@@ -11,7 +11,7 @@ uses portable VarInt streams and componentwise delta vertices. It does not requi
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {MLTWriter} from '@loaders.gl/mlt';
+import {MLTWriter} from '@loaders.gl/tiles/mlt';
 
 const bytes = await encode(tileLocalArrowTable, MLTWriter, {
   mlt: {layerName: 'features', extent: 4096, idColumn: 'id'}

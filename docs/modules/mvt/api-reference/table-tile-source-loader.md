@@ -76,20 +76,20 @@ There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to tes
 ### Install
 
 ```sh
-npm install @loaders.gl/mvt
+npm install @loaders.gl/tiles
 ```
 
 Or just import via a browser script tag:
 
 ```html
-<script src="https://unpkg.com/@loaders.gl/mvt/dist/dist.min.js"></script>
+<script src="https://unpkg.com/@loaders.gl/tiles/mvt/dist/dist.min.js"></script>
 ```
 
 ### Usage
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {TableTileSourceLoader} from '@loaders.gl/mvt';
+import {TableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
 // Build an initial index of tiles.
@@ -132,7 +132,7 @@ although the defaults are sensible and work well for most use cases.
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {TableTileSourceLoader} from '@loaders.gl/mvt';
+import {TableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 
 const tileSource = createDataSource(parsedGeojson, [TableTileSourceLoader], {
   table: {

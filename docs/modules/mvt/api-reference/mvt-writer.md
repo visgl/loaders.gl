@@ -53,7 +53,7 @@ Writer for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specifi
 ## Installation
 
 ```bash
-npm install @loaders.gl/mvt
+npm install @loaders.gl/tiles
 npm install @loaders.gl/core
 ```
 
@@ -61,7 +61,7 @@ npm install @loaders.gl/core
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {MVTWriter} from '@loaders.gl/mvt';
+import {MVTWriter} from '@loaders.gl/tiles/mvt';
 
 const arrayBuffer = await encode(geojson, MVTWriter, {
   mvt: {

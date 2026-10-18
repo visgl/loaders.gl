@@ -16,8 +16,8 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {I3SLoader} from '@loaders.gl/i3s';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 import type {RequestCredential} from '@loaders.gl/loader-utils';
 import {createCesiumIonCredential} from '@loaders.gl/services/authentication';
 

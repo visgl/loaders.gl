@@ -1,9 +1,9 @@
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
-import {parseSLPKArchive} from '@loaders.gl/i3s';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {ArrayBufferFile} from '@loaders.gl/loader-utils';
-import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   convertSelectedContentsInWorker,
   saveSelectedContentsInWorker

@@ -5,7 +5,8 @@
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "moduleResolution": "bundler"
   },
   "references": [
     {"path": "../arrow"},
@@ -17,6 +18,7 @@
     {"path": "../schema"},
     {"path": "../schema-utils"},
     {"path": "../tiles"},
+    {"path": "../tiles-3d"},
     {"path": "../zip"}
   ]
 }

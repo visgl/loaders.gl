@@ -4,10 +4,10 @@
 
 import {afterEach, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
-import {Tiles3DTilesetSchema} from '@loaders.gl/3d-tiles/tileset-zod-schema';
-import {createTilesetSpatialReference} from '@loaders.gl/tiles';
-import {PointCloudTileSource} from '@loaders.gl/tiles/point-cloud-tile-source';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {Tiles3DTilesetSchema} from '@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {PointCloudTileSource} from '@loaders.gl/tiles-3d/point-cloud-tile-source';
 import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import type {Mesh} from '@loaders.gl/schema';
 import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';

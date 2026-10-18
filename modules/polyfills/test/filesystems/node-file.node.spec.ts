@@ -8,7 +8,7 @@ import {join} from 'node:path';
 import {expect, test} from 'vitest';
 import '@loaders.gl/polyfills';
 import {NodeFile} from '@loaders.gl/loader-utils';
-const SLPK_URL = 'modules/i3s/test/data/DA12_subset.slpk';
+const SLPK_URL = 'modules/tiles-3d/test/i3s/data/DA12_subset.slpk';
 const TEST_OFFSET = 100n;
 const getSize = async (provider: NodeFile): Promise<bigint> => {
   const stat = await provider.stat();

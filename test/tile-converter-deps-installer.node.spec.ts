@@ -43,7 +43,7 @@ test('dependency installer reports the failing URL and HTTP status without writi
   await expect(
     new DepsInstaller()['installFromNpm']('i3s', 'i3s-content-worker-node.js')
   ).rejects.toThrow(
-    `Failed to load resource i3s-content-worker-node.js from https://unpkg.com/@loaders.gl/i3s@${tileConverterPackage.version}/dist/i3s-content-worker-node.js: HTTP 404`
+    `Failed to load resource i3s-content-worker-node.js from https://unpkg.com/@loaders.gl/tiles-3d/i3s@${tileConverterPackage.version}/dist/i3s-content-worker-node.js: HTTP 404`
   );
   expect(writeFile).not.toHaveBeenCalled();
 });
@@ -55,7 +55,7 @@ test('full dependency installation requests published workers and installs the D
   await new DepsInstaller().install('deps');
   const requestedUrls = vi.mocked(fetchFile).mock.calls.map(([url]) => String(url));
   expect(requestedUrls.filter(url => url.includes('worker-node'))).toEqual([
-    `https://unpkg.com/@loaders.gl/i3s@${tileConverterPackage.version}/dist/i3s-content-worker-node.js`,
+    `https://unpkg.com/@loaders.gl/tiles-3d/i3s@${tileConverterPackage.version}/dist/i3s-content-worker-node.js`,
     `https://unpkg.com/@loaders.gl/draco@${tileConverterPackage.version}/dist/draco-worker-node.js`,
     `https://unpkg.com/@loaders.gl/draco@${tileConverterPackage.version}/dist/draco-writer-worker-node.cjs`,
     `https://unpkg.com/@loaders.gl/textures@${tileConverterPackage.version}/dist/basis-worker-node.cjs`,

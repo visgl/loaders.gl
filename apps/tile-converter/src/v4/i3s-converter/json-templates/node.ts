@@ -4,7 +4,7 @@
 
 import type {BuilderInput} from '../../lib/utils/builder-input';
 
-import type {BoundingVolumes, NodeReference, Node3DIndexDocument} from '@loaders.gl/i3s';
+import type {BoundingVolumes, NodeReference, Node3DIndexDocument} from '@loaders.gl/tiles-3d/i3s';
 
 /** Legacy node documents may include a path in addition to the typed I3S fields. */
 type NodeBuilderRecord = Node3DIndexDocument & {

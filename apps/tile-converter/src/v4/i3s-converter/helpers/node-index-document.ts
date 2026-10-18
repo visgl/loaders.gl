@@ -5,7 +5,7 @@ import {
   Node3DIndexDocument,
   NodeInPage,
   NodeReference
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 import {randomUUID} from 'node:crypto';
 import {openJson, writeFileForSlpk} from '../../lib/utils/file-utils';
 import I3SConverter from '../i3s-converter';

@@ -149,4 +149,4 @@ Implicit subtree payloads have their own `Tile3DSubtreeLoader` and availability 
 
 When diagnosing resource loading, record the original content URI, resolved URL, detected content type, normalized result shape, and whether the source is archive-backed. Keep credentials redacted. Follow the resource into [hierarchy refinement](/docs/modules/3d-tiles/concepts/tile-hierarchy-and-refinement), [request scheduling](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities), and [runtime diagnostics](/docs/modules/3d-tiles/concepts/runtime-tuning-and-diagnostics) to distinguish address/classification failures from traversal or cache behavior.
 
-See the [`Tiles3DLoader` API](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [`Tileset3D` API](/docs/modules/tiles/api-reference/tileset-3d), and [3D Tiles specification](https://docs.ogc.org/cs/22-025r4/22-025r4.html) for the surrounding data model.
+See the [`Tiles3DLoader` API](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [`Tileset3D` API](/docs/modules/tiles-3d/api-reference/tileset-3d), and [3D Tiles specification](https://docs.ogc.org/cs/22-025r4/22-025r4.html) for the surrounding data model.

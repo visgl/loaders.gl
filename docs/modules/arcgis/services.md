@@ -55,7 +55,7 @@ include Esri's [service catalog](https://developers.arcgis.com/rest/services-ref
 | Scene service: point clouds | I3S PointCloud profile | ⚠️ Implemented subset | Dedicated point-cloud source and LEPCC infrastructure | Attribute support is partial; profile/version and renderer checks still required |
 | Scene service: building scenes | Building profile and sublayers | ⚠️ Other package / partial | `I3SBuildingSceneLayerLoader` and building examples in I3S | Not evidence that the general SceneServer facade fully handles building roots, filters, categories, and all sublayers |
 | Scene service: feature query | Layer `query` | ⚠️ Implemented subset | Query parameter forwarding, transfer-limit metadata, raw response | Availability depends on published service; no automatic paging; local scene aggregation is not server-side statistics |
-| ArcGIS-hosted 3D Tiles | Root `tileset.json` and child content | ⚠️ Other package / verify | Generic `@loaders.gl/3d-tiles` and tiles runtime | ArcGIS item resolution, authentication propagation, extensions and deployment need validation; not the I3S SceneServer adapter |
+| ArcGIS-hosted 3D Tiles | Root `tileset.json` and child content | ⚠️ Other package / verify | Generic `@loaders.gl/tiles-3d/3d-tiles` and tiles runtime | ArcGIS item resolution, authentication propagation, extensions and deployment need validation; not the I3S SceneServer adapter |
 | Stream service | `StreamServer` and WebSocket subscription | ❌ Not implemented | No ArcGIS stream client | Subscription, filters, reconnect, bounded retention and incremental layer updates are gaps |
 | Video service | `VideoServer` resources | ❌ Not implemented | Generic video-related code is not this client | No service discovery, playback-session, frame/footprint synchronization, or ArcGIS video metadata integration |
 | Knowledge graph service | `KnowledgeGraphServer` | ❌ Not implemented | Generic graph/file support is not this client | No graph query protocol, data model, PBF response handling or spatial-entity conversion |
@@ -169,7 +169,7 @@ WebMap/WebScene rendering.
 | WCS | ⚠️ Other package | `@loaders.gl/wms` | Coverage access differs from ImageServer REST support |
 | OGC API Features / Tiles | ⚠️ Other package | `@loaders.gl/wms` | Protocol implementation does not establish ArcGIS publishing or deployment support |
 | KML, GeoJSON, CSV, GeoTIFF, Shapefile and similar exports | ⚠️ Other package | Format-specific packages | Parsing an existing file does not perform the ArcGIS export job |
-| SLPK | ⚠️ Other package | `@loaders.gl/i3s` | Archive/profile coverage differs from online SceneServer support |
+| SLPK | ⚠️ Other package | `@loaders.gl/tiles-3d/i3s` | Archive/profile coverage differs from online SceneServer support |
 | TPK/TPKX, VTPK, mobile map/scene packages | ⚠️ Not verified | ZIP/container utilities are only building blocks | Do not advertise package readers without format-specific implementations and tests |
 
 The protocol list is an alternative integration route, not a claim that every ArcGIS product

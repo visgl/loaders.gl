@@ -5,7 +5,7 @@ import {createRoot} from 'react-dom/client';
 import {ConversionPanel} from '../examples/website/i3s-slpk/src/components/conversion-panel';
 import TileConversionApp from '../examples/website/i3s-slpk/src/conversion-app';
 import {fetchFile, load, parse} from '@loaders.gl/core';
-import {Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles';
+import {Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles-3d';
 import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-source';
 import {
   inspectConversionInput,

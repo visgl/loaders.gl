@@ -46,6 +46,7 @@
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@loaders.gl/tiles": "5.0.0-alpha.12",
+    "@loaders.gl/tiles-3d": "5.0.0-alpha.12",
     "@loaders.gl/zip": "5.0.0-alpha.12",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",

@@ -73,7 +73,7 @@ Loaders.gl has `I3SBuildingSceneLayerLoader` that is used to load BSL JSON metad
 
 ```javascript
 import {load} from '@loaders.gl/core';
-import {I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
+import {I3SBuildingSceneLayerLoader} from '@loaders.gl/tiles-3d/i3s';
 
 const {header, sublayers} = await load(tilesetData.url, I3SBuildingSceneLayerLoader);
 ```
@@ -87,7 +87,7 @@ import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
-import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 function renderLayer() {
   const tile3dLayers = sublayers.map((layer) => {

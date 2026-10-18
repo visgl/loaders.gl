@@ -1,70 +1,17 @@
 # @loaders.gl/tiles
 
-This module contains the common components for tiles loaders, i.e. [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles).
+Two-dimensional tilesets and tiled-data formats share this package. Import the
+selection and cache runtime from the root, and import each format from its own
+subpath so a format-specific decoder is loaded only when needed.
 
-[loaders.gl](https://loaders.gl/docs) is a collection of loaders for big data visualizations.
+| Entry point | Purpose |
+| --- | --- |
+| `@loaders.gl/tiles` | `Tileset2D`, `ImageSet`, and `RasterSet` |
+| `@loaders.gl/tiles/mlt` | MapLibre Tile (MLT) loaders and writers |
+| `@loaders.gl/tiles/mvt` | Mapbox Vector Tile, TileJSON, and map-style APIs |
+| `@loaders.gl/tiles/pmtiles` | PMTiles archives and source loaders |
 
-## Source-backed tilesets
-
-`Tileset3D` now supports source-backed construction for format-specific loading behavior while keeping traversal and culling logic in the shared runtime.
-
-```ts
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
-
-const source = new Tiles3DSource({url, loader: Tiles3DLoader});
-const tileset = new Tileset3D(source, options);
-```
-
-Available source classes:
-
-- `Tiles3DSource` for 3D Tiles datasets
-- `I3SSource` for I3S datasets
-
-Archive-backed `.3tz` and `.slpk` datasets use the same source classes through archive-aware
-source construction helpers. Archive parsing stays in the `@loaders.gl/3d-tiles` and
-`@loaders.gl/i3s` packages rather than being duplicated in `@loaders.gl/tiles`.
-
-`Tileset3D` now requires an explicit source instance. Root metadata loading and normalization happen inside the source implementation.
-
-The shared `Tileset3DSource` contract owns:
-
-- root metadata loading and normalization
-- runtime tile-header creation
-- tile content URL resolution
-- tile content fetching
-- format-specific view-state metadata
-- format-specific post-load bookkeeping
-
-`Tileset3D` remains responsible for traversal, culling, request scheduling, selection, and cache management.
-
-### Camera-independent content traversal
-
-Conversion and inspection jobs can visit the complete dataset without creating a viewport:
-
-```ts
-import {traverseTilesetContents} from '@loaders.gl/tiles';
-
-for await (const {tile, contents} of traverseTilesetContents(tileset, {signal})) {
-  // `contents` preserves the tile's declared content order.
-  processTile(tile, contents);
-}
-```
-
-The traversal follows declared placements in depth-first order, resolves lazy 3D Tiles subtrees and
-I3S child headers through their source, and visits nested tilesets before descending into them.
-Repeated resource URLs remain separate visits when they appear at different placements, since each
-placement can have its own transform. By default, the caller owns loaded-content lifetime and
-should unload or destroy the tileset when processing completes.
-
-Pass `{signal, unloadContent: true}` with a runtime dedicated to traversal to unload newly read
-content when the iterator advances or closes, including on cancellation and errors. Preloaded
-content is retained. Finish processing each placement before requesting the next one; do not retain
-payloads or concurrently update the runtime. Tile placements and children remain available, and the
-caller still owns tileset destruction and source/archive lifetimes. This limits content retention,
-not decoder allocations, source caches, or the full dataset's metadata.
-
-For broader documentation please visit the [website](https://loaders.gl).
+The 3D runtime and 3D Tiles/I3S formats live in `@loaders.gl/tiles-3d`.
 
 ## Tileset2D
 
@@ -83,11 +30,7 @@ overwriting each other's traversal state.
 ### Installation
 
 ```ts
-import {
-  Tileset2D,
-  type Tileset2DProps,
-  type TileLoadProps
-} from '@loaders.gl/tiles';
+import {Tileset2D, type Tileset2DProps, type TileLoadProps} from '@loaders.gl/tiles';
 ```
 
 ### Construct from `getTileData`

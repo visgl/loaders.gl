@@ -8,7 +8,7 @@ import DeckGL from '@deck.gl/react';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {createArchiveSource} from './archive-source';
 import type {ArchiveFormat} from './archive-source';
-import type {Tileset3D} from '@loaders.gl/tiles';
+import type {Tileset3D} from '@loaders.gl/tiles-3d';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Map from 'react-map-gl/maplibre';
 

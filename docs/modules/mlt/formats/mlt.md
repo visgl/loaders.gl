@@ -37,7 +37,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 - _[MapLibre Tile format](https://github.com/maplibre/mlt)_
-- _[@loaders.gl/mlt](/docs/modules/mlt)_
+- _[@loaders.gl/tiles/mlt](/docs/modules/mlt)_
 - _[MLTLoader](/docs/modules/mlt/api-reference/mlt-loader)_
 - _[MLTSourceLoader](/docs/modules/mlt/api-reference/mlt-source-loader)_
 - _[MLT example](/examples/tiles/mlt)_

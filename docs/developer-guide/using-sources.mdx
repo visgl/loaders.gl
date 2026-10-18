@@ -178,7 +178,7 @@ For a single source and parser, use the same namespace for both:
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {MVTSourceLoader} from '@loaders.gl/mvt';
+import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 
 const source = createDataSource(url, [MVTSourceLoader], {
   core: {worker: false},
@@ -192,7 +192,7 @@ const source = createDataSource(url, [MVTSourceLoader], {
 For multiple candidate sources or multiple internal parsers, add their namespaces side by side:
 
 ```typescript
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
 const source = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
   core: {worker: false, fetch: {headers: {Authorization: 'Bearer …'}}},
@@ -243,7 +243,7 @@ GeoJSON interface.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ArrowTableTileSourceLoader} from '@loaders.gl/mvt';
+import {ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
 // build an initial index of tiles.

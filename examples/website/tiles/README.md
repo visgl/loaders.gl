@@ -15,7 +15,7 @@ including each tile's normal clipping buffer for vectors. Bounds do not crop the
 exact requested rectangle. Antimeridian-crossing bounds are not supported in this first example.
 
 The example delegates indexing/clipping to the existing GeoArrow tiler and encoding/packaging to
-`@loaders.gl/pmtiles/geoarrow` and `@loaders.gl/pmtiles/raster`. It adds no conversion algorithms.
+`@loaders.gl/tiles/pmtiles/geoarrow` and `@loaders.gl/tiles/pmtiles/raster`. It adds no conversion algorithms.
 Only the selected parser is loaded. A disposable module worker reads the input, parses it,
 builds the tile index, and encodes the archive, keeping the page responsive. Cancel and unmount
 terminate the worker, including synchronous parsing or encoding. Each retry starts a fresh worker.

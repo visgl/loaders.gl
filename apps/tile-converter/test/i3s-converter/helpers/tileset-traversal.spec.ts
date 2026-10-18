@@ -1,10 +1,10 @@
 import {expect, test} from 'vitest';
-import {Tiles3DLoader, Tiles3DTileJSONPostprocessed} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader, Tiles3DTileJSONPostprocessed} from '@loaders.gl/tiles-3d/3d-tiles';
 import {load} from '@loaders.gl/core';
 import {traverseDatasetWith} from '../../../src/v4/i3s-converter/helpers/tileset-traversal';
 import {loadNestedTileset} from '../../../src/v4/i3s-converter/helpers/load-3d-tiles';
 const NESTED_TILESET_URL =
-  '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
 test('tile-converter(i3s)#traverseDatasetWith', async () => {
   const nestedTileset = await load(NESTED_TILESET_URL, Tiles3DLoader, {});
   const AUTH_TOKEN = 'AUTH_TOKEN';

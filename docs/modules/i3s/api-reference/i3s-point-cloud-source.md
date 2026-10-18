@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['I3S 2.x', 'PointCloudTileset', 'CRS and elevation aware']}
   links={[
     {label: 'I3S module', to: '/docs/modules/i3s'},
-    {label: 'Point-cloud tiles', to: '/docs/modules/tiles/api-reference/point-cloud-tileset'},
+    {label: 'Point-cloud tiles', to: '/docs/modules/tiles-3d/api-reference/point-cloud-tileset'},
     {label: 'CRS in I3S', to: '/docs/modules/i3s/concepts/coordinate-reference-systems'}
   ]}
 />
@@ -42,12 +42,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 `I3SPointCloudSource` adapts an I3S 2.x Point Cloud layer to the shared
-[`PointCloudTileset`](/docs/modules/tiles/api-reference/point-cloud-tileset) traversal API.
+[`PointCloudTileset`](/docs/modules/tiles-3d/api-reference/point-cloud-tileset) traversal API.
 It accepts a SceneServer layer URL, an SLPK URL, or an SLPK `Blob`.
 
 ```ts
-import {I3SPointCloudSource} from '@loaders.gl/i3s';
-import {PointCloudTileset} from '@loaders.gl/tiles';
+import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
 const source = new I3SPointCloudSource(layerUrl, {
   i3s: {token: arcgisToken},

@@ -42,7 +42,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   </a>
 </p>
 
-- _[`@loaders.gl/mvt`](/docs/modules/mvt)_
+- _[`@loaders.gl/tiles/mvt`](/docs/modules/mvt)_
 - _[Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec)_
 
 A specification for encoding tiled vector data.

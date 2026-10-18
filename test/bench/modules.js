@@ -80,7 +80,9 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   }
 
   if (shouldRunBenchmark('3d-tiles')) {
-    const {default: tiles3dBench} = await import('@loaders.gl/3d-tiles/test/tiles-3d-loader.bench');
+    const {default: tiles3dBench} = await import(
+      '@loaders.gl/tiles-3d/3d-tiles/test/tiles-3d-loader.bench'
+    );
     await tiles3dBench(suite);
   }
 

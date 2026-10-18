@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {isLoaderObject, normalizeLoader} from '@loaders.gl/core/lib/loader-utils/normalize-loader';
-import * as threeDTiles from '@loaders.gl/3d-tiles';
+import * as threeDTiles from '@loaders.gl/tiles-3d/3d-tiles';
 import * as arrow from '@loaders.gl/arrow';
 import * as csv from '@loaders.gl/csv';
 import * as draco from '@loaders.gl/draco';

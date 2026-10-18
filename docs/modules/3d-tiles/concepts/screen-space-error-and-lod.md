@@ -52,8 +52,8 @@ maximum-scale multiplier. See the [draft profile](./3d-tiles-2-0-experimental).
 References:
 
 - [3D Tiles specification: geometric error](https://docs.ogc.org/cs/22-025r4/22-025r4.html#core-geometric-error)
-- [`Tileset3D` API](/docs/modules/tiles/api-reference/tileset-3d)
-- [`Tile3D` API](/docs/modules/tiles/api-reference/tile-3d)
+- [`Tileset3D` API](/docs/modules/tiles-3d/api-reference/tileset-3d)
+- [`Tile3D` API](/docs/modules/tiles-3d/api-reference/tile-3d)
 - [`Tiles3DLoader` API](/docs/modules/3d-tiles/api-reference/tiles-3d-loader)
 
 ## From Geometric Error to Refinement

@@ -98,7 +98,7 @@ You can use custom Earth Gravity Model or disable it using `--egm` option.
    Examples:
 
 ```
-npx tile-converter --input-type 3dtiles --tileset ./modules/3d-tiles/test/data/Batched/BatchedTextured/tileset.json --name BatchedTextured
+npx tile-converter --input-type 3dtiles --tileset ./modules/tiles-3d/test/3d-tiles/data/Batched/BatchedTextured/tileset.json --name BatchedTextured
 npx tile-converter --input-type 3dtiles --tileset https://assets.ion.cesium.com/29328/tileset.json --name CairoLayer --max-depth 10
 ```
 

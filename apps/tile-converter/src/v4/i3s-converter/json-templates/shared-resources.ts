@@ -4,7 +4,7 @@
 
 import type {BuilderInput} from '../../lib/utils/builder-input';
 
-import type {MaterialDefinitionInfo, TextureDefinitionInfo} from '@loaders.gl/i3s';
+import type {MaterialDefinitionInfo, TextureDefinitionInfo} from '@loaders.gl/tiles-3d/i3s';
 import type {SharedResourcesArrays} from '../types';
 
 /** Legacy material fields are selected from the material record, rather than its params field. */

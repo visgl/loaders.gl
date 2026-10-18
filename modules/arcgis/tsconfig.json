@@ -19,7 +19,7 @@
       "path": "../images"
     },
     {
-      "path": "../i3s"
+      "path": "../tiles-3d"
     },
     {
       "path": "../raster"
@@ -28,7 +28,7 @@
       "path": "../loader-utils"
     },
     {
-      "path": "../mvt"
+      "path": "../tiles"
     },
     {
       "path": "../schema"

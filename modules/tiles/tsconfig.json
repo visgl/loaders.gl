@@ -1,32 +1,49 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/mlt/libs/**/*.cjs"
+  ],
   "compilerOptions": {
     "moduleResolution": "bundler",
-    "noImplicitAny": false, // covered by strict
-    "noImplicitThis": true, // covered by strict
-    // "strictBindCallApply": true, // covered by strict
-    // "strictFunctionTypes": true, // covered by strict
-    // "useUnknownInCatchVariables": true,  // covered by strict
-    // "strictNullChecks": true, // covered by strict
-    // "strictPropertyInitialization": true,
-    // "exactOptionalPropertyTypes": true,
-
+    "noImplicitAny": false,
+    "noImplicitThis": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": false, // `override` modifier fails the website build
+    "noImplicitOverride": false,
     "noImplicitReturns": true,
-    // "noPropertyAccessFromIndexSignature": true,
-    // "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": false, // Not used - fixing this requires changing APIs.  
+    "noUnusedParameters": false,
     "composite": true,
     "rootDir": "src",
     "outDir": "dist"
   },
   "references": [
-    {"path": "../core"},
-    {"path": "../loader-utils"},
-    {"path": "../schema-utils"}
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../arrow"
+    },
+    {
+      "path": "../arrow-geometry"
+    },
+    {
+      "path": "../compression"
+    },
+    {
+      "path": "../images"
+    },
+    {
+      "path": "../loader-utils"
+    },
+    {
+      "path": "../schema"
+    },
+    {
+      "path": "../schema-utils"
+    }
   ]
 }

@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/mvt'
+title: '@loaders.gl/tiles/mvt'
 description: Load, write, and serve Mapbox Vector Tiles and the metadata that describes tiled maps.
 hide_title: true
 page_style: designed
@@ -36,7 +36,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](/docs/modules/mvt/formats/mvt) format, a protobuf-encoded format that defines geospatial geometries.
+The `@loaders.gl/tiles/mvt` module handles the [Mapbox Vector Tile](/docs/modules/mvt/formats/mvt) format, a protobuf-encoded format that defines geospatial geometries.
 
 The module also provides `TableTileSourceLoader` for generating dynamic tiles from an in-memory GeoJSON table.
 
@@ -52,7 +52,7 @@ attribute columns without a GeoJSON property round-trip.
 ## Installation
 
 ```bash
-npm install @loaders.gl/mvt
+npm install @loaders.gl/tiles
 npm install @loaders.gl/core
 ```
 

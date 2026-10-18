@@ -11,7 +11,7 @@ const getConverter = ({instantNodeWriting} = {instantNodeWriting: false}) => {
   converter.writeQueue = new WriteQueue(new ConversionDump());
   return converter;
 };
-/** @type {import('@loaders.gl/i3s').NodeInPage} */
+/** @type {import('@loaders.gl/tiles-3d/i3s').NodeInPage} */
 const newNodeStub = {
   index: 0,
   lodThreshold: 123.123,
@@ -131,7 +131,7 @@ describe.skipIf(isBrowser)('tile-converter(i3s)#NodePages', () => {
     expect(savePaths[55]).toBe('.data/node-pages-test/layers/0/nodepages');
   });
   test('tile-converter(i3s)#NodePages - Update material method should set "material" object in the "mesh" with node index and material id', async () => {
-    /** @type {import('@loaders.gl/i3s').NodeInPage} */
+    /** @type {import('@loaders.gl/tiles-3d/i3s').NodeInPage} */
     const newNodeWithMesh = {
       ...newNodeStub,
       mesh: {

@@ -1,5 +1,5 @@
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
+import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 import {I3SMeshExtension} from '../../../examples/website/i3s-slpk/src/i3s-mesh-extension';
 
 /** Mesh material compatibility shared with the I3S archive viewer. */
@@ -13,7 +13,7 @@ export function createHomeDemoLayer(): SourceLayer {
     loadOptions: {
       'i3s-content': {
         workerUrl: new URL(
-          '../../../modules/i3s/dist/i3s-content-worker.js',
+          '../../../modules/tiles-3d/dist/i3s/i3s-content-worker.js',
           import.meta.url
         ).href
       },

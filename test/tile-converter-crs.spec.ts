@@ -8,7 +8,7 @@ import type {Geoid} from '@math.gl/geoid';
 import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {parse} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {GLTFLoader} from '@loaders.gl/gltf/bundled';
 import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {convertTableToMesh, makeMeshArrowTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
@@ -16,8 +16,8 @@ import {
   createTilesetSpatialReference,
   getI3SSpatialReference,
   registerSpatialCrs
-} from '@loaders.gl/tiles';
-import type {PointCloudTilesetSource} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d';
+import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,

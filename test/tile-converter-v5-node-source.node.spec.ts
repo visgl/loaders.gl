@@ -5,7 +5,7 @@ import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createRequire} from 'node:module';
 import {execFileSync, spawnSync} from 'node:child_process';
-import {Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles';
+import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   createNodeTilesetConversionSource,
   NODE_TILESET_LIMITS

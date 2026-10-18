@@ -237,14 +237,14 @@
       "@loaders.gl/crypto/test": [
         "modules/crypto/test"
       ],
-      "@loaders.gl/3d-tiles": [
-        "modules/3d-tiles/src"
+      "@loaders.gl/tiles-3d/3d-tiles": [
+        "modules/tiles-3d/src/3d-tiles"
       ],
-      "@loaders.gl/3d-tiles/cesium-ion-loader-with-parser": [
-        "modules/3d-tiles/src/cesium-ion-loader-with-parser"
+      "@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser": [
+        "modules/tiles-3d/src/3d-tiles/cesium-ion-loader-with-parser"
       ],
-      "@loaders.gl/3d-tiles/test": [
-        "modules/3d-tiles/test"
+      "@loaders.gl/tiles-3d/3d-tiles/test": [
+        "modules/tiles-3d/test/3d-tiles"
       ],
       "@loaders.gl/arrow": [
         "modules/arrow/src"
@@ -330,14 +330,14 @@
       "@loaders.gl/images/test": [
         "modules/images/test"
       ],
-      "@loaders.gl/i3s": [
-        "modules/i3s/src"
+      "@loaders.gl/tiles-3d/i3s": [
+        "modules/tiles-3d/src/i3s"
       ],
-      "@loaders.gl/i3s/*": [
-        "modules/i3s/src/*"
+      "@loaders.gl/tiles-3d/i3s/*": [
+        "modules/tiles-3d/src/i3s/*"
       ],
-      "@loaders.gl/i3s/test": [
-        "modules/i3s/test"
+      "@loaders.gl/tiles-3d/i3s/test": [
+        "modules/tiles-3d/test/i3s"
       ],
       "@loaders.gl/json/fast-json-loader": [
         "modules/json/src/fast-json-loader"
@@ -384,23 +384,23 @@
       "@loaders.gl/raster/test/lerc": [
         "modules/raster/test/lerc"
       ],
-      "@loaders.gl/mlt": [
-        "modules/mlt/src"
+      "@loaders.gl/tiles/mlt": [
+        "modules/tiles/src/mlt"
       ],
-      "@loaders.gl/mlt/test": [
-        "modules/mlt/test"
+      "@loaders.gl/tiles/mlt/test": [
+        "modules/tiles/test/mlt"
       ],
-      "@loaders.gl/mvt": [
-        "modules/mvt/src"
+      "@loaders.gl/tiles/mvt": [
+        "modules/tiles/src/mvt"
       ],
-      "@loaders.gl/mvt/arrow-table-tile-source-loader": [
-        "modules/mvt/src/arrow-table-tile-source-loader.ts"
+      "@loaders.gl/tiles/mvt/arrow-table-tile-source-loader": [
+        "modules/tiles/src/mvt/arrow-table-tile-source-loader.ts"
       ],
-      "@loaders.gl/mvt/mvt-geojson-loader": [
-        "modules/mvt/src/mvt-geojson-loader.ts"
+      "@loaders.gl/tiles/mvt/mvt-geojson-loader": [
+        "modules/tiles/src/mvt/mvt-geojson-loader.ts"
       ],
-      "@loaders.gl/mvt/test": [
-        "modules/mvt/test"
+      "@loaders.gl/tiles/mvt/test": [
+        "modules/tiles/test/mvt"
       ],
       "@loaders.gl/netcdf": [
         "modules/netcdf/src"
@@ -459,11 +459,11 @@
       "@loaders.gl/pcd/test": [
         "modules/pcd/test"
       ],
-      "@loaders.gl/pmtiles": [
-        "modules/pmtiles/src"
+      "@loaders.gl/tiles/pmtiles": [
+        "modules/tiles/src/pmtiles"
       ],
-      "@loaders.gl/pmtiles/test": [
-        "modules/pmtiles/test"
+      "@loaders.gl/tiles/pmtiles/test": [
+        "modules/tiles/test/pmtiles"
       ],
       "@loaders.gl/sql": [
         "modules/sql/src"
@@ -525,11 +525,11 @@
       "@loaders.gl/shapefile/test": [
         "modules/shapefile/test"
       ],
-      "@loaders.gl/tiles/point-cloud-tile-source": [
-        "modules/tiles/src/point-cloud-tile-source.ts"
+      "@loaders.gl/tiles-3d/point-cloud-tile-source": [
+        "modules/tiles-3d/src/point-cloud-tile-source.ts"
       ],
-      "@loaders.gl/tiles/point-cloud-tile-source-loader": [
-        "modules/tiles/src/point-cloud-tile-source-loader.ts"
+      "@loaders.gl/tiles-3d/point-cloud-tile-source-loader": [
+        "modules/tiles-3d/src/point-cloud-tile-source-loader.ts"
       ],
       "@loaders.gl/tiles": [
         "modules/tiles/src"
@@ -633,8 +633,8 @@
       "@loaders.gl/zip/zip-writer": [
         "modules/zip/src/zip-writer"
       ],
-      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": [
-        "modules/3d-tiles/src/3d-tiles-archive-writer"
+      "@loaders.gl/tiles-3d/3d-tiles/3d-tiles-archive-writer": [
+        "modules/tiles-3d/src/3d-tiles/3d-tiles-archive-writer"
       ],
       "@loaders.gl/zip": [
         "modules/zip/src"
@@ -653,6 +653,12 @@
       ],
       "@loaders.gl/raster/test/*": [
         "modules/raster/test/*"
+      ],
+      "@loaders.gl/tiles-3d": [
+        "modules/tiles-3d/src"
+      ],
+      "@loaders.gl/tiles-3d/test": [
+        "modules/tiles-3d/test"
       ]
     },
     "plugins": [

@@ -34,7 +34,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-- _[`@loaders.gl/mvt`](/docs/modules/mvt)_
+- _[`@loaders.gl/tiles/mvt`](/docs/modules/mvt)_
 - _[Mapbox Style Specification](https://docs.mapbox.com/style-spec/guides/)_
 - _[MapLibre Style Specification](https://maplibre.org/maplibre-style-spec/)_
 

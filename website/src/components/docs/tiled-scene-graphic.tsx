@@ -72,7 +72,7 @@ export function TiledSceneGraphic(): ReactNode {
               <span>points</span>
               <span>textures</span>
             </div>
-            <Link className={styles.resultLink} to="/docs/modules/tiles/api-reference/tileset-3d">
+            <Link className={styles.resultLink} to="/docs/modules/tiles-3d/api-reference/tileset-3d">
               Tileset3D traversal ↗
             </Link>
           </div>

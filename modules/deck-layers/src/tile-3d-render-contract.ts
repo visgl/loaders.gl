@@ -8,7 +8,7 @@ import type {
   Tile3DContent,
   Tile3DFeatureIdSet,
   Tile3DMetadataContext
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d';
 
 /** Renderer-neutral adapter for consuming normalized 3D Tiles state. */
 export type Tile3DRenderContract = {

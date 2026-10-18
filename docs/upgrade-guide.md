@@ -54,6 +54,26 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+### Tile package consolidation
+
+The v5 tile packages are grouped by runtime dimension. Replace imports and
+dependencies from the removed packages as follows:
+
+| Removed package | New import prefix |
+| --- | --- |
+| `@loaders.gl/mlt` | `@loaders.gl/tiles/mlt` |
+| `@loaders.gl/mvt` | `@loaders.gl/tiles/mvt` |
+| `@loaders.gl/pmtiles` | `@loaders.gl/tiles/pmtiles` |
+| `@loaders.gl/3d-tiles` | `@loaders.gl/tiles-3d/3d-tiles` |
+| `@loaders.gl/i3s` | `@loaders.gl/tiles-3d/i3s` |
+
+`Tileset3D`, `Tile3D`, 3D traversal and spatial helpers, and point-cloud tileset
+APIs move from the `@loaders.gl/tiles` root to `@loaders.gl/tiles-3d`.
+`Tileset2D`, `ImageSet`, and `RasterSet` remain at `@loaders.gl/tiles`.
+Install the parent package (`@loaders.gl/tiles` or `@loaders.gl/tiles-3d`);
+subpaths are import paths, not separate npm packages.
+
+
 **OGC API Tiles matrix discovery**
 
 `OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/wms/services/ogc-api.md).
@@ -221,13 +241,13 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
 - `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
 
-**@loaders.gl/mlt**
+**@loaders.gl/tiles/mlt**
 
  - `MLTLoader` and `MLTSourceLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
    default. Applications that expect the previous GeoJSON table default must set
    `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
 
-**@loaders.gl/mvt**
+**@loaders.gl/tiles/mvt**
 
  - `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
@@ -285,9 +305,9 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
  - Generic image-source requests no longer accept `bbox`; pass `boundingBox` as two coordinate
    pairs. Protocol-specific `bbox` request parameters remain unchanged.
 
-**@loaders.gl/pmtiles**
+**@loaders.gl/tiles/pmtiles**
 
- - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/mlt`.
+ - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/tiles/mlt`.
  - The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
    for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
 
@@ -455,7 +475,7 @@ Before, in 4.4:
 import type {Source} from '@loaders.gl/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
 import {WMSSource} from '@loaders.gl/wms';
-import {PMTilesSource} from '@loaders.gl/pmtiles';
+import {PMTilesSource} from '@loaders.gl/tiles/pmtiles';
 
 const sources: Source[] = [WMSSource, PMTilesSource];
 const wmsSource = createDataSource(url, [WMSSource], options);
@@ -468,7 +488,7 @@ Now, in v5:
 import type {SourceLoader} from '@loaders.gl/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
 import {WMSSourceLoader} from '@loaders.gl/wms';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
 const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
 const wmsSource = createDataSource(url, [WMSSourceLoader], options);
@@ -561,7 +581,7 @@ This unifies top-level loading behavior:
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
 - `@loaders.gl/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
-- `@loaders.gl/zip`/`@loaders.gl/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
+- `@loaders.gl/zip`/`@loaders.gl/tiles-3d/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
 
 **Deprecations**
 
@@ -674,7 +694,7 @@ Loader module changes, in order of estimated impact to applications:
 - `options.tcx.shape` applies the same changes as `options.kml.shape`.
 - `options.gpx.shape: 'binary'` and `options.tcx.shape: 'binary'` have been removed. Use `shape: 'binary-geometry'` instead.
 
-**@loaders.gl/mvt, @loaders.gl/mlt, @loaders.gl/flatgeobuf**
+**@loaders.gl/tiles/mvt, @loaders.gl/tiles/mlt, @loaders.gl/flatgeobuf**
 
 - Geospatial loader shapes now use `geojson-table` for GeoJSON feature table output and `binary-geometry` for binary geometry output.
 - The old `geojson` shape has been removed from `MVTLoader` and `MLTLoader`. Use `geojson-table` instead.
@@ -839,7 +859,7 @@ The experimental ImageLoaders for individual formats introduced in 2.0 have been
 - `ImageBitmapLoader`: reintroduced in v4.4 as the preferred pure `ImageBitmap` loader.
 - `ImageLoader`: deprecated in v4.4 and retained as the broad compatibility loader. If application code needs raw pixels from either loader, load the image and call `getImageData(image)`.
 
-**`@loaders.gl/3d-tiles`**
+**`@loaders.gl/tiles-3d/3d-tiles`**
 
 `Tileset3DLoader` and `Tile3DLoader` are replaced by `Tiles3DLoader`, which supports loading both a 3D tileset file and a tile. Check `loaders.gl/3d-tiles` for loaded data format.
 

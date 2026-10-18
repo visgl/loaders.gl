@@ -11,10 +11,10 @@ import {
   I3SContentLoader,
   I3SAttributeLoader,
   type I3STileContent
-} from '@loaders.gl/i3s';
-import {I3SSource, Tileset3D} from '@loaders.gl/tiles';
-import type {Tileset3D as TilesetRuntime, TilesetSourceMetadata} from '@loaders.gl/tiles';
-import {createTilesetSpatialReference} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d/i3s';
+import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import type {Tileset3D as TilesetRuntime, TilesetSourceMetadata} from '@loaders.gl/tiles-3d';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
 import {GLTFLoader} from '@loaders.gl/gltf/bundled';
 import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {Matrix4} from '@math.gl/core';

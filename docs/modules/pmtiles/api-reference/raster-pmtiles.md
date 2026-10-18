@@ -34,7 +34,7 @@ Try the [browser PMTiles export example](/examples/tiles/pmtiles-authoring) with
 
 ```typescript
 import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/index';
-import {encodeRasterPMTiles} from '@loaders.gl/pmtiles/raster';
+import {encodeRasterPMTiles} from '@loaders.gl/tiles/pmtiles/raster';
 
 // A byte-valued grayscale, RGB or RGBA GeoTIFF/COG in a supported source CRS.
 const source = new GeoTIFFRasterSource('https://example.com/imagery.tif', {});

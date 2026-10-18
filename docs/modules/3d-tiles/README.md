@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/3d-tiles'
+title: '@loaders.gl/tiles-3d/3d-tiles'
 description: Load and traverse large 3D Tiles datasets with standards-aware tile and content handling.
 hide_title: true
 page_style: designed
@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   format="3d-tiles"
   eyebrow="Tiled scene module"
-  title="@loaders.gl/3d-tiles"
+  title="@loaders.gl/tiles-3d/3d-tiles"
   description="Resolve tileset structure, linked content, and level-of-detail decisions without making the application understand every 3D Tiles detail."
   tone="violet"
   meta={['3D Tiles', 'Tileset traversal', 'glTF and point clouds']}
@@ -26,7 +26,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <TiledSceneGraphic />
 
-The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles 1.x and an experimental
+The `@loaders.gl/tiles-3d/3d-tiles` module supports loading and traversing 3D Tiles 1.x and an experimental
 subset of the draft glTF-based 3D Tiles 2.0 representation. Draft resources are detected from
 their structure, so `.gltf`, `.glb`, signed, and extensionless URLs use the same loader entry point.
 
@@ -75,7 +75,7 @@ These are loader/runtime capabilities, not a claim of complete Cesium renderer p
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/3d-tiles @loaders.gl/tiles
+npm install @loaders.gl/core @loaders.gl/tiles-3d @loaders.gl/tiles
 ```
 
 ## API
@@ -88,8 +88,8 @@ The module provides loaders for the individual 3D Tiles payload forms:
 For dynamic selection and loading of tilesets larger than browser memory, use the helper classes in
 the `@loaders.gl/tiles` module:
 
-- [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) to work with the loaded tileset.
-- [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) to access data for a specific tile.
+- [`Tileset3D`](/docs/modules/tiles-3d/api-reference/tileset-3d) to work with the loaded tileset.
+- [`Tile3D`](/docs/modules/tiles-3d/api-reference/tile-3d) to access data for a specific tile.
 
 The [3D Tiles runtime concepts suite](/docs/modules/3d-tiles/concepts) explains the complete path from hierarchy traversal to rendering:
 
@@ -120,8 +120,8 @@ Basic API usage is illustrated in the following snippet. Load the tileset header
 
 ```typescript
 import {coreApi} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 
 const tilesetUrl = 'https://example.com/tileset.json';
 const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader, coreApi});
@@ -155,7 +155,7 @@ DWG parser is included.
 
 ## Attribution
 
-`@loaders.gl/3d-tiles` includes code derived from the [Cesium repository](https://github.com/AnalyticalGraphicsInc/cesium)
+`@loaders.gl/tiles-3d/3d-tiles` includes code derived from the [Cesium repository](https://github.com/AnalyticalGraphicsInc/cesium)
 under the Apache 2.0 license and is maintained in collaboration with the Cesium engineering team.
 
 ## Archive output

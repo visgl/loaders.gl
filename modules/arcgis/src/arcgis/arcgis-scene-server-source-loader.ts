@@ -16,8 +16,8 @@ import {
   createI3SLayerSource,
   normalizeI3SServiceMetadata,
   parseI3SSceneLayerMetadata
-} from '@loaders.gl/i3s';
-import type {I3SLayerSource, I3SServiceMetadata, SceneLayer3D} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
+import type {I3SLayerSource, I3SServiceMetadata, SceneLayer3D} from '@loaders.gl/tiles-3d/i3s';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 
 /** Error raised when a SceneServer query cannot be completed or decoded. */

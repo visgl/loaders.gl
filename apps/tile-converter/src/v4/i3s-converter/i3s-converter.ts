@@ -10,7 +10,7 @@ import type {
   Tiles3DTileContent,
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSONPostprocessed
-} from '@loaders.gl/3d-tiles';
+} from '@loaders.gl/tiles-3d/3d-tiles';
 import type {WriteQueueItem} from '../lib/utils/write-queue';
 import type {
   SceneLayer3D,
@@ -19,9 +19,9 @@ import type {
   NodeInPage,
   Attribute,
   Node3DIndexDocument
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 import {load, encode, isBrowser} from '@loaders.gl/core';
-import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';
 import {randomUUID} from 'node:crypto';
@@ -47,7 +47,7 @@ import {createSharedResources} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
+import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/tiles-3d/i3s';
 import {getImageData, ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {
@@ -73,7 +73,7 @@ import {
 } from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
-import {TILE_REFINEMENT, createBoundingVolume} from '@loaders.gl/tiles';
+import {TILE_REFINEMENT, createBoundingVolume} from '@loaders.gl/tiles-3d';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
 import {Progress} from './helpers/progress';

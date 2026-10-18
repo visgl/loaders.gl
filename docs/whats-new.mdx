@@ -288,7 +288,7 @@ evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable M
 - Enable skip-LOD replacement traversal by default for 3D Tiles, reducing intermediate content
   requests while retaining ready ancestors as coverage. Set `skipLevelOfDetail: false` to keep
   requesting every replacement level; I3S retains its existing default. See
-  [skip-LOD options](/docs/modules/tiles/api-reference/tileset-3d#skiplevelofdetail--boolean).
+  [skip-LOD options](/docs/modules/tiles-3d/api-reference/tileset-3d#skiplevelofdetail--boolean).
   Known empty terminal branches release ancestor coverage, and sibling requests respect viewer
   request volumes in skip traversal.
 
@@ -341,7 +341,7 @@ Release Date: 2026
 - **Module workers by default** - Worker descriptors can create bundler-resolved ES module workers as their default browser path while retaining explicit worker URLs and pre-built classic-worker fallbacks. Arrow triangulation is the first API to use this path; existing classic workers are not deprecated.
 - **Automatic atomic worker selection** - `core.worker: 'auto'` lets loaders provide synchronous normalized work estimates so small parses stay on the main thread while expensive parses use workers. The default `core.worker: true` behavior remains unchanged.
 - **OpenUSD scenes** - The new `@loaders.gl/scene` module provides an experimental [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) for the [OpenUSD format](/docs/modules/scene/formats/usd), supporting ASCII USDA layers and uncompressed USDZ archives, including reference and variant composition.
-- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/mvt`, `@loaders.gl/3d-tiles`, `@loaders.gl/schema`, `@loaders.gl/i3s`, and `@loaders.gl/splats`.
+- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/tiles/mvt`, `@loaders.gl/tiles-3d/3d-tiles`, `@loaders.gl/schema`, `@loaders.gl/tiles-3d/i3s`, and `@loaders.gl/splats`.
 
 **Features**
 
@@ -389,7 +389,7 @@ Release Date: 2026
   `Utf8View`, `Binary`, and `BinaryView` data between standard and view layouts with runtime
   fallback.
 
-**@loaders.gl/3d-tiles**
+**@loaders.gl/tiles-3d/3d-tiles**
 
 - [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader) validates tileset metadata at the loader boundary. The runtime `Tiles3DTilesetSchema` and generated `tileset.schema.json` are published for application and tooling use.
 - [`getStructuralMetadataRow()`](/docs/modules/3d-tiles/concepts/correctness-and-conformance) exposes normalized property-table rows with `default`/`noData` handling while preserving raw metadata references.
@@ -486,9 +486,9 @@ Release Date: 2026
 - Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/schema`, while matching runtime validators are available from `@loaders.gl/schema/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
 - Draft-07 `geoparquet.schema.json` and `geoarrow-metadata.schema.json` assets are published for validation and editor integrations.
 
-**@loaders.gl/i3s**
+**@loaders.gl/tiles-3d/i3s**
 
-- Handwritten I3S metadata types are paired with runtime scene-layer and node-page validators from `@loaders.gl/i3s/i3s-zod-schema`, plus published draft-07 JSON Schema assets.
+- Handwritten I3S metadata types are paired with runtime scene-layer and node-page validators from `@loaders.gl/tiles-3d/i3s/i3s-zod-schema`, plus published draft-07 JSON Schema assets.
 - Legacy textured I3S materials retain their texture reference, and explicit zero alpha cutoffs are preserved.
 
 **@loaders.gl/geoarrow and @loaders.gl/flatgeobuf**
@@ -598,7 +598,7 @@ v4.5 adds experimental Gaussian splat and TypeScript Parquet support, Chrome Tra
 - **@loaders.gl/splats** - New loaders for raw SPLAT, KSPLAT, SPZ, and Spark RAD Gaussian-splat data. `RADSourceLoader` supports progressive chunk loading for paged RAD scenes.
 - **@loaders.gl/parquet** - New experimental `ParquetJSLoader` makes the TypeScript Parquet backend available through an explicit loader import.
 - **@loaders.gl/traces** - New `ChromeTraceLoader` parses Chrome Trace Event JSON as normalized JSON or Arrow tables. Streaming helpers support incremental event, Arrow-batch, and file parsing.
-- **@loaders.gl/mvt** - New [`MapStyleLoader`](/docs/modules/mvt/api-reference/map-style-loader) parses Mapbox/MapLibre style JSON, resolves relative source and TileJSON URLs, preserves metadata, and supports custom fetch and base URL options.
+- **@loaders.gl/tiles/mvt** - New [`MapStyleLoader`](/docs/modules/mvt/api-reference/map-style-loader) parses Mapbox/MapLibre style JSON, resolves relative source and TileJSON URLs, preserves metadata, and supports custom fetch and base URL options.
 - **@loaders.gl/gltf** - `KHR_texture_transform` now supports independent transforms on textures that share a UV attribute, and `GLTFLoader` selects `EXT_texture_avif` sources when AVIF is available.
 - **@loaders.gl/textures** - The experimental `CompressedTextureWriter` no longer installs `texture-compressor` for every consumer; applications that use the writer can opt in explicitly.
 
@@ -612,10 +612,10 @@ Release Date: March 31, 2026
 
 
 
-- **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
+- **@loaders.gl/tiles/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
 - **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader).
 - **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
-- **@loaders.gl/mvt** - New experimental [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
+- **@loaders.gl/tiles/mvt** - New experimental [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
 
 **Features**
 
@@ -670,7 +670,7 @@ A minor release that includes:
 - [`selectSource`](/docs/modules/core/api-reference/select-source) - Select the appropriate `Source` from a list of `Source` objects.
 - Loader-wide options such as `fetch`, `worker`, `nothrow`, batching limits, etc. are now grouped under `options.core`, while the deprecated top-level aliases continue to work for backwards compatibility.
 
-**@loaders.gl/mvt**
+**@loaders.gl/tiles/mvt**
 
 - [`TableTileSourceLoader`](/docs/modules/mvt/api-reference/table-tile-source-loader) - Geospatial tables can now be vector tiled dynamically in the browser.
 
@@ -678,7 +678,7 @@ A minor release that includes:
 
 - [`Comp[ressedTextureLoader]`](/docs/modules/textures/api-reference/compressed-texture-loader) - Now supports mipmaps in KTX2 textures.
 
-**@loaders.gl/3d-tiles**
+**@loaders.gl/tiles-3d/3d-tiles**
 
 - **3D Tiles 1.1 Writing** [`Tile3DWriter`](/docs/modules/3d-tiles/api-reference/tile-3d-writer) now supports writing 3DTiles 1.1
 - **3D Tiles 1.1 Extensions** `EXT_mesh_features` and `EXT_structural_metadata` are now supported.
@@ -740,7 +740,7 @@ A minor release that includes:
 
 - `selectLoader()` - MIME type comparisons are now case insensitive.
 
-**@loaders.gl/pmtiles**
+**@loaders.gl/tiles/pmtiles**
 
 - `PMTilesSourceLoader` - now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
 - `PMTilesSourceLoader` - Now refreshes the already loaded index if the underlying PMTiles file being loaded from is changed.
@@ -751,11 +751,11 @@ A minor release that includes:
 - `ParquetLoader` - Many parquet files that previously failed to load now load correctly.
 - `GeoparquetLoader` - Improved support for large `Polygons` and `MultiPolygons`.
 
-**@loaders.gl/i3s**
+**@loaders.gl/tiles-3d/i3s**
 
 - `SLPKLoader` - Load from a local SLPK archive in the browser (Experimental).
 
-**@loaders.gl/3d-tiles**
+**@loaders.gl/tiles-3d/3d-tiles**
 
 - `Tile3DLoader` - Ignores unknown Draco3D attributes such as FLOAT64, INT64 and UINT64, when loading from e.g. `.PNTS` files. See [LAS to 3D Tiles conversion](https://cesium.com/blog/2024/03/20/preserving-more-metadata-for-point-clouds-using-3dtiles/).
 
@@ -815,7 +815,7 @@ A major release that brings:
 - **File format documentation** - articles describing the [file formats](/docs/formats?README) supported by loaders.gl.
 - **Node.js v18 & v20** - Supports the current set of Node.js LTS releases.
 
-**@loaders.gl/pmtiles** - NEW
+**@loaders.gl/tiles/pmtiles** - NEW
 
 - New [`PMTilesSourceLoader`](/docs/modules/pmtiles/api-reference/pmtiles-source-loader) supports the [PMTiles](/docs/modules/pmtiles/formats/pmtiles) format.
 - New [PMTiles example](/examples/tiles/pmtiles).
@@ -825,7 +825,7 @@ A major release that brings:
 - The [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) now supports loading [GeoParquet](/docs/modules/parquet/formats/geoparquet) files.
 - New [GeoParquet example](/examples/geospatial/geoparquet).
 
-**@loaders.gl/mvt**
+**@loaders.gl/tiles/mvt**
 
 - New [`TileJSONLoader`](/docs/modules/mvt/api-reference/tilejson-loader) adds supports for the [TileJSON](/docs/modules/mvt/formats/tilejson) format.
 
@@ -859,7 +859,7 @@ A major release that brings:
 
 - Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions for 3D Tiles v1.1. This completes 3D Tiles datasets attribute load support (adding to the current EXT_feature_metadata support). Attribute data can be used for "feature picking" capabilities of i3s viewers.
 
-**@loaders.gl/3d-tiles**
+**@loaders.gl/tiles-3d/3d-tiles**
 
 - 3D Tiles v1.1 [Implicit Tiling](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling)
 - 3D Tiles v1.1 attributes (via the new [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions).
@@ -889,7 +889,7 @@ A major release that brings:
 
 - All hashes now accept an encoding parameter allowing the app to choose between `'hex'` and `'base64'` encoding (rather than getting `'base64'` by default).
 
-**@loaders.gl/i3s**
+**@loaders.gl/tiles-3d/i3s**
 
 - New SLPK-loader allows the load of SLPK files into a web app using loaders.gl (like i3s explorer)
 - "Multiply" mode added to the existing "replace" mode for colourization by attribute for i3s datasets
@@ -1004,7 +1004,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 - **vite bundler** - Most examples are now bundled with vite. vite is now an officially supported bundler for loaders.gl.
 
-**@loaders.gl/3d-tiles**
+**@loaders.gl/tiles-3d/3d-tiles**
 
 - Limited support for [3D Tiles Next](https://github.com/CesiumGS/3d-tiles/tree/main/next):
 - [`3DTILES_content_gltf`](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_content_gltf) extension support (glTF 2.0 extensions support is enabled in 3d tiles archives).
@@ -1097,7 +1097,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 - `GTLTLoader` now decodes Basis super compressed textures if present (via the [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension).
 
-**@loaders.gl/i3s**
+**@loaders.gl/tiles-3d/i3s**
 
 - Support KTX2-Basis textures.
 
@@ -1192,7 +1192,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 - New table category loader for Excel spreadsheets in both binary `.xls`, `.xlsb` and XML-based `.xlsx` formats.
 
-**@loaders.gl/i3s**
+**@loaders.gl/tiles-3d/i3s**
 
 - Thanks to a major contribution from Esri, the `I3SLoader` now offers full I3S 1.7 support including:
   - page nodes
@@ -1200,7 +1200,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
   - compressed textures
   - attributes (object picking)
 
-**@loaders.gl/mvt**
+**@loaders.gl/tiles/mvt**
 
 - Binary output is now 2-3X faster for large datasets thanks to parsing directly from PBF to binary, rather than going through GeoJSON as an intermediate representation. Speed comparison on some example data sets (MVT tiles parsed per second):
 
@@ -1277,7 +1277,7 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 - Uses a newer version of the `laz-perf` parser (1.4.4).
 
-**@loaders.gl/mvt**
+**@loaders.gl/tiles/mvt**
 
 - Binary output is now available for the Mapbox Vector Tiles `MVTLoader`, via `options.gis.format: 'binary'`.
 
@@ -1315,7 +1315,7 @@ Release Date: June 18, 2020
 
 The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that support `ImageBitmap` (Chrome and Firefox). The performance improvements are dramatic, which can be verified in the new [benchmark example](https://loaders.gl/examples/benchmarks).
 
-**@loaders.gl/i3s**
+**@loaders.gl/tiles-3d/i3s**
 
 Addresses a number of compatibility issues with different I3S tilesets that have been reported by users.
 
@@ -1349,7 +1349,7 @@ Worker support for the `WKTLoader`, designed to support future binary data impro
 
 Updated to use `apache-arrow` version `0.17.0`.
 
-**@loaders.gl/3d-tiles**
+**@loaders.gl/tiles-3d/3d-tiles**
 
 The `Tile3DLoader` now installs the `DracoLoader`. The application no longer needs to import and register the `DracoWorkerLoader`.
 
@@ -1403,11 +1403,11 @@ This release adds a number of new geospatial format loaders. The new loaders ena
   </figure>
 </div>
 
-**@loaders.gl/i3s** (new loader module)
+**@loaders.gl/tiles-3d/i3s** (new loader module)
 
 - A new loader module for [I3S](https://github.com/Esri/i3s-spec) tiles is added to the 3D Tiles family. Checkout the San Francisco Buildings [example](https://loaders.gl/examples/i3s). This is a collaboration with ESRI and Tamrat Belayneh [@Tamrat-B](https://github.com/Tamrat-B)
 
-**@loaders.gl/mvt** (new loader module)
+**@loaders.gl/tiles/mvt** (new loader module)
 
 - A new loader module for loading [Mapbox Vector Tiles](https://github.com/mapbox/vector-tile-spec). Development was led by contributors from [CARTO](https://carto.com/),
 
@@ -1500,7 +1500,7 @@ The 1.3 release is focused on production quality 3D tiles support, maturing the 
   </figcaption>
 </figure>
 
-**`@loaders.gl/3d-tiles`**
+**`@loaders.gl/tiles-3d/3d-tiles`**
 
 - **Tile3DLayer moved to deck.gl**
   - The `Tile3DLayer` can now be imported from `@deck.gl/geo-layers`, and no longer needs to be copied from the loaders.gl `3d-tiles` example
@@ -1546,7 +1546,7 @@ Release Date: Aug 8, 2019
 - `@loaders.gl/images`: Image file extensions now added to loader object
 - `@loaders.gl/gltf`: Generate default sampler parameters if none provided in gltf file
 
-**@loaders.gl/3d-tiles** (EXPERIMENTAL)
+**@loaders.gl/tiles-3d/3d-tiles** (EXPERIMENTAL)
 
 - Support for dynamic traversal of 3D tilesets (automatically loads and unloads tiles based on viewer position and view frustum).
 - Support for loading tilesets from Cesium ION servers.
@@ -1592,9 +1592,9 @@ Release Date: May 30, 2019
   - [`GLBLoader`](//api-reference/gltf/glb-loader)/[`GLBWriter`]NEW - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
   - [`GLTFLoader`](//api-reference/gltf/gltf-loader), letting application separately handle post-processing.
 
-**@loaders.gl/3d-tiles** (NEW MODULE)
+**@loaders.gl/tiles-3d/3d-tiles** (NEW MODULE)
 
-- Support for the 3D tiles format is being developed in the new `@loaders.gl/3d-tiles` module.
+- Support for the 3D tiles format is being developed in the new `@loaders.gl/tiles-3d/3d-tiles` module.
 - Loading of individual point cloud tiles, including support for Draco compression and compact color formats such as RGB565 is supported.
 
 **@loaders.gl/polyfills** (NEW MODULE)

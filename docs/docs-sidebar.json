@@ -241,7 +241,7 @@
           "modules/geopackage/api-reference/geopackage-source",
           "modules/geotiff/api-reference/geotiff-source-loader",
           "modules/zarr/api-reference/geo-zarr-source-loader",
-          "modules/tiles/api-reference/i3s-source",
+          "modules/tiles-3d/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
           "modules/zarr/api-reference/ome-zarr-source-loader",
           "modules/parquet/api-reference/delta-table-source",
@@ -251,8 +251,8 @@
           "modules/potree/api-reference/potree-source-loader",
           "modules/tiles/api-reference/raster-set",
           "modules/stac/api-reference/stac-source-loader",
-          "modules/tiles/api-reference/tiles-3d-source",
-          "modules/tiles/api-reference/tileset-3d-source",
+          "modules/tiles-3d/api-reference/tiles-3d-source",
+          "modules/tiles-3d/api-reference/tileset-3d-source",
           "modules/mvt/api-reference/mvt-source-loader",
           "modules/mvt/api-reference/table-tile-source-loader",
           "modules/mvt/api-reference/arrow-table-tile-source-loader",
@@ -320,7 +320,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/3d-tiles",
+        "label": "@loaders.gl/tiles-3d/3d-tiles",
         "items": [
           "modules/3d-tiles/README",
           {
@@ -512,7 +512,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/i3s",
+        "label": "@loaders.gl/tiles-3d/i3s",
         "items": [
           "modules/i3s/README",
           "modules/i3s/concepts/coordinate-reference-systems"
@@ -557,7 +557,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/mvt",
+        "label": "@loaders.gl/tiles/mvt",
         "items": [
           "modules/mvt/README"
         ]
@@ -571,7 +571,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/mlt",
+        "label": "@loaders.gl/tiles/mlt",
         "items": [
           "modules/mlt/README"
         ]
@@ -617,7 +617,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/pmtiles",
+        "label": "@loaders.gl/tiles/pmtiles",
         "items": [
           "modules/pmtiles/README"
         ]
@@ -674,9 +674,23 @@
         "label": "@loaders.gl/tiles",
         "items": [
           "modules/tiles/README",
-          "modules/tiles/api-reference/point-cloud-tileset",
-          "modules/tiles/api-reference/tileset-3d",
-          "modules/tiles/api-reference/tile-3d"
+          "modules/tiles/api-reference/tileset-2d",
+          "modules/tiles/api-reference/raster-set"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/tiles-3d",
+        "items": [
+          "modules/tiles-3d/README",
+          "modules/tiles-3d/runtime",
+          "modules/tiles-3d/api-reference/tileset-3d",
+          "modules/tiles-3d/api-reference/i3s-source",
+          "modules/tiles-3d/api-reference/tileset-3d-source",
+          "modules/tiles-3d/api-reference/point-cloud-tileset",
+          "modules/tiles-3d/api-reference/point-cloud-tile-source",
+          "modules/tiles-3d/api-reference/tile-3d",
+          "modules/tiles-3d/api-reference/tiles-3d-source"
         ]
       },
       {

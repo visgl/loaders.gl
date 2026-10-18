@@ -55,7 +55,7 @@ The `TileJSONLoader` parses metadata from a TileJSON / tilestats file. It merges
 ## Usage
 
 ```typescript
-import {TileJSONLoader} from '@loaders.gl/mvt';
+import {TileJSONLoader} from '@loaders.gl/tiles/mvt';
 import {load} from '@loaders.gl/core';
 
 const tileJSON = await load(url, TileJSONLoader, options);

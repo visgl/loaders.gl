@@ -1,0 +1,50 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {I3STilesetHeader} from './types';
+import {I3SParseOptions} from './types';
+
+import {I3SFormat} from './i3s-format';
+import {I3SContentLoader} from './i3s-content-loader';
+import {I3S_LOADER_OPTIONS} from './i3s-loader-options';
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type I3SLoaderOptions = StrictLoaderOptions & {
+  i3s?: I3SParseOptions & {
+    /** For I3SAttributeLoader */
+    attributeName?: string;
+    /** For I3SAttributeLoader */
+    attributeType?: string;
+    /** Exact strings/nulls and bigint 64-bit integers with strict resource counts; default legacy. */
+    attributeValues?: 'legacy' | 'exact';
+  };
+};
+
+/**
+ * Loader for I3S - Indexed 3D Scene Layer
+ */
+export const I3SLoader = {
+  ...I3SFormat,
+  dataType: null as unknown as I3STilesetHeader,
+  batchType: null as never,
+
+  name: 'I3S (Indexed Scene Layers)',
+  id: 'i3s',
+  module: 'tiles-3d',
+  /** Worker-capable loader used by I3S sources for binary tile content. */
+  contentLoader: I3SContentLoader,
+  version: VERSION,
+  mimeTypes: ['application/octet-stream'],
+  /** Loads the parser-bearing I3S loader implementation. */
+  preload: async () => (await import('./i3s-loader-with-parser')).I3SLoaderWithParser,
+  extensions: ['bin'],
+  options: {
+    i3s: I3S_LOADER_OPTIONS
+  }
+} as const satisfies Loader<I3STilesetHeader, never, I3SLoaderOptions> & {
+  contentLoader: Loader;
+};

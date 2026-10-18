@@ -38,7 +38,7 @@ exists. Geometry conversion requires the separate
 See [converter usage](/docs/developer-guide/converters/dispatcher) and
 [table representations](/docs/specifications/category-table).
 
-See the [dynamic point source reference](/docs/modules/tiles/api-reference/point-cloud-tile-source)
+See the [dynamic point source reference](/docs/modules/tiles-3d/api-reference/point-cloud-tile-source)
 for `PointCloudTiler` ownership, coordinate and memory-limit contracts.
 
 ## Arrow worker transport

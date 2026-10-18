@@ -5,7 +5,7 @@
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {describe, expect, test, vi} from 'vitest';
 import {PointCloudSourceLayer} from '@loaders.gl/deck-layers';
-import type {PointCloudTilesetSource} from '@loaders.gl/tiles';
+import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d';
 
 const ROOT_BOUNDING_VOLUME = {
   cartographicBounds: [

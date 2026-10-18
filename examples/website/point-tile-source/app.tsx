@@ -10,7 +10,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, LinearInterpolator, OrbitView, TerrainController} from '@deck.gl/core';
-import type {PointCloudBoundingVolume, PointCloudTileset} from '@loaders.gl/tiles';
+import type {PointCloudBoundingVolume, PointCloudTileset} from '@loaders.gl/tiles-3d';
 import {COPCSourceLoader} from '@loaders.gl/copc';
 import {PotreeSourceLoader} from '@loaders.gl/potree';
 import {SourceLayer} from '@loaders.gl/deck-layers';

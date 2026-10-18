@@ -1,5 +1,5 @@
 import {vi} from 'vitest';
-import {Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles';
+import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles';
 import {createTriangle} from './tile-browser-conversion';
 
 /** Creates a tiny archive with a nested content path and explicit ECEF placement. */

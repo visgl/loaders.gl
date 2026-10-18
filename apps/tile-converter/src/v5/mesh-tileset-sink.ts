@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Tiles3DTilesetJSON, Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
+import type {Tiles3DTilesetJSON, Tiles3DTileJSON} from '@loaders.gl/tiles-3d/3d-tiles';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
 import {createBoundedMemoryTileConversionSink} from '@loaders.gl/tile-converter/v5/core';

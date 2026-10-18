@@ -5,7 +5,7 @@ import type {
   Field,
   FieldInfo,
   PopupInfo
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 
 import {AttributeType} from '../types';
 

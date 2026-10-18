@@ -43,7 +43,7 @@ contracts to prepare application-owned style inputs.
   tone="violet"
 />
 
-The @loaders.gl/3d-tiles APIs in this guide are intentionally renderer-neutral. They make metadata and feature access explicit while preserving the existing Tile3D.content, Tile3D.contents, raw extension objects, and batch-table classes.
+The @loaders.gl/tiles-3d/3d-tiles APIs in this guide are intentionally renderer-neutral. They make metadata and feature access explicit while preserving the existing Tile3D.content, Tile3D.contents, raw extension objects, and batch-table classes.
 
 ## Build a style input
 
@@ -51,7 +51,7 @@ The @loaders.gl/3d-tiles APIs in this guide are intentionally renderer-neutral. 
 import {
   createTile3DStyleInput,
   getTile3DStyleProperty
-} from '@loaders.gl/3d-tiles';
+} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const content = tile.contentEntries[0];
 const styleInput = createTile3DStyleInput(content, tile.metadataContext, {
@@ -86,7 +86,7 @@ The most specific defined value wins. A batch-table hierarchy row therefore over
 Structural metadata columns must already be decoded by glTF parsing. getStructuralMetadataRow returns one row and applies class default values and noData sentinels. getStructuralMetadataProperty is the named-value convenience form:
 
 ~~~ts
-import {getStructuralMetadataProperty} from '@loaders.gl/3d-tiles';
+import {getStructuralMetadataProperty} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const value = getStructuralMetadataProperty(
   propertyTable,
@@ -103,7 +103,7 @@ These helpers preserve typed arrays for vector and array values. They do not map
 Legacy b3dm, i3dm, and pnts batch tables expose getProperty, getPropertyNames, hasProperty, and class queries. getTile3DBatchTableProperties copies the visible row into a plain object:
 
 ~~~ts
-import {getTile3DBatchTableProperties} from '@loaders.gl/3d-tiles';
+import {getTile3DBatchTableProperties} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const properties = getTile3DBatchTableProperties(batchTable, featureId);
 ~~~
@@ -142,4 +142,4 @@ Do not treat a preserved metadata reference as a decoded property bag. Conversel
 - Unknown optional extensions remain available, while unsupported required extensions are rejected at parse time.
 - I3S LOD metrics and metadata remain separate from 3D Tiles styling inputs.
 
-For traversal and render visibility, see [screen-space error and LOD](./screen-space-error-and-lod) and [3D Tiles correctness and conformance](./correctness-and-conformance). For the public content and feature contracts, see the [Tile3D API](/docs/modules/tiles/api-reference/tile-3d) and [3D Tiles format compatibility](../formats/3d-tiles).
+For traversal and render visibility, see [screen-space error and LOD](./screen-space-error-and-lod) and [3D Tiles correctness and conformance](./correctness-and-conformance). For the public content and feature contracts, see the [Tile3D API](/docs/modules/tiles-3d/api-reference/tile-3d) and [3D Tiles format compatibility](../formats/3d-tiles).

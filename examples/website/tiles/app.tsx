@@ -7,9 +7,9 @@ import {createRoot} from 'react-dom/client';
 
 import type {RangeRequestEvent, RangeStats} from '@loaders.gl/loader-utils';
 import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
-import {MLTSourceLoader} from '@loaders.gl/mlt';
-import {MVTSourceLoader, ArrowTableTileSourceLoader} from '@loaders.gl/mvt';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
+import {MVTSourceLoader, ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
 import DeckGL from '@deck.gl/react';
@@ -342,7 +342,7 @@ function renderTilesSidebar(
 
   if (options.currentExample?.localRangeServer) {
     rootElement.appendChild(
-      createPreBlock('Run this command from the loaders.gl repository root:\nyarn serve-range --root ./modules/pmtiles/test/data/pmtiles-v3 --port 9000')
+      createPreBlock('Run this command from the loaders.gl repository root:\nyarn serve-range --root ./modules/tiles/test/pmtiles/data/pmtiles-v3 --port 9000')
     );
   }
 

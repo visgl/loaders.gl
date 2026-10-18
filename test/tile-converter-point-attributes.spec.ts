@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {convertTableToMesh, makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import {encodePointCloudTile} from '../apps/tile-converter/src/v5/point-cloud';
 

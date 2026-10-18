@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {DataDrivenTile3DLayer} from './data-driven-tile-3d-layer';
-import {Tileset3D, type Tileset3DProps} from '@loaders.gl/tiles';
+import {Tileset3D, type Tileset3DProps} from '@loaders.gl/tiles-3d';
 import {
   getAuthenticatedFetch,
   resolveLoaderAuthenticationOptions,
