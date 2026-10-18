@@ -94,6 +94,15 @@ test('DataSourceManager handles prototype-shaped source and subscription ids saf
     })
   ).toBe(dataSource);
 
+  expect(
+    dataSourceManager.subscribe({
+      dataSourceId: '__proto__',
+      consumerId: '__proto__',
+      requestId: '__proto__',
+      onChange: updatedDataSource => changes.push(updatedDataSource)
+    })
+  ).toBe(dataSource);
+
   dataSourceManager.add({dataSourceId: '__proto__', dataSource: null});
   expect(changes).toEqual([null]);
   expect(Object.prototype).not.toHaveProperty('dataSourceId');

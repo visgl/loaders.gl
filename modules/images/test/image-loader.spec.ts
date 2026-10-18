@@ -7,6 +7,7 @@ import {expect, test} from 'vitest';
 import {ImageLoader, ImageBitmapLoader, getImageType, getImageData} from '@loaders.gl/images';
 import {load, isBrowser} from '@loaders.gl/core';
 import {parseImageBitmapBlob} from '../src/lib/parsers/parse-image-bitmap';
+import {getBlob, isSVG} from '../src/lib/parsers/svg-utils';
 
 import {
   TEST_CASES,
@@ -17,6 +18,22 @@ import {
 } from './lib/test-cases';
 
 const INVALID_IMAGE_TYPES = ['auto', 'image', 'data'] as const;
+
+test.each([
+  ['icon.svg', true],
+  ['icon.svg?version=2', true],
+  ['icon.svg#fragment', true],
+  ['icon.svgx/preview.svg', true],
+  ['icon.svgx', false]
+])('SVG URL detection handles %s', (url, expected) => {
+  expect(isSVG(url)).toBe(expected);
+});
+
+test('direct SVG Blob parsing rejects SVG URLs', () => {
+  expect(() => getBlob(new ArrayBuffer(0), 'icon.svg')).toThrow(
+    'SVG cannot be parsed directly to imagebitmap'
+  );
+});
 
 test('image loaders#imports', () => {
   expect(ImageLoader, 'ImageLoader defined').toBeTruthy();
