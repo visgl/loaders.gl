@@ -91,6 +91,6 @@ metadata before Parquet encoding.
 
 `@loaders.gl/parquet` module is based on Apache 2.0 licensed code.
 
-LZO decompression is supported through compress-utils 0.9.0. Parquet Hadoop block framing is handled in TypeScript. LZO compression is not supported.
+LZO decompression is supported through compress-utils 0.10.1. Parquet Hadoop block framing is handled in TypeScript. LZO compression is not supported.
 
 The TypeScript reader supports `parquet.rowGroups`, projection, offset, limit, batching, and cancellation. `parquet.wasmUrl` applies only to the explicit WASM reader. `parquet.concurrency` remains accepted for compatibility; the TypeScript loader reads row groups sequentially.

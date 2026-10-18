@@ -139,3 +139,46 @@ test('compress-utils preload shares initialization, retries failures, and forwar
   expect(new Uint8Array(decoder.decompressSync(INPUT.buffer, 3))).toEqual(INPUT);
   expect(forwardedOptions).toEqual({expectedSize: 3});
 });
+
+test.each([
+  'cancel',
+  'overflow',
+  'finish-overflow',
+  'input-error'
+] as const)('Incremental decompression releases resources on %s', async mode => {
+  let destroyed = 0;
+  let inputClosed = false;
+  const decoder = new CompressUtilsDecompressor(
+    METADATA,
+    async () => ({
+      decompress: async input => input,
+      createDecompressStream: async () => ({
+        write: input => input,
+        finish: () => (mode === 'finish-overflow' ? new Uint8Array(2) : new Uint8Array()),
+        destroy: () => {
+          destroyed++;
+        }
+      })
+    }),
+    {maxOutputByteLength: 3}
+  );
+  /** Keeps source cleanup observable when the consumer stops or decoding fails. */
+  async function* input() {
+    try {
+      yield new Uint8Array(2).buffer;
+      if (mode === 'input-error') throw new Error('source failure');
+      if (mode === 'overflow') yield new Uint8Array(2).buffer;
+    } finally {
+      inputClosed = true;
+    }
+  }
+  const iterator = decoder.decompressBatches(input())[Symbol.asyncIterator]();
+  expect((await iterator.next()).value.byteLength).toBe(2);
+  if (mode === 'cancel') await iterator.return?.();
+  else
+    await expect(iterator.next()).rejects.toThrow(
+      mode === 'input-error' ? /source failure/ : /maxOutputByteLength/
+    );
+  expect(destroyed).toBe(1);
+  expect(inputClosed).toBe(true);
+});
