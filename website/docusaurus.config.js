@@ -270,7 +270,7 @@ const config = {
             '@loaders.gl/pcd': resolve('../modules/pcd/src'),
             '@loaders.gl/ply': resolve('../modules/ply/src'),
             '@loaders.gl/pmtiles': resolve('../modules/pmtiles/src'),
-            '@loaders.gl/polyfills': resolve('../modules/polyfills/src'),
+            '@loaders.gl/core/polyfills': resolve('../modules/core/src/polyfills'),
             '@loaders.gl/potree': resolve('../modules/potree/src'),
             '@loaders.gl/scan': resolve('../modules/scan/src'),
             '@loaders.gl/schema': resolve('../modules/schema/src'),

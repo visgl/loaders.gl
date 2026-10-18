@@ -19,7 +19,7 @@ const excludePatterns = [
   'modules/mvt/test/lib/mapbox-vt-pbf/**',
   'modules/mvt/test/table-tile-source-loader-full.spec.ts',
   'modules/mvt/test/table-tile-source-loader-multi-world.spec.ts',
-  'modules/polyfills/test/load-library/require-utils.spec.ts',
+  'modules/core/test/polyfills-package/load-library/require-utils.spec.ts',
   'test/browser.ts',
   'test/init-browser-test.ts',
   'test/init-tests.ts',

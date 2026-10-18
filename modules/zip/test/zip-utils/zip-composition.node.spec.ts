@@ -5,7 +5,7 @@
 import {mkdtemp, writeFile, mkdir, readFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
 import {encodeZip, openZipArchive, composeHashFile} from '@loaders.gl/zip';
 import {addOneFile, createZip, getFileIterator} from '../../src/lib/zip-composition';

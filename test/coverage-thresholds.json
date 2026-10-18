@@ -577,21 +577,6 @@
         "branches": 34
       }
     },
-    "@loaders.gl/polyfills": {
-      "path": "modules/polyfills",
-      "browser": {
-        "statements": 0,
-        "lines": 0,
-        "functions": 0,
-        "branches": 0
-      },
-      "merged": {
-        "statements": 61,
-        "lines": 61,
-        "functions": 64,
-        "branches": 46
-      }
-    },
     "@loaders.gl/potree": {
       "path": "modules/potree",
       "browser": {
@@ -1029,6 +1014,25 @@
       "owner": "@loaders.gl/raster",
       "sourcePaths": [
         "modules/raster/src/terrain/"
+      ]
+    },
+    "@loaders.gl/core/polyfills": {
+      "path": "modules/core/src/polyfills",
+      "browser": {
+        "statements": 0,
+        "lines": 0,
+        "functions": 0,
+        "branches": 0
+      },
+      "merged": {
+        "statements": 61,
+        "lines": 61,
+        "functions": 64,
+        "branches": 46
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/polyfills/"
       ]
     }
   }

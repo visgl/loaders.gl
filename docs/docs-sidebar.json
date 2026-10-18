@@ -617,7 +617,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/polyfills",
+        "label": "@loaders.gl/core/polyfills",
         "items": [
           "modules/polyfills/api-reference/README"
         ]

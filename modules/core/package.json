@@ -38,11 +38,29 @@
     },
     "./null-worker-node.js": {
       "import": "./dist/null-worker-node.js"
+    },
+    "./polyfills": {
+      "types": "./dist/polyfills/index.d.ts",
+      "browser": "./dist/polyfills/index.browser.js",
+      "import": "./dist/polyfills/index.js",
+      "require": "./dist/polyfills/index.cjs"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/polyfills/index.js",
+    "./dist/polyfills/index.cjs",
+    "./dist/polyfills/index.browser.js",
+    "./src/polyfills/index.ts",
+    "./src/polyfills/index.browser.ts"
+  ],
   "browser": {
+    "./dist/polyfills/index.cjs": "./dist/polyfills/index.browser.js",
+    "./dist/polyfills/index.js": "./dist/polyfills/index.browser.js",
+    "./dist/polyfills/load-library/require-utils.node.js": false,
+    "./src/polyfills/index.ts": "./src/polyfills/index.browser.ts",
+    "./src/polyfills/load-library/require-utils.node.ts": false,
     "fs": false,
+    "path": false,
     "stream": false
   },
   "files": [
@@ -51,11 +69,12 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-polyfills-node-entrypoint",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-polyfills-node-entrypoint": "esbuild src/polyfills/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/polyfills/index.cjs"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "5.0.0-alpha.12",
@@ -64,5 +83,21 @@
     "@loaders.gl/worker-utils": "5.0.0-alpha.12",
     "@probe.gl/log": "^4.1.1"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "peerDependencies": {
+    "get-pixels": "^3.3.3",
+    "ndarray": "^1.0.19",
+    "save-pixels": "^2.3.6"
+  },
+  "peerDependenciesMeta": {
+    "get-pixels": {
+      "optional": true
+    },
+    "ndarray": {
+      "optional": true
+    },
+    "save-pixels": {
+      "optional": true
+    }
+  }
 }

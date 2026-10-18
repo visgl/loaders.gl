@@ -97,6 +97,6 @@ transpilation and provide any missing Web APIs.
 ## Node.js support
 
 Modern Node.js provides `fetch`, `Response`, `TextEncoder`, and `TextDecoder`.
-Import `@loaders.gl/polyfills` when you need loaders.gl's Node.js adapters for
+Import `@loaders.gl/core/polyfills` when you need loaders.gl's Node.js adapters for
 local files or image decoding. This package is intended for Node.js, not browser
 polyfills. See [Node.js support](/docs/developer-guide/node) for setup.

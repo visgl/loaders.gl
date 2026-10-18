@@ -25,7 +25,7 @@ export class NodeFileSystemFacade implements RandomAccessFileSystem {
       throw new Error('Can\'t instantiate NodeFileSystem in browser.');
     }
     throw new Error(
-      'Can\'t instantiate NodeFileSystem. Make sure to import @loaders.gl/polyfills first.'
+      'Can\'t instantiate NodeFileSystem. Make sure to import @loaders.gl/core/polyfills first.'
     );
   }
 

@@ -79,6 +79,7 @@
 
 ## Notes
 
+- Keep `@loaders.gl/core/polyfills` independent: its implementation must not import the core root, other core subpath entry points, or other `@loaders.gl/*` modules. Put the small Node-specific helpers it needs inside the polyfills subpath instead of creating package or entry-point cycles.
 - Published loaders.gl modules must not import `@loaders.gl/core` from `src/**`. `@loaders.gl/deck-layers` is the exception and may depend on `@loaders.gl/core`.
 - If a published module needs functionality that currently lives in `@loaders.gl/core`, move the shared helper to a lower-level module or inject the dependency instead of adding a new `@loaders.gl/core` import.
 - Avoid importing node specific files unless in specific functions that are intentionally designed to handle both cases. For instance, `fetchFile` handles both browser and Node.js, so importing `fs` is almost never required.

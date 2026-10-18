@@ -44,14 +44,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Usage
 
 ```typescript
-import '@loaders.gl/polyfills'; // only needed if using under Node
+import '@loaders.gl/core/polyfills'; // only needed if using under Node
 import {loadImageTexture} from '@loaders.gl/textures';
 
 const image = await loadImageTexture(url);
 ```
 
 ```typescript
-import '@loaders.gl/polyfills'; // only needed if using under Node
+import '@loaders.gl/core/polyfills'; // only needed if using under Node
 import {loadImageTexture} from '@loaders.gl/textures';
 
 const URL = ...;
@@ -90,4 +90,4 @@ Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-refer
 
 Number of mip level images to load: Use `0` to indicate a single image with no mips. Supplying the string `'auto'` will infer the mipLevel from the size of the `lod`=`0` image.
 
-Returned images use the same runtime-dependent `ImageBitmap` contract as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader): native `ImageBitmap` in supported browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/polyfills` is installed.
+Returned images use the same runtime-dependent `ImageBitmap` contract as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader): native `ImageBitmap` in supported browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is installed.
