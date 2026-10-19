@@ -38,3 +38,22 @@ test.each([
 ] as any[])('Default renderer rejects incompatible matrix geometry (%j)', set => {
   expect(() => getTileGridLayerOptions({tileGrid: {tileMatrixSet: set}})).toThrow(/requires/);
 });
+
+test('High-zoom grid checks use relative tolerance rather than an absolute resolution floor', () => {
+  const matrix = createMatrix(30);
+  const metadata = (resolution: number) => ({
+    tileGrid: {
+      tileMatrixSet: {
+        crs: 'EPSG:3857',
+        matrices: [{...matrix, resolution}]
+      }
+    }
+  });
+  // This tiny per-pixel difference accumulates to tens of metres across the matrix.
+  expect(() => getTileGridLayerOptions(metadata(matrix.resolution + 9e-11))).toThrow(/requires/);
+  expect(getTileGridLayerOptions(metadata(matrix.resolution * (1 + 1e-12)))).toMatchObject({
+    minZoom: 30,
+    maxZoom: 30,
+    tileSize: 512
+  });
+});

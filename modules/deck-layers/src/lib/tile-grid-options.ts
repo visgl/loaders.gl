@@ -61,10 +61,7 @@ export function getTileGridLayerOptions(
   return options;
 }
 
-/** Compares canonical coordinates with a small serialization tolerance. */
+/** Compares canonical coordinates with a small relative serialization tolerance. */
 function isClose(actual: number, expected: number): boolean {
-  return (
-    Number.isFinite(actual) &&
-    Math.abs(actual - expected) <= Math.max(1, Math.abs(expected)) * 1e-10
-  );
+  return Number.isFinite(actual) && Math.abs(actual - expected) <= Math.abs(expected) * 1e-10;
 }
