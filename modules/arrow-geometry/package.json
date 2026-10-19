@@ -98,5 +98,8 @@
     "@math.gl/polygon": "5.0.0-alpha.18",
     "@math.gl/wkb": "5.0.0-alpha.18",
     "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
   }
 }

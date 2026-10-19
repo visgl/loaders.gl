@@ -73,6 +73,14 @@ function collectDependencies(moduleName: string, visited = new Set<string>()): S
   return visited;
 }
 
+test('arrow-geometry declares the core package as a peer for schema subpaths', () => {
+  const manifest = JSON.parse(
+    readFileSync(join(modulesDirectory, 'arrow-geometry/package.json'), 'utf8')
+  );
+  expect(manifest.peerDependencies['@loaders.gl/core']).toBe('~5.0.0-alpha.0');
+  expect(manifest.dependencies ?? {}).not.toHaveProperty('@loaders.gl/core');
+});
+
 test('GeoArrow is independent of GIS in source, project references and transitive dependencies', () => {
   const directory = join(modulesDirectory, 'geoarrow');
   expect(readSources(join(directory, 'src'))).not.toMatch(/@loaders\.gl\/gis/);

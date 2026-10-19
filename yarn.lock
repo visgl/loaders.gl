@@ -5151,6 +5151,8 @@ __metadata:
     "@math.gl/polygon": "npm:5.0.0-alpha.18"
     "@math.gl/wkb": "npm:5.0.0-alpha.18"
     apache-arrow: "npm:>= 17.0.0"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
   linkType: soft
 
