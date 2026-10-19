@@ -51,7 +51,7 @@ sessions in browsers and Node.js.
 ## Installation
 
 ```bash
-npm install @loaders.gl/core/worker-utils
+npm install @loaders.gl/core
 ```
 
 ## APIs

@@ -108,6 +108,7 @@
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.18",
+    "@math.gl/geospatial": "5.0.0-alpha.18",
     "@probe.gl/log": "^4.1.1",
     "@probe.gl/stats": "^4.1.1"
   },

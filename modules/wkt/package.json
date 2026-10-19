@@ -65,7 +65,6 @@
   },
   "dependencies": {
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
-    "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.18",
     "@math.gl/wkb": "5.0.0-alpha.18"

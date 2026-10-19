@@ -54,7 +54,6 @@
     "build-cjs-zarr": "esbuild src/zarr/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr/index.cjs --external:@loaders.gl/* --external:@math.gl/*"
   },
   "dependencies": {
-    "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.14",
     "zarr": "^0.5.0",

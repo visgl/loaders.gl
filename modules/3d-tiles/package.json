@@ -78,7 +78,6 @@
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/draco": "5.0.0-alpha.12",
     "@loaders.gl/gltf": "5.0.0-alpha.12",
     "@loaders.gl/images": "5.0.0-alpha.12",

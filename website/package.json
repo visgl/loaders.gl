@@ -135,7 +135,6 @@
     "@loaders.gl/geopackage": "workspace:*",
     "@loaders.gl/i3s": "workspace:*",
     "@loaders.gl/las": "workspace:*",
-    "@loaders.gl/core/loader-utils": "workspace:*",
     "@loaders.gl/obj": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
     "@loaders.gl/schema": "workspace:*",
