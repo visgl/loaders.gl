@@ -19,7 +19,8 @@ import {
   DataSource,
   parseContentType,
   createWebMercatorTileGrid,
-  resolveXYZTileParameters
+  resolveXYZTileParameters,
+  waitForPromiseWithSignal
 } from '@loaders.gl/loader-utils';
 import {
   ImageBitmapLoader,
@@ -198,7 +199,10 @@ export class MVTTileSource
   }
 
   async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
-    const resolved = resolveXYZTileParameters((await this.metadata).tileGrid, parameters);
+    const resolved = resolveXYZTileParameters(
+      (await waitForPromiseWithSignal(this.metadata, parameters.signal)).tileGrid,
+      parameters
+    );
     if (!resolved) return null;
     const {x, y, z} = resolved;
     const tileUrl = this.getTileURL(x, y, z);
@@ -281,7 +285,10 @@ export class MVTTileSource
     arrayBuffer: ArrayBuffer,
     tileParams: GetTileParameters
   ): Promise<VectorTile | null> {
-    const resolved = resolveXYZTileParameters((await this.metadata).tileGrid, tileParams);
+    const resolved = resolveXYZTileParameters(
+      (await waitForPromiseWithSignal(this.metadata, tileParams.signal)).tileGrid,
+      tileParams
+    );
     if (!resolved) return null;
     const inheritedMVTOptions = (this.loadOptions as MVTLoaderOptions)?.mvt;
     const selectedLayers = normalizeTileLayers(tileParams.layers) || inheritedMVTOptions?.layers;

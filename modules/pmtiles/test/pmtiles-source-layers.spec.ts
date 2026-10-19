@@ -338,3 +338,33 @@ test('PMTiles resolves native matrix IDs and sparse tiles without changing archi
     /Unknown/
   );
 });
+
+test.each([
+  'getTile',
+  'getVectorTile',
+  'getTileData'
+] as const)('PMTiles %s aborts metadata waiting without cancelling the shared read', async method => {
+  let finishMetadata!: (metadata: ReturnType<typeof parsePMTilesHeader>) => void;
+  const metadata = new Promise<ReturnType<typeof parsePMTilesHeader>>(resolve => {
+    finishMetadata = resolve;
+  });
+  vi.spyOn(PMTilesTileSource.prototype, 'getMetadata').mockReturnValue(metadata);
+  const source = new PMTilesTileSource(new Blob([]), {});
+  const lookup = vi
+    .spyOn(source.pmtiles, 'getZxy')
+    .mockResolvedValue({data: new Uint8Array([1]).buffer} as any);
+  const controller = new AbortController();
+  const parameters =
+    method === 'getTileData'
+      ? {index: {z: 3, x: 1, y: 2}, signal: controller.signal}
+      : {z: 3, x: 1, y: 2, signal: controller.signal};
+  const cancelled = source[method](parameters as any);
+  const surviving = source.getTile({z: 3, x: 1, y: 2});
+  const cancellation = expect(cancelled).rejects.toMatchObject({name: 'AbortError'});
+  controller.abort();
+  await cancellation;
+  expect(lookup).not.toHaveBeenCalled();
+  finishMetadata(parsePMTilesHeader(createHeader(), null));
+  expect(await surviving).toBeInstanceOf(ArrayBuffer);
+  expect(lookup).toHaveBeenCalledOnce();
+});

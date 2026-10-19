@@ -127,3 +127,6 @@ rule applies. The resolved native zoom is also used for vector coordinate decodi
 indices return `null`; unknown explicit IDs reject. See [Tile matrices](/docs/developer-guide/tile-matrices).
 
 The geographic and row-convention contract follows [TileJSON 3.0](https://github.com/mapbox/tilejson-spec/tree/master/3.0.0).
+
+A tile request's abort signal cancels its metadata wait promptly. Shared metadata discovery
+continues for other callers; cancelling one tile does not invalidate their requests.

@@ -126,3 +126,6 @@ Exact `tileMatrix` IDs and the shared native-ID-first/index-fallback rule resolv
 archive zooms before lookup and vector decoding. Unknown explicit IDs reject.
 
 See the [PMTiles specification](https://github.com/protomaps/PMTiles/blob/main/spec/v3/spec.md) and [Tile matrices](/docs/developer-guide/tile-matrices).
+
+A tile request's abort signal cancels its metadata wait promptly. Shared metadata discovery
+continues for other callers; cancelling one tile does not invalidate their requests.

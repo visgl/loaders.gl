@@ -75,3 +75,37 @@ test('Logical pixel size alone does not invent a CRS for a standalone template',
   });
   expect((await source.metadata).tileGrid).toBeUndefined();
 });
+
+test('Aborting one MVT metadata waiter settles promptly without cancelling another tile request', async () => {
+  let finishMetadata!: (response: Response) => void;
+  const metadataResponse = new Promise<Response>(resolve => {
+    finishMetadata = resolve;
+  });
+  const fetcher = vi.fn(async input =>
+    String(input).endsWith('tilejson.json') ? metadataResponse : new Response(new Uint8Array([7]))
+  );
+  const source = new MVTTileSource(
+    'https://example.com/{z}/{x}/{y}.mvt',
+    {
+      core: {fetch: fetcher}
+    },
+    {parse: async (text: string) => parseTileJSON(JSON.parse(text), {})} as unknown as CoreAPI
+  );
+  const controller = new AbortController();
+  const cancelled = source.getTile({z: 3, x: 1, y: 2, signal: controller.signal});
+  const surviving = source.getTile({z: 3, x: 1, y: 2});
+  const cancellation = expect(cancelled).rejects.toMatchObject({name: 'AbortError'});
+  controller.abort();
+  await cancellation;
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  finishMetadata(
+    Response.json({
+      tilejson: '3.0.0',
+      minzoom: 3,
+      maxzoom: 3,
+      tiles: ['https://example.com/{z}/{x}/{y}.mvt']
+    })
+  );
+  expect(await surviving).toBeInstanceOf(ArrayBuffer);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});

@@ -18,7 +18,8 @@ import {
   DataSource,
   DataSourceOptions,
   resolvePath,
-  resolveXYZTileParameters
+  resolveXYZTileParameters,
+  waitForPromiseWithSignal
 } from '@loaders.gl/loader-utils';
 import {ImageBitmapLoader, ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {MLTLoader, MLTLoaderOptions} from '@loaders.gl/mlt';
@@ -149,7 +150,10 @@ export class PMTilesTileSource
   }
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
-    const resolved = resolveXYZTileParameters((await this.metadata).tileGrid, tileParams);
+    const resolved = resolveXYZTileParameters(
+      (await waitForPromiseWithSignal(this.metadata, tileParams.signal)).tileGrid,
+      tileParams
+    );
     if (!resolved) return null;
     const {x, y, z} = resolved;
     let rangeResponse;
@@ -175,7 +179,7 @@ export class PMTilesTileSource
 
   async getTileData(tileParams: GetTileDataParameters): Promise<any> {
     const {x, y, z} = tileParams.index;
-    const metadata = await this.metadata;
+    const metadata = await waitForPromiseWithSignal(this.metadata, tileParams.signal);
     switch (metadata.tileMIMEType) {
       case 'application/vnd.mapbox-vector-tile':
       case 'application/vnd.maplibre-tile':
@@ -205,7 +209,7 @@ export class PMTilesTileSource
   // VectorTileSource interface implementation
 
   async getVectorTile(tileParams: GetTileParameters): Promise<VectorTile | null> {
-    const metadata = await this.metadata;
+    const metadata = await waitForPromiseWithSignal(this.metadata, tileParams.signal);
     const resolved = resolveXYZTileParameters(metadata.tileGrid, tileParams);
     if (!resolved) return null;
     tileParams = resolved;
