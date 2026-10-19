@@ -92,7 +92,10 @@ export class ArcGISImageTileSource
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
   async getTileData(parameters: GetTileDataParameters): Promise<ImageType | LERCData | null> {
-    return this.getTile(parameters.index, parameters.signal);
+    return this.getTile(
+      {...parameters.index, tileMatrix: parameters.tileMatrix, signal: parameters.signal},
+      parameters.signal
+    );
   }
 
   /** Updates parameters applied to subsequent ImageServer export requests. */

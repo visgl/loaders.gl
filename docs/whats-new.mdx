@@ -505,6 +505,7 @@ Release Date: 2026
 
 **@loaders.gl/deck-layers**
 
+- Tile request wrappers preserve native matrix IDs and cancellation. The image-source adapter supports explicit matrix geometry and coverage, and corrects legacy XYZ bounds. The default tile selector uses declared canonical tile size and rejects incompatible complete grids. See [Tile matrices](/docs/developer-guide/tile-matrices).
 - `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.
 - `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
 - `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.

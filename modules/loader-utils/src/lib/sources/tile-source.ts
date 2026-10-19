@@ -174,6 +174,8 @@ export type GetTileParameters = {
 
 /** deck.gl compatibility: parameters for TileSource.getTileData() */
 export type GetTileDataParameters = {
+  /** Native matrix identifier, independent of the renderer's numeric index. */
+  tileMatrix?: string;
   /** Tile index */
   index: {x: number; y: number; z: number};
   id: string;

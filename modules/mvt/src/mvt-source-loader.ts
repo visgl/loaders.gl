@@ -200,7 +200,14 @@ export class MVTTileSource
     // const metadata = await this.metadata;
     // mimeType = metadata?.tileMIMEType || 'application/vnd.mapbox-vector-tile';
 
-    const arrayBuffer = await this.getTile({x, y, z, layers: []});
+    const arrayBuffer = await this.getTile({
+      x,
+      y,
+      z,
+      layers: [],
+      tileMatrix: parameters.tileMatrix,
+      signal: parameters.signal
+    });
     if (arrayBuffer === null) {
       return null;
     }
@@ -210,7 +217,14 @@ export class MVTTileSource
       this.mimeType || imageMetadata?.mimeType || 'application/vnd.mapbox-vector-tile';
     switch (this.mimeType) {
       case 'application/vnd.mapbox-vector-tile':
-        return await this._parseVectorTile(arrayBuffer, {x, y, z, layers: []});
+        return await this._parseVectorTile(arrayBuffer, {
+          x,
+          y,
+          z,
+          layers: [],
+          tileMatrix: parameters.tileMatrix,
+          signal: parameters.signal
+        });
       default:
         return await this._parseImageTile(arrayBuffer);
     }

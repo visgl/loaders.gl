@@ -465,6 +465,7 @@ export type {TileSource, TileGrid, TileGridMatrix, TileGridLimits} from './lib/s
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
 export type {GetTileDataBatchResult, GetTileDataParameters} from './lib/sources/tile-source';
 export {getTileDataBatch} from './lib/sources/tile-source-utils';
+export {TileSourceAdapter} from './lib/sources/tile-source-adapter';
 
 export type {ImageTileSource} from './lib/sources/image-tile-source';
 

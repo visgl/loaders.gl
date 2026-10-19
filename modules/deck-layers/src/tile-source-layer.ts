@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getTileGridLayerOptions} from './lib/tile-grid-options';
+
 import {CompositeLayer} from '@deck.gl/core';
 import {MVTLayer, TileLayer, type TileLayerProps} from '@deck.gl/geo-layers';
 import {BitmapLayer, GeoJsonLayer, PathLayer} from '@deck.gl/layers';
@@ -152,8 +154,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
   /** Render vector tiles through `MVTLayer` when local coordinate support is required. */
   renderMVTLayer() {
     const {data, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
-    const minZoom = metadata?.minZoom || 0;
-    const maxZoom = metadata?.maxZoom || 30;
+    const {minZoom, maxZoom, tileSize} = getTileGridLayerOptions(metadata);
     const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
@@ -170,7 +171,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
         onTileError,
         minZoom,
         maxZoom,
-        tileSize: 256,
+        tileSize,
         zoomOffset: devicePixelRatio === 1 ? -1 : 0,
         showTileBorders
       } as any)
@@ -180,8 +181,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
   /** Render image tiles and non-local vector tiles through `TileLayer`. */
   renderTileLayer() {
     const {data, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
-    const minZoom = metadata?.minZoom || 0;
-    const maxZoom = metadata?.maxZoom || 30;
+    const {minZoom, maxZoom, tileSize} = getTileGridLayerOptions(metadata);
     const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
@@ -201,7 +201,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
         onViewportLoad: onTilesLoad,
         minZoom,
         maxZoom,
-        tileSize: 256,
+        tileSize,
         zoomOffset: devicePixelRatio === 1 ? -1 : 0,
         renderSubLayers: renderSubLayers as any,
         tileSource: data as any,

@@ -163,7 +163,10 @@ export class WMTSImageTileSource
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
   async getTileData(parameters: GetTileDataParameters): Promise<ImageType | null> {
-    return this.getTile(parameters.index, parameters.signal);
+    return this.getTile(
+      {...parameters.index, tileMatrix: parameters.tileMatrix, signal: parameters.signal},
+      parameters.signal
+    );
   }
 
   /**

@@ -165,9 +165,23 @@ export class PMTilesTileSource
     switch (metadata.tileMIMEType) {
       case 'application/vnd.mapbox-vector-tile':
       case 'application/vnd.maplibre-tile':
-        return await this.getVectorTile({x, y, z, layers: []});
+        return await this.getVectorTile({
+          x,
+          y,
+          z,
+          layers: [],
+          tileMatrix: tileParams.tileMatrix,
+          signal: tileParams.signal
+        });
       default:
-        return await this.getImageTile({x, y, z, layers: []});
+        return await this.getImageTile({
+          x,
+          y,
+          z,
+          layers: [],
+          tileMatrix: tileParams.tileMatrix,
+          signal: tileParams.signal
+        });
     }
   }
 

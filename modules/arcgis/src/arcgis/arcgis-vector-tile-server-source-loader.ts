@@ -135,7 +135,11 @@ export class ArcGISVectorTileServerSource
 
   /** Provides decoded vector tiles through the deck.gl source interface. */
   async getTileData(parameters: GetTileDataParameters): Promise<VectorTile | null> {
-    return this.getVectorTile({...parameters.index, signal: parameters.signal});
+    return this.getVectorTile({
+      ...parameters.index,
+      tileMatrix: parameters.tileMatrix,
+      signal: parameters.signal
+    });
   }
 
   /** Builds the ArcGIS cached vector tile URL. */

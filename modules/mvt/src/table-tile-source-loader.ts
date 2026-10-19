@@ -30,6 +30,7 @@ import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature
 import {deduceTableSchema} from '@loaders.gl/schema-utils';
 import {Stats, Stat} from '@probe.gl/stats';
 
+import {resolveTableTileParameters} from './lib/resolve-table-tile-parameters';
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
 import type {ProtoTile} from './lib/vector-tiler/proto-tile';
 import {createProtoTile} from './lib/vector-tiler/proto-tile';
@@ -220,7 +221,7 @@ export class TableVectorTileSource
       : table;
   }
 
-  async getTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
+  async getTile(tileIndex: GetTileParameters): Promise<GeoJSONTable | null> {
     await this.ready;
     return this.getTileSync(tileIndex);
   }
@@ -228,9 +229,12 @@ export class TableVectorTileSource
   async getTileData(
     tileParams: GetTileDataParameters
   ): Promise<Feature[] | BinaryFeatureCollection> {
-    const {x, y, z} = tileParams.index;
     await this.ready;
-    const tile = this.getTileSync({x, y, z});
+    const tile = this.getTileSync({
+      ...tileParams.index,
+      tileMatrix: tileParams.tileMatrix,
+      signal: tileParams.signal
+    });
     return tile?.features || [];
   }
 
@@ -240,7 +244,8 @@ export class TableVectorTileSource
    * Synchronously request a tile
    * @note Application must await `source.ready` before calling sync methods.
    */
-  getTileSync(tileIndex: {z: number; x: number; y: number}): GeoJSONTable | null {
+  getTileSync(tileIndex: GetTileParameters): GeoJSONTable | null {
+    tileIndex = resolveTableTileParameters(tileIndex, this.tableOptions.maxZoom);
     const protoTile = this.getProtoTile(tileIndex);
     if (!protoTile) {
       return null;
