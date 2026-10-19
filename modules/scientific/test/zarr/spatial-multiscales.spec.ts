@@ -12,7 +12,8 @@ const BASE_URL = 'https://example.com/spatial.zarr';
 function createSource(
   overrides: Record<string, unknown> = {},
   grouped = false,
-  groupOverrides: Record<string, unknown> = {}
+  groupOverrides: Record<string, unknown> = {},
+  consolidated = false
 ): {source: GeoZarrRasterSource; requests: string[]} {
   const assets = ['fine', 'overview'];
   const rootAttributes = {
@@ -21,7 +22,12 @@ function createSource(
     ...groupOverrides
   };
   const documents: Record<string, unknown> = {
-    '/zarr.json': {zarr_format: 3, node_type: 'group', attributes: rootAttributes}
+    '/zarr.json': {
+      zarr_format: 3,
+      node_type: 'group',
+      attributes: rootAttributes,
+      ...(consolidated ? {consolidated_metadata: {kind: 'inline', metadata: {}}} : {})
+    }
   };
   for (const [index, asset] of assets.entries()) {
     const attributes = {
@@ -54,7 +60,10 @@ function createSource(
   }) as typeof fetch;
   return {
     source: new GeoZarrRasterSource(BASE_URL, {
-      zarr: {requireConsolidatedMetadata: false},
+      zarr: {
+        requireConsolidatedMetadata: consolidated,
+        metadataPath: consolidated ? 'zarr.json' : 'auto'
+      },
       geozarr: {array: `fine${grouped ? '/values' : ''}`, defaultSelection: {time: 1}},
       core: {fetch: fetcher}
     }),
@@ -156,4 +165,54 @@ test('Native OME metadata and unrelated or ambiguous layouts are not recast as s
   expect(() =>
     getSpatialMultiscaleLevels({multiscales: {layout: [{asset: 'a'}, {asset: 'a'}]}}, 'a')
   ).toThrow(/Duplicate/);
+});
+
+test('Non-CRS projection attributes preserve inherited CRS and reprojection checks', async () => {
+  const {source} = createSource({}, false, {
+    multiscales: {
+      layout: [
+        {asset: 'fine', 'proj:shape': [4, 5]},
+        {asset: 'overview', 'proj:bbox': [100, 180, 120, 200]}
+      ]
+    }
+  });
+  const metadata = await source.getMetadata();
+  expect(metadata.crs).toBe('EPSG:32610');
+  expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual(['EPSG:32610', 'EPSG:32610']);
+  expect(metadata.tileGrid?.tileMatrixSet?.crs).toBe('EPSG:32610');
+  await expect(
+    source.getRaster({
+      viewport: {
+        bounds: [
+          [0, 0],
+          [1, 1]
+        ],
+        crs: 'EPSG:4326'
+      }
+    } as any)
+  ).rejects.toThrow(/reprojection/);
+});
+
+test('Sibling discovery reuses the validated parent consolidated metadata and group', async () => {
+  const {source, requests} = createSource({}, false, {}, true);
+  const metadata = await source.getMetadata();
+  expect(metadata.tileGrid?.tileMatrixSet?.matrices).toHaveLength(2);
+  // One consolidated preflight plus one Zarrita group open; siblings reuse the same group/store.
+  expect(requests.filter(url => url === `${BASE_URL}/zarr.json`)).toHaveLength(2);
+  expect((await source.getConsolidatedMetadata()).format).toBe('v3');
+  expect(requests.filter(url => url === `${BASE_URL}/zarr.json`)).toHaveLength(2);
+});
+
+test('The closest CRS declaration replaces inherited alternatives across level groups and entries', async () => {
+  const {source} = createSource({'proj:wkt2': 'another-crs'}, true, {
+    multiscales: {
+      layout: [
+        {asset: 'fine', 'proj:code': 'EPSG:32610'},
+        {asset: 'overview', 'proj:code': 'EPSG:32610'}
+      ]
+    }
+  });
+  const metadata = await source.getMetadata();
+  expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual(['EPSG:32610', 'EPSG:32610']);
+  expect(metadata.tileGrid?.tileMatrixSet?.crs).toBe('EPSG:32610');
 });

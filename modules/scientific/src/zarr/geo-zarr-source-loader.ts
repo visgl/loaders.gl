@@ -108,6 +108,8 @@ export type GetGeoZarrParameters = Omit<GetRasterParameters, 'bands' | 'interlea
 type GeoZarrAttributes = Record<string, unknown>;
 
 type GeoZarrInit = {
+  /** Validated parent group and shared store used by sibling metadata reads. */
+  group: zarrita.Group<Readable>;
   /** Open Zarrita data array. */
   array: zarrita.Array<zarrita.DataType, Readable>;
   /** Normalized source metadata. */
@@ -216,7 +218,7 @@ export class GeoZarrRasterSource
 
   /** Opens sibling array metadata without selecting or decoding their samples. */
   private async loadGridMetadata(): Promise<GeoZarrSourceMetadata> {
-    const {metadata} = await this.getInitializationPromise();
+    const {metadata, group} = await this.getInitializationPromise();
     const groupAttributes = metadata.metadata?.groupAttributes as GeoZarrAttributes;
     const layout = getSpatialMultiscaleLevels(groupAttributes, metadata.array);
     const levels: GeoZarrLevelMetadata[] = [];
@@ -235,7 +237,7 @@ export class GeoZarrRasterSource
         this.hasCoreApi ? this.coreApi : undefined
       );
       try {
-        const initialization = await source.initialize(undefined, true);
+        const initialization = await source.initialize(undefined, true, group);
         levels.push({id: level.id, array: level.array, metadata: initialization.metadata});
       } catch {
         // Unsupported siblings remain advertised; never publish a complete set with missing levels.
@@ -383,8 +385,12 @@ export class GeoZarrRasterSource
   }
 
   /** Opens the selected data array and resolves GeoZarr or CF/xarray geospatial metadata. */
-  private async initialize(signal?: AbortSignal, metadataOnly = false): Promise<GeoZarrInit> {
-    const group = await this.openGroup(signal);
+  private async initialize(
+    signal?: AbortSignal,
+    metadataOnly = false,
+    validatedGroup?: zarrita.Group<Readable>
+  ): Promise<GeoZarrInit> {
+    const group = validatedGroup || await this.openGroup(signal);
     const options = (this.options as GeoZarrSourceLoaderOptions).geozarr;
     const arrayPath = options?.array;
     if (!arrayPath) {
@@ -407,17 +413,18 @@ export class GeoZarrRasterSource
       ...level?.attributes,
       ...arrayAttributes
     };
-    const childAttributes = {...levelGroupAttributes, ...level?.attributes, ...arrayAttributes};
-    if (Object.keys(childAttributes).some(key => key.startsWith('proj:'))) {
-      for (const key of Object.keys(attributes)) {
-        if (key.startsWith('proj:')) {
-          delete attributes[key];
+    const coordinateReferenceSystemKeys = ['proj:code', 'proj:wkt2', 'proj:projjson', 'proj:epsg'];
+    const coordinateReferenceSystemAttributes = [
+      arrayAttributes, level?.attributes, levelGroupAttributes
+    ].find(candidate => candidate &&
+      coordinateReferenceSystemKeys.some(key => Object.hasOwn(candidate, key)));
+    if (coordinateReferenceSystemAttributes) {
+      for (const key of coordinateReferenceSystemKeys) {
+        delete attributes[key];
+        if (Object.hasOwn(coordinateReferenceSystemAttributes, key)) {
+          attributes[key] = coordinateReferenceSystemAttributes[key];
         }
       }
-      Object.assign(
-        attributes,
-        Object.fromEntries(Object.entries(childAttributes).filter(([key]) => key.startsWith('proj:')))
-      );
     }
     if (level) {
       // A root affine does not establish the geometry of each differently sampled child.
@@ -499,7 +506,7 @@ export class GeoZarrRasterSource
       registration: declaredRegistration
     };
 
-    return {array, metadata, xDimensionIndex, yDimensionIndex};
+    return {group, array, metadata, xDimensionIndex, yDimensionIndex};
   }
 }
 

@@ -163,7 +163,9 @@ Chunk matrices include padded edge chunks. Valid raster extent remains in each l
 not a decoded display tile or a standalone 2D payload. `getRaster()` continues to read the
 configured `geozarr.array` and named selection; it does not automatically select an overview.
 To read another advertised level, create a source with that level's `array` path. Sibling grid
-discovery reads metadata only, without decoding coordinate or sample chunks.
+discovery reuses the validated parent group/store and consolidated preflight, and reads
+metadata only without decoding coordinate or sample chunks. Non-CRS `proj:*` fields retain
+the inherited CRS; an explicit nearer CRS declaration replaces inherited alternatives.
 
 OME-Zarr microscopy coordinates remain native OME metadata. An OME `multiscales` array is not
 the generic multiscales object and does not establish a geographic CRS. Use the OME source for
