@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
+import type {CoreAPI} from '@loaders.gl/loader-utils';
+import {ArcGISMapTileSource} from '../../src/arcgis/arcgis-map-tile-source-loader';
+import {ArcGISImageTileSource} from '../../src/arcgis/arcgis-image-tile-source-loader';
 import {
   ArcGISMapTileSourceLoader,
   ArcGISVectorTileServerSourceLoader
@@ -69,4 +72,27 @@ test('ArcGIS normalization retains header metadata and handles CRS aliases witho
   expect(createArcGISTileGrid({lods: [{level: 3}]})?.matrices).toEqual([{id: '3'}]);
   expect(() => createArcGISTileGrid({lods: [{level: 1}, {level: 1}]})).toThrow('unique');
   expect(() => createArcGISTileGrid({lods: [{level: -1}]})).toThrow('nonnegative');
+});
+
+test('ArcGIS consumer requests the cached native LOD and rejects mismatched dynamic exports', async () => {
+  const fetcher = vi.fn(async () => new Response(new Uint8Array(1)));
+  const source = new ArcGISMapTileSource(
+    'https://example.com/MapServer',
+    {
+      'arcgis-map-server': {mode: 'cached', metadata: {tileInfo: TILE_INFO}},
+      core: {fetch: fetcher}
+    },
+    {parse: async () => ({width: 512, height: 256})} as unknown as CoreAPI
+  );
+  const signal = new AbortController().signal;
+  await source.getTileData({index: {z: 0, x: 1, y: 2}, tileMatrix: '7', signal});
+  expect(fetcher).toHaveBeenCalledWith(expect.stringContaining('/tile/7/2/1'), {signal});
+  const image = new ArcGISImageTileSource('https://example.com/ImageServer', {
+    core: {fetch: fetcher}
+  });
+  fetcher.mockClear();
+  await expect(image.getTileData({index: {z: 0, x: 0, y: 0}, tileMatrix: '7'})).rejects.toThrow(
+    'matching XYZ zoom'
+  );
+  expect(fetcher).not.toHaveBeenCalled();
 });

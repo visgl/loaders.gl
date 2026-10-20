@@ -76,6 +76,7 @@ export class ArcGISImageTileSource
     parameters: GetTileParameters,
     signal?: AbortSignal
   ): Promise<ImageType | LERCData | null> {
+    signal ||= parameters.signal;
     const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
     if (!response.ok) {
       throw new Error(
@@ -105,6 +106,9 @@ export class ArcGISImageTileSource
 
   /** Builds an ImageServer exportImage URL for one web-mercator tile. */
   getTileURL(parameters: GetTileParameters, tileSize?: number): string {
+    if (parameters.tileMatrix !== undefined && parameters.tileMatrix !== String(parameters.z)) {
+      throw new Error('ArcGIS ImageServer export requires a matching XYZ zoom');
+    }
     const options = this.options['arcgis-image-server-tiles'] || {};
     const resolvedTileSize = tileSize || options.tileSize || 256;
     const [west, south, east, north] = getWebMercatorTileBounds(parameters);

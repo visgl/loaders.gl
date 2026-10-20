@@ -127,7 +127,9 @@ The image source must support the supplied CRS and bounds. Inclusive `grid.limit
 before requesting pixels. Explicit matrix IDs are independent of `z`; the deck.gl-compatible
 request shape also accepts top-level `tileMatrix` and preserves its abort signal. Generated table
 tilers resolve canonical numeric matrix IDs before clipping and coordinate conversion, and reject
-unknown or aliased identifiers. With no grid,
+unknown or aliased identifiers. ArcGIS dynamic MapServer and ImageServer exports require
+`tileMatrix` to match the numeric XYZ zoom; cached MapServer requests can use native LOD IDs.
+With no grid,
 the legacy adapter uses geographic longitude/latitude bounds for canonical XYZ indices.
 
 ### Renderer compatibility

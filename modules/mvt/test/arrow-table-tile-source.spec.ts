@@ -449,3 +449,22 @@ test('Arrow tile source rejects invalid inputs and geometry declarations', async
     expect(() => new ArrowTableVectorTileSource(table, {table: options})).toThrow();
   }
 });
+
+test('Arrow consumer clips the requested native level rather than the index zoom', async () => {
+  const source = new ArrowTableVectorTileSource(
+    makeTable([POINT, {type: 'Point', coordinates: [90, -45]}]),
+    {table: {maxZoom: 3, indexMaxZoom: 3, coordinates: 'wgs84'}}
+  );
+  const northwest = await source.getTileData({index: {z: 0, x: 0, y: 0}, tileMatrix: '1'});
+  expect(northwest?.data.numRows).toBe(1);
+  const geometry = readGeometries(northwest)[0] as {type: string; coordinates: number[]};
+  expect(geometry.type).toBe('Point');
+  expect(geometry.coordinates[0]).toBeCloseTo(-90, 2);
+  expect(geometry.coordinates[1]).toBeCloseTo(40, 1);
+  expect(
+    (await source.getTileData({index: {z: 1, x: 0, y: 0}, tileMatrix: '0'}))?.data.numRows
+  ).toBe(2);
+  await expect(source.getTileData({index: {z: 0, x: 0, y: 0}, tileMatrix: '02'})).rejects.toThrow(
+    /Unknown/
+  );
+});

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, describe, expect, test, vi} from 'vitest';
-import type {Header} from 'pmtiles';
+import {PMTiles, type Header} from 'pmtiles';
 import {createDataSource} from '@loaders.gl/core';
 import {createWebMercatorTileGrid, type CoreAPI} from '@loaders.gl/loader-utils';
 import {parsePMTilesHeader} from '../src/lib/parse-pmtiles';
@@ -367,4 +367,47 @@ test.each([
   finishMetadata(parsePMTilesHeader(createHeader(), null));
   expect(await surviving).toBeInstanceOf(ArrayBuffer);
   expect(lookup).toHaveBeenCalledOnce();
+});
+
+test('PMTiles consumer selects native range and decoder zooms', async () => {
+  vi.spyOn(PMTiles.prototype, 'getHeader').mockResolvedValue(createHeader());
+  vi.spyOn(PMTiles.prototype, 'getMetadata').mockResolvedValue({});
+  const range = vi
+    .spyOn(PMTiles.prototype, 'getZxy')
+    .mockResolvedValue({data: new ArrayBuffer(16)});
+  const parse = vi.fn(async () => ({shape: 'arrow-table'}));
+  const source = new PMTilesTileSource(new Blob([]), {}, {parse} as unknown as CoreAPI);
+  const signal = new AbortController().signal;
+  await source.getTileData({index: {z: 0, x: 2, y: 1}, tileMatrix: '3', signal});
+  expect(range).toHaveBeenCalledWith(3, 2, 1, signal);
+  expect(parse).toHaveBeenCalledWith(
+    expect.any(ArrayBuffer),
+    MVTLoader,
+    expect.objectContaining({mvt: expect.objectContaining({tileIndex: {z: 3, x: 2, y: 1}})})
+  );
+});
+
+test('PMTiles in-flight range cancellation rejects without reporting a missing tile', async () => {
+  vi.spyOn(PMTiles.prototype, 'getHeader').mockResolvedValue(createHeader());
+  vi.spyOn(PMTiles.prototype, 'getMetadata').mockResolvedValue({});
+  let start!: () => void;
+  const started = new Promise<void>(resolve => {
+    start = resolve;
+  });
+  vi.spyOn(PMTiles.prototype, 'getZxy').mockImplementation(
+    (_zoom, _column, _row, signal) =>
+      new Promise((_resolve, reject) => {
+        signal!.addEventListener('abort', () => reject(signal!.reason), {once: true});
+        start();
+      })
+  );
+  const onError = vi.fn();
+  const source = new PMTilesTileSource(new Blob([]), {core: {onError}});
+  const controller = new AbortController();
+  const request = source.getTileData({index: {z: 3, x: 1, y: 1}, signal: controller.signal});
+  const cancellation = expect(request).rejects.toMatchObject({name: 'AbortError'});
+  await started;
+  controller.abort();
+  await cancellation;
+  expect(onError).not.toHaveBeenCalled();
 });

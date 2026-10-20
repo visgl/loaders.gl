@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
+import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {WMTSSourceLoader, WMTSImageTileSource} from '@loaders.gl/wms';
 import {WMTSCapabilitiesLoader} from '@loaders.gl/wms';
 import {getTileBounds} from '@math.gl/geospatial';
@@ -715,4 +716,18 @@ test.each(
       maxTileRow: limit.maximumTileRow
     }))
   );
+});
+
+test('WMTS consumer requests the native matrix URL with caller cancellation', async () => {
+  const capabilities = (await WMTSCapabilitiesLoader.preload()).parseTextSync(UTM_CAPABILITIES_XML);
+  const fetcher = vi.fn(async () => new Response(new Uint8Array(1)));
+  const source = new WMTSImageTileSource(WMTS_URL, {wmts: {capabilities}, core: {fetch: fetcher}}, {
+    parse: async () => ({width: 512, height: 512})
+  } as unknown as CoreAPI);
+  const signal = new AbortController().signal;
+  await source.getTileData({index: {z: 0, x: 1, y: 2}, tileMatrix: '1', signal});
+  const [url, options] = fetcher.mock.calls[0] as unknown as [string, RequestInit];
+  expect(new URL(url).searchParams.get('TILEMATRIX')).toBe('1');
+  expect(new URL(url).searchParams.get('TILEROW')).toBe('2');
+  expect(options.signal).toBe(signal);
 });

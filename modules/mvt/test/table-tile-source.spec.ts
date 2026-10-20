@@ -202,3 +202,31 @@ async function loadGeoJSONTable(filename: string): Promise<GeoJSONTable> {
     ? {shape: 'geojson-table', features: json, type: 'FeatureCollection'}
     : {shape: 'geojson-table', ...json};
 }
+
+test('Table consumer uses the native matrix before clipping geometry', async () => {
+  const source = new TableVectorTileSource(
+    {
+      shape: 'geojson-table',
+      type: 'FeatureCollection',
+      features: [
+        [-90, 45],
+        [90, -45]
+      ].map(coordinates => ({
+        type: 'Feature',
+        properties: {},
+        geometry: {type: 'Point', coordinates}
+      }))
+    } as GeoJSONTable,
+    {table: {maxZoom: 3}}
+  );
+  expect(await source.getTileData({index: {z: 0, x: 0, y: 0}, tileMatrix: '1'})).toHaveLength(1);
+  expect(await source.getTileData({index: {z: 1, x: 0, y: 0}, tileMatrix: '0'})).toHaveLength(2);
+  await expect(source.getTileData({index: {z: 0, x: 0, y: 0}, tileMatrix: '02'})).rejects.toThrow(
+    /Unknown/
+  );
+  const controller = new AbortController();
+  controller.abort();
+  await expect(
+    source.getTileData({index: {z: 0, x: 0, y: 0}, signal: controller.signal})
+  ).rejects.toMatchObject({name: 'AbortError'});
+});
