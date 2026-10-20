@@ -30,7 +30,7 @@
     "@math.gl/geospatial": "5.0.0-alpha.18",
     "@probe.gl/stats": "^4.1.1",
     "@probe.gl/stats-widget": "^4.0.2",
-    "maplibre-gl": "^3.6.2",
+    "maplibre-gl": "^6.4.1",
     "marked": "^0.7.0",
     "prop-types": "^15.7.2",
     "react": "^19.2.5",
