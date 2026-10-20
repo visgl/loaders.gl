@@ -8,9 +8,9 @@ import type {
   GeoJSONTableBatch,
   ArrowTableBatch,
   ObjectRowTable
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/arrow-geometry/wkb-table';
-import {convertArrowToTable} from '@loaders.gl/schema-utils';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 
 import type {ParquetLoaderOptions} from '../../parquet-loader-options';
 import {parseParquetArrowTable, parseParquetArrowTableInBatches} from './parse-parquet-tables';

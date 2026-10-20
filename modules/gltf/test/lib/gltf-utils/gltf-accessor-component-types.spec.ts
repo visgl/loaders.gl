@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
-import type {BigTypedArray} from '@loaders.gl/schema';
+import type {BigTypedArray} from '@loaders.gl/core/schema';
 const TEST_CASES: {
   name: string;
   componentType: number;

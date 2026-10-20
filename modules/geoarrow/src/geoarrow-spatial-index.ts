@@ -4,7 +4,7 @@
 
 import type {Vector} from 'apache-arrow';
 import {intersectsCoordinate, intersectsExtent} from './lib/geometry-predicates';
-import type {GeoArrowEncoding, Geometry} from '@loaders.gl/schema';
+import type {GeoArrowEncoding, Geometry} from '@loaders.gl/core/schema';
 import {getGeoArrowRowBounds, type GeoArrowBounds} from './geoarrow-bounds';
 import {
   convertGeoArrowVector,

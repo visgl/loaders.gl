@@ -65,7 +65,7 @@ isolated buffers before creating the payload:
   does not rely on preserving Arrow JS class prototypes.
 - Schema and type metadata use the loaders.gl schema utility helpers `serializeArrowSchema`,
   `deserializeArrowSchema`, `serializeArrowType`, and `deserializeArrowType` from
-  `@loaders.gl/schema-utils`.
+  `@loaders.gl/core/schema-utils`.
 
 `hydrateArrowTable(payload)` rebuilds a real Apache Arrow JS `Table` from that payload. The hydrated
 table is useful for further Arrow JS work in the receiving thread, including slicing, dropping

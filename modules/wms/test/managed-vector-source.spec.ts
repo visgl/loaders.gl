@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {ManagedVectorSource, type ManagedVectorSourceOptions} from '@loaders.gl/wms';
-import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
+import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 import type {GetFeaturesParameters, VectorSource} from '@loaders.gl/core/loader-utils';
 
 const parameters: GetFeaturesParameters = {

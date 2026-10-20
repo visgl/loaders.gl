@@ -32,8 +32,8 @@ import type {
   Mesh,
   MeshArrowTable,
   Schema
-} from '@loaders.gl/schema';
-import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/core/schema-utils';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {
   POTreeNode,

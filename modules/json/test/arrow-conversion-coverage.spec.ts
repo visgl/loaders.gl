@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import type {Feature, Schema, TableBatch} from '@loaders.gl/schema';
+import type {Feature, Schema, TableBatch} from '@loaders.gl/core/schema';
 import {
   convertGeoJSONFeaturesToArrowTable,
   convertRowTableToArrowTable,

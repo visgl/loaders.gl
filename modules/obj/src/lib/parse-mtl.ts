@@ -4,7 +4,7 @@
 // Forked from THREE.js under MIT license
 // https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/MTLLoader.js
 
-// import type {DiffuseMaterial} from '@loaders.gl/schema';
+// import type {DiffuseMaterial} from '@loaders.gl/core/schema';
 
 export type MTLMaterial = {
   name: string;

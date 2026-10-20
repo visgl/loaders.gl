@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load, loadInBatches} from '@loaders.gl/core';
 import {TCXLoader} from '@loaders.gl/kml';
-import type {GeoJSONTable} from '@loaders.gl/schema';
+import type {GeoJSONTable} from '@loaders.gl/core/schema';
 const TCX_URL = '@loaders.gl/kml/test/data/tcx/tcx_sample';
 test('TCXLoader#loader conformance', () => {
   validateLoader(TCXLoader, 'TCXLoader');

@@ -10,7 +10,7 @@ import {parse} from '@loaders.gl/core';
 import {MVTLoader} from '@loaders.gl/mvt';
 import {encodeGeoArrowPMTiles} from '../src/geoarrow';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
-import type {GeoArrowEncodingPreference, Geometry} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference, Geometry} from '@loaders.gl/core/schema';
 
 /** Two separated source points make partial selection and empty-address handling observable. */
 function createTable(encodingPreference: GeoArrowEncodingPreference = 'geoarrow.wkb') {

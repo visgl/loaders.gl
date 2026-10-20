@@ -13,7 +13,7 @@ import type {
   GeoJSONTable,
   ArrowTable,
   ArrowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type {SHPLoaderOptions} from './shp-loader-types';
 import type {ShapefileOutput} from './lib/parsers/parse-shapefile';
 import type {DBFLoaderOptions} from './dbf-loader-types';

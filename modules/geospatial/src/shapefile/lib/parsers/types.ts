@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoArrowEncodingPreference, Schema, ObjectRowTable} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference, Schema, ObjectRowTable} from '@loaders.gl/core/schema';
 import type {StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 
 /**

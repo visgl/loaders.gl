@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import type {ArrowTable, TableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
 import {
   executeTableScanBatches,
   filterTableBatch,

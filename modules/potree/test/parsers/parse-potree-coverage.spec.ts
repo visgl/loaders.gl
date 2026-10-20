@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {getFloat16Value} from '@loaders.gl/schema';
+import {getFloat16Value} from '@loaders.gl/core/schema';
 
 import {parsePotreeBin} from '../../src/parsers/parse-potree-bin';
 import {

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {TextureFormat} from '@loaders.gl/schema';
+import type {TextureFormat} from '@loaders.gl/core/schema';
 import {isBrowser} from '@loaders.gl/core';
 import {
   getSupportedBasisFormats,

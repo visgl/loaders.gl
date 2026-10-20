@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {GeoArrowDimension, GeoArrowEncoding} from '@loaders.gl/schema';
+import type {GeoArrowDimension, GeoArrowEncoding} from '@loaders.gl/core/schema';
 import {getGeoArrowUnionDimension, getGeoArrowUnionGeometryKind} from './geoarrow-union';
 
 type GeometryKind =

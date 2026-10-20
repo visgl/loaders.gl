@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {BinaryFeatureCollection, Feature, FlatFeature} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection, Feature, FlatFeature} from '@loaders.gl/core/schema';
 import type {GeojsonGeometryInfo} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
   convertFlatGeojsonToBinaryFeatureCollection,

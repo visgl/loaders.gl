@@ -9,8 +9,8 @@ import {encode} from '@loaders.gl/core';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
 import {ParquetDatasetSource} from '@loaders.gl/parquet/parquet-dataset-source';
 import {queryArrowTable} from '@loaders.gl/sql/arrow-query';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 
 test('Arrow and Parquet execute one portable projection, predicate, and limit consistently', async () => {
   const rows = [

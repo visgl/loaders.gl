@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import type {GaussianSplats} from '../types';
 import {makeGaussianSplatsArrowTable} from './splats-arrow-table';
 import {convertAlphaByteToLinearOpacity, decodeFloat16, normalizeQuaternion} from './splat-utils';

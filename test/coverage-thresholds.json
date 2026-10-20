@@ -49,8 +49,8 @@
       "sourcePaths": [
         "modules/arrow/src/",
         "modules/tables/src/arrow/",
-        "modules/schema-utils/src/lib/arrow/arrow-table-transport.ts",
-        "modules/schema-utils/src/lib/arrow/split-arrow-buffers.ts"
+        "modules/core/src/schema-utils/lib/arrow/arrow-table-transport.ts",
+        "modules/core/src/schema-utils/lib/arrow/split-arrow-buffers.ts"
       ]
     },
     "@loaders.gl/arrow-geometry": {
@@ -611,36 +611,6 @@
         "branches": 73
       }
     },
-    "@loaders.gl/schema": {
-      "path": "modules/schema",
-      "browser": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
-      },
-      "merged": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
-      }
-    },
-    "@loaders.gl/schema-utils": {
-      "path": "modules/schema-utils",
-      "browser": {
-        "statements": 81,
-        "lines": 81,
-        "functions": 87,
-        "branches": 76
-      },
-      "merged": {
-        "statements": 80,
-        "lines": 81,
-        "functions": 86,
-        "branches": 76
-      }
-    },
     "@loaders.gl/scientific": {
       "path": "modules/scientific",
       "browser": {
@@ -1045,6 +1015,44 @@
       "owner": "@loaders.gl/core",
       "sourcePaths": [
         "modules/core/src/polyfills/"
+      ]
+    },
+    "@loaders.gl/core/schema": {
+      "path": "modules/core/src/schema",
+      "browser": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "merged": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/schema/"
+      ]
+    },
+    "@loaders.gl/core/schema-utils": {
+      "path": "modules/core/src/schema-utils",
+      "browser": {
+        "statements": 81,
+        "lines": 81,
+        "functions": 87,
+        "branches": 76
+      },
+      "merged": {
+        "statements": 80,
+        "lines": 81,
+        "functions": 86,
+        "branches": 76
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/schema-utils/"
       ]
     }
   }

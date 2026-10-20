@@ -30,7 +30,7 @@ MIT License reproduced above.
 
 Copyright (c) 2016-17 Karl Cheng
 
-Portions of modules/schema-utils/src/lib/utils/async-queue.ts are adapted from
+Portions of modules/core/src/schema-utils/lib/utils/async-queue.ts are adapted from
 async-iter-demo (https://github.com/rauschma/async-iter-demo) under the MIT
 License reproduced above.
 

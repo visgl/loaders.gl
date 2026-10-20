@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {BinaryGeometry, Geometry as GeoJSONGeometry} from '@loaders.gl/schema';
-import type {Converter} from '@loaders.gl/schema-utils';
+import type {BinaryGeometry, Geometry as GeoJSONGeometry} from '@loaders.gl/core/schema';
+import type {Converter} from '@loaders.gl/core/schema-utils';
 import {convertBinaryGeometryToGeometry} from '../convert-binary-geometry-to-geojson';
 import {convertBinaryGeometryToWKB} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';

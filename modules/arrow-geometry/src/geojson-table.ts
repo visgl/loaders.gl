@@ -3,12 +3,18 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {Feature, GeoArrowEncoding, GeoJSONTable, Geometry, Schema} from '@loaders.gl/schema';
+import type {
+  Feature,
+  GeoArrowEncoding,
+  GeoJSONTable,
+  Geometry,
+  Schema
+} from '@loaders.gl/core/schema';
 import {convertWKBToGeometry} from './geometry-codecs';
 import {convertWKTToGeometry} from './geometry-codecs';
 import {makeGeoArrowColumnFromArrowVector} from './arrow-geoarrow-adapter';
 import {materializeGeoArrowRows} from '@math.gl/geoarrow';
-import {getGeoMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 
 /**
  * Converts an Arrow table with GeoArrow geometry metadata to a GeoJSON table.

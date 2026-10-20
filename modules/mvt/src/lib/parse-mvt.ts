@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
 import {
   convertFlatGeojsonToBinaryFeatureCollection as flatGeojsonToBinary,

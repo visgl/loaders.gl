@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {SourceLoader, CoreAPI} from '@loaders.gl/core/loader-utils';
 
 import {SQLDataSource, SQL_SOURCE_DEFAULT_OPTIONS} from './sql-source';

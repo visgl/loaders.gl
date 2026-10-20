@@ -14,7 +14,7 @@ import type {
   BinaryPointFeature,
   BinaryPolygonFeature,
   TypedArray
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 type SupportedNumericArray =
   | Float64Array

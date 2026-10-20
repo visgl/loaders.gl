@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {concatenateArrayBuffersAsync, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {AvroLoader as AvroLoaderMetadata} from './avro-loader-types';
 import {
   parseAvro,

@@ -7,8 +7,8 @@ import type {
   BinaryGeometryType,
   Feature,
   FlatFeature
-} from '@loaders.gl/schema';
-import type {Converter} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import type {Converter} from '@loaders.gl/core/schema-utils';
 import type {FlatGeojsonToBinaryOptions} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {GeojsonToBinaryOptions} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {GeojsonToFlatGeojsonOptions} from '@loaders.gl/arrow-geometry/legacy-binary';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import type {LASMesh} from './lib/las-types';
 import {LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
 

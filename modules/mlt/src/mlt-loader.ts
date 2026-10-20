@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {MLTFormat} from './mlt-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

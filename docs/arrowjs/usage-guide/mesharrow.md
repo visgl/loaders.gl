@@ -49,7 +49,7 @@ The contract deliberately covers geometry attributes, primitive topology, indice
 A `MeshArrowTable` wraps an `arrow.Table`:
 
 ```ts
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
 declare const mesh: MeshArrowTable;
 
@@ -71,7 +71,7 @@ The raw Arrow table has **one vertex per row**. Each vertex attribute is a scala
 
 `POSITION`, `NORMAL`, `COLOR_0`, and `TEXCOORD_n` use glTF attribute semantic names. The lowercase `indices` name follows the glTF primitive property; it is not a vertex attribute. Index values use unsigned 32-bit storage (`Uint32Array`) for GPU compatibility, including after conversion back to a `Mesh`. The Arrow list offsets remain signed 32-bit integers.
 
-`@loaders.gl/schema` exports `MeshArrowTable`, `MeshArrowColumns`, `MeshArrowTableData`, `IndexedMeshArrowColumns`, `IndexedMeshArrowTableData`, `meshArrowSchema`, and `indexedMeshArrowSchema` for this contract.
+`@loaders.gl/core/schema` exports `MeshArrowTable`, `MeshArrowColumns`, `MeshArrowTableData`, `IndexedMeshArrowColumns`, `IndexedMeshArrowTableData`, `meshArrowSchema`, and `indexedMeshArrowSchema` for this contract.
 
 ### Metadata and record batches
 
@@ -88,17 +88,17 @@ Mesh-category loaders expose Arrow output through a loader-specific `shape: 'arr
 ```ts
 import {load} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/las';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
 const pointCloud = (await load('point-cloud.laz', LASLoader, {
   las: {shape: 'arrow-table'}
 })) as MeshArrowTable;
 ```
 
-`@loaders.gl/schema-utils` can build a table from typed attributes:
+`@loaders.gl/core/schema-utils` can build a table from typed attributes:
 
 ```ts
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 
 const triangle = makeMeshArrowTable(
   {

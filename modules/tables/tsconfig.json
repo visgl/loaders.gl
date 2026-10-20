@@ -20,12 +20,6 @@
     },
     {
       "path": "../core"
-    },
-    {
-      "path": "../schema"
-    },
-    {
-      "path": "../schema-utils"
     }
   ]
 }

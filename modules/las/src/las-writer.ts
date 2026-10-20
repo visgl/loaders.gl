@@ -10,8 +10,8 @@ import {
   type WriterOptions,
   type WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {LASFormat} from './las-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

@@ -13,7 +13,7 @@ import {ParquetJSWriter} from '@loaders.gl/parquet';
 import {DeltaTableSource} from '../src/delta';
 import {IcebergTableSource} from '../src/iceberg';
 import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
-import type {Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/sql';
 
 import {FederatedTableScanSource} from '../src/federated-table-scan-source';

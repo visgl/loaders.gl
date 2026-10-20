@@ -391,7 +391,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/schema-utils",
+        "label": "@loaders.gl/core/schema-utils",
         "items": [
           "modules/schema-utils/README"
         ]
@@ -629,7 +629,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/schema",
+        "label": "@loaders.gl/core/schema",
         "items": [
           "modules/schema/README",
           "modules/schema/api-reference/schema",

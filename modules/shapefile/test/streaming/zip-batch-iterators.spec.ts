@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {ObjectRowTableBatch, ArrayRowTableBatch} from '@loaders.gl/schema';
+import type {ObjectRowTableBatch, ArrayRowTableBatch} from '@loaders.gl/core/schema';
 import {_zipBatchIterators as zipBatchIterators} from '@loaders.gl/shapefile';
 type RowTableBatch = ObjectRowTableBatch | ArrayRowTableBatch;
 type TestCase = {

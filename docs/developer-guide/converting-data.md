@@ -39,7 +39,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 The loaders.gl converter system is a graph of small, explicit converter objects. You pass the converters you want, `convert()` finds a path, and each leaf module handles one direct step.
 
 ```ts
-import {convert, TableConverter} from '@loaders.gl/schema-utils';
+import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
 import {ArrowConverter} from '@loaders.gl/arrow';
 import {
   FeatureCollectionConverter,
@@ -81,7 +81,7 @@ const binary = convert(features, 'binary-feature-collection', [FeatureCollection
 
 | Converter | Package | Direct responsibility |
 | --- | --- | --- |
-| `TableConverter` | `@loaders.gl/schema-utils` | loaders.gl table wrappers |
+| `TableConverter` | `@loaders.gl/core/schema-utils` | loaders.gl table wrappers |
 | `ArrowConverter` | `@loaders.gl/arrow` | Apache Arrow tables and table wrappers |
 | `GeoArrowTableConverter` | `@loaders.gl/geoarrow` | GeoArrow tables and wrapper/table shapes |
 | `GeoArrowGeometryConverter` | `@loaders.gl/geoarrow` | GeoArrow geometry encoding rewrites |

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Field, DataType, SchemaMetadata, FieldMetadata} from '@loaders.gl/schema';
+import type {Schema, Field, DataType, SchemaMetadata, FieldMetadata} from '@loaders.gl/core/schema';
 import type {TileJSONLayer, TileJSONField} from './parse-tilejson';
 
 // LAYERS

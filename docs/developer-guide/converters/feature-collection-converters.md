@@ -99,7 +99,7 @@ For WKB/WKT render conversion:
 ## Example
 
 ```ts
-import {convert} from '@loaders.gl/schema-utils';
+import {convert} from '@loaders.gl/core/schema-utils';
 import {FeatureCollectionConverter, GeometryConverter} from '@loaders.gl/geoarrow';
 
 const binary = convert(features, 'binary-feature-collection', [FeatureCollectionConverter]);

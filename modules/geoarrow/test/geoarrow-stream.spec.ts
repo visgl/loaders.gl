@@ -6,7 +6,7 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {convertGeoArrowBatches, convertGeoArrowVectorCellToGeoJSON} from '@loaders.gl/geoarrow';
-import type {ArrowTableBatch, Geometry} from '@loaders.gl/schema';
+import type {ArrowTableBatch, Geometry} from '@loaders.gl/core/schema';
 
 test('convertGeoArrowBatches freezes an unknown WKB stream to one union schema', async () => {
   const batches = [

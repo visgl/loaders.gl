@@ -4,8 +4,8 @@
 
 // loaders.gl
 import * as arrow from 'apache-arrow';
-import {Schema, type Field} from '@loaders.gl/schema';
-import {unpackGeoMetadata, unpackJSONStringMetadata} from '@loaders.gl/schema';
+import {Schema, type Field} from '@loaders.gl/core/schema';
+import {unpackGeoMetadata, unpackJSONStringMetadata} from '@loaders.gl/core/schema';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {convertParquetSchema} from '../arrow/convert-schema-from-parquet';
 import {applyGeoParquetToFieldMetadata} from '../geo/geospatial-metadata';

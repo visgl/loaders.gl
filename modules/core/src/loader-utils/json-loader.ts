@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from './loader-types';
-import type {Table, TableBatch} from '@loaders.gl/schema';
+import type {Table, TableBatch} from '@loaders.gl/core/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

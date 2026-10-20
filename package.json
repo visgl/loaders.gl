@@ -125,8 +125,6 @@
     "@loaders.gl/ply": "^5.0.0-alpha.0",
     "@loaders.gl/splats": "^5.0.0-alpha.0",
     "@loaders.gl/sql": "^5.0.0-alpha.0",
-    "@loaders.gl/schema": "^5.0.0-alpha.0",
-    "@loaders.gl/schema-utils": "^5.0.0-alpha.0",
     "@loaders.gl/scene": "^5.0.0-alpha.0",
     "@loaders.gl/textures": "^5.0.0-alpha.0",
     "@loaders.gl/tiles": "^5.0.0-alpha.0",

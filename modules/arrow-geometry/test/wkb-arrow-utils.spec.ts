@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {Geometry, Schema} from '@loaders.gl/schema';
+import type {Geometry, Schema} from '@loaders.gl/core/schema';
 import {convertWKBToGeometry} from '../src/geometry-codecs';
 import {makeWKBGeometryData, makeWKBGeometryDataFromWriters} from '../src/wkb-arrow-utils';
 import {
@@ -17,7 +17,7 @@ import {
   setGeoMetadata,
   unpackGeoMetadata,
   unpackJSONStringMetadata
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 test('geoarrow WKB helpers round-trip metadata for object and Map containers', () => {
   const geoMetadata = {
     version: '1.1.0',

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {compressAvro, type AvroCodec} from '../../avro-compression';
 import {getAvroSchemaFingerprint} from '../parsers/parse-avro';
 

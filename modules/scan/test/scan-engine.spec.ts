@@ -4,8 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import type {ArrowTable} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import type {ArrowTable} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {
   createScanEngine,
   createScanQueryMetadata,

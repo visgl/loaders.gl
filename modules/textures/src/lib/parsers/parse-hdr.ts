@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Texture, TextureLevel} from '@loaders.gl/schema';
+import type {Texture, TextureLevel} from '@loaders.gl/core/schema';
 import {GL_RGBA32F} from '../gl-extensions';
 
 const HDR_MAGIC_HEADERS = ['#?RADIANCE', '#?RGBE'];

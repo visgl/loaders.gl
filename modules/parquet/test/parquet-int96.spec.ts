@@ -1,7 +1,7 @@
 import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter, ParquetReader} from '@loaders.gl/parquet';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
 import {convertParquetSchema} from '../../tables/src/parquet/lib/arrow/convert-schema-from-parquet';

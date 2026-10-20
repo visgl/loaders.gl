@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/core/schema';
 import {extractLoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import type {
   BasisASTCBlockSize,

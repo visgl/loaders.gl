@@ -9,7 +9,7 @@ import type {
   ObjectRowTableBatch,
   ArrowTable,
   ArrowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 
 import {

@@ -7,7 +7,7 @@ import {encode, load} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
 import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
 import {expect, test} from 'vitest';

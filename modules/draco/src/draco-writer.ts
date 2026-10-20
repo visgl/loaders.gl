@@ -7,8 +7,8 @@ import {
   type WriterWithEncoder,
   type WriterOptions
 } from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable, TypedArray} from '@loaders.gl/schema';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable, TypedArray} from '@loaders.gl/core/schema';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {extractLoadLibraryOptions, processOnWorkerInBatches} from '@loaders.gl/core/worker-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuilderMesh, DracoBuildOptions, DracoEncodingResult} from './lib/draco-builder';

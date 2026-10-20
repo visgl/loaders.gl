@@ -1,4 +1,4 @@
-import type {MeshGeometry} from '@loaders.gl/schema';
+import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {MeshTileMaterial} from '../../apps/tile-converter/src/v5/mesh';
 import {encodeDracoMeshTile} from '../../apps/tile-converter/src/v5/mesh-draco';
 

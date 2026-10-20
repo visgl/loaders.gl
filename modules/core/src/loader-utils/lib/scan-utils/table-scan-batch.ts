@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
 import type {TableScanReadOptions, ScanExecutionTelemetry} from './scan-query-metadata';
 import {emitScanExecutionTelemetry} from './scan-query-metadata';
 import {filterColumnarRowIndices, validateColumnarPredicate} from './columnar-predicate';

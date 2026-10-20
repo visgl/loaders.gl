@@ -9,7 +9,7 @@ import type {
   ArcGISFeatureServerSourceLoaderOptions
 } from '../arcgis-source-types';
 
-import type {DataType, Schema} from '@loaders.gl/schema';
+import type {DataType, Schema} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {

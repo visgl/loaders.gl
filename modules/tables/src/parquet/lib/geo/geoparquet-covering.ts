@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getGeoMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 
 import type {
   ParquetBoundingBox,

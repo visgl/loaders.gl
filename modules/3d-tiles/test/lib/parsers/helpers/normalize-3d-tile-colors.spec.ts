@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {GL} from '@math.gl/geometry-utils';
-import {getFloat16Value} from '@loaders.gl/schema';
+import {getFloat16Value} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers/normalize-3d-tile-colors';
 import {Tile3DBatchTable, type Tiles3DTileContent} from '@loaders.gl/3d-tiles';

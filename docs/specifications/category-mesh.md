@@ -79,7 +79,7 @@ Mesh category writers accept Mesh Arrow tables and legacy Mesh objects. Legacy M
 
 A single mesh is typically defined by a set of attributes, such as `positions`, `colors`, `normals` etc, as well as a draw mode.
 
-The Mesh/PointCloud category uses Arrow as the primary tabular mesh representation. Arrow loader variants return a loaders.gl Arrow table wrapper (`shape: 'arrow-table'`) whose raw Arrow `data` value has shape `'arrow'` and can be typed with `MeshArrowTableData` or `IndexedMeshArrowTableData` from `@loaders.gl/schema`.
+The Mesh/PointCloud category uses Arrow as the primary tabular mesh representation. Arrow loader variants return a loaders.gl Arrow table wrapper (`shape: 'arrow-table'`) whose raw Arrow `data` value has shape `'arrow'` and can be typed with `MeshArrowTableData` or `IndexedMeshArrowTableData` from `@loaders.gl/core/schema`.
 
 Legacy Mesh loader variants return a JavaScript object shape that is optimized for direct use in WebGL frameworks:
 
@@ -101,7 +101,7 @@ Legacy Mesh loader variants return a JavaScript object shape that is optimized f
 
 See the [Mesh Arrow usage guide](/docs/arrowjs/usage-guide/mesharrow) for the complete column and metadata conventions, construction examples, and luma.gl rendering guidance.
 
-`@loaders.gl/schema` exports predefined schema contracts for common mesh columns:
+`@loaders.gl/core/schema` exports predefined schema contracts for common mesh columns:
 
 | Export                       | Description                                                                                 |
 | ---------------------------- | ------------------------------------------------------------------------------------------- |

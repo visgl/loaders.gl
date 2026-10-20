@@ -11,12 +11,16 @@ import {
   type LoaderOptions,
   type LoaderWithParser
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
 } from '@loaders.gl/arrow/transport';
-import {convertMeshToTable, convertTableToMesh, getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {
+  convertMeshToTable,
+  convertTableToMesh,
+  getMeshBoundingBox
+} from '@loaders.gl/core/schema-utils';
 import {getOBJSchema} from './lib/get-obj-schema';
 import {parseOBJ} from './lib/parse-obj';
 import {OBJWorkerLoader as OBJWorkerLoaderMetadata} from './obj-loader';

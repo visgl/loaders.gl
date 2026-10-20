@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import type {Mesh, MeshGeometry} from '@loaders.gl/schema';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshGeometry} from '@loaders.gl/core/schema';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {COPCWriter} from '@loaders.gl/copc';
 import {encodePotreeDataset} from '@loaders.gl/potree';
 import {ZipWriter} from '@loaders.gl/zip';

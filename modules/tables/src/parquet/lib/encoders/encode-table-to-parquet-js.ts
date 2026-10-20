@@ -12,7 +12,7 @@ import {
   type ObjectRowTable,
   type Schema,
   type Table
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {concatUint8Arrays} from '../../parquetjs/utils/binary-utils';
 import {ParquetEncoder} from '../../parquetjs/encoder/parquet-encoder';
 import {ParquetSchema} from '../../parquetjs/schema/schema';

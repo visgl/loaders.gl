@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
+import type {BinaryGeometry, Geometry} from '@loaders.gl/core/schema';
 import {WKBBuilder} from '../src/wkb-builder';
 import {convertWKBToGeometry} from '../src/geometry-codecs';
 import {

@@ -18,7 +18,7 @@ import type {
   Geometry,
   ObjectRowTable,
   ObjectRowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {projectionEngine} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
 

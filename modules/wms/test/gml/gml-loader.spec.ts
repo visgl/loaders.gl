@@ -7,7 +7,7 @@ import {GML_V3_TESTS} from '@loaders.gl/wms/test/data/gml/v3/tests';
 // import {validateLoader} from 'test/common/conformance';
 import {GMLLoader} from '@loaders.gl/wms';
 import {GMLLoader as GMLParserLoader} from '@loaders.gl/wms/bundled';
-import type {ArrowTable, ArrowTableBatch, GeoJSON} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, GeoJSON} from '@loaders.gl/core/schema';
 import {parse} from '@loaders.gl/core';
 const VALID_TEST = {
   'v3/envelope.xml': true,

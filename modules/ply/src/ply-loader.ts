@@ -4,7 +4,7 @@
 
 // PLY Loader
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {PLYFormat} from './ply-format';

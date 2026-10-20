@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table} from '@loaders.gl/schema';
+import type {Table} from '@loaders.gl/core/schema';
 import type {WriterOptions} from '@loaders.gl/core/loader-utils';
 
 /** ORC writer options. */

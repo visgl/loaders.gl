@@ -4,7 +4,7 @@
 
 import {getPolygonSignedArea} from '@math.gl/polygon';
 
-import {Feature, Position, FlatFeature} from '@loaders.gl/schema';
+import {Feature, Position, FlatFeature} from '@loaders.gl/core/schema';
 
 /**
  * Options for flattening GeoJSON coordinates into the legacy intermediate representation.

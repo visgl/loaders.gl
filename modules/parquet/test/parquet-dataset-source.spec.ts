@@ -10,7 +10,7 @@ import {
   ParquetDatasetSource,
   type ParquetDatasetFileQuery
 } from '@loaders.gl/parquet/parquet-dataset-source';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 let westernFile: Blob;
 let easternFile: Blob;

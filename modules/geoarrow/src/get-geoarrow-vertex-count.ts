@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {scanWKB} from '@math.gl/wkb';
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 
 import {

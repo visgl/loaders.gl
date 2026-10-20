@@ -9,14 +9,14 @@ import type {
   ObjectRowTable,
   Schema,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {parseUTF8Boolean, parseUTF8Number} from '../arrow/lib/utils/utf8-utils';
 import {
   ArrowTableBuilder,
   convertArrowToSchema,
   convertSchemaToArrow,
   type ArrowViewTypeMode
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {
   convertWKBToGeometry,
@@ -224,7 +224,7 @@ export function parseCSVInArrowBatches(
 export function convertCSVRowTableToArrowTable(
   table: ObjectRowTable | ArrayRowTable,
   viewTypes?: ArrowViewTypeMode,
-  encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference
+  encodingPreference?: import('@loaders.gl/core/schema').GeoArrowEncodingPreference
 ): ArrowTable {
   if (
     encodingPreference &&
@@ -271,7 +271,7 @@ export function convertCSVRowTableToArrowTable(
 async function* convertCSVRowBatchesToArrowBatches(
   rowBatchIterator: AsyncIterable<TableBatch>,
   viewTypes?: ArrowViewTypeMode,
-  encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference
+  encodingPreference?: import('@loaders.gl/core/schema').GeoArrowEncodingPreference
 ): AsyncIterable<ArrowTableBatch> {
   for await (const rowBatch of rowBatchIterator) {
     if (

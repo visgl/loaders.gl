@@ -102,7 +102,7 @@ must not be deferred as ordinary minor-release features.
   - `ParquetLoader` can return Apache Arrow tables with `parquet.shape: 'arrow-table'` and leverages the high-performance `parquet-wasm` library.
   - `ParquetJSLoader` is the explicit TypeScript/main-thread alternative; `ParquetJSONLoader` is removed.
 
-- **`@loaders.gl/schema-utils`**
+- **`@loaders.gl/core/schema-utils`**
   - Shared schema, table, mesh, and converter infrastructure.
 
 - **`@loaders.gl/arrow-geometry`**
@@ -120,7 +120,7 @@ must not be deferred as ordinary minor-release features.
 
 - Loaders document supported shapes and defaults. `core.shape` supplies a shared default where
   supported, and loader-specific shape settings select the format explicitly.
-- Applications can also use explicit converters in `@loaders.gl/schema-utils` and
+- Applications can also use explicit converters in `@loaders.gl/core/schema-utils` and
   `@loaders.gl/geoarrow` to obtain other representations. Converters do not imply that every
   loader-specific alternate shape has been removed.
 

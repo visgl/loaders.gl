@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import type {MeshAttributes} from '@loaders.gl/core/schema';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import type {PLYMesh, PLYHeader, PLYAttributes, MeshHeader} from './ply-types';
 import {getPLYSchema} from './get-ply-schema';
 

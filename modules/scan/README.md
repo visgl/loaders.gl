@@ -56,7 +56,7 @@ implementation in one place without making a CSV, JSON, or other format root imp
 scan runtime (and therefore preserves tree-shaking for users who never scan).
 
 Arrow-backed formats use the same layering for materialized queries. `queryArrowTable()` lives in
-`@loaders.gl/schema-utils`, which already owns Arrow schema and vector utilities. ORC, GeoPackage,
+`@loaders.gl/core/schema-utils`, which already owns Arrow schema and vector utilities. ORC, GeoPackage,
 and FlatGeobuf provide only their predicate evaluator and source-specific pruning; projection,
 row-index gathering, vector reconstruction, and limits are shared. This keeps format adapters
 small while avoiding a dependency from those packages on the optional scan runtime.

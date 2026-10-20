@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load} from '@loaders.gl/core';
-import {getGeoMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/arrow-geometry/geojson-table';
 import {GPXLoader} from '@loaders.gl/kml';
 import * as kml from '@loaders.gl/kml';

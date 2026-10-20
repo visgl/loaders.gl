@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import type {PointCloudTilerOptions} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {PointCloudTilerOptions} from '@loaders.gl/core/schema-utils';
 import type {TilesetSpatialReference} from '@loaders.gl/tiles';
 import {PointCloudTileSource} from '@loaders.gl/tiles/point-cloud-tile-source';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
