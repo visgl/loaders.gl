@@ -4,7 +4,7 @@
 // https://github.com/mrdoob/three.js/blob/dev/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
-import {initializeWasmModule} from '@loaders.gl/loader-utils';
+import {initializeWasmModule} from '@loaders.gl/core/loader-utils';
 import {isBrowser, loadLibrary, type LoadLibraryOptions} from './draco-library-loader';
 import type {Draco3D} from '../draco3d/draco3d-types';
 

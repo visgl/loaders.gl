@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, TypedArray} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, TypedArray} from '@loaders.gl/core/loader-utils';
 import {openTiffNumericDecoder} from './lib/tiff/tiff-numeric-decoder';
 import {GeoTIFFRasterLoader} from './geotiff-raster-loader-types';
 import type {GeoTIFFRasterData, GeoTIFFRasterLoaderOptions} from './geotiff-raster-types';

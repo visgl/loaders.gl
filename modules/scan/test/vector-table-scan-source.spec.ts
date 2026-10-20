@@ -9,7 +9,7 @@ import type {
   GetTileParameters,
   VectorSource,
   VectorTileSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {OGCAPIFeaturesSource, WFSVectorSource} from '@loaders.gl/wms';

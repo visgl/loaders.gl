@@ -6,11 +6,11 @@ import './init-tests';
 
 // Utility modules
 import '@loaders.gl/core/polyfills/test';
-import '@loaders.gl/worker-utils/test';
+import '@loaders.gl/core/worker-utils/test';
 import '@loaders.gl/geoarrow/test';
 
 // Core
-import '@loaders.gl/loader-utils/test';
+import '@loaders.gl/core/loader-utils/test';
 import '@loaders.gl/schema/test';
 import '@loaders.gl/schema-utils/test';
 import '@loaders.gl/core/test';

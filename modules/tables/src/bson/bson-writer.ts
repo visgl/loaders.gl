@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {EncodeBSONOptions} from './lib/encoders/encode-bson';
 import {encodeBSONSync} from './lib/encoders/encode-bson';
 import {BSONFormat} from './bson-format';

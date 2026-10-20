@@ -12,12 +12,12 @@ import type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   SourceLoader
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
   validateRasterQueryOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {NetCDFFormat} from './netcdf-format';
 import {NetCDFReader} from './netcdfjs/netcdf-reader';
 import type {NetCDFHeader, NetCDFVariable} from './netcdfjs/netcdf-types';

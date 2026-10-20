@@ -9,7 +9,7 @@ import {
   type ArrowQueryOptions,
   type SQLPredicate
 } from '@loaders.gl/sql';
-import type {TableQueryExplain} from '@loaders.gl/loader-utils';
+import type {TableQueryExplain} from '@loaders.gl/core/loader-utils';
 
 /** Names accepted by the optional scan engine factory. */
 export type ScanBackendName = 'arrow' | (string & {});

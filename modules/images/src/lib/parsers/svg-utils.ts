@@ -6,10 +6,24 @@
 // https://bugs.chromium.org/p/chromium/issues/detail?id=606319
 
 const SVG_DATA_URL_PATTERN = /^data:image\/svg\+xml/;
-const SVG_URL_PATTERN = /\.svg((\?|#).*)?$/;
-
 export function isSVG(url) {
-  return url && (SVG_DATA_URL_PATTERN.test(url) || SVG_URL_PATTERN.test(url));
+  if (!url) return false;
+  if (SVG_DATA_URL_PATTERN.test(url)) return true;
+  for (
+    let svgSuffixIndex = url.indexOf('.svg');
+    svgSuffixIndex >= 0;
+    svgSuffixIndex = url.indexOf('.svg', svgSuffixIndex + 4)
+  ) {
+    const followingCharacter = url[svgSuffixIndex + 4];
+    if (
+      followingCharacter === undefined ||
+      followingCharacter === '?' ||
+      followingCharacter === '#'
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function getBlobOrSVGDataUrl(arrayBuffer: ArrayBuffer, url?: string): Blob | string {

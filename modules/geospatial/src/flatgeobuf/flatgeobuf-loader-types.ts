@@ -8,7 +8,7 @@ import type {
   GeoJSONTable,
   BinaryFeatureCollection
 } from '@loaders.gl/schema';
-import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 

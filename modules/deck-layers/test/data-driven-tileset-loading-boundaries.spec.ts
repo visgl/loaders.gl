@@ -4,7 +4,7 @@
 
 import {afterEach, beforeEach, expect, test, vi} from 'vitest';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
-import {createBearerTokenCredential} from '@loaders.gl/loader-utils';
+import {createBearerTokenCredential} from '@loaders.gl/core/loader-utils';
 
 const loadingMocks = vi.hoisted(() => ({
   load: vi.fn(),

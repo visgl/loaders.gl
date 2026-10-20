@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {encode, isBrowser, load} from '@loaders.gl/core';
+import {encode, load, isBrowser} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/schema';
 import {
   ParquetJSWriter,

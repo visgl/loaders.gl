@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {Subtree, Availability} from '../../../types';
-import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {SubtreeSchema} from '../../../subtree-zod-schema';
 
 const SUBTREE_FILE_MAGIC = 0x74627573;

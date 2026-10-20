@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 
 /** Immutable archive bytes or an owned random-access file. */
 export type ZipArchiveInput = ArrayBuffer | ArrayBufferView | Blob | ReadableFile;

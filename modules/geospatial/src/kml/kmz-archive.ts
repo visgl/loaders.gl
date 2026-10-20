@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {HttpFile} from '@loaders.gl/loader-utils';
+import {HttpFile} from '@loaders.gl/core/loader-utils';
 import {ZipFileSystem} from '@loaders.gl/zip';
 import type {KMLDocument} from './kml-parser';
 import {parseKMLDocument} from './kml-parser';

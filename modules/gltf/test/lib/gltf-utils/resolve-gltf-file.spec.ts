@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 import {findGLTFFileIndex, resolveGLTFFile} from '@loaders.gl/gltf';
 test('resolveGLTFFile#resolves embedded package files by name', async () => {

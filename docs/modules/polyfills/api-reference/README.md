@@ -102,7 +102,7 @@ The Node image decoder support remains limited to the formats supported by the e
 
 ## ReadableFile utilities
 
-`@loaders.gl/loader-utils` exports `NodeFile` and `NodeFilesystem` wrappers that are installed by this polyfill package. They mirror the browser `HttpFile`/`BlobFile` implementations, exposing a consistent `ReadableFile` interface for local and remote assets without bundling Node built-ins directly into application code.
+`@loaders.gl/core/loader-utils` exports `NodeFile` and `NodeFilesystem` wrappers that are installed by this polyfill package. They mirror the browser `HttpFile`/`BlobFile` implementations, exposing a consistent `ReadableFile` interface for local and remote assets without bundling Node built-ins directly into application code.
 
 ## Deprecated polyfills
 

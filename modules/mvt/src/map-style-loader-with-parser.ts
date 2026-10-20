@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {ResolvedMapStyleSchema} from './map-style-schema';
 import {
   getMapStyleLoadOptions,

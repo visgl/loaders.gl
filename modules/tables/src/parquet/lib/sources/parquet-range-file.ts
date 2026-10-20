@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile, Stat} from '@loaders.gl/loader-utils';
-import {RangeRequestCache, RangeRequestScheduler} from '@loaders.gl/loader-utils';
+import type {ReadableFile, Stat} from '@loaders.gl/core/loader-utils';
+import {RangeRequestCache, RangeRequestScheduler} from '@loaders.gl/core/loader-utils';
 
 import type {ParquetObjectVersion, ParquetRangeRequestOptions} from '../../parquet-source-types';
 

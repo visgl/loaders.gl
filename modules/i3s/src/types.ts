@@ -10,7 +10,7 @@ import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from './lib/helpers/i3s-nodepages-tiles';
-import {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {CoordinateSystem} from './lib/parsers/constants';
 
 export type COLOR = [number, number, number, number];

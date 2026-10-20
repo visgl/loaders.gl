@@ -3,11 +3,11 @@ import {validateLoader} from 'test/common/conformance';
 import {
   load,
   loadInBatches,
-  isAsyncIterable,
   parse,
   parseInBatches,
   preload,
-  preloadSync
+  preloadSync,
+  isAsyncIterable
 } from '@loaders.gl/core';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {

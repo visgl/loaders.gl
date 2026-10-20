@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {LASLoader, LASWriter, type LASExtraBytesWriter} from '@loaders.gl/las';
 import {encode, parse} from '@loaders.gl/core';
-import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
+import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/core/loader-utils';
 import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
 const attributes = {
   POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 1]), size: 3},

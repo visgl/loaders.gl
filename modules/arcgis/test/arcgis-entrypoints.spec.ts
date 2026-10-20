@@ -10,7 +10,7 @@ import {
   ARCGIS_LOADERS as BUNDLED_ARCGIS_LOADERS,
   getArcGISLoader as getBundledArcGISLoader
 } from '@loaders.gl/arcgis/bundled';
-import {resolveCredentials} from '@loaders.gl/loader-utils';
+import {resolveCredentials} from '@loaders.gl/core/loader-utils';
 
 describe('ArcGIS public entrypoints', () => {
   test('the package root loads the FeatureServer implementation for queries', async () => {

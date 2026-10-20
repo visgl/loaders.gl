@@ -13,14 +13,14 @@ import type {
   ImageTileSource,
   ImageType,
   RangeRequestSchedulerProps
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   DataSource,
   DataSourceOptions,
   resolvePath,
   resolveXYZTileParameters,
   waitForPromiseWithSignal
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {ImageBitmapLoader, ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {MLTLoader, MLTLoaderOptions} from '@loaders.gl/mlt';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';

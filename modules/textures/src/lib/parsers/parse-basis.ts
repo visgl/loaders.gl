@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
-import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
+import {extractLoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import type {
   BasisASTCBlockSize,
   BasisCodec,

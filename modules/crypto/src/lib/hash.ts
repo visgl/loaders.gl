@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 
 type HashOptions = {
   modules?: {[moduleName: string]: any};

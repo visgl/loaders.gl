@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {WFSCapabilities} from './lib/parsers/wfs/parse-wfs-capabilities';
 import {parseWFSCapabilities} from './lib/parsers/wfs/parse-wfs-capabilities';
 import {WFSCapabilitiesLoader as WFSCapabilitiesLoaderMetadata} from './wfs-capabilities-loader';

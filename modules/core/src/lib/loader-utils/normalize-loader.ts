@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/loader-utils';
-import {assert} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/core/loader-utils';
+import {assert} from '@loaders.gl/core/loader-utils';
 
 export function isLoaderObject(loader?: any): boolean {
   if (!loader) {

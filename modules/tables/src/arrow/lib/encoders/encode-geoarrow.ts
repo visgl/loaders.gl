@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {AnyArrayType, VECTOR_TYPES} from '../types';
-import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
+import {ensureArrayBuffer} from '@loaders.gl/core/loader-utils';
 
 export type ColumnarTable = {
   name: string;

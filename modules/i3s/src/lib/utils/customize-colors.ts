@@ -4,8 +4,8 @@
 
 import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
 import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
-import {getAuthenticatedFetch} from '@loaders.gl/loader-utils';
+import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
+import {getAuthenticatedFetch} from '@loaders.gl/core/loader-utils';
 import type {AttributeStorageInfo, COLOR, Field} from '../../types';
 
 import {getAttributeValueType} from '../../i3s-attribute-loader';

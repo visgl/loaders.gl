@@ -5,7 +5,7 @@
 import {describe, expect, test} from 'vitest';
 
 import {fetchFile} from '@loaders.gl/core';
-import {ArrayBufferFile} from '@loaders.gl/loader-utils';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 
 import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
 

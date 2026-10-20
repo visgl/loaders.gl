@@ -22,8 +22,8 @@ import type {
   ImageSourceMetadata,
   Loader,
   SourceLoader
-} from '@loaders.gl/loader-utils';
-import {isSourceLoader} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {

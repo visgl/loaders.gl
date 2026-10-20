@@ -13,8 +13,8 @@ import type {
   VectorSourceMetadata,
   GetFeaturesParameters,
   VectorSourceData
-} from '@loaders.gl/loader-utils';
-import {DataSource, mergeOptions} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource, mergeOptions} from '@loaders.gl/core/loader-utils';
 
 import type {WFSCapabilities} from './wfs-capabilities-loader';
 import {WFSCapabilitiesLoaderWithParser} from './wfs-capabilities-loader-with-parser';

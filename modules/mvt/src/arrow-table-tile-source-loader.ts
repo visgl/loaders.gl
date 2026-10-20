@@ -12,7 +12,7 @@ import {
   type GetTileParameters,
   type GetTileDataParameters,
   type TileSourceMetadata
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, Schema, GeoArrowEncoding} from '@loaders.gl/schema';
 import {
   convertWKBToGeometry,

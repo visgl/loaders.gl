@@ -7,7 +7,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {expect, test} from 'vitest';
 import '@loaders.gl/core/polyfills';
-import {NodeFile} from '@loaders.gl/loader-utils';
+import {NodeFile} from '@loaders.gl/core/loader-utils';
 const SLPK_URL = 'modules/i3s/test/data/DA12_subset.slpk';
 const TEST_OFFSET = 100n;
 const getSize = async (provider: NodeFile): Promise<bigint> => {

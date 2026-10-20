@@ -6,7 +6,11 @@ import {CompositeLayer} from '@deck.gl/core';
 import {MVTLayer, TileLayer, type TileLayerProps} from '@deck.gl/geo-layers';
 import {BitmapLayer, GeoJsonLayer, PathLayer} from '@deck.gl/layers';
 
-import type {GetTileDataParameters, TileSource, TileSourceMetadata} from '@loaders.gl/loader-utils';
+import type {
+  GetTileDataParameters,
+  TileSource,
+  TileSourceMetadata
+} from '@loaders.gl/core/loader-utils';
 
 /**
  * Runtime shape used by the example layer adapter.

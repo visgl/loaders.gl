@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {LoaderWithParser} from '@loaders.gl/loader-utils';
+export type {LoaderWithParser} from '@loaders.gl/core/loader-utils';

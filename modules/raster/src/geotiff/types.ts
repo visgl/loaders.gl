@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TypedArray} from '@loaders.gl/loader-utils';
-import type {RasterChannelDataType} from '@loaders.gl/loader-utils';
+import type {TypedArray} from '@loaders.gl/core/loader-utils';
+import type {RasterChannelDataType} from '@loaders.gl/core/loader-utils';
 
 /** Backwards-compatible alias for raster sample data types used by TIFF pixel helpers. */
 export type Dtype = RasterChannelDataType;

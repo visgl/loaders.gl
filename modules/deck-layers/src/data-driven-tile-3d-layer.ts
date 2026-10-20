@@ -6,8 +6,8 @@ import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
 import type {DefaultProps, UpdateParameters, Viewport} from '@deck.gl/core';
 import {TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import {load} from '@loaders.gl/core';
-import type {RequestCredential} from '@loaders.gl/loader-utils';
-import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
+import type {RequestCredential} from '@loaders.gl/core/loader-utils';
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 
 /** Color ramp configuration applied to tile content using a numeric feature attribute. */
 export type ColorsByAttribute = {

@@ -4,7 +4,7 @@
 
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
 import {encode, load} from '@loaders.gl/core';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
 import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
 import type {ObjectRowTable} from '@loaders.gl/schema';

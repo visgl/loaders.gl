@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isBrowser, BlobFile, NodeFile} from '@loaders.gl/loader-utils';
-import type {FileSystem, ReadableFile} from '@loaders.gl/loader-utils';
+import {isBrowser, BlobFile, NodeFile} from '@loaders.gl/core/loader-utils';
+import type {FileSystem, ReadableFile} from '@loaders.gl/core/loader-utils';
 import {IndexedArchive} from './IndexedArchive';
 import {openZipArchive, type ZipArchive} from '../zip-archive';
 import type {ZipArchiveInput, ZipArchiveOptions, ZipEntry} from '../zip-archive-types';

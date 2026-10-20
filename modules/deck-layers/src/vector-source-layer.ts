@@ -24,8 +24,8 @@ import type {
   VectorSource,
   VectorSourceData,
   VectorSourceMetadata
-} from '@loaders.gl/loader-utils';
-import {isSourceLoader} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import {VectorSet} from './vector-source-layer/vector-set';
 import {createGeoJsonLayerProps, type GeoArrowLayerProps} from './geoarrow-layer';
 import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';

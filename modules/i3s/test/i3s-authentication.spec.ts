@@ -6,7 +6,7 @@ import {
   createQueryParameterCredential,
   getAuthenticatedFetch,
   type LoaderContext
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {loadFeatureAttributes} from '../src/i3s-attribute-loader-with-parser';

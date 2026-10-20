@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {SourceLoader} from '@loaders.gl/loader-utils';
+import type {SourceLoader} from '@loaders.gl/core/loader-utils';
 import {DeltaFormat} from './delta-format';
 import type {DeltaSourceOptions} from './delta-types';
 import type {DeltaTableSource} from './delta-source';

@@ -4,7 +4,7 @@
 
 import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
-import {ArrayBufferFile} from '@loaders.gl/loader-utils';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
 import {ParquetWasmLoaderWithParser} from '@loaders.gl/parquet/parquet-wasm-loader';
 

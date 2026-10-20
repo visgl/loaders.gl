@@ -20,7 +20,7 @@ import type {GLTFLoaderOptions} from '../../gltf-loader';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
 import {GLTFIterator} from '../api/gltf-iterator';
-import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
+import {ensureArrayBuffer} from '@loaders.gl/core/loader-utils';
 
 /** Extension name */
 const KHR_TEXTURE_TRANSFORM = 'KHR_texture_transform';

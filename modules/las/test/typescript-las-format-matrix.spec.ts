@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import {encodeLAZChunk} from '@loaders.gl/loader-utils';
+import {encodeLAZChunk} from '@loaders.gl/core/loader-utils';
 import {
   decodeLAZChunkToArrowTable,
   parseLAS,

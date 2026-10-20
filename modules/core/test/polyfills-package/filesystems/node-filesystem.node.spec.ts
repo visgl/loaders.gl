@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {NodeFilesystem} from '@loaders.gl/loader-utils';
+import {NodeFilesystem} from '@loaders.gl/core/loader-utils';
 
 test('NodeFileSystem#import', () => {
   if (!NodeFilesystem) {

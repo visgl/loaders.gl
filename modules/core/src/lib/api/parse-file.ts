@@ -15,13 +15,13 @@ import type {
   LoaderWithParser,
   ReadableFile,
   StrictLoaderOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   isSourceLoader,
   mergeOptions,
   resolveLoaderAuthenticationOptions
-} from '@loaders.gl/loader-utils';
-import {validateWorkerVersion} from '@loaders.gl/worker-utils';
+} from '@loaders.gl/core/loader-utils';
+import {validateWorkerVersion} from '@loaders.gl/core/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';

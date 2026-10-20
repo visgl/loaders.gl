@@ -41,7 +41,6 @@
   },
   "dependencies": {
     "@loaders.gl/las": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.18",
@@ -50,5 +49,8 @@
   "devDependencies": {
     "copc": "0.0.8"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5",
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  }
 }

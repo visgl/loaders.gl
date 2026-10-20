@@ -12,8 +12,8 @@ export {
   projectTableBatch,
   projectTableSchema,
   truncateTableBatch
-} from '@loaders.gl/loader-utils';
-export type {TableScanBatchReader, TableScanBatchOperators} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+export type {TableScanBatchReader, TableScanBatchOperators} from '@loaders.gl/core/loader-utils';
 export type {
   ScanBackend,
   ScanBackendLoader,
@@ -23,7 +23,7 @@ export type {
 } from './scan-engine';
 
 // Re-export the query vocabulary from one optional entry point for applications. Format adapters
-// should continue importing the lightweight contracts from @loaders.gl/loader-utils.
+// should continue importing the lightweight contracts from @loaders.gl/core/loader-utils.
 export {parseSQLPredicate} from '@loaders.gl/sql';
 export type {ArrowQueryOptions, SQLPredicate} from '@loaders.gl/sql';
 export type {
@@ -31,14 +31,14 @@ export type {
   RelationalExpression,
   RelationalOrderKey,
   TableQueryOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 export {
   createScanQueryMetadata,
   intersectPointCloudBounds,
   selectPointCloudScanTiles,
   validatePointCloudQueryOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 export type {
   CreateScanQueryMetadataOptions,
   PointCloudQueryBounds,
@@ -68,7 +68,7 @@ export type {
   ScanSpatialMetadata,
   TableScanReadOptions,
   TableScanSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 export type {ScanQuery} from './scan-query';
 
 export {

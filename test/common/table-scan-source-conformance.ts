@@ -8,7 +8,7 @@ import type {
   ScanExecutionTelemetry,
   TableScanReadOptions,
   TableScanSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/schema';
 import {convertBatch} from '@loaders.gl/schema-utils';
 import {parseSQLPredicate, type SQLPredicate} from '@loaders.gl/sql';

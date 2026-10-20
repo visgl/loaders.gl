@@ -9,14 +9,14 @@ import type {
   ScanQueryMetadataOptions,
   SourceLoader,
   TableQueryOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
   filterColumnarRowIndices,
   makeTableScanBatch,
   validateTableQueryOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {queryArrowTable} from '@loaders.gl/schema-utils';
 import {
   parseORC,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Format} from '@loaders.gl/loader-utils';
+import type {Format} from '@loaders.gl/core/loader-utils';
 
 /** 3D Tiles tile content format. */
 export const Tiles3DFormat = {

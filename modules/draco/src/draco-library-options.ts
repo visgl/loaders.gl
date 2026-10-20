@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoadLibraryOptions} from '@loaders.gl/worker-utils';
+import type {LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import type {DracoDecoderProfile} from './lib/draco-module-loader';
 
 /** Bundled Draco runtime selection and optional application overrides. */

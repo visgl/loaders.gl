@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {DataSourceOptions} from '@loaders.gl/core/loader-utils';
 
 /** Shared source options; range ceilings apply to modern 2.0 datasets. */
 export type PotreeSourceLoaderOptions = DataSourceOptions & {

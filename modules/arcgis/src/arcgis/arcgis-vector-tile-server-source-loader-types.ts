@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ARCGIS_VECTOR_TILE_SERVER_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISVectorTileServerSource} from './arcgis-vector-tile-server-source-loader';
 import type {ArcGISVectorTileServerSourceLoaderOptions} from '../arcgis-source-types';
 

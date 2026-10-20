@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {RequestScheduler} from '@loaders.gl/loader-utils';
+import {RequestScheduler} from '@loaders.gl/core/loader-utils';
 import {IcebergRestCatalog} from '../../tables/src/parquet/iceberg-rest-catalog';
 
 test('IcebergRestCatalog loads a table through the standard REST endpoint', async () => {

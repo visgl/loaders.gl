@@ -5,4 +5,4 @@
 export {
   BinaryChunkReader,
   type BinaryChunkReaderOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';

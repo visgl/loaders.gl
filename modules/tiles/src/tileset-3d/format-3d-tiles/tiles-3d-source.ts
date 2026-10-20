@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/loader-utils';
+import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Matrix4, Vector3} from '@math.gl/core';
-import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
 import type {Tileset3D} from '../common/tileset-3d';

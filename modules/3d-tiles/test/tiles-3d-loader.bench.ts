@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {CachedUriResolver} from '@loaders.gl/loader-utils';
+import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
 import {
   createImplicitSubtreeReference,
   LOD_METRIC_TYPE,

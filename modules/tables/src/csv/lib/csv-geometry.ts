@@ -8,7 +8,7 @@ import {
   convertWKBToGeometry,
   convertWKTToGeometry
 } from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {decodeHex} from '@loaders.gl/loader-utils';
+import {decodeHex} from '@loaders.gl/core/loader-utils';
 import {getGeoMetadata, setGeoMetadata, type GeoParquetGeometryType} from '@loaders.gl/schema';
 import {inferGeoParquetGeometryTypes} from '@loaders.gl/arrow-geometry/geometry-field';
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TileGrid, TileGridMatrix} from '@loaders.gl/loader-utils';
+import type {TileGrid, TileGridMatrix} from '@loaders.gl/core/loader-utils';
 import {getServiceCRSAxisOrder} from '../../../crs-utils';
 import {
   createTileGrid,

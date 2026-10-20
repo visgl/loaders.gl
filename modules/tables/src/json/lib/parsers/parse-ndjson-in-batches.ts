@@ -10,7 +10,7 @@ import {
   makeNumberedLineIterator,
   makeTextDecoderIterator,
   toArrayBufferIterator
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 export async function* parseNDJSONInBatches(
   binaryAsyncIterator:

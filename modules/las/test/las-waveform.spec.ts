@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {ArrayBufferFile, type ReadableFile} from '@loaders.gl/loader-utils';
+import {ArrayBufferFile, type ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {LASLoaderWithParser} from '../src/las-loader';
 import {

@@ -61,7 +61,7 @@ the same owner as their associated API unless a schema owner is listed.
 | `buildFeatureArrowSchema`, `convertFeaturesToWKBArrowTable` | `@loaders.gl/arrow-geometry/feature-collection-to-arrow` |
 | `GeoJSONGeometry`, geometry/metadata types, `getGeoMetadata`, `setGeoMetadata`, `unpackGeoMetadata`, JSON metadata and key/value helpers | `@loaders.gl/schema` (use `Geometry` instead of `GeoJSONGeometry`) |
 | Metadata validators and generated JSON Schemas | `@loaders.gl/schema/geospatial-metadata-zod-schema` and `@loaders.gl/schema/geoparquet.schema.json` and `@loaders.gl/schema/geoarrow-metadata.schema.json` |
-| `encodeHex`, `decodeHex` | `@loaders.gl/loader-utils` |
+| `encodeHex`, `decodeHex` | `@loaders.gl/core/loader-utils` |
 | `_extractNumericPropTypes` | Internal legacy helper in `@loaders.gl/arrow-geometry/legacy-binary`; do not build new application code around it |
 
 ## Ownership and allocation

@@ -5,7 +5,7 @@
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import type {Header} from 'pmtiles';
 import {createDataSource} from '@loaders.gl/core';
-import {createWebMercatorTileGrid, type CoreAPI} from '@loaders.gl/loader-utils';
+import {createWebMercatorTileGrid, type CoreAPI} from '@loaders.gl/core/loader-utils';
 import {parsePMTilesHeader} from '../src/lib/parse-pmtiles';
 import {MLTLoader} from '@loaders.gl/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/mvt';

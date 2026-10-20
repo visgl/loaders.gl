@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import type {ImageTypeEnum} from '../../types';
 
 // @ts-ignore TS2339: Property does not exist on type

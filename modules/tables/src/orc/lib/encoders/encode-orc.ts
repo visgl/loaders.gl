@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table} from '@loaders.gl/schema';
-import type {WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterOptions} from '@loaders.gl/core/loader-utils';
 
 /** ORC writer options. */
 export type ORCWriterOptions = WriterOptions & {

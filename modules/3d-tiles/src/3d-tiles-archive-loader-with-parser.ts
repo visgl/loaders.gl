@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/core/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {parse3DTilesArchive as parse3DTilesArchiveFromProvider} from './3d-tiles-archive/3d-tiles-archive-parser';
 import {Tiles3DArchiveFileLoader as Tiles3DArchiveFileLoaderMetadata} from './3d-tiles-archive-loader';
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Texture} from '@loaders.gl/schema';
 import type {TextureLoaderOptions as TextureApiLoaderOptions} from './lib/texture-api/texture-api-types';
 import {

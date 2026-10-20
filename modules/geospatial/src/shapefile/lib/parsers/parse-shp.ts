@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {parseSHPHeader, SHPHeader} from './parse-shp-header';
 import {parseRecordToWKB} from './parse-shp-geometry';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {AvroSchemaLoader as AvroSchemaLoaderMetadata} from './avro-schema-loader-types';
 import {parseAvroSchema} from './lib/parsers/parse-avro-schema';
 import type {AvroSchemaLoaderOptions} from './avro-schema-loader-types';

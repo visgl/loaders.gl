@@ -2,7 +2,7 @@ import {beforeAll, expect, test, vi} from 'vitest';
 import {userEvent} from 'vitest/browser';
 import {parse} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {parseSLPKArchive, I3SAttributeLoader} from '@loaders.gl/i3s';
 import {

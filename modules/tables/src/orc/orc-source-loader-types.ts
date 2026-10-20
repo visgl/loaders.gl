@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ORCSource} from './orc-source-loader';
 import {ORCFormat} from './orc-format';
 import type {ORCSourceOptions} from './orc-source-loader';

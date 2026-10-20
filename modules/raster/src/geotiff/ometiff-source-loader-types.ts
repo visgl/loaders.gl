@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {SourceLoader} from '@loaders.gl/loader-utils';
+import type {SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {OMETiffImageSource, OMETiffSourceLoaderOptions} from './ometiff-source-loader';
 import {OMETiffFormat} from './geotiff-format';
 import {GeoTIFFLoader} from './geotiff-loader-types';

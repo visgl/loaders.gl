@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {test} from 'vitest';
-import {isBrowser, parse} from '@loaders.gl/core';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {parse, isBrowser} from '@loaders.gl/core';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 // const JSON_DATA = [{col1: 22, col2: 'abc'}];
 // const JSONLoader = {

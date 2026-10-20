@@ -83,7 +83,7 @@ const tilePromises = source.getTileDataBatch?.([tileA, tileB, tileC]);
 See the [using range requests guide](../../../developer-guide/using-range-requests.md) for the
 shared scheduler model and option tradeoffs.
 
-Use `createRangeStats()` and `getRangeStats()` from `@loaders.gl/loader-utils` when you need
+Use `createRangeStats()` and `getRangeStats()` from `@loaders.gl/core/loader-utils` when you need
 typed aggregate counters for PMTiles range transport diagnostics.
 
 ## Options

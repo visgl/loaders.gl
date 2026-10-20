@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {encodeDracoBatch, encodeDracoInBatches} from '@loaders.gl/draco';
 import draco3d from 'draco3d';
-import {WorkerFarm} from '@loaders.gl/worker-utils';
+import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 
 const GEOMETRY = {
   attributes: {POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])},

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DataSource, type CoreAPI} from '@loaders.gl/loader-utils';
+import {DataSource, type CoreAPI} from '@loaders.gl/core/loader-utils';
 import {
   PointCloudTiler,
   convertMeshToTable,

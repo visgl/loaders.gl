@@ -9,7 +9,7 @@ import type {MVTTile} from '../mvt-pbf/mvt-types';
 import {writeMVT} from '../mvt-pbf/write-mvt-to-pbf';
 import GeoJSONWrapper from './geojson-wrapper';
 import type {GeoJSON, FeatureCollection, Geometry} from '@loaders.gl/schema';
-import {copyToArrayBuffer} from '@loaders.gl/loader-utils';
+import {copyToArrayBuffer} from '@loaders.gl/core/loader-utils';
 
 export type FromGeojsonOptions = {
   layerName?: string;

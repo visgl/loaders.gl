@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Subtree} from './types';
 import parse3DTilesSubtree from './lib/parsers/helpers/parse-3d-tile-subtree';
 import {Tile3DSubtreeLoader as Tile3DSubtreeLoaderMetadata} from './tile-3d-subtree-loader';

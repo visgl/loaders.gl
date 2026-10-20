@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {ZipLoader} from './zip-loader-types';
 import type {ZipFileMap, ZipLoaderOptions} from './zip-loader-types';
 import type {ZipArchiveInput, ZipEntry} from './zip-archive-types';
