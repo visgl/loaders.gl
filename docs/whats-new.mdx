@@ -566,6 +566,7 @@ Release Date: 2026
 
 **@loaders.gl/scientific/zarr**
 
+- GeoZarr sources expose native spatial chunk grids and eligible explicit multiscale layouts, preserving asset IDs, per-axis resolution and named non-spatial selections. Unsupported layouts retain native metadata. See [GeoZarrSourceLoader](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader).
 - OME-Zarr channel selection preserves reordered or repeated channels even when the selection has the same length as the source channel count.
 - [`GeoZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader) NEW - reads
   axis-aligned GeoZarr `proj:` / `spatial:` grids and regular CF/xarray coordinate arrays through

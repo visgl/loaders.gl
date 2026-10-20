@@ -127,3 +127,10 @@ can use to browse SpatialData-style roots before opening a specific image group.
 
 The source reads numeric OME-Zarr image planes and pyramids. It does not yet normalize SpatialData
 tables, points, shapes, or coordinate systems into loaders.gl data sources.
+
+### TileMatrix compatibility
+
+OME spatial axes and physical units alone do not establish a geographic CRS. The OME source
+retains native level and channel/time/depth metadata rather than inventing a `TileMatrixSet`.
+Explicitly georeferenced generic Zarr multiscales are supported by
+[GeoZarrSourceLoader](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader).
