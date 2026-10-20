@@ -54,6 +54,27 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+**Schema packages move into core subpaths**
+
+- Replace imports from `@loaders.gl/schema` with `@loaders.gl/core/schema`, and imports from `@loaders.gl/schema-utils` with `@loaders.gl/core/schema-utils`.
+- Use `@loaders.gl/core/schema-utils/arrow-transport` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
+- Install `@loaders.gl/core` as the package. Published loaders use it as a peer dependency so applications can provide one compatible core version.
+
+### Core utility subpaths
+
+The standalone `@loaders.gl/loader-utils` and `@loaders.gl/worker-utils` packages have moved to
+`@loaders.gl/core/loader-utils` and `@loaders.gl/core/worker-utils`, respectively. Install
+`@loaders.gl/core` and update imports to the corresponding subpath. Existing utility re-exports
+from the `@loaders.gl/core` root remain available for compatibility; the full utility APIs live
+at the subpaths.
+
+Worker URLs previously pointing into `@loaders.gl/worker-utils` should use the matching
+`@loaders.gl/core/worker-utils/null-worker.js` or `null-worker-node.js` subpath.
+
+**Node polyfills**
+
+The `@loaders.gl/polyfills` package has moved to the independent `@loaders.gl/core/polyfills` subpath. Install `@loaders.gl/core` and replace side-effect imports of the old package with `import '@loaders.gl/core/polyfills'`. The polyfills subpath does not load the core root entry point or another loaders.gl module. If an application configured file aliases through `@loaders.gl/loader-utils`, configure the polyfills path resolver separately with `setPathPrefix` and `addAliases` from `@loaders.gl/core/polyfills`.
+
 ### Tile package consolidation
 
 The v5 tile packages are grouped by runtime dimension. Replace imports and
@@ -475,7 +496,7 @@ Before, in 4.4:
 import type {Source} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
 import {WMSSource} from '@loaders.gl/wms';
-import {PMTilesSource} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesSource} from '@loaders.gl/pmtiles';
 
 const sources: Source[] = [WMSSource, PMTilesSource];
 const wmsSource = createDataSource(url, [WMSSource], options);

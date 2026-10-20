@@ -126,7 +126,7 @@
     "README.md"
   ],
   "scripts": {
-    "3d-tiles-pre-build": "npm run 3d-tiles-generate-json-schema",
+    "3d-tiles-pre-build": "npm run 3d-tiles-generate-json-schema && npm run 3d-tiles-build-bundle && npm run 3d-tiles-build-bundle-dev",
     "3d-tiles-generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/3d-tiles/tileset-zod-schema.js --export Tiles3DTilesetSchema --output ./dist/3d-tiles/tileset.schema.json --id https://unpkg.com/@loaders.gl/tiles-3d/3d-tiles/tileset.schema.json --title 'loaders.gl 3D Tiles tileset JSON' && node ../../scripts/generate-json-schema.mjs --schema ./dist/3d-tiles/subtree-zod-schema.js --export SubtreeSchema --output ./dist/3d-tiles/subtree.schema.json --id https://unpkg.com/@loaders.gl/tiles-3d/3d-tiles/subtree.schema.json --title 'loaders.gl 3D Tiles subtree metadata'",
     "3d-tiles-build-bundle": "node ../../scripts/build-codec-bundle.mjs ./3d-tiles/bundle.ts --output=dist/3d-tiles/dist.min.js",
     "3d-tiles-build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./3d-tiles/bundle.ts --env=dev --output=dist/3d-tiles/dist.dev.js",
