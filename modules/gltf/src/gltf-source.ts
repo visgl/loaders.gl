@@ -4,7 +4,6 @@
 
 import type {GLTF, GLTFNode, GLTFScene} from './lib/types/gltf-json-schema';
 import type {GLTFExternalBuffer, GLTFExternalFile, GLTFWithBuffers} from './lib/types/gltf-types';
-import {parse as parseGLTF} from './gltf-loader-with-parser';
 
 /** Options for a persistent, CPU-only glTF source. */
 export type GLTFSourceOptions = {
@@ -21,16 +20,26 @@ export type GLTFSourceOptions = {
  * The source owns its resource cache and outstanding requests. No GPU resources are created.
  */
 export class GLTFSource {
+  /** Canonical URL of the root document, including redirects. */
   readonly url: string;
+  /** Parsed container and lazily resolved resources. */
   readonly gltf: GLTFWithBuffers;
+  /** Original glTF JSON without extension decoding. */
   readonly json: GLTF;
+  /** Fetch implementation used for lazy requests. */
   private readonly fetcher: typeof fetch;
+  /** Maximum traversal depth relative to each scene root. */
   private readonly maxDepth: number;
+  /** Requests shared by canonical resource URL. */
   private readonly pending = new Map<string, Promise<ArrayBuffer>>();
+  /** Downloaded bytes shared by canonical resource URL. */
   private readonly cache = new Map<string, ArrayBuffer>();
+  /** Cancellation signal shared by resource requests. */
   private readonly controller = new AbortController();
+  /** Whether this source has been closed. */
   private closed = false;
 
+  /** Initialize an open source around the parsed container. */
   private constructor(url: string, gltf: GLTFWithBuffers, options: GLTFSourceOptions) {
     this.url = url;
     this.gltf = gltf;
@@ -41,19 +50,29 @@ export class GLTFSource {
 
   /** Load the root JSON or GLB container without fetching external resources. */
   static async open(url: string, options: GLTFSourceOptions = {}): Promise<GLTFSource> {
+    if (
+      options.maxDepth !== undefined &&
+      (!Number.isSafeInteger(options.maxDepth) || options.maxDepth < 0)
+    ) {
+      throw new Error('maxDepth must be a nonnegative safe integer');
+    }
     const fetcher = options.fetch || globalThis.fetch.bind(globalThis);
     const response = await fetcher(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch glTF ${url}: HTTP ${response.status}`);
     }
     const bytes = await response.arrayBuffer();
+    url = response.url || url;
     const baseUrl = new URL('.', url).href;
+    const {parse: parseGLTF} = await import('./gltf-loader-with-parser');
+    const {EXTENSIONS} = await import('./lib/api/gltf-extensions');
     const gltf = await parseGLTF(
       bytes,
       {
         core: {baseUrl},
         gltf: {
           normalize: false,
+          excludeExtensions: EXTENSIONS.map(extension => extension.name),
           loadBuffers: false,
           loadImages: false,
           loadAudio: false,
@@ -84,10 +103,17 @@ export class GLTFSource {
   }
 
   /** Traverse a scene's native node indices in depth-first order. */
-  *traverse(sceneIndex: number = this.json.scene ?? 0): IterableIterator<{index: number; node: GLTFNode}> {
+  *traverse(
+    sceneIndex: number = this.json.scene ?? 0
+  ): IterableIterator<{index: number; node: GLTFNode}> {
     const scene = this.getScene(sceneIndex);
     const active = new Set<number>();
-    const visit = function* (source: GLTFSource, index: number, depth: number): IterableIterator<{index: number; node: GLTFNode}> {
+    /** Visit one node while tracking only the current ancestry path. */
+    const visit = function* (
+      source: GLTFSource,
+      index: number,
+      depth: number
+    ): IterableIterator<{index: number; node: GLTFNode}> {
       if (depth > source.maxDepth) throw new Error('glTF node traversal depth exceeded');
       if (active.has(index)) throw new Error(`Cycle in glTF node hierarchy at index ${index}`);
       const node = source.getNode(index);
@@ -108,7 +134,12 @@ export class GLTFSource {
     const definition = this.json.buffers?.[index];
     if (!definition) throw new Error(`Invalid glTF buffer index ${index}`);
     const embedded = this.gltf.buffers[index];
-    if (embedded) return embedded;
+    if (embedded) {
+      if (embedded.byteLength < definition.byteLength)
+        throw new Error(`Truncated glTF buffer ${index}`);
+      embedded.byteLength = definition.byteLength;
+      return embedded;
+    }
     if (!definition.uri) throw new Error(`glTF buffer ${index} has no embedded data or URI`);
     const data = await this.fetchBytes(definition.uri);
     if (data.byteLength < definition.byteLength) throw new Error(`Truncated glTF buffer ${index}`);
@@ -140,13 +171,26 @@ export class GLTFSource {
       if (!view) throw new Error(`Invalid glTF file bufferView ${definition.bufferView}`);
       const buffer = await this.resolveBuffer(view.buffer);
       arrayBuffer = buffer.arrayBuffer;
-      byteOffset = buffer.byteOffset + (view.byteOffset || 0);
+      const viewOffset = view.byteOffset ?? 0;
+      byteOffset = buffer.byteOffset + viewOffset;
       byteLength = view.byteLength;
-      if (byteOffset + byteLength > arrayBuffer.byteLength) throw new Error('glTF file bufferView exceeds buffer');
+      if (
+        !Number.isSafeInteger(viewOffset) ||
+        viewOffset < 0 ||
+        !Number.isSafeInteger(byteLength) ||
+        byteLength < 0 ||
+        viewOffset + byteLength > buffer.byteLength ||
+        byteOffset + byteLength > arrayBuffer.byteLength
+      ) {
+        throw new Error('glTF file bufferView exceeds buffer');
+      }
     }
     this.assertOpen();
     const result: GLTFExternalFile = {
-      arrayBuffer, byteOffset, byteLength, mimeType: definition.mimeType,
+      arrayBuffer,
+      byteOffset,
+      byteLength,
+      mimeType: definition.mimeType,
       name: definition.name,
       ...(definition.uri ? {url: new URL(definition.uri, this.url).href} : {})
     };
@@ -162,12 +206,18 @@ export class GLTFSource {
     this.controller.abort();
     this.cache.clear();
     this.pending.clear();
+    this.gltf.buffers.length = 0;
+    if (this.gltf.files) this.gltf.files.length = 0;
+    Reflect.deleteProperty(this.gltf, '_glb');
+    delete this.gltf.binary;
   }
 
+  /** Reject operations after close. */
   private assertOpen(): void {
     if (this.closed) throw new Error('GLTFSource is closed');
   }
 
+  /** Fetch bytes once per URL, allowing failed requests to be retried. */
   private async fetchBytes(uri: string): Promise<ArrayBuffer> {
     this.assertOpen();
     const key = new URL(uri, this.url).href;
@@ -177,7 +227,8 @@ export class GLTFSource {
     if (inFlight) return inFlight;
     const promise = (async () => {
       const response = await this.fetcher(key, {signal: this.controller.signal});
-      if (!response.ok) throw new Error(`Failed to fetch glTF resource ${key}: HTTP ${response.status}`);
+      if (!response.ok)
+        throw new Error(`Failed to fetch glTF resource ${key}: HTTP ${response.status}`);
       const data = await response.arrayBuffer();
       this.assertOpen();
       this.cache.set(key, data);
