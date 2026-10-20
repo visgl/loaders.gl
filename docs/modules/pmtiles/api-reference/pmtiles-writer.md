@@ -29,7 +29,7 @@ for the entire archive.
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {PMTilesWriter, encodePMTiles} from '@loaders.gl/pmtiles';
+import {PMTilesWriter, encodePMTiles} from '@loaders.gl/tiles/pmtiles';
 
 const tiles = [
   {z: 1, x: 0, y: 0, data: firstMvtBytes},

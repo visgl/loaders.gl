@@ -11,7 +11,7 @@ import {
   Tileset3D,
   type Tileset3DProps,
   type Tileset3DSource
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d';
 import {coreApi, preload, selectLoader} from '@loaders.gl/core';
 import {
   getAuthenticatedFetch,
@@ -135,7 +135,9 @@ export class Tile3DSourceLayer<
       typeof tilesetUrl === 'string' ? tilesetUrl : undefined
     );
     loadOptions = await resolveLoaderAuthenticationOptions(
-      selectedLoader.getAuthentications ? selectedLoader : loader,
+      'getAuthentications' in selectedLoader && selectedLoader.getAuthentications
+        ? selectedLoader
+        : loader,
       typeof tilesetUrl === 'string' ? tilesetUrl : '',
       loadOptions
     );

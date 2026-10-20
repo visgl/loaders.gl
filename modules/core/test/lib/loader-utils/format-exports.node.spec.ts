@@ -9,7 +9,7 @@ import {join} from 'node:path';
 const MODULES_DIRECTORY = join(process.cwd(), 'modules');
 
 const FORMAT_EXPORTS = {
-  '3d-tiles': ['Tiles3DFormat', 'Tile3DSubtreeFormat', 'ThreeTZFormat'],
+  'tiles-3d/3d-tiles': ['Tiles3DFormat', 'Tile3DSubtreeFormat', 'ThreeTZFormat'],
   arrow: ['ArrowFormat'],
   bson: ['BSONFormat'],
   copc: ['COPCFormat'],
@@ -45,7 +45,7 @@ const FORMAT_EXPORTS = {
   geopackage: ['GeoPackageFormat'],
   raster: ['GeoTIFFFormat', 'OMETiffFormat', 'LERCFormat', 'TerrainFormat', 'QuantizedMeshFormat'],
   gltf: ['GLTFFormat', 'GLBFormat'],
-  i3s: [
+  'tiles-3d/i3s': [
     'ArcGISWebSceneFormat',
     'I3SAttributeFormat',
     'I3SBuildingSceneLayerFormat',
@@ -58,14 +58,14 @@ const FORMAT_EXPORTS = {
   json: ['JSONFormat', 'GeoJSONFormat', 'NDJSONFormat', 'NDGeoJSONFormat'],
   kml: ['KMLFormat', 'KMZFormat', 'GPXFormat', 'TCXFormat'],
   las: ['LASFormat'],
-  mlt: ['MLTFormat'],
-  mvt: ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
+  'tiles/mlt': ['MLTFormat'],
+  'tiles/mvt': ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
   scientific: ['NetCDFFormat'],
   obj: ['OBJFormat', 'MTLFormat'],
   parquet: ['ParquetFormat'],
   pcd: ['PCDFormat'],
   ply: ['PLYFormat'],
-  pmtiles: ['PMTilesFormat'],
+  'tiles/pmtiles': ['PMTilesFormat'],
   potree: ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
   shapefile: ['ShapefileFormat', 'SHPFormat', 'DBFFormat'],
   textures: [
@@ -99,7 +99,11 @@ const FORMAT_EXPORTS = {
 describe('Format exports', () => {
   for (const [moduleName, formatNames] of Object.entries(FORMAT_EXPORTS)) {
     test(`${moduleName} exports all Format objects from the root`, () => {
-      const indexSource = readFileSync(join(MODULES_DIRECTORY, moduleName, 'src/index.ts'), 'utf8');
+      const [packageName, subpathName] = moduleName.split('/');
+      const indexSource = readFileSync(
+        join(MODULES_DIRECTORY, packageName, 'src', subpathName || '', 'index.ts'),
+        'utf8'
+      );
 
       for (const formatName of formatNames) {
         expect(indexSource, formatName).toMatch(new RegExp(`\\b${formatName}\\b`));

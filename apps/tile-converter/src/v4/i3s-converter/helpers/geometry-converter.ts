@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
+import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
 import type {
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
@@ -47,7 +47,7 @@ import {
   I3SMaterialDefinition,
   MaterialDefinitionInfo,
   TextureDefinitionInfo
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 import {Geoid} from '@math.gl/geoid';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';

@@ -54,7 +54,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
 import {PotreeSourceLoader} from '@loaders.gl/potree';
-import {PointCloudTileset} from '@loaders.gl/tiles';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
 const dataSource = createDataSource(url, [PotreeSourceLoader], {
   potree: {}
@@ -87,7 +87,7 @@ and viewer release numbers are distinct from dataset versions.
 
 ```typescript
 import {PotreeSourceLoader} from '@loaders.gl/potree';
-import {PointCloudTileset} from '@loaders.gl/tiles';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
 const source = PotreeSourceLoader.createDataSource('https://example.com/cloud/metadata.json', {});
 await source.initialize();

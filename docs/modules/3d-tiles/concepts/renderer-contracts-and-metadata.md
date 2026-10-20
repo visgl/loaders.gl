@@ -29,7 +29,7 @@ matching load-result payloads, or explicit `TileContentLoadResult.contentEntries
 the descriptor contract. The example below is for a `Tiles3DSource` tile.
 
 ```typescript
-import type {Tile3D} from '@loaders.gl/tiles';
+import type {Tile3D} from '@loaders.gl/tiles-3d';
 
 function inspectTile(tile: Tile3D) {
   for (const entry of tile.contentEntries) {
@@ -112,7 +112,7 @@ fixed/variable arrays. Numeric normalization, scale, and offset are applied whil
 available for `noData` comparison. Property-texture sampling is a separate concern.
 
 `getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)` and
-`getStructuralMetadataProperty(...)`, exported by `@loaders.gl/3d-tiles`, read these decoded tables.
+`getStructuralMetadataProperty(...)`, exported by `@loaders.gl/tiles-3d/3d-tiles`, read these decoded tables.
 Rows apply class defaults and `noData` semantics; they do not fetch missing buffers. An out-of-range
 row returns `null`. JSON batch-table hierarchy access is also supported; binary hierarchy property
 access remains unsupported.

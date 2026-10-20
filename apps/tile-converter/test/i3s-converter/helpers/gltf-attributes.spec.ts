@@ -2,7 +2,7 @@ import {BoundingSphere} from '@math.gl/culling';
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
 import {load} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   calculateTransformProps,
   prepareDataForAttributesConversion

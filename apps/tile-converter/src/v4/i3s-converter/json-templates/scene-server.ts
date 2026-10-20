@@ -4,7 +4,7 @@
 
 import type {BuilderInput} from '../../lib/utils/builder-input';
 
-import type {SceneLayer3D} from '@loaders.gl/i3s';
+import type {SceneLayer3D} from '@loaders.gl/tiles-3d/i3s';
 /** Legacy scene service input and output fields. */
 export type SceneServerRecord = {
   /** Service identifier. */

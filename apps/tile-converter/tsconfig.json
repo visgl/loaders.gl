@@ -13,7 +13,7 @@
   },
   "references": [
     {
-      "path": "../../modules/3d-tiles"
+      "path": "../../modules/tiles-3d"
     },
     {
       "path": "../../modules/crypto"
@@ -25,19 +25,16 @@
       "path": "../../modules/gltf"
     },
     {
-      "path": "../../modules/i3s"
-    },
-    {
       "path": "../../modules/images"
-    },
-    {
-      "path": "../../modules/core"
     },
     {
       "path": "../../modules/tiles"
     },
     {
       "path": "../../modules/zip"
+    },
+    {
+      "path": "../../modules/core"
     }
   ]
 }

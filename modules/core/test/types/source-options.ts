@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {createDataSource, load} from '@loaders.gl/core';
-import {MVTSourceLoader, MVTTileSource} from '@loaders.gl/mvt';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {MVTSourceLoader, MVTTileSource} from '@loaders.gl/tiles/mvt';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 import {WMSSourceLoader} from '@loaders.gl/wms';
 import type {DataSourceOptions, SourcePropsType} from '@loaders.gl/core/loader-utils';
 

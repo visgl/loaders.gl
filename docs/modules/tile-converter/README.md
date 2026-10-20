@@ -153,8 +153,8 @@ buffer in the worker or guarantees a total memory cap. See the [v5 application g
 
 ## References
 
-- The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
-- The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
+- The `@loaders.gl/tiles-3d/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
+- The `@loaders.gl/tiles-3d/3d-tiles` module supports loading and traversing 3D Tiles.
 
 - [I3S Indexed Scene Layer Specification](https://github.com/Esri/i3s-spec) - The living specification.
 - [3D Tiles Specification](https://github.com/AnalyticalGraphicsInc/3d-tiles) - The living specification.

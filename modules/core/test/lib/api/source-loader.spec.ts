@@ -16,8 +16,8 @@ import {
   MVTTileSource,
   TableTileSourceLoader,
   TableVectorTileSource
-} from '@loaders.gl/mvt';
-import {PMTilesSourceLoader, PMTilesTileSource} from '@loaders.gl/pmtiles';
+} from '@loaders.gl/tiles/mvt';
+import {PMTilesSourceLoader, PMTilesTileSource} from '@loaders.gl/tiles/pmtiles';
 import {WMSSourceLoader, WMSImageSource} from '@loaders.gl/wms';
 import {OMEZarrSourceLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
@@ -35,7 +35,7 @@ const GEOJSON_TABLE: GeoJSONTable = {
 };
 
 const PMTILES_FIXTURE_URL = resolvePath(
-  '@loaders.gl/pmtiles/test/data/pmtiles-v2/test_fixture_1.pmtiles'
+  '@loaders.gl/tiles/pmtiles/test/data/pmtiles-v2/test_fixture_1.pmtiles'
 );
 const OME_ZARR_FIXTURE_URL = resolvePath('@loaders.gl/scientific/test/zarr/data/ome.zarr');
 

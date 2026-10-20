@@ -8,7 +8,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader, type DracoMesh} from '@loaders.gl/draco';
-import {parseSLPKArchive} from '@loaders.gl/i3s';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {NodeFile} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import I3SConverter from '../../src/v4/i3s-converter/i3s-converter';

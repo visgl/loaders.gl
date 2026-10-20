@@ -150,8 +150,8 @@ test.each([
   const {parse} = await import('@loaders.gl/core');
   const loader =
     tileType === 'mvt'
-      ? (await import('@loaders.gl/mvt')).MVTLoader
-      : (await import('@loaders.gl/mlt')).MLTLoader;
+      ? (await import('@loaders.gl/tiles/mvt')).MVTLoader
+      : (await import('@loaders.gl/tiles/mlt')).MLTLoader;
   const tile = await archive.getZxy(1, 0, 0);
   const decoded = await parse(tile!.data, loader, {
     core: {worker: false},

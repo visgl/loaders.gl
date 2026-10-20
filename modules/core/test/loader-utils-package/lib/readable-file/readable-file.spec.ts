@@ -4,14 +4,14 @@
 
 import {expect, test} from 'vitest';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
+import {DATA_ARRAY} from '@loaders.gl/tiles-3d/i3s/test/data/test.zip';
 const localHeaderSignature = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
 import {
   createReadableFileFromBuffer,
   createReadableFileFromPath,
   createBrowserReadableFile
 } from 'test/utils/readable-files';
-const SLPK_URL = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
+const SLPK_URL = '@loaders.gl/tiles-3d/i3s/test/data/DA12_subset.slpk';
 
 test('ReadableFile#ArrayBufferFile range reads and stat', async () => {
   const arrayBuffer = Uint8Array.from([10, 20, 30, 40, 50]).buffer;

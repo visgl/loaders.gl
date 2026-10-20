@@ -6,7 +6,11 @@ import * as zarrita from 'zarrita';
 import type {Readable} from 'zarrita';
 import type {CoreAPI, SourceLoader, TypedArray} from '@loaders.gl/core/loader-utils';
 import {ZarrSource, type ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
-import {cloneZarrSelection, getCachedZarrSelection, getZarrSelectionKey} from './lib/zarr-data-cache';
+import {
+  cloneZarrSelection,
+  getCachedZarrSelection,
+  getZarrSelectionKey
+} from './lib/zarr-data-cache';
 
 /** Metadata describing one directly addressable Zarr array. */
 export type ZarrArraySourceMetadata = {
@@ -132,7 +136,8 @@ export class ZarrArraySource extends ZarrSource {
     if (parameters.selection && parameters.selectionByDimension) {
       throw new Error('Zarr array requests cannot combine positional and named selections.');
     }
-    const selection = parameters.selection || createNamedSelection(parameters.selectionByDimension, metadata);
+    const selection =
+      parameters.selection || createNamedSelection(parameters.selectionByDimension, metadata);
     if (selection.length !== metadata.shape.length) {
       throw new Error(`Zarr array selection must have ${metadata.shape.length} dimensions.`);
     }
@@ -176,7 +181,9 @@ export class ZarrArraySource extends ZarrSource {
     const path = options?.path || '';
     const location = path ? group.resolve(path) : group;
     const array = await zarrita.open(location, {kind: 'array', signal});
-    const dimensions = options?.dimensions || this.options.zarr?.labels ||
+    const dimensions =
+      options?.dimensions ||
+      this.options.zarr?.labels ||
       array.shape.map((_size, index) => `dim_${index}`);
     if (dimensions.length !== array.shape.length) {
       throw new Error(`Zarr array dimensions must have length ${array.shape.length}.`);

@@ -37,7 +37,7 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
   ]}
 />
 
-- _[`@loaders.gl/i3s`](/docs/modules/i3s)_
+- _[`@loaders.gl/tiles-3d/i3s`](/docs/modules/i3s)_
 - _[I3S community specification](https://github.com/Esri/i3s-spec)_
 - _[OGC I3S Community Standard](https://www.ogc.org/standard/i3s/)_
 
@@ -66,8 +66,8 @@ capability-based rather than inferred only from the version string in a layer do
 
 A supported loader capability does not imply that every renderer implements the corresponding
 visual effect. The [`I3SLoader`](../api-reference/i3s-loader) parses I3S resources, while
-[`I3SSource`](/docs/modules/tiles/api-reference/i3s-source) and
-[`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) provide traversal, scheduling, and
+[`I3SSource`](/docs/modules/tiles-3d/api-reference/i3s-source) and
+[`Tileset3D`](/docs/modules/tiles-3d/api-reference/tileset-3d) provide traversal, scheduling, and
 caching.
 
 The main **v5.0** I3S additions are the formal `I3SSource` API, archive-backed `SLPKSource`
@@ -323,5 +323,5 @@ prevents normalized white materials from dimming their textures during conversio
 - [I3S texture resources](https://github.com/Esri/i3s-spec/blob/master/docs/1.10/texture.cmn.md)
 - [I3S Point Cloud layer definition](https://github.com/Esri/i3s-spec/blob/master/docs/2.1/layer.pcsl.md)
 - [`I3SLoader` API](../api-reference/i3s-loader)
-- [`I3SSource` API](/docs/modules/tiles/api-reference/i3s-source)
+- [`I3SSource` API](/docs/modules/tiles-3d/api-reference/i3s-source)
 - [Tile converter supported features](/docs/modules/tile-converter/cli-reference/supported-features)

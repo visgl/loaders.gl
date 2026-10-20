@@ -19,7 +19,7 @@
     "@deck.gl/mesh-layers": "^9.4.0",
     "@esri/react-arcgis": "^5.2.0",
     "@loaders.gl/core": "workspace:*",
-    "@loaders.gl/i3s": "workspace:*",
+    "@loaders.gl/tiles-3d": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",

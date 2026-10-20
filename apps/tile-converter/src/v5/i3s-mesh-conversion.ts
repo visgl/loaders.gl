@@ -6,12 +6,12 @@ import {
   encodeI3SMeshLayer,
   encodeI3SMeshLayerWithDraco,
   preloadI3SMeshCompression
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 import type {
   EncodedI3SMeshLayer,
   I3SMeshWriterOptions,
   I3SDracoLibraryOptions
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionCodec, TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
 import type {

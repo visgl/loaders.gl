@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
+import {Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
 import {GLTFPrimitiveModeString, PreprocessData} from '../types';
 import {
   EXT_STRUCTURAL_METADATA,

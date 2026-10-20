@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Tile3DLayer} from '@deck.gl/geo-layers';
-import {TILE_TYPE} from '@loaders.gl/tiles';
+import {TILE_TYPE} from '@loaders.gl/tiles-3d';
 import {afterEach, expect, test, vi} from 'vitest';
 import {DataDrivenTile3DLayer} from '../src/data-driven-tile-3d-layer';
 

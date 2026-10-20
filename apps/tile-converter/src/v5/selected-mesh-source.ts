@@ -5,13 +5,13 @@
 import {prepareMeshHierarchy} from './mesh-hierarchy.js';
 import {coreApi, parse} from '@loaders.gl/core';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import type {
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSpatialReference
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d';
 import type {DracoLibraryOptions} from '@loaders.gl/draco/bundled';
 import {
   createBrowserTilesetConversionSource,

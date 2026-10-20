@@ -21,7 +21,7 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
   links={[
     {label: 'I3S module', to: '/docs/modules/i3s'},
     {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'},
-    {label: 'I3S source', to: '/docs/modules/tiles/api-reference/i3s-source'}
+    {label: 'I3S source', to: '/docs/modules/tiles-3d/api-reference/i3s-source'}
   ]}
 />
 
@@ -118,7 +118,7 @@ renderer. The same pattern works for SceneServer mesh and point layers:
 
 ```typescript
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
+import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 const layer = new SourceLayer({
   id: 'city-buildings',
@@ -131,15 +131,15 @@ const layer = new SourceLayer({
 ```
 
 See the [I3S example](/examples/i3s-arcgis) for a complete application and the
-[`I3SSource`](/docs/modules/tiles/api-reference/i3s-source) reference for direct traversal.
+[`I3SSource`](/docs/modules/tiles-3d/api-reference/i3s-source) reference for direct traversal.
 
 **Basic API Usage**
 
 Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
 
 ```typescript
-import {I3SLoader} from '@loaders.gl/i3s';
-import {I3SSource, Tileset3D} from '@loaders.gl/tiles';
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import {WebMercatorViewport} from '@deck.gl/core';
 
 const tilesetUrl =
@@ -247,7 +247,7 @@ The returned object is keyed by each descriptor's `key`; an unavailable resource
 `null` so other fields can still be consumed.
 
 ```typescript
-import {loadStatistics} from '@loaders.gl/i3s';
+import {loadStatistics} from '@loaders.gl/tiles-3d/i3s';
 
 const statistics = await loadStatistics(sceneLayer.statisticsInfo, {
   core: {baseUrl: sceneLayer.url},

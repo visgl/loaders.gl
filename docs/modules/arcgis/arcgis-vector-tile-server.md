@@ -64,7 +64,7 @@ loaders.gl `VectorTileSource` contract.
 | --- | --- | --- |
 | Service metadata | ✅ Supported | `getMetadata()` exposes extent, CRS, LOD grid, style URL, and sprite URL |
 | Raw vector tiles | ✅ Supported | `getTile()` returns the original PBF bytes |
-| Decoded vector tiles | ✅ Supported | `getVectorTile()` decodes MVT through `@loaders.gl/mvt` |
+| Decoded vector tiles | ✅ Supported | `getVectorTile()` decodes MVT through `@loaders.gl/tiles/mvt` |
 | deck.gl tile data | ✅ Supported | `getTileData()` returns decoded WGS84 feature data |
 | Geometry coordinates | ⚠️ WGS84 | Decoded features are transformed from tile-local coordinates for visualization |
 | Layer filtering | ✅ Supported | Forward MVT loader options to select named source layers |
@@ -97,7 +97,7 @@ needs decoded geometries and properties.
 
 ## Decoder options
 
-MVT options are forwarded to `@loaders.gl/mvt`:
+MVT options are forwarded to `@loaders.gl/tiles/mvt`:
 
 ```ts
 const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader], {

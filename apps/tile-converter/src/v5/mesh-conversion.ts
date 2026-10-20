@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getSpatialCoordinateFrame} from '@loaders.gl/tiles';
-import type {TilesetSpatialReference} from '@loaders.gl/tiles';
+import {getSpatialCoordinateFrame} from '@loaders.gl/tiles-3d';
+import type {TilesetSpatialReference} from '@loaders.gl/tiles-3d';
 import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';

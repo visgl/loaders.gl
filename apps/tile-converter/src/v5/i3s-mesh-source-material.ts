@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {I3STileContent, I3STileHeader} from '@loaders.gl/i3s';
+import type {I3STileContent, I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
 import type {GLTFMaterialPostprocessed} from '@loaders.gl/gltf';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';

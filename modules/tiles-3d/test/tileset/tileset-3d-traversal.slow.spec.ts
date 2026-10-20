@@ -1,0 +1,293 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
+
+// This file is derived from the Cesium code base under Apache 2 license
+// See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
+import {expect, test} from 'vitest';
+import {WebMercatorViewport} from '@deck.gl/core';
+import {coreApi, load} from '@loaders.gl/core';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+// import {loadTileset} from '../utils/load-utils';
+// Parent tile with content and four child tiles with content
+const TILESET_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';
+const TILESET_REPLACEMENT_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement1/tileset.json';
+const ASYNC_TRAVERSAL_TIMEOUT = 10000;
+/*
+// Parent tile with no content and four child tiles with content
+const TILESET_EMPTY_ROOT_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetEmptyRoot/tileset.json';
+
+// Tileset with 3 levels of uniform subdivision
+const TILESET_UNIFORM = '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetUniform/tileset.json';
+
+const TILESET_REPLACEMENT_1_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement1/tileset.json';
+const TILESET_REPLACEMENT_2_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement2/tileset.json';
+const TILESET_REPLACEMENT_3_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement3/tileset.json';
+
+// 3 level tree with mix of additive and replacement refinement
+const TILESET_REFINEMENT_MIX =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetRefinementMix/tileset.json';
+
+// tileset.json : root content points to tiles2.json
+// tiles2.json: root with b3dm content, three children with b3dm content, one child points to tiles3.json
+// tiles3.json: root with b3dm content
+const TILESET_OF_TILESETS_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
+
+const WITHOUT_BATCH_TABLE_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithoutBatchTable/tileset.json';
+const WITH_BATCH_TABLE_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBatchTable/tileset.json';
+const NO_BATCH_IDS_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedNoBatchIds/tileset.json';
+*
+
+const TILESET_WITH_BATCH_TABLE_HIERARCHY_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchy/tileset.json';
+
+const WITH_TRANSFORM_BOX_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformBox/tileset.json';
+const WITH_TRANSFORM_SPHERE_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformSphere/tileset.json';
+const WITH_TRANSFORM_REGION_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformRegion/tileset.json';
+const WITH_BOUNDING_SPHERE_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBoundingSphere/tileset.json';
+
+const COMPOSITE_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Composite/Composite/tileset.json';
+const INSTANCED_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Instanced/InstancedWithBatchTable/tileset.json';
+const INSTANCED_RED_MATERIAL_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Instanced/InstancedRedMaterial/tileset.json';
+
+// 1 tile where each feature is a different source color
+const COLORS_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/tileset.json';
+
+// 1 tile where each feature has a reddish texture
+const TEXTURED_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedTextured/tileset.json';
+
+// 1 tile with translucent features
+const TRANSLUCENT_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedTranslucent/tileset.json';
+
+// 1 tile with opaque and translucent features
+const TRANSLUCENT_OPAQUE_MIX_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedTranslucentOpaqueMix/tileset.json';
+
+// Root tile is transformed from local space to wgs84, child tile is rotated, scaled, and translated locally
+const TILESET_WITH_TRANSFORMS_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetWithTransforms/tileset.json';
+
+// Root tile with 4 b3dm children and 1 pnts child with a viewer request volume
+const TILESET_WITH_VIEWER_REQUEST_VOLUME_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetWithViewerRequestVolume/tileset.json';
+
+// Parent tile with content and four child tiles with content with viewer request volume for each child
+const TILESET_REPLACEMENT_WITH_VIEWER_REQUEST_VOLUME_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacementWithViewerRequestVolume/tileset.json';
+
+const TILESET_WITH_EXTERNAL_RESOURCES_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetWithExternalResources/tileset.json';
+const TILESET_URL_WITH_CONTENT_URI =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithContentDataUri/tileset.json';
+
+const TILESET_SUBTREE_EXPIRATION_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetSubtreeExpiration/tileset.json';
+const TILESET_SUBTREE_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/TilesetSubtreeExpiration/subtree.json';
+const BATCHED_EXPIRATION_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedExpiration/tileset.json';
+const BATCHED_COLORS_B3DM_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/batchedColors.b3dm';
+const BATCHED_VERTEX_COLORS_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithVertexColors/tileset.json';
+
+const STYLE_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Style/style.json';
+
+const POINT_CLOUD_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGB/tileset.json';
+const POINT_CLOUD_BATCHED_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudBatched/tileset.json';
+*/
+const VIEWPORTS = [
+  new WebMercatorViewport({
+    altitude: 1.5,
+    bearing: 0,
+    far: 1000,
+    fovy: 50,
+    height: 600,
+    id: 'view0',
+    latitude: 40.049483884253355,
+    longitude: -75.60783109310839,
+    maxPitch: 85,
+    maxZoom: 30,
+    minPitch: 0,
+    minZoom: 2,
+    modelMatrix: null,
+    near: 0.1,
+    pitch: 45,
+    projectionMatrix: null,
+    width: 1848,
+    // Keep the far view below the refinement threshold with its actual 50-degree projection.
+    zoom: 12
+  }),
+  new WebMercatorViewport({
+    altitude: 1.5,
+    bearing: 0,
+    far: 1000,
+    fovy: 50,
+    height: 600,
+    id: 'view1',
+    latitude: 40.04263801150246,
+    longitude: -75.61214643071165,
+    maxPitch: 85,
+    maxZoom: 30,
+    minPitch: 0,
+    minZoom: 2,
+    modelMatrix: null,
+    near: 0.1,
+    pitch: 45,
+    projectionMatrix: null,
+    width: 1848,
+    zoom: 14.687765254329607
+  })
+];
+
+/** Waits for asynchronous tile traversal to reach a deterministic test condition. */
+async function waitForCondition(
+  predicate: () => boolean,
+  timeoutMs: number,
+  intervalMs = 100
+): Promise<void> {
+  const startTime = Date.now();
+  while (!predicate()) {
+    if (Date.now() - startTime > timeoutMs) {
+      throw new Error(`Timed out after ${timeoutMs}ms`);
+    }
+    await new Promise(resolve => setTimeout(resolve, intervalMs));
+  }
+}
+test('Tileset3D#one viewport traversal', async () => {
+  expect.assertions(1);
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewport = VIEWPORTS[0];
+  let tileLoadCounter = 0;
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    onTileLoad: () => {
+      tileset.update(viewport);
+      tileLoadCounter++;
+    }
+  });
+  tileset.update(viewport);
+  await waitForCondition(() => tileLoadCounter > 0, ASYNC_TRAVERSAL_TIMEOUT);
+  tileset.update(viewport);
+  expect(tileset.selectedTiles.length).toBe(1);
+});
+test('Tileset3D#onTraversalComplete', async () => {
+  expect.assertions(1);
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewport = VIEWPORTS[1];
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    onTileLoad: () => {
+      tileset.update(viewport);
+    },
+    onTraversalComplete: selectedTiles => {
+      return selectedTiles.filter(tile => tile.depth === 1);
+    }
+  });
+  tileset.update(viewport);
+  await waitForCondition(() => tileset.selectedTiles.length === 4, ASYNC_TRAVERSAL_TIMEOUT);
+  tileset.update(viewport);
+  expect(tileset.selectedTiles.length).toBe(4);
+});
+test('Tileset3D#two viewports traversal', async () => {
+  expect.assertions(3);
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewports = VIEWPORTS;
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    onTileLoad: () => {
+      tileset.update(viewports);
+    }
+  });
+  tileset.update(viewports);
+  await waitForCondition(() => tileset.selectedTiles.length === 6, ASYNC_TRAVERSAL_TIMEOUT);
+  tileset.update(viewports);
+  expect(tileset.selectedTiles.length).toBe(6);
+  expect(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length).toBe(1);
+  expect(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length).toBe(5);
+});
+test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async () => {
+  expect.assertions(3);
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewports = VIEWPORTS;
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    onTileLoad: () => {
+      tileset.update(viewports);
+    },
+    viewportTraversersMap: {
+      view0: 'view1',
+      view1: 'view1'
+    }
+  });
+  tileset.update(viewports);
+  // TODO/ActionEngine - wait for onTraversalComplete or onTilesetLoad or similar
+  await waitForCondition(() => tileset.selectedTiles.length === 5, ASYNC_TRAVERSAL_TIMEOUT);
+  tileset.update(viewports);
+  expect(tileset.selectedTiles.length).toBe(5);
+  expect(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length).toBe(5);
+  expect(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length).toBe(5);
+});
+test('Tileset3D#loadTiles option', async () => {
+  expect.assertions(2);
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  let viewport = VIEWPORTS[0];
+  let tileLoadCounter = 0;
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    onTileLoad: () => {
+      tileset.update(viewport);
+      tileLoadCounter++;
+    },
+    loadTiles: true
+  });
+  tileset.update(viewport);
+  await waitForCondition(() => tileLoadCounter > 0, ASYNC_TRAVERSAL_TIMEOUT);
+  tileset.update(viewport);
+  expect(tileset.selectedTiles.length).toBe(1);
+  tileLoadCounter = 0;
+  viewport = VIEWPORTS[1];
+  tileset.setProps({loadTiles: false});
+  tileset.update(viewport);
+  await new Promise(resolve => setTimeout(resolve, 300));
+  expect(tileLoadCounter).toBe(0);
+});
+
+test('Tileset3D#skipLevelOfDetail releases replacement ancestors after descendants load', async () => {
+  expect.assertions(3);
+  const tilesetJson = await load(TILESET_REPLACEMENT_URL, Tiles3DLoader);
+  const viewport = VIEWPORTS[0];
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    maximumScreenSpaceError: 0,
+    skipLevelOfDetail: true,
+    onTileLoad: () => {
+      tileset.update(viewport);
+    }
+  });
+  try {
+    tileset.update(viewport);
+    // The first load may be the ancestor; wait for replacement traversal, not just any tile.
+    await waitForCondition(
+      () => tileset.selectedTiles.length > 1 && tileset.selectedTiles.every(tile => tile.depth > 0),
+      ASYNC_TRAVERSAL_TIMEOUT
+    );
+    expect(tileset.options.skipLevelOfDetail).toBe(true);
+    expect(tileset.selectedTiles.every(tile => tile.depth > 0)).toBe(true);
+    expect(tileset.selectedTiles.length).toBeGreaterThan(1);
+  } finally {
+    tileset.destroy();
+  }
+});

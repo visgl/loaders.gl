@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {waitForPromiseWithSignal} from '@loaders.gl/core/loader-utils';
-import type {PMTilesTile} from '@loaders.gl/pmtiles';
+import type {PMTilesTile} from '@loaders.gl/tiles/pmtiles';
 
 /** In-memory export ceilings; actual allocations depend on the browser and available memory. */
 export const PMTILES_EXAMPLE_LIMITS = {
@@ -243,7 +243,7 @@ export async function createPMTilesExampleArchive(
   if (options.format === 'geotiff') {
     const sourceInput = typeof input === 'string' ? getPMTilesExampleURL(input).href : input;
     const [{GeoTIFFRasterSource}, {encodeRasterPMTiles}] = await waitForPromiseWithSignal(
-      Promise.all([import('@loaders.gl/raster/geotiff/index'), import('@loaders.gl/pmtiles/raster')]),
+      Promise.all([import('@loaders.gl/raster/geotiff/index'), import('@loaders.gl/tiles/pmtiles/raster')]),
       signal
     );
     signal.throwIfAborted();
@@ -297,7 +297,7 @@ export async function createPMTilesExampleArchive(
     signal.throwIfAborted();
     if (table.shape !== 'arrow-table') throw new Error('Input did not produce a GeoArrow table.');
     const {encodeGeoArrowPMTiles} = await waitForPromiseWithSignal(
-      import('@loaders.gl/pmtiles/geoarrow'),
+      import('@loaders.gl/tiles/pmtiles/geoarrow'),
       signal
     );
     signal.throwIfAborted();

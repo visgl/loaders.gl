@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/i3s'
+title: '@loaders.gl/tiles-3d/i3s'
 description: Load and traverse Indexed 3D Scene Layers with profile-aware scene and point-cloud support.
 hide_title: true
 page_style: designed
@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   format="i3s"
   eyebrow="Tiled scene module"
-  title="@loaders.gl/i3s"
+  title="@loaders.gl/tiles-3d/i3s"
   description="Read ArcGIS Indexed 3D Scene Layers through the same source and traversal building blocks used for large browser-rendered scenes."
   tone="orange"
   meta={['I3S profiles', 'Scene and point cloud', 'ArcGIS services']}
@@ -30,7 +30,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <TiledSceneGraphic />
 
-The `@loaders.gl/i3s` module supports loading and traversing Indexed 3D Scene Layer (I3S).
+The `@loaders.gl/tiles-3d/i3s` module supports loading and traversing Indexed 3D Scene Layer (I3S).
 
 See the [I3S format support matrix](/docs/modules/i3s/formats/i3s) for detailed coverage of scene layer profiles,
 specification generations, geometry, textures, attributes, delivery options, and known gaps.
@@ -62,7 +62,7 @@ specification generations, geometry, textures, attributes, delivery options, and
 ## Installation
 
 ```bash
-npm install @loaders.gl/i3s
+npm install @loaders.gl/tiles-3d
 npm install @loaders.gl/core
 ```
 
@@ -71,13 +71,13 @@ npm install @loaders.gl/core
 The module provides loaders and sources for I3S scene-layer profiles:
 
 - [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader), a loader for loading a top-down or nested tileset and its tiles.
-- [`I3SPointCloudSource`](/docs/modules/i3s/api-reference/i3s-point-cloud-source), a source for I3S 2.x Point Cloud layers that can be used with [`PointCloudTileset`](/docs/modules/tiles/api-reference/point-cloud-tileset).
+- [`I3SPointCloudSource`](/docs/modules/i3s/api-reference/i3s-point-cloud-source), a source for I3S 2.x Point Cloud layers that can be used with [`PointCloudTileset`](/docs/modules/tiles-3d/api-reference/point-cloud-tileset).
 
 For dynamic selection and loading of scene layers larger than browser memory, use the helper classes
 in the `@loaders.gl/tiles` module:
 
-- [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) to work with the loaded tileset.
-- [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) to access data for a specific tile.
+- [`Tileset3D`](/docs/modules/tiles-3d/api-reference/tileset-3d) to work with the loaded tileset.
+- [`Tile3D`](/docs/modules/tiles-3d/api-reference/tile-3d) to access data for a specific tile.
 
 ## Attribution
 

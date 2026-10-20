@@ -148,7 +148,7 @@ const sourceDocumentationLinks = {
   FlatGeobufSourceLoader: '/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader',
   GeoPackageSourceLoader: '/docs/modules/geopackage/api-reference/geopackage-source',
   GeoTIFFSourceLoader: '/docs/modules/geotiff/api-reference/geotiff-source-loader',
-  I3SSource: '/docs/modules/tiles/api-reference/i3s-source',
+  I3SSource: '/docs/modules/tiles-3d/api-reference/i3s-source',
   MLTSourceLoader: '/docs/modules/mlt/api-reference/mlt-source-loader',
   MVTSourceLoader: '/docs/modules/mvt/api-reference/mvt-source-loader',
   OMETiffSourceLoader: '/docs/modules/geotiff/api-reference/ometiff-source-loader',
@@ -156,7 +156,7 @@ const sourceDocumentationLinks = {
   PotreeSourceLoader: '/docs/modules/potree/api-reference/potree-source-loader',
   SnowflakeSQLSource: '/docs/modules/sql/api-reference/sql-source',
   ArrowTableTileSourceLoader: '/docs/modules/mvt/api-reference/arrow-table-tile-source-loader',
-  Tiles3DSource: '/docs/modules/tiles/api-reference/tiles-3d-source',
+  Tiles3DSource: '/docs/modules/tiles-3d/api-reference/tiles-3d-source',
   WFSSourceLoader: '/docs/modules/wms/formats/wfs',
   WMSSourceLoader: '/docs/modules/wms/api-reference/wms-source-loader',
   WMTSSourceLoader: '/docs/modules/wms/formats/wmts'
@@ -164,7 +164,7 @@ const sourceDocumentationLinks = {
 
 const loadingManagerDocumentationLinks = {
   Tileset2D: '/docs/modules/tiles/api-reference/tileset-2d',
-  Tileset3D: '/docs/modules/tiles/api-reference/tileset-3d'
+  Tileset3D: '/docs/modules/tiles-3d/api-reference/tileset-3d'
 };
 
 const deckLayerDocumentationLinks = {

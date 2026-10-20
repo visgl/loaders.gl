@@ -123,9 +123,9 @@ requested target CRS. They return one finite height per location in the same ord
 batched per geometry or bound operation and may be synchronous or asynchronous.
 
 ```ts
-import type {TilesetElevationProvider} from '@loaders.gl/tiles';
-import {I3SSource, Tileset3D} from '@loaders.gl/tiles';
-import {I3SLoader} from '@loaders.gl/i3s';
+import type {TilesetElevationProvider} from '@loaders.gl/tiles-3d';
+import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 const terrainElevationProvider: TilesetElevationProvider = {
   heightReference: 'orthometric',

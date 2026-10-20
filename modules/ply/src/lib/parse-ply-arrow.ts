@@ -87,7 +87,7 @@ export function convertPLYElementTablesToMesh(elementTables: PLYElementTables): 
     loaderData: elementTables.header,
     header: {
       vertexCount,
-      boundingBox
+      boundingBox: boundingBox ?? undefined
     },
     schema,
     attributes,

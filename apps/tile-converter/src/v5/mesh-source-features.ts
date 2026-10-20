@@ -4,7 +4,7 @@
 
 import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {GLTFPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
-import type {I3SMeshFeatures} from '@loaders.gl/i3s';
+import type {I3SMeshFeatures} from '@loaders.gl/tiles-3d/i3s';
 import {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 import type {FeatureArrowBatchOptions} from './feature-arrow.js';
 import {createMeshSourceFeatureOptions} from './mesh-source-schema.js';

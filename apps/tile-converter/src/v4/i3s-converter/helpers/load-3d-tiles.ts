@@ -3,8 +3,8 @@ import type {
   Tiles3DTileContent,
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSONPostprocessed
-} from '@loaders.gl/3d-tiles';
-import {parse3DTilesArchive} from '@loaders.gl/3d-tiles';
+} from '@loaders.gl/tiles-3d/3d-tiles';
+import {parse3DTilesArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {LoaderWithParser, load} from '@loaders.gl/core';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {HttpFile, NodeFile, isBrowser} from '@loaders.gl/core/loader-utils';

@@ -27,7 +27,7 @@ const TILES_3D_DOCS_TABS: Tiles3DDocsTab[] = [
   {
     id: 'source',
     label: 'Source API',
-    href: '/docs/modules/tiles/api-reference/tiles-3d-source'
+    href: '/docs/modules/tiles-3d/api-reference/tiles-3d-source'
   }
 ];
 

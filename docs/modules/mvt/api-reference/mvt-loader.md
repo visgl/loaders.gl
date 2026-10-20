@@ -59,7 +59,7 @@ Loader for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specifi
 ## Usage
 
 ```typescript
-import {MVTLoader} from '@loaders.gl/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {load} from '@loaders.gl/core';
 
 // Arrow table containing local coordinates decoded from tile origin.
@@ -88,7 +88,7 @@ const geoJSONfeatures = await load(url, MVTLoader, loaderOptions);
 Set `mvt.shape` to `'geojson-table'` to return an array of [GeoJSON objects](https://tools.ietf.org/html/rfc7946) with WGS84 coordinates and feature properties from MVT. `coordinates: 'wgs84'` requires a matching `tileIndex`.
 
 ```typescript
-import {MVTLoader} from '@loaders.gl/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {load} from '@loaders.gl/core';
 
 const geoJSONfeatures = await load(url, MVTLoader, {
@@ -113,7 +113,7 @@ Even though tile coordinates go from 0 to 1, there can be some negative (or grea
 Note that local coordinates are relative to tile origin, which is in the top left.
 
 ```typescript
-import {MVTLoader} from '@loaders.gl/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {load} from '@loaders.gl/core';
 
 const geoJSONfeatures = await load(url, MVTLoader, {mvt: {shape: 'geojson-table'}});

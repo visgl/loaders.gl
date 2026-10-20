@@ -1,4 +1,4 @@
-import type {BoundingVolumes, FullExtent, Mbs, Obb} from '@loaders.gl/i3s';
+import type {BoundingVolumes, FullExtent, Mbs, Obb} from '@loaders.gl/tiles-3d/i3s';
 
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';

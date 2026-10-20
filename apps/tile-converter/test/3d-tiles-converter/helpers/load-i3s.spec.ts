@@ -1,12 +1,12 @@
 import {expect, test} from 'vitest';
-// @ts-expect-error it required `@loaders.gl/i3s/src/lib/helpers/i3s-nodepages-tiles` but it fails because tries to get the dependency from
-// `@loaders.gl/i3s/src/src/lib/helpers/i3s-nodepages-tiles`
-import I3SNodePagesTiles from '@loaders.gl/i3s/lib/helpers/i3s-nodepages-tiles';
+// @ts-expect-error it required `@loaders.gl/tiles-3d/i3s/src/lib/helpers/i3s-nodepages-tiles` but it fails because tries to get the dependency from
+// `@loaders.gl/tiles-3d/i3s/src/src/lib/helpers/i3s-nodepages-tiles`
+import I3SNodePagesTiles from '@loaders.gl/tiles-3d/i3s/lib/helpers/i3s-nodepages-tiles';
 import {
   TILESET_STUB,
   getI3sTileHeader,
   TEST_LAYER_URL
-} from '@loaders.gl/i3s/test/test-utils/load-utils';
+} from '@loaders.gl/tiles-3d/i3s/test/test-utils/load-utils';
 import {loadI3SContent} from '../../../src/v4/3d-tiles-converter/helpers/load-i3s';
 test('tile-converter(i3s)#loadNestedTileset', async () => {
   const i3sTilesetData = TILESET_STUB();

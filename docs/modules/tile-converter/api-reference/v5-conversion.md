@@ -849,7 +849,7 @@ heights); the helper does not infer or transform a CRS. Per-tile RTC centers ret
 ECEF magnitudes, and `geometricError` must cover measured position reconstruction error.
 
 ```ts
-import {createTilesetSpatialReference} from '@loaders.gl/tiles';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
 import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';
 
 const result = await convertPointCloudToTileset(decodedPoints, {

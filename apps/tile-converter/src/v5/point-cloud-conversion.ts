@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {PointCloudTilesetSource} from '@loaders.gl/tiles';
+import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d';
 import {convertTileset} from '@loaders.gl/tile-converter/v5/core';
 import type {
   TileConversionProgress,

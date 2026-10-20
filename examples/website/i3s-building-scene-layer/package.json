@@ -17,7 +17,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loaders.gl/core": "workspace:*",
-    "@loaders.gl/i3s": "workspace:*",
+    "@loaders.gl/tiles-3d": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "deck.gl": "^9.4.0",
     "mapbox-gl": "npm:maplibre-gl@^3.6.2",

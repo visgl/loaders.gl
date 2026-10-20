@@ -1,4 +1,4 @@
-import {SceneLayer3D} from '@loaders.gl/i3s';
+import {SceneLayer3D} from '@loaders.gl/tiles-3d/i3s';
 import {randomUUID} from 'node:crypto';
 
 /**

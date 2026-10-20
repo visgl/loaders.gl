@@ -70,7 +70,7 @@ as unstable:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const tilesetUrl = 'https://example.com/tileset.glb';
 const tileset = await load(tilesetUrl, Tiles3DLoader);

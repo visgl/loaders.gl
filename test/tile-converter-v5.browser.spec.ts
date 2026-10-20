@@ -23,12 +23,12 @@ import {
 } from '@loaders.gl/tile-converter/v5/adapters';
 import {makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parse} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {
   createTilesetSpatialReference,
   get3DTilesSpatialReference,
   getI3SSpatialReference
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d';
 import type {Schema} from '@loaders.gl/core/schema';
 
 test('tile-converter(v5)#encodes a Mesh Arrow point batch as a PNTS resource', async () => {

@@ -244,7 +244,7 @@ only loads that object's implementation; use the core API to prepare the depende
 
 ```ts
 import {preload, parse} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const loader = await preload(Tiles3DLoader, {
   core: {subloaders: {GLTFLoader: CustomGLTFLoader}},

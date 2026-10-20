@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Matrix4} from '@math.gl/core';
-import {getSpatialCoordinateFrame, createTilesetSpatialReference} from '@loaders.gl/tiles';
+import {getSpatialCoordinateFrame, createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
 import {convertTableToMesh, makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {

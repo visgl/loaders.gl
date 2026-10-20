@@ -137,7 +137,9 @@ export class SpatialDataSource extends ZarrSource {
     signal?: AbortSignal
   ): Promise<SpatialDataElementMetadata> {
     const metadata = await this.getMetadata(signal);
-    const element = metadata.elements.find(candidate => candidate.kind === kind && candidate.name === name);
+    const element = metadata.elements.find(
+      candidate => candidate.kind === kind && candidate.name === name
+    );
     if (!element) {
       throw new Error(`SpatialData ${kind} element ${name} is not available.`);
     }
@@ -276,13 +278,16 @@ function getDirectGroupChildren(
   const prefix = `${namespace}/`;
   const paths = new Set<string>();
   for (const [metadataPath, value] of Object.entries(consolidated.metadata)) {
-    const path = consolidated.format === 'v2'
-      ? metadataPath.endsWith('/.zgroup')
-        ? metadataPath.slice(0, -8)
-        : ''
-      : value && typeof value === 'object' && (value as {node_type?: unknown}).node_type === 'group'
-        ? metadataPath
-        : '';
+    const path =
+      consolidated.format === 'v2'
+        ? metadataPath.endsWith('/.zgroup')
+          ? metadataPath.slice(0, -8)
+          : ''
+        : value &&
+            typeof value === 'object' &&
+            (value as {node_type?: unknown}).node_type === 'group'
+          ? metadataPath
+          : '';
     if (!path.startsWith(prefix) || path.slice(prefix.length).includes('/')) continue;
     paths.add(path);
   }
@@ -302,11 +307,7 @@ function getGroupAttributes(
 }
 
 /** Returns the external or Zarr URL associated with an element format. */
-function getElementUrl(
-  rootUrl: string,
-  path: string,
-  format: SpatialDataElementFormat
-): string {
+function getElementUrl(rootUrl: string, path: string, format: SpatialDataElementFormat): string {
   const baseUrl = `${rootUrl.replace(/\/+$/, '')}/${path}`;
   if (format === 'parquet-dataset') return `${baseUrl}/points.parquet`;
   if (format === 'geoparquet') return `${baseUrl}/shapes.parquet`;
@@ -328,7 +329,7 @@ function getAxes(attributes: Record<string, unknown>): readonly string[] | undef
 function normalizeAxes(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined;
   const axes = value
-    .map(axis => typeof axis === 'string' ? axis : getString(getObject(axis)?.name))
+    .map(axis => (typeof axis === 'string' ? axis : getString(getObject(axis)?.name)))
     .filter((axis): axis is string => Boolean(axis));
   return axes.length ? axes : undefined;
 }
@@ -359,7 +360,7 @@ function getElementsByKind(
 /** Narrows an unknown metadata value to an object. */
 function getObject(value: unknown): Record<string, unknown> | undefined {
   return value && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
+    ? (value as Record<string, unknown>)
     : undefined;
 }
 

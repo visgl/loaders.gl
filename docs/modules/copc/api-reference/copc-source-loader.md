@@ -57,7 +57,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
 import {COPCSourceLoader} from '@loaders.gl/copc';
-import {PointCloudTileset} from '@loaders.gl/tiles';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
 const dataSource = createDataSource(url, [COPCSourceLoader], {
   copc: {}

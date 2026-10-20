@@ -4,8 +4,8 @@ Authors a small I3S 1.7 **3D Object** layer from one triangle mesh using portabl
 ArrayBuffer, typed-array, TextEncoder, and GZIP APIs. Package the result with `SLPKWriter`.
 
 ```ts
-import {encodeI3SMeshLayer} from '@loaders.gl/i3s/i3s-mesh-writer';
-import {SLPKWriter} from '@loaders.gl/i3s/i3s-slpk-writer';
+import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s/i3s-mesh-writer';
+import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
 
 const layer = encodeI3SMeshLayer(absoluteEcefMesh, {
   name: 'My mesh',
@@ -17,7 +17,7 @@ const archive = await SLPKWriter.encode(layer.files, {
 });
 ```
 
-Also exported from `@loaders.gl/i3s`. The input uses `MeshGeometry` with triangle-list mode 4,
+Also exported from `@loaders.gl/tiles-3d/i3s`. The input uses `MeshGeometry` with triangle-list mode 4,
 packed Float32 or Float64 absolute EPSG:4978 positions, optional unit Float32 ECEF normals,
 and optional packed unsigned indices. Input arrays remain unchanged. Indices are expanded;
 triangles retain their winding. The output includes an empty root and a mesh leaf, paged and
@@ -106,7 +106,7 @@ reflect Draco's decoded vertex count. Other layer, material and feature resource
 their encoding; geometry, attributes and JSON remain individually GZIP compressed.
 
 ```ts
-import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/i3s/i3s-mesh-writer';
+import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/tiles-3d/i3s/i3s-mesh-writer';
 import {getDracoLibraryOptions} from '@loaders.gl/draco/bundled';
 
 const layer = await encodeI3SMeshLayerWithDraco(

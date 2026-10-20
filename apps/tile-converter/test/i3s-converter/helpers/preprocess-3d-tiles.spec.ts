@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
 import {createLegacyB3dm} from '../../utils/create-legacy-b3dm';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   GLTF_PRIMITIVE_MODES,
   analyzeTileContent,

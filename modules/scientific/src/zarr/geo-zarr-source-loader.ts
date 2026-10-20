@@ -27,11 +27,12 @@ import {
 
 import {getSpatialMultiscaleLevels} from './lib/spatial-multiscales';
 import type {SupportedTypedArray} from './types';
+import {ZarrSource, type ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
 import {
-  ZarrSource,
-  type ZarrSourceLoaderOptions
-} from './ome-zarr-source-loader';
-import {cloneZarrSelection, getCachedZarrSelection, getZarrSelectionKey} from './lib/zarr-data-cache';
+  cloneZarrSelection,
+  getCachedZarrSelection,
+  getZarrSelectionKey
+} from './lib/zarr-data-cache';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -303,19 +304,21 @@ export class GeoZarrRasterSource
       );
     }
     if (parameters.resampleMethod === 'bilinear') {
-      throw new Error('GeoZarrRasterSource currently supports native nearest-neighbor windows only.');
+      throw new Error(
+        'GeoZarrRasterSource currently supports native nearest-neighbor windows only.'
+      );
     }
 
-    const clippedBoundingBox = intersectBoundingBoxes(
-      requestedBoundingBox,
-      metadata.boundingBox
-    );
+    const clippedBoundingBox = intersectBoundingBoxes(requestedBoundingBox, metadata.boundingBox);
     if (!clippedBoundingBox) {
       return createEmptyRaster(metadata, requestedBoundingBox);
     }
 
     const pixelWindow = getPixelWindow(clippedBoundingBox, metadata);
-    if (pixelWindow.columnStart === pixelWindow.columnStop || pixelWindow.rowStart === pixelWindow.rowStop) {
+    if (
+      pixelWindow.columnStart === pixelWindow.columnStop ||
+      pixelWindow.rowStart === pixelWindow.rowStop
+    ) {
       return createEmptyRaster(metadata, clippedBoundingBox);
     }
 
@@ -332,7 +335,11 @@ export class GeoZarrRasterSource
     const chunk = await getCachedZarrSelection(
       array,
       getZarrSelectionKey(zarritaSelection),
-      () => zarrita.get(array, zarritaSelection) as Promise<{data: SupportedTypedArray; shape: number[]}>,
+      () =>
+        zarrita.get(array, zarritaSelection) as Promise<{
+          data: SupportedTypedArray;
+          shape: number[];
+        }>,
       parameters.signal
     );
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
@@ -342,9 +349,8 @@ export class GeoZarrRasterSource
     const width = pixelWindow.columnStop - pixelWindow.columnStart;
     const height = pixelWindow.rowStop - pixelWindow.rowStart;
     const typedData = cloneZarrSelection(chunk).data as SupportedTypedArray;
-    const data = xDimensionIndex < yDimensionIndex
-      ? transposeRaster(typedData, width, height)
-      : typedData;
+    const data =
+      xDimensionIndex < yDimensionIndex ? transposeRaster(typedData, width, height) : typedData;
     const outputBoundingBox = getPixelWindowBoundingBox(pixelWindow, metadata.transform);
 
     return {
@@ -434,7 +440,11 @@ export class GeoZarrRasterSource
         levelGroupAttributes['spatial:transform'];
     }
     const dimensions = getDimensionNames(array, attributes);
-    const spatialDimensions = getSpatialDimensions(dimensions, attributes, options?.spatialDimensions);
+    const spatialDimensions = getSpatialDimensions(
+      dimensions,
+      attributes,
+      options?.spatialDimensions
+    );
     const yDimensionIndex = dimensions.indexOf(spatialDimensions[0]);
     const xDimensionIndex = dimensions.indexOf(spatialDimensions[1]);
     const width = array.shape[xDimensionIndex];
@@ -450,9 +460,10 @@ export class GeoZarrRasterSource
     }
 
     const declaredRegistration = normalizeRegistration(attributes['spatial:registration']);
-    const transform = declaredRegistration === 'node'
-      ? convertNodeTransformToPixelTransform(coordinateTransform)
-      : coordinateTransform;
+    const transform =
+      declaredRegistration === 'node'
+        ? convertNodeTransformToPixelTransform(coordinateTransform)
+        : coordinateTransform;
     const declaredBoundingBox = normalizeBoundingBox(attributes['spatial:bbox']);
     const boundingBox =
       declaredRegistration === 'pixel' && declaredBoundingBox
@@ -472,7 +483,8 @@ export class GeoZarrRasterSource
       .filter(dimension => !spatialDimensions.includes(dimension.name));
     normalizeSelection(undefined, selectionDimensions);
     const dtype = normalizeDtype(array.dtype);
-    const noData = normalizeNumber(attributes._FillValue) ?? normalizeNumber(attributes.missing_value);
+    const noData =
+      normalizeNumber(attributes._FillValue) ?? normalizeNumber(attributes.missing_value);
     const metadata: GeoZarrSourceMetadata = {
       name: normalizeString(attributes.long_name) || normalizeString(attributes.title) || arrayPath,
       title: normalizeString(attributes.title) || normalizeString(groupAttributes.title),
@@ -511,9 +523,7 @@ export class GeoZarrRasterSource
 
 /** Converts arbitrary Zarrita attributes into a plain object. */
 function normalizeAttributes(attributes: unknown): GeoZarrAttributes {
-  return attributes && typeof attributes === 'object'
-    ? (attributes as GeoZarrAttributes)
-    : {};
+  return attributes && typeof attributes === 'object' ? (attributes as GeoZarrAttributes) : {};
 }
 
 /** Resolves array dimension names from Zarr v3 or xarray's Zarr v2 convention. */
@@ -525,7 +535,11 @@ function getDimensionNames(
     ? [...array.dimensionNames]
     : normalizeStringArray(attributes._ARRAY_DIMENSIONS);
 
-  if (!dimensions || dimensions.length !== array.shape.length || new Set(dimensions).size !== dimensions.length) {
+  if (
+    !dimensions ||
+    dimensions.length !== array.shape.length ||
+    new Set(dimensions).size !== dimensions.length
+  ) {
     throw new Error(
       'GeoZarrRasterSource requires unique Zarr dimension_names or xarray _ARRAY_DIMENSIONS matching the array shape.'
     );
@@ -539,7 +553,8 @@ function getSpatialDimensions(
   attributes: GeoZarrAttributes,
   optionDimensions?: [y: string, x: string]
 ): [y: string, x: string] {
-  const declaredDimensions = optionDimensions || normalizeSpatialDimensions(attributes['spatial:dimensions']);
+  const declaredDimensions =
+    optionDimensions || normalizeSpatialDimensions(attributes['spatial:dimensions']);
   const spatialDimensions = declaredDimensions || [
     findDimension(dimensions, ['y', 'lat', 'latitude']),
     findDimension(dimensions, ['x', 'lon', 'longitude'])
@@ -588,9 +603,7 @@ function normalizeBoundingBox(value: unknown): [number, number, number, number] 
 }
 
 /** Converts a flat `[minimumX, minimumY, maximumX, maximumY]` box to RasterSource form. */
-function toRasterBoundingBox(
-  boundingBox: [number, number, number, number]
-): RasterBoundingBox {
+function toRasterBoundingBox(boundingBox: [number, number, number, number]): RasterBoundingBox {
   return [
     [boundingBox[0], boundingBox[1]],
     [boundingBox[2], boundingBox[3]]
@@ -630,14 +643,7 @@ async function loadCFCoordinateTransform(
     ]);
     const scaleX = getRegularCoordinateSpacing(xCoordinates, spatialDimensions[1]);
     const scaleY = getRegularCoordinateSpacing(yCoordinates, spatialDimensions[0]);
-    return [
-      scaleX,
-      0,
-      xCoordinates[0] - scaleX / 2,
-      0,
-      scaleY,
-      yCoordinates[0] - scaleY / 2
-    ];
+    return [scaleX, 0, xCoordinates[0] - scaleX / 2, 0, scaleY, yCoordinates[0] - scaleY / 2];
   } catch {
     return null;
   }
@@ -649,9 +655,14 @@ async function loadCoordinateValues(
   coordinateName: string,
   signal?: AbortSignal
 ): Promise<number[]> {
-  const coordinateArray = await zarrita.open(group.resolve(coordinateName), {kind: 'array', signal});
+  const coordinateArray = await zarrita.open(group.resolve(coordinateName), {
+    kind: 'array',
+    signal
+  });
   if (coordinateArray.shape.length !== 1 || coordinateArray.shape[0] < 2) {
-    throw new Error(`Coordinate ${coordinateName} must be a one-dimensional array with at least two values.`);
+    throw new Error(
+      `Coordinate ${coordinateName} must be a one-dimensional array with at least two values.`
+    );
   }
   const coordinateChunk = await zarrita.get(coordinateArray, [null], {signal});
   if (!coordinateChunk || typeof coordinateChunk !== 'object' || !('data' in coordinateChunk)) {
@@ -670,7 +681,10 @@ function getRegularCoordinateSpacing(coordinates: number[], coordinateName: stri
   const tolerance = Math.max(Math.abs(spacing) * 1e-6, Number.EPSILON);
   for (let index = 0; index < coordinates.length; index++) {
     const expectedCoordinate = coordinates[0] + spacing * index;
-    if (!Number.isFinite(coordinates[index]) || Math.abs(coordinates[index] - expectedCoordinate) > tolerance) {
+    if (
+      !Number.isFinite(coordinates[index]) ||
+      Math.abs(coordinates[index] - expectedCoordinate) > tolerance
+    ) {
       throw new Error(`Coordinate ${coordinateName} is not regularly spaced.`);
     }
   }
@@ -762,7 +776,10 @@ function intersectBoundingBoxes(
   const maximumX = Math.min(leftBoundingBox[1][0], rightBoundingBox[1][0]);
   const maximumY = Math.min(leftBoundingBox[1][1], rightBoundingBox[1][1]);
   return maximumX > minimumX && maximumY > minimumY
-    ? [[minimumX, minimumY], [maximumX, maximumY]]
+    ? [
+        [minimumX, minimumY],
+        [maximumX, maximumY]
+      ]
     : null;
 }
 
@@ -892,7 +909,9 @@ function normalizeDtype(dtype: string): RasterChannelDataType {
 /** Returns the typed-array constructor represented by a raster dtype. */
 function getTypedArrayConstructor(
   dtype: RasterChannelDataType
-): new (length: number) => SupportedTypedArray {
+): new (
+  length: number
+) => SupportedTypedArray {
   switch (dtype) {
     case 'uint8':
       return Uint8Array;

@@ -8,7 +8,8 @@ import {load} from '@loaders.gl/core';
 // Extracted from Cesium 3D Tiles
 const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 const GLB_MESHOPT_GEOMETRY_URL = '@loaders.gl/gltf/test/data/meshopt/pirate.glb';
-const GLB_KTX2_GEOMETRY_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/VNext/agi-ktx2/0/0.glb';
+const GLB_KTX2_GEOMETRY_URL =
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/VNext/agi-ktx2/0/0.glb';
 test('GLTFScenegraph#ctor', () => {
   const gltfScenegraph = new GLTFScenegraph();
   expect(gltfScenegraph).toBeTruthy();

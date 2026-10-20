@@ -1,6 +1,6 @@
 import {join} from 'path';
 import {createMetadata} from '../json-templates/metadata';
-import {NodeInPage} from '@loaders.gl/i3s';
+import {NodeInPage} from '@loaders.gl/tiles-3d/i3s';
 import {isFileExists, openJson} from '../../lib/utils/file-utils';
 import I3SConverter from '../i3s-converter';
 

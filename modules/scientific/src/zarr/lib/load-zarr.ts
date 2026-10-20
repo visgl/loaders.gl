@@ -24,7 +24,7 @@ export async function loadZarr(root: string | Store, options: ZarrOptions = {}) 
     throw new Error('Invalid labels for Zarr array dimensions.');
   }
 
-  const pyramid = data.map((arr) => new ZarrPixelSource(arr, labels, tileSize));
+  const pyramid = data.map(arr => new ZarrPixelSource(arr, labels, tileSize));
   return {
     data: pyramid,
     metadata: rootAttrs

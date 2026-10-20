@@ -19,7 +19,7 @@ function resolveTestPath(testPath: string): string {
 function makeAliases() {
   return {
     test: resolveTestPath('./test'),
-    '@loaders.gl/3d-tiles/test': resolveTestPath('./modules/3d-tiles/test'),
+    '@loaders.gl/tiles-3d/3d-tiles/test': resolveTestPath('./modules/tiles-3d/test/3d-tiles'),
     '@loaders.gl/arrow/transport': resolveTestPath('./modules/arrow/src/transport'),
     '@loaders.gl/arrow-geometry/test': resolveTestPath('./modules/arrow-geometry/test'),
     '@loaders.gl/geoarrow/test': resolveTestPath('./modules/geoarrow/test'),
@@ -35,7 +35,7 @@ function makeAliases() {
     '@loaders.gl/geopackage/test': resolveTestPath('./modules/geopackage/test'),
     '@loaders.gl/raster/test/geotiff': resolveTestPath('./modules/raster/test/geotiff'),
     '@loaders.gl/gltf/test': resolveTestPath('./modules/gltf/test'),
-    '@loaders.gl/i3s/test': resolveTestPath('./modules/i3s/test'),
+    '@loaders.gl/tiles-3d/i3s/test': resolveTestPath('./modules/tiles-3d/test/i3s'),
     '@loaders.gl/images/test': resolveTestPath('./modules/images/test'),
     '@loaders.gl/json/test': resolveTestPath('./modules/json/test'),
     '@loaders.gl/kml/test': resolveTestPath('./modules/kml/test'),
@@ -44,8 +44,8 @@ function makeAliases() {
       './modules/core/test/loader-utils-package'
     ),
     '@loaders.gl/raster/test/lerc': resolveTestPath('./modules/raster/test/lerc'),
-    '@loaders.gl/mlt/test': resolveTestPath('./modules/mlt/test'),
-    '@loaders.gl/mvt/test': resolveTestPath('./modules/mvt/test'),
+    '@loaders.gl/tiles/mlt/test': resolveTestPath('./modules/tiles/test/mlt'),
+    '@loaders.gl/tiles/mvt/test': resolveTestPath('./modules/tiles/test/mvt'),
     '@loaders.gl/scientific/test/netcdf': resolveTestPath('./modules/scientific/test/netcdf'),
     '@loaders.gl/scientific/test/zarr': resolveTestPath('./modules/scientific/test/zarr'),
     '@loaders.gl/obj/test': resolveTestPath('./modules/obj/test'),
@@ -56,7 +56,7 @@ function makeAliases() {
     '@loaders.gl/ply/test': resolveTestPath('./modules/ply/test'),
     '@loaders.gl/splats/test': resolveTestPath('./modules/splats/test'),
     '@loaders.gl/stac/test': resolveTestPath('./modules/stac/test'),
-    '@loaders.gl/pmtiles/test': resolveTestPath('./modules/pmtiles/test'),
+    '@loaders.gl/tiles/pmtiles/test': resolveTestPath('./modules/tiles/test/pmtiles'),
     '@loaders.gl/core/polyfills/test': resolveTestPath('./modules/core/test/polyfills-package'),
     '@loaders.gl/potree/test': resolveTestPath('./modules/potree/test'),
     '@loaders.gl/shapefile/test': resolveTestPath('./modules/shapefile/test'),

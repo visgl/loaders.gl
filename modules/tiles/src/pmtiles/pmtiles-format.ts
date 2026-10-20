@@ -1,0 +1,19 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Format} from '@loaders.gl/core/loader-utils';
+
+/**
+ * PMTiles
+ */
+export const PMTilesFormat = {
+  name: 'PMTiles',
+  id: 'pmtiles',
+  module: 'tiles',
+  encoding: 'binary',
+  format: 'pmtiles',
+  extensions: ['pmtiles'],
+  mimeTypes: ['application/vnd.pmtiles', 'application/octet-stream'],
+  tests: ['PMTiles']
+} as const satisfies Format;

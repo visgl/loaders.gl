@@ -287,7 +287,7 @@ customized application builds, or doing in-depth debugging.
  *
  * https://vitejs.dev/guide/assets.html#explicit-url-imports
  */
-import mvtLoaderUrl from '@loaders.gl/mvt/mvt-worker.js?url';
+import mvtLoaderUrl from '@loaders.gl/tiles/mvt/mvt-worker.js?url';
 ```
 
 ## Composite Loaders and Workers (Advanced)

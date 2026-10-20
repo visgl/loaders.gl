@@ -26,7 +26,7 @@ indexing, clipping, simplification and geometry collection expansion. The tiler 
 with normalized tile-local coordinates; `MVTWriter` or `MLTWriter` reads those geometries and scalar attributes
 without converting attribute rows to GeoJSON feature objects. `encodePMTiles` packages the encoded bytes.
 
-The implementation lives at `@loaders.gl/pmtiles/geoarrow`, keeping export orchestration outside the
+The implementation lives at `@loaders.gl/tiles/pmtiles/geoarrow`, keeping export orchestration outside the
 package root's runtime imports.
 
 Try the [browser PMTiles export example](/examples/tiles/pmtiles-authoring) with a local file or dataset URL.
@@ -34,7 +34,7 @@ Try the [browser PMTiles export example](/examples/tiles/pmtiles-authoring) with
 ## Usage
 
 ```typescript
-import {encodeGeoArrowPMTiles} from '@loaders.gl/pmtiles/geoarrow';
+import {encodeGeoArrowPMTiles} from '@loaders.gl/tiles/pmtiles/geoarrow';
 
 // Input geometry is longitude/latitude WGS84. Here export only two selected tiles.
 const archive = await encodeGeoArrowPMTiles(geoArrowTable, {

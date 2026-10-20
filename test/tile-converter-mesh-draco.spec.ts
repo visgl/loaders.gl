@@ -15,7 +15,7 @@ import {
   type MeshConversionInput,
   type EncodedMeshConversionResource
 } from '@loaders.gl/tile-converter/v5/browser';
-import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 
 /** Creates two adjacent triangles with exact but irregular coordinates and unique appearance. */

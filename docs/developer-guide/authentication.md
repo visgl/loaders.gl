@@ -229,7 +229,7 @@ the service is reached through a proxy or another provider host.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {MVTSourceLoader} from '@loaders.gl/mvt';
+import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 import {createMapboxCredential} from '@loaders.gl/services';
 
 const source = createDataSource(tileJSONUrl, [MVTSourceLoader], {
@@ -242,8 +242,8 @@ const source = createDataSource(tileJSONUrl, [MVTSourceLoader], {
 ### Google 3D Tiles
 
 ```ts
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tiles3DSource} from '@loaders.gl/tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d';
 import {createGoogleMapsCredential} from '@loaders.gl/services';
 
 const source = new Tiles3DSource(
@@ -260,7 +260,7 @@ without replacing an explicit child parameter.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const tileset = await load('https://assets.cesium.com/123/tileset.json', CesiumIonLoader, {
   'cesium-ion': {accessToken: ionAccessToken, assetId: 123}
@@ -279,7 +279,7 @@ Pass credentials inside the usual `loadOptions`. The source-backed adapters reta
 metadata, node pages, geometry, textures, attributes, and other dependent resources:
 
 ```ts
-import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
 const layer = new SourceLayer({

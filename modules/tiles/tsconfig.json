@@ -4,7 +4,8 @@
     "src/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/mlt/libs/**/*.cjs"
   ],
   "compilerOptions": {
     "moduleResolution": "bundler",
@@ -22,6 +23,21 @@
   "references": [
     {
       "path": "../core"
+    },
+    {
+      "path": "../arrow"
+    },
+    {
+      "path": "../arrow-geometry"
+    },
+    {
+      "path": "../compression"
+    },
+    {
+      "path": "../images"
+    },
+    {
+      "path": "../tiles-3d"
     }
   ]
 }

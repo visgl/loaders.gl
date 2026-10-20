@@ -382,7 +382,8 @@ export class OMEZarrImageSource extends ZarrSource implements ScanQueryMetadataP
     }
 
     const interleavedSource = metadata.labels.includes('_c');
-    const interleaved = parameters.interleaved ?? this.options.omezarr?.interleaved ?? interleavedSource;
+    const interleaved =
+      parameters.interleaved ?? this.options.omezarr?.interleaved ?? interleavedSource;
     const selection: Record<string, number> = {};
     const timeIndex = normalizeAxisSelection(
       parameters.t,
@@ -406,7 +407,12 @@ export class OMEZarrImageSource extends ZarrSource implements ScanQueryMetadataP
     if (interleavedSource) {
       const raster = await pixelSource.getRaster({selection, signal: parameters.signal});
       const rawData = raster.data as SupportedTypedArray;
-      const channelData = selectInterleavedChannels(rawData, metadata.bandCount, channels, interleaved);
+      const channelData = selectInterleavedChannels(
+        rawData,
+        metadata.bandCount,
+        channels,
+        interleaved
+      );
       return {
         data: channelData,
         width: raster.width,
@@ -473,9 +479,7 @@ export class OMEZarrImageSource extends ZarrSource implements ScanQueryMetadataP
     }
 
     const arrays = await Promise.all(
-      datasets.map(dataset =>
-        zarrita.open(group.resolve(dataset.path), {kind: 'array', signal})
-      )
+      datasets.map(dataset => zarrita.open(group.resolve(dataset.path), {kind: 'array', signal}))
     );
 
     const labels = inferLabels(attrs, arrays[0], this.options.zarr?.labels);
@@ -492,7 +496,11 @@ export class OMEZarrImageSource extends ZarrSource implements ScanQueryMetadataP
 /** Normalizes pre-0.5 and 0.5 OME attributes into one internal shape. */
 function normalizeRootAttrs(attrs: RootAttrs): {
   multiscales: Multiscale[];
-  omero: {channels?: Channel[]; name?: string; rdefs?: {defaultT?: number; defaultZ?: number; model: string}};
+  omero: {
+    channels?: Channel[];
+    name?: string;
+    rdefs?: {defaultT?: number; defaultZ?: number; model: string};
+  };
   coordinateTransformations?: unknown[];
 } {
   const omeAttrs = 'ome' in attrs && attrs.ome ? attrs.ome : null;
@@ -568,7 +576,8 @@ function normalizeOMEZarrMetadata(
   const bandCount =
     getAxisSize(baseSource.shape, labels, '_c') ||
     getAxisSize(baseSource.shape, labels, 'c') ||
-    (attrs.omero?.channels?.length || 1);
+    attrs.omero?.channels?.length ||
+    1;
   const levels = sources.map((source, level) => {
     const levelInterleaved = source.labels[source.labels.length - 1] === '_c';
     const [levelHeight, levelWidth] = source.shape.slice(levelInterleaved ? -3 : -2);
@@ -756,7 +765,11 @@ function selectInterleavedChannels(
   const channelData = channels.map(() => new TypedArrayConstructor(pixelCount));
 
   for (let pixelIndex = 0; pixelIndex < pixelCount; pixelIndex++) {
-    for (let channelSelectionIndex = 0; channelSelectionIndex < channels.length; channelSelectionIndex++) {
+    for (
+      let channelSelectionIndex = 0;
+      channelSelectionIndex < channels.length;
+      channelSelectionIndex++
+    ) {
       channelData[channelSelectionIndex][pixelIndex] =
         data[pixelIndex * bandCount + channels[channelSelectionIndex]];
     }
@@ -772,7 +785,9 @@ function selectInterleavedChannels(
 /** Returns the typed-array constructor for a raster dtype. */
 function getTypedArrayConstructor(
   dtype: RasterChannelDataType
-): new (length: number) => SupportedTypedArray {
+): new (
+  length: number
+) => SupportedTypedArray {
   switch (dtype) {
     case 'uint8':
       return Uint8Array;

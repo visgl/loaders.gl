@@ -5,7 +5,7 @@
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {MeshGeometry, Field} from '@loaders.gl/core/schema';
 import type {GLTFScenegraph} from '@loaders.gl/gltf';
-import type {I3SMeshFeatures} from '@loaders.gl/i3s';
+import type {I3SMeshFeatures} from '@loaders.gl/tiles-3d/i3s';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Explicit-schema Arrow features; stable identifiers are distinct from geometry row indices. */

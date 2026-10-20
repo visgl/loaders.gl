@@ -77,7 +77,10 @@ export async function loadConsolidatedMetadata(
       const json = (await response.json()) as V2ConsolidatedMetadata | V3ConsolidatedMetadata;
       return normalizeConsolidatedMetadata(json, metadataPath);
     } catch (error) {
-      if (options.signal?.aborted || options.metadataPath !== undefined && options.metadataPath !== 'auto') {
+      if (
+        options.signal?.aborted ||
+        (options.metadataPath !== undefined && options.metadataPath !== 'auto')
+      ) {
         throw error;
       }
       const message = error instanceof Error ? error.message : String(error);
@@ -161,7 +164,11 @@ function extractV3TopLevelNodes(
 ): string[] {
   const nodePaths = Object.entries(metadata)
     .filter(([, value]) =>
-      Boolean(value && typeof value === 'object' && (value as {node_type?: unknown}).node_type === nodeType)
+      Boolean(
+        value &&
+          typeof value === 'object' &&
+          (value as {node_type?: unknown}).node_type === nodeType
+      )
     )
     .map(([path]) => path);
   return extractDirectChildren(nodePaths);

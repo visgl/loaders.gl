@@ -18,7 +18,7 @@ export function parseOBJ(text: string, options?): Mesh {
   const header = {
     vertexCount,
     // @ts-ignore Need to export Attributes type
-    boundingBox: getMeshBoundingBox(attributes)
+    boundingBox: getMeshBoundingBox(attributes) ?? undefined
   };
 
   const schema = getOBJSchema(attributes, {

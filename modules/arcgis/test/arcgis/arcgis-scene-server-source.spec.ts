@@ -1,6 +1,6 @@
 import {fetchFile} from '@loaders.gl/core';
-import {I3SPointCloudSource} from '@loaders.gl/i3s';
-import {I3SSource} from '@loaders.gl/tiles';
+import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
+import {I3SSource} from '@loaders.gl/tiles-3d';
 import {
   ArcGISSceneServerSource,
   ArcGISSceneServerSourceLoader,
@@ -9,9 +9,10 @@ import {
 import {expect, test, vi} from 'vitest';
 
 const SCENE_SERVER_URL = 'https://example.com/arcgis/rest/services/City/SceneServer';
-const MESH_FIXTURE = '@loaders.gl/i3s/test/data/conformance/i3s-1.8-3d-object.json';
-const POINT_FIXTURE = '@loaders.gl/i3s/test/data/conformance/i3s-1.8-point.json';
-const POINT_CLOUD_FIXTURE = '@loaders.gl/i3s/test/data/conformance/i3s-2.1-point-cloud.json';
+const MESH_FIXTURE = '@loaders.gl/tiles-3d/i3s/test/data/conformance/i3s-1.8-3d-object.json';
+const POINT_FIXTURE = '@loaders.gl/tiles-3d/i3s/test/data/conformance/i3s-1.8-point.json';
+const POINT_CLOUD_FIXTURE =
+  '@loaders.gl/tiles-3d/i3s/test/data/conformance/i3s-2.1-point-cloud.json';
 
 const MESH_LAYER = {
   id: 0,

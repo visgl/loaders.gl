@@ -238,7 +238,7 @@ The underscored SSE field is diagnostic rather than stable API. Use these values
 - S2-derived implicit descendants use math.gl S2 descendant indexing and recompute a matching oriented box in the `@loaders.gl/tiles` runtime.
 - Lazy hierarchy metadata is source-managed; custom source implementations must provide `loadTileChildren` to use the same traversal hook.
 
-See the [3D Tiles implicit tiling specification](https://docs.ogc.org/cs/22-025r4/22-025r4.html#implicit-tiling), [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [`Tiles3DSource`](/docs/modules/tiles/api-reference/tiles-3d-source), [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d), and [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) for the surrounding APIs.
+See the [3D Tiles implicit tiling specification](https://docs.ogc.org/cs/22-025r4/22-025r4.html#implicit-tiling), [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [`Tiles3DSource`](/docs/modules/tiles-3d/api-reference/tiles-3d-source), [`Tileset3D`](/docs/modules/tiles-3d/api-reference/tileset-3d), and [`Tile3D`](/docs/modules/tiles-3d/api-reference/tile-3d) for the surrounding APIs.
 
 
 ## Conformance and lifecycle guarantees

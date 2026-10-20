@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from '@loaders.gl/3d-tiles';
+import {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from '@loaders.gl/tiles-3d/3d-tiles';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {ArrowFormat} from '@loaders.gl/arrow';
 import {BSONFormat} from '@loaders.gl/bson';
@@ -23,19 +23,19 @@ import {
   I3SFormat,
   I3SNodePageFormat,
   SLPKFormat
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 import {ImageBitmapFormat, ImageFormat} from '@loaders.gl/images';
 import {GeoJSONFormat, JSONFormat, NDGeoJSONFormat, NDJSONFormat} from '@loaders.gl/json';
 import {GPXFormat, KMLFormat, KMZFormat, TCXFormat} from '@loaders.gl/kml';
 import {LASFormat} from '@loaders.gl/las';
 import {LERCFormat} from '@loaders.gl/raster';
-import {MLTFormat} from '@loaders.gl/mlt';
-import {MapStyleFormat, MVTFormat, TileJSONFormat} from '@loaders.gl/mvt';
+import {MLTFormat} from '@loaders.gl/tiles/mlt';
+import {MapStyleFormat, MVTFormat, TileJSONFormat} from '@loaders.gl/tiles/mvt';
 import {NetCDFFormat} from '@loaders.gl/scientific/netcdf';
 import {MTLFormat, OBJFormat} from '@loaders.gl/obj';
 import {ParquetFormat} from '@loaders.gl/parquet';
 import {PCDFormat} from '@loaders.gl/pcd';
-import {PMTilesFormat} from '@loaders.gl/pmtiles';
+import {PMTilesFormat} from '@loaders.gl/tiles/pmtiles';
 import {PotreeBinFormat, PotreeFormat, PotreeHierarchyChunkFormat} from '@loaders.gl/potree';
 import {DBFFormat, SHPFormat, ShapefileFormat} from '@loaders.gl/shapefile';
 import {QuantizedMeshFormat, TerrainFormat} from '@loaders.gl/raster';
@@ -66,7 +66,7 @@ import {HTMLFormat, XMLFormat} from '@loaders.gl/xml';
 import {ZipFormat} from '@loaders.gl/zip';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {FlatGeobufFormat} from '@loaders.gl/flatgeobuf';
-import {MVTLoader, TileJSONLoader} from '@loaders.gl/mvt';
+import {MVTLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
 import {PLYLoader} from '@loaders.gl/ply';
 import {PLYFormat} from '@loaders.gl/ply';
 import {VideoFormat} from '../../../../video/src/video-format';

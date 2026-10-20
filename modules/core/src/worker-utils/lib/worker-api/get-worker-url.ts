@@ -62,7 +62,9 @@ export function getCustomWorkerURL(
         worker.module === 'core' && worker.workerNode?.startsWith('worker-utils/')
           ? 'worker-utils/workers'
           : 'workers';
-      url = `modules/${worker.module}/src/${workerSourceDirectory}/${worker.id}-worker-node.ts`;
+      const workerSourceNode =
+        worker.workerSourceNode || `${workerSourceDirectory}/${worker.id}-worker-node.ts`;
+      url = `modules/${worker.module}/src/${workerSourceNode}`;
     }
   }
 

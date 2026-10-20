@@ -4,8 +4,8 @@
 
 import {BlobFile, HttpFile} from '@loaders.gl/core/loader-utils';
 import type {HttpFileIdentity, ReadableFile} from '@loaders.gl/core/loader-utils';
-import {parseSLPKArchive} from '@loaders.gl/i3s';
-import {parse3DTilesArchive} from '@loaders.gl/3d-tiles';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
+import {parse3DTilesArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {createTileConversionResourceFetcher} from './resource-fetcher.js';
 

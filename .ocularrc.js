@@ -25,7 +25,7 @@ const config = {
   },
 
   nodeAliases: {
-    '@maplibre/mlt': join(packageRoot, 'modules/mlt/src/libs/mlt-decoder.cjs')
+    '@maplibre/mlt': join(packageRoot, 'modules/tiles/src/mlt/libs/mlt-decoder.cjs')
   },
 
   bundle: {
