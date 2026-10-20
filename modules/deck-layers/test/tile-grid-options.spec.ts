@@ -65,3 +65,16 @@ test('Canonical zoom-31 levels retain their declared renderer range', () => {
     })
   ).toEqual({minZoom: 30, maxZoom: 31, tileSize: 512});
 });
+
+test.each([
+  'urn:ogc:def:crs:EPSG::3857',
+  'urn:x-ogc:def:crs:EPSG::3857',
+  'http://www.opengis.net/def/crs/EPSG/0/3857',
+  'https://www.opengis.net/def/crs/EPSG/0/3857'
+])('Canonical service geometry accepts the standard CRS identifier %s', coordinateReferenceSystem => {
+  expect(
+    getTileGridLayerOptions({
+      tileGrid: {tileMatrixSet: {crs: coordinateReferenceSystem, matrices: [createMatrix(0)]}}
+    })
+  ).toEqual({minZoom: 0, maxZoom: 0, tileSize: 512});
+});

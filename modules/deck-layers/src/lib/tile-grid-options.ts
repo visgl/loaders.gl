@@ -3,6 +3,15 @@
 // Copyright (c) vis.gl contributors
 import type {TileSourceMetadata} from '@loaders.gl/core/loader-utils';
 
+/** Standard identifiers for the same Web Mercator CRS returned by tile services. */
+const WEB_MERCATOR_COORDINATE_REFERENCE_SYSTEMS = new Set([
+  'EPSG:3857',
+  'urn:ogc:def:crs:EPSG::3857',
+  'urn:x-ogc:def:crs:EPSG::3857',
+  'http://www.opengis.net/def/crs/EPSG/0/3857',
+  'https://www.opengis.net/def/crs/EPSG/0/3857'
+]);
+
 /** Options supported by the default deck.gl XYZ selector. */
 export type TileGridLayerOptions = {
   /** Minimum native zoom. */
@@ -24,7 +33,7 @@ export function getTileGridLayerOptions(
   };
   const set = metadata?.tileGrid?.tileMatrixSet;
   if (!set) return options;
-  if (set.crs !== 'EPSG:3857' || !set.matrices.length)
+  if (!WEB_MERCATOR_COORDINATE_REFERENCE_SYSTEMS.has(set.crs) || !set.matrices.length)
     throw new Error(
       'TileSourceLayer requires canonical Web Mercator XYZ geometry; use a custom tile selector and compatible projection.'
     );

@@ -135,7 +135,8 @@ the legacy adapter uses geographic longitude/latitude bounds for canonical XYZ i
 ### Renderer compatibility
 
 The default `@loaders.gl/deck-layers` tile adapter uses deck.gl's Web Mercator XYZ selector. For
-complete grids it requires contiguous canonical XYZ levels and square logical tile sizes, and
+complete grids it recognizes EPSG:3857 and its standard OGC URI/URN identifiers, requires
+contiguous canonical XYZ levels and square logical tile sizes, and
 uses the declared pixel size and zoom range. It rejects projected, bottom-left, irregular, or
 renamed matrix geometry with guidance to use a compatible custom selector and projection.
 Partial metadata does not broaden existing rendering support. Native source requests and
