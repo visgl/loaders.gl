@@ -2,21 +2,6 @@
   "version": 1,
   "target": 90,
   "packages": {
-    "@loaders.gl/3d-tiles": {
-      "path": "modules/3d-tiles",
-      "browser": {
-        "statements": 67,
-        "lines": 67,
-        "functions": 80,
-        "branches": 59
-      },
-      "merged": {
-        "statements": 66,
-        "lines": 67,
-        "functions": 79,
-        "branches": 59
-      }
-    },
     "@loaders.gl/arcgis": {
       "path": "modules/arcgis",
       "browser": {
@@ -336,21 +321,6 @@
         "branches": 90
       }
     },
-    "@loaders.gl/i3s": {
-      "path": "modules/i3s",
-      "browser": {
-        "statements": 82,
-        "lines": 82,
-        "functions": 86,
-        "branches": 64
-      },
-      "merged": {
-        "statements": 80,
-        "lines": 81,
-        "functions": 86,
-        "branches": 64
-      }
-    },
     "@loaders.gl/images": {
       "path": "modules/images",
       "browser": {
@@ -438,36 +408,6 @@
         "branches": 46
       }
     },
-    "@loaders.gl/mlt": {
-      "path": "modules/mlt",
-      "browser": {
-        "statements": 42,
-        "lines": 43,
-        "functions": 47,
-        "branches": 29
-      },
-      "merged": {
-        "statements": 41,
-        "lines": 42,
-        "functions": 43,
-        "branches": 29
-      }
-    },
-    "@loaders.gl/mvt": {
-      "path": "modules/mvt",
-      "browser": {
-        "statements": 79,
-        "lines": 79,
-        "functions": 81,
-        "branches": 67
-      },
-      "merged": {
-        "statements": 79,
-        "lines": 79,
-        "functions": 80,
-        "branches": 67
-      }
-    },
     "@loaders.gl/obj": {
       "path": "modules/obj",
       "browser": {
@@ -549,21 +489,6 @@
         "lines": 82,
         "functions": 90,
         "branches": 60
-      }
-    },
-    "@loaders.gl/pmtiles": {
-      "path": "modules/pmtiles",
-      "browser": {
-        "statements": 54,
-        "lines": 55,
-        "functions": 51,
-        "branches": 35
-      },
-      "merged": {
-        "statements": 53,
-        "lines": 55,
-        "functions": 50,
-        "branches": 34
       }
     },
     "@loaders.gl/potree": {
@@ -1076,6 +1001,101 @@
       "owner": "@loaders.gl/core",
       "sourcePaths": [
         "modules/core/src/schema-utils/"
+      ]
+    },
+    "3d-tiles": {
+      "path": "modules/tiles-3d/src/3d-tiles",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 80,
+        "branches": 59
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 67,
+        "functions": 79,
+        "branches": 59
+      },
+      "owner": "@loaders.gl/tiles-3d",
+      "sourcePaths": [
+        "modules/tiles-3d/src/3d-tiles/"
+      ]
+    },
+    "i3s": {
+      "path": "modules/tiles-3d/src/i3s",
+      "browser": {
+        "statements": 82,
+        "lines": 82,
+        "functions": 86,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 80,
+        "lines": 81,
+        "functions": 86,
+        "branches": 64
+      },
+      "owner": "@loaders.gl/tiles-3d",
+      "sourcePaths": [
+        "modules/tiles-3d/src/i3s/"
+      ]
+    },
+    "mlt": {
+      "path": "modules/tiles/src/mlt",
+      "browser": {
+        "statements": 42,
+        "lines": 43,
+        "functions": 47,
+        "branches": 29
+      },
+      "merged": {
+        "statements": 41,
+        "lines": 42,
+        "functions": 43,
+        "branches": 29
+      },
+      "owner": "@loaders.gl/tiles",
+      "sourcePaths": [
+        "modules/tiles/src/mlt/"
+      ]
+    },
+    "mvt": {
+      "path": "modules/tiles/src/mvt",
+      "browser": {
+        "statements": 79,
+        "lines": 79,
+        "functions": 81,
+        "branches": 67
+      },
+      "merged": {
+        "statements": 79,
+        "lines": 79,
+        "functions": 80,
+        "branches": 67
+      },
+      "owner": "@loaders.gl/tiles",
+      "sourcePaths": [
+        "modules/tiles/src/mvt/"
+      ]
+    },
+    "pmtiles": {
+      "path": "modules/tiles/src/pmtiles",
+      "browser": {
+        "statements": 54,
+        "lines": 55,
+        "functions": 51,
+        "branches": 35
+      },
+      "merged": {
+        "statements": 53,
+        "lines": 55,
+        "functions": 50,
+        "branches": 34
+      },
+      "owner": "@loaders.gl/tiles",
+      "sourcePaths": [
+        "modules/tiles/src/pmtiles/"
       ]
     }
   }
