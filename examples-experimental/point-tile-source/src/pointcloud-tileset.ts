@@ -1,5 +1,5 @@
 import {Vector3} from '@math.gl/core';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {POTreeNode} from '@loaders.gl/potree';
 import {PointTileSourceTraverser} from './point-tile-source-traverser';
 

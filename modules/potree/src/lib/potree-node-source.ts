@@ -13,7 +13,7 @@ import type {
   PointCloudScanReadOptions,
   PointCloudScanSource,
   PointCloudScanTile
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
@@ -23,7 +23,7 @@ import {
   selectPointCloudScanTiles,
   validatePointCloudQueryOptions,
   type PointCloudQueryCapabilities
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
 import type {
   ArrowTableBatch,

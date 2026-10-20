@@ -7,7 +7,7 @@ import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream
 } from '@loaders.gl/compression/native-decompression';
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {compareArrayBuffers} from './utils/test-utils';
 import {
   installRecordingDecompressionStream,

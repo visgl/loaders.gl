@@ -4,7 +4,7 @@
 
 import * as zarrita from 'zarrita';
 import type {Readable} from 'zarrita';
-import type {CoreAPI, SourceLoader, TypedArray} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader, TypedArray} from '@loaders.gl/core/loader-utils';
 import {ZarrSource, type ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
 import {cloneZarrSelection, getCachedZarrSelection, getZarrSelectionKey} from './lib/zarr-data-cache';
 

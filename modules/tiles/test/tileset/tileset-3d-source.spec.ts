@@ -8,7 +8,7 @@ import {
   createQueryParameterCredential,
   type Loader,
   type LoaderWithParser
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {

@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {NPYLoaderWithParser} from '../npy-loader-with-parser';
-import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 
 createLoaderWorker(NPYLoaderWithParser);

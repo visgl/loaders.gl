@@ -7,8 +7,8 @@ import type {
   DataSourceOptions,
   ReadableFile,
   StrictLoaderOptions
-} from '@loaders.gl/loader-utils';
-import {BlobFile, HttpFile} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {BlobFile, HttpFile} from '@loaders.gl/core/loader-utils';
 import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
 import {convertColorArrayToFloat16} from '@loaders.gl/schema';
 import type {MeshAttributes} from '@loaders.gl/schema';
@@ -28,7 +28,7 @@ import {
   getI3SSpatialReference,
   I3SSpatialTransformer
 } from '@loaders.gl/tiles';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 import type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
 import {I3SLEPCCDecoder} from './i3s-lepcc';
@@ -141,7 +141,11 @@ export class I3SPointCloudSource
       );
       this.spatialReference = this.spatialTransformer.spatialReference;
     }
-    this.baseUrl = this.url.replace(/\/+$/, '');
+    let baseUrlEnd = this.url.length;
+    while (baseUrlEnd > 0 && this.url[baseUrlEnd - 1] === '/') {
+      baseUrlEnd--;
+    }
+    this.baseUrl = this.url.slice(0, baseUrlEnd);
     this.nodesPerPage = Math.max(
       1,
       Number(layerJson.nodePages?.nodesPerPage || layerJson.store?.index?.nodePerIndexBlock || 1)

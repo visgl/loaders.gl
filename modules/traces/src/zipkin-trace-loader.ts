@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 import type {OtlpTrace, OtlpTraceBatch} from './otlp-trace-arrow-schema';
 import {emitOtlpTraceBatches, normalizeOtlpBatchSize} from './otlp-trace-batches';

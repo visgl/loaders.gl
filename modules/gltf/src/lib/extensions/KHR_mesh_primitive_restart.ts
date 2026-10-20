@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {NumericArray} from '@loaders.gl/loader-utils';
+import type {NumericArray} from '@loaders.gl/core/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLTFAccessor, GLTFMeshPrimitive} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';

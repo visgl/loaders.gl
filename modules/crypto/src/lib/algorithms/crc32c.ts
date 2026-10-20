@@ -5,7 +5,7 @@
 // From: https://gist.github.com/wqli78/1330293/6d85cc967f32cccfcbad94ae7d088a3dcfc14bd9
 // CRC32 doesn't appear to be supported natively by crypto-js
 
-// import {toBuffer} from '@loaders.gl/loader-utils';
+// import {toBuffer} from '@loaders.gl/core/loader-utils';
 // import {calculate as sse4calculate} from 'sse4_crc32';
 
 /**

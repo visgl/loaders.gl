@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {load, selectLoader} from '@loaders.gl/core';
-import type {DataSourceOptions, Loader, SourceLoader} from '@loaders.gl/loader-utils';
-import {isSourceLoader} from '@loaders.gl/loader-utils';
+import type {DataSourceOptions, Loader, SourceLoader} from '@loaders.gl/core/loader-utils';
+import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import {isTileset3DSource} from '@loaders.gl/tiles';
 
 /** Visual source families supported by {@link SourceLayer}. */

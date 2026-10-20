@@ -6,12 +6,12 @@ import {expect, test} from 'vitest';
 import {
   load,
   loadInBatches,
-  isIterator,
-  isAsyncIterable,
   parse,
   parseInBatches,
   preload,
-  preloadSync
+  preloadSync,
+  isIterator,
+  isAsyncIterable
 } from '@loaders.gl/core';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {

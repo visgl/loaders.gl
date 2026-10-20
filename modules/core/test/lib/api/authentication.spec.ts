@@ -11,7 +11,7 @@ import {
   parseFile,
   parseInBatches
 } from '@loaders.gl/core';
-import {BearerTokenAuthentication, BlobFile, DataSource} from '@loaders.gl/loader-utils';
+import {BearerTokenAuthentication, BlobFile, DataSource} from '@loaders.gl/core/loader-utils';
 import type {
   FetchLike,
   LoaderOptions,
@@ -19,7 +19,7 @@ import type {
   RequestAuthentication,
   AuthenticationRequest,
   SourceLoader
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 const ORIGIN = 'https://tiles.example.com';
 

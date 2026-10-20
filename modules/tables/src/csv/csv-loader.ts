@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   Schema,
   ArrayRowTable,
@@ -14,7 +14,7 @@ import type {
   TableBatch
 } from '@loaders.gl/schema';
 
-import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {
   AsyncQueue,
   TableBatchBuilder,

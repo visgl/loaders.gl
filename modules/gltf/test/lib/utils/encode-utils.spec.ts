@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {copyPaddedStringToDataView} from '@loaders.gl/loader-utils';
+import {copyPaddedStringToDataView} from '@loaders.gl/core/loader-utils';
 test('encode-utils', () => {
   const STRING = 'abcdef';
   const byteLength = copyPaddedStringToDataView(null, 0, STRING, 4);

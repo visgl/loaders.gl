@@ -7,13 +7,13 @@ import type {
   RequestCredential,
   TokenProviderContext,
   TokenValue
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createAuthenticatedFetch,
   TokenAuthentication,
   createBearerTokenCredential,
   createQueryParameterCredential
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 const CESIUM_ION_API_ORIGIN = 'https://api.cesium.com';
 

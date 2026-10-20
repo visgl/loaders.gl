@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {WorkerOptions} from '@loaders.gl/worker-utils';
-import {processOnWorker} from '@loaders.gl/worker-utils';
+import type {WorkerOptions} from '@loaders.gl/core/worker-utils';
+import {processOnWorker} from '@loaders.gl/core/worker-utils';
 import type {BinaryDataFromGeoArrow} from '@loaders.gl/arrow-geometry/binary-features';
 import type {GeoArrowEncoding} from '@loaders.gl/schema';
 

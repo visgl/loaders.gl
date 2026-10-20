@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {_addAliases} from '@loaders.gl/loader-utils';
+import {_addAliases} from '@loaders.gl/core/loader-utils';
 import {setGlobalOptions} from '../modules/core/src/lib/loader-utils/option-utils';
 import aliases from './aliases';
 

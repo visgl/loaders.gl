@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import {RequestScheduler} from '@loaders.gl/loader-utils';
+import {RequestScheduler} from '@loaders.gl/core/loader-utils';
 import {advanceTimersAndFlush, withFakeTimers} from '@loaders.gl/test-utils/vitest';
 import {Tile3D} from '../../src/tileset-3d/common/tile-3d';
 import type {FrameState} from '../../src/tileset-3d/helpers/frame-state';

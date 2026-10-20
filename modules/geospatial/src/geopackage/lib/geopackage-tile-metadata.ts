@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createTileGrid, createTileGridMatrix} from '@loaders.gl/loader-utils';
-import type {TileGrid} from '@loaders.gl/loader-utils';
+import {createTileGrid, createTileGridMatrix} from '@loaders.gl/core/loader-utils';
+import type {TileGrid} from '@loaders.gl/core/loader-utils';
 import type {Database} from 'sql.js';
 
 /** Metadata for one GeoPackage raster tile table; tile payloads are not read. */

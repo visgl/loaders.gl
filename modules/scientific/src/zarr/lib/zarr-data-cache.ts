@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TypedArray} from '@loaders.gl/loader-utils';
+import type {TypedArray} from '@loaders.gl/core/loader-utils';
 
 type CachedData = {
   data: TypedArray;

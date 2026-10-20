@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Format} from '@loaders.gl/loader-utils';
+import type {Format} from '@loaders.gl/core/loader-utils';
 import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 export const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg', 'avif'];

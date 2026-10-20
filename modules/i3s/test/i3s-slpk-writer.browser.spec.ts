@@ -8,7 +8,7 @@ import {validateWriter} from 'test/common/conformance';
 import {SLPKWriter as RootWriter, parseSLPKArchive} from '@loaders.gl/i3s';
 import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/i3s/i3s-slpk-writer';
 import {GZipCompressor} from '@loaders.gl/compression';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {readZip} from 'test/common/read-zip';
 
 /** Small caller-authored root used only to qualify packaging and archive reader interoperability. */

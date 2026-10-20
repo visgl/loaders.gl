@@ -7,7 +7,7 @@ import type {
   SplitArrowBuffersOptions
 } from '@loaders.gl/schema-utils/arrow-transport';
 import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/schema-utils/arrow-transport';
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 
 type SerializedArrowTable = Omit<ArrowTable, 'data'> & {

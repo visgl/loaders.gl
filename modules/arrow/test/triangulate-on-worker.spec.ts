@@ -18,8 +18,8 @@ import {
   triangulateWKBGeometryColumn
 } from '@loaders.gl/arrow';
 import {fetchFile} from '@loaders.gl/core';
-import type {WorkerOptions} from '@loaders.gl/worker-utils';
-import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
+import type {WorkerOptions} from '@loaders.gl/core/worker-utils';
+import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {
   GEOARROW_POINT_FILE,
   GEOARROW_POLYGON_WKB_FILE

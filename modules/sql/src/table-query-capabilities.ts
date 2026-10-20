@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TableQueryCapabilities} from '@loaders.gl/loader-utils';
+import type {TableQueryCapabilities} from '@loaders.gl/core/loader-utils';
 
 /** Portable query capabilities of the in-memory Arrow executor. */
 export const ARROW_TABLE_QUERY_CAPABILITIES: TableQueryCapabilities = Object.freeze({

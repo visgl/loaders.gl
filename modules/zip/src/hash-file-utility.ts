@@ -3,7 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {MD5Hash} from '@loaders.gl/crypto';
-import {concatenateArrayBuffers, concatenateArrayBuffersFromArray} from '@loaders.gl/loader-utils';
+import {
+  concatenateArrayBuffers,
+  concatenateArrayBuffersFromArray
+} from '@loaders.gl/core/loader-utils';
 import type {ZipEntry} from './zip-archive-types';
 
 /**

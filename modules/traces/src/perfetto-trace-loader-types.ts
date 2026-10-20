@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 
 import type {PerfettoTrace, PerfettoTraceBatch} from './perfetto-trace-arrow-schema';
 import {testPerfettoTrace} from './perfetto-trace-detector';

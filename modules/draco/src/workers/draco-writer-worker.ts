@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createWorker} from '@loaders.gl/worker-utils';
+import {createWorker} from '@loaders.gl/core/worker-utils';
 import {encodeDraco, encodeDracoInBatchesLocally} from '../draco-writer';
 
 createWorker(

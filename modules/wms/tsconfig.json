@@ -22,7 +22,7 @@
       "path": "../images"
     },
     {
-      "path": "../loader-utils"
+      "path": "../core"
     },
     {
       "path": "../schema"

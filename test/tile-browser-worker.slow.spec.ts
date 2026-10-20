@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
-import {ArrayBufferFile} from '@loaders.gl/loader-utils';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {
   convertSelectedContentsInWorker,

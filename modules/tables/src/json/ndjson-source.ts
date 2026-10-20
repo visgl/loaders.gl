@@ -2,7 +2,7 @@ import {
   createScanQueryMetadata,
   executeTableScanBatches,
   explainTableQuery
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -10,9 +10,9 @@ import type {
   SourceLoader,
   TableScanReadOptions,
   TableScanSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/schema';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {NDJSONFormat} from './json-format';
 import type {NDJSONLoaderOptions} from './ndjson-loader';
 

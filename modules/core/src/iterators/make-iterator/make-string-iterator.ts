@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
+import {ensureArrayBuffer} from '@loaders.gl/core/loader-utils';
 import type {IteratorOptions} from './make-iterator';
 
 const DEFAULT_CHUNK_SIZE = 256 * 1024;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, ReadableFile} from '@loaders.gl/loader-utils';
+import type {Loader, ReadableFile} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {parseFile} from '../../../src/lib/api/parse-file';
 import {parseSync} from '../../../src/lib/api/parse-sync';

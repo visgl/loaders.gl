@@ -8,7 +8,7 @@ import {
   type Loader,
   type LoaderWithParser,
   type LoaderOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {

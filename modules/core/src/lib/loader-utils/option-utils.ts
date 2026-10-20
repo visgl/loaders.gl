@@ -10,7 +10,7 @@ import {
   isObject,
   StrictLoaderOptions,
   path
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 import {stripQueryString} from '../utils/url-utils';

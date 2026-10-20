@@ -6,7 +6,11 @@ import type {Schema, TableBatch} from '@loaders.gl/schema';
 import type {JSONLoaderOptions, MetadataBatch, JSONBatch} from '../../json-loader-types';
 
 import {TableBatchBuilder} from '@loaders.gl/schema-utils';
-import {assert, makeTextDecoderIterator, toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {
+  assert,
+  makeTextDecoderIterator,
+  toArrayBufferIterator
+} from '@loaders.gl/core/loader-utils';
 import StreamingJSONParser from '../json-parser/streaming-json-parser';
 import type {
   StreamingJSONParserFactory,

@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, Schema} from '@loaders.gl/schema';
-import {DataSource} from '@loaders.gl/loader-utils';
-import type {CoreAPI, RequiredOptions} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, RequiredOptions} from '@loaders.gl/core/loader-utils';
 
 import type {
   SQLAdapter,

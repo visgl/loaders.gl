@@ -101,9 +101,7 @@
   },
   "dependencies": {
     "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.12",
     "@math.gl/types": "5.0.0-alpha.18",
     "zod": "^4.1.12"
   },

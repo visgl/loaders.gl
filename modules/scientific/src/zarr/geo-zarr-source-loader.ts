@@ -17,13 +17,13 @@ import type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {CRSDefinition} from '@math.gl/crs';
 import {
   createTileGrid,
   createScanQueryMetadata,
   getRasterViewportBoundingBox
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 import {getSpatialMultiscaleLevels} from './lib/spatial-multiscales';
 import type {SupportedTypedArray} from './types';

@@ -24,6 +24,6 @@
     "**3d-tiles/src/styles/**",
     "modules/tables/src/parquet/parquetjs/parquet-thrift/**",
     "modules/traces/src/otlp-proto/generated/**",
-    "modules/worker-utils/src/lib/process-utils/child-process-proxy.ts"
+    "modules/core/src/worker-utils/lib/process-utils/child-process-proxy.ts"
   ]
 }

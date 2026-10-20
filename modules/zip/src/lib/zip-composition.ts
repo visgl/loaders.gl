@@ -8,7 +8,7 @@ import {
   NodeFilesystem,
   NodeFile,
   toArrayBuffer
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {encodeUtf8Text, validateZipPath} from './zip-entry-metadata';
 import {CRC32Hash} from '@loaders.gl/crypto';
 import type {ZipArchiveOptions} from '../zip-archive-types';

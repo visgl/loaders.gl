@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {setPathPrefix} from '@loaders.gl/loader-utils';
+import {setPathPrefix} from '@loaders.gl/core/loader-utils';
 
 afterEach(() => setPathPrefix(''));
 

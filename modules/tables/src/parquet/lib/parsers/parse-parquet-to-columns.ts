@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {ParquetRowGroup} from '../../parquetjs/schema/declare';

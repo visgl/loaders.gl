@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import {ImageBitmapLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';

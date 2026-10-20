@@ -4,7 +4,7 @@
 
 import type {Batch} from '@loaders.gl/schema';
 import {isTable, makeBatchFromTable} from '@loaders.gl/schema-utils';
-import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import type {
   Loader,
   LoaderWithParser,
@@ -19,13 +19,13 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayBatchType,
   TransformBatches
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   canParseWithWorker,
   concatenateArrayBuffersAsync,
   isBrowser,
   parseWithWorkerInBatches
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';

@@ -9,7 +9,7 @@ import {
   type LAZChunkTableEntry,
   type WriterOptions,
   type WriterWithEncoder
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {LASFormat} from './las-format';

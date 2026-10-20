@@ -5,7 +5,7 @@
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/potree';
-import {getPathPrefix, setPathPrefix} from '@loaders.gl/loader-utils';
+import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {createPoints, createDatasetFetch} from './potree-format-fixtures';
 import {expect, test} from 'vitest';
 

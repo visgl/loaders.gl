@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CRSReprojectionOptions, StrictLoaderOptions, Loader} from '@loaders.gl/loader-utils';
+import type {
+  CRSReprojectionOptions,
+  StrictLoaderOptions,
+  Loader
+} from '@loaders.gl/core/loader-utils';
 import type {
   Batch,
   GeoArrowEncodingPreference,

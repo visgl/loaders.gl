@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Format} from '@loaders.gl/loader-utils';
+import type {Format} from '@loaders.gl/core/loader-utils';
 const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 
 /** SHP geometry file format. */

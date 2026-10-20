@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {parseWMSError} from './lib/parsers/wms/parse-wms-error';
 import {WMSErrorLoader as WMSErrorLoaderMetadata} from './wms-error-loader';
 

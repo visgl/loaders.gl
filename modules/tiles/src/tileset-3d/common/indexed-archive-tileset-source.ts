@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {BlobFile, HttpFile, path} from '@loaders.gl/loader-utils';
-import type {CoreAPI, Loader, LoaderOptions, ReadableFile} from '@loaders.gl/loader-utils';
+import {BlobFile, HttpFile, path} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions, ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {TilesetSourceResolver} from './tileset-source';
 
 /** Options for {@link IndexedArchiveTilesetSource}. */

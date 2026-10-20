@@ -54,9 +54,21 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+### Core utility subpaths
+
+The standalone `@loaders.gl/loader-utils` and `@loaders.gl/worker-utils` packages have moved to
+`@loaders.gl/core/loader-utils` and `@loaders.gl/core/worker-utils`, respectively. Install
+`@loaders.gl/core` and update imports to the corresponding subpath. Existing utility re-exports
+from the `@loaders.gl/core` root remain available for compatibility; the full utility APIs live
+at the subpaths.
+
+Worker URLs previously pointing into `@loaders.gl/worker-utils` should use the matching
+`@loaders.gl/core/worker-utils/null-worker.js` or `null-worker-node.js` subpath.
+
 **Node polyfills**
 
 The `@loaders.gl/polyfills` package has moved to the independent `@loaders.gl/core/polyfills` subpath. Install `@loaders.gl/core` and replace side-effect imports of the old package with `import '@loaders.gl/core/polyfills'`. The polyfills subpath does not load the core root entry point or another loaders.gl module. If an application configured file aliases through `@loaders.gl/loader-utils`, configure the polyfills path resolver separately with `setPathPrefix` and `addAliases` from `@loaders.gl/core/polyfills`.
+
 
 **OGC API Tiles matrix discovery**
 
@@ -85,7 +97,7 @@ The `@loaders.gl/polyfills` package has moved to the independent `@loaders.gl/co
 - Raw ZIP header parsers/serializers, signature/search helpers, central-header iteration and ZIP
   file utilities are no longer root exports. Use `openZipArchive`, `ZipArchive.entries()`,
   `getEntryAt()` and the native encoders. Use `ArrayBufferFile`/`BlobFile` from
-  `@loaders.gl/loader-utils` instead of the ZIP-exported `DataViewReadableFile`.
+  `@loaders.gl/core/loader-utils` instead of the ZIP-exported `DataViewReadableFile`.
 - Removed `ZIP_COMPRESSION_HANDLERS` and `CompressionHandler`. Use shared archive read methods
   instead of dispatching container compression in consumers. Complete generic filesystem
   responses now stream; consume the response body to observe integrity errors.
@@ -99,7 +111,7 @@ Custom decoder URL overrides must provide ESM default factory exports (Draco als
 factory exports). Built-in
 Draco, Basis, and Crunch wrappers have generated `.mjs` adapters; custom CDNs must serve
 these additional assets. Classic-worker `importScripts()` behavior is unchanged. See
-[decoder library loading](/docs/modules/worker-utils#loading-decoder-libraries) for overrides
+[decoder library loading](/docs/modules/core/worker-utils#loading-decoder-libraries) for overrides
 and content-security-policy limitations.
 
 ### Explicit reference compression backends
@@ -337,7 +349,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 - `BrotliCompression`, `ZstdCompression`, and frame-based `LZ4Compression` may load larger codec implementations asynchronously. Prefer their async APIs; synchronous callers must explicitly preload or inject the required codec.
 - `transformBatches()` remains available for compatibility but is deprecated. Use `compressBatches()` or `decompressBatches()` for new code.
 
-**@loaders.gl/loader-utils, @loaders.gl/core, and source modules**
+**@loaders.gl/core/loader-utils, @loaders.gl/core, and source modules**
 
 If you are upgrading from the 4.4 release line, migrate top-level source factories and types as follows:
 
@@ -376,14 +388,14 @@ Custom sources that extended one of the old abstract classes should instead exte
 and implement one or more capability interfaces:
 
 ```ts
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {
   DataSourceOptions,
   GetImageParameters,
   ImageSource,
   ImageSourceMetadata,
   ImageType
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 class CustomImageSource
   extends DataSource<string, DataSourceOptions>
@@ -456,7 +468,7 @@ const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
 Before, in 4.4:
 
 ```ts
-import type {Source} from '@loaders.gl/loader-utils';
+import type {Source} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
 import {WMSSource} from '@loaders.gl/wms';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
@@ -469,7 +481,7 @@ const loaded = await load(url, WMSSource);
 Now, in v5:
 
 ```ts
-import type {SourceLoader} from '@loaders.gl/loader-utils';
+import type {SourceLoader} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
 import {WMSSourceLoader} from '@loaders.gl/wms';
 import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
@@ -564,7 +576,7 @@ This unifies top-level loading behavior:
 
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
-- `@loaders.gl/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
+- `@loaders.gl/core/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
 - `@loaders.gl/zip`/`@loaders.gl/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
 
 **Deprecations**
@@ -760,7 +772,7 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 - The `KMLLoader`, `GPXLoader`, and `TCXLoader` now require a value for `options.gis.format`. Previously, the lack of a value would return data in "raw" format, i.e. not normalized to GeoJSON. To return GeoJSON-formatted data, use `options.gis.format: 'geojson'`. Other options are `binary` and `raw`.
 - The `kml.normalize` option has been deprecated. When `options.gis.format` is `geojson`, coordinates will always be in longitude-latitude ordering.
 
-**@loaders.gl/loader-utils**
+**@loaders.gl/core/loader-utils**
 
 - `createWorker()` now creates a generic worker. For loader workers use the new `createLoaderWorker()` function.
 

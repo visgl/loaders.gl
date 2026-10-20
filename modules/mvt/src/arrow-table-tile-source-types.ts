@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table} from 'apache-arrow';
-import type {DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 import type {TableTileSourceLoaderOptions} from './table-tile-source-loader';
 

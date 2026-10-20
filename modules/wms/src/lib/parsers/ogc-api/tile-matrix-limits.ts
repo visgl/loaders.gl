@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GetTileParameters, TileGrid, TileGridLimits} from '@loaders.gl/loader-utils';
+import type {GetTileParameters, TileGrid, TileGridLimits} from '@loaders.gl/core/loader-utils';
 import {getRequestedTileMatrix} from '../../tile-grid';
 
 /** Inclusive tile availability bounds in an OGC API Tiles tileset document. */

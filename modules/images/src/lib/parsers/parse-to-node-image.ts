@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ImageDataType} from '../../types';
-import {assert} from '@loaders.gl/loader-utils';
+import {assert} from '@loaders.gl/core/loader-utils';
 import {getBinaryImageMetadata} from '../category-api/binary-image-api';
 
 // Note: These types should be consistent with loaders.gl/polyfills

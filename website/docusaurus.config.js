@@ -80,7 +80,7 @@ function createBundlerPlugin() {
           ),
           new bundler.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
             const normalizedContext = resource.context?.replace(/\\/g, '/');
-            if (normalizedContext?.includes('/modules/worker-utils/src')) {
+            if (normalizedContext?.includes('/modules/core/src/worker-utils')) {
               resource.request = resolve('./src/shims/loadersgl-worker-version.js');
             }
           }),
@@ -242,6 +242,8 @@ const config = {
             '@loaders.gl/compression': resolve('../modules/compression/src'),
             '@loaders.gl/config': resolve('../modules/config/src'),
             '@loaders.gl/copc': resolve('../modules/copc/src'),
+            '@loaders.gl/core/loader-utils': resolve('../modules/core/src/loader-utils'),
+            '@loaders.gl/core/worker-utils': resolve('../modules/core/src/worker-utils'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/csv': resolve('../modules/csv/src'),
@@ -260,7 +262,6 @@ const config = {
             '@loaders.gl/kml': resolve('../modules/kml/src'),
             '@loaders.gl/las': resolve('../modules/las/src'),
             '@loaders.gl/raster/lerc/index': resolve('../modules/raster/src/lerc/index.ts'),
-            '@loaders.gl/loader-utils': resolve('../modules/loader-utils/src'),
             '@loaders.gl/mlt': resolve('../modules/mlt/src'),
             '@loaders.gl/mvt': resolve('../modules/mvt/src'),
             '@loaders.gl/scientific': resolve('../modules/scientific/src'),
@@ -304,7 +305,6 @@ const config = {
             '@loaders.gl/arcgis/scene-aggregation': resolve('../modules/arcgis/src/arcgis/arcgis-scene-aggregation'),
             '@loaders.gl/arcgis': resolve('../modules/arcgis/src'),
             '@loaders.gl/services': resolve('../modules/services/src'),
-            '@loaders.gl/worker-utils': resolve('../modules/worker-utils/src'),
             '@loaders.gl/xml': resolve('../modules/xml/src'),
             '@loaders.gl/zip': resolve('../modules/zip/src'),
             'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),

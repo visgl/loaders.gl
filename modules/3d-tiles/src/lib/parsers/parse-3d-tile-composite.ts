@@ -8,7 +8,7 @@
 // Reference code:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/Composite3DTileContent.js#L182
 
-import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {Tiles3DTileContent} from '../../types';

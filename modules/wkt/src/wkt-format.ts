@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Format} from '@loaders.gl/loader-utils';
+import type {Format} from '@loaders.gl/core/loader-utils';
 import {inspectWKBHeader} from '@math.gl/wkb';
 
 const WKT_MAGIC_STRINGS = [

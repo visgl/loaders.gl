@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {RangeRequestScheduler, sampleRaster} from '@loaders.gl/loader-utils';
+import {RangeRequestScheduler, sampleRaster} from '@loaders.gl/core/loader-utils';
 import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source-loader';
 
 /** Builds a float TIFF with configurable pixel placement and an optional wider second band. */

@@ -4,7 +4,7 @@
 
 import {prepareMeshHierarchy} from './mesh-hierarchy.js';
 import {coreApi, parse} from '@loaders.gl/core';
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import type {

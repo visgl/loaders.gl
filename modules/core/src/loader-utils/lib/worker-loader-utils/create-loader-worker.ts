@@ -1,0 +1,233 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+/* eslint-disable no-restricted-globals */
+import type {CoreAPI} from '../sources/data-source';
+import type {LoaderWithParser, LoaderOptions, LoaderContext, Loader} from '../../loader-types';
+import {createWorker} from '@loaders.gl/core/worker-utils';
+// import {validateLoaderVersion} from './validate-loader-version';
+
+/**
+ * Set up a WebWorkerGlobalScope to talk with the main thread
+ * @param loader
+ * @param selectLoader Selects the parser used for each worker request.
+ */
+export async function createLoaderWorker(
+  loader: LoaderWithParser,
+  selectLoader: (options: {[key: string]: any}) => LoaderWithParser = () => loader
+) {
+  await createWorker(
+    (input, options, workerContext, loaderContext) =>
+      processLoaderWorkerData(
+        selectLoader(options || {}),
+        input,
+        options,
+        workerContext,
+        loaderContext
+      ),
+    (inputIterator, options, workerContext, loaderContext) =>
+      processLoaderWorkerBatches(
+        selectLoader(options || {}),
+        inputIterator,
+        options,
+        workerContext,
+        loaderContext
+      )
+  );
+}
+
+/** Processes one loader request using the same context installed inside a worker. */
+export async function processLoaderWorkerData(
+  loader: LoaderWithParser,
+  input: ArrayBuffer,
+  options: {[key: string]: any} = {},
+  workerContext?: {
+    process?: (data: any, options?: LoaderOptions, context?: Record<string, any>) => any;
+  },
+  loaderContext: Record<string, any> = {}
+) {
+  const result = await parseData({
+    loader,
+    arrayBuffer: input,
+    options,
+    context: {
+      ...loaderContext,
+      coreApi: createWorkerCoreApi(),
+      _parse: createParseOnMainThread(workerContext?.process)
+    } as LoaderContext
+  });
+
+  return loader.serializeWorkerResult
+    ? loader.serializeWorkerResult(result, options, loaderContext as LoaderContext)
+    : result;
+}
+
+/** Processes a complete input stream using the loader's stateful batch parser. */
+export async function* processLoaderWorkerBatches(
+  loader: LoaderWithParser,
+  inputIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options: {[key: string]: any} = {},
+  workerContext?: {
+    process?: (data: any, options?: LoaderOptions, context?: Record<string, any>) => any;
+  },
+  loaderContext: Record<string, any> = {}
+): AsyncIterable<unknown> {
+  if (!loader.parseInBatches) {
+    throw new Error(`${loader.id} loader does not support batched parsing`);
+  }
+
+  const resultIterator = loader.parseInBatches(inputIterator, options, {
+    ...loaderContext,
+    coreApi: createWorkerCoreApi(),
+    _parse: createParseOnMainThread(workerContext?.process)
+  } as LoaderContext);
+
+  for await (const batch of resultIterator) {
+    yield loader.serializeWorkerBatch
+      ? loader.serializeWorkerBatch(batch, options, loaderContext as LoaderContext)
+      : batch;
+  }
+}
+
+/**
+ * Create a minimal core API implementation available inside worker loaders.
+ */
+function createWorkerCoreApi(): CoreAPI {
+  const unavailable = (methodName: keyof CoreAPI) => () => {
+    throw new Error(`context.coreApi.${methodName} is unavailable inside worker loaders.`);
+  };
+
+  return {
+    fetchFile: async (urlOrData, fetchOptions) =>
+      await fetch(urlOrData as RequestInfo | URL, fetchOptions),
+    parseSync: unavailable('parseSync'),
+    parse: unavailable('parse'),
+    parseFile: unavailable('parseFile'),
+    parseInBatches: unavailable('parseInBatches'),
+    load: unavailable('load'),
+    loadInBatches: unavailable('loadInBatches')
+  };
+}
+
+/**
+ * Create a loader context parse callback that redirects subloader parsing to the main thread.
+ * @param processOnMainThread
+ */
+function createParseOnMainThread(
+  processOnMainThread?: (data: any, options?: LoaderOptions, context?: Record<string, any>) => any
+) {
+  return (
+    arrayBuffer: ArrayBuffer,
+    loaders?: Loader | Loader[] | LoaderOptions,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => {
+    if (!processOnMainThread) {
+      throw new Error('Worker not set up to parse on main thread');
+    }
+
+    const parseArguments = getMainThreadParseArguments(loaders, options, context);
+    return processOnMainThread(arrayBuffer, parseArguments.options, {
+      ...parseArguments.context,
+      ...(Array.isArray(loaders) || (loaders && isLoaderObject(loaders))
+        ? {
+            _loaderIsArray: Array.isArray(loaders),
+            _loaderIds: (Array.isArray(loaders) ? loaders : [loaders]).map(loader => loader.id)
+          }
+        : {})
+    });
+  };
+}
+
+/**
+ * Extract parse options and context from the overloaded loader context parse signature.
+ * @param loaders
+ * @param options
+ * @param context
+ */
+function getMainThreadParseArguments(
+  loaders?: Loader | Loader[] | LoaderOptions,
+  options?: LoaderOptions,
+  context?: LoaderContext
+): {options?: LoaderOptions; context?: Record<string, any>} {
+  if (options) {
+    return {options, context: getSerializableLoaderContext(context)};
+  }
+  if (Array.isArray(loaders) || (loaders && isLoaderObject(loaders))) {
+    return {options: undefined, context: getSerializableLoaderContext(context)};
+  }
+  if (loaders && !Array.isArray(loaders)) {
+    return {options: loaders};
+  }
+  return {options: undefined, context: getSerializableLoaderContext(context)};
+}
+
+/**
+ * Checks whether a value is a loader object.
+ * @param value
+ */
+function isLoaderObject(value: Loader | LoaderOptions): value is Loader {
+  return 'id' in value && 'extensions' in value;
+}
+
+/**
+ * Create a serializable loader context for a main-thread parse request.
+ * @param context
+ */
+function getSerializableLoaderContext(context?: LoaderContext) {
+  if (!context) {
+    return undefined;
+  }
+  const {fetch, loaders, coreApi, _parse, _parseSync, _parseInBatches, ...serializableContext} =
+    context;
+  return JSON.parse(JSON.stringify(serializableContext));
+}
+
+// TODO - Support byteOffset and byteLength (enabling parsing of embedded binaries without copies)
+// TODO - Why not support async loader.parse* funcs here?
+// TODO - Why not reuse a common function instead of reimplementing loader.parse* selection logic? Keeping loader small?
+// TODO - Lack of appropriate parser functions can be detected when we create worker, no need to wait until parse
+async function parseData({
+  loader,
+  arrayBuffer,
+  options,
+  context
+}: {
+  loader: LoaderWithParser;
+  arrayBuffer: ArrayBuffer;
+  options: LoaderOptions;
+  context: LoaderContext;
+}) {
+  let data;
+  let parser;
+  if (loader.parse || loader.parseSync) {
+    data = arrayBuffer;
+    parser = loader.parse || loader.parseSync;
+  } else if (loader.parseTextSync) {
+    const textDecoder = new TextDecoder();
+    data = textDecoder.decode(arrayBuffer);
+    parser = loader.parseTextSync;
+  } else {
+    throw new Error(`Could not load data with ${loader.name} loader`);
+  }
+
+  // Preserve worker-supplied module overrides (for example a caller-provided
+  // Draco URL) while still applying the loader's defaults. Functions cannot be
+  // structured-cloned, but URL strings and other serializable options can.
+  options = {
+    ...options,
+    modules: {
+      ...((loader && loader.options && loader.options.modules) || {}),
+      ...(options.modules || {})
+    },
+    core: {
+      ...options.core,
+      worker: false
+    }
+  };
+
+  return await parser(data, {...options}, context, loader);
+}

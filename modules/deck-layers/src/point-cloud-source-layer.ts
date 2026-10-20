@@ -12,7 +12,7 @@ import type {
 } from '@deck.gl/core';
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
-import type {DataSourceOptions, Loader, SourceLoader} from '@loaders.gl/loader-utils';
+import type {DataSourceOptions, Loader, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {
   PointCloudTile,
   PointCloudTileset,

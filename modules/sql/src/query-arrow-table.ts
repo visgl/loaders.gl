@@ -31,11 +31,11 @@ import type {
   RelationalAggregate,
   RelationalExpression,
   RelationalOrderKey
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   explainTableQuery as explainColumnarTableQuery,
   planRelationalQuery
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 import {validateSQLPredicate} from './sql-predicate-schema';
 export {ARROW_TABLE_QUERY_CAPABILITIES};

@@ -1,5 +1,5 @@
 import {expect, test, vi} from 'vitest';
-import {createAuthenticatedFetch} from '@loaders.gl/loader-utils';
+import {createAuthenticatedFetch} from '@loaders.gl/core/loader-utils';
 import {ArcGISAuthentication, createArcGISCredential} from '../src/authentication';
 import {ArcGISFeatureQueryClient} from '../src/arcgis/arcgis-feature-query';
 

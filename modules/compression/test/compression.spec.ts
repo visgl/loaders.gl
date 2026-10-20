@@ -11,8 +11,8 @@ import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream
 } from '@loaders.gl/compression/native-decompression';
-import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
-import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {getData, compareArrayBuffers} from './utils/test-utils';
 import {
   installRecordingDecompressionStream,

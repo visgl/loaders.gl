@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {LERCData} from './lib/parsers/lerc/lerc-types';
 import * as Lerc from 'lerc';
 import {LERCLoader as LERCLoaderMetadata} from './lerc-loader-types';

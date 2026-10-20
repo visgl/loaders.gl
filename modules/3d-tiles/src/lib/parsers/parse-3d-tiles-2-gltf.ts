@@ -14,7 +14,7 @@ import type {
 import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {CachedUriResolver} from '@loaders.gl/loader-utils';
+import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
 import {type ParsedImplicitSubtree} from '@loaders.gl/tiles';
 import type {
   Tile3DBoundingVolume,

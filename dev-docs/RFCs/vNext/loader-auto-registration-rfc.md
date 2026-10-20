@@ -79,6 +79,6 @@ import '@loaders.gl/draco/worker-loader'; // Registers bundled worker loader ava
 
 This would require solving non-trivial problems in ocular-dev-tools (which would of course be helpful in other cases), relating e.g. to src/dist aliasing and pre-compilation.
 
-- Increased dependency: Currently simple loader modules can be written without importing any loaders.gl helper libraries (e.g. `@loaders.gl/loader-utils`). If the loader modules have to import `registerLoaders` that changes. This is a design simplicity/elegance in loaders.gl that matters to some people, that would be lost for this convenience.
-- Manual registration code? - To avoid having to import `@loaders.gl/loader-utils` in each loader module, we could just ask each loader to push their loaders to a global array. But even then, the global scope must be determined, if not by helper functions in loaders.gl, then by some code that needs to be copied into each loader.
+- Increased dependency: Currently simple loader modules can be written without importing any loaders.gl helper libraries (e.g. `@loaders.gl/core/loader-utils`). If the loader modules have to import `registerLoaders` that changes. This is a design simplicity/elegance in loaders.gl that matters to some people, that would be lost for this convenience.
+- Manual registration code? - To avoid having to import `@loaders.gl/core/loader-utils` in each loader module, we could just ask each loader to push their loaders to a global array. But even then, the global scope must be determined, if not by helper functions in loaders.gl, then by some code that needs to be copied into each loader.
 - Conceptually, global mechanisms should normally be minimized.

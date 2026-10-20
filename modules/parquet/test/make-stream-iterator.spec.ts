@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import { expect, test } from "vitest";
-import { isBrowser } from '@loaders.gl/loader-utils';
+import { isBrowser } from '@loaders.gl/core/loader-utils';
 import { makeStreamIterator } from '../../tables/src/parquet/lib/utils/make-stream-iterator';
 test('Parquet makeStreamIterator#rethrows read errors and releases the lock', async () => {
     if (!isBrowser) {

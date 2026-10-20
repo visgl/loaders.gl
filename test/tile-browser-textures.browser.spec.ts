@@ -2,7 +2,7 @@ import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
-import {ArrayBufferFile} from '@loaders.gl/loader-utils';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {
   CONVERSION_LIMITS,
   convertSelectedContents,

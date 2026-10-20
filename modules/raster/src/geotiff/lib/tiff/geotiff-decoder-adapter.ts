@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import type {TypedArray} from '@loaders.gl/loader-utils';
-import {waitForPromiseWithSignal} from '@loaders.gl/loader-utils';
+import type {TypedArray} from '@loaders.gl/core/loader-utils';
+import {waitForPromiseWithSignal} from '@loaders.gl/core/loader-utils';
 import {fromArrayBuffer} from 'geotiff';
 import type {TiffNumericDecoder, TiffNumericImage} from './tiff-numeric-decoder';
 import type {TiffSampleOptions} from './decode-tiff-samples';

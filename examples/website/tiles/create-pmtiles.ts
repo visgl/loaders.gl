@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {waitForPromiseWithSignal} from '@loaders.gl/loader-utils';
+import {waitForPromiseWithSignal} from '@loaders.gl/core/loader-utils';
 import type {PMTilesTile} from '@loaders.gl/pmtiles';
 
 /** In-memory export ceilings; actual allocations depend on the browser and available memory. */

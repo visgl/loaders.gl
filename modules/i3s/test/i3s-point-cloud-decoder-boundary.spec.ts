@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, describe, expect, test, vi} from 'vitest';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {I3SLEPCCLoader} from '../src/i3s-lepcc-loader-types';
 import {I3SLEPCCDecoder} from '../src/i3s-lepcc';
 import {I3SPointCloudSource} from '../src/i3s-point-cloud-source';
