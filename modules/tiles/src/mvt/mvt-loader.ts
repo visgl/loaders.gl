@@ -48,6 +48,7 @@ export const MVTLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  workerSourceNode: 'mvt/workers/mvt-worker-node.ts',
   options: {
     mvt: {
       shape: 'arrow-table',

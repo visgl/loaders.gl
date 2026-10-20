@@ -197,6 +197,8 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   workerFile?: string;
   /** Optional Node.js worker filename, such as a CommonJS `.cjs` bundle. */
   workerNode?: string;
+  /** Repository-relative source path for a Node test worker after package grouping. */
+  workerSourceNode?: string;
   /** Creates a built-in browser worker, typically using `type: 'module'`. */
   loadWorker?: LoadWorker;
   /**

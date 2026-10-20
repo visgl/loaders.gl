@@ -25,6 +25,7 @@ export const I3SContentLoader = {
   id: 'i3s-content',
   module: 'tiles-3d',
   worker: true,
+  workerSourceNode: 'i3s/workers/i3s-content-worker-node.ts',
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
   /** Loads the parser-bearing I3S content loader implementation. */

@@ -57,6 +57,30 @@ test('getWorkerURL', () => {
     isBrowser ? 'modules/wkt/dist/wkt-worker.js' : 'modules/wkt/src/workers/wkb-worker-node.ts'
   );
 });
+test('getWorkerURL#grouped Node test workers', () => {
+  const i3sWorker = {
+    ...NullWorker,
+    id: 'i3s-content',
+    module: 'tiles-3d',
+    workerSourceNode: 'i3s/workers/i3s-content-worker-node.ts'
+  };
+  expect(getWorkerURL(i3sWorker, {_workerType: 'test'})).toBe(
+    isBrowser
+      ? 'modules/tiles-3d/dist/i3s-content-worker.js'
+      : 'modules/tiles-3d/src/i3s/workers/i3s-content-worker-node.ts'
+  );
+  const mvtWorker = {
+    ...NullWorker,
+    id: 'mvt',
+    module: 'tiles',
+    workerSourceNode: 'mvt/workers/mvt-worker-node.ts'
+  };
+  expect(getWorkerURL(mvtWorker, {_workerType: 'test'})).toBe(
+    isBrowser
+      ? 'modules/tiles/dist/mvt-worker.js'
+      : 'modules/tiles/src/mvt/workers/mvt-worker-node.ts'
+  );
+});
 test('getWorkerURL#version fallback warning', () => {
   const warnings: string[] = [];
   const originalConsoleWarn = console.warn;

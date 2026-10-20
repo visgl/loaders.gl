@@ -33,6 +33,7 @@ export const I3SLEPCCLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  workerSourceNode: 'i3s/workers/i3s-lepcc-worker-node.ts',
   options: {
     'i3s-lepcc': {
       verifyChecksum: true
