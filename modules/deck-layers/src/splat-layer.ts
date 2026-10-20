@@ -23,7 +23,7 @@ import {
 import type {BufferLayout} from '@luma.gl/core';
 import {Geometry, Model} from '@luma.gl/engine';
 import type {ShaderModule} from '@luma.gl/shadertools';
-import type {ArrowTableBatch, MeshArrowTable, TypedArray} from '@loaders.gl/schema';
+import type {ArrowTableBatch, MeshArrowTable, TypedArray} from '@loaders.gl/core/schema';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {SplatEngine, type SplatSortMode} from './splat/splat-engine';
 import {getArrowTable, getGaussianSplatDataFromArrowTable} from './splat/splat-data';

@@ -5,7 +5,7 @@
 // This code is inspired by https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import Protobuf from 'pbf';
-import {Schema} from '@loaders.gl/schema';
+import {Schema} from '@loaders.gl/core/schema';
 import type {MVTTile, MVTLayer} from './mvt-types';
 import * as MVT from './mvt-constants';
 import {readBoundingBoxFromPBF, loadFlatGeometryFromPBF} from './parse-geometry-from-pbf';

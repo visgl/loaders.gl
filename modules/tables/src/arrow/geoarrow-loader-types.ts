@@ -8,7 +8,7 @@ import type {
   ArrowTableBatch,
   GeoJSONTable,
   GeoJSONTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type {GeoArrowLoaderOptions} from './exports/geoarrow-loader';
 import {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
 

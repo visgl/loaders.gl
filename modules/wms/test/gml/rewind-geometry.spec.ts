@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import {expect, test} from 'vitest';
-import type {Geometry, Position} from '@loaders.gl/schema';
+import type {Geometry, Position} from '@loaders.gl/core/schema';
 import {rewindGeometry} from '../../src/lib/parsers/gml/rewind-geometry';
 
 /** Creates a closed clockwise triangle with retained elevation values. */

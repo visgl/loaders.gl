@@ -64,7 +64,7 @@ Core texture category support is provided by the `@loaders.gl/textures` module.
 
 ## Texture Types
 
-Texture loaders in this category return normalized texture payloads from `@loaders.gl/schema`.
+Texture loaders in this category return normalized texture payloads from `@loaders.gl/core/schema`.
 
 | Type               | Shape                                 | Description                                                                      |
 | ------------------ | ------------------------------------- | -------------------------------------------------------------------------------- |

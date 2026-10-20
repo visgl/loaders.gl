@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {convertGeometryToTWKB} from '@loaders.gl/wkt/twkb';
-import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
+import type {BinaryGeometry, Geometry} from '@loaders.gl/core/schema';
 import {GeometryConverter, convertGeometryToWKB, convertGeometryToWKT} from '@loaders.gl/geoarrow';
 import {describe, expect, test} from 'vitest';
 

@@ -24,7 +24,7 @@
 //     diffuse_blue: 'blue'
 //   }
 // });
-import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import type {
   PLYMesh,

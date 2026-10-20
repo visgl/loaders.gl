@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Viewport} from '@deck.gl/core';
-import type {Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {
   GetFeaturesParameters,
   VectorSource,

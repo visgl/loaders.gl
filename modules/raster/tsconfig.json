@@ -17,12 +17,6 @@
     },
     {
       "path": "../images"
-    },
-    {
-      "path": "../schema"
-    },
-    {
-      "path": "../schema-utils"
     }
   ]
 }

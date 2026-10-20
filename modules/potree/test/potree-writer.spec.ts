@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
+import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
 import {encodePotreeDataset, PotreeWriter} from '@loaders.gl/potree';
 import {PotreeNodesSource} from '../src/lib/potree-node-source';
 import {parsePotreeBin} from '../src/parsers/parse-potree-bin';

@@ -82,9 +82,7 @@
     "build-writer-worker-node": "node ../../scripts/build-codec-worker.mjs src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12"
+    "@loaders.gl/arrow": "5.0.0-alpha.12"
   },
   "optionalDependencies": {
     "draco3d": "1.5.7"

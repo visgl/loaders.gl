@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Field, ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {Schema, Field, ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {DBFLoaderOptions, DBFHeader, DBFField} from './types';
 

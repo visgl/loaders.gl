@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import type {DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {PointCloudTileset} from '@loaders.gl/tiles';
 type Deferred<T> = {
   promise: Promise<T>;

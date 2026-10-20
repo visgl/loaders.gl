@@ -53,8 +53,6 @@
     "build-cjs-entrypoints": "esbuild dist/index.js dist/point-cloud-tile-source.js dist/point-cloud-tile-source-loader.js --outdir=dist --out-extension:.js=.cjs --bundle --format=cjs --platform=node --target=node22 --sourcemap --external:@loaders.gl/* --external:@math.gl/*"
   },
   "dependencies": {
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@math.gl/core": "5.0.0-alpha.18",
     "@math.gl/crs": "5.0.0-alpha.18",
     "@math.gl/culling": "5.0.0-alpha.18",

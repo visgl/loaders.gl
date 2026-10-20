@@ -64,7 +64,7 @@ See [Draco](/docs/modules/draco/formats/draco) docs.
 ```typescript
 import {DracoWriter} from '@loaders.gl/draco';
 import {encode} from '@loaders.gl/core';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 
 declare const mesh: Mesh | MeshArrowTable;
 

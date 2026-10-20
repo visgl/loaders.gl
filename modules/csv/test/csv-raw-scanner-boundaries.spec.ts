@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {
   parseRawArrowCSVASCIIText,
   parseRawArrowCSVBytes

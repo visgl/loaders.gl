@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import type {ArrowTableBatch, Field} from '@loaders.gl/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import type {ArrowTableBatch, Field} from '@loaders.gl/core/schema';
 
 /** One feature table with an explicit triangle-to-row association. */
 export interface I3SMeshFeatures {

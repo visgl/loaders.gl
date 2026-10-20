@@ -6,7 +6,14 @@ import * as arrow from 'apache-arrow';
 import {projectionEngine} from '@math.gl/projection';
 import type {Projection} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';
-import type {ArrowTable, ArrowTableBatch, Feature, Field, Schema, Table} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  Feature,
+  Field,
+  Schema,
+  Table
+} from '@loaders.gl/core/schema';
 import {
   filterColumnarRowIndices,
   makeTableScanBatch,
@@ -25,9 +32,9 @@ import {
 } from '@loaders.gl/arrow-geometry/geometry-field';
 import {makeWKBGeometryDataFromArray} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
-import {type GeoParquetGeometryType} from '@loaders.gl/schema';
+import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {WKBBuilder} from '@loaders.gl/arrow-geometry';
-import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/schema-utils';
+import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/core/schema-utils';
 import {
   decodeFlatGeobufGeometry,
   FlatGeobufColumnType,
@@ -46,7 +53,7 @@ export type ParseFlatGeobufOptions = CRSReprojectionOptions & {
   shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
   boundingBox?: [[number, number], [number, number]];
   /** Preferred encoding for Arrow geometry output. */
-  geoarrow?: {encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference};
+  geoarrow?: {encodingPreference?: import('@loaders.gl/core/schema').GeoArrowEncodingPreference};
 };
 
 /** Portable FlatGeobuf query options, with an indexed spatial envelope. */

@@ -1,0 +1,298 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {expect, test} from 'vitest';
+import * as arrow from 'apache-arrow';
+import type {Mesh} from '@loaders.gl/core/schema';
+import {
+  createFloat16Array,
+  encodeFloat16,
+  getFloat16Value,
+  indexedMeshArrowSchema,
+  meshArrowSchema,
+  isNativeFloat16Array,
+  setFloat16Value
+} from '@loaders.gl/core/schema';
+import {
+  convertMeshToTable,
+  convertTableToMesh,
+  deduceMeshSchema
+} from '@loaders.gl/core/schema-utils';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+test('convertMeshToTable preserves empty vector and scalar attribute schemas', () => {
+  const attributes = {
+    POSITION: {value: new Float32Array(0), size: 3},
+    intensity: {value: new Uint16Array(0), size: 1}
+  };
+  const table = convertMeshToTable(
+    {attributes, schema: deduceMeshSchema(attributes), topology: 'point-list', mode: 0},
+    'arrow-table'
+  );
+  expect(table.data.numRows).toBe(0);
+  expect(table.data.schema.fields.map(field => field.name)).toEqual(['POSITION', 'intensity']);
+  expect(table.data.getChild('POSITION')!.type).toBeInstanceOf(arrow.FixedSizeList);
+  expect(table.data.getChild('intensity')!.type).toBeInstanceOf(arrow.Uint16);
+});
+test('meshArrowSchema', () => {
+  expect(meshArrowSchema.fields.length, 'mesh schema has one predefined field').toBe(1);
+  const positionField = meshArrowSchema.fields[0];
+  expect(positionField.name, 'position field is first').toBe('POSITION');
+  expect(positionField.nullable, 'position field is required').toBeFalsy();
+  expect(
+    positionField.type instanceof arrow.FixedSizeList,
+    'position is a fixed-size list'
+  ).toBeTruthy();
+  expect(positionField.type.listSize, 'position has XYZ tuple size').toBe(3);
+  expect(
+    positionField.type.children[0].type instanceof arrow.Float32,
+    'position values are float32'
+  ).toBeTruthy();
+});
+test('indexedMeshArrowSchema', () => {
+  expect(indexedMeshArrowSchema.fields.length, 'indexed schema has two predefined fields').toBe(2);
+  expect(indexedMeshArrowSchema.fields[0].name, 'position field is first').toBe('POSITION');
+  const indicesField = indexedMeshArrowSchema.fields[1];
+  expect(indicesField.name, 'indices field is second').toBe('indices');
+  expect(indicesField.nullable, 'indices field is nullable').toBeTruthy();
+  expect(indicesField.type instanceof arrow.List, 'indices is a list').toBeTruthy();
+  expect(
+    indicesField.type.children[0].type instanceof arrow.Uint32,
+    'indices values are uint32'
+  ).toBeTruthy();
+});
+
+test('convertMeshToTable#preserves logical Float16 colors', () => {
+  const colors = createFloat16Array(9);
+  setFloat16Value(colors, 0, 0);
+  setFloat16Value(colors, 1, 0.5);
+  setFloat16Value(colors, 2, 1);
+  setFloat16Value(colors, 3, 1);
+  setFloat16Value(colors, 4, 0.25);
+  setFloat16Value(colors, 5, 0.75);
+  setFloat16Value(colors, 6, 0.5);
+  setFloat16Value(colors, 7, 0.125);
+  setFloat16Value(colors, 8, 0.875);
+  const mesh = {
+    ...makeMesh(),
+    attributes: {
+      POSITION: makeMesh().attributes.POSITION,
+      COLOR_0: {value: colors, size: 3, componentType: 'float16' as const}
+    }
+  } as Mesh;
+
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  const colorField = table.data.schema.fields.find(field => field.name === 'COLOR_0');
+  expect(colorField!.type instanceof arrow.FixedSizeList).toBeTruthy();
+  expect(colorField!.type.children[0].type instanceof arrow.Float16).toBeTruthy();
+  expect(colorField!.metadata.get('componentType')).toBe('float16');
+
+  const roundTripMesh = convertTableToMesh(table);
+  const roundTripColors = roundTripMesh.attributes.COLOR_0;
+  expect(roundTripColors.componentType).toBe('float16');
+  expect(getFloat16Value(roundTripColors.value, 1)).toBeCloseTo(0.5, 3);
+  expect(getFloat16Value(roundTripColors.value, 4)).toBeCloseTo(0.25, 3);
+});
+
+test('Float16 fallback stores binary16 words', () => {
+  const words = new Uint16Array([encodeFloat16(0), encodeFloat16(0.5), encodeFloat16(1)]);
+  expect(Array.from(words)).toEqual([0x0000, 0x3800, 0x3c00]);
+  expect(getFloat16Value(words, 1)).toBeCloseTo(0.5, 3);
+});
+
+test('convertMeshToTable#preserves Float32 colors', () => {
+  const colors = new Float32Array([0, 0.5, 1, 1, 0.25, 0.75]);
+  const attributes = {
+    POSITION: {value: new Float32Array([0, 0, 0, 1, 1, 1]), size: 3},
+    COLOR_0: {value: colors, size: 3, normalized: false}
+  };
+  const mesh: Mesh = {
+    attributes,
+    schema: deduceMeshSchema(attributes),
+    topology: 'point-list',
+    mode: 0
+  };
+
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  const colorField = table.data.schema.fields.find(field => field.name === 'COLOR_0');
+  expect((colorField!.type as arrow.FixedSizeList).children[0].type).toBeInstanceOf(arrow.Float32);
+
+  const roundTripColors = convertTableToMesh(table).attributes.COLOR_0;
+  expect(roundTripColors.value).toBeInstanceOf(Float32Array);
+  expect(Array.from(roundTripColors.value)).toEqual(Array.from(colors));
+  expect(roundTripColors.normalized).toBe(false);
+});
+
+test('createFloat16Array selects native or fallback storage', () => {
+  const values = createFloat16Array(1);
+  if (typeof Float16Array !== 'undefined') {
+    expect(isNativeFloat16Array(values)).toBe(true);
+  } else {
+    expect(values).toBeInstanceOf(Uint16Array);
+  }
+});
+test('convertMeshToTable#unindexed mesh Arrow table round trip', () => {
+  const mesh = makeMesh();
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
+  validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'Mesh Arrow table'});
+  expect(
+    table.data.schema.fields.map(field => field.name),
+    'predefined position column is first'
+  ).toEqual(['POSITION', 'NORMAL', 'intensity']);
+  const intensityColumn = table.data.getChild('intensity');
+  expect(intensityColumn, 'scalar intensity column is present').toBeTruthy();
+  expect(
+    intensityColumn!.type instanceof arrow.FixedSizeList,
+    'scalar intensity column is not a fixed-size list'
+  ).toBeFalsy();
+  expect(
+    intensityColumn!.type instanceof arrow.Uint16,
+    'scalar intensity column is uint16'
+  ).toBeTruthy();
+  expect(intensityColumn!.get(0), 'scalar intensity reads as a scalar').toBe(10);
+  expect(table.data.getChild('indices'), 'indices column is absent').toBeFalsy();
+  const roundTripMesh = convertTableToMesh(table);
+  expect(roundTripMesh.indices, 'round trip mesh has no top-level indices').toBeFalsy();
+  expect(
+    Array.from(roundTripMesh.attributes.POSITION.value),
+    'round trip preserves positions'
+  ).toEqual(Array.from(mesh.attributes.POSITION.value));
+  expect(roundTripMesh.attributes.POSITION.size, 'round trip preserves position size').toBe(3);
+  expect(
+    Array.from(roundTripMesh.attributes.intensity.value),
+    'round trip preserves scalar intensity'
+  ).toEqual([10, 20, 30]);
+  expect(roundTripMesh.attributes.intensity.size, 'round trip preserves scalar size').toBe(1);
+});
+test.each([
+  Uint8Array,
+  Uint16Array,
+  Uint32Array
+])('convertMeshToTable#indexed mesh Arrow table round trip from %s', IndexArray => {
+  const mesh = makeMesh(new IndexArray([0, 1, 2]));
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'IndexedMesh Arrow table'
+  });
+  expect(
+    table.data.schema.fields.map(field => field.name),
+    'indexed schema fields are first'
+  ).toEqual(['POSITION', 'indices', 'NORMAL', 'intensity']);
+  const indicesColumn = table.data.getChild('indices');
+  expect(indicesColumn, 'indices column is present').toBeTruthy();
+  expect(Array.from(indicesColumn!.get(0)!), 'indices are stored in row 0').toEqual([0, 1, 2]);
+  expect(indicesColumn!.get(1), 'remaining rows have null indices').toBe(null);
+  const roundTripMesh = convertTableToMesh(table);
+  expect(roundTripMesh.indices!.value).toBeInstanceOf(Uint32Array);
+  expect(indicesColumn!.data[0].valueOffsets).toBeInstanceOf(Int32Array);
+  expect(
+    roundTripMesh.attributes.indices,
+    'round trip mesh does not create an indices attribute'
+  ).toBeFalsy();
+  expect(Array.from(roundTripMesh.indices!.value), 'round trip mesh preserves indices').toEqual([
+    0, 1, 2
+  ]);
+});
+
+test('convertMeshToTable#preserves unsigned 32-bit index values and buffer views', () => {
+  // Exercise storage boundaries without allocating billions of vertex positions.
+  const indices = new Uint32Array([99, 0, 0x7fffffff, 0x80000000, 0xfffffffe, 99]).subarray(1, 5);
+  const table = convertMeshToTable(makeMesh(indices), 'arrow-table');
+  const values = convertTableToMesh(table).indices!.value;
+  expect(values).toBeInstanceOf(Uint32Array);
+  expect(Array.from(values)).toEqual([0, 0x7fffffff, 0x80000000, 0xfffffffe]);
+  expect(values.buffer).toBe(indices.buffer);
+  expect(values.byteOffset).toBe(indices.byteOffset);
+
+  const restoredTable = arrow.tableFromIPC(arrow.tableToIPC(table.data));
+  const restoredIndices = convertTableToMesh({...table, data: restoredTable}).indices!.value;
+  expect(restoredIndices).toBeInstanceOf(Uint32Array);
+  expect(Array.from(restoredIndices)).toEqual(Array.from(indices));
+});
+test('convertTableToMesh#honors FixedSizeList chunk offsets', () => {
+  const attributes = {
+    POSITION: {
+      value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      size: 3
+    }
+  };
+  const mesh: Mesh = {
+    schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'}),
+    attributes,
+    topology: 'point-list',
+    mode: 0
+  };
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  const positionColumn = table.data.getChild('POSITION') as arrow.Vector<arrow.FixedSizeList>;
+  const positionData = positionColumn.data[0];
+  const offsetPositionData = new arrow.Data<arrow.FixedSizeList>(
+    positionData.type,
+    1,
+    2,
+    positionData.nullCount,
+    positionData,
+    positionData.children
+  );
+  const offsetTable = new arrow.Table(table.data.schema, {
+    POSITION: new arrow.Vector([offsetPositionData])
+  });
+  const roundTripMesh = convertTableToMesh({...table, data: offsetTable});
+  expect(
+    Array.from(roundTripMesh.attributes.POSITION.value),
+    'round trip uses the chunk offset when flattening values'
+  ).toEqual([1, 0, 0, 0, 1, 0]);
+  expect(roundTripMesh.attributes.POSITION.size, 'round trip preserves position size').toBe(3);
+});
+
+test('convertTableToMesh#restores quantized position metadata and logical bounds', () => {
+  const attributes = {
+    POSITION: {
+      value: new Uint16Array([0, 0, 0, 10, 10, 10]),
+      size: 3,
+      transform: {type: 'quantization', bits: 8, origin: [50, -100, 150], range: 2}
+    }
+  };
+  const mesh: Mesh = {
+    attributes,
+    schema: deduceMeshSchema(attributes),
+    topology: 'point-list',
+    mode: 0,
+    header: {
+      vertexCount: 2,
+      boundingBox: [
+        [50, -100, 150],
+        [52, -98, 152]
+      ]
+    }
+  };
+  const roundTripMesh = convertTableToMesh(convertMeshToTable(mesh, 'arrow-table'));
+  expect(roundTripMesh.attributes.POSITION.transform).toEqual(mesh.attributes.POSITION.transform);
+  expect(roundTripMesh.header?.boundingBox).toEqual(mesh.header?.boundingBox);
+});
+/** Create a small mesh for attribute and index conversion tests. */
+function makeMesh(indices?: Uint8Array | Uint16Array | Uint32Array): Mesh {
+  const attributes = {
+    POSITION: {
+      value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      size: 3
+    },
+    NORMAL: {
+      value: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      size: 3
+    },
+    intensity: {
+      value: new Uint16Array([10, 20, 30]),
+      size: 1
+    }
+  };
+  const topology = indices ? 'triangle-list' : 'point-list';
+  const mode = indices ? 4 : 0;
+  return {
+    schema: deduceMeshSchema(attributes, {topology, mode: String(mode)}),
+    attributes,
+    indices: indices ? {value: indices, size: 1} : undefined,
+    topology,
+    mode
+  };
+}

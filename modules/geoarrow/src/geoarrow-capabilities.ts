@@ -9,7 +9,7 @@ import type {
   GeoArrowEncoding,
   GeoArrowOffsetType,
   GeoParquetGeometryType
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {getGeometryMetadataForField} from './metadata/geoarrow-metadata';
 import {getGeoArrowGeometryInfoFromLayout} from './get-geoarrow-geometry-info';
 import {scanWKB} from '@math.gl/wkb';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/schema';
+import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/core/schema';
 import {WKBBuilder} from '@loaders.gl/arrow-geometry';
 import {type CoordinateTransform} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
 import {

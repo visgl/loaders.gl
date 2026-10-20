@@ -8,7 +8,7 @@ import type {
   GeoArrowDimension,
   GeoArrowOffsetType,
   GeoParquetGeometryType
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {
   GeoArrowBuilder,
   type GeoArrowBuilderEncoding,

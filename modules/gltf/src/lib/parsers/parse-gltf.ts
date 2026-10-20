@@ -10,7 +10,7 @@ import type {GLTFExternalFile, GLTFWithBuffers} from '../types/gltf-types';
 import type {GLB} from '../types/glb-types';
 import type {ParseGLBOptions} from './parse-glb';
 
-import type {ImageType, TextureLevel} from '@loaders.gl/schema';
+import type {ImageType, TextureLevel} from '@loaders.gl/core/schema';
 import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/core/loader-utils';
 import {ImageBitmapLoader} from '@loaders.gl/images';
 import {BasisLoader} from '@loaders.gl/textures';

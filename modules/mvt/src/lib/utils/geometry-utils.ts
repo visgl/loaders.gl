@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {getPolygonSignedArea} from '@math.gl/polygon';
-import {FlatIndexedGeometry, FlatPolygon} from '@loaders.gl/schema';
+import {FlatIndexedGeometry, FlatPolygon} from '@loaders.gl/core/schema';
 
 /**
  *

@@ -9,7 +9,7 @@ import {
   type Geometry,
   type Metadata,
   type Schema
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type {GeoArrowBuilderEncoding} from '../src/geoarrow-builder';
 import {
   encodeWKBGeometryValue,

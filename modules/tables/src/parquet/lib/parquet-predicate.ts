@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrayType} from '@loaders.gl/schema';
+import type {ArrayType} from '@loaders.gl/core/schema';
 
 import type {
   ParquetColumnChunkStatistics,

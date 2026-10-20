@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TableBatch} from '@loaders.gl/schema';
-import {makeTableFromData, TableBatchBuilder} from '@loaders.gl/schema-utils';
+import type {TableBatch} from '@loaders.gl/core/schema';
+import {makeTableFromData, TableBatchBuilder} from '@loaders.gl/core/schema-utils';
 import {
   LoaderOptions,
   makeLineIterator,

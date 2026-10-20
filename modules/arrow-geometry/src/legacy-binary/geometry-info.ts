@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/core/schema';
 
 /** Aggregate information for converting GeoJSON into other formats */
 export type GeojsonGeometryInfo = {

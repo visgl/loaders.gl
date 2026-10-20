@@ -11,7 +11,7 @@ import type {
   ObjectRowTable,
   Schema,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {
   type LegacyGeoJSONCRS,
   convertFeaturesToGeoArrowTable,
@@ -23,7 +23,7 @@ import {
   ArrowTableBuilder,
   convertArrowToSchema,
   type ArrowViewTypeMode
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 type PrimitiveArrowDataType = 'null' | 'bool' | 'float64' | 'utf8' | 'date-millisecond';
@@ -85,7 +85,7 @@ export type GeoJSONArrowConversionOptions = JSONArrowConversionOptions & {
   /** Optional legacy GeoJSON root CRS metadata to preserve on GeoArrow output. */
   crs?: LegacyGeoJSONCRS | null;
   /** Preferred encoding for Arrow geometry output. */
-  geoarrow?: {encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference};
+  geoarrow?: {encodingPreference?: import('@loaders.gl/core/schema').GeoArrowEncodingPreference};
 };
 
 type NormalizedArrowConversionOptions = Required<ArrowConversionOptions>;

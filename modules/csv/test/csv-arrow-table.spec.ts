@@ -24,7 +24,7 @@ import {
 } from '@loaders.gl/csv/unbundled';
 import * as csv from '@loaders.gl/csv';
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
   deserializeCSVWorkerResult,
   serializeCSVWorkerResult

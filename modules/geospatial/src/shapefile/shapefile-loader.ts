@@ -9,7 +9,7 @@ import type {
   GeoJSONTable,
   ArrowTable,
   ArrowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {SHPLoaderOptions} from './shp-loader-types';
 import {
   parseShapefile,

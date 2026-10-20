@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 
-import {Mesh} from '@loaders.gl/schema';
+import {Mesh} from '@loaders.gl/core/schema';
 
 // DRACO FORMAT SPECIFIC DATA
 

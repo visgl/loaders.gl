@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {GZipDecompressor, ZstdDecompressor} from '@loaders.gl/compression';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import type {GaussianSplats, SPZCoordinateSystem, SplatsLoaderOptions} from '../types';
 import {makeGaussianSplatsArrowTable} from './splats-arrow-table';
 import {normalizeQuaternion} from './splat-utils';

@@ -4,7 +4,7 @@
 
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {encodeMLT} from './lib/encode-mlt';
 import {MLTFormat} from './mlt-format';
 

@@ -28,12 +28,6 @@
       "path": "../geoarrow"
     },
     {
-      "path": "../schema"
-    },
-    {
-      "path": "../schema-utils"
-    },
-    {
       "path": "../tiles"
     },
     {

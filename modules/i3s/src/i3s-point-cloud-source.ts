@@ -9,9 +9,9 @@ import type {
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
 import {BlobFile, HttpFile} from '@loaders.gl/core/loader-utils';
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
-import {convertColorArrayToFloat16} from '@loaders.gl/schema';
-import type {MeshAttributes} from '@loaders.gl/schema';
+import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
+import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
+import type {MeshAttributes} from '@loaders.gl/core/schema';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {

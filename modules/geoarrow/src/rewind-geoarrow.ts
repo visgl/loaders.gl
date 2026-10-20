@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {GeoArrowEncoding} from '@loaders.gl/schema';
+import type {GeoArrowEncoding} from '@loaders.gl/core/schema';
 import {getGeoArrowUnionGeometryKind} from './lib/kernels/geoarrow-union';
 
 /** Ring orientation requested by {@link rewindGeoArrow}. */

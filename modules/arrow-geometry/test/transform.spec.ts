@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {BinaryFeatureCollection, Feature} from '@loaders.gl/schema';
+import {BinaryFeatureCollection, Feature} from '@loaders.gl/core/schema';
 import {transformBinaryCoords, transformGeoJsonCoords} from '../src/legacy-binary';
 import {projectionEngine} from '@math.gl/projection';
 test('geoarrow#reproject GeoJSON', () => {

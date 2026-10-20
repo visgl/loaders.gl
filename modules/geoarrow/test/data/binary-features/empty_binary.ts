@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {BinaryFeatureCollection} from '@loaders.gl/schema';
+import {BinaryFeatureCollection} from '@loaders.gl/core/schema';
 
 export const EMPTY_BINARY_DATA: BinaryFeatureCollection = {
   shape: 'binary-feature-collection',

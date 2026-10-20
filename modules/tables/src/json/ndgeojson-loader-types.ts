@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, ObjectRowTable, TableBatch} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  ObjectRowTable,
+  TableBatch
+} from '@loaders.gl/core/schema';
 import type {GeoJSONLoaderOptions} from './geojson-loader-types';
 import {NDGeoJSONFormat} from './json-format';
 

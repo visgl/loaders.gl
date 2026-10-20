@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {parseWKB, WKBBuilder} from '@math.gl/wkb';
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 import {
   convertGeometryToWKB,
   convertGeometryToWKT,

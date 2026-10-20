@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
-import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseVersion} from '../utils/parse-version';
 import type {PotreeAttribute} from '../types/potree-metadata';
 

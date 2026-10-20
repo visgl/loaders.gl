@@ -40,8 +40,8 @@ export type geoColumnInfo = {
 // // SPDX-License-Identifier: MIT
 // // Copyright (c) vis.gl contributors
 
-// import type {Schema, Field, GeoArrowMetadata, GeoArrowEncoding, Geometry} from '@loaders.gl/schema';
-// import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+// import type {Schema, Field, GeoArrowMetadata, GeoArrowEncoding, Geometry} from '@loaders.gl/core/schema';
+// import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 // import * as arrow from 'apache-arrow';
 // import {getGeometryColumnsFromSchema, getGeometryMetadataForField} from '../geoarrow/geoarrow-metadata';
 // import { getGeoMetadata as getParquetMe} from './geoparquet-metadata';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {COPCWriter, type COPCWriterOptions} from '@loaders.gl/copc';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {TileConversionError, type TileConversionCodec} from '@loaders.gl/tile-converter/v5/core';
 import {
   getPointCloudMesh,

@@ -86,7 +86,6 @@
     "@loaders.gl/images": "5.0.0-alpha.12",
     "@loaders.gl/mvt": "5.0.0-alpha.12",
     "@loaders.gl/raster": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
     "lerc": "^4.2.0"
   },
   "peerDependencies": {

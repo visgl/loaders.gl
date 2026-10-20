@@ -6,7 +6,7 @@ import { expect, test } from "vitest";
 // import {validateLoader} from 'test/common/conformance';
 import { GeoParquetLoader, ParquetLoader, ParquetWriter } from '@loaders.gl/parquet';
 import { load, encode, setLoaderOptions } from '@loaders.gl/core';
-import { getTableLength } from '@loaders.gl/schema-utils';
+import { getTableLength } from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/geoparquet';
 const GEOPARQUET_EXAMPLE = `${PARQUET_DIR}/example.parquet`;

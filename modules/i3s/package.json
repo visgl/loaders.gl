@@ -90,8 +90,6 @@
     "@loaders.gl/compression": "5.0.0-alpha.12",
     "@loaders.gl/draco": "5.0.0-alpha.12",
     "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@loaders.gl/textures": "5.0.0-alpha.12",
     "@loaders.gl/tiles": "5.0.0-alpha.12",
     "@loaders.gl/zip": "5.0.0-alpha.12",

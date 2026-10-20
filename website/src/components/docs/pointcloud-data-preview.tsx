@@ -5,8 +5,8 @@ import {LASLoader} from '@loaders.gl/las';
 import {OBJLoader} from '@loaders.gl/obj';
 import {PCDLoader} from '@loaders.gl/pcd';
 import {PLYLoader} from '@loaders.gl/ply';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {EXAMPLES, type Example} from 'examples/website/pointcloud/examples';
 import {
   ExampleUrlInputCard,

@@ -11,7 +11,7 @@ import type {
   ColumnarTableBatch,
   ObjectRowTable,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {CSVFormat} from './csv-format';
 import {CSV_LOADER_OPTIONS, CSV_LOADER_VERSION, type CSVLoaderOptions} from './csv-loader-options';
 

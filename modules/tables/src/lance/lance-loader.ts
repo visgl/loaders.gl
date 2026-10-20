@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {concatenateArrayBuffersAsync, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 
 import {LanceLoader as LanceLoaderMetadata, type LanceLoaderOptions} from './lance-loader-types';

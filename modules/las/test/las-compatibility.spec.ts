@@ -5,8 +5,8 @@
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {LASLoader, type LASLoaderOptions} from '@loaders.gl/las';
-import type {MeshAttributes} from '@loaders.gl/schema';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {MeshAttributes} from '@loaders.gl/core/schema';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseLAS, parseLASInBatches, decodeLAZFileInBatches} from '../src/lib/typescript/parse-las';
 
 const formats = [6, 7, 8, 9, 10] as const;

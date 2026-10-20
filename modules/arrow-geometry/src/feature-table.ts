@@ -12,14 +12,14 @@ import type {
   GeoArrowEncodingPreference,
   GeoJSONTable,
   Schema
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type {PROJJSONCRS} from '@math.gl/crs';
 import * as arrow from 'apache-arrow';
 import {
   ArrowTableBuilder,
   convertArrowToSchema,
   convertSchemaToArrow
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import {convertGeometryToWKT} from './geometry-codecs';
 import {
   encodeWKBGeometryValue,
@@ -28,7 +28,7 @@ import {
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata
 } from './geometry-field';
-import {getGeoMetadata, setGeoMetadata, type GeoColumnMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata, setGeoMetadata, type GeoColumnMetadata} from '@loaders.gl/core/schema';
 import {GeoArrowBuilder, type GeoArrowBuilderEncoding} from './geoarrow-builder';
 
 const DEFAULT_GEOMETRY_COLUMN_NAME = 'geometry';
@@ -114,7 +114,7 @@ const EPSG_4326_PROJJSON = {
 /** Supported GeoArrow encodings for GeoJSON feature conversion. */
 export type GeoJSONToGeoArrowEncoding = 'wkb' | 'wkt';
 
-export type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+export type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 
 /** Legacy GeoJSON CRS object from pre-RFC 7946 GeoJSON documents. */
 export type LegacyGeoJSONCRS = {

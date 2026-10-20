@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 
 /** Explicit policy for representing an entire geometry by one point. */
 export type RepresentativePointStrategy = 'point' | 'centroid' | 'bounds-center' | 'line-midpoint';

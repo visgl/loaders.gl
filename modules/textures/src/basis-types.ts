@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {TextureFormat} from '@loaders.gl/schema';
+import type {TextureFormat} from '@loaders.gl/core/schema';
 
 /** ASTC block sizes supported by Basis Universal v2.50. */
 export type BasisASTCBlockSize =

@@ -11,8 +11,8 @@ import type {
   Geometry,
   ObjectRowTable,
   Table
-} from '@loaders.gl/schema';
-import {convertTable} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {convertTable} from '@loaders.gl/core/schema-utils';
 import {earcut} from '@math.gl/polygon';
 import type {GeoArrowBuilderEncoding} from '@loaders.gl/arrow-geometry';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';

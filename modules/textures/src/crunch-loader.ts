@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {TextureLevel} from '@loaders.gl/core/schema';
 import {CrunchTextureFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
 

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {GLTFPostprocessed, GLTF_EXT_structural_metadata_ClassProperty} from '@loaders.gl/gltf';
-import type {DataType, Field} from '@loaders.gl/schema';
+import type {DataType, Field} from '@loaders.gl/core/schema';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';
 

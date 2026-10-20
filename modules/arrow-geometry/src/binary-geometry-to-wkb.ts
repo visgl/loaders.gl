@@ -7,8 +7,8 @@ import type {
   BinaryLineGeometry,
   BinaryPointGeometry,
   BinaryPolygonGeometry
-} from '@loaders.gl/schema';
-import type {GeoParquetGeometryType} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
+import type {GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {visitWKB} from '@math.gl/wkb';
 import {WKBBuilder, type WKBCoordinateTransform} from './wkb-builder';
 

@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {CSVLoader} from '@loaders.gl/csv';
 import {ExcelLoader} from '@loaders.gl/excel';
 import * as excel from '@loaders.gl/excel';

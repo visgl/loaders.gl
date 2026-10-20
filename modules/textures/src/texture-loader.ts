@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {Texture} from '@loaders.gl/schema';
+import type {Texture} from '@loaders.gl/core/schema';
 import type {TextureLoaderOptions as TextureApiLoaderOptions} from './lib/texture-api/texture-api-types';
 import {VERSION} from './lib/utils/version';
 import {

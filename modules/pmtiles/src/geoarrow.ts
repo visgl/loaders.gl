@@ -11,8 +11,8 @@ import type {
   MVTWriterOptions
 } from '@loaders.gl/mvt';
 import {ArrowTableVectorTileSource} from '@loaders.gl/mvt/arrow-table-tile-source-loader';
-import {getGeoMetadata} from '@loaders.gl/schema';
-import type {DataType} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
+import type {DataType} from '@loaders.gl/core/schema';
 import {encodePMTiles} from './lib/encode-pmtiles';
 import type {PMTilesEncodeOptions, PMTilesTile} from './pmtiles-writer-types';
 

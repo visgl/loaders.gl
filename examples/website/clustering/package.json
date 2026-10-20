@@ -16,7 +16,6 @@
     "@deck.gl/react": "^9.4.0",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/geoarrow": "workspace:*",
-    "@loaders.gl/schema": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",

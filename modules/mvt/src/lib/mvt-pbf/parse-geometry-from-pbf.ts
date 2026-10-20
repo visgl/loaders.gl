@@ -10,7 +10,7 @@ import type {
   // FlatGeometry,
   FlatIndexedGeometry
   // GeojsonGeometryInfo
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 import Protobuf from 'pbf';
 

@@ -20,7 +20,7 @@ import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 
 import {load} from '@loaders.gl/core';
 import {getDeckBinaryDataFromArrowMesh, getBoundingBoxFromArrowPositions} from '@loaders.gl/geoarrow';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {DracoArrowLoader} from '@loaders.gl/draco';
 import {LASArrowLoader} from '@loaders.gl/las';
 import {OBJArrowLoader} from '@loaders.gl/obj';

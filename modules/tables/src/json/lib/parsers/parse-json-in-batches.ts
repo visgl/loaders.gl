@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, TableBatch} from '@loaders.gl/schema';
+import type {Schema, TableBatch} from '@loaders.gl/core/schema';
 import type {JSONLoaderOptions, MetadataBatch, JSONBatch} from '../../json-loader-types';
 
-import {TableBatchBuilder} from '@loaders.gl/schema-utils';
+import {TableBatchBuilder} from '@loaders.gl/core/schema-utils';
 import {
   assert,
   makeTextDecoderIterator,

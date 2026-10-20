@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoJSONTable} from '@loaders.gl/schema';
+import type {GeoJSONTable} from '@loaders.gl/core/schema';
 
 /** Bounds for opt-in service pagination; exhausting a bound throws rather than returning partial data. */
 export type FeaturePaginationOptions = {

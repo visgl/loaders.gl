@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Matrix4} from '@math.gl/core';
-import type {MeshAttribute} from '@loaders.gl/schema';
+import type {MeshAttribute} from '@loaders.gl/core/schema';
 import type {
   GLTFPostprocessed,
   GLTFNodePostprocessed,

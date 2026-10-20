@@ -8,7 +8,7 @@ import type {
   GeoArrowEncoding,
   GeoArrowOffsetType,
   GeoParquetGeometryType
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 /** All GeoArrow extension encodings recognized by the loaders.gl contract. */
 export const GEOARROW_ENCODINGS = [

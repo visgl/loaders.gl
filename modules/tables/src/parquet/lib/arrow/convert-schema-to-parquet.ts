@@ -13,7 +13,7 @@ import {
   // Struct,
   // Field,
   DataType
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: DataType} = {
   BOOLEAN: 'bool',

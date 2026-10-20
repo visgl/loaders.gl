@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {VectorSourceLayer, type VectorSourceLayerProps} from '@loaders.gl/deck-layers';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {VectorSet} from '../src/vector-source-layer/vector-set';
 function createDeferredPromise<T>() {
   let resolvePromise!: (value: T) => void;

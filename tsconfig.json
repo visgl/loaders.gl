@@ -159,24 +159,6 @@
       "@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader": [
         "modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader"
       ],
-      "@loaders.gl/schema": [
-        "modules/schema/src"
-      ],
-      "@loaders.gl/schema/*": [
-        "modules/schema/src/*"
-      ],
-      "@loaders.gl/schema/test": [
-        "modules/schema/test"
-      ],
-      "@loaders.gl/schema-utils/arrow-transport": [
-        "modules/schema-utils/src/arrow-transport"
-      ],
-      "@loaders.gl/schema-utils": [
-        "modules/schema-utils/src"
-      ],
-      "@loaders.gl/schema-utils/test": [
-        "modules/schema-utils/test"
-      ],
       "@loaders.gl/core/worker-utils": [
         "modules/core/src/worker-utils"
       ],
@@ -402,10 +384,18 @@
       "@loaders.gl/mvt/test": [
         "modules/mvt/test"
       ],
-      "@loaders.gl/scientific": ["modules/scientific/src"],
-      "@loaders.gl/scientific/*": ["modules/scientific/src/*"],
-      "@loaders.gl/scientific/test": ["modules/scientific/test"],
-      "@loaders.gl/scientific/test/*": ["modules/scientific/test/*"],
+      "@loaders.gl/scientific": [
+        "modules/scientific/src"
+      ],
+      "@loaders.gl/scientific/*": [
+        "modules/scientific/src/*"
+      ],
+      "@loaders.gl/scientific/test": [
+        "modules/scientific/test"
+      ],
+      "@loaders.gl/scientific/test/*": [
+        "modules/scientific/test/*"
+      ],
       "@loaders.gl/obj": [
         "modules/obj/src"
       ],
@@ -613,10 +603,18 @@
       "@loaders.gl/xml/test": [
         "modules/xml/test"
       ],
-      "@loaders.gl/zip/indexed-zip-writer": ["modules/zip/src/indexed-zip-writer"],
-      "@loaders.gl/zip/zip-loader": ["modules/zip/src/zip-loader"],
-      "@loaders.gl/zip/zip-writer": ["modules/zip/src/zip-writer"],
-      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": ["modules/3d-tiles/src/3d-tiles-archive-writer"],
+      "@loaders.gl/zip/indexed-zip-writer": [
+        "modules/zip/src/indexed-zip-writer"
+      ],
+      "@loaders.gl/zip/zip-loader": [
+        "modules/zip/src/zip-loader"
+      ],
+      "@loaders.gl/zip/zip-writer": [
+        "modules/zip/src/zip-writer"
+      ],
+      "@loaders.gl/3d-tiles/3d-tiles-archive-writer": [
+        "modules/3d-tiles/src/3d-tiles-archive-writer"
+      ],
       "@loaders.gl/zip": [
         "modules/zip/src"
       ],
@@ -634,6 +632,24 @@
       ],
       "@loaders.gl/raster/test/*": [
         "modules/raster/test/*"
+      ],
+      "@loaders.gl/core/schema": [
+        "modules/core/src/schema"
+      ],
+      "@loaders.gl/core/schema/*": [
+        "modules/core/src/schema/*"
+      ],
+      "@loaders.gl/core/schema/test": [
+        "modules/core/test/schema-package"
+      ],
+      "@loaders.gl/core/schema-utils/arrow-transport": [
+        "modules/core/src/schema-utils/arrow-transport"
+      ],
+      "@loaders.gl/core/schema-utils": [
+        "modules/core/src/schema-utils"
+      ],
+      "@loaders.gl/core/schema-utils/test": [
+        "modules/core/test/schema-utils-package"
       ]
     },
     "plugins": [

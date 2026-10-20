@@ -4,7 +4,7 @@
 
 import type {DehydratedArrowTable, SplitArrowBuffersOptions} from '@loaders.gl/arrow/transport';
 import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/arrow/transport';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {MVTLoaderOptions} from '../mvt-loader';
 
 type SerializedArrowTable = Omit<ArrowTable, 'data'> & {

@@ -10,7 +10,7 @@ import type {
   GeoJSONTable,
   ObjectRowTable,
   Position
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {KMLFormat, KMZFormat} from './kml-format';
 import {ZipWriter} from '@loaders.gl/zip';
 

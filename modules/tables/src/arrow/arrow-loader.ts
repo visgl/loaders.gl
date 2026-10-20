@@ -4,7 +4,7 @@
 
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
+import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {parseArrowSync, parseArrowInBatches} from './lib/parsers/parse-arrow';
 
 import type {ArrowLoaderOptions} from './exports/arrow-loader';

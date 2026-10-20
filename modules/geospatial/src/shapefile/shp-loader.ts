@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 import type {SHPResult} from './lib/parsers/parse-shp';
 import {parseSHPToArrow, parseSHPToArrowInBatches} from './lib/parsers/parse-shp-to-arrow';

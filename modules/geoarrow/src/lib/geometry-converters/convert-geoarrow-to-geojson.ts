@@ -11,7 +11,7 @@ import type {
   MultiLineString,
   LineString,
   Geometry
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {
   convertWKBToGeometry,
   convertWKTToGeometry

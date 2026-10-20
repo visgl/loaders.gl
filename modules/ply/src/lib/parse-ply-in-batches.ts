@@ -31,7 +31,7 @@ import {
   forEach,
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import normalizePLY from './normalize-ply';
 import {PLYMesh, PLYHeader, PLYElement, PLYProperty, PLYAttributes} from './ply-types';
 import {

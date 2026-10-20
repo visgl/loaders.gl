@@ -77,7 +77,7 @@ single table, the metadata-marked default, or the first vector table as a fallba
 ```typescript
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {load} from '@loaders.gl/core';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 
 const table: ArrowTable = await load(url, GeoPackageLoader);
 ```
@@ -87,7 +87,7 @@ To load a specific table named `feature_table` in a GeoPackage file as GeoJSON:
 ```typescript
 import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
 import {load} from '@loaders.gl/core';
-import type {GeoJSONTable} from '@loaders.gl/schema';
+import type {GeoJSONTable} from '@loaders.gl/core/schema';
 
 const optionsAsGeoJson: GeoPackageLoaderOptions = {
   geopackage: {
