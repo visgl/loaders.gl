@@ -57,3 +57,11 @@ test('High-zoom grid checks use relative tolerance rather than an absolute resol
     tileSize: 512
   });
 });
+
+test('Canonical zoom-31 levels retain their declared renderer range', () => {
+  expect(
+    getTileGridLayerOptions({
+      tileGrid: {tileMatrixSet: {crs: 'EPSG:3857', matrices: [createMatrix(30), createMatrix(31)]}}
+    })
+  ).toEqual({minZoom: 30, maxZoom: 31, tileSize: 512});
+});

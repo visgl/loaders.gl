@@ -36,7 +36,7 @@ export function getTileGridLayerOptions(
     if (
       !Number.isInteger(zoom) ||
       zoom < 0 ||
-      zoom > 30 ||
+      zoom > 31 ||
       matrix.id !== String(zoom) ||
       matrix.matrixSize[1] !== matrix.matrixSize[0] ||
       matrix.cornerOfOrigin !== 'topLeft' ||
