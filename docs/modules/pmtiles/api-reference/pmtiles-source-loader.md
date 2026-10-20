@@ -129,3 +129,10 @@ See the [PMTiles specification](https://github.com/protomaps/PMTiles/blob/main/s
 
 A tile request's abort signal cancels its metadata wait promptly. Shared metadata discovery
 continues for other callers; cancelling one tile does not invalidate their requests.
+
+Native grid metadata preserves PMTiles header zooms through 31. Tile payload lookup retains the
+installed PMTiles JavaScript reader's zoom-26 safe-number limit; higher advertised levels do not
+prevent metadata discovery or requests at supported lower levels.
+
+Header ranges that cannot form a supported numeric grid retain their native metadata and omit
+`tileGrid`; they do not make metadata parsing fail.

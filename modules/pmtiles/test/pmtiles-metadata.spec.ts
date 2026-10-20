@@ -103,3 +103,24 @@ test('Explicit PMTiles geographic source contract enables complete Web Mercator 
   expect(metadata.tileGrid?.tileMatrixSet?.crs).toBe('EPSG:3857');
   expect(metadata.tileGrid?.tileSize).toEqual([512, 512]);
 });
+
+test('PMTiles zoom-31 headers preserve lower levels and native metadata', () => {
+  const metadata = parsePMTilesHeader(
+    {...createHeader(1 as TileType), minZoom: 0, maxZoom: 31},
+    null
+  );
+  expect(metadata.maxZoom).toBe(31);
+  expect(metadata.tileGrid?.matrixIds).toHaveLength(32);
+  expect(metadata.tileGrid?.matrices?.[0]).toMatchObject({id: '0', matrixSize: [1, 1]});
+  expect(metadata.tileGrid?.matrices?.at(-1)).toMatchObject({
+    id: '31',
+    matrixSize: [2147483648, 2147483648]
+  });
+});
+
+test('Unrepresentable PMTiles grid ranges retain native header metadata', () => {
+  const metadata = parsePMTilesHeader({...createHeader(1 as TileType), maxZoom: 255}, null);
+  expect(metadata.maxZoom).toBe(255);
+  expect(metadata.tileGrid).toBeUndefined();
+  expect(metadata.tileMIMEType).toBe('application/vnd.mapbox-vector-tile');
+});

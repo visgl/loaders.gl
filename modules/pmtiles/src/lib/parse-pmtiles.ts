@@ -103,13 +103,17 @@ export function parsePMTilesHeader(
     partialMetadata.attributions = [tilejson.htmlAttribution];
   }
 
-  const canonicalGrid = createWebMercatorTileGrid(
-    header.minZoom,
-    header.maxZoom,
-    options?.tileSize ?? 256
-  );
+  // Preserve native header metadata even when its range cannot form a supported numeric grid.
+  const canonicalGrid =
+    Number.isInteger(header.minZoom) &&
+    Number.isInteger(header.maxZoom) &&
+    header.minZoom >= 0 &&
+    header.maxZoom >= header.minZoom &&
+    header.maxZoom <= 31
+      ? createWebMercatorTileGrid(header.minZoom, header.maxZoom, options?.tileSize ?? 256)
+      : undefined;
   const tileGrid =
-    options?.coordinateReferenceSystem === 'EPSG:3857'
+    !canonicalGrid || options?.coordinateReferenceSystem === 'EPSG:3857'
       ? canonicalGrid
       : createTileGrid(
           undefined,
