@@ -518,3 +518,5 @@ export {
   getTileGridMatrixId
 } from './lib/sources/tile-grid';
 export type {TileMatrixFields} from './lib/sources/tile-grid';
+
+export {createWebMercatorTileGrid, resolveXYZTileParameters} from './lib/sources/xyz-grid';

@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LoaderOptions} from '@loaders.gl/loader-utils';
+import {
+  createTileGrid,
+  createWebMercatorTileGrid,
+  type TileGrid,
+  LoaderOptions
+} from '@loaders.gl/loader-utils';
 import type {TileJSON} from '@loaders.gl/mvt';
 import {parseTileJSON} from '@loaders.gl/mvt';
 // import {Source, PMTiles, Header, TileType} from 'pmtiles';
@@ -12,6 +17,8 @@ const {TileType} = pmtiles;
 /** Metadata describing a PMTiles file */
 export type PMTilesMetadata = {
   format: 'pmtiles';
+  /** Native XYZ levels; complete geometry requires an explicit source CRS contract. */
+  tileGrid?: TileGrid;
   /** Version of pm tiles format used by this tileset */
   formatVersion: number;
 
@@ -63,7 +70,14 @@ export type PMTilesMetadata = {
 export function parsePMTilesHeader(
   header: pmtiles.Header,
   pmtilesMetadata: Record<string, unknown> | null,
-  options?: {includeFormatHeader?: boolean},
+  options?: {
+    /** Include the deprecated raw format header. */
+    includeFormatHeader?: boolean;
+    /** Explicit source contract for geographic XYZ geometry. */
+    coordinateReferenceSystem?: 'EPSG:3857';
+    /** Logical tile size; independent of encoded tile dimensions. */
+    tileSize?: number;
+  },
   loadOptions?: LoaderOptions
 ): PMTilesMetadata {
   // Ironically, to use the TileJSON loader we need to stringify the metadata again.
@@ -89,9 +103,22 @@ export function parsePMTilesHeader(
     partialMetadata.attributions = [tilejson.htmlAttribution];
   }
 
+  const canonicalGrid = createWebMercatorTileGrid(
+    header.minZoom,
+    header.maxZoom,
+    options?.tileSize ?? 256
+  );
+  const tileGrid =
+    options?.coordinateReferenceSystem === 'EPSG:3857'
+      ? canonicalGrid
+      : createTileGrid(
+          undefined,
+          canonicalGrid.matrices!.map(({id, tileSize, matrixSize}) => ({id, tileSize, matrixSize}))
+        );
   const metadata: PMTilesMetadata = {
     ...partialMetadata,
     format: 'pmtiles',
+    tileGrid,
     formatVersion: header.specVersion,
     attributions: [],
     tileMIMEType: decodeTileType(header.tileType),

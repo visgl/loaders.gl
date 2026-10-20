@@ -84,3 +84,22 @@ test('parsePMTilesHeader#tolerates invalid TileJSON metadata', () => {
   expect(metadata.tilejson).toBeUndefined();
   expect(metadata.attributions).toEqual([]);
 });
+
+test('Sparse PMTiles header describes the whole XYZ grid independently of content bounds', () => {
+  const metadata = parsePMTilesHeader(createHeader(1 as TileType), null);
+  expect(metadata.tileGrid?.matrixIds?.[0]).toBe('2');
+  expect(metadata.tileGrid?.matrixIds?.at(-1)).toBe('12');
+  expect(metadata.tileGrid?.matrices?.[0].matrixSize).toEqual([4, 4]);
+  expect(metadata.tileGrid?.tileMatrixSet).toBeUndefined();
+  expect(metadata.tileGrid?.tileSize).toEqual([256, 256]);
+  expect(metadata.tileGrid?.limits).toBeUndefined();
+});
+
+test('Explicit PMTiles geographic source contract enables complete Web Mercator geometry', () => {
+  const metadata = parsePMTilesHeader(createHeader(1 as TileType), null, {
+    coordinateReferenceSystem: 'EPSG:3857',
+    tileSize: 512
+  });
+  expect(metadata.tileGrid?.tileMatrixSet?.crs).toBe('EPSG:3857');
+  expect(metadata.tileGrid?.tileSize).toEqual([512, 512]);
+});

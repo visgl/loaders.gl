@@ -112,3 +112,20 @@ configuration. PMTiles can delegate to MVT, MLT, or image parsers. `pmtiles.shap
 - PMTiles URL sources expect byte-range fetches to return `206 Partial Content`. If a server
   ignores `Range` and responds with `200 OK`, loaders.gl aborts the fetch and rejects the tile
   request instead of downloading the full archive.
+
+## Canonical XYZ grid
+
+PMTiles archive addressing establishes XYZ level IDs and matrix counts, but does not declare
+a geographic CRS. `getMetadata().tileGrid` therefore retains partial native geometry by default.
+Set `pmtiles.coordinateReferenceSystem: 'EPSG:3857'` only when the source contract establishes
+Web Mercator to obtain a complete `tileMatrixSet`. It uses native zoom IDs and the header range. Its default 256-pixel logical frame can be
+changed with `pmtiles.tileSize`; this does not resample raster tiles or change vector quantization.
+Header geographic bounds and sparse directory entries remain separate from world matrix geometry.
+An advertised level does not guarantee that every tile exists; missing entries return `null`.
+Exact `tileMatrix` IDs and the shared native-ID-first/index-fallback rule resolve to native
+archive zooms before lookup and vector decoding. Unknown explicit IDs reject.
+
+See the [PMTiles specification](https://github.com/protomaps/PMTiles/blob/main/spec/v3/spec.md) and [Tile matrices](/docs/developer-guide/tile-matrices).
+
+A tile request's abort signal cancels its metadata wait promptly. Shared metadata discovery
+continues for other callers; cancelling one tile does not invalidate their requests.
