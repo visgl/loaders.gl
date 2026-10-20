@@ -170,3 +170,9 @@ the inherited CRS; an explicit nearer CRS declaration replaces inherited alterna
 OME-Zarr microscopy coordinates remain native OME metadata. An OME `multiscales` array is not
 the generic multiscales object and does not establish a geographic CRS. Use the OME source for
 its existing image/selection APIs. See [Tile matrices](/docs/developer-guide/tile-matrices).
+
+Explicit `proj:epsg` integer identifiers normalize to `EPSG:<code>`. `proj:projjson` definitions
+are retained as structured `metadata.crs` values, without semantic rewriting or identifier-only
+reduction. A structured CRS therefore keeps native metadata but omits complete `TileMatrixSet`
+geometry, whose current CRS contract is a string. An inherited string CRS never substitutes
+for a different explicit child declaration.

@@ -460,8 +460,7 @@ export class GeoZarrRasterSource
         : getTransformBoundingBox(transform, width, height);
     const coordinateReferenceSystem =
       options?.coordinateReferenceSystem ||
-      normalizeString(attributes['proj:wkt2']) ||
-      normalizeString(attributes['proj:code']) ||
+      normalizeDeclaredCoordinateReferenceSystem(attributes) ||
       (!metadataOnly ? await loadCFCoordinateReferenceSystem(group, attributes, spatialDimensions, signal) : undefined);
     const defaultSelection = options?.defaultSelection || {};
     const selectionDimensions = dimensions
@@ -961,4 +960,22 @@ function getSpatialChunkMatrix(
     tileSize: [tileSize.width, tileSize.height],
     matrixSize: [Math.ceil(width / tileSize.width), Math.ceil(height / tileSize.height)]
   };
+}
+
+/** Retains declared CRS definitions without resolving them, and normalizes numeric EPSG identifiers. */
+function normalizeDeclaredCoordinateReferenceSystem(
+  attributes: GeoZarrAttributes
+): CRSDefinition | undefined {
+  const wellKnownText = normalizeString(attributes['proj:wkt2']);
+  if (wellKnownText) return wellKnownText;
+  const projection = attributes['proj:projjson'];
+  if (projection && typeof projection === 'object' && !Array.isArray(projection)) {
+    return projection as CRSDefinition;
+  }
+  const code = normalizeString(attributes['proj:code']);
+  if (code) return code;
+  const epsg = attributes['proj:epsg'];
+  return typeof epsg === 'number' && Number.isSafeInteger(epsg) && epsg > 0
+    ? `EPSG:${epsg}`
+    : undefined;
 }

@@ -216,3 +216,67 @@ test('The closest CRS declaration replaces inherited alternatives across level g
   expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual(['EPSG:32610', 'EPSG:32610']);
   expect(metadata.tileGrid?.tileMatrixSet?.crs).toBe('EPSG:32610');
 });
+
+test('Explicit EPSG-only levels replace inherited CRS and retain complete geometry', async () => {
+  const {source} = createSource({}, false, {
+    'proj:code': 'EPSG:3857',
+    multiscales: {
+      layout: [
+        {asset: 'fine', 'proj:epsg': 32610},
+        {asset: 'overview', 'proj:epsg': 32610}
+      ]
+    }
+  });
+  const metadata = await source.getMetadata();
+  expect(metadata.crs).toBe('EPSG:32610');
+  expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual(['EPSG:32610', 'EPSG:32610']);
+  expect(metadata.tileGrid?.tileMatrixSet?.crs).toBe('EPSG:32610');
+});
+
+test('PROJJSON overrides retain their full declaration instead of inheriting a different string CRS', async () => {
+  const projection = {
+    type: 'GeographicCRS',
+    name: 'Declared geographic coordinates',
+    datum: {
+      type: 'GeodeticReferenceFrame',
+      name: 'WGS 84',
+      ellipsoid: {
+        name: 'WGS 84',
+        semi_major_axis: 6378137,
+        inverse_flattening: 298.257223563
+      }
+    },
+    coordinate_system: {
+      subtype: 'ellipsoidal',
+      axis: [
+        {name: 'Longitude', abbreviation: 'Lon', direction: 'east', unit: 'degree'},
+        {name: 'Latitude', abbreviation: 'Lat', direction: 'north', unit: 'degree'}
+      ]
+    }
+  };
+  const {source} = createSource({}, false, {
+    multiscales: {
+      layout: [
+        {asset: 'fine', 'proj:projjson': projection},
+        {asset: 'overview', 'proj:projjson': projection}
+      ]
+    }
+  });
+  const metadata = await source.getMetadata();
+  expect(metadata.crs).toEqual(projection);
+  expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual([projection, projection]);
+  // TileMatrixSet currently has a string CRS contract; do not reduce a full definition to its ID.
+  expect(metadata.tileGrid?.tileMatrixSet).toBeUndefined();
+});
+
+test.each([
+  0,
+  -1,
+  32610.5,
+  '32610'
+])('Invalid EPSG declarations do not reuse the inherited CRS (%s)', async epsg => {
+  const {source} = createSource({'proj:epsg': epsg});
+  const metadata = await source.getMetadata();
+  expect(metadata.levels?.[1].metadata?.crs).toBeUndefined();
+  expect(metadata.tileGrid?.tileMatrixSet).toBeUndefined();
+});
