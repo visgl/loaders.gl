@@ -968,14 +968,12 @@ function normalizeDeclaredCoordinateReferenceSystem(
 ): CRSDefinition | undefined {
   const wellKnownText = normalizeString(attributes['proj:wkt2']);
   if (wellKnownText) return wellKnownText;
-  const projection = attributes['proj:projjson'];
-  if (projection && typeof projection === 'object' && !Array.isArray(projection)) {
-    return projection as CRSDefinition;
-  }
   const code = normalizeString(attributes['proj:code']);
   if (code) return code;
   const epsg = attributes['proj:epsg'];
-  return typeof epsg === 'number' && Number.isSafeInteger(epsg) && epsg > 0
-    ? `EPSG:${epsg}`
+  if (typeof epsg === 'number' && Number.isSafeInteger(epsg) && epsg > 0) return `EPSG:${epsg}`;
+  const projection = attributes['proj:projjson'];
+  return projection && typeof projection === 'object' && !Array.isArray(projection)
+    ? projection as CRSDefinition
     : undefined;
 }

@@ -176,3 +176,9 @@ are retained as structured `metadata.crs` values, without semantic rewriting or 
 reduction. A structured CRS therefore keeps native metadata but omits complete `TileMatrixSet`
 geometry, whose current CRS contract is a string. An inherited string CRS never substitutes
 for a different explicit child declaration.
+
+When a scope declares both a string CRS and PROJJSON, native raster requests use the string CRS;
+the full PROJJSON remains in the raw attributes. PROJJSON-only sources retain structured metadata
+and support native windows without a viewport CRS. A string viewport CRS is not assumed equivalent
+to a structured definition; supply an explicit `geozarr.coordinateReferenceSystem` string when that
+identity is known. No CRS equivalence or reprojection is inferred from a PROJJSON identifier.

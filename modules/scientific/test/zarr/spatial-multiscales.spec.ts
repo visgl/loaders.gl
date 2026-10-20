@@ -280,3 +280,36 @@ test.each([
   expect(metadata.levels?.[1].metadata?.crs).toBeUndefined();
   expect(metadata.tileGrid?.tileMatrixSet).toBeUndefined();
 });
+
+test('A co-declared string CRS remains usable for native windows alongside full PROJJSON', async () => {
+  const projection = {type: 'ProjectedCRS', name: 'Retained native definition'};
+  const {source} = createSource({}, false, {
+    'proj:code': 'EPSG:32610',
+    'proj:projjson': projection
+  });
+  const metadata = await source.getMetadata();
+  expect(metadata.crs).toBe('EPSG:32610');
+  expect(metadata.metadata?.groupAttributes).toMatchObject({'proj:projjson': projection});
+  const raster = await source.getRaster({
+    viewport: {
+      bounds: [
+        [100, 188],
+        [110, 200]
+      ],
+      crs: 'EPSG:32610'
+    }
+  } as any);
+  expect(raster.width).toBe(5);
+  expect(raster.height).toBe(4);
+  await expect(
+    source.getRaster({
+      viewport: {
+        bounds: [
+          [100, 188],
+          [110, 200]
+        ],
+        crs: 'EPSG:4326'
+      }
+    } as any)
+  ).rejects.toThrow(/reprojection/);
+});
