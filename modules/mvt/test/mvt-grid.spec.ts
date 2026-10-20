@@ -130,3 +130,27 @@ test('MVT consumer selects the native zoom for the request and vector decoding',
     expect.objectContaining({mvt: expect.objectContaining({tileIndex: {z: 3, x: 2, y: 1}})})
   );
 });
+
+test.each([
+  {minzoom: 0.5, maxzoom: 3},
+  {minzoom: 3, maxzoom: 2},
+  {minzoom: 0, maxzoom: 32},
+  {minzoom: -1, maxzoom: 3}
+])('Unrepresentable TileJSON ranges preserve native requests (%j)', async range => {
+  const fetcher = vi.fn(async input =>
+    String(input).endsWith('tilejson.json')
+      ? Response.json({tilejson: '3.0.0', ...range, tiles: ['https://example.com/{z}/{x}/{y}.mvt']})
+      : new Response(new Uint8Array(16))
+  );
+  const source = new MVTTileSource(
+    'https://example.com/{z}/{x}/{y}.mvt',
+    {core: {fetch: fetcher}},
+    {parse: async (text: string) => parseTileJSON(JSON.parse(text), {})} as unknown as CoreAPI
+  );
+  const metadata = await source.metadata;
+  expect(metadata.tileGrid).toBeUndefined();
+  expect(metadata.minZoom).toBe(range.minzoom);
+  expect(metadata.maxZoom).toBe(range.maxzoom);
+  expect(await source.getTile({z: 1, x: 0, y: 0})).toBeInstanceOf(ArrayBuffer);
+  expect(fetcher.mock.calls.at(-1)?.[0]).toBe('https://example.com/1/0/0.mvt');
+});
