@@ -13,7 +13,8 @@ function createSource(
   overrides: Record<string, unknown> = {},
   grouped = false,
   groupOverrides: Record<string, unknown> = {},
-  consolidated = false
+  consolidated = false,
+  extraDocuments: Record<string, unknown> = {}
 ): {source: GeoZarrRasterSource; requests: string[]} {
   const assets = ['fine', 'overview'];
   const rootAttributes = {
@@ -51,6 +52,7 @@ function createSource(
       attributes: grouped ? {} : attributes
     };
   }
+  Object.assign(documents, extraDocuments);
   const requests: string[] = [];
   const fetcher = (async (input: RequestInfo | URL) => {
     const url = input instanceof Request ? input.url : String(input);
@@ -312,4 +314,38 @@ test('A co-declared string CRS remains usable for native windows alongside full 
       }
     } as any)
   ).rejects.toThrow(/reprojection/);
+});
+
+test('Sibling CF grid-mapping CRS discovery reads metadata without sample chunks', async () => {
+  const coordinateReferenceSystem = 'PROJCRS["Native CF grid"]';
+  const {source, requests} = createSource(
+    {},
+    false,
+    {'proj:code': undefined, grid_mapping: 'crs'},
+    false,
+    {
+      '/crs/zarr.json': {
+        zarr_format: 3,
+        node_type: 'array',
+        shape: [],
+        dimension_names: [],
+        data_type: 'uint8',
+        chunk_grid: {name: 'regular', configuration: {chunk_shape: []}},
+        chunk_key_encoding: {name: 'default', configuration: {separator: '/'}},
+        codecs: [{name: 'bytes', configuration: {endian: 'little'}}],
+        fill_value: 0,
+        attributes: {crs_wkt: coordinateReferenceSystem}
+      }
+    }
+  );
+  const metadata = await source.getMetadata();
+  expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual([
+    coordinateReferenceSystem,
+    coordinateReferenceSystem
+  ]);
+  expect(metadata.tileGrid?.tileMatrixSet?.crs).toBe(coordinateReferenceSystem);
+  expect(requests.some(url => url.endsWith('/crs/zarr.json'))).toBe(true);
+  expect(
+    requests.every(url => /\/(?:zarr\.json|\.z(?:array|group|attrs|metadata))$/.test(url))
+  ).toBe(true);
 });

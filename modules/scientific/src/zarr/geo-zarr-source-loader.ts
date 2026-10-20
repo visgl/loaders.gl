@@ -461,7 +461,7 @@ export class GeoZarrRasterSource
     const coordinateReferenceSystem =
       options?.coordinateReferenceSystem ||
       normalizeDeclaredCoordinateReferenceSystem(attributes) ||
-      (!metadataOnly ? await loadCFCoordinateReferenceSystem(group, attributes, spatialDimensions, signal) : undefined);
+      await loadCFCoordinateReferenceSystem(group, attributes, spatialDimensions, signal);
     const defaultSelection = options?.defaultSelection || {};
     const selectionDimensions = dimensions
       .map((dimensionName, dimensionIndex) => ({
