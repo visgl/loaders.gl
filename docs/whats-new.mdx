@@ -60,6 +60,7 @@ for imports, worker asset availability, and dependency tradeoffs.
 
 ## Tile matrix source adapters
 
+- TileJSON sources expose canonical Web Mercator matrix geometry. PMTiles preserves native XYZ levels and supports explicit Web Mercator configuration. Both retain native zoom IDs and configurable logical pixel sizes; sparse content remains separate from world geometry.
 - Shared grid normalization now lives in `@loaders.gl/core/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
 - ArcGIS map and vector tile sources expose per-level grid metadata and preserve matrix identifiers in cached-tile URLs without inventing matrix dimensions.
 - GeoPackage source metadata discovers raster tile tables, including raster-only packages, and exposes normalized matrix geometry. Raster payload access remains separate.
@@ -505,6 +506,7 @@ Release Date: 2026
 
 **@loaders.gl/deck-layers**
 
+- Tile request wrappers preserve native matrix IDs and cancellation. The image-source adapter supports explicit matrix geometry and coverage, and corrects legacy XYZ bounds. The default tile selector uses declared canonical tile size and rejects incompatible complete grids. See [Tile matrices](/docs/developer-guide/tile-matrices).
 - `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.
 - `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
 - `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.
@@ -566,6 +568,7 @@ Release Date: 2026
 
 **@loaders.gl/scientific/zarr**
 
+- GeoZarr sources expose native spatial chunk grids and eligible explicit multiscale layouts, preserving asset IDs, per-axis resolution and named non-spatial selections. Unsupported layouts retain native metadata. See [GeoZarrSourceLoader](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader).
 - OME-Zarr channel selection preserves reordered or repeated channels even when the selection has the same length as the source channel count.
 - [`GeoZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader) NEW - reads
   axis-aligned GeoZarr `proj:` / `spatial:` grids and regular CF/xarray coordinate arrays through

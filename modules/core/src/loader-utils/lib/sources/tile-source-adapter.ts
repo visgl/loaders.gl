@@ -1,59 +1,126 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-import type {TileSource, GetTileParameters, GetTileDataParameters} from './tile-source';
+import {getTileBounds, isTileIndexInRange, validateTileMatrix} from '@math.gl/geospatial';
+import type {TileSource, GetTileParameters, GetTileDataParameters, TileGrid} from './tile-source';
 import type {ImageSource, ImageSourceMetadata} from './image-source';
+import {getRequestedTileMatrix} from './tile-grid';
 
-/**
- * MapTileSource - data sources that allow data to be queried by (geospatial) extents
- * @note
- * - If geospatial, bounding box is expected to be in web mercator coordinates
- */
+/** Converts image-window requests into tiles in a configured grid, or legacy geographic XYZ. */
 export class TileSourceAdapter<ImageSourceT extends ImageSource> implements TileSource {
+  /** Image-window source used to fulfill tile requests. */
   readonly viewportSource: ImageSourceT;
-  constructor(source: ImageSourceT) {
+  /** Explicit geometry and availability; never inferred from image dataset bounds. */
+  readonly tileGrid?: TileGrid;
+
+  /** Wraps an image source, optionally using an authoritative matrix set. */
+  constructor(source: ImageSourceT, tileGrid?: TileGrid) {
+    if (
+      tileGrid &&
+      (!tileGrid.tileMatrixSet?.crs ||
+        !tileGrid.tileMatrixSet.matrices.length ||
+        new Set(tileGrid.tileMatrixSet.matrices.map(matrix => matrix.id)).size !==
+          tileGrid.tileMatrixSet.matrices.length)
+    )
+      throw new Error('TileSourceAdapter requires complete tile matrix geometry.');
+    for (const matrix of tileGrid?.tileMatrixSet?.matrices || []) validateTileMatrix(matrix);
     this.viewportSource = source;
+    this.tileGrid = tileGrid;
   }
 
-  async getMetadata(): Promise<ImageSourceMetadata> {
-    return await this.viewportSource.getMetadata();
+  /** Returns source metadata plus the explicitly configured tile grid. */
+  async getMetadata(): Promise<ImageSourceMetadata & {tileGrid?: TileGrid}> {
+    const metadata = await this.viewportSource.getMetadata();
+    return this.tileGrid ? {...metadata, tileGrid: this.tileGrid} : metadata;
   }
 
-  /** Flat parameters */
-  getTile(parameters: GetTileParameters): Promise<unknown> {
-    const width = 512;
-    const height = 512;
+  /** Requests native matrix bounds and pixel dimensions without reprojection. */
+  getTile(parameters: GetTileParameters): Promise<unknown | null> {
+    let width = 512;
+    let height = 512;
+    let coordinateReferenceSystem = 'EPSG:4326';
+    const set = this.tileGrid?.tileMatrixSet;
+    if (set) {
+      if (parameters.crs && parameters.crs !== set.crs)
+        throw new Error('TileSourceAdapter does not support reprojection.');
+      const matrix = getRequestedTileMatrix(set.matrices, level => level.id, parameters);
+      if (!matrix) return Promise.resolve(null);
+      const limits = this.tileGrid?.limits?.find(limit => limit.tileMatrix === matrix.id);
+      if (
+        (this.tileGrid?.limits !== undefined && !limits) ||
+        !isTileIndexInRange(matrix, parameters.x, parameters.y, limits)
+      )
+        return Promise.resolve(null);
+      [width, height] = matrix.tileSize;
+      coordinateReferenceSystem = set.crs;
+    } else if (parameters.tileMatrix !== undefined) {
+      throw new RangeError('Explicit tile matrix selection requires a configured grid.');
+    }
     const boundingBox = this.getTileBoundingBox(parameters);
-    return this.viewportSource.getImage({boundingBox, layers: [], width, height});
+    return this.viewportSource.getImage({
+      boundingBox,
+      layers: parameters.layers || [],
+      width,
+      height,
+      crs: coordinateReferenceSystem,
+      styles: parameters.styles,
+      format: parameters.format,
+      signal: parameters.signal
+    });
   }
 
-  /** deck.gl style parameters */
+  /** Preserves matrix identity and cancellation from deck.gl-compatible requests. */
   getTileData(parameters: GetTileDataParameters): Promise<unknown | null> {
-    return this.getTile(parameters.index);
+    return this.getTile({
+      ...parameters.index,
+      tileMatrix: parameters.tileMatrix,
+      signal: parameters.signal
+    });
   }
 
-  /** Bounding box of tiles in this tileset `[[w, s], [e, n]]`  */
+  /** Returns native configured bounds, or longitude/latitude bounds for legacy XYZ requests. */
   protected getTileBoundingBox(
     parameters: GetTileParameters
-  ): [min: [x: number, y: number], max: [x: number, y: number]] {
-    if (parameters.crs && parameters.crs !== 'ESPG3758') {
-      throw new Error('SRS not ESPG3758');
+  ): [min: [number, number], max: [number, number]] {
+    const set = this.tileGrid?.tileMatrixSet;
+    if (set) {
+      const matrix = getRequestedTileMatrix(set.matrices, level => level.id, parameters);
+      if (!matrix) throw new RangeError('No tile matrix for request.');
+      const [minimumX, minimumY, maximumX, maximumY] = getTileBounds(
+        matrix,
+        parameters.x,
+        parameters.y
+      );
+      return [
+        [minimumX, minimumY],
+        [maximumX, maximumY]
+      ];
     }
-    const {x, y, z: zoom} = parameters;
-
-    return [
-      /** Bounding box of tile in this tileset `[[w, s], ...]`  */
-      this.getTileLowerLeftCorner(x, y, zoom),
-      /** Bounding box of tile in this tileset `[..., [e, n]]`  */
-      this.getTileLowerLeftCorner(x + 1, y - 1, zoom)
-    ];
+    if (parameters.crs && parameters.crs !== 'EPSG:4326')
+      throw new Error('Legacy XYZ image bounds require EPSG:4326.');
+    const {x, y, z} = parameters;
+    if (
+      !Number.isInteger(z) ||
+      z < 0 ||
+      z > 30 ||
+      !Number.isInteger(x) ||
+      !Number.isInteger(y) ||
+      x < 0 ||
+      y < 0 ||
+      x >= 2 ** z ||
+      y >= 2 ** z
+    )
+      throw new RangeError('Invalid XYZ tile index.');
+    return [this.getTileLowerLeftCorner(x, y, z), this.getTileLowerLeftCorner(x + 1, y - 1, z)];
   }
 
+  /** Returns a longitude/latitude lower-left corner of a canonical XYZ tile. */
   getTileLowerLeftCorner(x: number, y: number, zoom: number): [number, number] {
-    const tiles = 2 ^ zoom;
-    const longitude = (x / tiles) * 360.0 - 180.0;
-    const latitudeRadians = Math.atan(Math.sinh(Math.PI * (1 - (2 * (y + 1)) / tiles)));
-    const latitude = (180.0 * latitudeRadians) / Math.PI;
-    return [longitude, latitude];
+    const count = 2 ** zoom;
+    return [
+      (x / count) * 360 - 180,
+      (180 / Math.PI) * Math.atan(Math.sinh(Math.PI * (1 - (2 * (y + 1)) / count)))
+    ];
   }
 }

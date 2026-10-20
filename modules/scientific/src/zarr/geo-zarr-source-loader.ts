@@ -5,6 +5,7 @@
 import * as zarrita from 'zarrita';
 import type {Readable} from 'zarrita';
 import type {
+  TileGridMatrix,
   CoreAPI,
   GetRasterParameters,
   RasterBoundingBox,
@@ -18,8 +19,13 @@ import type {
   ScanQueryMetadataProvider
 } from '@loaders.gl/core/loader-utils';
 import type {CRSDefinition} from '@math.gl/crs';
-import {createScanQueryMetadata, getRasterViewportBoundingBox} from '@loaders.gl/core/loader-utils';
+import {
+  createTileGrid,
+  createScanQueryMetadata,
+  getRasterViewportBoundingBox
+} from '@loaders.gl/core/loader-utils';
 
+import {getSpatialMultiscaleLevels} from './lib/spatial-multiscales';
 import type {SupportedTypedArray} from './types';
 import {ZarrSource, type ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
 import {
@@ -52,10 +58,22 @@ export type GeoZarrSelectionDimension = {
   defaultIndex: number;
 };
 
+/** Native array geometry for one advertised spatial multiscale level. */
+export type GeoZarrLevelMetadata = {
+  /** Advertised asset identifier, preserved verbatim. */
+  id: string;
+  /** Data-array path relative to the selected group. */
+  array: string;
+  /** Resolved array metadata; absent when this level cannot be normalized. */
+  metadata?: Omit<GeoZarrSourceMetadata, 'levels' | 'tileGrid'>;
+};
+
 /** Normalized metadata exposed by {@link GeoZarrRasterSource}. */
 export type GeoZarrSourceMetadata = RasterSourceMetadata & {
   /** Data-array path relative to the selected Zarr group. */
   array: string;
+  /** Advertised spatial multiscales; reads still use the selected `array`. */
+  levels?: GeoZarrLevelMetadata[];
   /** Ordered names matching the data array shape. */
   dimensions: string[];
   /** Logical `[y, x]` spatial dimension names. */
@@ -91,6 +109,8 @@ export type GetGeoZarrParameters = Omit<GetRasterParameters, 'bands' | 'interlea
 type GeoZarrAttributes = Record<string, unknown>;
 
 type GeoZarrInit = {
+  /** Validated parent group and shared store used by sibling metadata reads. */
+  group: zarrita.Group<Readable>;
   /** Open Zarrita data array. */
   array: zarrita.Array<zarrita.DataType, Readable>;
   /** Normalized source metadata. */
@@ -178,6 +198,9 @@ export class GeoZarrRasterSource
   /** Shared source initialization request. */
   private initializationPromise: Promise<GeoZarrInit> | null = null;
 
+  /** Shared metadata-only multiscale discovery request. */
+  private metadataPromise: Promise<GeoZarrSourceMetadata> | null = null;
+
   /** Creates a GeoZarr raster source. */
   constructor(data: string, options: GeoZarrSourceLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, coreApi);
@@ -185,8 +208,57 @@ export class GeoZarrRasterSource
 
   /** Returns normalized geospatial, array, and selectable-dimension metadata. */
   async getMetadata(): Promise<GeoZarrSourceMetadata> {
-    const {metadata} = await this.getInitializationPromise();
-    return metadata;
+    if (!this.metadataPromise) {
+      this.metadataPromise = this.loadGridMetadata().catch(error => {
+        this.metadataPromise = null;
+        throw error;
+      });
+    }
+    return await this.metadataPromise;
+  }
+
+  /** Opens sibling array metadata without selecting or decoding their samples. */
+  private async loadGridMetadata(): Promise<GeoZarrSourceMetadata> {
+    const {metadata, group} = await this.getInitializationPromise();
+    const groupAttributes = metadata.metadata?.groupAttributes as GeoZarrAttributes;
+    const layout = getSpatialMultiscaleLevels(groupAttributes, metadata.array);
+    const levels: GeoZarrLevelMetadata[] = [];
+    for (const level of layout) {
+      if (level.array === metadata.array) {
+        levels.push({id: level.id, array: level.array, metadata});
+        continue;
+      }
+      const options = this.options as GeoZarrSourceLoaderOptions;
+      const source = new GeoZarrRasterSource(
+        this.data,
+        {
+          ...options,
+          geozarr: {...options.geozarr, array: level.array, transform: undefined}
+        },
+        this.hasCoreApi ? this.coreApi : undefined
+      );
+      try {
+        const initialization = await source.initialize(undefined, true, group);
+        levels.push({id: level.id, array: level.array, metadata: initialization.metadata});
+      } catch {
+        // Unsupported siblings remain advertised; never publish a complete set with missing levels.
+        levels.push({id: level.id, array: level.array});
+      }
+    }
+    const normalizedLevels = levels.length
+      ? levels
+      : [{id: metadata.array, array: metadata.array, metadata}];
+    const matrices = normalizedLevels.map(level => getSpatialChunkMatrix(level.id, level.metadata));
+    const commonCoordinateReferenceSystem =
+      typeof metadata.crs === 'string' &&
+      normalizedLevels.every(level => level.metadata?.crs === metadata.crs)
+        ? metadata.crs
+        : undefined;
+    return {
+      ...metadata,
+      ...(levels.length ? {levels} : {}),
+      tileGrid: createTileGrid(commonCoordinateReferenceSystem, matrices)
+    };
   }
 
   /** Discovers GeoZarr variables, spatial bounds, and selectable dimensions. */
@@ -319,8 +391,12 @@ export class GeoZarrRasterSource
   }
 
   /** Opens the selected data array and resolves GeoZarr or CF/xarray geospatial metadata. */
-  private async initialize(signal?: AbortSignal): Promise<GeoZarrInit> {
-    const group = await this.openGroup(signal);
+  private async initialize(
+    signal?: AbortSignal,
+    metadataOnly = false,
+    validatedGroup?: zarrita.Group<Readable>
+  ): Promise<GeoZarrInit> {
+    const group = validatedGroup || await this.openGroup(signal);
     const options = (this.options as GeoZarrSourceLoaderOptions).geozarr;
     const arrayPath = options?.array;
     if (!arrayPath) {
@@ -330,7 +406,39 @@ export class GeoZarrRasterSource
     const array = await zarrita.open(group.resolve(arrayPath), {kind: 'array', signal});
     const groupAttributes = normalizeAttributes(group.attrs);
     const arrayAttributes = normalizeAttributes(array.attrs);
-    const attributes = {...groupAttributes, ...arrayAttributes};
+    const layout = getSpatialMultiscaleLevels(groupAttributes, arrayPath);
+    const level = layout.find(candidate => candidate.array === arrayPath);
+    const levelGroupAttributes = level?.group
+      ? normalizeAttributes(
+          (await zarrita.open(group.resolve(level.group), {kind: 'group', signal})).attrs
+        )
+      : {};
+    const attributes = {
+      ...groupAttributes,
+      ...levelGroupAttributes,
+      ...level?.attributes,
+      ...arrayAttributes
+    };
+    const coordinateReferenceSystemKeys = ['proj:code', 'proj:wkt2', 'proj:projjson', 'proj:epsg'];
+    const coordinateReferenceSystemAttributes = [
+      arrayAttributes, level?.attributes, levelGroupAttributes
+    ].find(candidate => candidate &&
+      coordinateReferenceSystemKeys.some(key => Object.hasOwn(candidate, key)));
+    if (coordinateReferenceSystemAttributes) {
+      for (const key of coordinateReferenceSystemKeys) {
+        delete attributes[key];
+        if (Object.hasOwn(coordinateReferenceSystemAttributes, key)) {
+          attributes[key] = coordinateReferenceSystemAttributes[key];
+        }
+      }
+    }
+    if (level) {
+      // A root affine does not establish the geometry of each differently sampled child.
+      attributes['spatial:transform'] =
+        arrayAttributes['spatial:transform'] ??
+        level.attributes['spatial:transform'] ??
+        levelGroupAttributes['spatial:transform'];
+    }
     const dimensions = getDimensionNames(array, attributes);
     const spatialDimensions = getSpatialDimensions(
       dimensions,
@@ -344,7 +452,7 @@ export class GeoZarrRasterSource
     const coordinateTransform =
       options?.transform ||
       normalizeAffineTransform(attributes['spatial:transform']) ||
-      (await loadCFCoordinateTransform(group, spatialDimensions, signal));
+      (!metadataOnly ? await loadCFCoordinateTransform(group, spatialDimensions, signal) : null);
     if (!coordinateTransform) {
       throw new Error(
         'GeoZarrRasterSource requires spatial:transform metadata, explicit geozarr.transform, or regular 1D CF coordinate arrays.'
@@ -363,9 +471,8 @@ export class GeoZarrRasterSource
         : getTransformBoundingBox(transform, width, height);
     const coordinateReferenceSystem =
       options?.coordinateReferenceSystem ||
-      normalizeString(attributes['proj:wkt2']) ||
-      normalizeString(attributes['proj:code']) ||
-      (await loadCFCoordinateReferenceSystem(group, attributes, spatialDimensions, signal));
+      normalizeDeclaredCoordinateReferenceSystem(attributes) ||
+      await loadCFCoordinateReferenceSystem(group, attributes, spatialDimensions, signal);
     const defaultSelection = options?.defaultSelection || {};
     const selectionDimensions = dimensions
       .map((dimensionName, dimensionIndex) => ({
@@ -410,7 +517,7 @@ export class GeoZarrRasterSource
       registration: declaredRegistration
     };
 
-    return {array, metadata, xDimensionIndex, yDimensionIndex};
+    return {group, array, metadata, xDimensionIndex, yDimensionIndex};
   }
 }
 
@@ -847,4 +954,45 @@ function normalizeStringArray(value: unknown): string[] | undefined {
 /** Clamps a number to an inclusive range. */
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
+}
+
+/** Describes spatial storage chunks only when the affine is axis aligned and rightward. */
+function getSpatialChunkMatrix(
+  id: string,
+  metadata?: Omit<GeoZarrSourceMetadata, 'levels' | 'tileGrid'>
+): TileGridMatrix {
+  if (!metadata) return {id};
+  const {transform, tileSize, width, height} = metadata;
+  const [scaleX, rotationX, translateX, rotationY, scaleY, translateY] = transform;
+  if (
+    rotationX !== 0 || rotationY !== 0 || scaleX <= 0 || scaleY === 0 ||
+    !transform.every(Number.isFinite) || !tileSize || !width || !height
+  ) {
+    return {id};
+  }
+  return {
+    id,
+    resolution: scaleX,
+    resolutionY: Math.abs(scaleY),
+    origin: [translateX, translateY],
+    cornerOfOrigin: scaleY < 0 ? 'topLeft' : 'bottomLeft',
+    tileSize: [tileSize.width, tileSize.height],
+    matrixSize: [Math.ceil(width / tileSize.width), Math.ceil(height / tileSize.height)]
+  };
+}
+
+/** Retains declared CRS definitions without resolving them, and normalizes numeric EPSG identifiers. */
+function normalizeDeclaredCoordinateReferenceSystem(
+  attributes: GeoZarrAttributes
+): CRSDefinition | undefined {
+  const wellKnownText = normalizeString(attributes['proj:wkt2']);
+  if (wellKnownText) return wellKnownText;
+  const code = normalizeString(attributes['proj:code']);
+  if (code) return code;
+  const epsg = attributes['proj:epsg'];
+  if (typeof epsg === 'number' && Number.isSafeInteger(epsg) && epsg > 0) return `EPSG:${epsg}`;
+  const projection = attributes['proj:projjson'];
+  return projection && typeof projection === 'object' && !Array.isArray(projection)
+    ? projection as CRSDefinition
+    : undefined;
 }

@@ -51,6 +51,7 @@ export type {
   ZarrSourceLoaderOptions
 } from './ome-zarr-source-loader';
 export type {
+  GeoZarrLevelMetadata,
   GeoZarrAffineTransform,
   GeoZarrSelectionDimension,
   GeoZarrSourceLoaderOptions,

@@ -496,18 +496,27 @@ export class OGCAPITilesSource
 
   /** Fetches raw bytes for one tile from an advertised template. */
   async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
+    if (parameters.signal?.aborted)
+      throw new DOMException('The operation was aborted', 'AbortError');
     // The matrix identifier in the URL comes from the configured or discovered tile matrix set.
     const tileGrid = await this.getTileGrid();
     if (!isOGCTileAvailable(parameters, tileGrid)) return null;
     const url = this.getTileURL(parameters);
-    const response = await this.fetch(url, {headers: {Accept: 'application/octet-stream'}});
+    const response = await this.fetch(url, {
+      headers: {Accept: 'application/octet-stream'},
+      signal: parameters.signal
+    });
     if (!response.ok) throw new Error(`OGC API Tiles request failed: ${response.status}`);
     return response.arrayBuffer();
   }
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
   async getTileData(parameters: GetTileDataParameters): Promise<ArrayBuffer | null> {
-    return this.getTile(parameters.index);
+    return this.getTile({
+      ...parameters.index,
+      tileMatrix: parameters.tileMatrix,
+      signal: parameters.signal
+    });
   }
 
   /** Checks advertised coverage; load remote metadata with getMetadata() first. */
