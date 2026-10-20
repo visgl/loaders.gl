@@ -24,7 +24,7 @@ test('Canonical XYZ geometry preserves zoom IDs and logical pixel density', () =
 test.each([
   [-1, 3, 256],
   [2, 1, 256],
-  [0, 31, 256],
+  [0, 32, 256],
   [0.5, 2, 256],
   [0, 2, 0],
   [0, 2, NaN]
@@ -60,4 +60,13 @@ test('XYZ resolution rejects non-XYZ or incomplete matrix metadata', () => {
       /canonical zoom/
     );
   }
+});
+
+test('XYZ zoom 31 retains unsigned dimensions and boundary indices', () => {
+  const grid = createWebMercatorTileGrid(31, 31);
+  expect(grid.tileMatrixSet?.matrices[0].matrixSize).toEqual([2147483648, 2147483648]);
+  expect(
+    resolveXYZTileParameters(grid, {z: 0, x: 2147483647, y: 2147483647, tileMatrix: '31'})?.z
+  ).toBe(31);
+  expect(resolveXYZTileParameters(grid, {z: 31, x: 2147483648, y: 0})).toBeNull();
 });

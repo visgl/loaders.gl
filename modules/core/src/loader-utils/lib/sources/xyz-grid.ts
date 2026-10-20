@@ -22,11 +22,11 @@ export function createWebMercatorTileGrid(
     !Number.isInteger(maxZoom) ||
     minZoom < 0 ||
     maxZoom < minZoom ||
-    maxZoom > 30 ||
+    maxZoom > 31 ||
     !Number.isSafeInteger(tileSize) ||
     tileSize <= 0
   ) {
-    throw new RangeError('XYZ grids require integer zooms 0–30 and a positive integer tile size.');
+    throw new RangeError('XYZ grids require integer zooms 0–31 and a positive integer tile size.');
   }
   return createTileGrid(
     'EPSG:3857',
@@ -62,7 +62,7 @@ export function resolveXYZTileParameters(
     !size ||
     !Number.isInteger(zoom) ||
     zoom < 0 ||
-    zoom > 30 ||
+    zoom > 31 ||
     String(zoom) !== matrix.id ||
     size[0] !== 2 ** zoom ||
     size[1] !== 2 ** zoom
