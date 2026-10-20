@@ -50,5 +50,5 @@ test('TileSourceAdapter forwards metadata and converts tile requests to image re
   await adapter.getTileData({index: {x: 1, y: 1, z: 2}} as any);
   expect(getImage).toHaveBeenCalledTimes(2);
   expect(adapter.getTileLowerLeftCorner(0, 0, 0)).toHaveLength(2);
-  expect(() => adapter.getTile({x: 0, y: 0, z: 0, crs: 'EPSG:4326'})).toThrow(/SRS not ESPG3758/);
+  expect(() => adapter.getTile({x: 0, y: 0, z: 0, crs: 'EPSG:3857'})).toThrow(/require EPSG:4326/);
 });

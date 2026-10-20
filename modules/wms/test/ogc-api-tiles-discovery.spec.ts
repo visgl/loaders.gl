@@ -177,7 +177,9 @@ test('OGCAPITilesSource does not discover when a tile matrix set is configured',
     {tileTemplate: DATASET_TEMPLATE, tileMatrixSet: NAMED_LEVELS}
   );
   expect((await source.getMetadata()).tileGrid?.matrixIds).toEqual(['L0', 'L1']);
-  await source.getTile({z: 1, x: 0, y: 0});
+  expect(await source.getTileData({index: {z: 0, x: 0, y: 0}, tileMatrix: 'L1'})).toBeInstanceOf(
+    ArrayBuffer
+  );
   expect(requestedUrls).toEqual([
     LANDING_PAGE_URL,
     `${LANDING_PAGE_URL}/tiles/WebMercatorQuad/L1/0/0?f=mvt`

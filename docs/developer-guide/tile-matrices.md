@@ -99,3 +99,47 @@ See [WMTS](/docs/modules/wms/formats/wmts), [OGC API Tiles](/docs/modules/wms/se
 GeoPackage sources expose explicit-table `getTile()` lookups for bounded encoded payloads. Missing rows return `null`; matrix geometry does not imply that every position is populated. See [GeoPackageSource](/docs/modules/geopackage/api-reference/geopackage-source).
 
 GeoTIFF/COG raster sources expose optional `tileGrid` metadata for representable tiled overview hierarchies. Native IFD identifiers, unequal pixel sizes, and padded edge tiles are preserved. Stripped or rotated hierarchies retain their native raster APIs without an invented tile matrix. See [GeoTIFFSourceLoader](/docs/modules/geotiff/api-reference/geotiff-source-loader).
+
+## Requesting a non-default grid through an image source
+
+An image service that accepts bounds in the source CRS can be wrapped with `TileSourceAdapter`
+from `@loaders.gl/core/loader-utils`. Supply a complete grid; the adapter forwards native bounds,
+per-level pixel dimensions, layers, styling, CRS, and cancellation without reprojection.
+
+```typescript
+import {createTileGrid, TileSourceAdapter} from '@loaders.gl/core/loader-utils';
+
+const grid = createTileGrid('EPSG:32610', [{
+  id: 'survey',
+  origin: [500000, 4200000],
+  resolution: 2,
+  resolutionY: 3,
+  cornerOfOrigin: 'bottomLeft',
+  tileSize: [256, 128],
+  matrixSize: [4, 3]
+}]);
+const tiles = new TileSourceAdapter(imageSource, grid);
+const image = await tiles.getTile({z: 0, x: 1, y: 1, tileMatrix: 'survey'});
+// Requests [500512, 4200384, 501024, 4200768] in EPSG:32610, at 256 x 128 pixels.
+```
+
+The image source must support the supplied CRS and bounds. Inclusive `grid.limits` are checked
+before requesting pixels. Explicit matrix IDs are independent of `z`; the deck.gl-compatible
+request shape also accepts top-level `tileMatrix` and preserves its abort signal. Generated table
+tilers resolve canonical numeric matrix IDs before clipping and coordinate conversion, and reject
+unknown or aliased identifiers. ArcGIS dynamic MapServer and ImageServer exports require
+`tileMatrix` to match the numeric XYZ zoom; cached MapServer requests can use native LOD IDs.
+With no grid,
+the legacy adapter uses geographic longitude/latitude bounds for canonical XYZ indices.
+
+### Renderer compatibility
+
+The default `@loaders.gl/deck-layers` tile adapter uses deck.gl's Web Mercator XYZ selector. For
+complete grids it recognizes EPSG:3857 and its standard OGC URI/URN identifiers, requires
+contiguous canonical XYZ levels and square logical tile sizes, and
+uses the declared pixel size and zoom range. It rejects projected, bottom-left, irregular, or
+renamed matrix geometry with guidance to use a compatible custom selector and projection.
+Partial metadata does not broaden existing rendering support. Native source requests and
+geometry utilities remain available for these grids; exposing their metadata does not reproject
+pixels or select tiles in a different deck.gl view. Availability checks belong to the source,
+not to a renderer's assumption that every tile exists.

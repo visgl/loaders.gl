@@ -160,9 +160,12 @@ export class PMTilesTileSource
     try {
       rangeResponse = await this.getZxyBatched(z, x, y, tileParams.signal);
     } catch (error) {
+      if (tileParams.signal?.aborted) throw tileParams.signal.reason;
+      if (error instanceof Error && error.name === 'AbortError') throw error;
       this.reportError(error, `Failed to fetch tile ${this.url} ${JSON.stringify(tileParams)}`);
       return null;
     }
+    if (tileParams.signal?.aborted) throw tileParams.signal.reason;
     const arrayBuffer = rangeResponse?.data;
     if (!arrayBuffer) {
       this.reportError(
@@ -183,9 +186,23 @@ export class PMTilesTileSource
     switch (metadata.tileMIMEType) {
       case 'application/vnd.mapbox-vector-tile':
       case 'application/vnd.maplibre-tile':
-        return await this.getVectorTile({x, y, z, layers: []});
+        return await this.getVectorTile({
+          x,
+          y,
+          z,
+          layers: [],
+          tileMatrix: tileParams.tileMatrix,
+          signal: tileParams.signal
+        });
       default:
-        return await this.getImageTile({x, y, z, layers: []});
+        return await this.getImageTile({
+          x,
+          y,
+          z,
+          layers: [],
+          tileMatrix: tileParams.tileMatrix,
+          signal: tileParams.signal
+        });
     }
   }
 

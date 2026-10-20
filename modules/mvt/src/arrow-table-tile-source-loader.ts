@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {resolveTableTileParameters} from './lib/resolve-table-tile-parameters';
 import * as arrow from 'apache-arrow';
 import {isLongitudeLatitudeCRS} from './lib/is-longitude-latitude-crs';
 import {
@@ -118,13 +119,18 @@ export class ArrowTableVectorTileSource
 
   /** Rendering-facing tile accessor, also returning an Arrow table. */
   async getTileData(parameters: GetTileDataParameters): Promise<ArrowTable | null> {
-    return this.getVectorTile(parameters.index);
+    return this.getVectorTile({
+      ...parameters.index,
+      tileMatrix: parameters.tileMatrix,
+      signal: parameters.signal
+    });
   }
 
   /** Returns a tile synchronously after ready resolves; never mutates cached coordinates. */
   getTileSync(tileIndex: GetTileParameters): ArrowTable | null {
     if (!this.table || !this.tileSchema)
       throw new Error('Await ArrowTableVectorTileSource.ready before requesting tiles');
+    tileIndex = resolveTableTileParameters(tileIndex, this.tiler.tableOptions.maxZoom);
     if (
       ![tileIndex.x, tileIndex.y, tileIndex.z].every(Number.isInteger) ||
       tileIndex.z < 0 ||

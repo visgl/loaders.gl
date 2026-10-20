@@ -110,6 +110,27 @@ test('Aborting one MVT metadata waiter settles promptly without cancelling anoth
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
 
+test('MVT consumer selects the native zoom for the request and vector decoding', async () => {
+  const signal = new AbortController().signal;
+  const fetcher = vi.fn(async () => new Response(new Uint8Array(16)));
+  const parse = vi.fn(async () => ({shape: 'geojson-table', features: []}));
+  const source = new MVTTileSource(
+    'https://example.com/{z}/{x}/{y}.mvt',
+    {
+      mvt: {metadataUrl: null, coordinateReferenceSystem: 'EPSG:3857', minZoom: 0, maxZoom: 3},
+      core: {fetch: fetcher}
+    },
+    {parse} as unknown as CoreAPI
+  );
+  await source.getTileData({index: {z: 0, x: 2, y: 1}, tileMatrix: '3', signal});
+  expect(fetcher).toHaveBeenCalledWith('https://example.com/3/2/1.mvt', {signal});
+  expect(parse).toHaveBeenCalledWith(
+    expect.any(ArrayBuffer),
+    expect.anything(),
+    expect.objectContaining({mvt: expect.objectContaining({tileIndex: {z: 3, x: 2, y: 1}})})
+  );
+});
+
 test.each([
   {minzoom: 0.5, maxzoom: 3},
   {minzoom: 3, maxzoom: 2},
