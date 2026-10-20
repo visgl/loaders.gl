@@ -62,6 +62,7 @@ test('getWorkerURL#grouped Node test workers', () => {
     ...NullWorker,
     id: 'i3s-content',
     module: 'tiles-3d',
+    workerFile: undefined,
     workerSourceNode: 'i3s/workers/i3s-content-worker-node.ts'
   };
   expect(getWorkerURL(i3sWorker, {_workerType: 'test'})).toBe(
@@ -73,6 +74,7 @@ test('getWorkerURL#grouped Node test workers', () => {
     ...NullWorker,
     id: 'mvt',
     module: 'tiles',
+    workerFile: undefined,
     workerSourceNode: 'mvt/workers/mvt-worker-node.ts'
   };
   expect(getWorkerURL(mvtWorker, {_workerType: 'test'})).toBe(
