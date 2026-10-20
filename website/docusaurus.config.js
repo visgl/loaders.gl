@@ -285,6 +285,7 @@ const config = {
             '@loaders.gl/textures': resolve('../modules/textures/src'),
             '@loaders.gl/tile-converter/v5/core': resolve('../apps/tile-converter/src/v5/core.ts'),
             '@loaders.gl/tile-converter/v5/adapters': resolve('../apps/tile-converter/src/v5/adapters.ts'),
+            '@loaders.gl/tiles-3d': resolve('../modules/tiles-3d/src'),
             '@loaders.gl/tiles': resolve('../modules/tiles/src'),
             '@loaders.gl/tiles-2d': resolve('../modules/tiles-2d/src'),
             '@loaders.gl/traces': resolve('../modules/traces/src'),
