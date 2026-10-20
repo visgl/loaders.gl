@@ -190,6 +190,7 @@ export {GLTFFormat, GLBFormat} from './gltf-format';
 
 // glTF loader/writer definition objects
 export {GLTFLoader} from './gltf-loader';
+export {GLTFSource, type GLTFSourceOptions} from './gltf-source';
 export {GLTFWriter} from './gltf-writer';
 export {
   compressGLTFWithDraco,
