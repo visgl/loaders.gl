@@ -6,7 +6,7 @@
 import {
   copyPaddedStringToDataView,
   copyPaddedArrayBufferToDataView
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {GLB, GLBChunk} from '../types/glb-types';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 

@@ -10,7 +10,7 @@ import {MapController} from '@deck.gl/core';
 import type {MapViewState} from '@deck.gl/core';
 
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import type {RasterBoundingBox, RasterData} from '@loaders.gl/loader-utils';
+import type {RasterBoundingBox, RasterData} from '@loaders.gl/core/loader-utils';
 import {GeoZarrSourceLoader, type GeoZarrSourceMetadata} from '@loaders.gl/scientific/zarr';
 
 import {Map} from 'react-map-gl';

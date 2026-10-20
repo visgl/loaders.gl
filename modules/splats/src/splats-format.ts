@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Format} from '@loaders.gl/loader-utils';
+import type {Format} from '@loaders.gl/core/loader-utils';
 
 /** SPLAT - raw binary Gaussian splat format. */
 export const SPLATFormat = {

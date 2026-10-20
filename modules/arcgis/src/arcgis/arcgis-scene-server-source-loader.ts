@@ -10,8 +10,8 @@ import type {
   ArcGISSceneServerSourceOptions
 } from '../arcgis-source-types';
 
-import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {
   createI3SLayerSource,
   normalizeI3SServiceMetadata,

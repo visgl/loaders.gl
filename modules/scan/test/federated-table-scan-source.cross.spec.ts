@@ -12,7 +12,7 @@ import {
   type ScanQueryMetadata,
   type TableScanReadOptions,
   type TableScanSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import type {SQLPredicate} from '@loaders.gl/sql';

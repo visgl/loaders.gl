@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Bench} from '@probe.gl/bench';
-import {_addAliases} from '@loaders.gl/loader-utils';
+import {_addAliases} from '@loaders.gl/core/loader-utils';
 import ALIASES from '../aliases';
 import {installSortedGroupBenchOverride} from './group-sorted';
 

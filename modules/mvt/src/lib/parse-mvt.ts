@@ -8,7 +8,7 @@ import {
   convertFlatGeojsonToBinaryFeatureCollection as flatGeojsonToBinary,
   type GeojsonGeometryInfo
 } from '@loaders.gl/arrow-geometry/legacy-binary';
-import {log} from '@loaders.gl/loader-utils';
+import {log} from '@loaders.gl/core/loader-utils';
 import Protobuf from 'pbf';
 
 import {VectorTile} from './vector-tile/vector-tile';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ARCGIS_IMAGE_SERVER_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISImageSource} from './arcgis-image-server-source-loader';
 import type {ArcGISImageSourceLoaderProps} from '../arcgis-source-types';
 

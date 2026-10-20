@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import {ClusterLayer} from '@loaders.gl/deck-layers';
 import {ClusterSource} from '@loaders.gl/geoarrow';
 import {VectorSet} from '../src/vector-source-layer/vector-set';
-import type {GetFeaturesParameters} from '@loaders.gl/loader-utils';
+import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 test('ClusterLayer renders shared pickable cluster objects with count labels and configurable styles', () => {
   const source = new ClusterSource(

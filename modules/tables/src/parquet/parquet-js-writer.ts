@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable, Table, TableBatch} from '@loaders.gl/schema';
 import {convertTable, deduceTableSchema} from '@loaders.gl/schema-utils';
 

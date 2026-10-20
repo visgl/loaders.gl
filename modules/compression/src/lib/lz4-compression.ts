@@ -32,7 +32,7 @@ import {
   registerJSModules,
   getJSModule,
   getJSModuleOrNull
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 

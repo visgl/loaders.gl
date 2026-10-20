@@ -12,7 +12,7 @@ import {
   type ScanFragmentProvider,
   type ScanTask,
   type ScanExecutionTelemetry
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 
 import {ParquetSource} from './parquet-source-loader';

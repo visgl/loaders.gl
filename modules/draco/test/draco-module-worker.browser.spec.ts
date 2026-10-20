@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
-import {processOnWorker} from '@loaders.gl/worker-utils';
+import {processOnWorker} from '@loaders.gl/core/worker-utils';
 import {getDracoLibraryOptions} from '../src/draco-library-options';
 
 test.each([

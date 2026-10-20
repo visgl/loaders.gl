@@ -8,7 +8,7 @@ import type {
   VectorTileSource,
   GetTileParameters,
   GetTileDataParameters
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   BinaryFeatureCollection,
@@ -16,7 +16,7 @@ import type {
   Schema,
   GeoArrowEncodingPreference
 } from '@loaders.gl/schema';
-import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
+import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import type {MLTLoaderOptions} from './mlt-loader';
 import {MLTFormat} from './mlt-format';
 

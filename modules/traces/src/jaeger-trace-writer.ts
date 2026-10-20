@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {toJson} from '@bufbuild/protobuf';
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 
 import {ExportTraceServiceRequestSchema} from './otlp-proto/generated/opentelemetry/proto/collector/trace/v1/trace_service_pb';
 import type {OtlpTrace} from './otlp-trace-arrow-schema';

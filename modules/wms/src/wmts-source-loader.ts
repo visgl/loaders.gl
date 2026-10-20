@@ -14,8 +14,8 @@ import type {
   TileGridMatrix,
   TileSource,
   TileSourceMetadata
-} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {parseXMLTextSync} from './lib/parsers/xml/parse-xml-text';
 import type {
   WMTSCapabilities,

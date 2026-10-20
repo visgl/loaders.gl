@@ -1,23 +1,43 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
     "outDir": "dist"
   },
   "references": [
-    {"path": "../../modules/3d-tiles"},
-    {"path": "../../modules/crypto"},
-    {"path": "../../modules/draco"},
-    {"path": "../../modules/gltf"},
-    {"path": "../../modules/i3s"},
-    {"path": "../../modules/images"},
-    {"path": "../../modules/loader-utils"},
-    {"path": "../../modules/tiles"},
-    {"path": "../../modules/worker-utils"},
-    {"path": "../../modules/zip"},
-    {"path": "../../modules/core"}
+    {
+      "path": "../../modules/3d-tiles"
+    },
+    {
+      "path": "../../modules/crypto"
+    },
+    {
+      "path": "../../modules/draco"
+    },
+    {
+      "path": "../../modules/gltf"
+    },
+    {
+      "path": "../../modules/i3s"
+    },
+    {
+      "path": "../../modules/images"
+    },
+    {
+      "path": "../../modules/core"
+    },
+    {
+      "path": "../../modules/tiles"
+    },
+    {
+      "path": "../../modules/zip"
+    }
   ]
 }

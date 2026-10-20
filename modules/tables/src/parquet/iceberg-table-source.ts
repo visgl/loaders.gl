@@ -7,12 +7,12 @@ import type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   TableScanSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource as BaseDataSource,
   emitScanExecutionTelemetry
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
 
 import type {
@@ -40,7 +40,7 @@ import type {
   ParquetDatasetExplain,
   ParquetDatasetSourceOptions
 } from './parquet-source-types';
-import type {ScanExecutionTelemetry} from '@loaders.gl/loader-utils';
+import type {ScanExecutionTelemetry} from '@loaders.gl/core/loader-utils';
 
 type IcebergEqualityDelete = {
   /** Top-level data-column names covered by the delete. */

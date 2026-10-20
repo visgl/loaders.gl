@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {parseFromContext, path, resolvePath} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
+import {parseFromContext, path, resolvePath} from '@loaders.gl/core/loader-utils';
 import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {ImageBitmapLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images';
 import {asyncDeepMap} from '../texture-api/async-deep-map';

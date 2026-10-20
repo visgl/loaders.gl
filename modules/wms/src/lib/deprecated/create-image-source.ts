@@ -6,7 +6,7 @@ import type {
   SourceArrayDataSourceType,
   DataSourceOptions,
   SourceLoader
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {WMSSourceLoaderOptions} from '../../wms-source-loader';
 import {WMSSourceLoader} from '../../wms-source-loader';
 

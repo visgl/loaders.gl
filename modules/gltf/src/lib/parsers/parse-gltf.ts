@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
-import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLTF} from '../types/gltf-json-schema';
 import type {GLTFExternalFile, GLTFWithBuffers} from '../types/gltf-types';
@@ -11,7 +11,7 @@ import type {GLB} from '../types/glb-types';
 import type {ParseGLBOptions} from './parse-glb';
 
 import type {ImageType, TextureLevel} from '@loaders.gl/schema';
-import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
+import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/core/loader-utils';
 import {ImageBitmapLoader} from '@loaders.gl/images';
 import {BasisLoader} from '@loaders.gl/textures';
 

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createTileGrid, createTileGridMatrix} from '@loaders.gl/loader-utils';
-import type {TileGrid} from '@loaders.gl/loader-utils';
+import {createTileGrid, createTileGridMatrix} from '@loaders.gl/core/loader-utils';
+import type {TileGrid} from '@loaders.gl/core/loader-utils';
 import type {ArcGISMapServerMetadata} from '../arcgis-source-types';
 
 /** Normalizes advertised ArcGIS LODs without inventing dimensions from service coverage. */

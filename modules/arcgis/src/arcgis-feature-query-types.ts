@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {GeoJSONTable} from '@loaders.gl/schema';
-import type {GetFeaturesParameters} from '@loaders.gl/loader-utils';
+import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 import type {ArcGISFeatureServiceQueryOptions} from './arcgis-source-types';
 
 /** Parameters shared by feature, table and MapServer layer queries. */

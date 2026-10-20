@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import {CRSReprojectionError} from '@loaders.gl/loader-utils';
+import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   DataType,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {MVTGeoJSONTable} from './lib/types';
 import {parseMVTGeoJSON} from './lib/parse-mvt-geojson';
 import {MVTGeoJSONLoader as MVTGeoJSONLoaderMetadata} from './mvt-geojson-loader-types';

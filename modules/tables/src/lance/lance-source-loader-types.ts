@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {LanceSource, LanceSourceLoaderOptions} from './lance-source-loader';
 import {LanceFormat} from './lance-format';
 

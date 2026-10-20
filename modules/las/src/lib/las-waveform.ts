@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {LASMetadata, LASWaveformPacketDescriptor} from './las-types';
 
 const WAVEFORM_PACKET_REFERENCE_BYTE_LENGTH = 29;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/zip/indexed-zip-writer';
 import type {IndexedZipOptions} from '@loaders.gl/zip/indexed-zip-writer';
 import type {IndexedZipFiles} from '@loaders.gl/zip/indexed-zip-writer';

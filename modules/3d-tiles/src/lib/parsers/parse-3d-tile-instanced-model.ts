@@ -15,7 +15,7 @@ import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 import {parse3DTileGLTFViewSync, extractGLTF} from './helpers/parse-3d-tile-gltf-view';
 import {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
-import {LoaderContext} from '@loaders.gl/loader-utils';
+import {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {Tiles3DTileContent} from '../../types';
 
 export async function parseInstancedModel3DTile(

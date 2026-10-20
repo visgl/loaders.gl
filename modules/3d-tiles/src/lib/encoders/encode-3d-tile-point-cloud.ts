@@ -11,7 +11,7 @@ import {
   padStringToByteAlignment,
   copyStringToDataView,
   copyBinaryToDataView
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 const DEFAULT_FEATURE_TABLE_JSON = {
   POINTS_LENGTH: 1,

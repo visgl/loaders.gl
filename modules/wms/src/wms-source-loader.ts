@@ -10,8 +10,8 @@ import type {
   ImageSource,
   ImageSourceMetadata,
   GetImageParameters
-} from '@loaders.gl/loader-utils';
-import {DataSource, mergeOptions, validateRasterRegion} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource, mergeOptions, validateRasterRegion} from '@loaders.gl/core/loader-utils';
 
 import type {ImageType, ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {ImageBitmapLoader} from '@loaders.gl/images';

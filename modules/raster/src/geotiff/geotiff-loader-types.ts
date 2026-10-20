@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TypedArray, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {TypedArray, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {CRSIdentifier} from '@math.gl/crs';
 import {GeoTIFFFormat} from './geotiff-format';
 

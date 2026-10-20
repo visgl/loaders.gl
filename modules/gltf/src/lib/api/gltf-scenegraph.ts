@@ -19,7 +19,7 @@ import type {
 } from '../types/gltf-json-schema';
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
-import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
+import {padToNBytes, copyToArray} from '@loaders.gl/core/loader-utils';
 import {assert} from '../utils/assert';
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 

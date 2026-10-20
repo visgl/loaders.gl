@@ -16,13 +16,13 @@ import type {
   VectorSourceData,
   VectorSourceLayer,
   VectorSourceMetadata
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
   explainTableQuery,
   makeTableScanBatch
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {createSpatialReference, type SpatialReference} from '@math.gl/crs';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 import {

@@ -4,9 +4,9 @@
 
 import {encodeTableAsText, fetchFile, parse, preload} from '@loaders.gl/core';
 import {CSVLoader, CSVWriter} from '@loaders.gl/csv';
-import type {Loader} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, Table} from '@loaders.gl/schema';
-import {preloadWorker} from '@loaders.gl/worker-utils';
+import {preloadWorker} from '@loaders.gl/core/worker-utils';
 import PapaParseNPM from 'papaparse';
 import {inferSchema, initParser} from 'udsv';
 import Papa from '../../tables/src/csv/papaparse/papaparse';

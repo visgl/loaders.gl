@@ -45,7 +45,7 @@ reference Arrow executor, query parsing, source-neutral query metadata, ordered 
 and adapters that expose an already-addressed vector result as a table.
 
 Format packages do not depend on this runtime. They implement lightweight contracts from
-`@loaders.gl/loader-utils`, so applications that only load or decode a format do not pay the scan
+`@loaders.gl/core/loader-utils`, so applications that only load or decode a format do not pay the scan
 runtime bundle cost.
 
 ## Incubating Hudi source

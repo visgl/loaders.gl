@@ -4,7 +4,7 @@
 
 // Polyfills increases the bundle size significantly. Use it for NodeJS worker only
 import '@loaders.gl/core/polyfills';
-import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 import {DracoLoaderWithParser} from '../draco-loader-with-parser';
 
 createLoaderWorker(DracoLoaderWithParser);

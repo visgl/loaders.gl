@@ -4,7 +4,7 @@
 // Copyright (c) 2017 ironSource Ltd.
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
-import {stream} from '@loaders.gl/loader-utils';
+import {stream} from '@loaders.gl/core/loader-utils';
 import * as fs from 'fs';
 
 export function load(name: string): any {

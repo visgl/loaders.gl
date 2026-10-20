@@ -11,8 +11,8 @@ import type {
   LoaderOptionsType,
   LoaderOptionsWithShape,
   LoaderShapeType
-} from '@loaders.gl/loader-utils';
-import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 import {applySearchParamsToUrl} from '../loader-utils/option-utils';

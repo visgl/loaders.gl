@@ -65,11 +65,11 @@ without adopting Arrow's materialization strategy. This is useful for lightweigh
 it is not a replacement for DuckDB and does not yet implement SQL `SELECT` parsing, aggregation,
 or joins.
 
-The generic contract and planner live in `@loaders.gl/loader-utils`; SQL-specialized compatibility
+The generic contract and planner live in `@loaders.gl/core/loader-utils`; SQL-specialized compatibility
 exports remain available from `@loaders.gl/sql/table-query`:
 
 ```ts
-import {planTableQuery, type TableQueryOptions} from '@loaders.gl/loader-utils';
+import {planTableQuery, type TableQueryOptions} from '@loaders.gl/core/loader-utils';
 ```
 
 ```ts

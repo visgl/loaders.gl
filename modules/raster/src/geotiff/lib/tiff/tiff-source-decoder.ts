@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import type {TypedArray} from '@loaders.gl/loader-utils';
+import type {TypedArray} from '@loaders.gl/core/loader-utils';
 
 /** TIFF-standard tags consumed by the region pipeline, independent of library directory classes. */
 export type TiffSourceDirectory = Readonly<Record<string, unknown>> & {

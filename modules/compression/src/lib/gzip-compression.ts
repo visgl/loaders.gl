@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // GZIP
-// import {isBrowser} from '@loaders.gl/loader-utils';
+// import {isBrowser} from '@loaders.gl/core/loader-utils';
 import type {CompressionOptions} from './compression';
 import {DeflateCompression} from './deflate-compression';
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ImageSource as ImageSourceContract} from '@loaders.gl/loader-utils';
+import type {ImageSource as ImageSourceContract} from '@loaders.gl/core/loader-utils';
 
 /** Type-only image source capability retained by the WMS package. */
 export type ImageSource = ImageSourceContract;

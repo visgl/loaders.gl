@@ -5,7 +5,7 @@
 // SNAPPY (aka ZIPPY)
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {getJSModule, getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
+import {getJSModule, getJSModuleOrNull, registerJSModules} from '@loaders.gl/core/loader-utils';
 
 /**
  * Snappy/zippy compression / decompression

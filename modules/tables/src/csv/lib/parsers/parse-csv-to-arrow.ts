@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {
   concatenateArrayBuffersAsync,
   makeTableScanBatch,
   toArrayBufferIterator
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {
   AsyncQueue,

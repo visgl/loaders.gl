@@ -5,8 +5,8 @@
 import {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import type {RangeRequestEvent, RangeStats} from '@loaders.gl/loader-utils';
-import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
+import type {RangeRequestEvent, RangeStats} from '@loaders.gl/core/loader-utils';
+import {createRangeStats, getRangeStats} from '@loaders.gl/core/loader-utils';
 import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 import {MLTSourceLoader} from '@loaders.gl/mlt';
 import {MVTSourceLoader, ArrowTableTileSourceLoader} from '@loaders.gl/mvt';

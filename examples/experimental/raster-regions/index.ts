@@ -3,12 +3,12 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {RasterSet} from '@loaders.gl/tiles';
-import {sampleRaster, rasterCoordinateToPixel} from '@loaders.gl/loader-utils';
+import {sampleRaster, rasterCoordinateToPixel} from '@loaders.gl/core/loader-utils';
 import type {
   NumericRasterData,
   RasterRegionParameters,
   RasterRegionSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 /** Renderer-injected coverage provider; every region has an explicit supported CRS. */
 export type RasterCoverageProvider = () => RasterRegionParameters[];

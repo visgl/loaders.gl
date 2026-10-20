@@ -6,8 +6,8 @@ import {
   SourceLoader,
   SourceArrayOptionsType,
   SourceArrayDataSourceType
-} from '@loaders.gl/loader-utils';
-import {resolveAuthenticationOptions} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {resolveAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import {coreApi} from './core-api';
 import {selectLoaderSync} from './select-loader';
 

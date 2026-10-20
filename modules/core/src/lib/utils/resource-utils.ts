@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isResponse, isBlob} from '@loaders.gl/loader-utils';
+import {isResponse, isBlob} from '@loaders.gl/core/loader-utils';
 import {parseMIMEType, parseMIMETypeFromURL} from './mime-type-utils';
 import {stripQueryString} from './url-utils';
 

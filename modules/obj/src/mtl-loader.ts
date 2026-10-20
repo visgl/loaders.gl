@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {MTLMaterial, ParseMTLOptions} from './lib/parse-mtl';
 import {MTLFormat} from './mtl-format';
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterWithEncoder} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import {ORCFormat} from './orc-format';
 import {encodeORC, type ORCWriterOptions} from './lib/encoders/encode-orc';

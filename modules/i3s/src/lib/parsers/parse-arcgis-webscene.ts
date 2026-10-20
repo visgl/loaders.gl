@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArcGISWebSceneData, OperationalLayer} from '../../types';
-import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {resolvePath} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
+import {resolvePath} from '@loaders.gl/core/loader-utils';
 
 /**
  * WKID, or Well-Known ID, of the CRS. Specify either WKID or WKT of the CRS.

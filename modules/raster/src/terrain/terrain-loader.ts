@@ -6,8 +6,8 @@ import {
   serializeArrowWorkerResult,
   deserializeArrowWorkerResult
 } from '@loaders.gl/schema-utils/arrow-transport';
-import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {parseFromContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {parseFromContext} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';

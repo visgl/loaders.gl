@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {DehydratedArrowTable} from '@loaders.gl/schema-utils/arrow-transport';
-import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 
 import type {ParquetPredicate} from '../parquet-source-types';

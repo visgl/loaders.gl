@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions, LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {BuildingSceneLayerTileset} from './types';
 

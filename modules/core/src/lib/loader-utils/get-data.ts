@@ -8,7 +8,7 @@ import type {
   BatchableDataType,
   Loader,
   LoaderOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   concatenateArrayBuffersAsync,
   isPromise,
@@ -22,7 +22,7 @@ import {
   isArrayBufferLike,
   toArrayBuffer,
   toArrayBufferView
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {makeIterator} from '../../iterators/make-iterator/make-iterator';
 import {checkResponse, makeResponse} from '../utils/response-utils';
 

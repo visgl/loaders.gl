@@ -50,7 +50,7 @@ export function FederatedScanLiveExample(): JSX.Element {
             import('@loaders.gl/arrow'),
             import('@loaders.gl/csv'),
             import('@loaders.gl/json'),
-            import('@loaders.gl/loader-utils'),
+            import('@loaders.gl/core/loader-utils'),
             import('@loaders.gl/scan')
           ]);
         const dataSourceManager = new loaderUtilsModule.DataSourceManager();

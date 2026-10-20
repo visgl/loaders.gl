@@ -8,7 +8,7 @@ import type {LASLoaderOptions} from '../../las-loader-types';
 import type {LASMesh, LASHeader} from '../las-types';
 import type {MeshAttributes} from '@loaders.gl/schema';
 import {getMeshBoundingBox /* , convertMeshToTable */} from '@loaders.gl/schema-utils';
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {getLASSchema} from '../get-las-schema';
 import {LASFile} from './laslaz-decoder';
 

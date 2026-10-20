@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {ManagedVectorSource, OGCAPIFeaturesSource, WFSVectorSource} from '@loaders.gl/wms';
-import type {GetFeaturesParameters} from '@loaders.gl/loader-utils';
+import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 const PARAMETERS: GetFeaturesParameters = {
   layers: 'roads',

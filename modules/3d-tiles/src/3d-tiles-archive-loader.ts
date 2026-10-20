@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {ThreeTZFormat} from './tiles-3d-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

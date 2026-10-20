@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isSourceLoader, mergeOptions} from '@loaders.gl/loader-utils';
+import {isSourceLoader, mergeOptions} from '@loaders.gl/core/loader-utils';
 import type {
   Loader,
   LoaderOptions,
   LoaderWithParser,
   StrictLoaderOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 const loaderImplementationPromises = new Map<Loader, Map<string, Promise<LoaderWithParser>>>();
 const loaderImplementations = new Map<Loader, Map<string, LoaderWithParser>>();

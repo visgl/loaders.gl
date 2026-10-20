@@ -5,7 +5,7 @@
 import {DracoLoader, encodeDraco, type DracoMesh} from '@loaders.gl/draco';
 import type {GLTFAccessor} from '@loaders.gl/gltf';
 import type {MeshGeometry} from '@loaders.gl/schema';
-import type {LoadLibraryOptions} from '@loaders.gl/worker-utils';
+import type {LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {
   createMeshTileScenegraph,

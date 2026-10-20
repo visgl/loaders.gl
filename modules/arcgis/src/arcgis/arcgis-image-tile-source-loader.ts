@@ -15,8 +15,8 @@ import type {
   SourceLoader,
   TileSource,
   TileSourceMetadata
-} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {LERCData} from '@loaders.gl/raster';
 import {LERCLoader} from '@loaders.gl/raster';
 

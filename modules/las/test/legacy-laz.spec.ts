@@ -11,7 +11,7 @@ import {parseLAS, parseLASInBatches, decodeLAZFileInBatches} from '../src/lib/ty
 import {
   loadLegacyLAZFixture,
   type LegacyLAZFixture
-} from '../../loader-utils/test/lib/laz/legacy-laz-fixtures';
+} from '../../core/test/loader-utils-package/lib/laz/legacy-laz-fixtures';
 
 let fixtures: LegacyLAZFixture[];
 beforeAll(async () => {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {makeTableScanBatch, type LoaderWithParser} from '@loaders.gl/loader-utils';
+import {makeTableScanBatch, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Feature} from '@loaders.gl/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
 import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/schema';

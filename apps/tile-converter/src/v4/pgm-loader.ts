@@ -1,4 +1,4 @@
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {Geoid, parsePGM} from '@math.gl/geoid';
 
 // __VERSION__ is injected by babel-plugin-version-inline

@@ -14,8 +14,8 @@ import type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider
-} from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {createScanQueryMetadata, DataSource} from '@loaders.gl/core/loader-utils';
 
 import type {TiffPixelSource} from './lib/tiff-pixel-source';
 import {loadOmeTiff, isOmeTiff} from './lib/ome/load-ome-tiff';

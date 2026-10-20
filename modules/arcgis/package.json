@@ -84,7 +84,6 @@
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
     "@loaders.gl/i3s": "5.0.0-alpha.12",
     "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/mvt": "5.0.0-alpha.12",
     "@loaders.gl/raster": "5.0.0-alpha.12",
     "@loaders.gl/schema": "5.0.0-alpha.12",

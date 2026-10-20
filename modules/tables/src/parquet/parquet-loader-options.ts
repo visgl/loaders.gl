@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Shared row-level options supported by both Parquet backends. */

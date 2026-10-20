@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {fetchFile, resolvePath} from '@loaders.gl/core';
-import {CRSReprojectionError} from '@loaders.gl/loader-utils';
+import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
 
 import {
   decodeFlatGeobufGeometry,

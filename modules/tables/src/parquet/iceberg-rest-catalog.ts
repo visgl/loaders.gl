@@ -5,7 +5,7 @@
 import {IcebergTableSource} from './iceberg-table-source';
 import type {IcebergSourceOptions} from './iceberg-table-source';
 import type {IcebergTableMetadata} from './iceberg-types';
-import type {RequestScheduler} from '@loaders.gl/loader-utils';
+import type {RequestScheduler} from '@loaders.gl/core/loader-utils';
 
 /** Configuration for the minimal Iceberg REST Catalog adapter. */
 export type IcebergRestCatalogOptions = {

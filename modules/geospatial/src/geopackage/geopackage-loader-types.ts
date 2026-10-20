@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference, GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
 import {DEFAULT_SQLJS_CDN} from './geopackage-loader-options';
 import {GeoPackageFormat} from './geopackage-format';

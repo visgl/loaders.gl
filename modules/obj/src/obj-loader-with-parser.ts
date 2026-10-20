@@ -10,7 +10,7 @@ import {
   type Loader,
   type LoaderOptions,
   type LoaderWithParser
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {
   deserializeArrowWorkerResult,

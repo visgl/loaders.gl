@@ -7,7 +7,7 @@ import {
   createAuthenticatedFetch,
   resolveCredentials,
   type FetchLike
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   MapboxAuthentication,
   GoogleMapsAuthentication,

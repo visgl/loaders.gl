@@ -8,7 +8,7 @@ import type {
   Field,
   GeoArrowEncodingPreference
 } from '@loaders.gl/schema';
-import {makeTableScanBatch} from '@loaders.gl/loader-utils';
+import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import {type GeoParquetGeometryType} from '@loaders.gl/schema';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
