@@ -24,6 +24,7 @@ const browserSummary = readJsonFile(browserSummaryPath);
 const mergedSummary = readJsonFile(mergedSummaryPath);
 const publishedPackages = findPublishedPackages();
 const results = [];
+const formatResults = [];
 const violations = [];
 
 checkCoverageSummaryFreshness('browser', browserSummary, violations);
@@ -34,7 +35,11 @@ for (const publishedPackage of publishedPackages) {
   const sourcePaths = manifest.packages[publishedPackage.name]?.sourcePaths || [
     `${publishedPackage.path}/src/`
   ];
-  const browserCoverage = aggregatePackageCoverage(browserSummary, sourcePaths);
+  const browserCoverage = aggregatePackageCoverage(
+    browserSummary,
+    sourcePaths,
+    manifest.packages[publishedPackage.name]?.browserExcludedSourcePaths || []
+  );
   const mergedCoverage = aggregatePackageCoverage(mergedSummary, sourcePaths);
   checkCoveragePresence(publishedPackage.name, 'browser', browserCoverage, violations);
   checkCoveragePresence(publishedPackage.name, 'merged', mergedCoverage, violations);
@@ -81,6 +86,17 @@ for (const publishedPackage of publishedPackages) {
     packageThresholds.merged,
     violations
   );
+  for (const [formatName, formatThresholds] of Object.entries(packageThresholds.formatThresholds || {})) {
+    const formatCoverageByKind = {
+      browser: aggregatePackageCoverage(browserSummary, formatThresholds.sourcePaths),
+      merged: aggregatePackageCoverage(mergedSummary, formatThresholds.sourcePaths)
+    };
+    for (const coverageKind of ['browser', 'merged']) {
+      checkCoveragePresence(`${publishedPackage.name}/${formatName}`, coverageKind, formatCoverageByKind[coverageKind], violations);
+      checkThresholds(`${publishedPackage.name}/${formatName}`, coverageKind, formatCoverageByKind[coverageKind], formatThresholds[coverageKind], violations);
+    }
+    formatResults.push({name: `${publishedPackage.name}/${formatName}`, ...formatCoverageByKind, thresholds: formatThresholds});
+  }
   results.push({
     name: publishedPackage.name,
     path: publishedPackage.path,
@@ -136,6 +152,7 @@ const report = {
   ).length,
   packageCount: results.length,
   results,
+  formatResults,
   violations
 };
 fs.mkdirSync(path.dirname(outputPath), {recursive: true});
@@ -201,7 +218,7 @@ function findPublishedPackages() {
 }
 
 /** Aggregates file-level Istanbul summary counts for one package. */
-function aggregatePackageCoverage(coverageSummary, sourcePaths) {
+function aggregatePackageCoverage(coverageSummary, sourcePaths, excludedSourcePaths = []) {
   const aggregate = Object.fromEntries(
     COVERAGE_METRICS.map(metric => [metric, {total: 0, covered: 0, percentage: 100}])
   );
@@ -214,7 +231,10 @@ function aggregatePackageCoverage(coverageSummary, sourcePaths) {
     const relativeSourceFile = path.isAbsolute(normalizedSourceFile)
       ? path.relative(repositoryRoot, normalizedSourceFile).replaceAll(path.sep, '/')
       : normalizedSourceFile.replace(/^\.\//, '');
-    if (!sourcePaths.some(sourcePath => relativeSourceFile.startsWith(sourcePath))) {
+    if (
+      !sourcePaths.some(sourcePath => relativeSourceFile.startsWith(sourcePath)) ||
+      excludedSourcePaths.some(sourcePath => relativeSourceFile.startsWith(sourcePath))
+    ) {
       continue;
     }
 

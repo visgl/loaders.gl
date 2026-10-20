@@ -4,9 +4,9 @@
 
 import {expect, test} from 'vitest';
 import {openCOPC, loadCOPCHierarchyPage, loadCOPCNodeData} from '@loaders.gl/copc';
-import {decodeLAZChunk} from '@loaders.gl/loader-utils';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
-import type {Mesh} from '@loaders.gl/schema';
+import {decodeLAZChunk} from '@loaders.gl/core/loader-utils';
+import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {convertTileset} from '../apps/tile-converter/src/v5/conversion-api';
 import {mapPointCloudAttributes} from '../apps/tile-converter/src/v5/point-cloud-attributes';
 import {

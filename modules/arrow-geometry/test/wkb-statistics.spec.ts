@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 
 import {encodeWKBGeometryValue} from '../src/geometry-field';
 import {getWKBGeometryStatistics} from '../src/wkb-statistics';

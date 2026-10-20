@@ -15,8 +15,6 @@
     "@deck.gl/layers": "^9.4.0",
     "@deck.gl/react": "^9.4.0",
     "@deck.gl/widgets": "^9.4.0",
-    "@loaders.gl/schema": "workspace:*",
-    "@loaders.gl/schema-utils": "workspace:*",
     "@loaders.gl/sql": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",

@@ -5,15 +5,18 @@
 import type {
   DehydratedArrowTable,
   SplitArrowBuffersOptions
-} from '@loaders.gl/schema-utils/arrow-transport';
-import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/schema-utils/arrow-transport';
+} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {
+  dehydrateArrowTable,
+  hydrateArrowTable
+} from '@loaders.gl/core/schema-utils/arrow-transport';
 import type {
   ArrayRowTable,
   ArrowTable,
   ArrowTableBatch,
   ColumnarTable,
   ObjectRowTable
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type {CSVLoaderOptions} from '../csv-loader-options';
 
 type CSVWorkerResult = ArrowTable | ObjectRowTable | ArrayRowTable | ColumnarTable;

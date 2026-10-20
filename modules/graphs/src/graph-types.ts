@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ObjectRowTable, Tables} from '@loaders.gl/schema';
+import type {ArrowTable, ObjectRowTable, Tables} from '@loaders.gl/core/schema';
 
 /** A graph node with its original identifier and application attributes. */
 export type GraphNode = {

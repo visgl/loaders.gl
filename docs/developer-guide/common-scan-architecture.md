@@ -166,7 +166,7 @@ pages, and byte ranges.
 
 ## The portable logical query
 
-The foundational types live in `@loaders.gl/loader-utils`, below every storage, SQL, and Arrow
+The foundational types live in `@loaders.gl/core/loader-utils`, below every storage, SQL, and Arrow
 package. The query is generic over a compatible columnar predicate so a format may narrow property
 paths or values without cloning the logical operators:
 
@@ -239,8 +239,8 @@ logical plan while adding row-group, page-index, Bloom-filter, range, and worker
 
 | Layer | Owning package | Responsibility |
 | --- | --- | --- |
-| Portable values and predicates | `@loaders.gl/loader-utils` | AST types, paths, traversal, validation, immutable binding |
-| Logical table query | `@loaders.gl/loader-utils` | query options, canonical plan, capability vocabulary |
+| Portable values and predicates | `@loaders.gl/core/loader-utils` | AST types, paths, traversal, validation, immutable binding |
+| Logical table query | `@loaders.gl/core/loader-utils` | query options, canonical plan, capability vocabulary |
 | SQL syntax and compilation | `@loaders.gl/sql` | parser, SQL validation, identifier quoting, placeholders and bindings |
 | In-memory execution | `@loaders.gl/sql/arrow-query` | exact Arrow semantics for the portable query |
 | Physical columnar scans | `@loaders.gl/parquet` | files, ranges, pruning, decoding, residual filtering, batches |
@@ -268,7 +268,7 @@ const result = engine.query(table, {
 
 Arrow is the built-in reference backend. The factory is asynchronous so optional backends can be
 loaded later without adding backend-specific imports to application code. Format adapters continue
-to import only the lightweight contracts from `@loaders.gl/loader-utils`; importing a format or
+to import only the lightweight contracts from `@loaders.gl/core/loader-utils`; importing a format or
 loading metadata does not require the scan runtime. The proof-of-concept backend registry is
 intentionally internal to this one public package rather than exposing a family of backend
 subpaths.
@@ -289,7 +289,7 @@ async function describe(source: {getQueryMetadata(): Promise<ScanQueryMetadata>}
 field. An adapter normalizes the values it understands and reports the rest through metadata
 capabilities. This keeps the panel reusable without making React, a database client, or a GPU
 runtime a dependency of the scan package. Format packages continue to implement the contracts from
-`@loaders.gl/loader-utils`, so applications that do not use scanning pay no scan-runtime bundle
+`@loaders.gl/core/loader-utils`, so applications that do not use scanning pay no scan-runtime bundle
 cost.
 
 ## Predicates and SQL semantics
@@ -789,7 +789,7 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    capability vocabulary, ordered scan tasks, Arrow execution, and lazy DuckDB compilation stable.
 1. **Optional package boundary — implemented in this stack.** Keep query state, metadata contracts,
    and the reference runtime in `@loaders.gl/scan`, while format adapters retain lightweight
-   `@loaders.gl/loader-utils` dependencies. No UI or GPU code crosses this boundary.
+   `@loaders.gl/core/loader-utils` dependencies. No UI or GPU code crosses this boundary.
 2. **Panel everywhere — concluded for support signaling.** The shared panel consumes package-level
    metadata/query types, renders discovered raster overviews, and is exercised by FlatGeobuf,
    Parquet, Iceberg, CSV, and Arrow examples. It now shows the source's declared execution method

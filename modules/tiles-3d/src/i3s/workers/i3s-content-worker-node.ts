@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 // Polyfills increases the bundle size significantly. Use it for NodeJS worker only
-import '@loaders.gl/polyfills';
-import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import '@loaders.gl/core/polyfills';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 import {I3SContentLoaderWithParser} from '../i3s-content-loader-with-parser';
 
 createLoaderWorker(I3SContentLoaderWithParser);

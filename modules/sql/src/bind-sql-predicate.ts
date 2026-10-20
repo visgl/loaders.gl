@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {bindColumnarPredicateParameters} from '@loaders.gl/loader-utils';
+import {bindColumnarPredicateParameters} from '@loaders.gl/core/loader-utils';
 
 import {validateSQLPredicate} from './sql-predicate-schema';
 import {

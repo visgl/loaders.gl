@@ -1,0 +1,15 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {expect, test} from 'vitest';
+import {NodeFilesystem} from '@loaders.gl/core/loader-utils';
+
+test('NodeFileSystem#import', () => {
+  if (!NodeFilesystem) {
+    console.log('NodeFileSystem not defined');
+    return;
+  }
+
+  expect(NodeFilesystem, 'NodeFileSystem defined').toBeTruthy();
+});

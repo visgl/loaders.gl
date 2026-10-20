@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {MeshArrowTable} from '@loaders.gl/schema';
-import {encodeLAZChunk} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import {encodeLAZChunk} from '@loaders.gl/core/loader-utils';
 import {
   decodeLAZChunkToArrowTable,
   parseLAS,

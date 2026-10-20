@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {coreApi} from '@loaders.gl/core';
 import {loadExplicitBitstream} from '../../../../../src/3d-tiles/lib/parsers/helpers/parse-3d-tile-subtree';
 import {Subtree, Availability} from '../../../../../src/3d-tiles/types';
-import {LoaderContext} from '@loaders.gl/loader-utils';
+import {LoaderContext} from '@loaders.gl/core/loader-utils';
 const context = (): LoaderContext => ({
   fetch,
   coreApi,

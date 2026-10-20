@@ -2,19 +2,24 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {CRSReprojectionError, type LoaderContext} from '@loaders.gl/loader-utils';
+import {CRSReprojectionError, type LoaderContext} from '@loaders.gl/core/loader-utils';
 import {
   makeTableScanBatch,
   parseFromContext,
   parseInBatchesFromContext,
   toArrayBufferIterator
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, ArrowTableBatch, Field, Schema as TableSchema} from '@loaders.gl/schema';
-import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/schema-utils';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  Field,
+  Schema as TableSchema
+} from '@loaders.gl/core/schema';
+import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {type GeoParquetGeometryType} from '@loaders.gl/schema';
+import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata

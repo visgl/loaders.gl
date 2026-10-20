@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseBSONSync} from './lib/parsers/parse-bson';
 import {BSONLoader as BSONLoaderMetadata} from './bson-loader-types';
 

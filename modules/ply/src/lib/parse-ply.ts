@@ -24,7 +24,7 @@
 //     diffuse_blue: 'blue'
 //   }
 // });
-import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import type {
   PLYMesh,
@@ -144,16 +144,20 @@ export function parsePLYBinaryPointCloudRecordsToArrowTable(
  * @returns header
  */
 export function parsePLYHeader(data: any, options?: ParsePLYOptions): PLYHeader {
-  const PLY_HEADER_PATTERN = /ply([\s\S]*)end_header\s/;
-
   const {headerText, headerLength} =
     data instanceof ArrayBuffer ? getBinaryHeader(data) : getTextHeader(data);
 
-  const result = PLY_HEADER_PATTERN.exec(headerText);
-
-  if (result !== null) {
-    const lines = result[1].split('\n');
-    const header = parseHeaderLines(lines, headerLength || result[0].length, options);
+  const headerStart = headerText.indexOf('ply');
+  const headerEndMarker = headerText.lastIndexOf('end_header');
+  const headerEnd = headerEndMarker + 'end_header'.length;
+  if (
+    headerStart >= 0 &&
+    headerEndMarker >= headerStart + 3 &&
+    headerEnd < headerText.length &&
+    /\s/.test(headerText[headerEnd])
+  ) {
+    const lines = headerText.slice(headerStart + 3, headerEndMarker).split('\n');
+    const header = parseHeaderLines(lines, headerLength || headerEnd + 1 - headerStart, options);
     return header;
   }
 

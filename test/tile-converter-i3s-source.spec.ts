@@ -18,7 +18,7 @@ import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
 import {GLTFLoader} from '@loaders.gl/gltf/bundled';
 import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {Matrix4} from '@math.gl/core';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {
   createI3SMeshTilesetConversionSource,
   createI3SConversionSpatialContext,

@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import {BinaryGeometry, Geometry} from '@loaders.gl/schema';
+import {BinaryGeometry, Geometry} from '@loaders.gl/core/schema';
 
 export type GeometryTestCase = {
   binary: BinaryGeometry;

@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Batch} from '@loaders.gl/schema';
-import {isTable, makeBatchFromTable} from '@loaders.gl/schema-utils';
-import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
+import type {Batch, Table} from '@loaders.gl/core/schema';
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import type {
   Loader,
   LoaderWithParser,
@@ -19,13 +18,13 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayBatchType,
   TransformBatches
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   canParseWithWorker,
   concatenateArrayBuffersAsync,
   isBrowser,
   parseWithWorkerInBatches
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';
@@ -236,7 +235,7 @@ async function* parseChunkInBatches(
 function convertDataToBatch(parsedData: unknown, loader: Loader): Batch {
   // biome-ignore format: preserve intentional fixture layout
   const batch: Batch = isTable(parsedData)
-    ? makeBatchFromTable(parsedData)
+    ? {...parsedData, length: getTableLength(parsedData), batchType: 'data'}
     : {
       shape: 'unknown',
       batchType: 'data',
@@ -247,6 +246,45 @@ function convertDataToBatch(parsedData: unknown, loader: Loader): Batch {
   batch.mimeType = loader.mimeTypes[0];
 
   return batch;
+}
+
+/** Checks whether parsed data follows one of the core table shapes. */
+function isTable(value: unknown): value is Table {
+  if (!value || typeof value !== 'object' || !('shape' in value)) {
+    return false;
+  }
+  const table = value as Partial<Table>;
+  switch (table.shape) {
+    case 'array-row-table':
+    case 'object-row-table':
+      return Array.isArray(table.data);
+    case 'geojson-table':
+      return Array.isArray(table.features);
+    case 'columnar-table':
+      return Boolean(table.data && typeof table.data === 'object');
+    case 'arrow-table':
+      return Boolean(table.data && typeof table.data === 'object' && 'numRows' in table.data);
+    default:
+      return false;
+  }
+}
+
+/** Returns the row count for a table-shaped parse result. */
+function getTableLength(table: Table): number {
+  switch (table.shape) {
+    case 'array-row-table':
+    case 'object-row-table':
+      return table.data.length;
+    case 'geojson-table':
+      return table.features.length;
+    case 'arrow-table':
+      return table.data.numRows;
+    case 'columnar-table':
+      for (const column of Object.values(table.data)) {
+        return column.length || 0;
+      }
+      return 0;
+  }
 }
 
 /**

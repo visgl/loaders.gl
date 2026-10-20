@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/core/schema';
 import {loadCrunchModule} from './crunch-module-loader';
-import {assert} from '@loaders.gl/loader-utils';
-import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
+import {assert} from '@loaders.gl/core/loader-utils';
+import {extractLoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import {getDxt1LevelSize, getDxtXLevelSize} from './parse-dds';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 

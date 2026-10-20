@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {encodeIndexedZip} from '@loaders.gl/zip/indexed-zip-writer';
 import {expect, test, vi} from 'vitest';
 import {coreApi, load, parseFile} from '@loaders.gl/core';

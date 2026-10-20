@@ -174,7 +174,7 @@ export function validateMeshCategoryData(assertionTargetOrData, data?) {
 
 /**
  * Check if the returned data from loaders use the format specified in `ColumnarTable`:
- *  modules/schema/src/category/table/table-types.ts
+ *  modules/core/src/schema/category/table/table-types.ts
  */
 export function validateTableCategoryData(t, data) {
   t.equals(data.shape, 'columnar-table');

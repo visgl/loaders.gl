@@ -9,8 +9,8 @@ import {
   getUrlWithToken,
   generateTilesetAttributeUrls
 } from '../utils/url-utils';
-import type {FetchLike, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import {getAuthenticatedFetch} from '@loaders.gl/loader-utils';
+import type {FetchLike, LoaderContext, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import {getAuthenticatedFetch} from '@loaders.gl/core/loader-utils';
 import {
   LodSelection,
   NodePage,

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, DataType, Field, ObjectRowTable, Schema} from '@loaders.gl/schema';
-import {ArrowTableBuilder, makeTableFromData} from '@loaders.gl/schema-utils';
+import type {ArrowTable, DataType, Field, ObjectRowTable, Schema} from '@loaders.gl/core/schema';
+import {ArrowTableBuilder, makeTableFromData} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 /**

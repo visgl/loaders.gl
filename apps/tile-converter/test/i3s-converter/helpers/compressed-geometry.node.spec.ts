@@ -1,7 +1,7 @@
 import {afterEach, expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader, type DracoMesh} from '@loaders.gl/draco';
-import {WorkerFarm} from '@loaders.gl/worker-utils';
+import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {generateCompressedGeometry} from '../../../src/v4/i3s-converter/helpers/geometry-converter';
 
 afterEach(() => WorkerFarm.getWorkerFarm({}).destroy());

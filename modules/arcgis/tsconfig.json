@@ -25,13 +25,10 @@
       "path": "../raster"
     },
     {
-      "path": "../loader-utils"
+      "path": "../core"
     },
     {
       "path": "../tiles"
-    },
-    {
-      "path": "../schema"
     }
   ]
 }

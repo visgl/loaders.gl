@@ -12,8 +12,8 @@ import {
   type ScanFragmentProvider,
   type ScanTask,
   type ScanExecutionTelemetry
-} from '@loaders.gl/loader-utils';
-import type {Schema} from '@loaders.gl/schema';
+} from '@loaders.gl/core/loader-utils';
+import type {Schema} from '@loaders.gl/core/schema';
 
 import {ParquetSource} from './parquet-source-loader';
 import {sliceParquetBatch} from './lib/slice-parquet-batch';

@@ -101,7 +101,7 @@ subpaths are import paths, not separate npm packages.
 - Raw ZIP header parsers/serializers, signature/search helpers, central-header iteration and ZIP
   file utilities are no longer root exports. Use `openZipArchive`, `ZipArchive.entries()`,
   `getEntryAt()` and the native encoders. Use `ArrayBufferFile`/`BlobFile` from
-  `@loaders.gl/loader-utils` instead of the ZIP-exported `DataViewReadableFile`.
+  `@loaders.gl/core/loader-utils` instead of the ZIP-exported `DataViewReadableFile`.
 - Removed `ZIP_COMPRESSION_HANDLERS` and `CompressionHandler`. Use shared archive read methods
   instead of dispatching container compression in consumers. Complete generic filesystem
   responses now stream; consume the response body to observe integrity errors.
@@ -115,7 +115,7 @@ Custom decoder URL overrides must provide ESM default factory exports (Draco als
 factory exports). Built-in
 Draco, Basis, and Crunch wrappers have generated `.mjs` adapters; custom CDNs must serve
 these additional assets. Classic-worker `importScripts()` behavior is unchanged. See
-[decoder library loading](/docs/modules/worker-utils#loading-decoder-libraries) for overrides
+[decoder library loading](/docs/modules/core/worker-utils#loading-decoder-libraries) for overrides
 and content-security-policy limitations.
 
 ### Explicit reference compression backends
@@ -278,10 +278,10 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 - `@loaders.gl/gis` is removed in 5.0. Applications should replace it with
   `@loaders.gl/geoarrow` for conversion and processing. Use `GEOARROW_CONVERTERS`
   instead of `GIS_CONVERTERS`.
-- Import geometry and metadata types from `@loaders.gl/schema`. Runtime validators
-  use `@loaders.gl/schema/geospatial-metadata-zod-schema`; generated schemas use
-  `@loaders.gl/schema/geoparquet.schema.json` and
-  `@loaders.gl/schema/geoarrow-metadata.schema.json`.
+- Import geometry and metadata types from `@loaders.gl/core/schema`. Runtime validators
+  use `@loaders.gl/core/schema/geospatial-metadata-zod-schema`; generated schemas use
+  `@loaders.gl/core/schema/geoparquet.schema.json` and
+  `@loaders.gl/core/schema/geoarrow-metadata.schema.json`.
 - Use `convertGeojsonToBinaryFeatureCollection` and
   `convertBinaryFeatureCollectionToGeojson` from GeoArrow instead of the old
   `geojsonToBinary` and `binaryToGeojson` aliases. Existing binary layouts are unchanged;
@@ -293,9 +293,9 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 
  - The nonfunctional `@loaders.gl/images` `loadImage()` placeholder has been removed. Use
    `load(url, ImageBitmapLoader)` or the texture helpers in `@loaders.gl/textures`.
- - `getMeshSize` is no longer exported from `@loaders.gl/schema`; import it from
-   `@loaders.gl/schema-utils`. The `getMeshBoundingBox` root export is deprecated and retained
-   temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/schema-utils`.
+ - `getMeshSize` is no longer exported from `@loaders.gl/core/schema`; import it from
+   `@loaders.gl/core/schema-utils`. The `getMeshBoundingBox` root export is deprecated and retained
+   temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/core/schema-utils`.
  - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
    longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
    `@math.gl/crs`.
@@ -353,7 +353,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 - `BrotliCompression`, `ZstdCompression`, and frame-based `LZ4Compression` may load larger codec implementations asynchronously. Prefer their async APIs; synchronous callers must explicitly preload or inject the required codec.
 - `transformBatches()` remains available for compatibility but is deprecated. Use `compressBatches()` or `decompressBatches()` for new code.
 
-**@loaders.gl/loader-utils, @loaders.gl/core, and source modules**
+**@loaders.gl/core/loader-utils, @loaders.gl/core, and source modules**
 
 If you are upgrading from the 4.4 release line, migrate top-level source factories and types as follows:
 
@@ -392,14 +392,14 @@ Custom sources that extended one of the old abstract classes should instead exte
 and implement one or more capability interfaces:
 
 ```ts
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {
   DataSourceOptions,
   GetImageParameters,
   ImageSource,
   ImageSourceMetadata,
   ImageType
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 class CustomImageSource
   extends DataSource<string, DataSourceOptions>
@@ -472,7 +472,7 @@ const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
 Before, in 4.4:
 
 ```ts
-import type {Source} from '@loaders.gl/loader-utils';
+import type {Source} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
 import {WMSSource} from '@loaders.gl/wms';
 import {PMTilesSource} from '@loaders.gl/tiles/pmtiles';
@@ -485,7 +485,7 @@ const loaded = await load(url, WMSSource);
 Now, in v5:
 
 ```ts
-import type {SourceLoader} from '@loaders.gl/loader-utils';
+import type {SourceLoader} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
 import {WMSSourceLoader} from '@loaders.gl/wms';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
@@ -580,7 +580,7 @@ This unifies top-level loading behavior:
 
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
-- `@loaders.gl/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
+- `@loaders.gl/core/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
 - `@loaders.gl/zip`/`@loaders.gl/tiles-3d/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
 
 **Deprecations**
@@ -612,7 +612,7 @@ This unifies top-level loading behavior:
 
 **Node.js v18+**
 
-When using loaders.gl on Node.js your application should import the `@loaders.gl/polyfills` module before calling any loaders.gl functions.
+When using loaders.gl on Node.js your application should import the `@loaders.gl/core/polyfills` module before calling any loaders.gl functions.
 
 **Typed Loaders**
 
@@ -646,7 +646,7 @@ const arrowSchema = deserializeArrowSchema(table.schema);
 
 **Polyfills**
 
-If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` function under Node.js that supported fetching from local files, loaders.gl v4 uses the built-in fetch in Node.js v18+ (which doesn't support fetching from local files), so to fetch from local files, you now need to use `fetchFile()` instead.
+If you were relying on `@loaders.gl/core/polyfills` module to install a global `fetch()` function under Node.js that supported fetching from local files, loaders.gl v4 uses the built-in fetch in Node.js v18+ (which doesn't support fetching from local files), so to fetch from local files, you now need to use `fetchFile()` instead.
 
 ```typescript
 import {fetchFile} from '@loaders.gl/core';
@@ -685,7 +685,7 @@ Loader module changes, in order of estimated impact to applications:
 **@loaders.gl/geopackage**
 
 - `options.geopackage.shape` replaces all other format specification options, such as `options.gis.format`
-- `options.geopackage.shape: 'tables'` - The default data format returned is now `tables` which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
+- `options.geopackage.shape: 'tables'` - The default data format returned is now `tables` which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/core/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
 
 **@loaders.gl/kml**
 
@@ -717,7 +717,7 @@ This module is still marked as experimental and had some breaking changes.
 
 **@loaders.gl/geopackage**
 
-- The default data format returned is now `options.gis.format: 'tables'`, which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.gis.format: 'geojson'` to return an object mapping table names to an array of GeoJSON features.
+- The default data format returned is now `options.gis.format: 'tables'`, which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/core/schema`.) You can use `options.gis.format: 'geojson'` to return an object mapping table names to an array of GeoJSON features.
 
 ## Upgrading to v3.0
 
@@ -776,7 +776,7 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 - The `KMLLoader`, `GPXLoader`, and `TCXLoader` now require a value for `options.gis.format`. Previously, the lack of a value would return data in "raw" format, i.e. not normalized to GeoJSON. To return GeoJSON-formatted data, use `options.gis.format: 'geojson'`. Other options are `binary` and `raw`.
 - The `kml.normalize` option has been deprecated. When `options.gis.format` is `geojson`, coordinates will always be in longitude-latitude ordering.
 
-**@loaders.gl/loader-utils**
+**@loaders.gl/core/loader-utils**
 
 - `createWorker()` now creates a generic worker. For loader workers use the new `createLoaderWorker()` function.
 
@@ -786,7 +786,7 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 
 **@loaders.gl/tables**
 
-- The (undocumented) `@loaders.gl/tables` module has been renamed to `@loaders.gl/schema`.
+- The (undocumented) `@loaders.gl/tables` module has been renamed to `@loaders.gl/core/schema`.
 
 ## Upgrading to v2.3
 
@@ -876,8 +876,8 @@ Some general changes:
 
 | Removal            | Replacement                                                            |
 | ------------------ | ---------------------------------------------------------------------- |
-| `TextEncoder`      | Use global `TextEncoder` instead and `@loaders.gl/polyfills` if needed |
-| `TextDecoder`      | Use global `TextDecoder` instead and `@loaders.gl/polyfills` if needed |
+| `TextEncoder`      | Use global `TextEncoder` instead and `@loaders.gl/core/polyfills` if needed |
+| `TextDecoder`      | Use global `TextDecoder` instead and `@loaders.gl/core/polyfills` if needed |
 | `createReadStream` | `fetch().then(resp => resp.body)`                                      |
 | `parseFile`        | `parse`                                                                |
 | `parseFileSync`    | `parseSync`                                                            |
@@ -949,17 +949,17 @@ The foillowing top-level options are deprecated and will be removed in v2.0
 
 A couple of functions have been deprecated and will be removed in v2.0. They now emit console warnings. Start replacing your use of these functions now to remove the console warnings and ensure a smooth future upgrade to v2.0.
 
-Also, Node support now requires installing `@loaders.gl/polyfills` before use.
+Also, Node support now requires installing `@loaders.gl/core/polyfills` before use.
 
 ### @loaders.gl/core
 
-- Removal: Node support for `fetchFile` now requires importing `@loaders.gl/polyfills` before use.
-- Removal: Node support for `TextEncoder`, and `TextDecoder` now requires importing `@loaders.gl/polyfills` before use.
+- Removal: Node support for `fetchFile` now requires importing `@loaders.gl/core/polyfills` before use.
+- Removal: Node support for `TextEncoder`, and `TextDecoder` now requires importing `@loaders.gl/core/polyfills` before use.
 - Deprecation: `TextEncoder` and `TextDecoder` will not be exported from `loaders.gl/core` in v2.0.
 
 ### @loaders.gl/images
 
-- Removal: Node support for images now requires importing `@loaders.gl/polyfills` before use.
+- Removal: Node support for images now requires importing `@loaders.gl/core/polyfills` before use.
 
 ### @loaders.gl/gltf
 
@@ -992,6 +992,18 @@ applications that intentionally consume partial data to `queryFeaturePage()` or 
 explicit `complete`/`reason` fields from `queryFeatures()` before displaying results. Spatial
 GeoJSON output is restricted to EPSG:4326; use `requestCrs` for projected input bounds. See the
 [query guide](/docs/developer-guide/arcgis/feature-layers) for the replacement contracts.
+
+## Scientific format package consolidation (v5)
+
+NetCDF and Zarr now share the public `@loaders.gl/scientific` package. Replace dependencies on `@loaders.gl/netcdf` or the previously private `@loaders.gl/zarr` package with `@loaders.gl/scientific`. Metadata loaders are exported from the package root; import implementation APIs from a format subpath:
+
+```ts
+import {NetCDFLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
+import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
+import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
+```
+
+The NetCDF and Zarr documentation now lives under [the scientific module](/docs/modules/scientific). Zarr storage engines are installed as dependencies of the scientific package.
 
 ## Raster package consolidation
 

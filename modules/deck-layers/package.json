@@ -40,11 +40,7 @@
     "@deck.gl/layers": "^9.4.0",
     "@loaders.gl/arrow": "5.0.0-alpha.12",
     "@loaders.gl/compression": "5.0.0-alpha.12",
-    "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/geoarrow": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@loaders.gl/tiles": "5.0.0-alpha.12",
     "@loaders.gl/tiles-3d": "5.0.0-alpha.12",
     "@loaders.gl/zip": "5.0.0-alpha.12",
@@ -55,5 +51,8 @@
     "@math.gl/culling": "5.0.0-alpha.18",
     "@math.gl/web-mercator": "5.0.0-alpha.18",
     "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
   }
 }

@@ -1,6 +1,6 @@
 import {Tile3DLayer, Tile3DLayerProps} from '@deck.gl/geo-layers';
 import {Viewport, UpdateParameters, COORDINATE_SYSTEM, Layer, LayersList} from '@deck.gl/core';
-import {Source} from '@loaders.gl/loader-utils';
+import {Source} from '@loaders.gl/core/loader-utils';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {PointCloudTile, PointCloudTileset} from '@loaders.gl/tiles';
 

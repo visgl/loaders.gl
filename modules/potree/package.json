@@ -67,9 +67,6 @@
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-alpha.12",
     "@loaders.gl/las": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.18",
     "@math.gl/projection": "5.0.0-alpha.18",
     "zod": "^4.1.12"

@@ -8,8 +8,8 @@ import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
-import type {MeshGeometry, Schema} from '@loaders.gl/schema';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
+import type {MeshGeometry, Schema} from '@loaders.gl/core/schema';
 import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {
   encodeI3SMeshLayer as encodeRoot,

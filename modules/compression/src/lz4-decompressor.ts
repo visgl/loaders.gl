@@ -65,6 +65,13 @@ export class LZ4Decompressor extends Decompressor {
     return this.raw.decompressSync(input, size);
   }
 
+  /** Incrementally decodes one frame or, with raw: true, one raw block. */
+  async *decompressBatches(
+    inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+  ): AsyncIterable<ArrayBuffer> {
+    yield* (this.useRaw ? this.raw : this.framed).decompressBatches(inputBatches);
+  }
+
   /** Validates the legacy Hadoop lengths in TypeScript before decoding each raw block. */
   private decodeHadoopBlocks(input: ArrayBuffer, capacity: number): ArrayBuffer | null {
     const view = new DataView(input);

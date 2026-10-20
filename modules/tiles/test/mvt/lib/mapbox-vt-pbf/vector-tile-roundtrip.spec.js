@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import VectorTile from '@loaders.gl/tiles/mvt/lib/mapbox-vector-tile-js/vector-tile';
 import {
   fromGeojsonVt,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArrowTableVectorTileSource} from './arrow-table-tile-source-loader';
 import {
   ARROW_TABLE_TILE_SOURCE_DEFAULT_OPTIONS,

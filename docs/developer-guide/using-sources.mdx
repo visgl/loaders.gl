@@ -89,7 +89,7 @@ One runtime object can implement several source capabilities while sharing the i
 authentication, caches, and lifecycle supplied by `DataSource`:
 
 ```ts
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {
   DataSourceOptions,
   ImageSource,
@@ -100,7 +100,7 @@ import type {
   RasterSource,
   RasterSourceMetadata,
   GetRasterParameters
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 type CompositeMetadata = ImageSourceMetadata & RasterSourceMetadata;
 

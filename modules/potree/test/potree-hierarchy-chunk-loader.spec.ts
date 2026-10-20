@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {PotreeHierarchyChunkLoader} from '@loaders.gl/potree';
 import {PotreeNodesSource} from '../src/lib/potree-node-source';
 import {buildPotreeHierarchyFromMetadata} from '../src/parsers/parse-potree-hierarchy-chunk';

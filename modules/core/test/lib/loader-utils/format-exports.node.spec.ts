@@ -60,7 +60,7 @@ const FORMAT_EXPORTS = {
   las: ['LASFormat'],
   'tiles/mlt': ['MLTFormat'],
   'tiles/mvt': ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
-  netcdf: ['NetCDFFormat'],
+  scientific: ['NetCDFFormat'],
   obj: ['OBJFormat', 'MTLFormat'],
   parquet: ['ParquetFormat'],
   pcd: ['PCDFormat'],

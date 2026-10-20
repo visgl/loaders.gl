@@ -5,14 +5,14 @@
 import './init-tests';
 
 // Utility modules
-import '@loaders.gl/polyfills/test';
-import '@loaders.gl/worker-utils/test';
+import '@loaders.gl/core/polyfills/test';
+import '@loaders.gl/core/worker-utils/test';
 import '@loaders.gl/geoarrow/test';
 
 // Core
-import '@loaders.gl/loader-utils/test';
-import '@loaders.gl/schema/test';
-import '@loaders.gl/schema-utils/test';
+import '@loaders.gl/core/loader-utils/test';
+import '@loaders.gl/core/schema/test';
+import '@loaders.gl/core/schema-utils/test';
 import '@loaders.gl/core/test';
 
 // Image Formats
@@ -21,8 +21,8 @@ import '@loaders.gl/textures/test';
 import '@loaders.gl/raster/test/lerc';
 // import '@loaders.gl/video/test';
 import '@loaders.gl/raster/test/geotiff';
-// import '@loaders.gl/zarr/test';
-import '@loaders.gl/netcdf/test';
+import '@loaders.gl/scientific/test/netcdf';
+import '@loaders.gl/scientific/test/zarr';
 
 // Pointcloud/Mesh Formats
 import '@loaders.gl/draco/test';

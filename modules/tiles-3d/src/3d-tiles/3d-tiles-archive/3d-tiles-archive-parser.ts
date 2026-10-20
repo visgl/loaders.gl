@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {ZipArchiveOptions} from '@loaders.gl/zip';
 import {Tiles3DArchive} from './3d-tiles-archive-archive';
 

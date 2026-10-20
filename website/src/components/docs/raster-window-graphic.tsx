@@ -35,7 +35,7 @@ const RASTER_CONTENT = {
     output: 'Typed array result',
     outputNote: 'Values return with dimension metadata and coordinate meaning intact.',
     outputTags: ['values', 'dimensions', 'metadata'],
-    link: '/docs/modules/zarr/api-reference/geo-zarr-source-loader'
+    link: '/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader'
   }
 } as const;
 

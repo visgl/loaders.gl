@@ -12,9 +12,9 @@ import {
 } from '@loaders.gl/parquet';
 import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
 import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
-import {convertTable, makeTableFromData} from '@loaders.gl/schema-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import {convertTable, makeTableFromData} from '@loaders.gl/core/schema-utils';
 import {parquetRead, parquetReadObjects, type ColumnData} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';
 

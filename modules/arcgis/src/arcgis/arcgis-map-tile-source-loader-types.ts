@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISMapTileSource} from './arcgis-map-tile-source-loader';
 import type {ArcGISMapTileSourceLoaderOptions} from '../arcgis-source-types';
 

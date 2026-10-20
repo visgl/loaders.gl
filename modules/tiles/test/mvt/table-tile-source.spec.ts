@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {createDataSource, fetchFile, load} from '@loaders.gl/core';
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {TableTileSourceLoader, TableVectorTileSource} from '@loaders.gl/tiles/mvt';
-import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
+import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 const DATA_PATH = '@loaders.gl/tiles/mvt/test/data/geojson-vt';
 const square = [
   {

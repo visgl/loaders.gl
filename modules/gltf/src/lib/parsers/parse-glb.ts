@@ -7,7 +7,7 @@
 // Draft GLB v3 layout: https://github.com/KhronosGroup/glTF/issues/2594
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
 import type {GLB} from '../types/glb-types';
-import {assert} from '@loaders.gl/loader-utils';
+import {assert} from '@loaders.gl/core/loader-utils';
 
 /** Options for parsing a GLB */
 export type ParseGLBOptions = {

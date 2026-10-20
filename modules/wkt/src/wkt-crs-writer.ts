@@ -6,7 +6,7 @@ import {
   type WriterWithEncoder,
   type WriterOptions,
   ensureArrayBuffer
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {encodeWKTCRS, type EncodeWKTCRSOptions, type WKTCRSAst} from '@math.gl/crs';
 import {VERSION} from './lib/version';
 import {WKTCRSFormat} from './wkt-format';

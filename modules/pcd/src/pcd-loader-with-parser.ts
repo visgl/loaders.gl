@@ -8,13 +8,13 @@ import {
   type Loader,
   type LoaderOptions,
   type LoaderWithParser
-} from '@loaders.gl/loader-utils';
-import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
+} from '@loaders.gl/core/loader-utils';
+import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
 } from '@loaders.gl/arrow/transport';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import type {PCDMesh} from './lib/pcd-types';
 import {parsePCD, parsePCDHeader} from './lib/parse-pcd';
 import {PCDWorkerLoader as PCDWorkerLoaderMetadata} from './pcd-loader';

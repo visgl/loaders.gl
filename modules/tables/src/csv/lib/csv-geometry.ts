@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataType, Field, Geometry, Schema} from '@loaders.gl/schema';
+import type {DataType, Field, Geometry, Schema} from '@loaders.gl/core/schema';
 import {
   convertGeometryToWKB,
   convertWKBToGeometry,
   convertWKTToGeometry
 } from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {decodeHex} from '@loaders.gl/loader-utils';
-import {getGeoMetadata, setGeoMetadata, type GeoParquetGeometryType} from '@loaders.gl/schema';
+import {decodeHex} from '@loaders.gl/core/loader-utils';
+import {getGeoMetadata, setGeoMetadata, type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {inferGeoParquetGeometryTypes} from '@loaders.gl/arrow-geometry/geometry-field';
 
 const GEOMETRY_COLUMN_NAMES = new Set(['geom', 'geometry', 'the_geom', 'wkt', 'wkb']);

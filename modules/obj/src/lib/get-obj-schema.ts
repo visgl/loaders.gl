@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, SchemaMetadata, Field, MeshAttribute} from '@loaders.gl/schema';
-import {getDataTypeFromArray} from '@loaders.gl/schema-utils';
+import type {Schema, SchemaMetadata, Field, MeshAttribute} from '@loaders.gl/core/schema';
+import {getDataTypeFromArray} from '@loaders.gl/core/schema-utils';
 
 /** Get Mesh Schema */
 export function getOBJSchema(

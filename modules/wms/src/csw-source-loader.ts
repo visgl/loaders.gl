@@ -10,8 +10,8 @@ import type {
   CoreAPI,
   SourceLoader,
   DataSourceOptions
-} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 
 import type {CSWCapabilities, CSWLoaderOptions} from './csw-capabilities-loader';
 import type {WMSLoaderOptions} from './wms-error-loader';

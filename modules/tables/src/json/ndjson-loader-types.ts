@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {
   ObjectRowTable,
   ArrayRowTable,
@@ -10,7 +10,7 @@ import type {
   ArrowTableBatch,
   Schema,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type * as arrow from 'apache-arrow';
 import {NDJSONFormat} from './json-format';
 import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';

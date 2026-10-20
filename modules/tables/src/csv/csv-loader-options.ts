@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
-import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
-import type {ArrowViewTypeMode} from '@loaders.gl/schema-utils';
+import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
+import type {ArrowViewTypeMode} from '@loaders.gl/core/schema-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

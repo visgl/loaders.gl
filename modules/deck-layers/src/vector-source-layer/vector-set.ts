@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {Viewport} from '@deck.gl/core';
-import type {Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {
   GetFeaturesParameters,
   VectorSource,
   VectorSourceMetadata
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 /** Resolved feature-table type returned by the active vector source. */
 type VectorSetData = Awaited<ReturnType<VectorSource['getFeatures']>>;

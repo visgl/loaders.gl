@@ -11,7 +11,7 @@ import type {
   LoaderWithParser,
   LoaderOptions,
   LoaderContext
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {Tiles3DLoader} from '../../src/3d-tiles/tiles-3d-loader';
 
 /** Creates a tiny legacy tile around the same GLB used by the modern content case. */

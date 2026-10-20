@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoArrowEncodingPreference, Schema, ObjectRowTable} from '@loaders.gl/schema';
-import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {GeoArrowEncodingPreference, Schema, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 
 /**
  * GeoArrow geometry encoding mode for SHP Arrow output.
@@ -46,7 +46,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
       batchSize?: number;
     };
-    gis?: import('@loaders.gl/loader-utils').CRSReprojectionOptions;
+    gis?: import('@loaders.gl/core/loader-utils').CRSReprojectionOptions;
   };
 
 export type DBFRowsOutput = ObjectRowTable['data'];

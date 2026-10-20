@@ -8,8 +8,8 @@ import type {
   MeshArrowTable,
   MeshAttribute,
   MeshAttributeQuantizationTransform
-} from '@loaders.gl/schema';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 /** Options for encoding one Arrow or mesh point batch as a 3D Tiles point tile. */

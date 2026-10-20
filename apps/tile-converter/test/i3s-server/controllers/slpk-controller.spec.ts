@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
-import {path} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/core/loader-utils';
 import {getFileByUrl, loadArchive} from '../../../src/v4/i3s-server/controllers/slpk-controller';
 const URL_PREFIX = '';
 const SLPK_URL = './modules/tiles-3d/test/i3s/data/DA12_subset.slpk';

@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {
   explainArrowTableQuery,
   queryArrowTable,
   type ArrowQueryOptions,
   type SQLPredicate
 } from '@loaders.gl/sql';
-import type {TableQueryExplain} from '@loaders.gl/loader-utils';
+import type {TableQueryExplain} from '@loaders.gl/core/loader-utils';
 
 /** Names accepted by the optional scan engine factory. */
 export type ScanBackendName = 'arrow' | (string & {});

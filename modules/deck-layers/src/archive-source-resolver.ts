@@ -4,8 +4,13 @@
 
 import {fetchFile, parse} from '@loaders.gl/core';
 import {GZipDecompressor} from '@loaders.gl/compression';
-import {BlobFile, HttpFile, path} from '@loaders.gl/loader-utils';
-import type {Loader, LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
+import {BlobFile, HttpFile, path} from '@loaders.gl/core/loader-utils';
+import type {
+  Loader,
+  LoaderOptions,
+  LoaderWithParser,
+  ReadableFile
+} from '@loaders.gl/core/loader-utils';
 import type {TilesetSourceResolver} from '@loaders.gl/tiles-3d';
 import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/zip';
 

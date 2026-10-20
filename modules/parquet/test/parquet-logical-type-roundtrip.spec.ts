@@ -5,9 +5,9 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
 import * as arrow from 'apache-arrow';
 import {encode, load} from '@loaders.gl/core';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter, ParquetReader} from '@loaders.gl/parquet';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
 const TIMESTAMP_NANOS = 1_700_000_000_123_456_789n;

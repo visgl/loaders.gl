@@ -5,7 +5,7 @@
 import React, {useEffect, useState} from 'react';
 
 import {Bench, type LogEntry} from '@probe.gl/bench';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 
 type BenchmarkResultRow = {
   /** Human-readable fixture and feature label. */
@@ -571,7 +571,7 @@ async function createParquetBenchmarkImplementations(): Promise<
     import('../../../modules/tables/src/parquet/parquet-js-loader'),
     import('../../../modules/tables/src/parquet/lib/utils/load-wasm'),
     import('../../../modules/tables/src/parquet/lib/parsers/convert-parquet-tables'),
-    import('@loaders.gl/schema-utils'),
+    import('@loaders.gl/core/schema-utils'),
     import('apache-arrow'),
     import('hyparquet'),
     import('hyparquet-compressors')

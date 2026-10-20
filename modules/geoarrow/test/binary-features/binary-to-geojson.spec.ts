@@ -7,7 +7,7 @@ import type {
   BinaryFeatureCollection,
   BinaryPolygonGeometry,
   FeatureCollection
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {fetchFile} from '@loaders.gl/core';
 import {
   convertBinaryFeatureCollectionToGeojson,

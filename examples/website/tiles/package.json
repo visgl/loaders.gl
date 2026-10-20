@@ -24,7 +24,6 @@
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/json": "workspace:*",
-    "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/raster": "workspace:*",
     "@loaders.gl/tiles": "workspace:*",
     "@luma.gl/core": "^9.4.0",

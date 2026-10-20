@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {PointCloudTileSource} from '@loaders.gl/tiles-3d/point-cloud-tile-source';
 import {PointCloudTileSourceLoader} from './point-cloud-tile-source-loader-types';
 import type {

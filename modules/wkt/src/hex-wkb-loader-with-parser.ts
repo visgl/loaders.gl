@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {Geometry} from '@loaders.gl/schema';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {Geometry} from '@loaders.gl/core/schema';
 
 import type {WKBLoaderOptions} from './wkb-loader';
 import {HexWKBLoader as HexWKBLoaderMetadata} from './hex-wkb-loader';

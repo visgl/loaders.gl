@@ -128,7 +128,7 @@ export async function convertNodeTileset(
   let report: TileConversionReport;
   try {
     const inspection = await rawSource.inspect(signal);
-    await import('@loaders.gl/polyfills');
+    await import('@loaders.gl/core/polyfills');
     const {getDracoLibraryOptions} = await import('@loaders.gl/draco/bundled');
     const dracoLibraryOptions = getDracoLibraryOptions({
       decoderProfile: 'full',

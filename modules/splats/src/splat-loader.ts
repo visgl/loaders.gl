@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import type {SplatsLoaderOptions} from './types';
 import {parseSPLAT} from './lib/parse-splat';
 import {SPLATLoader as SPLATLoaderMetadata} from './splat-loader-types';

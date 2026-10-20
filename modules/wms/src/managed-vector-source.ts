@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
+import type {Feature, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 import type {
   GetFeaturesParameters,
   VectorSource,
   VectorSourceData,
   VectorSourceMetadata
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {areServiceCRSEquivalent, normalizeServiceCRS} from './crs-utils';

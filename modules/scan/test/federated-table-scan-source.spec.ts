@@ -13,9 +13,9 @@ import {
   type ScanQueryMetadata,
   type TableScanReadOptions,
   type TableScanSource
-} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ArrowTableBatch, DataType, Schema} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable, ArrowTableBatch, DataType, Schema} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {queryArrowTable, type SQLPredicate} from '@loaders.gl/sql';
 import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/scan';
 

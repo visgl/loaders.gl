@@ -6,12 +6,12 @@ import {expect, test} from 'vitest';
 import {
   load,
   loadInBatches,
-  isIterator,
-  isAsyncIterable,
   parse,
   parseInBatches,
   preload,
-  preloadSync
+  preloadSync,
+  isIterator,
+  isAsyncIterable
 } from '@loaders.gl/core';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {
@@ -24,7 +24,7 @@ import {
 } from '@loaders.gl/csv/unbundled';
 import * as csv from '@loaders.gl/csv';
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
   deserializeCSVWorkerResult,
   serializeCSVWorkerResult

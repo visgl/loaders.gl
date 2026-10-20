@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Core module', to: '/docs/modules/core'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
-    {label: 'Source manager', to: '/docs/modules/loader-utils/api-reference/data-source-manager'}
+    {label: 'Source manager', to: '/docs/modules/core/loader-utils/api-reference/data-source-manager'}
   ]}
 />
 

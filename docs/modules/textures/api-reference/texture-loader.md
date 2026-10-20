@@ -73,7 +73,7 @@ import {TextureLoader} from '@loaders.gl/textures';
 const texture = await load('texture.image-texture.json', TextureLoader);
 ```
 
-Member images use the same runtime-dependent bitmap contract as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader): native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/polyfills` is present.
+Member images use the same runtime-dependent bitmap contract as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader): native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
 
 ## Manifest
 

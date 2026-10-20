@@ -4,10 +4,10 @@
 
 import { expect, test } from "vitest";
 // import {validateLoader} from 'test/common/conformance';
-import { load, loadInBatches, encode, fetchFile, isBrowser, setLoaderOptions } from '@loaders.gl/core';
-import type { ArrowTable, ObjectRowTable } from '@loaders.gl/schema';
+import {load, loadInBatches, encode, fetchFile, setLoaderOptions, isBrowser} from '@loaders.gl/core';
+import type { ArrowTable, ObjectRowTable } from '@loaders.gl/core/schema';
 import { getGeometryColumnsFromSchema } from '@loaders.gl/geoarrow';
-import {getGeoMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import { GeoParquetLoader, ParquetJSWriter, ParquetLoader, ParquetWriter } from '@loaders.gl/parquet';
 import { ParquetLoader as BundledParquetLoader, ParquetJSLoader } from '@loaders.gl/parquet/bundled';
@@ -21,7 +21,8 @@ test('ParquetLoader#loader objects', () => {
 });
 test('ParquetLoader#publishes a module-local worker asset', () => {
     expect(typeof ParquetLoader.worker, 'declares a concrete packaged worker URL').toBe('string');
-    expect(String(ParquetLoader.worker).includes('unpkg.com'), 'does not use the implicit worker CDN fallback').toBeFalsy();
+    const workerUrl = new URL(String(ParquetLoader.worker), 'https://example.invalid');
+    expect(workerUrl.hostname, 'does not use the implicit worker CDN fallback').not.toBe('unpkg.com');
     const workerFile = isBrowser ? '/parquet-worker.js' : '/parquet-worker-node.cjs';
     expect(String(ParquetLoader.worker).endsWith(workerFile), 'targets the packaged runtime worker').toBeTruthy();
 });

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, Loader} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, Loader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISWebSceneData} from './types';
 
 import {ArcGISWebSceneFormat} from './i3s-format';

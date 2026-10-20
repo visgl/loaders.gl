@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 
 import {decodeParquetSourceWorkerInput} from '../lib/parquet-source-worker-decoder';
 import type {ParquetSourceWorkerInput} from '../lib/parquet-source-worker-types';

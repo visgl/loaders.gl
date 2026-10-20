@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {createDataSource, load} from '@loaders.gl/core';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {ArrowTableTileSourceLoader as ArrowTableTileSourceLoaderMetadata} from '@loaders.gl/tiles/mvt';
 import {
@@ -14,8 +14,8 @@ import {
 } from '@loaders.gl/tiles/mvt/arrow-table-tile-source-loader';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {GeometryConverter} from '@loaders.gl/geoarrow';
-import {getGeoMetadata} from '@loaders.gl/schema';
-import type {ArrowTable, Geometry, GeoArrowEncodingPreference} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
+import type {ArrowTable, Geometry, GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 
 const ROOT_TILE = {x: 0, y: 0, z: 0};
 const POINT: Geometry = {type: 'Point', coordinates: [-90, 40]};

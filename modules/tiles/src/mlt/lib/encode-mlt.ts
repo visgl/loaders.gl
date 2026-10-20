@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, Geometry} from '@loaders.gl/schema';
-import {getGeoMetadata} from '@loaders.gl/schema';
+import type {ArrowTable, Geometry} from '@loaders.gl/core/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import type {MLTWriterOptions} from '../mlt-writer';
 import {

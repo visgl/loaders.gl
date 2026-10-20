@@ -6,8 +6,8 @@ import {expect, test} from 'vitest';
 import {JSONWriter} from '@loaders.gl/json';
 import {GeoJSONLoader as BundledGeoJSONLoader} from '@loaders.gl/json/bundled';
 import {encodeTableAsText} from '@loaders.gl/core';
-import {convertTableToArrow} from '@loaders.gl/schema-utils';
-import {emptyTable, tableWithData} from '@loaders.gl/schema-utils/test/shared-utils';
+import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
+import {emptyTable, tableWithData} from '@loaders.gl/core/schema-utils/test/shared-utils';
 test('JSONWriter#encodeTableAsText - empty table', async () => {
   const encodedText = await encodeTableAsText(emptyTable, JSONWriter);
   expect(encodedText, 'got expected output').toBe('[]');

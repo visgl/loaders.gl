@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {LASWriter} from '@loaders.gl/las';
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {LASFile as LazPerfLASFile} from '../src/lib/laz-perf/laslaz-decoder';
 import {
   decodeLAZFileInBatches,

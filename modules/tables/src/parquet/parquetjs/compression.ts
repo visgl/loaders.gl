@@ -20,7 +20,7 @@ import {
   Decompressor,
   type Compressor
 } from '@loaders.gl/compression';
-import {concatenateArrayBuffers, registerJSModules} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers, registerJSModules} from '@loaders.gl/core/loader-utils';
 
 import {ParquetCompression} from './schema/declare';
 import {toArrayBuffer, toUint8Array} from './utils/binary-utils';

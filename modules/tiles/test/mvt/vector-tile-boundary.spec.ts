@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import Pbf from 'pbf';
-import type {FeatureCollection, Geometry} from '@loaders.gl/schema';
+import type {FeatureCollection, Geometry} from '@loaders.gl/core/schema';
 import {fromGeojson, normalizeGeojson} from '../../src/mvt/lib/mapbox-vt-pbf/to-vector-tile';
 import {VectorTile} from '../../src/mvt/lib/vector-tile/vector-tile';
 

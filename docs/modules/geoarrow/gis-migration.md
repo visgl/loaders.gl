@@ -12,7 +12,7 @@ entry points; previously published GIS versions remain available.
 ## Application conversions
 
 ```typescript
-import {convert} from '@loaders.gl/schema-utils';
+import {convert} from '@loaders.gl/core/schema-utils';
 import {GEOARROW_CONVERTERS} from '@loaders.gl/geoarrow';
 
 const geometry = convert('POINT (1 2)', 'geojson-geometry', GEOARROW_CONVERTERS);
@@ -59,9 +59,9 @@ the same owner as their associated API unless a schema owner is listed.
 | `makeGeoArrowGeometryField`, `makeWKBGeometryField`, `set*Geometry*Metadata`, `encodeWKBGeometryValue`, `getGeometryWKBOptions`, `inferGeoParquetGeometryTypes`, `getCoordinateDimensions`, `getGeometrySampleCoordinates` | `@loaders.gl/arrow-geometry/geometry-field` |
 | `makeWKBGeometryArrowTable*`, `makeWKBGeometryData*` and WKB Arrow options | `@loaders.gl/arrow-geometry/wkb-arrow-utils` |
 | `buildFeatureArrowSchema`, `convertFeaturesToWKBArrowTable` | `@loaders.gl/arrow-geometry/feature-collection-to-arrow` |
-| `GeoJSONGeometry`, geometry/metadata types, `getGeoMetadata`, `setGeoMetadata`, `unpackGeoMetadata`, JSON metadata and key/value helpers | `@loaders.gl/schema` (use `Geometry` instead of `GeoJSONGeometry`) |
-| Metadata validators and generated JSON Schemas | `@loaders.gl/schema/geospatial-metadata-zod-schema` and `@loaders.gl/schema/geoparquet.schema.json` and `@loaders.gl/schema/geoarrow-metadata.schema.json` |
-| `encodeHex`, `decodeHex` | `@loaders.gl/loader-utils` |
+| `GeoJSONGeometry`, geometry/metadata types, `getGeoMetadata`, `setGeoMetadata`, `unpackGeoMetadata`, JSON metadata and key/value helpers | `@loaders.gl/core/schema` (use `Geometry` instead of `GeoJSONGeometry`) |
+| Metadata validators and generated JSON Schemas | `@loaders.gl/core/schema/geospatial-metadata-zod-schema` and `@loaders.gl/core/schema/geoparquet.schema.json` and `@loaders.gl/core/schema/geoarrow-metadata.schema.json` |
+| `encodeHex`, `decodeHex` | `@loaders.gl/core/loader-utils` |
 | `_extractNumericPropTypes` | Internal legacy helper in `@loaders.gl/arrow-geometry/legacy-binary`; do not build new application code around it |
 
 ## Ownership and allocation

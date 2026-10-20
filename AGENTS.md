@@ -79,14 +79,14 @@
 
 ## Notes
 
-- Published loaders.gl modules must not import `@loaders.gl/core` from `src/**`. `@loaders.gl/deck-layers` is the exception and may depend on `@loaders.gl/core`.
-- If a published module needs functionality that currently lives in `@loaders.gl/core`, move the shared helper to a lower-level module or inject the dependency instead of adding a new `@loaders.gl/core` import.
+- Keep `@loaders.gl/core/polyfills` independent: its implementation must not import the core root, other core subpath entry points, or other `@loaders.gl/*` modules. Put the small Node-specific helpers it needs inside the polyfills subpath instead of creating package or entry-point cycles.
+- Published loaders.gl modules may import independent `@loaders.gl/core/*` subpaths when they need those APIs. Declare `@loaders.gl/core` as a peer dependency, not an exact runtime dependency, and never list a subpath as a package dependency. Keep the core root entry point independent of optional subpath dependencies.
 - Avoid importing node specific files unless in specific functions that are intentionally designed to handle both cases. For instance, `fetchFile` handles both browser and Node.js, so importing `fs` is almost never required.
 - In `package.json` `browser` fields, use relative replacements that match actual emitted files in the current layout: pair `./src/...*.ts` entries with the corresponding `./dist/...*.js` entries, and map each one either to a real browser shim file or to `false`. Do not leave stale paths such as old `dist/esm` targets or entries for files that do not exist in that module.
 - Keep the upgrade guide focused on deleted or deprecated functionality. New feature documentation belongs in the module docs and release notes instead.
 - Running module- or file-scoped commands such as `tsc` tends to generate `.js` and `.d.ts` files in this repo. After such commands, check for generated files and remove them before finishing.
 - Running tests that use workers requires `yarn build` first so the worker bundles exist before the tests run.
-- Loader-required geometry construction belongs in focused `@loaders.gl/arrow-geometry` entry points, with metadata types/helpers in `@loaders.gl/schema`. The GIS compatibility package has been removed; do not restore imports or implementations under that package.
+- Loader-required geometry construction belongs in focused `@loaders.gl/arrow-geometry` entry points, with metadata types/helpers in `@loaders.gl/core/schema`. The GIS compatibility package has been removed; do not restore imports or implementations under that package.
 - `@loaders.gl/geoarrow` should provide the richer converter and processing APIs for geospatial tables, especially GeoArrow-formatted Arrow tables.
 - Loaders should not import the larger `@loaders.gl/geoarrow` module; applications can install and use it when they need more extensive geospatial processing.
 

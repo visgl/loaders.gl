@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {DracoMesh} from './lib/draco-types';
 import {
   deserializeArrowWorkerResult,

@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {registerLoaders, load, parse, parseSync, fetchFile, encodeSync} from '@loaders.gl/core';
 import {GLTFLoader, GLTFWriter, postProcessGLTF, type GLTFLoaderOptions} from '@loaders.gl/gltf';
-import {encodeArrayBufferToBase64} from '@loaders.gl/loader-utils';
+import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {ImageBitmapLoader} from '@loaders.gl/images';
 import {getGLTFImageOptions} from '../src/lib/parsers/parse-gltf';

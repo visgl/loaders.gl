@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {
   GeoJSONTable,
   ObjectRowTable,
   BinaryFeatureCollection,
   ArrowTable,
   GeoArrowEncodingPreference
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {GPXFormat} from './kml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

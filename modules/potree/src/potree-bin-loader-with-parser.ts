@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {parsePotreeBin, type PotreeBinLoaderOptions} from './parsers/parse-potree-bin';
 import {PotreeBinLoader as PotreeBinLoaderMetadata} from './potree-bin-loader';
 

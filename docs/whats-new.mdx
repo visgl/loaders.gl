@@ -40,6 +40,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## Scientific format package consolidation
+
+NetCDF and Zarr are now available from the public `@loaders.gl/scientific` package. The package root exports metadata-only loaders; parser and source implementations are available through `@loaders.gl/scientific/netcdf` and `@loaders.gl/scientific/zarr`. See the [NetCDF format guide](/docs/modules/scientific/netcdf/formats/netcdf) and [upgrade guide](/docs/upgrade-guide#scientific-format-package-consolidation-v5).
 ## Raster package
 
 `@loaders.gl/raster` consolidates GeoTIFF, LERC, terrain and quantized mesh with metadata-only
@@ -57,7 +60,7 @@ for imports, worker asset availability, and dependency tradeoffs.
 
 ## Tile matrix source adapters
 
-- Shared grid normalization now lives in `@loaders.gl/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
+- Shared grid normalization now lives in `@loaders.gl/core/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
 - ArcGIS map and vector tile sources expose per-level grid metadata and preserve matrix identifiers in cached-tile URLs without inventing matrix dimensions.
 - GeoPackage source metadata discovers raster tile tables, including raster-only packages, and exposes normalized matrix geometry. Raster payload access remains separate.
 
@@ -67,9 +70,13 @@ OGC API Tiles exposes matrix coverage limits and avoids requests outside adverti
 
 ## Compression backends and LZO
 
-Default fallback compressors and decompressors use lazy, direction-specific compress-utils 0.9.0
+Default fallback compressors and decompressors use lazy, direction-specific compress-utils 0.10.1
 WASM modules. Native streams remain the first async choice where supported. Preload enables sync
 calls. Raw DEFLATE and LZ4 bindings share their framed codec assets.
+
+Raw LZ4 and LZO `decompressBatches()` emit decoded bytes before the complete block arrives,
+without an output-capacity hint. Batch decoding enforces the cumulative `maxOutputByteLength`
+limit and releases streams when iteration finishes, fails, or is cancelled.
 
 The decoder-only [LzoDecompressor API](./modules/compression/api-reference/lzo) supports raw LZO1X.
 Parquet adds Hadoop-framed LZO page support and ORC adds LZO chunk support. Container framing is
@@ -336,12 +343,12 @@ Release Date: 2026
 - **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
 - **Coverage expansion and test modernization** - Broad, fast, hermetic Vitest coverage has raised combined line-and-branch coverage from about 70% to over 90%, while completing the migration of legacy Tape tests to native Vitest syntax. Compact boundary suites cover binary point-cloud decoders, CSV and Parquet Arrow output, geometry conversion, 3D Tiles traversal, raster and splat sources, and streaming file and worker lifecycles. Large compatibility fixtures remain in the slow lane, and boundary checks use small deterministic inputs.
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
-- **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`OMEZarrSourceLoader`](/docs/modules/zarr/api-reference/ome-zarr-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF / OME-Zarr website examples.
+- **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`OMEZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF / OME-Zarr website examples.
 - **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
 - **Module workers by default** - Worker descriptors can create bundler-resolved ES module workers as their default browser path while retaining explicit worker URLs and pre-built classic-worker fallbacks. Arrow triangulation is the first API to use this path; existing classic workers are not deprecated.
 - **Automatic atomic worker selection** - `core.worker: 'auto'` lets loaders provide synchronous normalized work estimates so small parses stay on the main thread while expensive parses use workers. The default `core.worker: true` behavior remains unchanged.
 - **OpenUSD scenes** - The new `@loaders.gl/scene` module provides an experimental [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) for the [OpenUSD format](/docs/modules/scene/formats/usd), supporting ASCII USDA layers and uncompressed USDZ archives, including reference and variant composition.
-- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/tiles/mvt`, `@loaders.gl/tiles-3d/3d-tiles`, `@loaders.gl/schema`, `@loaders.gl/tiles-3d/i3s`, and `@loaders.gl/splats`.
+- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/tiles/mvt`, `@loaders.gl/tiles-3d/3d-tiles`, `@loaders.gl/core/schema`, `@loaders.gl/tiles-3d/i3s`, and `@loaders.gl/splats`.
 
 **Features**
 
@@ -444,7 +451,7 @@ Release Date: 2026
 - [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) NEW - loads GaussianSplats3D `.ksplat` files into Mesh Arrow tables.
 - Handwritten RAD and RADC metadata types are paired with runtime validators from `@loaders.gl/splats/rad-zod-schema`, plus published draft-07 JSON Schema assets.
 
-**@loaders.gl/worker-utils**
+**@loaders.gl/core/worker-utils**
 
 - `processOnWorkerInBatches()` streams input and output through one leased worker, preserving
   parser or encoder state across batches with demand-driven backpressure and transferable data.
@@ -480,10 +487,10 @@ Release Date: 2026
 
 - The new lightweight `@loaders.gl/compression/native-decompression` entrypoint probes runtime support for gzip, deflate, raw deflate, Brotli, and future Zstandard decompression without importing codec fallbacks. Parquet and SPZ use it before lazily loading codec-backed implementations; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed parsing.
 
-**@loaders.gl/schema and @loaders.gl/geoarrow**
+**@loaders.gl/core/schema and @loaders.gl/geoarrow**
 
 - The GIS compatibility package is removed in 5.0. GeoArrow owns application-facing conversion and processing; see the [GIS migration map](/docs/modules/geoarrow/gis-migration). Legacy binary layouts remain supported as explicit, allocating rendering representations.
-- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/schema`, while matching runtime validators are available from `@loaders.gl/schema/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
+- Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/core/schema`, while matching runtime validators are available from `@loaders.gl/core/schema/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
 - Draft-07 `geoparquet.schema.json` and `geoarrow-metadata.schema.json` assets are published for validation and editor integrations.
 
 **@loaders.gl/tiles-3d/i3s**
@@ -502,7 +509,7 @@ Release Date: 2026
 - `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
 - `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.
 
-**@loaders.gl/loader-utils**
+**@loaders.gl/core/loader-utils**
 
 - `RasterSource`, `RasterData`, `RasterViewport`, and `GetRasterParameters` NEW - shared typed raster contracts for viewport-driven sources.
 - `ImageSource`, `VectorSource`, and `RasterSource` are composable type-only capability interfaces; custom runtimes extend `DataSource` once and can implement several source families without duplicating shared state.
@@ -557,16 +564,16 @@ Release Date: 2026
   `GetRasterParameters.selection` indices for time, vertical level, and other non-spatial raster
   dimensions.
 
-**@loaders.gl/zarr**
+**@loaders.gl/scientific/zarr**
 
 - OME-Zarr channel selection preserves reordered or repeated channels even when the selection has the same length as the source channel count.
-- [`GeoZarrSourceLoader`](/docs/modules/zarr/api-reference/geo-zarr-source-loader) NEW - reads
+- [`GeoZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader) NEW - reads
   axis-aligned GeoZarr `proj:` / `spatial:` grids and regular CF/xarray coordinate arrays through
   viewport-clipped native Zarr windows with named time and vertical selections.
 - [GeoZarr with deck.gl](/examples/geospatial/geo-zarr) NEW - streams NASA POWER monthly solar
   climatology from a public Zarr store, colorizes it in the browser, and displays it on an
   interactive deck.gl map.
-- [`OMEZarrSourceLoader`](/docs/modules/zarr/api-reference/ome-zarr-source-loader) NEW - opens OME-Zarr v2 and v3 image pyramids, normalizes multiscale and channel metadata, and reads typed 2D planes with channel and level selection.
+- [`OMEZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader) NEW - opens OME-Zarr v2 and v3 image pyramids, normalizes multiscale and channel metadata, and reads typed 2D planes with channel and level selection.
 - `loadZarrConsolidatedMetadata()` NEW - browses consolidated Zarr and SpatialData-style roots and distinguishes top-level groups from arrays.
 
 **@loaders.gl/shapefile**
@@ -799,10 +806,10 @@ Release Date: February 6, 2024
 
 - Loading flatgeobuf into a `GeoJSONTable` now extracts a Schema object from the flatgeobuf header, and uses it to infer the types of the columns in the table.
 
-**@loaders.gl/loader-utils**
+**@loaders.gl/core/loader-utils**
 
 - **Request Scheduling**
-  - [`RequestScheduler`](/docs/modules/loader-utils/api-reference/request-scheduler) now includes a 'debounceTime' option. When enabled, may reduce bandwidth usage and total loading time during interactive view transitions.
+  - [`RequestScheduler`](/docs/modules/core/loader-utils/api-reference/request-scheduler) now includes a 'debounceTime' option. When enabled, may reduce bandwidth usage and total loading time during interactive view transitions.
 
 ## v4.0
 
@@ -881,7 +888,7 @@ A major release that brings:
 
 - `fetchFile()` now supports fetching from local filesystem in Node.js
 
-**@loaders.gl/schema**
+**@loaders.gl/core/schema**
 
 - The loaders.gl schema and type system is serializable counterpart to the Apache Arrow schema and type system. This simplifies transferring schemas between workers.
 
@@ -894,7 +901,7 @@ A major release that brings:
 - New SLPK-loader allows the load of SLPK files into a web app using loaders.gl (like i3s explorer)
 - "Multiply" mode added to the existing "replace" mode for colourization by attribute for i3s datasets
 
-**@loaders.gl/loader-utils**
+**@loaders.gl/core/loader-utils**
 
 - New functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
 - `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()`
@@ -1069,7 +1076,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 - Fix winding order of "skirt" geometries, to prevent them from being incorrectly hidden by GPU face culling during rendering.
 
-**@loaders.gl/worker-utils**
+**@loaders.gl/core/worker-utils**
 
 - Experimental support for Node.js workers.
 
@@ -1290,7 +1297,7 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 - `selectLoader()` can now select loaders through content sniffing of `Blob` and `File` objects.
 - `selectLoaderSync()` has been added for situations when calling an async function is not practial.
 
-**@loaders.gl/polyfills**
+**@loaders.gl/core/polyfills**
 
 - `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
 - `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
@@ -1357,7 +1364,7 @@ The `Tile3DLoader` now installs the `DracoLoader`. The application no longer nee
 
 The `GLTFLoader` now installs the `DracoLoader`. The application no longer needs to import and register the `DracoWorkerLoader`.
 
-**@loaders.gl/polyfills**
+**@loaders.gl/core/polyfills**
 
 - The `fetch` and `Response` polyfills for Node.js have been significantly improved, supporting more types of input and parameters with higher fidelity
 - The `fetch` polyfill now automatically add the `accept-encoding` header and automatically decompresses `gzip`, `brotli` and `deflate` compressed responses.
@@ -1541,7 +1548,7 @@ The 1.2 release is a smaller release that resolves various issues encountered wh
 Release Date: Aug 8, 2019
 
 - `@loaders.gl/core`: File Type Auto Detection now supports binary files
-- `@loaders.gl/polyfills`: Fixed `TextEncoder` warnings
+- `@loaders.gl/core/polyfills`: Fixed `TextEncoder` warnings
 - `@loaders.gl/arrow`: Improved Node 8 support
 - `@loaders.gl/images`: Image file extensions now added to loader object
 - `@loaders.gl/gltf`: Generate default sampler parameters if none provided in gltf file
@@ -1597,13 +1604,13 @@ Release Date: May 30, 2019
 - Support for the 3D tiles format is being developed in the new `@loaders.gl/tiles-3d/3d-tiles` module.
 - Loading of individual point cloud tiles, including support for Draco compression and compact color formats such as RGB565 is supported.
 
-**@loaders.gl/polyfills** (NEW MODULE)
+**@loaders.gl/core/polyfills** (NEW MODULE)
 
-Node support now requires importing `@loaders.gl/polyfills` before use. This reduces the number of dependencies, bundle size and potential build complications when using other loaders.gl modules when not using Node.js support.
+Node support now requires importing `@loaders.gl/core/polyfills` before use. This reduces the number of dependencies, bundle size and potential build complications when using other loaders.gl modules when not using Node.js support.
 
-**@loaders.gl/loader-utils** (NEW MODULE)
+**@loaders.gl/core/loader-utils** (NEW MODULE)
 
-Helper functions for loaders have been broken out from `@loaders.gl/core`. Individual loaders no longer depend on`@loaders.gl/core` but only on `@loaders.gl/loader-utils`.
+Helper functions for loaders have been broken out from `@loaders.gl/core`. Individual loaders no longer depend on`@loaders.gl/core` but only on `@loaders.gl/core/loader-utils`.
 
 ## v1.0
 

@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-// import {GeoJSONTable} from '@loaders.gl/schema';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
+// import {GeoJSONTable} from '@loaders.gl/core/schema';
 import {
   FeatureCollection,
   GeoJSONTable,
   ObjectRowTable,
   ArrowTable,
   GeoArrowEncodingPreference
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable

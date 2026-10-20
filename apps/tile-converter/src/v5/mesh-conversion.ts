@@ -4,8 +4,8 @@
 
 import {getSpatialCoordinateFrame} from '@loaders.gl/tiles-3d';
 import type {TilesetSpatialReference} from '@loaders.gl/tiles-3d';
-import type {MeshGeometry} from '@loaders.gl/schema';
-import type {LoadLibraryOptions} from '@loaders.gl/worker-utils';
+import type {MeshGeometry} from '@loaders.gl/core/schema';
+import type {LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionCodec} from '@loaders.gl/tile-converter/v5/core';
 import type {

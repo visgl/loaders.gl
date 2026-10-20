@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {NumericArray} from '@loaders.gl/loader-utils';
+import type {NumericArray} from '@loaders.gl/core/loader-utils';
 
 /** A contiguous run of primitive indices delimited by primitive-restart values. */
 export type GLTFPrimitiveIndexRange = {

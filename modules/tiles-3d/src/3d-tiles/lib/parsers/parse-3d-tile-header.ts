@@ -3,8 +3,8 @@
 // Copyright vis.gl contributors
 
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
-import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import {CachedUriResolver} from '@loaders.gl/loader-utils';
+import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
+import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
 import {
   createImplicitSubtreeReference,
   LOD_METRIC_TYPE,

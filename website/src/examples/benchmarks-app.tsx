@@ -8,7 +8,7 @@ import {Bench, type BenchProps, type LogEntry, type LogFunction} from '@probe.gl
 import {BenchResults} from '@probe.gl/react-bench';
 import {fetchFile} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv/bundled';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {autoType, csvParse, tsvParse} from 'd3-dsv';
 import PapaParseNPM from 'papaparse';
 import {inferSchema, initParser} from 'udsv';

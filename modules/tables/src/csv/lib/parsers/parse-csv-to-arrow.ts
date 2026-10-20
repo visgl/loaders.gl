@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {
   concatenateArrayBuffersAsync,
   makeTableScanBatch,
   toArrayBufferIterator
-} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
+} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
 import {
   AsyncQueue,
   ArrowTableBuilder,
   convertArrowToSchema,
   convertToObjectRow,
   deserializeArrowType
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import type {CSVLoaderOptions} from '../../csv-loader-options';

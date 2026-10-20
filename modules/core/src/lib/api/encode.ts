@@ -8,15 +8,15 @@ import type {
   WriterOptionsType,
   WriterDataType,
   WriterBatchType
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   canEncodeWithWorker,
   NodeFile,
   resolvePath,
   isBrowser,
   ensureArrayBuffer
-} from '@loaders.gl/loader-utils';
-import {processOnWorker} from '@loaders.gl/worker-utils';
+} from '@loaders.gl/core/loader-utils';
+import {processOnWorker} from '@loaders.gl/core/worker-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {getLoaderOptions} from './loader-options';
 

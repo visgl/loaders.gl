@@ -18,7 +18,7 @@ import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/creat
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
-import type {RequestCredential} from '@loaders.gl/loader-utils';
+import type {RequestCredential} from '@loaders.gl/core/loader-utils';
 import {createCesiumIonCredential} from '@loaders.gl/services/authentication';
 
 import ControlPanel from './components/control-panel.jsx';

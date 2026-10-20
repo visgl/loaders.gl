@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {encodeArrayBufferToBase64, padToNBytes} from '@loaders.gl/loader-utils';
+import {encodeArrayBufferToBase64, padToNBytes} from '@loaders.gl/core/loader-utils';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 
 /** A validated payload and its deferred metadata update. */

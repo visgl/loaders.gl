@@ -9,9 +9,9 @@ import {
   type LAZChunkTableEntry,
   type WriterOptions,
   type WriterWithEncoder
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {LASWriter, type LASExtraBytesWriter} from '@loaders.gl/las';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import type {WKTCRSDefinition} from '@math.gl/crs';
 import {COPCFormat} from './copc-format';
 

@@ -87,7 +87,7 @@ sorting, worker execution, file-format writers and a drag-and-drop example are f
 
 ## Lower-level authoring
 
-`PointCloudTiler` from `@loaders.gl/schema-utils` exposes the same portable index without
+`PointCloudTiler` from `@loaders.gl/core/schema-utils` exposes the same portable index without
 the tile runtime or Arrow output wrapper. Await `ready`, then call `getRootNode()`,
 `getChildNodes(id)`, `getNodeMetadata(id)` and `getTileMesh(id)`. Each output is a fresh
 packed mesh, suitable for point-format writers. Call `close()` when finished.

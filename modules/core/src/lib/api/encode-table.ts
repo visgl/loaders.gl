@@ -9,8 +9,8 @@ import {
   ensureArrayBuffer,
   WriterOptionsType,
   WriterWithEncoder
-} from '@loaders.gl/loader-utils';
-import type {Table} from '@loaders.gl/schema';
+} from '@loaders.gl/core/loader-utils';
+import type {Table} from '@loaders.gl/core/schema';
 
 export async function encodeTable<WriterT extends WriterWithEncoder = WriterWithEncoder>(
   data: Table,

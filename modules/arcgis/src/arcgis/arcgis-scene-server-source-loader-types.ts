@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ARCGIS_SCENE_SERVER_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISSceneServerSource} from './arcgis-scene-server-source-loader';
 import type {ArcGISSceneServerSourceOptions} from '../arcgis-source-types';
 

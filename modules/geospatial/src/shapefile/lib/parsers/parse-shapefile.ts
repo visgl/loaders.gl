@@ -8,7 +8,7 @@ import {
   parseInBatchesFromContext,
   parseFromContext,
   toArrayBufferIterator
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {
@@ -18,7 +18,7 @@ import type {
   Geometry,
   ObjectRowTable,
   ObjectRowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {projectionEngine} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
 

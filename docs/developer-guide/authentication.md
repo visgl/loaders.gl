@@ -68,7 +68,7 @@ const loadOptions = {
 Available service classes are `ArcGISAuthentication` (`arcgis`, from `@loaders.gl/arcgis/authentication`), `MapboxAuthentication`
 (`mapbox`), `GoogleMapsAuthentication` (`google-maps`), and `CesiumIonAuthentication`
 (`cesium-ion`). They accept the same options as the corresponding `create*Credential`
-helpers. `@loaders.gl/loader-utils` also exports `BearerTokenAuthentication` (`bearer-token`)
+helpers. `@loaders.gl/core/loader-utils` also exports `BearerTokenAuthentication` (`bearer-token`)
 and `QueryParameterAuthentication` (`query-parameter`). There is no implicit global registry.
 
 Loaders may contribute constructors through `getAuthentications(url, options)`. ArcGIS service
@@ -95,7 +95,7 @@ For signing that depends on the individual URL, method, headers or body, supply 
 credential. loaders.gl does not import an AWS/S3 SDK; the application provides its signer:
 
 ```ts
-import type {RequestAuthentication} from '@loaders.gl/loader-utils';
+import type {RequestAuthentication} from '@loaders.gl/core/loader-utils';
 
 // signRequest is application code. It returns the complete {url, options} to send.
 const credential: RequestAuthentication = {
@@ -125,7 +125,7 @@ Provider credential refresh and refresh deduplication belong to the application 
 The same callback can be declared through JSON by supplying an application class:
 
 ```ts
-import type {AuthenticationRequest, RequestAuthentication} from '@loaders.gl/loader-utils';
+import type {AuthenticationRequest, RequestAuthentication} from '@loaders.gl/core/loader-utils';
 
 class ApplicationSigningAuthentication implements RequestAuthentication {
   static readonly type = 'application-signing';
@@ -192,7 +192,7 @@ A string is appropriate for a token whose lifetime exceeds the source. For expir
 provide a callback that returns the current token and refreshes it when asked:
 
 ```ts
-import {createBearerTokenCredential} from '@loaders.gl/loader-utils';
+import {createBearerTokenCredential} from '@loaders.gl/core/loader-utils';
 
 let currentToken = await acquireToken();
 
@@ -322,5 +322,5 @@ request signing, service workers, or application gateways, provide `core.fetch`;
 credential wrapper composes with that function. Avoid configuring both a custom signer and a
 loaders.gl credential for the same field unless explicit request values are intended to win.
 
-See the [request credential API](/docs/modules/loader-utils/api-reference/request-credentials) for
+See the [request credential API](/docs/modules/core/loader-utils/api-reference/request-credentials) for
 the generic constructors and callback contract.

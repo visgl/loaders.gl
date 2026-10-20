@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   Schema,
   ArrayRowTable,
@@ -12,15 +12,15 @@ import type {
   ColumnarTableBatch,
   ObjectRowTable,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
-import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {
   AsyncQueue,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 import {DEFAULT_CSV_SHAPE} from './csv-loader-options';

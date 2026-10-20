@@ -27,7 +27,7 @@ import {getExampleDevicePixelRatio, getExampleRowLimit} from '../shared/example-
 import type {Example} from './examples';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 
-import {Table, GeoJSON, type ArrowTable, type Schema} from '@loaders.gl/schema';
+import {Table, GeoJSON, type ArrowTable, type Schema} from '@loaders.gl/core/schema';
 import {load, LoaderOptions} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
 import {
@@ -44,8 +44,8 @@ import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
 import {CSVLoader} from '@loaders.gl/csv';
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/geoarrow';
-import {getGeoMetadata} from '@loaders.gl/schema';
-import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/schema-utils';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
+import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/core/schema-utils';
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import {CRSReprojectionError} from '@loaders.gl/loader-utils';
+import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   DataType,
@@ -12,9 +12,9 @@ import type {
   Geometry,
   GeoJSONTable,
   Schema
-} from '@loaders.gl/schema';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
-import {type GeoParquetGeometryType} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
+import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata

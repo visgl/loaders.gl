@@ -16,7 +16,7 @@
     "**/encoding.js",
     "**/laz-perf.js",
     "modules/video/src/lib/gifshot/gifshot.ts",
-    "modules/polyfills/src/text-encoder/text-encoder.ts",
+    "modules/core/src/polyfills/text-encoder/text-encoder.ts",
     "modules/compression/src/brotli/decode.ts",
     "modules/raster/src/terrain/lib/delatin/index.ts",
     "modules/crypto/src/lib/algorithms/md5-wasm.ts",
@@ -24,6 +24,6 @@
     "**3d-tiles/src/styles/**",
     "modules/tables/src/parquet/parquetjs/parquet-thrift/**",
     "modules/traces/src/otlp-proto/generated/**",
-    "modules/worker-utils/src/lib/process-utils/child-process-proxy.ts"
+    "modules/core/src/worker-utils/lib/process-utils/child-process-proxy.ts"
   ]
 }

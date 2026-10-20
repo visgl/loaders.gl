@@ -6,7 +6,7 @@ import {createDataSource, load} from '@loaders.gl/core';
 import {MVTSourceLoader, MVTTileSource} from '@loaders.gl/tiles/mvt';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 import {WMSSourceLoader} from '@loaders.gl/wms';
-import type {DataSourceOptions, SourcePropsType} from '@loaders.gl/loader-utils';
+import type {DataSourceOptions, SourcePropsType} from '@loaders.gl/core/loader-utils';
 
 // Compile only: node node_modules/typescript/bin/tsc --project modules/core/test/types/tsconfig.json
 const source: MVTTileSource = createDataSource('memory://tiles', [MVTSourceLoader], {

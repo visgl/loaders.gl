@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {makeTableFromData} from '@loaders.gl/schema-utils';
+import {makeTableFromData} from '@loaders.gl/core/schema-utils';
 import type {JSONLoaderOptions} from '../../json-loader-types';
 
 /** Parses one JSON payload into either raw JSON or the requested table shape. */

@@ -11,9 +11,9 @@ import {
   createLAZChunkDecoderCursor,
   decodeLAZChunk,
   getLAZChunkByteLength
-} from '@loaders.gl/loader-utils';
-import type {LAZPointDataTarget} from '@loaders.gl/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+} from '@loaders.gl/core/loader-utils';
+import type {LAZPointDataTarget} from '@loaders.gl/core/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {parseLASHeader} from '../src/lib/typescript/parse-las';
 
 const LAZ_1_2_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';

@@ -7,7 +7,7 @@ import type {
   GeoJSONTableBatch,
   ArrowTable,
   ArrowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/arrow-geometry/geojson-table';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
 

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/core/schema';
 import {KMZFormat} from './kml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

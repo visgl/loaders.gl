@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {createBearerTokenCredential} from '@loaders.gl/loader-utils';
+import {createBearerTokenCredential} from '@loaders.gl/core/loader-utils';
 import {getFetchFunction} from '../../../src/lib/loader-utils/get-fetch-function';
 import {getLoaderContext} from '../../../src/lib/loader-utils/loader-context';
 

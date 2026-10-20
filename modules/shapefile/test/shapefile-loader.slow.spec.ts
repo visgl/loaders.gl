@@ -9,8 +9,8 @@ import {
   load,
   loadInBatches,
   selectLoader,
-  isBrowser,
-  _BrowserFileSystem as BrowserFileSystem
+  _BrowserFileSystem as BrowserFileSystem,
+  isBrowser
 } from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {DBFLoaderWithParser as DBFLoader} from '../../geospatial/src/shapefile/dbf-loader';

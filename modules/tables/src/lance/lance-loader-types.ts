@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 
 import {LanceFormat} from './lance-format';
 import type {LanceFlatPrimitiveType} from './lance-decoder';

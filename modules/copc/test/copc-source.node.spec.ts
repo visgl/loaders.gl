@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {COPCSourceLoader} from '@loaders.gl/copc';
 import {expect, test, vi} from 'vitest';
 

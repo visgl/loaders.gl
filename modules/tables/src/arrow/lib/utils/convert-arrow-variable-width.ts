@@ -7,7 +7,7 @@ import {
   deserializeArrowType,
   serializeArrowType,
   type ArrowSchemaConversionOptions
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 
 /** Options controlling conversion between standard and view-based Arrow variable-width types. */
 export type ConvertArrowVariableWidthOptions = ArrowSchemaConversionOptions;

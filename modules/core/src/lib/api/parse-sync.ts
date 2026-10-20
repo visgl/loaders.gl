@@ -15,8 +15,8 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
   StrictLoaderOptions
-} from '@loaders.gl/loader-utils';
-import {isSourceLoader} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';

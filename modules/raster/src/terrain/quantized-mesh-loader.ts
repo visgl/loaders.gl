@@ -5,10 +5,10 @@
 import {
   serializeArrowWorkerResult,
   deserializeArrowWorkerResult
-} from '@loaders.gl/schema-utils/arrow-transport';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils/arrow-transport';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseQuantizedMesh} from './lib/parse-quantized-mesh';
 import {
   QuantizedMeshLoader as QuantizedMeshLoaderMetadata,

@@ -5,7 +5,7 @@
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import type {Header} from 'pmtiles';
 import {createDataSource} from '@loaders.gl/core';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {MLTLoader} from '@loaders.gl/tiles/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/tiles/mvt';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';

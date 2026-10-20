@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/core/loader-utils';
 import type {
   ObjectRowTable,
   ObjectRowTableBatch,
   ArrowTable,
   ArrowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 import {PARQUET_LOADER_BASE} from './parquet-loader-base';
 import type {ParquetLoaderOptions as SharedParquetLoaderOptions} from './parquet-loader-options';

@@ -55,7 +55,7 @@ The `QuantizedMeshWriter` writes [Mesh](/docs/specifications/category-mesh) or [
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {QuantizedMeshWriter} from '@loaders.gl/raster';
 
 declare const terrainMesh: Mesh | MeshArrowTable;

@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {LASWriter} from '@loaders.gl/las';
-import {makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import {makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseLAS, parseLASInBatches, decodeLAZFileInBatches} from '../src/lib/typescript/parse-las';
 
 /** Generate a tiny fixed-chunk file without involving a remote fixture. */

@@ -54,13 +54,13 @@ export {
   decodeLAZChunk,
   decodeLAZChunkInBatches,
   encodeLAZChunk
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 export type {
   FeedableLAZChunkDecoder,
   FeedableLAZChunkEncoder,
   LAZChunkDecoderOptions,
   LAZChunkMetadata
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use LASLoader. */

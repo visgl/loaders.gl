@@ -14,6 +14,10 @@ Start with a service URL and a small public feature layer. Then choose the data 
 visualization that fit your application. The module is a read-only data client; it does not reproduce
 an ArcGIS web map's styling, popups, expressions, or editing tools.
 
+The [connection checklist](/docs/modules/arcgis#before-connecting-your-application) links the
+ArcGIS documentation for service URLs, sharing, sign-in, CORS and query limits. The service format
+pages explain what travels over the wire and what loaders.gl can read.
+
 ## Choose your starting point
 
 | What you have | Next step |

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {
   ArrayType,
   ArrowTable,
@@ -12,8 +12,8 @@ import type {
   Field,
   Schema,
   SchemaMetadata
-} from '@loaders.gl/schema';
-import {deserializeArrowType} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {deserializeArrowType} from '@loaders.gl/core/schema-utils';
 
 import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import {preloadCompressions} from '../../parquetjs/compression';

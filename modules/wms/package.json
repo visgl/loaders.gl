@@ -68,9 +68,7 @@
   "dependencies": {
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
     "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
     "@loaders.gl/raster": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
     "@loaders.gl/xml": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.18",
     "@math.gl/geospatial": "5.0.0-alpha.18",

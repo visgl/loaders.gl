@@ -11,7 +11,7 @@ import {
   Tiles3DArchiveWriter,
   encodeTiles3DArchiveInBatches
 } from '@loaders.gl/tiles-3d/3d-tiles/3d-tiles-archive-writer';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {parse3DTilesArchive} from '../../src/3d-tiles/3d-tiles-archive/3d-tiles-archive-parser';
 
 /** Small payloads exercising nested and case-sensitive paths, and numeric object-key ordering. */

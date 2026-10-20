@@ -8,7 +8,7 @@ import {
   convertArrowTableVariableWidthTypes,
   convertArrowVariableWidthVector
 } from '@loaders.gl/arrow';
-import {getArrowViewTypeSupport, serializeArrowType} from '@loaders.gl/schema-utils';
+import {getArrowViewTypeSupport, serializeArrowType} from '@loaders.gl/core/schema-utils';
 test('ArrowVariableWidth#convertArrowVariableWidthVector converts Utf8 in both directions', () => {
   const firstChunk = arrow.vectorFromArray(['short', null], new arrow.Utf8());
   const secondChunk = arrow.vectorFromArray(

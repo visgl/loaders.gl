@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import type {
+  LoaderWithParser,
+  StrictLoaderOptions,
+  LoaderContext
+} from '@loaders.gl/core/loader-utils';
 import type {I3STilesetHeader} from './types';
 import {I3SContentLoaderWithParser} from './i3s-content-loader-with-parser';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';

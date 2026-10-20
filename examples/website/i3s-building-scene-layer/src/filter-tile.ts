@@ -1,6 +1,6 @@
 import {load} from '@loaders.gl/core';
 import {I3SAttributeLoader, type AttributeStorageInfo} from '@loaders.gl/tiles-3d/i3s';
-import type {TypedArray} from '@loaders.gl/schema';
+import type {TypedArray} from '@loaders.gl/core/schema';
 import {Tile3D} from '@loaders.gl/tiles-3d';
 
 type FiltersByAttribute = {

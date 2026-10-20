@@ -4,8 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
-import type {GeoArrowEncoding} from '@loaders.gl/schema';
-import type {Geometry} from '@loaders.gl/schema';
+import type {GeoArrowEncoding} from '@loaders.gl/core/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 
 vi.mock('../src/lib/kernels/decode-wkt-native', async importOriginal => {
   const original = await importOriginal<typeof import('../src/lib/kernels/decode-wkt-native')>();

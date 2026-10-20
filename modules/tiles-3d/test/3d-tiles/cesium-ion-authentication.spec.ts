@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {afterEach, describe, expect, test, vi} from 'vitest';
-import {createAuthenticatedFetch, type FetchLike} from '@loaders.gl/loader-utils';
+import {createAuthenticatedFetch, type FetchLike} from '@loaders.gl/core/loader-utils';
 import {load} from '@loaders.gl/core';
 import {
   CesiumIonLoader,

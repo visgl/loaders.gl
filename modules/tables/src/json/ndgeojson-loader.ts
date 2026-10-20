@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {makeLineIterator, type LoaderWithParser} from '@loaders.gl/loader-utils';
+import {makeLineIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
   Feature,
   ObjectRowTable,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';
 import {
   convertGeoJSONFeaturesToArrowTable,

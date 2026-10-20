@@ -59,7 +59,7 @@ A basic Video element loader. Only works in the browser.
 ## Usage
 
 ```typescript
-import '@loaders.gl/polyfills'; // only needed if using under Node
+import '@loaders.gl/core/polyfills'; // only needed if using under Node
 import {VideoLoader} from '@loaders.gl/video';
 import {load} from '@loaders.gl/core';
 

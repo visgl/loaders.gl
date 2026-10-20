@@ -13,9 +13,9 @@ import type {
   TileSourceMetadata,
   GetTileParameters,
   GetTileDataParameters
-} from '@loaders.gl/loader-utils';
-import type {Schema} from '@loaders.gl/schema';
-import {DataSource, parseContentType} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import type {Schema} from '@loaders.gl/core/schema';
+import {DataSource, parseContentType} from '@loaders.gl/core/loader-utils';
 import {
   ImageBitmapLoader,
   type ImageBitmapLoaderOptions,

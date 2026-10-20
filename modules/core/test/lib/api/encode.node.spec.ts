@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {encode, encodeURLtoURL} from '@loaders.gl/core';
 
 test('encode uses command-line writer hooks in Node.js', async () => {

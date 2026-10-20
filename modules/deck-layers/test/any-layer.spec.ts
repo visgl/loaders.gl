@@ -4,7 +4,7 @@
 
 import {describe, expect, test, vi} from 'vitest';
 import {AnyLayer, SourceLayer, type SourceLayerProps} from '@loaders.gl/deck-layers';
-import type {Loader, SourceLoader} from '@loaders.gl/loader-utils';
+import type {Loader, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {
   classifyVisualSource,
   createSourceViewState,

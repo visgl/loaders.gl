@@ -8,9 +8,9 @@ import {
   encodeDracoBatch
 } from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
-// import {getMeshSize} from '@loaders.gl/schema-utils';
+// import {getMeshSize} from '@loaders.gl/core/schema-utils';
 import draco3d from 'draco3d';
-import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
+import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {cloneTypeArray} from './test-utils/copyTypedArray';
 export type TestCase = {
   title: string;

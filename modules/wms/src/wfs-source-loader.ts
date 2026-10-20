@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, GeoJSONTable, Geometry} from '@loaders.gl/schema';
+import type {Schema, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {
@@ -13,8 +13,8 @@ import type {
   VectorSourceMetadata,
   GetFeaturesParameters,
   VectorSourceData
-} from '@loaders.gl/loader-utils';
-import {DataSource, mergeOptions} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource, mergeOptions} from '@loaders.gl/core/loader-utils';
 
 import type {WFSCapabilities} from './wfs-capabilities-loader';
 import {WFSCapabilitiesLoaderWithParser} from './wfs-capabilities-loader-with-parser';
@@ -951,7 +951,7 @@ function isWFSExceptionDocument(text: string, contentType: string | null): boole
 function convertWFSFeatures(
   parsed: Geometry | GMLFeatureCollection | null,
   format?: string,
-  encodingPreference?: import('@loaders.gl/schema').GeoArrowEncodingPreference
+  encodingPreference?: import('@loaders.gl/core/schema').GeoArrowEncodingPreference
 ): VectorSourceData {
   if (!parsed || parsed.type !== 'FeatureCollection') {
     throw new Error('WFS GetFeature did not return a GML FeatureCollection');

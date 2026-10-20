@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Compressor, type CompressionOptions} from './lib/compression';
-import {getJSModule, getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
+import {getJSModule, getJSModuleOrNull, registerJSModules} from '@loaders.gl/core/loader-utils';
 
 type SnappyJS = {compress(input: ArrayBuffer): ArrayBuffer};
 

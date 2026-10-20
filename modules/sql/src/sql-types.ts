@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Schema} from '@loaders.gl/schema';
-import type {CoreAPI, DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {CoreAPI, DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import type {SQLTableQuery} from './compile-table-query';
 
 export type SQLParameterValues = unknown[] | Record<string, unknown>;

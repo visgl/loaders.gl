@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {encodeAvro, encodeAvroInChunks} from '../../tables/src/avro/lib/encoders/encode-avro';
 import {

@@ -5,7 +5,7 @@
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/core/schema';
 
 const WITH_FEATURE_ID = '@loaders.gl/tiles/mvt/test/data/mvt/with_feature_id.mvt';
 

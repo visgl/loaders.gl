@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {parse} from '@loaders.gl/core';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 
 const WORKER_SOURCE = `

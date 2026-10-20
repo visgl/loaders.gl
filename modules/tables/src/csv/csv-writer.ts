@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 /* global TextEncoder */
-import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
-import type {Table, TableBatch} from '@loaders.gl/schema';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
+import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {encodeTableAsCSV} from './lib/encoders/encode-csv';
 import {CSVFormat} from './csv-format';
 

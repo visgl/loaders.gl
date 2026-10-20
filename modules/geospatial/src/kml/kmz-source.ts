@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Feature, GeoJSONTable, Schema} from '@loaders.gl/schema';
+import type {Feature, GeoJSONTable, Schema} from '@loaders.gl/core/schema';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -12,8 +12,8 @@ import type {
   VectorSourceData,
   VectorSourceLayer,
   VectorSourceMetadata
-} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable

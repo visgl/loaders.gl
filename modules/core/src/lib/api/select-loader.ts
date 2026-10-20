@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, LoaderOptions, Loader, DataType} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderOptions, Loader, DataType} from '@loaders.gl/core/loader-utils';
 import {
   compareArrayBuffers,
   path,
@@ -11,8 +11,8 @@ import {
   ensureArrayBuffer,
   isArrayBufferLike,
   isSourceLoader
-} from '@loaders.gl/loader-utils';
-import {TypedArray} from '@loaders.gl/schema';
+} from '@loaders.gl/core/loader-utils';
+import {TypedArray} from '@loaders.gl/core/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {normalizeLoaderOptions} from '../loader-utils/option-utils';
 import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';

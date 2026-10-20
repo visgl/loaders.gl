@@ -8,8 +8,8 @@ import type {
   MeshAttributes,
   MeshArrowTable,
   TypedArray
-} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 import type {ParsePLYOptions} from './parse-ply';
 import {parsePLYHeader} from './parse-ply';

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {Loader} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {AvroFormat} from './avro-format';
 
 // __VERSION__ is injected by the build tooling.

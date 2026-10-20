@@ -1,10 +1,10 @@
 import {expect, test} from 'vitest';
 import {default as I3SConverter} from '../../src/v4/i3s-converter/i3s-converter';
-import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
+import {setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {cleanUpPath} from '../utils/file-utils';
 import {BROWSER_ERROR_MESSAGE} from '../../src/v4/constants';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
-import {NodeFile} from '@loaders.gl/loader-utils';
+import {NodeFile} from '@loaders.gl/core/loader-utils';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 const TILESET_URL =
   '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/tileset.json';

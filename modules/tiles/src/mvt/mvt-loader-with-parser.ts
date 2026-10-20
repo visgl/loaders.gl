@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 // import type {MVTOptions} from './lib/types';
 import {parseMVT} from './lib/parse-mvt';
 import {deserializeMVTWorkerResult, serializeMVTWorkerResult} from './lib/mvt-worker-transport';

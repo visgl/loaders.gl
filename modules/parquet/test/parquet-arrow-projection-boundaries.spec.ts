@@ -6,7 +6,7 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/
 import {beforeAll, expect, test} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 let fixture: ArrayBuffer;
 const values = [

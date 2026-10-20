@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {parseInBatches} from '@loaders.gl/core';
 import {PCDLoader} from '@loaders.gl/pcd';
-import {getFloat16Value} from '@loaders.gl/schema';
+import {getFloat16Value} from '@loaders.gl/core/schema';
 import {parsePCD} from '../src/lib/parse-pcd';
 
 const PCD_WITH_COLORS = `# .PCD v0.7 - Point Cloud Data file format

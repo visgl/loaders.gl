@@ -101,4 +101,4 @@ for await (const batch of source.read({
 Use Parquet when physical column and row-group pruning is a hard requirement. ORC remains useful
 when format compatibility matters and materializing the selected file is acceptable.
 
-LZO decompression is supported through compress-utils 0.9.0. ORC compression chunk framing is handled in TypeScript. LZO compression is not supported.
+LZO decompression is supported through compress-utils 0.10.1. ORC compression chunk framing is handled in TypeScript. LZO compression is not supported.

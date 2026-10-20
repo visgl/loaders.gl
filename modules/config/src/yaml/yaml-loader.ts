@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseYAMLSync} from './lib/parsers/parse-yaml';
 import {YAMLLoader as YAMLLoaderMetadata} from './yaml-loader-types';
 import type {YAMLLoaderOptions} from './yaml-loader-options';

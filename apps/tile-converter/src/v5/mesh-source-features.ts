@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {MeshGeometry} from '@loaders.gl/schema';
+import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {GLTFPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
 import type {I3SMeshFeatures} from '@loaders.gl/tiles-3d/i3s';
 import {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';

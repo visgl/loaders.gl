@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import type {ArrowTable} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {convertRowsToArrowTable} from './sql-utils';
 
 import {
@@ -31,11 +31,11 @@ import type {
   RelationalAggregate,
   RelationalExpression,
   RelationalOrderKey
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   explainTableQuery as explainColumnarTableQuery,
   planRelationalQuery
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 import {validateSQLPredicate} from './sql-predicate-schema';
 export {ARROW_TABLE_QUERY_CAPABILITIES};

@@ -2,22 +2,22 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/core/schema';
 import type {
   DataSourceOptions,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   SourceLoader,
   TableQueryOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
   filterColumnarRowIndices,
   makeTableScanBatch,
   validateTableQueryOptions
-} from '@loaders.gl/loader-utils';
-import {queryArrowTable} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/loader-utils';
+import {queryArrowTable} from '@loaders.gl/core/schema-utils';
 import {
   parseORC,
   readORCPostScript,

@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {makeTableScanBatch} from '@loaders.gl/loader-utils';
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {decompressAvro} from '../../avro-compression';
 
 export type AvroSchema =

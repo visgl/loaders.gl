@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import '@loaders.gl/polyfills';
-import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import '@loaders.gl/core/polyfills';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 import {I3SLEPCCLoaderWithParser} from '../i3s-lepcc-loader';
 
 createLoaderWorker(I3SLEPCCLoaderWithParser);

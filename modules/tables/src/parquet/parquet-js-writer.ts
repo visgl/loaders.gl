@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
-import type {ObjectRowTable, Table, TableBatch} from '@loaders.gl/schema';
-import {convertTable, deduceTableSchema} from '@loaders.gl/schema-utils';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
+import type {ObjectRowTable, Table, TableBatch} from '@loaders.gl/core/schema';
+import {convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
 
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {encodeTableToParquetJs} from './lib/encoders/encode-table-to-parquet-js';

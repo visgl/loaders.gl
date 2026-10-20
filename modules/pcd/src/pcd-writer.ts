@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
+import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {PCDFormat} from './pcd-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

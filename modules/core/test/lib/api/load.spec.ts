@@ -3,15 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {parseFromContext} from '@loaders.gl/loader-utils';
+import {parseFromContext} from '@loaders.gl/core/loader-utils';
 import {
-  isBrowser,
   load,
   fetchFile,
   registerLoaders,
-  resolvePath,
   NullLoader,
-  NullWorkerLoader
+  NullWorkerLoader,
+  isBrowser,
+  resolvePath
 } from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {JSONLoader} from '@loaders.gl/json';

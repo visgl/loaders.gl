@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fromBinary} from '@bufbuild/protobuf';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 import {
   OtlpTraceLoader as OtlpTraceLoaderMetadata,

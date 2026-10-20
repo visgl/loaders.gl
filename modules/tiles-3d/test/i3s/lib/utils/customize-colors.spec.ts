@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {createQueryParameterCredential} from '@loaders.gl/loader-utils';
-import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
+import {createQueryParameterCredential} from '@loaders.gl/core/loader-utils';
+import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/core/schema';
 
 import {customizeColors} from '../../../../src/i3s/lib/utils/customize-colors';
 

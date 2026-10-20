@@ -16,7 +16,6 @@
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/draco": "workspace:*",
-    "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/tile-converter": "workspace:*",
     "@loaders.gl/tiles": "workspace:*",
     "@loaders.gl/tiles-3d": "workspace:*",

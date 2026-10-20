@@ -8,12 +8,12 @@ import {expect, test} from 'vitest';
 import {ArrowTableSource} from '@loaders.gl/arrow';
 import {CSVTableSource} from '@loaders.gl/csv';
 import {NDJSONTableSource} from '@loaders.gl/json';
-import {DataSourceManager, type ScanExecutionTelemetry} from '@loaders.gl/loader-utils';
+import {DataSourceManager, type ScanExecutionTelemetry} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
 import {DeltaTableSource} from '../src/delta';
 import {IcebergTableSource} from '../src/iceberg';
 import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
-import type {Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/sql';
 
 import {FederatedTableScanSource} from '../src/federated-table-scan-source';

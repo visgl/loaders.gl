@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Vector3} from '@math.gl/core';
 import type {TilesetTraverser, TilesetTraverserProps} from './tileset-traverser';
 import type {Tile3D} from './tile-3d';

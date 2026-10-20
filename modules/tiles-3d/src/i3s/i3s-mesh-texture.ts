@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
-import type {MeshAttribute} from '@loaders.gl/schema';
+import type {MeshAttribute} from '@loaders.gl/core/schema';
 
 /** Encoded base-color image and the supported glTF UV/sampling controls. */
 export interface I3SMeshTexture {

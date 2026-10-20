@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -11,13 +11,13 @@ import type {
   GeoJSONTable,
   ObjectRowTable,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {type LegacyGeoJSONCRS} from '@loaders.gl/arrow-geometry/feature-table';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/schema-utils/arrow-transport';
+} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {
   convertGeoJSONFeaturesToArrowTable,

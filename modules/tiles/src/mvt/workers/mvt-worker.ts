@@ -3,6 +3,6 @@
 // Copyright vis.gl contributors
 
 import {MVTLoaderWithParser} from '../mvt-loader-with-parser';
-import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 
 createLoaderWorker(MVTLoaderWithParser);

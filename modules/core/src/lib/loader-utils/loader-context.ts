@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderContext, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import {getFetchFunction} from './get-fetch-function';
 import {extractQueryString, stripQueryString} from '../utils/url-utils';
-import {path} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/core/loader-utils';
 import {coreApi} from '../api/core-api';
 
 /** Properties for creating an updated context */

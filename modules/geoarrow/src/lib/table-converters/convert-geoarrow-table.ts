@@ -11,8 +11,8 @@ import type {
   GeoJSONTable,
   ArrowTable,
   Feature
-} from '@loaders.gl/schema';
-import {convertTable, convertArrowToSchema} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {convertTable, convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {getGeometryColumnsFromSchema} from '../../metadata/geoarrow-metadata';
 import {getGeoMetadata} from '../../metadata/geoparquet-metadata';
 import {convertGeoArrowVectorCellToGeoJSON} from '../../geoarrow-converter/convert-geoarrow-geometry';

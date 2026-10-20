@@ -5,7 +5,7 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
 /* eslint-disable camelcase */
-import {stream} from '@loaders.gl/loader-utils';
+import {stream} from '@loaders.gl/core/loader-utils';
 import {
   getWKBGeometryStatistics,
   type WKBGeometryBoundingBox

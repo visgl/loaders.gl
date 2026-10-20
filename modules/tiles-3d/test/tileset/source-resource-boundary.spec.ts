@@ -5,7 +5,7 @@
 import {describe, expect, test, vi} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
-import type {CoreAPI, LoaderContext} from '@loaders.gl/loader-utils';
+import type {CoreAPI, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {Tileset3D} from '../../src/tileset-3d/common/tileset-3d';
 import {Tiles3DSource} from '../../src/tileset-3d/format-3d-tiles/tiles-3d-source';
 import {I3SSource} from '../../src/tileset-3d/format-i3s/i3s-source';

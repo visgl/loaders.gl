@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Core module', to: '/docs/modules/core'},
     {label: 'Parse in batches', to: '/docs/modules/core/api-reference/parse-in-batches'},
-    {label: 'Worker processing', to: '/docs/modules/worker-utils/api-reference/worker-processing'}
+    {label: 'Worker processing', to: '/docs/modules/core/worker-utils/api-reference/worker-processing'}
   ]}
 />
 

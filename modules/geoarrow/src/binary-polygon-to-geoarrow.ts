@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {BinaryPolygonGeometry} from '@loaders.gl/schema';
+import type {BinaryPolygonGeometry} from '@loaders.gl/core/schema';
 import type {GeoArrowColumn, GeoArrowDimension} from '@math.gl/geoarrow';
 import {getGeoArrowDimensionSize} from '@math.gl/geoarrow';
 

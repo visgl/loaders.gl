@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {validateWriter} from 'test/common/conformance';
-import {createDataSource, encodeSync, fetchFile, isBrowser, parse} from '@loaders.gl/core';
+import {createDataSource, encodeSync, fetchFile, parse, isBrowser} from '@loaders.gl/core';
 import {
   COPCSourceLoader,
   COPCTileSource,
@@ -16,9 +16,13 @@ import {
   type COPCRangeReader
 } from '@loaders.gl/copc';
 import {LASLoader} from '@loaders.gl/las';
-import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/loader-utils';
-import {deduceMeshSchema, makeMeshArrowTable, convertTableToMesh} from '@loaders.gl/schema-utils';
-import {getFloat16Value} from '@loaders.gl/schema';
+import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/core/loader-utils';
+import {
+  deduceMeshSchema,
+  makeMeshArrowTable,
+  convertTableToMesh
+} from '@loaders.gl/core/schema-utils';
+import {getFloat16Value} from '@loaders.gl/core/schema';
 
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
 const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.url).href;

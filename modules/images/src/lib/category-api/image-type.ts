@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import type {ImageTypeEnum} from '../../types';
 
 // @ts-ignore TS2339: Property does not exist on type
@@ -51,5 +51,5 @@ export function getDefaultImageType(): ImageTypeEnum {
   }
 
   // This should only happen in Node.js
-  throw new Error('Install \'@loaders.gl/polyfills\' to parse images under Node.js');
+  throw new Error('Install \'@loaders.gl/core/polyfills\' to parse images under Node.js');
 }

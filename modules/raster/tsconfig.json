@@ -13,16 +13,10 @@
   },
   "references": [
     {
-      "path": "../loader-utils"
+      "path": "../core"
     },
     {
       "path": "../images"
-    },
-    {
-      "path": "../schema"
-    },
-    {
-      "path": "../schema-utils"
     }
   ]
 }

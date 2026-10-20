@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/worker-utils';
+import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {getImageData} from '@loaders.gl/images';
 import convertB3dmToI3sGeometry, {
   getPropertyTable

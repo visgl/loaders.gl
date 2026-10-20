@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // Compression interface
-import {concatenateArrayBuffersAsync, registerJSModules} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync, registerJSModules} from '@loaders.gl/core/loader-utils';
 
 /** Compression options */
 export type CompressionOptions = {
@@ -11,7 +11,7 @@ export type CompressionOptions = {
   modules?: {[moduleName: string]: any};
   /** Encoder or decoder settings forwarded to the default WASM backend. */
   compressUtils?: Record<string, unknown>;
-  /** Maximum caller-supplied output capacity; defaults to 512 MiB for WASM decoders. */
+  /** Maximum caller-supplied capacity, decoded size, and cumulative WASM batch output; defaults to 512 MiB. */
   maxOutputByteLength?: number;
   /** Selects raw DEFLATE or LZ4 blocks where supported. */
   raw?: boolean;

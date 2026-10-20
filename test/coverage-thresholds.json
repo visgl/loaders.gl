@@ -2,6 +2,21 @@
   "version": 1,
   "target": 90,
   "packages": {
+    "@loaders.gl/3d-tiles": {
+      "path": "modules/3d-tiles",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 80,
+        "branches": 59
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 67,
+        "functions": 79,
+        "branches": 59
+      }
+    },
     "@loaders.gl/arcgis": {
       "path": "modules/arcgis",
       "browser": {
@@ -34,8 +49,8 @@
       "sourcePaths": [
         "modules/arrow/src/",
         "modules/tables/src/arrow/",
-        "modules/schema-utils/src/lib/arrow/arrow-table-transport.ts",
-        "modules/schema-utils/src/lib/arrow/split-arrow-buffers.ts"
+        "modules/core/src/schema-utils/lib/arrow/arrow-table-transport.ts",
+        "modules/core/src/schema-utils/lib/arrow/split-arrow-buffers.ts"
       ]
     },
     "@loaders.gl/arrow-geometry": {
@@ -138,6 +153,10 @@
     },
     "@loaders.gl/core": {
       "path": "modules/core",
+      "browserExcludedSourcePaths": [
+        "modules/core/src/polyfills/"
+      ],
+      "browserExclusionReason": "The polyfills subpath installs Node.js adapters and cannot execute in Chromium; its source remains in the merged coverage gate and its independent format ratchet.",
       "browser": {
         "statements": 74,
         "lines": 74,
@@ -317,6 +336,21 @@
         "branches": 90
       }
     },
+    "@loaders.gl/i3s": {
+      "path": "modules/i3s",
+      "browser": {
+        "statements": 82,
+        "lines": 82,
+        "functions": 86,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 80,
+        "lines": 81,
+        "functions": 86,
+        "branches": 64
+      }
+    },
     "@loaders.gl/images": {
       "path": "modules/images",
       "browser": {
@@ -404,34 +438,34 @@
         "branches": 46
       }
     },
-    "@loaders.gl/loader-utils": {
-      "path": "modules/loader-utils",
+    "@loaders.gl/mlt": {
+      "path": "modules/mlt",
       "browser": {
-        "statements": 78,
-        "lines": 78,
-        "functions": 74,
-        "branches": 69
+        "statements": 42,
+        "lines": 43,
+        "functions": 47,
+        "branches": 29
+      },
+      "merged": {
+        "statements": 41,
+        "lines": 42,
+        "functions": 43,
+        "branches": 29
+      }
+    },
+    "@loaders.gl/mvt": {
+      "path": "modules/mvt",
+      "browser": {
+        "statements": 79,
+        "lines": 79,
+        "functions": 81,
+        "branches": 67
       },
       "merged": {
         "statements": 79,
         "lines": 79,
-        "functions": 75,
-        "branches": 71
-      }
-    },
-    "@loaders.gl/netcdf": {
-      "path": "modules/netcdf",
-      "browser": {
-        "statements": 61,
-        "lines": 61,
-        "functions": 57,
-        "branches": 60
-      },
-      "merged": {
-        "statements": 61,
-        "lines": 61,
-        "functions": 56,
-        "branches": 60
+        "functions": 80,
+        "branches": 67
       }
     },
     "@loaders.gl/obj": {
@@ -517,19 +551,19 @@
         "branches": 60
       }
     },
-    "@loaders.gl/polyfills": {
-      "path": "modules/polyfills",
+    "@loaders.gl/pmtiles": {
+      "path": "modules/pmtiles",
       "browser": {
-        "statements": 0,
-        "lines": 0,
-        "functions": 0,
-        "branches": 0
+        "statements": 54,
+        "lines": 55,
+        "functions": 51,
+        "branches": 35
       },
       "merged": {
-        "statements": 61,
-        "lines": 61,
-        "functions": 64,
-        "branches": 46
+        "statements": 53,
+        "lines": 55,
+        "functions": 50,
+        "branches": 34
       }
     },
     "@loaders.gl/potree": {
@@ -545,6 +579,31 @@
         "lines": 83,
         "functions": 78,
         "branches": 66
+      }
+    },
+    "@loaders.gl/raster": {
+      "path": "modules/raster",
+      "sourcePaths": [
+        "modules/raster/src/index.ts",
+        "modules/raster/src/geotiff.ts",
+        "modules/raster/src/lerc.ts",
+        "modules/raster/src/terrain.ts",
+        "modules/raster/src/quantized-mesh.ts",
+        "modules/raster/src/geotiff/geotiff-source-loader-types.ts",
+        "modules/raster/src/geotiff/ometiff-source-loader-types.ts"
+      ],
+      "ownershipReason": "New source metadata and dispatch entry points use the new-package default; each moved implementation retains its original independent browser and merged format gates.",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
       }
     },
     "@loaders.gl/scan": {
@@ -577,34 +636,55 @@
         "branches": 73
       }
     },
-    "@loaders.gl/schema": {
-      "path": "modules/schema",
+    "@loaders.gl/scientific": {
+      "path": "modules/scientific",
       "browser": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
       },
       "merged": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
-      }
-    },
-    "@loaders.gl/schema-utils": {
-      "path": "modules/schema-utils",
-      "browser": {
-        "statements": 81,
-        "lines": 81,
-        "functions": 87,
-        "branches": 76
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
       },
-      "merged": {
-        "statements": 80,
-        "lines": 81,
-        "functions": 86,
-        "branches": 76
+      "formatThresholds": {
+        "netcdf": {
+          "sourcePaths": [
+            "modules/scientific/src/netcdf/"
+          ],
+          "browser": {
+            "statements": 61,
+            "lines": 61,
+            "functions": 57,
+            "branches": 60
+          },
+          "merged": {
+            "statements": 61,
+            "lines": 61,
+            "functions": 56,
+            "branches": 60
+          }
+        },
+        "zarr": {
+          "sourcePaths": [
+            "modules/scientific/src/zarr/"
+          ],
+          "browser": {
+            "statements": 90,
+            "lines": 90,
+            "functions": 90,
+            "branches": 90
+          },
+          "merged": {
+            "statements": 90,
+            "lines": 90,
+            "functions": 90,
+            "branches": 90
+          }
+        }
       }
     },
     "@loaders.gl/services": {
@@ -734,6 +814,26 @@
         "modules/tiles/src/tileset-2d/"
       ]
     },
+    "@loaders.gl/tiles-3d": {
+      "path": "modules/tiles-3d",
+      "browser": {
+        "statements": 76,
+        "lines": 76,
+        "functions": 76,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 76,
+        "lines": 76,
+        "functions": 76,
+        "branches": 64
+      },
+      "sourcePaths": [
+        "modules/tiles-3d/src/tileset-3d/",
+        "modules/tiles-3d/src/point-cloud/",
+        "modules/tiles-3d/src/spatial/"
+      ]
+    },
     "@loaders.gl/traces": {
       "path": "modules/traces",
       "browser": {
@@ -794,21 +894,6 @@
         "branches": 57
       }
     },
-    "@loaders.gl/worker-utils": {
-      "path": "modules/worker-utils",
-      "browser": {
-        "statements": 62,
-        "lines": 63,
-        "functions": 63,
-        "branches": 58
-      },
-      "merged": {
-        "statements": 65,
-        "lines": 65,
-        "functions": 67,
-        "branches": 63
-      }
-    },
     "@loaders.gl/xml": {
       "path": "modules/xml",
       "browser": {
@@ -822,21 +907,6 @@
         "lines": 80,
         "functions": 70,
         "branches": 80
-      }
-    },
-    "@loaders.gl/zarr": {
-      "path": "modules/zarr",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "merged": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
       }
     },
     "@loaders.gl/zip": {
@@ -853,51 +923,6 @@
         "functions": 91,
         "branches": 72
       }
-    },
-    "@loaders.gl/raster": {
-      "path": "modules/raster",
-      "sourcePaths": [
-        "modules/raster/src/index.ts",
-        "modules/raster/src/geotiff.ts",
-        "modules/raster/src/lerc.ts",
-        "modules/raster/src/terrain.ts",
-        "modules/raster/src/quantized-mesh.ts",
-        "modules/raster/src/geotiff/geotiff-source-loader-types.ts",
-        "modules/raster/src/geotiff/ometiff-source-loader-types.ts"
-      ],
-      "ownershipReason": "New source metadata and dispatch entry points use the new-package default; each moved implementation retains its original independent browser and merged format gates.",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "merged": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      }
-    },
-    "@loaders.gl/tiles-3d": {
-      "path": "modules/tiles-3d",
-      "browser": {
-        "statements": 76,
-        "lines": 76,
-        "functions": 76,
-        "branches": 64
-      },
-      "merged": {
-        "statements": 76,
-        "lines": 76,
-        "functions": 76,
-        "branches": 64
-      },
-      "sourcePaths": [
-        "modules/tiles-3d/src/tileset-3d/",
-        "modules/tiles-3d/src/point-cloud/",
-        "modules/tiles-3d/src/spatial/"
-      ]
     }
   },
   "formats": {
@@ -958,99 +983,99 @@
         "modules/raster/src/terrain/"
       ]
     },
-    "@loaders.gl/tiles-3d/3d-tiles": {
-      "path": "modules/tiles-3d/src/3d-tiles",
+    "@loaders.gl/core/loader-utils": {
+      "path": "modules/core/src/loader-utils",
       "browser": {
-        "statements": 67,
-        "lines": 67,
-        "functions": 80,
-        "branches": 59
+        "statements": 78,
+        "lines": 78,
+        "functions": 74,
+        "branches": 69
       },
       "merged": {
-        "statements": 66,
-        "lines": 67,
-        "functions": 79,
-        "branches": 59
+        "statements": 79,
+        "lines": 79,
+        "functions": 75,
+        "branches": 71
       },
-      "owner": "@loaders.gl/tiles-3d",
+      "owner": "@loaders.gl/core",
       "sourcePaths": [
-        "modules/tiles-3d/src/3d-tiles/"
+        "modules/core/src/loader-utils/"
       ]
     },
-    "@loaders.gl/tiles-3d/i3s": {
-      "path": "modules/tiles-3d/src/i3s",
+    "@loaders.gl/core/worker-utils": {
+      "path": "modules/core/src/worker-utils",
       "browser": {
-        "statements": 82,
-        "lines": 82,
-        "functions": 86,
-        "branches": 64
+        "statements": 62,
+        "lines": 63,
+        "functions": 63,
+        "branches": 58
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 65,
+        "functions": 67,
+        "branches": 63
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/worker-utils/"
+      ]
+    },
+    "@loaders.gl/core/polyfills": {
+      "path": "modules/core/src/polyfills",
+      "browser": {
+        "statements": 0,
+        "lines": 0,
+        "functions": 0,
+        "branches": 0
+      },
+      "merged": {
+        "statements": 61,
+        "lines": 61,
+        "functions": 64,
+        "branches": 46
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/polyfills/"
+      ]
+    },
+    "@loaders.gl/core/schema": {
+      "path": "modules/core/src/schema",
+      "browser": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "merged": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/schema/"
+      ]
+    },
+    "@loaders.gl/core/schema-utils": {
+      "path": "modules/core/src/schema-utils",
+      "browser": {
+        "statements": 81,
+        "lines": 81,
+        "functions": 87,
+        "branches": 76
       },
       "merged": {
         "statements": 80,
         "lines": 81,
         "functions": 86,
-        "branches": 64
+        "branches": 76
       },
-      "owner": "@loaders.gl/tiles-3d",
+      "owner": "@loaders.gl/core",
       "sourcePaths": [
-        "modules/tiles-3d/src/i3s/"
-      ]
-    },
-    "@loaders.gl/tiles/mlt": {
-      "path": "modules/tiles/src/mlt",
-      "browser": {
-        "statements": 42,
-        "lines": 43,
-        "functions": 47,
-        "branches": 29
-      },
-      "merged": {
-        "statements": 41,
-        "lines": 42,
-        "functions": 43,
-        "branches": 29
-      },
-      "owner": "@loaders.gl/tiles",
-      "sourcePaths": [
-        "modules/tiles/src/mlt/"
-      ]
-    },
-    "@loaders.gl/tiles/mvt": {
-      "path": "modules/tiles/src/mvt",
-      "browser": {
-        "statements": 79,
-        "lines": 79,
-        "functions": 81,
-        "branches": 67
-      },
-      "merged": {
-        "statements": 79,
-        "lines": 79,
-        "functions": 80,
-        "branches": 67
-      },
-      "owner": "@loaders.gl/tiles",
-      "sourcePaths": [
-        "modules/tiles/src/mvt/"
-      ]
-    },
-    "@loaders.gl/tiles/pmtiles": {
-      "path": "modules/tiles/src/pmtiles",
-      "browser": {
-        "statements": 54,
-        "lines": 55,
-        "functions": 51,
-        "branches": 35
-      },
-      "merged": {
-        "statements": 53,
-        "lines": 55,
-        "functions": 50,
-        "branches": 34
-      },
-      "owner": "@loaders.gl/tiles",
-      "sourcePaths": [
-        "modules/tiles/src/pmtiles/"
+        "modules/core/src/schema-utils/"
       ]
     }
   }

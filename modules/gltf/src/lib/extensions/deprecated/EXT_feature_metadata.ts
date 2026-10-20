@@ -15,7 +15,7 @@ import type {
   GLTF_EXT_feature_metadata_TextureAccessor,
   GLTF_EXT_feature_metadata_Schema
 } from '../../types/gltf-ext-feature-metadata-schema';
-import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
+import type {BigTypedArray, TypedArray} from '@loaders.gl/core/schema';
 import {GLTFIterator} from '../../api/gltf-iterator';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
 import {

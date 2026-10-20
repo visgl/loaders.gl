@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -16,13 +16,13 @@ import type {
   VectorSourceData,
   VectorSourceLayer,
   VectorSourceMetadata
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
   explainTableQuery,
   makeTableScanBatch
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {createSpatialReference, type SpatialReference} from '@math.gl/crs';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 import {

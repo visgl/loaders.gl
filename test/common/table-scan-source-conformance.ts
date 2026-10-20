@@ -8,9 +8,9 @@ import type {
   ScanExecutionTelemetry,
   TableScanReadOptions,
   TableScanSource
-} from '@loaders.gl/loader-utils';
-import type {TableBatch} from '@loaders.gl/schema';
-import {convertBatch} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/loader-utils';
+import type {TableBatch} from '@loaders.gl/core/schema';
+import {convertBatch} from '@loaders.gl/core/schema-utils';
 import {parseSQLPredicate, type SQLPredicate} from '@loaders.gl/sql';
 
 /** One independently disposable source used by the portable scan conformance kit. */

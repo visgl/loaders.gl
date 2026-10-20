@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
-import type {ArrowTable, Table, TableBatch} from '@loaders.gl/schema';
-import {convertTable, deduceTableSchema} from '@loaders.gl/schema-utils';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable, Table, TableBatch} from '@loaders.gl/core/schema';
+import {convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
 
 import {encodeArrowToParquet} from './lib/encoders/encode-arrow-to-parquet';
 import {ensureGeoParquetMetadataOnArrowTable} from './lib/geo/geospatial-metadata';

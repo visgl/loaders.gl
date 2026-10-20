@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {
   GetFeaturesParameters,
   GetTileParameters,
@@ -13,8 +13,8 @@ import type {
   TableQueryExplain,
   VectorSource,
   VectorTileSource
-} from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, makeTableScanBatch} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {createScanQueryMetadata, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,

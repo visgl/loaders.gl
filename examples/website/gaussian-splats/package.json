@@ -16,7 +16,6 @@
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
-    "@loaders.gl/schema": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/webgpu": "^9.4.0",
     "react": "^19.2.5",

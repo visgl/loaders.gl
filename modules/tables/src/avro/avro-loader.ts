@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {concatenateArrayBuffersAsync, type LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {concatenateArrayBuffersAsync, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {AvroLoader as AvroLoaderMetadata} from './avro-loader-types';
 import {
   parseAvro,
@@ -87,7 +87,7 @@ export const AvroLoaderWithParser = {
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, AvroLoaderOptions> & {
   parseUrl: (url: string, options?: AvroLoaderOptions) => Promise<ArrowTable>;
   parseFile: (
-    file: import('@loaders.gl/loader-utils').ReadableFile,
+    file: import('@loaders.gl/core/loader-utils').ReadableFile,
     options?: AvroLoaderOptions
   ) => Promise<ArrowTable>;
   parseInBatchesFromUrl: (

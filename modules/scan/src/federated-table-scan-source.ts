@@ -20,7 +20,7 @@ import {
   type TableQueryExplain,
   type TableScanReadOptions,
   type TableScanSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -28,8 +28,12 @@ import type {
   Field,
   Schema,
   TableBatch
-} from '@loaders.gl/schema';
-import {convertArrowToSchema, convertBatch, convertSchemaToArrow} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {
+  convertArrowToSchema,
+  convertBatch,
+  convertSchemaToArrow
+} from '@loaders.gl/core/schema-utils';
 import {queryArrowTable, type SQLPredicate} from '@loaders.gl/sql';
 
 /** Schema reconciliation modes supported by ordered append federation. */

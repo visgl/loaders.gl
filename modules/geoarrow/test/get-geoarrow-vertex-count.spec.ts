@@ -7,7 +7,7 @@ import {
 } from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {makeWKBGeometryField} from '@loaders.gl/arrow-geometry/geometry-field';
-import type {Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 test('geoarrow#getGeoarrowVertexCount counts WKB Data/Vector/Table vertices', () => {
   const polygonWKB = convertGeometryToWKB({
     type: 'Polygon',

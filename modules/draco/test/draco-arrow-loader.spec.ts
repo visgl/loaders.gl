@@ -6,7 +6,7 @@ import * as bundledDraco from '@loaders.gl/draco/bundled';
 import * as unbundledDraco from '@loaders.gl/draco/unbundled';
 import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
-import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/schema';
+import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/core/schema';
 import draco3d from 'draco3d';
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const CESIUM_TILE_URL = '@loaders.gl/draco/test/data/cesium-tile.drc';

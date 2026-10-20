@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
 import type {PotreeDataset} from '../src/potree-writer';
 
 /** Small decoded native-coordinate point fixture. */

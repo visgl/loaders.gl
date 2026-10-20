@@ -12,15 +12,15 @@ import {
   type GetTileParameters,
   type GetTileDataParameters,
   type TileSourceMetadata
-} from '@loaders.gl/loader-utils';
-import type {ArrowTable, Schema, GeoArrowEncoding} from '@loaders.gl/schema';
+} from '@loaders.gl/core/loader-utils';
+import type {ArrowTable, Schema, GeoArrowEncoding} from '@loaders.gl/core/schema';
 import {
   convertWKBToGeometry,
   convertWKTToGeometry
 } from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {getGeoArrowNativeGeometry} from '@loaders.gl/arrow-geometry/native-geometry';
-import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {TableVectorTileSource, TableTileSourceLoader} from './table-tile-source-loader';
 import {convertFeaturesToProtoFeature} from './lib/vector-tiler/features/convert-feature';
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';

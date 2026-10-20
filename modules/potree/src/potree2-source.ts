@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DataSource, type CoreAPI} from '@loaders.gl/loader-utils';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
+import {DataSource, type CoreAPI} from '@loaders.gl/core/loader-utils';
+import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
 import type {PotreeSourceLoaderOptions} from './potree-source-options';
 import type {Potree2HierarchyNode, Potree2Metadata} from './potree2-types';
 import {

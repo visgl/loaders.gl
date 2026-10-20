@@ -1,9 +1,12 @@
 import {expect, test} from 'vitest';
 import {CSVLoader, CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
 import {encodeTableAsText, parse, preload} from '@loaders.gl/core';
-import {Table} from '@loaders.gl/schema';
-import {convertTable} from '@loaders.gl/schema-utils';
-import {makeTestTable, tableWithGeometryColumn} from '@loaders.gl/schema-utils/test/shared-utils';
+import {Table} from '@loaders.gl/core/schema';
+import {convertTable} from '@loaders.gl/core/schema-utils';
+import {
+  makeTestTable,
+  tableWithGeometryColumn
+} from '@loaders.gl/core/schema-utils/test/shared-utils';
 type TestCase = {
   name: string;
   options?: CSVWriterOptions;

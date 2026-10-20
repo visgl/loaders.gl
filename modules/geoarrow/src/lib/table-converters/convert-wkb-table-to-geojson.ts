@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrayRowTable, ObjectRowTable, GeoJSONTable, Schema} from '@loaders.gl/schema';
+import type {ArrayRowTable, ObjectRowTable, GeoJSONTable, Schema} from '@loaders.gl/core/schema';
 import {convertWKBTableToGeoJSON as convertWKBTableToGeoJSONImplementation} from '@loaders.gl/arrow-geometry/wkb-table';
 
 /**

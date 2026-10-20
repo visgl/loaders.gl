@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {MeshArrowTable, MeshAttributes} from '@loaders.gl/schema';
-import {makeMeshArrowTable, type MeshArrowAttributes} from '@loaders.gl/schema-utils';
+import type {MeshArrowTable, MeshAttributes} from '@loaders.gl/core/schema';
+import {makeMeshArrowTable, type MeshArrowAttributes} from '@loaders.gl/core/schema-utils';
 import {
   BinaryChunkReader,
   createLAZChunkDecoder,
@@ -13,12 +13,12 @@ import {
   getLAZChunkDeclaredByteLength,
   getLAZChunkHeaderByteLength,
   NeedsMoreData
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   LAZChunkMetadata,
   LAZChunkTableEntry,
   LAZPointDataTarget
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';
 import {
@@ -1443,7 +1443,11 @@ function readLASString(bytes: Uint8Array, offset: number, length: number): strin
 }
 
 function decodeLASString(bytes: Uint8Array): string {
-  return new TextDecoder().decode(bytes).replace(/\0+$/, '').trim();
+  let end = bytes.length;
+  while (end > 0 && bytes[end - 1] === 0) {
+    end--;
+  }
+  return new TextDecoder().decode(bytes.subarray(0, end)).trim();
 }
 
 function formatLASProjectId(bytes: Uint8Array): string {

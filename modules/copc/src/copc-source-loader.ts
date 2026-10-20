@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
 import type {
   Schema,
   Field,
@@ -10,12 +10,12 @@ import type {
   MeshArrowTable,
   ArrowTableBatch,
   MeshAttribute
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {
   ArrowTableBuilder,
   makeMeshArrowTable,
   type MeshArrowAttributes
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import type {
   CoreAPI,
   SourceLoader,
@@ -25,7 +25,7 @@ import type {
   TileSourceMetadata,
   GetTileParameters,
   GetTileDataParameters
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   canParseWithWorker,
   createLAZChunkDecoderCursor,
@@ -45,8 +45,11 @@ import {
   type PointCloudScanSource,
   type PointCloudScanTile,
   type ReadableFile
-} from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, type PointCloudQueryCapabilities} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {
+  createScanQueryMetadata,
+  type PointCloudQueryCapabilities
+} from '@loaders.gl/core/loader-utils';
 import {projectionEngine} from '@math.gl/projection';
 import type {Projection} from '@math.gl/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/crs';

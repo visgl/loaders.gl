@@ -9,7 +9,7 @@ import type {
   ArcGISFeatureServerSourceLoaderOptions
 } from '../arcgis-source-types';
 
-import type {DataType, Schema} from '@loaders.gl/schema';
+import type {DataType, Schema} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {
@@ -18,9 +18,9 @@ import type {
   GetFeaturesParameters,
   VectorSource,
   VectorSourceData
-} from '@loaders.gl/loader-utils';
-import type {SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import type {SourceLoader} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 import {ArcGISFeatureQueryClient} from './arcgis-feature-query';
 import type {

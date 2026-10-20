@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {mergeOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {mergeOptions} from '@loaders.gl/core/loader-utils';
 import {XMLLoaderWithParser, XMLLoaderOptions} from './xml-loader-with-parser';
 import {HTMLLoader as HTMLLoaderMetadata} from './html-loader';
 

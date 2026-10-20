@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
-import {assert} from '@loaders.gl/loader-utils';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/core/schema';
+import {assert} from '@loaders.gl/core/loader-utils';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
 const DDS_CONSTANTS = {

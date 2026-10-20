@@ -6,15 +6,15 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {createDataSource} from '@loaders.gl/core';
-import type {RasterData, RasterViewport} from '@loaders.gl/loader-utils';
+import type {RasterData, RasterViewport} from '@loaders.gl/core/loader-utils';
 import {RasterSet} from '@loaders.gl/tiles';
 import type {
   GetOMEZarrParameters,
   OMEZarrImageSource,
   OMEZarrSourceLoaderMetadata,
   ZarrConsolidatedMetadata
-} from '@loaders.gl/zarr';
-import {OMEZarrSourceLoader, loadZarrConsolidatedMetadata} from '@loaders.gl/zarr';
+} from '@loaders.gl/scientific/zarr';
+import {OMEZarrSourceLoader, loadZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr';
 
 type AppProps = {
   hideChrome?: boolean;

@@ -205,7 +205,7 @@
 
 ### v4.4.0-alpha.5
 
-- Make `@loaders.gl/zarr` and `@loaders.gl/geoarrow` libraries private
+- Make `@loaders.gl/scientific/zarr` and `@loaders.gl/geoarrow` libraries private
 
 ### v4.4.0-alpha.4
 
@@ -1688,10 +1688,10 @@ See `4.3-release` branch for additional CHANGELOGS
 - fix(csv): Change default `shape` to `object-row-table` (#1631)
 - Fix featureIds parsing to avoid errors in Safari browser (#1629)
 - fix-typing-warnings (#1628)
-- feat: Move gis category types to `@loaders.gl/schema (#1458)
+- feat: Move gis category types to `@loaders.gl/core/schema (#1458)
 - Refactor 3DTiles converter to typescript (#1619)
 - feat(core): probe.gl for options warnings, handle <loader>.workerUrl (#1621)
-- chore: Move mesh utils to @loaders.gl/schema (#1607)
+- chore: Move mesh utils to @loaders.gl/core/schema (#1607)
 - Move types from i3s-converter to particular modules (#1609)
 - chore(docs): Update whats-new for 3.0 (#1616)
 - feat: specify data format with `options.<loader>.shape` (#1615)
@@ -2644,7 +2644,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - Add georeference for 3d tiles (#512)
 - Add cesium point cloud 3D tile format support (#508)
 - upgrade rapidjson lib (#507)
-- tables: @loaders.gl/experimental => @loaders.gl/schema (#500)
+- tables: @loaders.gl/experimental => @loaders.gl/core/schema (#500)
 - basis: add docs (#497)
 - i3s test data using NYC 3-D Building Model from NYC DoITT (#495)
 - i3s server tests (#494)
@@ -2932,9 +2932,9 @@ See `4.3-release` branch for additional CHANGELOGS
 - Minor website fixes (#208)
 - Node 12 support (#207)
 - Minimal Raw port of 3D Tileset (#205)
-- @loaders.gl/core: Move node fetch polyfills to @loaders.gl/polyfills (#202)
-- @loaders.gl/images: Move node support to @loaders.gl/polyfills (#203)
-- @loaders.gl/loader-utils: New module breaking out from core (#204)
+- @loaders.gl/core: Move node fetch polyfills to @loaders.gl/core/polyfills (#202)
+- @loaders.gl/images: Move node support to @loaders.gl/core/polyfills (#203)
+- @loaders.gl/core/loader-utils: New module breaking out from core (#204)
 - LAS and GLTF working in examples (#201)
 - Support draco and fix 3d point cloud examples (#199)
 - Use static images (#198)

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Schema, MeshAttributes} from '@loaders.gl/schema';
-import {deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {Schema, MeshAttributes} from '@loaders.gl/core/schema';
+import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import type {LASHeader} from './las-types';
 
 /**

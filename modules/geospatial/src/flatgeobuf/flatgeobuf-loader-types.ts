@@ -7,9 +7,9 @@ import type {
   ArrowTableBatch,
   GeoJSONTable,
   BinaryFeatureCollection
-} from '@loaders.gl/schema';
-import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
+import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

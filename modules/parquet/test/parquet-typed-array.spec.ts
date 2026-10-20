@@ -4,7 +4,7 @@
 
 import { expect, test } from "vitest";
 import { fetchFile } from '@loaders.gl/core';
-import { BlobFile } from '@loaders.gl/loader-utils';
+import { BlobFile } from '@loaders.gl/core/loader-utils';
 import { PARQUET_CODECS } from '../../tables/src/parquet/parquetjs/codecs/index';
 import { decodeFileMetadata, decodePageHeader } from '../../tables/src/parquet/parquetjs/utils/read-utils';
 import { ParquetReader } from '../../tables/src/parquet/parquetjs/parser/parquet-reader';

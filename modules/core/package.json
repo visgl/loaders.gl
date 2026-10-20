@@ -33,36 +33,128 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./loader-utils": {
+      "types": "./dist/loader-utils/index.d.ts",
+      "import": "./dist/loader-utils/index.js",
+      "require": "./dist/loader-utils/index.cjs"
+    },
+    "./worker-utils": {
+      "types": "./dist/worker-utils/index.d.ts",
+      "import": "./dist/worker-utils/index.js",
+      "require": "./dist/worker-utils/index.cjs"
+    },
+    "./worker-utils/null-worker.js": {
+      "import": "./dist/worker-utils/null-worker.js"
+    },
+    "./worker-utils/null-worker-node.js": {
+      "import": "./dist/worker-utils/null-worker-node.js"
+    },
     "./null-worker.js": {
       "import": "./dist/null-worker.js"
     },
     "./null-worker-node.js": {
       "import": "./dist/null-worker-node.js"
+    },
+    "./polyfills": {
+      "types": "./dist/polyfills/index.d.ts",
+      "browser": "./dist/polyfills/index.browser.js",
+      "import": "./dist/polyfills/index.js",
+      "require": "./dist/polyfills/index.cjs"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.ts",
+      "import": "./dist/schema/index.js",
+      "require": "./dist/schema/index.cjs"
+    },
+    "./schema-utils": {
+      "types": "./dist/schema-utils/index.d.ts",
+      "import": "./dist/schema-utils/index.js",
+      "require": "./dist/schema-utils/index.cjs"
+    },
+    "./schema/geospatial-metadata-zod-schema": {
+      "types": "./dist/schema/geospatial-metadata-zod-schema.d.ts",
+      "import": "./dist/schema/geospatial-metadata-zod-schema.js",
+      "require": "./dist/schema/geospatial-metadata-zod-schema.cjs"
+    },
+    "./schema/geoparquet.schema.json": "./dist/schema/geoparquet.schema.json",
+    "./schema/geoarrow-metadata.schema.json": "./dist/schema/geoarrow-metadata.schema.json",
+    "./schema-utils/arrow-transport": {
+      "types": "./dist/schema-utils/arrow-transport.d.ts",
+      "import": "./dist/schema-utils/arrow-transport.js",
+      "require": "./dist/schema-utils/arrow-transport.cjs"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/polyfills/index.js",
+    "./dist/polyfills/index.cjs",
+    "./dist/polyfills/index.browser.js",
+    "./src/polyfills/index.ts",
+    "./src/polyfills/index.browser.ts"
+  ],
   "browser": {
+    "./dist/loader-utils/lib/node/buffer.js": "./dist/loader-utils/lib/node/buffer.browser.js",
+    "./dist/loader-utils/lib/node/stream.js": "./dist/loader-utils/lib/node/stream.browser.js",
+    "./dist/polyfills/index.cjs": "./dist/polyfills/index.browser.js",
+    "./dist/polyfills/index.js": "./dist/polyfills/index.browser.js",
+    "./dist/polyfills/load-library/require-utils.node.js": false,
+    "./dist/worker-utils/lib/node/worker_threads.js": "./dist/worker-utils/lib/node/worker_threads-browser.js",
+    "./dist/worker-utils/lib/process-utils/child-process-proxy.js": "./dist/worker-utils/lib/process-utils/child-process-proxy.browser.js",
+    "./src/loader-utils/lib/node/buffer.ts": "./src/loader-utils/lib/node/buffer.browser.ts",
+    "./src/loader-utils/lib/node/stream.ts": "./src/loader-utils/lib/node/stream.browser.ts",
+    "./src/polyfills/index.ts": "./src/polyfills/index.browser.ts",
+    "./src/polyfills/load-library/require-utils.node.ts": false,
+    "./src/worker-utils/lib/node/worker_threads.ts": "./src/worker-utils/lib/node/worker_threads-browser.ts",
+    "./src/worker-utils/lib/process-utils/child-process-proxy.ts": "./src/worker-utils/lib/process-utils/child-process-proxy.browser.ts",
+    "child_process": false,
     "fs": false,
+    "module": false,
+    "path": false,
     "stream": false
   },
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "SCHEMA-README.md",
+    "SCHEMA-UTILS-README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-worker-utils-worker && npm run build-worker-utils-worker-node && npm run build-polyfills-node-entrypoint && npm run build-schema-subpaths && npm run generate-json-schema",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-utils-worker": "esbuild src/worker-utils/workers/null-worker.ts --outfile=dist/worker-utils/null-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-utils-worker-node": "esbuild src/worker-utils/workers/null-worker.ts --outfile=dist/worker-utils/null-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-polyfills-node-entrypoint": "esbuild src/polyfills/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/polyfills/index.cjs",
+    "build-schema-subpaths": "esbuild src/schema/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/index.cjs && esbuild src/schema/geospatial-metadata-zod-schema.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/geospatial-metadata-zod-schema.cjs && esbuild src/schema-utils/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/index.cjs && esbuild src/schema-utils/arrow-transport.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/arrow-transport.cjs",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/schema/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/schema/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.12",
-    "@probe.gl/log": "^4.1.1"
+    "@math.gl/crs": "5.0.0-alpha.18",
+    "@math.gl/geospatial": "5.0.0-alpha.18",
+    "@math.gl/types": "5.0.0-alpha.18",
+    "@probe.gl/log": "^4.1.1",
+    "@probe.gl/stats": "^4.1.1",
+    "@types/geojson": "^7946.0.7",
+    "apache-arrow": ">= 17.0.0",
+    "zod": "^4.1.12"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "peerDependencies": {
+    "get-pixels": "^3.3.3",
+    "ndarray": "^1.0.19",
+    "save-pixels": "^2.3.6"
+  },
+  "peerDependenciesMeta": {
+    "get-pixels": {
+      "optional": true
+    },
+    "ndarray": {
+      "optional": true
+    },
+    "save-pixels": {
+      "optional": true
+    }
+  }
 }

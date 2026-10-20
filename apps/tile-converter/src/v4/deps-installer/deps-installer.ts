@@ -6,7 +6,7 @@ import {load, fetchFile} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 import {writeFile} from '../lib/utils/file-utils';
 import {join, dirname} from 'path';
-import {ChildProcessProxy} from '@loaders.gl/worker-utils';
+import {ChildProcessProxy} from '@loaders.gl/core/worker-utils';
 import {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from '@loaders.gl/draco';
 import {BASIS_EXTERNAL_LIBRARIES} from '@loaders.gl/textures';
 

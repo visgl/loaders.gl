@@ -5,13 +5,13 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load} from '@loaders.gl/core';
-import {getGeoMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/arrow-geometry/geojson-table';
 import {KMLLoader} from '@loaders.gl/kml';
 import * as kml from '@loaders.gl/kml';
 import * as bundledKml from '@loaders.gl/kml/bundled';
 import * as unbundledKml from '@loaders.gl/kml/unbundled';
-import type {Feature, Geometry} from '@loaders.gl/schema';
+import type {Feature, Geometry} from '@loaders.gl/core/schema';
 const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 const KML_LINESTRING_URL = '@loaders.gl/kml/test/data/kml/linestring';
 test('KMLLoader#loader conformance', () => {

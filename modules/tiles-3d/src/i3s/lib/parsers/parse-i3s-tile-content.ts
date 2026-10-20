@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertColorArrayToFloat16} from '@loaders.gl/schema';
-import type {TypedArray} from '@loaders.gl/schema';
+import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
+import type {TypedArray} from '@loaders.gl/core/schema';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
+import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';

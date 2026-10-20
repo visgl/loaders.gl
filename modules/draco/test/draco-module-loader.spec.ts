@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import draco3d from 'draco3d';
-import {isBrowser} from '@loaders.gl/worker-utils';
+import {isBrowser} from '@loaders.gl/core/worker-utils';
 import {DracoLoader} from '../src/draco-loader';
 import {Draco3DLoaderWithParser} from '../src/draco3d-loader-with-parser';
 import {DracoJavaScriptLoaderWithParser} from '../src/draco-javascript-loader-with-parser';

@@ -159,41 +159,23 @@
       "@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader": [
         "modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader"
       ],
-      "@loaders.gl/schema": [
-        "modules/schema/src"
+      "@loaders.gl/core/worker-utils": [
+        "modules/core/src/worker-utils"
       ],
-      "@loaders.gl/schema/*": [
-        "modules/schema/src/*"
+      "@loaders.gl/core/worker-utils/test": [
+        "modules/core/test/worker-utils-package"
       ],
-      "@loaders.gl/schema/test": [
-        "modules/schema/test"
+      "@loaders.gl/core/loader-utils": [
+        "modules/core/src/loader-utils"
       ],
-      "@loaders.gl/schema-utils/arrow-transport": [
-        "modules/schema-utils/src/arrow-transport"
+      "@loaders.gl/core/loader-utils/test": [
+        "modules/core/test/loader-utils-package"
       ],
-      "@loaders.gl/schema-utils": [
-        "modules/schema-utils/src"
+      "@loaders.gl/core/polyfills": [
+        "modules/core/src/polyfills"
       ],
-      "@loaders.gl/schema-utils/test": [
-        "modules/schema-utils/test"
-      ],
-      "@loaders.gl/worker-utils": [
-        "modules/worker-utils/src"
-      ],
-      "@loaders.gl/worker-utils/test": [
-        "modules/worker-utils/test"
-      ],
-      "@loaders.gl/loader-utils": [
-        "modules/loader-utils/src"
-      ],
-      "@loaders.gl/loader-utils/test": [
-        "modules/loader-utils/test"
-      ],
-      "@loaders.gl/polyfills": [
-        "modules/polyfills/src"
-      ],
-      "@loaders.gl/polyfills/test": [
-        "modules/polyfills/test"
+      "@loaders.gl/core/polyfills/test": [
+        "modules/core/test/polyfills-package"
       ],
       "@loaders.gl/geoarrow": [
         "modules/geoarrow/src"
@@ -405,14 +387,17 @@
       "@loaders.gl/tiles/mvt/test": [
         "modules/tiles/test/mvt"
       ],
-      "@loaders.gl/netcdf": [
-        "modules/netcdf/src"
+      "@loaders.gl/scientific": [
+        "modules/scientific/src"
       ],
-      "@loaders.gl/netcdf/*": [
-        "modules/netcdf/src/*"
+      "@loaders.gl/scientific/*": [
+        "modules/scientific/src/*"
       ],
-      "@loaders.gl/netcdf/test": [
-        "modules/netcdf/test"
+      "@loaders.gl/scientific/test": [
+        "modules/scientific/test"
+      ],
+      "@loaders.gl/scientific/test/*": [
+        "modules/scientific/test/*"
       ],
       "@loaders.gl/obj": [
         "modules/obj/src"
@@ -621,12 +606,6 @@
       "@loaders.gl/xml/test": [
         "modules/xml/test"
       ],
-      "@loaders.gl/zarr": [
-        "modules/zarr/src"
-      ],
-      "@loaders.gl/zarr/test": [
-        "modules/zarr/test"
-      ],
       "@loaders.gl/zip/indexed-zip-writer": [
         "modules/zip/src/indexed-zip-writer"
       ],
@@ -662,6 +641,24 @@
       ],
       "@loaders.gl/tiles-3d/test": [
         "modules/tiles-3d/test"
+      ],
+      "@loaders.gl/core/schema": [
+        "modules/core/src/schema"
+      ],
+      "@loaders.gl/core/schema/*": [
+        "modules/core/src/schema/*"
+      ],
+      "@loaders.gl/core/schema/test": [
+        "modules/core/test/schema-package"
+      ],
+      "@loaders.gl/core/schema-utils/arrow-transport": [
+        "modules/core/src/schema-utils/arrow-transport"
+      ],
+      "@loaders.gl/core/schema-utils": [
+        "modules/core/src/schema-utils"
+      ],
+      "@loaders.gl/core/schema-utils/test": [
+        "modules/core/test/schema-utils-package"
       ]
     },
     "plugins": [

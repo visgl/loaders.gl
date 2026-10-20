@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Schema} from '@loaders.gl/schema';
+import {Schema} from '@loaders.gl/core/schema';
 
 export type SourceInfo = VectorSourceInfo | ImageSourceInfo;
 

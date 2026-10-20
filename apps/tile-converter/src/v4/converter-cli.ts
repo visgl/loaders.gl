@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import '@loaders.gl/polyfills';
+import '@loaders.gl/core/polyfills';
 import {join} from 'path';
 import inquirer from 'inquirer';
 import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
@@ -12,7 +12,7 @@ import {
   validateOptionsWithEqual
 } from './lib/utils/cli-utils';
 import {addOneFile, composeHashFile, openZipArchive} from '@loaders.gl/zip';
-import {NodeFile} from '@loaders.gl/loader-utils';
+import {NodeFile} from '@loaders.gl/core/loader-utils';
 // @ts-ignore
 import {copyFile} from 'node:fs/promises';
 

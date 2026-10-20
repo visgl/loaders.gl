@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {PMTiles, type Source} from 'pmtiles';
-import type {NumericRasterData, RasterRegionParameters} from '@loaders.gl/loader-utils';
+import type {NumericRasterData, RasterRegionParameters} from '@loaders.gl/core/loader-utils';
 import {encodeRasterPMTiles} from '../../src/pmtiles/raster';
 
 const SELECTED = [{z: 0, x: 0, y: 0}];

@@ -15,7 +15,7 @@ import type {
   RelationalAggregate,
   RelationalExpression,
   RelationalOrderKey
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 /** A named child relation using the SQL module's property-oriented predicate AST. */
 type SQLChildQuery = Readonly<{

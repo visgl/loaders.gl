@@ -80,7 +80,7 @@ function createBundlerPlugin() {
           ),
           new bundler.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
             const normalizedContext = resource.context?.replace(/\\/g, '/');
-            if (normalizedContext?.includes('/modules/worker-utils/src')) {
+            if (normalizedContext?.includes('/modules/core/src/worker-utils')) {
               resource.request = resolve('./src/shims/loadersgl-worker-version.js');
             }
           }),
@@ -221,7 +221,6 @@ const config = {
           fallback: {path: false, fs: false, buffer: true},
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
-            '@loaders.gl/3d-tiles$': resolve('../modules/tiles-3d/src/3d-tiles'),
             '@loaders.gl/tables': resolve('../modules/tables/src'),
             '@loaders.gl/geospatial': resolve('../modules/geospatial/src'),
             examples: resolve('../examples'),
@@ -235,6 +234,7 @@ const config = {
             'website-lerc-es': resolve('../node_modules/lerc/LercDecode.es.js'),
             'laz-perf$': resolve('./src/utils/laz-perf-with-wasm.js'),
 
+            '@loaders.gl/3d-tiles$': resolve('../modules/tiles-3d/src/3d-tiles'),
             '@loaders.gl/tiles-3d/3d-tiles': resolve('../modules/tiles-3d/src/3d-tiles'),
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
             '@loaders.gl/arrow-geometry': resolve('../modules/arrow-geometry/src'),
@@ -243,6 +243,8 @@ const config = {
             '@loaders.gl/compression': resolve('../modules/compression/src'),
             '@loaders.gl/config': resolve('../modules/config/src'),
             '@loaders.gl/copc': resolve('../modules/copc/src'),
+            '@loaders.gl/core/loader-utils': resolve('../modules/core/src/loader-utils'),
+            '@loaders.gl/core/worker-utils': resolve('../modules/core/src/worker-utils'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/csv': resolve('../modules/csv/src'),
@@ -261,21 +263,20 @@ const config = {
             '@loaders.gl/kml': resolve('../modules/kml/src'),
             '@loaders.gl/las': resolve('../modules/las/src'),
             '@loaders.gl/raster/lerc/index': resolve('../modules/raster/src/lerc/index.ts'),
-            '@loaders.gl/loader-utils': resolve('../modules/loader-utils/src'),
             '@loaders.gl/tiles/mlt': resolve('../modules/tiles/src/mlt'),
             '@loaders.gl/tiles/mvt': resolve('../modules/tiles/src/mvt'),
-            '@loaders.gl/netcdf': resolve('../modules/netcdf/src'),
+            '@loaders.gl/scientific': resolve('../modules/scientific/src'),
             '@loaders.gl/obj': resolve('../modules/obj/src'),
             '@loaders.gl/parquet': resolve('../modules/parquet/src'),
             '@loaders.gl/orc': resolve('../modules/orc/src'),
             '@loaders.gl/pcd': resolve('../modules/pcd/src'),
             '@loaders.gl/ply': resolve('../modules/ply/src'),
             '@loaders.gl/tiles/pmtiles': resolve('../modules/tiles/src/pmtiles'),
-            '@loaders.gl/polyfills': resolve('../modules/polyfills/src'),
+            '@loaders.gl/core/polyfills': resolve('../modules/core/src/polyfills'),
             '@loaders.gl/potree': resolve('../modules/potree/src'),
             '@loaders.gl/scan': resolve('../modules/scan/src'),
-            '@loaders.gl/schema': resolve('../modules/schema/src'),
-            '@loaders.gl/schema-utils': resolve('../modules/schema-utils/src'),
+            '@loaders.gl/core/schema': resolve('../modules/core/src/schema'),
+            '@loaders.gl/core/schema-utils': resolve('../modules/core/src/schema-utils'),
             '@loaders.gl/scene': resolve('../modules/scene/src'),
             '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
             '@loaders.gl/splats': resolve('../modules/splats/src'),
@@ -306,9 +307,7 @@ const config = {
             '@loaders.gl/arcgis/scene-aggregation': resolve('../modules/arcgis/src/arcgis/arcgis-scene-aggregation'),
             '@loaders.gl/arcgis': resolve('../modules/arcgis/src'),
             '@loaders.gl/services': resolve('../modules/services/src'),
-            '@loaders.gl/worker-utils': resolve('../modules/worker-utils/src'),
             '@loaders.gl/xml': resolve('../modules/xml/src'),
-            '@loaders.gl/zarr': resolve('../modules/zarr/src'),
             '@loaders.gl/zip': resolve('../modules/zip/src'),
             'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 

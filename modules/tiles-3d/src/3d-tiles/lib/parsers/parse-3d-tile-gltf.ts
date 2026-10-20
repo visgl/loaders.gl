@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {parseFromContext, LoaderContext} from '@loaders.gl/loader-utils';
+import {parseFromContext, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {
   _getMemoryUsageGLTF,
   GLTFLoader,

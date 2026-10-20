@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
-import {ArrayBufferFile, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, ReadableFile} from '@loaders.gl/core/loader-utils';
+import {ArrayBufferFile, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
   ObjectRowTable,
   ObjectRowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-json';
 import {
   parseParquetFileToArrowInBatchesWithJs,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import {path} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/core/loader-utils';
 const {resolve} = path;
 
 declare const __TEST_REPOSITORY_ROOT__: string;
@@ -40,11 +40,14 @@ function makeAliases() {
     '@loaders.gl/json/test': resolveTestPath('./modules/json/test'),
     '@loaders.gl/kml/test': resolveTestPath('./modules/kml/test'),
     '@loaders.gl/las/test': resolveTestPath('./modules/las/test'),
-    '@loaders.gl/loader-utils/test': resolveTestPath('./modules/loader-utils/test'),
+    '@loaders.gl/core/loader-utils/test': resolveTestPath(
+      './modules/core/test/loader-utils-package'
+    ),
     '@loaders.gl/raster/test/lerc': resolveTestPath('./modules/raster/test/lerc'),
     '@loaders.gl/tiles/mlt/test': resolveTestPath('./modules/tiles/test/mlt'),
     '@loaders.gl/tiles/mvt/test': resolveTestPath('./modules/tiles/test/mvt'),
-    '@loaders.gl/netcdf/test': resolveTestPath('./modules/netcdf/test'),
+    '@loaders.gl/scientific/test/netcdf': resolveTestPath('./modules/scientific/test/netcdf'),
+    '@loaders.gl/scientific/test/zarr': resolveTestPath('./modules/scientific/test/zarr'),
     '@loaders.gl/obj/test': resolveTestPath('./modules/obj/test'),
     '@loaders.gl/parquet/test': resolveTestPath('./modules/parquet/test'),
     '@loaders.gl/lance/test': resolveTestPath('./modules/lance/test'),
@@ -54,10 +57,10 @@ function makeAliases() {
     '@loaders.gl/splats/test': resolveTestPath('./modules/splats/test'),
     '@loaders.gl/stac/test': resolveTestPath('./modules/stac/test'),
     '@loaders.gl/tiles/pmtiles/test': resolveTestPath('./modules/tiles/test/pmtiles'),
-    '@loaders.gl/polyfills/test': resolveTestPath('./modules/polyfills/test'),
+    '@loaders.gl/core/polyfills/test': resolveTestPath('./modules/core/test/polyfills-package'),
     '@loaders.gl/potree/test': resolveTestPath('./modules/potree/test'),
     '@loaders.gl/shapefile/test': resolveTestPath('./modules/shapefile/test'),
-    '@loaders.gl/schema/test': resolveTestPath('./modules/schema/test'),
+    '@loaders.gl/core/schema/test': resolveTestPath('./modules/core/test/schema-package'),
     '@loaders.gl/raster/test/terrain': resolveTestPath('./modules/raster/test/terrain'),
     '@loaders.gl/textures/test': resolveTestPath('./modules/textures/test'),
     '@loaders.gl/tile-converter/test': resolveTestPath('./apps/tile-converter/test'),
@@ -66,9 +69,10 @@ function makeAliases() {
     '@loaders.gl/video/test': resolveTestPath('./modules/video/test'),
     '@loaders.gl/wkt/test': resolveTestPath('./modules/wkt/test'),
     '@loaders.gl/wms/test': resolveTestPath('./modules/wms/test'),
-    '@loaders.gl/worker-utils/test': resolveTestPath('./modules/worker-utils/test'),
+    '@loaders.gl/core/worker-utils/test': resolveTestPath(
+      './modules/core/test/worker-utils-package'
+    ),
     '@loaders.gl/xml/test': resolveTestPath('./modules/xml/test'),
-    '@loaders.gl/zarr/test': resolveTestPath('./modules/zarr/test'),
     '@loaders.gl/zip/test': resolveTestPath('./modules/zip/test'),
     // eslint-disable-next-line camelcase
     node_modules: resolveTestPath('./node_modules')

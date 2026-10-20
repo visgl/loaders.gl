@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {LASFormat} from './las-format';
 import type {LASMesh} from './lib/las-types';
 

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {MeshAttributes} from '@loaders.gl/schema';
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import type {MeshAttributes} from '@loaders.gl/core/schema';
+import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import {Las} from 'copc';
 import type {LASLoaderOptions} from '../../las-loader-types';
 import {getLASSchema} from '../get-las-schema';

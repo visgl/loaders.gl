@@ -10,9 +10,9 @@
 // @author Filipe Caixeta / http://filipecaixeta.com.br
 // @author Mugen87 / https://github.com/Mugen87
 
-import {convertColorArrayToFloat16} from '@loaders.gl/schema';
-import type {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
+import type {MeshAttribute, MeshAttributes} from '@loaders.gl/core/schema';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
 import type {PCDHeader, PCDMesh} from './pcd-types';

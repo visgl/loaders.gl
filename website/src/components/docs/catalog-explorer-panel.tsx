@@ -1,6 +1,6 @@
 import React, {useEffect, useId, useState} from 'react';
 import styled from 'styled-components';
-import type {CatalogSource, CatalogSourceCapabilities} from '@loaders.gl/loader-utils';
+import type {CatalogSource, CatalogSourceCapabilities} from '@loaders.gl/core/loader-utils';
 import {ReactExamplePanel} from './example-panel-host';
 import {getCatalogAssetUrl} from './catalog-asset-url';
 

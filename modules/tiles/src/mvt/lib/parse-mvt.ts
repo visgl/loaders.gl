@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
 import {
   convertFlatGeojsonToBinaryFeatureCollection as flatGeojsonToBinary,
   type GeojsonGeometryInfo
 } from '@loaders.gl/arrow-geometry/legacy-binary';
-import {log} from '@loaders.gl/loader-utils';
+import {log} from '@loaders.gl/core/loader-utils';
 import Protobuf from 'pbf';
 
 import {VectorTile} from './vector-tile/vector-tile';

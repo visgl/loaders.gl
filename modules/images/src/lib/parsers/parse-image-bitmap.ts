@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {isBrowser} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import type {ImageBitmapLoaderOptions} from '../../image-bitmap-loader';
 import {parseBlobToImageBitmap, parseToImageBitmap} from './parse-to-image-bitmap';
 import {isSVG} from './svg-utils';
@@ -12,7 +12,7 @@ import {parseToNodeImage} from './parse-to-node-image';
 const INVALID_IMAGE_TYPE_ERROR =
   "@loaders.gl/images: ImageBitmapLoader only accepts options.image.type='imagebitmap'. Remove legacy image/data/auto values and call getImageData(image) if you need raw pixels.";
 const UNSUPPORTED_IMAGE_BITMAP_ERROR =
-  '@loaders.gl/images: ImageBitmapLoader requires browser ImageBitmap support. Use a browser with createImageBitmap support or load images under Node.js with @loaders.gl/polyfills.';
+  '@loaders.gl/images: ImageBitmapLoader requires browser ImageBitmap support. Use a browser with createImageBitmap support or load images under Node.js with @loaders.gl/core/polyfills.';
 
 /**
  * Parses images into `ImageBitmap` in browsers and Node.js.

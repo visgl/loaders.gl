@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 
 import {fetchFile, load} from '@loaders.gl/core';
 import {parseBSONSync} from '@loaders.gl/bson';
-import {ArrayBufferFile} from '@loaders.gl/loader-utils';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {ParquetReader} from '@loaders.gl/parquet';
 
 test('ParquetJSLoader projects nested and repeated columns directly to Arrow', async () => {

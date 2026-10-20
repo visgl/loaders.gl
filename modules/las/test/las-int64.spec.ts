@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {LASWriter} from '@loaders.gl/las';
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {parseLAS, parseLASInBatches} from '../src/lib/typescript/parse-las';
 
 const unsignedValues = new BigUint64Array([0n, 9007199254740993n, (1n << 64n) - 1n]);

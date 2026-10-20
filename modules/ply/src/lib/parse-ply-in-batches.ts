@@ -30,8 +30,8 @@ import {
   makeTextDecoderIterator,
   forEach,
   toArrayBufferIterator
-} from '@loaders.gl/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+} from '@loaders.gl/core/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import normalizePLY from './normalize-ply';
 import {PLYMesh, PLYHeader, PLYElement, PLYProperty, PLYAttributes} from './ply-types';
 import {

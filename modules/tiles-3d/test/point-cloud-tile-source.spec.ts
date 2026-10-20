@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {
   PointCloudTileSourceLoader,
   PointCloudTileset,

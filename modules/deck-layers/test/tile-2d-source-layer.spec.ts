@@ -5,10 +5,10 @@
 import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-layers';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {ArrowTableTileSourceLoader, MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {resolveVisualSource} from '../src/source-layer-utils';
 
 test.each([

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {SerializedArrowTableIPC} from '@loaders.gl/schema-utils/arrow-transport';
+import type {SerializedArrowTableIPC} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {
   deserializeArrowTableFromIPC,
   serializeArrowTableToIPC
-} from '@loaders.gl/schema-utils/arrow-transport';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema-utils/arrow-transport';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 
 type ParquetWorkerResult = ArrowTable | ObjectRowTable;
 

@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {IndexedArchiveTilesetSource, Tiles3DSource} from '@loaders.gl/tiles-3d';
-import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {parse3DTilesArchive} from './3d-tiles-archive/3d-tiles-archive-parser';
 
 /** Constructor input for {@link Tiles3DArchiveSource}. */

@@ -44,9 +44,6 @@
     "dist",
     "README.md"
   ],
-  "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12"
-  },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   }

@@ -12,7 +12,7 @@ import {
   getJSModule,
   getJSModuleOrNull,
   promisify1
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 import type brotliNamespace from 'brotli';
 // import brotli from 'brotli';  // https://bundlephobia.com/package/brotli

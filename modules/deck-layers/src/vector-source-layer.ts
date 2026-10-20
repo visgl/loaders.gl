@@ -15,7 +15,7 @@ import type {GeoJsonLayerProps} from '@deck.gl/layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {createDataSource} from '@loaders.gl/core';
 import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/geoarrow';
-import type {GeoJSONTable} from '@loaders.gl/schema';
+import type {GeoJSONTable} from '@loaders.gl/core/schema';
 import type {
   DataSourceOptions,
   GetFeaturesParameters,
@@ -24,8 +24,8 @@ import type {
   VectorSource,
   VectorSourceData,
   VectorSourceMetadata
-} from '@loaders.gl/loader-utils';
-import {isSourceLoader} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import {VectorSet} from './vector-source-layer/vector-set';
 import {createGeoJsonLayerProps, type GeoArrowLayerProps} from './geoarrow-layer';
 import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {getWorkerURL} from '@loaders.gl/worker-utils';
+import {getWorkerURL} from '@loaders.gl/core/worker-utils';
 import {BasisLoader, KTX2BasisWriterWorker} from '../src';
 
 test.each([

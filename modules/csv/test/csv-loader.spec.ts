@@ -3,11 +3,11 @@ import {validateLoader} from 'test/common/conformance';
 import {
   load,
   loadInBatches,
-  isAsyncIterable,
   parse,
   parseInBatches,
   preload,
-  preloadSync
+  preloadSync,
+  isAsyncIterable
 } from '@loaders.gl/core';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {
@@ -19,8 +19,8 @@ import {
   CSVWorkerLoader as UnbundledCSVWorkerLoader
 } from '@loaders.gl/csv/unbundled';
 import * as csv from '@loaders.gl/csv';
-import {getGeoMetadata} from '@loaders.gl/schema';
-import {getTableLength} from '@loaders.gl/schema-utils';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
+import {getTableLength} from '@loaders.gl/core/schema-utils';
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';

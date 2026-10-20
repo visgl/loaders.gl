@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import type {Mesh, TypedArray} from '@loaders.gl/schema';
+import type {Mesh, TypedArray} from '@loaders.gl/core/schema';
 
 /** A parsed PLY mesh */
 export type PLYMesh = Mesh & {

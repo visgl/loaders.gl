@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GLTFExternalFile, GLTFWithBuffers} from '../types/gltf-types';
 import {getTypedArrayForBufferView} from './get-typed-array';
 import {resolveUrl} from './resolve-url';

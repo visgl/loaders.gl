@@ -64,7 +64,7 @@
       "modules/mvt/formats/map-style",
       "modules/mlt/formats/mlt",
       "modules/mvt/formats/mvt",
-      "modules/netcdf/formats/netcdf",
+      "modules/scientific/netcdf/formats/netcdf",
       "modules/obj/formats/obj",
       "modules/orc/formats/orc",
       "modules/wms/formats/ows-context",
@@ -84,7 +84,7 @@
       "modules/wkt/formats/wkt",
       "modules/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
-      "modules/zarr/formats/zarr",
+      "modules/scientific/zarr/formats/zarr",
       "modules/zip/formats/zip"
     ]
   },
@@ -102,6 +102,11 @@
       "modules/wms/formats/wms",
       "modules/wms/formats/wmts",
       "modules/wms/services/ogc-api",
+      "modules/arcgis/formats/arcgis-feature-server",
+      "modules/arcgis/formats/arcgis-map-server",
+      "modules/arcgis/formats/arcgis-image-server",
+      "modules/arcgis/formats/arcgis-vector-tile-server",
+      "modules/arcgis/formats/arcgis-scene-server",
       "modules/arcgis/arcgis-map-server",
       "modules/arcgis/arcgis-image-server",
       "modules/arcgis/arcgis-feature-server",
@@ -240,10 +245,10 @@
           "modules/flatgeobuf/api-reference/flatgeobuf-source-loader",
           "modules/geopackage/api-reference/geopackage-source",
           "modules/geotiff/api-reference/geotiff-source-loader",
-          "modules/zarr/api-reference/geo-zarr-source-loader",
+          "modules/scientific/zarr/api-reference/geo-zarr-source-loader",
           "modules/tiles-3d/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
-          "modules/zarr/api-reference/ome-zarr-source-loader",
+          "modules/scientific/zarr/api-reference/ome-zarr-source-loader",
           "modules/parquet/api-reference/delta-table-source",
           "modules/parquet/api-reference/iceberg-table-source",
           "modules/parquet/api-reference/parquet-source-loader",
@@ -296,26 +301,26 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/loader-utils",
+        "label": "@loaders.gl/core/loader-utils",
         "items": [
-          "modules/loader-utils/README",
-          "modules/loader-utils/api-reference/data-source-manager",
-          "modules/loader-utils/api-reference/readable-file",
-          "modules/loader-utils/api-reference/http-file",
-          "modules/loader-utils/api-reference/request-scheduler",
-          "modules/loader-utils/api-reference/request-cache",
-          "modules/loader-utils/api-reference/range-request-scheduler",
-          "modules/loader-utils/api-reference/range-request-cache",
-          "modules/loader-utils/api-reference/request-credentials",
-          "modules/loader-utils/api-reference/parse-with-context"
+          "modules/core/loader-utils/README",
+          "modules/core/loader-utils/api-reference/data-source-manager",
+          "modules/core/loader-utils/api-reference/readable-file",
+          "modules/core/loader-utils/api-reference/http-file",
+          "modules/core/loader-utils/api-reference/request-scheduler",
+          "modules/core/loader-utils/api-reference/request-cache",
+          "modules/core/loader-utils/api-reference/range-request-scheduler",
+          "modules/core/loader-utils/api-reference/range-request-cache",
+          "modules/core/loader-utils/api-reference/request-credentials",
+          "modules/core/loader-utils/api-reference/parse-with-context"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/worker-utils",
+        "label": "@loaders.gl/core/worker-utils",
         "items": [
-          "modules/worker-utils/README",
-          "modules/worker-utils/api-reference/worker-processing"
+          "modules/core/worker-utils/README",
+          "modules/core/worker-utils/api-reference/worker-processing"
         ]
       },
       {
@@ -386,7 +391,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/schema-utils",
+        "label": "@loaders.gl/core/schema-utils",
         "items": [
           "modules/schema-utils/README"
         ]
@@ -564,13 +569,6 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/netcdf",
-        "items": [
-          "modules/netcdf/api-reference/README"
-        ]
-      },
-      {
-        "type": "category",
         "label": "@loaders.gl/tiles/mlt",
         "items": [
           "modules/mlt/README"
@@ -624,14 +622,14 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/polyfills",
+        "label": "@loaders.gl/core/polyfills",
         "items": [
           "modules/polyfills/api-reference/README"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/schema",
+        "label": "@loaders.gl/core/schema",
         "items": [
           "modules/schema/README",
           "modules/schema/api-reference/schema",
@@ -775,11 +773,24 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/zarr",
+        "label": "@loaders.gl/scientific",
         "items": [
-          "modules/zarr/README",
-          "modules/zarr/api-reference/geo-zarr-source-loader",
-          "modules/zarr/api-reference/ome-zarr-source-loader"
+          {
+            "type": "category",
+            "label": "NetCDF",
+            "items": [
+              "modules/scientific/netcdf/api-reference/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "Zarr",
+            "items": [
+              "modules/scientific/zarr/README",
+              "modules/scientific/zarr/api-reference/geo-zarr-source-loader",
+              "modules/scientific/zarr/api-reference/ome-zarr-source-loader"
+            ]
+          }
         ]
       }
     ]

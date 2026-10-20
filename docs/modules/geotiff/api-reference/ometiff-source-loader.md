@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'GeoTIFF module', to: '/docs/modules/geotiff'},
     {label: 'OME-TIFF example', to: '/examples/bioimaging/ome-tiff'},
-    {label: 'OME-Zarr source', to: '/docs/modules/zarr/api-reference/ome-zarr-source-loader'}
+    {label: 'OME-Zarr source', to: '/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader'}
   ]}
 />
 

@@ -12,7 +12,7 @@ test('installed raster ESM and CommonJS subpaths encode with the existing Node i
       '--input-type=module',
       '--eval',
       `
-    import '@loaders.gl/polyfills';
+    import '@loaders.gl/core/polyfills';
     import {createRequire} from 'node:module';
     import {encodeRasterPMTiles} from '@loaders.gl/tiles/pmtiles/raster';
     import {PMTiles} from 'pmtiles';

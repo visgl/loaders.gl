@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {resolveLoaderAuthenticationOptions} from '@loaders.gl/loader-utils';
+import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import type {
   Loader,
   LoaderContext,
@@ -16,7 +16,7 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
   StrictLoaderOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   parseWithWorker,
   shouldParseWithWorker,
@@ -24,8 +24,8 @@ import {
   isResponse,
   isBlob,
   isSourceLoader
-} from '@loaders.gl/loader-utils';
-import {validateWorkerVersion} from '@loaders.gl/worker-utils';
+} from '@loaders.gl/core/loader-utils';
+import {validateWorkerVersion} from '@loaders.gl/core/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';

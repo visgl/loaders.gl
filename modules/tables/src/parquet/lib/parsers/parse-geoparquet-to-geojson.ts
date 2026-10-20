@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {
   GeoJSONTable,
   GeoJSONTableBatch,
   ArrowTableBatch,
   ObjectRowTable
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/arrow-geometry/wkb-table';
-import {convertArrowToTable} from '@loaders.gl/schema-utils';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 
 import type {ParquetLoaderOptions} from '../../parquet-loader-options';
 import {parseParquetArrowTable, parseParquetArrowTableInBatches} from './parse-parquet-tables';

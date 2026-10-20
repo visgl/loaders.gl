@@ -12,14 +12,14 @@
  */
 
 import type {GLTFTextureInfoMetadata, GLTFMeshPrimitive} from '../../types/gltf-json-schema';
-import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
+import type {BigTypedArray, TypedArray} from '@loaders.gl/core/schema';
 import type {ImageType} from '@loaders.gl/images';
 
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {GLTFIterator} from '../../api/gltf-iterator';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
-import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
+import {ensureArrayBuffer} from '@loaders.gl/core/loader-utils';
 
 function emod(n: number): number {
   return ((n % 1) + 1) % 1;
