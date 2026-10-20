@@ -37,7 +37,12 @@ export function getMeshSize(attributes: TypedArrays): number {
  * @returns array of two vectors representing the axis aligned bounding box
  */
 // eslint-disable-next-line complexity
-export function getMeshBoundingBox(attributes: MeshAttributes): BoundingBox {
+export function getMeshBoundingBox(attributes: MeshAttributes | null): BoundingBox | null {
+  const positionAttribute = attributes?.POSITION;
+  if (!positionAttribute || !('value' in positionAttribute) || !positionAttribute.value.length) {
+    return null;
+  }
+
   let minX = Infinity;
   let minY = Infinity;
   let minZ = Infinity;
@@ -45,8 +50,8 @@ export function getMeshBoundingBox(attributes: MeshAttributes): BoundingBox {
   let maxY = -Infinity;
   let maxZ = -Infinity;
 
-  const positions = attributes.POSITION ? attributes.POSITION.value : [];
-  const len = positions && positions.length;
+  const positions = positionAttribute.value;
+  const len = positions.length;
 
   for (let i = 0; i < len; i += 3) {
     const x = positions[i];

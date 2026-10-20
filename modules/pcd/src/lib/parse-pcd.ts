@@ -101,9 +101,11 @@ export function parsePCD(data: ArrayBufferLike, options?: ParsePCDOptions): PCDM
 function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): MeshHeader {
   if (typeof pcdHeader.width === 'number' && typeof pcdHeader.height === 'number') {
     const pointCount = pcdHeader.width * pcdHeader.height; // Supports "organized" point sets
+    const boundingBox = getMeshBoundingBox(attributes);
+    if (!boundingBox) throw new Error('PCD point cloud is missing positions');
     return {
       vertexCount: pointCount,
-      boundingBox: getMeshBoundingBox(attributes)
+      boundingBox
     };
   }
   return {

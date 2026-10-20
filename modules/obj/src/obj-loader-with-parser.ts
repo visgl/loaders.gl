@@ -190,11 +190,11 @@ function parseOBJPointCloudMesh(vertexLines: string[]): Mesh {
     },
     schema: getOBJSchema(attributes, {
       mode: 0,
-      boundingBox
+      boundingBox: boundingBox ?? undefined
     }),
     header: {
       vertexCount: vertexLines.length,
-      boundingBox
+      boundingBox: boundingBox ?? undefined
     },
     mode: 0,
     topology: 'point-list',

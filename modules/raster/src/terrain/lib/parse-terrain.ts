@@ -102,7 +102,7 @@ export function makeTerrainMeshFromImage(
     },
     header: {
       vertexCount: triangles.length,
-      boundingBox
+      boundingBox: boundingBox ?? undefined
     },
     schema,
     topology,

@@ -175,7 +175,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
 
   lasMesh.header = {
     vertexCount: originalHeader.totalToRead,
-    boundingBox: getMeshBoundingBox(lasMesh?.attributes || {})
+    boundingBox: getMeshBoundingBox(lasMesh?.attributes || {}) ?? undefined
   };
 
   if (lasMesh) {

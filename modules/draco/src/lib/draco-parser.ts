@@ -763,6 +763,7 @@ function getTransformedMeshBoundingBox(
   attributes: Record<string, MeshAttribute>
 ): [number[], number[]] {
   const boundingBox = getMeshBoundingBox(attributes);
+  if (!boundingBox) throw new Error('Decoded mesh is missing positions');
   const position = attributes.POSITION;
   if (position?.transform?.type !== 'quantization') {
     return boundingBox;
