@@ -10,7 +10,7 @@ import type {
   GLTFMeshPrimitivePostprocessed,
   GLTFMaterialPostprocessed
 } from '@loaders.gl/gltf';
-import type {Tileset3D, TilesetSourceMetadata} from '@loaders.gl/tiles';
+import type {Tileset3D, TilesetSourceMetadata} from '@loaders.gl/tiles-3d';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionSource} from '@loaders.gl/tile-converter/v5/core';
 import {createTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core';
@@ -22,7 +22,7 @@ import {resolveMeshSourceTexture} from './mesh-source-texture.js';
 import {extractMeshFeatures} from './mesh-source-features.js';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';
 import type {MeshSourceSchemaOptions} from './mesh-source-schema.js';
-import type {I3SMeshFeatures} from '@loaders.gl/i3s';
+import type {I3SMeshFeatures} from '@loaders.gl/tiles-3d/i3s';
 export type {MeshSourceFeatureOptions} from './mesh-source-features.js';
 
 /** Source mesh with optional explicit-schema feature data and triangle association. */

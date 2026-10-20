@@ -1,4 +1,8 @@
-import type {I3STileContent, AttributeStorageInfo, I3STileAttributes} from '@loaders.gl/i3s';
+import type {
+  I3STileContent,
+  AttributeStorageInfo,
+  I3STileAttributes
+} from '@loaders.gl/tiles-3d/i3s';
 import {encodeSync} from '@loaders.gl/core';
 import {
   GLTFScenegraph,
@@ -7,7 +11,7 @@ import {
   createExtMeshFeatures,
   type PropertyAttribute
 } from '@loaders.gl/gltf';
-import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
+import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {isTypedArray} from '@math.gl/types';
 import {Ellipsoid} from '@math.gl/geospatial';

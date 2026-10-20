@@ -1,5 +1,5 @@
 import '@loaders.gl/core/polyfills';
-import {parseSLPKArchive, SLPKArchive} from '@loaders.gl/i3s';
+import {parseSLPKArchive, SLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {NodeFile} from '@loaders.gl/core/loader-utils';
 
 let slpkArchive: SLPKArchive;

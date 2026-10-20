@@ -275,7 +275,7 @@ workers, multi-tile hierarchy, and source-scene extraction remain separate work.
 ### Download a 3TZ archive
 
 `createSingleMeshTilesetArchive` packages the finalized sink's two files into a **3TZ archive**
-with a final `@3dtilesIndex1@` path-hash index. The format writer lives in `@loaders.gl/3d-tiles`,
+with a final `@3dtilesIndex1@` path-hash index. The format writer lives in `@loaders.gl/tiles-3d/3d-tiles`,
 uses typed arrays and native Blobs, and needs no filesystem or Node.js Buffer.
 
 ```ts
@@ -353,7 +353,7 @@ resources implicitly.
 
 ```ts
 import {createI3SConversionSpatialContext} from '@loaders.gl/tile-converter/v5';
-import {getI3SSpatialReference} from '@loaders.gl/tiles';
+import {getI3SSpatialReference} from '@loaders.gl/tiles-3d';
 
 const spatial = createI3SConversionSpatialContext(
   getI3SSpatialReference(layerMetadata),
@@ -563,7 +563,7 @@ heights); the helper does not infer or transform a CRS. Per-tile RTC centers ret
 ECEF magnitudes, and `geometricError` must cover measured position reconstruction error.
 
 ```ts
-import {createTilesetSpatialReference} from '@loaders.gl/tiles';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
 import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';
 
 const result = await convertPointCloudToTileset(decodedPoints, {

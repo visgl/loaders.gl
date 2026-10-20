@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="MLT module"
   title="Decode compact vector tiles without changing the tile path."
-  description="`@loaders.gl/mlt` supports MapLibre Tile vector data through a direct loader and a URL-addressed source. Both paths use the MapLibre decoder while fitting the normal loaders.gl data contracts."
+  description="`@loaders.gl/tiles/mlt` supports MapLibre Tile vector data through a direct loader and a URL-addressed source. Both paths use the MapLibre decoder while fitting the normal loaders.gl data contracts."
   tone="blue"
   meta={['MapLibre Tile', 'Vector tiles', 'Loader and source']}
   links={[
@@ -49,7 +49,7 @@ Support for loading [MapLibre Tile](/docs/modules/mlt/formats/mlt) vector tiles.
 ## Installation
 
 ```bash
-npm install @loaders.gl/mlt
+npm install @loaders.gl/tiles
 npm install @loaders.gl/core
 ```
 

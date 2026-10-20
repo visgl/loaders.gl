@@ -76,7 +76,7 @@ the application needs repeated, viewport-driven requests:
 | Resolve Cesium ion data | [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader) | Resolve ion credentials and tileset URLs |
 | Parse I3S resources | [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader) | Decode I3S metadata, nodes, and content |
 | Parse Potree resources | [`PotreeLoader`](/docs/modules/potree/api-reference/potree-loader) | Decode Potree hierarchy and point data |
-| Traverse a tiled world | [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) | Select, request, cache, and release visible tiles |
+| Traverse a tiled world | [`Tileset3D`](/docs/modules/tiles-3d/api-reference/tileset-3d) | Select, request, cache, and release visible tiles |
 
 <ReferenceBoundary
   title="The application-facing contract"
@@ -90,8 +90,8 @@ Create the format-specific source, give it to `Tileset3D`, and await selection a
 changes:
 
 ```typescript
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 
 const source = new Tiles3DSource({
   url: 'https://example.com/tileset.json',
@@ -115,7 +115,7 @@ renderer boundary.
 ## Application data
 
 The following fields are common entry points, but a source may add format-specific metadata. Use
-the [`Tile3D` reference](/docs/modules/tiles/api-reference/tile-3d) for runtime state and the
+the [`Tile3D` reference](/docs/modules/tiles-3d/api-reference/tile-3d) for runtime state and the
 [3D Tiles format page](/docs/modules/3d-tiles/formats/3d-tiles) for payload conformance.
 
 | Object | Common fields | Meaning |

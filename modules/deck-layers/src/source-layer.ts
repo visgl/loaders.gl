@@ -19,7 +19,7 @@ import type {
   TileSourceMetadata,
   VectorSource
 } from '@loaders.gl/core/loader-utils';
-import type {PointCloudTilesetSource, Tileset3DSource} from '@loaders.gl/tiles';
+import type {PointCloudTilesetSource, Tileset3DSource} from '@loaders.gl/tiles-3d';
 import {type ImageSourceLayerProps, ImageSourceLayer} from './image-source-layer';
 import {type PointCloudSourceLayerProps, PointCloudSourceLayer} from './point-cloud-source-layer';
 import {type RasterSourceLayerProps, RasterSourceLayer} from './raster-source-layer';

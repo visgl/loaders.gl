@@ -60,7 +60,6 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 - Use `@loaders.gl/core/schema-utils/arrow-transport` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
 - Install `@loaders.gl/core` as the package. Published loaders use it as a peer dependency so applications can provide one compatible core version.
 
-
 ### Core utility subpaths
 
 The standalone `@loaders.gl/loader-utils` and `@loaders.gl/worker-utils` packages have moved to
@@ -75,6 +74,25 @@ Worker URLs previously pointing into `@loaders.gl/worker-utils` should use the m
 **Node polyfills**
 
 The `@loaders.gl/polyfills` package has moved to the independent `@loaders.gl/core/polyfills` subpath. Install `@loaders.gl/core` and replace side-effect imports of the old package with `import '@loaders.gl/core/polyfills'`. The polyfills subpath does not load the core root entry point or another loaders.gl module. If an application configured file aliases through `@loaders.gl/loader-utils`, configure the polyfills path resolver separately with `setPathPrefix` and `addAliases` from `@loaders.gl/core/polyfills`.
+
+### Tile package consolidation
+
+The v5 tile packages are grouped by runtime dimension. Replace imports and
+dependencies from the removed packages as follows:
+
+| Removed package | New import prefix |
+| --- | --- |
+| `@loaders.gl/mlt` | `@loaders.gl/tiles/mlt` |
+| `@loaders.gl/mvt` | `@loaders.gl/tiles/mvt` |
+| `@loaders.gl/pmtiles` | `@loaders.gl/tiles/pmtiles` |
+| `@loaders.gl/3d-tiles` | `@loaders.gl/tiles-3d/3d-tiles` |
+| `@loaders.gl/i3s` | `@loaders.gl/tiles-3d/i3s` |
+
+`Tileset3D`, `Tile3D`, 3D traversal and spatial helpers, and point-cloud tileset
+APIs move from the `@loaders.gl/tiles` root to `@loaders.gl/tiles-3d`.
+`Tileset2D`, `ImageSet`, and `RasterSet` remain at `@loaders.gl/tiles`.
+Install the parent package (`@loaders.gl/tiles` or `@loaders.gl/tiles-3d`);
+subpaths are import paths, not separate npm packages.
 
 
 **OGC API Tiles matrix discovery**
@@ -244,13 +262,13 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 - `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
 - `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
 
-**@loaders.gl/mlt**
+**@loaders.gl/tiles/mlt**
 
  - `MLTLoader` and `MLTSourceLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
    default. Applications that expect the previous GeoJSON table default must set
    `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
 
-**@loaders.gl/mvt**
+**@loaders.gl/tiles/mvt**
 
  - `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
@@ -308,9 +326,9 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
  - Generic image-source requests no longer accept `bbox`; pass `boundingBox` as two coordinate
    pairs. Protocol-specific `bbox` request parameters remain unchanged.
 
-**@loaders.gl/pmtiles**
+**@loaders.gl/tiles/pmtiles**
 
- - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/mlt`.
+ - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/tiles/mlt`.
  - The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
    for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
 
@@ -491,7 +509,7 @@ Now, in v5:
 import type {SourceLoader} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
 import {WMSSourceLoader} from '@loaders.gl/wms';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
 const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
 const wmsSource = createDataSource(url, [WMSSourceLoader], options);
@@ -584,7 +602,7 @@ This unifies top-level loading behavior:
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
 - `@loaders.gl/core/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
-- `@loaders.gl/zip`/`@loaders.gl/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
+- `@loaders.gl/zip`/`@loaders.gl/tiles-3d/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
 
 **Deprecations**
 
@@ -615,7 +633,7 @@ This unifies top-level loading behavior:
 
 **Node.js v18+**
 
-When using loaders.gl on Node.js your application should import the `@loaders.gl/polyfills` module before calling any loaders.gl functions.
+When using loaders.gl on Node.js your application should import the `@loaders.gl/core/polyfills` module before calling any loaders.gl functions.
 
 **Typed Loaders**
 
@@ -649,7 +667,7 @@ const arrowSchema = deserializeArrowSchema(table.schema);
 
 **Polyfills**
 
-If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` function under Node.js that supported fetching from local files, loaders.gl v4 uses the built-in fetch in Node.js v18+ (which doesn't support fetching from local files), so to fetch from local files, you now need to use `fetchFile()` instead.
+If you were relying on `@loaders.gl/core/polyfills` module to install a global `fetch()` function under Node.js that supported fetching from local files, loaders.gl v4 uses the built-in fetch in Node.js v18+ (which doesn't support fetching from local files), so to fetch from local files, you now need to use `fetchFile()` instead.
 
 ```typescript
 import {fetchFile} from '@loaders.gl/core';
@@ -697,7 +715,7 @@ Loader module changes, in order of estimated impact to applications:
 - `options.tcx.shape` applies the same changes as `options.kml.shape`.
 - `options.gpx.shape: 'binary'` and `options.tcx.shape: 'binary'` have been removed. Use `shape: 'binary-geometry'` instead.
 
-**@loaders.gl/mvt, @loaders.gl/mlt, @loaders.gl/flatgeobuf**
+**@loaders.gl/tiles/mvt, @loaders.gl/tiles/mlt, @loaders.gl/flatgeobuf**
 
 - Geospatial loader shapes now use `geojson-table` for GeoJSON feature table output and `binary-geometry` for binary geometry output.
 - The old `geojson` shape has been removed from `MVTLoader` and `MLTLoader`. Use `geojson-table` instead.
@@ -862,7 +880,7 @@ The experimental ImageLoaders for individual formats introduced in 2.0 have been
 - `ImageBitmapLoader`: reintroduced in v4.4 as the preferred pure `ImageBitmap` loader.
 - `ImageLoader`: deprecated in v4.4 and retained as the broad compatibility loader. If application code needs raw pixels from either loader, load the image and call `getImageData(image)`.
 
-**`@loaders.gl/3d-tiles`**
+**`@loaders.gl/tiles-3d/3d-tiles`**
 
 `Tileset3DLoader` and `Tile3DLoader` are replaced by `Tiles3DLoader`, which supports loading both a 3D tileset file and a tile. Check `loaders.gl/3d-tiles` for loaded data format.
 
@@ -879,8 +897,8 @@ Some general changes:
 
 | Removal            | Replacement                                                            |
 | ------------------ | ---------------------------------------------------------------------- |
-| `TextEncoder`      | Use global `TextEncoder` instead and `@loaders.gl/polyfills` if needed |
-| `TextDecoder`      | Use global `TextDecoder` instead and `@loaders.gl/polyfills` if needed |
+| `TextEncoder`      | Use global `TextEncoder` instead and `@loaders.gl/core/polyfills` if needed |
+| `TextDecoder`      | Use global `TextDecoder` instead and `@loaders.gl/core/polyfills` if needed |
 | `createReadStream` | `fetch().then(resp => resp.body)`                                      |
 | `parseFile`        | `parse`                                                                |
 | `parseFileSync`    | `parseSync`                                                            |
@@ -952,17 +970,17 @@ The foillowing top-level options are deprecated and will be removed in v2.0
 
 A couple of functions have been deprecated and will be removed in v2.0. They now emit console warnings. Start replacing your use of these functions now to remove the console warnings and ensure a smooth future upgrade to v2.0.
 
-Also, Node support now requires installing `@loaders.gl/polyfills` before use.
+Also, Node support now requires installing `@loaders.gl/core/polyfills` before use.
 
 ### @loaders.gl/core
 
-- Removal: Node support for `fetchFile` now requires importing `@loaders.gl/polyfills` before use.
-- Removal: Node support for `TextEncoder`, and `TextDecoder` now requires importing `@loaders.gl/polyfills` before use.
+- Removal: Node support for `fetchFile` now requires importing `@loaders.gl/core/polyfills` before use.
+- Removal: Node support for `TextEncoder`, and `TextDecoder` now requires importing `@loaders.gl/core/polyfills` before use.
 - Deprecation: `TextEncoder` and `TextDecoder` will not be exported from `loaders.gl/core` in v2.0.
 
 ### @loaders.gl/images
 
-- Removal: Node support for images now requires importing `@loaders.gl/polyfills` before use.
+- Removal: Node support for images now requires importing `@loaders.gl/core/polyfills` before use.
 
 ### @loaders.gl/gltf
 

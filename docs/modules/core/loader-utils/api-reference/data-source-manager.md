@@ -57,7 +57,7 @@ Most applications should create runtime sources with `createDataSource()` from `
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
 const dataSourceManager = new DataSourceManager();
 
@@ -262,8 +262,8 @@ A `SourceLoader` is metadata plus a `createDataSource()` method. The manager doe
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {MVTSourceLoader} from '@loaders.gl/mvt';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
 const dataSourceManager = new DataSourceManager();
 

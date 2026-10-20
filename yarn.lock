@@ -16,12 +16,11 @@ __metadata:
     "@deck.gl/mesh-layers": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
     "@deck.gl/widgets": "npm:^9.4.0"
-    "@loaders.gl/3d-tiles": "workspace:*"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/gltf": "workspace:*"
-    "@loaders.gl/i3s": "workspace:*"
     "@loaders.gl/services": "workspace:*"
+    "@loaders.gl/tiles-3d": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
@@ -5108,34 +5107,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/3d-tiles@npm:^5.0.0-alpha.0, @loaders.gl/3d-tiles@workspace:modules/3d-tiles":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/3d-tiles@workspace:modules/3d-tiles"
+"@loaders.gl/3d-tiles@npm:^4.4.3":
+  version: 4.5.4
+  resolution: "@loaders.gl/3d-tiles@npm:4.5.4"
   dependencies:
-    "@loaders.gl/draco": "npm:5.0.0-alpha.12"
-    "@loaders.gl/gltf": "npm:5.0.0-alpha.12"
-    "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
-    "@loaders.gl/zip": "npm:5.0.0-alpha.12"
-    "@math.gl/core": "npm:5.0.0-alpha.18"
-    "@math.gl/dggs": "npm:5.0.0-alpha.18"
-    "@math.gl/geometry-utils": "npm:5.0.0-alpha.18"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.18"
-    zod: "npm:^4.1.12"
+    "@loaders.gl/compression": "npm:4.5.4"
+    "@loaders.gl/crypto": "npm:4.5.4"
+    "@loaders.gl/draco": "npm:4.5.4"
+    "@loaders.gl/gltf": "npm:4.5.4"
+    "@loaders.gl/images": "npm:4.5.4"
+    "@loaders.gl/loader-utils": "npm:4.5.4"
+    "@loaders.gl/math": "npm:4.5.4"
+    "@loaders.gl/tiles": "npm:4.5.4"
+    "@loaders.gl/zip": "npm:4.5.4"
+    "@math.gl/core": "npm:^4.1.0"
+    "@math.gl/culling": "npm:^4.1.0"
+    "@math.gl/geospatial": "npm:^4.1.0"
+    "@probe.gl/log": "npm:^4.1.1"
+    long: "npm:^5.2.1"
   peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
+    "@loaders.gl/core": ~4.5.0
+  checksum: 10c0/d10991f8aa51251fcc21364ca7b722628ce89acd812b4a850b32eab2019bcb278f22d172bc7933ed306e948a8d076415e46375786d209e497cd3de77e3001317
+  languageName: node
+  linkType: hard
 
 "@loaders.gl/arcgis@workspace:*, @loaders.gl/arcgis@workspace:modules/arcgis":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arcgis@workspace:modules/arcgis"
   dependencies:
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
-    "@loaders.gl/i3s": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/mvt": "npm:5.0.0-alpha.12"
     "@loaders.gl/raster": "npm:5.0.0-alpha.12"
+    "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
+    "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.12"
     lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5308,6 +5312,7 @@ __metadata:
     "@loaders.gl/compression": "npm:5.0.0-alpha.12"
     "@loaders.gl/geoarrow": "npm:5.0.0-alpha.12"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
+    "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.12"
     "@loaders.gl/zip": "npm:5.0.0-alpha.12"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
@@ -5421,7 +5426,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/gis@npm:^4.4.3":
+"@loaders.gl/gis@npm:4.5.4, @loaders.gl/gis@npm:^4.4.3":
   version: 4.5.4
   resolution: "@loaders.gl/gis@npm:4.5.4"
   dependencies:
@@ -5460,27 +5465,6 @@ __metadata:
   dependencies:
     apache-arrow: "npm:>= 17.0.0"
     fast-xml-parser: "npm:^5.5.3"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
-
-"@loaders.gl/i3s@npm:^5.0.0-alpha.0, @loaders.gl/i3s@workspace:modules/i3s":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/i3s@workspace:modules/i3s"
-  dependencies:
-    "@loaders.gl/compression": "npm:5.0.0-alpha.12"
-    "@loaders.gl/draco": "npm:5.0.0-alpha.12"
-    "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/textures": "npm:5.0.0-alpha.12"
-    "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
-    "@loaders.gl/zip": "npm:5.0.0-alpha.12"
-    "@math.gl/core": "npm:5.0.0-alpha.18"
-    "@math.gl/crs": "npm:5.0.0-alpha.18"
-    "@math.gl/culling": "npm:5.0.0-alpha.18"
-    "@math.gl/geometry-utils": "npm:5.0.0-alpha.18"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.18"
-    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5553,35 +5537,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/mlt@npm:5.0.0-alpha.12, @loaders.gl/mlt@workspace:*, @loaders.gl/mlt@workspace:modules/mlt":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/mlt@workspace:modules/mlt"
+"@loaders.gl/math@npm:4.5.4":
+  version: 4.5.4
+  resolution: "@loaders.gl/math@npm:4.5.4"
   dependencies:
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
-    "@maplibre/mlt": "npm:^1.1.6"
-    apache-arrow: "npm:>= 17.0.0"
+    "@math.gl/core": "npm:^4.1.0"
   peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
+    "@loaders.gl/core": ~4.5.0
+  checksum: 10c0/bddf8c99e2aaa016181c442e72a937be93a8d4313daf08d8c77b87e6ad1294e4807f0738ed18a24b26634dc48f86390aff2f7a60f2888f01b6e903218aee1e63
+  languageName: node
+  linkType: hard
 
-"@loaders.gl/mvt@npm:^5.0.0-alpha.0, @loaders.gl/mvt@workspace:modules/mvt":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/mvt@workspace:modules/mvt"
+"@loaders.gl/mvt@npm:^4.4.3":
+  version: 4.5.4
+  resolution: "@loaders.gl/mvt@npm:4.5.4"
   dependencies:
-    "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
-    "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@math.gl/polygon": "npm:5.0.0-alpha.18"
+    "@loaders.gl/gis": "npm:4.5.4"
+    "@loaders.gl/images": "npm:4.5.4"
+    "@loaders.gl/loader-utils": "npm:4.5.4"
+    "@loaders.gl/schema": "npm:4.5.4"
+    "@loaders.gl/schema-utils": "npm:4.5.4"
+    "@math.gl/polygon": "npm:^4.1.0"
     "@probe.gl/stats": "npm:^4.1.1"
-    "@types/pbf": "npm:^3.0.2"
-    apache-arrow: "npm:^21.2.0"
     pbf: "npm:^3.2.1"
     zod: "npm:^4.1.12"
   peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
+    "@loaders.gl/core": ~4.5.0
+  checksum: 10c0/7c9f85e1ec92594cdad54be65a7ff53a7aa78652ceb166c448c85e04d9960e1d1f307f1e74d3502fc1c9d753740d2343f71195baf914fe49f4802dc93e6a1020
+  languageName: node
+  linkType: hard
 
 "@loaders.gl/obj@npm:^5.0.0-alpha.0, @loaders.gl/obj@workspace:modules/obj":
   version: 0.0.0-use.local
@@ -5635,20 +5619,6 @@ __metadata:
   dependencies:
     "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
     apache-arrow: "npm:>= 17.0.0"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
-
-"@loaders.gl/pmtiles@workspace:*, @loaders.gl/pmtiles@workspace:modules/pmtiles":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/pmtiles@workspace:modules/pmtiles"
-  dependencies:
-    "@loaders.gl/compression": "npm:5.0.0-alpha.12"
-    "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/mlt": "npm:5.0.0-alpha.12"
-    "@loaders.gl/mvt": "npm:5.0.0-alpha.12"
-    pmtiles: "npm:^4.5.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5866,17 +5836,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tile-converter@workspace:apps/tile-converter"
   dependencies:
-    "@loaders.gl/3d-tiles": "npm:5.0.0-alpha.12"
     "@loaders.gl/compression": "npm:5.0.0-alpha.12"
     "@loaders.gl/copc": "npm:5.0.0-alpha.12"
+    "@loaders.gl/core": "workspace:*"
     "@loaders.gl/crypto": "npm:5.0.0-alpha.12"
     "@loaders.gl/draco": "npm:5.0.0-alpha.12"
     "@loaders.gl/gltf": "npm:5.0.0-alpha.12"
-    "@loaders.gl/i3s": "npm:5.0.0-alpha.12"
     "@loaders.gl/images": "npm:5.0.0-alpha.12"
     "@loaders.gl/potree": "npm:5.0.0-alpha.12"
     "@loaders.gl/textures": "npm:5.0.0-alpha.12"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.12"
+    "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.12"
     "@loaders.gl/zip": "npm:5.0.0-alpha.12"
     "@math.gl/core": "npm:5.0.0-alpha.18"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
@@ -5902,19 +5872,50 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/tiles@npm:^5.0.0-alpha.0, @loaders.gl/tiles@workspace:modules/tiles":
+"@loaders.gl/tiles-3d@npm:^5.0.0-alpha.0, @loaders.gl/tiles-3d@workspace:modules/tiles-3d":
   version: 0.0.0-use.local
-  resolution: "@loaders.gl/tiles@workspace:modules/tiles"
+  resolution: "@loaders.gl/tiles-3d@workspace:modules/tiles-3d"
   dependencies:
     "@deck.gl/core": "npm:^9.4.0"
+    "@loaders.gl/compression": "npm:5.0.0-alpha.12"
+    "@loaders.gl/draco": "npm:5.0.0-alpha.12"
+    "@loaders.gl/gltf": "npm:5.0.0-alpha.12"
+    "@loaders.gl/images": "npm:5.0.0-alpha.12"
+    "@loaders.gl/textures": "npm:5.0.0-alpha.12"
+    "@loaders.gl/zip": "npm:5.0.0-alpha.12"
     "@math.gl/core": "npm:5.0.0-alpha.18"
     "@math.gl/crs": "npm:5.0.0-alpha.18"
     "@math.gl/culling": "npm:5.0.0-alpha.18"
     "@math.gl/dggs": "npm:5.0.0-alpha.18"
     "@math.gl/geoid": "npm:5.0.0-alpha.18"
+    "@math.gl/geometry-utils": "npm:5.0.0-alpha.18"
     "@math.gl/geospatial": "npm:5.0.0-alpha.18"
     "@math.gl/projection": "npm:5.0.0-alpha.18"
     "@probe.gl/stats": "npm:^4.1.1"
+    zod: "npm:^4.1.12"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+  languageName: unknown
+  linkType: soft
+
+"@loaders.gl/tiles@npm:^5.0.0-alpha.0, @loaders.gl/tiles@workspace:modules/tiles":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/tiles@workspace:modules/tiles"
+  dependencies:
+    "@deck.gl/core": "npm:^9.4.0"
+    "@loaders.gl/arrow": "npm:5.0.0-alpha.12"
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
+    "@loaders.gl/compression": "npm:5.0.0-alpha.12"
+    "@loaders.gl/images": "npm:5.0.0-alpha.12"
+    "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.12"
+    "@maplibre/mlt": "npm:^1.1.6"
+    "@math.gl/polygon": "npm:5.0.0-alpha.18"
+    "@probe.gl/stats": "npm:^4.1.1"
+    "@types/pbf": "npm:^3.0.2"
+    apache-arrow: "npm:^21.2.0"
+    pbf: "npm:^3.2.1"
+    pmtiles: "npm:^4.5.0"
+    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -6472,6 +6473,16 @@ __metadata:
     "@math.gl/culling": "npm:5.0.0-alpha.18"
     "@math.gl/types": "npm:5.0.0-alpha.18"
   checksum: 10c0/5dc54ffaed375d85026224a43332e13e43b41695683044828798398401733e4233339a5fc7f802247e6031144b594dcf70c6b5cb653a6b3940f4d5584eff9613
+  languageName: node
+  linkType: hard
+
+"@math.gl/geospatial@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@math.gl/geospatial@npm:4.1.0"
+  dependencies:
+    "@math.gl/core": "npm:4.1.0"
+    "@math.gl/types": "npm:4.1.0"
+  checksum: 10c0/fb7c24dc82dbc32e9982782cda256b242e1a42eb8db69f28fff5653e459d068b44af5dc5eab1da45e43f3502ee4cd741033b656b2adbc7dfc687702a25db7ec2
   languageName: node
   linkType: hard
 
@@ -20899,7 +20910,7 @@ __metadata:
     "@deck.gl/mesh-layers": "npm:^9.4.0"
     "@esri/react-arcgis": "npm:^5.2.0"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/i3s": "workspace:*"
+    "@loaders.gl/tiles-3d": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
@@ -20922,7 +20933,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^5.15.2"
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/i3s": "workspace:*"
+    "@loaders.gl/tiles-3d": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     deck.gl: "npm:^9.4.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
@@ -20945,7 +20956,7 @@ __metadata:
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/widgets": "npm:^9.4.0"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/i3s": "workspace:*"
+    "@loaders.gl/tiles-3d": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
     maplibre-gl: "npm:^3.6.2"
@@ -20975,7 +20986,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^5.15.2"
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/i3s": "workspace:*"
+    "@loaders.gl/tiles-3d": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
@@ -21012,13 +21023,12 @@ __metadata:
   dependencies:
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
-    "@loaders.gl/3d-tiles": "workspace:*"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/draco": "workspace:*"
-    "@loaders.gl/i3s": "workspace:*"
     "@loaders.gl/tile-converter": "workspace:*"
     "@loaders.gl/tiles": "workspace:*"
+    "@loaders.gl/tiles-3d": "workspace:*"
     "@math.gl/geospatial": "npm:5.0.0-alpha.18"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
@@ -23193,6 +23203,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "loaders.gl@workspace:."
   dependencies:
+    "@loaders.gl/tiles-3d": "npm:^5.0.0-alpha.0"
     "@probe.gl/bench": "npm:^4.1.1"
     "@probe.gl/env": "npm:^4.1.1"
     "@probe.gl/test-utils": "npm:^4.1.1"
@@ -23321,6 +23332,13 @@ __metadata:
   version: 3.2.0
   resolution: "long@npm:3.2.0"
   checksum: 10c0/03884ad097403bda356228899c8397d7e4e2cd26489983034faa8e52ab9f18df4539de548571ad2f574ecf78454fc377bbcd2ba8ba76d567bf973345aefcbdb2
+  languageName: node
+  linkType: hard
+
+"long@npm:^5.2.1":
+  version: 5.3.2
+  resolution: "long@npm:5.3.2"
+  checksum: 10c0/7130fe1cbce2dca06734b35b70d380ca3f70271c7f8852c922a7c62c86c4e35f0c39290565eca7133c625908d40e126ac57c02b1b1a4636b9457d77e1e60b981
   languageName: node
   linkType: hard
 
@@ -28300,7 +28318,6 @@ __metadata:
     "@loaders.gl/excel": "workspace:*"
     "@loaders.gl/flatgeobuf": "workspace:*"
     "@loaders.gl/geopackage": "workspace:*"
-    "@loaders.gl/i3s": "workspace:*"
     "@loaders.gl/json": "workspace:*"
     "@loaders.gl/las": "workspace:*"
     "@loaders.gl/obj": "workspace:*"
@@ -28314,6 +28331,7 @@ __metadata:
     "@loaders.gl/services": "workspace:*"
     "@loaders.gl/splats": "workspace:*"
     "@loaders.gl/stac": "workspace:*"
+    "@loaders.gl/tiles-3d": "workspace:*"
     "@loaders.gl/traces": "workspace:*"
     "@loaders.gl/xml": "workspace:*"
     "@luma.gl/constants": "npm:^9.4.0"
@@ -32055,10 +32073,8 @@ __metadata:
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/json": "workspace:*"
-    "@loaders.gl/mlt": "workspace:*"
-    "@loaders.gl/mvt": "workspace:*"
-    "@loaders.gl/pmtiles": "workspace:*"
     "@loaders.gl/raster": "workspace:*"
+    "@loaders.gl/tiles": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"

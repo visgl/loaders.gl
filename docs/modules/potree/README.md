@@ -99,7 +99,7 @@ Potree can also be used through the `DataSource` path with the lightweight point
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {PointCloudTileset} from '@loaders.gl/tiles';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 import {PotreeSourceLoader} from '@loaders.gl/potree';
 
 const dataSource = createDataSource(POTREE_URL, [PotreeSourceLoader], {

@@ -7,7 +7,7 @@ import {BROWSER_ERROR_MESSAGE} from '../../src/v4/constants';
 import {cleanUpPath} from '../utils/file-utils';
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0';
-const SLPK_URL = './modules/i3s/test/data/DA12_subset.slpk';
+const SLPK_URL = './modules/tiles-3d/test/i3s/data/DA12_subset.slpk';
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 setLoaderOptions({
   _worker: 'test'

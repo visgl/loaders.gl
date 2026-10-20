@@ -60,7 +60,7 @@ bridge style metadata into other runtimes such as deck.gl tile workflows.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {MapStyleLoader} from '@loaders.gl/mvt';
+import {MapStyleLoader} from '@loaders.gl/tiles/mvt';
 
 const style = await load('https://example.com/styles/base/style.json', MapStyleLoader);
 ```
@@ -69,7 +69,7 @@ With explicit URL resolution options:
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {MapStyleLoader} from '@loaders.gl/mvt';
+import {MapStyleLoader} from '@loaders.gl/tiles/mvt';
 
 const style = await parse(styleJsonText, MapStyleLoader, {
   mapStyle: {
@@ -83,7 +83,7 @@ const style = await parse(styleJsonText, MapStyleLoader, {
 Direct style resolution without the loader:
 
 ```typescript
-import {resolveMapStyle} from '@loaders.gl/mvt';
+import {resolveMapStyle} from '@loaders.gl/tiles/mvt';
 
 const style = await resolveMapStyle('https://example.com/styles/base/style.json');
 ```

@@ -20,16 +20,22 @@ export class NodeFileFacade implements ReadableFile, WritableFile {
       return new globalThis.loaders.NodeFile(url, flags, mode);
     }
     if (isBrowser) {
-      throw new Error('Can\'t instantiate NodeFile in browser.');
+      throw new Error("Can't instantiate NodeFile in browser.");
     }
-    throw new Error('Can\'t instantiate NodeFile. Make sure to import @loaders.gl/core/polyfills first.');
+    throw new Error(
+      "Can't instantiate NodeFile. Make sure to import @loaders.gl/core/polyfills first."
+    );
   }
   /** Read data */
   async read(start?: number | bigint, length?: number): Promise<ArrayBuffer> {
     throw NOT_IMPLEMENTED;
   }
   /** Write to file. The number of bytes written will be returned */
-  async write(arrayBuffer: ArrayBuffer, offset?: number | bigint, length?: number | bigint): Promise<number> {
+  async write(
+    arrayBuffer: ArrayBuffer,
+    offset?: number | bigint,
+    length?: number | bigint
+  ): Promise<number> {
     throw NOT_IMPLEMENTED;
   }
   /** Get information about file */

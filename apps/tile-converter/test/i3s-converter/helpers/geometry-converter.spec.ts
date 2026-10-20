@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {getImageData} from '@loaders.gl/images';

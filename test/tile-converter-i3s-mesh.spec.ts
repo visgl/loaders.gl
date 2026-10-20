@@ -4,11 +4,11 @@
 
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {GLTFScenegraph, GLTFWriter, type GLTFPostprocessed} from '@loaders.gl/gltf';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {parseSLPKArchive} from '@loaders.gl/i3s';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {Matrix4} from '@math.gl/core';
 import {
   convertTileset,

@@ -19,7 +19,7 @@ import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
   links={[
     {label: '3D Tiles loader', to: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader'},
     {label: 'Authentication guide', to: '/docs/developer-guide/authentication'},
-    {label: 'Tiles source', to: '/docs/modules/tiles/api-reference/tiles-3d-source'}
+    {label: 'Tiles source', to: '/docs/modules/tiles-3d/api-reference/tiles-3d-source'}
   ]}
 />
 
@@ -53,7 +53,7 @@ returned by ion to the resolved asset origin. Nested tiles, external tilesets, a
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const tileset = await load(
   'https://assets.cesium.com/123/tileset.json',

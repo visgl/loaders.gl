@@ -77,7 +77,7 @@ Load a tileset file.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 ```
@@ -87,7 +87,7 @@ point-cloud tile, the nested Draco options control the returned representation:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 const tileUrl = 'https://assets.ion.cesium.com/43978/1.pnts';
 const tile = await load(tileUrl, Tiles3DLoader, {draco: {shape: 'mesh'}});
 ```
@@ -105,8 +105,8 @@ const tile = await load(tileUrl, Tiles3DLoader, {
 Load a tileset and dynamically load/unload tiles based on viewport with helper class `Tileset3D` (`@loaders.gl/tiles`)
 
 ```typescript
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {WebMercatorViewport} from '@deck.gl/core';
 
 const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
@@ -139,13 +139,13 @@ const visibleTiles = tileset.tiles.filter((tile) => tile.selected);
 Applications can use the same Zod schema directly:
 
 ```typescript
-import {Tiles3DTilesetSchema} from '@loaders.gl/3d-tiles/tileset-zod-schema';
+import {Tiles3DTilesetSchema} from '@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema';
 
 const validatedTileset = Tiles3DTilesetSchema.parse(tilesetJson);
 ```
 
 The equivalent generated JSON Schema is published as
-`@loaders.gl/3d-tiles/tileset.schema.json` for editors, build tools, and non-TypeScript validators.
+`@loaders.gl/tiles-3d/3d-tiles/tileset.schema.json` for editors, build tools, and non-TypeScript validators.
 Both schemas enforce the same structural constraints, including that a tileset cannot define both
 `schema` and `schemaUri`.
 
@@ -179,7 +179,7 @@ recursively and accepts replacements through the flat `core.subloaders` map.
 
 ```typescript
 import {preload, parse} from '@loaders.gl/core';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const loader = await preload(Tiles3DLoader, {
   core: {subloaders: {GLTFLoader: CustomGLTFLoader}},

@@ -53,7 +53,7 @@ The `MVTSourceLoader` dynamically loads tiles, typically from big pre-tiled hier
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {MVTSourceLoader} from '@loaders.gl/mvt';
+import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 
 const source = createDataSource(url, [MVTSourceLoader]);
 const tile = await source.getTile(...);

@@ -62,14 +62,14 @@ Loader for the [MapLibre Tile (MLT)](/docs/modules/mlt/formats/mlt) geospatial t
 ## Installation
 
 ```bash
-npm install @loaders.gl/mlt
+npm install @loaders.gl/tiles
 npm install @loaders.gl/core
 ```
 
 ## Usage
 
 ```typescript
-import {MLTLoader} from '@loaders.gl/mlt';
+import {MLTLoader} from '@loaders.gl/tiles/mlt';
 import {load} from '@loaders.gl/core';
 
 const tileFeatures = await load(url, MLTLoader);
@@ -81,7 +81,7 @@ By default, `MLTLoader` returns an Arrow table with a WKB-compatible GeoArrow ge
 local tile coordinates in `[0, 1]` space:
 
 ```typescript
-import {MLTLoader} from '@loaders.gl/mlt';
+import {MLTLoader} from '@loaders.gl/tiles/mlt';
 import {load} from '@loaders.gl/core';
 
 const arrowTable = await load(url, MLTLoader);
@@ -92,7 +92,7 @@ const arrowTable = await load(url, MLTLoader);
 Set `coordinates: 'wgs84'` and provide the tile index to get longitude / latitude coordinates:
 
 ```typescript
-import {MLTLoader} from '@loaders.gl/mlt';
+import {MLTLoader} from '@loaders.gl/tiles/mlt';
 import {load} from '@loaders.gl/core';
 
 const geoJSONfeatures = await load(url, MLTLoader, {

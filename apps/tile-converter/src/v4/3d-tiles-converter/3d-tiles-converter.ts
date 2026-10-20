@@ -4,13 +4,13 @@ import type {
   NodeReference,
   I3STilesetHeader,
   I3STileAttributes
-} from '@loaders.gl/i3s';
-import type {Tile3DBoundingVolume, Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
+} from '@loaders.gl/tiles-3d/i3s';
+import type {Tile3DBoundingVolume, Tiles3DTileJSON} from '@loaders.gl/tiles-3d/3d-tiles';
 
 import {join} from 'path';
 import process from 'process';
 import {load, isBrowser} from '@loaders.gl/core';
-import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
+import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s';
 import {Geoid} from '@math.gl/geoid';
 
 import {validateI3SConversionSpatialReference} from './helpers/validate-i3s-spatial-reference';
@@ -27,9 +27,9 @@ import {
   Tiles3DContentConverter,
   type I3SAttributesData
 } from './helpers/3d-tiles-content-converter';
-import {I3STileHeader} from '@loaders.gl/i3s/src/types';
+import {I3STileHeader} from '@loaders.gl/tiles-3d/i3s/src/types';
 import {getNodeCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
-import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
+import {I3SLoaderOptions} from '@loaders.gl/tiles-3d/i3s/src/i3s-loader';
 import type {ZipFileSystem} from '@loaders.gl/zip';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
 import {Progress} from '../i3s-converter/helpers/progress';
@@ -60,7 +60,7 @@ export default class Tiles3DConverter {
     i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false},
     // We need to load local fs workers because nodejs can't load workers from the Internet
     'i3s-content': {
-      workerUrl: './modules/i3s/dist/i3s-content-worker-node.js'
+      workerUrl: './modules/tiles-3d/dist/i3s-content-worker-node.js'
     }
   };
   conversionDump: ConversionDump;

@@ -1,5 +1,5 @@
-import {Tiles3DArchiveSource, Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {I3SLoader, SLPKSource} from '@loaders.gl/i3s';
+import {Tiles3DArchiveSource, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {I3SLoader, SLPKSource} from '@loaders.gl/tiles-3d/i3s';
 
 /** Supported archive selection; auto detects the file name or URL pathname. */
 export type ArchiveFormat = 'auto' | 'slpk' | '3tz';

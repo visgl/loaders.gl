@@ -13,7 +13,7 @@ table. It is a separate alternative to [`TableTileSourceLoader`](./table-tile-so
 input and output stay in Arrow, and attributes do not pass through GeoJSON objects.
 
 ```typescript
-import {ArrowTableTileSourceLoaderWithParser} from '@loaders.gl/mvt/arrow-table-tile-source-loader';
+import {ArrowTableTileSourceLoaderWithParser} from '@loaders.gl/tiles/mvt/arrow-table-tile-source-loader';
 
 // table is a loaders.gl ArrowTable or an Apache Arrow Table (or a promise of either).
 const source = ArrowTableTileSourceLoaderWithParser.createDataSource(table, {
@@ -31,7 +31,7 @@ does not select a parser or override its output options. Configure the parser to
 ```typescript
 import {load} from '@loaders.gl/core';
 import {GeoJSONLoader} from '@loaders.gl/json';
-import {ArrowTableTileSourceLoader} from '@loaders.gl/mvt';
+import {ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 
 const source = await load('/features.geojson', ArrowTableTileSourceLoader, {
   core: {loaders: [GeoJSONLoader]}, // Arrow-primary in loaders.gl 5
@@ -43,7 +43,7 @@ const tile = await source.getTile({z: 0, x: 0, y: 0});
 Source selection must be explicit: this source has no file extension or URL autodetection.
 The package-root export is lightweight metadata: async `load` preloads its implementation.
 Synchronous `createDataSource` calls require `ArrowTableTileSourceLoaderWithParser` from the explicit
-`@loaders.gl/mvt/arrow-table-tile-source-loader` subpath. That subpath also exports the
+`@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` subpath. That subpath also exports the
 `ArrowTableVectorTileSource` class. Direct construction requires an injected core API for URLs/blobs;
 in-memory tables do not require `@loaders.gl/core`.
 

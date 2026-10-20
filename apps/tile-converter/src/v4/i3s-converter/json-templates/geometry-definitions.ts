@@ -4,7 +4,7 @@
 
 import type {BuilderInput} from '../../lib/utils/builder-input';
 
-import type {SceneLayer3D} from '@loaders.gl/i3s';
+import type {SceneLayer3D} from '@loaders.gl/tiles-3d/i3s';
 /** Legacy geometry layout choices. */
 export type GeometryConfiguration = {
   /** Whether texture coordinates are present. */

@@ -1,4 +1,4 @@
-This is a standalone web app using `@loaders.gl/i3s`.
+This is a standalone web app using `@loaders.gl/tiles-3d/i3s`.
 
 ### Usage
 

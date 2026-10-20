@@ -4,7 +4,7 @@ import {
   I3SMaterialDefinition,
   MaterialDefinitionInfo,
   TextureDefinitionInfo
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 import {Matrix4, Vector3} from '@math.gl/core';
 
 /** Converted resources for specific node */

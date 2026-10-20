@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/tiles",
   "version": "5.0.0-alpha.12",
-  "description": "Common components for different tiles loaders.",
+  "description": "2D tilesets, MLT, MVT, and PMTiles loaders",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -29,15 +29,73 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./point-cloud-tile-source-loader": {
-      "types": "./dist/point-cloud-tile-source-loader.d.ts",
-      "import": "./dist/point-cloud-tile-source-loader.js",
-      "require": "./dist/point-cloud-tile-source-loader.cjs"
+    "./mlt": {
+      "types": "./dist/mlt/index.d.ts",
+      "import": "./dist/mlt/index.js",
+      "require": "./dist/mlt/index.cjs"
     },
-    "./point-cloud-tile-source": {
-      "types": "./dist/point-cloud-tile-source.d.ts",
-      "import": "./dist/point-cloud-tile-source.js",
-      "require": "./dist/point-cloud-tile-source.cjs"
+    "./mlt/unbundled": {
+      "types": "./dist/mlt/unbundled.d.ts",
+      "import": "./dist/mlt/unbundled.js"
+    },
+    "./mlt/bundled": {
+      "types": "./dist/mlt/bundled.d.ts",
+      "import": "./dist/mlt/bundled.js"
+    },
+    "./mvt": {
+      "types": "./dist/mvt/index.d.ts",
+      "import": "./dist/mvt/index.js",
+      "require": "./dist/mvt/index.cjs"
+    },
+    "./mvt/arrow-table-tile-source-loader": {
+      "types": "./dist/mvt/arrow-table-tile-source-loader.d.ts",
+      "import": "./dist/mvt/arrow-table-tile-source-loader.js",
+      "require": "./dist/mvt/arrow-table-tile-source-loader.cjs"
+    },
+    "./mvt/tilejson-zod-schema": {
+      "types": "./dist/mvt/tilejson-zod-schema.d.ts",
+      "import": "./dist/mvt/tilejson-zod-schema.js",
+      "require": "./dist/mvt/tilejson-zod-schema.cjs"
+    },
+    "./mvt/unbundled": {
+      "types": "./dist/mvt/unbundled.d.ts",
+      "import": "./dist/mvt/unbundled.js"
+    },
+    "./mvt/mvt-geojson-loader": {
+      "types": "./dist/mvt/mvt-geojson-loader.d.ts",
+      "import": "./dist/mvt/mvt-geojson-loader.js",
+      "require": "./dist/mvt/mvt-geojson-loader.cjs"
+    },
+    "./mvt/bundled": {
+      "types": "./dist/mvt/bundled.d.ts",
+      "import": "./dist/mvt/bundled.js"
+    },
+    "./mvt/mvt-worker.js": {
+      "import": "./dist/mvt-worker.js"
+    },
+    "./mvt/tilejson.schema.json": "./dist/mvt/tilejson.schema.json",
+    "./pmtiles": {
+      "types": "./dist/pmtiles/index.d.ts",
+      "import": "./dist/pmtiles/index.js",
+      "require": "./dist/pmtiles/index.cjs"
+    },
+    "./pmtiles/unbundled": {
+      "types": "./dist/pmtiles/unbundled.d.ts",
+      "import": "./dist/pmtiles/unbundled.js"
+    },
+    "./pmtiles/bundled": {
+      "types": "./dist/pmtiles/bundled.d.ts",
+      "import": "./dist/pmtiles/bundled.js"
+    },
+    "./pmtiles/geoarrow": {
+      "types": "./dist/pmtiles/geoarrow.d.ts",
+      "import": "./dist/pmtiles/geoarrow.js",
+      "require": "./dist/pmtiles/geoarrow.cjs"
+    },
+    "./pmtiles/raster": {
+      "types": "./dist/pmtiles/raster.d.ts",
+      "import": "./dist/pmtiles/raster.js",
+      "require": "./dist/pmtiles/raster.cjs"
     }
   },
   "sideEffects": false,
@@ -47,23 +105,38 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-cjs-entrypoints && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run mlt-pre-build && npm run mvt-pre-build && npm run pmtiles-pre-build && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-cjs-entrypoints": "esbuild dist/index.js dist/point-cloud-tile-source.js dist/point-cloud-tile-source-loader.js --outdir=dist --out-extension:.js=.cjs --bundle --format=cjs --platform=node --target=node22 --sourcemap --external:@loaders.gl/* --external:@math.gl/*"
+    "mlt-pre-build": "npx esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=cjs --outfile=src/mlt/libs/mlt-decoder.cjs && node -e \"const fs=require('fs'); const file='src/mlt/libs/mlt-decoder.cjs'; const header='// SPDX-License-Identifier: MIT\\n// Generated from @maplibre/mlt (MIT) for loaders.gl browser bundling.\\n// Source: https://github.com/maplibre/mlt\\n\\n'; const body=fs.readFileSync(file,'utf8'); if (!body.startsWith('// SPDX-License-Identifier: MIT')) { fs.writeFileSync(file, header + body); }\"",
+    "mvt-pre-build": "npm run mvt-generate-json-schema && npm run mvt-build-worker && npm run mvt-build-worker-node && npm run mvt-build-worker --env.dev && npm run mvt-build-bundle && npm run mvt-build-bundle-dev",
+    "mvt-generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/mvt/tilejson-zod-schema.js --export TileJSONMetadataSchema --output ./dist/mvt/tilejson.schema.json --id https://unpkg.com/@loaders.gl/tiles/mvt/tilejson.schema.json --title 'loaders.gl TileJSON and Tilestats metadata'",
+    "mvt-build-bundle": "node ../../scripts/build-codec-bundle.mjs ./mvt/bundle.ts --output=dist/mvt/dist.min.js",
+    "mvt-build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./mvt/bundle.ts --env=dev --output=dist/mvt/dist.dev.js",
+    "mvt-build-worker-node": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker-node.ts --outfile=dist/mvt-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "mvt-build-worker": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "pmtiles-pre-build": "npm run pmtiles-build-bundle && npm run pmtiles-build-bundle-dev",
+    "pmtiles-build-bundle": "node ../../scripts/build-codec-bundle.mjs ./pmtiles/bundle.ts --output=dist/pmtiles/dist.min.js",
+    "pmtiles-build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./pmtiles/bundle.ts --env=dev --output=dist/pmtiles/dist.dev.js",
+    "build-worker-mvt": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@math.gl/core": "5.0.0-alpha.18",
-    "@math.gl/crs": "5.0.0-alpha.18",
-    "@math.gl/culling": "5.0.0-alpha.18",
-    "@math.gl/dggs": "5.0.0-alpha.18",
-    "@math.gl/geoid": "5.0.0-alpha.18",
-    "@math.gl/geospatial": "5.0.0-alpha.18",
-    "@math.gl/projection": "5.0.0-alpha.18",
-    "@probe.gl/stats": "^4.1.1"
+    "@loaders.gl/arrow": "5.0.0-alpha.12",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
+    "@loaders.gl/compression": "5.0.0-alpha.12",
+    "@loaders.gl/images": "5.0.0-alpha.12",
+    "@loaders.gl/tiles-3d": "5.0.0-alpha.12",
+    "@maplibre/mlt": "^1.1.6",
+    "@math.gl/polygon": "5.0.0-alpha.18",
+    "@probe.gl/stats": "^4.1.1",
+    "apache-arrow": "^21.2.0",
+    "pbf": "^3.2.1",
+    "pmtiles": "^4.5.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@deck.gl/core": "^9.4.0"
+    "@deck.gl/core": "^9.4.0",
+    "@types/pbf": "^3.0.2"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

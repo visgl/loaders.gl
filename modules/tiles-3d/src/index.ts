@@ -1,0 +1,135 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+export type {Tileset3DProps} from './tileset-3d/common/tileset-3d';
+export type {FoveatedInterpolationCallback} from './tileset-3d/helpers/tiles-3d-request-priority';
+export {Tileset3D} from './tileset-3d/common/tileset-3d';
+export {getTileset3DTraversalSnapshot} from './tileset-3d/common/tileset-observability';
+export type {Tileset3DTraversalSnapshot} from './tileset-3d/common/tileset-observability';
+export {traverseTilesetContents} from './tileset-3d/common/tileset-content-traversal';
+export type {
+  TilesetContentTraversalItem,
+  TraverseTilesetContentsOptions
+} from './tileset-3d/common/tileset-content-traversal';
+export type {
+  TileContentLoadResult,
+  TileChildrenLoadResult,
+  TilesetContentFormats,
+  TilesetJSON,
+  TilesetSourceInput,
+  TilesetSourceMetadata,
+  TilesetSourceRequest,
+  TilesetSourceResolver,
+  Tileset3DSource,
+  TilesetSourceViewState
+} from './tileset-3d/common/tileset-source';
+export {isTileset3DSource} from './tileset-3d/common/tileset-source';
+export type {IndexedArchiveTilesetSourceOptions} from './tileset-3d/common/indexed-archive-tileset-source';
+export {IndexedArchiveTilesetSource} from './tileset-3d/common/indexed-archive-tileset-source';
+export {Tile3D} from './tileset-3d/common/tile-3d';
+export type {
+  Tile3DContent,
+  Tile3DFeatureIdSet,
+  Tile3DMetadataContext,
+  Tile3DBoundingVolume
+} from './tileset-3d/common/tile-3d-contracts';
+export type {TileChildrenState} from './tileset-3d/common/tile-3d';
+export {Tiles3DSource} from './tileset-3d/format-3d-tiles/tiles-3d-source';
+export type {ImplicitTilingStats} from './tileset-3d/format-3d-tiles/tiles-3d-source';
+export type {
+  ImplicitAvailability,
+  ImplicitSubtreeReference,
+  ImplicitTileCoordinates,
+  ImplicitTileHeader,
+  ImplicitTilingDescriptor,
+  MaterializedImplicitSubtree,
+  ParsedImplicitSubtree
+} from './tileset-3d/format-3d-tiles/implicit-tiling';
+export {
+  createImplicitSubtreeReference,
+  materializeImplicitSubtree,
+  replaceImplicitUrlTemplate
+} from './tileset-3d/format-3d-tiles/implicit-tiling';
+export {I3SSource} from './tileset-3d/format-i3s/i3s-source';
+
+export {TilesetTraverser} from './tileset-3d/common/tileset-traverser';
+export {TilesetCache} from './tileset-3d/common/tileset-cache';
+
+export type {
+  PointCloudAttribute,
+  PointCloudBoundingVolume,
+  PointCloudTileContent,
+  PointCloudTileHeader,
+  PointCloudTilesetSource,
+  PointCloudTilesetViewState,
+  PointCloudCoordinateSystem
+} from './point-cloud/types';
+export type {PointCloudTilesetOptions} from './point-cloud/point-cloud-tileset';
+export {PointCloudTileset} from './point-cloud/point-cloud-tileset';
+export {PointCloudTile} from './point-cloud/point-cloud-tile';
+export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
+export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
+export {convertS2BoundingVolumeToOBB} from './tileset-3d/helpers/s2-bounding-volume';
+export type {S2VolumeInfo} from './tileset-3d/helpers/s2-bounding-volume';
+
+export type {
+  CreateTilesetSpatialReferenceOptions,
+  TilesetCoordinateFrame,
+  TilesetElevationBounds,
+  TilesetElevationMode,
+  TilesetElevationProvider,
+  TilesetElevationRange,
+  TilesetElevationSample,
+  TilesetHeightReference,
+  TilesetOutputCoordinates,
+  TilesetSpatialOptions,
+  TilesetSpatialReference,
+  TilesetSpatialReferenceProvenance,
+  TilesetTargetHeightReference
+} from './spatial/spatial-types';
+export {
+  applyTilesetSpatialOptions,
+  createTilesetSpatialReference,
+  markTilesetSpatialReferenceTransformed
+} from './spatial/spatial-types';
+export {
+  get3DTilesSpatialReference,
+  getI3SSpatialReference
+} from './spatial/format-spatial-reference';
+export {SpatialCoordinateTransformer} from './spatial/spatial-coordinate-transformer';
+export {getSpatialCoordinateFrame} from './spatial/spatial-coordinate-transformer';
+export {Tiles3DSpatialTransformer} from './spatial/tiles-3d-spatial-transformer';
+export type {Tiles3DSpatialBoundingVolume} from './spatial/tiles-3d-spatial-transformer';
+export type {
+  I3SSpatialBounds,
+  I3SSpatialObb,
+  I3STransformedPositions,
+  I3STransformedGeometry
+} from './spatial/i3s-spatial-transformer';
+export {I3SSpatialTransformer} from './spatial/i3s-spatial-transformer';
+export {
+  getGeoidModel,
+  registerGeoidModel,
+  registerGeoidModelFromPgm,
+  registerSpatialCrs,
+  registerSpatialDatumGrid
+} from './spatial/spatial-resource-registry';
+
+export {getFrameState} from './tileset-3d/helpers/frame-state';
+export type {FrameState, GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
+export {getLodStatus} from './tileset-3d/helpers/i3s-lod';
+
+export {
+  TILE_CONTENT_STATE,
+  TILE_REFINEMENT,
+  TILE_TYPE,
+  TILESET_TYPE,
+  LOD_METRIC_TYPE
+} from './constants';
+
+export {PointCloudTileSourceLoader} from './point-cloud-tile-source-loader-types';
+export type {
+  PointCloudTileSourceInput,
+  PointCloudTileSourceOptions
+} from './point-cloud-tile-source-types';

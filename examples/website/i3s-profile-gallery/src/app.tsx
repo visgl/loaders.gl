@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ArcGISSceneServerSource} from '@loaders.gl/arcgis/bundled';
-import type {I3SServiceMetadata} from '@loaders.gl/i3s';
+import type {I3SServiceMetadata} from '@loaders.gl/tiles-3d/i3s';
 
 const DEFAULT_URL =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';

@@ -49,13 +49,18 @@ export function getCachedZarrSelection<T extends CachedData>(
 
 /** Returns an independent result so callers cannot mutate the cached buffer. */
 export function cloneZarrSelection<T extends CachedData>(selection: T): T {
-  return {...selection, data: selection.data.slice() as TypedArray, shape: [...selection.shape]} as T;
+  return {
+    ...selection,
+    data: selection.data.slice() as TypedArray,
+    shape: [...selection.shape]
+  } as T;
 }
 
 /** Applies cancellation to one cache waiter without aborting the shared read. */
 function awaitWithAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
   if (!signal) return promise;
-  if (signal.aborted) return Promise.reject(signal.reason || new Error('The operation was aborted.'));
+  if (signal.aborted)
+    return Promise.reject(signal.reason || new Error('The operation was aborted.'));
   return new Promise<T>((resolve, reject) => {
     const abort = () => {
       cleanup();

@@ -75,7 +75,7 @@ export function parseQuantizedMesh(
     header: {
       // @ts-ignore
       vertexCount: triangleIndices.length,
-      boundingBox
+      boundingBox: boundingBox ?? undefined
     },
     schema,
     topology,

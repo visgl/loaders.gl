@@ -2,7 +2,11 @@ import {isDeepStrictEqual} from 'util';
 import {DUMP_FILE_SUFFIX} from '../../constants';
 import {isFileExists, openJson, removeFile, renameFile, writeFile} from './file-utils';
 import {join} from 'path';
-import {BoundingVolumes, I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
+import {
+  BoundingVolumes,
+  I3SMaterialDefinition,
+  TextureSetDefinitionFormats
+} from '@loaders.gl/tiles-3d/i3s';
 import {AttributeMetadataInfoObject} from '../../i3s-converter/helpers/attribute-metadata-info';
 import process from 'process';
 import Ajv from 'ajv';

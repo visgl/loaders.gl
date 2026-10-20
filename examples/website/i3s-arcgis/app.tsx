@@ -1,6 +1,6 @@
 import {loadArcGISModules} from '@deck.gl/arcgis';
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 // Tileset entry point: Indexed 3D layer file url
 const TILESET_URL =

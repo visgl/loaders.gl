@@ -7,7 +7,7 @@ import {
   I3SSpatialTransformer,
   markTilesetSpatialReferenceTransformed,
   Tiles3DSpatialTransformer
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d';
 import {Matrix4} from '@math.gl/core';
 import type {
   CreateTilesetSpatialReferenceOptions,
@@ -17,7 +17,7 @@ import type {
   Tiles3DSpatialBoundingVolume,
   TilesetSpatialOptions,
   TilesetSpatialReference
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d';
 import {TileConversionError} from './conversion-api.js';
 import type {TileConversionDiagnostic} from './conversion-api.js';
 

@@ -35,7 +35,11 @@ export default class ZarritaPixelSource<S extends string[]> {
   private readonly indexer: ZarritaIndexer<S>;
 
   /** Creates a pixel source for one Zarr pyramid level. */
-  constructor(data: zarrita.Array<zarrita.DataType, Readable>, labels: Labels<S>, tileSize: number) {
+  constructor(
+    data: zarrita.Array<zarrita.DataType, Readable>,
+    labels: Labels<S>,
+    tileSize: number
+  ) {
     this.indexer = getIndexer(labels);
     this.data = data;
     this.labels = labels;
@@ -74,7 +78,10 @@ export default class ZarritaPixelSource<S extends string[]> {
   }
 
   /** Reads a complete 2D plane from the backing array. */
-  async getRaster({selection, signal}: RasterSelection<S> | {selection: number[]; signal?: AbortSignal}) {
+  async getRaster({
+    selection,
+    signal
+  }: RasterSelection<S> | {selection: number[]; signal?: AbortSignal}) {
     const sel = this.chunkIndex(selection, null, null) as Array<number | null>;
     if (this.labels[this.labels.length - 1] === '_c') {
       sel[sel.length - 1] = null;
@@ -125,6 +132,10 @@ export default class ZarritaPixelSource<S extends string[]> {
 
     const shape = chunk.shape as number[];
     const [tileHeight, tileWidth] = shape.slice(interleaved ? -3 : -2);
-    return {data: cloneZarrSelection(chunk).data, width: tileWidth, height: tileHeight} as PixelData;
+    return {
+      data: cloneZarrSelection(chunk).data,
+      width: tileWidth,
+      height: tileHeight
+    } as PixelData;
   }
 }

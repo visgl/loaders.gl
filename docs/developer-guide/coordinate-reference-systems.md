@@ -212,11 +212,7 @@ Common EPSG definitions supported by Proj4 require no setup. Custom definitions,
 geoid models are application resources registered once during startup:
 
 ```ts
-import {
-  registerGeoidModelFromPgm,
-  registerSpatialCrs,
-  registerSpatialDatumGrid
-} from '@loaders.gl/tiles';
+import {registerGeoidModelFromPgm, registerSpatialCrs, registerSpatialDatumGrid} from '@loaders.gl/tiles-3d';
 
 registerSpatialCrs('LOCAL:SURVEY_GRID', '+proj=tmerc +lat_0=... +lon_0=...');
 registerSpatialDatumGrid('regional.gsb', datumGridArrayBuffer);

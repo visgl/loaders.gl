@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {I3SAttributeLoader} from '@loaders.gl/i3s';
-import type {AttributeStorageInfo, I3STileContent, I3SMeshFeatures} from '@loaders.gl/i3s';
-import type {TilesetContentTraversalItem, TilesetSourceMetadata} from '@loaders.gl/tiles';
+import {I3SAttributeLoader} from '@loaders.gl/tiles-3d/i3s';
+import type {AttributeStorageInfo, I3STileContent, I3SMeshFeatures} from '@loaders.gl/tiles-3d/i3s';
+import type {TilesetContentTraversalItem, TilesetSourceMetadata} from '@loaders.gl/tiles-3d';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';

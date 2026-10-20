@@ -30,7 +30,7 @@ export async function loadMultiscales(store: Store, path = '') {
   }
 
   const {datasets} = multiscales[0];
-  const promises = datasets.map((d) => grp.getItem(d.path)) as Promise<ZarrArray>[];
+  const promises = datasets.map(d => grp.getItem(d.path)) as Promise<ZarrArray>[];
 
   return {
     data: await Promise.all(promises),
@@ -145,7 +145,7 @@ export function joinUrlParts(...args: string[]) {
       if (i === 0) return part.trim().replace(/[/]*$/g, '');
       return part.trim().replace(/(^[/]*|[/]*$)/g, '');
     })
-    .filter((x) => x.length)
+    .filter(x => x.length)
     .join('/');
 }
 

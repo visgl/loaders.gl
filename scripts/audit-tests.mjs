@@ -213,8 +213,13 @@ function findLargeFixtureReferences(files) {
     const source = fs.readFileSync(testFile, 'utf8');
     for (const fixturePath of largeFixtures) {
       const fixtureUrl = fixturePath.replace(/^modules\//, '@loaders.gl/');
+      const subpathFixtureUrl = fixtureUrl.replace(/\/test\/([^/]+)\/data\//, '/$1/test/data/');
       const fixturePathWithinModule = fixturePath.replace(/^modules\/[^/]+\//, '');
-      if (source.includes(fixtureUrl) || source.includes(fixturePathWithinModule)) {
+      if (
+        source.includes(fixtureUrl) ||
+        source.includes(subpathFixtureUrl) ||
+        source.includes(fixturePathWithinModule)
+      ) {
         references.push(`${testFile}::${fixturePath}`);
       }
     }

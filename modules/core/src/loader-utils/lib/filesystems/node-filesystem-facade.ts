@@ -22,10 +22,10 @@ export class NodeFileSystemFacade implements RandomAccessFileSystem {
       return new globalThis.loaders.NodeFileSystem(options);
     }
     if (isBrowser) {
-      throw new Error('Can\'t instantiate NodeFileSystem in browser.');
+      throw new Error("Can't instantiate NodeFileSystem in browser.");
     }
     throw new Error(
-      'Can\'t instantiate NodeFileSystem. Make sure to import @loaders.gl/core/polyfills first.'
+      "Can't instantiate NodeFileSystem. Make sure to import @loaders.gl/core/polyfills first."
     );
   }
 

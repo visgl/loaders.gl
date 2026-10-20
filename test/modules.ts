@@ -37,8 +37,9 @@ import '@loaders.gl/raster/test/terrain';
 import '@loaders.gl/gltf/test';
 
 // 3D Tile Formats
-import '@loaders.gl/3d-tiles/test';
-import '@loaders.gl/i3s/test';
+import '@loaders.gl/tiles-3d/3d-tiles/test';
+import '@loaders.gl/tiles-3d/i3s/test';
+import '@loaders.gl/tiles-3d/test';
 import '@loaders.gl/potree/test';
 import '@loaders.gl/tiles/test';
 
@@ -52,11 +53,11 @@ import '@loaders.gl/wkt/test';
 import '@loaders.gl/wms/test';
 import '@loaders.gl/stac/test';
 
-import '@loaders.gl/mlt/test';
-import '@loaders.gl/mvt/test';
+import '@loaders.gl/tiles/mlt/test';
+import '@loaders.gl/tiles/mvt/test';
 
 // Range request archive style formats
-import '@loaders.gl/pmtiles/test';
+import '@loaders.gl/tiles/pmtiles/test';
 
 // Table Formats
 import '@loaders.gl/arrow/test';

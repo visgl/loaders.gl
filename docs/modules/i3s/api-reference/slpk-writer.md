@@ -4,7 +4,7 @@ Packages already-authored I3S layer resources as a deterministic `.slpk` archive
 The writer accepts `ArrayBuffer` and native `Blob` values without Node.js Buffer or filesystem APIs.
 
 ```ts
-import {SLPKWriter} from '@loaders.gl/i3s/i3s-slpk-writer';
+import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
 
 const archive = await SLPKWriter.encode(
   {
@@ -16,7 +16,7 @@ const archive = await SLPKWriter.encode(
 );
 ```
 
-Also exported from `@loaders.gl/i3s`. Resource paths are canonical relative ASCII paths rooted
+Also exported from `@loaders.gl/tiles-3d/i3s`. Resource paths are canonical relative ASCII paths rooted
 at the layer: exclude the service `SceneServer/layers/0` prefix. Root `3dSceneLayer.json.gz` is
 required. Supply valid I3S resources with their required archive names and GZIP compression
 already applied; image resources such as PNG/JPEG retain their own encoding. Inputs must
@@ -62,7 +62,7 @@ storage, use the iterator below.
 resources/options and yields `Uint8Array` views with byte-identical archive content:
 
 ```ts
-import {encodeSLPKArchiveInBatches} from '@loaders.gl/i3s/i3s-slpk-writer';
+import {encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
 
 try {
   for await (const chunk of encodeSLPKArchiveInBatches(resources, {

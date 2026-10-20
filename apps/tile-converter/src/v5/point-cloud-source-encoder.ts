@@ -7,7 +7,7 @@ import type {
   PointCloudCoordinateSystem,
   PointCloudTilesetSource,
   TilesetSpatialReference
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles-3d';
 import {transformPointCloudSourceTile} from './point-cloud-spatial.js';
 import type {PointCloudSpatialOptions} from './point-cloud-spatial.js';
 import {encodePointCloudTileWithMetadata} from './point-cloud.js';

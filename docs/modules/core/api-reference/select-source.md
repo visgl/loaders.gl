@@ -53,8 +53,8 @@ source. There is no public `selectSourceSync` or `createDataSourceSync` export.
 
 ```typescript
 import {_selectSource} from '@loaders.gl/core';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
-import {MVTSourceLoader} from '@loaders.gl/mvt';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 
 const sourceLoader = _selectSource('filename.pmtiles', [PMTilesSourceLoader, MVTSourceLoader]);
 ```

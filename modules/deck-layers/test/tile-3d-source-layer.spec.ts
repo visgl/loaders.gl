@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {Tiles3DArchiveFileLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {I3SLoader, SLPKLoader} from '@loaders.gl/i3s';
-import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DArchiveFileLoader, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {I3SLoader, SLPKLoader} from '@loaders.gl/tiles-3d/i3s';
+import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import {
   createSource,
   SourceDataDrivenTile3DLayer,
@@ -17,8 +17,8 @@ import {
   createSLPKArchiveResolver,
   createTiles3DArchiveResolver
 } from '../src/archive-source-resolver';
-const TILES_ARCHIVE_URL = '@loaders.gl/3d-tiles/test/data/test.3tz';
-const SLPK_ARCHIVE_URL = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
+const TILES_ARCHIVE_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/test.3tz';
+const SLPK_ARCHIVE_URL = '@loaders.gl/tiles-3d/i3s/test/data/DA12_subset.slpk';
 test('createSource#selects Tiles3DSource for 3tz urls', () => {
   const source = createSource('https://example.com/data/test.3tz', Tiles3DLoader, {});
   expect(source instanceof Tiles3DSource).toBeTruthy();

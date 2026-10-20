@@ -7,7 +7,7 @@ import {AxisAlignedBoundingBox, OrientedBoundingBox} from '@math.gl/culling';
 import type {Layer} from '@deck.gl/core';
 import {BoundingBoxLayer, createBoundingBoxLayerEdges} from '../src/bounding-box-layer';
 import {TileBoundingBoxLayer} from '../src/tile-bounding-box-layer';
-import {PointCloudTile} from '../../tiles/src/point-cloud/point-cloud-tile';
+import {PointCloudTile} from '@loaders.gl/tiles-3d';
 /** Normalizes a layer render result to an array. */
 function asLayerArray(layerResult: Layer | Layer[] | null): Layer[] {
   if (!layerResult) {

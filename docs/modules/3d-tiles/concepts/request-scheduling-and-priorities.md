@@ -77,7 +77,7 @@ default. Temporary ancestor/descendant overlap can increase draw work while refi
 Set `skipLevelOfDetail: false` to use traditional replacement traversal. I3S retains its existing
 non-skipping default.
 
-See [skip-LOD options](/docs/modules/tiles/api-reference/tileset-3d#skiplevelofdetail--boolean) for
+See [skip-LOD options](/docs/modules/tiles-3d/api-reference/tileset-3d#skiplevelofdetail--boolean) for
 the SSE and depth thresholds.
 
 ## Progressive Coarse Coverage

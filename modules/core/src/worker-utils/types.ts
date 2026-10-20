@@ -64,6 +64,8 @@ export type WorkerObject = {
   loadWorker?: LoadWorker;
   /** Optional Node.js-specific worker filename (for example a `.cjs` asset). */
   workerNode?: string;
+  /** Repository-relative source path for a Node test worker after package grouping. */
+  workerSourceNode?: string;
   options: {[key: string]: any};
   deprecatedOptions?: object;
 

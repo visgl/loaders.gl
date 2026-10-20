@@ -7,13 +7,13 @@ import {fetchFile, selectLoader, selectLoaderSync, isBrowser} from '@loaders.gl/
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
-import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {KMLLoader} from '@loaders.gl/kml';
 
 const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 const DRACO_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const TILE_3D_URL =
-  '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGB/pointCloudRGB.pnts';
+  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGB/pointCloudRGB.pnts';
 const URL_WITH_QUERYSTRING =
   'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw.xy';
 const DRACO_URL_QUERYSTRING = '@loaders.gl/draco/test/data/bunny.drc?query.string';

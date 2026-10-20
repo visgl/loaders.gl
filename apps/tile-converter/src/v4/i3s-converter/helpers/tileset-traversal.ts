@@ -1,4 +1,4 @@
-import {Tiles3DTileJSONPostprocessed} from '@loaders.gl/3d-tiles';
+import {Tiles3DTileJSONPostprocessed} from '@loaders.gl/tiles-3d/3d-tiles';
 import {NodeIndexDocument} from './node-index-document';
 import {Matrix4} from '@math.gl/core';
 

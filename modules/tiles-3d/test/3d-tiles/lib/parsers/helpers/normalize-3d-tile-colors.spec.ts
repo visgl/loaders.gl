@@ -1,0 +1,121 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
+
+import {GL} from '@math.gl/geometry-utils';
+import {getFloat16Value} from '@loaders.gl/core/schema';
+import {expect, test} from 'vitest';
+import {normalize3DTileColorAttribute} from '../../../../../src/3d-tiles/lib/parsers/helpers/normalize-3d-tile-colors';
+import {Tile3DBatchTable, type Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
+const TEST_CASES: {
+  tile: Tiles3DTileContent;
+  colors;
+  batchTable;
+  expected;
+  message: string;
+}[] = [
+  {
+    tile: {shape: 'tile3d'},
+    colors: null,
+    batchTable: null,
+    expected: null,
+    message: 'Should return null when no tile / colors'
+  },
+  {
+    tile: {shape: 'tile3d', pointCount: 1},
+    colors: new Uint8ClampedArray([250, 150, 50]),
+    batchTable: null,
+    expected: {
+      type: GL.UNSIGNED_BYTE,
+      size: 3,
+      value: new Uint8ClampedArray([250, 150, 50]),
+      normalized: true
+    },
+    message: 'Size should be 3 for RGB format'
+  },
+  {
+    tile: {shape: 'tile3d', pointCount: 1},
+    colors: new Uint8ClampedArray([250, 150, 50, 255]),
+    batchTable: null,
+    expected: {
+      type: GL.UNSIGNED_BYTE,
+      size: 4,
+      value: new Uint8ClampedArray([250, 150, 50, 255]),
+      normalized: true
+    },
+    message: 'Size should be 4 for RGBA format'
+  }
+  // {
+  //   tile: {pointCount: 1, isRGB565: true},
+  //   colors: [64678],
+  //   batchTable: null,
+  //   expected: {size: 3, value: new Uint8ClampedArray([250, 150, 50])},
+  //   message: 'Size should be 3 for rgb565 format'
+  // }
+];
+test('normalize3DTileColorAttribute', () => {
+  TEST_CASES.forEach(testCase =>
+    expect(normalize3DTileColorAttribute(testCase.tile, testCase.colors), testCase.message).toEqual(
+      testCase.expected
+    )
+  );
+});
+
+test.each([
+  {colors: null, expected: null},
+  {
+    colors: new Uint8ClampedArray([250, 150, 50]),
+    expected: {
+      type: GL.UNSIGNED_BYTE,
+      size: 3,
+      value: new Uint8ClampedArray([250, 150, 50]),
+      normalized: true
+    }
+  }
+])('normalize3DTileColorAttribute#handles ordinary batch metadata ($colors)', ({
+  colors,
+  expected
+}) => {
+  const tile: Tiles3DTileContent = {
+    shape: 'tile3d',
+    pointCount: 1,
+    batchIds: new Uint16Array([0])
+  };
+  const batchTable = new Tile3DBatchTable({featureId: ['point-0']}, undefined, 1);
+
+  expect(normalize3DTileColorAttribute(tile, colors, batchTable)).toEqual(expected);
+});
+
+test('normalize3DTileColorAttribute#float16', () => {
+  const attribute = normalize3DTileColorAttribute(
+    {shape: 'tile3d', pointCount: 1},
+    new Uint8ClampedArray([250, 150, 50]),
+    undefined,
+    'float16'
+  );
+  expect(attribute).toMatchObject({
+    type: 0x140b,
+    size: 3,
+    normalized: false,
+    componentType: 'float16'
+  });
+  expect(getFloat16Value(attribute!.value, 0)).toBeCloseTo(250 / 255, 3);
+  expect(getFloat16Value(attribute!.value, 1)).toBeCloseTo(150 / 255, 3);
+});
+
+test('normalize3DTileColorAttribute#float32', () => {
+  const attribute = normalize3DTileColorAttribute(
+    {shape: 'tile3d', pointCount: 1},
+    new Uint8ClampedArray([250, 150, 50]),
+    undefined,
+    'float32'
+  );
+  expect(attribute).toMatchObject({
+    type: GL.FLOAT,
+    size: 3,
+    normalized: false
+  });
+  expect(Array.from(attribute!.value as Float32Array)).toEqual(
+    Array.from(Float32Array.from([250 / 255, 150 / 255, 50 / 255]))
+  );
+});

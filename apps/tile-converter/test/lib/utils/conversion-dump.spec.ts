@@ -8,7 +8,7 @@ import {join} from 'path';
 import {isFileExists, openJson} from '../../../src/v4/lib/utils/file-utils';
 import {DUMP_FILE_SUFFIX} from '../../../src/v4/constants';
 import {cleanUpPath} from '../../utils/file-utils';
-import {I3SMaterialDefinition, Mbs} from '@loaders.gl/i3s';
+import {I3SMaterialDefinition, Mbs} from '@loaders.gl/tiles-3d/i3s';
 const testDumpMetadata = {
   boundingVolumes: {
     obb: {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]},

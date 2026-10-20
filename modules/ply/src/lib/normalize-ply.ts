@@ -34,7 +34,7 @@ export default function normalizePLY(
     loaderData: plyHeader,
     header: {
       vertexCount,
-      boundingBox
+      boundingBox: boundingBox ?? undefined
     },
     schema,
     attributes,

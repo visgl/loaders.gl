@@ -10,8 +10,8 @@ props, lifecycle tests, and no example-specific imports.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
-import {MVTLoader} from '@loaders.gl/mvt';
+import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
 new SourceLayer({
   id: 'basemap',

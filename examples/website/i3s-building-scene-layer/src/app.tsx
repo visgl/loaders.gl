@@ -14,10 +14,10 @@ import {
   COORDINATE_SYSTEM,
   I3SBuildingSceneLayerLoader,
   I3SLoader
-} from '@loaders.gl/i3s';
+} from '@loaders.gl/tiles-3d/i3s';
 import {fetchFile, load} from '@loaders.gl/core';
 import {Sublayer, buildSublayersTree} from './helpers/sublayers';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d';
 import {BuildingExplorer} from './components/building-explorer';
 import {filterTile} from './filter-tile';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';

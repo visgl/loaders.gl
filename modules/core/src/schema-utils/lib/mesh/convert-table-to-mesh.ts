@@ -81,7 +81,7 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
     indices,
     header: {
       vertexCount: arrowTable.numRows,
-      boundingBox
+      boundingBox: boundingBox ?? undefined
     }
   };
 }

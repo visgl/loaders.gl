@@ -4,7 +4,7 @@
 
 import type {BuilderInput} from '../../lib/utils/builder-input';
 
-import type {Store} from '@loaders.gl/i3s';
+import type {Store} from '@loaders.gl/tiles-3d/i3s';
 
 /** Converter stores use the legacy uppercase string identifier. */
 export type StoreBuilderRecord = Omit<Store, 'id'> & {

@@ -9,8 +9,8 @@ import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator, PickingInfo} from '@deck.gl/core';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {COORDINATE_SYSTEM, I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {COORDINATE_SYSTEM, I3SLoader, loadFeatureAttributes} from '@loaders.gl/tiles-3d/i3s';
+import {Tileset3D} from '@loaders.gl/tiles-3d';
 import {ControlPanel} from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
