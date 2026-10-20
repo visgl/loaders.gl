@@ -115,7 +115,13 @@ function extractGLTFBufferOrURL(
         const gltfUrlBytes = new Uint8Array(tile.gltfArrayBuffer, tile.gltfByteOffset);
         const textDecoder = new TextDecoder();
         const gltfUrl = textDecoder.decode(gltfUrlBytes);
-        tile.gltfUrl = gltfUrl.replace(/[\s\0]+$/, '');
+        let urlEnd = gltfUrl.length;
+        while (urlEnd > 0) {
+          const trailingCharacter = gltfUrl[urlEnd - 1];
+          if (trailingCharacter !== '\0' && trailingCharacter.trim() !== '') break;
+          urlEnd--;
+        }
+        tile.gltfUrl = gltfUrl.slice(0, urlEnd);
       }
       delete tile.gltfArrayBuffer;
       delete tile.gltfByteOffset;
