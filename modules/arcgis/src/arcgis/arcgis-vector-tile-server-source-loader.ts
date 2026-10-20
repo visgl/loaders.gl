@@ -22,7 +22,7 @@ import type {
 import {DataSource, getTileGridMatrixId} from '@loaders.gl/core/loader-utils';
 import {createArcGISTileGrid} from './arcgis-tile-grid';
 import {MVTLoader, type MVTLoaderOptions} from '@loaders.gl/mvt';
-import type {Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 
 /** A source for ArcGIS VectorTileServer metadata and PBF tiles. */
 export class ArcGISVectorTileServerSource

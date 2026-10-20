@@ -16,7 +16,7 @@ import type {
   MultiLineString,
   Polygon,
   MultiPolygon
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 /** Parse input binary data and return a valid GeoJSON geometry object */
 export function convertBinaryGeometryToGeometry(

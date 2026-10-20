@@ -5,7 +5,7 @@
 // import type {} from '@loaders.gl/core/loader-utils';
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
-import type {GeoJSONTable, BinaryGeometry} from '@loaders.gl/schema';
+import type {GeoJSONTable, BinaryGeometry} from '@loaders.gl/core/schema';
 import {encodeGeoArrowSync} from './lib/encoders/encode-geoarrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline

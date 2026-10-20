@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
-import {meshArrowSchema} from '@loaders.gl/schema';
+import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {canParseWithWorker} from '@loaders.gl/core/loader-utils';
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
 import {setLoaderOptions, fetchFile, parse, load, parseInBatches} from '@loaders.gl/core';

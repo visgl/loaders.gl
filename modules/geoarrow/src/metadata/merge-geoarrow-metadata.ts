@@ -9,8 +9,8 @@ import type {
   GeoMetadata,
   GeoParquetGeometryType,
   Metadata
-} from '@loaders.gl/schema';
-import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
+import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/core/schema';
 import {GEOARROW_GEOMETRY_TYPES} from '../geoarrow-conformance';
 import {getGeometryMetadataForField} from './geoarrow-metadata';
 

@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {load, loadInBatches} from '@loaders.gl/core';
-import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import {ExcelLoader} from '@loaders.gl/excel';
 import * as excel from '@loaders.gl/excel';
 import * as bundledExcel from '@loaders.gl/excel/bundled';

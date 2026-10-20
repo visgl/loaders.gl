@@ -4,7 +4,7 @@
 
 import type {DracoBuildOptions, DracoBuilderMesh, DracoEncodingResult} from '@loaders.gl/draco';
 import {encodeDraco} from '@loaders.gl/draco';
-import type {TypedArray} from '@loaders.gl/schema';
+import type {TypedArray} from '@loaders.gl/core/schema';
 import type {GLTFWriterOptions} from '../../gltf-writer';
 import type {GLTFMeshPrimitive} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {parseMLT} from './lib/parse-mlt';
 import {MLTWorkerLoader as MLTWorkerLoaderMetadata} from './mlt-loader';
 import {MLTLoader as MLTLoaderMetadata} from './mlt-loader';

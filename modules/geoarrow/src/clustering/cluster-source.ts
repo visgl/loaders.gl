@@ -16,14 +16,14 @@ import type {
   GeoJSONTable,
   Geometry,
   Schema
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata
 } from '@loaders.gl/arrow-geometry/geometry-field';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {getGeometryColumnsFromSchema} from '../metadata/geoarrow-metadata';
 import {
   convertGeoArrowVectorCellToGeoJSON,

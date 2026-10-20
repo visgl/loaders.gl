@@ -16,10 +16,10 @@
       "path": "../arrow-geometry"
     },
     {
-      "path": "../schema-utils"
+      "path": "../wkt"
     },
     {
-      "path": "../wkt"
+      "path": "../core"
     }
   ]
 }

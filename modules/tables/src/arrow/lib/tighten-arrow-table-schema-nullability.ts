@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Field, Schema} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import type {ArrowTable, Field, Schema} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 /** Updates nullable Arrow table fields to non-nullable when their columns contain no null values. */

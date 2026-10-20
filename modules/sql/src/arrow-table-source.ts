@@ -13,8 +13,8 @@ import {
   makeTableScanBatch,
   type ScanColumnRole
 } from '@loaders.gl/core/loader-utils';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,

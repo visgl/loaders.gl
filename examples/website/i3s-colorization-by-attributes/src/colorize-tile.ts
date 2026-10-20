@@ -1,5 +1,5 @@
 import {customizeColors} from '@loaders.gl/i3s';
-import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
+import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/core/schema';
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Tile3D} from '@loaders.gl/tiles';
 

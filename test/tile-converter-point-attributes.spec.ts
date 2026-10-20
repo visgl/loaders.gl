@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
-import {convertTableToMesh, makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {convertTableToMesh, makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {encodePointCloudTile} from '../apps/tile-converter/src/v5/point-cloud';
 
 test.each(['mesh', 'arrow'] as const)('PNTS rejects unsupported %s point attributes', shape => {

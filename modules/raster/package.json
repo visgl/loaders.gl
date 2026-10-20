@@ -322,8 +322,6 @@
   },
   "dependencies": {
     "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@math.gl/crs": "5.0.0-alpha.18",
     "fast-xml-parser": "^5.3.6"
   },

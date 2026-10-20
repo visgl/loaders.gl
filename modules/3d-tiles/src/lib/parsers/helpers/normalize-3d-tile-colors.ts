@@ -4,7 +4,7 @@
 
 import {Tile3DBatchTable} from '@loaders.gl/3d-tiles';
 import {decodeRGB565, GL} from '@math.gl/geometry-utils';
-import {convertColorArrayToFloat16} from '@loaders.gl/schema';
+import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
 import {Tiles3DTileContent} from '../../../types';
 
 /* eslint-disable complexity*/

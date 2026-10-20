@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {BinaryLineGeometry, BinaryPointGeometry} from '@loaders.gl/schema';
+import type {BinaryLineGeometry, BinaryPointGeometry} from '@loaders.gl/core/schema';
 import {describe, expect, test} from 'vitest';
 import {getBinaryGeometryInfo} from '@loaders.gl/geoarrow';
 import {convertBinaryGeometryToGeometry} from '@loaders.gl/geoarrow';

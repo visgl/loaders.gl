@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {TypedArray} from '@math.gl/types';
-import {getFloat16Value} from '@loaders.gl/schema';
+import {getFloat16Value} from '@loaders.gl/core/schema';
 import {getSizeAndValueFromMeshArrowVector} from './mesh-accessors';
 import * as arrow from 'apache-arrow';
 

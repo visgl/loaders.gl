@@ -4,7 +4,7 @@
 
 import {parseWKB, parseWKTWithMetadata, writeWKB, WKBBuilder} from '@math.gl/wkb';
 import type {WellKnownDimension, WellKnownGeometry, WKTParseResult} from '@math.gl/wkb';
-import type {Feature, Geometry, GeoArrowDimension} from '@loaders.gl/schema';
+import type {Feature, Geometry, GeoArrowDimension} from '@loaders.gl/core/schema';
 import {normalizeEmptyPoints} from './geometry-utils';
 export {convertGeometryToWKT} from './geometry-to-wkt';
 export type {WKTGeometryOptions} from './geometry-to-wkt';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 import type {GeoArrowBounds} from '../geoarrow-bounds';
 
 /** Tests planar XY intersection with a coordinate, including polygon ring boundaries. */

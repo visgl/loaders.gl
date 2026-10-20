@@ -8,7 +8,7 @@ import type {
   GeoArrowEncodingPreference,
   GeoJSONTable,
   Schema
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type {CRSIdentifier, SpatialReference} from '@math.gl/crs';
 
 export type VectorSourceProps = {};

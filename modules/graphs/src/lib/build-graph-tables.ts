@@ -16,8 +16,8 @@ import {
   vectorFromArray
 } from 'apache-arrow';
 import type {DataType, Vector} from 'apache-arrow';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 import type {
   GraphNode,
   GraphEdge,

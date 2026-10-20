@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {BrotliDecompressor} from '@loaders.gl/compression';
-import type {Mesh, MeshAttribute} from '@loaders.gl/schema';
+import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
 import type {Potree2AttributeType, Potree2Metadata, Potree2HierarchyNode} from '../potree2-types';
 
 /** Scalar constructors and little-endian readers for all Potree 2.0 wire types. */

@@ -21,8 +21,8 @@ import type {
   BinaryPointFeature,
   BinaryPolygonFeature,
   TypedArray
-} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {BinaryDataFromGeoArrow, GeoArrowEncoding} from '@loaders.gl/geoarrow';
 import {
   convertGeoArrowToBinaryFeatureCollection,

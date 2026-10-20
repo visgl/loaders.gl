@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import type {Geometry, GeoArrowEncoding} from '@loaders.gl/schema';
+import type {Geometry, GeoArrowEncoding} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {
   convertGeoArrowVector,

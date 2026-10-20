@@ -5,7 +5,7 @@
 
 /* global TextEncoder */
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
-import type {Table, TableBatch} from '@loaders.gl/schema';
+import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {encodeTableAsJSON} from './lib/encoders/json-encoder';
 import {JSONFormat} from './json-format';
 

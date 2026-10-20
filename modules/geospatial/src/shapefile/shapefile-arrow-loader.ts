@@ -10,11 +10,16 @@ import {
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, ArrowTableBatch, Field, Schema as TableSchema} from '@loaders.gl/schema';
-import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/schema-utils';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  Field,
+  Schema as TableSchema
+} from '@loaders.gl/core/schema';
+import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {type GeoParquetGeometryType} from '@loaders.gl/schema';
+import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata

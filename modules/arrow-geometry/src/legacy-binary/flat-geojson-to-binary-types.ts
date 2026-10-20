@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TypedArray} from '@loaders.gl/schema';
+import type {TypedArray} from '@loaders.gl/core/schema';
 
 /**
  * Permissable constructor for numeric props

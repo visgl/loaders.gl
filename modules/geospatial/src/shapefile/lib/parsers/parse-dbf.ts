@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Field, ObjectRowTable} from '@loaders.gl/schema';
+import type {Field, ObjectRowTable} from '@loaders.gl/core/schema';
 import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {

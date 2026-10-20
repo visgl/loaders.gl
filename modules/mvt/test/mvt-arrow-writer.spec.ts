@@ -8,7 +8,7 @@ import Protobuf from 'pbf';
 import {encode, parse} from '@loaders.gl/core';
 import {MVTLoader, MVTWriter} from '@loaders.gl/mvt';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 import {VectorTile} from '../src/lib/vector-tile/vector-tile';
 
 /** Small WKB geometry tables; properties may span dictionary, sliced and nullable vectors. */

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import type {GaussianSplats, SplatsLoaderOptions} from '../types';
 import {
   parseRADChunkHeader,

@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import type {BinaryFeatureCollection, Feature} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection, Feature} from '@loaders.gl/core/schema';
 import {
   transformBinaryCoords,
   transformGeoJsonCoords

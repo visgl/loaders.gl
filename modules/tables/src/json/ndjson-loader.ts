@@ -9,7 +9,7 @@ import type {
   ArrowTable,
   ArrowTableBatch,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
 import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
 import {

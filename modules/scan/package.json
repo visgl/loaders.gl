@@ -55,8 +55,6 @@
   },
   "dependencies": {
     "@loaders.gl/parquet": "5.0.0-alpha.12",
-    "@loaders.gl/schema": "5.0.0-alpha.12",
-    "@loaders.gl/schema-utils": "5.0.0-alpha.12",
     "@loaders.gl/sql": "5.0.0-alpha.12",
     "apache-arrow": ">= 17.0.0"
   },

@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/core/schema';
 import {
   FeatureCollectionConverter,
   convertFeatureCollection

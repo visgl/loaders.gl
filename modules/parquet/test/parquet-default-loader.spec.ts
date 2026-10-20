@@ -6,7 +6,7 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {encode, parse, load} from '@loaders.gl/core';
 import {ParquetLoader, ParquetJSWriter} from '@loaders.gl/parquet';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 /** Creates two tiny row groups without storing a binary fixture. */
 async function createRowGroups(): Promise<ArrayBuffer> {

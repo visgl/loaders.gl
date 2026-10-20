@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Schema, FlatIndexedGeometry} from '@loaders.gl/schema';
+import type {Schema, FlatIndexedGeometry} from '@loaders.gl/core/schema';
 
 export type MVTTile = {
   layers: Record<string, MVTLayer>;

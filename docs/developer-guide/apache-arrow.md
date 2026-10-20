@@ -59,8 +59,8 @@ A subset of modules that import the Apache Arrow JS library:
 - `@loaders.gl/arrow`
 - `@loaders.gl/geoarrow`
 - `@loaders.gl/parquet`
-- `@loaders.gl/schema`
-- `@loaders.gl/schema-utils`
+- `@loaders.gl/core/schema`
+- `@loaders.gl/core/schema-utils`
 
 ### Apache Arrow JS versions
 
@@ -116,15 +116,15 @@ $ yarn why apache-arrow
 ├─ @loaders.gl/geoarrow@workspace:modules/geoarrow
 │  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 │
-├─ @loaders.gl/schema-utils@workspace:modules/schema-utils [3820d]
+├─ @loaders.gl/core/schema-utils@workspace:modules/schema-utils [3820d]
 │  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 │
-├─ @loaders.gl/schema-utils@workspace:modules/schema-utils [b9e22]
+├─ @loaders.gl/core/schema-utils@workspace:modules/schema-utils [b9e22]
 │  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 │
-├─ @loaders.gl/schema-utils@workspace:modules/schema-utils
+├─ @loaders.gl/core/schema-utils@workspace:modules/schema-utils
 │  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 │
-└─ @loaders.gl/schema@workspace:modules/schema
+└─ @loaders.gl/core/schema@workspace:modules/schema
    └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 ```

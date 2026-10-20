@@ -8,7 +8,7 @@ import {
   getGeometryColumnsFromSchema,
   convertGeoArrowToBinaryFeatureCollection
 } from '@loaders.gl/geoarrow';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {load} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {

@@ -6,7 +6,7 @@ import {beforeAll, expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {LASLoader, type LASLoaderOptions} from '@loaders.gl/las';
 import type {LASMesh} from '../src/lib/las-types';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseLAS, parseLASInBatches, decodeLAZFileInBatches} from '../src/lib/typescript/parse-las';
 import {
   loadLegacyLAZFixture,

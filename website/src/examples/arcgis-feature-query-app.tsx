@@ -4,7 +4,7 @@ import {GeoJsonLayer} from '@deck.gl/layers';
 import {load} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 import type {ArcGISFeatureQueryProgress} from '@loaders.gl/arcgis';
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/core/schema';
 
 /** Existing public gallery dataset; all records come from the live service. */
 const SERVICE_URL =

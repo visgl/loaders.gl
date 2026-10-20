@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, ObjectRowTable} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   parseDBF as parseDBFToObjectRows,
   parseDBFInBatches as parseDBFToObjectRowsInBatches

@@ -95,7 +95,7 @@ The `@loaders.gl/textures` module handles the following formats:
 
 ## Return Types
 
-The compressed texture loaders in this module return `TextureLevel` objects from `@loaders.gl/schema`.
+The compressed texture loaders in this module return `TextureLevel` objects from `@loaders.gl/core/schema`.
 
 ## Texture Category
 

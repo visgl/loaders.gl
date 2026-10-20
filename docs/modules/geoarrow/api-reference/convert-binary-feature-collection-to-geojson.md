@@ -48,7 +48,7 @@ an array of GeoJSON Features, or one Feature when selecting a global feature id.
 ## Usage
 
 ```typescript
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/core/schema';
 import {convertGeojsonToBinaryFeatureCollection, convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/geoarrow';
 
 const features: Feature[] = [{

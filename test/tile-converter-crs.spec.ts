@@ -11,7 +11,11 @@ import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
 import {GLTFLoader} from '@loaders.gl/gltf/bundled';
 import {GLTFScenegraph} from '@loaders.gl/gltf';
-import {convertTableToMesh, makeMeshArrowTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {
+  convertTableToMesh,
+  makeMeshArrowTable,
+  deduceMeshSchema
+} from '@loaders.gl/core/schema-utils';
 import {
   createTilesetSpatialReference,
   getI3SSpatialReference,

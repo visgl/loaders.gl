@@ -11,7 +11,7 @@ import type {
   BinaryFeatureCollection,
   ArrowTable,
   GeoArrowEncodingPreference
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable

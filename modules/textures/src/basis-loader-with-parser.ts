@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {TextureLevel} from '@loaders.gl/core/schema';
 import {parseBasis} from './lib/parsers/parse-basis';
 import type {BasisLoaderOptions} from './basis-types';
 import {BasisWorkerLoader as BasisWorkerLoaderMetadata} from './basis-loader';

@@ -5,13 +5,13 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {load} from '@loaders.gl/core';
-import {getGeoMetadata} from '@loaders.gl/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/arrow-geometry/geojson-table';
 import {TCXLoader} from '@loaders.gl/kml';
 import * as kml from '@loaders.gl/kml';
 import * as bundledKml from '@loaders.gl/kml/bundled';
 import * as unbundledKml from '@loaders.gl/kml/unbundled';
-import type {Feature, Geometry} from '@loaders.gl/schema';
+import type {Feature, Geometry} from '@loaders.gl/core/schema';
 const TCX_URL = '@loaders.gl/kml/test/data/tcx/tcx_sample.tcx';
 test('TCXLoader#loader conformance', () => {
   validateLoader(TCXLoader, 'TCXLoader');

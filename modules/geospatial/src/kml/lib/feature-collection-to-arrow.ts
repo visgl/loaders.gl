@@ -9,8 +9,8 @@ import type {
   Geometry,
   GeoJsonProperties,
   Schema
-} from '@loaders.gl/schema';
-import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
 import {
   encodeWKBGeometryValue,
@@ -21,7 +21,7 @@ import {
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata
 } from '@loaders.gl/arrow-geometry/geometry-field';
-import {ArrowTableBuilder, getDataTypeFromArray} from '@loaders.gl/schema-utils';
+import {ArrowTableBuilder, getDataTypeFromArray} from '@loaders.gl/core/schema-utils';
 
 const GEOMETRY_COLUMN_NAME = 'geometry';
 

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 

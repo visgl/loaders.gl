@@ -7,7 +7,7 @@ import {
   PointCloudTiler,
   convertMeshToTable,
   type PointCloudTilerNode
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import type {
   PointCloudTileContent,
   PointCloudTileHeader,

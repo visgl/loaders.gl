@@ -5,7 +5,7 @@
 
 import {expect, test} from 'vitest';
 import {TableVectorTileSource} from '@loaders.gl/mvt';
-import type {GeoJSONTable, Feature} from '@loaders.gl/schema';
+import type {GeoJSONTable, Feature} from '@loaders.gl/core/schema';
 const leftPoint = {
   type: 'Feature',
   properties: {},

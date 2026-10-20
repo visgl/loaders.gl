@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {dehydrateArrowTable} from '@loaders.gl/schema-utils/arrow-transport';
-import type {ArrayType} from '@loaders.gl/schema';
-import {convertTable} from '@loaders.gl/schema-utils';
+import {dehydrateArrowTable} from '@loaders.gl/core/schema-utils/arrow-transport';
+import type {ArrayType} from '@loaders.gl/core/schema';
+import {convertTable} from '@loaders.gl/core/schema-utils';
 
 import {preloadCompressions} from '../parquetjs/compression';
 import {filterParquetRowIndices, gatherParquetColumns} from './parquet-predicate';

@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {Matrix4} from '@math.gl/core';
-import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
-import {deduceMeshSchema, makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
+import {deduceMeshSchema, makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import type {GLTFAccessor, GLTFMeshPrimitive, GLTFNode} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import {getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';

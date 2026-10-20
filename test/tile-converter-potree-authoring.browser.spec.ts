@@ -3,10 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {parse} from '@loaders.gl/core';
 import {PotreeBinLoader} from '@loaders.gl/potree';
-import {PointCloudTiler, convertTableToMesh, makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {
+  PointCloudTiler,
+  convertTableToMesh,
+  makeMeshArrowTable
+} from '@loaders.gl/core/schema-utils';
 import {convertPointCloudToPotree, openPointCloudFile} from '@loaders.gl/tile-converter/v5/browser';
 import {convertPointCloudToPotree as convertRoot} from '@loaders.gl/tile-converter/v5';
 import {readZip} from 'test/common/read-zip';

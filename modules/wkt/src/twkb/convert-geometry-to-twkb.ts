@@ -12,7 +12,7 @@ import type {
   MultiPolygon,
   GeometryCollection,
   Geometry
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 import {TWKBWriter as BinaryWriter} from './twkb-io';
 import {TWKBGeometryType as WKBGeometryType} from './twkb-types';

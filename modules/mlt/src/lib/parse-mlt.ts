@@ -11,7 +11,7 @@ import type {
   Field,
   Schema,
   GeoParquetGeometryType
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {
   makeWKBGeometryField,
@@ -29,7 +29,7 @@ import {
   convertArrowToSchema,
   convertSchemaToArrow,
   getDataTypeFromArray
-} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema-utils';
 import type {Feature as MLTFeature} from '@maplibre/mlt';
 import * as maplibreMLT from '@maplibre/mlt';
 

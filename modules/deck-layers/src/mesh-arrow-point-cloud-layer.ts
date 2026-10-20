@@ -15,7 +15,7 @@ import {
 } from '@deck.gl/core';
 import {PointCloudLayer, type PointCloudLayerProps} from '@deck.gl/layers';
 import {getDeckBinaryDataFromArrowMesh} from '@loaders.gl/geoarrow';
-import type {ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
   getArrowTable,
   getArrowTableRowProperties,

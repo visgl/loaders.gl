@@ -49,7 +49,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import type {Table} from '@loaders.gl/schema';
+import type {Table} from '@loaders.gl/core/schema';
 import {CSVWriter} from '@loaders.gl/csv';
 
 declare const table: Table;

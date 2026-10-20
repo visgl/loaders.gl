@@ -8,7 +8,7 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {SplatLayer, type SplatLayerProps} from '../src/splat-layer';
-import type {ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTableBatch} from '@loaders.gl/core/schema';
 type ControlledAsyncIterable<T> = AsyncIterable<T> & {
   push: (value: T) => void;
   close: () => void;

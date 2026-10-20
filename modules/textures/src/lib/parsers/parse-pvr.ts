@@ -6,7 +6,7 @@
 // Forked from PicoGL: https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
 
-import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/core/schema';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
 const PVR_CONSTANTS: Record<string, number> = {

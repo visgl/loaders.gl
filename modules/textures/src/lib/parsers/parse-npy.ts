@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// import type {TextureLevel} from '@loaders.gl/schema';
+// import type {TextureLevel} from '@loaders.gl/core/schema';
 import {TypedArray} from '@math.gl/types';
 // import {TypedArrayConstructor} from "@math.gl/types";
 

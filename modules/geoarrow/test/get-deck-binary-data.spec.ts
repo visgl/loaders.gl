@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createFloat16Array, setFloat16Value} from '@loaders.gl/schema';
-import {makeMeshArrowTable} from '@loaders.gl/schema-utils';
+import {createFloat16Array, setFloat16Value} from '@loaders.gl/core/schema';
+import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import {getDeckBinaryDataFromArrowMesh} from '../src/mesharrow/get-deck-binary-data';
 

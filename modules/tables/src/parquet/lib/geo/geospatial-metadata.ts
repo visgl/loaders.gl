@@ -16,12 +16,12 @@ import {
   type GeoParquetGeometryType,
   type Field,
   type Schema
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {
   GeoArrowMetadataSchema,
   GeoParquetMetadataSchema
-} from '@loaders.gl/schema/geospatial-metadata-zod-schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema/geospatial-metadata-zod-schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 
 const GEOARROW_EXTENSION_NAME_KEY = 'ARROW:extension:name';
 const GEOARROW_EXTENSION_METADATA_KEY = 'ARROW:extension:metadata';

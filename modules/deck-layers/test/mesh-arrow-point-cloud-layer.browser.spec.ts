@@ -7,8 +7,8 @@ import {
   MeshArrowPointCloudLayer,
   type MeshArrowPointCloudLayerProps
 } from '../src/mesh-arrow-point-cloud-layer';
-import type {ArrowTableBatch, Mesh} from '@loaders.gl/schema';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
+import type {ArrowTableBatch, Mesh} from '@loaders.gl/core/schema';
+import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
 type ControlledAsyncIterable<T> = AsyncIterable<T> & {
   push: (value: T) => void;
   close: () => void;

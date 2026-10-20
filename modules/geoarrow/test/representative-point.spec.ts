@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {getRepresentativePoint} from '@loaders.gl/geoarrow';
-import type {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 
 test('point extraction is explicit, ignores extra ordinates, and rejects invalid/empty positions', () => {
   expect(getRepresentativePoint({type: 'Point', coordinates: [1, 2, 3]})).toEqual([1, 2]);

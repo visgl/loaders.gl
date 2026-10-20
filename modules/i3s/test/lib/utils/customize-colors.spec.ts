@@ -4,7 +4,7 @@
 
 import {afterEach, expect, test, vi} from 'vitest';
 import {createQueryParameterCredential} from '@loaders.gl/core/loader-utils';
-import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/schema';
+import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/core/schema';
 
 import {customizeColors} from '../../../src/lib/utils/customize-colors';
 

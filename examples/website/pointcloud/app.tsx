@@ -20,8 +20,8 @@ import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 
 import {load, loadInBatches} from '@loaders.gl/core';
 import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
-import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 import {OBJLoader} from '@loaders.gl/obj';

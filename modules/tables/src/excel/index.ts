@@ -5,7 +5,7 @@
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/schema-utils/arrow-transport';
+} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {ExcelLoader as ExcelLoaderMetadata} from './excel-loader-types';
 
 export {ExcelFormat} from './excel-format';

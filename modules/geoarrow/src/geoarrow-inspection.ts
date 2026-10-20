@@ -7,7 +7,7 @@ import {getWKTDimension} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {getWKTGeometryType} from './lib/geometry-converters/wkb/helpers/parse-wkb-header';
 import {inspectWKBHeader} from '@math.gl/wkb';
 import type {WKBGeometryType} from '@math.gl/wkb';
-import type {GeoArrowEncoding, GeoParquetGeometryType} from '@loaders.gl/schema';
+import type {GeoArrowEncoding, GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {
   getGeoArrowUnionDimension,
   getGeoArrowUnionGeometryKind,

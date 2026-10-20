@@ -10,12 +10,12 @@ import type {
   GeoJSONTable,
   Schema,
   TableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type * as arrow from 'apache-arrow';
 import type {JSONLoaderOptions} from './json-loader-types';
 import {GeoJSONFormat} from './json-format';
 import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
-import type {GeoArrowEncodingPreference} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

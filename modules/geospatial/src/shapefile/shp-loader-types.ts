@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, GeoArrowEncodingPreference} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  GeoArrowEncodingPreference
+} from '@loaders.gl/core/schema';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {SHPFormat} from './shp-format';
 
