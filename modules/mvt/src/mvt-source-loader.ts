@@ -183,13 +183,23 @@ export class MVTTileSource
     const maxZoom =
       this.options.mvt?.maxZoom ?? tileJSONMetadata?.maxZoom ?? fallbackMetadata.maxZoom!;
     this.tileScheme = this.options.mvt?.scheme || tileJSONMetadata?.scheme || 'xyz';
+    const hasRepresentableZoomRange =
+      Number.isInteger(minZoom) &&
+      Number.isInteger(maxZoom) &&
+      minZoom >= 0 &&
+      maxZoom >= minZoom &&
+      maxZoom <= 31;
     return {
       ...fallbackMetadata,
       ...tileJSONMetadata,
       minZoom,
       maxZoom,
       ...(tileJSONMetadata
-        ? {tileGrid: createWebMercatorTileGrid(minZoom, maxZoom, this.options.mvt?.tileSize ?? 256)}
+        ? {
+            tileGrid: hasRepresentableZoomRange
+              ? createWebMercatorTileGrid(minZoom, maxZoom, this.options.mvt?.tileSize ?? 256)
+              : undefined
+          }
         : {})
     };
   }

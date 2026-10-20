@@ -130,3 +130,6 @@ The geographic and row-convention contract follows [TileJSON 3.0](https://github
 
 A tile request's abort signal cancels its metadata wait promptly. Shared metadata discovery
 continues for other callers; cancelling one tile does not invalidate their requests.
+
+TileJSON zoom ranges that are non-integral, inverted, or outside the supported grid range retain
+their native metadata and omit `tileGrid`. They do not prevent ordinary numeric tile requests.
