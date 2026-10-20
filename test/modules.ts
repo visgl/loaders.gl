@@ -11,8 +11,8 @@ import '@loaders.gl/geoarrow/test';
 
 // Core
 import '@loaders.gl/core/loader-utils/test';
-import '@loaders.gl/schema/test';
-import '@loaders.gl/schema-utils/test';
+import '@loaders.gl/core/schema/test';
+import '@loaders.gl/core/schema-utils/test';
 import '@loaders.gl/core/test';
 
 // Image Formats

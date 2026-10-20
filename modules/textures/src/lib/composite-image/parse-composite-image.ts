@@ -4,7 +4,7 @@
 
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {parseFromContext, path, resolvePath} from '@loaders.gl/core/loader-utils';
-import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/core/schema';
 import {ImageBitmapLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images';
 import {asyncDeepMap} from '../texture-api/async-deep-map';
 import type {TextureLoaderOptions} from '../texture-api/texture-api-types';

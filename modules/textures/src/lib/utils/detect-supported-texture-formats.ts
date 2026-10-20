@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GPUTextureFormat, TextureFormat} from '@loaders.gl/schema';
+import type {GPUTextureFormat, TextureFormat} from '@loaders.gl/core/schema';
 
 const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
 

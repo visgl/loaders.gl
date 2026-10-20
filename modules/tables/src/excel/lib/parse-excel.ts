@@ -4,7 +4,7 @@
 
 import type {ExcelLoaderOptions} from '../excel-loader-types';
 import {utils, read} from 'xlsx';
-// import {convertToArrayRow} from '@loaders.gl/schema';
+// import {convertToArrayRow} from '@loaders.gl/core/schema';
 
 // local table names cache with dataUrl/tableNames array key/values
 const dataTableNamesMap = {};

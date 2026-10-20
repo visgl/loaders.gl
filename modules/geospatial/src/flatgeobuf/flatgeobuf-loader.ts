@@ -7,7 +7,7 @@ import type {
   ArrowTableBatch,
   GeoJSONTable,
   BinaryFeatureCollection
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseFlatGeobuf, ParseFlatGeobufOptions} from './lib/parse-flatgeobuf';
 import {

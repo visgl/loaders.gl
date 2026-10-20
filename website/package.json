@@ -60,8 +60,6 @@
     "@loaders.gl/raster": "workspace:*",
     "@loaders.gl/scan": "workspace:*",
     "@loaders.gl/scene": "workspace:*",
-    "@loaders.gl/schema": "workspace:*",
-    "@loaders.gl/schema-utils": "workspace:*",
     "@loaders.gl/scientific": "workspace:*",
     "@loaders.gl/services": "workspace:*",
     "@loaders.gl/splats": "workspace:*",
@@ -137,8 +135,6 @@
     "@loaders.gl/las": "workspace:*",
     "@loaders.gl/obj": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
-    "@loaders.gl/schema": "workspace:*",
-    "@loaders.gl/schema-utils": "workspace:*",
     "@loaders.gl/splats": "workspace:*"
   },
   "browser": {

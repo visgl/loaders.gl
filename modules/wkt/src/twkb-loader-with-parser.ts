@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
+import type {BinaryGeometry, Geometry} from '@loaders.gl/core/schema';
 import {convertTWKBToGeometry} from './twkb/convert-twkb-to-geometry';
 import {TWKBWorkerLoader as TWKBWorkerLoaderMetadata} from './twkb-loader';
 import {TWKBLoader as TWKBLoaderMetadata} from './twkb-loader';

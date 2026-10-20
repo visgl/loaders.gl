@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {OBJFormat} from './obj-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

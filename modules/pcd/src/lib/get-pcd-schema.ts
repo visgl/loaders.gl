@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Schema, Field} from '@loaders.gl/schema';
+import {Schema, Field} from '@loaders.gl/core/schema';
 import type {PCDHeader} from './pcd-types';
 
 /**

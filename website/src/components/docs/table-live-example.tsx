@@ -5,7 +5,7 @@ import {ArrowLoader} from '@loaders.gl/arrow'
 import {CSVLoader} from '@loaders.gl/csv'
 import {ExcelLoader} from '@loaders.gl/excel'
 import {JSONLoader, NDJSONLoader} from '@loaders.gl/json'
-import type {Field, Table} from '@loaders.gl/schema'
+import type {Field, Table} from '@loaders.gl/core/schema'
 import {ChromeTraceLoader} from '@loaders.gl/traces'
 
 import styles from './table-live-example.module.css'

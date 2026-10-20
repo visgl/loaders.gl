@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
+import type {Feature, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 
 /** Available synthetic geometry datasets. */
 export type SampleGeometry = 'points' | 'polygons';

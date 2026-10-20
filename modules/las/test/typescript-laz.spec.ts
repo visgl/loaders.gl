@@ -12,7 +12,7 @@ import {
   getLAZChunkByteLength
 } from '@loaders.gl/core/loader-utils';
 import type {LAZChunkMetadata, LAZPointDataTarget} from '@loaders.gl/core/loader-utils';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
   decodeLAZFileInBatches,
   parseLAS,

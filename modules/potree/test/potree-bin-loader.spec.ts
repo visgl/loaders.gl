@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
-import {meshArrowSchema} from '@loaders.gl/schema';
+import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {PotreeBinLoader} from '@loaders.gl/potree';
 test('PotreeBinLoader#parse defaults to Arrow table', async () => {
   const arrayBuffer = makePotreeBinTile();

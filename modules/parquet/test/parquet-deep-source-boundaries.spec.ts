@@ -6,7 +6,7 @@ import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {ParquetSource} from '../../tables/src/parquet/parquet-source-loader';
 import type {ParquetSourceBatch, ParquetSourceExplain} from '../../tables/src/parquet/parquet-source-types';
 import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';

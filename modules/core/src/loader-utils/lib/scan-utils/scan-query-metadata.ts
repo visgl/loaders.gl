@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataType, FieldMetadata, Schema} from '@loaders.gl/schema';
+import type {DataType, FieldMetadata, Schema} from '@loaders.gl/core/schema';
 import type {ColumnarPredicate, ColumnarPredicateProperty} from './columnar-predicate';
 import type {
   TableQueryCapabilities,

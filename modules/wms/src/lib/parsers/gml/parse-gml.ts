@@ -21,7 +21,7 @@ import type {
   // Polygon,
   // MultiPolygon,
   // GeometryCollection
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 import {deepStrictEqual} from './deep-strict-equal';
 import {parseXMLTextSync} from '../xml/parse-xml-text';

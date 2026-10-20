@@ -9,15 +9,19 @@ import {
   type LoaderWithParser,
   type LoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/schema';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
 } from '@loaders.gl/arrow/transport';
 import type {PLYHeader, PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
-import {convertMeshToTable, convertTableToMesh, deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {
+  convertMeshToTable,
+  convertTableToMesh,
+  deduceMeshSchema
+} from '@loaders.gl/core/schema-utils';
 import {parsePLY, parsePLYHeader, parsePLYToArrowTable} from './lib/parse-ply';
 import {
   convertPLYElementTablesToMeshArrowTable,

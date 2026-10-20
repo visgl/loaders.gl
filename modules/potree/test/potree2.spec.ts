@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import {PotreeLoader, PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/potree';
 import {Potree2Source} from '../src/potree2-source';
 import {PotreeLoaderWithParser} from '@loaders.gl/potree/potree-loader';
-import {convertTableToMesh} from '@loaders.gl/schema-utils';
+import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
   parsePotree2Metadata,
   parsePotree2Hierarchy,

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 test('getMeshBoundingBox', () => {
   // @ts-ignore
   expect(getMeshBoundingBox(null), 'does not crash with invalid input').toBe(null);

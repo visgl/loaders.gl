@@ -9,10 +9,10 @@ import type {
   Geometry,
   ObjectRowTable,
   Schema
-} from '@loaders.gl/schema';
-import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema-utils';
-import type {GeoColumnMetadata} from '@loaders.gl/schema';
-import {getGeoMetadata} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
+import {getTableLength, getTableRowAsObject} from '@loaders.gl/core/schema-utils';
+import type {GeoColumnMetadata} from '@loaders.gl/core/schema';
+import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {convertWKTToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 

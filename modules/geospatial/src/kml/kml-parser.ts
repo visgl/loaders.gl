@@ -8,7 +8,7 @@ import type {
   Geometry,
   GeoJsonProperties,
   Position
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {parseXMLSync} from '@loaders.gl/xml';
 
 interface XMLValueArray extends Array<XMLValue> {}

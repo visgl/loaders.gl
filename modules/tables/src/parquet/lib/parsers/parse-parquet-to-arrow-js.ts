@@ -12,8 +12,8 @@ import type {
   Field,
   Schema,
   SchemaMetadata
-} from '@loaders.gl/schema';
-import {deserializeArrowType} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {deserializeArrowType} from '@loaders.gl/core/schema-utils';
 
 import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
 import {preloadCompressions} from '../../parquetjs/compression';

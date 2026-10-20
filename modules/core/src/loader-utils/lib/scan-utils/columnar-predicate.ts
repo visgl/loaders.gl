@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrayType} from '@loaders.gl/schema';
+import type {ArrayType} from '@loaders.gl/core/schema';
 
 /** Scalar values supported by format-neutral columnar predicates. */
 export type ColumnarPredicateValue = boolean | number | bigint | string | Date | Uint8Array;

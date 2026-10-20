@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
-import type {ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/schema';
+import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
+import type {ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/core/schema';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 const DEFAULT_FEATURE_ID_FIELD = 'feature_id';

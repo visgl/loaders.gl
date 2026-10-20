@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {parsePLY} from '../src/lib/parse-ply';
 import {parsePLYInBatches} from '../src/lib/parse-ply-in-batches';
 

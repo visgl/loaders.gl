@@ -4,9 +4,9 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {tightenArrowTableSchemaNullability} from '@loaders.gl/arrow';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 test('tightenArrowTableSchemaNullability#tightens nullable fields without nulls', async () => {
   const table = makeTestArrowTable({
     values: ['a', 'b', 'c'],

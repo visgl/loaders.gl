@@ -13,7 +13,7 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
 <DocPageHeader
   eyebrow="Schema module"
   title="Give loaders a common shape to return."
-  description="`@loaders.gl/schema` defines the lightweight table, schema, and batch contracts used across loaders.gl. It follows the parts of Apache Arrow that applications need for portable category data."
+  description="`@loaders.gl/core/schema` defines the lightweight table, schema, and batch contracts used across loaders.gl. It follows the parts of Apache Arrow that applications need for portable category data."
   tone="cyan"
   meta={['Tables and schemas', 'Batch contracts', 'Arrow-aligned']}
   links={[
@@ -52,14 +52,14 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
 
 Geometry/GeoParquet metadata types and dependency-light metadata helpers are
 available from the root. Runtime validators are isolated in
-`@loaders.gl/schema/geospatial-metadata-zod-schema`, so importing the root does
+`@loaders.gl/core/schema/geospatial-metadata-zod-schema`, so importing the root does
 not load Zod. The subpath exports `GeoArrowMetadataSchema`,
 `GeoParquetMetadataSchema`, `GeoParquetColumnMetadataSchema` and
 `GeoParquetGeometryTypeSchema`.
 
 Generated schemas are available at
-`@loaders.gl/schema/geoparquet.schema.json` and
-`@loaders.gl/schema/geoarrow-metadata.schema.json`. The old GIS subpaths remain
+`@loaders.gl/core/schema/geoparquet.schema.json` and
+`@loaders.gl/core/schema/geoarrow-metadata.schema.json`. The old GIS subpaths remain
 compatibility entry points.
 
 The schema module is the small contract shared by loaders, sources, converters, and writers. It

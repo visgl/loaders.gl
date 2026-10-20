@@ -3,11 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/schema-utils/arrow-transport';
+} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {parseExcel} from './lib/parse-excel';
 import {convertExcelRowsToArrowTable} from './lib/convert-excel-rows-to-arrow';
 import {ExcelWorkerLoader as ExcelWorkerLoaderMetadata} from './excel-loader-types';

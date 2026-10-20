@@ -8,7 +8,7 @@ import type {
   ArrowTableBatch,
   GeoJSONTable,
   GeoJSONTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 
 import {ParquetFormat} from './parquet-format';
 import {

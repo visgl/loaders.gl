@@ -4,7 +4,7 @@
 
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
-import type {MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
+import type {MeshAttribute, MeshGeometry} from '@loaders.gl/core/schema';
 import {
   prepareMeshFeatureGeometry,
   encodeMeshFeatures,

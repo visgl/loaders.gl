@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {Texture} from '@loaders.gl/schema';
+import type {Texture} from '@loaders.gl/core/schema';
 import type {TextureLoaderOptions as TextureApiLoaderOptions} from './lib/texture-api/texture-api-types';
 import {
   parseCompositeImageManifest,

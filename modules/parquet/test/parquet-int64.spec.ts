@@ -6,7 +6,7 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/
 import * as arrow from 'apache-arrow';
 import {encode, load} from '@loaders.gl/core';
 import {ParquetJSWriter} from '@loaders.gl/parquet';
-import type {ObjectRowTable} from '@loaders.gl/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
 import {readInt64LE, readUInt64LE} from '../../tables/src/parquet/parquetjs/utils/binary-utils';

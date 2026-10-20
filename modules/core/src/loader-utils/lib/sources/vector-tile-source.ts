@@ -8,7 +8,7 @@ import type {
   GeoJSONTable,
   BinaryFeatureCollection,
   ArrowTable
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {TileSource, TileSourceProps, GetTileParameters} from './tile-source';
 import type {GetTileDataParameters} from './tile-source';
 

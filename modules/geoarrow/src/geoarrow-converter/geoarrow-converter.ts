@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Converter} from '@loaders.gl/schema-utils';
+import type {Converter} from '@loaders.gl/core/schema-utils';
 import type {GeoArrowConvertFromOptions as GeoArrowTableConvertFromOptions} from '../convert-table-to-geoarrow';
 import {convertGeoArrow, isGeoArrowApacheTable} from './convert-geoarrow';
 import {GeometryConverter} from '../lib/geometry-converters/geometry-converter/geometry-converter';

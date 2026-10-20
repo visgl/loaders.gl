@@ -4,7 +4,7 @@
 
 import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {DataSource as BaseDataSource, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTableBatch} from '@loaders.gl/core/schema';
 
 import {LanceSourceLoader as LanceSourceLoaderMetadata} from './lance-source-loader-types';
 import {parseLanceFileMetadata, type LanceFileMetadata} from './lance-file';

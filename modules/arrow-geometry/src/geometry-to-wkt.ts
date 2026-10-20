@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {formatWKT} from '@math.gl/wkb';
-import type {GeoArrowDimension, Geometry} from '@loaders.gl/schema';
+import type {GeoArrowDimension, Geometry} from '@loaders.gl/core/schema';
 import type {WellKnownGeometry} from '@math.gl/wkb';
 
 /** Options controlling dimensional tokens in WKT output. */

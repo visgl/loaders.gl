@@ -4,7 +4,7 @@
 
 import type {Table} from 'apache-arrow';
 import type {DataSourceOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {TableTileSourceLoaderOptions} from './table-tile-source-loader';
 
 /** In-memory Arrow tables accepted by the Arrow tile source. */

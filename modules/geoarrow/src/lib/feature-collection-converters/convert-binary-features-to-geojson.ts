@@ -11,7 +11,7 @@ import type {
   // BinaryPolygonFeature,
   Feature,
   GeoJsonProperties
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {convertBinaryGeometryToGeometry} from '../geometry-converters/convert-binary-geometry-to-geojson';
 
 // Note: We do not handle GeometryCollection, define a limited Geometry type that always has coordinates.

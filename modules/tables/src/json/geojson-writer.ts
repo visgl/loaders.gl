@@ -8,7 +8,7 @@ import {
   type WriterOptions,
   concatenateArrayBuffersAsync
 } from '@loaders.gl/core/loader-utils';
-import type {Table, TableBatch} from '@loaders.gl/schema';
+import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {encodeTableAsGeojsonInBatches} from './lib/encoders/geojson-encoder';
 import {GeoJSONFormat} from './json-format';
 

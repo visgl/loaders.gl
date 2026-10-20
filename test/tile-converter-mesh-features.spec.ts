@@ -7,7 +7,7 @@ import {validateBytes} from 'gltf-validator';
 import {extractMeshFeatures} from '../apps/tile-converter/src/v5/mesh-source-features';
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader, GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
-import type {Field, MeshGeometry} from '@loaders.gl/schema';
+import type {Field, MeshGeometry} from '@loaders.gl/core/schema';
 import {
   encodeMeshTile,
   createMeshSourceFeatureOptions,

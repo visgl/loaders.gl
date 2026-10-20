@@ -3,11 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {Metadata, SchemaWithMetadata, getMetadataValue} from './metadata-utils';
-import type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/schema';
-import {GeoArrowMetadataSchema} from '@loaders.gl/schema/geospatial-metadata-zod-schema';
+import type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/core/schema';
+import {GeoArrowMetadataSchema} from '@loaders.gl/core/schema/geospatial-metadata-zod-schema';
 import {GEOARROW_ENCODINGS} from '../geoarrow-conformance';
 
-export type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/schema';
+export type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/core/schema';
 
 const GEOARROW_ENCODING = 'ARROW:extension:name';
 const GEOARROW_METADATA = 'ARROW:extension:metadata';

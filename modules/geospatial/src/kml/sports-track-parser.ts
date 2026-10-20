@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Feature, FeatureCollection, Position} from '@loaders.gl/schema';
+import type {Feature, FeatureCollection, Position} from '@loaders.gl/core/schema';
 import {parseXMLSync} from '@loaders.gl/xml';
 
 interface XMLValueArray extends Array<XMLValue> {}

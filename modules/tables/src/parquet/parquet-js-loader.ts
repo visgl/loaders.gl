@@ -9,7 +9,7 @@ import type {
   ArrowTableBatch,
   ObjectRowTable,
   ObjectRowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-json';
 import {
   parseParquetFileToArrowInBatchesWithJs,

@@ -4,11 +4,11 @@ title: Schema utilities
 
 # Schema and table utilities
 
-`@loaders.gl/schema-utils` provides table access, schema conversion, batch
+`@loaders.gl/core/schema-utils` provides table access, schema conversion, batch
 construction, and the dispatcher for explicit converter sets.
 
 ```bash
-npm install @loaders.gl/schema-utils
+npm install @loaders.gl/core
 ```
 
 | API group | Examples |
@@ -24,7 +24,7 @@ npm install @loaders.gl/schema-utils
 ## Converting table representations
 
 ```typescript
-import {convert, TABLE_CONVERTERS} from '@loaders.gl/schema-utils';
+import {convert, TABLE_CONVERTERS} from '@loaders.gl/core/schema-utils';
 
 const table = {shape: 'object-row-table', data: [{id: 1, name: 'Alice'}]};
 const columns = convert(table, 'columnar-table', [...TABLE_CONVERTERS]);
@@ -47,7 +47,7 @@ Use the dedicated subpath when passing Arrow tables across a worker boundary:
 
 ```typescript
 import {tableFromArrays} from 'apache-arrow';
-import {dehydrateArrowTable, hydrateArrowTable, splitArrowBuffers} from '@loaders.gl/schema-utils/arrow-transport';
+import {dehydrateArrowTable, hydrateArrowTable, splitArrowBuffers} from '@loaders.gl/core/schema-utils/arrow-transport';
 
 const table = tableFromArrays({value: [1, 2]});
 const transferableTable = splitArrowBuffers(table, {copy: 'sliced'});

@@ -17,7 +17,7 @@ import type {
   draco_GeometryAttribute_Type
 } from '../draco3d/draco3d-types';
 
-import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
+import type {MeshAttribute, TypedArray} from '@loaders.gl/core/schema';
 
 /** Geometry accepted by the low-level Draco encoder. */
 export type DracoBuilderMesh = {

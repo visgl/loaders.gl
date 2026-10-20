@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoArrowEncodingPreference, Schema} from '@loaders.gl/schema';
+import type {GeoArrowEncodingPreference, Schema} from '@loaders.gl/core/schema';
 import type {
   CoreAPI,
   SourceLoader,

@@ -10,8 +10,8 @@ import type {
   ColumnarTable,
   ArrowTable,
   GeoJSONTable
-} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
+} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowToTable} from '../lib/table-converters/convert-geoarrow-table';
 import {convertTableToGeoArrow} from '../convert-table-to-geoarrow';
 import {getGeometryColumnsFromSchema} from '../metadata/geoarrow-metadata';

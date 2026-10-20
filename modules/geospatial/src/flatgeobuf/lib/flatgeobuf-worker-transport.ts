@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, BinaryFeatureCollection, GeoJSONTable} from '@loaders.gl/schema';
+import type {ArrowTable, BinaryFeatureCollection, GeoJSONTable} from '@loaders.gl/core/schema';
 
 type FlatGeobufWorkerResult = ArrowTable | GeoJSONTable | BinaryFeatureCollection;
 

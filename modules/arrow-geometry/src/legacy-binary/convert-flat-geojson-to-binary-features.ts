@@ -13,7 +13,7 @@ import type {
   FlatLineString,
   FlatPolygon,
   TypedArray
-} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
 import {GeojsonGeometryInfo} from './geometry-info';
 import {PropArrayConstructor, Lines, Points, Polygons} from './flat-geojson-to-binary-types';
 

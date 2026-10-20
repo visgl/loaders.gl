@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Field, Schema, DataType} from '@loaders.gl/schema';
+import type {Field, Schema, DataType} from '@loaders.gl/core/schema';
 import type {
   DataSourceOptions,
   RasterChannelDataType,

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import type {GeoJSONTable, Feature} from '@loaders.gl/schema';
+import type {GeoJSONTable, Feature} from '@loaders.gl/core/schema';
 import {
   addNextLinkHeader,
   collectFeaturePages,

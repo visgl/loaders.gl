@@ -9,7 +9,7 @@ import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
 import {load, parse, parseSync} from '@loaders.gl/core';
 import {RADLoader, RADSourceLoader, resolveRADChunkUrl} from '@loaders.gl/splats';
 import type {RADSource} from '@loaders.gl/splats';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   parseRADChunkHeader,
   parseRADChunkToGaussianSplats,

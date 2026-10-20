@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import type {TextureFormat} from '@loaders.gl/schema';
+import type {TextureFormat} from '@loaders.gl/core/schema';
 import type {GLTextureFormat} from '../gl-types';
 import {
   GL_RGBA32F,

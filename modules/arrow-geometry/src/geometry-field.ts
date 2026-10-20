@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Field, Geometry, GeoArrowDimension, Schema} from '@loaders.gl/schema';
+import type {Field, Geometry, GeoArrowDimension, Schema} from '@loaders.gl/core/schema';
 import type {GeoArrowBuilderEncoding} from './geoarrow-builder';
 import {convertGeometryToWKB} from './geometry-codecs';
 import {
@@ -11,8 +11,8 @@ import {
   type GeoColumnMetadata,
   type GeoMetadata,
   type GeoParquetGeometryType
-} from '@loaders.gl/schema';
-import type {Metadata} from '@loaders.gl/schema';
+} from '@loaders.gl/core/schema';
+import type {Metadata} from '@loaders.gl/core/schema';
 
 const DEFAULT_GEO_METADATA_VERSION = '1.1.0';
 

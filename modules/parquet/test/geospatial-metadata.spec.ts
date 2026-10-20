@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Schema} from '@loaders.gl/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {describe, expect, it} from 'vitest';
 import {

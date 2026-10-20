@@ -4,8 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {convert, convertTable, convertArrowToSchema} from '@loaders.gl/schema-utils';
-import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
+import {convert, convertTable, convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 import {
   GEOARROW_CONVERTERS,
   GeometryColumnConverter,

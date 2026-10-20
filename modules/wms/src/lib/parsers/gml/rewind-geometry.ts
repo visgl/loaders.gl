@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Geometry, Position} from '@loaders.gl/schema';
+import type {Geometry, Position} from '@loaders.gl/core/schema';
 
 /** Normalizes GML winding in place, preserving the historical Turf polygon and line ordering. */
 export function rewindGeometry(geometry: Geometry): Geometry {

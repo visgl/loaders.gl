@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {BinaryGeometryType} from '@loaders.gl/schema';
+import type {BinaryGeometryType} from '@loaders.gl/core/schema';
 import {GeoArrowBuilder, WKBBuilder} from '@loaders.gl/arrow-geometry';
 import {SHPLoaderOptions} from './types';
 

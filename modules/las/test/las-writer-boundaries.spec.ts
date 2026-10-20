@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {Mesh, MeshAttribute, MeshArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/schema-utils';
+import type {Mesh, MeshAttribute, MeshArrowTable} from '@loaders.gl/core/schema';
+import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {LASWriter, type LASWriterOptions} from '../src/las-writer';
 
 /** Creates a minimal point mesh with optional attribute and metadata overrides. */

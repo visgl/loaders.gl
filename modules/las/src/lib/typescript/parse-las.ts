@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {MeshArrowTable, MeshAttributes} from '@loaders.gl/schema';
-import {makeMeshArrowTable, type MeshArrowAttributes} from '@loaders.gl/schema-utils';
+import type {MeshArrowTable, MeshAttributes} from '@loaders.gl/core/schema';
+import {makeMeshArrowTable, type MeshArrowAttributes} from '@loaders.gl/core/schema-utils';
 import {
   BinaryChunkReader,
   createLAZChunkDecoder,

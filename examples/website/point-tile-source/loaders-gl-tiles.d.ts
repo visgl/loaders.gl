@@ -1,6 +1,6 @@
 declare module '@loaders.gl/tiles' {
   import type {Viewport} from '@deck.gl/core';
-  import type {MeshArrowTable} from '@loaders.gl/schema';
+  import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
   export type PointCloudAttribute = {
     value: ArrayBufferView;
