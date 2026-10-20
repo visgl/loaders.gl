@@ -14,7 +14,7 @@ import {
   type ColumnarPredicateParameter,
   type ColumnarPredicateParameterValues,
   type ColumnarPredicateValue
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 /** Scalar values supported by portable SQL predicate expressions. */
 export type SQLPredicateScalar = ColumnarPredicateValue;

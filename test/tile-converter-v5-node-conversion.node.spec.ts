@@ -13,7 +13,7 @@ import {
   convertFeatureAttributesToArrowBatches
 } from '@loaders.gl/tile-converter/v5/adapters';
 import {GLTFLoader, GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {parse3DTilesArchive, Tiles3DArchiveWriter} from '@loaders.gl/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
 import {

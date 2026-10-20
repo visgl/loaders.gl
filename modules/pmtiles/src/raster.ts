@@ -7,12 +7,12 @@ import {
   rasterCoordinateToPixel,
   sampleRaster,
   waitForPromiseWithSignal
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   NumericRasterData,
   RasterBoundingBox,
   RasterRegionSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {encodePMTiles} from './lib/encode-pmtiles';
 import type {PMTilesEncodeOptions, PMTilesTile} from './pmtiles-writer-types';
 

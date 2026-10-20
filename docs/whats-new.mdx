@@ -61,7 +61,7 @@ for imports, worker asset availability, and dependency tradeoffs.
 ## Tile matrix source adapters
 
 - TileJSON sources expose canonical Web Mercator matrix geometry. PMTiles preserves native XYZ levels and supports explicit Web Mercator configuration. Both retain native zoom IDs and configurable logical pixel sizes; sparse content remains separate from world geometry.
-- Shared grid normalization now lives in `@loaders.gl/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
+- Shared grid normalization now lives in `@loaders.gl/core/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
 - ArcGIS map and vector tile sources expose per-level grid metadata and preserve matrix identifiers in cached-tile URLs without inventing matrix dimensions.
 - GeoPackage source metadata discovers raster tile tables, including raster-only packages, and exposes normalized matrix geometry. Raster payload access remains separate.
 
@@ -452,7 +452,7 @@ Release Date: 2026
 - [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) NEW - loads GaussianSplats3D `.ksplat` files into Mesh Arrow tables.
 - Handwritten RAD and RADC metadata types are paired with runtime validators from `@loaders.gl/splats/rad-zod-schema`, plus published draft-07 JSON Schema assets.
 
-**@loaders.gl/worker-utils**
+**@loaders.gl/core/worker-utils**
 
 - `processOnWorkerInBatches()` streams input and output through one leased worker, preserving
   parser or encoder state across batches with demand-driven backpressure and transferable data.
@@ -511,7 +511,7 @@ Release Date: 2026
 - `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
 - `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.
 
-**@loaders.gl/loader-utils**
+**@loaders.gl/core/loader-utils**
 
 - `RasterSource`, `RasterData`, `RasterViewport`, and `GetRasterParameters` NEW - shared typed raster contracts for viewport-driven sources.
 - `ImageSource`, `VectorSource`, and `RasterSource` are composable type-only capability interfaces; custom runtimes extend `DataSource` once and can implement several source families without duplicating shared state.
@@ -808,10 +808,10 @@ Release Date: February 6, 2024
 
 - Loading flatgeobuf into a `GeoJSONTable` now extracts a Schema object from the flatgeobuf header, and uses it to infer the types of the columns in the table.
 
-**@loaders.gl/loader-utils**
+**@loaders.gl/core/loader-utils**
 
 - **Request Scheduling**
-  - [`RequestScheduler`](/docs/modules/loader-utils/api-reference/request-scheduler) now includes a 'debounceTime' option. When enabled, may reduce bandwidth usage and total loading time during interactive view transitions.
+  - [`RequestScheduler`](/docs/modules/core/loader-utils/api-reference/request-scheduler) now includes a 'debounceTime' option. When enabled, may reduce bandwidth usage and total loading time during interactive view transitions.
 
 ## v4.0
 
@@ -903,7 +903,7 @@ A major release that brings:
 - New SLPK-loader allows the load of SLPK files into a web app using loaders.gl (like i3s explorer)
 - "Multiply" mode added to the existing "replace" mode for colourization by attribute for i3s datasets
 
-**@loaders.gl/loader-utils**
+**@loaders.gl/core/loader-utils**
 
 - New functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
 - `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()`
@@ -1078,7 +1078,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 - Fix winding order of "skirt" geometries, to prevent them from being incorrectly hidden by GPU face culling during rendering.
 
-**@loaders.gl/worker-utils**
+**@loaders.gl/core/worker-utils**
 
 - Experimental support for Node.js workers.
 
@@ -1610,9 +1610,9 @@ Release Date: May 30, 2019
 
 Node support now requires importing `@loaders.gl/polyfills` before use. This reduces the number of dependencies, bundle size and potential build complications when using other loaders.gl modules when not using Node.js support.
 
-**@loaders.gl/loader-utils** (NEW MODULE)
+**@loaders.gl/core/loader-utils** (NEW MODULE)
 
-Helper functions for loaders have been broken out from `@loaders.gl/core`. Individual loaders no longer depend on`@loaders.gl/core` but only on `@loaders.gl/loader-utils`.
+Helper functions for loaders have been broken out from `@loaders.gl/core`. Individual loaders no longer depend on`@loaders.gl/core` but only on `@loaders.gl/core/loader-utils`.
 
 ## v1.0
 

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { ArrayBufferFile, BlobFile } from '@loaders.gl/loader-utils';
+import { ArrayBufferFile, BlobFile } from '@loaders.gl/core/loader-utils';
 import { ParquetReader } from '@loaders.gl/parquet';
 import { fetchFile } from '@loaders.gl/core';
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';

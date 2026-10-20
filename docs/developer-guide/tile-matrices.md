@@ -103,11 +103,11 @@ GeoTIFF/COG raster sources expose optional `tileGrid` metadata for representable
 ## Requesting a non-default grid through an image source
 
 An image service that accepts bounds in the source CRS can be wrapped with `TileSourceAdapter`
-from `@loaders.gl/loader-utils`. Supply a complete grid; the adapter forwards native bounds,
+from `@loaders.gl/core/loader-utils`. Supply a complete grid; the adapter forwards native bounds,
 per-level pixel dimensions, layers, styling, CRS, and cancellation without reprojection.
 
 ```typescript
-import {createTileGrid, TileSourceAdapter} from '@loaders.gl/loader-utils';
+import {createTileGrid, TileSourceAdapter} from '@loaders.gl/core/loader-utils';
 
 const grid = createTileGrid('EPSG:32610', [{
   id: 'survey',

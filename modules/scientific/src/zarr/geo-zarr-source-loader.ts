@@ -16,9 +16,9 @@ import type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {CRSDefinition} from '@math.gl/crs';
-import {createScanQueryMetadata, getRasterViewportBoundingBox} from '@loaders.gl/loader-utils';
+import {createScanQueryMetadata, getRasterViewportBoundingBox} from '@loaders.gl/core/loader-utils';
 
 import type {SupportedTypedArray} from './types';
 import {

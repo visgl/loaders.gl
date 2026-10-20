@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {createImageSource, WMSImageSource} from '@loaders.gl/wms';
-import type {SourceLoader} from '@loaders.gl/loader-utils';
+import type {SourceLoader} from '@loaders.gl/core/loader-utils';
 
 test.each([
   'auto',

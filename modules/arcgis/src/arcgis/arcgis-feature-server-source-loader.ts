@@ -18,9 +18,9 @@ import type {
   GetFeaturesParameters,
   VectorSource,
   VectorSourceData
-} from '@loaders.gl/loader-utils';
-import type {SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import type {SourceLoader} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 import {ArcGISFeatureQueryClient} from './arcgis-feature-query';
 import type {

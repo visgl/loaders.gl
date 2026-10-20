@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 import {DracoLoaderWithParser} from '../draco-loader-with-parser';
 
 createLoaderWorker(DracoLoaderWithParser);

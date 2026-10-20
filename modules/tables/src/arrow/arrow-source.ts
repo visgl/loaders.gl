@@ -5,7 +5,7 @@ import {
   explainTableQuery,
   filterColumnarRowIndices,
   validateColumnarPredicate
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -13,10 +13,10 @@ import type {
   SourceLoader,
   TableScanReadOptions,
   TableScanSource
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch, TableBatch} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import {ArrowFormat} from './exports/arrow-format';
 
 const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({

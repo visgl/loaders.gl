@@ -11,7 +11,7 @@ import {
   getJSModule,
   getJSModuleOrNull,
   ensureArrayBuffer
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {compressWithNativeCompressionStream} from './compression-stream';
 import {decompressWithNativeDecompressionStream} from './decompression-stream';
 

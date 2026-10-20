@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {path} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
-import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tile3D as Tile3DNode} from '../common/tile-3d';
 import type {Tile3DContent} from '../common/tile-3d-contracts';

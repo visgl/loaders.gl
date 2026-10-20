@@ -13,8 +13,8 @@ import type {
   TableQueryExplain,
   VectorSource,
   VectorTileSource
-} from '@loaders.gl/loader-utils';
-import {createScanQueryMetadata, makeTableScanBatch} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {createScanQueryMetadata, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,

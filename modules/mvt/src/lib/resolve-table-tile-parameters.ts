@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import type {GetTileParameters} from '@loaders.gl/loader-utils';
+import type {GetTileParameters} from '@loaders.gl/core/loader-utils';
 
 /** Resolves a generated table tiler's native numeric level ID before tiling or coordinate conversion. */
 export function resolveTableTileParameters(

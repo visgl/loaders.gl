@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {ArcGISMapTileSource} from '../../src/arcgis/arcgis-map-tile-source-loader';
 import {ArcGISImageTileSource} from '../../src/arcgis/arcgis-image-tile-source-loader';
 import {

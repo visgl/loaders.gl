@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {CRSReprojectionError, type LoaderContext} from '@loaders.gl/loader-utils';
+import {CRSReprojectionError, type LoaderContext} from '@loaders.gl/core/loader-utils';
 import {
   makeTableScanBatch,
   parseFromContext,
   parseInBatchesFromContext,
   toArrayBufferIterator
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch, Field, Schema as TableSchema} from '@loaders.gl/schema';
 import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/schema-utils';

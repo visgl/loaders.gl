@@ -4,7 +4,7 @@
 import {expect, test, vi} from 'vitest';
 import {MVTTileSource} from '@loaders.gl/mvt';
 import {parseTileJSON} from '../src/lib/parse-tilejson';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 
 test.each([
   'xyz',

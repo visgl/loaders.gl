@@ -6,8 +6,8 @@
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
 /* eslint-disable camelcase */
 
-import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
+import {sliceArrayBuffer, parseFromContext} from '@loaders.gl/core/loader-utils';
 
 import {DracoLoader, DracoLoaderOptions, type DracoMesh} from '@loaders.gl/draco';
 

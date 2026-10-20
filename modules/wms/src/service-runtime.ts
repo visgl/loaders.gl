@@ -9,8 +9,8 @@ import type {
   FetchLike,
   RequestCredential,
   SourceLoader
-} from '@loaders.gl/loader-utils';
-import {createAuthenticatedFetch, redactCredentialURL} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {createAuthenticatedFetch, redactCredentialURL} from '@loaders.gl/core/loader-utils';
 import {CSWSourceLoader} from './csw-source-loader';
 import {WMSSourceLoader} from './wms-source-loader';
 import {WMTSSourceLoader} from './wmts-source-loader';

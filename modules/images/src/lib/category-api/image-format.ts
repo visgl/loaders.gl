@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 
 const MIME_TYPES = [
   'image/png',

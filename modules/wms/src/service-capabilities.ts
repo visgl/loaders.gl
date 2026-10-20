@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TileSourceMetadata, VectorSourceMetadata} from '@loaders.gl/loader-utils';
-import type {GeoServiceType, ServiceCapabilities} from '@loaders.gl/loader-utils';
+import type {TileSourceMetadata, VectorSourceMetadata} from '@loaders.gl/core/loader-utils';
+import type {GeoServiceType, ServiceCapabilities} from '@loaders.gl/core/loader-utils';
 import type {WMSCapabilities} from './lib/parsers/wms/parse-wms-capabilities';
 import type {WMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
 import type {WFSCapabilities} from './lib/parsers/wfs/parse-wfs-capabilities';
 
-export type {GeoServiceType, ServiceCapabilities} from '@loaders.gl/loader-utils';
+export type {GeoServiceType, ServiceCapabilities} from '@loaders.gl/core/loader-utils';
 
 /** Normalizes WMS capabilities into the shared service contract. */
 export function normalizeWMSCapabilities(

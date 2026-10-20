@@ -10,7 +10,7 @@ import {
   GeoZarrSourceLoader,
   type GeoZarrSourceLoaderOptions
 } from '@loaders.gl/scientific/zarr';
-import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/loader-utils';
+import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 const CONTENT_BASE = resolvePath('@loaders.gl/scientific/test/zarr/data');
 const SPATIALDATA_V3_FIXTURE = `${CONTENT_BASE}/spatialdata-v3.zarr`;
 const SPATIALDATA_V3_FIXTURE_URL = pathToFileURL(SPATIALDATA_V3_FIXTURE).href;

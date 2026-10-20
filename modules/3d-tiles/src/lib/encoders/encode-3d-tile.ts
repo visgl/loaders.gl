@@ -6,7 +6,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {TILE3D_TYPE} from '../constants';
-import {assert} from '@loaders.gl/loader-utils';
+import {assert} from '@loaders.gl/core/loader-utils';
 
 import {encodeComposite3DTile} from './encode-3d-tile-composite';
 import {encodeBatchedModel3DTile} from './encode-3d-tile-batched-model';

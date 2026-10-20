@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {
   OMEZarrImageSource,
   OMEZarrSourceLoaderWithParser,
@@ -169,7 +169,15 @@ export class SpatialDataSource extends ZarrSource {
     signal?: AbortSignal
   ): Promise<ZarrArraySource> {
     const element = await this.getElement('table', name, signal);
-    const normalizedArrayPath = arrayPath.replace(/^\/+|\/+$/g, '');
+    let pathStart = 0;
+    let pathEnd = arrayPath.length;
+    while (pathStart < pathEnd && arrayPath[pathStart] === '/') {
+      pathStart++;
+    }
+    while (pathEnd > pathStart && arrayPath[pathEnd - 1] === '/') {
+      pathEnd--;
+    }
+    const normalizedArrayPath = arrayPath.slice(pathStart, pathEnd);
     if (!normalizedArrayPath) {
       throw new Error('SpatialData table array path must not be empty.');
     }

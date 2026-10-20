@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {initializeWasmModule, registerJSModules, getJSModuleOrNull} from '@loaders.gl/loader-utils';
-import {loadLibrary, LoadLibraryOptions} from '@loaders.gl/worker-utils';
+import {
+  initializeWasmModule,
+  registerJSModules,
+  getJSModuleOrNull
+} from '@loaders.gl/core/loader-utils';
+import {loadLibrary, LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 
 export const BASIS_EXTERNAL_LIBRARIES = {
   /** Basis transcoder, javascript wrapper part */

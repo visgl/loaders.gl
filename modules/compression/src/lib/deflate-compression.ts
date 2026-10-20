@@ -4,7 +4,7 @@
 
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {isBrowser, toArrayBuffer, promisify1} from '@loaders.gl/loader-utils';
+import {isBrowser, toArrayBuffer, promisify1} from '@loaders.gl/core/loader-utils';
 import {
   Deflate,
   Gzip,

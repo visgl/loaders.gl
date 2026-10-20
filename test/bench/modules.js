@@ -5,7 +5,7 @@
 // Override aliases to point to publicly accessible github
 // TODO maybe setPathPrefix is enough?
 import ALIASES from '../aliases';
-import {_addAliases} from '@loaders.gl/loader-utils';
+import {_addAliases} from '@loaders.gl/core/loader-utils';
 _addAliases(ALIASES);
 
 /**
@@ -87,7 +87,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   // await mvtBench(suite);
   if (shouldRunBenchmark('loader-utils')) {
     const {default: loaderUtilsBench} = await import(
-      '@loaders.gl/loader-utils/test/loader-utils.bench'
+      '@loaders.gl/core/loader-utils/test/loader-utils.bench'
     );
     await loaderUtilsBench(suite);
   }

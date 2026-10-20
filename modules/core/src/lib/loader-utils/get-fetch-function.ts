@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, LoaderOptions, FetchLike} from '@loaders.gl/loader-utils';
-import {createAuthenticatedFetch, isObject} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderOptions, FetchLike} from '@loaders.gl/core/loader-utils';
+import {createAuthenticatedFetch, isObject} from '@loaders.gl/core/loader-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {getGlobalLoaderOptions} from './option-utils';
 

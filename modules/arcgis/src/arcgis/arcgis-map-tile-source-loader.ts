@@ -19,8 +19,8 @@ import type {
   SourceLoader,
   TileSource,
   TileSourceMetadata
-} from '@loaders.gl/loader-utils';
-import {DataSource, getTileGridMatrixId} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import {DataSource, getTileGridMatrixId} from '@loaders.gl/core/loader-utils';
 import {createArcGISTileGrid} from './arcgis-tile-grid';
 
 /** ArcGIS MapServer source for cached `/tile/{z}/{y}/{x}` image tiles. */

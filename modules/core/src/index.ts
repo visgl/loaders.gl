@@ -19,8 +19,8 @@ export type {
   Stat,
   FileSystem,
   RandomAccessFileSystem
-} from '@loaders.gl/loader-utils';
-export type {SourceLoader} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+export type {SourceLoader} from '@loaders.gl/core/loader-utils';
 
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
@@ -56,8 +56,8 @@ export {createDataSource} from './lib/api/create-data-source';
 export {selectSource as _selectSource} from './lib/api/select-source';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
-export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
-export {RequestScheduler} from '@loaders.gl/loader-utils';
+export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/core/loader-utils';
+export {RequestScheduler} from '@loaders.gl/core/loader-utils';
 
 // ITERATOR UTILS
 export {makeIterator} from './iterators/make-iterator/make-iterator';
@@ -65,7 +65,7 @@ export {makeStream} from './iterators/make-stream/make-stream';
 
 // CORE LOADERS
 export {NullLoader} from './null-loader';
-export {JSONLoader} from '@loaders.gl/loader-utils';
+export {JSONLoader} from '@loaders.gl/core/loader-utils';
 
 // EXPERIMENTAL
 export {fetchProgress as _fetchProgress} from './lib/progress/fetch-progress';
@@ -78,16 +78,16 @@ export {_unregisterLoaders} from './lib/api/register-loaders';
 // TODO - MOVE TO LOADER-UTILS AND DEPRECATE IN CORE?
 //
 
-export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
-export {assert} from '@loaders.gl/loader-utils';
-export {forEach, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/core/loader-utils';
+export {assert} from '@loaders.gl/core/loader-utils';
+export {forEach, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 
 export {
   makeTextDecoderIterator,
   makeTextEncoderIterator,
   makeLineIterator,
   makeNumberedLineIterator
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 // "JAVASCRIPT" UTILS - move to loader-utils?
 export {
@@ -99,7 +99,7 @@ export {
   isResponse,
   isReadableStream,
   isWritableStream
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use NullLoader. */

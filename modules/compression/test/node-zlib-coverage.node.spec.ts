@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {brotliDecompressSync} from 'node:zlib';
-import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers} from '@loaders.gl/core/loader-utils';
 import {BrotliCompressor} from '../src/brotli-compressor';
 import {DeflateCompression} from '../src/lib/deflate-compression';
 

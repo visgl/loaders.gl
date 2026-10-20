@@ -13,7 +13,7 @@ import type {
   TileSourceMetadata,
   GetTileParameters,
   GetTileDataParameters
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/schema';
 import {
   DataSource,
@@ -21,7 +21,7 @@ import {
   createWebMercatorTileGrid,
   resolveXYZTileParameters,
   waitForPromiseWithSignal
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   ImageBitmapLoader,
   type ImageBitmapLoaderOptions,

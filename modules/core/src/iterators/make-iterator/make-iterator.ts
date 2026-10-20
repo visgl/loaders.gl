@@ -9,7 +9,7 @@ import {makeArrayBufferIterator} from './make-array-buffer-iterator';
 import {makeBlobIterator} from './make-blob-iterator';
 import type {StreamIteratorOptions} from './make-stream-iterator';
 import {makeStreamIterator} from './make-stream-iterator';
-import {isBlob, isReadableStream, isResponse} from '@loaders.gl/loader-utils';
+import {isBlob, isReadableStream, isResponse} from '@loaders.gl/core/loader-utils';
 
 /**
  * @param [options.chunkSize]

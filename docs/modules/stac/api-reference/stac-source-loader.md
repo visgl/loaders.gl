@@ -119,7 +119,7 @@ For shared loading controls and parser configuration, see
 ## Capabilities
 
 `STACSource.capabilities` implements the protocol-neutral `CatalogSource` capability contract from
-`@loaders.gl/loader-utils`. STAC-specific methods remain available directly on `STACSource`.
+`@loaders.gl/core/loader-utils`. STAC-specific methods remain available directly on `STACSource`.
 
 The initial implementation does not advertise text search or CQL2. Those extensions can be added
 without changing the shared catalog contract.

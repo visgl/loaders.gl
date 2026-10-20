@@ -11,7 +11,7 @@ import type {
   TableBatch
 } from '@loaders.gl/schema';
 import {convertTable, makeTableFromData} from '@loaders.gl/schema-utils';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
 import {parseJSONSync} from './lib/parsers/parse-json';

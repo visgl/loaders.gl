@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
-import {BlobFile, type ReadableFile} from '@loaders.gl/loader-utils';
+import {BlobFile, type ReadableFile} from '@loaders.gl/core/loader-utils';
 import {openZipArchive, type ZipArchive, type ZipArchiveOptions} from '@loaders.gl/zip';
 import {createZipFixture, concatenateZipBytes, type FixtureEntry} from './zip-reader-fixture';
 import {decodeZipHeader, decodeZipText, calculateZipChecksum} from '../src/lib/zip-entry-metadata';

@@ -8,7 +8,7 @@ import {
   parseInBatchesFromContext,
   parseFromContext,
   toArrayBufferIterator
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
 import type {

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TableBatch} from '@loaders.gl/schema';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';

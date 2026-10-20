@@ -4,8 +4,8 @@
 
 import type {LERCData} from '@loaders.gl/raster';
 import {LERCLoader} from '@loaders.gl/raster';
-import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/core/loader-utils';
+import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {WCSCapabilities} from './wip/lib/wcs/parse-wcs-capabilities';
 import {parseWCSCapabilities} from './wip/lib/wcs/parse-wcs-capabilities';
 
@@ -178,7 +178,7 @@ export const WCSCoverageSourceLoader = {
   fromBlob: false,
   options: {wcs: {}},
   defaultOptions: {wcs: {}},
-  testURL: (url: string): boolean => /(?:wcs|GetCapabilities.*WCS|service=WCS)/i.test(url),
+  testURL: (url: string): boolean => url.toLowerCase().includes('wcs'),
   createDataSource: (url: string, options: WCSSourceOptions = {}, coreApi?: CoreAPI) =>
     new WCSCoverageSource(url, options, coreApi)
 } as const satisfies SourceLoader<WCSCoverageSource>;

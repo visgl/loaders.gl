@@ -73,7 +73,7 @@ factory rejections and catch errors inside the success callback: a throw there
 does not reject a separate outer promise. Keep resource and lock cleanup in
 `finally`.
 
-Basis, Draco, and Zstd use `initializeWasmModule` from `@loaders.gl/loader-utils`
+Basis, Draco, and Zstd use `initializeWasmModule` from `@loaders.gl/core/loader-utils`
 for this callback bridge. It extracts exports once, even if a factory reports
 readiness through both a callback and a promise. MD5 uses a native async function. The
 optional `zstd-codec` dependency exposes only a success callback, so asynchronous

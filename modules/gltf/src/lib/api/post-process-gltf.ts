@@ -41,8 +41,8 @@ import type {
 
 import {assert} from '../utils/assert';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
-import {copyToArrayBuffer} from '@loaders.gl/loader-utils';
-import type {BigTypedArray, BigTypedArrayConstructor} from '@loaders.gl/loader-utils';
+import {copyToArrayBuffer} from '@loaders.gl/core/loader-utils';
+import type {BigTypedArray, BigTypedArrayConstructor} from '@loaders.gl/core/loader-utils';
 import {GLTFIterator} from './gltf-iterator';
 
 // This is a post processor for loaded glTF files

@@ -15,7 +15,7 @@ import {
   type CRSReprojectionOptions,
   type ColumnarPredicate,
   type TableQueryOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {

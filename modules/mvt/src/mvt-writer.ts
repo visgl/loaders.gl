@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {WriterWithEncoder} from '@loaders.gl/loader-utils';
+import {WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import {MVTFormat} from './mvt-format';
 import {encodeMVT, type MVTWriterOptions} from './lib/encode-mvt';
 

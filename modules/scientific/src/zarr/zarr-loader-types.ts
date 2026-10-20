@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, SourceLoader} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {GeoZarrRasterSource, GeoZarrSourceLoaderOptions} from './geo-zarr-source-loader';
 import type {OMEZarrImageSource, ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
 import type {SpatialDataSource, SpatialDataSourceLoaderOptions} from './spatial-data-source';

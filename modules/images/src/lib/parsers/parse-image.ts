@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {assert, isBrowser} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
+import {assert, isBrowser} from '@loaders.gl/core/loader-utils';
 import type {ImageType} from '../../types';
 import type {ImageLoaderOptions} from '../../image-loader';
 import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';

@@ -48,7 +48,7 @@ test.each([
     expect(manifest[section] ?? {}).not.toHaveProperty('@loaders.gl/geoarrow');
   }
   expect(readSources(join(directory, 'src'))).not.toMatch(
-    /(?:from\s+|import\s*\()(['"])@loaders\.gl\/(?:gis|geoarrow|core)(?:\/|\1)/
+    /(?:from\s+|import\s*\()(['"])@loaders\.gl\/(?:gis|geoarrow|core(?!\/(?:loader-utils|worker-utils)(?:\/|\1)))(?:\/|\1)/
   );
 });
 

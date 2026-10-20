@@ -13,7 +13,7 @@ import {parseBatchedModel3DTile} from './parse-3d-tile-batched-model';
 import {parseInstancedModel3DTile} from './parse-3d-tile-instanced-model';
 import {parseComposite3DTile} from './parse-3d-tile-composite';
 import {parseGltf3DTile} from './parse-3d-tile-gltf';
-import {LoaderContext} from '@loaders.gl/loader-utils';
+import {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../types';
 import type {Tiles3DBinaryContentType, Tiles3DContentType} from './preprocess-3d-tile-content';

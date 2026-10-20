@@ -11,14 +11,14 @@ import type {
   RasterData,
   RasterChannelDataType,
   RasterQueryCapabilities
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
   DataSource,
   type ScanQueryMetadata,
   type ScanQueryMetadataOptions,
   type ScanQueryMetadataProvider
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 
 import type {Labels, Channel, Multiscale, RootAttrs, SupportedTypedArray} from './types';
 import {guessLabels, guessTileSize, validLabels} from './lib/utils';

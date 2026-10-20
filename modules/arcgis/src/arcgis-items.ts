@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {FetchLike} from '@loaders.gl/loader-utils';
+import type {FetchLike} from '@loaders.gl/core/loader-utils';
 
 /** A supported service-backed portal item, retaining the original portal metadata. */
 export type ArcGISItem = {

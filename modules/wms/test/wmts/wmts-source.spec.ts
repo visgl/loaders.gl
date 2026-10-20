@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {WMTSSourceLoader, WMTSImageTileSource} from '@loaders.gl/wms';
 import {WMTSCapabilitiesLoader} from '@loaders.gl/wms';
 import {getTileBounds} from '@math.gl/geospatial';

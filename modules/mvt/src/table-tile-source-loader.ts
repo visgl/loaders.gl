@@ -11,13 +11,13 @@ import type {
   TileSourceMetadata,
   GetTileDataParameters,
   GetTileParameters
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import {
   DataSource,
   getRequiredOptions,
   getSourceLoaderOptions,
   log
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {
   Schema,
   GeoJSONTable,

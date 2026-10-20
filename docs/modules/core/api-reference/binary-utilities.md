@@ -45,7 +45,7 @@ loaders.gl provides a set of functions to simplify working with binary data. The
 ## Usage
 
 ```typescript
-import {toArrayBuffer} from '@loaders.gl/loader-utils';
+import {toArrayBuffer} from '@loaders.gl/core/loader-utils';
 ```
 
 ## Functions

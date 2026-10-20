@@ -36,7 +36,7 @@ Wrap any GeoJSON-capable `VectorSource`, including WFS and OGC API Features, in
 
 ```ts
 import {ManagedVectorSource} from '@loaders.gl/wms';
-import type {GetFeaturesParameters} from '@loaders.gl/loader-utils';
+import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 const managed = new ManagedVectorSource(source, {maxCachedExtents: 32});
 const request: GetFeaturesParameters = {

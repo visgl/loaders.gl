@@ -103,7 +103,7 @@ const tileset = new Tileset2D({
 ### Construct from a loaders.gl `TileSource`
 
 ```ts
-import type {TileSource} from '@loaders.gl/loader-utils';
+import type {TileSource} from '@loaders.gl/core/loader-utils';
 import {Tileset2D} from '@loaders.gl/tiles';
 
 const tileSource: TileSource = createTileSourceSomehow();

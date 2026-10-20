@@ -10,7 +10,7 @@ import type {
   RangeRequestSchedulerProps,
   ScanExecutionTelemetryCallback,
   StrictLoaderOptions
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import type {
   ColumnarComparisonPredicate,
@@ -20,8 +20,8 @@ import type {
   ColumnarNullPredicate,
   ColumnarPredicateProperty,
   ColumnarPredicateValue
-} from '@loaders.gl/loader-utils';
-import type {TableQueryExplain} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
+import type {TableQueryExplain} from '@loaders.gl/core/loader-utils';
 import type {FileMetaData} from './parquetjs/parquet-thrift/index';
 import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 

@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
-import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {fetchFile, loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 import {CryptoHash} from '@loaders.gl/crypto';

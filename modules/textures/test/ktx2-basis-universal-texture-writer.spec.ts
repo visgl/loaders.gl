@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {load, encode} from '@loaders.gl/core';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {BasisLoader, KTX2BasisWriter, KTX2BasisWriterWorker} from '@loaders.gl/textures';
-import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
+import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/core/worker-utils';
 const shannonPNG = '@loaders.gl/textures/test/data/shannon.png';
 const shannonJPG = '@loaders.gl/textures/test/data/shannon.jpg';
 test('KTX2BasisUniversalTextureWriter#Should encode PNG', async () => {

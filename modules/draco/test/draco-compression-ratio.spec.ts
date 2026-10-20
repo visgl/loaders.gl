@@ -3,7 +3,7 @@ import {fetchFile, parse, encode} from '@loaders.gl/core';
 // import {getMeshSize} from '@loaders.gl/schema-utils';
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {validateMeshCategoryData} from 'test/common/conformance';
-import {isBrowser} from '@loaders.gl/worker-utils';
+import {isBrowser} from '@loaders.gl/core/worker-utils';
 const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 test('DracoWriter#compressRawBuffers', async () => {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, TypedArray} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, TypedArray} from '@loaders.gl/core/loader-utils';
 import type {CRSIdentifier} from '@math.gl/crs';
 
 /** One original sample band, with no color conversion, resampling or scale/offset applied. */

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseRADHeader} from './lib/parse-rad';
 import type {RADMetadata} from './lib/parse-rad';
 import {RADLoader as RADLoaderMetadata} from './rad-loader-types';

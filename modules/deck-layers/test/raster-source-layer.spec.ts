@@ -4,7 +4,7 @@
 
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {describe, expect, test, vi} from 'vitest';
-import type {RasterData, RasterSourceMetadata} from '@loaders.gl/loader-utils';
+import type {RasterData, RasterSourceMetadata} from '@loaders.gl/core/loader-utils';
 import {RasterSet} from '@loaders.gl/tiles';
 import {
   RasterSourceLayer,

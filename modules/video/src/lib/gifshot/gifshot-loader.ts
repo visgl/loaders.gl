@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 // @ts-nocheck
-import {loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
-import {registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
+import {loadLibrary, type LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
+import {registerJSModules, getJSModule} from '@loaders.gl/core/loader-utils';
 
 let loadGifshotPromise;
 

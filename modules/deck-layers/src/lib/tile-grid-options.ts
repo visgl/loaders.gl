@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import type {TileSourceMetadata} from '@loaders.gl/loader-utils';
+import type {TileSourceMetadata} from '@loaders.gl/core/loader-utils';
 
 /** Options supported by the default deck.gl XYZ selector. */
 export type TileGridLayerOptions = {

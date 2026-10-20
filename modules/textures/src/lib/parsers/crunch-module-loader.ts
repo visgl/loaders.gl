@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 // @ts-nocheck
-import {getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
-import {loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
+import {getJSModuleOrNull, registerJSModules} from '@loaders.gl/core/loader-utils';
+import {loadLibrary, type LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 
 export const CRUNCH_EXTERNAL_LIBRARIES = {
   /** Crunch decoder library. It is used as dynamically imported script */

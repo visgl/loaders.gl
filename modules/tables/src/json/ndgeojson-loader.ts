@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {makeLineIterator, type LoaderWithParser} from '@loaders.gl/loader-utils';
+import {makeLineIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,

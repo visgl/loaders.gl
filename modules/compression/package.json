@@ -311,8 +311,6 @@
     "build-worker-node": "node scripts/build-worker.mjs node"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.12",
-    "@loaders.gl/worker-utils": "5.0.0-alpha.12",
     "compress-utils": "^0.10.1"
   },
   "devDependencies": {

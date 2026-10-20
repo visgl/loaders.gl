@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {ParquetReader} from '../../tables/src/parquet/parquetjs/parser/parquet-reader';
 import {ParquetSchema} from '../../tables/src/parquet/parquetjs/schema/schema';

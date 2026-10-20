@@ -15,7 +15,7 @@ const excludePatterns = [
   'modules/xml/test/sax-ts/testcases/**/*.spec.ts',
   'modules/core/test/lib/api/create-data-source.spec.ts',
   'modules/i3s/test/i3s-content-loader.spec.ts',
-  'modules/loader-utils/test/categories/mesh/**',
+  'modules/core/test/loader-utils-package/categories/mesh/**',
   'modules/mvt/test/lib/mapbox-vt-pbf/**',
   'modules/mvt/test/table-tile-source-loader-full.spec.ts',
   'modules/mvt/test/table-tile-source-loader-multi-world.spec.ts',

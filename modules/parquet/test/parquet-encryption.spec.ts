@@ -4,7 +4,7 @@
 
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
 import {fetchFile, load} from '@loaders.gl/core';
-import {ArrayBufferFile} from '@loaders.gl/loader-utils';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {
   ParquetReader,
   ParquetSourceLoader,

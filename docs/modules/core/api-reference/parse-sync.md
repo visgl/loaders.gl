@@ -71,4 +71,4 @@ const mesh = parseSync(arrayBuffer, parserLoader);
 
 Handle errors with an ordinary `try`/`catch`; `parseSync` does not return a promise.
 Inside a composite loader, use `parseSyncFromContext` from
-`@loaders.gl/loader-utils` to preserve the parent context.
+`@loaders.gl/core/loader-utils` to preserve the parent context.

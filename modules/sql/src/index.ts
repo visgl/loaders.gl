@@ -67,7 +67,7 @@ export type {
   RelationalAggregate,
   RelationalExpression,
   RelationalOrderKey
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/core/loader-utils';
 export type {
   TableQueryFilterStep,
   TableQueryLimitStep,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import parseVideo, {parseVideoBlob} from './lib/parsers/parse-video';
 import {VideoLoader as VideoLoaderMetadata} from './video-loader';
 

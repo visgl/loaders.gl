@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {I3SSource, IndexedArchiveTilesetSource} from '@loaders.gl/tiles';
-import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 
 /** Constructor input for {@link SLPKSource}. */

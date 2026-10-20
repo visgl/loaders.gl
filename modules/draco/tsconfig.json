@@ -1,18 +1,29 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "src/libs"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/libs"
+  ],
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
     "outDir": "dist"
   },
   "references": [
-    {"path": "../arrow"},
-    {"path": "../loader-utils"},
-    {"path": "../schema"},
-    {"path": "../schema-utils"},
-    {"path": "../worker-utils"},
-    {"path": "../core"}
+    {
+      "path": "../arrow"
+    },
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../schema"
+    },
+    {
+      "path": "../schema-utils"
+    }
   ]
 }

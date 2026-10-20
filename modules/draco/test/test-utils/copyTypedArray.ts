@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {copyToArray} from '@loaders.gl/loader-utils';
+import {copyToArray} from '@loaders.gl/core/loader-utils';
 
 export function cloneTypeArray(source) {
   const indicesContainer = new Uint8Array(source.byteLength);

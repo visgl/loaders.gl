@@ -112,7 +112,7 @@ The `context` parameter will contain the following fields
 A loader opts into worker execution by exposing a worker descriptor (`worker: true` or a worker
 URL). Browser loaders can additionally provide `loadWorker()` to construct a bundler-resolved
 module worker. The worker entry point normally calls `createLoaderWorker(loader)` from
-`@loaders.gl/loader-utils`, which installs the loader's atomic `parse` function and, when present,
+`@loaders.gl/core/loader-utils`, which installs the loader's atomic `parse` function and, when present,
 its stateful `parseInBatches` function.
 
 Atomic worker selection is controlled by `options.core.worker`:

@@ -24,7 +24,6 @@
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/json": "workspace:*",
-    "@loaders.gl/loader-utils": "workspace:*",
     "@loaders.gl/mlt": "workspace:*",
     "@loaders.gl/mvt": "workspace:*",
     "@loaders.gl/pmtiles": "workspace:*",

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline

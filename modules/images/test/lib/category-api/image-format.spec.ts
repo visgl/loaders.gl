@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/core/loader-utils';
 import {isImageFormatSupported, getSupportedImageFormats} from '@loaders.gl/images';
 export const TEST_CASES = [
   {
