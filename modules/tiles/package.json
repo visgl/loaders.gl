@@ -96,6 +96,11 @@
       "types": "./dist/pmtiles/raster.d.ts",
       "import": "./dist/pmtiles/raster.js",
       "require": "./dist/pmtiles/raster.cjs"
+    },
+    "./tile-matrix": {
+      "types": "./dist/tile-matrix.d.ts",
+      "import": "./dist/tile-matrix.js",
+      "require": "./dist/tile-matrix.cjs"
     }
   },
   "sideEffects": false,
@@ -127,6 +132,7 @@
     "@loaders.gl/images": "5.0.0-alpha.12",
     "@loaders.gl/tiles-3d": "5.0.0-alpha.12",
     "@maplibre/mlt": "^1.1.6",
+    "@math.gl/geospatial": "5.0.0-alpha.18",
     "@math.gl/polygon": "5.0.0-alpha.18",
     "@probe.gl/stats": "^4.1.1",
     "apache-arrow": "^21.2.0",

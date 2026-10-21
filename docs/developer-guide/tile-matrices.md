@@ -143,3 +143,7 @@ Partial metadata does not broaden existing rendering support. Native source requ
 geometry utilities remain available for these grids; exposing their metadata does not reproject
 pixels or select tiles in a different deck.gl view. Availability checks belong to the source,
 not to a renderer's assumption that every tile exists.
+
+## Explicit frame selection
+
+For complete regular grids, [`selectTileMatrixTiles`](/docs/modules/tiles/api-reference/tile-matrix) accepts an extent and resolution already expressed in the grid CRS, applies advertised limits, and returns native source requests. Our current thinking is that this may be a useful renderer-independent boundary. It does not yet connect arbitrary matrix sets to `Tileset2D` or enable projected rendering. The fixed-frame OGC walkthrough provides a small, tested example for discussing that next step.
