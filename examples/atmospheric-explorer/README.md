@@ -51,9 +51,14 @@ The remaining dimension must be the flattened spatial point axis. The app verifi
 
 The app displays a color-coded globe point cloud and min/max statistics. NaN values are excluded from rendering. The UI does not yet discover variables or generate Gaussian grid coordinates from ECMWF metadata.
 
+## Shared example information panels
+
+This example uses `@deck.gl-community/panels` through `examples/website/shared/example-info-panel.ts`. The shared `createExampleInfoBox()` helper accepts authored About, Dataset, and Attributions sections and can be reused by other loaders.gl examples. `mountExampleInfoBox()` supports standalone DOM examples. Existing React examples can compose the returned panel container with their established panel/widget architecture. The atmospheric-specific content lives in `info.ts` and credits Jannes van Ingen for highlighting the dataset.
+
 ## Implementation
 
-- `app.ts`: Zarr metadata/selection fetch, deck.gl GlobeView, errors and aborts.
+- `app.ts`: Zarr/Icechunk selection, deck.gl GlobeView, errors, aborts and panel lifecycle.
+- `info.ts`: example-specific About, Dataset and Attributions tabs backed by the shared panels helper.
 - `grid.ts`: grid expansion, shape checks, finite range and color mapping.
 - `grid.spec.ts`: focused geometry and validation tests.
 
