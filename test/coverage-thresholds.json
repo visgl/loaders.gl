@@ -1067,6 +1067,44 @@
       "sourcePaths": [
         "modules/tiles/src/pmtiles/"
       ]
+    },
+    "wms": {
+      "path": "modules/services/src/wms",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 69,
+        "branches": 57
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 66,
+        "functions": 64,
+        "branches": 57
+      },
+      "owner": "@loaders.gl/services",
+      "sourcePaths": [
+        "modules/services/src/wms/"
+      ]
+    },
+    "stac": {
+      "path": "modules/services/src/stac",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "owner": "@loaders.gl/services",
+      "sourcePaths": [
+        "modules/services/src/stac/"
+      ]
     }
   }
 }
