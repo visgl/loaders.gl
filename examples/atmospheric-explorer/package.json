@@ -7,7 +7,9 @@
     "@deck.gl/core": "^9.4.0",
     "@deck.gl/layers": "^9.4.0",
     "@loaders.gl/core": "workspace:*",
-    "@loaders.gl/scientific": "workspace:*"
+    "@loaders.gl/scientific": "workspace:*",
+    "icechunk-js": "^0.6.0",
+    "zarrita": "~0.7.1"
   },
   "devDependencies": {"vite": "^8.0.0", "typescript": "^6.0.3", "vitest": "5.0.2"}
 }
