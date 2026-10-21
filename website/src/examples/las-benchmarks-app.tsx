@@ -4,15 +4,15 @@
 
 import React, {useEffect, useState} from 'react';
 
-import {Bench, type BenchProps, type LogEntry, type LogFunction} from '@probe.gl/bench';
-import {BenchResults} from '@probe.gl/react-bench';
+import {Bench, type BenchProps, type LogEntry, type LogFunction} from 'probe.gl/bench';
+import {BenchResults} from '../components/bench-results';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import {LASLoaderWithParser as LASLoader} from '@loaders.gl/las/las-loader';
 import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/las/lazperf-loader';
 import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/las/laz-rs-loader';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
-// @probe.gl/bench reads this process-wide configuration without guarding its existence.
+// probe.gl/bench reads this process-wide configuration without guarding its existence.
 globalThis.probe ||= {};
 
 const FIXTURE_BASE_URL =

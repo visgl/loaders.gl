@@ -4,8 +4,8 @@
 
 import React, {useEffect, useState} from 'react';
 
-import {Bench, type BenchProps, type LogEntry, type LogFunction} from '@probe.gl/bench';
-import {BenchResults} from '@probe.gl/react-bench';
+import {Bench, type BenchProps, type LogEntry, type LogFunction} from 'probe.gl/bench';
+import {BenchResults} from '../components/bench-results';
 import {fetchFile} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv/bundled';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
@@ -13,7 +13,7 @@ import {autoType, csvParse, tsvParse} from 'd3-dsv';
 import PapaParseNPM from 'papaparse';
 import {inferSchema, initParser} from 'udsv';
 
-// @probe.gl/bench reads this process-wide configuration without guarding its existence.
+// probe.gl/bench reads this process-wide configuration without guarding its existence.
 globalThis.probe ||= {};
 
 const SAMPLE_CSV_URL =

@@ -635,8 +635,8 @@
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
     "@loaders.gl/compression": "5.0.0-alpha.12",
     "@math.gl/wkb": "5.0.0-alpha.18",
-    "@probe.gl/log": "^4.1.1",
-    "apache-arrow": ">= 17.0.0"
+    "apache-arrow": ">= 17.0.0",
+    "probe.gl": "^5.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

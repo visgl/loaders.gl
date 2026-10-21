@@ -26,7 +26,7 @@ import {
 import {getExampleDevicePixelRatio} from '../shared/example-performance';
 
 import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 
 import type {Example} from './examples';
 import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE} from './examples';

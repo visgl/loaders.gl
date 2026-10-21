@@ -10,7 +10,7 @@ _addAliases(ALIASES);
 
 /**
  * Adds module benchmarks that are compatible with the current runtime.
- * @param {import('@probe.gl/bench').Bench} suite Benchmark suite.
+ * @param {import('probe.gl/bench').Bench} suite Benchmark suite.
  * @param {string[]} filters Optional benchmark module filters.
  * @returns {Promise<void>} Resolves after all compatible benchmarks have been added.
  */

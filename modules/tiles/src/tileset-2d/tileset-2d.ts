@@ -7,7 +7,7 @@ import {
   type TileSource,
   type TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
-import {Stats} from '@probe.gl/stats';
+import {Stats} from 'probe.gl/stats';
 import {SharedTile2DHeader} from './tile-2d-header';
 import type {Tileset2DAdapter, Tileset2DTileContext} from './adapter';
 import type {TileIndex, TileLoadProps, ZRange} from './types';

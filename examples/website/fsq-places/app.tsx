@@ -20,7 +20,7 @@ import {
 } from '@loaders.gl/parquet/parquet-dataset-source';
 import type {ParquetPredicate} from '@loaders.gl/parquet';
 import type {Table as ArrowTable} from 'apache-arrow';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import {Map} from 'react-map-gl';
 
 import {

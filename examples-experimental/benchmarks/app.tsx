@@ -5,8 +5,8 @@
 import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import {BenchResults} from '@probe.gl/react-bench';
-import {Bench} from '@probe.gl/bench';
+import {BenchResults} from '../../website/src/components/bench-results';
+import {Bench} from 'probe.gl/bench';
 
 import {addModuleBenchmarksToSuite} from '../../test/bench/modules';
 
@@ -51,10 +51,10 @@ export default class App extends PureComponent {
   }
 
   _logResult(result) {
-    const {entry, id, itersPerSecond, error} = result;
+    const {type, id, itersPerSecond, error} = result;
 
     const {log} = this.state;
-    switch (entry) {
+    switch (type) {
       case LOG_ENTRY.GROUP:
         log.push({id});
         break;

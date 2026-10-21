@@ -10,7 +10,7 @@ import {GeoJsonLayer} from '@deck.gl/layers';
 import {DeckGL} from '@deck.gl/react';
 import {ClusterLayer} from '@loaders.gl/deck-layers';
 import {ClusterSource, getRepresentativePoint, type ClusterNode} from '@loaders.gl/geoarrow';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import {Map as MapLibreMap} from 'react-map-gl';
 import {createSampleData, type SampleGeometry} from './sample-data';
 import './style.css';

@@ -173,6 +173,18 @@ in the supported minimum release, Arrow 17. Import version-specific names such
 as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type
 guards directly from your installed `apache-arrow` package.
 
+### probe.gl imports
+
+loaders.gl now uses `probe.gl@^5.0.0`. Applications that supply loggers or statistics
+objects should replace the scoped v4 packages with `probe.gl` and import from its
+subpaths:
+
+```typescript
+import {Log} from 'probe.gl/log';
+import {Stats} from 'probe.gl/stats';
+import {StatsWidget} from 'probe.gl/stats-widget';
+```
+
 ### Graph loader output defaults
 
 `GraphMLLoader` and `DOTLoader` now default to a `shape: 'tables'` collection with
