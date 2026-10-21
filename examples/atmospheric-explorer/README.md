@@ -13,6 +13,20 @@ yarn start
 
 Run the focused grid tests with `yarn test`; build with `yarn build`.
 
+## Data provenance, licensing and acknowledgements
+
+This example uses and acknowledges the work of multiple independent projects and organizations:
+
+- **ECMWF — European Centre for Medium-Range Weather Forecasts:** originator of the IFS operational atmospheric analyses. See [ECMWF](https://www.ecmwf.int/) and the specific archive's licensing and attribution requirements.
+- **Beyond Weather:** prepared and published the cloud-native ECMWF IFS N320 analysis archive used for this demonstration. See the [dataset examples and documentation](https://github.com/Beyond-Weather-Git/open-data-examples/tree/main/ifs-analysis-n320).
+- **AWS Open Data:** hosts/distributes the publicly documented dataset; see the [AWS dataset registry](https://registry.opendata.aws/beyond-weather-ecmwf-ifs-analysis/).
+- **Earthmover:** cloud-native scientific-data infrastructure and marketplace associated with the release; see [Earthmover](https://earthmover.io/).
+- **Icechunk:** transactional, versioned Zarr storage technology, developed by the Icechunk contributors; see [Icechunk](https://github.com/earth-mover/icechunk).
+- **Zarrita:** JavaScript Zarr array access and decoding; see [Zarrita](https://github.com/manzt/zarrita.js).
+- **vis.gl contributors:** loaders.gl and deck.gl for browser-side data access and visualization.
+
+The dataset is described as **Creative Commons Attribution 4.0 (CC BY 4.0)**. See the [license text](https://creativecommons.org/licenses/by/4.0/) and **verify the original dataset-specific terms and exact ECMWF attribution statement before publishing screenshots, derivative data, or a hosted showcase**. Preserve source identification, license links, and any modifications or transformations made for visualization. The underlying ECMWF analysis is not produced by vis.gl, and the example is not endorsed by ECMWF, Beyond Weather, AWS, or Earthmover.
+
 ## Data
 
 Beyond Weather's ECMWF IFS N320 operational analysis archive is distributed using Icechunk/Zarr.
