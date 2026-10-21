@@ -3,6 +3,7 @@ import {ScatterplotLayer} from '@deck.gl/layers';
 import {createDataSource} from '@loaders.gl/core';
 import {ZarrArraySourceLoader} from '@loaders.gl/scientific/zarr';
 import {readIcechunkField} from './icechunk';
+import {mountAtmosphericInfo} from './info';
 import {expandReducedGaussianGrid, finiteRange, colorForValue, type GaussianGrid} from './grid';
 
 type Configuration = {
@@ -29,6 +30,7 @@ const deck = new Deck({
   layers: []
 });
 
+const destroyInfo = mountAtmosphericInfo(document.querySelector<HTMLElement>('#panels')!);
 let controller: AbortController | null = null;
 const params = new URLSearchParams(location.search);
 rootInput.value = params.get('root') || '';
@@ -89,4 +91,4 @@ async function loadField() {
 }
 
 loadButton.addEventListener('click', () => {void loadField();});
-window.addEventListener('beforeunload', () => {controller?.abort(); deck.finalize();});
+window.addEventListener('beforeunload', () => {controller?.abort(); destroyInfo(); deck.finalize();});
