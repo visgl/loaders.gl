@@ -10,7 +10,7 @@ import {expect, test} from 'vitest';
 import {readFile} from 'fs/promises';
 // import {validateLoader} from 'test/common/conformance';
 
-// import {LERCLoader, LERCData} from '@loaders.gl/wms';
+// import {LERCLoader, LERCData} from '@loaders.gl/services/wms';
 import type {LERCData} from '../../../src/lerc/lib/parsers/lerc/lerc-types';
 import {LERCLoader} from '../../../src/lerc/lerc-loader-types';
 import {load, resolvePath} from '@loaders.gl/core';

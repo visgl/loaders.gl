@@ -18,7 +18,7 @@ import {
   TableVectorTileSource
 } from '@loaders.gl/tiles/mvt';
 import {PMTilesSourceLoader, PMTilesTileSource} from '@loaders.gl/tiles/pmtiles';
-import {WMSSourceLoader, WMSImageSource} from '@loaders.gl/wms';
+import {WMSSourceLoader, WMSImageSource} from '@loaders.gl/services/wms';
 import {OMEZarrSourceLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 

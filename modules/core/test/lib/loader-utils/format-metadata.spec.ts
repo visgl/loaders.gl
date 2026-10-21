@@ -61,7 +61,7 @@ import {
   WMSFeatureInfoFormat,
   WMSLayerDescriptionFormat,
   WMTSCapabilitiesFormat
-} from '@loaders.gl/wms';
+} from '@loaders.gl/services/wms';
 import {HTMLFormat, XMLFormat} from '@loaders.gl/xml';
 import {ZipFormat} from '@loaders.gl/zip';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';

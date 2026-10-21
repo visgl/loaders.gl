@@ -38,7 +38,7 @@
       "modules/3d-tiles/formats/3d-tiles",
       "modules/textures/formats/crunch",
       "modules/csv/formats/csv",
-      "modules/wms/formats/csw",
+      "modules/services/wms/formats/csw",
       "modules/textures/formats/dds",
       "modules/draco/formats/draco",
       "modules/flatgeobuf/formats/flatgeobuf",
@@ -51,7 +51,7 @@
       "modules/geotiff/formats/geotiff",
       "modules/gltf/formats/glb",
       "modules/gltf/formats/gltf",
-      "modules/wms/formats/gml",
+      "modules/services/wms/formats/gml",
       "modules/kml/formats/gpx",
       "modules/textures/formats/hdr",
       "modules/xml/formats/html",
@@ -67,7 +67,7 @@
       "modules/scientific/netcdf/formats/netcdf",
       "modules/obj/formats/obj",
       "modules/orc/formats/orc",
-      "modules/wms/formats/ows-context",
+      "modules/services/wms/formats/ows-context",
       "modules/parquet/formats/parquet",
       "modules/traces/formats/perfetto-trace",
       "modules/pcd/formats/pcd",
@@ -76,7 +76,7 @@
       "modules/potree/formats/potree",
       "modules/textures/formats/pvr",
       "modules/shapefile/formats/shapefile",
-      "modules/stac/formats/stac",
+      "modules/services/stac/formats/stac",
       "modules/kml/formats/tcx",
       "modules/mvt/formats/tilejson",
       "modules/scene/formats/usd",
@@ -95,13 +95,13 @@
       "modules/arcgis/README",
       "modules/services/README",
       "developer-guide/authentication",
-      "modules/wms/formats/csw",
-      "modules/wms/formats/wcs",
-      "modules/wms/formats/wfs",
-      "modules/wms/formats/wmc",
-      "modules/wms/formats/wms",
-      "modules/wms/formats/wmts",
-      "modules/wms/services/ogc-api",
+      "modules/services/wms/formats/csw",
+      "modules/services/wms/formats/wcs",
+      "modules/services/wms/formats/wfs",
+      "modules/services/wms/formats/wmc",
+      "modules/services/wms/formats/wms",
+      "modules/services/wms/formats/wmts",
+      "modules/services/wms/services/ogc-api",
       "modules/arcgis/formats/arcgis-feature-server",
       "modules/arcgis/formats/arcgis-map-server",
       "modules/arcgis/formats/arcgis-image-server",
@@ -197,7 +197,7 @@
           "modules/wkt/api-reference/wkb-loader",
           "modules/wkt/api-reference/wkt-crs-loader",
           "modules/wkt/api-reference/wkt-loader",
-          "modules/wms/api-reference/wms-capabilities-loader",
+          "modules/services/wms/api-reference/wms-capabilities-loader",
           "modules/xml/api-reference/xml-loader",
           "modules/zip/api-reference/zip-loader"
         ]
@@ -255,15 +255,15 @@
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
           "modules/tiles/api-reference/raster-set",
-          "modules/stac/api-reference/stac-source-loader",
+          "modules/services/stac/api-reference/stac-source-loader",
           "modules/tiles-3d/api-reference/tiles-3d-source",
           "modules/tiles-3d/api-reference/tileset-3d-source",
           "modules/mvt/api-reference/mvt-source-loader",
           "modules/mvt/api-reference/table-tile-source-loader",
           "modules/mvt/api-reference/arrow-table-tile-source-loader",
           "modules/mlt/api-reference/mlt-source-loader",
-          "modules/wms/api-reference/csw-source-loader",
-          "modules/wms/api-reference/wms-source-loader"
+          "modules/services/wms/api-reference/csw-source-loader",
+          "modules/services/wms/api-reference/wms-source-loader"
         ]
       }
     ]
@@ -662,9 +662,9 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/stac",
+        "label": "@loaders.gl/services/stac",
         "items": [
-          "modules/stac/README"
+          "modules/services/stac/README"
         ]
       },
       {
@@ -746,10 +746,10 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/wms",
+        "label": "@loaders.gl/services/wms",
         "items": [
-          "modules/wms/README",
-          "modules/wms/api-reference/wms-capabilities-loader"
+          "modules/services/wms/README",
+          "modules/services/wms/api-reference/wms-capabilities-loader"
         ]
       },
       {

@@ -15,7 +15,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
   meta={['LERC 1 and 2', 'Typed raster output', 'GeoTIFF and service use']}
   links={[
-    {label: 'WMS module', to: '/docs/modules/wms'},
+    {label: 'WMS module', to: '/docs/modules/services/wms'},
     {label: 'GeoTIFF module', to: '/docs/modules/geotiff'},
     {label: 'Image category', to: '/docs/specifications/category-image'}
   ]}

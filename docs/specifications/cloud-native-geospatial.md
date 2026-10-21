@@ -64,7 +64,7 @@ data from object storage without downloading a complete dataset.
 | COPC | Indexed LAS/LAZ point-cloud ranges | [COPC](/docs/modules/copc) |
 | PMTiles | Tile archive ranges | [PMTiles](/docs/modules/pmtiles) |
 | Zarr | Chunked multidimensional arrays | [Zarr](/docs/modules/scientific/zarr) |
-| STAC | Catalog and asset discovery | [STAC](/docs/modules/stac) |
+| STAC | Catalog and asset discovery | [STAC](/docs/modules/services/stac) |
 
 Format structure alone does not guarantee selective reads. Check the source's
 supported queries and the server's range/CORS behavior. See the

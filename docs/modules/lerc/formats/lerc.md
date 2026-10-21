@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'LERC module', to: '/docs/modules/lerc'},
     {label: 'LERC loader', to: '/docs/modules/lerc/api-reference/lerc-loader'},
-    {label: 'WCS coverage services', to: '/docs/modules/wms/formats/wcs'}
+    {label: 'WCS coverage services', to: '/docs/modules/services/wms/formats/wcs'}
   ]}
 />
 
@@ -34,7 +34,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-- _[`loaders.gl/wms`](/docs/modules/wms)_
+- _[`loaders.gl/wms`](/docs/modules/services/wms)_
 - _[LERC specification](http://esri.github.io/lerc/)_
 
 LERC is an open-source image or raster format which supports rapid encoding and decoding for any pixel type (not just RGB or Byte). Users set the maximum compression error per pixel while encoding, so the precision of the original input image is preserved (within user defined error bounds).
