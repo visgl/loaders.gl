@@ -1,0 +1,13 @@
+{
+  "name": "atmospheric-explorer",
+  "private": true,
+  "type": "module",
+  "scripts": {"start": "vite --host", "build": "vite build", "test": "vitest run grid.spec.ts"},
+  "dependencies": {
+    "@deck.gl/core": "^9.4.0",
+    "@deck.gl/layers": "^9.4.0",
+    "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/scientific": "workspace:*"
+  },
+  "devDependencies": {"vite": "^8.0.0", "typescript": "^6.0.3", "vitest": "5.0.2"}
+}
