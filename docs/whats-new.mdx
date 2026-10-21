@@ -65,7 +65,7 @@ for imports, worker asset availability, and dependency tradeoffs.
 ## Tile matrix source adapters
 
 - TileJSON sources expose canonical Web Mercator matrix geometry. PMTiles preserves native XYZ levels and supports explicit Web Mercator configuration. Both retain native zoom IDs and configurable logical pixel sizes; sparse content remains separate from world geometry.
-- Shared grid normalization now lives in `@loaders.gl/core/loader-utils`, with math.gl 5.0.0-alpha.18 and independent vertical pixel resolution.
+- Shared grid normalization now lives in `@loaders.gl/core/loader-utils`, with math.gl 5.0.0-alpha.19 and independent vertical pixel resolution.
 - ArcGIS map and vector tile sources expose per-level grid metadata and preserve matrix identifiers in cached-tile URLs without inventing matrix dimensions.
 - GeoPackage source metadata discovers raster tile tables, including raster-only packages, and exposes normalized matrix geometry. Raster payload access remains separate.
 
@@ -134,7 +134,7 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 - The v5 tile-converter mesh codec now writes lossless Draco Edge Breaker GLB/3TZ geometry by default, with `draco: false` for uncompressed output. glTF Draco decoding preserves normalized integer color and UV accessors and supports texture transforms on decoded UVs. See the [conversion API](/docs/modules/tile-converter/api-reference/v5-conversion#draco-mesh-output).
 
 - Upgrade math.gl dependencies to 5.0.0-alpha.12 and migrate coordinate transformations to
-  `@math.gl/projection`, the successor to `@math.gl/proj4`.
+  `@math.gl/geospatial/projection`, the successor to `@math.gl/proj4`.
 
 - Preserve unique glTF node placements during 3D Tiles CRS conversion, retain empty mesh Arrow
   schemas, and correctly skip padding between ORC RLEv2 integer blocks.
@@ -359,7 +359,7 @@ Release Date: 2026
 
 **Coordinate reference systems**
 
-- Adopts the shared `@math.gl/crs` identifier, definition, PROJJSON, WKT, and PROJ types across
+- Adopts the shared `@math.gl/geospatial/crs` identifier, definition, PROJJSON, WKT, and PROJ types across
   loader metadata and service source APIs.
 - `WKTCRSLoader` and `WKTCRSWriter` are thin adapters over the dependency-free math.gl WKT codec
   and use its value-preserving `WKTCRSAst` result.
@@ -370,7 +370,7 @@ Release Date: 2026
   separates metadata preservation from coordinate transformation and records the reprojection
   roadmap.
 - Upgrades all math.gl packages to `4.2.0-alpha.6` and adopts the canonical `SpatialReference`
-  descriptor from `@math.gl/crs` in I3S/3D Tiles and FlatGeobuf source metadata, without removing
+  descriptor from `@math.gl/geospatial/crs` in I3S/3D Tiles and FlatGeobuf source metadata, without removing
   format compatibility fields or implying that coordinates were transformed.
 - Uses math.gl's explicit horizontal-component conversion when a 3D transformation passes a broad
   PROJJSON definition to proj4js, rejecting unsupported CRS object types instead of relying on
@@ -391,7 +391,7 @@ Release Date: 2026
   ECEF/geographic bounds so culling and LOD remain compatible with existing runtimes.
 - I3S mesh and Point Cloud sources normalize vertical units and offsets, apply all
   `elevationInfo` placement modes with application terrain or scene providers, and use registered
-  `@math.gl/geoid` models for ellipsoidal/orthometric conversion. The [vertical coordinate systems
+  `@math.gl/earth/geoid` models for ellipsoidal/orthometric conversion. The [vertical coordinate systems
   guide](/docs/developer-guide/vertical-coordinate-systems) documents formulas, provider
   contracts, and deterministic failure behavior.
 

@@ -26,7 +26,7 @@ import {WMSLayerDescriptionLoaderWithParser} from './wip/wms-layer-description-l
 
 import type {WMSLoaderOptions} from './wms-error-loader';
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 
 /** Properties for creating a enw WMS service */
 export type WMSSourceLoaderOptions = DataSourceOptions &

@@ -8,7 +8,7 @@ import type {
   ArrowTableBatch,
   TypedArray
 } from '@loaders.gl/core/schema';
-import {isTypedArray} from '@math.gl/types';
+import {isTypedArray} from '@math.gl/core/types';
 import {getArrayTypeFromDataType} from '../../schema/data-type';
 import {TableBatchAggregator} from './table-batch-aggregator';
 type ColumnarTableBatchOptions = {};

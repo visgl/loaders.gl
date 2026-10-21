@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {projectionEngine} from '@math.gl/projection';
-import type {Projection} from '@math.gl/projection';
-import type {ReadonlyCRSDefinition} from '@math.gl/crs';
+import {projectionEngine} from '@math.gl/geospatial/projection';
+import type {Projection} from '@math.gl/geospatial/projection';
+import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
 import type {
   ArrowTable,
   ArrowTableBatch,

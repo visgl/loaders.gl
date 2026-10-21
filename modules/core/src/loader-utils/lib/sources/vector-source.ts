@@ -9,7 +9,7 @@ import type {
   GeoJSONTable,
   Schema
 } from '@loaders.gl/core/schema';
-import type {CRSIdentifier, SpatialReference} from '@math.gl/crs';
+import type {CRSIdentifier, SpatialReference} from '@math.gl/geospatial/crs';
 
 export type VectorSourceProps = {};
 

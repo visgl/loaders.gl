@@ -36,7 +36,9 @@ export async function getVitestConfig(options = {}) {
   const browserName = vitestConfig.browserName || 'chromium';
   const testTimeout = vitestConfig.testTimeout || 60_000;
   const softwareGpu = Boolean(vitestConfig.softwareGpu);
-  const tsconfigAliases = getTsconfigAliases(tsconfigProjects);
+  const tsconfigAliases = getTsconfigAliases(tsconfigProjects).filter(
+    alias => !alias.replacement.endsWith('.d.ts')
+  );
   const c8CoverageConfig = loadC8CoverageConfig();
   const repositoryRoot = process.cwd();
   const testAliases = [
@@ -75,11 +77,11 @@ export async function getVitestConfig(options = {}) {
         '@mapbox/martini',
         '@maplibre/mlt',
         '@math.gl/core',
-        '@math.gl/culling',
+        '@math.gl/geometry/culling',
         '@math.gl/geospatial',
-        '@math.gl/polygon',
-        '@math.gl/proj4',
-        '@math.gl/types',
+        '@math.gl/geometry/polygon',
+        '@math.gl/geospatial/projection',
+        '@math.gl/core/types',
         '@math.gl/web-mercator',
         'probe.gl/env',
         'probe.gl/log',

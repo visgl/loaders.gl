@@ -63,9 +63,9 @@ system inside loaders.gl:
 
 | Layer | Responsibility |
 | --- | --- |
-| `@math.gl/crs` | Canonical immutable source CRS, vertical CRS, coordinate order, coordinate frame, epoch, and per-component units |
-| `@math.gl/projection` | Executable geographic, projected, and geocentric coordinate transformations |
-| `@math.gl/geoid` | Ellipsoidal/orthometric height conversion using an application-supplied geoid model |
+| `@math.gl/geospatial/crs` | Canonical immutable source CRS, vertical CRS, coordinate order, coordinate frame, epoch, and per-component units |
+| `@math.gl/geospatial/projection` | Executable geographic, projected, and geocentric coordinate transformations |
+| `@math.gl/earth/geoid` | Ellipsoidal/orthometric height conversion using an application-supplied geoid model |
 | `@loaders.gl/tiles` | Transformation status, target selection, format diagnostics, and shared spatial orchestration |
 | I3S adapter | `ZFactor`, ArcGIS unit aliases, `elevationInfo`, surface providers, and geometry/bounds/origin placement |
 
@@ -202,7 +202,7 @@ h = H + N
 H = h - N
 ```
 
-The same application-supplied `@math.gl/geoid` model can normalize a provider into the layer's
+The same application-supplied `@math.gl/earth/geoid` model can normalize a provider into the layer's
 height reference and then convert the placed result into the requested output height reference.
 The geoid is sampled at the geographic location before target projection.
 

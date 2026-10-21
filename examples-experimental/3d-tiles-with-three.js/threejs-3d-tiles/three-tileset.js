@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import {Tileset3D} from '@loaders.gl/tiles';
-import {Plane} from '@math.gl/culling';
+import {Plane} from '@math.gl/geometry/culling';
 import TileHeader from './tile-header';
 
 export default class THREETileset {

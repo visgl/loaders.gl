@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CRSIdentifier, WKTCRSDefinition} from '@math.gl/crs';
+import type {CRSIdentifier, WKTCRSDefinition} from '@math.gl/geospatial/crs';
 import type {WKBBuilder} from '@loaders.gl/arrow-geometry';
 
 /** The FlatGeobuf file signature has a stable prefix and a version byte. */

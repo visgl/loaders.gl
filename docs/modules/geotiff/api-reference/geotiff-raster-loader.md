@@ -118,4 +118,4 @@ north-up geographic degree grids with metre `geoid_undulation` bands and the
 remain valid loader output but are not necessarily valid geoid grids.
 
 The packages share a structural data contract, without a loaders.gl dependency on
-`@math.gl/projection` or a math.gl dependency on a TIFF decoder.
+`@math.gl/geospatial/projection` or a math.gl dependency on a TIFF decoder.

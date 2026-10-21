@@ -7,7 +7,7 @@ import {
   type WriterOptions,
   ensureArrayBuffer
 } from '@loaders.gl/core/loader-utils';
-import {encodeWKTCRS, type EncodeWKTCRSOptions, type WKTCRSAst} from '@math.gl/crs';
+import {encodeWKTCRS, type EncodeWKTCRSOptions, type WKTCRSAst} from '@math.gl/geospatial/crs';
 import {VERSION} from './lib/version';
 import {WKTCRSFormat} from './wkt-format';
 

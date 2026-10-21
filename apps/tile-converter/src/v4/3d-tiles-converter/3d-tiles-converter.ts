@@ -11,7 +11,7 @@ import {join} from 'path';
 import process from 'process';
 import {load, isBrowser} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s';
-import {Geoid} from '@math.gl/geoid';
+import {Geoid} from '@math.gl/earth/geoid';
 
 import {validateI3SConversionSpatialReference} from './helpers/validate-i3s-spatial-reference';
 import {PGMLoader} from '../pgm-loader';
@@ -27,9 +27,9 @@ import {
   Tiles3DContentConverter,
   type I3SAttributesData
 } from './helpers/3d-tiles-content-converter';
-import {I3STileHeader} from '@loaders.gl/tiles-3d/i3s/src/types';
+import type {I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
 import {getNodeCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
-import {I3SLoaderOptions} from '@loaders.gl/tiles-3d/i3s/src/i3s-loader';
+import type {I3SLoaderOptions} from '@loaders.gl/tiles-3d/i3s';
 import type {ZipFileSystem} from '@loaders.gl/zip';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
 import {Progress} from '../i3s-converter/helpers/progress';

@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {BinaryFeatureCollection, Feature} from '@loaders.gl/core/schema';
 import {transformBinaryCoords, transformGeoJsonCoords} from '../src/legacy-binary';
-import {projectionEngine} from '@math.gl/projection';
+import {projectionEngine} from '@math.gl/geospatial/projection';
 test('geoarrow#reproject GeoJSON', () => {
   const projection = projectionEngine.createProjection({from: 'WGS84', to: 'EPSG:3857'});
   const inputGeoJson: Feature[] = [

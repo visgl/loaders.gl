@@ -22,7 +22,7 @@ import type {
 } from '@loaders.gl/tiles-3d/i3s';
 import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Geoid} from '@math.gl/geoid';
+import {Geoid} from '@math.gl/earth/geoid';
 import {join} from 'path';
 import {randomUUID} from 'node:crypto';
 import process from 'process';
@@ -72,7 +72,7 @@ import {
   loadFromArchive
 } from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {TILE_REFINEMENT, createBoundingVolume} from '@loaders.gl/tiles-3d';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';

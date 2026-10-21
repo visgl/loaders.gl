@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {AxisAlignedBoundingBox, OrientedBoundingBox} from '@math.gl/culling';
+import {AxisAlignedBoundingBox, OrientedBoundingBox} from '@math.gl/geometry/culling';
 
 /** math.gl bounding boxes supported by BoundingBoxLayer utilities. */
 export type BoundingBoxLayerBox = AxisAlignedBoundingBox | OrientedBoundingBox;

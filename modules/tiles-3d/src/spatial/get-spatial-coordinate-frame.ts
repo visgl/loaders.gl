@@ -9,7 +9,7 @@ import {
   type ReadonlyCRSDefinition,
   type SpatialReferenceCoordinateFrame,
   type WKTCRSNode
-} from '@math.gl/crs';
+} from '@math.gl/geospatial/crs';
 import {
   normalizeCrsIdentifier,
   WGS84_GEOCENTRIC_CRS,
@@ -106,7 +106,7 @@ export function getKnownCrsIdentifierCoordinateFrame(
   return undefined;
 }
 
-/** Classifies a WKT definition using the syntax tree parsed by `@math.gl/crs`. */
+/** Classifies a WKT definition using the syntax tree parsed by `@math.gl/geospatial/crs`. */
 function getWktCoordinateFrame(definition: string): SpatialReferenceCoordinateFrame {
   let root: WKTCRSNode;
   try {
@@ -148,7 +148,7 @@ function getWktCoordinateFrame(definition: string): SpatialReferenceCoordinateFr
   }
 }
 
-/** Classifies a PROJ string using the syntax tree parsed by `@math.gl/crs`. */
+/** Classifies a PROJ string using the syntax tree parsed by `@math.gl/geospatial/crs`. */
 function getProjStringCoordinateFrame(definition: string): SpatialReferenceCoordinateFrame {
   try {
     const projection = parsePROJString(definition).parameters.find(

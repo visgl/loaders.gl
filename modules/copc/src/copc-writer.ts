@@ -12,7 +12,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import {LASWriter, type LASExtraBytesWriter} from '@loaders.gl/las';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
-import type {WKTCRSDefinition} from '@math.gl/crs';
+import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
 import {COPCFormat} from './copc-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

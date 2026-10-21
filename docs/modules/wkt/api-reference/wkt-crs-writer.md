@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="WKTCRSWriter normalizes insignificant whitespace while retaining keyword spelling, delimiters, ordering, repeated and unknown nodes, and original number lexemes."
   tone="violet"
   items={[
-    {label: 'Input', value: 'A WKTCRSAst from @math.gl/crs'},
+    {label: 'Input', value: 'A WKTCRSAst from @math.gl/geospatial/crs'},
     {label: 'Output', value: 'Compact or pretty WKT-CRS text'},
     {label: 'Preserves', value: 'Structure, ordering, and numeric lexemes'},
     {label: 'Boundary', value: 'Serialization, not coordinate transformation'}
@@ -41,14 +41,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
-Encodes a `WKTCRSAst` from `@math.gl/crs` as WKT. See
+Encodes a `WKTCRSAst` from `@math.gl/geospatial/crs` as WKT. See
 [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems) for the shared
 type model and the distinction between syntax preservation and coordinate transformation.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/wkt @math.gl/crs
+npm install @loaders.gl/core @loaders.gl/wkt @math.gl/geospatial
 ```
 
 ## Usage

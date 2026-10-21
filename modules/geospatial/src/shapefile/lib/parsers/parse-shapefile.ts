@@ -19,8 +19,8 @@ import type {
   ObjectRowTable,
   ObjectRowTableBatch
 } from '@loaders.gl/core/schema';
-import {projectionEngine} from '@math.gl/projection';
-import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
+import {projectionEngine} from '@math.gl/geospatial/projection';
+import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/geospatial/crs';
 
 import type {SHXOutput} from './parse-shx';
 import type {SHPResult} from './parse-shp';

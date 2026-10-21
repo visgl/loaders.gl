@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {projectionEngine} from '@math.gl/projection';
-import type {Projection} from '@math.gl/projection';
-import type {PROJStringDefinition} from '@math.gl/crs';
+import {projectionEngine} from '@math.gl/geospatial/projection';
+import type {Projection} from '@math.gl/geospatial/projection';
+import type {PROJStringDefinition} from '@math.gl/geospatial/crs';
 
 /**
  * Create projection from proj4 definition to WGS84

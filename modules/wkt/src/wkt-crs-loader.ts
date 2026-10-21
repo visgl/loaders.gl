@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ParseWKTCRSOptions, WKTCRSAst} from '@math.gl/crs';
+import type {ParseWKTCRSOptions, WKTCRSAst} from '@math.gl/geospatial/crs';
 import {VERSION} from './lib/version';
 import {WKTCRSFormat} from './wkt-format';
 

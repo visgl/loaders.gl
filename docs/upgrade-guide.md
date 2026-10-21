@@ -60,6 +60,27 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 - Use `@loaders.gl/core/schema-utils/arrow-transport` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
 - Install `@loaders.gl/core` as the package. Published loaders use it as a peer dependency so applications can provide one compatible core version.
 
+### math.gl package consolidation
+
+math.gl alpha.19 removes the standalone leaf packages. Applications importing their APIs or types
+alongside loaders.gl should install the grouped package and use its public subpath:
+
+| Removed package | Replacement import |
+| --- | --- |
+| `@math.gl/types` | `@math.gl/core/types` |
+| `@math.gl/culling` | `@math.gl/geometry/culling` |
+| `@math.gl/geometry-utils` | `@math.gl/geometry/utils` |
+| `@math.gl/polygon` | `@math.gl/geometry/polygon` |
+| `@math.gl/crs` | `@math.gl/geospatial/crs` |
+| `@math.gl/projection` | `@math.gl/geospatial/projection` |
+| `@math.gl/wkb` | `@math.gl/geospatial/wkb` |
+| `@math.gl/geoarrow` | `@math.gl/geospatial/geoarrow` |
+| `@math.gl/geoid` | `@math.gl/earth/geoid` |
+
+Install the package name before the subpath, such as `@math.gl/geospatial`. Nested entry points move
+with their parent API, for example `@math.gl/geospatial/projection/bulk`. TypeScript consumers need a
+module resolver that reads package exports, such as `bundler`, `node16`, or `nodenext`.
+
 ### Core utility subpaths
 
 The standalone `@loaders.gl/loader-utils` and `@loaders.gl/worker-utils` packages have moved to
@@ -199,19 +220,19 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 
 **@loaders.gl/math**
 
-- The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry-utils`
-  and update imports for GL constants, typed-array, geometry, color, and attribute-compression
+- The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry`
+  and update imports to `@math.gl/geometry/utils` for GL constants, typed-array, geometry, color, and attribute-compression
   utilities.
 
 **CRS and @loaders.gl/wkt**
 
-- Replace `@math.gl/proj4` imports with `@math.gl/projection` and `Proj4Projection` with
-  `Projection`. Import `ReadonlyCRSDefinition` from `@math.gl/crs` instead of the removed
-  `Proj4CRSDefinition` type. loaders.gl now uses math.gl 5.0.0-alpha.12.
+- Replace `@math.gl/proj4` imports with `@math.gl/geospatial/projection` and `Proj4Projection` with
+  `Projection`. Import `ReadonlyCRSDefinition` from `@math.gl/geospatial/crs` instead of the removed
+  `Proj4CRSDefinition` type. loaders.gl now uses math.gl 5.0.0-alpha.19.
 
-- Shared CRS definition types now come from `@math.gl/crs`. Replace new uses of the deprecated
+- Shared CRS definition types now come from `@math.gl/geospatial/crs`. Replace new uses of the deprecated
   `PROJ4CRS` alias with `PROJStringDefinition` and import `CRSIdentifier`, `CRSDefinition`, WKT,
-  PROJ, and PROJJSON types directly from `@math.gl/crs`.
+  PROJ, and PROJJSON types directly from `@math.gl/geospatial/crs`.
 - `WKTCRSLoader` now returns the discriminated, value-preserving `WKTCRSAst`. Code that indexed
   the v4 hybrid nested array/object must traverse `ast.root.values` and discriminate each value by
   its `type` field.
@@ -331,7 +352,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
    temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/core/schema-utils`.
  - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
    longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
-   `@math.gl/crs`.
+   `@math.gl/geospatial/crs`.
  - The parent-level `shapefile.workerUrl` option has been removed. Configure `shp.workerUrl`
    and `dbf.workerUrl` independently.
  - The PMTiles `tileRangeRequest` alias has been removed. Use `rangeRequests`.

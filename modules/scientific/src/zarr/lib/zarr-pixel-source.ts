@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ZarrArray} from 'zarr';
-// eslint-disable-next-line import/no-unresolved
-import type {RawArray} from 'zarr/types/rawArray';
+import type {ZarrRawArray} from '../types';
 import type {
   PixelSource,
   Labels,
@@ -97,7 +96,7 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
 
   async getRaster({selection}: RasterSelection<S> | {selection: number[]}) {
     const sel = this._chunkIndex(selection, null, null);
-    const {data, shape} = (await this._data.getRaw(sel)) as RawArray;
+    const {data, shape} = (await this._data.getRaw(sel)) as ZarrRawArray;
     const [height, width] = shape;
     return {data, width, height} as PixelData;
   }
@@ -120,7 +119,7 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
     const {
       data,
       shape: [height, width]
-    } = res as RawArray;
+    } = res as ZarrRawArray;
     return {data, width, height} as PixelData;
   }
 

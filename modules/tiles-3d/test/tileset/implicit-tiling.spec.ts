@@ -3,7 +3,6 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-// @ts-expect-error Conditional package subpath exports require a modern module resolver.
 import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs/s2';
 import {
   createImplicitSubtreeReference,
