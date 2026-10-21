@@ -2,6 +2,7 @@ import {Deck, GlobeView} from '@deck.gl/core';
 import {ScatterplotLayer} from '@deck.gl/layers';
 import {createDataSource} from '@loaders.gl/core';
 import {ZarrArraySourceLoader} from '@loaders.gl/scientific/zarr';
+import {readIcechunkField} from './icechunk';
 import {expandReducedGaussianGrid, finiteRange, colorForValue, type GaussianGrid} from './grid';
 
 type Configuration = {
@@ -11,6 +12,8 @@ type Configuration = {
   grid: GaussianGrid;
   selection: Record<string, number>;
   label?: string;
+  storage?: 'zarr' | 'icechunk';
+  reference?: {branch: string} | {tag: string} | {snapshot: string};
 };
 
 const rootInput = document.querySelector<HTMLInputElement>('#root')!;
@@ -47,16 +50,18 @@ async function loadField() {
     const root = rootInput.value.trim();
     if (!root || !/^https?:\/\//.test(root)) throw new Error('Enter an HTTP(S) Zarr root URL');
     if (!config.array || !config.dimensions?.length) throw new Error('Array path and dimension names are required');
-    const source = createDataSource(root, [ZarrArraySourceLoader], {
+    const source = config.storage === 'icechunk' ? null : createDataSource(root, [ZarrArraySourceLoader], {
       zarrArray: {path: config.array, dimensions: config.dimensions}
     });
-    const metadata = await source.getMetadata(signal);
+    const metadata = source ? await source.getMetadata(signal) : null;
     const selection: Record<string, number | null> = {};
-    for (const dim of metadata.dimensions) selection[dim] = config.selection?.[dim] ?? null;
-    const remaining = metadata.dimensions.filter(dim => selection[dim] === null);
+    for (const dim of (metadata?.dimensions || config.dimensions)) selection[dim] = config.selection?.[dim] ?? null;
+    const remaining = (metadata?.dimensions || config.dimensions).filter(dim => selection[dim] === null);
     if (remaining.length !== 1) throw new Error('Select all dimensions except the flat point dimension');
     status.textContent = 'Reading selected chunks…';
-    const field = await source.getArray({selectionByDimension: selection, signal});
+    const field = source
+      ? await source.getArray({selectionByDimension: selection, signal})
+      : await readIcechunkField({root, path: config.array, dimensions: config.dimensions, selection: config.selection, reference: config.reference, signal});
     if (signal.aborted) return;
     if (field.shape.length !== 1) throw new Error('Expected a one-dimensional point field');
     const points = expandReducedGaussianGrid(field.data, config.grid);
