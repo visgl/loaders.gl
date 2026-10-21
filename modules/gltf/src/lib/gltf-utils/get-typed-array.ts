@@ -48,6 +48,10 @@ export function getTypedArrayForAccessor(
   if (!gltfAccessor) {
     throw new Error(`No gltf accessor ${JSON.stringify(accessor)}`);
   }
+  const decodedValue = (gltfAccessor as GLTFAccessor & {value?: BigTypedArray}).value;
+  if (ArrayBuffer.isView(decodedValue)) {
+    return decodedValue;
+  }
   const bufferView = json.bufferViews?.[gltfAccessor.bufferView || 0];
   if (!bufferView) {
     throw new Error(`No gltf buffer view for accessor ${bufferView}`);
