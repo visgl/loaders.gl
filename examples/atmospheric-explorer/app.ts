@@ -33,6 +33,8 @@ let controller: AbortController | null = null;
 const params = new URLSearchParams(location.search);
 rootInput.value = params.get('root') || '';
 configInput.value = JSON.stringify({
+  storage: 'icechunk',
+  reference: {branch: 'main'},
   array: 'temperature',
   dimensions: ['time', 'level', 'point'],
   selection: {time: 0, level: 0},
