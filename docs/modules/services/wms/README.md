@@ -79,7 +79,7 @@ ArcGIS REST services are provided by [`@loaders.gl/arcgis`](/docs/modules/arcgis
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/services/wms
+npm install @loaders.gl/core @loaders.gl/services
 ```
 
 Install `@loaders.gl/deck-layers` when visual services should render directly through deck.gl.

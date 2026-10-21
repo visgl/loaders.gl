@@ -55,7 +55,7 @@ dependency.
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/services/stac
+npm install @loaders.gl/core @loaders.gl/services
 ```
 
 ## Usage
