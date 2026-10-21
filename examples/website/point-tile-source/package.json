@@ -26,7 +26,7 @@
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",
     "@luma.gl/webgl": "^9.4.0",
-    "maplibre-gl": "^4.7.1",
+    "maplibre-gl": "^3.6.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-map-gl": "^7.1.7"
