@@ -18,7 +18,7 @@ import {
 import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
 import {Map} from 'react-map-gl';
-import * as maplibregl from 'maplibre-gl';
+import maplibregl from 'maplibre-gl';
 
 import {ExamplePanel, Example, MetadataViewer} from './components/example-panel';
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
