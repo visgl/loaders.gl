@@ -102,7 +102,7 @@
     "debug": "~4.3.4",
     "express": "~4.19.2",
     "inquirer": "^8.0.0",
-    "morgan": "~1.9.1"
+    "morgan": "~1.12.1"
   },
   "quarantinedDependencies": {
     "join-images": "^1.1.3",
