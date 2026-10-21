@@ -58,6 +58,10 @@ metadata loaders; format subpaths expose parser-bearing loaders. Existing packag
 compatibility entry points. See the [grouped package guide](/docs/developer-guide/grouped-packages)
 for imports, worker asset availability, and dependency tradeoffs.
 
+## Regular-grid TileMatrix frame selection
+
+`@loaders.gl/tiles/tile-matrix` adds `selectTileMatrixTiles` for explicit native-CRS frames, complete regular grids, native matrix IDs and advertised limits. A deterministic offline UTM/OGC example exercises the request path. This is a renderer-independent selection step; existing traversal and rendering adapters remain unchanged. See the [API guide](/docs/modules/tiles/api-reference/tile-matrix).
+
 ## Tile matrix source adapters
 
 - TileJSON sources expose canonical Web Mercator matrix geometry. PMTiles preserves native XYZ levels and supports explicit Web Mercator configuration. Both retain native zoom IDs and configurable logical pixel sizes; sparse content remains separate from world geometry.

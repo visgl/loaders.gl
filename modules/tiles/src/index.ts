@@ -49,3 +49,11 @@ export {RasterSet} from './raster-set';
 
 /** @deprecated Import 3D runtime symbols from `@loaders.gl/tiles-3d`. */
 export {Tileset3D, TILE_TYPE, TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles-3d';
+
+export {selectTileMatrixTiles} from './tile-matrix';
+export type {
+  TileMatrixViewFrame,
+  TileMatrixTile,
+  TileMatrixSelectionOptions,
+  TileMatrixSelectionGrid
+} from './tile-matrix';
