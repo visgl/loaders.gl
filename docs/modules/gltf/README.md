@@ -133,3 +133,38 @@ The maintained meshoptimizer decoder is bundled in @loaders.gl/gltf and loaded
 only on the first meshopt-compressed buffer decode. Applications do not need to
 install meshoptimizer, including when bundling the loader for a browser. Ordinary
 glTF parsing does not initialize the decoder.
+
+## Lazy resource access
+
+`GLTFSource` opens a glTF or GLB document without loading linked resources or decoding
+extensions. It preserves the original JSON and provides scene traversal and lazy byte access:
+
+```typescript
+import {GLTFSource} from '@loaders.gl/gltf';
+
+const source = await GLTFSource.open('https://example.com/model.glb');
+try {
+  for (const {index, node} of source.traverse()) {
+    console.log(index, node.name);
+  }
+  const buffer = await source.resolveBuffer(0);
+  const bytes = new Uint8Array(buffer.arrayBuffer, buffer.byteOffset, buffer.byteLength);
+} finally {
+  source.close();
+}
+```
+
+`getScene(index)` and `getNode(index)` return original JSON definitions. `traverse(sceneIndex)`
+visits nodes depth first, rejecting cycles and paths deeper than `maxDepth` (default `256`,
+with scene roots at depth zero). `open(url, {fetch, maxDepth})` accepts a custom fetch function.
+Resource URLs resolve relative to the final root response URL after redirects.
+
+`resolveBuffer(index)` returns embedded GLB bytes or fetches a buffer URI on demand.
+`resolveFile(index)` resolves a draft glTF 2.1 `files` entry from its URI or buffer view.
+Both return byte ranges; always honor `byteOffset` and `byteLength`. Requests and downloaded
+bytes are shared by URL. Failed requests can be retried. `close()` aborts outstanding resource
+requests, releases source-owned byte references, and prevents further operations. Byte ranges
+already retained by the caller remain usable.
+
+This initial API does not traverse external assets, decode images or compressed geometry,
+normalize glTF 1, evict individual resources, or expose per-request cancellation.
