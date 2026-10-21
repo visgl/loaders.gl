@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {selectTileMatrixTiles} from '@loaders.gl/tiles/tile-matrix';
-import {OGCAPITilesSource} from '@loaders.gl/wms';
+import {OGCAPITilesSource} from '@loaders.gl/services/wms';
 
 /** A small illustrative UTM31 grid; the coarse level is one column by two rows. */
 export const MATRIX_SET = {

@@ -55,7 +55,7 @@ function makeAliases() {
     '@loaders.gl/pcd/test': resolveTestPath('./modules/pcd/test'),
     '@loaders.gl/ply/test': resolveTestPath('./modules/ply/test'),
     '@loaders.gl/splats/test': resolveTestPath('./modules/splats/test'),
-    '@loaders.gl/stac/test': resolveTestPath('./modules/stac/test'),
+    '@loaders.gl/services/stac/test': resolveTestPath('./modules/services/test/stac'),
     '@loaders.gl/tiles/pmtiles/test': resolveTestPath('./modules/tiles/test/pmtiles'),
     '@loaders.gl/core/polyfills/test': resolveTestPath('./modules/core/test/polyfills-package'),
     '@loaders.gl/potree/test': resolveTestPath('./modules/potree/test'),
@@ -68,7 +68,7 @@ function makeAliases() {
     '@loaders.gl/traces/test': resolveTestPath('./modules/traces/test'),
     '@loaders.gl/video/test': resolveTestPath('./modules/video/test'),
     '@loaders.gl/wkt/test': resolveTestPath('./modules/wkt/test'),
-    '@loaders.gl/wms/test': resolveTestPath('./modules/wms/test'),
+    '@loaders.gl/services/wms/test': resolveTestPath('./modules/services/test/wms'),
     '@loaders.gl/core/worker-utils/test': resolveTestPath(
       './modules/core/test/worker-utils-package'
     ),

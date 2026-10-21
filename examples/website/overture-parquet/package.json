@@ -16,7 +16,7 @@
     "@deck.gl/widgets": "^9.4.0",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/parquet": "workspace:*",
-    "@loaders.gl/stac": "workspace:*",
+    "@loaders.gl/services": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",

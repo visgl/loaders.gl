@@ -5714,9 +5714,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/services@workspace:*, @loaders.gl/services@workspace:modules/services":
+"@loaders.gl/services@npm:^5.0.0-alpha.0, @loaders.gl/services@workspace:modules/services":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/services@workspace:modules/services"
+  dependencies:
+    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
+    "@loaders.gl/images": "npm:5.0.0-alpha.12"
+    "@loaders.gl/raster": "npm:5.0.0-alpha.12"
+    "@loaders.gl/xml": "npm:5.0.0-alpha.12"
+    "@math.gl/crs": "npm:5.0.0-alpha.18"
+    "@math.gl/geospatial": "npm:5.0.0-alpha.18"
+    lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5765,14 +5773,6 @@ __metadata:
       optional: true
     zod:
       optional: true
-  languageName: unknown
-  linkType: soft
-
-"@loaders.gl/stac@workspace:*, @loaders.gl/stac@workspace:modules/stac":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/stac@workspace:modules/stac"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
   linkType: soft
 
@@ -5953,21 +5953,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/wms@npm:^5.0.0-alpha.0, @loaders.gl/wms@workspace:modules/wms":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/wms@workspace:modules/wms"
+"@loaders.gl/wms@npm:^4.4.3":
+  version: 4.5.4
+  resolution: "@loaders.gl/wms@npm:4.5.4"
   dependencies:
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.12"
-    "@loaders.gl/images": "npm:5.0.0-alpha.12"
-    "@loaders.gl/raster": "npm:5.0.0-alpha.12"
-    "@loaders.gl/xml": "npm:5.0.0-alpha.12"
-    "@math.gl/crs": "npm:5.0.0-alpha.18"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.18"
-    lerc: "npm:^4.2.0"
+    "@loaders.gl/images": "npm:4.5.4"
+    "@loaders.gl/loader-utils": "npm:4.5.4"
+    "@loaders.gl/schema": "npm:4.5.4"
+    "@loaders.gl/xml": "npm:4.5.4"
+    "@turf/rewind": "npm:^5.1.5"
+    deep-strict-equal: "npm:^0.2.0"
   peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
+    "@loaders.gl/core": ~4.5.0
+  checksum: 10c0/f889ea36088e41eb71093022a91fe477b6b7c64fdc6b6354cbd51df6a468c8de2af4accf080192f9270842b4175ba3e47c45a8a398f295c849247e42797b0aac
+  languageName: node
+  linkType: hard
 
 "@loaders.gl/worker-utils@npm:4.5.4":
   version: 4.5.4
@@ -5975,6 +5975,19 @@ __metadata:
   peerDependencies:
     "@loaders.gl/core": ~4.5.0
   checksum: 10c0/e0f27886eedae01a509fd2e72e8abc5f234e44c5257c647bfc3b9960412551636e17aee8a081cb38d7906bb564ac450fe9374be8c63929551dc9aad971ec1cb2
+  languageName: node
+  linkType: hard
+
+"@loaders.gl/xml@npm:4.5.4":
+  version: 4.5.4
+  resolution: "@loaders.gl/xml@npm:4.5.4"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:4.5.4"
+    "@loaders.gl/schema": "npm:4.5.4"
+    fast-xml-parser: "npm:^5.3.6"
+  peerDependencies:
+    "@loaders.gl/core": ~4.5.0
+  checksum: 10c0/7b283cd74db1d7bc5b1d27bde16c4261d9ee85d6349e7413f7766ed9a20ce68bd803007fa20bb8e4aac2413dba6eeca1a95449e2fbbece8b58ae1771979a501e
   languageName: node
   linkType: hard
 
@@ -9057,6 +9070,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@turf/boolean-clockwise@npm:^5.1.5":
+  version: 5.1.5
+  resolution: "@turf/boolean-clockwise@npm:5.1.5"
+  dependencies:
+    "@turf/helpers": "npm:^5.1.5"
+    "@turf/invariant": "npm:^5.1.5"
+  checksum: 10c0/3aa66df49319e7b7fbbf02826d05c3c221b4d416d5e0fa21adc8d3e033d72055d3b1a7f4d319600b6f1d43c04c7e10f387fb490117884de8137c375b7fd2e543
+  languageName: node
+  linkType: hard
+
 "@turf/boolean-clockwise@npm:^6.5.0":
   version: 6.5.0
   resolution: "@turf/boolean-clockwise@npm:6.5.0"
@@ -9277,6 +9300,15 @@ __metadata:
     "@turf/helpers": "npm:^6.5.0"
     "@turf/invariant": "npm:^6.5.0"
   checksum: 10c0/854a43d7a1e911b65ac92aae2d7fa853450eb7c862c4ccdf1d7b62d553ec34d1f5ff6582c3b269b342fcfb279eb3e63a9a8bbc4eb9e7fa932cc3aa55aee8bcc2
+  languageName: node
+  linkType: hard
+
+"@turf/clone@npm:^5.1.5":
+  version: 5.1.5
+  resolution: "@turf/clone@npm:5.1.5"
+  dependencies:
+    "@turf/helpers": "npm:^5.1.5"
+  checksum: 10c0/8bb5c9266a458e42fc6f8b13977fea5a1c46f7de20ac5e65090134d8f2d130bd313ef04137d6bef62070876593bcee94119369119ab38eeddddacf18e270d900
   languageName: node
   linkType: hard
 
@@ -9510,6 +9542,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@turf/helpers@npm:^5.1.5":
+  version: 5.1.5
+  resolution: "@turf/helpers@npm:5.1.5"
+  checksum: 10c0/f5ed19cddef37fb5098e2509e8472df3afe099dcd6db62b7e541cf37c02c6ea1b13f69c29ff493ded7a1374c1a9b185a87fefee368211934364977dffd48b2e9
+  languageName: node
+  linkType: hard
+
 "@turf/hex-grid@npm:^6.5.0":
   version: 6.5.0
   resolution: "@turf/hex-grid@npm:6.5.0"
@@ -9549,6 +9588,15 @@ __metadata:
     "@turf/invariant": "npm:^6.5.0"
     polygon-clipping: "npm:^0.15.3"
   checksum: 10c0/e2b95ab2f8b874c17fa788f3256147c8963be8b8689f21b7b692fb0112c3f06ab6d33a568e943c2c87f383ac8dba127ea67c3e7e7e4fd75b5331a8d4e7cf84d8
+  languageName: node
+  linkType: hard
+
+"@turf/invariant@npm:^5.1.5":
+  version: 5.2.0
+  resolution: "@turf/invariant@npm:5.2.0"
+  dependencies:
+    "@turf/helpers": "npm:^5.1.5"
+  checksum: 10c0/c7d6c81f85d85ce7da5bdbc457a61609a11a54f209f0bb922bcd12c329e9e7855d2b14b2df596c78521193b44c2a92cecf2f50db228546fa1a92beb413a22fbb
   languageName: node
   linkType: hard
 
@@ -9767,6 +9815,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@turf/meta@npm:^5.1.5":
+  version: 5.2.0
+  resolution: "@turf/meta@npm:5.2.0"
+  dependencies:
+    "@turf/helpers": "npm:^5.1.5"
+  checksum: 10c0/fd41fbad84d840bebf75fdf13a4e3dd15b8c600251533073d5f6129a31a42e4f88790ce396492cec69f42ca4365e96d6f7940aeb302daaedcb795dc9414e7adc
+  languageName: node
+  linkType: hard
+
 "@turf/midpoint@npm:^6.5.0":
   version: 6.5.0
   resolution: "@turf/midpoint@npm:6.5.0"
@@ -9967,6 +10024,19 @@ __metadata:
     "@turf/distance": "npm:^6.5.0"
     "@turf/helpers": "npm:^6.5.0"
   checksum: 10c0/a3146064d62825fb37db827a603e2528c7129ed31d2dc5e7a5500b4a5470adafbea116cc7a80c34fb055d63a364937b7abcaa11d50a625a10db29c6aa3e05f92
+  languageName: node
+  linkType: hard
+
+"@turf/rewind@npm:^5.1.5":
+  version: 5.1.5
+  resolution: "@turf/rewind@npm:5.1.5"
+  dependencies:
+    "@turf/boolean-clockwise": "npm:^5.1.5"
+    "@turf/clone": "npm:^5.1.5"
+    "@turf/helpers": "npm:^5.1.5"
+    "@turf/invariant": "npm:^5.1.5"
+    "@turf/meta": "npm:^5.1.5"
+  checksum: 10c0/503c624ba2b5898daac6937ecf5eaf9f8b1ccd8109233b977adc8aeefbb0a086ff09f0813677b3fdf3d3c1072a9f3f22dfc4c6dc10dfbddf7f063bb4a543ec90
   languageName: node
   linkType: hard
 
@@ -13847,6 +13917,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"buf-compare@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "buf-compare@npm:1.0.1"
+  checksum: 10c0/ccf1a89efc24bb36213813802b50c20752308859de42a7dca1b035231c72407aa0dbd49383409c818bb93e748117ea7961a8b5366e2597c7db76eb2b028cd64f
+  languageName: node
+  linkType: hard
+
 "buffer-from@npm:^1.0.0":
   version: 1.1.2
   resolution: "buffer-from@npm:1.1.2"
@@ -15257,6 +15334,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"core-assert@npm:^0.2.0":
+  version: 0.2.1
+  resolution: "core-assert@npm:0.2.1"
+  dependencies:
+    buf-compare: "npm:^1.0.0"
+    is-error: "npm:^2.2.0"
+  checksum: 10c0/d4eb0482861a77ac476e01b6eb48f924adeb94003c01c541e020b7cfacddca28fc30be183cdda42231a2e90e66afeeaac46028c9885bfa98faee8d15bdb6e3c6
+  languageName: node
+  linkType: hard
+
 "core-js-compat@npm:^3.43.0, core-js-compat@npm:^3.48.0":
   version: 3.50.0
   resolution: "core-js-compat@npm:3.50.0"
@@ -16563,6 +16650,15 @@ __metadata:
   version: 0.1.4
   resolution: "deep-is@npm:0.1.4"
   checksum: 10c0/7f0ee496e0dff14a573dc6127f14c95061b448b87b995fc96c017ce0a1e66af1675e73f1d6064407975bc4ea6ab679497a29fff7b5b9c4e99cb10797c1ad0b4c
+  languageName: node
+  linkType: hard
+
+"deep-strict-equal@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "deep-strict-equal@npm:0.2.0"
+  dependencies:
+    core-assert: "npm:^0.2.0"
+  checksum: 10c0/774bffaa22c625e54452de4796183099ad95f03f6a4ead2dac7e61d884fddd7e56d56e07d89d31df5914a7172458377fedc33e84579a47301130c41da6fe06b1
   languageName: node
   linkType: hard
 
@@ -21588,6 +21684,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-error@npm:^2.2.0":
+  version: 2.2.2
+  resolution: "is-error@npm:2.2.2"
+  checksum: 10c0/475d3463968bf16e94485555d7cb7a879ed68685e08d365a3370972e626054f1846ebbb3934403091e06682445568601fe919e41646096e5007952d0c1f4fd9b
+  languageName: node
+  linkType: hard
+
 "is-extendable@npm:^0.1.0, is-extendable@npm:^0.1.1":
   version: 0.1.1
   resolution: "is-extendable@npm:0.1.1"
@@ -26202,7 +26305,7 @@ __metadata:
     "@deck.gl/widgets": "npm:^9.4.0"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/parquet": "workspace:*"
-    "@loaders.gl/stac": "workspace:*"
+    "@loaders.gl/services": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
@@ -28155,7 +28258,6 @@ __metadata:
     "@loaders.gl/scientific": "workspace:*"
     "@loaders.gl/services": "workspace:*"
     "@loaders.gl/splats": "workspace:*"
-    "@loaders.gl/stac": "workspace:*"
     "@loaders.gl/tiles-3d": "workspace:*"
     "@loaders.gl/traces": "workspace:*"
     "@loaders.gl/xml": "workspace:*"
@@ -34077,7 +34179,7 @@ __metadata:
     "@deck.gl/widgets": "npm:^9.4.0"
     "@loaders.gl/arcgis": "workspace:*"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/wms": "workspace:*"
+    "@loaders.gl/services": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"

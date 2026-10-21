@@ -9,7 +9,7 @@ picking for hover/click feedback, a vector source for remote extent requests, an
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {WFSSourceLoader} from '@loaders.gl/wms';
+import {WFSSourceLoader} from '@loaders.gl/services/wms';
 
 const source = createDataSource(wfsUrl, [WFSSourceLoader], {
   wfs: {wfsParameters: {version: '2.0.0', crs: 'EPSG:3857'}}
@@ -32,10 +32,10 @@ and an independent `srsName`. The server must support the requested output proje
 ## Manage loaded extents
 
 Wrap any GeoJSON-capable `VectorSource`, including WFS and OGC API Features, in
-`ManagedVectorSource` from `@loaders.gl/wms`:
+`ManagedVectorSource` from `@loaders.gl/services/wms`:
 
 ```ts
-import {ManagedVectorSource} from '@loaders.gl/wms';
+import {ManagedVectorSource} from '@loaders.gl/services/wms';
 import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 const managed = new ManagedVectorSource(source, {maxCachedExtents: 32});
@@ -65,8 +65,8 @@ and GML responses without count metadata do **not** establish coverage. A succes
 alone is not proof of completeness. For a service whose complete-response guarantee you know,
 supply `isComplete(table, request)` to certify that guarantee. Enable `wfs.pagination` or `ogc-api.pagination` on the underlying source to gather service pages
 before returning. Numeric GML WFS counts also provide completion evidence; unknown totals remain
-uncertified. See [WFS pagination](/docs/modules/wms/formats/wfs#bounded-automatic-pagination) and
-[OGC API Features pagination](/docs/modules/wms/services/ogc-api#progressive-pages-and-complete-collection).
+uncertified. See [WFS pagination](/docs/modules/services/wms/formats/wfs#bounded-automatic-pagination) and
+[OGC API Features pagination](/docs/modules/services/wms/services/ogc-api#progressive-pages-and-complete-collection).
 
 The wrapper requests GeoJSON internally and returns GeoJSON by default, with Arrow or binary
 conversion available through `format`. Only complete responses are retained; the default limit

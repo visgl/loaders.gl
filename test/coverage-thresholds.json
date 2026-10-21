@@ -676,21 +676,6 @@
         "branches": 49
       }
     },
-    "@loaders.gl/stac": {
-      "path": "modules/stac",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "merged": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      }
-    },
     "@loaders.gl/tables": {
       "path": "modules/tables",
       "browser": {
@@ -802,21 +787,6 @@
         "lines": 56,
         "functions": 21,
         "branches": 46
-      }
-    },
-    "@loaders.gl/wms": {
-      "path": "modules/wms",
-      "browser": {
-        "statements": 67,
-        "lines": 67,
-        "functions": 69,
-        "branches": 57
-      },
-      "merged": {
-        "statements": 65,
-        "lines": 66,
-        "functions": 64,
-        "branches": 57
       }
     },
     "@loaders.gl/xml": {

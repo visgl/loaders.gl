@@ -39,7 +39,7 @@ Use async `load()` to create a source. Feature, image and tile sources can feed 
 service permissions continue to apply.
 
 OGC protocols such as WMS, WMTS, WFS, WCS, CSW, GML, and OGC API remain in
-[`@loaders.gl/wms`](/docs/modules/wms). Keeping the protocol implementations in their owning
+[`@loaders.gl/services/wms`](/docs/modules/services/wms). Keeping the protocol implementations in their owning
 modules lets applications install only the service families they use.
 
 <DocOrientation

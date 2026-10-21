@@ -54,6 +54,13 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+**WMS and STAC packages move into services subpaths**
+
+- Install `@loaders.gl/services` in place of `@loaders.gl/wms` and `@loaders.gl/stac`. Import OGC sources and loaders from `@loaders.gl/services/wms`, and STAC sources from `@loaders.gl/services/stac`.
+- Replace direct parser imports with `@loaders.gl/services/wms/gml-loader`, `@loaders.gl/services/wms/wmts-capabilities-loader-with-parser`, or `@loaders.gl/services/stac/stac-source` as appropriate. The old package entrypoints are removed.
+- Provider authentication presets remain on the lightweight `@loaders.gl/services` root. ArcGIS stays in `@loaders.gl/arcgis`.
+
+
 **Schema packages move into core subpaths**
 
 - Replace imports from `@loaders.gl/schema` with `@loaders.gl/core/schema`, and imports from `@loaders.gl/schema-utils` with `@loaders.gl/core/schema-utils`.
@@ -97,7 +104,7 @@ subpaths are import paths, not separate npm packages.
 
 **OGC API Tiles matrix discovery**
 
-`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/wms/services/ogc-api.md).
+`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/services/wms/services/ogc-api.md).
 
 **@loaders.gl/zip**
 
@@ -286,7 +293,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
  - The top-level `gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
 
-**@loaders.gl/json, @loaders.gl/traces, and @loaders.gl/wms**
+**@loaders.gl/json, @loaders.gl/traces, and @loaders.gl/services/wms**
 
 - `NDGeoJSONLoader` now returns Arrow tables by default. Set `geojson.shape: 'object-row-table'`
   to keep complete GeoJSON features as object rows. Its loader ID is now `ndgeojson` rather than
@@ -450,7 +457,7 @@ class CustomImageSource
 
 Import these contracts with `import type`; they are no longer runtime constructor values. Concrete
 source classes and operational methods such as `getMetadata()`, `getImage()`, `getRaster()`, and
-`getFeatures()` are unchanged. `@loaders.gl/wms` temporarily retains a deprecated structural
+`getFeatures()` are unchanged. `@loaders.gl/services/wms` temporarily retains a deprecated structural
 `ImageSource` runtime guard for deck.gl 9.x compatibility; it is not a constructor or base class.
 
 ### Arrow loader and writer variant removal
@@ -507,7 +514,7 @@ Before, in 4.4:
 ```ts
 import type {Source} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
-import {WMSSource} from '@loaders.gl/wms';
+import {WMSSource} from '@loaders.gl/services/wms';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 
 const sources: Source[] = [WMSSource, PMTilesSource];
@@ -520,7 +527,7 @@ Now, in v5:
 ```ts
 import type {SourceLoader} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
-import {WMSSourceLoader} from '@loaders.gl/wms';
+import {WMSSourceLoader} from '@loaders.gl/services/wms';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
 const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
@@ -736,7 +743,7 @@ Loader module changes, in order of estimated impact to applications:
 
 ## Upgrading to v3.4
 
-**@loaders.gl/wms**
+**@loaders.gl/services/wms**
 
 This module is still marked as experimental and had some breaking changes.
 

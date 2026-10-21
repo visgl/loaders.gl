@@ -163,17 +163,17 @@ WebMap/WebScene rendering.
 
 | Interface or format | Current status | Relevant package | What must not be inferred |
 | --- | --- | --- | --- |
-| WMS | ⚠️ Other package | `@loaders.gl/wms` | Generic protocol support does not certify every ArcGIS WMS configuration |
-| WMTS | ⚠️ Other package | `@loaders.gl/wms` | Validate tile matrix, CRS and authentication for the actual deployment |
-| WFS | ⚠️ Other package | `@loaders.gl/wms` | Version and geometry/CRS limits apply; no ArcGIS transaction guarantee |
-| WCS | ⚠️ Other package | `@loaders.gl/wms` | Coverage access differs from ImageServer REST support |
-| OGC API Features / Tiles | ⚠️ Other package | `@loaders.gl/wms` | Protocol implementation does not establish ArcGIS publishing or deployment support |
+| WMS | ⚠️ Other package | `@loaders.gl/services/wms` | Generic protocol support does not certify every ArcGIS WMS configuration |
+| WMTS | ⚠️ Other package | `@loaders.gl/services/wms` | Validate tile matrix, CRS and authentication for the actual deployment |
+| WFS | ⚠️ Other package | `@loaders.gl/services/wms` | Version and geometry/CRS limits apply; no ArcGIS transaction guarantee |
+| WCS | ⚠️ Other package | `@loaders.gl/services/wms` | Coverage access differs from ImageServer REST support |
+| OGC API Features / Tiles | ⚠️ Other package | `@loaders.gl/services/wms` | Protocol implementation does not establish ArcGIS publishing or deployment support |
 | KML, GeoJSON, CSV, GeoTIFF, Shapefile and similar exports | ⚠️ Other package | Format-specific packages | Parsing an existing file does not perform the ArcGIS export job |
 | SLPK | ⚠️ Other package | `@loaders.gl/tiles-3d/i3s` | Archive/profile coverage differs from online SceneServer support |
 | TPK/TPKX, VTPK, mobile map/scene packages | ⚠️ Not verified | ZIP/container utilities are only building blocks | Do not advertise package readers without format-specific implementations and tests |
 
 The protocol list is an alternative integration route, not a claim that every ArcGIS product
-publishes every listed protocol. See the current [WMS package reference](/docs/modules/wms) for actual APIs.
+publishes every listed protocol. See the current [WMS package reference](/docs/modules/services/wms) for actual APIs.
 
 ## Verification scope
 

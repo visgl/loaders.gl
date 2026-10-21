@@ -65,7 +65,7 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
       {label: 'Shapefile', to: '/docs/modules/shapefile/formats/shapefile'},
       {label: 'WKT / WKB', to: '/docs/modules/wkt/formats/wkt'},
       {label: 'WKT-CRS', to: '/docs/modules/wkt/formats/wkt-crs'},
-      {label: 'STAC', to: '/docs/modules/stac/formats/stac'}
+      {label: 'STAC', to: '/docs/modules/services/stac/formats/stac'}
     ]
   },
   {
@@ -73,12 +73,12 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
     title: 'Network services',
     description: 'Standards and vendor APIs where discovery is followed by bounded requests.',
     links: [
-      {label: 'WMS', to: '/docs/modules/wms/formats/wms'},
-      {label: 'WMTS', to: '/docs/modules/wms/formats/wmts'},
-      {label: 'WFS', to: '/docs/modules/wms/formats/wfs'},
-      {label: 'WCS', to: '/docs/modules/wms/formats/wcs'},
-      {label: 'CSW', to: '/docs/modules/wms/formats/csw'},
-      {label: 'OGC API', to: '/docs/modules/wms/services/ogc-api'},
+      {label: 'WMS', to: '/docs/modules/services/wms/formats/wms'},
+      {label: 'WMTS', to: '/docs/modules/services/wms/formats/wmts'},
+      {label: 'WFS', to: '/docs/modules/services/wms/formats/wfs'},
+      {label: 'WCS', to: '/docs/modules/services/wms/formats/wcs'},
+      {label: 'CSW', to: '/docs/modules/services/wms/formats/csw'},
+      {label: 'OGC API', to: '/docs/modules/services/wms/services/ogc-api'},
       {label: 'ArcGIS REST', to: '/docs/modules/arcgis'}
     ]
   }
@@ -118,9 +118,9 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
       {label: 'GeoPackage', to: '/docs/modules/geopackage/formats/geopackage'},
       {label: 'GeoTIFF', to: '/docs/modules/geotiff/formats/geotiff'},
       {label: 'KML', to: '/docs/modules/kml/formats/kml'},
-      {label: 'GML', to: '/docs/modules/wms/formats/gml'},
+      {label: 'GML', to: '/docs/modules/services/wms/formats/gml'},
       {label: 'WKT / WKB', to: '/docs/modules/wkt/formats/wkt'},
-      {label: 'Web services', to: '/docs/modules/wms'}
+      {label: 'Web services', to: '/docs/modules/services/wms'}
     ]
   },
   {

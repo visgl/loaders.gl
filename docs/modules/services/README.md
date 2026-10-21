@@ -1,16 +1,17 @@
 ---
-title: Provider authentication presets
+title: Geospatial services
 ---
 
 # @loaders.gl/services
 
-Authentication presets for Mapbox, Google Maps and Cesium ion.
+Service authentication presets and geospatial service sources live in one package with independent subpaths.
 
-Use `MapboxAuthentication`, `GoogleMapsAuthentication`, `CesiumIonAuthentication`, or their
-`create*Credential` helpers with the shared loaders.gl credential pipeline. Sign-in and token
-issuance remain application responsibilities.
+```ts
+import {MapboxAuthentication} from '@loaders.gl/services';
+import {WMSSourceLoader, WMSCapabilitiesLoader} from '@loaders.gl/services/wms';
+import {STACSourceLoader} from '@loaders.gl/services/stac';
+```
 
-ArcGIS sources and credentials live in [@loaders.gl/arcgis](https://loaders.gl/docs/modules/arcgis).
-OGC protocol sources live in [@loaders.gl/wms](https://loaders.gl/docs/modules/wms).
+The package root contains provider authentication presets for Mapbox, Google Maps, and Cesium ion. Import WMS, WFS, WMTS, CSW, OGC API, and GML functionality from `@loaders.gl/services/wms`; import STAC sources from `@loaders.gl/services/stac`. Parser implementations are available from their explicit subpaths, such as `@loaders.gl/services/wms/gml-loader` and `@loaders.gl/services/stac/stac-source`.
 
-See the [authentication guide](https://loaders.gl/docs/developer-guide/authentication).
+ArcGIS sources and credentials remain in [@loaders.gl/arcgis](../arcgis/README.md). See the [authentication guide](../../developer-guide/authentication.md), the [WMS guide](./wms/README.md), and the [STAC guide](./stac/README.md).

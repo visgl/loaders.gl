@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// import {_getArcGISServices, CSWService} from '@loaders.gl/wms';
+// import {_getArcGISServices, CSWService} from '@loaders.gl/services/wms';
 
 // export async function loadCSWCatalog(url: string = 'https://gamone.whoi.edu/csw') {
 //   const catalogService = new CSWService({url}); // https://deims.org/pycsw/catalogue'});

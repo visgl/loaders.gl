@@ -480,15 +480,6 @@
       "@loaders.gl/splats/test": [
         "modules/splats/test"
       ],
-      "@loaders.gl/stac": [
-        "modules/stac/src"
-      ],
-      "@loaders.gl/stac/*": [
-        "modules/stac/src/*"
-      ],
-      "@loaders.gl/stac/test": [
-        "modules/stac/test"
-      ],
       "@loaders.gl/scene": [
         "modules/scene/src"
       ],
@@ -582,15 +573,6 @@
       "@loaders.gl/wkt/test": [
         "modules/wkt/test"
       ],
-      "@loaders.gl/wms": [
-        "modules/wms/src"
-      ],
-      "@loaders.gl/wms/*": [
-        "modules/wms/src/*"
-      ],
-      "@loaders.gl/wms/test": [
-        "modules/wms/test"
-      ],
       "@loaders.gl/services": [
         "modules/services/src"
       ],
@@ -659,6 +641,24 @@
       ],
       "@loaders.gl/core/schema-utils/test": [
         "modules/core/test/schema-utils-package"
+      ],
+      "@loaders.gl/services/wms": [
+        "modules/services/src/wms"
+      ],
+      "@loaders.gl/services/wms/*": [
+        "modules/services/src/wms/*"
+      ],
+      "@loaders.gl/services/wms/test": [
+        "modules/services/test/wms"
+      ],
+      "@loaders.gl/services/stac": [
+        "modules/services/src/stac"
+      ],
+      "@loaders.gl/services/stac/*": [
+        "modules/services/src/stac/*"
+      ],
+      "@loaders.gl/services/stac/test": [
+        "modules/services/test/stac"
       ]
     },
     "plugins": [
