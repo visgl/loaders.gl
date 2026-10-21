@@ -6,7 +6,7 @@
 
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {Stats} from '@probe.gl/stats';
+import {Stats} from 'probe.gl/stats';
 import {RequestScheduler, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from '../helpers/transform-utils';

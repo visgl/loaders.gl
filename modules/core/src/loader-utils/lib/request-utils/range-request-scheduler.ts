@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import {Stats} from '@probe.gl/stats';
+import {Stats} from 'probe.gl/stats';
 
 /** Typed snapshot of the byte-range scheduler counters stored in a probe.gl `Stats` object. */
 export type RangeStats = {

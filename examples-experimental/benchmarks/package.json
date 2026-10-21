@@ -9,10 +9,9 @@
     "start-local": "webpack-dev-server --env.local --progress --hot --open"
   },
   "dependencies": {
-    "@probe.gl/bench": "^4.0.2",
-    "@probe.gl/react-bench": "^4.0.2",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "probe.gl": "^5.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",

@@ -7,7 +7,7 @@ import {gunzipSync, unzlibSync, gzipSync, zlibSync} from 'fflate';
 import React, {useEffect, useState} from 'react';
 import {createCompressionBenchmarkData} from './compression-benchmark-data';
 
-import {Bench, type LogEntry} from '@probe.gl/bench';
+import {Bench, type LogEntry} from 'probe.gl/bench';
 import * as defaultCodecs from '@loaders.gl/compression';
 import {BrotliShimDecompressor} from '@loaders.gl/compression/brotli-decompressor-shim';
 import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compressor-fflate';

@@ -78,9 +78,6 @@
   },
   "devDependencies": {
     "@loaders.gl/tiles-3d": "^5.0.0-alpha.0",
-    "@probe.gl/bench": "^4.1.1",
-    "@probe.gl/env": "^4.1.1",
-    "@probe.gl/test-utils": "^4.1.1",
     "@types/node": "^25.3.0",
     "@vis.gl/dev-tools": "2.0.0-alpha.6",
     "@vis.gl/ts-plugins": "2.0.0-alpha.6",
@@ -92,6 +89,7 @@
     "playwright": "^1.59.1",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
+    "probe.gl": "^5.0.0",
     "save-pixels": "^2.3.6",
     "vite": "^8.0.0",
     "vitest": "5.0.2",

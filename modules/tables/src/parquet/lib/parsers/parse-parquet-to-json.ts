@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {default as log} from '@probe.gl/log';
+import {default as log} from 'probe.gl/log';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable, ObjectRowTableBatch, Schema} from '@loaders.gl/core/schema';
 

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import '@loaders.gl/core/polyfills';
-import {Bench} from '@probe.gl/bench';
+import {Bench} from 'probe.gl/bench';
 
 import {addModuleBenchmarksToSuite} from './modules';
 import {installSortedGroupBenchOverride} from './group-sorted';

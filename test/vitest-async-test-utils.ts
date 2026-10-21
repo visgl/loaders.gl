@@ -1,4 +1,4 @@
-import {isBrowser as checkIsBrowser} from '@probe.gl/env';
+import {isBrowser as checkIsBrowser} from 'probe.gl/env';
 import {test as vitestTest, vi, type TestFunction, type TestOptions} from 'vitest';
 
 /** True when the current Vitest project is running in a browser-like runtime. */

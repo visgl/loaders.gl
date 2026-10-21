@@ -4,8 +4,8 @@
 
 import React, {useEffect, useState} from 'react';
 
-import {Bench, type LogEntry} from '@probe.gl/bench';
-import {BenchResults} from '@probe.gl/react-bench';
+import {Bench, type LogEntry} from 'probe.gl/bench';
+import {BenchResults} from '../components/bench-results';
 import {parse} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/ply/bundled';
 

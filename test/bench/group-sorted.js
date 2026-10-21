@@ -7,8 +7,8 @@ const SORTED_GROUP_PATCHED_FLAG = Symbol.for('loaders.gl.bench.sortedGroup.patch
 const sortedGroupIds = new WeakMap();
 
 /**
- * Adds a `groupSorted()` helper to @probe.gl/bench suites.
- * @param {typeof import('@probe.gl/bench').Bench} Bench Benchmark class.
+ * Adds a `groupSorted()` helper to probe.gl/bench suites.
+ * @param {typeof import('probe.gl/bench').Bench} Bench Benchmark class.
  * @returns {void}
  */
 export function installSortedGroupBenchOverride(Bench) {

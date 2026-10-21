@@ -71,7 +71,7 @@ Explicit options still override source metadata.
 - `tiles`: current contents of the shared tile cache
 - `selectedTiles` / `visibleTiles`: union views across all attached consumers
 - `loadingTiles` / `unloadedTiles`: current loading and unloaded cache subsets
-- `stats`: live `@probe.gl/stats` counters for cache size, selection, visibility, and consumers
+- `stats`: live `probe.gl/stats` counters for cache size, selection, visibility, and consumers
 - `subscribe(listener)`: tile lifecycle, metadata update, and stats callbacks
 - `setOptions(opts)`: update runtime configuration
 - `reloadAll()`: mark retained tiles stale for reload

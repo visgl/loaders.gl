@@ -4,7 +4,7 @@
 
 import React, {useEffect, useState} from 'react';
 
-import {Bench, type LogEntry} from '@probe.gl/bench';
+import {Bench, type LogEntry} from 'probe.gl/bench';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 
 type BenchmarkResultRow = {

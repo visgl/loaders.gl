@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Log} from '@probe.gl/log';
+import {Log} from 'probe.gl/log';
 
 // Version constant cannot be imported, it needs to correspond to the build version of **this** module.
 // __VERSION__ is injected by babel-plugin-version-inline
