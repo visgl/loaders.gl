@@ -12,7 +12,7 @@ import {luma} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 import {Tile3DSourceLayer} from '@loaders.gl/deck-layers';
-import {StatsWidget} from '@probe.gl/stats-widget';
+import {StatsWidget} from 'probe.gl/stats-widget';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in

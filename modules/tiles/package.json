@@ -128,10 +128,10 @@
     "@loaders.gl/tiles-3d": "5.0.0-alpha.12",
     "@maplibre/mlt": "^1.1.6",
     "@math.gl/polygon": "5.0.0-alpha.18",
-    "@probe.gl/stats": "^4.1.1",
     "apache-arrow": "^21.2.0",
     "pbf": "^3.2.1",
     "pmtiles": "^4.5.0",
+    "probe.gl": "^5.0.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {

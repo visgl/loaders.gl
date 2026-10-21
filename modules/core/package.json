@@ -134,10 +134,9 @@
     "@math.gl/crs": "5.0.0-alpha.18",
     "@math.gl/geospatial": "5.0.0-alpha.18",
     "@math.gl/types": "5.0.0-alpha.18",
-    "@probe.gl/log": "^4.1.1",
-    "@probe.gl/stats": "^4.1.1",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0",
+    "probe.gl": "^5.0.0",
     "zod": "^4.1.12"
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",

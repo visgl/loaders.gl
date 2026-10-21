@@ -4,7 +4,7 @@
 
 // probe.gl Log compatible loggers
 
-import {Log} from '@probe.gl/log';
+import {Log} from 'probe.gl/log';
 
 /** Default probe.gl logger used by loaders.gl. */
 export const probeLog = new Log({id: 'loaders.gl'});

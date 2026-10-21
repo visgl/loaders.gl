@@ -1,4 +1,4 @@
-import {isBrowser as checkIsBrowser} from '@probe.gl/env';
+import {isBrowser as checkIsBrowser} from 'probe.gl/env';
 import {test as vitestTest, expect} from 'vitest';
 
 type TestCallback = (test: Test) => void | Promise<void>;
