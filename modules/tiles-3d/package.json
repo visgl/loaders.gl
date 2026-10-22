@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles-3d",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "3D tilesets, 3D Tiles, and I3S loaders",
   "license": "MIT",
   "type": "module",
@@ -147,12 +147,12 @@
     "build-worker-i3s-lepcc-node": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-lepcc-worker-node.ts --outfile=dist/i3s-lepcc-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-alpha.12",
-    "@loaders.gl/draco": "5.0.0-alpha.12",
-    "@loaders.gl/gltf": "5.0.0-alpha.12",
-    "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/textures": "5.0.0-alpha.12",
-    "@loaders.gl/zip": "5.0.0-alpha.12",
+    "@loaders.gl/compression": "5.0.0-alpha.13",
+    "@loaders.gl/draco": "5.0.0-alpha.13",
+    "@loaders.gl/gltf": "5.0.0-alpha.13",
+    "@loaders.gl/images": "5.0.0-alpha.13",
+    "@loaders.gl/textures": "5.0.0-alpha.13",
+    "@loaders.gl/zip": "5.0.0-alpha.13",
     "@math.gl/core": "5.0.0-alpha.19",
     "@math.gl/dggs": "5.0.0-alpha.19",
     "@math.gl/earth": "5.0.0-alpha.19",

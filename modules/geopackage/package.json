@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/geopackage",
   "description": "GeoPackage data loaders",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -51,7 +51,7 @@
     "build-worker": "# esbuild src/workers/geopackage-worker.ts --bundle --outfile=dist/geopackage-worker.js --external:{util,fs,path} --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/geospatial": "5.0.0-alpha.12"
+    "@loaders.gl/geospatial": "5.0.0-alpha.13"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",

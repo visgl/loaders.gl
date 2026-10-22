@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/stac",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "Framework-independent source for SpatioTemporal Asset Catalogs",
   "license": "MIT",
   "type": "module",

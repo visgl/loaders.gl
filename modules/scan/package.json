@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/scan",
   "description": "Optional scan planning and execution for loaders.gl",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -54,8 +54,8 @@
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/parquet": "5.0.0-alpha.12",
-    "@loaders.gl/sql": "5.0.0-alpha.12",
+    "@loaders.gl/parquet": "5.0.0-alpha.13",
+    "@loaders.gl/sql": "5.0.0-alpha.13",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/wkt",
   "description": "Loader and Writer for the WKT (Well Known Text) Format",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -64,7 +64,7 @@
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
     "@math.gl/geospatial": "5.0.0-alpha.19"
   },
   "peerDependencies": {

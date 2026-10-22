@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/shapefile",
   "description": "Loader for the Shapefile Format",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -71,7 +71,7 @@
     "build-worker-dbf": "node ../../scripts/build-codec-worker.mjs ../geospatial/src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/geospatial": "5.0.0-alpha.12"
+    "@loaders.gl/geospatial": "5.0.0-alpha.13"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

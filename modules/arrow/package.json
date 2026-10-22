@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "type": "module",
@@ -95,7 +95,7 @@
     "build-worker2": "node ../../scripts/build-codec-worker.mjs ../tables/src/arrow/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
-    "@loaders.gl/tables": "5.0.0-alpha.12"
+    "@loaders.gl/tables": "5.0.0-alpha.13"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

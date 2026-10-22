@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/avro",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "Framework-independent loader and writer for Apache Avro",
   "license": "MIT",
   "type": "module",
@@ -59,6 +59,6 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/tables": "5.0.0-alpha.12"
+    "@loaders.gl/tables": "5.0.0-alpha.13"
   }
 }

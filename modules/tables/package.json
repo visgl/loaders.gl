@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tables",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "Table format loaders with metadata and explicit parser subpaths",
   "license": "MIT",
   "type": "module",
@@ -632,8 +632,8 @@
     "build-source-worker-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-source-worker.ts --outfile=dist/parquet-source-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/parquet/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
-    "@loaders.gl/compression": "5.0.0-alpha.12",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
+    "@loaders.gl/compression": "5.0.0-alpha.13",
     "@math.gl/geospatial": "5.0.0-alpha.19",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0"

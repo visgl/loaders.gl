@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
   "type": "module",
@@ -65,7 +65,7 @@
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/geospatial": "5.0.0-alpha.12"
+    "@loaders.gl/geospatial": "5.0.0-alpha.13"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
