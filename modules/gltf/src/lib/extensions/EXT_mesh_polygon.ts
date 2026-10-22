@@ -111,16 +111,22 @@ function decodePolygonData(
 /** Resolve one unsigned scalar accessor with an optional expected count. */
 function getUnsignedScalarAccessor(
   iterator: GLTFIterator,
-  accessorIndex: number,
+  accessorReference: number | GLTFAccessor,
   label: string,
   expectedCount?: number
 ): NumericArray {
-  if (!Number.isInteger(accessorIndex) || accessorIndex < 0) {
+  if (
+    typeof accessorReference === 'number' &&
+    (!Number.isInteger(accessorReference) || accessorReference < 0)
+  ) {
     throw new Error(`${name}: ${label} must reference an accessor`);
   }
-  const accessor = iterator.data.accessors?.[accessorIndex];
+  const accessor =
+    typeof accessorReference === 'number'
+      ? iterator.data.accessors?.[accessorReference]
+      : accessorReference;
   if (!accessor) {
-    throw new Error(`${name}: ${label} references missing accessor ${accessorIndex}`);
+    throw new Error(`${name}: ${label} references missing accessor ${accessorReference}`);
   }
   if (accessor.type !== 'SCALAR' || ![5121, 5123, 5125].includes(accessor.componentType)) {
     throw new Error(`${name}: ${label} must be an unsigned integer SCALAR accessor`);
@@ -128,7 +134,7 @@ function getUnsignedScalarAccessor(
   if (expectedCount !== undefined && accessor.count !== expectedCount) {
     throw new Error(`${name}: ${label} count must equal polygon count ${expectedCount}`);
   }
-  return iterator.getTypedArrayForAccessor(accessorIndex) as NumericArray;
+  return iterator.getTypedArrayForAccessor(accessorReference) as NumericArray;
 }
 
 /** Validate monotonic offsets into an index accessor. */

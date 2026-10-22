@@ -138,8 +138,9 @@ async function decompressPrimitive(
     }
   }
 
+  // Attributes outside the Draco bitstream still reference ordinary glTF accessors.
   // @ts-ignore
-  primitive.attributes = decodedAttributes;
+  primitive.attributes = {...primitive.attributes, ...decodedAttributes};
   if (decodedData.indices) {
     // @ts-ignore
     primitive.indices = getGLTFAccessor(decodedData.indices);

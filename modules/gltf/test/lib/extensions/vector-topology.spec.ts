@@ -11,6 +11,48 @@ import type {
 import {decodeExtensions} from '../../../src/lib/api/gltf-extensions';
 
 describe('draft vector topology extensions', () => {
+  test.each([
+    false,
+    true
+  ])('decodes Draco indices with polygon topology enabled: %s', async polygonsEnabled => {
+    const gltf = createPolygonGLTF();
+    gltf.json.extensionsUsed = [
+      'KHR_draco_mesh_compression',
+      'KHR_mesh_primitive_restart',
+      ...(polygonsEnabled ? ['EXT_mesh_polygon'] : [])
+    ];
+    gltf.json.extensionsRequired = ['KHR_mesh_primitive_restart'];
+    const primitive = gltf.json.meshes![0].primitives[0];
+    primitive.attributes = {POSITION: 4};
+    gltf.json.accessors!.push({componentType: 5126, count: 11, type: 'VEC3'});
+    // No raw index buffer exists: only the Draco decoder can supply these values.
+    delete gltf.json.accessors![0].bufferView;
+    primitive.extensions!.KHR_draco_mesh_compression = {bufferView: 0, attributes: {POSITION: 0}};
+    if (!polygonsEnabled) {
+      delete primitive.extensions!.EXT_mesh_polygon;
+    }
+    const decodedIndices = new Uint16Array([0, 1, 2, 0, 2, 3, 4, 5, 6]);
+    const context = {
+      _parse: async () => ({
+        attributes: {POSITION: {value: new Float32Array(33), size: 3}},
+        indices: {value: decodedIndices, size: 1}
+      })
+    };
+
+    await decodeExtensions(gltf, {gltf: {loadBuffers: true, decompressMeshes: true}}, context);
+
+    expect(primitive.indices).toMatchObject({value: decodedIndices, count: 9, type: 'SCALAR'});
+    // Asset-wide restart decoding must tolerate indexed Draco triangles even without markers.
+    expect(primitive.primitiveRestart).toBeUndefined();
+    if (polygonsEnabled) {
+      expect(
+        getPolygonExtension(gltf).data?.polygons.map(polygon => polygon.triangleRange)
+      ).toEqual([
+        {offset: 0, count: 6},
+        {offset: 6, count: 3}
+      ]);
+    }
+  });
   test('decodes primitive-restart ranges without copying indices', async () => {
     const gltf = createPrimitiveRestartGLTF();
 

@@ -201,6 +201,11 @@ Draco mesh indices are decoded as triangle lists (`mode: 4`), including compress
 primitives. This keeps the decoded index buffer and primitive mode consistent; the standalone
 Draco loader's `topology` option does not change this glTF representation.
 
+Draco decompression preserves attributes stored outside the compressed bitstream. Compression
+is decoded before metadata and feature extensions, so `EXT_mesh_features` can consume both
+decoded and uncompressed feature ID attributes. Later topology decoders also accept decoded
+Draco index accessors.
+
 Draco and meshopt decoders are maintained by the glTF module. For linked buffers, images, or
 draft glTF 2.1 files, enable the matching `gltf.load*` options described below.
 
