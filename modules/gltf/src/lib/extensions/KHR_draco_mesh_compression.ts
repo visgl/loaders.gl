@@ -123,6 +123,13 @@ async function decompressPrimitive(
 
   const decodedAttributes: {[key: string]: GLTFAccessor} = getGLTFAccessors(decodedData.attributes);
 
+  // A declared compressed attribute cannot fall back to its raw accessor: it may have no buffer view.
+  for (const attributeName of Object.keys(dracoExtension.attributes)) {
+    if (!Object.hasOwn(decodedAttributes, attributeName)) {
+      throw new Error(`glTF: Draco decompression did not produce attribute ${attributeName}`);
+    }
+  }
+
   // Restore accessor bounds and integer normalization from the glTF declaration.
   for (const [attributeName, decodedAttribute] of Object.entries(decodedAttributes)) {
     if (attributeName in primitive.attributes) {
@@ -138,8 +145,9 @@ async function decompressPrimitive(
     }
   }
 
+  // Attributes outside the Draco bitstream still reference ordinary glTF accessors.
   // @ts-ignore
-  primitive.attributes = decodedAttributes;
+  primitive.attributes = {...primitive.attributes, ...decodedAttributes};
   if (decodedData.indices) {
     // @ts-ignore
     primitive.indices = getGLTFAccessor(decodedData.indices);
