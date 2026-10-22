@@ -14,7 +14,7 @@ import {
 } from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {DBFLoaderWithParser as DBFLoader} from '../../geospatial/src/shapefile/dbf-loader';
-import {projectionEngine} from '@math.gl/projection';
+import {projectionEngine} from '@math.gl/geospatial/projection';
 import {equals, withEpsilon} from '@math.gl/core';
 setLoaderOptions({
   _workerType: 'test',

@@ -15,7 +15,7 @@ import {
 import {expect, test, vi} from 'vitest';
 
 // Exercise native storage paths deterministically even in browsers without Float16Array.
-vi.mock('@math.gl/types', () => ({
+vi.mock('@math.gl/core/types', () => ({
   getFloat16ArrayConstructor: () => Float32Array,
   NativeFloat16ArrayConstructor: Float32Array
 }));

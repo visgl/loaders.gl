@@ -11,7 +11,7 @@ import {
   selectLoader
 } from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {projectionEngine} from '@math.gl/projection';
+import {projectionEngine} from '@math.gl/geospatial/projection';
 
 const SHAPEFILE_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
 

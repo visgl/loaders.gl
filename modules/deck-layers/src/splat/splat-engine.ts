@@ -13,7 +13,7 @@ import {
 } from '@luma.gl/core';
 import type {Color} from '@deck.gl/core';
 import type {ArrowTableBatch} from '@loaders.gl/core/schema';
-import {BoundingSphere, CullingVolume} from '@math.gl/culling';
+import {BoundingSphere, CullingVolume} from '@math.gl/geometry/culling';
 import {
   projectSplatCovarianceToScreen,
   projectWorldPositionToScreen,

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 import {convertXMLFieldToArrayInPlace} from '@loaders.gl/xml';
 import {parseExceptionReport} from './parse-exception-report';
 import {parseXMLTextSync} from '../xml/parse-xml-text';

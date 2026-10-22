@@ -27,7 +27,7 @@ import type {
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider
 } from '@loaders.gl/core/loader-utils';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 import {
   createTileGrid,
   createTileGridMatrix,

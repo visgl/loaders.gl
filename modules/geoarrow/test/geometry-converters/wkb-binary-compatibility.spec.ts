@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {writeWKB} from '@math.gl/wkb';
+import {writeWKB} from '@math.gl/geospatial/wkb';
 import {convertWKBToBinaryGeometry} from '../../src/lib/geometry-converters/wkb/convert-wkb-to-binary-geometry';
 
 test('math.gl traversal retains legacy XYM positions without confusing measures with Z', () => {

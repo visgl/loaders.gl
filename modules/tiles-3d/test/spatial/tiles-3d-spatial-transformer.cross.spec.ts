@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 
-import type {Geoid} from '@math.gl/geoid';
+import type {Geoid} from '@math.gl/earth/geoid';
 import {describe, expect, test} from 'vitest';
 import {createTilesetSpatialReference, Tiles3DSpatialTransformer} from '@loaders.gl/tiles-3d';
 

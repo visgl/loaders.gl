@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TypedArray, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 import {GeoTIFFLoader as GeoTIFFLoaderMetadata} from './geotiff-loader-types';
 
 const {preload: _GeoTIFFLoaderPreload, ...GeoTIFFLoaderMetadataWithoutPreload} =

@@ -48,20 +48,20 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/tiles-3d/i3s';
-import {Geoid} from '@math.gl/geoid';
+import {Geoid} from '@math.gl/earth/geoid';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {GL} from '@math.gl/geometry-utils';
+import {GL} from '@math.gl/geometry/utils';
 
 /*
-  At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/types'.
+  At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/core/types'.
   So the following import is replaced with the local import
-  import type {TypedArrayConstructor} from '@math.gl/types'; 
+  import type {TypedArrayConstructor} from '@math.gl/core/types';
 */
 import type {GLTFAttributesData, TextureImageProperties, TypedArrayConstructor} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 
 import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 

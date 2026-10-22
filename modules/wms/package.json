@@ -70,8 +70,7 @@
     "@loaders.gl/images": "5.0.0-alpha.12",
     "@loaders.gl/raster": "5.0.0-alpha.12",
     "@loaders.gl/xml": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.18",
-    "@math.gl/geospatial": "5.0.0-alpha.18",
+    "@math.gl/geospatial": "5.0.0-alpha.19",
     "lerc": "^4.2.0"
   },
   "peerDependencies": {

@@ -13,7 +13,7 @@ import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertFeaturesToGeoArrowTable, type LegacyGeoJSONCRS} from '../src/feature-table';
 import {convertWKTToGeometry} from '../src/geometry-codecs';
 import {makeGeoArrowColumnFromArrowVector} from '../src/arrow-geoarrow-adapter';
-import {materializeGeoArrowRows} from '@math.gl/geoarrow';
+import {materializeGeoArrowRows} from '@math.gl/geospatial/geoarrow';
 
 test.each([
   ['POINT M (1 2 3)', 'xym', 'Point M'],

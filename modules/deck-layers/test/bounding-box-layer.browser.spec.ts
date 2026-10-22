@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {AxisAlignedBoundingBox, OrientedBoundingBox} from '@math.gl/culling';
+import {AxisAlignedBoundingBox, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import type {Layer} from '@deck.gl/core';
 import {BoundingBoxLayer, createBoundingBoxLayerEdges} from '../src/bounding-box-layer';
 import {TileBoundingBoxLayer} from '../src/tile-bounding-box-layer';

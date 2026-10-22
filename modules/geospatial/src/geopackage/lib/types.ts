@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WKTCRSDefinition} from '@math.gl/crs';
+import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
 
 /* eslint-disable camelcase */
 export interface GeometryBitFlags {

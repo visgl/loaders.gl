@@ -1,6 +1,6 @@
 import {Tiles3DTileJSONPostprocessed} from '@loaders.gl/tiles-3d/3d-tiles';
 import {BoundingVolumes} from '@loaders.gl/tiles-3d/i3s';
-import {I3STileHeader} from '@loaders.gl/tiles-3d/i3s/src/types';
+import type {I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
 
 // https://cesium.com/docs/cesiumjs-ref-doc/Cesium3DTileset.html
 const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;

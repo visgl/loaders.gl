@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {BoxShape, CapsuleShape, CylinderShape, PlaneShape, SphereShape} from '@math.gl/culling';
-import type {ImplicitShape} from '@math.gl/culling';
+import {
+  BoxShape,
+  CapsuleShape,
+  CylinderShape,
+  PlaneShape,
+  SphereShape
+} from '@math.gl/geometry/culling';
+import type {ImplicitShape} from '@math.gl/geometry/culling';
 import type {GLTFBoundingVolume, GLTFShape} from '../types/gltf-shape-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import {Matrix4} from '@math.gl/core';

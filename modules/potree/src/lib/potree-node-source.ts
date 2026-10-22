@@ -42,8 +42,8 @@ import {
 import {PotreeHierarchyChunkLoaderWithParser} from '../potree-hierarchy-chunk-loader-with-parser';
 import {PotreeBinLoaderWithParser} from '../potree-bin-loader-with-parser';
 import {parseVersion} from '../utils/parse-version';
-import type {Projection} from '@math.gl/projection';
-import {LASMesh} from '@loaders.gl/las/src/lib/las-types';
+import type {Projection} from '@math.gl/geospatial/projection';
+import type {LASMesh} from '@loaders.gl/las';
 import {createProjection} from '../utils/projection-utils';
 import {
   getCartographicOriginFromBoundingBox,

@@ -9,7 +9,7 @@
     "noImplicitAny": false,
     "allowJs": true,
     "checkJs": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
@@ -21,6 +21,8 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
+      // Zarr 0.5 advertises these public types via typings but omits them from package exports.
+      "zarr": ["node_modules/zarr/types/zarr.d.ts"],
       "@loaders.gl/csv/csv-loader": [
         "modules/csv/src/csv-loader-entry"
       ],

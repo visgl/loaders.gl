@@ -107,10 +107,9 @@
   "dependencies": {
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
     "@loaders.gl/wkt": "5.0.0-alpha.12",
-    "@math.gl/geoarrow": "5.0.0-alpha.18",
-    "@math.gl/polygon": "5.0.0-alpha.18",
-    "@math.gl/types": "5.0.0-alpha.18",
-    "@math.gl/wkb": "5.0.0-alpha.18",
+    "@math.gl/core": "5.0.0-alpha.19",
+    "@math.gl/geometry": "5.0.0-alpha.19",
+    "@math.gl/geospatial": "5.0.0-alpha.19",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

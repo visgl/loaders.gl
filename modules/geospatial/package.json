@@ -266,8 +266,7 @@
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
     "@loaders.gl/xml": "5.0.0-alpha.12",
     "@loaders.gl/zip": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.18",
-    "@math.gl/projection": "5.0.0-alpha.18",
+    "@math.gl/geospatial": "5.0.0-alpha.19",
     "@types/sql.js": "^1.4.5",
     "apache-arrow": ">= 17.0.0"
   },

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {ImageDataType} from '@loaders.gl/images';

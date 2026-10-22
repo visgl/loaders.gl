@@ -57,7 +57,7 @@ const createHeadlessBrowser = () => ({
 });
 const coverageConfig = loadCoverageConfig();
 
-export default getVitestConfig({
+const vitestConfiguration = getVitestConfig({
   excludePatterns,
   launchOptions: {
     args: browserLaunchArguments
@@ -83,12 +83,12 @@ export default getVitestConfig({
         '@mapbox/martini',
         '@maplibre/mlt',
         '@math.gl/core',
-        '@math.gl/culling',
+        '@math.gl/geometry/culling',
         '@math.gl/geospatial',
-        '@math.gl/geometry-utils',
-        '@math.gl/polygon',
-        '@math.gl/projection',
-        '@math.gl/types',
+        '@math.gl/geometry/utils',
+        '@math.gl/geometry/polygon',
+        '@math.gl/geospatial/projection',
+        '@math.gl/core/types',
         '@math.gl/web-mercator',
         'probe.gl/env',
         'probe.gl/log',
@@ -289,6 +289,15 @@ export default getVitestConfig({
     excludeAfterRemap: true
   }
 });
+
+// TypeScript declaration mappings are compile-time only; Vite must resolve the runtime package.
+if (Array.isArray(vitestConfiguration.resolve?.alias)) {
+  vitestConfiguration.resolve.alias = vitestConfiguration.resolve.alias.filter(
+    alias => !alias.replacement.endsWith('.d.ts')
+  );
+}
+
+export default vitestConfiguration;
 
 /** Serves repository fixtures and built workers without Vite transforms or HTML fallback. */
 function serveLocalTestAssetsPlugin(repositoryRoot: string) {

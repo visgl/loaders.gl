@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {parseWKTCRS, type WKTCRSNode} from '@math.gl/crs';
+import {parseWKTCRS, type WKTCRSNode} from '@math.gl/geospatial/crs';
 import {getSpatialCoordinateFrame} from '@loaders.gl/tiles-3d';
 
 /** Horizontal CRS declarations consumed by the legacy I3S converter. */

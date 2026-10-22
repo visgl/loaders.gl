@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {OrientedBoundingBox} from '@math.gl/culling';
+import {OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles-3d';
 import I3SNodePagesTiles from '../helpers/i3s-nodepages-tiles';

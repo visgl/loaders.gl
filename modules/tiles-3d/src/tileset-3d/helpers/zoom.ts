@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Vector3} from '@math.gl/core';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {BoundingRectangle} from '../../types';
 

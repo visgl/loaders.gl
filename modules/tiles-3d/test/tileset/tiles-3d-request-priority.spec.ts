@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {BoundingSphere} from '@math.gl/culling';
+import {BoundingSphere} from '@math.gl/geometry/culling';
 import {TILE_CONTENT_STATE, TILE_REFINEMENT} from '../../src/constants';
 import {Tile3D} from '../../src/tileset-3d/common/tile-3d';
 import {TilesetTraverser} from '../../src/tileset-3d/common/tileset-traverser';

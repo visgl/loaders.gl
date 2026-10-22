@@ -88,9 +88,11 @@ function createBundlerPlugin() {
             const normalizedContext = resource.context?.replace(/\\/g, '/');
             if (
               normalizedContext?.includes('/node_modules/@deck.gl/') ||
-              normalizedContext?.includes('/node_modules/@luma.gl/')
+              normalizedContext?.includes('/node_modules/@luma.gl/') ||
+              normalizedContext?.includes('/node_modules/@math.gl/culling/') ||
+              normalizedContext?.includes('/node_modules/@math.gl/polygon/')
             ) {
-              // deck.gl/luma.gl 9.3 publish code compiled against math.gl 4.x.
+              // deck.gl/luma.gl and their standalone math.gl leaf dependencies require 4.x.
               resource.request = legacyMathCoreEntry;
             }
           }),

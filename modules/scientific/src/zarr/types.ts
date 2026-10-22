@@ -4,6 +4,13 @@
 
 /* eslint-disable */
 import {DTYPE_LOOKUP} from './lib/zarr-pixel-source';
+import type {ZarrArray} from 'zarr';
+
+/** Storage accepted by Zarr's public array interface. */
+export type ZarrStore = ZarrArray['store'];
+
+/** Raw chunk returned by Zarr's public chunk-reading API. */
+export type ZarrRawArray = Awaited<ReturnType<ZarrArray['getRawChunk']>>;
 export type SupportedDtype = (typeof DTYPE_LOOKUP)[keyof typeof DTYPE_LOOKUP];
 export type SupportedTypedArray = InstanceType<(typeof globalThis)[`${SupportedDtype}Array`]>;
 

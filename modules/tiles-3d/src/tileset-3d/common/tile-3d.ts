@@ -6,8 +6,8 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {Vector3, Matrix4} from '@math.gl/core';
-import {CullingVolume} from '@math.gl/culling';
-import type {CullingResult} from '@math.gl/culling';
+import {CullingVolume} from '@math.gl/geometry/culling';
+import type {CullingResult} from '@math.gl/geometry/culling';
 import {getTile3DFeatureIdSets} from './tile-3d-contracts';
 import type {Tile3DContent, Tile3DFeatureIdSet, Tile3DMetadataContext} from './tile-3d-contracts';
 

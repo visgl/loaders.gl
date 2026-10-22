@@ -41,8 +41,7 @@
   },
   "dependencies": {
     "@loaders.gl/las": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.18",
-    "@math.gl/projection": "5.0.0-alpha.18"
+    "@math.gl/geospatial": "5.0.0-alpha.19"
   },
   "devDependencies": {
     "copc": "0.0.8"

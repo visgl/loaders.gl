@@ -13,7 +13,7 @@ import type {
   GeoJSONTable,
   Schema
 } from '@loaders.gl/core/schema';
-import type {PROJJSONCRS} from '@math.gl/crs';
+import type {PROJJSONCRS} from '@math.gl/geospatial/crs';
 import * as arrow from 'apache-arrow';
 import {
   ArrowTableBuilder,

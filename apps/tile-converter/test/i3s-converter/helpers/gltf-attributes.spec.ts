@@ -1,4 +1,4 @@
-import {BoundingSphere} from '@math.gl/culling';
+import {BoundingSphere} from '@math.gl/geometry/culling';
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
 import {load} from '@loaders.gl/core';

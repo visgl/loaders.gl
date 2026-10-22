@@ -5,7 +5,7 @@
 // This file contains behavior derived from the Cesium code base under Apache 2 license.
 
 import {Vector3} from '@math.gl/core';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {TILE_REFINEMENT} from '../../constants';
 
 const PREFERRED_SORTING_DIGITS = 10_000;

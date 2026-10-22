@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Projection} from '@math.gl/projection';
+import type {Projection} from '@math.gl/geospatial/projection';
 
 /**
  * Calculate cartographic origin from Potree bounding box
