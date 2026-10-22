@@ -6,7 +6,7 @@ This file records the attribution wording for the **ECMWF IFS Analysis N320 - Be
 
 This service is based on data and products of the European Centre for Medium-Range Weather Forecasts (ECMWF).
 
-**Original data:** ECMWF Integrated Forecasting System (IFS) operational analysis, 2011–2024. Copyright © 2011–2024 European Centre for Medium-Range Weather Forecasts (ECMWF). Source: https://www.ecmwf.int/.
+**Original data:** ECMWF Integrated Forecasting System (IFS) operational analysis, 2011–2026. Copyright © 2011–2026 European Centre for Medium-Range Weather Forecasts (ECMWF). Source: https://www.ecmwf.int/.
 
 **Licence:** This ECMWF data is published under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence: https://creativecommons.org/licenses/by/4.0/.
 

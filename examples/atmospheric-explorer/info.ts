@@ -34,7 +34,7 @@ export function mountAtmosphericInfo(host: HTMLElement): () => void {
 <p>Visualization concept inspired by <strong>Jannes van Ingen</strong> and <a href="https://www.linkedin.com/posts/jannesvaningen_opendata-weather-machinelearning-ugcPost-7516842522401226753-A2TN/" target="_blank" rel="noopener noreferrer">his post announcing the open ECMWF dataset ↗</a>.</p>
 <h3>Original data and copyright</h3>
 <p><strong>This service is based on data and products of the European Centre for Medium-Range Weather Forecasts (ECMWF).</strong></p>
-<p>ECMWF IFS operational analysis, 2011–2024. Copyright © 2011–2024 European Centre for Medium-Range Weather Forecasts (ECMWF). Source: <a href="https://www.ecmwf.int/" target="_blank" rel="noopener noreferrer">www.ecmwf.int</a>.</p>
+<p>ECMWF IFS operational analysis, 2011–2026. Copyright © 2011–2026 European Centre for Medium-Range Weather Forecasts (ECMWF). Source: <a href="https://www.ecmwf.int/" target="_blank" rel="noopener noreferrer">www.ecmwf.int</a>.</p>
 <h3>Modifications</h3>
 <p>Beyond Weather selected variables and pressure levels, converted GRIB to Icechunk Zarr, and applied lossy bit rounding. This example selects fields and renders values as colored geographic points.</p>
 <h3>Distribution and licensing</h3>

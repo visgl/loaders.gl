@@ -1,4 +1,4 @@
-import {Deck, GlobeView} from '@deck.gl/core';
+import {Deck, _GlobeView as GlobeView} from '@deck.gl/core';
 import {ScatterplotLayer} from '@deck.gl/layers';
 import {createDataSource} from '@loaders.gl/core';
 import {ZarrArraySourceLoader} from '@loaders.gl/scientific/zarr';
@@ -10,7 +10,7 @@ type Configuration = {
   root: string;
   array: string;
   dimensions: string[];
-  grid: GaussianGrid;
+  grid?: GaussianGrid;
   selection: Record<string, number>;
   label?: string;
   storage?: 'zarr' | 'icechunk';
@@ -33,14 +33,14 @@ const deck = new Deck({
 const destroyInfo = mountAtmosphericInfo(document.querySelector<HTMLElement>('#panels')!);
 let controller: AbortController | null = null;
 const params = new URLSearchParams(location.search);
-rootInput.value = params.get('root') || '';
+rootInput.value = params.get('root') || 'https://beyond-weather-ecmwf-ifs-analysis.s3.us-east-2.amazonaws.com/data.zarr';
 configInput.value = JSON.stringify({
   storage: 'icechunk',
   reference: {branch: 'main'},
-  array: 'temperature',
-  dimensions: ['time', 'level', 'point'],
-  selection: {time: 0, level: 0},
-  grid: {latitudes: [], pointsPerLatitude: []}
+  array: '2m_temperature',
+  dimensions: ['time', 'point'],
+  selection: {time: 0},
+  label: '2 m temperature (K) · 2011-01-01 00:00 UTC'
 }, null, 2);
 
 async function loadField() {
@@ -65,10 +65,12 @@ async function loadField() {
     status.textContent = 'Reading selected chunks…';
     const field = source
       ? await source.getArray({selectionByDimension: selection, signal})
-      : await readIcechunkField({root, path: config.array, dimensions: config.dimensions, selection: config.selection, reference: config.reference, signal});
+      : await readIcechunkField({root, path: config.array, dimensions: config.dimensions, selection: config.selection, reference: config.reference, signal, loadCoordinates: !config.grid});
     if (signal.aborted) return;
     if (field.shape.length !== 1) throw new Error('Expected a one-dimensional point field');
-    const points = expandReducedGaussianGrid(field.data, config.grid);
+    const grid = config.grid || ('grid' in field ? field.grid : undefined);
+    if (!grid) throw new Error('Provide a Gaussian grid for a plain Zarr store');
+    const points = expandReducedGaussianGrid(field.data, grid);
     const [min, max] = finiteRange(field.data);
     deck.setProps({layers: [new ScatterplotLayer({
       id: 'atmospheric-field',

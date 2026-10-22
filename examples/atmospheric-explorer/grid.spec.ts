@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {expandReducedGaussianGrid, finiteRange, colorForValue} from './grid';
+import {expandReducedGaussianGrid, finiteRange, colorForValue, createGaussianGridFromCoordinates} from './grid';
 
 describe('reduced Gaussian grid', () => {
   it('expands variable row lengths in storage order', () => {
@@ -19,5 +19,26 @@ describe('reduced Gaussian grid', () => {
     expect(finiteRange([NaN, -2, 3])).toEqual([-2, 3]);
     expect(() => finiteRange([NaN])).toThrow();
     expect(colorForValue(0, 0, 10)).toHaveLength(4);
+  });
+});
+
+
+describe('archive point coordinates', () => {
+  it('groups consecutive latitude rows and preserves explicit longitudes', () => {
+    const grid = createGaussianGridFromCoordinates(
+      new Float64Array([60, 60, -30, -30, -30]),
+      new Float64Array([5, 185, 10, 130, 250])
+    );
+    expect(grid).toEqual({latitudes: [60, -30], pointsPerLatitude: [2, 3], longitudes: [5, 185, 10, 130, 250]});
+    expect(expandReducedGaussianGrid([1, 2, 3, 4, 5], grid)[1].position).toEqual([-175, 60]);
+  });
+  it.each([
+    [[], []],
+    [[0], []],
+    [[NaN], [0]],
+    [[91], [0]],
+    [[0], [Infinity]]
+  ])('rejects invalid coordinate arrays %j / %j', (latitudes, longitudes) => {
+    expect(() => createGaussianGridFromCoordinates(latitudes, longitudes)).toThrow();
   });
 });

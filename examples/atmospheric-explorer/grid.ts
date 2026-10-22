@@ -44,3 +44,28 @@ export function colorForValue(value: number, min: number, max: number): [number,
   const t = max > min ? Math.max(0, Math.min(1, (value - min) / (max - min))) : 0.5;
   return [Math.round(255 * t), Math.round(180 * (1 - Math.abs(2 * t - 1))), Math.round(255 * (1 - t)), 210];
 }
+
+/** Build latitude rows from the archive's explicit point coordinates in storage order. */
+export function createGaussianGridFromCoordinates(
+  latitudes: ArrayLike<number>,
+  longitudes: ArrayLike<number>
+): GaussianGrid {
+  if (latitudes.length !== longitudes.length || !latitudes.length) {
+    throw new Error('Coordinate arrays must have the same nonzero length');
+  }
+  const grid: GaussianGrid = {latitudes: [], pointsPerLatitude: [], longitudes: Array.from(longitudes)};
+  for (let index = 0; index < latitudes.length; index++) {
+    const latitude = latitudes[index];
+    if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 || !Number.isFinite(longitudes[index])) {
+      throw new Error('Invalid point coordinates');
+    }
+    const row = grid.latitudes.length - 1;
+    if (row < 0 || latitude !== grid.latitudes[row]) {
+      grid.latitudes.push(latitude);
+      grid.pointsPerLatitude.push(1);
+    } else {
+      grid.pointsPerLatitude[row]++;
+    }
+  }
+  return grid;
+}
