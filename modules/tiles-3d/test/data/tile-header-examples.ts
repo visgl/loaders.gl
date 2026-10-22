@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {I3STileHeader} from '@loaders.gl/tiles-3d/i3s/src';
+import type {I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
 import {TILE_TYPE} from '../../src';
 
 /* eslint-disable @typescript-eslint/no-loss-of-precision */

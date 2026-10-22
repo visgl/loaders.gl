@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {BoxShape, CapsuleShape, SphereShape} from '@math.gl/culling';
+import {BoxShape, CapsuleShape, SphereShape} from '@math.gl/geometry/culling';
 import {getGLTFCullingShape, getGLTFNodeCullingShape} from '@loaders.gl/gltf';
 import type {GLTFWithBuffers} from '../src/lib/types/gltf-types';
 

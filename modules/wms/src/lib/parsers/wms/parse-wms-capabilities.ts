@@ -10,7 +10,7 @@ import {
   getXMLBoolean
 } from '../xml/parse-xml-helpers';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 
 /** All capabilities of a WMS service - response to a WMS `GetCapabilities` data structure extracted from XML */
 export type WMSCapabilities = {

@@ -42,13 +42,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 Parses [WKT coordinate reference system syntax](../formats/wkt-crs) into the value-preserving
-`WKTCRSAst` from `@math.gl/crs`. See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems)
+`WKTCRSAst` from `@math.gl/geospatial/crs`. See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-systems)
 for the shared type model, format support, and reprojection roadmap.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/wkt @math.gl/crs
+npm install @loaders.gl/core @loaders.gl/wkt @math.gl/geospatial
 ```
 
 ## Usage

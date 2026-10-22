@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {inspectWKBHeader} from '@math.gl/wkb';
-import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@math.gl/wkb';
+import {inspectWKBHeader} from '@math.gl/geospatial/wkb';
+import type {
+  WellKnownDimension,
+  WKBGeometryType as MathWKBGeometryType
+} from '@math.gl/geospatial/wkb';
 import type {WKBGeometryType, WKBHeader} from './wkb-types';
 import {MAX_SRID, WKT_MAGIC_STRINGS, WKT_MAGIC_BYTES} from './wkb-types';
 

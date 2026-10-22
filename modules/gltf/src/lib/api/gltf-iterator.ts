@@ -714,9 +714,9 @@ export class GLTFIterator {
     return getBufferViewTypedArray(this.data, this.gltf.buffers, bufferViewIndex);
   }
 
-  /** Return the loaded typed values addressed by a raw accessor index. */
-  getTypedArrayForAccessor(accessorIndex: number): unknown {
-    return getAccessorTypedArray(this.data, this.gltf.buffers, accessorIndex);
+  /** Return the loaded typed values addressed by a raw accessor index or decoded accessor. */
+  getTypedArrayForAccessor(accessor: GLTFAccessor | number): unknown {
+    return getAccessorTypedArray(this.data, this.gltf.buffers, accessor);
   }
 
   /** Return the loaded bytes addressed by a raw image index. */

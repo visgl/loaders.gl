@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {GL} from '@math.gl/geometry-utils';
+import {GL} from '@math.gl/geometry/utils';
 import {getFloat16Value} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 import {normalize3DTileColorAttribute} from '../../../../../src/3d-tiles/lib/parsers/helpers/normalize-3d-tile-colors';

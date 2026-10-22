@@ -1,5 +1,5 @@
 import type {Mbs, Node3DIndexDocument, Obb} from '@loaders.gl/tiles-3d/i3s';
-import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
+import {OrientedBoundingBox, BoundingSphere} from '@math.gl/geometry/culling';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 

@@ -12,7 +12,7 @@ import type {
 import type {PointCloudQueryOptions} from './point-cloud-query';
 import type {RasterQueryCapabilities} from './raster-query';
 import type {TableQueryExplain} from './table-query-explain';
-import {createSpatialReference, type SpatialReference} from '@math.gl/crs';
+import {createSpatialReference, type SpatialReference} from '@math.gl/geospatial/crs';
 
 /** Semantic role used by query editors to choose appropriate controls for a column. */
 export type ScanColumnRole =

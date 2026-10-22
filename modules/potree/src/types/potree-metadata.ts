@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {PROJStringDefinition} from '@math.gl/crs';
+import type {PROJStringDefinition} from '@math.gl/geospatial/crs';
 import {z} from 'zod';
 
 /** Potree axis-aligned bounding box metadata. */

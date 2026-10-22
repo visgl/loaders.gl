@@ -12,7 +12,7 @@ export const WGS84_GEOCENTRIC_CRS = 'EPSG:4978';
  * Normalizes common OGC URL and URN CRS spellings to compact authority identifiers.
  *
  * This intentionally performs syntax normalization only. Authority lookup and semantic
- * equivalence remain outside the scope of `@math.gl/crs` and the tiles runtime.
+ * equivalence remain outside the scope of `@math.gl/geospatial/crs` and the tiles runtime.
  *
  * @param identifier - Serialized CRS identifier.
  * @returns Uppercase compact identifier when an OGC spelling is recognized.

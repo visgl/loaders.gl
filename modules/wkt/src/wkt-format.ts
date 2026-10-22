@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Format} from '@loaders.gl/core/loader-utils';
-import {inspectWKBHeader} from '@math.gl/wkb';
+import {inspectWKBHeader} from '@math.gl/geospatial/wkb';
 
 const WKT_MAGIC_STRINGS = [
   'POINT(',

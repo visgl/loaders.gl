@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {AxisAlignedBoundingBox, OrientedBoundingBox} from '@math.gl/culling';
+import {AxisAlignedBoundingBox, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {createBoundingBoxLayerEdges} from '../src/bounding-box-utils';
 test('createBoundingBoxLayerEdges creates edge paths for AxisAlignedBoundingBox', () => {
   const boundingBox = new AxisAlignedBoundingBox([0, 1, 2], [3, 4, 5]);

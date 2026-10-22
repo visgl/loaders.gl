@@ -72,6 +72,9 @@ vendored runtimes.
 | [`LASLoader`](/docs/modules/las/api-reference/las-loader)      | Loads LAS/LAZ point clouds as Mesh objects or [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
 | [`LASWriter`](/docs/modules/las/api-reference/las-writer)      | Writes Mesh or Mesh Arrow table point clouds as LAS or LAZ data. |
 
+`LASMesh`, `LASHeader`, and `LASMetadata` are available as type-only imports from `@loaders.gl/las`.
+Use `LASMesh` when describing the loader's mesh output without importing implementation files.
+
 ## Attribution
 
 LASLoader is a fork of Uday Verma and Howard Butler's [plasio](https://github.com/verma/plasio/) under MIT License.

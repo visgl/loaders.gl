@@ -23,7 +23,7 @@ import {
   explainTableQuery,
   makeTableScanBatch
 } from '@loaders.gl/core/loader-utils';
-import {createSpatialReference, type SpatialReference} from '@math.gl/crs';
+import {createSpatialReference, type SpatialReference} from '@math.gl/geospatial/crs';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 import {
   makeArrowSchema,

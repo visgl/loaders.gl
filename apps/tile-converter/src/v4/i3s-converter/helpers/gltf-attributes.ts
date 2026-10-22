@@ -1,7 +1,7 @@
 import type {Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
 import type {GLTFAccessorPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import {Matrix4, TypedArray, Vector3} from '@math.gl/core';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {getImageData} from '@loaders.gl/images';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {GLTFAttributesData} from '../types';

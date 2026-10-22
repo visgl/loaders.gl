@@ -337,3 +337,89 @@ test('gltf#EXT_mesh_features - Roundtrip encode/decode', async () => {
   expect(gltfBin.json).toEqual(GLTF_JSON_ROUNDTRIP_EXPECTED);
   expect(gltfBin.buffers[0].arrayBuffer).toEqual(BUFFER_ROUNDTRIP_EXPECTED);
 });
+
+test.each([
+  'all compressed',
+  'uncompressed feature IDs',
+  'uncompressed POSITION'
+])('gltf#EXT_mesh_features - decodes Draco with %s', async variant => {
+  const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+  const featureValues = new Uint16Array([0, 0, 1]);
+  const sourceBytes = new Uint8Array(46);
+  sourceBytes.set([1, 2, 3, 4]);
+  sourceBytes.set(new Uint8Array(positions.buffer), 4);
+  sourceBytes.set(new Uint8Array(featureValues.buffer), 40);
+  const compressedPosition = variant !== 'uncompressed POSITION';
+  const compressedFeatures = variant !== 'uncompressed feature IDs';
+  const gltf = {
+    json: {
+      asset: {version: '2.0'},
+      extensionsUsed: ['KHR_draco_mesh_compression', 'EXT_mesh_features'],
+      buffers: [{byteLength: sourceBytes.byteLength}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 4},
+        {buffer: 0, byteOffset: 4, byteLength: 36},
+        {buffer: 0, byteOffset: 40, byteLength: 6}
+      ],
+      accessors: [
+        {
+          componentType: 5126,
+          count: 3,
+          type: 'VEC3',
+          bufferView: compressedPosition ? undefined : 1
+        },
+        {
+          componentType: 5123,
+          count: 3,
+          type: 'SCALAR',
+          bufferView: compressedFeatures ? undefined : 2
+        }
+      ],
+      meshes: [
+        {
+          primitives: [
+            {
+              attributes: {POSITION: 0, _FEATURE_ID_0: 1},
+              extensions: {
+                KHR_draco_mesh_compression: {
+                  bufferView: 0,
+                  attributes: {
+                    ...(compressedPosition ? {POSITION: 0} : {}),
+                    ...(compressedFeatures ? {_FEATURE_ID_0: 1} : {})
+                  }
+                },
+                EXT_mesh_features: {
+                  featureIds: [{featureCount: 2, attribute: 0, propertyTable: 0}, {featureCount: 3}]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    buffers: [{arrayBuffer: sourceBytes.buffer, byteOffset: 0, byteLength: sourceBytes.byteLength}]
+  };
+  const context = {
+    _parse: async () => ({
+      attributes: {
+        ...(compressedPosition ? {POSITION: {value: positions, size: 3}} : {}),
+        ...(compressedFeatures ? {_FEATURE_ID_0: {value: featureValues, size: 1}} : {})
+      }
+    })
+  };
+  await decodeExtensions(
+    gltf as any,
+    {gltf: {loadBuffers: true, decompressMeshes: true}},
+    context as any
+  );
+  const primitive = gltf.json.meshes[0].primitives[0];
+  const featureIds = primitive.extensions.EXT_mesh_features.featureIds;
+  expect(Array.from(featureIds[0].data)).toEqual([0, 0, 1]);
+  expect(featureIds[1]).toMatchObject({implicit: {start: 0, count: 3}});
+  if (!compressedFeatures) {
+    expect(primitive.attributes._FEATURE_ID_0).toBe(1);
+  }
+  if (!compressedPosition) {
+    expect(primitive.attributes.POSITION).toBe(0);
+  }
+});

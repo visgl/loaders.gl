@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import type {Geoid} from '@math.gl/geoid';
+import type {Geoid} from '@math.gl/earth/geoid';
 import {
   createTilesetSpatialReference,
   I3SSpatialTransformer,

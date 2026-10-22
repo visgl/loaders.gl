@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {Tile3DFeatureTable} from '@loaders.gl/tiles-3d/3d-tiles';
-import {GL} from '@math.gl/geometry-utils';
+import {GL} from '@math.gl/geometry/utils';
 test('Tile3DFeatureTable#loads from JSON', () => {
   // @ts-expect-error
   const featureTable = new Tile3DFeatureTable({

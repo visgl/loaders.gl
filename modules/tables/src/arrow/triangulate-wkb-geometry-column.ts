@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {parseWKB} from '@math.gl/wkb';
+import {parseWKB} from '@math.gl/geospatial/wkb';
 import {triangulateWKB} from '@loaders.gl/arrow-geometry';
 import type {Geometry, MultiPolygon, Polygon, Position} from '@loaders.gl/core/schema';
 

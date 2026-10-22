@@ -71,4 +71,4 @@ The `@loaders.gl/wkt` module handles the following formats:
 The `WKTLoader` is based on a fork of the Mapbox [`wellknown`](https://github.com/mapbox/wellknown) module under the ISC license (MIT/BSD 2-clause equivalent).
 The `WKBLoader` and `WKBWriter` are forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz.
 The `WKTCRSLoader` and `WKTCRSWriter` are thin adapters over the dependency-free syntax codecs in
-`@math.gl/crs`.
+`@math.gl/geospatial/crs`.

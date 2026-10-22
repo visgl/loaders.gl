@@ -3,20 +3,19 @@
 // Copyright (c) vis.gl contributors
 
 import type {ZarrArray} from 'zarr';
-// eslint-disable-next-line import/no-unresolved
-import type {Store} from 'zarr/types/storage/types';
+import type {ZarrStore} from '../types';
 import type {PixelSource, RootAttrs, Labels} from '../types';
 
 import {openGroup, HTTPStore} from 'zarr';
 
-export function normalizeStore(source: string | Store): Store {
+export function normalizeStore(source: string | ZarrStore): ZarrStore {
   if (typeof source === 'string') {
     return new HTTPStore(source);
   }
   return source;
 }
 
-export async function loadMultiscales(store: Store, path = '') {
+export async function loadMultiscales(store: ZarrStore, path = '') {
   const grp = await openGroup(store, path);
   const rootAttrs = (await grp.attrs.asObject()) as RootAttrs;
   const multiscales =

@@ -23,9 +23,13 @@ import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
 import {reprojectWKBInPlace} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
 import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
-import {projectionEngine} from '@math.gl/projection';
-import type {Projection} from '@math.gl/projection';
-import {parseWKTCRS, type ReadonlyCRSDefinition, type WKTCRSDefinition} from '@math.gl/crs';
+import {projectionEngine} from '@math.gl/geospatial/projection';
+import type {Projection} from '@math.gl/geospatial/projection';
+import {
+  parseWKTCRS,
+  type ReadonlyCRSDefinition,
+  type WKTCRSDefinition
+} from '@math.gl/geospatial/crs';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
 import type {GeoPackageLoaderOptions} from '../geopackage-loader-types';
