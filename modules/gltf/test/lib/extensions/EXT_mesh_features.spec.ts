@@ -337,3 +337,53 @@ test('gltf#EXT_mesh_features - Roundtrip encode/decode', async () => {
   expect(gltfBin.json).toEqual(GLTF_JSON_ROUNDTRIP_EXPECTED);
   expect(gltfBin.buffers[0].arrayBuffer).toEqual(BUFFER_ROUNDTRIP_EXPECTED);
 });
+
+test('gltf#EXT_mesh_features - decodes Draco-compressed feature ID attributes', async () => {
+  const gltf = {
+    json: {
+      asset: {version: '2.0'},
+      extensionsUsed: ['KHR_draco_mesh_compression', 'EXT_mesh_features'],
+      buffers: [{byteLength: 4}],
+      bufferViews: [{buffer: 0, byteOffset: 0, byteLength: 4}],
+      accessors: [
+        {componentType: 5126, count: 3, type: 'VEC3'},
+        {componentType: 5123, count: 3, type: 'SCALAR'}
+      ],
+      meshes: [
+        {
+          primitives: [
+            {
+              attributes: {POSITION: 0, _FEATURE_ID_0: 1},
+              extensions: {
+                KHR_draco_mesh_compression: {
+                  bufferView: 0,
+                  attributes: {POSITION: 0, _FEATURE_ID_0: 1}
+                },
+                EXT_mesh_features: {
+                  featureIds: [{featureCount: 2, attribute: 0, propertyTable: 0}, {featureCount: 3}]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    buffers: [{arrayBuffer: new Uint8Array([1, 2, 3, 4]).buffer, byteOffset: 0, byteLength: 4}]
+  };
+  const context = {
+    _parse: async () => ({
+      attributes: {
+        POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3},
+        _FEATURE_ID_0: {value: new Uint16Array([7, 7, 9]), size: 1}
+      }
+    })
+  };
+  await decodeExtensions(
+    gltf as any,
+    {gltf: {loadBuffers: true, decompressMeshes: true}},
+    context as any
+  );
+  const featureIds = gltf.json.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds;
+  expect(Array.from(featureIds[0].data)).toEqual([7, 7, 9]);
+  expect(featureIds[1]).toMatchObject({implicit: {start: 0, count: 3}});
+});
