@@ -105,7 +105,8 @@ uploads the IPC stream to DuckDB. No Arrow runtime objects cross the adapter bou
 ### `insertArrowIPC(bytes, options)`
 
 Uploads a complete Arrow IPC stream supplied as a `Uint8Array`. This avoids
-serializing a table when the caller already has IPC bytes.
+serializing a table when the caller already has IPC bytes. The browser adapter copies
+the bytes before transferring them to its worker, so the caller can reuse the input.
 
 Both methods return `Promise<void>` and accept `SQLArrowInsertOptions`:
 

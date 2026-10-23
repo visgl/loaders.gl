@@ -32,12 +32,16 @@ test('DuckDB exchanges IPC with Arrow 21 for queries and uploads', async () => {
     expect(empty.data.numRows).toBe(0);
     expect(empty.data.schema.fields[0].name).toBe('value');
     await source.insertArrowTable(result, {tableName: 'uploaded'});
-    await source.insertArrowTable(result, {tableName: 'uploaded', create: false});
+    const bytes = arrow.tableToIPC(result.data, 'stream');
+    const byteLength = bytes.byteLength;
+    await source.insertArrowIPC(bytes, {tableName: 'uploaded', create: false});
+    expect(bytes.byteLength).toBe(byteLength);
+    await source.insertArrowIPC(bytes, {tableName: 'uploaded', create: false});
     const uploaded = await source.queryArrow('SELECT * FROM uploaded WHERE large_integer = ?', {
       parameters: ['9007199254740993']
     });
     expect(uploaded.data).toBeInstanceOf(arrow.Table);
-    expect(uploaded.data.numRows).toBe(2);
+    expect(uploaded.data.numRows).toBe(3);
     expect(uploaded.data.schema.fields.map(field => field.name)).toEqual(
       result.data.schema.fields.map(field => field.name)
     );

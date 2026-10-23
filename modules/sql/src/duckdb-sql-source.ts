@@ -281,7 +281,8 @@ async function createDuckDBBrowserAdapter(context: SQLAdapterFactoryContext): Pr
       isDynamic: true
     },
     async insertArrowIPC(bytes, options): Promise<void> {
-      await connection.insertArrowFromIPCStream(bytes, {
+      // DuckDB transfers the buffer to its worker; retain the caller's IPC bytes.
+      await connection.insertArrowFromIPCStream(new Uint8Array(bytes), {
         name: options.tableName,
         schema: options.schemaName,
         create: options.create ?? true
