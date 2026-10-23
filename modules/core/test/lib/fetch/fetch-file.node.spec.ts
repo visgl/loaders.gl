@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 
-const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/';
+const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/4.5-release/modules/';
 const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
 const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = '@loaders.gl/polyfills/test/data/data.txt';
