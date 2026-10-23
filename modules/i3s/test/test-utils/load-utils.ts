@@ -3,7 +3,7 @@ import {Tileset3D, Tile3D, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
 
 export const TEST_LAYER_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/4.4-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0';
 
 /**
  * The data stub of "tileset header" which I3SLoader returns after loading
