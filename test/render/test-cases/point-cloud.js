@@ -13,9 +13,9 @@ const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 
 // Raw point cloud data URLS
 const KITTI_POSITIONS_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const KITTI_COLORS_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 
 // Load big cloud only once...
 let kittiPointCloud;

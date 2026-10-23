@@ -19,15 +19,15 @@ test('I3SNodePagesTiles#Tile with content', async () => {
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   expect(node1).toBeTruthy();
   expect(node1.contentUrl).toBe(
-    'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0'
+    'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0'
   );
   if (isBrowser) {
     expect(node1.textureUrl).toBe(
-      'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/textures/0_0_1'
+      'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/textures/0_0_1'
     );
   } else {
     expect(node1.textureUrl).toBe(
-      'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/textures/0'
+      'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/textures/0'
     );
   }
 });
@@ -101,14 +101,14 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async () => {
   if (isBrowser) {
     if (node.textureUrl?.endsWith('/0_0_1')) {
       expect(node.textureUrl).toBe(
-        'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0_0_1'
+        'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0_0_1'
       );
       expect(i3SNodePagesTiles.textureDefinitionsSelectedFormats).toEqual([
         {name: '0_0_1', format: 'dds'}
       ]);
     } else {
       expect(node.textureUrl).toBe(
-        'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
+        'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
       );
       expect(i3SNodePagesTiles.textureDefinitionsSelectedFormats).toEqual([
         {name: '0', format: 'jpg'}
@@ -116,7 +116,7 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async () => {
     }
   } else {
     expect(node.textureUrl).toBe(
-      'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
+      'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
     );
     expect(i3SNodePagesTiles.textureDefinitionsSelectedFormats).toEqual([
       {name: '0', format: 'jpg'}
@@ -150,7 +150,7 @@ test('I3SNodePagesTiles#Switch off compressed textures', async () => {
   if (isBrowser) {
     if (node.textureUrl?.endsWith('/0')) {
       expect(node.textureUrl).toBe(
-        'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
+        'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
       );
       expect(i3SNodePagesTiles.textureDefinitionsSelectedFormats).toEqual([
         {name: '0', format: 'jpg'}
@@ -165,7 +165,7 @@ test('I3SNodePagesTiles#Should load DRACO geometry', async () => {
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   expect(node1).toBeTruthy();
   expect(node1.contentUrl).toBe(
-    'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/1'
+    'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/1'
   );
   const tilesetJson = TILESET_STUB();
   // Remove compressed geometry metadata from geometry definitions
@@ -178,7 +178,7 @@ test('I3SNodePagesTiles#Should load DRACO geometry', async () => {
   });
   const node12 = await i3SNodePagesTiles2.formTileFromNodePages(1);
   expect(node12.contentUrl).toBe(
-    'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0'
+    'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0'
   );
 });
 test('I3SNodePagesTiles#Root tile should calculate nodesInNodePages metric', async () => {

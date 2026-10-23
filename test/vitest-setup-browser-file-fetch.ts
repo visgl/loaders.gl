@@ -9,7 +9,8 @@ type TestGlobalThis = typeof globalThis & {
 declare const __TEST_REPOSITORY_ROOT__: string;
 
 const LOCAL_FIXTURE_PREFIX = '/__loaders_gl_test_fixtures__/';
-const LOADERS_GL_RAW_GITHUB_PREFIX = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/';
+const LOADERS_GL_RAW_GITHUB_PREFIX =
+  'https://raw.githubusercontent.com/visgl/loaders.gl/5.0-release/';
 const SQL_JS_WASM_URL = 'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/sql-wasm-browser.wasm';
 
 /** Configures browser globals and rewrites repository file paths through the raw fixture server. */
