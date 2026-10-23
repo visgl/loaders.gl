@@ -148,6 +148,8 @@ See [supported items and verification boundaries](/docs/developer-guide/arcgis/i
 
 ## v5.0 (In Development)
 
+- **Node.js** - loaders.gl supports all current Node.js LTS releases; Node.js 20 reached end-of-life in April 2026 and is no longer supported. The [October 2026 Node.js security releases](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases) fix a Brotli decoder vulnerability (CVE-2026-111497) that affects Brotli decompression in loaders.gl under Node.js. Applications that load Brotli data from untrusted sources should upgrade to Node.js 22.23.4, 24.22.1, 26.12.1 or later. See [Node.js support](/docs/developer-guide/node#supported-nodejs-versions).
+
 - The browser PMTiles converter now reads GeoTIFF/COG URLs through the shared raster source planner, selecting metadata, overviews and intersecting blocks within a bounded range-read budget. A live progress panel reports stages, tile addresses and bytes, with immediate Cancel and cooperative Finish to emit completed work. In-memory byte ceilings are just under 4 GiB, subject to browser memory.
 
 - The [browser PMTiles export example](/examples/tiles/pmtiles-authoring) accepts local files or HTTP(S) GeoJSON, GeoArrow IPC and byte GeoTIFF inputs, then downloads bounded selected-tile MVT, MLT or PNG archives using the existing tiler and authoring APIs. Input reading, parsing, tiling and encoding run in a disposable worker so the page stays responsive; Cancel terminates computation. A matching [inline 3D tile converter](/examples/tiles/3d-tiles-conversion) shares the progress panel and Finish/Cancel controls, reporting written meshes and packaging completed work as SLPK or 3TZ.
