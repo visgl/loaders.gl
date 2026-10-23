@@ -39,12 +39,17 @@ const tapeAllowlist = readAllowlist(tapeAllowlistPath);
 const largeFixtureAllowlist = readAllowlist(largeFixtureAllowlistPath);
 const emptyTestFiles = testFiles.filter(testFile => !containsTestRegistration(testFile));
 const remoteFetches = findRemoteFetches(fastTestFiles);
+const branchFixtureUrls = findBranchFixtureUrls();
 const coverageExclusionViolations = auditCoverageExclusions();
 const violations = [
   ...findAllowlistViolations('Tape import', tapeFiles, tapeAllowlist),
   ...findStaleAllowlistEntries('Tape allowlist', tapeFiles, tapeAllowlist),
   ...emptyTestFiles.map(testFile => `Empty test file: ${testFile}`),
   ...remoteFetches.map(remoteFetch => `Remote fetch in hermetic test: ${remoteFetch}`),
+  ...branchFixtureUrls.map(
+    branchFixtureUrl =>
+      `Branch-pinned loaders.gl fixture URL (use test/common/remote-fixtures): ${branchFixtureUrl}`
+  ),
   ...findAllowlistViolations(
     'Large fixture reference',
     largeFixtureReferences,
@@ -74,11 +79,13 @@ const report = {
     }, 0),
     emptyTestFiles: emptyTestFiles.length,
     remoteFetches: remoteFetches.length,
+    branchFixtureUrls: branchFixtureUrls.length,
     largeFixtureReferences: largeFixtureReferences.length
   },
   tapeFiles,
   emptyTestFiles,
   remoteFetches,
+  branchFixtureUrls,
   largeFixtureReferences,
   exactDuplicateGroups: findExactDuplicateGroups(testFiles),
   violations
@@ -199,6 +206,36 @@ function findRemoteFetches(files) {
     }
   }
   return remoteFetches;
+}
+
+/**
+ * Finds loaders.gl GitHub fixture URLs in test sources that reference a branch instead of a commit.
+ * Branch URLs break release branches when fixtures are later moved or deleted on that branch.
+ */
+function findBranchFixtureUrls() {
+  const branchFixtureUrls = [];
+  const fixtureUrlPattern =
+    /(?:raw\.githubusercontent\.com\/visgl\/loaders\.gl|github\.com\/visgl\/loaders\.gl\/raw)\/([^/'"`\s]+)\//g;
+  const sourceFiles = testRoots
+    .flatMap(testRoot => walkFiles(path.resolve(testRoot)))
+    .map(toRepositoryPath)
+    .filter(
+      sourceFile =>
+        /(?:^|\/)test\//.test(sourceFile) &&
+        /\.(?:[cm]?[jt]sx?|json)$/.test(sourceFile) &&
+        sourceFile !== 'test/common/remote-fixtures.ts' &&
+        fs.statSync(sourceFile).size <= 1024 * 1024
+    );
+
+  for (const sourceFile of sourceFiles) {
+    const source = fs.readFileSync(sourceFile, 'utf8');
+    for (const match of source.matchAll(fixtureUrlPattern)) {
+      if (!/^[0-9a-f]{40}$/.test(match[1])) {
+        branchFixtureUrls.push(`${sourceFile}:${source.slice(0, match.index).split('\n').length}`);
+      }
+    }
+  }
+  return branchFixtureUrls.sort();
 }
 
 /** Finds fast tests that reference fixture files larger than one MiB. */

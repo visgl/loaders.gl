@@ -4,8 +4,11 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/';
-const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
+import {
+  LOADERS_GL_RAW_FIXTURE_URL,
+  LOADERS_GL_REDIRECTING_FIXTURE_URL
+} from 'test/common/remote-fixtures';
+const PLY_CUBE_ATT_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/ply/test/data/cube_att.ply`;
 const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = `@loaders.gl/core/polyfills/test/data/data.txt`;
 const TEXT_URL_GZIPPED = `@loaders.gl/core/polyfills/test/data/data.txt.gz`;
@@ -13,9 +16,8 @@ const TEXT_URL_GZIPPED = `@loaders.gl/core/polyfills/test/data/data.txt.gz`;
 // So we get an error when trying to fetch such redirect url without protocol and origin.
 const TEXT_URL_WITH_REDIRECT = `https://unpkg.com/@loaders.gl/textures@beta/dist/libs/basis_encoder.js`;
 // This type of links on github works via 302 redirect
-// ("https://github.com/repository/raw/branch-name/path/to/file/file-name.extension")
-const REDIRECT_URL =
-  'https://github.com/visgl/loaders.gl/raw/master/modules/core/test/polyfills-package/data/data.txt';
+// ("https://github.com/repository/raw/commit-or-branch/path/to/file/file-name.extension")
+const REDIRECT_URL = `${LOADERS_GL_REDIRECTING_FIXTURE_URL}modules/core/test/polyfills-package/data/data.txt`;
 
 test('polyfills#fetch() (NODE)', async () => {
   const response = await fetch(PLY_CUBE_ATT_URL);

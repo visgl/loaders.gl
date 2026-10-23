@@ -18,17 +18,11 @@ test('I3SNodePagesTiles#Tile with content', async () => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   expect(node1).toBeTruthy();
-  expect(node1.contentUrl).toBe(
-    'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0'
-  );
+  expect(node1.contentUrl).toBe(`${TEST_LAYER_URL}/nodes/1/geometries/0`);
   if (isBrowser) {
-    expect(node1.textureUrl).toBe(
-      'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/textures/0_0_1'
-    );
+    expect(node1.textureUrl).toBe(`${TEST_LAYER_URL}/nodes/1/textures/0_0_1`);
   } else {
-    expect(node1.textureUrl).toBe(
-      'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/textures/0'
-    );
+    expect(node1.textureUrl).toBe(`${TEST_LAYER_URL}/nodes/1/textures/0`);
   }
 });
 test('I3SNodePagesTiles#Layer without textures', async () => {
@@ -100,24 +94,18 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async () => {
   expect(node).toBeTruthy();
   if (isBrowser) {
     if (node.textureUrl?.endsWith('/0_0_1')) {
-      expect(node.textureUrl).toBe(
-        'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0_0_1'
-      );
+      expect(node.textureUrl).toBe(`${TEST_LAYER_URL}/nodes/2/textures/0_0_1`);
       expect(i3SNodePagesTiles.textureDefinitionsSelectedFormats).toEqual([
         {name: '0_0_1', format: 'dds'}
       ]);
     } else {
-      expect(node.textureUrl).toBe(
-        'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
-      );
+      expect(node.textureUrl).toBe(`${TEST_LAYER_URL}/nodes/2/textures/0`);
       expect(i3SNodePagesTiles.textureDefinitionsSelectedFormats).toEqual([
         {name: '0', format: 'jpg'}
       ]);
     }
   } else {
-    expect(node.textureUrl).toBe(
-      'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
-    );
+    expect(node.textureUrl).toBe(`${TEST_LAYER_URL}/nodes/2/textures/0`);
     expect(i3SNodePagesTiles.textureDefinitionsSelectedFormats).toEqual([
       {name: '0', format: 'jpg'}
     ]);
@@ -149,9 +137,7 @@ test('I3SNodePagesTiles#Switch off compressed textures', async () => {
   expect(node).toBeTruthy();
   if (isBrowser) {
     if (node.textureUrl?.endsWith('/0')) {
-      expect(node.textureUrl).toBe(
-        'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'
-      );
+      expect(node.textureUrl).toBe(`${TEST_LAYER_URL}/nodes/2/textures/0`);
       expect(i3SNodePagesTiles.textureDefinitionsSelectedFormats).toEqual([
         {name: '0', format: 'jpg'}
       ]);
@@ -164,9 +150,7 @@ test('I3SNodePagesTiles#Should load DRACO geometry', async () => {
   });
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   expect(node1).toBeTruthy();
-  expect(node1.contentUrl).toBe(
-    'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/1'
-  );
+  expect(node1.contentUrl).toBe(`${TEST_LAYER_URL}/nodes/1/geometries/1`);
   const tilesetJson = TILESET_STUB();
   // Remove compressed geometry metadata from geometry definitions
   if (tilesetJson.geometryDefinitions) {
@@ -177,9 +161,7 @@ test('I3SNodePagesTiles#Should load DRACO geometry', async () => {
     i3s: {useDracoGeometry: true}
   });
   const node12 = await i3SNodePagesTiles2.formTileFromNodePages(1);
-  expect(node12.contentUrl).toBe(
-    'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/i3s/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0'
-  );
+  expect(node12.contentUrl).toBe(`${TEST_LAYER_URL}/nodes/1/geometries/0`);
 });
 test('I3SNodePagesTiles#Root tile should calculate nodesInNodePages metric', async () => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});

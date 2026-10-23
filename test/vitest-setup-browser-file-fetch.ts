@@ -9,7 +9,9 @@ type TestGlobalThis = typeof globalThis & {
 declare const __TEST_REPOSITORY_ROOT__: string;
 
 const LOCAL_FIXTURE_PREFIX = '/__loaders_gl_test_fixtures__/';
-const LOADERS_GL_RAW_GITHUB_PREFIX = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/';
+/** Matches raw loaders.gl GitHub URLs at any commit or branch, capturing the repository path. */
+const LOADERS_GL_RAW_GITHUB_URL_REGEX =
+  /^https:\/\/raw\.githubusercontent\.com\/visgl\/loaders\.gl\/[^/]+\/([^?#]*)/;
 const SQL_JS_WASM_URL = 'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/sql-wasm-browser.wasm';
 
 /** Configures browser globals and rewrites repository file paths through the raw fixture server. */
@@ -57,8 +59,9 @@ export function setupBrowserFileFetch(options?: {rewriteRemoteFixtures?: boolean
 
 /** Maps an approved remote URL to its hermetic repository-local equivalent. */
 function getRemoteFixturePath(url: string): string | null {
-  if (url.startsWith(LOADERS_GL_RAW_GITHUB_PREFIX)) {
-    return url.slice(LOADERS_GL_RAW_GITHUB_PREFIX.length).split(/[?#]/, 1)[0];
+  const loadersGlFixtureMatch = LOADERS_GL_RAW_GITHUB_URL_REGEX.exec(url);
+  if (loadersGlFixtureMatch) {
+    return loadersGlFixtureMatch[1];
   }
   if (url === SQL_JS_WASM_URL) {
     return 'node_modules/sql.js/dist/sql-wasm-browser.wasm';
