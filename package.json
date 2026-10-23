@@ -101,12 +101,13 @@
   "resolutions_notes": [
     "Ensure we use recent typescript",
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
-    "apache-arrow version should be aligned with parquet-wasm version",
+    "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5"
   ],
   "resolutions": {
-    "apache-arrow": "^21.2.0",
+    "apache-arrow@npm:>= 17.0.0": "^21.2.0",
+    "apache-arrow@npm:>=17.0.0": "^21.2.0",
     "typescript": "^6.0.3",
     "playwright": "1.59.1",
     "@loaders.gl/tiles-3d": "^5.0.0-alpha.0",

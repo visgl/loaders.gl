@@ -64,6 +64,16 @@ export type SQLAdapterCapabilities = {
   isDynamic?: boolean;
 };
 
+/** Destination for an Arrow IPC upload. */
+export type SQLArrowInsertOptions = {
+  /** Destination table name. */
+  tableName: string;
+  /** Destination schema, defaulting to DuckDB's default schema. */
+  schemaName?: string;
+  /** Create a table when true (default); append to an existing table when false. */
+  create?: boolean;
+};
+
 /** Runtime adapter interface used by SQL-backed data sources. */
 export interface SQLAdapter {
   readonly capabilities: SQLAdapterCapabilities;
@@ -78,6 +88,8 @@ export interface SQLAdapter {
     tableName: string;
   }): Promise<Schema>;
   executeRows(sql: string, options?: SQLQueryOptions): Promise<Record<string, unknown>[]>;
+  /** Uploads an Arrow IPC stream without passing Arrow runtime objects. */
+  insertArrowIPC?(bytes: Uint8Array, options: SQLArrowInsertOptions): Promise<void>;
   executeArrow?(sql: string, options?: SQLQueryOptions): Promise<ArrowTable>;
 }
 

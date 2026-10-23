@@ -90,3 +90,33 @@ Executes raw SQL or a portable table query and returns a loaders.gl Arrow table.
 ### `close()`
 
 Closes the backing adapter connection and clears cached metadata.
+
+## DuckDB Arrow uploads
+
+These methods are available on `DuckDBSQLDataSource` with the browser DuckDB-Wasm
+adapter. The Node adapter rejects uploads as unsupported. Custom SQL adapters can
+provide the optional `insertArrowIPC` method to support uploads.
+
+### `insertArrowTable(table, options)`
+
+Serializes a loaders.gl `ArrowTable` with the application's Arrow runtime, then
+uploads the IPC stream to DuckDB. No Arrow runtime objects cross the adapter boundary.
+
+### `insertArrowIPC(bytes, options)`
+
+Uploads a complete Arrow IPC stream supplied as a `Uint8Array`. This avoids
+serializing a table when the caller already has IPC bytes. The browser adapter copies
+the bytes before transferring them to its worker, so the caller can reuse the input.
+
+Both methods return `Promise<void>` and accept `SQLArrowInsertOptions`:
+
+| Option | Meaning |
+| --- | --- |
+| `tableName` | Required destination table name. |
+| `schemaName` | Optional destination schema. |
+| `create` | Defaults to `true` to create a table; use `false` to append to an existing table. |
+
+Query results cross the same IPC boundary in the opposite direction and are decoded
+with loaders.gl's Arrow runtime. DuckDB-Wasm keeps its own Arrow 17 dependency;
+loaders.gl uses Arrow 21. Complete query results and upload streams are materialized
+in memory; these methods do not provide incremental streaming or zero-copy transfer.
