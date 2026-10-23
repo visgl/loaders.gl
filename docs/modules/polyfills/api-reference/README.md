@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
   items={[
     {label: 'Files', value: 'NodeFile, NodeFilesystem, ReadableFile, and WritableFile'},
-    {label: 'Network', value: 'fetch, Response, and Headers on older Node versions'},
+    {label: 'Network', value: 'Uses the built-in fetch, Response, and Headers'},
     {label: 'Media', value: 'ImageBitmap and image-data helpers'},
     {label: 'Runtime', value: 'Crypto, streams, and dynamic library loading'}
   ]}

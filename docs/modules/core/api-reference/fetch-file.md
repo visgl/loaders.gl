@@ -81,7 +81,7 @@ to the built-in `fetch` function. Other URLs will be interpreted as local files.
 
 :::caution
 loaders.gl v4.0+ applications no longer need to install the `@loaders.gl/core/polyfills`
-module to get `fetch` support under Node.js v18+.
+module to get `fetch` support under [supported Node.js versions](/docs/developer-guide/node#supported-nodejs-versions).
 :::
 
 ## Path prefix resolution
