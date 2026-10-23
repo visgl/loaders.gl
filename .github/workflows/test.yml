@@ -65,8 +65,8 @@ jobs:
     needs: build
     runs-on: ubuntu-22.04
     # Keep the image version aligned with the Playwright resolution in package.json.
-    # Node-only entries use the host; browser entries avoid apt and browser downloads.
-    container: ${{ matrix.playwright && fromJSON('{"image":"mcr.microsoft.com/playwright:v1.59.1-jammy","options":"--ipc=host"}') || '' }}
+    # All coverage producers and the merge job share container workspace paths.
+    container: ${{ matrix.coverage && fromJSON('{"image":"mcr.microsoft.com/playwright:v1.59.1-jammy","options":"--ipc=host"}') || '' }}
     timeout-minutes: 15
     strategy:
       matrix:
@@ -197,6 +197,10 @@ jobs:
     name: Merge and check coverage
     needs: [test, slow-tests]
     runs-on: ubuntu-22.04
+    # Vitest blobs contain absolute paths, so match every coverage producer's workspace.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+      options: --ipc=host
     timeout-minutes: 10
     steps:
       - name: Checkout code
