@@ -64,6 +64,9 @@ jobs:
     name: Tests (Node ${{ matrix.node-version }} - ${{ matrix.scope }})
     needs: build
     runs-on: ubuntu-22.04
+    # Keep the image version aligned with the Playwright resolution in package.json.
+    # All coverage producers and the merge job share container workspace paths.
+    container: ${{ matrix.coverage && fromJSON('{"image":"mcr.microsoft.com/playwright:v1.59.1-jammy","options":"--ipc=host"}') || '' }}
     timeout-minutes: 15
     strategy:
       matrix:
@@ -167,10 +170,6 @@ jobs:
       - name: Restore package and worker build
         run: tar -xf "$RUNNER_TEMP/package-build/package-build.tar"
 
-      - name: Install Playwright browser dependencies
-        if: matrix.playwright
-        run: yarn playwright install --with-deps chromium
-
       - name: Run tests
         env:
           LOADERS_GL_TEST_PROFILE_OUTPUT: test-results/${{ matrix.profile-name }}.json
@@ -198,6 +197,10 @@ jobs:
     name: Merge and check coverage
     needs: [test, slow-tests]
     runs-on: ubuntu-22.04
+    # Vitest blobs contain absolute paths, so match every coverage producer's workspace.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+      options: --ipc=host
     timeout-minutes: 10
     steps:
       - name: Checkout code
@@ -278,6 +281,10 @@ jobs:
     name: Affected hermetic slow tests
     needs: build
     runs-on: ubuntu-22.04
+    # Includes Chromium and system libraries; match the pinned Playwright package.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+      options: --ipc=host
     timeout-minutes: 30
     steps:
       - name: Checkout code
@@ -316,9 +323,6 @@ jobs:
       - name: Restore package and worker build
         run: tar -xf "$RUNNER_TEMP/package-build/package-build.tar"
 
-      - name: Install Playwright browser dependencies
-        run: yarn playwright install --with-deps chromium
-
       - name: Run full slow suite for comparable coverage
         env:
           VITEST_MAX_WORKERS: 1
@@ -343,6 +347,10 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-22.04
+    # Includes Chromium and system libraries; match the pinned Playwright package.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+      options: --ipc=host
     timeout-minutes: 20
     steps:
       - name: Checkout code
@@ -378,9 +386,6 @@ jobs:
 
       - name: Restore package and worker build
         run: tar -xf "$RUNNER_TEMP/package-build/package-build.tar"
-
-      - name: Install Playwright browser dependencies
-        run: yarn playwright install --with-deps chromium
 
       - name: Run external smoke suite
         env:
