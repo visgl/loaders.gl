@@ -6,6 +6,8 @@
 
 Compresses / decompresses Brotli encoded data.
 
+Under Node.js, the `brotli.useZlib` option uses the Brotli decoder bundled with Node.js. When decompressing untrusted data, use the latest patch release of a [supported Node.js version](/docs/developer-guide/node#supported-nodejs-versions).
+
 ## Interface
 
 Implements the [`Compression](./compression) API.

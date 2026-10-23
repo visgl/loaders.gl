@@ -58,11 +58,11 @@ You will of course need to install the basic JavaScript development tools. Unles
 - `https://github.com/nvm-sh/nvm/releases`
 
 ```bash
-nvm install 16
-nvm use 16
+nvm install
+nvm use
 ```
 
-(Node 16 is currently recommeded for building and development of loaders 3.3. NPM comes with the NodeJS in this case)
+(Run these in the repository root to use the Node.js version in `.nvmrc`. NPM comes with Node.js.)
 
 #### Optional: Install Node and NPM manually
 

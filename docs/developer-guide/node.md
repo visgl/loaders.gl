@@ -6,6 +6,18 @@ Also it is good to understand that loaders.gl avoids using Node.js specific APIs
 
 However, if your goal is to write Node.js-idiomatic code rather than browser-portable code, you may find that working with loaders.gl can require some extra work.
 
+## Supported Node.js versions
+
+loaders.gl supports all current Node.js [LTS releases](https://nodejs.org/en/about/previous-releases).
+End-of-life Node.js versions are not supported.
+
+Node.js ships security fixes only as patch releases, so use the latest patch release of
+your Node.js version. This matters in particular when loading data from untrusted sources:
+under Node.js, Brotli-compressed data is decoded by the Brotli decoder bundled with Node.js.
+This includes `.br` files loaded through `@loaders.gl/polyfills`, responses with Brotli
+`content-encoding` returned by the built-in `fetch()`, and `BrotliCompression` in
+`@loaders.gl/compression` when the `brotli.useZlib` option is set.
+
 ## Polyfills
 
 To install these polyfills, just `import` the polyfills module before start using loaders.gl.
