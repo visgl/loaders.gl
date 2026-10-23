@@ -64,7 +64,7 @@ For tile-converter v4.0 and up:
 
 Operationg Systems: Windows 8.1 or higher, Ubuntu 20.04 or higher
 
-NodeJS 18 or higher is required.
+A [supported Node.js LTS release](/docs/developer-guide/node#supported-nodejs-versions) is required.
 
 ## Options
 

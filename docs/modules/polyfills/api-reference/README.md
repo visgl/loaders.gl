@@ -38,7 +38,7 @@ The polyfills module installs the following capabilities.
 
 ## Deprecated polyfills
 
-Before Node v18, `fetch` needed to be polyfilled. The `@loaders.gl/polyfills` module still conditionally installs a fetch polyfill on Node 16, but this is expected to be removed in next major release.
+All [supported Node.js versions](/docs/developer-guide/node#supported-nodejs-versions) provide `fetch` natively. The `@loaders.gl/polyfills` module only installs its fetch polyfill when `fetch` is missing, which does not happen on supported Node.js versions. The polyfill is expected to be removed in the next major release.
 
 ### fetch Polyfill
 
