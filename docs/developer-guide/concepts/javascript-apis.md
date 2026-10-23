@@ -116,7 +116,7 @@ The `Buffer` class in Node.js is not supported by browsers. Polyfills are availa
 Therefore loaders.gl tries to avoid use of the `Buffer` class in its core libraries and loaders, preferring to use `ArrayBuffer`, typed arrays and `Blob`s.
 :::
 
-The `Blob` (and `File`) classes in the browser have some unique advantages. They leverage an efficient blob storage mechanism in the browser, and they also enable partial, random-access reads from large blobs in that storage or from local files. `Blob`s are available in Node starting with Node.js v18. For lower versions, a polyfill will be installed by `@laoders.gl/polyfills`.
+The `Blob` (and `File`) classes in the browser have some unique advantages. They leverage an efficient blob storage mechanism in the browser, and they also enable partial, random-access reads from large blobs in that storage or from local files. `Blob`s are available natively in all [supported Node.js versions](/docs/developer-guide/node#supported-nodejs-versions).
 
 ## Image APIs
 
