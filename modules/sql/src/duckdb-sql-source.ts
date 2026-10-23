@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema} from '@loaders.gl/core/schema';
+import {tableFromIPC, tableToIPC} from 'apache-arrow';
+import type {AsyncDuckDBConnection} from '@duckdb/duckdb-wasm';
+import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
 import type {SourceLoader, CoreAPI} from '@loaders.gl/core/loader-utils';
 import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 
@@ -14,7 +16,8 @@ import type {
   SQLColumnInfo,
   SQLQueryOptions,
   SQLSourceOptions,
-  SQLTableInfo
+  SQLTableInfo,
+  SQLArrowInsertOptions
 } from './sql-types';
 import {
   convertRowsToArrowTable,
@@ -75,6 +78,20 @@ export const DuckDBSQLSource = {
 
 /** SQLDataSource specialization for DuckDB. */
 export class DuckDBSQLDataSource extends SQLDataSource {
+  /** Uploads an Arrow table through IPC. Supported by the browser DuckDB-Wasm adapter. */
+  async insertArrowTable(table: ArrowTable, options: SQLArrowInsertOptions): Promise<void> {
+    await this.insertArrowIPC(tableToIPC(table.data, 'stream'), options);
+  }
+
+  /** Uploads a complete Arrow IPC stream to a browser DuckDB-Wasm table. */
+  async insertArrowIPC(bytes: Uint8Array, options: SQLArrowInsertOptions): Promise<void> {
+    const adapter = await this.getAdapter();
+    if (!adapter.insertArrowIPC) {
+      throw new Error('This DuckDB adapter does not support Arrow IPC uploads.');
+    }
+    await adapter.insertArrowIPC(bytes, options);
+  }
+
   constructor(data: string, options: SQLSourceOptions, coreApi?: CoreAPI) {
     super(
       data,
@@ -253,7 +270,7 @@ async function createDuckDBBrowserAdapter(context: SQLAdapterFactoryContext): Pr
     options: SQLQueryOptions = {}
   ): Promise<Record<string, unknown>[]> => {
     const result = await executeDuckDBBrowserQuery(connection, sqlText, options.parameters);
-    return convertArrowToTable(result, 'object-row-table').data;
+    return convertArrowToTable(tableFromIPC(result), 'object-row-table').data;
   };
 
   return {
@@ -262,6 +279,13 @@ async function createDuckDBBrowserAdapter(context: SQLAdapterFactoryContext): Pr
       supportsMetadata: true,
       runtime: 'browser',
       isDynamic: true
+    },
+    async insertArrowIPC(bytes, options): Promise<void> {
+      await connection.insertArrowFromIPCStream(bytes, {
+        name: options.tableName,
+        schema: options.schemaName,
+        create: options.create ?? true
+      });
     },
     async connect(): Promise<void> {},
     async close(): Promise<void> {
@@ -355,27 +379,30 @@ async function createDuckDBBrowserAdapter(context: SQLAdapterFactoryContext): Pr
     },
     async executeArrow(sqlText: string, options: SQLQueryOptions = {}) {
       const result = await executeDuckDBBrowserQuery(connection, sqlText, options.parameters);
-      return convertArrowToTable(result, 'arrow-table');
+      return convertArrowToTable(tableFromIPC(result), 'arrow-table');
     }
   };
 }
 
-/** Executes a DuckDB-Wasm query directly or through a prepared statement when values are bound. */
+/** Returns raw IPC so DuckDB's Arrow objects never cross into loaders.gl's Arrow runtime. */
 async function executeDuckDBBrowserQuery(
-  connection: any,
+  connection: AsyncDuckDBConnection,
   sqlText: string,
   parameters?: SQLQueryOptions['parameters']
-): Promise<any> {
-  if (!parameters) {
-    return await connection.query(sqlText);
-  }
-  const values = Array.isArray(parameters) ? parameters : Object.values(parameters);
-  const statement = await connection.prepare(sqlText);
-  try {
-    return await statement.query(...values);
-  } finally {
-    await statement.close();
-  }
+): Promise<Uint8Array> {
+  // Keep DuckDB's lower-level connection handle confined to this IPC boundary.
+  return await connection.useUnsafe(async (bindings, connectionId) => {
+    if (!parameters) {
+      return await bindings.runQuery(connectionId, sqlText);
+    }
+    const values = Array.isArray(parameters) ? parameters : Object.values(parameters);
+    const statementId = await bindings.createPrepared(connectionId, sqlText);
+    try {
+      return await bindings.runPrepared(connectionId, statementId, values);
+    } finally {
+      await bindings.closePrepared(connectionId, statementId);
+    }
+  });
 }
 
 function getDuckDBDatabasePath(url: string, options: SQLSourceOptions): string {
