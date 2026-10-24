@@ -21,6 +21,6 @@
     "esm": ">=3.1.0",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.1"
+    "webpack-dev-server": "^6.1.0"
   }
 }
