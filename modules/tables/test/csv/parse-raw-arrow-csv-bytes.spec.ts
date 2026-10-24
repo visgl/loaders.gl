@@ -334,7 +334,7 @@ describe('raw Arrow CSV parser', () => {
     const emSpace = '\u2003';
     const quotedValue = `${'x'.repeat(5000)}"${'y'.repeat(5000)}`;
     const table = await parseCSVTextAsArrow(
-      `boolean,numeric,date,mixed,quoted\nTRUE,${nonBreakingSpace}12${nonBreakingSpace},2025-01-02T03:04:05Z,True,"${quotedValue.replace('"', '""')}"\nFALSE,${emSpace}13,2026-02-03T04:05:06Z,true,short`,
+      `boolean,numeric,date,mixed,quoted\nTRUE,${nonBreakingSpace}12${nonBreakingSpace},2025-01-02T03:04:05Z,True,"${quotedValue.replaceAll('"', '""')}"\nFALSE,${emSpace}13,2026-02-03T04:05:06Z,true,short`,
       {csv: {header: true, delimiter: ',', dynamicTyping: true}}
     );
 

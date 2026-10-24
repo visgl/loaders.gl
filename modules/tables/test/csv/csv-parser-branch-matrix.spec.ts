@@ -167,7 +167,7 @@ test.each([
 test('raw builders grow value, offset, escaped, and null buffers together', () => {
   const rows = ['name,name,value'];
   for (let index = 0; index < 1100; index++) {
-    const escaped = `${'x'.repeat(8)}"${'y'.repeat(8)}`.replace('"', '""');
+    const escaped = `${'x'.repeat(8)}"${'y'.repeat(8)}`.replaceAll('"', '""');
     rows.push(index % 3 === 0 ? `"${escaped}",duplicate` : `row-${index},duplicate,${index}`);
   }
   const table = parseRawArrowCSVBytes(encode(rows.join('\n')), {
