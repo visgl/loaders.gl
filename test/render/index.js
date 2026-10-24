@@ -2,21 +2,25 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {SnapshotTestRunner} from '@luma.gl/test-utils';
 import {TEST_CASES} from './test-cases';
 
-const TOTAL_TIMEOUT = TEST_CASES.reduce((t, testCase) => t + (testCase.timeout || 2000), 0);
+const TOTAL_TIMEOUT = TEST_CASES.reduce(
+  (totalTimeout, testCase) => totalTimeout + (testCase.timeout || 2000),
+  0
+);
 
-test('RenderTest', t => {
-  t.timeoutAfter(TOTAL_TIMEOUT);
+test(
+  'RenderTest',
+  async () => {
+    const failures = [];
 
-  new SnapshotTestRunner({width: 800, height: 450})
-    .add(TEST_CASES)
-    .run({
-      onTestStart: testCase => t.comment(testCase.name),
-      onTestPass: (testCase, result) => t.pass(`match: ${result.matchPercentage}`),
-      onTestFail: (testCase, result) => t.fail(result.error || `match: ${result.matchPercentage}`),
+    await new SnapshotTestRunner({width: 800, height: 450}).add(TEST_CASES).run({
+      onTestStart: testCase => console.info(testCase.name),
+      onTestFail: (testCase, result) => {
+        failures.push(`${testCase.name}: ${result.error || `match: ${result.matchPercentage}`}`);
+      },
 
       imageDiffOptions: {
         threshold: 0.99
@@ -26,7 +30,8 @@ test('RenderTest', t => {
         // if left commented will be saved as `[name]-fail.png.` enabling comparison
         // saveAs: '[name].png'
       }
-    })
-    .catch(t.fail)
-    .finally(t.end);
-});
+    });
+    expect(failures).toEqual([]);
+  },
+  TOTAL_TIMEOUT
+);

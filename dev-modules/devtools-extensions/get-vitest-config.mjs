@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {createRequire} from 'node:module';
-import {fileURLToPath} from 'node:url';
 
 import {defineConfig} from 'vitest/config';
 import {playwright} from '@vitest/browser-playwright';
@@ -13,7 +12,6 @@ import {createRangeServerMiddleware} from './range-server.mjs';
 
 const require = createRequire(import.meta.url);
 const VITEST_INTERNAL_BROWSER_PATH = require.resolve('vitest/internal/browser');
-const TAPE_TEST_UTILS_PATH = fileURLToPath(new URL('./tape-test-utils.mjs', import.meta.url));
 const LOCAL_FIXTURE_PREFIX = '/__loaders_gl_test_fixtures__/';
 
 export async function getVitestConfig(options = {}) {
@@ -44,9 +42,7 @@ export async function getVitestConfig(options = {}) {
   const testAliases = [
     ...tsconfigAliases,
     {find: /^@loaders\.gl\/bson$/, replacement: path.resolve(repositoryRoot, 'modules/tables/src/bson')},
-    {find: /^@loaders\.gl\/bson\/test$/, replacement: path.resolve(repositoryRoot, 'modules/tables/test/bson')},
-    {find: /^tape$/, replacement: TAPE_TEST_UTILS_PATH},
-    {find: /^tape-promise\/tape$/, replacement: TAPE_TEST_UTILS_PATH}
+    {find: /^@loaders\.gl\/bson\/test$/, replacement: path.resolve(repositoryRoot, 'modules/tables/test/bson')}
   ];
 
   const createPlaywrightProvider = () =>

@@ -11,7 +11,6 @@ import ts from 'typescript';
 
 const repositoryRoot = process.cwd();
 const testRoots = ['modules', 'test'];
-const tapeAllowlistPath = path.resolve('test/tape-allowlist.txt');
 const largeFixtureAllowlistPath = path.resolve('test/large-fixture-allowlist.txt');
 const coverageExclusionsPath = path.resolve('test/coverage-exclusions.json');
 const outputPath = path.resolve('test-results/test-audit.json');
@@ -26,23 +25,20 @@ const fastTestFiles = testFiles.filter(
 );
 const tapeFiles = testFiles.filter(testFile => {
   const source = fs.readFileSync(testFile, 'utf8');
-  return /from\s+['"](?:tape|tape-promise\/tape)['"]/.test(source);
+  return /from\s+['"](?:tape|tape-promise(?:\/tape)?|test\/utils\/vitest-tape)['"]/.test(source);
 });
 const largeFixtureReferences = findLargeFixtureReferences(fastTestFiles);
 
 if (updateAllowlists) {
-  writeAllowlist(tapeAllowlistPath, tapeFiles);
   writeAllowlist(largeFixtureAllowlistPath, largeFixtureReferences);
 }
 
-const tapeAllowlist = readAllowlist(tapeAllowlistPath);
 const largeFixtureAllowlist = readAllowlist(largeFixtureAllowlistPath);
 const emptyTestFiles = testFiles.filter(testFile => !containsTestRegistration(testFile));
 const remoteFetches = findRemoteFetches(fastTestFiles);
 const coverageExclusionViolations = auditCoverageExclusions();
 const violations = [
-  ...findAllowlistViolations('Tape import', tapeFiles, tapeAllowlist),
-  ...findStaleAllowlistEntries('Tape allowlist', tapeFiles, tapeAllowlist),
+  ...tapeFiles.map(testFile => `Tape import is no longer supported: ${testFile}`),
   ...emptyTestFiles.map(testFile => `Empty test file: ${testFile}`),
   ...remoteFetches.map(remoteFetch => `Remote fetch in hermetic test: ${remoteFetch}`),
   ...findAllowlistViolations(
@@ -175,7 +171,7 @@ function containsTestRegistration(testFile) {
   return hasRegistration || /import\s+['"][^'"]+\.spec['"]/.test(source);
 }
 
-/** Returns true when a call expression is rooted in a Vitest or Tape registration function. */
+/** Returns true when a call expression is rooted in a Vitest registration function. */
 function isTestRegistrationExpression(expression) {
   let rootExpression = expression;
   while (ts.isCallExpression(rootExpression) || ts.isPropertyAccessExpression(rootExpression)) {

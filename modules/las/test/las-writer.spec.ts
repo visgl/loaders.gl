@@ -22,24 +22,14 @@ const mesh = {
 };
 const exportedExtraBytesTypeCheck: LASExtraBytesWriter = {attribute: 'value'};
 void exportedExtraBytesTypeCheck;
-const vitestAssertions = {
-  ok(value: unknown, message?: string) {
-    expect(value, message).toBeTruthy();
-  },
-  notOk(value: unknown, message?: string) {
-    expect(value, message).toBeFalsy();
-  },
-  equal(actual: unknown, expected: unknown, message?: string) {
-    expect(actual, message).toBe(expected);
-  }
-};
+
 test('LASWriter#writer conformance', () => {
   validateWriter(LASWriter, 'LASWriter');
 });
 test('LASWriter#encode plain and Arrow mesh data', async () => {
   const arrayBuffer = await encode(mesh, LASWriter);
   const data = await parse(arrayBuffer, LASLoader, {las: {shape: 'mesh'}, core: {worker: false}});
-  validateMeshCategoryData(vitestAssertions, data);
+  validateMeshCategoryData(data);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
   const arrowTable = convertMeshToTable(mesh, 'arrow-table');
@@ -48,7 +38,7 @@ test('LASWriter#encode plain and Arrow mesh data', async () => {
     las: {shape: 'mesh'},
     core: {worker: false}
   });
-  validateMeshCategoryData(vitestAssertions, arrowData);
+  validateMeshCategoryData(arrowData);
   expect(arrowData.attributes.POSITION.value.length, 'Arrow POSITION attribute roundtripped').toBe(
     9
   );
