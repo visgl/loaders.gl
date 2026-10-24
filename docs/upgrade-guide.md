@@ -52,6 +52,10 @@ primitive definitions. The tile converter consumes this indexed representation d
 objects can call it at its rendering boundary. It is no longer called by the tile parsers.
 See [glTF accessor helpers](./modules/gltf/api-reference/gltf-accessors).
 
+`GLTFScenegraph.getTypedArrayForAccessor()` now treats an omitted `bufferView` as implicit-zero
+storage, including any sparse substitutions, as required by glTF. It no longer falls back to buffer
+view 0. An explicit `bufferView: 0` continues to read the first buffer view.
+
 ## Upgrading to v4.5
 
 v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.

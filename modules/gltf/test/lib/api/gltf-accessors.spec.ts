@@ -10,7 +10,8 @@ import {
   GLTFIterator,
   GLTFScenegraph,
   GLTFWriter,
-  GLTFLoader
+  GLTFLoader,
+  createExtStructuralMetadata
 } from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
@@ -229,4 +230,21 @@ test.each([
   expect(new Uint8Array(builder.gltf.binary!, extension.byteOffset, 1)).toEqual(
     new Uint8Array([7])
   );
+});
+
+test('glTF replacement values survive metadata extension encoding without duplicating its buffers', async () => {
+  const gltf = createAccessor(new Float32Array([1, 2, 3, 4]));
+  const scenegraph = new GLTFScenegraph(gltf);
+  createExtStructuralMetadata(scenegraph, [
+    {name: 'label', elementType: 'STRING', values: ['first', 'second']}
+  ]);
+  const replacement = new Float32Array([5, 6, 7, 8]);
+  setGLTFAccessorValue(scenegraph.gltf, 0, replacement);
+  const decoded = await parse(GLTFWriter.encodeSync!(scenegraph.gltf), GLTFLoader, {
+    core: {worker: false},
+    gltf: {loadImages: false}
+  });
+  expect(getGLTFAccessorValue(decoded, 0)).toEqual(replacement);
+  const metadata = new GLTFScenegraph(decoded).getExtension('EXT_structural_metadata');
+  expect(metadata.propertyTables[0].properties.label.data).toEqual(['first', 'second']);
 });
