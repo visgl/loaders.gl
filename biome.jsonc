@@ -44,7 +44,7 @@
       "!modules/tables/test/parquet/**",
       "!modules/geospatial/src/flatgeobuf/flatgeobuf*",
       "!modules/geospatial/src/flatgeobuf/lib/binary-geometries.ts",
-      "!modules/potree/test/data/**/cloud.js",
+      "!modules/tiles-3d/test/potree/data/**/cloud.js",
       "!modules/tiles/src/bundle.ts",
       "!modules/scientific/src/zarr/**",
       "!modules/images/src/lib/category-api/image-type.ts",

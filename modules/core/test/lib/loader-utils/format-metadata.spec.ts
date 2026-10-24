@@ -8,7 +8,7 @@ import {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from '@loaders.gl/til
 import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
 import {ArrowFormat} from '@loaders.gl/tables/arrow/index';
 import {BSONFormat} from '@loaders.gl/tables/bson/index';
-import {COPCFormat} from '@loaders.gl/copc';
+import {COPCFormat} from '@loaders.gl/tiles-3d/copc';
 import {CSVFormat} from '@loaders.gl/tables/csv/index';
 import {DracoFormat} from '@loaders.gl/draco';
 import {ExcelFormat} from '@loaders.gl/tables/excel/index';
@@ -41,7 +41,11 @@ import {MTLFormat, OBJFormat} from '@loaders.gl/obj';
 import {ParquetFormat} from '@loaders.gl/tables/parquet/index';
 import {PCDFormat} from '@loaders.gl/pcd';
 import {PMTilesFormat} from '@loaders.gl/tiles/pmtiles';
-import {PotreeBinFormat, PotreeFormat, PotreeHierarchyChunkFormat} from '@loaders.gl/potree';
+import {
+  PotreeBinFormat,
+  PotreeFormat,
+  PotreeHierarchyChunkFormat
+} from '@loaders.gl/tiles-3d/potree';
 import {DBFFormat, SHPFormat, ShapefileFormat} from '@loaders.gl/geospatial/shapefile/index';
 import {QuantizedMeshFormat, TerrainFormat} from '@loaders.gl/raster';
 import {

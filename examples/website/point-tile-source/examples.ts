@@ -34,10 +34,10 @@ export type PointTileSourceExample = {
 const POTREE_FARMLAND_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/refs/heads/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted';
 const POTREE_LION_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/potree/test/data/lion_takanawa';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/potree/data/lion_takanawa';
 const POTREE_VOL_TOTAL_URL = 'https://potree.github.io/potree/pointclouds/vol_total/cloud.js';
 const COPC_ELLIPSOID_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/copc/test/data/ellipsoid.copc.laz';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tiles-3d/test/copc/data/ellipsoid.copc.laz';
 const COPC_MIAMI_URL =
   'https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9271/20180425_324741D.copc.laz';
 

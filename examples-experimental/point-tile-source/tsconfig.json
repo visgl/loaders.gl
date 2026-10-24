@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "types": ["react", "react-dom"],
     "paths": {
-      "@loaders.gl/potree": ["modules/potree/src"]
+      "@loaders.gl/tiles-3d/potree": ["modules/tiles-3d/src/potree"]
     }
   },
   "include": ["./src/**/*", "./vite.config.ts"]

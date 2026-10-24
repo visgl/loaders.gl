@@ -12,7 +12,7 @@ const FORMAT_EXPORTS = {
   'tiles-3d/3d-tiles': ['Tiles3DFormat', 'Tile3DSubtreeFormat', 'ThreeTZFormat'],
   'tables/arrow': ['ArrowFormat'],
   'tables/bson': ['BSONFormat'],
-  copc: ['COPCFormat'],
+  'tiles-3d/copc': ['COPCFormat'],
   'tables/csv': ['CSVFormat'],
   tables: [
     'CSVFormat',
@@ -66,7 +66,7 @@ const FORMAT_EXPORTS = {
   pcd: ['PCDFormat'],
   ply: ['PLYFormat'],
   'tiles/pmtiles': ['PMTilesFormat'],
-  potree: ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
+  'tiles-3d/potree': ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
   'geospatial/shapefile': ['ShapefileFormat', 'SHPFormat', 'DBFFormat'],
   textures: [
     'BasisTextureFormat',

@@ -16,8 +16,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['COPC and Potree', 'Octree traversal', 'Point budgets']}
   links={[
     {label: 'Tiles module', to: '/docs/modules/tiles'},
-    {label: 'COPC source', to: '/docs/modules/copc/api-reference/copc-source-loader'},
-    {label: 'Potree source', to: '/docs/modules/potree/api-reference/potree-source-loader'}
+    {label: 'COPC source', to: '/docs/modules/tiles-3d/copc/api-reference/copc-source-loader'},
+    {label: 'Potree source', to: '/docs/modules/tiles-3d/potree/api-reference/potree-source-loader'}
   ]}
 />
 
@@ -57,7 +57,7 @@ It is intended for source-backed octree formats such as Potree and COPC and expo
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
-import {PotreeSourceLoader} from '@loaders.gl/potree';
+import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
 
 const dataSource = createDataSource(POTREE_URL, [PotreeSourceLoader], {
   core: {type: 'potree'},

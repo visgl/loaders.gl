@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'LAS module', to: '/docs/modules/las'},
     {label: 'LASLoader', to: '/docs/modules/las/api-reference/las-loader'},
-    {label: 'COPC', to: '/docs/modules/copc'}
+    {label: 'COPC', to: '/docs/modules/tiles-3d/copc'}
   ]}
 />
 

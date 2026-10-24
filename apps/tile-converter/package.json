@@ -80,13 +80,11 @@
   },
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-alpha.13",
-    "@loaders.gl/copc": "5.0.0-alpha.13",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/crypto": "5.0.0-alpha.13",
     "@loaders.gl/draco": "5.0.0-alpha.13",
     "@loaders.gl/gltf": "5.0.0-alpha.13",
     "@loaders.gl/images": "5.0.0-alpha.13",
-    "@loaders.gl/potree": "5.0.0-alpha.13",
     "@loaders.gl/textures": "5.0.0-alpha.13",
     "@loaders.gl/tiles": "5.0.0-alpha.13",
     "@loaders.gl/tiles-3d": "5.0.0-alpha.13",

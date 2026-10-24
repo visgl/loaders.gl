@@ -54,7 +54,7 @@ export type LASExtraBytesWriter = {
 export type LASWriterOptions = WriterOptions & {
   /** LAS-specific writer options. */
   las?: {
-    /** Output container format. COPC has its own writer in @loaders.gl/copc. */
+    /** Output container format. COPC has its own writer in @loaders.gl/tiles-3d/copc. */
     format?: 'las' | 'laz';
     /** LAS file version to write. LAS 1.5 requires a WKT CRS string. */
     version?: '1.0' | '1.1' | '1.2' | '1.3' | '1.4' | '1.5';

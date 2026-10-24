@@ -62,21 +62,6 @@
         "branches": 70
       }
     },
-    "@loaders.gl/copc": {
-      "path": "modules/copc",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "merged": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      }
-    },
     "@loaders.gl/core": {
       "path": "modules/core",
       "browserExcludedSourcePaths": [
@@ -259,21 +244,6 @@
         "lines": 82,
         "functions": 90,
         "branches": 60
-      }
-    },
-    "@loaders.gl/potree": {
-      "path": "modules/potree",
-      "browser": {
-        "statements": 82,
-        "lines": 83,
-        "functions": 82,
-        "branches": 66
-      },
-      "merged": {
-        "statements": 81,
-        "lines": 83,
-        "functions": 78,
-        "branches": 66
       }
     },
     "@loaders.gl/raster": {
@@ -587,6 +557,20 @@
     }
   },
   "formats": {
+    "copc": {
+      "path": "modules/tiles-3d/src/copc",
+      "browser": {"statements": 90, "lines": 90, "functions": 90, "branches": 90},
+      "merged": {"statements": 90, "lines": 90, "functions": 90, "branches": 90},
+      "owner": "@loaders.gl/tiles-3d",
+      "sourcePaths": ["modules/tiles-3d/src/copc/"]
+    },
+    "potree": {
+      "path": "modules/tiles-3d/src/potree",
+      "browser": {"statements": 82, "lines": 83, "functions": 82, "branches": 66},
+      "merged": {"statements": 81, "lines": 83, "functions": 78, "branches": 66},
+      "owner": "@loaders.gl/tiles-3d",
+      "sourcePaths": ["modules/tiles-3d/src/potree/"]
+    },
     "geotiff": {
       "path": "modules/raster/src/geotiff",
       "browser": {

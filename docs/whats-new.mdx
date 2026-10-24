@@ -357,7 +357,7 @@ Release Date: 2026
 - **Module workers by default** - Worker descriptors can create bundler-resolved ES module workers as their default browser path while retaining explicit worker URLs and pre-built classic-worker fallbacks. Arrow triangulation is the first API to use this path; existing classic workers are not deprecated.
 - **Automatic atomic worker selection** - `core.worker: 'auto'` lets loaders provide synchronous normalized work estimates so small parses stay on the main thread while expensive parses use workers. The default `core.worker: true` behavior remains unchanged.
 - **OpenUSD scenes** - The new `@loaders.gl/scene` module provides an experimental [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) for the [OpenUSD format](/docs/modules/scene/formats/usd), supporting ASCII USDA layers and uncompressed USDZ archives, including reference and variant composition.
-- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/potree`, `@loaders.gl/tiles/mvt`, `@loaders.gl/tiles-3d/3d-tiles`, `@loaders.gl/core/schema`, `@loaders.gl/tiles-3d/i3s`, and `@loaders.gl/splats`.
+- **JSON format validation** - [Zod](https://zod.dev/) schemas add runtime validation while retaining handwritten TypeScript types, with exported JSON Schemas for `@loaders.gl/textures`, `@loaders.gl/tiles-3d/potree`, `@loaders.gl/tiles/mvt`, `@loaders.gl/tiles-3d/3d-tiles`, `@loaders.gl/core/schema`, `@loaders.gl/tiles-3d/i3s`, and `@loaders.gl/splats`.
 
 **Features**
 

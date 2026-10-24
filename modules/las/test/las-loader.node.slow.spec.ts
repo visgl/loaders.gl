@@ -74,7 +74,7 @@ const PDRF_10_LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.4.las';
 const PDRF_10_LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.4.laz';
 const PDRF_10_LAS_1_5_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.5.las';
 const PDRF_10_LAZ_1_5_BINARY_URL = '@loaders.gl/las/test/data/pdrf10-1.5.laz';
-const COPC_BINARY_URL = 'modules/copc/test/data/ellipsoid.copc.laz';
+const COPC_BINARY_URL = 'modules/tiles-3d/test/copc/data/ellipsoid.copc.laz';
 let copcArrayBufferPromise: Promise<ArrayBuffer> | undefined;
 const LAZ_1_4_PARITY_VARIANTS = [
   {name: 'COPC', loader: LASCOPCLoader},

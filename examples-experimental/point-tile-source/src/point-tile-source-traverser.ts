@@ -1,4 +1,4 @@
-import {type POTreeNode} from "@loaders.gl/potree";
+import {type POTreeNode} from "@loaders.gl/tiles-3d/potree";
 
 export class PointTileSourceTraverser {
     root?: POTreeNode;

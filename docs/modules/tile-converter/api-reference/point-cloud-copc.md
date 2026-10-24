@@ -1,7 +1,7 @@
 # Point-cloud attribute mapping and COPC output
 
 The v5 adapters support explicit point attribute mapping and bounded COPC batch authoring.
-COPC output reuses `@loaders.gl/copc`'s writer, which owns LAS 1.4/LAZ encoding and octree layout.
+COPC output reuses `@loaders.gl/tiles-3d/copc`'s writer, which owns LAS 1.4/LAZ encoding and octree layout.
 
 ```typescript
 import {encodePointCloudCOPC} from '@loaders.gl/tile-converter/v5';

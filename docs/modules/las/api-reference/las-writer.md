@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'LAS format', to: '/docs/modules/las/formats/las'},
     {label: 'LAS module', to: '/docs/modules/las'},
-    {label: 'COPCWriter', to: '/docs/modules/copc/api-reference/copc-writer'}
+    {label: 'COPCWriter', to: '/docs/modules/tiles-3d/copc/api-reference/copc-writer'}
   ]}
 />
 
@@ -69,7 +69,7 @@ const arrayBuffer = await encode(pointCloud, LASWriter, {
 
 The writer requires a `POSITION` attribute. It can select LAS versions 1.0-1.4 and PDRF 0-10. Represented input attributes include color, intensity, classification, GPS time, NIR, return and scanner metadata, waveform packet references, and configured Extra Bytes. Fields without a corresponding input attribute are zero-filled.
 
-LAZ output supports PDRF 0-10. Legacy formats use LASzip compressor 2 and item version 2; modern formats use layered compressor 3 and item version 3. PDRF 4/5 and 9/10 preserve waveform packet references; waveform sample payload storage remains outside the writer. Fixed-size chunk tables are the default, and variable-size tables can be enabled when needed. The output is readable by the TypeScript loader. Interoperability is covered by independent LASzip fixtures and by bundled WASM comparisons for the item sets those variants support. COPC output is provided separately by [`COPCWriter`](/docs/modules/copc/api-reference/copc-writer) to keep the LAS and COPC packages acyclic.
+LAZ output supports PDRF 0-10. Legacy formats use LASzip compressor 2 and item version 2; modern formats use layered compressor 3 and item version 3. PDRF 4/5 and 9/10 preserve waveform packet references; waveform sample payload storage remains outside the writer. Fixed-size chunk tables are the default, and variable-size tables can be enabled when needed. The output is readable by the TypeScript loader. Interoperability is covered by independent LASzip fixtures and by bundled WASM comparisons for the item sets those variants support. COPC output is provided separately by [`COPCWriter`](/docs/modules/tiles-3d/copc/api-reference/copc-writer) to keep the LAS and COPC packages acyclic.
 
 ## Options
 

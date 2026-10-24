@@ -19,13 +19,13 @@ const POTREE_DOCS_TABS: PotreeDocsTab[] = [
     label: 'Try It',
     href: '/examples/pointclouds/potree-source'
   },
-  {id: 'overview', label: 'Overview', href: '/docs/modules/potree'},
-  {id: 'format', label: 'Format', href: '/docs/modules/potree/formats/potree'},
-  {id: 'loader', label: 'PotreeLoader', href: '/docs/modules/potree/api-reference/potree-loader'},
+  {id: 'overview', label: 'Overview', href: '/docs/modules/tiles-3d/potree'},
+  {id: 'format', label: 'Format', href: '/docs/modules/tiles-3d/potree/formats/potree'},
+  {id: 'loader', label: 'PotreeLoader', href: '/docs/modules/tiles-3d/potree/api-reference/potree-loader'},
   {
     id: 'source',
     label: 'PotreeSourceLoader',
-    href: '/docs/modules/potree/api-reference/potree-source-loader'
+    href: '/docs/modules/tiles-3d/potree/api-reference/potree-source-loader'
   }
 ];
 

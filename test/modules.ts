@@ -40,7 +40,7 @@ import '@loaders.gl/gltf/test';
 import '@loaders.gl/tiles-3d/3d-tiles/test';
 import '@loaders.gl/tiles-3d/i3s/test';
 import '@loaders.gl/tiles-3d/test';
-import '@loaders.gl/potree/test';
+import '@loaders.gl/tiles-3d/potree/test';
 import '@loaders.gl/tiles/test';
 
 // Geospatial Formats

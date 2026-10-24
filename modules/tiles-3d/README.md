@@ -7,6 +7,8 @@ Three-dimensional tileset traversal and format loaders share this package.
 | `@loaders.gl/tiles-3d` | `Tileset3D`, `Tile3D`, traversal, spatial helpers, and point-cloud tilesets |
 | `@loaders.gl/tiles-3d/3d-tiles` | 3D Tiles loaders, archives, and writers |
 | `@loaders.gl/tiles-3d/i3s` | I3S loaders, SLPK archives, and writers |
+| `@loaders.gl/tiles-3d/copc` | COPC point-cloud source, hierarchy, and writer |
+| `@loaders.gl/tiles-3d/potree` | Potree point-cloud loaders, source, and writer |
 
 Install `@loaders.gl/tiles-3d` once, then import the format subpath you use.
 
