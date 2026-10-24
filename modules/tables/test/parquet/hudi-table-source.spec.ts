@@ -7,7 +7,7 @@ import {setPathPrefix} from '@loaders.gl/core/loader-utils';
 
 afterEach(() => setPathPrefix(''));
 
-vi.mock('@loaders.gl/tables/parquet/parquet-dataset-source', () => ({
+vi.mock('../../src/parquet/parquet-dataset-source', () => ({
   ParquetDatasetSource: class MockParquetDatasetSource {
     constructor(public readonly fragments: unknown[] | (() => Promise<unknown[]>)) {}
     async getSchema() {
@@ -23,7 +23,7 @@ vi.mock('@loaders.gl/tables/parquet/parquet-dataset-source', () => ({
     }
   }
 }));
-import {HudiTableSource} from '../src/hudi';
+import {HudiTableSource} from '../../src/parquet/hudi-table-source';
 
 test('discovers Copy-on-Write Hudi base files from a snapshot descriptor', async () => {
   const source = new HudiTableSource(

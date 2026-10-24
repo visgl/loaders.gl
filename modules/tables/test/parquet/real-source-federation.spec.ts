@@ -10,13 +10,13 @@ import {CSVTableSource} from '@loaders.gl/tables/csv/index';
 import {NDJSONTableSource} from '@loaders.gl/tables/json/index';
 import {DataSourceManager, type ScanExecutionTelemetry} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
-import {DeltaTableSource} from '../src/delta';
-import {IcebergTableSource} from '../src/iceberg';
+import {DeltaTableSource} from '@loaders.gl/tables/delta';
+import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
 import {ParquetSource} from '@loaders.gl/tables/parquet/parquet-source-loader';
 import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/sql';
 
-import {FederatedTableScanSource} from '../src/federated-table-scan-source';
+import {FederatedTableScanSource} from '@loaders.gl/scan';
 
 const OUTPUT_SCHEMA: Schema = {
   fields: [
@@ -27,7 +27,7 @@ const OUTPUT_SCHEMA: Schema = {
   metadata: {}
 };
 
-test('exposes incubating table-format entry points without extending the scan root', () => {
+test('exposes table-format sources from their owning module', () => {
   expect(IcebergTableSource).toBeDefined();
   expect(DeltaTableSource).toBeDefined();
 });

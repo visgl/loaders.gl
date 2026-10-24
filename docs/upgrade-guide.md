@@ -40,6 +40,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
+## Table-format scan subpaths
+
+The experimental `@loaders.gl/scan/iceberg`, `/delta`, and `/hudi` subpaths have been removed.
+Import their source implementations from `@loaders.gl/tables/iceberg`,
+`@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`, respectively. `IcebergRestCatalog`
+is also exported from `@loaders.gl/tables/iceberg`. The `@loaders.gl/scan` root continues
+to provide the query engine and federation APIs without depending on `@loaders.gl/tables`.
+
 ## OGC service and STAC package imports
 
 The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in v5. Install

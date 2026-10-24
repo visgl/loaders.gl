@@ -5826,7 +5826,6 @@ __metadata:
   resolution: "@loaders.gl/scan@workspace:modules/scan"
   dependencies:
     "@loaders.gl/sql": "npm:5.0.0-alpha.13"
-    "@loaders.gl/tables": "npm:5.0.0-alpha.13"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0

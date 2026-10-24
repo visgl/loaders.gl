@@ -20,6 +20,21 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./iceberg": {
+      "types": "./dist/iceberg/index.d.ts",
+      "import": "./dist/iceberg/index.js",
+      "require": "./dist/iceberg/index.cjs"
+    },
+    "./delta": {
+      "types": "./dist/delta/index.d.ts",
+      "import": "./dist/delta/index.js",
+      "require": "./dist/delta/index.cjs"
+    },
+    "./hudi": {
+      "types": "./dist/hudi/index.d.ts",
+      "import": "./dist/hudi/index.js",
+      "require": "./dist/hudi/index.cjs"
+    },
     "./csv/bundled": {
       "types": "./dist/csv/bundled.d.ts",
       "import": "./dist/csv/bundled.js"
@@ -470,6 +485,11 @@
     "./parquet/iceberg-table-source": {
       "types": "./dist/parquet/iceberg-table-source.d.ts",
       "import": "./dist/parquet/iceberg-table-source.js"
+    },
+    "./parquet/hudi-table-source": {
+      "types": "./dist/parquet/hudi-table-source.d.ts",
+      "import": "./dist/parquet/hudi-table-source.js",
+      "require": "./dist/parquet/hudi-table-source.cjs"
     },
     "./parquet/iceberg-types": {
       "types": "./dist/parquet/iceberg-types.d.ts",

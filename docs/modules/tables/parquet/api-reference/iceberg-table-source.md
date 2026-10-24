@@ -52,7 +52,7 @@ data files, and delegates the actual file reads to `ParquetDatasetSource`.
 />
 
 ```ts
-import {IcebergTableSource} from '@loaders.gl/scan/iceberg';
+import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
 
 const source = new IcebergTableSource('https://data.example.com/events/metadata/v12.metadata.json', {
   iceberg: {
@@ -74,7 +74,7 @@ for await (const batch of source.scan({
 await source.close();
 ```
 
-The adapter is incubating under `@loaders.gl/scan/iceberg`. It is intentionally an explicit
+The adapter is available under `@loaders.gl/tables/iceberg`. It is intentionally an explicit
 subpath so importing Parquet alone does not include table-format planning code.
 
 ## API surface
@@ -242,7 +242,7 @@ The small `IcebergRestCatalog` adapter loads a table response and returns an
 `IcebergTableSource`; it does not become a catalog-wide API or add write operations:
 
 ```ts
-import {IcebergRestCatalog} from '@loaders.gl/scan/iceberg';
+import {IcebergRestCatalog} from '@loaders.gl/tables/iceberg';
 
 const catalog = new IcebergRestCatalog({endpoint: 'https://catalog.example.com'});
 const table = await catalog.loadTable({namespace: ['analytics'], table: 'events'});
@@ -293,14 +293,14 @@ introduce a second worker protocol or a second range-reader implementation.
 
 ## Delta Lake adapter
 
-`DeltaTableSource` is the read-only Delta adapter incubating under `@loaders.gl/scan`. It accepts a
+`DeltaTableSource` is the read-only Delta adapter under `@loaders.gl/tables/delta`. It accepts a
 commit-log URL or an in-memory `Blob`, replays all JSON commits through the selected version, and
 delegates active Parquet files to `ParquetDatasetSource`. A commit URL with a twenty-digit version
 selects that snapshot automatically; callers can override it with `delta.version` or per-scan
 `version`.
 
 ```ts
-import {DeltaTableSource} from '@loaders.gl/scan/delta';
+import {DeltaTableSource} from '@loaders.gl/tables/delta';
 
 const source = new DeltaTableSource(
   'https://data.example.com/events/_delta_log/00000000000000000042.json',
