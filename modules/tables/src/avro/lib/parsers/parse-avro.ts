@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {createAvroTable} from './create-avro-table';
+import {concatenateAvroTables, createAvroTable} from './create-avro-table';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
@@ -178,7 +178,7 @@ export async function parseAvroFromUrl(
   for await (const batch of parseAvroInBatchesFromUrl(url, options)) tables.push(batch.data);
   return {
     shape: 'arrow-table',
-    data: tables.length ? tables[0].concat(...tables.slice(1)) : new arrow.Table()
+    data: concatenateAvroTables(tables)
   };
 }
 
@@ -270,7 +270,7 @@ export async function parseAvroFromFile(
   for await (const batch of parseAvroInBatchesFromFile(file, options)) tables.push(batch.data);
   return {
     shape: 'arrow-table',
-    data: tables.length ? tables[0].concat(...tables.slice(1)) : new arrow.Table()
+    data: concatenateAvroTables(tables)
   };
 }
 

@@ -24,6 +24,11 @@ export function createAvroTable(
   );
 }
 
+/** Combines Arrow batches without spreading an unbounded number of function arguments. */
+export function concatenateAvroTables(tables: arrow.Table[]): arrow.Table {
+  return new arrow.Table(tables.flatMap(table => table.batches));
+}
+
 /** Registers definitions used by named record, enum, and fixed references. */
 function registerTypes(schema: AvroSchema, namedTypes: Map<string, AvroSchema>): void {
   if (typeof schema === 'string') return;
