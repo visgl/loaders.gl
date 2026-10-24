@@ -240,3 +240,28 @@ test('Avro retains row counts for records with no fields', async () => {
   const {createAvroTable} = await import('../src/avro/lib/parsers/create-avro-table');
   expect(createAvroTable([{}, {}], {type: 'record', name: 'Empty', fields: []}).numRows).toBe(2);
 });
+
+test.each([
+  'bytes',
+  'fixed'
+] as const)('Avro preserves nullable %s with object-form null branches', async kind => {
+  const {createAvroTable} = await import('../src/avro/lib/parsers/create-avro-table');
+  const values =
+    kind === 'bytes'
+      ? [null, new Uint8Array([1, 2, 3]), new Uint8Array([9])]
+      : [null, new Uint8Array([1, 2]), new Uint8Array([3, 4])];
+  const binarySchema = kind === 'bytes' ? {type: 'bytes'} : {type: 'fixed', name: 'Pair', size: 2};
+  const table = createAvroTable(
+    values.map(payload => ({payload})),
+    {
+      type: 'record',
+      name: 'Nullable',
+      fields: [{name: 'payload', type: [{type: 'null'}, binarySchema]}]
+    }
+  );
+  const column = table.getChild('payload')!;
+  expect(column.type).toBeInstanceOf(kind === 'bytes' ? arrow.Binary : arrow.FixedSizeBinary);
+  expect(Array.from(column, value => (value === null ? null : Array.from(value)))).toEqual(
+    values.map(value => (value === null ? null : Array.from(value)))
+  );
+});

@@ -43,6 +43,12 @@ function registerTypes(schema: AvroSchema, namedTypes: Map<string, AvroSchema>):
   if (schema.values) registerTypes(schema.values, namedTypes);
 }
 
+/** Recognizes null branches in both primitive-name and schema-object form. */
+function isNullSchema(schema: AvroSchema): boolean {
+  if (typeof schema === 'string') return schema === 'null';
+  return !Array.isArray(schema) && isNullSchema(schema.type);
+}
+
 /** Maps Avro schemas recursively while retaining existing numeric and logical representations. */
 function createArrowType(
   schema: AvroSchema,
@@ -52,7 +58,7 @@ function createArrowType(
   longType: 'number' | 'bigint'
 ): arrow.DataType {
   if (Array.isArray(schema)) {
-    const branches = schema.filter(branch => branch !== 'null');
+    const branches = schema.filter(branch => !isNullSchema(branch));
     if (branches.length === 1)
       return createArrowType(branches[0], values, namedTypes, ancestors, longType);
     return arrow.vectorFromArray(values).type;
