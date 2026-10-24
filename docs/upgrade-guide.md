@@ -44,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 `@loaders.gl/gltf` no longer exports `postProcessGLTF` or `GLTF*Postprocessed` types.
 Import them from [`@luma.gl/gltf`](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
-when preparing data for rendering. Pass the `GLTFLoader` result directly to the luma.gl function.
+in luma.gl v10 when preparing data for rendering. Pass the `GLTFLoader` result directly to the luma.gl function.
 Keep `GLTFWithBuffers` and indexed JSON for loader-side processing, writing, and conversion;
 use `getGLTFAccessorValue` and `GLTFIterator` to read resources without linking a second document.
 `_getMemoryUsageGLTF` now accepts only the indexed `GLTFWithBuffers` container.
