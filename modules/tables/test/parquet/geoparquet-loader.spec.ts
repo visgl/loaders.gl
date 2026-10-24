@@ -1,0 +1,67 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import { expect, test } from "vitest";
+// import {validateLoader} from 'test/common/conformance';
+import { GeoParquetLoader, ParquetLoader, ParquetWriter } from '@loaders.gl/tables/parquet/index';
+import { load, encode, setLoaderOptions } from '@loaders.gl/core';
+import { getTableLength } from '@loaders.gl/core/schema-utils';
+import * as arrow from 'apache-arrow';
+const PARQUET_DIR = '@loaders.gl/tables/parquet/test/data/geoparquet';
+const GEOPARQUET_EXAMPLE = `${PARQUET_DIR}/example.parquet`;
+const GEOPARQUET_FILES = ['example.parquet', 'airports.parquet', 'geojson-big.parquet'];
+// Use local workers
+setLoaderOptions({ _workerType: 'test' });
+test('Load GeoParquet#airports.parquet', async () => {
+    const table = await load(`${PARQUET_DIR}/airports.parquet`, GeoParquetLoader, {
+        core: { worker: false },
+        parquet: {
+            preserveBinary: true
+        }
+    });
+    expect(table.shape).toBe('arrow-table');
+    expect(getTableLength(table)).toBe(1000);
+    expect(table.schema?.fields.map((f) => f.name)).toEqual(['cartodb_id', 'gps_code', 'name', 'geom']);
+});
+test('Load GeoParquet file', async () => {
+    const table = await load(GEOPARQUET_EXAMPLE, GeoParquetLoader, {
+        core: { worker: false }
+    });
+    expect(table.shape).toBe('arrow-table');
+    expect(getTableLength(table)).toBe(5);
+    expect(table.schema?.fields.map((f) => f.name)).toEqual(['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry']);
+});
+test.skip('GeoParquetLoader#load', async () => {
+    // t.comment('SUPPORTED FILES');
+    for (const fileName of GEOPARQUET_FILES) {
+        const url = `${PARQUET_DIR}/geoparquet/${fileName}`;
+        const data = await load(url, ParquetLoader, {
+            core: { worker: false }
+        });
+        expect(data, `GOOD(${fileName})`).toBeTruthy();
+    }
+});
+test.skip('ParquetWriterLoader round trip', async () => {
+    const table = createArrowTable();
+    const parquetBuffer = await encode(table, ParquetWriter, {
+        core: { worker: false }
+    });
+    const newTable = await load(parquetBuffer, ParquetLoader, {
+        core: { worker: false }
+    });
+    expect(table.schema).toEqual(newTable.schema);
+});
+function createArrowTable(): arrow.Table {
+    const utf8Vector = arrow.vectorFromArray<arrow.Utf8>(['a', 'b', 'c', 'd']);
+    const boolVector = arrow.makeVector({ data: [1, 1, 0, 0], type: new arrow.Bool() });
+    const uint8Vector = arrow.makeVector(new Uint8Array([1, 2, 3, 4]));
+    const int32Vector = arrow.makeVector(new Int32Array([0, -2147483638, 2147483637, 1]));
+    const table = new arrow.Table({
+        str: utf8Vector,
+        uint8: uint8Vector,
+        int32: int32Vector,
+        bool: boolVector
+    });
+    return table;
+}

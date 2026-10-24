@@ -45,7 +45,7 @@ export const CURATED_EXAMPLES: readonly CuratedExample[] = [
     id: 'geoparquet-airports',
     label: 'Airports in GeoParquet',
     format: 'GeoParquet',
-    url: 'https://github.com/visgl/loaders.gl/raw/refs/heads/master/modules/parquet/test/data/geoparquet/airports.parquet',
+    url: 'https://github.com/visgl/loaders.gl/raw/refs/heads/master/modules/tables/test/parquet/data/geoparquet/airports.parquet',
     surface: 'geospatial',
     description: 'A columnar point dataset that demonstrates GeoParquet.',
     thumbnail: 'images/examples/geospatial/geoparquet.jpg',

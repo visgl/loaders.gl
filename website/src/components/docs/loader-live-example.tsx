@@ -38,21 +38,21 @@ type LoaderLiveExampleConfig =
 const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
   'modules/3d-tiles/api-reference/tiles-3d-loader': {kind: '3d-tiles'},
   'modules/3d-tiles/api-reference/cesium-ion-loader': {kind: '3d-tiles'},
-  'modules/arrow/api-reference/geoarrow-loader': {kind: 'geospatial', format: 'GeoArrow'},
-  'modules/excel/api-reference/excel-loader': {
+  'modules/tables/arrow/api-reference/geoarrow-loader': {kind: 'geospatial', format: 'GeoArrow'},
+  'modules/tables/excel/api-reference/excel-loader': {
     kind: 'table',
     table: {
       loaderName: 'ExcelLoader',
-      url: `${LOADERS_URL}/modules/excel/test/data/zipcodes.xlsx`,
+      url: `${LOADERS_URL}/modules/tables/test/excel/data/zipcodes.xlsx`,
       options: {core: {worker: false}}
     }
   },
-  'modules/json/api-reference/geojson-loader': {kind: 'geospatial', format: 'GeoJSON'},
-  'modules/json/api-reference/ndjson-loader': {
+  'modules/tables/json/api-reference/geojson-loader': {kind: 'geospatial', format: 'GeoJSON'},
+  'modules/tables/json/api-reference/ndjson-loader': {
     kind: 'table',
     table: {
       loaderName: 'NDJSONLoader',
-      url: `${LOADERS_URL}/modules/json/test/data/ndjson.ndjson`
+      url: `${LOADERS_URL}/modules/tables/test/json/data/ndjson.ndjson`
     }
   },
   'modules/mlt/api-reference/mlt-loader': {kind: 'tiles', format: 'MLT'},

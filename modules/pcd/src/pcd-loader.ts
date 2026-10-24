@@ -9,7 +9,7 @@ import {PCDFormat} from './pcd-format';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
+} from '@loaders.gl/tables/arrow/transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

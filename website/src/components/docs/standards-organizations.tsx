@@ -43,13 +43,13 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
     title: 'Columnar and analytical',
     description: 'Formats that preserve schemas, columns, batches, and cloud-selective layouts.',
     links: [
-      {label: 'Apache Arrow', to: '/docs/modules/arrow/formats/arrow'},
-      {label: 'GeoArrow', to: '/docs/modules/arrow/formats/geoarrow'},
-      {label: 'Apache Parquet', to: '/docs/modules/parquet/formats/parquet'},
-      {label: 'GeoParquet', to: '/docs/modules/parquet/formats/geoparquet'},
+      {label: 'Apache Arrow', to: '/docs/modules/tables/arrow/formats/arrow'},
+      {label: 'GeoArrow', to: '/docs/modules/tables/arrow/formats/geoarrow'},
+      {label: 'Apache Parquet', to: '/docs/modules/tables/parquet/formats/parquet'},
+      {label: 'GeoParquet', to: '/docs/modules/tables/parquet/formats/geoparquet'},
       {label: 'Apache Avro', to: '/examples/table/avro'},
-      {label: 'Apache ORC', to: '/docs/modules/orc/formats/orc'},
-      {label: 'Apache Iceberg', to: '/docs/modules/parquet/api-reference/iceberg-table-source'}
+      {label: 'Apache ORC', to: '/docs/modules/tables/orc/formats/orc'},
+      {label: 'Apache Iceberg', to: '/docs/modules/tables/parquet/api-reference/iceberg-table-source'}
     ]
   },
   {
@@ -57,15 +57,15 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
     title: 'Geospatial files',
     description: 'Interoperable feature, raster, catalog, geometry, and archive formats.',
     links: [
-      {label: 'GeoJSON', to: '/docs/modules/json/formats/geojson'},
-      {label: 'KML / KMZ', to: '/docs/modules/kml/formats/kml'},
-      {label: 'GeoPackage', to: '/docs/modules/geopackage/formats/geopackage'},
+      {label: 'GeoJSON', to: '/docs/modules/tables/json/formats/geojson'},
+      {label: 'KML / KMZ', to: '/docs/modules/geospatial/kml/formats/kml'},
+      {label: 'GeoPackage', to: '/docs/modules/geospatial/geopackage/formats/geopackage'},
       {label: 'GeoTIFF', to: '/docs/modules/geotiff/formats/geotiff'},
-      {label: 'FlatGeobuf', to: '/docs/modules/flatgeobuf/formats/flatgeobuf'},
-      {label: 'Shapefile', to: '/docs/modules/shapefile/formats/shapefile'},
+      {label: 'FlatGeobuf', to: '/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf'},
+      {label: 'Shapefile', to: '/docs/modules/geospatial/shapefile/formats/shapefile'},
       {label: 'WKT / WKB', to: '/docs/modules/wkt/formats/wkt'},
       {label: 'WKT-CRS', to: '/docs/modules/wkt/formats/wkt-crs'},
-      {label: 'STAC', to: '/docs/modules/services/stac/formats/stac'}
+      {label: 'STAC', to: '/docs/modules/stac/formats/stac'}
     ]
   },
   {
@@ -73,12 +73,12 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
     title: 'Network services',
     description: 'Standards and vendor APIs where discovery is followed by bounded requests.',
     links: [
-      {label: 'WMS', to: '/docs/modules/services/wms/formats/wms'},
-      {label: 'WMTS', to: '/docs/modules/services/wms/formats/wmts'},
-      {label: 'WFS', to: '/docs/modules/services/wms/formats/wfs'},
-      {label: 'WCS', to: '/docs/modules/services/wms/formats/wcs'},
-      {label: 'CSW', to: '/docs/modules/services/wms/formats/csw'},
-      {label: 'OGC API', to: '/docs/modules/services/wms/services/ogc-api'},
+      {label: 'WMS', to: '/docs/modules/wms/formats/wms'},
+      {label: 'WMTS', to: '/docs/modules/wms/formats/wmts'},
+      {label: 'WFS', to: '/docs/modules/wms/formats/wfs'},
+      {label: 'WCS', to: '/docs/modules/wms/formats/wcs'},
+      {label: 'CSW', to: '/docs/modules/wms/formats/csw'},
+      {label: 'OGC API', to: '/docs/modules/wms/services/ogc-api'},
       {label: 'ArcGIS REST', to: '/docs/modules/arcgis'}
     ]
   }
@@ -90,11 +90,11 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     title: 'Apache',
     description: 'Binary table, storage, serialization, and table-catalog projects used by large-data pipelines.',
     links: [
-      {label: 'Arrow', to: '/docs/modules/arrow/formats/arrow'},
-      {label: 'Parquet', to: '/docs/modules/parquet/formats/parquet'},
+      {label: 'Arrow', to: '/docs/modules/tables/arrow/formats/arrow'},
+      {label: 'Parquet', to: '/docs/modules/tables/parquet/formats/parquet'},
       {label: 'Avro', to: '/examples/table/avro'},
-      {label: 'ORC', to: '/docs/modules/orc/formats/orc'},
-      {label: 'Iceberg', to: '/docs/modules/parquet/api-reference/iceberg-table-source'}
+      {label: 'ORC', to: '/docs/modules/tables/orc/formats/orc'},
+      {label: 'Iceberg', to: '/docs/modules/tables/parquet/api-reference/iceberg-table-source'}
     ]
   },
   {
@@ -115,12 +115,12 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     links: [
       {label: '3D Tiles', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
       {label: 'I3S', to: '/docs/modules/i3s/formats/i3s'},
-      {label: 'GeoPackage', to: '/docs/modules/geopackage/formats/geopackage'},
+      {label: 'GeoPackage', to: '/docs/modules/geospatial/geopackage/formats/geopackage'},
       {label: 'GeoTIFF', to: '/docs/modules/geotiff/formats/geotiff'},
-      {label: 'KML', to: '/docs/modules/kml/formats/kml'},
-      {label: 'GML', to: '/docs/modules/services/wms/formats/gml'},
+      {label: 'KML', to: '/docs/modules/geospatial/kml/formats/kml'},
+      {label: 'GML', to: '/docs/modules/wms/formats/gml'},
       {label: 'WKT / WKB', to: '/docs/modules/wkt/formats/wkt'},
-      {label: 'Web services', to: '/docs/modules/services/wms'}
+      {label: 'Web services', to: '/docs/modules/wms'}
     ]
   },
   {
@@ -142,7 +142,7 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     title: 'IETF, ASPRS, Cesium, AOUSD',
     description: 'Important specifications stewarded outside the four largest format families.',
     links: [
-      {label: 'IETF GeoJSON', to: '/docs/modules/json/formats/geojson'},
+      {label: 'IETF GeoJSON', to: '/docs/modules/tables/json/formats/geojson'},
       {label: 'ASPRS LAS / LAZ', to: '/docs/modules/las/formats/las'},
       {label: 'Cesium 3D Tiles', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
       {label: 'AOUSD OpenUSD', to: '/docs/modules/scene/formats/usd'},

@@ -12,7 +12,7 @@ import type {
   GeoArrowNumericArray,
   GeoArrowOffsets,
   GeoArrowValidity
-} from '@math.gl/geoarrow';
+} from '@math.gl/geospatial/geoarrow';
 import * as arrow from 'apache-arrow';
 
 /** Options for adapting an Apache Arrow vector to math.gl's runtime-neutral GeoArrow ABI. */
@@ -28,7 +28,7 @@ export type MakeGeoArrowColumnFromArrowVectorOptions = {
 };
 
 /**
- * Adapts Apache Arrow physical buffers to `@math.gl/geoarrow` borrowed descriptors.
+ * Adapts Apache Arrow physical buffers to `@math.gl/geospatial/geoarrow` borrowed descriptors.
  * Arrow slices already adjust numeric buffers, list offsets, union buffers, and fixed-width
  * children. Their Data.offset is retained only as the validity bitmap's bit offset;
  * copying it onto the geometry descriptor would apply the physical slice twice.

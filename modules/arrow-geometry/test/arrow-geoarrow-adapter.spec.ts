@@ -4,7 +4,10 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {makeGeoArrowColumnFromGeometryRows, materializeGeoArrowRows} from '@math.gl/geoarrow';
+import {
+  makeGeoArrowColumnFromGeometryRows,
+  materializeGeoArrowRows
+} from '@math.gl/geospatial/geoarrow';
 import {
   inferGeoArrowCoordinateLayoutFromArrowType,
   inferGeoArrowDimensionFromArrowType,

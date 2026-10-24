@@ -1,0 +1,24 @@
+{
+  "name": "atmospheric-explorer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite --host",
+    "build": "vite build",
+    "test": "vitest run grid.spec.ts"
+  },
+  "dependencies": {
+    "@deck.gl-community/panels": "^9.4.0-alpha.3",
+    "@deck.gl/core": "^9.4.0",
+    "@deck.gl/layers": "^9.4.0",
+    "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/scientific": "workspace:*",
+    "icechunk-js": "^0.6.0",
+    "zarrita": "~0.7.1"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vite": "^8.0.0",
+    "vitest": "5.0.2"
+  }
+}

@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {earcut} from '@math.gl/polygon';
+import {earcut} from '@math.gl/geometry/polygon';
 import {triangulateWKB} from '@loaders.gl/arrow-geometry';
 import {
   convertGeometryToWKB,

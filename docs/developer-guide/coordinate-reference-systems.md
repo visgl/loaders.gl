@@ -49,11 +49,11 @@ happens when a loader documents an opt-in transformation path.
   OGC URN, or an OGC definition URL. Identifiers do not embed the definition and loaders.gl does
   not resolve them over the network.
 - **WKT1, WKT2:2015, and WKT2:2019** serialize CRS definitions as text. WKT can also serialize
-  coordinate operations and coordinate metadata. `@math.gl/crs` parses WKT into a
+  coordinate operations and coordinate metadata. `@math.gl/geospatial/crs` parses WKT into a
   value-preserving syntax tree and encodes it again without inventing semantic equivalence.
 - A **PROJ string** is an ordered parameter serialization. It may describe a CRS or a pipeline.
-  `@math.gl/crs` preserves flags, repeated parameters, pipeline steps, and parameter order.
-- **PROJJSON v0.7** is the canonical semantic object model exported by `@math.gl/crs`. A WKT or
+  `@math.gl/geospatial/crs` preserves flags, repeated parameters, pipeline steps, and parameter order.
+- **PROJJSON v0.7** is the canonical semantic object model exported by `@math.gl/geospatial/crs`. A WKT or
   PROJ syntax tree is not automatically convertible to PROJJSON.
 - A **coordinate epoch** identifies when coordinates in a dynamic CRS apply. GeoParquet stores it
   separately as `epoch`; it must not be confused with the CRS frame epoch.
@@ -68,7 +68,7 @@ even when all coordinate values are retained.
 
 ## Shared types and syntax codecs
 
-Install `@math.gl/crs` when a public application type needs to describe CRS values:
+Install `@math.gl/geospatial` and import from `@math.gl/geospatial/crs` when a public application type needs to describe CRS values:
 
 ```ts
 import type {
@@ -78,8 +78,8 @@ import type {
   PROJStringDefinition,
   ReadonlyCRSDefinition,
   WKTCRSDefinition
-} from '@math.gl/crs';
-import {encodePROJString, encodeWKTCRS, parsePROJString, parseWKTCRS} from '@math.gl/crs';
+} from '@math.gl/geospatial/crs';
+import {encodePROJString, encodeWKTCRS, parsePROJString, parseWKTCRS} from '@math.gl/geospatial/crs';
 ```
 
 `CRSIdentifier` is appropriate for service capabilities and request parameters. Embedded dataset
@@ -87,12 +87,12 @@ metadata should use `CRSDefinition`, `PROJJSONCRS`, `WKTCRSDefinition`, or
 `PROJStringDefinition`, according to what the format actually stores.
 
 The `WKTCRSLoader` and `WKTCRSWriter` remain loaders.gl adapters, but their v5 data shape is the
-`WKTCRSAst` exported by `@math.gl/crs`. The old hybrid array/object result and the `raw`, `sort`,
+`WKTCRSAst` exported by `@math.gl/geospatial/crs`. The old hybrid array/object result and the `raw`, `sort`,
 and `debug` options have been removed.
 
 ## Experimental cross-source descriptor
 
-`@math.gl/crs` exports the canonical, immutable `SpatialReference` descriptor for reporting CRS
+`@math.gl/geospatial/crs` exports the canonical, immutable `SpatialReference` descriptor for reporting CRS
 discovery consistently across vis.gl libraries. loaders.gl source and scan metadata reference that
 type directly rather than maintaining a loaders.gl-specific copy. It records a preferred
 definition and its representation, alternate source representations, provenance, coordinate
@@ -111,7 +111,7 @@ presence never claims that coordinates, bounds, or heights were transformed. Imp
 type and constructor from their owning module:
 
 ```ts
-import {createSpatialReference, type SpatialReference} from '@math.gl/crs';
+import {createSpatialReference, type SpatialReference} from '@math.gl/geospatial/crs';
 ```
 
 ```ts
@@ -227,9 +227,9 @@ network and licensing behavior, and lets each application choose its accuracy/re
 
 | Module | Responsibility | Deliberate boundary |
 | --- | --- | --- |
-| `@math.gl/crs` | Typed identifiers, WKT/PROJ syntax, and PROJJSON definitions | Does not look up definitions or transform coordinates |
-| `@math.gl/projection` | Horizontal/projected/geocentric transformations and NTv2 grid registration | Not assumed to perform vertical datum or epoch operations |
-| `@math.gl/geoid` | GeographicLib-compatible interpolation from application-supplied PGM data | Is not terrain and does not load a model automatically |
+| `@math.gl/geospatial/crs` | Typed identifiers, WKT/PROJ syntax, and PROJJSON definitions | Does not look up definitions or transform coordinates |
+| `@math.gl/geospatial/projection` | Horizontal/projected/geocentric transformations and NTv2 grid registration | Not assumed to perform vertical datum or epoch operations |
+| `@math.gl/earth/geoid` | GeographicLib-compatible interpolation from application-supplied PGM data | Is not terrain and does not load a model automatically |
 | `@math.gl/geospatial` | Ellipsoid, cartographic/ECEF, and local-frame mathematics | Does not interpret format metadata |
 | loaders.gl adapters | Axis normalization, profile semantics, bounds, origins, normals, elevation placement, and diagnostics | Never silently invent missing metadata |
 

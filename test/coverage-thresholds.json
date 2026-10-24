@@ -17,27 +17,6 @@
         "branches": 77
       }
     },
-    "@loaders.gl/arrow": {
-      "path": "modules/arrow",
-      "browser": {
-        "statements": 85,
-        "lines": 86,
-        "functions": 86,
-        "branches": 82
-      },
-      "merged": {
-        "statements": 83,
-        "lines": 85,
-        "functions": 84,
-        "branches": 82
-      },
-      "sourcePaths": [
-        "modules/arrow/src/",
-        "modules/tables/src/arrow/",
-        "modules/core/src/schema-utils/lib/arrow/arrow-table-transport.ts",
-        "modules/core/src/schema-utils/lib/arrow/split-arrow-buffers.ts"
-      ]
-    },
     "@loaders.gl/arrow-geometry": {
       "path": "modules/arrow-geometry",
       "browser": {
@@ -52,44 +31,6 @@
         "functions": 90,
         "branches": 90
       }
-    },
-    "@loaders.gl/avro": {
-      "path": "modules/avro",
-      "browser": {
-        "statements": 80,
-        "lines": 80,
-        "functions": 80,
-        "branches": 70
-      },
-      "merged": {
-        "statements": 80,
-        "lines": 80,
-        "functions": 80,
-        "branches": 70
-      },
-      "sourcePaths": [
-        "modules/avro/src/",
-        "modules/tables/src/avro/"
-      ]
-    },
-    "@loaders.gl/bson": {
-      "path": "modules/bson",
-      "browser": {
-        "statements": 78,
-        "lines": 78,
-        "functions": 60,
-        "branches": 65
-      },
-      "merged": {
-        "statements": 78,
-        "lines": 78,
-        "functions": 60,
-        "branches": 65
-      },
-      "sourcePaths": [
-        "modules/bson/src/",
-        "modules/tables/src/bson/"
-      ]
     },
     "@loaders.gl/compression": {
       "path": "modules/compression",
@@ -170,25 +111,6 @@
         "branches": 70
       }
     },
-    "@loaders.gl/csv": {
-      "path": "modules/csv",
-      "browser": {
-        "statements": 70,
-        "lines": 71,
-        "functions": 78,
-        "branches": 64
-      },
-      "merged": {
-        "statements": 70,
-        "lines": 71,
-        "functions": 76,
-        "branches": 64
-      },
-      "sourcePaths": [
-        "modules/csv/src/",
-        "modules/tables/src/csv/"
-      ]
-    },
     "@loaders.gl/draco": {
       "path": "modules/draco",
       "browser": {
@@ -204,44 +126,6 @@
         "branches": 25
       }
     },
-    "@loaders.gl/excel": {
-      "path": "modules/excel",
-      "browser": {
-        "statements": 94,
-        "lines": 94,
-        "functions": 100,
-        "branches": 83
-      },
-      "merged": {
-        "statements": 91,
-        "lines": 94,
-        "functions": 100,
-        "branches": 78
-      },
-      "sourcePaths": [
-        "modules/excel/src/",
-        "modules/tables/src/excel/"
-      ]
-    },
-    "@loaders.gl/flatgeobuf": {
-      "path": "modules/flatgeobuf",
-      "browser": {
-        "statements": 49,
-        "lines": 50,
-        "functions": 60,
-        "branches": 41
-      },
-      "merged": {
-        "statements": 48,
-        "lines": 50,
-        "functions": 59,
-        "branches": 39
-      },
-      "sourcePaths": [
-        "modules/flatgeobuf/src/",
-        "modules/geospatial/src/flatgeobuf/"
-      ]
-    },
     "@loaders.gl/geoarrow": {
       "path": "modules/geoarrow",
       "browser": {
@@ -256,25 +140,6 @@
         "functions": 68,
         "branches": 51
       }
-    },
-    "@loaders.gl/geopackage": {
-      "path": "modules/geopackage",
-      "browser": {
-        "statements": 86,
-        "lines": 86,
-        "functions": 97,
-        "branches": 65
-      },
-      "merged": {
-        "statements": 85,
-        "lines": 86,
-        "functions": 95,
-        "branches": 65
-      },
-      "sourcePaths": [
-        "modules/geopackage/src/",
-        "modules/geospatial/src/geopackage/"
-      ]
     },
     "@loaders.gl/geospatial": {
       "path": "modules/geospatial",
@@ -336,63 +201,6 @@
         "branches": 74
       }
     },
-    "@loaders.gl/json": {
-      "path": "modules/json",
-      "browser": {
-        "statements": 86,
-        "lines": 86,
-        "functions": 89,
-        "branches": 79
-      },
-      "merged": {
-        "statements": 85,
-        "lines": 86,
-        "functions": 88,
-        "branches": 79
-      },
-      "sourcePaths": [
-        "modules/json/src/",
-        "modules/tables/src/json/"
-      ]
-    },
-    "@loaders.gl/kml": {
-      "path": "modules/kml",
-      "browser": {
-        "statements": 83,
-        "lines": 82,
-        "functions": 75,
-        "branches": 63
-      },
-      "merged": {
-        "statements": 79,
-        "lines": 82,
-        "functions": 73,
-        "branches": 63
-      },
-      "sourcePaths": [
-        "modules/kml/src/",
-        "modules/geospatial/src/kml/"
-      ]
-    },
-    "@loaders.gl/lance": {
-      "path": "modules/lance",
-      "browser": {
-        "statements": 45,
-        "lines": 45,
-        "functions": 66,
-        "branches": 40
-      },
-      "merged": {
-        "statements": 45,
-        "lines": 45,
-        "functions": 66,
-        "branches": 40
-      },
-      "sourcePaths": [
-        "modules/lance/src/",
-        "modules/tables/src/lance/"
-      ]
-    },
     "@loaders.gl/las": {
       "path": "modules/las",
       "browser": {
@@ -422,44 +230,6 @@
         "functions": 74,
         "branches": 54
       }
-    },
-    "@loaders.gl/orc": {
-      "path": "modules/orc",
-      "browser": {
-        "statements": 66,
-        "lines": 70,
-        "functions": 78,
-        "branches": 48
-      },
-      "merged": {
-        "statements": 66,
-        "lines": 70,
-        "functions": 78,
-        "branches": 48
-      },
-      "sourcePaths": [
-        "modules/orc/src/",
-        "modules/tables/src/orc/"
-      ]
-    },
-    "@loaders.gl/parquet": {
-      "path": "modules/parquet",
-      "browser": {
-        "statements": 78,
-        "lines": 79,
-        "functions": 83,
-        "branches": 68
-      },
-      "merged": {
-        "statements": 77,
-        "lines": 79,
-        "functions": 82,
-        "branches": 68
-      },
-      "sourcePaths": [
-        "modules/parquet/src/",
-        "modules/tables/src/parquet/"
-      ]
     },
     "@loaders.gl/pcd": {
       "path": "modules/pcd",
@@ -627,25 +397,6 @@
         "branches": 35
       }
     },
-    "@loaders.gl/shapefile": {
-      "path": "modules/shapefile",
-      "browser": {
-        "statements": 67,
-        "lines": 67,
-        "functions": 71,
-        "branches": 55
-      },
-      "merged": {
-        "statements": 66,
-        "lines": 67,
-        "functions": 69,
-        "branches": 55
-      },
-      "sourcePaths": [
-        "modules/shapefile/src/",
-        "modules/geospatial/src/shapefile/"
-      ]
-    },
     "@loaders.gl/splats": {
       "path": "modules/splats",
       "browser": {
@@ -674,6 +425,21 @@
         "lines": 66,
         "functions": 63,
         "branches": 49
+      }
+    },
+    "@loaders.gl/stac": {
+      "path": "modules/stac",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
       }
     },
     "@loaders.gl/tables": {
@@ -787,6 +553,21 @@
         "lines": 56,
         "functions": 21,
         "branches": 46
+      }
+    },
+    "@loaders.gl/wms": {
+      "path": "modules/wms",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 69,
+        "branches": 57
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 66,
+        "functions": 64,
+        "branches": 57
       }
     },
     "@loaders.gl/xml": {
@@ -1068,43 +849,254 @@
         "modules/tiles/src/pmtiles/"
       ]
     },
-    "wms": {
-      "path": "modules/services/src/wms",
+    "tables/arrow": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/arrow",
+      "sourcePaths": [
+        "modules/tables/src/arrow/",
+        "modules/core/src/schema-utils/lib/arrow/arrow-table-transport.ts",
+        "modules/core/src/schema-utils/lib/arrow/split-arrow-buffers.ts"
+      ],
+      "browser": {
+        "statements": 85,
+        "lines": 86,
+        "functions": 86,
+        "branches": 82
+      },
+      "merged": {
+        "statements": 83,
+        "lines": 85,
+        "functions": 84,
+        "branches": 82
+      }
+    },
+    "tables/avro": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/avro",
+      "sourcePaths": [
+        "modules/tables/src/avro/"
+      ],
+      "browser": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 80,
+        "branches": 70
+      },
+      "merged": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 80,
+        "branches": 70
+      }
+    },
+    "tables/bson": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/bson",
+      "sourcePaths": [
+        "modules/tables/src/bson/"
+      ],
+      "browser": {
+        "statements": 78,
+        "lines": 78,
+        "functions": 60,
+        "branches": 65
+      },
+      "merged": {
+        "statements": 78,
+        "lines": 78,
+        "functions": 60,
+        "branches": 65
+      }
+    },
+    "tables/csv": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/csv",
+      "sourcePaths": [
+        "modules/tables/src/csv/"
+      ],
+      "browser": {
+        "statements": 70,
+        "lines": 71,
+        "functions": 78,
+        "branches": 64
+      },
+      "merged": {
+        "statements": 70,
+        "lines": 71,
+        "functions": 76,
+        "branches": 64
+      }
+    },
+    "tables/excel": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/excel",
+      "sourcePaths": [
+        "modules/tables/src/excel/"
+      ],
+      "browser": {
+        "statements": 94,
+        "lines": 94,
+        "functions": 100,
+        "branches": 83
+      },
+      "merged": {
+        "statements": 91,
+        "lines": 94,
+        "functions": 100,
+        "branches": 78
+      }
+    },
+    "tables/json": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/json",
+      "sourcePaths": [
+        "modules/tables/src/json/"
+      ],
+      "browser": {
+        "statements": 86,
+        "lines": 86,
+        "functions": 89,
+        "branches": 79
+      },
+      "merged": {
+        "statements": 85,
+        "lines": 86,
+        "functions": 88,
+        "branches": 79
+      }
+    },
+    "tables/lance": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/lance",
+      "sourcePaths": [
+        "modules/tables/src/lance/"
+      ],
+      "browser": {
+        "statements": 45,
+        "lines": 45,
+        "functions": 66,
+        "branches": 40
+      },
+      "merged": {
+        "statements": 45,
+        "lines": 45,
+        "functions": 66,
+        "branches": 40
+      }
+    },
+    "tables/orc": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/orc",
+      "sourcePaths": [
+        "modules/tables/src/orc/"
+      ],
+      "browser": {
+        "statements": 66,
+        "lines": 70,
+        "functions": 78,
+        "branches": 48
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 70,
+        "functions": 78,
+        "branches": 48
+      }
+    },
+    "tables/parquet": {
+      "owner": "@loaders.gl/tables",
+      "path": "modules/tables/src/parquet",
+      "sourcePaths": [
+        "modules/tables/src/parquet/"
+      ],
+      "browser": {
+        "statements": 78,
+        "lines": 79,
+        "functions": 83,
+        "branches": 68
+      },
+      "merged": {
+        "statements": 77,
+        "lines": 79,
+        "functions": 82,
+        "branches": 68
+      }
+    },
+    "geospatial/flatgeobuf": {
+      "owner": "@loaders.gl/geospatial",
+      "path": "modules/geospatial/src/flatgeobuf",
+      "sourcePaths": [
+        "modules/geospatial/src/flatgeobuf/"
+      ],
+      "browser": {
+        "statements": 49,
+        "lines": 50,
+        "functions": 60,
+        "branches": 41
+      },
+      "merged": {
+        "statements": 48,
+        "lines": 50,
+        "functions": 59,
+        "branches": 39
+      }
+    },
+    "geospatial/geopackage": {
+      "owner": "@loaders.gl/geospatial",
+      "path": "modules/geospatial/src/geopackage",
+      "sourcePaths": [
+        "modules/geospatial/src/geopackage/"
+      ],
+      "browser": {
+        "statements": 86,
+        "lines": 86,
+        "functions": 97,
+        "branches": 65
+      },
+      "merged": {
+        "statements": 85,
+        "lines": 86,
+        "functions": 95,
+        "branches": 65
+      }
+    },
+    "geospatial/kml": {
+      "owner": "@loaders.gl/geospatial",
+      "path": "modules/geospatial/src/kml",
+      "sourcePaths": [
+        "modules/geospatial/src/kml/"
+      ],
+      "browser": {
+        "statements": 83,
+        "lines": 82,
+        "functions": 75,
+        "branches": 63
+      },
+      "merged": {
+        "statements": 79,
+        "lines": 82,
+        "functions": 73,
+        "branches": 63
+      }
+    },
+    "geospatial/shapefile": {
+      "owner": "@loaders.gl/geospatial",
+      "path": "modules/geospatial/src/shapefile",
+      "sourcePaths": [
+        "modules/geospatial/src/shapefile/"
+      ],
       "browser": {
         "statements": 67,
         "lines": 67,
+        "functions": 71,
+        "branches": 55
+      },
+      "merged": {
+        "statements": 66,
+        "lines": 67,
         "functions": 69,
-        "branches": 57
-      },
-      "merged": {
-        "statements": 65,
-        "lines": 66,
-        "functions": 64,
-        "branches": 57
-      },
-      "owner": "@loaders.gl/services",
-      "sourcePaths": [
-        "modules/services/src/wms/"
-      ]
-    },
-    "stac": {
-      "path": "modules/services/src/stac",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "merged": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "owner": "@loaders.gl/services",
-      "sourcePaths": [
-        "modules/services/src/stac/"
-      ]
+        "branches": 55
+      }
     }
   }
 }

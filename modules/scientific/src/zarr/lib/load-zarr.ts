@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// eslint-disable-next-line import/no-unresolved
-import type {Store} from 'zarr/types/storage/types';
+import type {ZarrStore} from '../types';
 import {loadMultiscales, guessTileSize, guessLabels, normalizeStore, validLabels} from './utils';
 import ZarrPixelSource from './zarr-pixel-source';
 
@@ -11,7 +10,7 @@ interface ZarrOptions {
   labels?: string[];
 }
 
-export async function loadZarr(root: string | Store, options: ZarrOptions = {}) {
+export async function loadZarr(root: string | ZarrStore, options: ZarrOptions = {}) {
   const store = normalizeStore(root);
   const {data, rootAttrs} = await loadMultiscales(store);
   const tileSize = guessTileSize(data[0]);

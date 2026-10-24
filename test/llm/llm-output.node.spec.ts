@@ -8,7 +8,7 @@ test('normalizes deployment paths and rejects missing generated Markdown targets
   try {
     mkdirSync(path.join(temporaryDirectory, 'scripts'));
     mkdirSync(path.join(temporaryDirectory, 'build/docs/developer-guide'), {recursive: true});
-    mkdirSync(path.join(temporaryDirectory, 'build/docs/modules/csv/api-reference'), {
+    mkdirSync(path.join(temporaryDirectory, 'build/docs/modules/tables/csv/api-reference'), {
       recursive: true
     });
     for (const script of ['normalize-llm-output.mjs', 'check-llm-output.mjs'])
@@ -20,7 +20,7 @@ test('normalizes deployment paths and rejects missing generated Markdown targets
       'docs/developer-guide/get-started.md',
       'docs/developer-guide/using-loaders.md',
       'docs/developer-guide/working-with-ai.md',
-      'docs/modules/csv/api-reference/csv-loader.md'
+      'docs/modules/tables/csv/api-reference/csv-loader.md'
     ];
     for (const relativePath of [
       ...requiredPaths,

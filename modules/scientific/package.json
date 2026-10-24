@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scientific",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "Scientific data format loaders with metadata roots and explicit format subpaths",
   "license": "MIT",
   "type": "module",
@@ -54,7 +54,7 @@
     "build-cjs-zarr": "esbuild src/zarr/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr/index.cjs --external:@loaders.gl/* --external:@math.gl/*"
   },
   "dependencies": {
-    "@math.gl/crs": "5.0.0-alpha.14",
+    "@math.gl/geospatial": "5.0.0-alpha.19",
     "zarr": "^0.5.0",
     "zarrita": "~0.7.1"
   },

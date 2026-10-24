@@ -58,8 +58,8 @@ data from object storage without downloading a complete dataset.
 
 | Format | Access pattern | Reference |
 | --- | --- | --- |
-| FlatGeobuf | Indexed feature access | [FlatGeobuf](/docs/modules/flatgeobuf) |
-| GeoParquet | Columnar rows with geospatial metadata | [GeoParquet](/docs/modules/parquet/formats/geoparquet) |
+| FlatGeobuf | Indexed feature access | [FlatGeobuf](/docs/modules/geospatial/flatgeobuf) |
+| GeoParquet | Columnar rows with geospatial metadata | [GeoParquet](/docs/modules/tables/parquet/formats/geoparquet) |
 | COG | Tiled TIFF raster ranges | [GeoTIFF](/docs/modules/geotiff) |
 | COPC | Indexed LAS/LAZ point-cloud ranges | [COPC](/docs/modules/copc) |
 | PMTiles | Tile archive ranges | [PMTiles](/docs/modules/pmtiles) |

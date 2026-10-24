@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Geoid} from '@math.gl/geoid';
+import type {Geoid} from '@math.gl/earth/geoid';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import type {ReadonlyCRSDefinition} from '@math.gl/crs';
-import type {Projection} from '@math.gl/projection';
-import {ProjectionBuffer} from '@math.gl/projection/bulk';
+import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
+import type {Projection} from '@math.gl/geospatial/projection';
+import {ProjectionBuffer} from '@math.gl/geospatial/projection/bulk';
 import {getGeoidModel, getSpatialProjectionEngine} from './spatial-resource-registry';
 import {
   normalizeCrsIdentifier,

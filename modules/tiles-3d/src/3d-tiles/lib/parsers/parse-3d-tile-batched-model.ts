@@ -5,7 +5,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {GL} from '@math.gl/geometry-utils';
+import {GL} from '@math.gl/geometry/utils';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 // import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 
@@ -26,9 +26,10 @@ export async function parseBatchedModel3DTile(
   byteOffset = parseBatchedModel(tile, arrayBuffer, byteOffset, options, context);
   await extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
 
-  const extensions = tile?.gltf?.extensions;
-  if (extensions && extensions.CESIUM_RTC) {
-    tile.rtcCenter = extensions.CESIUM_RTC.center;
+  const extensions = tile?.gltf?.json.extensions;
+  const rtc = extensions?.CESIUM_RTC as {center?: number[]} | undefined;
+  if (rtc?.center) {
+    tile.rtcCenter = rtc.center;
   }
 
   return byteOffset;

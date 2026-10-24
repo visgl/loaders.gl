@@ -15,7 +15,7 @@ import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/core/schem
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
+} from '@loaders.gl/tables/arrow/transport';
 import {
   convertMeshToTable,
   convertTableToMesh,

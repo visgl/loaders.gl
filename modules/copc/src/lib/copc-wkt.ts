@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadonlyCRSDefinition} from '@math.gl/crs';
+import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
 
 /** Extracts the horizontal WKT1 component of a compound CRS in one bounded linear scan. */
 export function normalizeCOPCProjectionDefinition(

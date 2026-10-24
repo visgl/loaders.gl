@@ -92,3 +92,14 @@ test('DuckDBSQLSource validates unsupported remote adapters and URL forms', asyn
   ).resolves.toEqual([{value: 7}]);
   await encodedPathSource.close();
 });
+
+test('DuckDB Node adapter reports unsupported IPC uploads', async () => {
+  const source = new DuckDBSQLDataSource('duckdb:///:memory:', {});
+  try {
+    await expect(source.insertArrowIPC(new Uint8Array(), {tableName: 'events'})).rejects.toThrow(
+      'does not support Arrow IPC uploads'
+    );
+  } finally {
+    await source.close();
+  }
+});

@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {Vector3} from '@math.gl/core';
-import {BoundingSphere, CullingVolume, Plane} from '@math.gl/culling';
+import {BoundingSphere, CullingVolume, Plane} from '@math.gl/geometry/culling';
 import {getContentVisibility} from '../../src/tileset-3d/common/tile-3d';
 
 function createCullingVolume(visibleCenters: Set<number>) {

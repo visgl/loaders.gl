@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/services",
-  "version": "5.0.0-alpha.12",
-  "description": "Authentication and OGC/STAC geospatial service sources",
+  "version": "5.0.0-alpha.13",
+  "description": "Authentication presets for geospatial service providers",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -36,41 +36,6 @@
     "./authentication": {
       "types": "./dist/authentication.d.ts",
       "import": "./dist/authentication.js"
-    },
-    "./stac": {
-      "types": "./dist/stac/index.d.ts",
-      "import": "./dist/stac/index.js",
-      "require": "./dist/stac/index.cjs"
-    },
-    "./stac/stac-source": {
-      "types": "./dist/stac/stac-source.d.ts",
-      "import": "./dist/stac/stac-source.js",
-      "require": "./dist/stac/stac-source.cjs"
-    },
-    "./wms": {
-      "types": "./dist/wms/index.d.ts",
-      "import": "./dist/wms/index.js",
-      "require": "./dist/wms/index.cjs"
-    },
-    "./wms/unbundled": {
-      "types": "./dist/wms/unbundled.d.ts",
-      "import": "./dist/wms/unbundled.js",
-      "require": "./dist/wms/unbundled.cjs"
-    },
-    "./wms/bundled": {
-      "types": "./dist/wms/bundled.d.ts",
-      "import": "./dist/wms/bundled.js",
-      "require": "./dist/wms/bundled.cjs"
-    },
-    "./wms/gml-loader": {
-      "types": "./dist/wms/gml-loader.d.ts",
-      "import": "./dist/wms/gml-loader.js",
-      "require": "./dist/wms/gml-loader.cjs"
-    },
-    "./wms/wmts-capabilities-loader-with-parser": {
-      "types": "./dist/wms/wmts-capabilities-loader-with-parser.d.ts",
-      "import": "./dist/wms/wmts-capabilities-loader-with-parser.js",
-      "require": "./dist/wms/wmts-capabilities-loader-with-parser.cjs"
     }
   },
   "sideEffects": false,
@@ -81,14 +46,5 @@
   ],
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
-  },
-  "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
-    "@loaders.gl/images": "5.0.0-alpha.12",
-    "@loaders.gl/raster": "5.0.0-alpha.12",
-    "@loaders.gl/xml": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.18",
-    "@math.gl/geospatial": "5.0.0-alpha.18",
-    "lerc": "^4.2.0"
   }
 }

@@ -42,7 +42,11 @@ function decodePrimitiveRestart(iterator: GLTFIterator, primitive: GLTFMeshPrimi
   if (primitive.indices === undefined) {
     return;
   }
-  const accessor = iterator.data.accessors?.[primitive.indices];
+  const indicesAccessor = primitive.indices as number | GLTFAccessor;
+  const accessor =
+    typeof indicesAccessor === 'number'
+      ? iterator.data.accessors?.[indicesAccessor]
+      : indicesAccessor;
   if (!accessor) {
     throw new Error(`${name}: primitive references missing indices accessor ${primitive.indices}`);
   }

@@ -9,7 +9,7 @@ import {
   type DefaultProps,
   type Layer
 } from '@deck.gl/core';
-import {AxisAlignedBoundingBox} from '@math.gl/culling';
+import {AxisAlignedBoundingBox} from '@math.gl/geometry/culling';
 import type {PointCloudTile} from '@loaders.gl/tiles-3d';
 import {
   BoundingBoxLayer,

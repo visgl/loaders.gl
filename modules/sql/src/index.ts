@@ -50,6 +50,7 @@ export type {
   SQLParameterValues,
   SQLQuery,
   SQLQueryOptions,
+  SQLArrowInsertOptions,
   SQLSchemaInfo,
   SQLSourceOptions,
   SQLTableInfo

@@ -36,13 +36,15 @@ export async function getVitestConfig(options = {}) {
   const browserName = vitestConfig.browserName || 'chromium';
   const testTimeout = vitestConfig.testTimeout || 60_000;
   const softwareGpu = Boolean(vitestConfig.softwareGpu);
-  const tsconfigAliases = getTsconfigAliases(tsconfigProjects);
+  const tsconfigAliases = getTsconfigAliases(tsconfigProjects).filter(
+    alias => !alias.replacement.endsWith('.d.ts')
+  );
   const c8CoverageConfig = loadC8CoverageConfig();
   const repositoryRoot = process.cwd();
   const testAliases = [
     ...tsconfigAliases,
-    {find: /^@loaders\.gl\/bson$/, replacement: path.resolve(repositoryRoot, 'modules/bson/src')},
-    {find: /^@loaders\.gl\/bson\/test$/, replacement: path.resolve(repositoryRoot, 'modules/bson/test')},
+    {find: /^@loaders\.gl\/bson$/, replacement: path.resolve(repositoryRoot, 'modules/tables/src/bson')},
+    {find: /^@loaders\.gl\/bson\/test$/, replacement: path.resolve(repositoryRoot, 'modules/tables/test/bson')},
     {find: /^tape$/, replacement: TAPE_TEST_UTILS_PATH},
     {find: /^tape-promise\/tape$/, replacement: TAPE_TEST_UTILS_PATH}
   ];
@@ -75,19 +77,18 @@ export async function getVitestConfig(options = {}) {
         '@mapbox/martini',
         '@maplibre/mlt',
         '@math.gl/core',
-        '@math.gl/culling',
+        '@math.gl/geometry/culling',
         '@math.gl/geospatial',
-        '@math.gl/polygon',
-        '@math.gl/proj4',
-        '@math.gl/types',
+        '@math.gl/geometry/polygon',
+        '@math.gl/geospatial/projection',
+        '@math.gl/core/types',
         '@math.gl/web-mercator',
         'probe.gl/env',
         'probe.gl/log',
         'probe.gl/stats',
-        '@repeaterjs/repeater',
-        '@tmcw/togeojson',
+
         '@turf/rewind',
-        '@xmldom/xmldom',
+
         'apache-arrow',
         'apache-arrow/type',
         'brotli/decompress',
@@ -101,21 +102,21 @@ export async function getVitestConfig(options = {}) {
         'fuzzer',
         'geotiff',
         'get-pixels',
-        'jszip',
+
         'lerc',
         'long',
         'lz4js',
         'ndarray',
-        'node-int64',
+
         'pako',
         'parquet-wasm/esm/parquet_wasm.js',
         'pbf',
         'pmtiles',
         'save-pixels',
-        'slice-source',
+
         'snappyjs',
         'sql.js',
-        'thrift',
+
         'varint',
         'vitest',
         'web-streams-polyfill',

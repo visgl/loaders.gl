@@ -4,7 +4,7 @@
 
 import type {LASCompatibilityLayout} from './las-compatibility';
 import type {Mesh} from '@loaders.gl/core/schema';
-import type {WKTCRSDefinition} from '@math.gl/crs';
+import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
 
 /** LAS Variable Length Record metadata and payload. */
 export type LASVariableLengthRecord = {

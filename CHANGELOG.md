@@ -4,6 +4,10 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.13
+
+- chore(math.gl): upgrade to alpha.19 and migrate removed leaf packages to grouped subpaths
+
 ### v5.0.0-alpha.12
 
 - perf(tiles): upgrade math.gl to alpha.16 and batch horizontal XYZ reprojection with reusable projection buffers

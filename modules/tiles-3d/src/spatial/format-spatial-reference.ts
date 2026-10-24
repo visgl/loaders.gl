@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadonlyCRSDefinition} from '@math.gl/crs';
+import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
 import {getI3SLinearUnitScale, getI3SVerticalUnitScale} from './i3s-elevation';
 import {
   getKnownCrsIdentifierCoordinateFrame,

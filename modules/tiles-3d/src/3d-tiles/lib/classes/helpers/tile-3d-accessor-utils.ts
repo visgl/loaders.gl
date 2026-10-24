@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {GLType} from '@math.gl/geometry-utils';
+import {GLType} from '@math.gl/geometry/utils';
 import {assert} from '@loaders.gl/core/loader-utils';
 
 const COMPONENTS_PER_ATTRIBUTE = {

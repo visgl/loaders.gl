@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {convertBoundingVolumeToI3SFullExtent} from '../../../src/v4/i3s-converter/helpers/coordinate-converter';
 import {Ellipsoid} from '@math.gl/geospatial';
 test('tile-converter(i3s)#convertBoundingVolumeToI3SFullExtent', async () => {

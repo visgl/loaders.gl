@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/copc",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "Framework-independent loader for the COPC format",
   "license": "MIT",
   "type": "module",
@@ -40,9 +40,8 @@
     "build-bundle": "# ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/las": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.18",
-    "@math.gl/projection": "5.0.0-alpha.18"
+    "@loaders.gl/las": "5.0.0-alpha.13",
+    "@math.gl/geospatial": "5.0.0-alpha.19"
   },
   "devDependencies": {
     "copc": "0.0.8"

@@ -18,7 +18,7 @@ import type {
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider
 } from '@loaders.gl/core/loader-utils';
-import type {CRSDefinition} from '@math.gl/crs';
+import type {CRSDefinition} from '@math.gl/geospatial/crs';
 import {
   createTileGrid,
   createScanQueryMetadata,

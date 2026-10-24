@@ -205,3 +205,53 @@ test.each([
   expect(primitive.mode).toBe(4);
   expect(primitive.indices).toEqual(expect.objectContaining({value: indices, count: 6}));
 });
+
+test.each([
+  'POSITION',
+  '_FEATURE_ID_0'
+])('KHR_draco_mesh_compression rejects missing decoded %s instead of retaining a stale accessor', async missingAttribute => {
+  const gltf: GLTFWithBuffers = {
+    json: {
+      asset: {version: '2.0'},
+      extensionsUsed: ['KHR_draco_mesh_compression'],
+      extensionsRequired: ['KHR_draco_mesh_compression'],
+      buffers: [{byteLength: 4}],
+      bufferViews: [{buffer: 0, byteLength: 4}],
+      accessors: [
+        {componentType: 5126, count: 3, type: 'VEC3'},
+        {componentType: 5123, count: 3, type: 'SCALAR'}
+      ],
+      meshes: [
+        {
+          primitives: [
+            {
+              attributes: {POSITION: 0, _FEATURE_ID_0: 1},
+              extensions: {
+                KHR_draco_mesh_compression: {
+                  bufferView: 0,
+                  attributes: {POSITION: 0, _FEATURE_ID_0: 1}
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    buffers: [{arrayBuffer: new Uint8Array([1, 2, 3, 4]).buffer, byteOffset: 0, byteLength: 4}]
+  };
+  const context = {
+    _parse: async () => ({
+      attributes:
+        missingAttribute === 'POSITION' ? {} : {POSITION: {value: new Float32Array(9), size: 3}}
+    })
+  };
+
+  await expect(decode(gltf, {gltf: {decompressMeshes: true}}, context as any)).rejects.toThrow(
+    `Draco decompression did not produce attribute ${missingAttribute}`
+  );
+
+  const primitive = gltf.json.meshes![0].primitives[0];
+  expect(primitive.attributes).toEqual({POSITION: 0, _FEATURE_ID_0: 1});
+  expect(primitive.extensions?.KHR_draco_mesh_compression).toBeDefined();
+  expect(gltf.json.extensionsRequired).toContain('KHR_draco_mesh_compression');
+});

@@ -52,3 +52,24 @@ SQL data sources provide `createDataSource()` integration for external and embed
 - `queryRows(sqlText, options)` returns object rows.
 - `queryArrow(sqlText, options)` returns a loaders.gl Arrow table.
 - `getMetadata()` returns catalogs, schemas, tables, and adapter capabilities.
+
+## DuckDB Arrow interoperability
+
+The browser adapter exchanges Arrow IPC bytes with DuckDB-Wasm. DuckDB retains its
+Arrow 17 dependency; loaders.gl decodes query results with Arrow 21. Do not force
+DuckDB's Arrow dependency to a different major through package-manager resolutions
+or bundler deduplication. IPC results are materialized in memory before decoding.
+
+`DuckDBSQLDataSource.insertArrowTable(table, options)` uploads a loaders.gl Arrow
+table by serializing it as an IPC stream. `options.tableName` identifies the
+destination, `schemaName` optionally selects a schema, and `create` defaults to
+`true`. Set `create: false` to append to an existing table. Uploads currently
+require the browser DuckDB-Wasm adapter; the Node adapter reports an unsupported
+operation. `insertArrowIPC(bytes, options)` also accepts an already serialized IPC stream.
+Custom adapters can implement `insertArrowIPC(bytes, options)`.
+
+```typescript
+await source.insertArrowTable(arrowTable, {tableName: 'events'});
+await source.insertArrowTable(moreEvents, {tableName: 'events', create: false});
+const result = await source.queryArrow('SELECT * FROM events');
+```

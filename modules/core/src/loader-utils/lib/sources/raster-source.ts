@@ -4,7 +4,7 @@
 
 import type {TileGrid} from './tile-source';
 import type {TypedArray} from '../../types';
-import type {CRSDefinition, CRSIdentifier} from '@math.gl/crs';
+import type {CRSDefinition, CRSIdentifier} from '@math.gl/geospatial/crs';
 
 /**
  * Numeric channel types supported by viewport-driven raster payloads.

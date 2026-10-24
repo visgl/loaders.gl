@@ -40,6 +40,22 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
+## 3D Tiles decoded glTF content
+
+With `3d-tiles.loadGLTF: true`, `tile.gltf` now contains `GLTFWithBuffers` rather than a
+postprocessed scene. Read metadata from `tile.gltf.json`. Scene, mesh, material, texture and accessor
+references remain numeric indices. Read typed values with `getGLTFAccessorValue(tile.gltf, index)`
+and replace transformed storage with `setGLTFAccessorValue`. Vector-content descriptors retain raw
+primitive definitions. The tile converter consumes this indexed representation directly.
+
+`postProcessGLTF` remains available as an explicit application API. A renderer that requires linked
+objects can call it at its rendering boundary. It is no longer called by the tile parsers.
+See [glTF accessor helpers](./modules/gltf/api-reference/gltf-accessors).
+
+`GLTFScenegraph.getTypedArrayForAccessor()` now treats an omitted `bufferView` as implicit-zero
+storage, including any sparse substitutions, as required by glTF. It no longer falls back to buffer
+view 0. An explicit `bufferView: 0` continues to read the first buffer view.
+
 ## Upgrading to v4.5
 
 v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.
@@ -54,18 +70,38 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
-**WMS and STAC packages move into services subpaths**
+### Table and geospatial package consolidation
 
-- Install `@loaders.gl/services` in place of `@loaders.gl/wms` and `@loaders.gl/stac`. Import OGC sources and loaders from `@loaders.gl/services/wms`, and STAC sources from `@loaders.gl/services/stac`.
-- Replace direct parser imports with `@loaders.gl/services/wms/gml-loader`, `@loaders.gl/services/wms/wmts-capabilities-loader-with-parser`, or `@loaders.gl/services/stac/stac-source` as appropriate. The old package entrypoints are removed.
-- Provider authentication presets remain on the lightweight `@loaders.gl/services` root. ArcGIS stays in `@loaders.gl/arcgis`.
+The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `excel`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv` to retain the former root exports. The `@loaders.gl/tables` root and format subpaths export metadata loaders and writers; import `CSVLoaderWithParser` from `@loaders.gl/tables/csv/csv-loader` for synchronous parsing.
 
+The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` packages have also been removed. Install `@loaders.gl/geospatial` and use matching format subpaths, such as `@loaders.gl/geospatial/kml`, for former package-root APIs. The group root and format subpaths export metadata loaders; import `KMLLoaderWithParser` from `@loaders.gl/geospatial/kml/kml-loader` for synchronous parsing. Other parser, source, writer, and worker entry points have corresponding explicit subpaths in the group packages. Update any hard-coded worker asset URLs to the group package paths.
 
 **Schema packages move into core subpaths**
 
 - Replace imports from `@loaders.gl/schema` with `@loaders.gl/core/schema`, and imports from `@loaders.gl/schema-utils` with `@loaders.gl/core/schema-utils`.
 - Use `@loaders.gl/core/schema-utils/arrow-transport` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
 - Install `@loaders.gl/core` as the package. Published loaders use it as a peer dependency so applications can provide one compatible core version.
+
+### math.gl package consolidation
+
+math.gl alpha.19 removes the standalone leaf packages. Applications importing their APIs or types
+alongside loaders.gl should install the grouped package and use its public subpath:
+
+| Removed package | Replacement import |
+| --- | --- |
+| `@math.gl/types` | `@math.gl/core/types` |
+| `@math.gl/culling` | `@math.gl/geometry/culling` |
+| `@math.gl/geometry-utils` | `@math.gl/geometry/utils` |
+| `@math.gl/polygon` | `@math.gl/geometry/polygon` |
+| `@math.gl/crs` | `@math.gl/geospatial/crs` |
+| `@math.gl/projection` | `@math.gl/geospatial/projection` |
+| `@math.gl/wkb` | `@math.gl/geospatial/wkb` |
+| `@math.gl/geoarrow` | `@math.gl/geospatial/geoarrow` |
+| `@math.gl/geoid` | `@math.gl/earth/geoid` |
+
+Install the package name before the subpath, such as `@math.gl/geospatial`. Nested entry points move
+with their parent API, for example `@math.gl/geospatial/projection/bulk`. TypeScript consumers need a
+module resolver that reads package exports, such as `bundler`, `node16`, or `nodenext`.
 
 ### Core utility subpaths
 
@@ -104,7 +140,7 @@ subpaths are import paths, not separate npm packages.
 
 **OGC API Tiles matrix discovery**
 
-`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/services/wms/services/ogc-api.md).
+`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/wms/services/ogc-api.md).
 
 **@loaders.gl/zip**
 
@@ -206,19 +242,19 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 
 **@loaders.gl/math**
 
-- The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry-utils`
-  and update imports for GL constants, typed-array, geometry, color, and attribute-compression
+- The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry`
+  and update imports to `@math.gl/geometry/utils` for GL constants, typed-array, geometry, color, and attribute-compression
   utilities.
 
 **CRS and @loaders.gl/wkt**
 
-- Replace `@math.gl/proj4` imports with `@math.gl/projection` and `Proj4Projection` with
-  `Projection`. Import `ReadonlyCRSDefinition` from `@math.gl/crs` instead of the removed
-  `Proj4CRSDefinition` type. loaders.gl now uses math.gl 5.0.0-alpha.12.
+- Replace `@math.gl/proj4` imports with `@math.gl/geospatial/projection` and `Proj4Projection` with
+  `Projection`. Import `ReadonlyCRSDefinition` from `@math.gl/geospatial/crs` instead of the removed
+  `Proj4CRSDefinition` type. loaders.gl now uses math.gl 5.0.0-alpha.19.
 
-- Shared CRS definition types now come from `@math.gl/crs`. Replace new uses of the deprecated
+- Shared CRS definition types now come from `@math.gl/geospatial/crs`. Replace new uses of the deprecated
   `PROJ4CRS` alias with `PROJStringDefinition` and import `CRSIdentifier`, `CRSDefinition`, WKT,
-  PROJ, and PROJJSON types directly from `@math.gl/crs`.
+  PROJ, and PROJJSON types directly from `@math.gl/geospatial/crs`.
 - `WKTCRSLoader` now returns the discriminated, value-preserving `WKTCRSAst`. Code that indexed
   the v4 hybrid nested array/object must traverse `ast.root.values` and discriminate each value by
   its `type` field.
@@ -293,7 +329,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
  - The top-level `gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
 
-**@loaders.gl/json, @loaders.gl/traces, and @loaders.gl/services/wms**
+**@loaders.gl/json, @loaders.gl/traces, and @loaders.gl/wms**
 
 - `NDGeoJSONLoader` now returns Arrow tables by default. Set `geojson.shape: 'object-row-table'`
   to keep complete GeoJSON features as object rows. Its loader ID is now `ndgeojson` rather than
@@ -338,7 +374,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
    temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/core/schema-utils`.
  - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
    longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
-   `@math.gl/crs`.
+   `@math.gl/geospatial/crs`.
  - The parent-level `shapefile.workerUrl` option has been removed. Configure `shp.workerUrl`
    and `dbf.workerUrl` independently.
  - The PMTiles `tileRangeRequest` alias has been removed. Use `rangeRequests`.
@@ -457,7 +493,7 @@ class CustomImageSource
 
 Import these contracts with `import type`; they are no longer runtime constructor values. Concrete
 source classes and operational methods such as `getMetadata()`, `getImage()`, `getRaster()`, and
-`getFeatures()` are unchanged. `@loaders.gl/services/wms` temporarily retains a deprecated structural
+`getFeatures()` are unchanged. `@loaders.gl/wms` temporarily retains a deprecated structural
 `ImageSource` runtime guard for deck.gl 9.x compatibility; it is not a constructor or base class.
 
 ### Arrow loader and writer variant removal
@@ -514,7 +550,7 @@ Before, in 4.4:
 ```ts
 import type {Source} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
-import {WMSSource} from '@loaders.gl/services/wms';
+import {WMSSource} from '@loaders.gl/wms';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 
 const sources: Source[] = [WMSSource, PMTilesSource];
@@ -527,7 +563,7 @@ Now, in v5:
 ```ts
 import type {SourceLoader} from '@loaders.gl/core/loader-utils';
 import {createDataSource, load} from '@loaders.gl/core';
-import {WMSSourceLoader} from '@loaders.gl/services/wms';
+import {WMSSourceLoader} from '@loaders.gl/wms';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
 const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
@@ -743,7 +779,7 @@ Loader module changes, in order of estimated impact to applications:
 
 ## Upgrading to v3.4
 
-**@loaders.gl/services/wms**
+**@loaders.gl/wms**
 
 This module is still marked as experimental and had some breaking changes.
 

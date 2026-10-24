@@ -40,7 +40,7 @@ The loaders.gl converter system is a graph of small, explicit converter objects.
 
 ```ts
 import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
-import {ArrowConverter} from '@loaders.gl/arrow';
+import {ArrowConverter} from '@loaders.gl/tables/arrow';
 import {
   FeatureCollectionConverter,
   GeometryConverter
@@ -82,7 +82,7 @@ const binary = convert(features, 'binary-feature-collection', [FeatureCollection
 | Converter | Package | Direct responsibility |
 | --- | --- | --- |
 | `TableConverter` | `@loaders.gl/core/schema-utils` | loaders.gl table wrappers |
-| `ArrowConverter` | `@loaders.gl/arrow` | Apache Arrow tables and table wrappers |
+| `ArrowConverter` | `@loaders.gl/tables/arrow` | Apache Arrow tables and table wrappers |
 | `GeoArrowTableConverter` | `@loaders.gl/geoarrow` | GeoArrow tables and wrapper/table shapes |
 | `GeoArrowGeometryConverter` | `@loaders.gl/geoarrow` | GeoArrow geometry encoding rewrites |
 | `FeatureCollectionConverter` | `@loaders.gl/geoarrow` | GeoJSON, Flat GeoJSON, binary feature collections |

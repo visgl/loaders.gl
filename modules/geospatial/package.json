@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geospatial",
-  "version": "5.0.0-alpha.12",
+  "version": "5.0.0-alpha.13",
   "description": "Grouped geospatial loaders (package consolidation proof of concept)",
   "license": "MIT",
   "type": "module",
@@ -145,8 +145,9 @@
       "import": "./dist/dbf-worker.js"
     },
     "./kml": {
-      "types": "./dist/kml.d.ts",
-      "import": "./dist/kml.js"
+      "types": "./dist/kml/index.d.ts",
+      "import": "./dist/kml/index.js",
+      "require": "./dist/kml/index.cjs"
     },
     "./gpx": {
       "types": "./dist/gpx.d.ts",
@@ -161,8 +162,9 @@
       "import": "./dist/kmz.js"
     },
     "./shapefile": {
-      "types": "./dist/shapefile.d.ts",
-      "import": "./dist/shapefile.js"
+      "types": "./dist/shapefile/index.d.ts",
+      "import": "./dist/shapefile/index.js",
+      "require": "./dist/shapefile/index.cjs"
     },
     "./shp": {
       "types": "./dist/shp.d.ts",
@@ -206,8 +208,9 @@
       "import": "./dist/flatgeobuf/flatgeobuf-format.js"
     },
     "./flatgeobuf": {
-      "types": "./dist/flatgeobuf.d.ts",
-      "import": "./dist/flatgeobuf.js"
+      "types": "./dist/flatgeobuf/index.d.ts",
+      "import": "./dist/flatgeobuf/index.js",
+      "require": "./dist/flatgeobuf/index.cjs"
     },
     "./flatgeobuf-worker.js": {
       "import": "./dist/flatgeobuf-worker.js"
@@ -242,8 +245,9 @@
       "import": "./dist/geopackage/geopackage-loader-types.js"
     },
     "./geopackage": {
-      "types": "./dist/geopackage.d.ts",
-      "import": "./dist/geopackage.js"
+      "types": "./dist/geopackage/index.d.ts",
+      "import": "./dist/geopackage/index.js",
+      "require": "./dist/geopackage/index.cjs"
     },
     "./geopackage/geopackage-loader-options": {
       "types": "./dist/geopackage/geopackage-loader-options.d.ts",
@@ -263,11 +267,10 @@
     "build-worker-flatgeobuf": "node ../../scripts/build-codec-worker.mjs src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.12",
-    "@loaders.gl/xml": "5.0.0-alpha.12",
-    "@loaders.gl/zip": "5.0.0-alpha.12",
-    "@math.gl/crs": "5.0.0-alpha.18",
-    "@math.gl/projection": "5.0.0-alpha.18",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
+    "@loaders.gl/xml": "5.0.0-alpha.13",
+    "@loaders.gl/zip": "5.0.0-alpha.13",
+    "@math.gl/geospatial": "5.0.0-alpha.19",
     "@types/sql.js": "^1.4.5",
     "apache-arrow": ">= 17.0.0"
   },

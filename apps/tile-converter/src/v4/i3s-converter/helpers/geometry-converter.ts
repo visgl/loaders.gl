@@ -1,12 +1,15 @@
+import {getConversionMaterials} from './conversion-gltf';
+import type {
+  ConversionAccessor,
+  ConversionMaterial,
+  ConversionNode,
+  ConversionPrimitive,
+  ConversionMesh,
+  ConversionTexture
+} from './conversion-gltf';
 /* eslint-disable camelcase */
 import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
 import type {
-  GLTFAccessorPostprocessed,
-  GLTFMaterialPostprocessed,
-  GLTFNodePostprocessed,
-  GLTFMeshPrimitivePostprocessed,
-  GLTFMeshPostprocessed,
-  GLTFTexturePostprocessed,
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_FeatureTable,
   GLTF_EXT_feature_metadata_FeatureTexture,
@@ -48,20 +51,20 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/tiles-3d/i3s';
-import {Geoid} from '@math.gl/geoid';
+import {Geoid} from '@math.gl/earth/geoid';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {GL} from '@math.gl/geometry-utils';
+import {GL} from '@math.gl/geometry/utils';
 
 /*
-  At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/types'.
+  At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/core/types'.
   So the following import is replaced with the local import
-  import type {TypedArrayConstructor} from '@math.gl/types'; 
+  import type {TypedArrayConstructor} from '@math.gl/core/types';
 */
-import type {GLTFAttributesData, TextureImageProperties, TypedArrayConstructor} from '../types';
+import type {GLTFAttributesData, TextureImageProperties} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 
 import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 
@@ -136,7 +139,7 @@ export default async function convertB3dmToI3sGeometry({
 }): Promise<I3SConvertedResources[] | null> {
   const useCartesianPositions = generateBoundingVolumes;
   const materialAndTextureList: I3SMaterialWithTexture[] = await convertMaterials(
-    tileContent.gltf?.materials,
+    tileContent.gltf ? getConversionMaterials(tileContent.gltf) : [],
     shouldMergeMaterials
   );
 
@@ -339,7 +342,10 @@ async function _makeNodeResources({
     compressedGeometry,
     texture,
     hasUvRegions: Boolean(uvRegions.length),
-    sharedResources: getSharedResources(tileContent.gltf?.materials || [], nodeId),
+    sharedResources: getSharedResources(
+      tileContent.gltf ? getConversionMaterials(tileContent.gltf) : [],
+      nodeId
+    ),
     meshMaterial: material,
     vertexCount,
     attributes,
@@ -437,7 +443,7 @@ function convertNodes({
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
   featureTexture
 }: {
-  nodes: GLTFNodePostprocessed[];
+  nodes: ConversionNode[];
   images: (TextureImageProperties | null)[];
   cartographicOrigin: Vector3;
   cartesianModelMatrix: Matrix4;
@@ -468,7 +474,7 @@ function convertNodes({
  * @param node
  * @param matrix
  */
-function getCompositeTransformationMatrix(node: GLTFNodePostprocessed, matrix: Matrix4) {
+function getCompositeTransformationMatrix(node: ConversionNode, matrix: Matrix4) {
   let transformationMatrix = matrix;
 
   const {matrix: nodeMatrix, rotation, scale, translation} = node;
@@ -515,7 +521,7 @@ function convertNode({
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
   featureTexture
 }: {
-  node: GLTFNodePostprocessed;
+  node: ConversionNode;
   images: (TextureImageProperties | null)[];
   cartographicOrigin: Vector3;
   cartesianModelMatrix: Matrix4;
@@ -578,7 +584,7 @@ function convertMeshToTable({
   matrix,
   featureTexture
 }: {
-  mesh: GLTFMeshPostprocessed;
+  mesh: ConversionMesh;
   images: (TextureImageProperties | null)[];
   cartographicOrigin: Vector3;
   cartesianModelMatrix: Matrix4;
@@ -604,7 +610,8 @@ function convertMeshToTable({
     assert(
       primitive.mode === undefined ||
         primitive.mode === GL.TRIANGLES ||
-        primitive.mode === GL.TRIANGLE_STRIP,
+        primitive.mode === GL.TRIANGLE_STRIP ||
+        primitive.mode === GL.TRIANGLE_FAN,
       `Primitive - unsupported mode ${primitive.mode}`
     );
     const attributes = primitive.attributes;
@@ -661,44 +668,32 @@ function convertMeshToTable({
   }
 }
 /**
- * Converts TRIANGLE-STRIPS to independent TRIANGLES
+ * Converts triangle strips and fans to independent triangles
  * @param primitive - the primitive to get the indices from
  * @returns indices of vertices of the independent triangles
  */
-function normalizeIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
-  let indices: TypedArray | undefined = primitive.indices?.value;
-  if (!indices) {
-    const positions = primitive.attributes.POSITION.value;
-    return generateSyntheticIndices(positions.length / VALUES_PER_VERTEX);
+function normalizeIndices(primitive: ConversionPrimitive): TypedArray {
+  const source = primitive.indices?.value;
+  const vertexCount = primitive.attributes.POSITION.value.length / VALUES_PER_VERTEX;
+  const count = source?.length ?? vertexCount;
+  if (primitive.mode !== GL.TRIANGLE_STRIP && primitive.mode !== GL.TRIANGLE_FAN) {
+    return source || generateSyntheticIndices(vertexCount);
   }
-
-  if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
-    /*
-    TRIANGLE_STRIP geometry contains n+2 vertices for n triangles;
-    TRIANGLE geometry contains n*3 vertices for n triangles.
-    The conversion from TRIANGLE_STRIP to TRIANGLE implies duplicating adjacent vertices.
-    */
-    const TypedArrayConstructor = indices.constructor as TypedArrayConstructor;
-    const newIndices = new TypedArrayConstructor((indices.length - 2) * 3);
-
-    // Copy the first triangle indices with no modification like [i0, i1, i2, ...] -> [i0, i1, i2, ...]
-    let triangleIndex = 0;
-    let currentTriangle = indices.slice(0, 3);
-    newIndices.set(currentTriangle, 0);
-
-    // The rest triangle indices are being taken from strips using the following logic:
-    // [i1, i2, i3, i4, i5, i6, ...] -> [i3, i2, i1,   i2, i3, i4,   i5, i4, i3,   i4, i5, i6, ...]
-    for (let i = 1; i + 2 < indices.length; i++) {
-      triangleIndex += 3;
-      currentTriangle = indices.slice(i, i + 3);
-      if (i % 2 === 0) {
-        newIndices.set(currentTriangle, triangleIndex);
-      } else {
-        // The following "reverce" is necessary to calculate normals correctly
-        newIndices.set(currentTriangle.reverse(), triangleIndex);
-      }
-    }
-    indices = newIndices;
+  const indices = new Uint32Array(Math.max(0, count - 2) * 3);
+  for (let triangleIndex = 0; triangleIndex + 2 < count; triangleIndex++) {
+    const first = primitive.mode === GL.TRIANGLE_FAN ? 0 : triangleIndex;
+    const second =
+      primitive.mode === GL.TRIANGLE_FAN
+        ? triangleIndex + 1
+        : triangleIndex + 1 + (triangleIndex % 2);
+    const third =
+      primitive.mode === GL.TRIANGLE_FAN
+        ? triangleIndex + 2
+        : triangleIndex + 2 - (triangleIndex % 2);
+    indices.set(
+      [source?.[first] ?? first, source?.[second] ?? second, source?.[third] ?? third],
+      triangleIndex * 3
+    );
   }
   return indices;
 }
@@ -822,10 +817,7 @@ function flattenTexCoords(texCoords: TypedArray, indices: TypedArray): Float32Ar
  * @param indices - gltf primitive indices
  * @returns flattened colors attribute
  */
-function flattenColors(
-  colorsAttribute: GLTFAccessorPostprocessed,
-  indices: TypedArray
-): Uint8Array {
+function flattenColors(colorsAttribute: ConversionAccessor, indices: TypedArray): Uint8Array {
   const components = colorsAttribute?.components || VALUES_PER_COLOR_ELEMENT;
   const newColors = new Uint8Array(indices.length * components);
   if (!colorsAttribute) {
@@ -888,9 +880,9 @@ function flattenBatchIds(batchedIds: NumberArray, indices: TypedArray): number[]
  */
 function getBatchIds(
   attributes: {
-    [key: string]: GLTFAccessorPostprocessed;
+    [key: string]: ConversionAccessor;
   },
-  primitive: GLTFMeshPrimitivePostprocessed,
+  primitive: ConversionPrimitive,
   images: (TextureImageProperties | null)[],
   featureTexture: string | null
 ): NumberArray {
@@ -926,7 +918,7 @@ function getBatchIds(
  * @returns Array of Couples I3SMaterialDefinition + texture content
  */
 async function convertMaterials(
-  sourceMaterials: GLTFMaterialPostprocessed[] = [],
+  sourceMaterials: ConversionMaterial[] = [],
   shouldMergeMaterials: boolean
 ): Promise<I3SMaterialWithTexture[]> {
   let materials: I3SMaterialWithTexture[] = [];
@@ -1059,7 +1051,7 @@ async function mergeMaterials(
  * @param sourceMaterial - material object
  * @returns I3S material definition and texture
  */
-export function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterialWithTexture {
+export function convertMaterial(sourceMaterial: ConversionMaterial): I3SMaterialWithTexture {
   const material: I3SMaterialDefinition = {
     doubleSided: sourceMaterial.doubleSided,
     emissiveFactor: sourceMaterial.emissiveFactor?.map(c => Math.round(c * 255)) as [
@@ -1092,7 +1084,7 @@ export function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SM
     };
   }
 
-  sourceMaterial.id = Number.isFinite(sourceMaterial.id) ? sourceMaterial.id : randomUUID();
+  sourceMaterial.id ||= randomUUID();
   const mergedMaterials: MergedMaterial[] = [{originalMaterialId: sourceMaterial.id}];
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
@@ -1156,7 +1148,7 @@ function getDefaultMaterial(): I3SMaterialDefinition {
  * 2 arrays in format of i3s sharedResources data https://github.com/Esri/i3s-spec/blob/master/docs/1.7/sharedResource.cmn.md
  */
 function getSharedResources(
-  gltfMaterials: GLTFMaterialPostprocessed[],
+  gltfMaterials: ConversionMaterial[],
   nodeId: number
 ): SharedResourcesArrays {
   const i3sResources: SharedResourcesArrays = {};
@@ -1187,7 +1179,7 @@ function getSharedResources(
  * @returns - Couple {materialDefinitionInfo, textureDefinitionInfo} extracted from gltf material data
  */
 function convertGLTFMaterialToI3sSharedResources(
-  gltfMaterial: GLTFMaterialPostprocessed,
+  gltfMaterial: ConversionMaterial,
   nodeId: number
 ): {
   materialDefinitionInfo: MaterialDefinitionInfo;
@@ -1270,7 +1262,7 @@ function extractSharedResourcesMaterialInfo(
  * @returns texture definition infor for shared resource
  */
 function extractSharedResourcesTextureInfo(
-  texture: GLTFTexturePostprocessed,
+  texture: ConversionTexture,
   nodeId: number
 ): TextureDefinitionInfo {
   return {
@@ -1294,7 +1286,7 @@ function extractSharedResourcesTextureInfo(
  * @param nodeId - I3S node ID
  * @returns calculate image ID according to the spec
  */
-function generateImageId(texture: GLTFTexturePostprocessed, nodeId: number) {
+function generateImageId(texture: ConversionTexture, nodeId: number) {
   const {width, height} = texture.source?.image || {};
   if (!width || !height) {
     return '';
@@ -1797,14 +1789,14 @@ function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
   extension: string | GLTF_EXT_feature_metadata_GLTF | GLTF_EXT_structural_metadata_GLTF | null;
 } {
   const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA];
-  const extensionsUsed = tileContent?.gltf?.extensionsUsed;
+  const extensionsUsed = tileContent?.gltf?.json.extensionsUsed;
 
   if (!extensionsUsed) {
     return {extensionName: null, extension: null};
   }
 
   let extensionName: string = '';
-  for (const extensionItem of tileContent?.gltf?.extensionsUsed || []) {
+  for (const extensionItem of tileContent?.gltf?.json.extensionsUsed || []) {
     if (extensionsWithPropertyTables.includes(extensionItem)) {
       extensionName = extensionItem;
       /*
@@ -1821,7 +1813,7 @@ function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
     return {extensionName: null, extension: null};
   }
 
-  const extension = tileContent?.gltf?.extensions?.[extensionName] as
+  const extension = tileContent?.gltf?.json.extensions?.[extensionName] as
     | string // EXT_mesh_features doesn't have global metadata
     | GLTF_EXT_feature_metadata_GLTF
     | GLTF_EXT_structural_metadata_GLTF;

@@ -79,7 +79,7 @@ type ParquetDatasetDiscoverySummary = {
  * Multi-file Parquet source that composes catalog discovery with selective `ParquetSource` reads.
  *
  * The source accepts static descriptors or a lazy provider, allowing STAC and other catalogs to be
- * injected without coupling `@loaders.gl/parquet` to a catalog protocol.
+ * injected without coupling `@loaders.gl/tables/parquet` to a catalog protocol.
  */
 export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredicate> {
   /** Common projection, predicate, limit, streaming, and cancellation capabilities. */

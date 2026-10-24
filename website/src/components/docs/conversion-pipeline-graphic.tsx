@@ -13,15 +13,15 @@ type ConversionPipelineNode = {
 };
 
 const INPUTS: readonly ConversionPipelineNode[] = [
-  {label: 'CSV / JSONL', detail: 'records and streams', to: '/docs/modules/csv/formats/csv'},
-  {label: 'GeoJSON', detail: 'features and geometry', to: '/docs/modules/json/formats/geojson'},
-  {label: 'Parquet', detail: 'columns and row groups', to: '/docs/modules/parquet/formats/parquet'},
+  {label: 'CSV / JSONL', detail: 'records and streams', to: '/docs/modules/tables/csv/formats/csv'},
+  {label: 'GeoJSON', detail: 'features and geometry', to: '/docs/modules/tables/json/formats/geojson'},
+  {label: 'Parquet', detail: 'columns and row groups', to: '/docs/modules/tables/parquet/formats/parquet'},
   {label: 'glTF / GLB', detail: 'scenes and meshes', to: '/docs/modules/gltf/formats/gltf'}
 ];
 
 const OUTPUTS: readonly ConversionPipelineNode[] = [
-  {label: 'Arrow IPC', detail: 'typed batches', to: '/docs/modules/arrow/formats/arrow'},
-  {label: 'GeoParquet', detail: 'columnar geospatial data', to: '/docs/modules/parquet/formats/geoparquet'},
+  {label: 'Arrow IPC', detail: 'typed batches', to: '/docs/modules/tables/arrow/formats/arrow'},
+  {label: 'GeoParquet', detail: 'columnar geospatial data', to: '/docs/modules/tables/parquet/formats/geoparquet'},
   {label: 'LAS / LAZ', detail: 'point cloud data', to: '/docs/modules/las/formats/las'},
   {label: 'glTF / GLB', detail: 'portable scene assets', to: '/docs/modules/gltf/formats/gltf'}
 ];

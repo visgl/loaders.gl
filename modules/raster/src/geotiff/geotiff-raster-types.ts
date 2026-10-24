@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions, TypedArray} from '@loaders.gl/core/loader-utils';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 
 /** One original sample band, with no color conversion, resampling or scale/offset applied. */
 export type GeoTIFFRasterBand = {

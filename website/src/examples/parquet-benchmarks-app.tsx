@@ -78,7 +78,7 @@ type ParquetBenchmarkImplementationHeader = {
   version?: string;
 };
 
-/** Exact parquet-wasm package version pinned by @loaders.gl/parquet. */
+/** Exact parquet-wasm package version pinned by @loaders.gl/tables/parquet. */
 const PARQUET_WASM_VERSION = '0.7.2';
 
 /** Exact hyparquet package version pinned by the website benchmark. */
@@ -366,31 +366,31 @@ async function runBenchmarkPhase<Result>(
 /** Fetches the representative fixtures used by the live benchmark suite. */
 async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenario[]> {
   const geoParquetUrl = new URL(
-    '../../../modules/parquet/test/data/geoparquet/airports.parquet',
+    '../../../modules/tables/test/parquet/data/geoparquet/airports.parquet',
     import.meta.url
   ).toString();
   const lz4Url = new URL(
-    '../../../modules/parquet/test/data/apache/good/lz4_raw_compressed_larger.parquet',
+    '../../../modules/tables/test/parquet/data/apache/good/lz4_raw_compressed_larger.parquet',
     import.meta.url
   ).toString();
   const legacyLz4Url = new URL(
-    '../../../modules/parquet/test/data/apache/good/hadoop_lz4_compressed_larger.parquet',
+    '../../../modules/tables/test/parquet/data/apache/good/hadoop_lz4_compressed_larger.parquet',
     import.meta.url
   ).toString();
   const deltaByteArrayUrl = new URL(
-    '../../../modules/parquet/test/data/apache/good/delta_byte_array.parquet',
+    '../../../modules/tables/test/parquet/data/apache/good/delta_byte_array.parquet',
     import.meta.url
   ).toString();
   const deltaBinaryPackedUrl = new URL(
-    '../../../modules/parquet/test/data/apache/good/delta_binary_packed.parquet',
+    '../../../modules/tables/test/parquet/data/apache/good/delta_binary_packed.parquet',
     import.meta.url
   ).toString();
   const dictionaryUrl = new URL(
-    '../../../modules/parquet/test/data/benchmark-dictionary.parquet',
+    '../../../modules/tables/test/parquet/data/benchmark-dictionary.parquet',
     import.meta.url
   ).toString();
   const fruitsUrl = new URL(
-    '../../../modules/parquet/test/data/fruits.parquet',
+    '../../../modules/tables/test/parquet/data/fruits.parquet',
     import.meta.url
   ).toString();
   const [

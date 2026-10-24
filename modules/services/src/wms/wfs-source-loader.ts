@@ -24,7 +24,7 @@ import type {GMLLoaderOptions} from './gml-loader-types';
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 import {parseGML} from './lib/parsers/gml/parse-gml';
 import type {GMLFeatureCollection, GMLPropertyType} from './lib/parsers/gml/parse-gml';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 import {getServiceCRSAxisOrder, normalizeServiceCRS} from './crs-utils';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {

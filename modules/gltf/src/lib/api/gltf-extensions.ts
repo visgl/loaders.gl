@@ -65,9 +65,12 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   // KHR_binary_gltf,
 
   // 2.0
-  // Compression must be decoded before metadata consumes buffer-view values.
+  // Decode compression before metadata and feature extensions: meshopt populates buffer
+  // views, while Draco replaces compressed attribute references with decoded accessors
+  // consumed by EXT_mesh_features.
   KHR_meshopt_compression,
   EXT_meshopt_compression,
+  KHR_draco_mesh_compression,
   EXT_structural_metadata,
   EXT_mesh_features,
   KHR_gaussian_splatting,
@@ -80,7 +83,6 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   EXT_texture_webp,
   // Basisu should come after webp, we want basisu to be preferred if both are provided
   KHR_texture_basisu,
-  KHR_draco_mesh_compression,
   KHR_lights_punctual,
   KHR_materials_unlit,
   KHR_techniques_webgl,
@@ -109,8 +111,8 @@ export async function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}
 export async function decodeExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
   const extensions = EXTENSIONS.filter(extension => useExtension(extension.name, options));
   for (const extension of extensions) {
-    // Note: We decode async extensions sequentially, this might not be necessary
-    // Currently we only have Draco, but when we add Basis we may revisit
+    // Await each decoder in EXTENSIONS order: later extensions consume buffers and
+    // accessors populated by earlier decoders.
     await extension.decode?.(gltf, options, context);
   }
 }

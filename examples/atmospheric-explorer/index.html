@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atmospheric Explorer</title>
+<style>
+  body {margin:0;background:#0d1724;color:#e7eef8;font:14px system-ui}
+  main {display:grid;grid-template-columns:340px minmax(0,1fr);height:100vh}
+  aside {padding:18px;overflow:auto;border-right:1px solid #334155}
+  h1 {font-size:20px}
+  label {display:block;margin:14px 0 5px}
+  input,textarea {box-sizing:border-box;width:100%;padding:9px;background:#15283c;color:#e7eef8;border:1px solid #536479;border-radius:5px}
+  textarea {height:250px;font:12px monospace}
+  button {padding:9px 14px;cursor:pointer}
+  #load {margin-top:14px}
+  #map {position:relative;min-height:500px}
+  #legend {margin-top:14px}
+  a {color:#a9d8ff}
+  #panels {position:relative;min-height:40px;margin-top:18px}
+  #panels a {color:#a9d8ff}
+  #panels .loaders-example-info-content {font-size:12px;line-height:1.55;max-height:320px;overflow:auto;padding:4px 8px}
+  #panels .loaders-example-info-content h3 {font-size:13px;margin:14px 0 6px}
+  #panels .loaders-example-info-content p {margin:8px 0}
+  @media(max-width:700px) {main {grid-template-columns:1fr;grid-template-rows:auto minmax(450px,1fr);height:auto;min-height:100vh}aside {border-right:0;border-bottom:1px solid #334155}}
+</style>
+</head>
+<body>
+<main>
+  <aside>
+    <h1>Atmospheric Explorer</h1>
+    <p>ECMWF IFS analysis · loaders.gl + deck.gl</p>
+    <label for="root">HTTP Zarr / Icechunk root URL</label>
+    <input id="root" placeholder="https://…/dataset">
+    <label for="config">Array, dimension selection and Gaussian grid JSON</label>
+    <textarea id="config" spellcheck="false"></textarea>
+    <button id="load">Load field</button>
+    <p id="status" role="status">Configure a publicly accessible scientific data store.</p>
+    <div id="legend"></div>
+    <div id="panels" aria-label="Dataset information"></div>
+  </aside>
+  <div id="map"></div>
+</main>
+
+<script type="module" src="/app.ts"></script>
+
+</body>
+</html>

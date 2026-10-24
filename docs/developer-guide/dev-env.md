@@ -91,7 +91,7 @@ Chromium does not require the old Xvfb-based test setup.
 ### Website development workers
 
 The website development server can run the Parquet source worker directly from
-`modules/parquet/src/workers/parquet-source-worker.ts`. You do not need to run
+`modules/tables/src/parquet/workers/parquet-source-worker.ts`. You do not need to run
 `yarn build-workers` before `cd website && yarn start`; the website-only
 development webpack configuration supplies a module-worker URL for that source
 file and watches it for changes. Editing the worker invalidates the development

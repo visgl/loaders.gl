@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Geoid, parsePGM} from '@math.gl/geoid';
-import {FullProjectionEngine, parseNTv2Grid} from '@math.gl/projection';
-import type {DatumGrid, ProjectionEngine} from '@math.gl/projection';
-import type {ReadonlyCRSDefinition} from '@math.gl/crs';
+import {Geoid, parsePGM} from '@math.gl/earth/geoid';
+import {FullProjectionEngine, parseNTv2Grid} from '@math.gl/geospatial/projection';
+import type {DatumGrid, ProjectionEngine} from '@math.gl/geospatial/projection';
+import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
 
 const geoidModels = new Map<string, Geoid>();
 const projectionAliases: Record<string, ReadonlyCRSDefinition> = {};
@@ -23,7 +23,7 @@ export function getSpatialProjectionEngine(): ProjectionEngine {
  * loaders.gl never downloads registry definitions implicitly.
  *
  * @param name - Identifier used by dataset metadata or application options.
- * @param definition - CRS definition understood by `@math.gl/projection`.
+ * @param definition - CRS definition understood by `@math.gl/geospatial/projection`.
  */
 export function registerSpatialCrs(name: string, definition: ReadonlyCRSDefinition): void {
   validateResourceName(name, 'CRS');
@@ -47,7 +47,7 @@ export function registerSpatialDatumGrid(name: string, data: ArrayBuffer): void 
  * Registers an already parsed geoid model.
  *
  * @param name - Stable application-local model name.
- * @param geoid - Parsed `@math.gl/geoid` model.
+ * @param geoid - Parsed `@math.gl/earth/geoid` model.
  */
 export function registerGeoidModel(name: string, geoid: Geoid): void {
   validateResourceName(name, 'geoid model');
@@ -59,7 +59,7 @@ export function registerGeoidModel(name: string, geoid: Geoid): void {
  *
  * @param name - Stable application-local model name.
  * @param data - Complete PGM model bytes.
- * @param options - Interpolation options forwarded to `@math.gl/geoid`.
+ * @param options - Interpolation options forwarded to `@math.gl/earth/geoid`.
  * @returns The parsed and registered geoid model.
  */
 export function registerGeoidModelFromPgm(

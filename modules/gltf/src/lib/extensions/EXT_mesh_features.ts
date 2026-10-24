@@ -92,13 +92,14 @@ function processMeshPrimitiveFeatures(
 
     // Process "Feature ID by Index"
     else {
-      /*
-      When both featureId.attribute and featureId.texture are undefined,
-      then the feature ID value for each vertex is given implicitly, via the index of the vertex.
-      In this case, the featureCount must match the number of vertices of the mesh primitive.
-      */
-      const positionAccessorIndex = primitive.attributes.POSITION;
-      const vertexCount = iterator.data.accessors?.[positionAccessorIndex]?.count;
+      // When both featureId.attribute and featureId.texture are undefined,
+      // then the feature ID value for each vertex is given implicitly, via the index of the vertex.
+      // In this case, the featureCount must match the number of vertices of the mesh primitive.
+      const positionAccessor = primitive.attributes.POSITION;
+      const vertexCount =
+        typeof positionAccessor === 'number'
+          ? iterator.data.accessors?.[positionAccessor]?.count
+          : (positionAccessor as {count?: number} | undefined)?.count;
       if (typeof vertexCount !== 'number' || !Number.isInteger(vertexCount) || vertexCount < 0) {
         throw new Error('EXT_mesh_features: implicit feature IDs require a POSITION accessor');
       }
@@ -202,12 +203,6 @@ function encodeExtMeshFeaturesForPrimitive(
         propertyTable: featureId.propertyTable,
         attribute: index
       };
-
-      scenegraph.gltf.buffers.push({
-        arrayBuffer: typedArray.buffer,
-        byteOffset: typedArray.byteOffset,
-        byteLength: typedArray.byteLength
-      });
 
       const bufferViewIndex = scenegraph.addBufferView(typedArray);
       const accessorIndex = scenegraph.addAccessor(bufferViewIndex, {

@@ -101,12 +101,13 @@
   "resolutions_notes": [
     "Ensure we use recent typescript",
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
-    "apache-arrow version should be aligned with parquet-wasm version",
+    "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5"
   ],
   "resolutions": {
-    "apache-arrow": "^21.2.0",
+    "apache-arrow@npm:>= 17.0.0": "^21.2.0",
+    "apache-arrow@npm:>=17.0.0": "^21.2.0",
     "typescript": "^6.0.3",
     "playwright": "1.59.1",
     "@loaders.gl/tiles-3d": "^5.0.0-alpha.0",
@@ -114,7 +115,6 @@
     "@loaders.gl/core": "^5.0.0-alpha.0",
     "@loaders.gl/crypto": "^5.0.0-alpha.0",
     "@loaders.gl/draco": "^5.0.0-alpha.0",
-    "@loaders.gl/geopackage": "^5.0.0-alpha.0",
     "@loaders.gl/gltf": "^5.0.0-alpha.0",
     "@loaders.gl/images": "^5.0.0-alpha.0",
     "@loaders.gl/las": "^5.0.0-alpha.0",
@@ -127,11 +127,12 @@
     "@loaders.gl/scene": "^5.0.0-alpha.0",
     "@loaders.gl/textures": "^5.0.0-alpha.0",
     "@loaders.gl/traces": "^5.0.0-alpha.0",
+    "@loaders.gl/wms": "^5.0.0-alpha.0",
     "@loaders.gl/zip": "^5.0.0-alpha.0",
     "@deck.gl/arcgis@npm:9.4.0": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch",
     "@vitest/browser": "5.0.2",
     "@vitest/browser-playwright": "5.0.2",
     "@loaders.gl/raster": "^5.0.0-alpha.0",
-    "@loaders.gl/services": "^5.0.0-alpha.0"
+    "@loaders.gl/geospatial": "^5.0.0-alpha.0"
   }
 }

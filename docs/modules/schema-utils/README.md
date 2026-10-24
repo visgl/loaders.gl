@@ -62,5 +62,5 @@ and record batches. The receiving runtime must use a compatible Apache Arrow ver
 provide matching loaders.gl worker hooks. The subpath also exports IPC serialization
 helpers and transport types.
 
-The existing `@loaders.gl/arrow/transport` API forwards to this implementation.
+The existing `@loaders.gl/tables/arrow/transport` API forwards to this implementation.
 Importing schema-utils transport avoids a dependency on the grouped table format engines.

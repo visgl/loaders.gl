@@ -19,7 +19,7 @@ import {
   convertTableToMesh,
   deduceMeshSchema
 } from '@loaders.gl/core/schema-utils';
-import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {validateArrowTableSchema} from '@loaders.gl/tables/arrow/index';
 test('convertMeshToTable preserves empty vector and scalar attribute schemas', () => {
   const attributes = {
     POSITION: {value: new Float32Array(0), size: 3},

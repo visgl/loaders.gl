@@ -4,7 +4,7 @@
 
 // TODO - can we import from schema?
 import type {ImageType} from './utils/image-type';
-import type {CRSIdentifier} from '@math.gl/crs';
+import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 // TODO - remove (this breaks WMS layer)
 
 /**

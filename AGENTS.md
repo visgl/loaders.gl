@@ -92,10 +92,10 @@
 
 ## Loader module structure
 
-- Use `modules/csv` as the reference shape for loader modules that want a lightweight root import and an implementation subpath.
+- Use `modules/tables/src/csv` as the reference shape for loader modules that want a lightweight root import and an implementation subpath.
 - The package root `src/index.ts` should export metadata-only loaders, deprecated `*WorkerLoader` aliases if needed for compatibility, writers, and shared public types/options. It should not export `*WithParser` loaders.
 - Each public metadata loader should live in its own `*-loader-types.ts` file. That file should contain the loader metadata, options, default values, and an optional `preload()` function, but no `parse`, `parseSync`, `parseText`, or `parseInBatches` methods.
-- `preload()` should use a static package-subpath import such as `await import('@loaders.gl/csv/csv-loader')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers.
+- `preload()` should use a static package-subpath import such as `await import('@loaders.gl/tables/csv/csv-loader')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers.
 - Each parser-bearing loader should live in its own `*-loader.ts` file and export only the `*WithParser` loader. Keep parser logic out of the metadata file.
 - Move shared constants, option defaults, and types needed by both metadata and parser files into neutral shared files to avoid cycles.
 - Keep writer entry points unchanged unless the package is intentionally splitting them as well.

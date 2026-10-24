@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {I3STileContent, I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
-import type {GLTFMaterialPostprocessed} from '@loaders.gl/gltf';
+import type {GLTFMaterial, GLTFWithBuffers} from '@loaders.gl/gltf';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshTilesetSourceOptions} from './mesh-source.js';
@@ -18,6 +18,7 @@ export async function mapI3SMeshSourceMaterial(
   contentUri: string | undefined,
   signal?: AbortSignal
 ): Promise<MeshTileMaterial | undefined> {
+  const gltf: GLTFWithBuffers = {json: {asset: {version: '2.0'}}, buffers: []};
   const material = Object.fromEntries(
     Object.entries(content.material || {}).filter(([, value]) => value !== undefined)
   );
@@ -114,6 +115,7 @@ export async function mapI3SMeshSourceMaterial(
     }
     const declaredFormat = resources[0]?.textureFormat;
     if (
+      !(data instanceof Uint8Array) ||
       !image ||
       !['image/png', 'image/jpeg'].includes(image.mimeType) ||
       (declaredFormat &&
@@ -133,19 +135,24 @@ export async function mapI3SMeshSourceMaterial(
         .filter(name => textureInfo![name] !== undefined)
         .map(name => [name, wrappingModes[textureInfo![name] as string]])
     );
-    metallicRoughness.baseColorTexture = {
-      texCoord: 0,
-      texture: {
-        source: {mimeType: image.mimeType, bufferView: {data}},
-        ...(Object.keys(sampler).length ? {sampler} : {})
-      }
-    };
+    gltf.buffers.push({
+      arrayBuffer: data.buffer as ArrayBuffer,
+      byteOffset: data.byteOffset,
+      byteLength: data.byteLength
+    });
+    gltf.json.buffers = [{byteLength: data.byteLength}];
+    gltf.json.bufferViews = [{buffer: 0, byteLength: data.byteLength}];
+    gltf.json.images = [{mimeType: image.mimeType, bufferView: 0}];
+    gltf.json.samplers = [sampler];
+    gltf.json.textures = [{source: 0, sampler: 0}];
+    metallicRoughness.baseColorTexture = {texCoord: 0, index: 0};
   }
   const mapped = await mapMeshSourceMaterial(
-    material as GLTFMaterialPostprocessed,
+    material as GLTFMaterial,
     undefined,
     contentUri,
-    signal
+    signal,
+    gltf
   );
   if (mapped?.baseColorTexture && !content.sourceAttributes?.uv0) {
     throw new TileConversionError(

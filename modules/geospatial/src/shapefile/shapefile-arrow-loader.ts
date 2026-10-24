@@ -24,8 +24,8 @@ import {
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
 } from '@loaders.gl/arrow-geometry/geometry-field';
-import {projectionEngine} from '@math.gl/projection';
-import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/crs';
+import {projectionEngine} from '@math.gl/geospatial/projection';
+import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/geospatial/crs';
 import {SHPLoaderWithParser} from './shp-loader';
 import {DBFLoaderWithParser} from './dbf-loader';
 import type {ShapefileLoaderOptions} from './shapefile-loader-types';

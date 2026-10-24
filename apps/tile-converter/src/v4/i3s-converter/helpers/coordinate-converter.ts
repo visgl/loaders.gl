@@ -7,8 +7,8 @@ import {
   makeOrientedBoundingBoxFromPoints,
   makeBoundingSphereFromPoints,
   BoundingSphere
-} from '@math.gl/culling';
-import {Geoid} from '@math.gl/geoid';
+} from '@math.gl/geometry/culling';
+import {Geoid} from '@math.gl/earth/geoid';
 
 /**
  * Create bounding volumes object from tile and geoid height model.

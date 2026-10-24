@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable indent */
-import {earcut} from '@math.gl/polygon';
+import {earcut} from '@math.gl/geometry/polygon';
 import type {
   BinaryAttribute,
   BinaryFeatureCollection,

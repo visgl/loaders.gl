@@ -22,7 +22,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
 import {convertArrowToSchema, queryArrowTable} from '@loaders.gl/core/schema-utils';
-import type {WKTCRSDefinition} from '@math.gl/crs';
+import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
 
 import type {GeoPackageLoaderOptions} from './geopackage-loader-types';
 import {

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Vector3} from '@math.gl/core';
-import type {Plane} from '@math.gl/culling';
+import type {Plane} from '@math.gl/geometry/culling';
 
 export type BoundingRectangle = {
   width: number;

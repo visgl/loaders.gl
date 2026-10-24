@@ -19,7 +19,7 @@ import {TraceTableGraphic} from '@site/src/components/docs/trace-table-graphic';
   tone="cyan"
   meta={['Chrome Trace', 'Perfetto', 'OTLP / Jaeger / Zipkin']}
   links={[
-    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'Arrow format', to: '/docs/modules/tables/arrow/formats/arrow'},
     {label: 'Perfetto format', to: '/docs/modules/traces/formats/perfetto-trace'}
   ]}
 />

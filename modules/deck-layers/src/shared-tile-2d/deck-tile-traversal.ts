@@ -8,7 +8,7 @@ import {
   Plane,
   AxisAlignedBoundingBox,
   makeOrientedBoundingBoxFromPoints
-} from '@math.gl/culling';
+} from '@math.gl/geometry/culling';
 import {lngLatToWorld} from '@math.gl/web-mercator';
 import type {Bounds, TileIndex, ZRange} from '@loaders.gl/tiles';
 

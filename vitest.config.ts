@@ -57,7 +57,7 @@ const createHeadlessBrowser = () => ({
 });
 const coverageConfig = loadCoverageConfig();
 
-export default getVitestConfig({
+const vitestConfiguration = getVitestConfig({
   excludePatterns,
   launchOptions: {
     args: browserLaunchArguments
@@ -83,20 +83,19 @@ export default getVitestConfig({
         '@mapbox/martini',
         '@maplibre/mlt',
         '@math.gl/core',
-        '@math.gl/culling',
+        '@math.gl/geometry/culling',
         '@math.gl/geospatial',
-        '@math.gl/geometry-utils',
-        '@math.gl/polygon',
-        '@math.gl/projection',
-        '@math.gl/types',
+        '@math.gl/geometry/utils',
+        '@math.gl/geometry/polygon',
+        '@math.gl/geospatial/projection',
+        '@math.gl/core/types',
         '@math.gl/web-mercator',
         'probe.gl/env',
         'probe.gl/log',
         'probe.gl/stats',
-        '@repeaterjs/repeater',
-        '@tmcw/togeojson',
+
         '@turf/rewind',
-        '@xmldom/xmldom',
+
         'apache-arrow',
         'apache-arrow/type',
         'brotli/decompress',
@@ -112,12 +111,12 @@ export default getVitestConfig({
         'get-pixels',
         // The validator's compiled Dart CommonJS runtime requires browser prebundling.
         'gltf-validator',
-        'jszip',
+
         'lerc',
         'long',
         'lz4js',
         'ndarray',
-        'node-int64',
+
         'pako',
         'parquet-wasm/esm/parquet_wasm.js',
         'pbf',
@@ -128,10 +127,10 @@ export default getVitestConfig({
         'pmtiles',
         'styled-components',
         'save-pixels',
-        'slice-source',
+
         'snappyjs',
         'sql.js',
-        'thrift',
+
         'vitest',
         'web-streams-polyfill',
         'xlsx',
@@ -289,6 +288,15 @@ export default getVitestConfig({
     excludeAfterRemap: true
   }
 });
+
+// TypeScript declaration mappings are compile-time only; Vite must resolve the runtime package.
+if (Array.isArray(vitestConfiguration.resolve?.alias)) {
+  vitestConfiguration.resolve.alias = vitestConfiguration.resolve.alias.filter(
+    alias => !alias.replacement.endsWith('.d.ts')
+  );
+}
+
+export default vitestConfiguration;
 
 /** Serves repository fixtures and built workers without Vite transforms or HTML fallback. */
 function serveLocalTestAssetsPlugin(repositoryRoot: string) {

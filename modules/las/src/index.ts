@@ -17,6 +17,7 @@ export type {
   LASGeoTIFFKeyDirectory,
   LASHeader,
   LASMetadata,
+  LASMesh,
   LASVariableLengthRecord,
   LASWaveformPacketDescriptor
 } from './lib/las-types';

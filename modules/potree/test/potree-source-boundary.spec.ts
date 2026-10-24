@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {PotreeNodesSource} from '../src/lib/potree-node-source';
-import {projectionEngine} from '@math.gl/projection';
+import {projectionEngine} from '@math.gl/geospatial/projection';
 
 class TestPotreeSource extends PotreeNodesSource {
   override async initialize(): Promise<void> {}

@@ -107,7 +107,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     Countries: {
       sourceType: 'table',
       data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson',
-      // data: `${LOADERS_URL}/modules/flatgeobuf/test/data/countries.json`,
+      // data: `${LOADERS_URL}/modules/geospatial/test/flatgeobuf/data/countries.json`,
       viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   }

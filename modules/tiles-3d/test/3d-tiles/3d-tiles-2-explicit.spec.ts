@@ -1,3 +1,4 @@
+import {getGLTFAccessorValue} from '@loaders.gl/gltf';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
@@ -232,9 +233,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       primitives: [{type: 'points', meshIndex: 0, primitiveIndex: 0, pointCount: 1}]
     });
     expect(tileset.root!.vectorContent).toBe(tileset.root!.content.vectorContent);
-    expect(tileset.root!.content.gltf.meshes[0].primitives[0].attributes.POSITION.value).toEqual(
-      new Float32Array([1, 2, 3])
-    );
+    expect(
+      getGLTFAccessorValue(
+        tileset.root!.content.gltf,
+        tileset.root!.content.gltf.json.meshes[0].primitives[0].attributes.POSITION
+      )
+    ).toEqual(new Float32Array([1, 2, 3]));
 
     tileset.root!.unloadContent();
     await tileset.root!.loadContent();
@@ -242,9 +246,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       clip: true,
       primitives: [{type: 'points', pointCount: 1}]
     });
-    expect(tileset.root!.content.gltf.meshes[0].primitives[0].attributes.POSITION.value).toEqual(
-      new Float32Array([1, 2, 3])
-    );
+    expect(
+      getGLTFAccessorValue(
+        tileset.root!.content.gltf,
+        tileset.root!.content.gltf.json.meshes[0].primitives[0].attributes.POSITION
+      )
+    ).toEqual(new Float32Array([1, 2, 3]));
   });
 
   test('resolves URI-backed files inherited by an embedded nested tileset', async () => {
@@ -1361,12 +1368,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     const primitive = {
       mode: 4,
       attributes: {},
-      indices: {count: 3},
+      indices: 0,
       extensions: {EXT_mesh_polygon: {count: 1, data: topology}}
     };
 
     const vectorContent = parse3DTileVectorContent(
-      {meshes: [{primitives: [primitive]}]} as never,
+      {json: {asset: {version: '2.0'}, meshes: [{primitives: [primitive]}]}, buffers: []} as never,
       true
     );
 

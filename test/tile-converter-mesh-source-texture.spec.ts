@@ -4,8 +4,8 @@
 
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
-import {mapMeshSourceTexture} from '../apps/tile-converter/src/v5/mesh-source-texture';
+import {GLTFLoader} from '@loaders.gl/gltf';
+import {mapMeshSourceTexture as mapRawMeshSourceTexture} from '../apps/tile-converter/src/v5/mesh-source-texture';
 import {
   createTexturedTriangle,
   createImageDataUri,
@@ -22,19 +22,40 @@ beforeAll(async () => {
       await fetchFile(new URL('./data/tile-converter-texture.png', import.meta.url).href)
     ).arrayBuffer()
   );
-  const gltf = postProcessGLTF(
-    await parse(createTexturedTriangle(imageBytes, 'image/png'), GLTFLoader, {
-      worker: false,
-      gltf: {loadImages: false}
-    })
-  );
-  textureInfo = gltf.meshes[0].primitives[0].material!.pbrMetallicRoughness!.baseColorTexture;
+  const gltf = await parse(createTexturedTriangle(imageBytes, 'image/png'), GLTFLoader, {
+    worker: false,
+    gltf: {loadImages: false}
+  });
+  const material = gltf.json.materials![gltf.json.meshes![0].primitives[0].material!];
+  const info = material.pbrMetallicRoughness!.baseColorTexture!;
+  const texture = gltf.json.textures![info.index];
+  const image = gltf.json.images![texture.source!];
+  const view = gltf.json.bufferViews![image.bufferView!];
+  const buffer = gltf.buffers[view.buffer];
+  textureInfo = {
+    ...info,
+    texture: {
+      ...texture,
+      sampler: gltf.json.samplers![texture.sampler!],
+      source: {
+        ...image,
+        bufferView: {
+          ...view,
+          data: new Uint8Array(
+            buffer.arrayBuffer,
+            buffer.byteOffset + (view.byteOffset || 0),
+            view.byteLength
+          )
+        }
+      }
+    }
+  };
 });
 
 test('source texture mapping retains encoded subviews and sampling without modifying input', () => {
   const before = structuredClone(textureInfo);
   const texture = mapMeshSourceTexture(textureInfo);
-  expect(texture.data).toBe(textureInfo.texture.source.bufferView.data);
+  expect(texture.data.buffer).toBe(textureInfo.texture.source.bufferView.data.buffer);
   expect(texture.data.byteOffset).toBeGreaterThan(0);
   expect(texture.data).toEqual(imageBytes);
   expect(texture.mimeType).toBe('image/png');
@@ -239,3 +260,33 @@ test.each([
     expect.objectContaining({code: 'MESH_SOURCE_TEXTURE_UNSUPPORTED'})
   );
 });
+
+/** Author raw indexed JSON from a texture test descriptor, preserving malformed fields for validation. */
+function mapMeshSourceTexture(info: any) {
+  if (!info) return mapRawMeshSourceTexture({json: {asset: {version: '2.0'}}, buffers: []}, info);
+  const {texture, ...textureInfo} = info;
+  const {source, sampler, ...textureData} = texture || {};
+  const {bufferView, ...imageData} = source || {};
+  const data = bufferView?.data;
+  const {data: ignored, ...viewData} = bufferView || {};
+  return mapRawMeshSourceTexture(
+    {
+      json: {
+        asset: {version: '2.0'},
+        textures: texture
+          ? [{...textureData, source: source ? 0 : undefined, sampler: sampler ? 0 : undefined}]
+          : [],
+        images: source ? [{...imageData, bufferView: bufferView ? 0 : undefined}] : [],
+        samplers: sampler ? [sampler] : [],
+        bufferViews:
+          bufferView && data instanceof Uint8Array
+            ? [{...viewData, buffer: 0, byteLength: data?.byteLength || 0}]
+            : []
+      },
+      buffers: data
+        ? [{arrayBuffer: data.buffer, byteOffset: data.byteOffset, byteLength: data.byteLength}]
+        : []
+    },
+    textureInfo
+  );
+}
