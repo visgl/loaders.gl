@@ -1,7 +1,12 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {BoundingSphere} from '@math.gl/geometry/culling';
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
 import {load} from '@loaders.gl/core';
+import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   calculateTransformProps,
@@ -10,227 +15,44 @@ import {
 import {areNumberArraysEqual} from '../../utils/compareArrays';
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
-test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent without images', async () => {
-  const tileContent = {
-    gltf: {
-      materials: [{id: 'one', alphaMode: 'OPAQUE'}],
-      scene: {
-        id: 'scene-one',
-        nodes: [
-          {
-            id: 'node-one',
-            name: 'nodeName',
-            mesh: {
-              primitives: [
-                {
-                  attributes: {
-                    _BATCHID: {
-                      id: 'accessor-1',
-                      value: new Float32Array([1, 2, 3]),
-                      bufferView: {buffer: {arrayBuffer: new ArrayBuffer(1)}}
-                    },
-                    NORMAL: {
-                      id: 'accessor-2',
-                      value: new Float32Array([4, 5, 6]),
-                      bufferView: {buffer: {arrayBuffer: new ArrayBuffer(2)}}
-                    },
-                    POSITION: {
-                      id: 'accessor-3',
-                      value: new Float32Array([7, 8, 9]),
-                      bufferView: {buffer: {arrayBuffer: new ArrayBuffer(3)}}
-                    }
-                  },
-                  indices: {
-                    id: 'accessor-4',
-                    value: new Uint16Array([1, 2, 3, 4, 5]),
-                    bufferView: {buffer: {arrayBuffer: new ArrayBuffer(4)}}
-                  },
-                  material: {
-                    id: 'material-0',
-                    alphaMode: 'OPAQUE'
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    }
-  };
-  const expectedResult = {
-    nodes: [
-      {
-        id: 'node-one',
-        name: 'nodeName',
-        mesh: {
-          primitives: [
-            {
-              attributes: {
-                _BATCHID: {value: new Float32Array([1, 2, 3])},
-                NORMAL: {value: new Float32Array([4, 5, 6])},
-                POSITION: {value: new Float32Array([7, 8, 9])}
-              },
-              indices: {
-                value: new Uint16Array([1, 2, 3, 4, 5])
-              },
-              material: {id: 'material-0'}
-            }
-          ]
-        }
-      }
-    ],
-    images: [],
-    cartographicOrigin: [8.676496951388435, 50.108416671362576, 189.47502169783516],
-    cartesianModelMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-  };
+
+test.each([
+  false,
+  true
+])('legacy conversion selects raw accessor values and images without mutating glTF; images=%s', includeImages => {
+  const scenegraph = new GLTFScenegraph();
+  const positions = new Float32Array([7, 8, 9]);
+  const meshIndex = scenegraph.addMesh({attributes: {POSITION: {value: positions, size: 3}}});
+  const nodeIndex = scenegraph.addNode({meshIndex});
+  scenegraph.gltf.json.nodes![nodeIndex].translation = [1, 2, 3];
+  scenegraph.setDefaultScene(scenegraph.addScene({nodeIndices: [nodeIndex]}));
+  scenegraph.createBinaryChunk();
+  if (includeImages) {
+    scenegraph.gltf.json.images = [{mimeType: 'image/png'}, {mimeType: 'image/ktx2'}];
+    scenegraph.gltf.images = [
+      {data: new Uint8Array([1, 2, 3, 255]), width: 1, height: 1} as any,
+      {compressed: true, data: new Uint8Array(4), mipmaps: false, width: 1, height: 1}
+    ];
+  }
+  const before = structuredClone(scenegraph.gltf);
   const result = prepareDataForAttributesConversion(
-    // @ts-expect-error
-    tileContent,
+    {gltf: scenegraph.gltf} as any,
     new Matrix4(),
-    new BoundingSphere([4051833.805439, 618316.801881, 4870677.172590001])
+    new BoundingSphere([1, 2, 3], 4)
   );
-  expect(result).toBeTruthy();
-  // @ts-expect-error
-  delete result.nodes[0].mesh.primitives[0].material.uniqueId;
-  expect(result.nodes).toEqual(expectedResult.nodes);
-  expect(result.images).toEqual(expectedResult.images);
-  expect(
-    areNumberArraysEqual(result.cartographicOrigin, expectedResult.cartographicOrigin)
-  ).toBeTruthy();
-  expect(
-    areNumberArraysEqual(result.cartesianModelMatrix, expectedResult.cartesianModelMatrix)
-  ).toBeTruthy();
-});
-test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent with images', async () => {
-  const tileContent = {
-    gltf: {
-      materials: [{id: 'one', alphaMode: 'OPAQUE'}],
-      images: [
-        {
-          name: 'test',
-          mimeType: 'image/ktx2',
-          image: {
-            compressed: true,
-            data: [
-              {
-                components: 4,
-                width: 2,
-                height: 2,
-                data: new Uint8Array([1, 2, 3, 255])
-              }
-            ]
-          }
-        },
-        {
-          name: 'test2',
-          mimeType: 'image/jpeg',
-          image: {
-            width: 2,
-            height: 1,
-            data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255])
-          }
-        }
-      ],
-      scene: {
-        id: 'scene-one',
-        nodes: [
-          {
-            id: 'node-one',
-            name: 'nodeName',
-            mesh: {
-              primitives: [
-                {
-                  attributes: {
-                    _BATCHID: {
-                      id: 'accessor-1',
-                      value: new Float32Array([1, 2, 3]),
-                      bufferView: {buffer: {arrayBuffer: new ArrayBuffer(1)}}
-                    },
-                    NORMAL: {
-                      id: 'accessor-2',
-                      value: new Float32Array([4, 5, 6]),
-                      bufferView: {buffer: {arrayBuffer: new ArrayBuffer(2)}}
-                    },
-                    POSITION: {
-                      id: 'accessor-3',
-                      value: new Float32Array([7, 8, 9]),
-                      bufferView: {buffer: {arrayBuffer: new ArrayBuffer(3)}}
-                    }
-                  },
-                  indices: {
-                    id: 'accessor-4',
-                    value: new Uint16Array([1, 2, 3, 4, 5]),
-                    bufferView: {buffer: {arrayBuffer: new ArrayBuffer(4)}}
-                  },
-                  material: {
-                    id: 'material-0',
-                    alphaMode: 'OPAQUE'
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    }
-  };
-  const expectedResult = {
-    nodes: [
-      {
-        id: 'node-one',
-        name: 'nodeName',
-        mesh: {
-          primitives: [
-            {
-              attributes: {
-                _BATCHID: {value: new Float32Array([1, 2, 3])},
-                NORMAL: {value: new Float32Array([4, 5, 6])},
-                POSITION: {value: new Float32Array([7, 8, 9])}
-              },
-              indices: {
-                value: new Uint16Array([1, 2, 3, 4, 5])
-              },
-              material: {
-                id: 'material-0'
-              }
-            }
-          ]
-        }
-      }
-    ],
-    images: [
-      null,
-      {
-        width: 2,
-        height: 1,
-        components: 4,
-        mimeType: 'image/jpeg',
-        compressed: false,
-        data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255])
-      }
-    ],
-    cartographicOrigin: [8.676496951388435, 50.108416671362576, 189.47502169783516],
-    cartesianModelMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-  };
-  const result = prepareDataForAttributesConversion(
-    // @ts-expect-error
-    tileContent,
-    new Matrix4(),
-    new BoundingSphere([4051833.805439, 618316.801881, 4870677.172590001])
+  expect(result.nodes[0].mesh!.primitives[0].attributes.POSITION.value).toEqual(positions);
+  expect(result.nodes[0].translation).toEqual([1, 2, 3]);
+  expect(result.nodes[0].mesh!.primitives[0].attributes.POSITION).not.toHaveProperty('bufferView');
+  expect(result.nodes[0].mesh!.primitives[0].attributes.POSITION.value.buffer).not.toBe(
+    positions.buffer
   );
-  expect(result).toBeTruthy();
-  // @ts-expect-error
-  delete result.nodes[0].mesh.primitives[0].material.uniqueId;
-  expect(result.nodes).toEqual(expectedResult.nodes);
-  expect(result.images).toEqual(expectedResult.images);
-  expect(
-    areNumberArraysEqual(result.cartographicOrigin, expectedResult.cartographicOrigin)
-  ).toBeTruthy();
-  expect(
-    areNumberArraysEqual(result.cartesianModelMatrix, expectedResult.cartesianModelMatrix)
-  ).toBeTruthy();
+  expect(scenegraph.gltf).toEqual(before);
+  expect(result.images).toHaveLength(includeImages ? 2 : 0);
+  if (includeImages) {
+    expect(result.images[0]!.data).toEqual(new Uint8Array([1, 2, 3, 255]));
+    expect(result.images[1]).toBeNull();
+  }
 });
-// TODO app breakout
 test.skip('tile-converter(i3s)#calculateTransformProps', async () => {
   const tileContent = await load(FRANKFURT_B3DM_FILE_PATH, Tiles3DLoader);
   const tileTransform = new Matrix4([

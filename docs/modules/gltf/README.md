@@ -168,3 +168,9 @@ already retained by the caller remain usable.
 
 This initial API does not traverse external assets, decode images or compressed geometry,
 normalize glTF 1, evict individual resources, or expose per-request cancellation.
+
+## Direct accessor data
+
+Use [glTF accessor helpers](/docs/modules/gltf/api-reference/gltf-accessors) to read packed typed
+values from indexed `GLTFWithBuffers` data or replace accessor storage. The helpers support sparse,
+interleaved, implicit-zero and decoder-provided accessors without linking the scene graph.

@@ -5,7 +5,12 @@
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {GLTFScenegraph, GLTFWriter, type GLTFPostprocessed} from '@loaders.gl/gltf';
+import {
+  GLTFScenegraph,
+  GLTFWriter,
+  getGLTFAccessorValue,
+  setGLTFAccessorValue
+} from '@loaders.gl/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
@@ -238,7 +243,12 @@ test('tile, RTC, axis and node transforms are applied once with Float64 position
   ]);
   expect(Array.from(resource.mesh.attributes.NORMAL.value.slice(0, 3))).toEqual([0, -1, 0]);
   expect(
-    Array.from(payload.gltf.meshes[0].primitives[0].attributes.POSITION.value.slice(0, 3))
+    Array.from(
+      getGLTFAccessorValue(
+        payload.gltf,
+        payload.gltf.json.meshes[0].primitives[0].attributes.POSITION
+      ).slice(0, 3)
+    )
   ).toEqual([0, 0, 0]);
   const sink = createSingleMeshI3SSink({maxTotalBytes: 16384});
   const positions = vi.fn(SPATIAL.transformPositions);
@@ -272,8 +282,14 @@ test('legacy B3DM batch metadata follows the same explicit Arrow mapping with nu
       source_id: [9007199254740993n, 18446744073709551615n],
       label: [null, '']
     };
-    const primitive = payload.gltf.meshes[0].primitives[0];
-    primitive.attributes._BATCHID = {components: 1, value: new Float32Array([1, 1, 1, 0, 0, 0])};
+    const primitive = payload.gltf.json.meshes[0].primitives[0];
+    primitive.attributes._BATCHID = payload.gltf.json.accessors.length;
+    payload.gltf.json.accessors.push({count: 6, componentType: 5126, type: 'SCALAR'});
+    setGLTFAccessorValue(
+      payload.gltf,
+      primitive.attributes._BATCHID,
+      new Float32Array([1, 1, 1, 0, 0, 0])
+    );
   });
   const source = createMeshTilesetConversionSource(runtime, {
     features: {
@@ -315,49 +331,51 @@ test('unannotated real source conversion succeeds; GLB codec preserves feature-b
 });
 
 test.each([
-  ['animation', (payload: any) => (payload.gltf.animations = [{}])],
-  ['skin', (payload: any) => (payload.gltf.skins = [{}])],
-  ['scene extension', (payload: any) => (payload.gltf.extensions = {UNKNOWN: {}})],
+  ['animation', (payload: any) => (payload.gltf.json.animations = [{}])],
+  ['skin', (payload: any) => (payload.gltf.json.skins = [{}])],
+  ['scene extension', (payload: any) => (payload.gltf.json.extensions = {UNKNOWN: {}})],
   ['axis', (payload: any) => (payload.gltfUpAxis = 'INVALID')],
   ['RTC', (payload: any) => (payload.rtcCenter = [NaN, 0, 0])],
   [
     'no default scene',
     (payload: any) => {
-      delete payload.gltf.scene;
-      payload.gltf.scenes = [];
+      delete payload.gltf.json.scene;
+      payload.gltf.json.scenes = [];
     }
   ],
   [
     'node extension',
-    (payload: any) => (payload.gltf.scene.nodes[0].extensions = {EXT_mesh_gpu_instancing: {}})
+    (payload: any) => (payload.gltf.json.nodes[0].extensions = {EXT_mesh_gpu_instancing: {}})
   ],
-  ['node skin', (payload: any) => (payload.gltf.scene.nodes[0].skin = {})],
-  ['node weights', (payload: any) => (payload.gltf.scene.nodes[0].weights = [1])],
-  [
-    'cycle',
-    (payload: any) => (payload.gltf.scene.nodes[0].children = [payload.gltf.scene.nodes[0]])
-  ],
-  ['mirror', (payload: any) => (payload.gltf.scene.nodes[0].matrix[0] = -1)],
-  ['projective', (payload: any) => (payload.gltf.scene.nodes[0].matrix[3] = 1)],
+  ['node skin', (payload: any) => (payload.gltf.json.nodes[0].skin = {})],
+  ['node weights', (payload: any) => (payload.gltf.json.nodes[0].weights = [1])],
+  ['cycle', (payload: any) => (payload.gltf.json.nodes[0].children = [0])],
+  ['mirror', (payload: any) => (payload.gltf.json.nodes[0].matrix[0] = -1)],
+  ['projective', (payload: any) => (payload.gltf.json.nodes[0].matrix[3] = 1)],
   [
     'primitive extension',
-    (payload: any) => (payload.gltf.meshes[0].primitives[0].extensions = {UNKNOWN: {}})
+    (payload: any) => (payload.gltf.json.meshes[0].primitives[0].extensions = {UNKNOWN: {}})
   ],
-  ['morph', (payload: any) => (payload.gltf.meshes[0].primitives[0].targets = [{}])],
-  ['empty primitive', (payload: any) => (payload.gltf.meshes[0].primitives = [])],
+  ['morph', (payload: any) => (payload.gltf.json.meshes[0].primitives[0].targets = [{}])],
+  ['empty primitive', (payload: any) => (payload.gltf.json.meshes[0].primitives = [])],
   [
     'texture',
     (payload: any) =>
-      (payload.gltf.meshes[0].primitives[0].material.pbrMetallicRoughness.baseColorTexture = {})
+      (payload.gltf.json.materials[
+        payload.gltf.json.meshes[0].primitives[0].material
+      ].pbrMetallicRoughness.baseColorTexture = {})
   ],
   [
     'emissive',
-    (payload: any) => (payload.gltf.meshes[0].primitives[0].material.emissiveFactor = [1, 0, 0])
+    (payload: any) =>
+      (payload.gltf.json.materials[
+        payload.gltf.json.meshes[0].primitives[0].material
+      ].emissiveFactor = [1, 0, 0])
   ],
   [
     'undeclared feature',
     (payload: any) =>
-      (payload.gltf.meshes[0].primitives[0].attributes._FEATURE_ID_0 = {
+      (payload.gltf.json.meshes[0].primitives[0].attributes._FEATURE_ID_0 = {
         value: new Uint16Array(6),
         components: 1
       })
@@ -375,48 +393,45 @@ test.each([
   [
     'class',
     (payload: any) =>
-      (payload.gltf.extensions.EXT_structural_metadata.propertyTables[0].class = 'other')
+      (payload.gltf.json.extensions.EXT_structural_metadata.propertyTables[0].class = 'other')
   ],
   [
     'table count',
-    (payload: any) => (payload.gltf.extensions.EXT_structural_metadata.propertyTables[0].count = 3)
+    (payload: any) =>
+      (payload.gltf.json.extensions.EXT_structural_metadata.propertyTables[0].count = 3)
   ],
   [
     'texture IDs',
     (payload: any) =>
-      (payload.gltf.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds[0].texture = {})
+      (payload.gltf.json.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds[0].texture =
+        {})
   ],
   [
     'null IDs',
     (payload: any) =>
-      (payload.gltf.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds[0].nullFeatureId = 2)
+      (payload.gltf.json.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds[0].nullFeatureId = 2)
   ],
   [
     'multiple sets',
     (payload: any) =>
-      payload.gltf.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds.push({})
+      payload.gltf.json.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds.push({})
   ],
-  [
-    'row range',
-    (payload: any) => (payload.gltf.meshes[0].primitives[0].attributes._FEATURE_ID_0.value[0] = 2)
-  ],
-  [
-    'mixed triangle',
-    (payload: any) => (payload.gltf.meshes[0].primitives[0].attributes._FEATURE_ID_0.value[0] = 0)
-  ],
+  ['row range', (payload: any) => updateFeatureRow(payload, 2)],
+  ['mixed triangle', (payload: any) => updateFeatureRow(payload, 0)],
   [
     'undecoded property',
     (payload: any) =>
-      delete payload.gltf.extensions.EXT_structural_metadata.propertyTables[0].properties.label.data
+      delete payload.gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.label
+        .data
   ],
   [
     'missing class',
-    (payload: any) => delete payload.gltf.extensions.EXT_structural_metadata.schema.classes
+    (payload: any) => delete payload.gltf.json.extensions.EXT_structural_metadata.schema.classes
   ],
   [
     'second attribute',
     (payload: any) =>
-      (payload.gltf.meshes[0].primitives[0].attributes._FEATURE_ID_1 = {
+      (payload.gltf.json.meshes[0].primitives[0].attributes._FEATURE_ID_1 = {
         value: new Uint16Array(6),
         components: 1
       })
@@ -518,13 +533,14 @@ test.each([
   const {runtime} = await createRuntime(false, payload => {
     payload.gltfUpAxis = axis;
     delete payload.rtcCenter;
-    delete payload.gltf.scene;
-    delete payload.gltf.meshes[0].primitives[0].material;
-    delete payload.gltf.meshes[0].primitives[0].attributes.NORMAL;
-    const node = payload.gltf.scenes[0].nodes[0];
+    delete payload.gltf.json.scene;
+    delete payload.gltf.json.meshes[0].primitives[0].material;
+    delete payload.gltf.json.meshes[0].primitives[0].attributes.NORMAL;
+    const node = payload.gltf.json.nodes[0];
     delete node.matrix;
     node.translation = [2, 3, 4];
-    node.children = [{mesh: node.mesh}];
+    node.children = [payload.gltf.json.nodes.length];
+    payload.gltf.json.nodes.push({mesh: node.mesh});
   });
   const adapter = createMeshTilesetConversionSource(runtime);
   const resources = [];
@@ -538,7 +554,7 @@ test.each([
 
 test('feature extraction expands declared defaults and rejects undeclared or malformed columns', async () => {
   const {runtime} = await createRuntime(true, payload => {
-    const metadata = payload.gltf.extensions.EXT_structural_metadata;
+    const metadata = payload.gltf.json.extensions.EXT_structural_metadata;
     metadata.schema.classes.building.properties.label.default = 'default';
     delete metadata.propertyTables[0].properties.label;
   });
@@ -551,13 +567,13 @@ test('feature extraction expands declared defaults and rejects undeclared or mal
   }
   for (const mutate of [
     (payload: any) =>
-      (payload.gltf.extensions.EXT_structural_metadata.propertyTables[0].properties.extra = {
+      (payload.gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.extra = {
         data: [0, 1]
       }),
     (payload: any) =>
-      (payload.gltf.extensions.EXT_structural_metadata.propertyTables[0].properties.label.data =
+      (payload.gltf.json.extensions.EXT_structural_metadata.propertyTables[0].properties.label.data =
         'ab'),
-    (payload: any) => delete payload.gltf.meshes[0].primitives[0].attributes._FEATURE_ID_0
+    (payload: any) => delete payload.gltf.json.meshes[0].primitives[0].attributes._FEATURE_ID_0
   ]) {
     const {runtime: invalid} = await createRuntime(true, mutate);
     const source = createMeshTilesetConversionSource(invalid, {features: FEATURES});
@@ -610,7 +626,7 @@ test.each([
 ])('feature extraction rejects unresolved %s semantics', async kind => {
   const {runtime} = await createRuntime(true, payload => {
     const properties =
-      payload.gltf.extensions.EXT_structural_metadata.schema.classes.building.properties;
+      payload.gltf.json.extensions.EXT_structural_metadata.schema.classes.building.properties;
     if (kind === 'noData') properties.label.noData = 123;
     if (kind === 'array') properties.label.array = true;
     if (kind === 'enum') properties.label.type = 'ENUM';
@@ -652,3 +668,11 @@ test('mesh source derives each inline class mapping from declarations when schem
   ]);
   await iterator.return?.();
 });
+
+/** Replace intentionally mutated feature storage, including interleaved input. */
+function updateFeatureRow(payload: any, row: number): void {
+  const reference = payload.gltf.json.meshes[0].primitives[0].attributes._FEATURE_ID_0;
+  const value = Uint16Array.from(getGLTFAccessorValue(payload.gltf, reference), Number);
+  value[0] = row;
+  setGLTFAccessorValue(payload.gltf, reference, value);
+}

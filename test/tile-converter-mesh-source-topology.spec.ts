@@ -7,8 +7,15 @@ import {beforeAll as preloadBeforeAll} from 'vitest';
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader, type Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
-import {GLTFLoader, GLTFScenegraph, GLTFWriter, postProcessGLTF} from '@loaders.gl/gltf';
-import type {GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
+import {
+  GLTFLoader,
+  GLTFScenegraph,
+  GLTFWriter,
+  getGLTFAccessor,
+  getGLTFAccessorValue,
+  setGLTFAccessorValue
+} from '@loaders.gl/gltf';
+import type {GLTFMeshPrimitive} from '@loaders.gl/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import {Matrix4} from '@math.gl/core';
 import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
@@ -131,9 +138,9 @@ async function readResource(payload: Tiles3DTileContent): Promise<MeshSourceReso
 }
 
 /** Clones the parsed graph only for tests that change its descriptors or buffers. */
-function cloneStrip(): {payload: Tiles3DTileContent; primitive: GLTFMeshPrimitivePostprocessed} {
+function cloneStrip(): {payload: Tiles3DTileContent; primitive: GLTFMeshPrimitive} {
   const payload = structuredClone(fixtures.get('strip-16')!);
-  return {payload, primitive: payload.gltf!.meshes![0].primitives[0]};
+  return {payload, primitive: payload.gltf!.json.meshes![0].primitives[0]};
 }
 
 test.each([
@@ -154,7 +161,10 @@ test.each([
     )
   );
   expect(resource.mesh.attributes.NORMAL.value).toEqual(
-    payload.gltf!.meshes![0].primitives[0].attributes.NORMAL.value
+    getGLTFAccessorValue(
+      payload.gltf!,
+      payload.gltf!.json.meshes![0].primitives[0].attributes.NORMAL
+    )
   );
   expect(payload).toEqual(original);
 });
@@ -162,18 +172,18 @@ test.each([
 test.each([
   'fan',
   'fan-nonindexed'
-])('source retains glTF-loader normalization for %s', async name => {
+])('source expands %s while keeping loader JSON topology unchanged', async name => {
   const payload = fixtures.get(name)!;
-  const primitive = payload.gltf!.meshes![0].primitives[0];
-  expect(primitive.mode).toBe(4);
+  const primitive = payload.gltf!.json.meshes![0].primitives[0];
+  expect(primitive.mode).toBe(6);
   const resource = await readResource(payload);
-  expect(resource.mesh.indices!.value).toEqual(primitive.indices!.value);
+  expect(primitive.mode).toBe(6);
   expect(resource.mesh.indices!.value).toHaveLength(12);
 });
 
 test('compressed mode-5 input is not expanded a second time after Draco decoding', async () => {
   const payload = fixtures.get('compressed-strip')!;
-  expect(payload.gltf!.meshes[0].primitives[0].mode).toBe(4);
+  expect(payload.gltf!.json.meshes[0].primitives[0].mode).toBe(4);
   const resource = await readResource(payload);
   expect(resource.mesh.indices!.value).toHaveLength(6);
   const values = resource.mesh.attributes.POSITION.value;
@@ -198,7 +208,7 @@ test('compressed mode-5 input is not expanded a second time after Draco decoding
 test('strip subviews retain degenerate connectors and their winding parity', async () => {
   const {payload, primitive} = cloneStrip();
   const storage = new Uint16Array([99, 0, 1, 2, 2, 3, 4, 99]);
-  primitive.indices!.value = storage.subarray(1, 7);
+  replaceAccessor(payload, primitive.indices!, storage.subarray(1, 7));
   const resource = await readResource(payload);
   expect(Array.from(resource.mesh.indices!.value)).toEqual([0, 1, 2, 1, 2, 2, 2, 2, 3, 2, 4, 3]);
   expect(storage).toEqual(new Uint16Array([99, 0, 1, 2, 2, 3, 4, 99]));
@@ -206,7 +216,7 @@ test('strip subviews retain degenerate connectors and their winding parity', asy
 
 test.each([0, 1, 2])('strip rejects %s source indices before expansion', async count => {
   const {payload, primitive} = cloneStrip();
-  primitive.indices!.value = new Uint16Array(count);
+  replaceAccessor(payload, primitive.indices!, new Uint16Array(count));
   await expect(readResource(payload)).rejects.toMatchObject({code: 'MESH_TRIANGLE_COUNT_INVALID'});
 });
 
@@ -217,17 +227,17 @@ test.each([
   ['float', new Float32Array([0, 1, 2]), 'MESH_INDICES_INVALID']
 ] as const)('strip rejects %s indices without narrowing invalid values', async (_name, values, code) => {
   const {payload, primitive} = cloneStrip();
-  primitive.indices!.value = values;
+  replaceAccessor(payload, primitive.indices!, values);
   await expect(readResource(payload)).rejects.toMatchObject({code});
 });
 
 test('strip keeps index 65535 by selecting Uint32 output storage', async () => {
   const {payload, primitive} = cloneStrip();
   // The smallest vertex buffer crossing the Uint16 restart boundary is 768 KiB.
-  primitive.attributes.POSITION.value = new Float32Array(65536 * 3);
-  primitive.attributes.POSITION.count = 65536;
+  replaceAccessor(payload, primitive.attributes.POSITION, new Float32Array(65536 * 3));
+
   delete primitive.attributes.NORMAL;
-  primitive.indices!.value = new Uint32Array([0, 1, 65535]);
+  replaceAccessor(payload, primitive.indices!, new Uint32Array([0, 1, 65535]));
   const resource = await readResource(payload);
   expect(resource.mesh.indices!.value).toBeInstanceOf(Uint32Array);
   expect(Array.from(resource.mesh.indices!.value)).toEqual([0, 1, 65535]);
@@ -236,9 +246,11 @@ test('strip keeps index 65535 by selecting Uint32 output storage', async () => {
 test.each([2, 3])('non-indexed strip with %s vertices validates the minimum count', async count => {
   const {payload, primitive} = cloneStrip();
   delete primitive.indices;
-  primitive.attributes.POSITION.value = positions.slice(0, count * 3);
-  primitive.attributes.NORMAL.value = new Float32Array(
-    Array.from({length: count}, () => [0, 0, 1]).flat()
+  replaceAccessor(payload, primitive.attributes.POSITION, positions.slice(0, count * 3));
+  replaceAccessor(
+    payload,
+    primitive.attributes.NORMAL,
+    new Float32Array(Array.from({length: count}, () => [0, 0, 1]).flat())
   );
   if (count === 2)
     await expect(readResource(payload)).rejects.toMatchObject({
@@ -249,7 +261,7 @@ test.each([2, 3])('non-indexed strip with %s vertices validates the minimum coun
 
 test('strip rejects normalized indices', async () => {
   const {payload, primitive} = cloneStrip();
-  primitive.indices!.normalized = true;
+  getGLTFAccessor(payload.gltf!, primitive.indices!).normalized = true;
   await expect(readResource(payload)).rejects.toMatchObject({
     code: 'MESH_ATTRIBUTE_LAYOUT_UNSUPPORTED'
   });
@@ -263,12 +275,15 @@ test.each([0, 1, 3])('source still rejects non-surface mode %s', async mode => {
 
 test('multi-feature strip retains visible ownership and first-corner rows for degenerate connectors', async () => {
   const {payload, primitive} = cloneStrip();
-  primitive.indices!.value = new Uint16Array([0, 1, 2, 2, 3, 3, 4, 5]);
-  primitive.attributes._BATCHID = {
-    ...primitive.indices!,
-    value: new Uint8Array([0, 0, 0, 1, 1, 1]),
-    count: 6
+  replaceAccessor(payload, primitive.indices!, new Uint16Array([0, 1, 2, 2, 3, 3, 4, 5]));
+  const accessor = {
+    ...getGLTFAccessor(payload.gltf!, primitive.indices!),
+    count: 6,
+    componentType: 5121
   };
+  primitive.attributes._BATCHID = payload.gltf!.json.accessors!.length;
+  payload.gltf!.json.accessors!.push(accessor);
+  replaceAccessor(payload, primitive.attributes._BATCHID, new Uint8Array([0, 0, 0, 1, 1, 1]));
   payload.header = {...payload.header, batchLength: 2};
   payload.batchTableJson = {
     source_id: ['9007199254740993', '18446744073709551615'],
@@ -326,19 +341,17 @@ test.each([false, true])('expanded strip has valid GLB output with draco=%s', as
     const validation = await validateBytes(new Uint8Array(output.glb), {writeTimestamp: false});
     expect(validation.issues.numErrors).toBe(0);
     expect(validation.issues.numWarnings).toBe(0);
-    const decoded = postProcessGLTF(
-      await parse(output.glb, GLTFLoader, {
-        core: {worker: false, useLocalLibraries: true},
-        gltf: {decompressMeshes: true, loadImages: false}
-      })
-    );
-    const primitive = decoded.meshes![0].primitives[0];
-    expect(primitive.indices!.value).toHaveLength(12);
+    const decoded = await parse(output.glb, GLTFLoader, {
+      core: {worker: false, useLocalLibraries: true},
+      gltf: {decompressMeshes: true, loadImages: false}
+    });
+    const primitive = decoded.json.meshes![0].primitives[0];
+    expect(getGLTFAccessorValue(decoded, primitive.indices!)).toHaveLength(12);
     // Each triangle retains +Z winding, including the odd strip triangles.
-    const values = primitive.attributes.POSITION.value;
+    const values = getGLTFAccessorValue(decoded, primitive.attributes.POSITION);
     for (let triangle = 0; triangle < 4; triangle++) {
       const [first, second, third] = Array.from(
-        primitive.indices!.value.slice(triangle * 3, triangle * 3 + 3),
+        getGLTFAccessorValue(decoded, primitive.indices!).slice(triangle * 3, triangle * 3 + 3),
         Number
       );
       const signedArea =
@@ -372,3 +385,11 @@ test('expanded strip enters the raw I3S writer as four triangles', async () => {
     expect(nodePage.nodes[1].mesh.geometry).toMatchObject({vertexCount: 12});
   }
 });
+
+/** Update packed test storage and the corresponding raw accessor count. */
+function replaceAccessor(payload: Tiles3DTileContent, reference: number, values: any): void {
+  const accessor = getGLTFAccessor(payload.gltf!, reference);
+  const components = accessor.type === 'SCALAR' ? 1 : Number(accessor.type.slice(3));
+  accessor.count = values.length / components;
+  setGLTFAccessorValue(payload.gltf!, reference, values);
+}

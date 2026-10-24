@@ -273,3 +273,11 @@ export {
   getXMPMetadata
 } from './lib/api/gltf-extension-data';
 export type {GLTFMaterialVariantData, GLTFMeshInstanceData} from './lib/api/gltf-extension-data';
+
+export {
+  getGLTFAccessor,
+  getGLTFAccessorValue,
+  setGLTFAccessorValue
+} from './lib/api/gltf-accessors';
+
+export type {GLTFAccessorReference} from './lib/api/gltf-accessors';

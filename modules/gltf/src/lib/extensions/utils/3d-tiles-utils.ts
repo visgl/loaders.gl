@@ -252,19 +252,11 @@ export function primitivePropertyDataToAttributes(
     featureIndices.push(index);
   }
   const typedArray = new Uint32Array(featureIndices);
-  const bufferIndex =
-    scenegraph instanceof GLTFIterator
-      ? scenegraph.addBuffer(typedArray)
-      : scenegraph.gltf.buffers.push({
-          arrayBuffer: typedArray.buffer,
-          byteOffset: typedArray.byteOffset,
-          byteLength: typedArray.byteLength
-        }) - 1;
-  const bufferViewIndex =
-    scenegraph instanceof GLTFIterator
-      ? scenegraph.addBufferView(bufferIndex, typedArray.byteLength)
-      : scenegraph.addBufferView(typedArray, bufferIndex, 0);
-  const accessorIndex = scenegraph.addAccessor(bufferViewIndex, {
+  const iterator =
+    scenegraph instanceof GLTFIterator ? scenegraph : new GLTFIterator(scenegraph.gltf);
+  const bufferIndex = iterator.addBuffer(typedArray);
+  const bufferViewIndex = iterator.addBufferView(bufferIndex, typedArray.byteLength);
+  const accessorIndex = iterator.addAccessor(bufferViewIndex, {
     size: 1,
     componentType: getComponentTypeFromArray(typedArray),
     count: typedArray.length

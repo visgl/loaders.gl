@@ -204,12 +204,6 @@ function encodeExtMeshFeaturesForPrimitive(
         attribute: index
       };
 
-      scenegraph.gltf.buffers.push({
-        arrayBuffer: typedArray.buffer,
-        byteOffset: typedArray.byteOffset,
-        byteLength: typedArray.byteLength
-      });
-
       const bufferViewIndex = scenegraph.addBufferView(typedArray);
       const accessorIndex = scenegraph.addAccessor(bufferViewIndex, {
         size: 1,
