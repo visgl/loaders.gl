@@ -6,7 +6,7 @@ import {
   getAttributeTypesMapFromPropertyTable,
   getAttributeType
 } from '../../../src/v4/i3s-converter/helpers/feature-attributes';
-import type {GLTFPostprocessed} from '@loaders.gl/gltf';
+import type {GLTF} from '@loaders.gl/gltf';
 test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async () => {
   const featureIdsMap = {0: 0, 1: 1, 3: 3};
   const propertyTable = {
@@ -101,7 +101,7 @@ test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes
   };
   /* eslint-enable camelcase */
   const attributePropertySet = getAttributeTypesMapFromSchema(
-    gltfJson as unknown as GLTFPostprocessed,
+    gltfJson as unknown as GLTF,
     'owt_lulc'
   );
   expect(attributePropertySet, 'attribute type taken from the schema').toEqual(schema_expected);

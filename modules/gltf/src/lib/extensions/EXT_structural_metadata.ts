@@ -36,7 +36,7 @@ import {
   parseFixedLengthArrayNumeric,
   getPropertyDataString
 } from './utils/3d-tiles-utils';
-import {ensureArrayBuffer, type LoaderContext} from '@loaders.gl/core/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {resolveUrl} from '../gltf-utils/resolve-url';
 
 const EXT_STRUCTURAL_METADATA_NAME = 'EXT_structural_metadata';
@@ -1126,10 +1126,5 @@ function createPropertyDataString(strings: string[]): {
 }
 
 function createBufferView(typedArray: TypedArray, scenegraph: GLTFScenegraph): number {
-  scenegraph.gltf.buffers.push({
-    arrayBuffer: ensureArrayBuffer(typedArray.buffer),
-    byteOffset: typedArray.byteOffset,
-    byteLength: typedArray.byteLength
-  });
   return scenegraph.addBufferView(typedArray);
 }

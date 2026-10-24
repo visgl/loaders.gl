@@ -1,8 +1,7 @@
+import type {ConversionAccessor, ConversionPrimitive} from './conversion-gltf';
 /* eslint-disable camelcase */
 import type {NumericArray} from '@loaders.gl/core/loader-utils';
 import type {
-  GLTFAccessorPostprocessed,
-  GLTFMeshPrimitivePostprocessed,
   GLTF_EXT_feature_metadata_FeatureIdTexture,
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_Primitive,
@@ -27,7 +26,7 @@ export function getTextureByMetadataClass(
   tileContent: Tiles3DTileContent,
   metadataClass?: string
 ): string | null {
-  const extFeatureMetadata = tileContent.gltf?.extensions?.[
+  const extFeatureMetadata = tileContent.gltf?.json.extensions?.[
     EXT_FEATURE_METADATA
   ] as GLTF_EXT_feature_metadata_GLTF;
   if (!extFeatureMetadata?.featureTextures) {
@@ -52,9 +51,9 @@ export function getTextureByMetadataClass(
  */
 export function handleBatchIdsExtensions(
   attributes: {
-    [key: string]: GLTFAccessorPostprocessed;
+    [key: string]: ConversionAccessor;
   },
-  primitive: GLTFMeshPrimitivePostprocessed,
+  primitive: ConversionPrimitive,
   images: (TextureImageProperties | null)[],
   featureTexture: string | null
 ): NumericArray {
@@ -90,7 +89,7 @@ export function handleBatchIdsExtensions(
  */
 function handleExtMeshFeaturesExtension(
   attributes: {
-    [key: string]: GLTFAccessorPostprocessed;
+    [key: string]: ConversionAccessor;
   },
   extMeshFeatures: GLTF_EXT_mesh_features
 ): NumericArray {
@@ -114,7 +113,7 @@ function handleExtMeshFeaturesExtension(
  */
 function handleExtFeatureMetadataExtension(
   attributes: {
-    [key: string]: GLTFAccessorPostprocessed;
+    [key: string]: ConversionAccessor;
   },
   extFeatureMetadata: GLTF_EXT_feature_metadata_Primitive,
   images: (TextureImageProperties | null)[],

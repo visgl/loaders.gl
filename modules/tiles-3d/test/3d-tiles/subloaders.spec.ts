@@ -54,7 +54,7 @@ test('prepares GLB, JSON glTF and legacy tile dependencies before a content burs
     );
     for (const tile of tiles) {
       expect(tile.shape).toBe('tile3d');
-      expect(tile.gltf.asset.generator).toBe('subloader-test');
+      expect(tile.gltf.json.asset.generator).toBe('subloader-test');
       expect(tile.gltf.buffers[0].arrayBuffer.byteLength).toBe(4);
     }
     expect(gltfPreload).not.toHaveBeenCalled();
@@ -109,5 +109,5 @@ test('keeps nested decoder calls local when dependency bindings contain function
     expect(gltfOptions?.subloaders?.DracoLoader.parse).toBeTypeOf('function');
   }
   expect(tile.type).toBe('b3dm');
-  expect(tile.gltf.meshes.length).toBeGreaterThan(0);
+  expect(tile.gltf.json.meshes.length).toBeGreaterThan(0);
 });

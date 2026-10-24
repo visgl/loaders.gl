@@ -8,7 +8,9 @@ import {
   GLTFLoader,
   getGaussianSplatPrimitives,
   getVoxelPrimitives,
-  postProcessGLTF
+  getGLTFAccessor,
+  getGLTFAccessorValue,
+  setGLTFAccessorValue
 } from '@loaders.gl/gltf';
 import type {GLTF, GLTFWithBuffers} from '@loaders.gl/gltf';
 import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles-3d';
@@ -66,7 +68,7 @@ export async function parseGltf3DTile(
     tile.gaussianSplatPrimitives =
       gltfWithBuffers.gaussianSplatPrimitives || getGaussianSplatPrimitives(gltfWithBuffers);
     tile.voxelPrimitives = getVoxelPrimitives(gltfWithBuffers);
-    tile.gltf = postProcessGLTF(gltfWithBuffers);
+    tile.gltf = gltfWithBuffers;
     transformGLTFSpatialContent(
       tile.gltf,
       options?.['3d-tiles']?._tilesetOptions as
@@ -91,7 +93,7 @@ export async function parseGltf3DTile(
 
 /** Transform decoded glTF vertex attributes for a requested 3D Tiles target CRS. */
 function transformGLTFSpatialContent(
-  gltf: any,
+  gltf: GLTFWithBuffers,
   tilesetOptions:
     | {
         spatialReference?: TilesetSpatialReference;
@@ -115,41 +117,53 @@ function transformGLTFSpatialContent(
   const spatialTransform = tilesetOptions?.spatialTransform
     ? new Matrix4(Array.from(tilesetOptions.spatialTransform))
     : undefined;
-  const placements = getUniqueMeshPlacements(gltf, sourceGltf);
-  for (const mesh of gltf.meshes || []) {
+  const placements = getUniqueMeshPlacements(gltf.json, sourceGltf);
+  for (const mesh of gltf.json.meshes || []) {
     const meshPlacement = placements.get(mesh);
     for (const primitive of mesh.primitives || []) {
-      const positionAccessor = primitive.attributes?.POSITION;
-      if (!positionAccessor?.value || positionAccessor.value.length % 3 !== 0) {
-        continue;
-      }
-      const sourcePositions = positionAccessor.value;
+      const positionReference = primitive.attributes?.POSITION;
+      if (positionReference === undefined) continue;
+      const positionAccessor = getGLTFAccessor(gltf, positionReference);
+      const sourcePositions = getGLTFAccessorValue(gltf, positionReference);
+      if (sourcePositions.length % 3 !== 0) continue;
+      const numericPositions = Float64Array.from(sourcePositions, Number);
       const meshPlacedPositions = meshPlacement
-        ? transformPositionsByMatrix(sourcePositions, meshPlacement)
-        : Float64Array.from(sourcePositions);
+        ? transformPositionsByMatrix(numericPositions, meshPlacement)
+        : numericPositions;
       const placedPositions = spatialTransform
         ? transformPositionsByMatrix(meshPlacedPositions, spatialTransform)
         : meshPlacedPositions;
-      const transformedPositions = transformer.transformPositions(placedPositions);
-      positionAccessor.value = Float32Array.from(transformedPositions);
-      positionAccessor.min = getAttributeBounds(positionAccessor.value, 'min');
-      positionAccessor.max = getAttributeBounds(positionAccessor.value, 'max');
-      const normalAccessor = primitive.attributes?.NORMAL;
-      if (normalAccessor?.value?.length === sourcePositions.length) {
+      const transformedPositions = Float32Array.from(
+        transformer.transformPositions(placedPositions)
+      );
+      setGLTFAccessorValue(gltf, positionReference, transformedPositions);
+      positionAccessor.min = getAttributeBounds(transformedPositions, 'min');
+      positionAccessor.max = getAttributeBounds(transformedPositions, 'max');
+      const normalReference = primitive.attributes?.NORMAL;
+      if (normalReference !== undefined) {
+        const sourceNormals = Float32Array.from(
+          getGLTFAccessorValue(gltf, normalReference),
+          Number
+        );
+        if (sourceNormals.length !== sourcePositions.length) continue;
         const meshPlacedNormals = meshPlacement
-          ? transformNormalsByMatrix(normalAccessor.value, meshPlacement)
-          : Float32Array.from(normalAccessor.value);
+          ? transformNormalsByMatrix(sourceNormals, meshPlacement)
+          : sourceNormals;
         const placedNormals = spatialTransform
           ? transformNormalsByMatrix(meshPlacedNormals, spatialTransform)
           : meshPlacedNormals;
-        normalAccessor.value = transformer.transformNormals(placedNormals, placedPositions);
+        setGLTFAccessorValue(
+          gltf,
+          normalReference,
+          transformer.transformNormals(placedNormals, placedPositions)
+        );
       }
     }
   }
 }
 
 /** Return static node placements for meshes with exactly one instance. */
-function getUniqueMeshPlacements(gltf: any, sourceGltf: GLTF): Map<any, Matrix4> {
+function getUniqueMeshPlacements(gltf: GLTF, sourceGltf: GLTF): Map<any, Matrix4> {
   const rawNodes = sourceGltf.nodes || [];
   const animatedNodes = new Set(
     (sourceGltf.animations || []).flatMap(animation =>

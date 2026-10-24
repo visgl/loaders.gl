@@ -10,9 +10,14 @@ import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 const GLB_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/143.glb';
 test('3D Tiles#getMemoryUsageGLTF', async () => {
   const gltfWithBuffers = await load(GLB_URL, GLTFLoader, {worker: false});
-  const data = postProcessGLTF(gltfWithBuffers);
+  const data = gltfWithBuffers;
   expect(data, 'GLTFLoader returned parsed data').toBeTruthy();
-  expect(_getMemoryUsageGLTF(data), 'GLTF memory usage computed').toBe(2884442);
+  // Raw estimates count decoded Draco arrays rather than the compressed source buffer view.
+  expect(data.json.extensionsRemoved).toContain('KHR_draco_mesh_compression');
+  expect(_getMemoryUsageGLTF(data), 'decoded GPU storage computed').toBe(3389445);
+  expect(_getMemoryUsageGLTF(postProcessGLTF(data)), 'legacy estimate stays compatible').toBe(
+    2884442
+  );
 });
 const TEST_CASES = [
   {

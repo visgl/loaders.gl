@@ -261,7 +261,10 @@ function getMeshAttribute(
   }
 
   let value = bufferView
-    ? (getTypedArrayForAccessor(gltf.json, gltf.buffers, accessor) as MeshAttribute['value'])
+    ? (getTypedArrayForAccessor(gltf.json, gltf.buffers, {
+        ...accessor,
+        sparse: undefined
+      }) as MeshAttribute['value'])
     : new ArrayType(accessor.count * size);
 
   if (accessor.sparse) {
