@@ -34228,7 +34228,7 @@ __metadata:
     "@deck.gl/widgets": "npm:^9.4.0"
     "@loaders.gl/arcgis": "workspace:*"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/services": "workspace:*"
+    "@loaders.gl/ogc": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
