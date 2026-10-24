@@ -1,6 +1,7 @@
+import {getMeshAttributes} from '../modules/gltf/test/utils/get-mesh-attributes';
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {
@@ -87,26 +88,27 @@ test.each([
   ]);
   const archive = new Tiles3DArchive(new ArrayBufferFile(await result.file.arrayBuffer()));
   try {
-    const gltf = postProcessGLTF(
-      await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
-        worker: false,
-        gltf: {loadImages: false}
-      })
-    );
-    const primitive = gltf.meshes[0].primitives[0];
-    const coordinates = primitive.attributes.TEXCOORD_0;
+    const gltf = await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
+      worker: false,
+      gltf: {loadImages: false}
+    });
+    const primitive = gltf.json.meshes[0].primitives[0];
+    const attributes = getMeshAttributes(gltf);
+    const coordinates = attributes.TEXCOORD_0;
     expect(coordinates.normalized ?? false).toBe(normalized);
     expect(coordinates.value).toEqual(
       normalized
         ? new Uint16Array([0, 0, 65535, 0, 0, 65535])
         : new Float32Array([0, 0, 1, 0, 0, 1])
     );
-    const material = primitive.material!.pbrMetallicRoughness!;
+    const material = gltf.json.materials![primitive.material!].pbrMetallicRoughness!;
     expect(material.baseColorFactor).toEqual([0.5, 0.75, 1, 1]);
-    const texture = material.baseColorTexture!.texture;
-    expect(texture.sampler).toMatchObject(TEXTURE_SAMPLER);
-    expect(texture.source!.mimeType).toBe(mimeType);
-    const encoded = texture.source!.bufferView!.data;
+    const texture = gltf.json.textures![material.baseColorTexture!.index];
+    expect(gltf.json.samplers![texture.sampler!]).toMatchObject(TEXTURE_SAMPLER);
+    expect(gltf.json.images![texture.source!].mimeType).toBe(mimeType);
+    const encoded = new GLTFScenegraph(gltf).getTypedArrayForBufferView(
+      gltf.json.images![texture.source!].bufferView!
+    );
     expect(encoded).toEqual(image);
     const bitmap = await createImageBitmap(new Blob([encoded.slice().buffer], {type: mimeType}));
     expect(bitmap.width).toBeGreaterThan(0);
@@ -224,15 +226,18 @@ test.each([
     });
     expect(preserved.json.extensionsUsed).toContain('KHR_texture_transform');
     expect(preserved.json.extensionsRequired).toContain('KHR_texture_transform');
-    const primitive = postProcessGLTF(preserved).meshes[0].primitives[0];
+    const primitive = preserved.json.meshes![0].primitives[0];
+    const attributes = getMeshAttributes(preserved);
     expect(Object.keys(primitive.attributes)).toEqual(['POSITION', 'TEXCOORD_0']);
-    expect(primitive.attributes.TEXCOORD_0.value).toEqual(
+    expect(attributes.TEXCOORD_0.value).toEqual(
       normalized
         ? new Uint16Array([0, 0, 65535, 0, 0, 65535])
         : new Float32Array([0, 0, 1, 0, 0, 1])
     );
-    expect(primitive.attributes.TEXCOORD_0.normalized ?? false).toBe(normalized);
-    const textureInfo = primitive.material!.pbrMetallicRoughness!.baseColorTexture!;
+    expect(attributes.TEXCOORD_0.normalized ?? false).toBe(normalized);
+    const textureInfo =
+      preserved.json.materials![primitive.material!].pbrMetallicRoughness!.baseColorTexture!;
+    const texture = preserved.json.textures![textureInfo.index];
     expect(textureInfo.extensions).toEqual({
       KHR_texture_transform: {
         offset: transform.offset,
@@ -240,17 +245,21 @@ test.each([
         scale: transform.scale
       }
     });
-    expect(textureInfo.texture.source!.bufferView!.data).toEqual(pngImage);
-    expect(textureInfo.texture.sampler).toMatchObject(TEXTURE_SAMPLER);
+    expect(
+      new GLTFScenegraph(preserved).getTypedArrayForBufferView(
+        preserved.json.images![texture.source!].bufferView!
+      )
+    ).toEqual(pngImage);
+    expect(preserved.json.samplers![texture.sampler!]).toMatchObject(TEXTURE_SAMPLER);
     // A normal consumer applies the preserved transform exactly once, including integer normalization.
-    const rendered = postProcessGLTF(
-      await parse(output, GLTFLoader, {
-        worker: false,
-        gltf: {loadImages: false}
-      })
-    ).meshes[0].primitives[0];
-    const selected = rendered.material!.pbrMetallicRoughness!.baseColorTexture!;
-    const coordinates = rendered.attributes[`TEXCOORD_${selected.texCoord}`].value;
+    const renderedContainer = await parse(output, GLTFLoader, {
+      worker: false,
+      gltf: {loadImages: false}
+    });
+    const rendered = renderedContainer.json.meshes![0].primitives[0];
+    const selected =
+      renderedContainer.json.materials![rendered.material!].pbrMetallicRoughness!.baseColorTexture!;
+    const coordinates = getMeshAttributes(renderedContainer)[`TEXCOORD_${selected.texCoord}`].value;
     const expected = [0.25, -0.5, 0.25, 0, 1.25, -0.5];
     for (let index = 0; index < expected.length; index++)
       expect(coordinates[index]).toBeCloseTo(expected[index], 6);

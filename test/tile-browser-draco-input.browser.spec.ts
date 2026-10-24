@@ -1,6 +1,7 @@
+import {getMeshAttributes} from '../modules/gltf/test/utils/get-mesh-attributes';
 import {afterAll, beforeAll, expect, test} from 'vitest';
 import {fetchFile, getLoaderOptions, parse, setLoaderOptions} from '@loaders.gl/core';
-import {GLBLoader, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLBLoader, GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
@@ -74,14 +75,17 @@ beforeAll(async () => {
     attributes: {POSITION: {size: 3, value: new Float32Array(positions)}},
     indices: {size: 1, value: new Uint16Array(indices)}
   });
-  const decoded = postProcessGLTF(
-    await parse(grid, GLTFLoader, {
-      worker: false,
-      core: {useLocalLibraries: true},
-      gltf: {loadImages: false}
-    })
-  ).meshes[0].primitives[0];
-  gridBytes = decoded.attributes.POSITION.value.length * 8 + decoded.indices!.value.byteLength;
+  const decodedContainer = await parse(grid, GLTFLoader, {
+    worker: false,
+    core: {useLocalLibraries: true},
+    gltf: {loadImages: false}
+  });
+  const decoded = getMeshAttributes(decodedContainer);
+  gridBytes =
+    decoded.POSITION.value.length * 8 +
+    new GLTFScenegraph(decodedContainer).getTypedArrayForAccessor(
+      decodedContainer.json.meshes![0].primitives[0].indices!
+    ).byteLength;
 });
 
 afterAll(() => setLoaderOptions(originalLoaderOptions));
@@ -146,24 +150,30 @@ test.each([
   ]);
   const archive = new Tiles3DArchive(new BlobFile(output.file));
   try {
-    const gltf = postProcessGLTF(
-      await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
-        worker: false,
-        core: {useLocalLibraries: true},
-        gltf: {loadImages: false, excludeExtensions: {KHR_texture_transform: false}}
-      })
+    const gltf = await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
+      worker: false,
+      core: {useLocalLibraries: true},
+      gltf: {loadImages: false, excludeExtensions: {KHR_texture_transform: false}}
+    });
+    const primitive = gltf.json.meshes![0].primitives[0];
+    const attributes = getMeshAttributes(gltf);
+    expect(attributes.COLOR_0.normalized).toBe(true);
+    expect(attributes.TEXCOORD_0.normalized).toBe(true);
+    expect(Array.from(attributes.NORMAL.value)).toEqual([0, -1, 0, 0, -1, 0, 0, -1, 0]);
+    const selected =
+      gltf.json.materials![primitive.material!].pbrMetallicRoughness!.baseColorTexture!;
+    expect(
+      new GLTFScenegraph(gltf).getTypedArrayForBufferView(
+        gltf.json.images![gltf.json.textures![selected.index].source!].bufferView!
+      )
+    ).toEqual(image);
+    expect(gltf.json.samplers![gltf.json.textures![selected.index].sampler!]).toMatchObject(
+      TEXTURE_SAMPLER
     );
-    const primitive = gltf.meshes[0].primitives[0];
-    expect(primitive.attributes.COLOR_0.normalized).toBe(true);
-    expect(primitive.attributes.TEXCOORD_0.normalized).toBe(true);
-    expect(Array.from(primitive.attributes.NORMAL.value)).toEqual([0, -1, 0, 0, -1, 0, 0, -1, 0]);
-    const selected = primitive.material!.pbrMetallicRoughness!.baseColorTexture!;
-    expect(selected.texture.source!.bufferView!.data).toEqual(image);
-    expect(selected.texture.sampler).toMatchObject(TEXTURE_SAMPLER);
     expect(selected.extensions?.KHR_texture_transform).toEqual(textureTransform);
-    const appearance = Array.from({length: primitive.attributes.COLOR_0.count}, (_, vertex) => [
-      ...primitive.attributes.COLOR_0.value.slice(vertex * 4, vertex * 4 + 4),
-      ...primitive.attributes.TEXCOORD_0.value.slice(vertex * 2, vertex * 2 + 2)
+    const appearance = Array.from({length: attributes.COLOR_0.count}, (_, vertex) => [
+      ...attributes.COLOR_0.value.slice(vertex * 4, vertex * 4 + 4),
+      ...attributes.TEXCOORD_0.value.slice(vertex * 2, vertex * 2 + 2)
     ]);
     expect(appearance).toHaveLength(3);
     expect(appearance).toEqual(

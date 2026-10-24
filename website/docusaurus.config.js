@@ -2,6 +2,7 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const {resolve} = require('path');
+const {createRequire} = require('node:module');
 const {version} = require('../modules/core/package.json');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
@@ -82,6 +83,14 @@ function createBundlerPlugin() {
             const normalizedContext = resource.context?.replace(/\\/g, '/');
             if (normalizedContext?.includes('/modules/core/src/worker-utils')) {
               resource.request = resolve('./src/shims/loadersgl-worker-version.js');
+            }
+          }),
+          new bundler.NormalModuleReplacementPlugin(/^@loaders\.gl\/gltf$/, resource => {
+            if (resource.context?.replace(/\\/g, '/').includes('/node_modules/')) {
+              const publishedEntry = createRequire(resolve(resource.context, '__resolve__.js')).resolve('@loaders.gl/gltf');
+              if (publishedEntry.replace(/\\/g, '/').includes('/node_modules/')) {
+                resource.request = publishedEntry.replace(/\.cjs$/, '.js');
+              }
             }
           }),
           new bundler.NormalModuleReplacementPlugin(/^@math\.gl\/core$/, resource => {

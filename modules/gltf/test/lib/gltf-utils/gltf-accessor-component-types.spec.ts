@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/gltf';
 import type {BigTypedArray} from '@loaders.gl/core/schema';
 const TEST_CASES: {
   name: string;
@@ -54,12 +54,11 @@ test('glTF 2.1 accessor component types', () => {
     expect(Array.from(scenegraphValues), `${testCase.name} values`).toEqual(
       Array.from(testCase.source)
     );
-    const processed = postProcessGLTF(gltf);
-    const processedValues = processed.accessors[0].value;
-    expect(processedValues.constructor, `${testCase.name} postprocessed type`).toBe(
+    const processedValues = getGLTFAccessorValue(gltf, 0);
+    expect(processedValues.constructor, `${testCase.name} accessor helper type`).toBe(
       testCase.source.constructor
     );
-    expect(Array.from(processedValues), `${testCase.name} postprocessed values`).toEqual(
+    expect(Array.from(processedValues), `${testCase.name} accessor helper values`).toEqual(
       Array.from(testCase.source)
     );
   }
