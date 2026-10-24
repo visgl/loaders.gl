@@ -15,7 +15,7 @@
     "@deck.gl/react": "^9.4.0",
     "@deck.gl/widgets": "^9.4.0",
     "@loaders.gl/deck-layers": "workspace:*",
-    "@loaders.gl/stac": "workspace:*",
+    "@loaders.gl/ogc": "workspace:*",
     "@loaders.gl/tables": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",

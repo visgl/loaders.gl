@@ -40,6 +40,18 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
+## OGC service and STAC package imports
+
+The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in v5. Install
+`@loaders.gl/ogc` for OGC service protocols and STAC catalogs. Replace imports from
+`@loaders.gl/wms` with `@loaders.gl/ogc/wms`, and imports from `@loaders.gl/stac` with
+`@loaders.gl/ogc/stac`. Parser-bearing implementations remain on named subpaths, such as
+`@loaders.gl/ogc/wms/gml-loader` and `@loaders.gl/ogc/stac/stac-source`.
+
+`@loaders.gl/services` now contains provider authentication presets for Mapbox, Google Maps,
+and Cesium ion. ArcGIS remains in `@loaders.gl/arcgis`. OGC loader IDs and option namespaces
+remain unchanged; their `module` ownership and default package asset paths become `ogc`.
+
 ## Removed glTF rendering postprocessing
 
 `@loaders.gl/gltf` no longer exports `postProcessGLTF` or `GLTF*Postprocessed` types.
@@ -149,7 +161,7 @@ subpaths are import paths, not separate npm packages.
 
 **OGC API Tiles matrix discovery**
 
-`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/wms/services/ogc-api.md).
+`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/ogc/wms/services/ogc-api.md).
 
 **@loaders.gl/zip**
 

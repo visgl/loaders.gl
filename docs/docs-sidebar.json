@@ -38,7 +38,7 @@
       "modules/3d-tiles/formats/3d-tiles",
       "modules/textures/formats/crunch",
       "modules/tables/csv/formats/csv",
-      "modules/wms/formats/csw",
+      "modules/ogc/wms/formats/csw",
       "modules/textures/formats/dds",
       "modules/draco/formats/draco",
       "modules/geospatial/flatgeobuf/formats/flatgeobuf",
@@ -51,7 +51,7 @@
       "modules/geotiff/formats/geotiff",
       "modules/gltf/formats/glb",
       "modules/gltf/formats/gltf",
-      "modules/wms/formats/gml",
+      "modules/ogc/wms/formats/gml",
       "modules/geospatial/kml/formats/gpx",
       "modules/textures/formats/hdr",
       "modules/xml/formats/html",
@@ -67,7 +67,7 @@
       "modules/scientific/netcdf/formats/netcdf",
       "modules/obj/formats/obj",
       "modules/tables/orc/formats/orc",
-      "modules/wms/formats/ows-context",
+      "modules/ogc/wms/formats/ows-context",
       "modules/tables/parquet/formats/parquet",
       "modules/traces/formats/perfetto-trace",
       "modules/pcd/formats/pcd",
@@ -76,7 +76,7 @@
       "modules/potree/formats/potree",
       "modules/textures/formats/pvr",
       "modules/geospatial/shapefile/formats/shapefile",
-      "modules/stac/formats/stac",
+      "modules/ogc/stac/formats/stac",
       "modules/geospatial/kml/formats/tcx",
       "modules/mvt/formats/tilejson",
       "modules/scene/formats/usd",
@@ -95,13 +95,13 @@
       "modules/arcgis/README",
       "modules/services/README",
       "developer-guide/authentication",
-      "modules/wms/formats/csw",
-      "modules/wms/formats/wcs",
-      "modules/wms/formats/wfs",
-      "modules/wms/formats/wmc",
-      "modules/wms/formats/wms",
-      "modules/wms/formats/wmts",
-      "modules/wms/services/ogc-api",
+      "modules/ogc/wms/formats/csw",
+      "modules/ogc/wms/formats/wcs",
+      "modules/ogc/wms/formats/wfs",
+      "modules/ogc/wms/formats/wmc",
+      "modules/ogc/wms/formats/wms",
+      "modules/ogc/wms/formats/wmts",
+      "modules/ogc/wms/services/ogc-api",
       "modules/arcgis/formats/arcgis-feature-server",
       "modules/arcgis/formats/arcgis-map-server",
       "modules/arcgis/formats/arcgis-image-server",
@@ -197,7 +197,7 @@
           "modules/wkt/api-reference/wkb-loader",
           "modules/wkt/api-reference/wkt-crs-loader",
           "modules/wkt/api-reference/wkt-loader",
-          "modules/wms/api-reference/wms-capabilities-loader",
+          "modules/ogc/wms/api-reference/wms-capabilities-loader",
           "modules/xml/api-reference/xml-loader",
           "modules/zip/api-reference/zip-loader"
         ]
@@ -255,15 +255,15 @@
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
           "modules/tiles/api-reference/raster-set",
-          "modules/stac/api-reference/stac-source-loader",
+          "modules/ogc/stac/api-reference/stac-source-loader",
           "modules/tiles-3d/api-reference/tiles-3d-source",
           "modules/tiles-3d/api-reference/tileset-3d-source",
           "modules/mvt/api-reference/mvt-source-loader",
           "modules/mvt/api-reference/table-tile-source-loader",
           "modules/mvt/api-reference/arrow-table-tile-source-loader",
           "modules/mlt/api-reference/mlt-source-loader",
-          "modules/wms/api-reference/csw-source-loader",
-          "modules/wms/api-reference/wms-source-loader"
+          "modules/ogc/wms/api-reference/csw-source-loader",
+          "modules/ogc/wms/api-reference/wms-source-loader"
         ]
       }
     ]
@@ -628,6 +628,28 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/ogc",
+        "items": [
+          "modules/ogc/README",
+          {
+            "type": "category",
+            "label": "WMS and OGC APIs",
+            "items": [
+              "modules/ogc/wms/README",
+              "modules/ogc/wms/api-reference/wms-capabilities-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "STAC",
+            "items": [
+              "modules/ogc/stac/README"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/pcd",
         "items": [
           "modules/pcd/README"
@@ -677,13 +699,6 @@
         "label": "@loaders.gl/scene",
         "items": [
           "modules/scene/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/stac",
-        "items": [
-          "modules/stac/README"
         ]
       },
       {
@@ -761,14 +776,6 @@
         "label": "@loaders.gl/wkt",
         "items": [
           "modules/wkt/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/wms",
-        "items": [
-          "modules/wms/README",
-          "modules/wms/api-reference/wms-capabilities-loader"
         ]
       },
       {

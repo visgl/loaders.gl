@@ -114,7 +114,7 @@ the Parquet module does not depend on any catalog protocol.
 
 ```ts
 import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/parquet-dataset-source';
-import {STACSource} from '@loaders.gl/stac/stac-source';
+import {STACSource} from '@loaders.gl/ogc/stac/stac-source';
 
 const catalog = new STACSource('https://stac.overturemaps.org/catalog.json', {});
 const dataset = new ParquetDatasetSource(

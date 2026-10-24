@@ -50,8 +50,8 @@ import '@loaders.gl/geospatial/geopackage/test';
 import '@loaders.gl/geospatial/kml/test';
 import '@loaders.gl/geospatial/shapefile/test';
 import '@loaders.gl/wkt/test';
-import '@loaders.gl/wms/test';
-import '@loaders.gl/stac/test';
+import '@loaders.gl/ogc/wms/test';
+import '@loaders.gl/ogc/stac/test';
 
 import '@loaders.gl/tiles/mlt/test';
 import '@loaders.gl/tiles/mvt/test';
