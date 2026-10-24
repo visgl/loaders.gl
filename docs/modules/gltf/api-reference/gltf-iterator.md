@@ -110,4 +110,4 @@ iterator.removeExtension('VENDOR_texture_format');
 
 - `GLTFIterator` is a lazy navigation and extension-authoring view over the original document.
 - [`GLTFScenegraph`](./gltf-scenegraph) is the established access and builder utility and includes higher-level binary authoring methods.
-- [`postProcessGLTF()`](./post-process-gltf) creates a modified representation with references replaced by linked objects and selected data normalized for application use.
+- [`postProcessGLTF()`](https://luma.gl/docs/api-reference/gltf/post-process-gltf) creates a modified representation with references replaced by linked objects and selected data normalized for application use.

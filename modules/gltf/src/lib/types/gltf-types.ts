@@ -88,14 +88,3 @@ export type {
 } from './gltf-json-schema';
 
 export type {GLTFShape, GLTFBoundingVolume} from './gltf-shape-schema';
-
-export type {
-  GLTFPostprocessed,
-  GLTFAccessorPostprocessed,
-  GLTFImagePostprocessed,
-  GLTFNodePostprocessed,
-  GLTFMeshPostprocessed,
-  GLTFMeshPrimitivePostprocessed,
-  GLTFMaterialPostprocessed,
-  GLTFTexturePostprocessed
-} from './gltf-postprocessed-schema';

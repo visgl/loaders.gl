@@ -5,7 +5,12 @@
 import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {registerLoaders, load, parse, parseSync, fetchFile, encodeSync} from '@loaders.gl/core';
-import {GLTFLoader, GLTFWriter, postProcessGLTF, type GLTFLoaderOptions} from '@loaders.gl/gltf';
+import {
+  GLTFLoader,
+  GLTFWriter,
+  getGLTFAccessorValue,
+  type GLTFLoaderOptions
+} from '@loaders.gl/gltf';
 import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {ImageBitmapLoader} from '@loaders.gl/images';
@@ -330,15 +335,19 @@ test('GLTFLoader#load(glTF v1)', async () => {
   expect(gltf1, 'glTF v1 was normalized without errors').toBeTruthy();
 });
 // Check load options
-test('GLTFLoader#options+postProcessGLTF', async () => {
+test('GLTFLoader#options+getGLTFAccessorValue', async () => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
-  const data = postProcessGLTF(gltfWithBuffers);
-  const value = data.meshes[0].primitives[0].attributes.POSITION.value;
+  const value = getGLTFAccessorValue(
+    gltfWithBuffers,
+    gltfWithBuffers.json.meshes![0].primitives[0].attributes.POSITION
+  );
   expect(
     ArrayBuffer.isView(value),
-    'GLTFLoader+postProcessGLTF() resolves accessor value as typed array'
+    'GLTFLoader+getGLTFAccessorValue() resolves accessor value as typed array'
   ).toBeTruthy();
-  expect(value.length, 'GLTFLoader+postProcessGLTF() resolves accessor value length').toBe(6036);
+  expect(value.length, 'GLTFLoader+getGLTFAccessorValue() resolves accessor value length').toBe(
+    6036
+  );
 });
 
 test.each([

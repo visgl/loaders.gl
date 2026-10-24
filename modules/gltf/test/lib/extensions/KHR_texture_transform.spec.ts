@@ -6,7 +6,7 @@
 import {expect, test} from 'vitest';
 
 import {parse, fetchFile} from '@loaders.gl/core';
-import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLTFLoader, getGLTFAccessorValue} from '@loaders.gl/gltf';
 import type {GLTFWithBuffers} from '../../../src/lib/types/gltf-types';
 import type {GLTFLoaderOptions} from '../../../src/gltf-loader';
 import {decode as decodeTextureTransform} from '../../../src/lib/extensions/KHR_texture_transform';
@@ -17,15 +17,18 @@ test('GLTFLoader#KHR_texture_transform', async () => {
   const response = await fetchFile(GLTF_BINARY_URL);
   const data = await response.arrayBuffer();
   const gltfWithBuffers = await parse(data, GLTFLoader);
-  const gltf = postProcessGLTF(gltfWithBuffers);
+  const gltf = gltfWithBuffers.json;
 
   const primitive = gltf.meshes[0].primitives[0];
-  const transformedTexCoord = primitive.material?.pbrMetallicRoughness?.baseColorTexture?.texCoord;
+  const transformedTexCoord =
+    gltf.materials![primitive.material!]?.pbrMetallicRoughness?.baseColorTexture?.texCoord;
   expect(transformedTexCoord).toBe(1);
   expect(gltf.accessors[2].componentType).toBe(5123);
-  expect(primitive.attributes.TEXCOORD_0).toBe(gltf.accessors[2]);
-  expect(primitive.attributes.TEXCOORD_1.componentType).toBe(5126);
-  expect(primitive.attributes.TEXCOORD_1.value).toBeInstanceOf(Float32Array);
+  expect(primitive.attributes.TEXCOORD_0).toBe(2);
+  expect(gltf.accessors![primitive.attributes.TEXCOORD_1].componentType).toBe(5126);
+  expect(getGLTFAccessorValue(gltfWithBuffers, primitive.attributes.TEXCOORD_1)).toBeInstanceOf(
+    Float32Array
+  );
 });
 
 test('GLTFLoader#KHR_texture_transform preserves shared bufferView data', async () => {

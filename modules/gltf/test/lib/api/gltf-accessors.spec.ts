@@ -12,8 +12,7 @@ import {
   GLTFWriter,
   GLTFLoader,
   createExtStructuralMetadata,
-  _getMemoryUsageGLTF,
-  postProcessGLTF
+  _getMemoryUsageGLTF
 } from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
@@ -254,7 +253,6 @@ test('glTF replacement values survive metadata extension encoding without duplic
 test('glTF memory estimates count replacement storage once and retain shared live views', () => {
   const gltf = createAccessor(new Float32Array([1, 2, 3, 4]));
   expect(_getMemoryUsageGLTF(gltf)).toBe(16);
-  expect(_getMemoryUsageGLTF(postProcessGLTF(gltf))).toBe(16);
   setGLTFAccessorValue(gltf, 0, new Float32Array([5, 6, 7, 8]));
   expect(_getMemoryUsageGLTF(gltf)).toBe(16);
   setGLTFAccessorValue(gltf, 0, new Uint16Array([9, 10, 11, 12]));

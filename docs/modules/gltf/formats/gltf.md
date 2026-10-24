@@ -82,7 +82,7 @@ The JSON defines the asset. A rendering or application runtime interprets animat
 lighting, interactivity, and spatial audio. `GLTFLoader` returns the source-shaped document in
 `gltf.json` alongside resolved resources and derived metadata. Use
 [`GLTFIterator`](../api-reference/gltf-iterator) for lazy reference traversal or
-[`postProcessGLTF`](../api-reference/post-process-gltf) when an object tree is more convenient.
+[`postProcessGLTF`](https://luma.gl/docs/api-reference/gltf/post-process-gltf) when an object tree is more convenient.
 
 ### Coordinate conventions
 
@@ -115,7 +115,7 @@ evolving specification and is intentionally marked separately from stable glTF 2
 
 | Feature | Version | Raw | Runtime | Tests / notes |
 | --- | --- | --- | --- | --- |
-| Core asset, scene, node, mesh, material, camera, skin, animation, texture, image, sampler, buffer, and accessor objects | 2.0 | ✅ Complete | ✅ Complete | Loader, writer, schema, and post-processing coverage |
+| Core asset, scene, node, mesh, material, camera, skin, animation, texture, image, sampler, buffer, and accessor objects | 2.0 | ✅ Complete | ✅ Complete | Loader, writer, schema, and indexed accessor coverage |
 | `.gltf` JSON and external resources | 1.0 / 2.0 / 2.1 | ✅ Complete | ✅ Complete | URI and data-URI resolution |
 | GLB v1 and v2 | 1.0 / 2.0 | ✅ Complete | ✅ Complete | GLB loader and writer tests |
 | GLB v3 / multiple binary chunks | 2.1 draft | ✅ Complete | ⚠️ Partial | Draft parsing support; format may evolve |
@@ -125,7 +125,7 @@ evolving specification and is intentionally marked separately from stable glTF 2
 | Draft 2.1 accessor component types | 2.1 draft | ✅ Complete | ⚠️ Partial | Includes 32-bit, 16-bit float words, and 64-bit integer representations |
 | Unified `files` references | 2.1 draft | ✅ Complete | ✅ Complete | URI, data-URI, and bufferView-backed files |
 | External asset composition | 2.1 draft | ✅ Complete | ✅ Complete | Recursive loading, caching, and cycle rejection |
-| Asset thumbnails | 2.1 draft | ✅ Complete | ✅ Complete | Thumbnail image loading and post-processing |
+| Asset thumbnails | 2.1 draft | ✅ Complete | ✅ Complete | Thumbnail image loading; rendering links in luma.gl |
 | Implicit shapes and node bounding volumes | 2.1 draft | ✅ Complete | ⚠️ Partial | Box, capsule, cylinder, plane, and sphere adapters via `@math.gl/geometry/culling` |
 | WebGPU accessor transforms | 2.0 / 2.1 | ✅ Complete | ⚠️ Partial | GPU-oriented derived views are available without rewriting accessor JSON |
 | WebGPU texture format mapping | 2.0 / 2.1 | ✅ Complete | ❌ Planned | Raw image MIME and texture metadata are preserved; normalized GPU descriptors are the next tranche |
@@ -140,7 +140,7 @@ evolving specification and is intentionally marked separately from stable glTF 2
 | Vector primitive topology | Draft 2.0 extensions | ✅ Complete | ⚠️ Partial | Primitive-restart ranges and polygon loops are decoded; rendering remains application-owned |
 | Punctual lights and unlit materials | 2.0 extensions | ✅ Complete | ⚠️ Partial | Parsed and retained; renderer-specific behavior remains application-owned |
 | Legacy techniques, programs, and shaders | 1.0 / legacy extension | 📦 Preserved only | ❌ Unsupported | Retained source data; glTF 1 shader/technique conversion is unsupported |
-| Interactivity graphs | 2.0 extension | ✅ Complete | ⚠️ Metadata | Typed graphs, raw accessor, post-processing and GLB preservation; application executes graphs. |
+| Interactivity graphs | 2.0 extension | ✅ Complete | ⚠️ Metadata | Typed graphs, raw accessor, and GLB preservation; application executes graphs. |
 | Spatial audio | 2.0 extensions | ✅ Complete | ⚠️ Partial | MPEG source metadata and draft KHR encoded clips/emitter attachments; application decodes and plays audio. |
 | Material variants, GPU instances, XMP packets | 2.0 extensions | ✅ Complete | ⚠️ Metadata | Types, permissive schemas, and reference-resolution helpers. |
 | Animation pointers and node interaction flags | 2.0 extensions | ✅ Complete | ⚠️ Metadata | Typed declarations and permissive schemas; runtime evaluates pointers and inherited flags. |
@@ -209,7 +209,7 @@ const graph = interactivity?.graphs[interactivity.graph ?? 0];
 
 The helper returns the original extension object, without validating, cloning,
 resolving graph indices, or inserting defaults. Treat the returned value as shared
-data. `postProcessGLTF` retains the extension and `GLTFWriter` preserves it in GLB
+data. Luma.gl’s `postProcessGLTF` retains the extension and `GLTFWriter` preserves it in GLB
 output. Graph execution and property-pointer evaluation are the rendering runtime's
 responsibility.
 
@@ -551,7 +551,7 @@ image provides an optional preview that applications can display without renderi
 
 `GLTFLoader` treats the thumbnail as a referenced image, so `gltf.loadImages: true` loads it even
 when no texture uses that image. The unmodified index remains available at
-`gltf.json.asset.thumbnail`; [`postProcessGLTF()`](/docs/modules/gltf/api-reference/post-process-gltf)
+`gltf.json.asset.thumbnail`; [`postProcessGLTF()`](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
 resolves it to the corresponding processed image object.
 
 This support follows the Khronos [Thumbnails draft](https://github.com/KhronosGroup/glTF/issues/2593).

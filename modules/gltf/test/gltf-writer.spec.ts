@@ -5,8 +5,9 @@
 import {expect, test} from 'vitest';
 import {validateWriter} from 'test/common/conformance';
 import {parse, encodeSync, encode, load} from '@loaders.gl/core';
-import {GLTFLoader, GLTFWriter, GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFWriter, GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/gltf';
 import {ImageWriter} from '@loaders.gl/images';
+import {getMeshAttributes} from './utils/get-mesh-attributes';
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 const EXTRA_DATA = {extraData: 1};
 const APP_DATA = {vizData: 2};
@@ -150,16 +151,20 @@ test('GLTFWriter#encode with extensions', async () => {
 });
 test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder functions', async () => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
-  const inputData = postProcessGLTF(gltfWithBuffers);
+  const attributes = getMeshAttributes(gltfWithBuffers);
   const gltfBuilder = new GLTFScenegraph();
-  const meshIndex = gltfBuilder.addMesh({attributes: inputData.meshes[0].primitives[0].attributes});
+  const meshIndex = gltfBuilder.addMesh({attributes: attributes});
   const nodeIndex = gltfBuilder.addNode({meshIndex});
   const sceneIndex = gltfBuilder.addScene({nodeIndices: [nodeIndex]});
   gltfBuilder.setDefaultScene(sceneIndex);
-  if (inputData.images[0].bufferView?.data) {
-    const imageBuffer = new ArrayBuffer(inputData.images[0].bufferView.data.byteLength);
+  const sourceScenegraph = new GLTFScenegraph(gltfWithBuffers);
+  const imageData = sourceScenegraph.getTypedArrayForBufferView(
+    gltfWithBuffers.json.images![0].bufferView!
+  );
+  if (imageData) {
+    const imageBuffer = new ArrayBuffer(imageData.byteLength);
     const imageBufferData = new Uint8Array(imageBuffer);
-    imageBufferData.set(inputData.images[0].bufferView.data);
+    imageBufferData.set(imageData);
     const imageIndex = gltfBuilder.addImage(imageBuffer, 'image/jpeg');
     const textureIndex = gltfBuilder.addTexture({imageIndex});
     const pbrMaterialInfo = {
@@ -177,13 +182,13 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
 });
 test('GLTFWriter#should write extra data to binary chunk', async () => {
   const gltfWithBuffers1 = await load(GLTF_BINARY_URL, GLTFLoader);
-  const inputData = postProcessGLTF(gltfWithBuffers1);
+  const attributes = getMeshAttributes(gltfWithBuffers1);
   const gltfWithBuffers2 = await load(GLTF_BINARY_URL, GLTFLoader, {
     gltf: {decompressMeshes: false}
   });
   const gltfScenegraph = new GLTFScenegraph(gltfWithBuffers2);
   const meshIndex = gltfScenegraph.addMesh({
-    attributes: inputData.meshes[0].primitives[0].attributes
+    attributes: attributes
   });
   expect(meshIndex).toBe(1);
   gltfScenegraph.createBinaryChunk();
@@ -196,37 +201,37 @@ test('GLTFWriter#should write extra data to binary chunk', async () => {
   const gltfBuffer = encodeSync(gltfScenegraph.gltf, GLTFWriter);
   // Now parse the generated buffer
   const gltfWithBuffers3 = await parse(gltfBuffer, GLTFLoader);
-  const gltf = postProcessGLTF(gltfWithBuffers3);
+  const gltf = gltfWithBuffers3;
   expect(gltf).toBeTruthy();
-  expect(gltf.meshes[1]).toBeTruthy();
-  expect(gltf.meshes[1].primitives[0].attributes.POSITION.value.byteLength).toBe(
-    inputData.meshes[0].primitives[0].attributes.POSITION.value.byteLength
-  );
-  expect(gltf.meshes[0]).toBeTruthy();
+  expect(gltf.json.meshes![1]).toBeTruthy();
+  expect(
+    getGLTFAccessorValue(gltf, gltf.json.meshes![1].primitives[0].attributes.POSITION).byteLength
+  ).toBe(attributes.POSITION.value.byteLength);
+  expect(gltf.json.meshes![0]).toBeTruthy();
 });
 test('GLTFWriter#should write extra data to binary chunk twice', async () => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
-  const inputData = postProcessGLTF(gltfWithBuffers);
+  const attributes = getMeshAttributes(gltfWithBuffers);
   const data = await load(GLTF_BINARY_URL, GLTFLoader, {
     gltf: {decompressMeshes: false}
   });
   const gltfScenegraph = new GLTFScenegraph(data);
   gltfScenegraph.addMesh({
-    attributes: {positions: inputData.meshes[0].primitives[0].attributes.POSITION}
+    attributes: {positions: attributes.POSITION}
   });
   gltfScenegraph.createBinaryChunk();
-  const imageBuffer = await encode(inputData.images?.[0]?.image, ImageWriter);
+  const imageBuffer = await encode(gltfWithBuffers.images?.[0], ImageWriter);
   gltfScenegraph.addImage(imageBuffer, 'image/jpeg');
   gltfScenegraph.createBinaryChunk();
   expect(gltfScenegraph).toBeTruthy();
   const gltfBuffer = encodeSync(gltfScenegraph.gltf, GLTFWriter);
   const gltfWithBuffers2 = await parse(gltfBuffer, GLTFLoader);
-  const gltf = postProcessGLTF(gltfWithBuffers2);
+  const gltf = gltfWithBuffers2;
   expect(gltf).toBeTruthy();
-  expect(gltf.meshes[1]).toBeTruthy();
-  expect(gltf.meshes[1].primitives[0].attributes.POSITION.value.byteLength).toBe(
-    inputData.meshes[0].primitives[0].attributes.POSITION.value.byteLength
-  );
+  expect(gltf.json.meshes![1]).toBeTruthy();
+  expect(
+    getGLTFAccessorValue(gltf, gltf.json.meshes![1].primitives[0].attributes.POSITION).byteLength
+  ).toBe(attributes.POSITION.value.byteLength);
   expect(gltf.images[2]).toBeTruthy();
 });
 function checkJson(gltfBuilder) {
