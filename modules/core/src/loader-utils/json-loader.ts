@@ -13,7 +13,7 @@ export type JSONLoaderOptions = LoaderOptions;
 
 /**
  * A JSON Micro loader (minimal bundle size)
- * Alternative to `@loaders.gl/json`
+ * Alternative to `@loaders.gl/tables/json`
  */
 export const JSONLoader = {
   dataType: null as unknown as Table,

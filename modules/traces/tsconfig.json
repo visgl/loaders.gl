@@ -13,7 +13,7 @@
   },
   "references": [
     {
-      "path": "../json"
+      "path": "../tables"
     },
     {
       "path": "../core"

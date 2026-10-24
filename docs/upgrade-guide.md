@@ -40,6 +40,43 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
+## OGC service and STAC package imports
+
+The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in v5. Install
+`@loaders.gl/ogc` for OGC service protocols and STAC catalogs. Replace imports from
+`@loaders.gl/wms` with `@loaders.gl/ogc/wms`, and imports from `@loaders.gl/stac` with
+`@loaders.gl/ogc/stac`. Parser-bearing implementations remain on named subpaths, such as
+`@loaders.gl/ogc/wms/gml-loader` and `@loaders.gl/ogc/stac/stac-source`.
+
+`@loaders.gl/services` now contains provider authentication presets for Mapbox, Google Maps,
+and Cesium ion. ArcGIS remains in `@loaders.gl/arcgis`. OGC loader IDs and option namespaces
+remain unchanged; their `module` ownership and default package asset paths become `ogc`.
+
+## Removed glTF rendering postprocessing
+
+`@loaders.gl/gltf` no longer exports `postProcessGLTF` or `GLTF*Postprocessed` types.
+Import them from [`@luma.gl/gltf`](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
+in luma.gl v10 when preparing data for rendering. Pass the `GLTFLoader` result directly to the luma.gl function.
+Keep `GLTFWithBuffers` and indexed JSON for loader-side processing, writing, and conversion;
+use `getGLTFAccessorValue` and `GLTFIterator` to read resources without linking a second document.
+`_getMemoryUsageGLTF` now accepts only the indexed `GLTFWithBuffers` container.
+
+## 3D Tiles decoded glTF content
+
+With `3d-tiles.loadGLTF: true`, `tile.gltf` now contains `GLTFWithBuffers` rather than a
+postprocessed scene. Read metadata from `tile.gltf.json`. Scene, mesh, material, texture and accessor
+references remain numeric indices. Read typed values with `getGLTFAccessorValue(tile.gltf, index)`
+and replace transformed storage with `setGLTFAccessorValue`. Vector-content descriptors retain raw
+primitive definitions. The tile converter consumes this indexed representation directly.
+
+Luma.gl provides `postProcessGLTF` as an explicit application API. A renderer that requires linked
+objects can call it at its rendering boundary. It is no longer called by the tile parsers.
+See [glTF accessor helpers](./modules/gltf/api-reference/gltf-accessors).
+
+`GLTFScenegraph.getTypedArrayForAccessor()` now treats an omitted `bufferView` as implicit-zero
+storage, including any sparse substitutions, as required by glTF. It no longer falls back to buffer
+view 0. An explicit `bufferView: 0` continues to read the first buffer view.
+
 ## Upgrading to v4.5
 
 v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.
@@ -53,6 +90,12 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 - `@loaders.gl/textures` no longer installs the deprecated `texture-compressor` package for every consumer. Applications that use the experimental `CompressedTextureWriter` must install `texture-compressor` explicitly. The CLI is invoked with `npx --no`, so it is never downloaded on demand; all other loaders and writers are unaffected.
 
 ## Upgrading to v5.0
+
+### Table and geospatial package consolidation
+
+The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `excel`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv` to retain the former root exports. The `@loaders.gl/tables` root and format subpaths export metadata loaders and writers; import `CSVLoaderWithParser` from `@loaders.gl/tables/csv/csv-loader` for synchronous parsing.
+
+The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` packages have also been removed. Install `@loaders.gl/geospatial` and use matching format subpaths, such as `@loaders.gl/geospatial/kml`, for former package-root APIs. The group root and format subpaths export metadata loaders; import `KMLLoaderWithParser` from `@loaders.gl/geospatial/kml/kml-loader` for synchronous parsing. Other parser, source, writer, and worker entry points have corresponding explicit subpaths in the group packages. Update any hard-coded worker asset URLs to the group package paths.
 
 **Schema packages move into core subpaths**
 
@@ -118,7 +161,7 @@ subpaths are import paths, not separate npm packages.
 
 **OGC API Tiles matrix discovery**
 
-`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/wms/services/ogc-api.md).
+`OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/ogc/wms/services/ogc-api.md).
 
 **@loaders.gl/zip**
 

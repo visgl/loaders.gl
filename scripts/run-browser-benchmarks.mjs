@@ -49,8 +49,8 @@ export async function runBrowserBenchmarks(options = {}) {
 
   const page = await browser.newPage();
   forwardBrowserConsole(page);
-  await page.route('https://unpkg.com/@loaders.gl/csv@*/dist/csv-worker.js', route =>
-    route.fulfill({path: 'modules/csv/dist/csv-worker.js'})
+  await page.route('https://unpkg.com/@loaders.gl/tables/csv@*/dist/csv-worker.js', route =>
+    route.fulfill({path: 'modules/tables/dist/csv-worker.js'})
   );
 
   try {

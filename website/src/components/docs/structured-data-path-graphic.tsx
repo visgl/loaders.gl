@@ -13,10 +13,10 @@ type StructuredDataPathNode = {
 };
 
 const INPUT_NODES: readonly StructuredDataPathNode[] = [
-  {label: 'JSON', detail: 'nested documents', to: '/docs/modules/json/formats/json'},
-  {label: 'NDJSON', detail: 'one record per line', to: '/docs/modules/json/formats/json'},
-  {label: 'CSV / TSV', detail: 'delimited rows', to: '/docs/modules/csv/formats/csv'},
-  {label: 'BSON', detail: 'typed binary documents', to: '/docs/modules/bson/formats/bson'},
+  {label: 'JSON', detail: 'nested documents', to: '/docs/modules/tables/json/formats/json'},
+  {label: 'NDJSON', detail: 'one record per line', to: '/docs/modules/tables/json/formats/json'},
+  {label: 'CSV / TSV', detail: 'delimited rows', to: '/docs/modules/tables/csv/formats/csv'},
+  {label: 'BSON', detail: 'typed binary documents', to: '/docs/modules/tables/bson/formats/bson'},
   {label: 'XML', detail: 'namespaced trees', to: '/docs/modules/xml/formats/xml'}
 ];
 

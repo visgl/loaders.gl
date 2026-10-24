@@ -1,3 +1,4 @@
+import type {ConversionImage} from './helpers/conversion-gltf';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -49,7 +50,6 @@ import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/tiles-3d/i3s';
 import {getImageData, ImageWriter} from '@loaders.gl/images';
-import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {
   GLTFPrimitiveModeString,
   I3SConvertedResources,
@@ -1231,7 +1231,7 @@ export default class I3SConverter {
    */
   // eslint-disable-next-line max-statements
   private async _writeTexture(
-    texture: GLTFImagePostprocessed,
+    texture: ConversionImage,
     childPath: string,
     slpkChildPath: string,
     sourceId: string,
@@ -1506,7 +1506,7 @@ export default class I3SConverter {
     if (this.options.metadataClass) {
       if (!this.attributeMetadataInfo.attributeStorageInfo.length && tileContent?.gltf) {
         attributeTypesMap = getAttributeTypesMapFromSchema(
-          tileContent.gltf,
+          tileContent.gltf.json,
           this.options.metadataClass
         );
       }

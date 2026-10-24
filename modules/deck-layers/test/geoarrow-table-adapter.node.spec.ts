@@ -14,7 +14,7 @@ import {
   GEOARROW_POINT_FILE,
   GEOARROW_POINT_WKB_FILE,
   GEOARROW_POLYGON_FILE
-} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
+} from '@loaders.gl/tables/arrow/test/data/geoarrow/test-cases';
 import {
   convertGeoArrowTableToBinaryFeatureCollection,
   getApacheArrowTable,

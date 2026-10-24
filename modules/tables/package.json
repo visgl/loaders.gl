@@ -113,12 +113,14 @@
       "require": "./dist/avro/index.cjs"
     },
     "./csv": {
-      "types": "./dist/csv.d.ts",
-      "import": "./dist/csv.js"
+      "types": "./dist/csv/index.d.ts",
+      "import": "./dist/csv/index.js",
+      "require": "./dist/csv/index.cjs"
     },
     "./avro": {
-      "types": "./dist/avro.d.ts",
-      "import": "./dist/avro.js"
+      "types": "./dist/avro/index.d.ts",
+      "import": "./dist/avro/index.js",
+      "require": "./dist/avro/index.cjs"
     },
     "./avro-schema": {
       "types": "./dist/avro-schema.d.ts",
@@ -154,8 +156,9 @@
       "require": "./dist/bson/index.cjs"
     },
     "./bson": {
-      "types": "./dist/bson.d.ts",
-      "import": "./dist/bson.js"
+      "types": "./dist/bson/index.d.ts",
+      "import": "./dist/bson/index.js",
+      "require": "./dist/bson/index.cjs"
     },
     "./excel/excel-format": {
       "types": "./dist/excel/excel-format.d.ts",
@@ -183,8 +186,9 @@
       "import": "./dist/excel/excel-loader-types.js"
     },
     "./excel": {
-      "types": "./dist/excel.d.ts",
-      "import": "./dist/excel.js"
+      "types": "./dist/excel/index.d.ts",
+      "import": "./dist/excel/index.js",
+      "require": "./dist/excel/index.cjs"
     },
     "./excel-worker.js": {
       "import": "./dist/excel-worker.js"
@@ -581,24 +585,29 @@
     },
     "./parquet_wasm_bg.wasm": "./dist/parquet/parquet_wasm_bg.wasm",
     "./arrow": {
-      "types": "./dist/arrow.d.ts",
-      "import": "./dist/arrow.js"
+      "types": "./dist/arrow/index.d.ts",
+      "import": "./dist/arrow/index.js",
+      "require": "./dist/arrow/index.cjs"
     },
     "./json": {
-      "types": "./dist/json.d.ts",
-      "import": "./dist/json.js"
+      "types": "./dist/json/index.d.ts",
+      "import": "./dist/json/index.js",
+      "require": "./dist/json/index.cjs"
     },
     "./lance": {
-      "types": "./dist/lance.d.ts",
-      "import": "./dist/lance.js"
+      "types": "./dist/lance/index.d.ts",
+      "import": "./dist/lance/index.js",
+      "require": "./dist/lance/index.cjs"
     },
     "./orc": {
-      "types": "./dist/orc.d.ts",
-      "import": "./dist/orc.js"
+      "types": "./dist/orc/index.d.ts",
+      "import": "./dist/orc/index.js",
+      "require": "./dist/orc/index.cjs"
     },
     "./parquet": {
-      "types": "./dist/parquet.d.ts",
-      "import": "./dist/parquet.js"
+      "types": "./dist/parquet/index.d.ts",
+      "import": "./dist/parquet/index.js",
+      "require": "./dist/parquet/index.cjs"
     },
     "./lance/lance-source-loader-types": {
       "types": "./dist/lance/lance-source-loader-types.d.ts",

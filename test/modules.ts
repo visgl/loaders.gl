@@ -45,13 +45,13 @@ import '@loaders.gl/tiles/test';
 
 // Geospatial Formats
 // TODO restore once we have upgraded to ES modules
-import '@loaders.gl/flatgeobuf/test';
-import '@loaders.gl/geopackage/test';
-import '@loaders.gl/kml/test';
-import '@loaders.gl/shapefile/test';
+import '@loaders.gl/geospatial/flatgeobuf/test';
+import '@loaders.gl/geospatial/geopackage/test';
+import '@loaders.gl/geospatial/kml/test';
+import '@loaders.gl/geospatial/shapefile/test';
 import '@loaders.gl/wkt/test';
-import '@loaders.gl/wms/test';
-import '@loaders.gl/stac/test';
+import '@loaders.gl/ogc/wms/test';
+import '@loaders.gl/ogc/stac/test';
 
 import '@loaders.gl/tiles/mlt/test';
 import '@loaders.gl/tiles/mvt/test';
@@ -60,18 +60,18 @@ import '@loaders.gl/tiles/mvt/test';
 import '@loaders.gl/tiles/pmtiles/test';
 
 // Table Formats
-import '@loaders.gl/arrow/test';
-import '@loaders.gl/csv/test';
-import '@loaders.gl/json/test';
-import '@loaders.gl/excel/test';
-import '@loaders.gl/parquet/test';
-import '@loaders.gl/lance/test';
-import '@loaders.gl/orc/test';
+import '@loaders.gl/tables/arrow/test';
+import '@loaders.gl/tables/csv/test';
+import '@loaders.gl/tables/json/test';
+import '@loaders.gl/tables/excel/test';
+import '@loaders.gl/tables/parquet/test';
+import '@loaders.gl/tables/lance/test';
+import '@loaders.gl/tables/orc/test';
 import '@loaders.gl/traces/test';
 
 // unstructured (JSON) formats
 // JSON listed in tabular loaders since it optionally supports that category
-import '@loaders.gl/bson/test';
+import '@loaders.gl/tables/bson/test';
 import '@loaders.gl/xml/test';
 
 // Archive Formats

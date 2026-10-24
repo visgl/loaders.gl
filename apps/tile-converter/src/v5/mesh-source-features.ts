@@ -3,7 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import type {MeshGeometry} from '@loaders.gl/core/schema';
-import type {GLTFPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
+import type {
+  GLTFWithBuffers,
+  GLTFMeshPrimitive,
+  GLTF_EXT_mesh_features,
+  GLTF_EXT_structural_metadata_GLTF
+} from '@loaders.gl/gltf';
+import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/gltf';
 import type {I3SMeshFeatures} from '@loaders.gl/tiles-3d/i3s';
 import {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 import type {FeatureArrowBatchOptions} from './feature-arrow.js';
@@ -31,8 +37,8 @@ export interface MeshSourceFeatureOptions extends FeatureArrowBatchOptions {
 
 /** Extracts legacy batch tables or one decoded modern property table and validates geometry ownership. */
 export function extractMeshFeatures(
-  gltf: GLTFPostprocessed,
-  primitive: GLTFMeshPrimitivePostprocessed,
+  gltf: GLTFWithBuffers,
+  primitive: GLTFMeshPrimitive,
   payload: {
     batchTableJson?: Record<string, unknown>;
     header?: {batchLength?: number};
@@ -41,12 +47,16 @@ export function extractMeshFeatures(
   mesh: MeshGeometry,
   options?: MeshSourceFeatureOptions | MeshSourceSchemaOptions
 ): I3SMeshFeatures | undefined {
-  const declarations = primitive.extensions?.EXT_mesh_features?.featureIds;
-  const metadata = gltf.extensions?.EXT_structural_metadata;
+  const declarations = (
+    primitive.extensions?.EXT_mesh_features as GLTF_EXT_mesh_features | undefined
+  )?.featureIds;
+  const metadata = gltf.json.extensions?.EXT_structural_metadata as
+    | GLTF_EXT_structural_metadata_GLTF
+    | undefined;
   const legacy = primitive.attributes._BATCHID;
   if (
     !declarations &&
-    !legacy &&
+    legacy === undefined &&
     !metadata &&
     !Object.keys(payload.batchTableJson || {}).length &&
     !payload.header?.batchLength
@@ -68,14 +78,15 @@ export function extractMeshFeatures(
       'MESH_FEATURE_CLASS_REQUIRED',
       'Feature metadata class must be explicit'
     );
-  const mapping = 'schema' in options ? options : createMeshSourceFeatureOptions(gltf, options);
+  const mapping =
+    'schema' in options ? options : createMeshSourceFeatureOptions(gltf.json, options);
   const propertyMappings = new Map<string, MeshSourcePropertyMapping>();
   let count: number;
-  let attribute = legacy;
+  let attributeReference = legacy;
   let properties: Record<string, ArrayLike<unknown>>;
   if (declarations) {
     if (
-      legacy ||
+      legacy !== undefined ||
       declarations.length !== 1 ||
       metadata?.propertyTables?.length !== 1 ||
       metadata.propertyTextures?.length ||
@@ -87,6 +98,7 @@ export function extractMeshFeatures(
       );
     const declaration = declarations[0];
     if (
+      typeof declaration.attribute !== 'number' ||
       !Number.isInteger(declaration.attribute) ||
       declaration.attribute < 0 ||
       declaration.propertyTable !== 0 ||
@@ -98,7 +110,7 @@ export function extractMeshFeatures(
         'MESH_FEATURE_MAPPING_UNSUPPORTED',
         'Features require an attribute and property table 0 without null/texture/implicit IDs'
       );
-    attribute = primitive.attributes[`_FEATURE_ID_${declaration.attribute}`];
+    attributeReference = primitive.attributes[`_FEATURE_ID_${declaration.attribute}`];
     const table = metadata.propertyTables[0];
     if (
       table.class !== options.metadataClass ||
@@ -191,7 +203,7 @@ export function extractMeshFeatures(
           : (property.default ?? null);
       const decoded = data;
       if (property.noData === undefined || data === undefined) {
-        if (decoded !== undefined) properties[name] = decoded;
+        if (decoded !== undefined) properties[name] = decoded as ArrayLike<unknown>;
         else propertyMappings.set(name, {defaultValue});
         continue;
       }
@@ -224,6 +236,15 @@ export function extractMeshFeatures(
     count = payload.header?.batchLength ?? Number(payload.featureTableJson?.BATCH_LENGTH);
     properties = (payload.batchTableJson as Record<string, ArrayLike<unknown>>) || {};
   }
+  const accessor =
+    attributeReference === undefined ? undefined : getGLTFAccessor(gltf, attributeReference);
+  const attribute = accessor
+    ? {
+        ...accessor,
+        components: accessor.type === 'SCALAR' ? 1 : Number(accessor.type.slice(3)),
+        value: getGLTFAccessorValue(gltf, accessor)
+      }
+    : undefined;
   const vertexCount = mesh.attributes.POSITION.value.length / 3;
   if (
     !Number.isSafeInteger(count) ||

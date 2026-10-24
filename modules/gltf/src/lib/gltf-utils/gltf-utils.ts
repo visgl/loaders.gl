@@ -4,7 +4,7 @@
 
 import {assert} from '../utils/assert';
 
-import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
+import type {GLTFWithBuffers, GLTFAccessor} from '../types/gltf-types';
 import {BYTES, COMPONENTS} from './gltf-constants';
 
 /**
@@ -113,21 +113,50 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
  * @param gltf - the gltf content of a GLTF tile
  * @returns - total memory usage in bytes
  */
-export function getMemoryUsageGLTF(gltf: GLTFPostprocessed): number {
-  let {images, bufferViews} = gltf;
-  images = images || [];
-  bufferViews = bufferViews || [];
-  const imageBufferViews = images.map(i => i.bufferView);
-  bufferViews = bufferViews.filter(view => !imageBufferViews.includes(view as any));
-
-  const bufferMemory = bufferViews.reduce((acc, view) => acc + view.byteLength, 0);
-
-  // Assume each pixel of the texture is 4 channel with mimmaps (which add 33%)
-  // TODO correctly handle compressed textures
-  const pixelCount = images.reduce((acc, image) => {
-    // @ts-ignore
-    const {width, height} = (image as any).image;
-    return acc + width * height;
-  }, 0);
+export function getMemoryUsageGLTF(gltf: GLTFWithBuffers): number {
+  const imageBufferViews = new Set((gltf.json.images || []).map(image => image.bufferView));
+  const liveBufferViews = new Set<number>();
+  const decodedValues = new Set<ArrayBufferView>();
+  const accessors = new Set<GLTFAccessor>();
+  let materializedMemory = 0;
+  /** Count current accessor storage without reading or allocating its values. */
+  const addAccessorStorage = (reference: number | GLTFAccessor | undefined): void => {
+    const accessor = typeof reference === 'number' ? gltf.json.accessors?.[reference] : reference;
+    if (!accessor || accessors.has(accessor)) return;
+    accessors.add(accessor);
+    const value = (accessor as GLTFAccessor & {value?: ArrayBufferView}).value;
+    if (ArrayBuffer.isView(value)) {
+      if (!decodedValues.has(value)) materializedMemory += value.byteLength;
+      decodedValues.add(value);
+    } else if (accessor.sparse || accessor.bufferView === undefined) {
+      materializedMemory +=
+        accessor.count * BYTES[accessor.componentType] * COMPONENTS[accessor.type];
+    } else {
+      liveBufferViews.add(accessor.bufferView);
+    }
+  };
+  for (const accessor of gltf.json.accessors || []) {
+    // Unused Draco declarations can lack storage after decoding into inline accessors.
+    if (accessor.bufferView !== undefined || accessor.sparse || 'value' in accessor)
+      addAccessorStorage(accessor);
+  }
+  for (const mesh of gltf.json.meshes || []) {
+    for (const primitive of mesh.primitives) {
+      addAccessorStorage(primitive.indices);
+      for (const reference of Object.values(primitive.attributes)) addAccessorStorage(reference);
+      for (const target of primitive.targets || []) {
+        for (const reference of Object.values(target)) addAccessorStorage(reference);
+      }
+    }
+  }
+  const bufferMemory = [...liveBufferViews].reduce(
+    (total, index) =>
+      total + (imageBufferViews.has(index) ? 0 : gltf.json.bufferViews?.[index]?.byteLength || 0),
+    materializedMemory
+  );
+  const pixelCount = (gltf.images || []).reduce(
+    (total, image) => total + ((image as any)?.width || 0) * ((image as any)?.height || 0),
+    0
+  );
   return bufferMemory + Math.ceil(4 * pixelCount * MIPMAP_FACTOR);
 }

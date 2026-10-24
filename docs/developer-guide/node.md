@@ -61,7 +61,7 @@ yarn add @loaders.gl/core
 ```typescript
 import '@loaders.gl/core/polyfills';
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const table = await load('data.csv', CSVLoader);
 ```

@@ -49,7 +49,7 @@ Install loaders.gl core and the format modules you would like to use.
 Each format is published as a separate npm module.
 
 ```shell
-yarn add @loaders.gl/core @loaders.gl/csv
+yarn add @loaders.gl/core @loaders.gl/tables/csv
 ```
 
 ## Usage
@@ -58,7 +58,7 @@ Use `load` to fetch and parse a URL. Use `parse` when you already have the data,
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const data = await load('data.csv', CSVLoader);
 ```
@@ -70,7 +70,7 @@ to `load` or `parse`. Existing applications can still register loaders once:
 
 ```typescript
 import {registerLoaders} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 registerLoaders([CSVLoader]);
 ```
 

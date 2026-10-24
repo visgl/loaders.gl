@@ -48,8 +48,6 @@ export type ParseGLTFOptions = ParseGLBOptions & {
     options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
   ) => unknown | Promise<unknown>;
   excludeExtensions?: string[];
-  /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
-  postProcess?: never;
 };
 
 /**

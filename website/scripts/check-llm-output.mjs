@@ -129,7 +129,7 @@ const requiredIndexLinks = [
   'docs/developer-guide/get-started.md',
   'docs/developer-guide/using-loaders.md',
   'docs/developer-guide/working-with-ai.md',
-  'docs/modules/csv/api-reference/csv-loader.md'
+  'docs/modules/tables/csv/api-reference/csv-loader.md'
 ].map((relativePath) => new URL(relativePath, websiteUrl).href);
 for (const link of requiredIndexLinks) {
   if (!llmsTxt.includes(link)) {

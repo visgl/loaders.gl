@@ -24,7 +24,7 @@ async function preloadParquetSourceLoader(): Promise<SourceLoader<ParquetSource>
  * Lightweight Parquet source metadata.
  *
  * Use with the async `load()` API, which preloads the implementation, or import the runtime source
- * loader from `@loaders.gl/parquet/parquet-source-loader` for synchronous `createDataSource()`.
+ * loader from `@loaders.gl/tables/parquet/parquet-source-loader` for synchronous `createDataSource()`.
  */
 export const ParquetSourceLoader = {
   ...ParquetFormat,
@@ -93,7 +93,7 @@ export const ParquetSourceLoader = {
     _coreApi?: CoreAPI
   ): ParquetSource {
     throw new Error(
-      'ParquetSourceLoader requires async load() or an explicit @loaders.gl/parquet/parquet-source-loader import'
+      'ParquetSourceLoader requires async load() or an explicit @loaders.gl/tables/parquet/parquet-source-loader import'
     );
   }
 } as const satisfies SourceLoader<ParquetSource>;

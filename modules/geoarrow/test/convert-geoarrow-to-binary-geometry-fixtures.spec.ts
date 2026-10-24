@@ -10,7 +10,7 @@ import {
 } from '@loaders.gl/geoarrow';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {load} from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/arrow';
+import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
 import {
   GEOARROW_POINT_FILE,
   GEOARROW_MULTIPOINT_FILE,
@@ -19,7 +19,7 @@ import {
   GEOARROW_POLYGON_FILE,
   GEOARROW_MULTIPOLYGON_FILE,
   GEOARROW_MULTIPOLYGON_HOLE_FILE
-} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
+} from '@loaders.gl/tables/arrow/test/data/geoarrow/test-cases';
 const expectedPointBinaryGeometry = {
   binaryGeometries: [
     {

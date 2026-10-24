@@ -2,164 +2,59 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect as vitestExpect} from 'vitest';
+import {expect} from 'vitest';
 
-type AssertionTarget = {
-  ok(value: unknown, message?: string): void;
-  notOk(value: unknown, message?: string): void;
-  equal(actual: unknown, expected: unknown, message?: string): void;
-  equals?(actual: unknown, expected: unknown, message?: string): void;
-};
-
-function getAssertionTarget(assertionTarget?: AssertionTarget): AssertionTarget {
-  if (assertionTarget) {
-    return assertionTarget;
-  }
-
-  const expectFunction =
-    (globalThis as typeof globalThis & {expect?: (value: unknown, message?: string) => any})
-      .expect || vitestExpect;
-
-  if (!expectFunction) {
-    throw new Error('validateLoader requires tape assertions or a global expect');
-  }
-
-  return {
-    ok(value, message) {
-      expectFunction(value, message).toBeTruthy();
-    },
-    notOk(value, message) {
-      expectFunction(value, message).toBeFalsy();
-    },
-    equal(actual, expected, message) {
-      expectFunction(actual, message).toBe(expected);
-    },
-    equals(actual, expected, message) {
-      expectFunction(actual, message).toBe(expected);
-    }
-  };
-}
-
-function resolveAssertionsAndValue<T>(
-  assertionTargetOrValue: AssertionTarget | T,
-  valueOrName?: T | string,
-  name?: string
-): {assertionTarget: AssertionTarget; value: T; name: string} {
-  if (
-    assertionTargetOrValue &&
-    typeof assertionTargetOrValue === 'object' &&
-    ('ok' in assertionTargetOrValue || 'equal' in assertionTargetOrValue)
-  ) {
-    return {
-      assertionTarget: getAssertionTarget(assertionTargetOrValue as AssertionTarget),
-      value: valueOrName as T,
-      name: name || ''
-    };
-  }
-
-  return {
-    assertionTarget: getAssertionTarget(),
-    value: assertionTargetOrValue as T,
-    name: (valueOrName as string) || ''
-  };
-}
-
-export function validateLoader(
-  assertionTargetOrLoader: AssertionTarget | any,
-  loaderOrName?: any,
-  name = ''
-) {
-  const {
-    assertionTarget,
-    value: loader,
-    name: resolvedName
-  } = resolveAssertionsAndValue(assertionTargetOrLoader, loaderOrName, name);
-
-  assertionTarget.ok(
-    typeof loader.id === 'string',
-    `Loader ${resolvedName} loader.id is not defined`
-  );
-  assertionTarget.ok(loader, `Loader ${resolvedName} defined`);
-  assertionTarget.equal(typeof loader.name, 'string', `Loader ${resolvedName} has a name`);
-  assertionTarget.ok(
-    Array.isArray(loader.extensions),
-    `Loader ${resolvedName} has an extensions array`
-  );
-  assertionTarget.ok(
-    Array.isArray(loader.mimeTypes),
-    `Loader ${resolvedName} has a mimeTypes array`
-  );
+/** Validates loader metadata with native Vitest assertions. */
+export function validateLoader(loader: any, name = '') {
+  expect(typeof loader.id === 'string', `Loader ${name} loader.id is not defined`).toBeTruthy();
+  expect(loader, `Loader ${name} defined`).toBeTruthy();
+  expect(typeof loader.name, `Loader ${name} has a name`).toBe('string');
+  expect(Array.isArray(loader.extensions), `Loader ${name} has an extensions array`).toBeTruthy();
+  expect(Array.isArray(loader.mimeTypes), `Loader ${name} has a mimeTypes array`).toBeTruthy();
 
   const options = loader.options || {};
-  assertionTarget.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');
-  if (resolvedName.includes('Worker')) {
-    assertionTarget.ok('worker' in loader, `Loader ${resolvedName} loader.worker is not defined`);
+  expect(!('workerUrl' in options), 'workerUrl is not defined on loader.options').toBeTruthy();
+  if (name.includes('Worker')) {
+    expect('worker' in loader, `Loader ${name} loader.worker is not defined`).toBeTruthy();
   }
 
-  // const loaderOptions = options[loader.id] || {};
-  if (!loader.parse) {
-    // t.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
-  } else {
-    assertionTarget.equal(
-      typeof loader.parse,
-      'function',
-      `Loader ${resolvedName} has 'parse' function`
-    );
+  if (loader.parse) {
+    expect(typeof loader.parse, `Loader ${name} has 'parse' function`).toBe('function');
     // Call parse just to ensure it returns a promise
     const promise = loader.parse(new ArrayBuffer(0), {}).catch(_ => {});
-    assertionTarget.ok(promise.then, `Loader ${resolvedName} is async (returns a promise)`);
+    expect(promise.then, `Loader ${name} is async (returns a promise)`).toBeTruthy();
   }
 }
 
-export function validateWriter(
-  assertionTargetOrWriter: AssertionTarget | any,
-  writerOrName?: any,
-  name = ''
-) {
-  const {
-    assertionTarget,
-    value: writer,
-    name: resolvedName
-  } = resolveAssertionsAndValue(assertionTargetOrWriter, writerOrName, name);
-  assertionTarget.ok(writer, `Writer ${resolvedName} defined`);
-  assertionTarget.equal(typeof writer.name, 'string', `Writer ${resolvedName} has a name`);
+/** Validates writer metadata with native Vitest assertions. */
+export function validateWriter(writer: any, name = '') {
+  expect(writer, `Writer ${name} defined`).toBeTruthy();
+  expect(typeof writer.name, `Writer ${name} has a name`).toBe('string');
 }
 
-export function validateBuilder(
-  assertionTargetOrBuilder: AssertionTarget | any,
-  builderOrName?: any,
-  name = ''
-) {
-  const {
-    assertionTarget,
-    value: builder,
-    name: resolvedName
-  } = resolveAssertionsAndValue(assertionTargetOrBuilder, builderOrName, name);
-  assertionTarget.ok(builder, `Builder ${resolvedName} defined`);
-  assertionTarget.equal(typeof builder.name, 'string', `Builder ${resolvedName} has a name`);
+/** Validates builder metadata with native Vitest assertions. */
+export function validateBuilder(builder: any, name = '') {
+  expect(builder, `Builder ${name} defined`).toBeTruthy();
+  expect(typeof builder.name, `Builder ${name} has a name`).toBe('string');
 }
 
 /**
  * Check if the returned data from loaders use the format specified in:
  *  /docs/developer-guide/category-pointcloud.md
  */
-export function validateMeshCategoryData(assertionTargetOrData, data?) {
-  const {assertionTarget, value} = resolveAssertionsAndValue(assertionTargetOrData, data);
-  data = value;
-  // t.ok(data.loaderData && data.loaderData.header, 'data has original header');
-
-  assertionTarget.ok(
+export function validateMeshCategoryData(data) {
+  expect(
     data.header && Number.isFinite(data.header.vertexCount),
     'data has normalized header'
-  );
-  assertionTarget.ok(
+  ).toBeTruthy();
+  expect(
     data.header.boundingBox &&
       data.header.boundingBox.length === 2 &&
       data.header.boundingBox.every(p => p.length === 3 && p.every(Number.isFinite)),
     'data header has boundingBox'
-  );
+  ).toBeTruthy();
 
-  assertionTarget.ok(Number.isFinite(data.mode), 'data has draw mode');
+  expect(Number.isFinite(data.mode), 'data has draw mode').toBeTruthy();
 
   let attributesError = data.attributes ? null : 'data does not have attributes';
   if (data.indices) {
@@ -169,16 +64,16 @@ export function validateMeshCategoryData(assertionTargetOrData, data?) {
     attributesError =
       attributesError || validateAttribute(attributeName, data.attributes[attributeName]);
   }
-  assertionTarget.notOk(attributesError, 'data has valid attributes');
+  expect(attributesError, 'data has valid attributes').toBeFalsy();
 }
 
 /**
  * Check if the returned data from loaders use the format specified in `ColumnarTable`:
  *  modules/core/src/schema/category/table/table-types.ts
  */
-export function validateTableCategoryData(t, data) {
-  t.equals(data.shape, 'columnar-table');
-  t.ok(data.data);
+export function validateTableCategoryData(data) {
+  expect(data.shape).toBe('columnar-table');
+  expect(data.data).toBeTruthy();
   let hasAttributes = false;
   let attributesError = false;
   for (const attributeName in data.data) {
@@ -191,13 +86,17 @@ export function validateTableCategoryData(t, data) {
     }
   }
   attributesError = attributesError || !hasAttributes;
-  t.notOk(attributesError, 'data has valid attributes');
+  expect(attributesError, 'data has valid attributes').toBeFalsy();
   if (data.schema) {
-    t.ok(data.schema.fields && data.schema.metadata, 'Schema is instance of `Schema` class');
-    t.ok(data.schema.fields, 'Schema has fields');
+    expect(
+      data.schema.fields && data.schema.metadata,
+      'Schema is instance of `Schema` class'
+    ).toBeTruthy();
+    expect(data.schema.fields, 'Schema has fields').toBeTruthy();
   }
 }
 
+/** Returns the first mesh attribute shape error, or null for valid attributes. */
 function validateAttribute(attributeName, attribute) {
   if (!ArrayBuffer.isView(attribute.value)) {
     return `${attributeName} value is not typed array`;

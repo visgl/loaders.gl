@@ -37,26 +37,32 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   }
 
   if (shouldRunBenchmark('shapefile')) {
-    const {default: shapefileBench} = await import('@loaders.gl/shapefile/test/shapefile.bench');
-    const {default: shpBench} = await import('@loaders.gl/shapefile/test/shp.bench');
+    const {default: shapefileBench} = await import(
+      '@loaders.gl/geospatial/shapefile/test/shapefile.bench'
+    );
+    const {default: shpBench} = await import('@loaders.gl/geospatial/shapefile/test/shp.bench');
     await shapefileBench(suite);
     await shpBench(suite);
   }
   if (shouldRunBenchmark('geopackage')) {
-    const {default: geopackageBench} = await import('@loaders.gl/geopackage/test/geopackage.bench');
+    const {default: geopackageBench} = await import(
+      '@loaders.gl/geospatial/geopackage/test/geopackage.bench'
+    );
     await geopackageBench(suite);
   }
   if (shouldRunBenchmark('flatgeobuf')) {
-    const {default: flatgeobufBench} = await import('@loaders.gl/flatgeobuf/test/flatgeobuf.bench');
+    const {default: flatgeobufBench} = await import(
+      '@loaders.gl/geospatial/flatgeobuf/test/flatgeobuf.bench'
+    );
     await flatgeobufBench(suite);
   }
   if (shouldRunBenchmark('kml')) {
-    const {default: kmlBench} = await import('@loaders.gl/kml/test/kml.bench');
+    const {default: kmlBench} = await import('@loaders.gl/geospatial/kml/test/kml.bench');
     await kmlBench(suite);
   }
 
   if (shouldRunBenchmark('csv')) {
-    const {default: csvBench} = await import('@loaders.gl/csv/test/csv.bench');
+    const {default: csvBench} = await import('@loaders.gl/tables/csv/test/csv.bench');
     await csvBench(suite);
   }
 
@@ -66,7 +72,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   }
 
   if (shouldRunBenchmark('parquet')) {
-    const {parquetBench} = await import('@loaders.gl/parquet/test/parquet.bench');
+    const {parquetBench} = await import('@loaders.gl/tables/parquet/test/parquet.bench');
     await parquetBench(suite);
   }
   if (shouldRunBenchmark('ply')) {
@@ -75,7 +81,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   }
 
   if (shouldRunBenchmark('json')) {
-    const {default: jsonBench} = await import('@loaders.gl/json/test/json-loader.bench');
+    const {default: jsonBench} = await import('@loaders.gl/tables/json/test/json-loader.bench');
     await jsonBench(suite);
   }
 
@@ -108,7 +114,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
     await dracoBench(suite);
   }
   if (shouldRunBenchmark('excel')) {
-    const {default: excelBench} = await import('@loaders.gl/excel/test/excel.bench');
+    const {default: excelBench} = await import('@loaders.gl/tables/excel/test/excel.bench');
     await excelBench(suite);
   }
 }

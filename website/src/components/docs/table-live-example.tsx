@@ -1,10 +1,10 @@
 import React, {type ChangeEvent, type DragEvent, type KeyboardEvent, type ReactNode, useEffect, useState} from 'react'
 
 import {load, type LoaderOptions} from '@loaders.gl/core'
-import {ArrowLoader} from '@loaders.gl/arrow'
-import {CSVLoader} from '@loaders.gl/csv'
-import {ExcelLoader} from '@loaders.gl/excel'
-import {JSONLoader, NDJSONLoader} from '@loaders.gl/json'
+import {ArrowLoader} from '@loaders.gl/tables/arrow'
+import {CSVLoader} from '@loaders.gl/tables/csv'
+import {ExcelLoader} from '@loaders.gl/tables/excel'
+import {JSONLoader, NDJSONLoader} from '@loaders.gl/tables/json'
 import type {Field, Table} from '@loaders.gl/core/schema'
 import {ChromeTraceLoader} from '@loaders.gl/traces'
 

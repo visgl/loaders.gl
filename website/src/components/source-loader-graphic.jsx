@@ -143,10 +143,10 @@ const sourceDocumentationLinks = {
   ArcGISMapTileSourceLoader: '/docs/modules/arcgis/arcgis-map-server',
   ArcGISVectorTileServerSourceLoader: '/docs/modules/arcgis/arcgis-vector-tile-server',
   COPCSourceLoader: '/docs/modules/copc/api-reference/copc-source-loader',
-  CSWSourceLoader: '/docs/modules/wms/api-reference/csw-source-loader',
+  CSWSourceLoader: '/docs/modules/ogc/wms/api-reference/csw-source-loader',
   DuckDBSQLSource: '/docs/modules/sql/api-reference/sql-source',
-  FlatGeobufSourceLoader: '/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader',
-  GeoPackageSourceLoader: '/docs/modules/geopackage/api-reference/geopackage-source',
+  FlatGeobufSourceLoader: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader',
+  GeoPackageSourceLoader: '/docs/modules/geospatial/geopackage/api-reference/geopackage-source',
   GeoTIFFSourceLoader: '/docs/modules/geotiff/api-reference/geotiff-source-loader',
   I3SSource: '/docs/modules/tiles-3d/api-reference/i3s-source',
   MLTSourceLoader: '/docs/modules/mlt/api-reference/mlt-source-loader',
@@ -157,9 +157,9 @@ const sourceDocumentationLinks = {
   SnowflakeSQLSource: '/docs/modules/sql/api-reference/sql-source',
   ArrowTableTileSourceLoader: '/docs/modules/mvt/api-reference/arrow-table-tile-source-loader',
   Tiles3DSource: '/docs/modules/tiles-3d/api-reference/tiles-3d-source',
-  WFSSourceLoader: '/docs/modules/wms/formats/wfs',
-  WMSSourceLoader: '/docs/modules/wms/api-reference/wms-source-loader',
-  WMTSSourceLoader: '/docs/modules/wms/formats/wmts'
+  WFSSourceLoader: '/docs/modules/ogc/wms/formats/wfs',
+  WMSSourceLoader: '/docs/modules/ogc/wms/api-reference/wms-source-loader',
+  WMTSSourceLoader: '/docs/modules/ogc/wms/formats/wmts'
 };
 
 const loadingManagerDocumentationLinks = {

@@ -47,7 +47,7 @@ import {LASCOPCLoaderWithParser} from '../src/las-copc-loader';
 import {LAZPerfLoaderWithParser} from '../src/lazperf-loader';
 import {LAZRsLoaderWithParser} from '../src/laz-rs-loader';
 import {LASLoaderWithParser} from '../src/las-loader';
-// import {ArrowLoader} from '@loaders.gl/arrow';
+// import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
 const LAS_POINT_COUNT = 808042;
@@ -83,20 +83,7 @@ const LAZ_1_4_PARITY_VARIANTS = [
 setLoaderOptions({
   _workerType: 'test'
 });
-const vitestAssertions = {
-  ok(value: unknown, message?: string) {
-    expect(value, message).toBeTruthy();
-  },
-  notOk(value: unknown, message?: string) {
-    expect(value, message).toBeFalsy();
-  },
-  equal(actual: unknown, expected: unknown, message?: string) {
-    expect(actual, message).toBe(expected);
-  },
-  equals(actual: unknown, expected: unknown, message?: string) {
-    expect(actual, message).toBe(expected);
-  }
-};
+
 test('LASLoader#loader conformance', () => {
   validateLoader(LASLoader, 'LASLoader');
   validateLoader(LASWorkerLoader, 'LASWorkerLoader');
@@ -138,7 +125,7 @@ test('LASLoader#parse(binary)', async () => {
     las: {shape: 'mesh'},
     core: {worker: false}
   });
-  validateMeshCategoryData(vitestAssertions, data);
+  validateMeshCategoryData(data);
   expect(data.header?.vertexCount, 'Original header was found').toBe(data.loaderData.totalRead);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.indices, 'INDICES attribute was not preset').toBeFalsy();
@@ -156,7 +143,7 @@ test('LASLoader#parseInBatches(mesh)', async () => {
   const batchVertexCounts: number[] = [];
   let totalVertexCount = 0;
   for await (const batch of batches as AsyncIterable<any>) {
-    validateMeshCategoryData(vitestAssertions, batch);
+    validateMeshCategoryData(batch);
     expect(batch.mode, 'batch mode is POINTS (0)').toBe(0);
     expect(batch.attributes.POSITION, 'batch includes POSITION attribute').toBeTruthy();
     expect(batch.attributes.intensity, 'batch includes intensity attribute').toBeTruthy();
@@ -267,7 +254,7 @@ test('LASLoader#parse LAZ 1.2 PDRF 3 matches laz-rs variant', async () => {
     las: {shape: 'mesh'},
     core: {worker: false}
   });
-  validateMeshCategoryData(vitestAssertions, actual);
+  validateMeshCategoryData(actual);
   expect(actual.loaderData.versionAsString, 'fixture is LAS 1.2').toBe('1.2');
   expect(actual.loaderData.pointsFormatId, 'fixture uses point format 3').toBe(3);
   expect(actual.header.vertexCount, 'fixture point count is expected').toBe(
@@ -432,7 +419,7 @@ test('LASCOPCLoader#parse LAS 1.4 fixture', async () => {
     las: {shape: 'mesh'},
     core: {worker: false}
   });
-  validateMeshCategoryData(vitestAssertions, data);
+  validateMeshCategoryData(data);
   expect(data.loaderData.versionAsString, 'fixture is LAS 1.4').toBe('1.4');
   expect(data.loaderData.pointsFormatId, 'fixture uses point format 7').toBe(7);
   expect(data.header.vertexCount, 'fixture point count is expected').toBe(3);
@@ -447,7 +434,7 @@ test('LASLoader#parse LAS 1.4 fixture matches COPC variant', async () => {
     las: {shape: 'mesh'},
     core: {worker: false}
   });
-  validateMeshCategoryData(vitestAssertions, data);
+  validateMeshCategoryData(data);
   expect(data.loaderData.versionAsString, 'fixture is LAS 1.4').toBe('1.4');
   expect(data.loaderData.pointsFormatId, 'fixture uses point format 7').toBe(7);
   expect(data.header.vertexCount, 'fixture point count is expected').toBe(3);
@@ -489,7 +476,7 @@ test('LASCOPCLoader#parse LAZ 1.4 fixture', async () => {
     las: {shape: 'mesh'},
     core: {worker: false}
   });
-  validateMeshCategoryData(vitestAssertions, data);
+  validateMeshCategoryData(data);
   expect(data.loaderData.versionAsString, 'fixture is LAS 1.4').toBe('1.4');
   expect(data.loaderData.pointsFormatId, 'fixture uses point format 7').toBe(7);
   expect(data.header.vertexCount, 'fixture point count is expected').toBe(LAZ_1_4_POINT_COUNT);
@@ -500,7 +487,7 @@ test('LASLoader#parse LAZ 1.4 matches other loader variants', async () => {
     las: {shape: 'mesh'},
     core: {worker: false}
   });
-  validateMeshCategoryData(vitestAssertions, actual);
+  validateMeshCategoryData(actual);
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
     const expected = await parse(fetchFile(LAZ_1_4_BINARY_URL), loader, {
       las: {shape: 'mesh'},
@@ -1527,7 +1514,7 @@ test('LASWorker#parse(binary) extra bytes', async () => {
     las: {shape: 'mesh'},
     core: {worker: false}
   });
-  validateMeshCategoryData(vitestAssertions, data);
+  validateMeshCategoryData(data);
   expect(data.header?.vertexCount, 'Original header was found').toBe(data.loaderData.totalRead);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.indices, 'INDICES attribute was not preset').toBeFalsy();
@@ -1541,21 +1528,21 @@ test('LASWorkerLoader#load(worker)', async () => {
     return;
   }
   const data = await load(LAS_BINARY_URL, LASWorkerLoader, {las: {shape: 'mesh'}});
-  validateMeshCategoryData(vitestAssertions, data);
+  validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(
     LAS_POINT_COUNT * 3
   );
 });
 test('LASLoader#shape="mesh"', async () => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
-  validateMeshCategoryData(vitestAssertions, result);
+  validateMeshCategoryData(result);
 });
 // Related code was commented due to breaking pointcloud example on the website
 test.skip('LASLoader#shape="columnar-table"', async () => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'columnar-table'}
   });
-  validateTableCategoryData(vitestAssertions, result);
+  validateTableCategoryData(result);
 });
 async function getCOPCRootChunk() {
   copcArrayBufferPromise ||= fetchFile(COPC_BINARY_URL).then(response => response.arrayBuffer());

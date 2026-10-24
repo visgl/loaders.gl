@@ -13,10 +13,10 @@ type ArrowDataPlaneNode = {
 };
 
 const INPUTS: readonly ArrowDataPlaneNode[] = [
-  {label: 'Parquet', detail: 'columns and row groups', to: '/docs/modules/parquet/formats/parquet'},
-  {label: 'CSV / JSONL', detail: 'streamed records', to: '/docs/modules/csv/formats/csv'},
+  {label: 'Parquet', detail: 'columns and row groups', to: '/docs/modules/tables/parquet/formats/parquet'},
+  {label: 'CSV / JSONL', detail: 'streamed records', to: '/docs/modules/tables/csv/formats/csv'},
   {label: 'Geo formats', detail: 'features and geometry columns', to: '/docs/specifications/category-gis'},
-  {label: 'Arrow IPC', detail: 'file or stream', to: '/docs/modules/arrow/formats/arrow'}
+  {label: 'Arrow IPC', detail: 'file or stream', to: '/docs/modules/tables/arrow/formats/arrow'}
 ];
 
 const OUTPUTS: readonly ArrowDataPlaneNode[] = [

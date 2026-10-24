@@ -23,7 +23,10 @@ import {padToNBytes, copyToArray} from '@loaders.gl/core/loader-utils';
 import {assert} from '../utils/assert';
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 
-import {getTypedArrayForAccessor as _getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
+import {
+  getTypedArrayForAccessor as _getTypedArrayForAccessor,
+  getTypedArrayForBufferView as readBufferView
+} from '../gltf-utils/get-typed-array';
 
 type Extension = {[key: string]: any};
 
@@ -63,7 +66,7 @@ export class GLTFScenegraph {
 
     // Initialize buffers
     if (this.gltf.buffers && this.gltf.buffers[0]) {
-      this.byteLength = this.gltf.buffers[0].byteLength;
+      this.byteLength = padToNBytes(this.gltf.buffers[0].byteLength, 4);
       this.sourceBuffers = [this.gltf.buffers[0]];
     }
   }
@@ -185,28 +188,14 @@ export class GLTFScenegraph {
    * @returns a `Uint8Array`
    */
   getTypedArrayForBufferView(bufferView: number | object): Uint8Array {
-    bufferView = this.getBufferView(bufferView);
-    // @ts-ignore
-    const bufferIndex = bufferView.buffer;
-
-    // Get hold of the arrayBuffer
-    // const buffer = this.getBuffer(bufferIndex);
-    const binChunk = this.gltf.buffers[bufferIndex];
-    assert(binChunk);
-
-    // @ts-ignore
-    const byteOffset = (bufferView.byteOffset || 0) + binChunk.byteOffset;
-    // @ts-ignore
-    return new Uint8Array(binChunk.arrayBuffer, byteOffset, bufferView.byteLength);
+    return readBufferView(this.gltf.json, this.gltf.buffers, bufferView);
   }
 
   /** Accepts accessor index or accessor object
    * @returns a typed array with type that matches the types
    */
-  getTypedArrayForAccessor(accessor: number | object): any {
-    // @ts-ignore
-    const gltfAccessor = this.getAccessor(accessor);
-    return _getTypedArrayForAccessor(this.gltf.json, this.gltf.buffers, gltfAccessor);
+  getTypedArrayForAccessor(accessor: number | GLTFAccessor): any {
+    return _getTypedArrayForAccessor(this.gltf.json, this.gltf.buffers, accessor);
   }
 
   /** accepts accessor index or accessor object
@@ -579,23 +568,46 @@ export class GLTFScenegraph {
       this.gltf.buffers = [];
       return;
     }
-    // Allocate total array
-    const totalByteLength = this.byteLength;
+    // Builder additions belong to buffer zero. Retain all other loaded buffers and remap
+    // their views when explicitly packing the scene into a single GLB binary chunk.
+    const bufferOffsets: number[] = [0];
+    let totalByteLength = this.byteLength;
+    for (let bufferIndex = 1; bufferIndex < this.gltf.buffers.length; bufferIndex++) {
+      const buffer = this.gltf.buffers[bufferIndex];
+      if (!buffer) continue;
+      // Eight-byte alignment also preserves draft double and 64-bit accessor alignment.
+      bufferOffsets[bufferIndex] = padToNBytes(totalByteLength, 8);
+      totalByteLength = bufferOffsets[bufferIndex] + padToNBytes(buffer.byteLength, 4);
+    }
     const arrayBuffer = new ArrayBuffer(totalByteLength);
     const targetArray = new Uint8Array(arrayBuffer);
-
-    // Copy each array into
-    let dstByteOffset = 0;
+    let destinationByteOffset = 0;
     for (const sourceBuffer of this.sourceBuffers || []) {
-      dstByteOffset = copyToArray(sourceBuffer, targetArray, dstByteOffset);
+      destinationByteOffset = copyToArray(sourceBuffer, targetArray, destinationByteOffset);
     }
-
-    // Update the glTF BIN CHUNK byte length
-    if (this.json?.buffers?.[0]) {
-      this.json.buffers[0].byteLength = totalByteLength;
-    } else {
-      this.json.buffers = [{byteLength: totalByteLength}];
+    for (let bufferIndex = 1; bufferIndex < this.gltf.buffers.length; bufferIndex++) {
+      const buffer = this.gltf.buffers[bufferIndex];
+      if (buffer) copyToArray(buffer, targetArray, bufferOffsets[bufferIndex]);
     }
+    for (const bufferView of this.json.bufferViews || []) {
+      const bufferOffset = bufferOffsets[bufferView.buffer];
+      assert(bufferOffset !== undefined);
+      bufferView.byteOffset = bufferOffset + (bufferView.byteOffset || 0);
+      bufferView.buffer = 0;
+      for (const name of ['EXT_meshopt_compression', 'KHR_meshopt_compression']) {
+        const extension = bufferView.extensions?.[name] as
+          | {buffer: number; byteOffset?: number}
+          | undefined;
+        if (extension) {
+          const extensionOffset = bufferOffsets[extension.buffer];
+          assert(extensionOffset !== undefined);
+          extension.byteOffset = extensionOffset + (extension.byteOffset || 0);
+          extension.buffer = 0;
+        }
+      }
+    }
+    this.byteLength = totalByteLength;
+    this.json.buffers = [{byteLength: totalByteLength}];
 
     // Save generated arrayBuffer
     this.gltf.binary = arrayBuffer;

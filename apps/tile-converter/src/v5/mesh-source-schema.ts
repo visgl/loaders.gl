@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GLTFPostprocessed, GLTF_EXT_structural_metadata_ClassProperty} from '@loaders.gl/gltf';
+import type {
+  GLTF,
+  GLTF_EXT_structural_metadata_ClassProperty,
+  GLTF_EXT_structural_metadata_GLTF
+} from '@loaders.gl/gltf';
 import type {DataType, Field} from '@loaders.gl/core/schema';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';
@@ -32,10 +36,12 @@ const SCALAR_TYPES: Readonly<Record<string, DataType>> = {
  * This does not authorize destination type changes or loss of source class semantics.
  */
 export function createMeshSourceFeatureOptions(
-  gltf: GLTFPostprocessed,
+  gltf: GLTF,
   options: MeshSourceSchemaOptions
 ): MeshSourceFeatureOptions {
-  const metadata = gltf.extensions?.EXT_structural_metadata;
+  const metadata = gltf.extensions?.EXT_structural_metadata as
+    | GLTF_EXT_structural_metadata_GLTF
+    | undefined;
   const table = metadata?.propertyTables?.[0];
   const properties = metadata?.schema?.classes?.[options.metadataClass]?.properties;
   if (

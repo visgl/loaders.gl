@@ -1,3 +1,4 @@
+import {getGLTFAccessorValue} from '@loaders.gl/gltf';
 import {expect, test} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {loadI3STile} from '@loaders.gl/tiles-3d/i3s/test/test-utils/load-utils';
@@ -93,8 +94,11 @@ test('tile-converter(3d-tiles)#content converter - should normalise positions co
       tile: {type: 'b3dm'}
     });
     expect(decodedContent).toBeTruthy();
-    const positionOffsets = decodedContent.gltf.meshes[0].primitives[0].attributes.POSITION.value;
-    const matrix = decodedContent.gltf.nodes[0].matrix;
+    const positionOffsets = getGLTFAccessorValue(
+      decodedContent.gltf,
+      decodedContent.gltf.json.meshes[0].primitives[0].attributes.POSITION
+    );
+    const matrix = decodedContent.gltf.json.nodes[0].matrix;
     const positions = _transformPositionsWithMatrix(positionOffsets, matrix, cartographicOrigin);
     expect(_areArraysEqualWithDelta(originPositions, positions, 0.0001)).toBeTruthy();
   }
@@ -120,7 +124,8 @@ test('tile-converter(3d-tiles)#content converter - should add KHR_materials_unli
       tile: {type: 'b3dm'}
     });
     expect(decodedContent).toBeTruthy();
-    const material = decodedContent.gltf.meshes[0].primitives[0].material;
+    const material =
+      decodedContent.gltf.json.materials[decodedContent.gltf.json.meshes[0].primitives[0].material];
     expect(material.unlit).toBeTruthy();
   }
 });
@@ -145,7 +150,8 @@ test('tile-converter(3d-tiles)#content converter - should NOT add KHR_materials_
       tile: {type: 'b3dm'}
     });
     expect(decodedContent).toBeTruthy();
-    const material = decodedContent.gltf.meshes[0].primitives[0].material;
+    const material =
+      decodedContent.gltf.json.materials[decodedContent.gltf.json.meshes[0].primitives[0].material];
     expect(material.unlit).toBeFalsy();
   }
 });
@@ -165,10 +171,12 @@ test('tile-converter(3d-tiles)#content converter - should convert material', asy
       tile: {type: 'b3dm'}
     });
     expect(decodedContent).toBeTruthy();
-    expect(decodedContent.gltf.materials[0]).toBeTruthy();
-    expect(decodedContent.gltf.materials[0].doubleSided).toBeTruthy();
-    expect(decodedContent.gltf.materials[0].emissiveFactor).toEqual([1, 1, 1]);
-    expect(decodedContent.gltf.materials[0].pbrMetallicRoughness.baseColorTexture.index).toBe(0);
+    expect(decodedContent.gltf.json.materials[0]).toBeTruthy();
+    expect(decodedContent.gltf.json.materials[0].doubleSided).toBeTruthy();
+    expect(decodedContent.gltf.json.materials[0].emissiveFactor).toEqual([1, 1, 1]);
+    expect(decodedContent.gltf.json.materials[0].pbrMetallicRoughness.baseColorTexture.index).toBe(
+      0
+    );
   }
 });
 test('tile-converter(3d-tiles)#content converter - should not convert incorrect normals', async () => {
@@ -187,8 +195,8 @@ test('tile-converter(3d-tiles)#content converter - should not convert incorrect 
       tile: {type: 'b3dm'}
     });
     expect(decodedContent).toBeTruthy();
-    expect(decodedContent.gltf.meshes[0].primitives[0].attributes).toBeTruthy();
-    expect(decodedContent.gltf.meshes[0].primitives[0].attributes.NORMAL).toBeTruthy();
+    expect(decodedContent.gltf.json.meshes[0].primitives[0].attributes).toBeTruthy();
+    expect(decodedContent.gltf.json.meshes[0].primitives[0].attributes.NORMAL).toBeTruthy();
     // If all normals are 0, converter should not convert such normals
     tile.content.attributes.normals.value.fill(0);
     const encodedContent2 = await contentConverter.convert({
@@ -203,8 +211,8 @@ test('tile-converter(3d-tiles)#content converter - should not convert incorrect 
       tile: {type: 'b3dm'}
     });
     expect(decodedContent2).toBeTruthy();
-    expect(decodedContent2.gltf.meshes[0].primitives[0].attributes).toBeTruthy();
-    expect(decodedContent2.gltf.meshes[0].primitives[0].attributes.NORMAL).toBeFalsy();
+    expect(decodedContent2.gltf.json.meshes[0].primitives[0].attributes).toBeTruthy();
+    expect(decodedContent2.gltf.json.meshes[0].primitives[0].attributes.NORMAL).toBeFalsy();
   }
 });
 test('tile-converter(3d-tiles)#content converter - should handle geometry without normals', async () => {
@@ -224,8 +232,8 @@ test('tile-converter(3d-tiles)#content converter - should handle geometry withou
       tile: {type: 'b3dm'}
     });
     expect(decodedContent).toBeTruthy();
-    expect(decodedContent.gltf.meshes[0].primitives[0].attributes).toBeTruthy();
-    expect(decodedContent.gltf.meshes[0].primitives[0].attributes.NORMAL).toBeFalsy();
+    expect(decodedContent.gltf.json.meshes[0].primitives[0].attributes).toBeTruthy();
+    expect(decodedContent.gltf.json.meshes[0].primitives[0].attributes.NORMAL).toBeFalsy();
   }
 });
 test('tile-converter(3d-tiles)#content converter - should convert i3s node data to b3dm encoded data with ktx2 textures', async () => {
@@ -269,10 +277,13 @@ test('tile-converter(3d-tiles)#content converter - should generate batchIds duri
       '3d-tiles': {isTileset: false}
     });
     expect(decodedContent).toBeTruthy();
-    expect(decodedContent.gltf.meshes[0].primitives[0].attributes._BATCHID).toBeTruthy();
-    expect(decodedContent.gltf.meshes[0].primitives[0].attributes._BATCHID.value.length).toBe(
-      25638
-    );
+    expect(decodedContent.gltf.json.meshes[0].primitives[0].attributes._BATCHID).toBeTruthy();
+    expect(
+      getGLTFAccessorValue(
+        decodedContent.gltf,
+        decodedContent.gltf.json.meshes[0].primitives[0].attributes._BATCHID
+      ).length
+    ).toBe(25638);
   }
 });
 async function _loadAttributes(tile, attributeStorageInfo) {

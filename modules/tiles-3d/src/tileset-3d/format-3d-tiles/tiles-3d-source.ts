@@ -653,7 +653,9 @@ export class Tiles3DSource implements Tileset3DSource {
    */
   onTileLoaded(tileset: Tileset3D, tile: Tile3D, loadResult: TileContentLoadResult): void {
     const contents = tile.contents.length ? tile.contents : [tile.content];
-    const extensionsRemoved = contents.flatMap(content => content?.gltf?.extensionsRemoved || []);
+    const extensionsRemoved = contents.flatMap(
+      content => content?.gltf?.json.extensionsRemoved || []
+    );
     if (extensionsRemoved.includes('KHR_draco_mesh_compression')) {
       this.contentFormats.draco = true;
     }

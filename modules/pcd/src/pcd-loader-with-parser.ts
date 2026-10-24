@@ -13,7 +13,7 @@ import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
+} from '@loaders.gl/tables/arrow/transport';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import type {PCDMesh} from './lib/pcd-types';
 import {parsePCD, parsePCDHeader} from './lib/parse-pcd';

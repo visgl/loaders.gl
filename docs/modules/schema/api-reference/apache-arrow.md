@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Arrow guide', to: '/docs/developer-guide/apache-arrow'},
     {label: 'Schema module', to: '/docs/modules/schema'},
-    {label: 'ArrowLoader', to: '/docs/modules/arrow/api-reference/arrow-loader'}
+    {label: 'ArrowLoader', to: '/docs/modules/tables/arrow/api-reference/arrow-loader'}
   ]}
 />
 

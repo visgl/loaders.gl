@@ -14,7 +14,7 @@ import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/arrow/transport';
+} from '@loaders.gl/tables/arrow/transport';
 import type {PLYHeader, PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {

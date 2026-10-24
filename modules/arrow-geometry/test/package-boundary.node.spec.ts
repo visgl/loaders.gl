@@ -25,20 +25,12 @@ function readSources(directory: string): string {
 }
 
 test.each([
-  'arrow',
   'arrow-geometry',
   'arcgis',
-  'kml',
   'tiles',
-  'wms',
-  'csv',
+  'ogc',
   'tables',
-  'geospatial',
-  'json',
-  'flatgeobuf',
-  'geopackage',
-  'parquet',
-  'shapefile'
+  'geospatial'
 ])('%s does not depend on GIS or the GeoArrow processing package', moduleName => {
   const directory = join(modulesDirectory, moduleName);
   const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
@@ -88,19 +80,11 @@ test('GeoArrow is independent of GIS in source, project references and transitiv
 });
 
 test.each([
-  'arrow',
   'arcgis',
-  'kml',
   'tiles',
-  'wms',
-  'csv',
+  'ogc',
   'tables',
-  'geospatial',
-  'json',
-  'flatgeobuf',
-  'geopackage',
-  'parquet',
-  'shapefile'
+  'geospatial'
 ])('%s does not acquire GeoArrow through a compatibility dependency', moduleName => {
   expect(collectDependencies(moduleName)).not.toContain('geoarrow');
   expect(collectDependencies(moduleName)).not.toContain('gis');

@@ -10,7 +10,7 @@ import {createRangeStats, getRangeStats} from '@loaders.gl/core/loader-utils';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
 import {MVTSourceLoader, ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
-import {GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';

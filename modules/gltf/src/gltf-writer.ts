@@ -48,6 +48,9 @@ function encodeSync(gltf: GLTFWithBuffers, options: GLTFWriterOptions = {}) {
   }
   const {byteOffset = 0} = options;
   const gltfToEncode = encodeExtensions(gltf);
+  // Extension encoders repack JSON buffer references; keep the input container in sync.
+  gltf.buffers = gltfToEncode.buffers;
+  gltf.binary = gltfToEncode.binary;
 
   // Calculate length, then create arraybuffer and encode
   const byteLength = encodeGLTFSync(gltfToEncode, null, byteOffset, options);

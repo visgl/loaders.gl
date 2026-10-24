@@ -21,28 +21,8 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      // Zarr 0.5 advertises these public types via typings but omits them from package exports.
-      "zarr": ["node_modules/zarr/types/zarr.d.ts"],
-      "@loaders.gl/csv/csv-loader": [
-        "modules/csv/src/csv-loader-entry"
-      ],
-      "@loaders.gl/kml/kml-loader": [
-        "modules/kml/src/kml-loader-entry"
-      ],
-      "@loaders.gl/kml/gpx-loader": [
-        "modules/kml/src/gpx-loader-entry"
-      ],
-      "@loaders.gl/kml/tcx-loader": [
-        "modules/kml/src/tcx-loader-entry"
-      ],
-      "@loaders.gl/shapefile/shapefile-loader": [
-        "modules/shapefile/src/shapefile-loader-entry"
-      ],
-      "@loaders.gl/shapefile/shp-loader": [
-        "modules/shapefile/src/shp-loader-entry"
-      ],
-      "@loaders.gl/shapefile/dbf-loader": [
-        "modules/shapefile/src/dbf-loader-entry"
+      "zarr": [
+        "node_modules/zarr/types/zarr.d.ts"
       ],
       "@loaders.gl/tables": [
         "modules/tables/src"
@@ -233,68 +213,17 @@
       "@loaders.gl/tiles-3d/3d-tiles/test": [
         "modules/tiles-3d/test/3d-tiles"
       ],
-      "@loaders.gl/arrow": [
-        "modules/arrow/src"
-      ],
       "@loaders.gl/arrow-geometry": [
         "modules/arrow-geometry/src"
       ],
       "@loaders.gl/arrow-geometry/*": [
         "modules/arrow-geometry/src/*"
       ],
-      "@loaders.gl/arrow/arrow-loader": [
-        "modules/arrow/src/arrow-loader"
-      ],
-      "@loaders.gl/arrow/geoarrow-loader": [
-        "modules/arrow/src/geoarrow-loader"
-      ],
-      "@loaders.gl/arrow/types": [
-        "modules/arrow/src/types"
-      ],
-      "@loaders.gl/arrow/transport": [
-        "modules/arrow/src/transport"
-      ],
-      "@loaders.gl/arrow/test": [
-        "modules/arrow/test"
-      ],
-      "@loaders.gl/bson": [
-        "modules/bson/src"
-      ],
-      "@loaders.gl/bson/test": [
-        "modules/bson/test"
-      ],
-      "@loaders.gl/csv": [
-        "modules/csv/src"
-      ],
-      "@loaders.gl/csv/*": [
-        "modules/csv/src/*"
-      ],
-      "@loaders.gl/csv/test": [
-        "modules/csv/test"
-      ],
       "@loaders.gl/draco": [
         "modules/draco/src"
       ],
       "@loaders.gl/draco/test": [
         "modules/draco/test"
-      ],
-      "@loaders.gl/excel": [
-        "modules/excel/src"
-      ],
-      "@loaders.gl/excel/test": [
-        "modules/excel/test"
-      ],
-      "@loaders.gl/flatgeobuf": [
-        "modules/flatgeobuf/src"
-      ],
-      "@loaders.gl/flatgeobuf/test": [
-        "modules/flatgeobuf/test"
-      ],
-      "@loaders.gl/geopackage": [
-        "modules/geopackage/src"
-      ],
-      "@loaders.gl/geopackage/test": [
-        "modules/geopackage/test"
       ],
       "@loaders.gl/raster/geotiff/geotiff-raster-loader": [
         "modules/raster/src/geotiff/geotiff-raster-loader"
@@ -326,18 +255,6 @@
       "@loaders.gl/tiles-3d/i3s/test": [
         "modules/tiles-3d/test/i3s"
       ],
-      "@loaders.gl/json/fast-json-loader": [
-        "modules/json/src/fast-json-loader"
-      ],
-      "@loaders.gl/json": [
-        "modules/json/src"
-      ],
-      "@loaders.gl/json/test": [
-        "modules/json/test"
-      ],
-      "@loaders.gl/json/ndgeojson-loader": [
-        "modules/json/src/ndgeojson-loader.ts"
-      ],
       "@loaders.gl/config": [
         "modules/config/src"
       ],
@@ -346,15 +263,6 @@
       ],
       "@loaders.gl/config/test": [
         "modules/config/test"
-      ],
-      "@loaders.gl/kml": [
-        "modules/kml/src"
-      ],
-      "@loaders.gl/kml/*": [
-        "modules/kml/src/*"
-      ],
-      "@loaders.gl/kml/test": [
-        "modules/kml/test"
       ],
       "@loaders.gl/las": [
         "modules/las/src"
@@ -407,42 +315,6 @@
       "@loaders.gl/obj/test": [
         "modules/obj/test"
       ],
-      "@loaders.gl/parquet": [
-        "modules/parquet/src"
-      ],
-      "@loaders.gl/parquet/*": [
-        "modules/parquet/src/*"
-      ],
-      "@loaders.gl/parquet/test": [
-        "modules/parquet/test"
-      ],
-      "@loaders.gl/avro": [
-        "modules/avro/src"
-      ],
-      "@loaders.gl/avro/*": [
-        "modules/avro/src/*"
-      ],
-      "@loaders.gl/avro/test": [
-        "modules/avro/test"
-      ],
-      "@loaders.gl/lance": [
-        "modules/lance/src"
-      ],
-      "@loaders.gl/lance/*": [
-        "modules/lance/src/*"
-      ],
-      "@loaders.gl/lance/test": [
-        "modules/lance/test"
-      ],
-      "@loaders.gl/orc": [
-        "modules/orc/src"
-      ],
-      "@loaders.gl/orc/*": [
-        "modules/orc/src/*"
-      ],
-      "@loaders.gl/orc/test": [
-        "modules/orc/test"
-      ],
       "@loaders.gl/pcd": [
         "modules/pcd/src"
       ],
@@ -482,15 +354,6 @@
       "@loaders.gl/splats/test": [
         "modules/splats/test"
       ],
-      "@loaders.gl/stac": [
-        "modules/stac/src"
-      ],
-      "@loaders.gl/stac/*": [
-        "modules/stac/src/*"
-      ],
-      "@loaders.gl/stac/test": [
-        "modules/stac/test"
-      ],
       "@loaders.gl/scene": [
         "modules/scene/src"
       ],
@@ -508,12 +371,6 @@
       ],
       "@loaders.gl/potree/test": [
         "modules/potree/test"
-      ],
-      "@loaders.gl/shapefile": [
-        "modules/shapefile/src"
-      ],
-      "@loaders.gl/shapefile/test": [
-        "modules/shapefile/test"
       ],
       "@loaders.gl/tiles-3d/point-cloud-tile-source": [
         "modules/tiles-3d/src/point-cloud-tile-source.ts"
@@ -584,15 +441,6 @@
       "@loaders.gl/wkt/test": [
         "modules/wkt/test"
       ],
-      "@loaders.gl/wms": [
-        "modules/wms/src"
-      ],
-      "@loaders.gl/wms/*": [
-        "modules/wms/src/*"
-      ],
-      "@loaders.gl/wms/test": [
-        "modules/wms/test"
-      ],
       "@loaders.gl/services": [
         "modules/services/src"
       ],
@@ -661,6 +509,69 @@
       ],
       "@loaders.gl/core/schema-utils/test": [
         "modules/core/test/schema-utils-package"
+      ],
+      "@loaders.gl/tables/arrow/test": [
+        "modules/tables/test/arrow"
+      ],
+      "@loaders.gl/tables/avro/test": [
+        "modules/tables/test/avro"
+      ],
+      "@loaders.gl/tables/bson/test": [
+        "modules/tables/test/bson"
+      ],
+      "@loaders.gl/tables/csv/test": [
+        "modules/tables/test/csv"
+      ],
+      "@loaders.gl/tables/excel/test": [
+        "modules/tables/test/excel"
+      ],
+      "@loaders.gl/tables/json/test": [
+        "modules/tables/test/json"
+      ],
+      "@loaders.gl/tables/lance/test": [
+        "modules/tables/test/lance"
+      ],
+      "@loaders.gl/tables/orc/test": [
+        "modules/tables/test/orc"
+      ],
+      "@loaders.gl/tables/parquet/test": [
+        "modules/tables/test/parquet"
+      ],
+      "@loaders.gl/geospatial/flatgeobuf/test": [
+        "modules/geospatial/test/flatgeobuf"
+      ],
+      "@loaders.gl/geospatial/geopackage/test": [
+        "modules/geospatial/test/geopackage"
+      ],
+      "@loaders.gl/geospatial/kml/test": [
+        "modules/geospatial/test/kml"
+      ],
+      "@loaders.gl/geospatial/shapefile/test": [
+        "modules/geospatial/test/shapefile"
+      ],
+      "@loaders.gl/ogc": [
+        "modules/ogc/src"
+      ],
+      "@loaders.gl/ogc/test": [
+        "modules/ogc/test"
+      ],
+      "@loaders.gl/ogc/wms": [
+        "modules/ogc/src/wms"
+      ],
+      "@loaders.gl/ogc/wms/*": [
+        "modules/ogc/src/wms/*"
+      ],
+      "@loaders.gl/ogc/wms/test": [
+        "modules/ogc/test/wms"
+      ],
+      "@loaders.gl/ogc/stac": [
+        "modules/ogc/src/stac"
+      ],
+      "@loaders.gl/ogc/stac/*": [
+        "modules/ogc/src/stac/*"
+      ],
+      "@loaders.gl/ogc/stac/test": [
+        "modules/ogc/test/stac"
       ]
     },
     "plugins": [

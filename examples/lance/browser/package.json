@@ -6,7 +6,7 @@
   "dependencies": {
     "@deck.gl/core": "^9.4.0",
     "@deck.gl/layers": "^9.4.0",
-    "@loaders.gl/lance": "workspace:*"
+    "@loaders.gl/tables": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

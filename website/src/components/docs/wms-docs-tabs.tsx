@@ -33,11 +33,11 @@ export type WmsDocsTabId =
 const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
   wms: [
     {id: 'wms-example', label: 'Try WMS', href: '/examples/tiles/wms'},
-    {id: 'wms', label: 'WMS', href: '/docs/modules/wms/formats/wms'}
+    {id: 'wms', label: 'WMS', href: '/docs/modules/ogc/wms/formats/wms'}
   ],
   wfs: [
     {id: 'wfs-example', label: 'Try WFS', href: '/examples/tiles/wfs'},
-    {id: 'wfs', label: 'WFS', href: '/docs/modules/wms/formats/wfs'}
+    {id: 'wfs', label: 'WFS', href: '/docs/modules/ogc/wms/formats/wfs'}
   ],
   arcgisImageServer: [
     {
@@ -87,11 +87,11 @@ const WMS_TAB_GROUPS: Record<string, WmsDocsTab[]> = {
       href: '/docs/modules/arcgis/arcgis-vector-tile-server'
     }
   ],
-  wcs: [{id: 'wcs', label: 'WCS', href: '/docs/modules/wms/formats/wcs'}],
-  wmc: [{id: 'wmc', label: 'WMC', href: '/docs/modules/wms/formats/wmc'}],
+  wcs: [{id: 'wcs', label: 'WCS', href: '/docs/modules/ogc/wms/formats/wcs'}],
+  wmc: [{id: 'wmc', label: 'WMC', href: '/docs/modules/ogc/wms/formats/wmc'}],
   wmts: [
     {id: 'wmts-example', label: 'Try WMTS', href: '/examples/tiles/wmts'},
-    {id: 'wmts', label: 'WMTS', href: '/docs/modules/wms/formats/wmts'}
+    {id: 'wmts', label: 'WMTS', href: '/docs/modules/ogc/wms/formats/wmts'}
   ]
 };
 

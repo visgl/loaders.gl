@@ -58,13 +58,13 @@ data from object storage without downloading a complete dataset.
 
 | Format | Access pattern | Reference |
 | --- | --- | --- |
-| FlatGeobuf | Indexed feature access | [FlatGeobuf](/docs/modules/flatgeobuf) |
-| GeoParquet | Columnar rows with geospatial metadata | [GeoParquet](/docs/modules/parquet/formats/geoparquet) |
+| FlatGeobuf | Indexed feature access | [FlatGeobuf](/docs/modules/geospatial/flatgeobuf) |
+| GeoParquet | Columnar rows with geospatial metadata | [GeoParquet](/docs/modules/tables/parquet/formats/geoparquet) |
 | COG | Tiled TIFF raster ranges | [GeoTIFF](/docs/modules/geotiff) |
 | COPC | Indexed LAS/LAZ point-cloud ranges | [COPC](/docs/modules/copc) |
 | PMTiles | Tile archive ranges | [PMTiles](/docs/modules/pmtiles) |
 | Zarr | Chunked multidimensional arrays | [Zarr](/docs/modules/scientific/zarr) |
-| STAC | Catalog and asset discovery | [STAC](/docs/modules/stac) |
+| STAC | Catalog and asset discovery | [STAC](/docs/modules/ogc/stac) |
 
 Format structure alone does not guarantee selective reads. Check the source's
 supported queries and the server's range/CORS behavior. See the

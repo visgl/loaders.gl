@@ -38,9 +38,13 @@ test('GLTFScenegraph#resolves accessors from the full DamagedHelmet fixture', as
     expect(Array.from(typedArray.slice(0, 8))).toEqual(testData.arrayExpected);
 
     if (accessor.bufferView === 0) {
-      accessor.bufferView = undefined;
-      typedArray = gltfScenegraph.getTypedArrayForAccessor(accessor);
-      expect(Array.from(typedArray.slice(0, 8))).toEqual(testData.arrayExpected);
+      const implicitAccessor = {...accessor, bufferView: undefined};
+      typedArray = gltfScenegraph.getTypedArrayForAccessor(implicitAccessor);
+      expect(Array.from(typedArray.slice(0, 8))).toEqual(new Array(8).fill(0));
+      expect(accessor.bufferView).toBe(0);
+      expect(Array.from(gltfScenegraph.getTypedArrayForAccessor(accessor).slice(0, 8))).toEqual(
+        testData.arrayExpected
+      );
     }
   }
 });

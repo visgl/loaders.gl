@@ -8,7 +8,7 @@ import {
   hydrateArrowTable,
   type DehydratedArrowTable,
   type SerializedArrowTableIPC
-} from '@loaders.gl/arrow/transport';
+} from '@loaders.gl/tables/arrow/transport';
 import {
   convertGeometryValuesToBinaryFeatureCollection,
   type GeometryColumnBinaryFeatureCollectionScratch
