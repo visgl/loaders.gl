@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {concatenateAvroTables} from '../src/avro/lib/parsers/create-avro-table';
+import {concatenateAvroTables} from '../../src/avro/lib/parsers/create-avro-table';
 
 test('Avro collects more batches than the JavaScript function-argument limit', () => {
   // Reuse one immutable batch to exercise collection scale without decoding a large fixture.

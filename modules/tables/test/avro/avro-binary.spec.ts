@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
-import {AvroWriter} from '../src/avro/avro-writer';
+import {AvroWriter} from '../../src/avro/avro-writer';
 import {
   parseAvro,
   parseAvroFromFile,
@@ -12,7 +12,7 @@ import {
   parseAvroInBatches,
   parseAvroInBatchesFromFile,
   parseAvroInBatchesFromUrl
-} from '../src/avro/lib/parsers/parse-avro';
+} from '../../src/avro/lib/parsers/parse-avro';
 
 const PAYLOADS = [
   null,
@@ -111,7 +111,7 @@ test.each([
 });
 
 test('Avro applies binary schemas inside records, arrays, maps, and named fixed references', async () => {
-  const {createAvroTable} = await import('../src/avro/lib/parsers/create-avro-table');
+  const {createAvroTable} = await import('../../src/avro/lib/parsers/create-avro-table');
   const schema = {
     type: 'record',
     name: 'Nested',
@@ -154,7 +154,7 @@ test('Avro applies binary schemas inside records, arrays, maps, and named fixed 
 });
 
 test('Avro uses reader field names and preserves binary types in empty tables', async () => {
-  const {createAvroTable} = await import('../src/avro/lib/parsers/create-avro-table');
+  const {createAvroTable} = await import('../../src/avro/lib/parsers/create-avro-table');
   expectPayloads(createAvroTable([], SCHEMA), []);
   const readerSchema = {
     type: 'record',
@@ -237,7 +237,7 @@ test('Avro normalizes promoted longs and reader defaults for bigint columns', as
 });
 
 test('Avro retains row counts for records with no fields', async () => {
-  const {createAvroTable} = await import('../src/avro/lib/parsers/create-avro-table');
+  const {createAvroTable} = await import('../../src/avro/lib/parsers/create-avro-table');
   expect(createAvroTable([{}, {}], {type: 'record', name: 'Empty', fields: []}).numRows).toBe(2);
 });
 
@@ -245,7 +245,7 @@ test.each([
   'bytes',
   'fixed'
 ] as const)('Avro preserves nullable %s with object-form null branches', async kind => {
-  const {createAvroTable} = await import('../src/avro/lib/parsers/create-avro-table');
+  const {createAvroTable} = await import('../../src/avro/lib/parsers/create-avro-table');
   const values =
     kind === 'bytes'
       ? [null, new Uint8Array([1, 2, 3]), new Uint8Array([9])]
