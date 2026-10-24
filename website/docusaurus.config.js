@@ -238,10 +238,10 @@ const config = {
 
             '@loaders.gl/3d-tiles$': resolve('../modules/tiles-3d/src/3d-tiles'),
             '@loaders.gl/tiles-3d/3d-tiles': resolve('../modules/tiles-3d/src/3d-tiles'),
-            '@loaders.gl/arrow': resolve('../modules/arrow/src'),
+            '@loaders.gl/tables/arrow/index': resolve('../modules/tables/src/arrow'),
             '@loaders.gl/arrow-geometry': resolve('../modules/arrow-geometry/src'),
-            '@loaders.gl/avro': resolve('../modules/avro/src'),
-            '@loaders.gl/bson': resolve('../modules/bson/src'),
+            '@loaders.gl/tables/avro/index': resolve('../modules/tables/src/avro'),
+            '@loaders.gl/tables/bson/index': resolve('../modules/tables/src/bson'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
             '@loaders.gl/config': resolve('../modules/config/src'),
             '@loaders.gl/copc': resolve('../modules/copc/src'),
@@ -249,28 +249,28 @@ const config = {
             '@loaders.gl/core/worker-utils': resolve('../modules/core/src/worker-utils'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
-            '@loaders.gl/csv': resolve('../modules/csv/src'),
+            '@loaders.gl/tables/csv/index': resolve('../modules/tables/src/csv'),
             '@loaders.gl/deck-layers': resolve('../modules/deck-layers/src'),
             '@loaders.gl/draco': resolve('../modules/draco/src'),
-            '@loaders.gl/excel': resolve('../modules/excel/src'),
-            '@loaders.gl/flatgeobuf': resolve('../modules/flatgeobuf/src'),
-            '@loaders.gl/geopackage': resolve('../modules/geopackage/src'),
+            '@loaders.gl/tables/excel/index': resolve('../modules/tables/src/excel'),
+            '@loaders.gl/geospatial/flatgeobuf/index': resolve('../modules/geospatial/src/flatgeobuf'),
+            '@loaders.gl/geospatial/geopackage/index': resolve('../modules/geospatial/src/geopackage'),
             '@loaders.gl/raster': resolve('../modules/raster/src'),
             '@loaders.gl/raster/geotiff/index': resolve('../modules/raster/src/geotiff/index.ts'),
             '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
             '@loaders.gl/gltf': resolve('../modules/gltf/src'),
             '@loaders.gl/tiles-3d/i3s': resolve('../modules/tiles-3d/src/i3s'),
             '@loaders.gl/images': resolve('../modules/images/src'),
-            '@loaders.gl/json': resolve('../modules/json/src'),
-            '@loaders.gl/kml': resolve('../modules/kml/src'),
+            '@loaders.gl/tables/json/index': resolve('../modules/tables/src/json'),
+            '@loaders.gl/geospatial/kml/index': resolve('../modules/geospatial/src/kml'),
             '@loaders.gl/las': resolve('../modules/las/src'),
             '@loaders.gl/raster/lerc/index': resolve('../modules/raster/src/lerc/index.ts'),
             '@loaders.gl/tiles/mlt': resolve('../modules/tiles/src/mlt'),
             '@loaders.gl/tiles/mvt': resolve('../modules/tiles/src/mvt'),
             '@loaders.gl/scientific': resolve('../modules/scientific/src'),
             '@loaders.gl/obj': resolve('../modules/obj/src'),
-            '@loaders.gl/parquet': resolve('../modules/parquet/src'),
-            '@loaders.gl/orc': resolve('../modules/orc/src'),
+            '@loaders.gl/tables/parquet/index': resolve('../modules/tables/src/parquet'),
+            '@loaders.gl/tables/orc/index': resolve('../modules/tables/src/orc'),
             '@loaders.gl/pcd': resolve('../modules/pcd/src'),
             '@loaders.gl/ply': resolve('../modules/ply/src'),
             '@loaders.gl/tiles/pmtiles': resolve('../modules/tiles/src/pmtiles'),
@@ -280,7 +280,7 @@ const config = {
             '@loaders.gl/core/schema': resolve('../modules/core/src/schema'),
             '@loaders.gl/core/schema-utils': resolve('../modules/core/src/schema-utils'),
             '@loaders.gl/scene': resolve('../modules/scene/src'),
-            '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
+            '@loaders.gl/geospatial/shapefile/index': resolve('../modules/geospatial/src/shapefile'),
             '@loaders.gl/splats': resolve('../modules/splats/src'),
             '@loaders.gl/stac': resolve('../modules/stac/src'),
             '@loaders.gl/sql': resolve('../modules/sql/src'),
@@ -365,6 +365,10 @@ const config = {
       '@docusaurus/plugin-client-redirects',
       {
         createRedirects(existingPath) {
+          const consolidatedModuleDocs = {
+            tables: ['arrow', 'avro', 'bson', 'csv', 'excel', 'json', 'lance', 'orc', 'parquet'],
+            geospatial: ['flatgeobuf', 'geopackage', 'kml', 'shapefile']
+          };
           const pageRedirects = {
             '/docs/modules/gis': '/docs/modules/geoarrow/gis-migration',
             '/docs/modules/gis/api-reference/geojson-to-binary': '/docs/modules/geoarrow/api-reference/convert-geojson-to-binary-feature-collection',
@@ -374,9 +378,9 @@ const config = {
             '/examples/geoparquet': '/examples/geospatial/geoparquet',
             '/examples/geojson': '/examples/geospatial/geojson',
 
-            '/docs/modules/parquet/benchmarks': '/docs/modules/parquet/api-reference/parquet-loader',
-            '/docs/modules/parquet/api-reference/parquet-js-loader': '/docs/modules/parquet/api-reference/parquet-loader',
-            '/docs/modules/parquet/api-reference/parquet-js-writer': '/docs/modules/parquet/api-reference/parquet-writer',
+            '/docs/modules/parquet/benchmarks': '/docs/modules/tables/parquet/api-reference/parquet-loader',
+            '/docs/modules/parquet/api-reference/parquet-js-loader': '/docs/modules/tables/parquet/api-reference/parquet-loader',
+            '/docs/modules/parquet/api-reference/parquet-js-writer': '/docs/modules/tables/parquet/api-reference/parquet-writer',
 
             '/examples/pmtiles': '/examples/tiles/pmtiles',
             '/examples/wms': '/examples/tiles/wms',
@@ -399,6 +403,17 @@ const config = {
             '/examples/table/xml': '/docs/modules/xml/try-it'
           };
           const redirectSources = [];
+          for (const [group, formats] of Object.entries(consolidatedModuleDocs)) {
+            for (const format of formats) {
+              const currentPrefix = `/docs/modules/${group}/${format}`;
+              if (existingPath === currentPrefix || existingPath.startsWith(`${currentPrefix}/`)) {
+                const oldPath = existingPath.replace(currentPrefix, `/docs/modules/${format}`);
+                if (!pageRedirects[oldPath] || pageRedirects[oldPath] === existingPath) {
+                  redirectSources.push(oldPath);
+                }
+              }
+            }
+          }
           if (legacyTryItRedirects[existingPath]) {
             redirectSources.push(legacyTryItRedirects[existingPath]);
           }

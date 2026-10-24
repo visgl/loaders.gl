@@ -5,9 +5,10 @@
 import {expect, test} from 'vitest';
 import {concatenateArrayBuffers} from '@loaders.gl/core/loader-utils';
 import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
-import {SHPLoader} from '@loaders.gl/shapefile';
+import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {CRC32CHash} from '@loaders.gl/crypto';
-const SHAPEFILE_URL = '@loaders.gl/shapefile/test/data/shapefile-js/boolean-property.shp';
+const SHAPEFILE_URL =
+  '@loaders.gl/geospatial/shapefile/test/data/shapefile-js/boolean-property.shp';
 async function* calculateByteLengthInBaches(asyncIterator, options) {
   let byteLength = 0;
   for await (const chunk of asyncIterator) {

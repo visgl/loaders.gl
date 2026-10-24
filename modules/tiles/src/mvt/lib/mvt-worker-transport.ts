@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {DehydratedArrowTable, SplitArrowBuffersOptions} from '@loaders.gl/arrow/transport';
-import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/arrow/transport';
+import type {
+  DehydratedArrowTable,
+  SplitArrowBuffersOptions
+} from '@loaders.gl/tables/arrow/transport';
+import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/tables/arrow/transport';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {MVTLoaderOptions} from '../mvt-loader';
 

@@ -19,7 +19,7 @@ const INPUTS: readonly WriterPipelineNode[] = [
 ];
 
 const OUTPUTS: readonly WriterPipelineNode[] = [
-  {label: 'Parquet', detail: 'columnar analytical files', to: '/docs/modules/parquet/formats/parquet'},
+  {label: 'Parquet', detail: 'columnar analytical files', to: '/docs/modules/tables/parquet/formats/parquet'},
   {label: 'glTF / GLB', detail: 'portable scene assets', to: '/docs/modules/gltf/formats/gltf'},
   {label: 'Draco / LAS', detail: 'compressed geometry and points', to: '/docs/modules/draco/formats/draco'}
 ];

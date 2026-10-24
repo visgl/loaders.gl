@@ -23,23 +23,23 @@ export type ParquetDocsTabId =
 
 const PARQUET_DOCS_TABS: ParquetDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/geospatial/geoparquet'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/parquet/formats/parquet'},
-  {id: 'format', label: 'Format', href: '/docs/modules/parquet/format'},
-  {id: 'geoparquet', label: 'GeoParquet', href: '/docs/modules/parquet/formats/geoparquet'},
+  {id: 'overview', label: 'Overview', href: '/docs/modules/tables/parquet/formats/parquet'},
+  {id: 'format', label: 'Format', href: '/docs/modules/tables/parquet/format'},
+  {id: 'geoparquet', label: 'GeoParquet', href: '/docs/modules/tables/parquet/formats/geoparquet'},
   {
     id: 'parquetloader',
     label: 'ParquetLoader',
-    href: '/docs/modules/parquet/api-reference/parquet-loader'
+    href: '/docs/modules/tables/parquet/api-reference/parquet-loader'
   },
   {
     id: 'geoparquetloader',
     label: 'GeoParquetLoader',
-    href: '/docs/modules/parquet/api-reference/geoparquet-loader'
+    href: '/docs/modules/tables/parquet/api-reference/geoparquet-loader'
   },
   {
     id: 'parquetwriter',
     label: 'ParquetWriter',
-    href: '/docs/modules/parquet/api-reference/parquet-writer'
+    href: '/docs/modules/tables/parquet/api-reference/parquet-writer'
   }
 ];
 

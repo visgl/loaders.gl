@@ -47,7 +47,7 @@ import {LASCOPCLoaderWithParser} from '../src/las-copc-loader';
 import {LAZPerfLoaderWithParser} from '../src/lazperf-loader';
 import {LAZRsLoaderWithParser} from '../src/laz-rs-loader';
 import {LASLoaderWithParser} from '../src/las-loader';
-// import {ArrowLoader} from '@loaders.gl/arrow';
+// import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
 const LAS_POINT_COUNT = 808042;

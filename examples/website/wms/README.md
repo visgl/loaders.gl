@@ -1,4 +1,4 @@
-This is a standalone web app using `@loaders.gl/geopackage`.
+This is a standalone web app using `@loaders.gl/geospatial/geopackage`.
 
 ### Usage
 

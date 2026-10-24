@@ -1,4 +1,4 @@
-import {SHPLoader} from '@loaders.gl/shapefile';
+import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
 
 (() => {
   if (SHPLoader) {

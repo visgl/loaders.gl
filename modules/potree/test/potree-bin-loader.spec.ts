@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {validateArrowTableSchema} from '@loaders.gl/tables/arrow/index';
 import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {PotreeBinLoader} from '@loaders.gl/potree';
 test('PotreeBinLoader#parse defaults to Arrow table', async () => {

@@ -7,7 +7,7 @@ import React, {
   useState
 } from 'react';
 import {load, type LoaderOptions} from '@loaders.gl/core';
-import {BSONLoader} from '@loaders.gl/bson';
+import {BSONLoader} from '@loaders.gl/tables/bson';
 import {HTMLLoader, XMLLoader} from '@loaders.gl/xml';
 
 import styles from './structured-data-live-example.module.css';

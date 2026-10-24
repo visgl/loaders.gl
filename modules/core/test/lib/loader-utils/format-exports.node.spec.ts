@@ -10,10 +10,10 @@ const MODULES_DIRECTORY = join(process.cwd(), 'modules');
 
 const FORMAT_EXPORTS = {
   'tiles-3d/3d-tiles': ['Tiles3DFormat', 'Tile3DSubtreeFormat', 'ThreeTZFormat'],
-  arrow: ['ArrowFormat'],
-  bson: ['BSONFormat'],
+  'tables/arrow': ['ArrowFormat'],
+  'tables/bson': ['BSONFormat'],
   copc: ['COPCFormat'],
-  csv: ['CSVFormat'],
+  'tables/csv': ['CSVFormat'],
   tables: [
     'CSVFormat',
     'AvroFormat',
@@ -40,9 +40,9 @@ const FORMAT_EXPORTS = {
     'GeoPackageFormat'
   ],
   draco: ['DracoFormat'],
-  excel: ['ExcelFormat'],
-  flatgeobuf: ['FlatGeobufFormat'],
-  geopackage: ['GeoPackageFormat'],
+  'tables/excel': ['ExcelFormat'],
+  'geospatial/flatgeobuf': ['FlatGeobufFormat'],
+  'geospatial/geopackage': ['GeoPackageFormat'],
   raster: ['GeoTIFFFormat', 'OMETiffFormat', 'LERCFormat', 'TerrainFormat', 'QuantizedMeshFormat'],
   gltf: ['GLTFFormat', 'GLBFormat'],
   'tiles-3d/i3s': [
@@ -55,19 +55,19 @@ const FORMAT_EXPORTS = {
     'SLPKFormat'
   ],
   images: ['ImageFormat', 'ImageBitmapFormat'],
-  json: ['JSONFormat', 'GeoJSONFormat', 'NDJSONFormat', 'NDGeoJSONFormat'],
-  kml: ['KMLFormat', 'KMZFormat', 'GPXFormat', 'TCXFormat'],
+  'tables/json': ['JSONFormat', 'GeoJSONFormat', 'NDJSONFormat', 'NDGeoJSONFormat'],
+  'geospatial/kml': ['KMLFormat', 'KMZFormat', 'GPXFormat', 'TCXFormat'],
   las: ['LASFormat'],
   'tiles/mlt': ['MLTFormat'],
   'tiles/mvt': ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
   scientific: ['NetCDFFormat'],
   obj: ['OBJFormat', 'MTLFormat'],
-  parquet: ['ParquetFormat'],
+  'tables/parquet': ['ParquetFormat'],
   pcd: ['PCDFormat'],
   ply: ['PLYFormat'],
   'tiles/pmtiles': ['PMTilesFormat'],
   potree: ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
-  shapefile: ['ShapefileFormat', 'SHPFormat', 'DBFFormat'],
+  'geospatial/shapefile': ['ShapefileFormat', 'SHPFormat', 'DBFFormat'],
   textures: [
     'BasisTextureFormat',
     'CompressedTextureFormat',

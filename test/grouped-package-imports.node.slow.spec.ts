@@ -24,8 +24,8 @@ test.each([
   'published %s %s ESM metadata preloads through real package exports',
   (group, metadata, subpath, parser) => {
     // A separate Node process bypasses Vitest source aliases and checks the published layout.
-    const source = `import {${metadata}} from '@loaders.gl/${group}';
-    import {${parser}} from '@loaders.gl/${group}/${subpath}';
+    const source = `import {${metadata}} from '@loaders.gl/${group}/${subpath}';
+    import {${parser}} from '@loaders.gl/${group}/${subpath}/${subpath}-loader';
     if (await ${metadata}.preload() !== ${parser}) process.exit(1);`;
     expect(() =>
       execFileSync(process.execPath, ['--input-type=module', '-e', source], {
@@ -49,64 +49,68 @@ test.each([
   ['geospatial', 'GeoPackageLoader'],
   ['tables', 'CSVLoader'],
   ['geospatial', 'KMLLoader']
-])('grouped %s %s metadata keeps parser loaders out of the initial browser chunk', async (group, loader) => {
-  const result = await build({
-    stdin: {
-      contents: `import {${loader}} from '@loaders.gl/${group}'; console.log(${loader});`,
-      resolveDir: REPOSITORY_ROOT,
-      sourcefile: 'metadata-entry.js'
-    },
-    tsconfigRaw: {},
-    bundle: true,
-    splitting: true,
-    format: 'esm',
-    platform: 'browser',
-    outdir: 'grouped-package-test-output',
-    write: false,
-    metafile: true
-  });
-  const outputs = result.metafile!.outputs;
-  const entry = Object.entries(outputs).find(
-    ([, output]) => output.entryPoint === 'metadata-entry.js'
-  );
-  expect(entry).toBeDefined();
-  const visited = new Set<string>();
-  /** Visits only statically imported chunks; parser chunks are deferred. */
-  function visitOutput(filename: string): void {
-    if (visited.has(filename)) return;
-    visited.add(filename);
-    for (const imported of outputs[filename].imports) {
-      if (imported.kind !== 'dynamic-import' && !imported.external) visitOutput(imported.path);
+])(
+  'grouped %s %s metadata keeps parser loaders out of the initial browser chunk',
+  async (group, loader) => {
+    const result = await build({
+      stdin: {
+        contents: `import {${loader}} from '@loaders.gl/${group}'; console.log(${loader});`,
+        resolveDir: REPOSITORY_ROOT,
+        sourcefile: 'metadata-entry.js'
+      },
+      tsconfigRaw: {},
+      bundle: true,
+      splitting: true,
+      format: 'esm',
+      platform: 'browser',
+      outdir: 'grouped-package-test-output',
+      write: false,
+      metafile: true
+    });
+    const outputs = result.metafile!.outputs;
+    const entry = Object.entries(outputs).find(
+      ([, output]) => output.entryPoint === 'metadata-entry.js'
+    );
+    expect(entry).toBeDefined();
+    const visited = new Set<string>();
+    /** Visits only statically imported chunks; parser chunks are deferred. */
+    function visitOutput(filename: string): void {
+      if (visited.has(filename)) return;
+      visited.add(filename);
+      for (const imported of outputs[filename].imports) {
+        if (imported.kind !== 'dynamic-import' && !imported.external) visitOutput(imported.path);
+      }
     }
-  }
-  visitOutput(entry![0]);
-  const eagerInputs = [...visited].flatMap(filename => Object.keys(outputs[filename].inputs));
-  expect(
-    eagerInputs.filter(
-      filename =>
-        // Arrow's legacy exports/* files contain metadata WorkerLoader aliases.
-        !filename.includes('/arrow/exports/') &&
-        /\/(?:csv|avro|kml|kmz|gpx|tcx|shapefile|shp|dbf|bson|excel|flatgeobuf|geopackage|arrow|geoarrow|json|json-table|ndjson|ndgeojson|geojson|lance|orc|parquet|parquet-js|geoparquet)-loader\.js$/.test(
-          filename
-        )
-    )
-  ).toEqual([]);
-  expect(
-    eagerInputs.filter(filename =>
-      /node_modules\/(?:sql\.js|xlsx|apache-arrow|bson)\//.test(filename)
-    )
-  ).toEqual([]);
-  if (group === 'tables') {
+    visitOutput(entry![0]);
+    const eagerInputs = [...visited].flatMap(filename => Object.keys(outputs[filename].inputs));
     expect(
-      eagerInputs.filter(filename => filename.endsWith('/lib/sources/data-source.js'))
+      eagerInputs.filter(
+        filename =>
+          // Arrow's legacy exports/* files contain metadata WorkerLoader aliases.
+          !filename.includes('/arrow/exports/') &&
+          /\/(?:csv|avro|kml|kmz|gpx|tcx|shapefile|shp|dbf|bson|excel|flatgeobuf|geopackage|arrow|geoarrow|json|json-table|ndjson|ndgeojson|geojson|lance|orc|parquet|parquet-js|geoparquet)-loader\.js$/.test(
+            filename
+          )
+      )
     ).toEqual([]);
-  }
-  expect(
-    Object.values(outputs).some(output =>
-      output.imports.some(imported => imported.kind === 'dynamic-import')
-    )
-  ).toBe(true);
-});
+    expect(
+      eagerInputs.filter(filename =>
+        /node_modules\/(?:sql\.js|xlsx|apache-arrow|bson)\//.test(filename)
+      )
+    ).toEqual([]);
+    if (group === 'tables') {
+      expect(
+        eagerInputs.filter(filename => filename.endsWith('/lib/sources/data-source.js'))
+      ).toEqual([]);
+    }
+    expect(
+      Object.values(outputs).some(output =>
+        output.imports.some(imported => imported.kind === 'dynamic-import')
+      )
+    ).toBe(true);
+  },
+  30_000
+);
 
 test.each([
   ['arrow', 'arrow-source', 'ArrowTableSource'],
@@ -120,11 +124,10 @@ test.each([
   ['parquet', 'iceberg-rest-catalog', 'IcebergRestCatalog'],
   ['parquet', 'delta-source', 'DeltaSourceLoaderWithParser']
 ])(
-  'published %s/%s preserves its %s compatibility export',
+  'published tables/%s/%s exposes %s after forwarding removal',
   (format, subpath, exportName) => {
-    const source = `import {${exportName} as legacy} from '@loaders.gl/${format}/${subpath}';
-  import {${exportName} as grouped} from '@loaders.gl/tables/${format}/${subpath}';
-  if (legacy !== grouped) process.exit(1);`;
+    const source = `import {${exportName}} from '@loaders.gl/tables/${format}/${subpath}';
+  if (!${exportName}) process.exit(1);`;
     expect(() =>
       execFileSync(process.execPath, ['--input-type=module', '-e', source], {
         cwd: REPOSITORY_ROOT,
@@ -136,7 +139,7 @@ test.each([
 );
 
 test('published Arrow transport compatibility uses the shared lower-level owner', () => {
-  const source = `import {dehydrateArrowTable as legacy, splitArrowBuffers as legacySplit} from '@loaders.gl/arrow/transport';
+  const source = `import {dehydrateArrowTable as legacy, splitArrowBuffers as legacySplit} from '@loaders.gl/tables/arrow/transport';
   import {dehydrateArrowTable, splitArrowBuffers} from '@loaders.gl/core/schema-utils/arrow-transport';
   if (legacy !== dehydrateArrowTable || legacySplit !== splitArrowBuffers) process.exit(1);`;
   expect(() =>

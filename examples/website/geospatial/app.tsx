@@ -29,20 +29,20 @@ import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 
 import {Table, GeoJSON, type ArrowTable, type Schema} from '@loaders.gl/core/schema';
 import {load, LoaderOptions} from '@loaders.gl/core';
-import {GeoArrowLoader} from '@loaders.gl/arrow';
+import {GeoArrowLoader} from '@loaders.gl/tables/arrow/index';
 import {
   convertGeoArrowToTable,
   getGeometryColumnsFromSchema,
   type GeoArrowEncoding,
   type GeoArrowMetadata
 } from '@loaders.gl/geoarrow';
-import {GeoParquetLoader, ParquetLoader, preloadCompressions} from '@loaders.gl/parquet';
-import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
-import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
-import {CSVLoader} from '@loaders.gl/csv';
-import {GeoJSONLoader} from '@loaders.gl/json';
+import {GeoParquetLoader, ParquetLoader, preloadCompressions} from '@loaders.gl/tables/parquet/index';
+import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
+import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/geospatial/kml/index';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/core/schema-utils';

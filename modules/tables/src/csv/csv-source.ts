@@ -88,7 +88,7 @@ export class CSVTableSource
       this.data instanceof Blob
         ? readStreamChunks(this.data.stream(), signal, onByteLength)
         : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
-    const {CSVLoaderWithParser} = await import('@loaders.gl/tables/csv');
+    const {CSVLoaderWithParser} = await import('@loaders.gl/tables/csv/csv-loader');
     yield* CSVLoaderWithParser.parseInBatches(chunks, {
       ...this.options,
       csv: {...this.options.csv, shape: 'object-row-table'}

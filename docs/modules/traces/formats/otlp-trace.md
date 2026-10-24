@@ -19,7 +19,7 @@ import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
   meta={['OTLP v1.11 projection', 'Protobuf and JSON', 'Five Arrow tables']}
   links={[
     {label: 'Traces module', to: '/docs/modules/traces'},
-    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'Arrow format', to: '/docs/modules/tables/arrow/formats/arrow'},
     {label: 'OTLP loader', to: '/docs/modules/traces/api-reference/otlp-trace-loader'}
   ]}
 />

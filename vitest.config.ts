@@ -93,10 +93,9 @@ const vitestConfiguration = getVitestConfig({
         'probe.gl/env',
         'probe.gl/log',
         'probe.gl/stats',
-        '@repeaterjs/repeater',
-        '@tmcw/togeojson',
+
         '@turf/rewind',
-        '@xmldom/xmldom',
+
         'apache-arrow',
         'apache-arrow/type',
         'brotli/decompress',
@@ -112,12 +111,12 @@ const vitestConfiguration = getVitestConfig({
         'get-pixels',
         // The validator's compiled Dart CommonJS runtime requires browser prebundling.
         'gltf-validator',
-        'jszip',
+
         'lerc',
         'long',
         'lz4js',
         'ndarray',
-        'node-int64',
+
         'pako',
         'parquet-wasm/esm/parquet_wasm.js',
         'pbf',
@@ -128,10 +127,10 @@ const vitestConfiguration = getVitestConfig({
         'pmtiles',
         'styled-components',
         'save-pixels',
-        'slice-source',
+
         'snappyjs',
         'sql.js',
-        'thrift',
+
         'vitest',
         'web-streams-polyfill',
         'xlsx',

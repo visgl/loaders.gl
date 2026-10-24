@@ -22,11 +22,11 @@ export type CsvDocsTabId =
 
 const CSV_DOCS_TABS: CsvDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/geospatial/csv'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/csv/formats/csv'},
-  {id: 'format', label: 'Format', href: '/docs/modules/csv/format'},
-  {id: 'csvloader', label: 'CSVLoader', href: '/docs/modules/csv/api-reference/csv-loader'},
-  {id: 'csvwriter', label: 'CSVWriter', href: '/docs/modules/csv/api-reference/csv-writer'},
-  {id: 'benchmarks', label: 'Benchmarks', href: '/docs/modules/csv/benchmarks'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/tables/csv/formats/csv'},
+  {id: 'format', label: 'Format', href: '/docs/modules/tables/csv/format'},
+  {id: 'csvloader', label: 'CSVLoader', href: '/docs/modules/tables/csv/api-reference/csv-loader'},
+  {id: 'csvwriter', label: 'CSVWriter', href: '/docs/modules/tables/csv/api-reference/csv-writer'},
+  {id: 'benchmarks', label: 'Benchmarks', href: '/docs/modules/tables/csv/benchmarks'}
 ];
 
 /**

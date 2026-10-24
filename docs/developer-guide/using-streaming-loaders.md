@@ -32,7 +32,7 @@ that can immediately be filtered, displayed, stored, or passed to another transf
 
 ```typescript title="Process batches as they arrive"
 import {loadInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const batches = await loadInBatches('records.csv', CSVLoader);
 
@@ -76,7 +76,7 @@ For example, `GeoJSONLoader` can yield features from a large GeoJSON document in
 
 ```typescript title="Inspect streamed GeoJSON features"
 import {loadInBatches} from '@loaders.gl/core';
-import {GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/json';
 
 const batches = await loadInBatches('features.geojson', GeoJSONLoader);
 
@@ -109,7 +109,7 @@ calculates a checksum while CSV batches are being parsed:
 ```typescript title="Calculate a checksum incrementally"
 import {loadInBatches} from '@loaders.gl/core';
 import {CRC32Hash} from '@loaders.gl/crypto';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 let hash;
 const checksum = new CRC32Hash({

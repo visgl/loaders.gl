@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {createDataSource, load} from '@loaders.gl/core';
 import type {CoreAPI} from '@loaders.gl/core/loader-utils';
-import {GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import {ArrowTableTileSourceLoader as ArrowTableTileSourceLoaderMetadata} from '@loaders.gl/tiles/mvt';
 import {
   ArrowTableTileSourceLoaderWithParser as ArrowTableTileSourceLoader,

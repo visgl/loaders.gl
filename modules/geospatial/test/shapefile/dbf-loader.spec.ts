@@ -1,0 +1,42 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {expect, test} from 'vitest';
+import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
+import {DBFLoader} from '@loaders.gl/geospatial/shapefile/index';
+setLoaderOptions({
+  _workerType: 'test'
+});
+const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
+const SHAPEFILE_JS_TEST_FILES = [
+  'boolean-property',
+  'date-property',
+  // 'latin1-property', // fails on 'México'
+  'mixed-properties',
+  'multipoints',
+  'null',
+  'number-null-property',
+  'number-property',
+  'points',
+  'polygons',
+  'polylines',
+  'string-property',
+  'utf8-property'
+];
+test('Shapefile JS DBF tests', async () => {
+  for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
+    let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
+    const body = await response.arrayBuffer();
+    const options = {core: {worker: false}, dbf: {encoding: 'utf8', shape: 'rows' as const}};
+    if (testFileName === 'latin1-property') {
+      options.dbf.encoding = 'latin1';
+    }
+    const output = await parse(body, DBFLoader, options);
+    response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
+    const {features} = await response.json();
+    for (let i = 0; i < features.length; i++) {
+      expect(output[i], testFileName).toEqual(features[i].properties);
+    }
+  }
+});

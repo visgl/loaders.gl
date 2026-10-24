@@ -24,13 +24,13 @@ export type KmlDocsTabId =
 
 const KML_DOCS_TABS: KmlDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/geospatial/kml'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/kml/formats/kml'},
-  {id: 'format', label: 'Format', href: '/docs/modules/kml/format'},
-  {id: 'gpx', label: 'GPX', href: '/docs/modules/kml/formats/gpx'},
-  {id: 'tcx', label: 'TCX', href: '/docs/modules/kml/formats/tcx'},
-  {id: 'kmlloader', label: 'KMLLoader', href: '/docs/modules/kml/api-reference/kml-loader'},
-  {id: 'gpxloader', label: 'GPXLoader', href: '/docs/modules/kml/api-reference/gpx-loader'},
-  {id: 'tcxloader', label: 'TCXLoader', href: '/docs/modules/kml/api-reference/tcx-loader'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/geospatial/kml/formats/kml'},
+  {id: 'format', label: 'Format', href: '/docs/modules/geospatial/kml/format'},
+  {id: 'gpx', label: 'GPX', href: '/docs/modules/geospatial/kml/formats/gpx'},
+  {id: 'tcx', label: 'TCX', href: '/docs/modules/geospatial/kml/formats/tcx'},
+  {id: 'kmlloader', label: 'KMLLoader', href: '/docs/modules/geospatial/kml/api-reference/kml-loader'},
+  {id: 'gpxloader', label: 'GPXLoader', href: '/docs/modules/geospatial/kml/api-reference/gpx-loader'},
+  {id: 'tcxloader', label: 'TCXLoader', href: '/docs/modules/geospatial/kml/api-reference/tcx-loader'}
 ];
 
 /**

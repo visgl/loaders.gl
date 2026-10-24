@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'XML module', to: '/docs/modules/xml'},
     {label: 'XMLLoader', to: '/docs/modules/xml/api-reference/xml-loader'},
-    {label: 'KML and GPX', to: '/docs/modules/kml'}
+    {label: 'KML and GPX', to: '/docs/modules/geospatial/kml'}
   ]}
 />
 

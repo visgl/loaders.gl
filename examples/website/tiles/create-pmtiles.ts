@@ -283,12 +283,12 @@ export async function createPMTilesExampleArchive(
       options.format === 'arrow'
         ? await parse(
             bytes,
-            (await waitForPromiseWithSignal(import('@loaders.gl/arrow'), signal)).ArrowLoader,
+            (await waitForPromiseWithSignal(import('@loaders.gl/tables/arrow/index'), signal)).ArrowLoader,
             {core: {worker: false}, arrow: {shape: 'arrow-table'}}
           )
         : await parse(
             bytes,
-            (await waitForPromiseWithSignal(import('@loaders.gl/json'), signal)).GeoJSONLoader,
+            (await waitForPromiseWithSignal(import('@loaders.gl/tables/json/index'), signal)).GeoJSONLoader,
             {
               core: {worker: false},
               geojson: {shape: 'arrow-table'}

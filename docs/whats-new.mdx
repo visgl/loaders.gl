@@ -54,8 +54,7 @@ root exports, lazy parser subpaths, and optional `geotiff`/`lerc` engines. ArcGI
 The package consolidation POC moves Arrow, Avro, BSON, CSV, Excel, JSON, Lance, ORC, and Parquet
 into `@loaders.gl/tables`, and
 KML, Shapefile, FlatGeobuf, and GeoPackage into `@loaders.gl/geospatial`. Group roots expose
-metadata loaders; format subpaths expose parser-bearing loaders. Existing packages remain
-compatibility entry points. See the [grouped package guide](/docs/developer-guide/grouped-packages)
+metadata loaders; format subpaths expose parser-bearing loaders. The thirteen standalone format packages have been removed; applications should install the group package and use its format subpaths. See the [grouped package guide](/docs/developer-guide/grouped-packages)
 for imports, worker asset availability, and dependency tradeoffs.
 
 ## Regular-grid TileMatrix frame selection
@@ -523,8 +522,8 @@ Release Date: 2026
 
 **@loaders.gl/parquet**
 
-- [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) NEW - adds reusable range-backed Parquet metadata and selective row-group/column reads as cancellable Arrow batches with source provenance and object-version validation. Its lightweight root export dynamically preloads the runtime implementation.
-- [`ParquetDatasetSource`](/docs/modules/parquet/api-reference/parquet-source-loader#multi-file-datasets) NEW - coordinates lazy catalog-backed file discovery, conservative file pruning, bounded concurrent Parquet reads, and deterministic Arrow batches. The [Overture GeoParquet example](/examples/geospatial/overture-parquet) runs the complete STAC-to-map query in the browser.
+- [`ParquetSourceLoader`](/docs/modules/tables/parquet/api-reference/parquet-source-loader) NEW - adds reusable range-backed Parquet metadata and selective row-group/column reads as cancellable Arrow batches with source provenance and object-version validation. Its lightweight root export dynamically preloads the runtime implementation.
+- [`ParquetDatasetSource`](/docs/modules/tables/parquet/api-reference/parquet-source-loader#multi-file-datasets) NEW - coordinates lazy catalog-backed file discovery, conservative file pruning, bounded concurrent Parquet reads, and deterministic Arrow batches. The [Overture GeoParquet example](/examples/geospatial/overture-parquet) runs the complete STAC-to-map query in the browser.
 - `ParquetSourceLoader` exposes normalized column-chunk statistics, predicate-based row-group pruning, and cumulative transport/decode/Arrow telemetry with exact request and byte counts.
 - `ParquetSourceLoader` reads column and offset indexes for non-repeated primitive leaves, including struct children, converts page statistics into candidate row ranges, and fetches only the required data-page ranges before exact filtering on the caller thread or worker.
 - GeoParquet 1.1 bounding-box coverings now power `ParquetSource.read({bbox})` row-group, nested-page, and exact per-row bbox filtering.
@@ -538,9 +537,9 @@ Release Date: 2026
 - `HttpFile` now supports pinned object identity, strict or best-effort validator consistency, cancellable exact range reads, shared scheduling, and immutable request/byte/time telemetry.
 - The Parquet TypeScript backend now reads Data Page V2, `DELTA_BINARY_PACKED`, `DELTA_LENGTH_BYTE_ARRAY`, `DELTA_BYTE_ARRAY`, and legacy Hadoop-framed LZ4 data.
 - The Parquet TypeScript backend now reuses primitive views and materializes flat columns through allocation-conscious fast paths, substantially improving object-row decode throughput without changing output.
-- [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-writer#writer-variants) NEW - add the experimental parquetjs plain-row and plain-table APIs.
+- [`ParquetJSLoader`](/docs/modules/tables/parquet/api-reference/parquet-loader#loader-variants) and [`ParquetJSWriter`](/docs/modules/tables/parquet/api-reference/parquet-writer#writer-variants) NEW - add the experimental parquetjs plain-row and plain-table APIs.
 - Parquet parser selection now follows the imported loader: use the primary worker-capable `ParquetLoader` for WASM or the explicit main-thread `ParquetJSLoader` fallback for parquetjs. Runtime `parquet.backend` and `parquet.implementation` selectors have been removed.
-- `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) and `ParquetJSLoader` selects object-row or Arrow output.
+- `parquet.shape` on [`ParquetLoader`](/docs/modules/tables/parquet/api-reference/parquet-loader) and `ParquetJSLoader` selects object-row or Arrow output.
 - Parquet Arrow conversion preserves absent nested values as nulls; encrypted predicate-column metadata is resolved before Bloom-filter pruning, and RLE decoding supports omitted value counts.
 
 **@loaders.gl/geotiff**
@@ -559,7 +558,7 @@ Release Date: 2026
 
 **@loaders.gl/json**
 
-- [`JSONLoader`](/docs/modules/json/api-reference/json-loader) adds experimental `json.backend: 'fast'` for opt-in faster streaming extraction while keeping atomic JSON parsing on the standard `JSON.parse` path.
+- [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader) adds experimental `json.backend: 'fast'` for opt-in faster streaming extraction while keeping atomic JSON parsing on the standard `JSON.parse` path.
 - Arrow-producing JSON loaders add `arrowConversion.viewTypes` to opt into `BinaryView` and `Utf8View` columns without raising the minimum supported Apache Arrow version.
 - JSON Arrow conversion normalizes compatible or recovered 64-bit integer values to the BigInt representation required by Arrow builders.
 
@@ -585,21 +584,21 @@ Release Date: 2026
 
 **@loaders.gl/shapefile**
 
-- [`ShapefileLoader`](/docs/modules/shapefile/api-reference/shapefile-loader) supports `shapefile.shape: 'arrow-table'` for Arrow tables with DBF property columns and a WKB `geometry` column annotated with geospatial schema metadata.
+- [`ShapefileLoader`](/docs/modules/geospatial/shapefile/api-reference/shapefile-loader) supports `shapefile.shape: 'arrow-table'` for Arrow tables with DBF property columns and a WKB `geometry` column annotated with geospatial schema metadata.
 
 **@loaders.gl/flatgeobuf**
 
-- [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) adds `flatgeobuf.shape: 'arrow-table'` with FlatGeobuf property columns, a WKB `geometry` column, and geospatial Arrow metadata for round-tripping to GeoJSON.
-- [`FlatGeobufSourceLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader) NEW - creates indexed remote `.fgb` vector sources with schema/metadata discovery, bbox-filtered HTTP range reads, and `geojson`, `binary`, or `arrow` outputs.
+- [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader) adds `flatgeobuf.shape: 'arrow-table'` with FlatGeobuf property columns, a WKB `geometry` column, and geospatial Arrow metadata for round-tripping to GeoJSON.
+- [`FlatGeobufSourceLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader) NEW - creates indexed remote `.fgb` vector sources with schema/metadata discovery, bbox-filtered HTTP range reads, and `geojson`, `binary`, or `arrow` outputs.
 
 **@loaders.gl/json**
 
-- [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader), `GeoJSONWorkerLoader`, and [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer) are now official exports.
-- [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) now selects output with `geojson.shape`, including `'geojson-table'`, `'binary-feature-collection'`, and `'arrow-table'`.
-- [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) adds GeoArrow WKB Arrow output through `geojson.shape: 'arrow-table'`; GeoJSON remains a geospatial format with dedicated loader semantics even though it uses JSON encoding.
-- [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader) is the dedicated table-returning JSON API. [`JSONLoader`](/docs/modules/json/api-reference/json-loader) remains the arbitrary JSON document loader.
-- [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader) and [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) add schema-aware Arrow conversion with strict defaults, optional recovery policies, and one-time recovery logging.
-- [`JSONWriter`](/docs/modules/json/api-reference/json-writer) now accepts Arrow table inputs and decodes GeoArrow WKB geometry columns to GeoJSON geometry objects by default.
+- [`GeoJSONLoader`](/docs/modules/tables/json/api-reference/geojson-loader), `GeoJSONWorkerLoader`, and [`GeoJSONWriter`](/docs/modules/tables/json/api-reference/geojson-writer) are now official exports.
+- [`GeoJSONLoader`](/docs/modules/tables/json/api-reference/geojson-loader) now selects output with `geojson.shape`, including `'geojson-table'`, `'binary-feature-collection'`, and `'arrow-table'`.
+- [`GeoJSONLoader`](/docs/modules/tables/json/api-reference/geojson-loader) adds GeoArrow WKB Arrow output through `geojson.shape: 'arrow-table'`; GeoJSON remains a geospatial format with dedicated loader semantics even though it uses JSON encoding.
+- [`JSONTableLoader`](/docs/modules/tables/json/api-reference/json-table-loader) is the dedicated table-returning JSON API. [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader) remains the arbitrary JSON document loader.
+- [`JSONTableLoader`](/docs/modules/tables/json/api-reference/json-table-loader) and [`NDJSONLoader`](/docs/modules/tables/json/api-reference/ndjson-loader) add schema-aware Arrow conversion with strict defaults, optional recovery policies, and one-time recovery logging.
+- [`JSONWriter`](/docs/modules/tables/json/api-reference/json-writer) now accepts Arrow table inputs and decodes GeoArrow WKB geometry columns to GeoJSON geometry objects by default.
 
 ## v4.5
 
@@ -806,8 +805,8 @@ Release Date: February 6, 2024
 **@loaders.gl/arrow**
 
 - Now requires `apache-arrow` version `v15.0.0` or later.
-- New [`GeoArrowLoader`](/docs/modules/arrow/api-reference/geoarrow-loader) supports loading [GeoArrow](/docs/modules/arrow/formats/geoarrow) files.
-- New documentation for [Arrow](/docs/modules/arrow/formats/arrow) and [GeoArrow](/docs/modules/arrow/formats/geoarrow) formats.
+- New [`GeoArrowLoader`](/docs/modules/tables/arrow/api-reference/geoarrow-loader) supports loading [GeoArrow](/docs/modules/tables/arrow/formats/geoarrow) files.
+- New documentation for [Arrow](/docs/modules/tables/arrow/formats/arrow) and [GeoArrow](/docs/modules/tables/arrow/formats/geoarrow) formats.
 
 **@loaders.gl/flatgeobuf**
 
@@ -836,7 +835,7 @@ A major release that brings:
 
 **@loaders.gl/parquet**
 
-- The [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) now supports loading [GeoParquet](/docs/modules/parquet/formats/geoparquet) files.
+- The [`ParquetLoader`](/docs/modules/tables/parquet/api-reference/parquet-loader) now supports loading [GeoParquet](/docs/modules/tables/parquet/formats/geoparquet) files.
 - New [GeoParquet example](/examples/geospatial/geoparquet).
 
 **@loaders.gl/tiles/mvt**
@@ -845,12 +844,12 @@ A major release that brings:
 
 **@loaders.gl/csv**
 
-- New [`CSVWriter`](/docs/modules/csv/api-reference/csv-writer) allows export of tables in CSV format.
+- New [`CSVWriter`](/docs/modules/tables/csv/api-reference/csv-writer) allows export of tables in CSV format.
 - Migration: The promise of parse() now returns `{ shape: string; data: [] }` instead of `[]`, so you should add `.data` to get the records.
 
 **@laoders.gl/json**
 
-- New [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer) allows export of tables in GeoJSON format.
+- New [`GeoJSONWriter`](/docs/modules/tables/json/api-reference/geojson-writer) allows export of tables in GeoJSON format.
 - New `JSONWriter` allows export of tables in JSON format.
 - New `NDJSONWriter` allows export of tables in NDJSON format.
 - New `NDGeoJSONWriter` allows export of tables in NDGeoJSON format.
@@ -958,9 +957,9 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 **@loaders.gl/bson** (New module)
 
-- New module supporting the [BSON](/docs/modules/bson/formats/bson) (Binary JSON) format.
-- [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) - loads BSON encoded binary data into a "JSON like" JavaScript structure
-- [`BSONWriter`](/docs/modules/bson/api-reference/bson-writer) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
+- New module supporting the [BSON](/docs/modules/tables/bson/formats/bson) (Binary JSON) format.
+- [`BSONLoader`](/docs/modules/tables/bson/api-reference/bson-loader) - loads BSON encoded binary data into a "JSON like" JavaScript structure
+- [`BSONWriter`](/docs/modules/tables/bson/api-reference/bson-writer) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
 
 **@loaders.gl/images**
 
@@ -1067,9 +1066,9 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 **@loaders.gl/json**
 
-- [`GeoJSONLoader`](modules/json/api-reference/geojson-loader)
-- [`NDJSONLoader`](modules/json/api-reference/ndjson-loader) - Now supports JSONL, JSONSeq etc.
-- [`NDGeoJSONLoader`](modules/json/api-reference/ndgeojson-loader) - Now supports JSONL, JSONSeq etc.
+- [`GeoJSONLoader`](modules/tables/json/api-reference/geojson-loader)
+- [`NDJSONLoader`](modules/tables/json/api-reference/ndjson-loader) - Now supports JSONL, JSONSeq etc.
+- [`NDGeoJSONLoader`](modules/tables/json/api-reference/ndgeojson-loader) - Now supports JSONL, JSONSeq etc.
 
 **@loaders.gl/geopackage**
 
@@ -1117,7 +1116,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 **@loaders.gl/json**
 
-- New [`NDJSONLoader`](modules/json/api-reference/ndjson-loader) which handles new-line delimited JSON files.
+- New [`NDJSONLoader`](modules/tables/json/api-reference/ndjson-loader) which handles new-line delimited JSON files.
 
 **@loaders.gl/csv**
 
@@ -1125,11 +1124,11 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 **@loaders.gl/flatgeobuf**
 
-- The experimental [`FlatgeobufLoader`](modules/flatgeobuf/api-reference/flatgeobuf-loader) is now documented.
+- The experimental [`FlatgeobufLoader`](modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader) is now documented.
 
 **@loaders.gl/parquet** NEW
 
-- New experimental [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader)
+- New experimental [`ParquetLoader`](/docs/modules/tables/parquet/api-reference/parquet-loader)
 
 **@loaders.gl/pcd**
 
