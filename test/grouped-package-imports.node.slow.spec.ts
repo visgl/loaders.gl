@@ -136,7 +136,7 @@ test.each([
 );
 
 test('published Arrow transport compatibility uses the shared lower-level owner', () => {
-  const source = `import {dehydrateArrowTable as legacy, splitArrowBuffers as legacySplit} from '@loaders.gl/arrow/transport';
+  const source = `import {dehydrateArrowTable as legacy, splitArrowBuffers as legacySplit} from '@loaders.gl/tables/arrow/transport';
   import {dehydrateArrowTable, splitArrowBuffers} from '@loaders.gl/core/schema-utils/arrow-transport';
   if (legacy !== dehydrateArrowTable || legacySplit !== splitArrowBuffers) process.exit(1);`;
   expect(() =>

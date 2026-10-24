@@ -49,7 +49,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 
 The BSON ("Binary JSON") specification defines a binary format for storing JSON-like data with additional scalar types and explicit type information.
 
-- _[`@loaders.gl/bson`](/docs/modules/bson)_
+- _[`@loaders.gl/tables/bson`](/docs/modules/bson)_
 - _[BSON specification](https://bsonspec.org/)_
 - _[Wikipedia article](https://en.wikipedia.org/wiki/BSON)_
 

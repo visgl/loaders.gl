@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import type {Table as ArrowTable} from 'apache-arrow';
-import type {ParquetPredicate} from '@loaders.gl/parquet';
+import type {ParquetPredicate} from '@loaders.gl/tables/parquet/index';
 import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ExampleUrlInputCard, type UrlOption} from 'examples/website/shared/url-input-card';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
@@ -57,7 +57,7 @@ const ICEBERG_URL_OPTIONS: UrlOption<IcebergExample>[] = [
     format: 'Iceberg',
     group: 'Examples',
     label: 'CC0 Geospatial Points',
-    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/parquet/data/iceberg/geospatial-points',
+    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tables/data/parquet/iceberg/geospatial-points',
     example: {
       description: 'Synthetic CC0 points with latitude and longitude columns.',
       defaultAst: '{"op":">=","args":[{"property":"latitude"},0]}',
@@ -87,7 +87,7 @@ export function IcebergScanLiveExample(): JSX.Element {
 
     const runDemo = async (): Promise<void> => {
       try {
-        const {IcebergTableSource} = await import('@loaders.gl/parquet/iceberg-table-source');
+        const {IcebergTableSource} = await import('@loaders.gl/tables/parquet/iceberg-table-source');
         const {metadataUrl, metadataVersion} = await resolveIcebergMetadata(selectedTableUrl);
         const source = new IcebergTableSource(metadataUrl, {
           core: {fetch: fetchWithExposedContentRange, worker: false}

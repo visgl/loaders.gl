@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import type {ParquetSource} from '@loaders.gl/parquet';
+import type {ParquetSource} from '@loaders.gl/tables/parquet/index';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
@@ -12,7 +12,7 @@ type ParquetDemoState = Readonly<{
 }>;
 
 const DEFAULT_PARQUET_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/parquet/test/data/geoparquet/airports.parquet';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tables/test/parquet/data/geoparquet/airports.parquet';
 const objectSizeCache = new Map<string, number>();
 
 /** Demonstrates the shared scan panel on a standalone range-readable Parquet file. */
@@ -26,7 +26,7 @@ export function ParquetScanLiveExample(): JSX.Element {
     let mounted = true;
     void (async () => {
       try {
-        const {ParquetSource} = await import('@loaders.gl/parquet/parquet-source-loader');
+        const {ParquetSource} = await import('@loaders.gl/tables/parquet/parquet-source-loader');
         const source = new ParquetSource(url, {
           core: {fetch: fetchWithExposedContentRange, worker: false}
         }) as ParquetSource;

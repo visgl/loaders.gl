@@ -9,7 +9,7 @@ triangulates WKB geometry. It supplies shared construction primitives to other
 loaders.gl modules.
 
 ```bash
-npm install @loaders.gl/arrow-geometry
+npm install @loaders.gl/tables
 ```
 
 | API | Purpose |

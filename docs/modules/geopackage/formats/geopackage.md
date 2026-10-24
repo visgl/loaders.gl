@@ -52,7 +52,7 @@ import {ClientExample} from '@site/src/components';
   </a>
 </p>
 
-The `@loaders.gl/geopackage` module handles the OGC [GeoPackage](https://www.geopackage.org/) format.
+The `@loaders.gl/geospatial/geopackage` module handles the OGC [GeoPackage](https://www.geopackage.org/) format.
 
 ## Scan support
 

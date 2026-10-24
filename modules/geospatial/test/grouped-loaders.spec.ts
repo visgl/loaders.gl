@@ -22,12 +22,12 @@ import {TCXLoaderWithParser} from '@loaders.gl/geospatial/tcx';
 import {ShapefileLoaderWithParser} from '@loaders.gl/geospatial/shapefile';
 import {SHPLoaderWithParser} from '@loaders.gl/geospatial/shp';
 import {DBFLoaderWithParser} from '@loaders.gl/geospatial/dbf';
-import {KMLLoader as LegacyKMLLoader} from '@loaders.gl/kml';
-import {ShapefileLoader as LegacyShapefileLoader} from '@loaders.gl/shapefile';
+import {KMLLoader as LegacyKMLLoader} from '@loaders.gl/geospatial/kml/index';
+import {ShapefileLoader as LegacyShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {FlatGeobufLoaderWithParser} from '@loaders.gl/geospatial/flatgeobuf';
-import {FlatGeobufLoader as LegacyFlatGeobufLoader} from '@loaders.gl/flatgeobuf';
+import {FlatGeobufLoader as LegacyFlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
 import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
-import {GeoPackageLoader as LegacyGeoPackageLoader} from '@loaders.gl/geopackage';
+import {GeoPackageLoader as LegacyGeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
 
 test.each([
   [GeoPackageLoader, GeoPackageLoaderWithParser],
@@ -76,9 +76,9 @@ test('legacy geopackage metadata shares its grouped owner', () => {
 test('grouped source entry points preserve legacy source APIs', async () => {
   const [flatgeobuf, legacyFlatgeobuf, geopackage, legacyGeopackage] = await Promise.all([
     import('@loaders.gl/geospatial/flatgeobuf/flatgeobuf-source-loader'),
-    import('@loaders.gl/flatgeobuf'),
+    import('@loaders.gl/geospatial/flatgeobuf/index'),
     import('@loaders.gl/geospatial/geopackage/geopackage-source-loader'),
-    import('@loaders.gl/geopackage')
+    import('@loaders.gl/geospatial/geopackage/index')
   ]);
   expect(flatgeobuf.FlatGeobufSourceLoader).toBe(legacyFlatgeobuf.FlatGeobufSourceLoader);
   expect(flatgeobuf.FlatGeobufVectorSource).toBe(legacyFlatgeobuf.FlatGeobufVectorSource);

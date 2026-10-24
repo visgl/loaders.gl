@@ -64,10 +64,10 @@ The `GeoPackageLoader` requires applications to install the optional peer depend
 Install `sql.js` to use this API. It is an optional peer of `@loaders.gl/geospatial`.
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/geopackage sql.js@^1.14.1
+npm install @loaders.gl/core @loaders.gl/geospatial/geopackage sql.js@^1.14.1
 ```
 
-For grouped imports, install `@loaders.gl/geospatial` in place of `@loaders.gl/geopackage` and keep `sql.js` installed.
+For grouped imports, install `@loaders.gl/geospatial` in place of `@loaders.gl/geospatial/geopackage` and keep `sql.js` installed.
 
 ## Usage
 
@@ -75,7 +75,7 @@ The loader returns one selected vector table. With no table name supplied it use
 single table, the metadata-marked default, or the first vector table as a fallback:
 
 ```typescript
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
+import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
 import {load} from '@loaders.gl/core';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 
@@ -85,7 +85,7 @@ const table: ArrowTable = await load(url, GeoPackageLoader);
 To load a specific table named `feature_table` in a GeoPackage file as GeoJSON:
 
 ```typescript
-import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
+import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geospatial/geopackage/index';
 import {load} from '@loaders.gl/core';
 import type {GeoJSONTable} from '@loaders.gl/core/schema';
 

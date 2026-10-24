@@ -56,7 +56,7 @@ data ranges.
   </a>
 </p>
 
-- _[`@loaders.gl/parquet`](/docs/modules/parquet)_
+- _[`@loaders.gl/tables/parquet`](/docs/modules/parquet)_
 - _[Apache Parquet format specification](https://github.com/apache/parquet-format)_
 - _[Apache Parquet 2.13.0 release](https://github.com/apache/parquet-format/releases/tag/apache-parquet-format-2.13.0)_
 - _[Apache Parquet file-format documentation](https://parquet.apache.org/docs/file-format/)_
@@ -65,7 +65,7 @@ Apache Parquet is a binary, column-oriented format designed for compact storage 
 retrieval of tabular and nested data. Values are organized so that a reader can fetch selected
 row groups and columns without downloading or decoding the complete file.
 
-This page describes both the format and the current `@loaders.gl/parquet` TypeScript implementation.
+This page describes both the format and the current `@loaders.gl/tables/parquet` TypeScript implementation.
 The support tables use these symbols:
 
 | Symbol | Meaning |

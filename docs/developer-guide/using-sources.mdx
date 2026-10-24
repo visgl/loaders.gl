@@ -244,7 +244,7 @@ GeoJSON interface.
 ```typescript
 import {load} from '@loaders.gl/core';
 import {ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
-import {GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 
 // build an initial index of tiles.
 const tileSource = await load(url, ArrowTableTileSourceLoader, {

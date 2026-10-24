@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/geopackage'
+title: '@loaders.gl/geospatial/geopackage/index'
 description: Read GeoPackage layers and tables through loader and source APIs.
 hide_title: true
 page_style: designed
@@ -14,7 +14,7 @@ import {ClientExample} from '@site/src/components';
 <DocPageHeader
   format="geopackage"
   eyebrow="Geospatial database module"
-  title="@loaders.gl/geopackage"
+  title="@loaders.gl/geospatial/geopackage/index"
   description="GeoPackage is a SQLite-based container for vector features, tiles, and metadata. The loader reads one selected table, while the source path handles discovery and multi-table access."
   tone="orange"
   meta={['OGC GeoPackage', 'SQLite', 'Layer and table access']}
@@ -49,12 +49,12 @@ import {ClientExample} from '@site/src/components';
   tone="orange"
 />
 
-The `@loaders.gl/geopackage` module handles the OGC [GeoPackage](https://www.geopackage.org/) format.
+The `@loaders.gl/geospatial/geopackage` module handles the OGC [GeoPackage](https://www.geopackage.org/) format.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/geopackage sql.js
+npm install @loaders.gl/geospatial sql.js
 ```
 
 SQL.js is an optional peer dependency. Applications using the grouped package should install `@loaders.gl/geospatial sql.js`; other geospatial formats do not require SQL.js. The existing `geopackage.sqlJsCDN` option controls WASM asset resolution and does not replace the JavaScript peer dependency.

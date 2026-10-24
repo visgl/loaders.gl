@@ -59,7 +59,7 @@ container is Feather V2 and can optionally use LZ4-frame or Zstandard embedded b
 
 ```typescript
 import {encodeSync} from '@loaders.gl/core';
-import {ArrowWriter, VECTOR_TYPES} from '@loaders.gl/arrow';
+import {ArrowWriter, VECTOR_TYPES} from '@loaders.gl/tables/arrow/index';
 
 const LENGTH = 2000;
 

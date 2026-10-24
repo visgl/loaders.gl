@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Lance module"
   title="Read columnar dataset fragments without loading everything."
-  description="`@loaders.gl/lance` provides a focused, read-only path through Lance manifests, fragments, and selected primitive columns. It uses Arrow tables as the result and HTTP ranges for remote column reads."
+  description="`@loaders.gl/tables/lance` provides a focused, read-only path through Lance manifests, fragments, and selected primitive columns. It uses Arrow tables as the result and HTTP ranges for remote column reads."
   tone="cyan"
   meta={['Lance datasets', 'Selected columns', 'Arrow output']}
   links={[
@@ -47,7 +47,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
 </p>
 
-The `@loaders.gl/lance` module provides read-only access to Lance dataset
+The `@loaders.gl/tables/lance` module provides read-only access to Lance dataset
 manifests, data-file metadata, and a small Arrow decoding MVP.
 
 ## Current scope
@@ -67,7 +67,7 @@ encodings, predicate pushdown, and writes are not yet supported.
 - [`LanceSourceLoader`](/docs/modules/lance/api-reference/lance-source-loader)
   reads dataset metadata and local or remote Arrow batches.
 - The parser helpers are available from the
-  [`@loaders.gl/lance/lance-arrow`](/docs/modules/lance/api-reference/lance-arrow)
+  [`@loaders.gl/tables/lance/lance-arrow`](/docs/modules/lance/api-reference/lance-arrow)
   subpath. They read selected primitive or two-dimensional coordinate columns
   with HTTP ranges.
 

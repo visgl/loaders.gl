@@ -57,7 +57,7 @@ remote table. The same source contract is used by the broader scan architecture.
 
 Apache Arrow is a language-independent binary columnar memory format for table-like data. It enables efficient sharing between systems and languages with minimal copying.
 
-- _[`@loaders.gl/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
+- _[`@loaders.gl/tables/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
 - _[Apache Arrow](https://arrow.apache.org/)_ - Apache Arrow project
 - _[Arrow JS](https://arrow.apache.org/docs/js)_ - official Apache Arrow JS documentation
 - _[Arrow JS](/docs/arrowjs)_ - loaders.gl Arrow JS API reference
@@ -72,7 +72,7 @@ Arrow stores values by column rather than by row. This layout improves cache loc
 
 ## Arrow JS
 
-`@loaders.gl/arrow` uses Apache Arrow JS for IPC parsing, writing, and table access. The loaders.gl wrapper adds loader metadata, worker integration, table shape conversion, and utilities for common Arrow table workflows.
+`@loaders.gl/tables/arrow` uses Apache Arrow JS for IPC parsing, writing, and table access. The loaders.gl wrapper adds loader metadata, worker integration, table shape conversion, and utilities for common Arrow table workflows.
 
 ## Scan support
 

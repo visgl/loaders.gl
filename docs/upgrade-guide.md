@@ -54,6 +54,12 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 ## Upgrading to v5.0
 
+### Table and geospatial package consolidation
+
+The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `excel`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv/index` to retain the former root exports. The `@loaders.gl/tables` root exports metadata loaders and writers, while `@loaders.gl/tables/csv` exports `CSVLoaderWithParser`.
+
+The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` packages have also been removed. Install `@loaders.gl/geospatial` and use matching format indexes, such as `@loaders.gl/geospatial/kml/index`, for former package-root APIs. The `@loaders.gl/geospatial` root exports metadata loaders; `@loaders.gl/geospatial/kml` exports parser-bearing loaders. Parser, source, writer, and worker entry points have corresponding explicit subpaths in the group packages. Update any hard-coded worker asset URLs to the group package paths.
+
 **Schema packages move into core subpaths**
 
 - Replace imports from `@loaders.gl/schema` with `@loaders.gl/core/schema`, and imports from `@loaders.gl/schema-utils` with `@loaders.gl/core/schema-utils`.

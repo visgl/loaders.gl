@@ -50,7 +50,7 @@ The `GPXLoader` parses [GPX files][gpx_wikipedia] into loaders.gl geometry table
 ## Usage
 
 ```typescript
-import {GPXLoader} from '@loaders.gl/kml';
+import {GPXLoader} from '@loaders.gl/geospatial/kml/index';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, GPXLoader, options);

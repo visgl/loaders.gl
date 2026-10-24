@@ -56,7 +56,7 @@ defines the supported physical matrix.
   </a>
 </p>
 
-- _[`@loaders.gl/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
+- _[`@loaders.gl/tables/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
 - _[GeoArrow Specification](https://github.com/geoarrow/geoarrow)_
 - _[Apache Arrow](https://arrow.apache.org/)_ - A specification for large in-memory columnar data.
 - _[ArrowJS](/docs/arrowjs)_ - loaders.gl documentation on ArrowJS API.
@@ -166,7 +166,7 @@ Arrow-capable geospatial loaders accept a common encoding preference. The option
 `geoarrow.encodingPreference` alongside the loader-specific options:
 
 ```typescript
-import {GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import {load} from '@loaders.gl/core';
 
 const table = await load('cities.geojson', GeoJSONLoader, {
@@ -253,7 +253,7 @@ without a direct kernel retain the compatibility GeoJSON bridge by default. Set 
 to require a direct kernel in performance-sensitive code and fail instead of materializing objects.
 
 WKB/WKT scalar columns may use standard, large, or Arrow view storage (`Binary`, `LargeBinary`,
-`BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@loaders.gl/arrow/transport` to isolate
+`BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@loaders.gl/tables/arrow/transport` to isolate
 sliced Arrow buffers and prepare tables for worker transfer.
 
 WKB remains the compact interchange and persistence representation. WKT columns use direct

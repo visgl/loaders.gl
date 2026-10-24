@@ -353,7 +353,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/arrow",
+        "label": "@loaders.gl/tables/arrow",
         "items": [
           "modules/arrow/README",
           "modules/arrow/api-reference/indexed-arrow-table",
@@ -367,7 +367,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/avro",
+        "label": "@loaders.gl/tables/avro",
         "items": [
           "modules/avro/README"
         ]
@@ -398,14 +398,14 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/bson",
+        "label": "@loaders.gl/tables/bson",
         "items": [
           "modules/bson/README"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/csv",
+        "label": "@loaders.gl/tables/csv",
         "items": [
           "modules/csv/README"
         ]
@@ -464,14 +464,14 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/excel",
+        "label": "@loaders.gl/tables/excel",
         "items": [
           "modules/excel/README"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/flatgeobuf",
+        "label": "@loaders.gl/geospatial/flatgeobuf",
         "items": [
           "modules/flatgeobuf/README"
         ]
@@ -534,14 +534,14 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/json",
+        "label": "@loaders.gl/tables/json",
         "items": [
           "modules/json/README"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/kml",
+        "label": "@loaders.gl/geospatial/kml",
         "items": [
           "modules/kml/README"
         ]
@@ -555,7 +555,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/lance",
+        "label": "@loaders.gl/tables/lance",
         "items": [
           "modules/lance/README"
         ]
@@ -583,14 +583,14 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/orc",
+        "label": "@loaders.gl/tables/orc",
         "items": [
           "modules/orc/README"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/parquet",
+        "label": "@loaders.gl/tables/parquet",
         "items": [
           "modules/parquet/README",
           "modules/parquet/api-reference/parquet-source-loader",
@@ -653,7 +653,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/shapefile",
+        "label": "@loaders.gl/geospatial/shapefile",
         "items": [
           "modules/shapefile/README",
           "modules/shapefile/api-reference/shp-loader",

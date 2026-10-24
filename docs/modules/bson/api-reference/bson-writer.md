@@ -55,16 +55,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 Install `bson` to use this API. It is an optional dependency of `@loaders.gl/tables`.
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/bson bson@4.2.0
+npm install @loaders.gl/core @loaders.gl/tables/bson bson@4.2.0
 ```
 
-For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/bson` and keep `bson` installed.
+For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/tables/bson` and keep `bson` installed.
 
 ## Usage
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {BSONWriter} from '@loaders.gl/bson';
+import {BSONWriter} from '@loaders.gl/tables/bson/index';
 
 const arrayBuffer = await encode(data, BSONWriter);
 ```

@@ -49,7 +49,7 @@ The `ShapefileLoader` parses Shapefile datasets into loaders.gl geometry tables.
 ## Usage
 
 ```typescript
-import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {load} from '@loaders.gl/core';
 
 const table = await load(url, ShapefileLoader);

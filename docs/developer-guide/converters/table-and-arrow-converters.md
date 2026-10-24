@@ -58,7 +58,7 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 
 | Field | Value |
 | --- | --- |
-| Package | `@loaders.gl/arrow` |
+| Package | `@loaders.gl/tables/arrow` |
 | `id` | `'arrow'` |
 | `from` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
 | `to` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
@@ -80,7 +80,7 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 
 ```ts
 import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
-import {ArrowConverter} from '@loaders.gl/arrow';
+import {ArrowConverter} from '@loaders.gl/tables/arrow/index';
 
 const objectRows = convert(arrowTable, 'object-row-table', [ArrowConverter, TableConverter]);
 const rawArrow = convert(objectRows, 'arrow', [TableConverter, ArrowConverter]);

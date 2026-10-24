@@ -84,7 +84,7 @@ The `@loaders.gl/crypto` module exports transforms that can be used to increment
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';
 import {CRC32Hash} from '@loaders.gl/crypto';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 
 const checksum = new CRC32Hash({
   encoding: 'hex',

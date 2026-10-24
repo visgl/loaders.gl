@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/arrow'
+title: '@loaders.gl/tables/arrow/index'
 description: Arrow and GeoArrow loaders, writers, and utilities for typed columnar data.
 hide_title: true
 page_style: designed
@@ -14,7 +14,7 @@ import apacheLogo from '../../images/logos/apache-logo.png';
 <CapabilityHero
   capability="arrow"
   eyebrow="Module overview"
-  title="@loaders.gl/arrow"
+  title="@loaders.gl/tables/arrow/index"
   description="Use Apache Arrow as the common table shape between format loaders, workers, transforms, and writers."
   logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   links={[
@@ -41,7 +41,7 @@ import apacheLogo from '../../images/logos/apache-logo.png';
   ]}
 />
 
-The `@loaders.gl/arrow` module provides support for the [Apache Arrow](/docs/modules/arrow/formats/arrow) and [GeoArrow](/docs/modules/arrow/formats/geoarrow) formats.
+The `@loaders.gl/tables/arrow` module provides support for the [Apache Arrow](/docs/modules/arrow/formats/arrow) and [GeoArrow](/docs/modules/arrow/formats/geoarrow) formats.
 
 <ReferenceBoundary
   title="Loaders, writers, and table utilities"
@@ -52,18 +52,18 @@ The `@loaders.gl/arrow` module provides support for the [Apache Arrow](/docs/mod
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/arrow
+npm install @loaders.gl/core @loaders.gl/tables/arrow
 ```
 
 See [Using with Apache Arrow](/docs/developer-guide/apache-arrow) for practical guidance on how to integrate with the Apache Arrow JS library.
 
 ## Type-only imports
 
-Use `@loaders.gl/arrow/types` for types exported by the module and types available in Apache Arrow 17,
+Use `@loaders.gl/tables/arrow/types` for types exported by the module and types available in Apache Arrow 17,
 including classes exported as types:
 
 ```typescript
-import type {Table, Vector, ArrowLoaderOptions, IndexedArrowTable} from '@loaders.gl/arrow/types';
+import type {Table, Vector, ArrowLoaderOptions, IndexedArrowTable} from '@loaders.gl/tables/arrow/types';
 ```
 
 Types added in newer Apache Arrow releases, such as `Utf8View` and `BinaryView`,
@@ -71,7 +71,7 @@ should be imported directly from the installed `apache-arrow` package.
 
 Type-only imports are erased by TypeScript and add no runtime code or memory cost.
 The subpath itself emits an empty module with no runtime dependencies. To construct
-class instances, import their runtime values from `apache-arrow` or `@loaders.gl/arrow`.
+class instances, import their runtime values from `apache-arrow` or `@loaders.gl/tables/arrow`.
 
 ## Loaders and Writers
 
@@ -84,9 +84,9 @@ class instances, import their runtime values from `apache-arrow` or `@loaders.gl
 
 ## Additional APIs
 
-`@loaders.gl/arrow` also provides utilities for working with Apache Arrow JS tables after loading
+`@loaders.gl/tables/arrow` also provides utilities for working with Apache Arrow JS tables after loading
 or when integrating Arrow-backed data sources. Arrow worker transport helpers are available from
-the focused `@loaders.gl/arrow/transport` subpath as well as the root export.
+the focused `@loaders.gl/tables/arrow/transport` subpath as well as the root export.
 
 | Utility                                                                          | Description                                                            |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -104,6 +104,6 @@ For the underlying Apache Arrow JS classes, start with the
 
 ## Attributions
 
-`@loaders.gl/arrow` was developed with the benefit of extensive technical advice from Paul Taylor @ Graphistry.
+`@loaders.gl/tables/arrow` was developed with the benefit of extensive technical advice from Paul Taylor @ Graphistry.
 
 Arrow IPC LZ4-frame and Zstandard compression use compress-utils. Async parsing and writing initialize the required codecs automatically. For synchronous compressed parsing, call `await ArrowLoader.preload()` and use the returned parser-bearing loader. For synchronous encoding, initialize the requested codec with an async `encode()` first. Application-provided Arrow registry codecs remain supported. No `lz4js`, `fzstd`, or `zstd-codec` injection is required.

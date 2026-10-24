@@ -74,7 +74,7 @@ Some loaders also support batched (streaming) parsing:
 
 ```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 
 const batchIterator = await parseInBatches(fetchFile(url), CSVLoader);
 for await (const batch of batchIterator) {

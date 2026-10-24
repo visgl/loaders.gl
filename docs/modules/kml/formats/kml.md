@@ -43,7 +43,7 @@ visualization in two-dimensional maps and three-dimensional Earth browsers.
 KMZ is the ZIP-based packaging of a KML document and its related resources,
 such as images, models, and screen overlays.
 
-The `@loaders.gl/kml` module parses both formats with the native
+The `@loaders.gl/geospatial/kml` module parses both formats with the native
 `@loaders.gl/xml` parser. It does not require a browser DOM or Node DOM
 polyfill.
 
@@ -89,7 +89,7 @@ column uses the loaders.gl GeoArrow/WKB table representation.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {KMZLoader} from '@loaders.gl/kml';
+import {KMZLoader} from '@loaders.gl/geospatial/kml/index';
 
 const table = await load('map.kmz', KMZLoader);
 ```
@@ -199,7 +199,7 @@ Relative paths are significant. Extracting only the XML while discarding the nei
 can leave icons, models, or descriptions unresolved. Treat archive paths as case-sensitive and keep
 the extracted directory structure when an application needs to resolve those assets.
 
-`@loaders.gl/kml` currently advertises and parses `.kml` XML documents. It does not automatically
+`@loaders.gl/geospatial/kml` currently advertises and parses `.kml` XML documents. It does not automatically
 unwrap `.kmz` archives or execute `NetworkLink` requests. Use `@loaders.gl/zip` (or another ZIP
 implementation) to inspect and extract a KMZ, then pass the selected KML entry to `KMLLoader`.
 
@@ -209,7 +209,7 @@ For a KML document:
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {KMLLoader} from '@loaders.gl/kml';
+import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
 
 const data = await parse(kmlBytes, KMLLoader);
 ```
@@ -218,7 +218,7 @@ For a KMZ archive, use the ZIP loader as an intermediate step:
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {KMLLoader} from '@loaders.gl/kml';
+import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
 import {ZipLoader} from '@loaders.gl/zip';
 
 const files = await parse(kmzBytes, ZipLoader);

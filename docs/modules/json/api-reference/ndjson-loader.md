@@ -67,7 +67,7 @@ Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL)
 ## Usage
 
 ```typescript
-import {NDJSONLoader} from '@loaders.gl/json';
+import {NDJSONLoader} from '@loaders.gl/tables/json/index';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, NDJSONLoader, {ndjson: options});
@@ -76,7 +76,7 @@ const data = await load(url, NDJSONLoader, {ndjson: options});
 The NDJSONLoader supports streaming NDJSON parsing, in which case it will yield "batches" of rows, where each row is a parsed line from the NDJSON stream.
 
 ```typescript
-import {NDJSONLoader} from '@loaders.gl/json';
+import {NDJSONLoader} from '@loaders.gl/tables/json/index';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('ndjson.ndjson', NDJSONLoader, {
@@ -96,7 +96,7 @@ To request Arrow output explicitly, set `ndjson.shape: 'arrow-table'` (this is t
 
 ```typescript
 import {load, loadInBatches} from '@loaders.gl/core';
-import {NDJSONLoader} from '@loaders.gl/json';
+import {NDJSONLoader} from '@loaders.gl/tables/json/index';
 
 const table = await load(url, NDJSONLoader, {
   ndjson: {shape: 'arrow-table'}

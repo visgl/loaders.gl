@@ -48,7 +48,7 @@ import apacheLogo from '../../../images/logos/apache-logo.png';
   </a>
 </p>
 
-- _[`@loaders.gl/orc`](/docs/modules/orc)_
+- _[`@loaders.gl/tables/orc`](/docs/modules/orc)_
 - _[Apache ORC](https://orc.apache.org/)_
 
 Apache ORC is a typed, column-oriented storage format. Files organize rows into stripes and keep a

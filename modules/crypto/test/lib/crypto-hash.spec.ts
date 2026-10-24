@@ -2,10 +2,10 @@ import {expect, test} from 'vitest';
 import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {fetchFile, loadInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 import {CryptoHash} from '@loaders.gl/crypto';
 import CryptoJS from 'crypto-js';
-const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
+const CSV_URL = '@loaders.gl/tables/csv/test/data/sample-very-long.csv';
 /** Externally computed hash: `openssl md5 -binary sample-very-long.json | openssl base64` */
 const CSV_MD5 = 'zmLuuVSkigYR9r5FcsKkCw==';
 test('CryptoHash#hash(CSV, against external hash)', async () => {

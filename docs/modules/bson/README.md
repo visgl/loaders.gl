@@ -13,7 +13,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   format="bson"
   eyebrow="BSON module"
   title="Keep JSON-like documents in a binary form."
-  description="`@loaders.gl/bson` loads and writes BSON documents as JavaScript objects. It is useful when a binary document format is required but the application wants the familiar JSON data model."
+  description="`@loaders.gl/tables/bson` loads and writes BSON documents as JavaScript objects. It is useful when a binary document format is required but the application wants the familiar JSON data model."
   tone="yellow"
   meta={['BSON documents', 'Loader and writer', 'JSON-like objects']}
   links={[
@@ -49,13 +49,13 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
 </p>
 
-The `@loaders.gl/bson` module provides support for the [BSON](/docs/modules/bson/formats/bson) format.
+The `@loaders.gl/tables/bson` module provides support for the [BSON](/docs/modules/bson/formats/bson) format.
 The BSON format stores arbitrary (loosely structured) data largely equivalent to the textual JSON format.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/bson bson@4.2.0
+npm install @loaders.gl/core @loaders.gl/tables/bson bson@4.2.0
 ```
 
 `bson` is an optional dependency of `@loaders.gl/tables` and is required for BSON parsing and writing. If optional dependencies were omitted or failed to install, install it explicitly. For the grouped package:

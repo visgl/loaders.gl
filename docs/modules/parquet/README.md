@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/parquet'
+title: '@loaders.gl/tables/parquet/index'
 description: Read and write Parquet with selective scans, Arrow output, and cloud-friendly ranges.
 hide_title: true
 page_style: designed
@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <CapabilityHero
   capability="columnar"
   eyebrow="Module overview"
-  title="@loaders.gl/parquet"
+  title="@loaders.gl/tables/parquet/index"
   description="Use Parquet when column selection, metadata pruning, and Arrow-compatible results matter more than reading the whole file."
   logos={[
     {alt: 'Apache Parquet', format: 'parquet'}
@@ -55,7 +55,7 @@ Experimental loader and writer for the Apache Parquet format.
 - `ParquetLoader` uses the TypeScript reader and compress-utils codecs. `ParquetWriter` retains its WASM encoder. Use `parquet.shape: 'object-row-table'` when row objects are required.
 - [`ParquetSourceLoader`](/docs/modules/parquet/api-reference/parquet-source-loader) provides reusable, selective Arrow reads with cached schema and footer metadata. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - [`ParquetDatasetSource`](/docs/modules/parquet/api-reference/parquet-source-loader#multi-file-datasets) coordinates catalog-backed, multi-file Parquet reads with file pruning and bounded concurrency. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-- The optional WASM reader is available as `ParquetWasmLoaderWithParser` from `@loaders.gl/parquet/parquet-wasm-loader`. Install `parquet-wasm` when using this reader or `ParquetWriter`; it is an optional dependency. `ParquetJSLoaderWithParser` shares the TypeScript reader used by the canonical loader. `ParquetJSWriter` provides the TypeScript writer.
+- The optional WASM reader is available as `ParquetWasmLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-wasm-loader`. Install `parquet-wasm` when using this reader or `ParquetWriter`; it is an optional dependency. `ParquetJSLoaderWithParser` shares the TypeScript reader used by the canonical loader. `ParquetJSWriter` provides the TypeScript writer.
 - `ParquetLoader` returns an Arrow table by default and `ParquetWriter` accepts loaders.gl Arrow tables.
 - Iceberg and Delta table-format adapters incubate under the optional
   [`@loaders.gl/scan`](/docs/modules/scan) package. Import them from
@@ -89,7 +89,7 @@ metadata before Parquet encoding.
 
 # License
 
-`@loaders.gl/parquet` module is based on Apache 2.0 licensed code.
+`@loaders.gl/tables/parquet` module is based on Apache 2.0 licensed code.
 
 LZO decompression is supported through compress-utils 0.10.1. Parquet Hadoop block framing is handled in TypeScript. LZO compression is not supported.
 

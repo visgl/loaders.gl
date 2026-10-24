@@ -243,7 +243,7 @@ logical plan while adding row-group, page-index, Bloom-filter, range, and worker
 | Logical table query | `@loaders.gl/core/loader-utils` | query options, canonical plan, capability vocabulary |
 | SQL syntax and compilation | `@loaders.gl/sql` | parser, SQL validation, identifier quoting, placeholders and bindings |
 | In-memory execution | `@loaders.gl/sql/arrow-query` | exact Arrow semantics for the portable query |
-| Physical columnar scans | `@loaders.gl/parquet` | files, ranges, pruning, decoding, residual filtering, batches |
+| Physical columnar scans | `@loaders.gl/tables/parquet` | files, ranges, pruning, decoding, residual filtering, batches |
 | Table-format planning | `IcebergTableSource` and future peers | snapshots, manifests/logs, deletes, file selection |
 
 Keeping the common contracts in loader-utils avoids making Parquet or GPU code depend on a database

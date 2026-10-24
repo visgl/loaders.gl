@@ -34,8 +34,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-`@loaders.gl/arrow/transport` provides focused Arrow table transport helpers for worker
-boundaries. The same helpers are also available from the `@loaders.gl/arrow` root export for
+`@loaders.gl/tables/arrow/transport` provides focused Arrow table transport helpers for worker
+boundaries. The same helpers are also available from the `@loaders.gl/tables/arrow` root export for
 compatibility, but worker-aware modules should prefer the transport subpath.
 
 <ReferenceBoundary
@@ -73,7 +73,7 @@ columns, retaining columns independently, or transferring the table again withou
 memory.
 
 ```ts
-import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/arrow/transport';
+import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/tables/arrow/transport';
 
 const payload = dehydrateArrowTable(table);
 worker.postMessage(payload, transferList);
@@ -147,7 +147,7 @@ ownership or unrelated bytes, keep the default `copy: 'sliced'`.
 import {
   serializeArrowTableToIPC,
   deserializeArrowTableFromIPC
-} from '@loaders.gl/arrow/transport';
+} from '@loaders.gl/tables/arrow/transport';
 
 const payload = serializeArrowTableToIPC(table);
 worker.postMessage(payload, [payload.data.buffer]);

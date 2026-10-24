@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/csv'
+title: '@loaders.gl/tables/csv/index'
 description: Stream CSV and TSV data into reusable table shapes and write it back as text.
 hide_title: true
 page_style: designed
@@ -14,7 +14,7 @@ import {ClientExample} from '@site/src/components';
 <DocPageHeader
   format="csv"
   eyebrow="Table module"
-  title="@loaders.gl/csv"
+  title="@loaders.gl/tables/csv/index"
   description="The CSV module handles CSV and TSV input through the same loaders.gl APIs used by binary table formats. It can materialize a table, emit batches as records arrive, or write compatible data back to text."
   tone="cyan"
   meta={['CSV / TSV', 'Streaming', 'Table output']}
@@ -43,7 +43,7 @@ import {ClientExample} from '@site/src/components';
   ]}
 />
 
-The `@loaders.gl/csv` module handles tabular data stored in CSV and TSV format
+The `@loaders.gl/tables/csv` module handles tabular data stored in CSV and TSV format
 [CSV/DSV file format](https://en.wikipedia.org/wiki/Comma-separated_values).
 
 <ReferenceBoundary
@@ -55,7 +55,7 @@ The `@loaders.gl/csv` module handles tabular data stored in CSV and TSV format
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/csv
+npm install @loaders.gl/core @loaders.gl/tables/csv
 ```
 
 ## Loaders and Writers

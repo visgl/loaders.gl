@@ -90,7 +90,7 @@ Or just import via a browser script tag:
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
 import {TableTileSourceLoader} from '@loaders.gl/tiles/mvt';
-import {GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 
 // Build an initial index of tiles.
 const tileSource = createDataSource(url, [TableTileSourceLoader], {

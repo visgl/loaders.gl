@@ -61,7 +61,7 @@ Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL)
 
 ```typescript
 import {load, parseInBatches} from '@loaders.gl/core';
-import {NDGeoJSONLoader} from '@loaders.gl/json';
+import {NDGeoJSONLoader} from '@loaders.gl/tables/json/index';
 
 const table = await load('features.ndgeojson', NDGeoJSONLoader);
 console.log(table.data.numRows);
@@ -74,7 +74,7 @@ for await (const batch of await parseInBatches(chunks, NDGeoJSONLoader, {
 ```
 
 The package root exports a metadata-only loader. For `parseSync`, import
-`NDGeoJSONLoaderWithParser` from `@loaders.gl/json/ndgeojson-loader`.
+`NDGeoJSONLoaderWithParser` from `@loaders.gl/tables/json/ndgeojson-loader`.
 
 ## Output and options
 

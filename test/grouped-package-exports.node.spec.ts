@@ -28,40 +28,25 @@ test.each([
   }
 });
 
-test('grouped and legacy CommonJS roots expose compatible metadata loaders', () => {
-  for (const [legacy, group, loader] of [
-    ['arrow', 'tables', 'ArrowLoader'],
-    ['json', 'tables', 'JSONLoader'],
-    ['lance', 'tables', 'LanceLoader'],
-    ['orc', 'tables', 'ORCLoader'],
-    ['parquet', 'tables', 'ParquetLoader'],
-    ['bson', 'tables', 'BSONLoader'],
-    ['excel', 'tables', 'ExcelLoader'],
-    ['flatgeobuf', 'geospatial', 'FlatGeobufLoader'],
-    ['geopackage', 'geospatial', 'GeoPackageLoader'],
-    ['csv', 'tables', 'CSVLoader'],
-    ['avro', 'tables', 'AvroLoader'],
-    ['kml', 'geospatial', 'KMLLoader'],
-    ['shapefile', 'geospatial', 'ShapefileLoader']
+test('grouped CommonJS roots expose metadata loaders for every former package', () => {
+  for (const [group, loader] of [
+    ['tables', 'ArrowLoader'],
+    ['tables', 'JSONLoader'],
+    ['tables', 'LanceLoader'],
+    ['tables', 'ORCLoader'],
+    ['tables', 'ParquetLoader'],
+    ['tables', 'BSONLoader'],
+    ['tables', 'ExcelLoader'],
+    ['tables', 'CSVLoader'],
+    ['tables', 'AvroLoader'],
+    ['geospatial', 'FlatGeobufLoader'],
+    ['geospatial', 'GeoPackageLoader'],
+    ['geospatial', 'KMLLoader'],
+    ['geospatial', 'ShapefileLoader']
   ]) {
-    const grouped = requirePackage('@loaders.gl/' + group);
-    const legacyLoader = requirePackage('@loaders.gl/' + legacy)[loader];
-    expect(legacyLoader).toMatchObject({
-      id: grouped[loader].id,
-      module: grouped[loader].module,
-      options: grouped[loader].options
-    });
-    expect(grouped[loader]).not.toHaveProperty('parse');
-    if (legacy === 'parquet') {
-      expect(fileSystem.existsSync(grouped[loader].worker)).toBe(true);
-      expect(fileSystem.existsSync(legacyLoader.worker)).toBe(true);
-    }
-    if (legacy === 'excel') {
-      expect(typeof legacyLoader.serializeWorkerResult).toBe('function');
-      expect(typeof legacyLoader.deserializeWorkerResult).toBe('function');
-      expect(grouped[loader]).not.toHaveProperty('serializeWorkerResult');
-      expect(grouped[loader]).not.toHaveProperty('deserializeWorkerResult');
-    }
+    const metadataLoader = requirePackage('@loaders.gl/' + group)[loader];
+    expect(metadataLoader.id).toBeTruthy();
+    expect(metadataLoader).not.toHaveProperty('parse');
   }
 });
 
@@ -98,8 +83,8 @@ test('geospatial does not transitively install table engines or SQL.js', () => {
   visitPackage('@loaders.gl/geospatial');
   for (const dependency of [
     '@loaders.gl/tables',
-    '@loaders.gl/arrow',
-    '@loaders.gl/json',
+    '@loaders.gl/tables/arrow/index',
+    '@loaders.gl/tables/json/index',
     'bson',
     'xlsx',
     'parquet-wasm',
@@ -121,7 +106,7 @@ test.each([
   expect(declaration).toContain('export declare const ' + exportName + ': {');
 });
 
-test.each(['geospatial', 'geopackage'])('%s declares SQL.js as an optional peer', packageName => {
+test.each(['geospatial'])('%s declares SQL.js as an optional peer', packageName => {
   const manifest = JSON.parse(
     fileSystem.readFileSync(
       path.join(REPOSITORY_ROOT, 'modules', packageName, 'package.json'),

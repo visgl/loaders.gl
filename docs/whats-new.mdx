@@ -54,8 +54,7 @@ root exports, lazy parser subpaths, and optional `geotiff`/`lerc` engines. ArcGI
 The package consolidation POC moves Arrow, Avro, BSON, CSV, Excel, JSON, Lance, ORC, and Parquet
 into `@loaders.gl/tables`, and
 KML, Shapefile, FlatGeobuf, and GeoPackage into `@loaders.gl/geospatial`. Group roots expose
-metadata loaders; format subpaths expose parser-bearing loaders. Existing packages remain
-compatibility entry points. See the [grouped package guide](/docs/developer-guide/grouped-packages)
+metadata loaders; format subpaths expose parser-bearing loaders. The thirteen standalone format packages have been removed; applications should install the group package and use its format subpaths. See the [grouped package guide](/docs/developer-guide/grouped-packages)
 for imports, worker asset availability, and dependency tradeoffs.
 
 ## Regular-grid TileMatrix frame selection

@@ -43,7 +43,7 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
     kind: 'table',
     table: {
       loaderName: 'ExcelLoader',
-      url: `${LOADERS_URL}/modules/excel/test/data/zipcodes.xlsx`,
+      url: `${LOADERS_URL}/modules/tables/test/excel/data/zipcodes.xlsx`,
       options: {core: {worker: false}}
     }
   },
@@ -52,7 +52,7 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
     kind: 'table',
     table: {
       loaderName: 'NDJSONLoader',
-      url: `${LOADERS_URL}/modules/json/test/data/ndjson.ndjson`
+      url: `${LOADERS_URL}/modules/tables/test/json/data/ndjson.ndjson`
     }
   },
   'modules/mlt/api-reference/mlt-loader': {kind: 'tiles', format: 'MLT'},

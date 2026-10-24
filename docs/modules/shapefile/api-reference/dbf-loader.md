@@ -53,7 +53,7 @@ Note: Most applications will want to use the `ShapefileLoader` instead of this l
 The `DBFLoader` parses feature attributes from the Shapefile format.
 
 ```typescript
-import {DBFLoader} from '@loaders.gl/shapefile';
+import {DBFLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {load} from '@loaders.gl/core';
 
 const table = await load(url, DBFLoader, {dbf: {encoding: 'utf8'}});

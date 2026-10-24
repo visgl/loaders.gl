@@ -58,7 +58,7 @@ The `FlatGeobufSourceLoader` creates an indexed vector source for remote `.fgb` 
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {FlatGeobufSourceLoader} from '@loaders.gl/flatgeobuf';
+import {FlatGeobufSourceLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
 
 const source = createDataSource(url, [FlatGeobufSourceLoader]);
 

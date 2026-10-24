@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="shapefile"
   eyebrow="Shapefile module"
   title="Read the geometry and attributes that travel together."
-  description="`@loaders.gl/shapefile` loads the familiar `.shp` geometry and companion attribute files into geospatial table data. Use the archive loader for a complete dataset or the lower-level SHP loader for geometry-only input."
+  description="`@loaders.gl/geospatial/shapefile` loads the familiar `.shp` geometry and companion attribute files into geospatial table data. Use the archive loader for a complete dataset or the lower-level SHP loader for geometry-only input."
   tone="orange"
   meta={['Shapefile', 'Geometry and attributes', 'GIS table data']}
   links={[
@@ -41,12 +41,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-The `@loaders.gl/shapefile` module handles the [Shapefile](/docs/modules/shapefile/formats/shapefile) format, a widely used binary format.
+The `@loaders.gl/geospatial/shapefile` module handles the [Shapefile](/docs/modules/shapefile/formats/shapefile) format, a widely used binary format.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/shapefile
+npm install @loaders.gl/geospatial
 ```
 
 ## Loaders and Writers

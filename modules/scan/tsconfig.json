@@ -13,7 +13,7 @@
   },
   "references": [
     {
-      "path": "../parquet"
+      "path": "../tables"
     },
     {
       "path": "../core"

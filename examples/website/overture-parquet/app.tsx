@@ -17,7 +17,7 @@ import {GeoArrowLayer} from '@loaders.gl/deck-layers';
 import {
   ParquetDatasetSource,
   type ParquetDatasetTelemetry
-} from '@loaders.gl/parquet/parquet-dataset-source';
+} from '@loaders.gl/tables/parquet/parquet-dataset-source';
 import type {Table as ArrowTable} from 'apache-arrow';
 import maplibregl from 'maplibre-gl';
 import {Map} from 'react-map-gl';
@@ -29,7 +29,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 const PARQUET_SOURCE_WORKER_URL = new URL(
-  '../../../modules/parquet/dist/parquet-source-worker.js',
+  '../../../modules/tables/dist/parquet-source-worker.js',
   import.meta.url
 ).toString();
 const MAX_RESULT_ROWS = 75_000;

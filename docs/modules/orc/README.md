@@ -14,8 +14,8 @@ import apacheLogo from '../../images/logos/apache-logo.png';
 <DocPageHeader
   format="orc"
   eyebrow="ORC module"
-  title="@loaders.gl/orc"
-  description="`@loaders.gl/orc` reads and writes Apache ORC files. Its source API exposes metadata and a portable scan contract while keeping the current materialized execution model explicit."
+  title="@loaders.gl/tables/orc/index"
+  description="`@loaders.gl/tables/orc` reads and writes Apache ORC files. Its source API exposes metadata and a portable scan contract while keeping the current materialized execution model explicit."
   tone="yellow"
   logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   meta={['Apache ORC', 'Read and write', 'Arrow tables']}
@@ -56,13 +56,13 @@ import apacheLogo from '../../images/logos/apache-logo.png';
   </a>
 </p>
 
-The `@loaders.gl/orc` module reads and writes Apache ORC files. `ORCSourceLoader` adds a portable
+The `@loaders.gl/tables/orc` module reads and writes Apache ORC files. `ORCSourceLoader` adds a portable
 table scan over a URL or `Blob` and returns Arrow data.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/orc apache-arrow
+npm install @loaders.gl/core @loaders.gl/tables/orc apache-arrow
 ```
 
 ## Scan support
@@ -83,7 +83,7 @@ pushdown.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ORCSourceLoader} from '@loaders.gl/orc';
+import {ORCSourceLoader} from '@loaders.gl/tables/orc/index';
 import {parseSQLPredicate} from '@loaders.gl/scan';
 
 const source = createDataSource('events.orc', [ORCSourceLoader]);

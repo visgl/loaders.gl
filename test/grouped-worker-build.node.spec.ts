@@ -32,20 +32,17 @@ test.each([
       {mode: 0o755}
     );
 
-    for (const [format, input] of [
-      ['csv', `../tables/src/${formatDirectory}workers/csv-worker.ts`],
-      ['tables', `src/${formatDirectory}workers/csv-worker.ts`]
-    ]) {
-      const moduleDirectory = path.join(directory, 'modules', format);
-      fileSystem.mkdirSync(moduleDirectory, {recursive: true});
-      fileSystem.writeFileSync(
-        path.join(moduleDirectory, 'package.json'),
-        JSON.stringify({
-          name: '@loaders.gl/' + format,
-          scripts: {'build-worker': `esbuild ${input} --outfile=dist/csv-worker.js`}
-        })
-      );
-    }
+    const moduleDirectory = path.join(directory, 'modules/tables');
+    fileSystem.mkdirSync(moduleDirectory, {recursive: true});
+    fileSystem.writeFileSync(
+      path.join(moduleDirectory, 'package.json'),
+      JSON.stringify({
+        name: '@loaders.gl/tables',
+        scripts: {
+          'build-worker': `esbuild src/${formatDirectory}workers/csv-worker.ts --outfile=dist/csv-worker.js`
+        }
+      })
+    );
     if (sourceExists) {
       const workerDirectory = path.join(
         directory,
@@ -71,13 +68,12 @@ test.each([
     });
     expect(result.status, result.stderr).toBe(0);
     if (sourceExists) {
-      expect(fileSystem.readFileSync(callLog, 'utf8').trim().split('\n').sort()).toEqual([
-        path.join(directory, 'modules/csv'),
+      expect(fileSystem.readFileSync(callLog, 'utf8').trim()).toBe(
         path.join(directory, 'modules/tables')
-      ]);
+      );
     } else {
       expect(fileSystem.existsSync(callLog)).toBe(false);
-      expect(result.stderr).toContain('Skipping @loaders.gl/csv build-worker');
+      expect(result.stderr).toContain('Skipping @loaders.gl/tables build-worker');
     }
   } finally {
     fileSystem.rmSync(directory, {recursive: true, force: true});

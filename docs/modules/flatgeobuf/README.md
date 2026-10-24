@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/flatgeobuf'
+title: '@loaders.gl/geospatial/flatgeobuf/index'
 description: Read FlatGeobuf vector data with spatial indexing, range requests, and Arrow feature tables.
 hide_title: true
 page_style: designed
@@ -45,7 +45,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />
 </p>
 
-The `@loaders.gl/flatgeobuf` module handles the [FlatGeobuf](http://flatgeobuf.org/) format, a binary FlatBuffers-encoded format that defines geospatial geometries.
+The `@loaders.gl/geospatial/flatgeobuf` module handles the [FlatGeobuf](http://flatgeobuf.org/) format, a binary FlatBuffers-encoded format that defines geospatial geometries.
 
 <ReferenceBoundary
   title="FlatGeobuf module details"
@@ -56,7 +56,7 @@ The `@loaders.gl/flatgeobuf` module handles the [FlatGeobuf](http://flatgeobuf.o
 ## Installation
 
 ```bash
-npm install @loaders.gl/flatgeobuf
+npm install @loaders.gl/geospatial
 npm install @loaders.gl/core
 ```
 

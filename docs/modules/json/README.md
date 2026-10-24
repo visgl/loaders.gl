@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/json'
+title: '@loaders.gl/tables/json/index'
 description: Parse JSON, newline-delimited JSON, and GeoJSON into document, table, or feature data.
 hide_title: true
 page_style: designed
@@ -12,7 +12,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 <DocPageHeader
   format="json"
   eyebrow="Structured data module"
-  title="@loaders.gl/json"
+  title="@loaders.gl/tables/json/index"
   description="The JSON module covers arbitrary documents, newline-delimited records, tabular arrays, and GeoJSON. Applications can preserve nested structures or ask for table and feature outputs when that is the better next step."
   tone="yellow"
   meta={['JSON / NDJSON', 'GeoJSON', 'Table and feature output']}
@@ -37,7 +37,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   ]}
 />
 
-The `@loaders.gl/json` module parses JSON, tabular JSON, and geospatial formats that use JSON encoding. It includes:
+The `@loaders.gl/tables/json` module parses JSON, tabular JSON, and geospatial formats that use JSON encoding. It includes:
 
 - `JSONLoader` for arbitrary JSON documents.
 - `JSONTableLoader` for JSON documents that should always resolve to table output.
@@ -62,7 +62,7 @@ For configuration formats with the same general object/array data model, see the
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/json
+npm install @loaders.gl/core @loaders.gl/tables/json
 ```
 
 ## Loaders and Writers

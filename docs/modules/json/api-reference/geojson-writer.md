@@ -63,7 +63,7 @@ Encode a loaders.gl table containing geometry into a GeoJSON FeatureCollection.
 For example, an object-row table can contain WKT geometry strings in a named column:
 
 ```typescript
-import {GeoJSONWriter} from '@loaders.gl/json';
+import {GeoJSONWriter} from '@loaders.gl/tables/json/index';
 import {encode} from '@loaders.gl/core';
 
 const table = {
@@ -85,7 +85,7 @@ an `ArrayBuffer` containing UTF-8 text; join chunks in order to form the complet
 GeoJSON document. Output chunks are not parsed feature batches.
 
 ```typescript
-import {GeoJSONWriter} from '@loaders.gl/json';
+import {GeoJSONWriter} from '@loaders.gl/tables/json/index';
 import {encodeInBatches} from '@loaders.gl/core';
 
 const chunks = await encodeInBatches(tableBatches, GeoJSONWriter);

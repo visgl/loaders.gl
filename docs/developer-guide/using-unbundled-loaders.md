@@ -48,15 +48,15 @@ the explicit subpath:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/unbundled';
 
 const table = await load(url, CSVLoader);
 ```
 
-CSV also provides parser-bearing loaders from `@loaders.gl/csv/bundled`:
+CSV also provides parser-bearing loaders from `@loaders.gl/tables/csv/bundled`:
 
 ```typescript
-import {CSVLoader} from '@loaders.gl/csv/bundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/bundled';
 ```
 
 The unbundled loader has the same loader id, extensions, MIME types, and option shape as the bundled loader. The difference is that parser methods such as `parse`, `parseSync`, and `parseInBatches` are not present on the imported object. Instead, the loader exposes a `preload` function that core can use to dynamically import the parser-bearing implementation.
@@ -73,7 +73,7 @@ Async core APIs preload unbundled loaders automatically. In most cases, applicat
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/unbundled';
 
 const table = await parse(csvText, CSVLoader);
 ```
@@ -86,7 +86,7 @@ Applications can also preload an unbundled loader before the first parse call:
 
 ```typescript
 import {preload} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/unbundled';
 
 const parserLoader = await preload(CSVLoader);
 ```
@@ -99,7 +99,7 @@ The returned loader can be used directly:
 
 ```typescript
 import {parse, preload} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/unbundled';
 
 const parserLoader = await preload(CSVLoader);
 const table = await parse(csvText, parserLoader);
@@ -112,7 +112,7 @@ returned parser-bearing loader to `parseSync`:
 
 ```typescript
 import {parseSync, preload} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/unbundled';
 
 const parserLoader = await preload(CSVLoader);
 const table = parseSync(arrayBuffer, parserLoader);
@@ -130,7 +130,7 @@ implementation or call core's `preload(loader)`.
 
 ```typescript
 import {preloadSync} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/unbundled';
 
 const parserLoader = preloadSync(CSVLoader);
 ```

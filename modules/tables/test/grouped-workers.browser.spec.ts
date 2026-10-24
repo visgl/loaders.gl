@@ -6,9 +6,9 @@ import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
 import {ExcelLoader, GeoJSONLoader, ParquetLoader} from '@loaders.gl/tables';
 
-const WORKSHEET_URL = '@loaders.gl/excel/test/data/zipcodes-small.xlsx';
+const WORKSHEET_URL = '@loaders.gl/tables/excel/test/data/zipcodes-small.xlsx';
 
-test.each(['tables', 'excel'])('Excel worker assets remain executable under %s', async owner => {
+test.each(['tables'])('Excel worker assets remain executable under %s', async owner => {
   const workerUrl = new URL(`/modules/${owner}/dist/excel-worker.js`, window.location.origin).href;
   const table = await load(WORKSHEET_URL, ExcelLoader, {
     core: {worker: true, reuseWorkers: false},
@@ -19,10 +19,7 @@ test.each(['tables', 'excel'])('Excel worker assets remain executable under %s',
   expect(table.data.getChild('zip_code')?.get(0)).toBeTruthy();
 });
 
-test.each([
-  'tables',
-  'json'
-])('GeoJSON worker transport remains executable under %s', async owner => {
+test.each(['tables'])('GeoJSON worker transport remains executable under %s', async owner => {
   const workerUrl = new URL(`/modules/${owner}/dist/geojson-worker.js`, window.location.origin)
     .href;
   const input = new TextEncoder().encode(
@@ -46,14 +43,11 @@ test.each([
   expect(table.data.getChild('label')?.get(0)).toBe('grouped');
 });
 
-test.each([
-  'tables',
-  'parquet'
-])('Parquet worker assets remain executable under %s', async owner => {
+test.each(['tables'])('Parquet worker assets remain executable under %s', async owner => {
   const workerUrl = new URL(`/modules/${owner}/dist/parquet-worker.js`, window.location.origin)
     .href;
   const table = await load(
-    '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet',
+    '@loaders.gl/tables/parquet/test/data/apache/good/alltypes_dictionary.parquet',
     ParquetLoader,
     {
       core: {worker: true, reuseWorkers: false},

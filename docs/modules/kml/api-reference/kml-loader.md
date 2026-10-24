@@ -51,7 +51,7 @@ The `KMLLoader` parses [KML files][kml_wikipedia] into loaders.gl geometry table
 ## Usage
 
 ```typescript
-import {KMLLoader} from '@loaders.gl/kml';
+import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, KMLLoader, options);

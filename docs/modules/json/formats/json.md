@@ -54,7 +54,7 @@ JavaScript Object Notation (JSON) is a text format for structured data. It is co
   tone="cyan"
 />
 
-- _[`@loaders.gl/json`](/docs/modules/json)_
+- _[`@loaders.gl/tables/json`](/docs/modules/json)_
 - _[JSON.org](https://www.json.org/json-en.html)_
 - _[RFC8259](https://www.rfc-editor.org/rfc/rfc8259)_
 

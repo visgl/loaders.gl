@@ -13,7 +13,7 @@ import {
 } from '@loaders.gl/core/lib/loader-utils/option-utils';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {LASLoader} from '@loaders.gl/las';
-import {ArrowLoader} from '@loaders.gl/arrow';
+import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
 const TEST_CASES = [
   {
     loader: GLTFLoader,

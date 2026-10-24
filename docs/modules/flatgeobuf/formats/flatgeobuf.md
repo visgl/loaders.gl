@@ -48,7 +48,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 
 
-- _[`@loaders.gl/flatgeobuf`](/docs/modules/flatgeobuf)_
+- _[`@loaders.gl/geospatial/flatgeobuf`](/docs/modules/flatgeobuf)_
 - _[FlatGeobuf](http://flatgeobuf.org/)_
 
 FlatGeobuf is a binary (FlatBuffers-encoded) format that defines geospatial geometries. It is row-oriented rather than columnar like GeoParquet and GeoArrow and offers a different set of trade-offs.

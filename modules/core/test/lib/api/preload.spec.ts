@@ -4,7 +4,7 @@
 
 import {describe, expect, test, vi} from 'vitest';
 import {parse, parseInBatches, parseSync, preload, preloadSync, load} from '@loaders.gl/core';
-import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv/unbundled';
 
 const CSV_TEXT = 'city,population\nParis,2148000\nBerlin,3769000';
 const CSV_ARRAY_BUFFER = new TextEncoder().encode(CSV_TEXT).buffer;

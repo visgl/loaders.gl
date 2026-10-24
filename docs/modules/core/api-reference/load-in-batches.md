@@ -78,7 +78,7 @@ for (const iterator of iterators) {
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 
 const iteratorPromises = loadInBatches(['first.csv', 'second.csv'], CSVLoader);
 for (const iterator of await Promise.all(iteratorPromises)) {

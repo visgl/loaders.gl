@@ -56,7 +56,7 @@ Loaders are passed into utility functions in the loaders.gl core API to enable p
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 
 const data = await load(url, CSVLoader);
 // Application code here
@@ -124,7 +124,7 @@ Registered loaders will be included in loader selection if you call any form of
 
 ```typescript
 import {registerLoaders, load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 
 registerLoaders([CSVLoader]);
 
@@ -146,8 +146,8 @@ The loader selection algorithm is exposed to applications via `selectLoader`:
 
 ```typescript
 import {selectLoader} from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/arrow';
-import {CSVLoader} from '@loaders.gl/csv';
+import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 
 const loader = await selectLoader('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 ```

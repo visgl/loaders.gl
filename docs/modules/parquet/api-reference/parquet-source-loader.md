@@ -55,7 +55,7 @@ reads.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {ParquetSourceLoader} from '@loaders.gl/parquet';
+import {ParquetSourceLoader} from '@loaders.gl/tables/parquet/index';
 
 const abortController = new AbortController();
 const source = await load(
@@ -97,7 +97,7 @@ Applications that need synchronous `createDataSource()` can import the runtime l
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ParquetSourceLoader} from '@loaders.gl/parquet/parquet-source-loader';
+import {ParquetSourceLoader} from '@loaders.gl/tables/parquet/parquet-source-loader';
 
 const source = createDataSource(url, [ParquetSourceLoader], {});
 ```
@@ -113,7 +113,7 @@ file. The provider may be backed by STAC, a database, an application manifest, o
 the Parquet module does not depend on any catalog protocol.
 
 ```ts
-import {ParquetDatasetSource} from '@loaders.gl/parquet/parquet-dataset-source';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/parquet-dataset-source';
 import {STACSource} from '@loaders.gl/stac/stac-source';
 
 const catalog = new STACSource('https://stac.overturemaps.org/catalog.json', {});
@@ -229,7 +229,7 @@ range requests. Network and decode errors are rethrown by the iterator.
 By default in browsers, the source fetches selected compressed column chunks on the caller thread,
 then transfers those exact buffers to a dedicated worker. Decompression, page decoding, column
 materialization, and Arrow conversion run in that worker. The result uses
-`@loaders.gl/arrow`'s direct Arrow table transport: Arrow's underlying buffers are transferred and
+`@loaders.gl/tables/arrow`'s direct Arrow table transport: Arrow's underlying buffers are transferred and
 the table is hydrated on the caller thread, without serializing the table to Arrow IPC or
 constructing an intermediate object for every row. Keeping authenticated range requests on the
 caller thread preserves custom fetch implementations, cancellation, range scheduling, and object
@@ -454,9 +454,9 @@ individual read.
 
 ## Package-local WASM
 
-`@loaders.gl/parquet/wasm` exports `PARQUET_WASM_URL`, a bundler-resolvable URL for the packaged
+`@loaders.gl/tables/parquet/wasm` exports `PARQUET_WASM_URL`, a bundler-resolvable URL for the packaged
 `parquet_wasm_bg.wasm` asset. The raw file is also exported as
-`@loaders.gl/parquet/parquet_wasm_bg.wasm` for explicit copy or self-hosting workflows. The current
+`@loaders.gl/tables/parquet/parquet_wasm_bg.wasm` for explicit copy or self-hosting workflows. The current
 `ParquetSource` uses the TypeScript range decoder and does not initialize WASM; these entry points
 serve the package's WASM loader and writer paths.
 

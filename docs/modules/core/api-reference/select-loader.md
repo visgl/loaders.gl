@@ -61,8 +61,8 @@ Select a loader from a list of provided loaders:
 
 ```typescript
 import {selectLoaderSync} from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/arrow';
-import {CSVLoader} from '@loaders.gl/csv';
+import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 
 selectLoaderSync('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 ```
@@ -71,8 +71,8 @@ Select a loader from pre-registered loaders in the loader registry:
 
 ```typescript
 import {registerLoaders, selectLoader} from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/arrow';
-import {CSVLoader} from '@loaders.gl/csv';
+import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
 
 registerLoaders([ArrowLoader, CSVLoader]);
 

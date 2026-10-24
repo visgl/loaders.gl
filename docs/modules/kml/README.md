@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="kml"
   eyebrow="KML module"
   title="Bring map and track files into one data path."
-  description="`@loaders.gl/kml` reads KML, GPX, and TCX documents and converts their geographic content into application-ready data. The formats differ in origin, but share an XML boundary and a geospatial use case."
+  description="`@loaders.gl/geospatial/kml` reads KML, GPX, and TCX documents and converts their geographic content into application-ready data. The formats differ in origin, but share an XML boundary and a geospatial use case."
   tone="orange"
   meta={['KML', 'GPX', 'TCX']}
   links={[
@@ -42,7 +42,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 
-The `@loaders.gl/kml` module supports the KML, KMZ, GPX, and TCX formats.
+The `@loaders.gl/geospatial/kml` module supports the KML, KMZ, GPX, and TCX formats.
 
 KML (Keyhole Markup Language) is an XML-based file format used to display geographic data in an Earth browser such as Google Earth (originally named "Keyhole Earth Viewer"). It can be used with any 2D or 3D maps.
 
@@ -66,5 +66,5 @@ References:
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/kml
+npm install @loaders.gl/core @loaders.gl/geospatial/kml
 ```

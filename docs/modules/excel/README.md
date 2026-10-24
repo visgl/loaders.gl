@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Excel module"
   title="Bring workbook sheets into a table pipeline."
-  description="`@loaders.gl/excel` reads Excel workbooks and exposes their sheet data through the loaders.gl table conventions. It is a boundary adapter for applications that should not need to understand workbook internals."
+  description="`@loaders.gl/tables/excel` reads Excel workbooks and exposes their sheet data through the loaders.gl table conventions. It is a boundary adapter for applications that should not need to understand workbook internals."
   tone="mint"
   meta={['Excel workbooks', 'Table data', 'Browser and Node.js']}
   links={[
@@ -40,12 +40,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="mint"
 />
 
-The `@loaders.gl/excel` module handles tabular data stored in the Excel file format.
+The `@loaders.gl/tables/excel` module handles tabular data stored in the Excel file format.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/excel xlsx@^0.18.5
+npm install @loaders.gl/core @loaders.gl/tables/excel xlsx@^0.18.5
 ```
 
 `xlsx` is an optional dependency of `@loaders.gl/tables` and is required for Excel parsing. If optional dependencies were omitted or failed to install, install it explicitly. For the grouped package:

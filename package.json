@@ -115,7 +115,6 @@
     "@loaders.gl/core": "^5.0.0-alpha.0",
     "@loaders.gl/crypto": "^5.0.0-alpha.0",
     "@loaders.gl/draco": "^5.0.0-alpha.0",
-    "@loaders.gl/geopackage": "^5.0.0-alpha.0",
     "@loaders.gl/gltf": "^5.0.0-alpha.0",
     "@loaders.gl/images": "^5.0.0-alpha.0",
     "@loaders.gl/las": "^5.0.0-alpha.0",
@@ -133,6 +132,7 @@
     "@deck.gl/arcgis@npm:9.4.0": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch",
     "@vitest/browser": "5.0.2",
     "@vitest/browser-playwright": "5.0.2",
-    "@loaders.gl/raster": "^5.0.0-alpha.0"
+    "@loaders.gl/raster": "^5.0.0-alpha.0",
+    "@loaders.gl/geospatial": "^5.0.0-alpha.0"
   }
 }

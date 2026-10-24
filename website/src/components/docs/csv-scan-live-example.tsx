@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {CSVTableSource} from '@loaders.gl/csv';
+import {CSVTableSource} from '@loaders.gl/tables/csv/index';
 import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
@@ -11,7 +11,7 @@ type CSVScanDemoState = Readonly<{
 }>;
 
 const DEFAULT_CSV_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/csv/test/data/sample.csv';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tables/test/csv/data/sample.csv';
 
 /** Demonstrates the shared metadata-driven scan panel on a forward-only CSV source. */
 export function CSVScanLiveExample(): JSX.Element {

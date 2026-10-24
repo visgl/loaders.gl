@@ -6,12 +6,12 @@ import {expect, test} from 'vitest';
 import {
   GEOARROW_TEST_CASES,
   GEOARROW_ENCODINGS
-} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
+} from '@loaders.gl/tables/arrow/test/data/geoarrow/test-cases';
 import {load} from '@loaders.gl/core';
 import type {FeatureCollection} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {getGeometryColumnsFromSchema, convertGeoArrowGeometryToGeoJSON} from '@loaders.gl/geoarrow';
-import {ArrowLoader} from '@loaders.gl/arrow';
+import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
 test('ArrowUtils#convertGeoArrowGeometryToGeoJSON', async () => {
   for (const testCase of GEOARROW_TEST_CASES) {
     await testParseFromArrow(testCase[0], testCase[1]);

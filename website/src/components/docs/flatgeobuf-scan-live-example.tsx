@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import type {FlatGeobufReadOptions} from '@loaders.gl/flatgeobuf';
+import type {FlatGeobufReadOptions} from '@loaders.gl/geospatial/flatgeobuf/index';
 import type {ArrowTable} from '@loaders.gl/core/schema';
-import {FlatGeobufVectorSource} from '@loaders.gl/flatgeobuf';
+import {FlatGeobufVectorSource} from '@loaders.gl/geospatial/flatgeobuf/index';
 import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
@@ -13,7 +13,7 @@ type FlatGeobufDemoState = Readonly<{
 }>;
 
 const DEFAULT_FLATGEOBUF_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/flatgeobuf/test/data/countries.fgb';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/geospatial/test/flatgeobuf/data/countries.fgb';
 
 /** Demonstrates metadata-driven projection, limit, and bbox controls over FlatGeobuf. */
 export function FlatGeobufScanLiveExample(): JSX.Element {

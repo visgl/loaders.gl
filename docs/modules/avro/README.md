@@ -4,18 +4,18 @@ title: Avro module
 
 # Apache Avro
 
-`@loaders.gl/avro` reads Apache Avro records into Arrow tables and writes Arrow
+`@loaders.gl/tables/avro` reads Apache Avro records into Arrow tables and writes Arrow
 tables as Avro Object Container Files (OCF).
 
 ## Installation and usage
 
 ```bash
-npm install @loaders.gl/avro @loaders.gl/core
+npm install @loaders.gl/tables @loaders.gl/core
 ```
 
 ```typescript
 import {load, encode} from '@loaders.gl/core';
-import {AvroLoader, AvroWriter} from '@loaders.gl/avro';
+import {AvroLoader, AvroWriter} from '@loaders.gl/tables/avro/index';
 
 const table = await load('records.avro', AvroLoader);
 const bytes = await encode(table, AvroWriter);
@@ -38,7 +38,7 @@ Pass these options inside `avro`:
 | `blockIndices` | Optional zero-based OCF block selection. |
 
 For standalone `.avsc` schema parsing, import `AvroSchemaLoaderWithParser` from
-`@loaders.gl/avro/avro-schema-loader` and pass it to `load` or `parse`.
+`@loaders.gl/tables/avro/avro-schema-loader` and pass it to `load` or `parse`.
 The package-root `AvroSchemaLoader` contains metadata only.
 
 See [table representations](/docs/specifications/category-table) and

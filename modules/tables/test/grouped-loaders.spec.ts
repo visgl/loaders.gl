@@ -8,32 +8,32 @@ import {CSVLoader, AvroLoader, AvroSchemaLoader, BSONLoader, ExcelLoader} from '
 import {CSVLoaderWithParser} from '@loaders.gl/tables/csv';
 import {AvroLoaderWithParser} from '@loaders.gl/tables/avro';
 import {AvroSchemaLoaderWithParser} from '@loaders.gl/tables/avro-schema';
-import {CSVLoader as LegacyCSVLoader} from '@loaders.gl/csv';
-import {AvroLoader as LegacyAvroLoader} from '@loaders.gl/avro';
+import {CSVLoader as LegacyCSVLoader} from '@loaders.gl/tables/csv/index';
+import {AvroLoader as LegacyAvroLoader} from '@loaders.gl/tables/avro/index';
 import {BSONLoaderWithParser} from '@loaders.gl/tables/bson';
-import {BSONLoader as LegacyBSONLoader} from '@loaders.gl/bson';
+import {BSONLoader as LegacyBSONLoader} from '@loaders.gl/tables/bson/index';
 import {ExcelLoaderWithParser} from '@loaders.gl/tables/excel';
-import {ExcelLoader as LegacyExcelLoader} from '@loaders.gl/excel';
+import {ExcelLoader as LegacyExcelLoader} from '@loaders.gl/tables/excel/index';
 
 import {ArrowLoader} from '@loaders.gl/tables';
 import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
-import {ArrowLoader as LegacyArrowLoader} from '@loaders.gl/arrow';
+import {ArrowLoader as LegacyArrowLoader} from '@loaders.gl/tables/arrow/index';
 
 import {JSONLoader} from '@loaders.gl/tables';
 import {JSONLoaderWithParser} from '@loaders.gl/tables/json';
-import {JSONLoader as LegacyJSONLoader} from '@loaders.gl/json';
+import {JSONLoader as LegacyJSONLoader} from '@loaders.gl/tables/json/index';
 
 import {LanceLoader} from '@loaders.gl/tables';
 import {LanceLoaderWithParser} from '@loaders.gl/tables/lance';
-import {LanceLoader as LegacyLanceLoader} from '@loaders.gl/lance';
+import {LanceLoader as LegacyLanceLoader} from '@loaders.gl/tables/lance/index';
 
 import {ORCLoader} from '@loaders.gl/tables';
 import {ORCLoaderWithParser} from '@loaders.gl/tables/orc';
-import {ORCLoader as LegacyORCLoader} from '@loaders.gl/orc';
+import {ORCLoader as LegacyORCLoader} from '@loaders.gl/tables/orc/index';
 
 import {ParquetLoader} from '@loaders.gl/tables';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
-import {ParquetLoader as LegacyParquetLoader} from '@loaders.gl/parquet';
+import {ParquetLoader as LegacyParquetLoader} from '@loaders.gl/tables/parquet/index';
 
 import {GeoArrowLoader} from '@loaders.gl/tables';
 import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
@@ -159,7 +159,7 @@ test('grouped Lance source metadata defers synchronous source construction', asy
 });
 
 test('legacy GeoJSON metadata keeps transport hooks outside grouped metadata', async () => {
-  const {GeoJSONLoader: legacy} = await import('@loaders.gl/json');
+  const {GeoJSONLoader: legacy} = await import('@loaders.gl/tables/json/index');
   expect(legacy).toMatchObject(GeoJSONLoader);
   expect(legacy.serializeWorkerResult).toBe(GeoJSONLoaderWithParser.serializeWorkerResult);
   expect(legacy.deserializeWorkerResult).toBe(GeoJSONLoaderWithParser.deserializeWorkerResult);

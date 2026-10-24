@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/arrow` module can convert Apache Arrow `Utf8`, `Utf8View`, `Binary`, and
+The `@loaders.gl/tables/arrow` module can convert Apache Arrow `Utf8`, `Utf8View`, `Binary`, and
 `BinaryView` vectors without changing their logical values.
 
 <ReferenceBoundary
@@ -48,7 +48,7 @@ The `@loaders.gl/arrow` module can convert Apache Arrow `Utf8`, `Utf8View`, `Bin
 import {
   convertArrowTableVariableWidthTypes,
   convertArrowVariableWidthVector
-} from '@loaders.gl/arrow';
+} from '@loaders.gl/tables/arrow/index';
 
 const viewVector = convertArrowVariableWidthVector(utf8Vector, {viewTypes: 'prefer'});
 const standardVector = convertArrowVariableWidthVector(viewVector, {viewTypes: 'never'});

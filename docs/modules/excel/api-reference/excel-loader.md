@@ -66,15 +66,15 @@ Non-streaming table loaders for Excel files.
 Install `xlsx` to use this API. It is an optional dependency of `@loaders.gl/tables`.
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/excel xlsx@^0.18.5
+npm install @loaders.gl/core @loaders.gl/tables/excel xlsx@^0.18.5
 ```
 
-For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/excel` and keep `xlsx` installed.
+For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/tables/excel` and keep `xlsx` installed.
 
 ## Usage
 
 ```typescript
-import {ExcelLoader} from '@loaders.gl/excel';
+import {ExcelLoader} from '@loaders.gl/tables/excel/index';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, ExcelLoader, {excel: options});
@@ -84,7 +84,7 @@ Load an Excel worksheet as a loaders.gl `ArrowTable` by setting `excel.shape: 'a
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ExcelLoader} from '@loaders.gl/excel';
+import {ExcelLoader} from '@loaders.gl/tables/excel/index';
 
 const table = await load(url, ExcelLoader, {
   excel: {

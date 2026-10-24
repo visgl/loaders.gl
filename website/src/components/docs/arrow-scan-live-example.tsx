@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ArrowTableSource} from '@loaders.gl/arrow';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
@@ -12,7 +12,7 @@ type ArrowScanDemoState = Readonly<{
 }>;
 
 const DEFAULT_ARROW_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/arrow/test/data/arrow/simple.arrow';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tables/test/arrow/data/arrow/simple.arrow';
 
 /** Demonstrates the shared metadata-driven scan panel on an Arrow IPC source. */
 export function ArrowScanLiveExample(): JSX.Element {

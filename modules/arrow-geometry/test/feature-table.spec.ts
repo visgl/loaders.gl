@@ -4,10 +4,10 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {GEOARROW_TEST_CASES} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
+import {GEOARROW_TEST_CASES} from '@loaders.gl/tables/arrow/test/data/geoarrow/test-cases';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {Feature, FeatureCollection} from '@loaders.gl/core/schema';
-import {GeoArrowLoader} from '@loaders.gl/arrow';
+import {GeoArrowLoader} from '@loaders.gl/tables/arrow/index';
 import {convertFeaturesToWKBArrowTable} from '../src/feature-collection-to-arrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertFeaturesToGeoArrowTable, type LegacyGeoJSONCRS} from '../src/feature-table';

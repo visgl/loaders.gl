@@ -63,8 +63,8 @@ which [Parquet format features](/docs/modules/parquet/formats/parquet) are suppo
 Load a Parquet file as object rows when a row-oriented result is required.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/parquet';
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
+import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet/parquet-js-loader';
 import {load} from '@loaders.gl/core';
 
 const loaderOptions = {parquet: {batchSize: 10_000, shape: 'object-row-table'}};
@@ -74,13 +74,13 @@ const typeScriptRows = await load(url, ParquetJSLoader, loaderOptions);
 
 Applications normally import metadata loaders from the package root. Code that needs a
 parser-bearing loader directly can import `ParquetLoaderWithParser` from
-`@loaders.gl/parquet/parquet-loader` or `ParquetJSLoaderWithParser` from
-`@loaders.gl/parquet/parquet-js-loader`.
+`@loaders.gl/tables/parquet/parquet-loader` or `ParquetJSLoaderWithParser` from
+`@loaders.gl/tables/parquet/parquet-js-loader`.
 
 Load a Parquet file as Arrow using the primary loader.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
 import {load} from '@loaders.gl/core';
 
 const abortController = new AbortController();
@@ -109,7 +109,7 @@ Both `ParquetLoader` and `ParquetJSLoader` return loaders.gl `ArrowTable` object
 The ParquetLoader supports streaming parsing, in which case it will yield "batches" of rows.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('geo.parquet', ParquetLoader, {
@@ -213,14 +213,14 @@ Supports table category options such as `batchType` and `batchSize`.
   metadata, page indexes, Bloom filters, and page modules when `keyRetriever` is supplied. Plaintext
   footer signatures are verified by default.
 
-For the optional WASM reader, import `ParquetWasmLoaderWithParser` from `@loaders.gl/parquet/parquet-wasm-loader` and install `parquet-wasm`. The implementation is selected by the loader import. There is no runtime backend option.
+For the optional WASM reader, import `ParquetWasmLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-wasm-loader` and install `parquet-wasm`. The implementation is selected by the loader import. There is no runtime backend option.
 The [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)
 concept guide explains why selective I/O, direct Arrow construction, memory copies, and startup cost
 can matter more than the language used for a decoder's inner loop.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet/parquet-js-loader';
 
 const table = await load(url, ParquetJSLoader, {
   parquet: {

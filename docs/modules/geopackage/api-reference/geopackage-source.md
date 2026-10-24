@@ -44,7 +44,7 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
   tone="yellow"
 />
 
-`GeoPackageSource` is implemented in `@loaders.gl/geospatial/geopackage/index` and remains available through the `@loaders.gl/geopackage` compatibility package. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
+`GeoPackageSource` is implemented in `@loaders.gl/geospatial/geopackage/index` and remains available through the `@loaders.gl/geospatial/geopackage` compatibility package. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';

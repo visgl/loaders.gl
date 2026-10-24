@@ -46,7 +46,7 @@ ESRI Shapefiles is a file format for storing geospatial vector data.
   tone="mint"
 />
 
-- _[`@loaders.gl/shapefile`](/docs/modules/shapefile)_
+- _[`@loaders.gl/geospatial/shapefile`](/docs/modules/shapefile)_
 - _[Wikipedia](https://en.wikipedia.org/wiki/Shapefile)_ - _[ESRI Shapefile Whitepaper](https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf)_ - _[Notes on Shapefile usage](http://webhelp.esri.com/arcgisdesktop/9.3/index.cfm?TopicName=Geoprocessing_considerations_for_shapefile_output)_
 - _[DBF header](http://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm)_ - _[data types](https://www.clicketyclick.dk/databases/xbase/format/data_types.html_)_ - _[code pages](https://support.esri.com/en/technical-article/000013192)_ - _[implementation notes](https://www.loc.gov/preservation/digital/formats/fdd/fdd000326.shtml)\_
 
