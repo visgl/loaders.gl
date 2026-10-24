@@ -6,7 +6,13 @@ import {expect, test} from 'vitest';
 import {validateBytes} from 'gltf-validator';
 import {extractMeshFeatures} from '../apps/tile-converter/src/v5/mesh-source-features';
 import {parse} from '@loaders.gl/core';
-import {GLTFLoader, GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
+import {
+  GLTFLoader,
+  GLTFScenegraph,
+  getGLTFAccessorValue,
+  getGLTFAccessor,
+  setGLTFAccessorValue
+} from '@loaders.gl/gltf';
 import type {Field, MeshGeometry} from '@loaders.gl/core/schema';
 import {
   encodeMeshTile,
@@ -108,11 +114,14 @@ test.each([
     attribute: 0,
     propertyTable: 0
   });
-  const decodedPrimitive = postProcessGLTF(data).meshes[0].primitives[0];
-  const attributes = decodedPrimitive.attributes._FEATURE_ID_0.value;
-  const positions = decodedPrimitive.attributes.POSITION.value;
+  const decodedPrimitive = data.json.meshes[0].primitives[0];
+  const attributes = getGLTFAccessorValue(data, decodedPrimitive.attributes._FEATURE_ID_0);
+  const positions = getGLTFAccessorValue(data, decodedPrimitive.attributes.POSITION);
   const indices =
-    decodedPrimitive.indices?.value ?? Uint32Array.from({length: 6}, (_, index) => index);
+    (decodedPrimitive.indices === undefined
+      ? undefined
+      : getGLTFAccessorValue(data, decodedPrimitive.indices)) ??
+    Uint32Array.from({length: 6}, (_, index) => index);
   const ownership = new Map<number, string[]>();
   for (let index = 0; index < indices.length; index += 3) {
     const vertices = [0, 1, 2].map(corner => Number(indices[index + corner]));
@@ -131,23 +140,27 @@ test.each([
     );
     expect(rotated).toContain(expected.join(';'));
   }
-  const postprocessed = postProcessGLTF(data);
+  const container = data;
   const extracted = extractMeshFeatures(
-    postprocessed,
-    postprocessed.meshes[0].primitives[0],
+    container,
+    container.json.meshes[0].primitives[0],
     {},
     {
       topology: 'triangle-list',
       mode: 4,
       attributes: Object.fromEntries(
-        Object.entries(decodedPrimitive.attributes).map(([name, attribute]) => [
+        Object.entries(decodedPrimitive.attributes).map(([name, reference]) => [
           name,
-          {value: attribute.value, size: attribute.components!}
+          {
+            value: getGLTFAccessorValue(data, reference as number),
+            size: getGLTFAccessor(data, reference as number).type === 'SCALAR' ? 1 : 3
+          }
         ])
       ),
-      indices: decodedPrimitive.indices
-        ? {value: decodedPrimitive.indices.value, size: 1}
-        : undefined
+      indices:
+        decodedPrimitive.indices !== undefined
+          ? {value: getGLTFAccessorValue(data, decodedPrimitive.indices), size: 1}
+          : undefined
     },
     {
       metadataClass: 'building',
@@ -199,16 +212,18 @@ test.each([
   const metadata = data.json.extensions!.EXT_structural_metadata;
   expect(metadata.schema.classes.building.properties.value.noData).toBe(type === 'utf8' ? '_' : 1);
   expect(metadata.propertyTables[0].properties.value.data[1]).toBe(values[1]);
-  const postprocessed = postProcessGLTF(data);
-  const primitive = postprocessed.meshes[0].primitives[0];
+  const container = data;
+  const primitive = container.json.meshes[0].primitives[0];
   const extracted = extractMeshFeatures(
-    postprocessed,
+    container,
     primitive,
     {},
     {
       topology: 'triangle-list',
       mode: 4,
-      attributes: {POSITION: {value: primitive.attributes.POSITION.value, size: 3}}
+      attributes: {
+        POSITION: {value: getGLTFAccessorValue(container, primitive.attributes.POSITION), size: 3}
+      }
     },
     {
       metadataClass: 'building',
@@ -254,19 +269,21 @@ test('feature writer rejects unmapped schemas and invalid associations before em
 /** Returns a tiny decoded glTF with one declared feature table for schema-mapping conformance. */
 async function createDeclaredFeatureFixture() {
   const {data} = await readMesh(encodeMeshTile(createMesh(), {features: createFeatures()}));
-  const gltf = postProcessGLTF(data);
-  const primitive = gltf.meshes[0].primitives[0];
+  const gltf = data;
+  const primitive = gltf.json.meshes[0].primitives[0];
   const mesh: MeshGeometry = {
     topology: 'triangle-list',
     mode: 4,
-    attributes: {POSITION: {value: primitive.attributes.POSITION.value, size: 3}}
+    attributes: {
+      POSITION: {value: getGLTFAccessorValue(gltf, primitive.attributes.POSITION), size: 3}
+    }
   };
   return {gltf, primitive, mesh};
 }
 
 test('declared feature schema builds an exact Arrow mapping and round trips nullable Unicode values', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     sourceFeatureIdProperty: 'feature_id'
   });
@@ -294,10 +311,10 @@ test('declared feature schema builds an exact Arrow mapping and round trips null
 
 test('declared optional columns use defaults or nulls and default identifiers remain row indices', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   delete metadata.propertyTables[0].properties.label;
   metadata.schema.classes.building.properties.label.default = '默认';
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     featureIdField: 'row_id'
   });
@@ -324,7 +341,7 @@ test.each([
   'unmapped-column'
 ])('declared schema rejects unsupported %s without inferring types from data', async kind => {
   const {gltf} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   const property = metadata.schema.classes.building.properties.label;
   if (kind === 'array') property.array = true;
   if (kind === 'enum') property.type = 'ENUM';
@@ -341,7 +358,7 @@ test.each([
   if (kind === 'missing-class') delete metadata.schema.classes.building;
   if (kind === 'multiple-tables') metadata.propertyTables.push(metadata.propertyTables[0]);
   if (kind === 'unmapped-column') metadata.propertyTables[0].properties.extra = {data: [1, 2]};
-  expect(() => createMeshSourceFeatureOptions(gltf, {metadataClass: 'building'})).toThrow();
+  expect(() => createMeshSourceFeatureOptions(gltf.json, {metadataClass: 'building'})).toThrow();
 });
 
 test.each([
@@ -357,7 +374,7 @@ test.each([
   ['float64', 'FLOAT64']
 ] as const)('declared %s uses source width even when decoded values fit a smaller type', async (type, componentType) => {
   const {gltf} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   metadata.schema.classes.building.properties.value = {
     type: 'SCALAR',
     componentType,
@@ -366,7 +383,7 @@ test.each([
   metadata.propertyTables[0].properties.value = {
     data: type.endsWith('64') && !type.startsWith('float') ? [1n, 2n] : [1, 2]
   };
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     sourceFeatureIdProperty: 'feature_id'
   });
@@ -378,13 +395,13 @@ test.each([
 
 test('declared int64 defaults retain bigint values and reject unsafe JSON defaults', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   metadata.schema.classes.building.properties.code = {
     type: 'SCALAR',
     componentType: 'INT64',
     default: -7
   };
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     sourceFeatureIdProperty: 'feature_id'
   });
@@ -398,9 +415,9 @@ test('declared int64 defaults retain bigint values and reject unsafe JSON defaul
 
 test('optional encoded columns cannot become defaults when the decoder did not supply their values', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   metadata.schema.classes.building.properties.label.default = 'fallback';
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     sourceFeatureIdProperty: 'feature_id'
   });
@@ -414,11 +431,11 @@ test('optional encoded columns cannot become defaults when the decoder did not s
 
 test('shared table counts must match decoded columns without expanding defaults', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   metadata.propertyTables[0].count = 0xffffffff;
   primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = 2;
   delete metadata.propertyTables[0].properties.label;
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     sourceFeatureIdProperty: 'feature_id'
   });
@@ -430,10 +447,14 @@ test.each([
   true
 ])('shared tables compact indexed primitive rows, retaining stable IDs; explicit=%s', async explicit => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   metadata.propertyTables[0].count = 4;
   primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = 2;
-  primitive.attributes._FEATURE_ID_0.value = new Uint8Array([3, 3, 3, 0, 0, 0]);
+  setGLTFAccessorValue(
+    gltf,
+    primitive.attributes._FEATURE_ID_0,
+    new Uint8Array([3, 3, 3, 0, 0, 0])
+  );
   mesh.indices = {size: 1, value: new Uint16Array([0, 1, 2])};
   metadata.propertyTables[0].properties.feature_id.data = new BigUint64Array([
     1n,
@@ -443,7 +464,7 @@ test.each([
   ]);
   metadata.propertyTables[0].properties.label.data = ['', 'unused', 'unused', 'München 🏠'];
   metadata.schema.classes.building.properties.optional = {type: 'STRING', default: '默认'};
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     ...(explicit ? {sourceFeatureIdProperty: 'feature_id'} : {featureIdField: 'row_id'})
   });
@@ -461,12 +482,12 @@ test.each([
 
 test('default-only shared metadata materializes referenced rows without allocating the declared table', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   metadata.propertyTables[0].count = 0xffffffff;
   primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = 2;
   metadata.propertyTables[0].properties = {};
   metadata.schema.classes.building.properties = {label: {type: 'STRING', default: 'shared'}};
-  const options = createMeshSourceFeatureOptions(gltf, {metadataClass: 'building'});
+  const options = createMeshSourceFeatureOptions(gltf.json, {metadataClass: 'building'});
   const extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
   expect(extracted.batches[0].data.numRows).toBe(2);
   expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['shared', 'shared']);
@@ -477,7 +498,7 @@ test.each([
 ])('shared tables reject inconsistent per-primitive feature count %s', async count => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
   primitive.extensions!.EXT_mesh_features.featureIds[0].featureCount = count;
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     featureIdField: 'row_id'
   });
@@ -490,7 +511,7 @@ test.each([
 ])('compaction rejects incomplete or invalid triangle indices $indices', async ({indices}) => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
   mesh.indices = {size: 1, value: new Uint16Array(indices)};
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     featureIdField: 'row_id'
   });
@@ -503,7 +524,7 @@ test.each([
 ])('compaction rejects mixed triangle ownership but accepts repeated-index connectors; degenerate=%s', async degenerate => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
   mesh.indices = {size: 1, value: new Uint16Array(degenerate ? [0, 0, 3] : [0, 1, 3])};
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     featureIdField: 'row_id'
   });
@@ -519,16 +540,14 @@ test.each([
 
 test('legacy batch tables compact unused rows while preserving original batch identifiers', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     featureIdField: 'row_id'
   });
-  delete gltf.extensions;
+  delete gltf.json.extensions;
   delete primitive.extensions;
-  primitive.attributes._BATCHID = {
-    ...primitive.attributes._FEATURE_ID_0,
-    value: new Uint8Array([3, 3, 3, 0, 0, 0])
-  };
+  primitive.attributes._BATCHID = primitive.attributes._FEATURE_ID_0;
+  setGLTFAccessorValue(gltf, primitive.attributes._BATCHID, new Uint8Array([3, 3, 3, 0, 0, 0]));
   delete primitive.attributes._FEATURE_ID_0;
   mesh.indices = {size: 1, value: new Uint16Array([0, 1, 2])};
   const extracted = extractMeshFeatures(
@@ -548,14 +567,14 @@ test('legacy batch tables compact unused rows while preserving original batch id
 
 test('shared property readers treat prototype-like column names as data', async () => {
   const {gltf, primitive, mesh} = await createDeclaredFeatureFixture();
-  const metadata = gltf.extensions!.EXT_structural_metadata;
+  const metadata = gltf.json.extensions!.EXT_structural_metadata;
   metadata.schema.classes.building.properties.constructor = {
     type: 'STRING',
     noData: 'missing',
     default: 'fallback'
   };
   metadata.propertyTables[0].properties.constructor = {data: ['missing', 'value']};
-  const options = createMeshSourceFeatureOptions(gltf, {
+  const options = createMeshSourceFeatureOptions(gltf.json, {
     metadataClass: 'building',
     featureIdField: 'row_id'
   });

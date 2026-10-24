@@ -40,6 +40,18 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
+## 3D Tiles decoded glTF content
+
+With `3d-tiles.loadGLTF: true`, `tile.gltf` now contains `GLTFWithBuffers` rather than a
+postprocessed scene. Read metadata from `tile.gltf.json`. Scene, mesh, material, texture and accessor
+references remain numeric indices. Read typed values with `getGLTFAccessorValue(tile.gltf, index)`
+and replace transformed storage with `setGLTFAccessorValue`. Vector-content descriptors retain raw
+primitive definitions. The tile converter consumes this indexed representation directly.
+
+`postProcessGLTF` remains available as an explicit application API. A renderer that requires linked
+objects can call it at its rendering boundary. It is no longer called by the tile parsers.
+See [glTF accessor helpers](./modules/gltf/api-reference/gltf-accessors).
+
 ## Upgrading to v4.5
 
 v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.

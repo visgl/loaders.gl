@@ -1,3 +1,4 @@
+import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/gltf';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -117,15 +118,23 @@ async function parseSpatialContent(
 
 test('3D Tiles transforms glTF positions, bounds, normals, and a unique node placement', async () => {
   const tile = await parseSpatialContent([{mesh: 0, translation: [10, 0, 7], scale: [2, 1, 1]}]);
-  const attributes = tile.gltf.meshes[0].primitives[0].attributes;
+  const attributes = Object.fromEntries(
+    Object.entries(tile.gltf.json.meshes[0].primitives[0].attributes).map(([name, reference]) => [
+      name,
+      {
+        ...getGLTFAccessor(tile.gltf, reference as number),
+        value: getGLTFAccessorValue(tile.gltf, reference as number)
+      }
+    ])
+  );
   expect(attributes.POSITION.value[0]).toBeCloseTo(1113194.9, 0);
   expect(attributes.POSITION.value[3]).toBeCloseTo(1335833.875, 0);
   expect(attributes.POSITION.min).toEqual(Array.from(attributes.POSITION.value.slice(0, 3)));
   expect(attributes.POSITION.max).toEqual(Array.from(attributes.POSITION.value.slice(3, 6)));
   expect(Array.from(attributes.NORMAL.value)).toEqual([0, 0, 1, 0, 0, 1]);
-  expect(Array.from(tile.gltf.nodes[0].matrix)).toEqual(Array.from(new Matrix4()));
-  expect(tile.gltf.nodes[0].translation).toBeUndefined();
-  expect(tile.gltf.nodes[0].scale).toBeUndefined();
+  expect(Array.from(tile.gltf.json.nodes[0].matrix)).toEqual(Array.from(new Matrix4()));
+  expect(tile.gltf.json.nodes[0].translation).toBeUndefined();
+  expect(tile.gltf.json.nodes[0].scale).toBeUndefined();
 });
 
 test('3D Tiles composes explicit mesh and tile matrices before CRS conversion', async () => {
@@ -133,7 +142,10 @@ test('3D Tiles composes explicit mesh and tile matrices before CRS conversion', 
     [{mesh: 0, matrix: Array.from(new Matrix4().translate([2, 0, 4]))}],
     Array.from(new Matrix4().translate([3, 0, 5]))
   );
-  const positions = tile.gltf.meshes[0].primitives[0].attributes.POSITION.value;
+  const positions = getGLTFAccessorValue(
+    tile.gltf,
+    tile.gltf.json.meshes[0].primitives[0].attributes.POSITION
+  );
   expect(positions[0]).toBeCloseTo(556597.4375, 0);
   expect(positions[2]).toBe(9);
 });
@@ -144,7 +156,10 @@ test.each([
   ['unreferenced mesh', []]
 ])('3D Tiles transforms %s without consuming ambiguous node placement', async (_name, nodes) => {
   const tile = await parseSpatialContent(nodes, undefined, false);
-  const positions = tile.gltf.meshes[0].primitives[0].attributes.POSITION.value;
+  const positions = getGLTFAccessorValue(
+    tile.gltf,
+    tile.gltf.json.meshes[0].primitives[0].attributes.POSITION
+  );
   expect(positions[0]).toBe(0);
   expect(positions[3]).toBeCloseTo(111319.49, 0);
   expect(positions[5]).toBe(3);
@@ -156,8 +171,19 @@ test.each([
   ['unreferenced', [{mesh: 0, translation: [10, 0, 7]}]]
 ])('3D Tiles transforms a %s mesh alongside a uniquely placed mesh', async (_name, nodes) => {
   const tile = await parseSpatialContent(nodes, undefined, false, {meshCount: 2});
-  const first = tile.gltf.meshes[0].primitives[0].attributes.POSITION;
-  const second = tile.gltf.meshes[1].primitives[0].attributes.POSITION;
+  const first = {
+    value: getGLTFAccessorValue(
+      tile.gltf,
+      tile.gltf.json.meshes[0].primitives[0].attributes.POSITION
+    )
+  };
+  const second = {
+    ...getGLTFAccessor(tile.gltf, tile.gltf.json.meshes[1].primitives[0].attributes.POSITION),
+    value: getGLTFAccessorValue(
+      tile.gltf,
+      tile.gltf.json.meshes[1].primitives[0].attributes.POSITION
+    )
+  };
   expect(first.value[0]).toBeCloseTo(1113194.9, 0);
   expect(second.value[3]).toBeCloseTo(111319.49, 0);
   expect(second.max).toEqual(Array.from(second.value.slice(3, 6)));
@@ -173,12 +199,15 @@ test.each([
     false,
     {animationPath}
   );
-  const positions = tile.gltf.meshes[0].primitives[0].attributes.POSITION.value;
+  const positions = getGLTFAccessorValue(
+    tile.gltf,
+    tile.gltf.json.meshes[0].primitives[0].attributes.POSITION
+  );
   expect(positions[0]).toBe(0);
   expect(positions[3]).toBeCloseTo(111319.49, 0);
-  expect(tile.gltf.nodes[0].translation).toEqual([10, 0, 7]);
-  expect(tile.gltf.nodes[0].scale).toEqual([2, 1, 1]);
-  expect(tile.gltf.animations[0].channels[0].target).toEqual({node: 0, path: animationPath});
+  expect(tile.gltf.json.nodes[0].translation).toEqual([10, 0, 7]);
+  expect(tile.gltf.json.nodes[0].scale).toEqual([2, 1, 1]);
+  expect(tile.gltf.json.animations[0].channels[0].target).toEqual({node: 0, path: animationPath});
 });
 
 test.each([
@@ -196,7 +225,10 @@ test.each([
   ]
 ])('3D Tiles uses inverse-transpose normals for %s placements', async (_name, node, normal, expected) => {
   const tile = await parseSpatialContent([node], undefined, true, {normal});
-  const normals = tile.gltf.meshes[0].primitives[0].attributes.NORMAL.value;
+  const normals = getGLTFAccessorValue(
+    tile.gltf,
+    tile.gltf.json.meshes[0].primitives[0].attributes.NORMAL
+  );
   for (let axis = 0; axis < 3; axis++) {
     expect(normals[axis]).toBeCloseTo(expected[axis], 5);
   }
@@ -209,7 +241,10 @@ test('3D Tiles uses inverse-transpose normals for non-uniform tile transforms', 
     true,
     {normal: [1, 1, 0]}
   );
-  const normals = tile.gltf.meshes[0].primitives[0].attributes.NORMAL.value;
+  const normals = getGLTFAccessorValue(
+    tile.gltf,
+    tile.gltf.json.meshes[0].primitives[0].attributes.NORMAL
+  );
   expect(normals[0]).toBeCloseTo(1 / Math.sqrt(5), 5);
   expect(normals[1]).toBeCloseTo(2 / Math.sqrt(5), 5);
 });

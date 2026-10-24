@@ -90,14 +90,15 @@ const TRANSLATION_LIMIT_SQUARED = 10e5 ** 2; // 100km
  * These large translations cause Float32 precision issues when applied in the GPU shader.
  */
 function _getRootNode(tile: Tile3D['content']): {matrix: number[]} | null {
-  const gltf = tile.gltf;
+  const gltf = tile.gltf?.json;
   if (!gltf) {
     return null;
   }
 
   const sceneIndex = typeof gltf.scene === 'number' ? gltf.scene : 0;
   const scene = gltf.scenes?.[sceneIndex];
-  const rootNode = scene?.nodes?.[0];
+  const rootNodeIndex = scene?.nodes?.[0];
+  const rootNode = rootNodeIndex === undefined ? undefined : gltf.nodes?.[rootNodeIndex];
   if (!rootNode?.matrix) return null;
 
   // Extract translation and compare magnitude (meters) to limit

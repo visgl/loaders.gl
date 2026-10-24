@@ -4,6 +4,7 @@
 
 import {assert} from '../utils/assert';
 
+import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
 import {BYTES, COMPONENTS} from './gltf-constants';
 
@@ -113,7 +114,19 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
  * @param gltf - the gltf content of a GLTF tile
  * @returns - total memory usage in bytes
  */
-export function getMemoryUsageGLTF(gltf: GLTFPostprocessed): number {
+export function getMemoryUsageGLTF(gltf: GLTFPostprocessed | GLTFWithBuffers): number {
+  if ('json' in gltf) {
+    const imageBufferViews = new Set((gltf.json.images || []).map(image => image.bufferView));
+    const bufferMemory = (gltf.json.bufferViews || []).reduce(
+      (total, view, index) => total + (imageBufferViews.has(index) ? 0 : view.byteLength),
+      0
+    );
+    const pixelCount = (gltf.images || []).reduce(
+      (total, image) => total + ((image as any)?.width || 0) * ((image as any)?.height || 0),
+      0
+    );
+    return bufferMemory + Math.ceil(4 * pixelCount * MIPMAP_FACTOR);
+  }
   let {images, bufferViews} = gltf;
   images = images || [];
   bufferViews = bufferViews || [];

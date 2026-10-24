@@ -26,9 +26,10 @@ export async function parseBatchedModel3DTile(
   byteOffset = parseBatchedModel(tile, arrayBuffer, byteOffset, options, context);
   await extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
 
-  const extensions = tile?.gltf?.extensions;
-  if (extensions && extensions.CESIUM_RTC) {
-    tile.rtcCenter = extensions.CESIUM_RTC.center;
+  const extensions = tile?.gltf?.json.extensions;
+  const rtc = extensions?.CESIUM_RTC as {center?: number[]} | undefined;
+  if (rtc?.center) {
+    tile.rtcCenter = rtc.center;
   }
 
   return byteOffset;

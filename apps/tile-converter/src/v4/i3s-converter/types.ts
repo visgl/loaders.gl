@@ -1,4 +1,4 @@
-import {GLTFImagePostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
+import type {ConversionNode, ConversionImage} from './helpers/conversion-gltf';
 import {
   BoundingVolumes,
   I3SMaterialDefinition,
@@ -141,7 +141,7 @@ export type I3SMaterialWithTexture = {
   /** Material definition https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialDefinitions.cmn.md */
   material: I3SMaterialDefinition;
   /** Texture content (image) */
-  texture?: GLTFImagePostprocessed;
+  texture?: ConversionImage;
   /** Metadata of all merged materials */
   mergedMaterials: MergedMaterial[];
 };
@@ -217,7 +217,7 @@ export type GLTFAttributesData = {
   /** glTF PBR materials (only id is required) */
   gltfMaterials?: {id: string}[];
   /** glTF geometry nodes */
-  nodes: GLTFNodePostprocessed[];
+  nodes: ConversionNode[];
   /** glTF texture images (set to null for compressed textures) */
   images: (null | TextureImageProperties)[];
   /** Source tile origin coordinates in cartographic coordinate system */

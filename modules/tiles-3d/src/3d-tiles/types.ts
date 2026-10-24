@@ -4,8 +4,8 @@
 
 import type {
   GLTFMeshPolygonData,
-  GLTFMeshPrimitivePostprocessed,
-  GLTFPostprocessed,
+  GLTFMeshPrimitive,
+  GLTFWithBuffers,
   GLTFGaussianSplatPrimitive,
   GLTFVoxelPrimitive,
   GLTFPrimitiveIndexRange,
@@ -31,7 +31,7 @@ export type B3DMContent = {
   featureIds?: number[] | null;
   featureTableBinary?: Uint8Array;
   featureTableJson?: FeatureTableJson;
-  gltf?: GLTFPostprocessed;
+  gltf?: GLTFWithBuffers;
   gltfUpAxis: string;
   header: GLTFHeader;
   magic: number;
@@ -332,7 +332,7 @@ export type Tiles3DTileContent = {
   gltfUpAxis?: 'x' | 'X' | 'y' | 'Y' | 'z' | 'Z';
   gltfUrl?: string;
   gpuMemoryUsageInBytes?: number;
-  gltf?: GLTFPostprocessed;
+  gltf?: GLTFWithBuffers;
   /** Renderer-neutral Gaussian splat descriptors discovered in embedded glTF content. */
   gaussianSplatPrimitives?: GLTFGaussianSplatPrimitive[];
   /** Lazy voxel descriptors discovered in embedded glTF content. */
@@ -403,7 +403,7 @@ export type Tiles3DVectorPrimitiveBase = {
   /** Index of the primitive within the source mesh. */
   readonly primitiveIndex: number;
   /** Decoded glTF primitive retaining attributes, indices, feature IDs, and fallback geometry. */
-  readonly primitive: GLTFMeshPrimitivePostprocessed;
+  readonly primitive: GLTFMeshPrimitive;
 };
 
 /** A vector point primitive. */

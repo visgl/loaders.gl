@@ -168,7 +168,7 @@ test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', asyn
     '3d-tiles': {loadGLTF: true}
   });
   expect(tile.type).toBe('glTF');
-  expect(tile.gltf?.asset.version, 'parses the preprocessed JSON glTF object').toBe('2.0');
+  expect(tile.gltf?.json.asset.version, 'parses the preprocessed JSON glTF object').toBe('2.0');
 });
 test('Tiles3DLoader#reports explicit content-mode mismatches', async () => {
   await await expect(

@@ -12,6 +12,7 @@ import './lib/gltf-utils/external-assets.spec';
 
 import './lib/api/gltf-scenegraph-modifiers.spec';
 import './lib/api/gltf-scenegraph-accessors.spec';
+import './lib/api/gltf-accessors.spec';
 import './lib/api/post-process-gltf.spec';
 
 import './lib/extensions/KHR_meshopt_compression.spec';
