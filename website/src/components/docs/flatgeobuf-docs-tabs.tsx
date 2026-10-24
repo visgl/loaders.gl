@@ -16,13 +16,13 @@ export type FlatGeobufDocsTabId = 'overview' | 'try-it' | 'format' | 'loader' | 
 
 const FLATGEOBUF_DOCS_TABS: FlatGeobufDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/geospatial/flatgeobuf'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/flatgeobuf/formats/flatgeobuf'},
-  {id: 'format', label: 'Format', href: '/docs/modules/flatgeobuf/format'},
-  {id: 'loader', label: 'FlatGeobufLoader', href: '/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader'},
+  {id: 'overview', label: 'Overview', href: '/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf'},
+  {id: 'format', label: 'Format', href: '/docs/modules/geospatial/flatgeobuf/format'},
+  {id: 'loader', label: 'FlatGeobufLoader', href: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader'},
   {
     id: 'source',
     label: 'FlatGeobufSourceLoader',
-    href: '/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader'
+    href: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader'
   }
 ];
 

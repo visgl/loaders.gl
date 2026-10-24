@@ -7,7 +7,7 @@ import {setPathPrefix} from '@loaders.gl/core/loader-utils';
 
 afterEach(() => setPathPrefix(''));
 
-vi.mock('@loaders.gl/parquet/parquet-dataset-source', () => ({
+vi.mock('@loaders.gl/tables/parquet/parquet-dataset-source', () => ({
   ParquetDatasetSource: class MockParquetDatasetSource {
     constructor(public readonly fragments: unknown[] | (() => Promise<unknown[]>)) {}
     async getSchema() {

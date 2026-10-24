@@ -11,15 +11,15 @@ import type {
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import {createScanQueryMetadata, DataSource} from '@loaders.gl/core/loader-utils';
-import {ParquetDatasetSource} from '@loaders.gl/parquet/parquet-dataset-source';
-import {PARQUET_TABLE_QUERY_CAPABILITIES} from '@loaders.gl/parquet/parquet-source-capabilities';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/parquet-dataset-source';
+import {PARQUET_TABLE_QUERY_CAPABILITIES} from '@loaders.gl/tables/parquet/parquet-source-capabilities';
 import type {
   ParquetDatasetBatch,
   ParquetDatasetExplain,
   ParquetDatasetReadOptions,
   ParquetPredicate,
   ParquetDatasetSourceOptions
-} from '@loaders.gl/parquet/parquet-source-types';
+} from '@loaders.gl/tables/parquet/parquet-source-types';
 
 /** A physical Parquet base file recorded by a Hudi snapshot descriptor. */
 export type HudiBaseFile = Readonly<{

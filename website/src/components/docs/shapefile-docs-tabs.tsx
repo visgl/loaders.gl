@@ -22,11 +22,11 @@ export type ShapefileDocsTabId =
 
 const SHAPEFILE_DOCS_TABS: ShapefileDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/geospatial/shapefile'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/shapefile/formats/shapefile'},
-  {id: 'format', label: 'Format', href: '/docs/modules/shapefile/format'},
-  {id: 'loader', label: 'ShapefileLoader', href: '/docs/modules/shapefile/api-reference/shapefile-loader'},
-  {id: 'shp', label: 'SHPLoader', href: '/docs/modules/shapefile/api-reference/shp-loader'},
-  {id: 'dbf', label: 'DBFLoader', href: '/docs/modules/shapefile/api-reference/dbf-loader'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/geospatial/shapefile/formats/shapefile'},
+  {id: 'format', label: 'Format', href: '/docs/modules/geospatial/shapefile/format'},
+  {id: 'loader', label: 'ShapefileLoader', href: '/docs/modules/geospatial/shapefile/api-reference/shapefile-loader'},
+  {id: 'shp', label: 'SHPLoader', href: '/docs/modules/geospatial/shapefile/api-reference/shp-loader'},
+  {id: 'dbf', label: 'DBFLoader', href: '/docs/modules/geospatial/shapefile/api-reference/dbf-loader'}
 ];
 
 /**

@@ -22,13 +22,16 @@ test.each([95, 75])('moved format coverage keeps its original gate at %s percent
       metrics.map(metric => [metric, {total: 100, covered, pct: covered}])
     );
     const packages = {
-      '@loaders.gl/csv': {
-        path: 'modules/csv',
-        sourcePaths: ['modules/csv/src/', 'modules/tables/src/csv/'],
+      '@loaders.gl/tables': {path: 'modules/tables', browser: thresholds, merged: thresholds}
+    };
+    const formats = {
+      'tables/csv': {
+        owner: '@loaders.gl/tables',
+        path: 'modules/tables/src/csv',
+        sourcePaths: ['modules/tables/src/csv/'],
         browser: thresholds,
         merged: thresholds
-      },
-      '@loaders.gl/tables': {path: 'modules/tables', browser: thresholds, merged: thresholds}
+      }
     };
     /** Writes a fixture relative to the temporary repository. */
     function writeFixture(filename: string, value: unknown): void {
@@ -36,9 +39,9 @@ test.each([95, 75])('moved format coverage keeps its original gate at %s percent
       fileSystem.mkdirSync(path.dirname(target), {recursive: true});
       fileSystem.writeFileSync(target, JSON.stringify(value));
     }
-    for (const name of ['csv', 'tables'])
+    for (const name of ['tables'])
       writeFixture('modules/' + name + '/package.json', {name: '@loaders.gl/' + name});
-    writeFixture('test/coverage-thresholds.json', {version: 1, target: 90, packages});
+    writeFixture('test/coverage-thresholds.json', {version: 1, target: 90, packages, formats});
     const healthyCoverage = Object.fromEntries(
       metrics.map(metric => [metric, {total: 1000, covered: 1000, pct: 100}])
     );
@@ -52,7 +55,7 @@ test.each([95, 75])('moved format coverage keeps its original gate at %s percent
     const result = spawnSync(process.execPath, [CHECKER_PATH], {cwd: directory, encoding: 'utf8'});
     expect(result.status, result.stderr).toBe(covered >= 90 ? 0 : 1);
     if (covered < 90) {
-      expect(result.stderr).toContain('@loaders.gl/csv browser statements coverage');
+      expect(result.stderr).toContain('tables/csv browser statements coverage');
       expect(result.stderr).not.toContain('@loaders.gl/tables browser statements coverage');
     }
   } finally {

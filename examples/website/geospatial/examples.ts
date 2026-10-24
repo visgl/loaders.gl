@@ -35,12 +35,12 @@ const PARQUET_PATH = '/formats/geoparquet';
 const GEOMETRY_COLLECTION_WKB_DATA_URL =
   'data:application/vnd.apache.arrow.file;base64,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';
 
-const GEOARROW_TEST_DATA = `${LOADERS_URL}/modules/arrow/test/data/geoarrow`;
+const GEOARROW_TEST_DATA = `${LOADERS_URL}/modules/tables/test/arrow/data/geoarrow`;
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   CSV: {
     'Points (WKT)': {
       format: 'csv',
-      data: `${LOADERS_URL}/modules/csv/test/data/geospatial-points-wkt.csv`,
+      data: `${LOADERS_URL}/modules/tables/test/csv/data/geospatial-points-wkt.csv`,
       viewState: {longitude: -122.307, latitude: 37.834, zoom: 9.8},
       layerProps: {
         getPointRadius: 12,
@@ -50,7 +50,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     },
     'Points (WKB)': {
       format: 'csv',
-      data: `${LOADERS_URL}/modules/csv/test/data/geospatial-points-wkb.csv`,
+      data: `${LOADERS_URL}/modules/tables/test/csv/data/geospatial-points-wkb.csv`,
       viewState: {longitude: -122.307, latitude: 37.834, zoom: 9.8},
       layerProps: {
         getPointRadius: 12,
@@ -62,7 +62,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   Shapefile: {
     'Countries and Graticules': {
       format: 'shapefile',
-      data: `${LOADERS_URL}/modules/shapefile/test/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
+      data: `${LOADERS_URL}/modules/geospatial/test/shapefile/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
       viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76},
       layerProps: {getFillColor: (_, {index}) => [0, index % 255, 0]}
     },
@@ -122,7 +122,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   GeoParquet: {
     Airports: {
       format: 'geoparquet',
-      data: 'https://github.com/visgl/loaders.gl/raw/refs/heads/master/modules/parquet/test/data/geoparquet/airports.parquet',
+      data: 'https://github.com/visgl/loaders.gl/raw/refs/heads/master/modules/tables/test/parquet/data/geoparquet/airports.parquet',
       viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76}
     },
     'Countries (zstd)': {
@@ -245,7 +245,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   FlatGeobuf: {
     Countries: {
       format: 'flatgeobuf',
-      data: `${LOADERS_URL}/modules/flatgeobuf/test/data/countries.fgb`,
+      data: `${LOADERS_URL}/modules/geospatial/test/flatgeobuf/data/countries.fgb`,
       viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76},
       layerProps: {getFillColor: (_, {index}) => [index % 255, 0, 0]}
     }
@@ -262,7 +262,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   TCX: {
     'TXC Sample': {
       format: 'tcx',
-      data: `${LOADERS_URL}/modules/kml/test/data/tcx/tcx_sample.tcx`,
+      data: `${LOADERS_URL}/modules/geospatial/test/kml/data/tcx/tcx_sample.tcx`,
       viewState: {latitude: 37.89544935, longitude: -122.4883889, zoom: 16}
     }
   },
@@ -270,7 +270,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   GPX: {
     Trek: {
       format: 'gpx',
-      data: `${LOADERS_URL}/modules/kml/test/data/gpx/trek.gpx`,
+      data: `${LOADERS_URL}/modules/geospatial/test/kml/data/gpx/trek.gpx`,
       viewState: {latitude: 44.907783722, longitude: 6.08, zoom: 13}
     }
   },
@@ -297,7 +297,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     // TODO - size of features is excessive.
     'KML Sample': {
       format: 'kml',
-      data: `${LOADERS_URL}/modules/kml/test/data/kml/KML_Samples.kml`,
+      data: `${LOADERS_URL}/modules/geospatial/test/kml/data/kml/KML_Samples.kml`,
       viewState: {latitude: 37.65, longitude: -121.7, zoom: 11}
     }
   }

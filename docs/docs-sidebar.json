@@ -29,35 +29,35 @@
     "label": "Formats",
     "items": [
       "formats/README",
-      "modules/arrow/formats/arrow",
+      "modules/tables/arrow/formats/arrow",
       "modules/textures/formats/basis",
-      "modules/bson/formats/bson",
+      "modules/tables/bson/formats/bson",
       "modules/traces/formats/chrome-trace",
       "modules/textures/formats/compressed-textures",
       "modules/copc/formats/copc",
       "modules/3d-tiles/formats/3d-tiles",
       "modules/textures/formats/crunch",
-      "modules/csv/formats/csv",
+      "modules/tables/csv/formats/csv",
       "modules/wms/formats/csw",
       "modules/textures/formats/dds",
       "modules/draco/formats/draco",
-      "modules/flatgeobuf/formats/flatgeobuf",
-      "modules/arrow/formats/geoarrow",
-      "modules/json/formats/geojson",
+      "modules/geospatial/flatgeobuf/formats/flatgeobuf",
+      "modules/tables/arrow/formats/geoarrow",
+      "modules/tables/json/formats/geojson",
       "modules/config/formats/toml",
       "modules/config/formats/yaml",
-      "modules/geopackage/formats/geopackage",
-      "modules/parquet/formats/geoparquet",
+      "modules/geospatial/geopackage/formats/geopackage",
+      "modules/tables/parquet/formats/geoparquet",
       "modules/geotiff/formats/geotiff",
       "modules/gltf/formats/glb",
       "modules/gltf/formats/gltf",
       "modules/wms/formats/gml",
-      "modules/kml/formats/gpx",
+      "modules/geospatial/kml/formats/gpx",
       "modules/textures/formats/hdr",
       "modules/xml/formats/html",
       "modules/i3s/formats/i3s",
-      "modules/json/formats/json",
-      "modules/kml/formats/kml",
+      "modules/tables/json/formats/json",
+      "modules/geospatial/kml/formats/kml",
       "modules/textures/formats/ktx",
       "modules/las/formats/las",
       "modules/lerc/formats/lerc",
@@ -66,18 +66,18 @@
       "modules/mvt/formats/mvt",
       "modules/scientific/netcdf/formats/netcdf",
       "modules/obj/formats/obj",
-      "modules/orc/formats/orc",
+      "modules/tables/orc/formats/orc",
       "modules/wms/formats/ows-context",
-      "modules/parquet/formats/parquet",
+      "modules/tables/parquet/formats/parquet",
       "modules/traces/formats/perfetto-trace",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
       "modules/pmtiles/formats/pmtiles",
       "modules/potree/formats/potree",
       "modules/textures/formats/pvr",
-      "modules/shapefile/formats/shapefile",
+      "modules/geospatial/shapefile/formats/shapefile",
       "modules/stac/formats/stac",
-      "modules/kml/formats/tcx",
+      "modules/geospatial/kml/formats/tcx",
       "modules/mvt/formats/tilejson",
       "modules/scene/formats/usd",
       "modules/wkt/formats/wkb",
@@ -124,7 +124,7 @@
       "specifications/category-image",
       "specifications/category-texture",
       "specifications/category-gis",
-      "modules/json/formats/geojson-geometry",
+      "modules/tables/json/formats/geojson-geometry",
       "specifications/category-mesh",
       "specifications/category-scenegraph",
       "specifications/category-3d-tiles"
@@ -138,54 +138,54 @@
         "type": "category",
         "label": "Loaders",
         "items": [
-          "modules/arrow/api-reference/arrow-loader",
+          "modules/tables/arrow/api-reference/arrow-loader",
           "modules/textures/api-reference/basis-loader",
-          "modules/bson/api-reference/bson-loader",
+          "modules/tables/bson/api-reference/bson-loader",
           "modules/3d-tiles/api-reference/cesium-ion-loader",
           "modules/traces/api-reference/chrome-trace-loader",
           "modules/textures/api-reference/compressed-texture-loader",
           "modules/textures/api-reference/crunch-loader",
-          "modules/csv/api-reference/csv-loader",
+          "modules/tables/csv/api-reference/csv-loader",
           "modules/draco/api-reference/draco-loader",
-          "modules/excel/api-reference/excel-loader",
-          "modules/flatgeobuf/api-reference/flatgeobuf-loader",
-          "modules/arrow/api-reference/geoarrow-loader",
-          "modules/json/api-reference/geojson-loader",
-          "modules/parquet/api-reference/geoparquet-loader",
-          "modules/geopackage/api-reference/geopackage-loader",
+          "modules/tables/excel/api-reference/excel-loader",
+          "modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader",
+          "modules/tables/arrow/api-reference/geoarrow-loader",
+          "modules/tables/json/api-reference/geojson-loader",
+          "modules/tables/parquet/api-reference/geoparquet-loader",
+          "modules/geospatial/geopackage/api-reference/geopackage-loader",
           "modules/geotiff/api-reference/geotiff-loader",
           "modules/geotiff/api-reference/geotiff-raster-loader",
           "modules/gltf/api-reference/glb-loader",
           "modules/gltf/api-reference/gltf-loader",
-          "modules/kml/api-reference/gpx-loader",
+          "modules/geospatial/kml/api-reference/gpx-loader",
           "modules/i3s/api-reference/i3s-loader",
           "modules/i3s/api-reference/slpk-writer",
           "modules/i3s/api-reference/i3s-mesh-writer",
           "modules/images/api-reference/image-bitmap-loader",
           "modules/images/api-reference/image-loader",
-          "modules/json/api-reference/json-loader",
-          "modules/json/api-reference/json-table-loader",
+          "modules/tables/json/api-reference/json-loader",
+          "modules/tables/json/api-reference/json-table-loader",
           "modules/config/api-reference/toml-loader",
           "modules/config/api-reference/yaml-loader",
-          "modules/kml/api-reference/kml-loader",
+          "modules/geospatial/kml/api-reference/kml-loader",
           "modules/mvt/api-reference/map-style-loader",
           "modules/las/api-reference/las-loader",
           "modules/mlt/api-reference/mlt-loader",
           "modules/mlt/api-reference/mlt-source-loader",
           "modules/mvt/api-reference/mvt-loader",
-          "modules/json/api-reference/ndgeojson-loader",
-          "modules/json/api-reference/ndjson-loader",
+          "modules/tables/json/api-reference/ndgeojson-loader",
+          "modules/tables/json/api-reference/ndjson-loader",
           "modules/textures/api-reference/npy-loader",
           "modules/obj/api-reference/obj-loader",
-          "modules/parquet/api-reference/parquet-loader",
+          "modules/tables/parquet/api-reference/parquet-loader",
           "modules/traces/api-reference/perfetto-trace-loader",
           "modules/pcd/api-reference/pcd-loader",
           "modules/ply/api-reference/ply-loader",
           "modules/potree/api-reference/potree-loader",
           "modules/terrain/api-reference/quantized-mesh-loader",
           "modules/textures/api-reference/radiance-hdr-loader",
-          "modules/shapefile/api-reference/shapefile-loader",
-          "modules/kml/api-reference/tcx-loader",
+          "modules/geospatial/shapefile/api-reference/shapefile-loader",
+          "modules/geospatial/kml/api-reference/tcx-loader",
           "modules/terrain/api-reference/terrain-loader",
           "modules/terrain/api-reference/heightmap",
           "modules/mvt/api-reference/tilejson-loader",
@@ -207,20 +207,20 @@
         "label": "Writers",
         "items": [
           "modules/3d-tiles/api-reference/tile-3d-writer",
-          "modules/arrow/api-reference/arrow-writer",
-          "modules/bson/api-reference/bson-writer",
+          "modules/tables/arrow/api-reference/arrow-writer",
+          "modules/tables/bson/api-reference/bson-writer",
           "modules/traces/api-reference/chrome-trace-writer",
-          "modules/csv/api-reference/csv-writer",
+          "modules/tables/csv/api-reference/csv-writer",
           "modules/draco/api-reference/draco-writer",
           "modules/gltf/api-reference/gltf-writer",
           "modules/gltf/api-reference/glb-writer",
           "modules/images/api-reference/image-writer",
-          "modules/json/api-reference/geojson-writer",
-          "modules/json/api-reference/json-writer",
+          "modules/tables/json/api-reference/geojson-writer",
+          "modules/tables/json/api-reference/json-writer",
           "modules/las/api-reference/las-writer",
           "modules/mvt/api-reference/mvt-writer",
           "modules/obj/api-reference/obj-writer",
-          "modules/parquet/api-reference/parquet-writer",
+          "modules/tables/parquet/api-reference/parquet-writer",
           "modules/traces/api-reference/perfetto-trace-writer",
           "modules/pcd/api-reference/pcd-writer",
           "modules/ply/api-reference/ply-writer",
@@ -242,16 +242,16 @@
         "label": "Sources",
         "items": [
           "modules/copc/api-reference/copc-source-loader",
-          "modules/flatgeobuf/api-reference/flatgeobuf-source-loader",
-          "modules/geopackage/api-reference/geopackage-source",
+          "modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader",
+          "modules/geospatial/geopackage/api-reference/geopackage-source",
           "modules/geotiff/api-reference/geotiff-source-loader",
           "modules/scientific/zarr/api-reference/geo-zarr-source-loader",
           "modules/tiles-3d/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
           "modules/scientific/zarr/api-reference/ome-zarr-source-loader",
-          "modules/parquet/api-reference/delta-table-source",
-          "modules/parquet/api-reference/iceberg-table-source",
-          "modules/parquet/api-reference/parquet-source-loader",
+          "modules/tables/parquet/api-reference/delta-table-source",
+          "modules/tables/parquet/api-reference/iceberg-table-source",
+          "modules/tables/parquet/api-reference/parquet-source-loader",
           "modules/pmtiles/api-reference/pmtiles-source-loader",
           "modules/potree/api-reference/potree-source-loader",
           "modules/tiles/api-reference/raster-set",
@@ -353,23 +353,81 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/arrow",
+        "label": "@loaders.gl/tables",
         "items": [
-          "modules/arrow/README",
-          "modules/arrow/api-reference/indexed-arrow-table",
-          "modules/arrow/api-reference/mapped-arrow-table",
-          "modules/arrow/api-reference/split-arrow-buffers",
-          "modules/arrow/api-reference/arrow-table-transport",
-          "modules/arrow/api-reference/triangulate-wkb-geometry-column",
-          "modules/arrow/api-reference/arrow-schema-utils",
-          "modules/arrow/api-reference/utf8-utils"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/avro",
-        "items": [
-          "modules/avro/README"
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/arrow",
+            "items": [
+              "modules/tables/arrow/README",
+              "modules/tables/arrow/api-reference/indexed-arrow-table",
+              "modules/tables/arrow/api-reference/mapped-arrow-table",
+              "modules/tables/arrow/api-reference/split-arrow-buffers",
+              "modules/tables/arrow/api-reference/arrow-table-transport",
+              "modules/tables/arrow/api-reference/triangulate-wkb-geometry-column",
+              "modules/tables/arrow/api-reference/arrow-schema-utils",
+              "modules/tables/arrow/api-reference/utf8-utils"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/avro",
+            "items": [
+              "modules/tables/avro/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/bson",
+            "items": [
+              "modules/tables/bson/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/csv",
+            "items": [
+              "modules/tables/csv/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/excel",
+            "items": [
+              "modules/tables/excel/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/json",
+            "items": [
+              "modules/tables/json/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/lance",
+            "items": [
+              "modules/tables/lance/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/orc",
+            "items": [
+              "modules/tables/orc/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tables/parquet",
+            "items": [
+              "modules/tables/parquet/README",
+              "modules/tables/parquet/api-reference/parquet-source-loader",
+              "modules/tables/parquet/api-reference/iceberg-table-source",
+              "modules/tables/parquet/api-reference/delta-table-source"
+            ]
+          }
         ]
       },
       {
@@ -394,20 +452,6 @@
         "label": "@loaders.gl/core/schema-utils",
         "items": [
           "modules/schema-utils/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/bson",
-        "items": [
-          "modules/bson/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/csv",
-        "items": [
-          "modules/csv/README"
         ]
       },
       {
@@ -464,16 +508,38 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/excel",
+        "label": "@loaders.gl/geospatial",
         "items": [
-          "modules/excel/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/flatgeobuf",
-        "items": [
-          "modules/flatgeobuf/README"
+          {
+            "type": "category",
+            "label": "@loaders.gl/geospatial/flatgeobuf",
+            "items": [
+              "modules/geospatial/flatgeobuf/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/geospatial/geopackage",
+            "items": [
+              "modules/geospatial/geopackage/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/geospatial/kml",
+            "items": [
+              "modules/geospatial/kml/README"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/geospatial/shapefile",
+            "items": [
+              "modules/geospatial/shapefile/README",
+              "modules/geospatial/shapefile/api-reference/shp-loader",
+              "modules/geospatial/shapefile/api-reference/dbf-loader"
+            ]
+          }
         ]
       },
       {
@@ -534,30 +600,9 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/json",
-        "items": [
-          "modules/json/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/kml",
-        "items": [
-          "modules/kml/README"
-        ]
-      },
-      {
-        "type": "category",
         "label": "@loaders.gl/las",
         "items": [
           "modules/las/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/lance",
-        "items": [
-          "modules/lance/README"
         ]
       },
       {
@@ -579,23 +624,6 @@
         "label": "@loaders.gl/obj",
         "items": [
           "modules/obj/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/orc",
-        "items": [
-          "modules/orc/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/parquet",
-        "items": [
-          "modules/parquet/README",
-          "modules/parquet/api-reference/parquet-source-loader",
-          "modules/parquet/api-reference/iceberg-table-source",
-          "modules/parquet/api-reference/delta-table-source"
         ]
       },
       {
@@ -649,15 +677,6 @@
         "label": "@loaders.gl/scene",
         "items": [
           "modules/scene/README"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/shapefile",
-        "items": [
-          "modules/shapefile/README",
-          "modules/shapefile/api-reference/shp-loader",
-          "modules/shapefile/api-reference/dbf-loader"
         ]
       },
       {

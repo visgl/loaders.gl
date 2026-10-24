@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Schema module', to: '/docs/modules/schema'},
     {label: 'GeoArrow module', to: '/docs/modules/geoarrow'},
-    {label: 'GeoArrow', to: '/docs/modules/arrow/formats/geoarrow'}
+    {label: 'GeoArrow', to: '/docs/modules/tables/arrow/formats/geoarrow'}
   ]}
 />
 

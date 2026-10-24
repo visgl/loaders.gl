@@ -47,7 +47,7 @@ A parser can also reject a successful HTTP response whose contents are invalid.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 try {
   const table = await load(url, CSVLoader);

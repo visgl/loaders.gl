@@ -29,7 +29,7 @@ test('format implementations do not import the optional scan runtime', () => {
 });
 
 test('scan and representative format packages remain tree-shakeable', () => {
-  for (const moduleName of ['scan', 'arrow', 'csv', 'json', 'parquet']) {
+  for (const moduleName of ['scan', 'tables']) {
     const packageJson = JSON.parse(
       fs.readFileSync(path.join(REPOSITORY_ROOT, 'modules', moduleName, 'package.json'), 'utf8')
     ) as {sideEffects?: unknown};

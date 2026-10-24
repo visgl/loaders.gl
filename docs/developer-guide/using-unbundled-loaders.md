@@ -42,21 +42,19 @@ parser-bearing loader directly when you need synchronous parsing at startup.
 
 ## Importing unbundled loaders
 
-Check each module's exports: metadata-only loaders may be available at the root
-or through an explicit `/unbundled` subpath. CSV supports both; this example uses
-the explicit subpath:
+Grouped format entry points export metadata-only loaders by default:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const table = await load(url, CSVLoader);
 ```
 
-CSV also provides parser-bearing loaders from `@loaders.gl/csv/bundled`:
+Use the explicit parser entry point when a synchronous API needs a parser-bearing loader:
 
 ```typescript
-import {CSVLoader} from '@loaders.gl/csv/bundled';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
 ```
 
 The unbundled loader has the same loader id, extensions, MIME types, and option shape as the bundled loader. The difference is that parser methods such as `parse`, `parseSync`, and `parseInBatches` are not present on the imported object. Instead, the loader exposes a `preload` function that core can use to dynamically import the parser-bearing implementation.
@@ -73,7 +71,7 @@ Async core APIs preload unbundled loaders automatically. In most cases, applicat
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const table = await parse(csvText, CSVLoader);
 ```
@@ -86,7 +84,7 @@ Applications can also preload an unbundled loader before the first parse call:
 
 ```typescript
 import {preload} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const parserLoader = await preload(CSVLoader);
 ```
@@ -99,7 +97,7 @@ The returned loader can be used directly:
 
 ```typescript
 import {parse, preload} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const parserLoader = await preload(CSVLoader);
 const table = await parse(csvText, parserLoader);
@@ -112,7 +110,7 @@ returned parser-bearing loader to `parseSync`:
 
 ```typescript
 import {parseSync, preload} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const parserLoader = await preload(CSVLoader);
 const table = parseSync(arrayBuffer, parserLoader);
@@ -130,7 +128,7 @@ implementation or call core's `preload(loader)`.
 
 ```typescript
 import {preloadSync} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const parserLoader = preloadSync(CSVLoader);
 ```
@@ -139,5 +137,5 @@ const parserLoader = preloadSync(CSVLoader);
 
 ## Availability
 
-Check each module's documentation and package exports before using `/unbundled`
-or `/bundled`; these subpaths are not available in every module.
+Check each format's documentation for its parser entry point. Metadata loaders are available
+from the bare format subpath, and parser-bearing loaders use a named loader subpath.

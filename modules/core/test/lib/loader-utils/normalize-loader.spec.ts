@@ -5,13 +5,13 @@
 import {expect, test} from 'vitest';
 import {isLoaderObject, normalizeLoader} from '@loaders.gl/core/lib/loader-utils/normalize-loader';
 import * as threeDTiles from '@loaders.gl/tiles-3d/3d-tiles';
-import * as arrow from '@loaders.gl/arrow';
-import * as csv from '@loaders.gl/csv';
+import * as arrow from '@loaders.gl/tables/arrow/index';
+import * as csv from '@loaders.gl/tables/csv/index';
 import * as draco from '@loaders.gl/draco';
 import * as tables from '@loaders.gl/core/schema-utils';
 import * as gltf from '@loaders.gl/gltf';
 import * as images from '@loaders.gl/images';
-import * as kml from '@loaders.gl/kml';
+import * as kml from '@loaders.gl/geospatial/kml/index';
 import * as las from '@loaders.gl/las';
 import * as obj from '@loaders.gl/obj';
 import * as pcd from '@loaders.gl/pcd';

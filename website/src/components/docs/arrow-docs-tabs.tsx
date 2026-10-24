@@ -23,15 +23,15 @@ export type ArrowDocsTabId =
 
 const ARROW_DOCS_TABS: ArrowDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/table/arrow'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/arrow/formats/arrow'},
-  {id: 'format', label: 'Format', href: '/docs/modules/arrow/format'},
-  {id: 'arrowloader', label: 'ArrowLoader', href: '/docs/modules/arrow/api-reference/arrow-loader'},
-  {id: 'arrowwriter', label: 'ArrowWriter', href: '/docs/modules/arrow/api-reference/arrow-writer'},
-  {id: 'geoarrow', label: 'GeoArrow', href: '/docs/modules/arrow/formats/geoarrow'},
+  {id: 'overview', label: 'Overview', href: '/docs/modules/tables/arrow/formats/arrow'},
+  {id: 'format', label: 'Format', href: '/docs/modules/tables/arrow/format'},
+  {id: 'arrowloader', label: 'ArrowLoader', href: '/docs/modules/tables/arrow/api-reference/arrow-loader'},
+  {id: 'arrowwriter', label: 'ArrowWriter', href: '/docs/modules/tables/arrow/api-reference/arrow-writer'},
+  {id: 'geoarrow', label: 'GeoArrow', href: '/docs/modules/tables/arrow/formats/geoarrow'},
   {
     id: 'geoarrowloader',
     label: 'GeoArrowLoader',
-    href: '/docs/modules/arrow/api-reference/geoarrow-loader'
+    href: '/docs/modules/tables/arrow/api-reference/geoarrow-loader'
   }
 ];
 

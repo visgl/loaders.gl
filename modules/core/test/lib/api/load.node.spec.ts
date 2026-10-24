@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {load, resolvePath} from '@loaders.gl/core';
-import {JSONLoader} from '@loaders.gl/json';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json/json-loader';
 import {setupLoaderTestEnvironment} from '../../../../../test/vitest-setup-loaders';
 
 await setupLoaderTestEnvironment();
@@ -15,7 +15,7 @@ test('load#Node stream - NODE ONLY', async () => {
   const fs = await import('fs');
   const stream = fs.createReadStream(resolvePath(JSON_URL));
   // @ts-ignore TODO remove this ts-ignore
-  const data = await load(stream, JSONLoader);
+  const data = await load(stream, JSONLoaderWithParser);
 
   expect(typeof data, 'load(Node stream) returned data').toBe('object');
 });

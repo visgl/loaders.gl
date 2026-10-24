@@ -7,7 +7,7 @@ import React, {useEffect, useState} from 'react';
 import {Bench, type BenchProps, type LogEntry, type LogFunction} from 'probe.gl/bench';
 import {BenchResults} from '../components/bench-results';
 import {fetchFile} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/bundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/bundled';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {autoType, csvParse, tsvParse} from 'd3-dsv';
 import PapaParseNPM from 'papaparse';
@@ -17,7 +17,7 @@ import {inferSchema, initParser} from 'udsv';
 globalThis.probe ||= {};
 
 const SAMPLE_CSV_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/csv/test/data/sample-very-long.csv';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/tables/test/csv/data/sample-very-long.csv';
 const ROW_COUNT = 2000;
 const WIDE_COLUMN_COUNT = 40;
 // More samples and a longer measurement window reduce JIT/startup noise in the browser table.
