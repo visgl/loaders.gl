@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {createAvroTable} from './create-avro-table';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
@@ -89,7 +90,14 @@ export async function parseAvro(
     return parseExternalAvroDatum(bytes, options);
   const data: Record<string, unknown>[] = [];
   for await (const value of readAvroRows(arrayBuffer, options)) data.push(value);
-  return {shape: 'arrow-table', data: arrow.tableFromJSON(data)};
+  return {
+    shape: 'arrow-table',
+    data: createAvroTable(
+      data,
+      (options?.readerSchema || parseAvroOCFHeader(arrayBuffer).schema) as AvroSchema,
+      options?.longType
+    )
+  };
 }
 
 /** Inspects an Avro Object Container File without decompressing record blocks. */
@@ -149,15 +157,16 @@ export async function* parseAvroInBatches(
     yield makeTableScanBatch(table);
     return;
   }
+  const schema = (options?.readerSchema || parseAvroOCFHeader(arrayBuffer).schema) as AvroSchema;
   let data: Record<string, unknown>[] = [];
   for await (const value of readAvroRows(arrayBuffer, options)) {
     data.push(value);
     if (data.length >= batchSize) {
-      yield createAvroBatch(data);
+      yield createAvroBatch(data, schema, options?.longType);
       data = [];
     }
   }
-  if (data.length > 0) yield createAvroBatch(data);
+  if (data.length > 0) yield createAvroBatch(data, schema, options?.longType);
 }
 
 /** Loads an Avro OCF from a URL, using HTTP ranges when the server supports them. */
@@ -165,10 +174,12 @@ export async function parseAvroFromUrl(
   url: string,
   options?: AvroParseOptions & {batchSize?: number}
 ): Promise<ArrowTable> {
-  const data: Record<string, unknown>[] = [];
-  for await (const batch of parseAvroInBatchesFromUrl(url, options))
-    data.push(...(batch.data.toArray() as Record<string, unknown>[]));
-  return {shape: 'arrow-table', data: arrow.tableFromJSON(data)};
+  const tables: arrow.Table[] = [];
+  for await (const batch of parseAvroInBatchesFromUrl(url, options)) tables.push(batch.data);
+  return {
+    shape: 'arrow-table',
+    data: tables.length ? tables[0].concat(...tables.slice(1)) : new arrow.Table()
+  };
 }
 
 /** Streams Arrow batches from a URL-backed Avro OCF using block-sized range reads. */
@@ -230,7 +241,11 @@ export async function* parseAvroInBatchesFromUrl(
       for (const row of rows) {
         batch.push(row);
         if (batch.length >= batchSize) {
-          yield createAvroBatch(batch);
+          yield createAvroBatch(
+            batch,
+            (options?.readerSchema || header.schema) as AvroSchema,
+            options?.longType
+          );
           batch = [];
         }
       }
@@ -238,7 +253,12 @@ export async function* parseAvroInBatchesFromUrl(
     offset = dataOffset + sizeResult.value + header.syncMarker.length;
     blockIndex++;
   }
-  if (batch.length > 0) yield createAvroBatch(batch);
+  if (batch.length > 0)
+    yield createAvroBatch(
+      batch,
+      (options?.readerSchema || header.schema) as AvroSchema,
+      options?.longType
+    );
 }
 
 /** Loads an Avro OCF from a random-access file using bounded reads. */
@@ -246,10 +266,12 @@ export async function parseAvroFromFile(
   file: ReadableFile,
   options?: AvroParseOptions & {batchSize?: number}
 ): Promise<ArrowTable> {
-  const data: Record<string, unknown>[] = [];
-  for await (const batch of parseAvroInBatchesFromFile(file, options))
-    data.push(...(batch.data.toArray() as Record<string, unknown>[]));
-  return {shape: 'arrow-table', data: arrow.tableFromJSON(data)};
+  const tables: arrow.Table[] = [];
+  for await (const batch of parseAvroInBatchesFromFile(file, options)) tables.push(batch.data);
+  return {
+    shape: 'arrow-table',
+    data: tables.length ? tables[0].concat(...tables.slice(1)) : new arrow.Table()
+  };
 }
 
 /** Streams Arrow batches from a random-access Avro OCF file. */
@@ -308,7 +330,11 @@ export async function* parseAvroInBatchesFromFile(
       for (const row of rows) {
         batch.push(row);
         if (batch.length >= batchSize) {
-          yield createAvroBatch(batch);
+          yield createAvroBatch(
+            batch,
+            (options?.readerSchema || header.schema) as AvroSchema,
+            options?.longType
+          );
           batch = [];
         }
       }
@@ -316,7 +342,12 @@ export async function* parseAvroInBatchesFromFile(
     offset = dataOffset + sizeResult.value + header.syncMarker.length;
     blockIndex++;
   }
-  if (batch.length > 0) yield createAvroBatch(batch);
+  if (batch.length > 0)
+    yield createAvroBatch(
+      batch,
+      (options?.readerSchema || header.schema) as AvroSchema,
+      options?.longType
+    );
 }
 
 /** Decodes one Avro OCF block and applies the optional reader schema. */
@@ -413,7 +444,14 @@ function parseExternalAvroDatum(bytes: Uint8Array, options?: AvroParseOptions): 
   const resolved = options?.readerSchema
     ? resolveReaderRecord(value, schema, options.readerSchema as AvroSchema)
     : value;
-  return {shape: 'arrow-table', data: arrow.tableFromJSON([resolved])};
+  return {
+    shape: 'arrow-table',
+    data: createAvroTable(
+      [resolved],
+      (options?.readerSchema || schema) as AvroSchema,
+      options?.longType
+    )
+  };
 }
 
 /** Computes Avro's 64-bit Rabin fingerprint for a schema's parsing canonical form. */
@@ -526,8 +564,12 @@ async function* readAvroRows(
 }
 
 /** Wraps object rows in the loaders.gl Arrow batch shape. */
-function createAvroBatch(data: Record<string, unknown>[]): ArrowTableBatch {
-  return makeTableScanBatch({shape: 'arrow-table', data: arrow.tableFromJSON(data)});
+function createAvroBatch(
+  data: Record<string, unknown>[],
+  schema: AvroSchema,
+  longType?: 'number' | 'bigint'
+): ArrowTableBatch {
+  return makeTableScanBatch({shape: 'arrow-table', data: createAvroTable(data, schema, longType)});
 }
 
 /** Decodes UTF-8 metadata values. */

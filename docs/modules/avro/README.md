@@ -22,6 +22,11 @@ const bytes = await encode(table, AvroWriter);
 ```
 
 The returned table has `shape: 'arrow-table'` and an Apache Arrow table in `data`.
+Avro binary fields without a recognized logical type use Arrow `Binary` for
+`bytes` and `FixedSizeBinary` for `fixed`. Each value retains its own length,
+including empty byte arrays and nullable values. These types also apply inside
+records, arrays, and maps.
+
 Use `loadInBatches` with `AvroLoader` for Arrow table batches.
 
 ## Loader options
