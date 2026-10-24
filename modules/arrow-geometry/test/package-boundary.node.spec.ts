@@ -28,7 +28,7 @@ test.each([
   'arrow-geometry',
   'arcgis',
   'tiles',
-  'wms',
+  'ogc',
   'tables',
   'geospatial'
 ])('%s does not depend on GIS or the GeoArrow processing package', moduleName => {
@@ -82,7 +82,7 @@ test('GeoArrow is independent of GIS in source, project references and transitiv
 test.each([
   'arcgis',
   'tiles',
-  'wms',
+  'ogc',
   'tables',
   'geospatial'
 ])('%s does not acquire GeoArrow through a compatibility dependency', moduleName => {

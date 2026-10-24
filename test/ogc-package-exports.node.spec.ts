@@ -24,8 +24,8 @@ test('OGC root exposes lightweight metadata and CommonJS format subpaths', () =>
   const wms = requirePackage('@loaders.gl/ogc/wms');
   const stac = requirePackage('@loaders.gl/ogc/stac');
 
-  expect(root.WMSCapabilitiesLoader).toBe(wms.WMSCapabilitiesLoader);
-  expect(root.STACSourceLoader).toBe(stac.STACSourceLoader);
+  expect(root.WMSCapabilitiesLoader.id).toBe(wms.WMSCapabilitiesLoader.id);
+  expect(root.STACSourceLoader.id).toBe(stac.STACSourceLoader.id);
   expect(root.WMSCapabilitiesLoader).not.toHaveProperty('parse');
   expect(root.WMSCapabilitiesLoader.preload).toBeTypeOf('function');
   expect(root.STACSourceLoader.preload).toBeTypeOf('function');
