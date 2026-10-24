@@ -78,3 +78,10 @@ option namespaces and output defaults remain unchanged. Terrain worker assets no
 raster package, while the LERC WASM export is `@loaders.gl/raster/lerc/lerc-wasm.wasm`.
 Each moved format retains its original independent browser and merged coverage gates.
 ArcGIS services remain in `@loaders.gl/arcgis`.
+
+## OGC service protocols and STAC
+
+`@loaders.gl/ogc` owns WMS, WMTS, WFS, WCS, CSW, GML, OGC API sources, and STAC catalogs.
+Its root exports metadata loaders; format-specific source and parser APIs use
+`@loaders.gl/ogc/wms` and `@loaders.gl/ogc/stac` subpaths. Provider authentication presets
+remain in `@loaders.gl/services`, while ArcGIS retains its own package.

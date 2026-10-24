@@ -9,7 +9,7 @@
 import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
 
-// import {LERCLoader, LERCData} from '@loaders.gl/services/wms';
+// import {LERCLoader, LERCData} from '@loaders.gl/ogc/wms';
 // import type {LERCData} from '../../../src/lerc/lib/parsers/lerc/lerc-types';
 import {LERCLoader} from '../../../src/lerc/lerc-loader-types';
 import {LERCFormat} from '../../../src/lerc/lerc-format';

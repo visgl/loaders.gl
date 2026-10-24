@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {STACSource} from '@loaders.gl/services/stac/stac-source';
+import {STACSource} from '@loaders.gl/ogc/stac/stac-source';
 import type {
   STACCatalog,
   STACCollection,
   STACItem,
   STACLink
-} from '@loaders.gl/services/stac';
+} from '@loaders.gl/ogc/stac';
 import type {
   ParquetDatasetFile,
   ParquetDatasetFileQuery

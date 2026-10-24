@@ -79,7 +79,7 @@ const FORMAT_EXPORTS = {
   ],
   video: ['VideoFormat'],
   wkt: ['WKTFormat', 'WKBFormat', 'HexWKBFormat', 'TWKBFormat', 'WKTCRSFormat'],
-  'services/wms': [
+  'ogc/wms': [
     'GMLFormat',
     'WMSCapabilitiesFormat',
     'WFSCapabilitiesFormat',

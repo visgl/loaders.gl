@@ -13,19 +13,7 @@
   },
   "references": [
     {
-      "path": "../arrow-geometry"
-    },
-    {
-      "path": "../xml"
-    },
-    {
-      "path": "../images"
-    },
-    {
       "path": "../core"
-    },
-    {
-      "path": "../raster"
     }
   ]
 }

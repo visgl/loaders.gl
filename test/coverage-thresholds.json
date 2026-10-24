@@ -427,21 +427,6 @@
         "branches": 49
       }
     },
-    "@loaders.gl/stac": {
-      "path": "modules/stac",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "merged": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      }
-    },
     "@loaders.gl/tables": {
       "path": "modules/tables",
       "browser": {
@@ -555,21 +540,6 @@
         "branches": 46
       }
     },
-    "@loaders.gl/wms": {
-      "path": "modules/wms",
-      "browser": {
-        "statements": 67,
-        "lines": 67,
-        "functions": 69,
-        "branches": 57
-      },
-      "merged": {
-        "statements": 65,
-        "lines": 66,
-        "functions": 64,
-        "branches": 57
-      }
-    },
     "@loaders.gl/xml": {
       "path": "modules/xml",
       "browser": {
@@ -598,6 +568,21 @@
         "lines": 87,
         "functions": 91,
         "branches": 72
+      }
+    },
+    "@loaders.gl/ogc": {
+      "path": "modules/ogc",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 69,
+        "branches": 57
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 66,
+        "functions": 64,
+        "branches": 57
       }
     }
   },
@@ -1097,6 +1082,44 @@
         "functions": 69,
         "branches": 55
       }
+    },
+    "stac": {
+      "path": "modules/ogc/src/stac",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "owner": "@loaders.gl/ogc",
+      "sourcePaths": [
+        "modules/ogc/src/stac/"
+      ]
+    },
+    "wms": {
+      "path": "modules/ogc/src/wms",
+      "browser": {
+        "statements": 67,
+        "lines": 67,
+        "functions": 69,
+        "branches": 57
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 66,
+        "functions": 64,
+        "branches": 57
+      },
+      "owner": "@loaders.gl/ogc",
+      "sourcePaths": [
+        "modules/ogc/src/wms/"
+      ]
     }
   }
 }

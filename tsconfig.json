@@ -354,15 +354,6 @@
       "@loaders.gl/splats/test": [
         "modules/splats/test"
       ],
-      "@loaders.gl/stac": [
-        "modules/stac/src"
-      ],
-      "@loaders.gl/stac/*": [
-        "modules/stac/src/*"
-      ],
-      "@loaders.gl/stac/test": [
-        "modules/stac/test"
-      ],
       "@loaders.gl/scene": [
         "modules/scene/src"
       ],
@@ -449,15 +440,6 @@
       ],
       "@loaders.gl/wkt/test": [
         "modules/wkt/test"
-      ],
-      "@loaders.gl/wms": [
-        "modules/wms/src"
-      ],
-      "@loaders.gl/wms/*": [
-        "modules/wms/src/*"
-      ],
-      "@loaders.gl/wms/test": [
-        "modules/wms/test"
       ],
       "@loaders.gl/services": [
         "modules/services/src"
@@ -566,6 +548,30 @@
       ],
       "@loaders.gl/geospatial/shapefile/test": [
         "modules/geospatial/test/shapefile"
+      ],
+      "@loaders.gl/ogc": [
+        "modules/ogc/src"
+      ],
+      "@loaders.gl/ogc/test": [
+        "modules/ogc/test"
+      ],
+      "@loaders.gl/ogc/wms": [
+        "modules/ogc/src/wms"
+      ],
+      "@loaders.gl/ogc/wms/*": [
+        "modules/ogc/src/wms/*"
+      ],
+      "@loaders.gl/ogc/wms/test": [
+        "modules/ogc/test/wms"
+      ],
+      "@loaders.gl/ogc/stac": [
+        "modules/ogc/src/stac"
+      ],
+      "@loaders.gl/ogc/stac/*": [
+        "modules/ogc/src/stac/*"
+      ],
+      "@loaders.gl/ogc/stac/test": [
+        "modules/ogc/test/stac"
       ]
     },
     "plugins": [

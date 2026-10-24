@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from 'react';
-import {STACSource} from '@loaders.gl/services/stac/stac-source';
+import {STACSource} from '@loaders.gl/ogc/stac/stac-source';
 
 import {CatalogExplorerPanel} from './catalog-explorer-panel';
 import {CatalogAssetPreview, type CatalogPreviewAsset} from './catalog-asset-preview';

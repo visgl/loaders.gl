@@ -1,0 +1,42 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {expect, test} from 'vitest';
+// import {validateLoader} from 'test/common/conformance';
+import {CSWDomainLoader} from '@loaders.gl/ogc/wms';
+import {parse} from '@loaders.gl/core';
+// const CSW_REQUEST_2_0_2 =
+// '<csw:GetDomain xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" version="2.0.2">' +
+//   '<csw:PropertyName>type</csw:PropertyName>' +
+// '</csw:GetDomain>';
+const CSW_RESPONSE_2_0_2 =
+  '<?xml version="1.0" encoding="UTF-8"?>' +
+  '<csw:GetDomainResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2">' +
+  '<csw:DomainValues type="csw:Record">' +
+  '<csw:PropertyName>type</csw:PropertyName>' +
+  '<csw:ListOfValues>' +
+  '<csw:Value my_attr="my_value">dataset</csw:Value>' +
+  '<csw:Value>service</csw:Value>' +
+  '</csw:ListOfValues>' +
+  '</csw:DomainValues>' +
+  '</csw:GetDomainResponse>';
+test('CSWGetDomainLoader', async () => {
+  const domain = await parse(CSW_RESPONSE_2_0_2, CSWDomainLoader);
+  // t.comment(JSON.stringify(domain));
+  const domainValues = domain.domainValues;
+  // test getRecordsResponse object
+  expect(domainValues, 'object contains domainValues property').toBeTruthy();
+  // test DomainValues
+  expect(domainValues.length, 'object contains 1 object in domainValues').toBe(1);
+  const domainValue = domainValues[0];
+  expect(domainValue.type, 'check value for attribute type').toBe('csw:Record');
+  expect(domainValue.propertyName, 'check value for element propertyName').toBe('type');
+  expect(domainValue.values, 'object contains values property').toBeTruthy();
+  // test ListOfValues
+  expect(domainValue.values.length, 'object contains 2 objects ' + 'in values').toBe(2);
+  const value = domainValue.values[0];
+  expect(value, 'object contains value property').toBeTruthy();
+  expect(value.my_attr, 'check value for attribute my_attr').toBe('my_value');
+  expect(value.value, 'check value for element Value').toBe('dataset');
+});
