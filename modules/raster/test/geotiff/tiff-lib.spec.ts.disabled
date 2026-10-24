@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {test} from 'test/utils/vitest-tape';
+import {expect, test} from 'vitest';
 import {fromFile} from 'geotiff';
 // import {getDecoder} from 'geotiff/src/compression';
 
@@ -22,21 +22,16 @@ const pool = /** @type {import('../../src/geotiff/tiff/lib/Pool').default}} */ (
   }
 });
 
-test.skip('Inspect tiff proxies.', async t => {
-  t.plan(6);
-  try {
-    let tiff = await fromFile('tests/loaders/fixtures/multi-channel.ome.tif');
-    t.equal(tiff['__viv-decoder-pool'], undefined, 'Regular tiff should not have any proxies.');
-    t.equal(tiff['__viv-offsets'], undefined, 'Regular tiff should not have any proxies.');
+test.skip('Inspect tiff proxies.', async () => {
+  let tiff = await fromFile('tests/loaders/fixtures/multi-channel.ome.tif');
+  expect(tiff['__viv-decoder-pool'], 'Regular tiff should not have any proxies.').toBe(undefined);
+  expect(tiff['__viv-offsets'], 'Regular tiff should not have any proxies.').toBe(undefined);
 
-    tiff = createPoolProxy(tiff, pool);
-    t.equal(tiff['__viv-decoder-pool'], true, 'Should have pool proxy.');
-    t.equal(tiff['__viv-offsets'], undefined, 'Should not have offsets proxy.');
+  tiff = createPoolProxy(tiff, pool);
+  expect(tiff['__viv-decoder-pool'], 'Should have pool proxy.').toBe(true);
+  expect(tiff['__viv-offsets'], 'Should not have offsets proxy.').toBe(undefined);
 
-    tiff = createOffsetsProxy(tiff, []);
-    t.equal(tiff['__viv-decoder-pool'], true, 'Should have pool proxy.');
-    t.equal(tiff['__viv-offsets'], true, 'Should have both proxies.');
-  } catch (e) {
-    t.fail(e);
-  }
+  tiff = createOffsetsProxy(tiff, []);
+  expect(tiff['__viv-decoder-pool'], 'Should have pool proxy.').toBe(true);
+  expect(tiff['__viv-offsets'], 'Should have both proxies.').toBe(true);
 });
