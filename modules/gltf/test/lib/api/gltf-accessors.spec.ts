@@ -11,7 +11,9 @@ import {
   GLTFScenegraph,
   GLTFWriter,
   GLTFLoader,
-  createExtStructuralMetadata
+  createExtStructuralMetadata,
+  _getMemoryUsageGLTF,
+  postProcessGLTF
 } from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
 import type {GLTFWithBuffers} from '@loaders.gl/gltf';
@@ -247,4 +249,32 @@ test('glTF replacement values survive metadata extension encoding without duplic
   expect(getGLTFAccessorValue(decoded, 0)).toEqual(replacement);
   const metadata = new GLTFScenegraph(decoded).getExtension('EXT_structural_metadata');
   expect(metadata.propertyTables[0].properties.label.data).toEqual(['first', 'second']);
+});
+
+test('glTF memory estimates count replacement storage once and retain shared live views', () => {
+  const gltf = createAccessor(new Float32Array([1, 2, 3, 4]));
+  expect(_getMemoryUsageGLTF(gltf)).toBe(16);
+  expect(_getMemoryUsageGLTF(postProcessGLTF(gltf))).toBe(16);
+  setGLTFAccessorValue(gltf, 0, new Float32Array([5, 6, 7, 8]));
+  expect(_getMemoryUsageGLTF(gltf)).toBe(16);
+  setGLTFAccessorValue(gltf, 0, new Uint16Array([9, 10, 11, 12]));
+  expect(_getMemoryUsageGLTF(gltf)).toBe(8);
+  gltf.json.accessors!.push({bufferView: 0, componentType: 5126, type: 'VEC2', count: 2});
+  expect(_getMemoryUsageGLTF(gltf)).toBe(24);
+});
+
+test('glTF memory estimates include decoded inline and implicit-zero storage without allocating it', () => {
+  const value = new Float32Array([1, 2, 3]);
+  const decoded = {componentType: 5126, type: 'VEC3', count: 1, value};
+  const gltf: GLTFWithBuffers = {
+    json: {
+      asset: {version: '2.0'},
+      accessors: [{componentType: 5126, type: 'VEC3', count: 1}],
+      meshes: [{primitives: [{attributes: {POSITION: decoded, NORMAL: decoded}} as any]}]
+    },
+    buffers: []
+  };
+  expect(_getMemoryUsageGLTF(gltf)).toBe(12);
+  gltf.json.meshes![0].primitives.push({attributes: {POSITION: 0}});
+  expect(_getMemoryUsageGLTF(gltf)).toBe(24);
 });

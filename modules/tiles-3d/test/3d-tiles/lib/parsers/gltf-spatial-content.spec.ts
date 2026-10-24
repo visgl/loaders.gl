@@ -127,6 +127,7 @@ test('3D Tiles transforms glTF positions, bounds, normals, and a unique node pla
       }
     ])
   );
+  expect(tile.gpuMemoryUsageInBytes).toBe(48);
   expect(attributes.POSITION.value[0]).toBeCloseTo(1113194.9, 0);
   expect(attributes.POSITION.value[3]).toBeCloseTo(1335833.875, 0);
   expect(attributes.POSITION.min).toEqual(Array.from(attributes.POSITION.value.slice(0, 3)));
