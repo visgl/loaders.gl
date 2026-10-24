@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {JSONLoader} from '@loaders.gl/json';
+import {JSONLoader} from '@loaders.gl/tables/json/index';
 import {load} from '@loaders.gl/core';
 import {earcut} from '@math.gl/geometry/polygon';
 import {getGeoarrowVertexCount} from '@loaders.gl/geoarrow';
@@ -17,7 +17,7 @@ import {makeWKBGeometryData} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
 import {triangulateWKB} from '@loaders.gl/arrow-geometry';
 import type {Geometry, MultiPolygon, Polygon, Position} from '@loaders.gl/core/schema';
 
-// const GEOJSON_URL = '@loaders.gl/json/test/data/geojson-big.json';
+// const GEOJSON_URL = '@loaders.gl/tables/json/test/data/geojson-big.json';
 const GEOJSON_POLYGONS_URL = '@loaders.gl/tiles/mvt/test/data/geojson-vt/us-states.json';
 
 /** Registers geometry conversion and triangulation benchmarks. */

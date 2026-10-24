@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 
 import {load} from '@loaders.gl/core';
-import {JSONLoader} from '@loaders.gl/json';
+import {JSONLoader} from '@loaders.gl/tables/json/index';
 import {TileJSONLoader} from '@loaders.gl/tiles/mvt';
 import {parseTileJSON} from '../../src/mvt/lib/parse-tilejson';
 

@@ -9,7 +9,7 @@ import {Tiles3DArchiveSource, Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3
 import {SLPKSource} from '@loaders.gl/tiles-3d/i3s';
 import {fetchFile, load, parse} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles-3d';
-import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
+import {GLTFScenegraph, GLTFWriter, getGLTFAccessorValue} from '@loaders.gl/gltf';
 import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-source';
 
 const layerMock = vi.hoisted(() => ({selections: [] as any[], viewState: null as any}));
@@ -184,7 +184,10 @@ test('example 3TZ source initializes metadata and decodes a tile only when reque
     expect(result.loaded).toBe(true);
     expect(readContent).toHaveBeenCalledOnce();
     expect(
-      (runtime.root!.content as any).gltf.meshes[0].primitives[0].attributes.POSITION.value
+      getGLTFAccessorValue(
+        (runtime.root!.content as any).gltf,
+        (runtime.root!.content as any).gltf.json.meshes[0].primitives[0].attributes.POSITION
+      )
     ).toHaveLength(9);
   } finally {
     runtime.destroy();

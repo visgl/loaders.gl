@@ -64,6 +64,10 @@ function getWorkspaceBenchmarkPath(specifier) {
 
   const modulePath = specifier.slice('@loaders.gl/'.length);
   const [moduleName, ...rest] = modulePath.split('/');
+  const testIndex = rest.indexOf('test');
+  if (testIndex > 0) {
+    return path.join(ROOT_DIR, 'modules', moduleName, 'test', rest[testIndex - 1], ...rest.slice(testIndex + 1));
+  }
   return path.join(ROOT_DIR, 'modules', moduleName, ...rest);
 }
 

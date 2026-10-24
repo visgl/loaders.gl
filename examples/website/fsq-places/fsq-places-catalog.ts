@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetSource} from '@loaders.gl/parquet/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet/parquet-source-loader';
 import type {
   ParquetDatasetFile,
   ParquetDatasetFileQuery,
   ParquetRowGroupMetadata,
   ParquetTelemetry
-} from '@loaders.gl/parquet';
+} from '@loaders.gl/tables/parquet/index';
 
 /** FSQ Places snapshot republished by Fused on Source Cooperative. */
 export const FSQ_RELEASE = '2024-11-19';

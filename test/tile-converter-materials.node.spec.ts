@@ -1,11 +1,11 @@
 import {expect, test} from 'vitest';
 
-import type {GLTFMaterialPostprocessed} from '@loaders.gl/gltf';
+import type {ConversionMaterial} from '../apps/tile-converter/src/v4/i3s-converter/helpers/conversion-gltf';
 import {convertMaterial} from '../apps/tile-converter/src/v4/i3s-converter/helpers/geometry-converter';
 
 function createMaterial(
-  pbrMetallicRoughness: GLTFMaterialPostprocessed['pbrMetallicRoughness']
-): GLTFMaterialPostprocessed {
+  pbrMetallicRoughness: ConversionMaterial['pbrMetallicRoughness']
+): ConversionMaterial {
   return {
     id: 'material',
     alphaMode: 'OPAQUE',

@@ -301,3 +301,11 @@ Scenegraph Fields
 | Field  | Type     | Contents                                                                                             |
 | ------ | -------- | ---------------------------------------------------------------------------------------------------- |
 | `gltf` | `Object` | See the [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) reference for linked scene content. |
+
+### Decoded glTF content
+
+When `3d-tiles.loadGLTF` is enabled, `tile.gltf` is a `GLTFWithBuffers` container. Its `.json` member
+retains glTF indices; `.buffers` and `.images` hold loaded resources. Use
+[`getGLTFAccessorValue`](../../gltf/api-reference/gltf-accessors) for geometry arrays and
+`setGLTFAccessorValue` for replacements. This applies to standalone glTF and legacy B3DM/I3DM
+containers. Deferred content continues to expose `gltfArrayBuffer`.

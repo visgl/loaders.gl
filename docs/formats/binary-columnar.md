@@ -22,7 +22,7 @@ import {IcebergScanLiveExample} from '@site/src/components/docs/iceberg-scan-liv
   meta={['Arrow and IPC', 'Parquet and ORC', 'Cloud-native scans']}
   links={[
     {label: 'Arrow tentpole', to: '/docs/developer-guide/apache-arrow'},
-    {label: 'Parquet format', to: '/docs/modules/parquet/formats/parquet'},
+    {label: 'Parquet format', to: '/docs/modules/tables/parquet/formats/parquet'},
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
@@ -135,7 +135,7 @@ schema evolution, partition evolution, snapshots, deletes, or time travel, a tab
 Iceberg or Delta Lake supplies the metadata and transaction layer above the files.
 
 In loaders.gl, Iceberg planning is intentionally layered above Parquet. The
-[`IcebergTableSource`](/docs/modules/parquet/api-reference/iceberg-table-source) from
+[`IcebergTableSource`](/docs/modules/tables/parquet/api-reference/iceberg-table-source) from
 `@loaders.gl/scan/iceberg` reads metadata and
 manifests, prunes candidate files, and delegates selected Parquet files to the existing dataset
 source. This preserves Parquet's range requests, workers, projection, predicates, and Arrow batches
@@ -173,7 +173,7 @@ reader infrastructure to expose Parquet row groups or ORC stripes.
 ## loaders.gl
 
 loaders.gl uses Arrow as an important table and batch representation and provides dedicated support
-for formats such as [Arrow](/docs/modules/arrow/formats/arrow) and
-[Parquet](/docs/modules/parquet/formats/parquet). The format-specific documentation describes
+for formats such as [Arrow](/docs/modules/tables/arrow/formats/arrow) and
+[Parquet](/docs/modules/tables/parquet/formats/parquet). The format-specific documentation describes
 physical layout and loader behavior; this page provides the broader comparison and helps explain
 where future Avro, ORC, or table-format support would fit.

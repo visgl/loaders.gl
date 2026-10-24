@@ -1,6 +1,8 @@
+import {getConversionAccessor} from './conversion-gltf';
+import type {GLTFWithBuffers} from '@loaders.gl/gltf';
+import type {ConversionNode} from './conversion-gltf';
 import type {Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
-import type {GLTFAccessorPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
-import {Matrix4, TypedArray, Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {getImageData} from '@loaders.gl/images';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -19,32 +21,26 @@ export function prepareDataForAttributesConversion(
   tileTransform: Matrix4,
   boundingVolume: OrientedBoundingBox | BoundingSphere
 ): GLTFAttributesData {
-  const nodes =
-    tileContent.gltf?.scene?.nodes ||
-    tileContent.gltf?.scenes?.[0]?.nodes ||
-    tileContent.gltf?.nodes ||
+  const gltf = tileContent.gltf;
+  const json = gltf?.json;
+  const roots =
+    (json?.scene === undefined ? undefined : json.scenes?.[json.scene]?.nodes) ||
+    json?.scenes?.[0]?.nodes ||
+    json?.nodes?.map((_, index) => index) ||
     [];
-
-  const images =
-    tileContent.gltf?.images?.map(imageObject => {
-      // Need data only for uncompressed images because we can't get batchIds from compressed textures.
-      if (imageObject?.image?.compressed) {
-        return null;
-      }
-      const {data, width, height} = getImageData(imageObject.image);
-      const dataCopy = new Uint8Array(data.length);
-      dataCopy.set(data);
-      return {
-        data: dataCopy,
-        compressed: false,
-        height,
-        width,
-        components: data.length / (width * height),
-        mimeType: imageObject.mimeType
-      };
-    }) || [];
-
-  prepareNodes(nodes);
+  const nodes = gltf ? prepareNodes(gltf, roots) : [];
+  const images = (gltf?.images || []).map((image, index) => {
+    if (!image || (image as any).compressed) return null;
+    const {data, width, height} = getImageData(image);
+    return {
+      data: Uint8Array.from(data),
+      compressed: false,
+      height,
+      width,
+      components: data.length / (width * height),
+      mimeType: json?.images?.[index]?.mimeType
+    };
+  });
 
   const {cartographicOrigin, modelMatrix: cartesianModelMatrix} = calculateTransformProps(
     tileContent,
@@ -58,25 +54,6 @@ export function prepareDataForAttributesConversion(
     cartographicOrigin,
     cartesianModelMatrix
   };
-}
-
-/**
- * Keep only values for glTF attributes to pass data to worker thread.
- * @param attributes - geometry attributes
- * @returns attributes with only `value` item
- */
-function getB3DMAttributesWithoutBufferView(
-  attributes: Record<string, GLTFAccessorPostprocessed>
-): Record<string, {value: TypedArray}> {
-  const attributesWithoutBufferView: Record<string, {value: TypedArray}> = {};
-
-  for (const attributeName in attributes) {
-    attributesWithoutBufferView[attributeName] = {
-      value: attributes[attributeName].value
-    };
-  }
-
-  return attributesWithoutBufferView;
 }
 
 /**
@@ -133,30 +110,37 @@ export function calculateTransformProps(
  * Traverse all nodes to replace all sensible data with copy to avoid data corruption in worker.
  * @param nodes
  */
-function prepareNodes(nodes: GLTFNodePostprocessed[]): void {
-  for (let index = 0; index < nodes.length; index++) {
-    const node = nodes[index] as any;
-
-    if (node.mesh) {
-      nodes[index] = {
-        ...node,
-        mesh: {
-          ...node.mesh,
-          primitives: node.mesh?.primitives.map(primitive => ({
-            ...primitive,
-            indices: {value: primitive?.indices?.value},
-            attributes: getB3DMAttributesWithoutBufferView(primitive.attributes),
-            material: {
-              id: primitive?.material?.id,
-              uniqueId: primitive?.material?.uniqueId
-            }
-          }))
-        }
-      };
-    }
-
-    if (node.children) {
-      prepareNodes(node.children);
-    }
-  }
+function prepareNodes(
+  gltf: GLTFWithBuffers,
+  indices: number[],
+  ancestors = new Set<number>()
+): ConversionNode[] {
+  return indices.map(index => {
+    if (ancestors.has(index)) throw new Error('Cyclic glTF node hierarchy');
+    const node = gltf.json.nodes![index];
+    const mesh = node.mesh === undefined ? undefined : gltf.json.meshes?.[node.mesh];
+    return {
+      ...node,
+      mesh: mesh
+        ? {
+            primitives: mesh.primitives.map(primitive => ({
+              ...primitive,
+              indices:
+                primitive.indices === undefined
+                  ? undefined
+                  : getConversionAccessor(gltf, primitive.indices),
+              attributes: Object.fromEntries(
+                Object.entries(primitive.attributes).map(([name, reference]) => [
+                  name,
+                  getConversionAccessor(gltf, reference)
+                ])
+              ),
+              material:
+                primitive.material === undefined ? undefined : {id: String(primitive.material)}
+            }))
+          }
+        : undefined,
+      children: prepareNodes(gltf, node.children || [], new Set([...ancestors, index]))
+    };
+  });
 }

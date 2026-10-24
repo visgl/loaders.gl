@@ -4,7 +4,7 @@
 
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
@@ -106,16 +106,15 @@ test.each([
   if (format === '3tz') {
     const archive = new Tiles3DArchive(file);
     try {
-      const gltf = postProcessGLTF(
-        await parse(await archive.getFile('meshes/1.glb'), GLTFLoader, {
-          core: {worker: false},
-          gltf: {loadImages: false}
-        })
-      );
-      expect(
-        gltf.meshes[0].primitives[0].material!.pbrMetallicRoughness!.baseColorTexture!.texture
-          .source!.bufferView!.data
-      ).toEqual(png);
+      const gltf = await parse(await archive.getFile('meshes/1.glb'), GLTFLoader, {
+        core: {worker: false},
+        gltf: {loadImages: false}
+      });
+      const primitive = gltf.json.meshes![0].primitives[0];
+      const textureInfo =
+        gltf.json.materials![primitive.material!].pbrMetallicRoughness!.baseColorTexture!;
+      const image = gltf.json.images![gltf.json.textures![textureInfo.index].source!];
+      expect(new GLTFScenegraph(gltf).getTypedArrayForBufferView(image.bufferView!)).toEqual(png);
     } finally {
       await archive.file.close();
     }

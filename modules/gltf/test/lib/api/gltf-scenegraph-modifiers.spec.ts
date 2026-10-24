@@ -4,7 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
-import {GLTFLoader, GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
+import {getMeshAttributes} from '../../utils/get-mesh-attributes';
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 // biome-ignore format: preserve intentional fixture layout
 const PNG1x1 = new Uint8Array([
@@ -49,12 +50,12 @@ test('GLTFScenegraph#addImage', () => {
 });
 test('GLTFScenegraph#Should be able to write custom attribute', async () => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
-  const inputData = postProcessGLTF(gltfWithBuffers);
+  const attributes = getMeshAttributes(gltfWithBuffers);
   const gltfBuilder = new GLTFScenegraph();
   gltfBuilder.addMesh({
     attributes: {
-      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION,
-      _BATCHID: inputData.meshes[0].primitives[0].attributes.TEXCOORD_0
+      POSITION: attributes.POSITION,
+      _BATCHID: attributes.TEXCOORD_0
     }
   });
   expect(gltfBuilder.gltf.json.meshes?.[0]).toBeTruthy();
@@ -62,14 +63,14 @@ test('GLTFScenegraph#Should be able to write custom attribute', async () => {
 });
 test('GLTFScenegraph#Should calculate min and max arrays for accessor', async () => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
-  const inputData = postProcessGLTF(gltfWithBuffers);
+  const attributes = getMeshAttributes(gltfWithBuffers);
   // addMesh does not yet support adding additional accessor attributes, and does not auto calculate them
-  delete inputData.meshes[0].primitives[0].attributes.POSITION.min;
-  delete inputData.meshes[0].primitives[0].attributes.POSITION.max;
+  delete attributes.POSITION.min;
+  delete attributes.POSITION.max;
   const gltfBuilder = new GLTFScenegraph();
   gltfBuilder.addMesh({
     attributes: {
-      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION
+      POSITION: attributes.POSITION
     }
   });
   expect(gltfBuilder.gltf.json.accessors?.[0]).toBeTruthy();
@@ -82,11 +83,11 @@ test('GLTFScenegraph#Should calculate min and max arrays for accessor', async ()
 });
 test('GLTFScenegraph#Nodes should store `matrix` transformation data', async () => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
-  const inputData = postProcessGLTF(gltfWithBuffers);
+  const attributes = getMeshAttributes(gltfWithBuffers);
   const gltfBuilder = new GLTFScenegraph();
   const meshIndex = gltfBuilder.addMesh({
     attributes: {
-      POSITION: inputData.meshes[0].primitives[0].attributes.POSITION
+      POSITION: attributes.POSITION
     }
   });
   const inputMatrix = [1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1];

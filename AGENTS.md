@@ -21,7 +21,7 @@
 - Prefer high-signal behavior and boundary coverage over test count. Test an implementation exhaustively in its owning module, then keep only focused public-entrypoint or integration conformance in wrapper modules; do not duplicate the same fixture, call, and assertions across packages.
 - Use the smallest deterministic fixture that exercises the behavior. Fixtures over 1 MiB require an audited exception in the fast suite. Keep one representative large end-to-end parse in the slow lane when scale itself is meaningful.
 - Parse immutable fixture data once with `beforeAll` when multiple assertions inspect the same result. Tests that mutate a result must clone it or parse independently so state cannot leak between cases.
-- Write every new test case, and every substantially revised test, with native Vitest syntax (`test`, `describe`, `test.each`, lifecycle hooks, mocks, and `expect`). Do not use Tape for new coverage or add Tape imports; the Tape allowlist may only shrink.
+- Write every new test case, and every substantially revised test, with native Vitest syntax (`test`, `describe`, `test.each`, lifecycle hooks, mocks, and `expect`). Do not use Tape or its retired compatibility shim; the test audit rejects these imports.
 - Coverage is enforced per non-private published `modules/*` package across statements, lines, functions, and branches. Never lower a committed threshold or add an exclusion merely to make coverage pass; generated, vendored, declaration, or unreachable platform-specific exclusions require an adjacent reason.
 - Run `yarn test-audit` after changing test structure or fixtures. Use `yarn test-profile <mode>` when adding costly coverage, and move any fast test file that remains above the documented performance budget into smaller fast cases plus an explicit slow case.
 
@@ -92,10 +92,10 @@
 
 ## Loader module structure
 
-- Use `modules/csv` as the reference shape for loader modules that want a lightweight root import and an implementation subpath.
+- Use `modules/tables/src/csv` as the reference shape for loader modules that want a lightweight root import and an implementation subpath.
 - The package root `src/index.ts` should export metadata-only loaders, deprecated `*WorkerLoader` aliases if needed for compatibility, writers, and shared public types/options. It should not export `*WithParser` loaders.
 - Each public metadata loader should live in its own `*-loader-types.ts` file. That file should contain the loader metadata, options, default values, and an optional `preload()` function, but no `parse`, `parseSync`, `parseText`, or `parseInBatches` methods.
-- `preload()` should use a static package-subpath import such as `await import('@loaders.gl/csv/csv-loader')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers.
+- `preload()` should use a static package-subpath import such as `await import('@loaders.gl/tables/csv/csv-loader')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers.
 - Each parser-bearing loader should live in its own `*-loader.ts` file and export only the `*WithParser` loader. Keep parser logic out of the metadata file.
 - Move shared constants, option defaults, and types needed by both metadata and parser files into neutral shared files to avoid cycles.
 - Keep writer entry points unchanged unless the package is intentionally splitting them as well.

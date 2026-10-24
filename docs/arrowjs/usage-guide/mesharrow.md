@@ -191,5 +191,5 @@ Use glTF for portable scene and material interchange. Use Mesh Arrow when the us
 
 - [Mesh and PointCloud category](/docs/specifications/category-mesh)
 - [Apache Arrow support in loaders.gl](/docs/developer-guide/apache-arrow)
-- [GeoArrow format](/docs/modules/arrow/formats/geoarrow)
+- [GeoArrow format](/docs/modules/tables/arrow/formats/geoarrow)
 - [luma.gl Arrow overview](https://luma.gl/docs/api-reference/arrow)

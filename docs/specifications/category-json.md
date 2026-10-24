@@ -15,7 +15,7 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
   description="JSON-style loaders cover nested objects, arrays, scalar values, and related document formats. Use the same loaders.gl entry points for JSON, BSON, XML, and HTML when the application needs structured data rather than a geometry or table-specific shape."
   tone="yellow"
   links={[
-    {label: 'JSON module', to: '/docs/modules/json'},
+    {label: 'JSON module', to: '/docs/modules/tables/json'},
     {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'}
   ]}
 />
@@ -52,8 +52,8 @@ table-specific result shape. Its loaders can return:
 
 | Loader                                                       | Notes                                      |
 | ------------------------------------------------------------ | ------------------------------------------ |
-| [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | JSON documents and nested values           |
-| [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) | Binary JSON documents                       |
+| [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader) | JSON documents and nested values           |
+| [`BSONLoader`](/docs/modules/tables/bson/api-reference/bson-loader) | Binary JSON documents                       |
 | [`XMLLoader`](/docs/modules/xml/api-reference/xml-loader)    | XML documents represented as JavaScript data |
 | [`HTMLLoader`](/docs/modules/xml/api-reference/html-loader)  | HTML documents and fragments               |
 | [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) | Human-readable YAML documents; provided by `@loaders.gl/config`. |

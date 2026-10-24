@@ -95,10 +95,10 @@ must not be deferred as ordinary minor-release features.
 
 ### Per-module changes
 
-- **`@loaders.gl/csv`**
+- **`@loaders.gl/tables/csv`**
   - `CSVLoader` - Supports Apache Arrow table output through `csv.shape: 'arrow-table'`.
 
-- **`@loaders.gl/parquet`**
+- **`@loaders.gl/tables/parquet`**
   - `ParquetLoader` can return Apache Arrow tables with `parquet.shape: 'arrow-table'` and leverages the high-performance `parquet-wasm` library.
   - `ParquetJSLoader` is the explicit TypeScript/main-thread alternative; `ParquetJSONLoader` is removed.
 
@@ -155,7 +155,7 @@ The recent GIS work establishes a source and analysis baseline independent of re
 
 | Capability | Implementation and boundary |
 | --- | --- |
-| Capability-driven WMTS configuration | Layer, linked matrix set, CRS compatibility, style, format, native matrix IDs, axis-normalized origin, and known-unit resolutions; see [WMTS support](/docs/modules/wms/formats/wmts) |
+| Capability-driven WMTS configuration | Layer, linked matrix set, CRS compatibility, style, format, native matrix IDs, axis-normalized origin, and known-unit resolutions; see [WMTS support](/docs/modules/ogc/wms/formats/wmts) |
 | Local spatial queries beyond picking | ID lookup, bounds candidates, exact point/rectangle intersection, and nearest-geometry snapping over loaded GeoArrow rows; planar XY, immutable buffers, no geodesic/topology engine |
 | Managed extent loading | Coverage subtraction, shared requests, independent caller cancellation, explicit invalidation, bounded retention, and stable-ID deduplication; only verified complete responses establish reusable coverage |
 | Common relational scan/query integration | `VectorFeatureTableScanSource` adapts Arrow-capable vector sources; predicates, projection, ordering, aggregates, and limits execute locally over one materialized request |
@@ -163,8 +163,8 @@ The recent GIS work establishes a source and analysis baseline independent of re
 | WMTS coverage limits and dimensions | Per-layer matrix limits, matrix dimensions, skipped unavailable tiles, authoritative request fields, advertised defaults, and lexical dimension values |
 | WMTS feature information | REST/KVP query discovery, explicit tile/pixel queries, per-level pixel bounds, native JSON or text, HTTP/OWS errors, and cancellation; no implicit screen-coordinate conversion or unified feature schema |
 
-See the [spatial-query guide](/docs/developer-guide/spatial-queries), [WFS feature table](/docs/modules/wms/formats/wfs),
-and [OGC API Features feature table](/docs/modules/wms/services/ogc-api#ogc-api-features) for the actual
+See the [spatial-query guide](/docs/developer-guide/spatial-queries), [WFS feature table](/docs/modules/ogc/wms/formats/wfs),
+and [OGC API Features feature table](/docs/modules/ogc/wms/services/ogc-api#ogc-api-features) for the actual
 APIs and limitations. WMTS feature information is implemented in [PR #4087](https://github.com/visgl/loaders.gl/pull/4087);
 implementation status is distinct from availability in a published release.
 
@@ -182,13 +182,13 @@ Each tranche needs its own bounded API, hermetic boundary tests, and documented 
 | Priority | Tranche and current gap | Owner | Completion evidence |
 | --- | --- | --- | --- |
 | 1 | Arbitrary tile grids and raster reprojection: first-level normalized origin/tile size and standard XYZ rendering currently limit heterogeneous matrices | loaders.gl metadata; deck.gl rendering | Retain per-level origins, tile sizes, matrix bounds, and supported unit resolutions; render a non-XYZ geographic/projected grid correctly; explicitly test antimeridian and polar coverage |
-| 2 | Portable service predicate pushdown: relational filters currently run locally; WFS accepts caller-authored FES, OGC API does not translate CQL2 | `@loaders.gl/wms` and `@loaders.gl/scan` | Translate an advertised supported subset, report pushdown versus residual execution in `explain()`, preserve results with safe local fallback, and verify reduced requests/bytes |
-| 3 | Schema and queryables discovery: WFS `getSchema()` and OGC API Features schema currently lack automatic service schema negotiation | `@loaders.gl/wms` | Negotiate `DescribeFeatureType`/queryables, preserve typed/null/geometry/CRS metadata, reconcile heterogeneous pages, and expose unsupported schema constructs explicitly |
-| 4 | Progressive bounded-memory scans: pages and GML batches exist, but the common vector scan adapter materializes a whole bound result | `@loaders.gl/wms` and `@loaders.gl/scan` | Stream GeoJSON/GML into Arrow batches with backpressure, cancellation, and a measured memory bound; plan blocking sorts/aggregates separately; never certify incomplete extent coverage |
+| 2 | Portable service predicate pushdown: relational filters currently run locally; WFS accepts caller-authored FES, OGC API does not translate CQL2 | `@loaders.gl/ogc/wms` and `@loaders.gl/scan` | Translate an advertised supported subset, report pushdown versus residual execution in `explain()`, preserve results with safe local fallback, and verify reduced requests/bytes |
+| 3 | Schema and queryables discovery: WFS `getSchema()` and OGC API Features schema currently lack automatic service schema negotiation | `@loaders.gl/ogc/wms` | Negotiate `DescribeFeatureType`/queryables, preserve typed/null/geometry/CRS metadata, reconcile heterogeneous pages, and expose unsupported schema constructs explicitly |
+| 4 | Progressive bounded-memory scans: pages and GML batches exist, but the common vector scan adapter materializes a whole bound result | `@loaders.gl/ogc/wms` and `@loaders.gl/scan` | Stream GeoJSON/GML into Arrow batches with backpressure, cancellation, and a measured memory bound; plan blocking sorts/aggregates separately; never certify incomplete extent coverage |
 | 5 | Spatial-index scale and updates: the immutable minimum-X index can visit every row in the worst case | `@loaders.gl/geoarrow` | Benchmark representative points/lines/polygons, pruning, memory, and build costs; add a packed tree or another measured improvement plus explicit rebuild/update semantics without losing deterministic results |
 | 6 | Global spatial semantics and robust topology: local queries are planar XY with ordinary floating-point predicates | `@loaders.gl/geoarrow` and projection utilities | Define CRS/unit-aware distance, antimeridian handling, tolerance and precision policy; add independently validated edge cases before claiming geodesic or arbitrary geometry-predicate support |
 | 7 | Feature-info interoperability and coordinate helpers: WMTS callers supply tile/I/J and responses retain service-native schemas | loaders.gl service adapters; deck.gl interaction | Derive tile/pixel indices from source-grid coordinates, connect screen interactions through renderer transforms, and offer optional typed JSON/GML normalization while preserving the raw-response path |
-| 8 | Temporal/elevation dimension semantics: advertised values and defaults are preserved but not interpreted or validated | `@loaders.gl/wms` | Support explicitly defined interval/value validation and nearest-time selection with documented calendar, timezone, current-value, and boundary policies; avoid silent substitutions |
+| 8 | Temporal/elevation dimension semantics: advertised values and defaults are preserved but not interpreted or validated | `@loaders.gl/ogc/wms` | Support explicitly defined interval/value validation and nearest-time selection with documented calendar, timezone, current-value, and boundary policies; avoid silent substitutions |
 | 9 | Operational and standards hardening: runtime policy exists; persistent caching and blanket optional conformance do not | Service adapters and application fetch layer | Validate cache freshness, retry/cancellation/auth boundaries and complete multi-provider reports; add targeted optional conformance classes with fixtures and published limitations |
 
 WFS-T transactions, locks, mutable feature-store events, WMTS SOAP, and every optional OGC API

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {BigTypedArray} from '@loaders.gl/core/schema';
 import type {
   GLTF,
   GLTFAccessor,
@@ -715,7 +716,7 @@ export class GLTFIterator {
   }
 
   /** Return the loaded typed values addressed by a raw accessor index or decoded accessor. */
-  getTypedArrayForAccessor(accessor: GLTFAccessor | number): unknown {
+  getTypedArrayForAccessor(accessor: GLTFAccessor | number): BigTypedArray {
     return getAccessorTypedArray(this.data, this.gltf.buffers, accessor);
   }
 

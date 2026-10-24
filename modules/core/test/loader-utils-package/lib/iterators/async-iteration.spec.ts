@@ -12,7 +12,7 @@ import {
   concatenateArrayBuffersAsync
 } from '@loaders.gl/core/loader-utils';
 import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
-import {NDJSONLoader} from '@loaders.gl/json/bundled';
+import {NDJSONLoader} from '@loaders.gl/tables/json/bundled';
 const parseNDJSONInBatches = NDJSONLoader.parseInBatches;
 
 async function* asyncNumbers() {

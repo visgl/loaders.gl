@@ -2,7 +2,7 @@
 import type {FeatureTableJson} from '@loaders.gl/tiles-3d/3d-tiles';
 import type {Attribute} from '@loaders.gl/tiles-3d/i3s';
 import type {
-  GLTFPostprocessed,
+  GLTF,
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_ClassProperty,
   GLTF_EXT_structural_metadata_GLTF,
@@ -130,7 +130,7 @@ export function getAttributeTypesMapFromPropertyTable(
  * }
  */
 export const getAttributeTypesMapFromSchema = (
-  gltfJson: GLTFPostprocessed,
+  gltfJson: GLTF,
   metadataClass: string
 ): Record<string, Attribute> | null => {
   const attributeTypesMap: Record<string, Attribute> = {};

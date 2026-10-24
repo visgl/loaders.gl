@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {createRequire} from 'node:module';
-import {fileURLToPath} from 'node:url';
 
 import {defineConfig} from 'vitest/config';
 import {playwright} from '@vitest/browser-playwright';
@@ -13,7 +12,6 @@ import {createRangeServerMiddleware} from './range-server.mjs';
 
 const require = createRequire(import.meta.url);
 const VITEST_INTERNAL_BROWSER_PATH = require.resolve('vitest/internal/browser');
-const TAPE_TEST_UTILS_PATH = fileURLToPath(new URL('./tape-test-utils.mjs', import.meta.url));
 const LOCAL_FIXTURE_PREFIX = '/__loaders_gl_test_fixtures__/';
 
 export async function getVitestConfig(options = {}) {
@@ -43,10 +41,8 @@ export async function getVitestConfig(options = {}) {
   const repositoryRoot = process.cwd();
   const testAliases = [
     ...tsconfigAliases,
-    {find: /^@loaders\.gl\/bson$/, replacement: path.resolve(repositoryRoot, 'modules/bson/src')},
-    {find: /^@loaders\.gl\/bson\/test$/, replacement: path.resolve(repositoryRoot, 'modules/bson/test')},
-    {find: /^tape$/, replacement: TAPE_TEST_UTILS_PATH},
-    {find: /^tape-promise\/tape$/, replacement: TAPE_TEST_UTILS_PATH}
+    {find: /^@loaders\.gl\/bson$/, replacement: path.resolve(repositoryRoot, 'modules/tables/src/bson')},
+    {find: /^@loaders\.gl\/bson\/test$/, replacement: path.resolve(repositoryRoot, 'modules/tables/test/bson')}
   ];
 
   const createPlaywrightProvider = () =>
@@ -86,10 +82,9 @@ export async function getVitestConfig(options = {}) {
         'probe.gl/env',
         'probe.gl/log',
         'probe.gl/stats',
-        '@repeaterjs/repeater',
-        '@tmcw/togeojson',
+
         '@turf/rewind',
-        '@xmldom/xmldom',
+
         'apache-arrow',
         'apache-arrow/type',
         'brotli/decompress',
@@ -103,21 +98,21 @@ export async function getVitestConfig(options = {}) {
         'fuzzer',
         'geotiff',
         'get-pixels',
-        'jszip',
+
         'lerc',
         'long',
         'lz4js',
         'ndarray',
-        'node-int64',
+
         'pako',
         'parquet-wasm/esm/parquet_wasm.js',
         'pbf',
         'pmtiles',
         'save-pixels',
-        'slice-source',
+
         'snappyjs',
         'sql.js',
-        'thrift',
+
         'varint',
         'vitest',
         'web-streams-polyfill',

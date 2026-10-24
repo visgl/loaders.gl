@@ -54,9 +54,9 @@ worker, scan, renderer, or writer boundary.
 
 | Loader                                                          | Notes                              |
 | --------------------------------------------------------------- | ---------------------------------- |
-| [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader) |                                    |
-| [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader)       |                                    |
-| [`JSONLoader`](/docs/modules/json/api-reference/json-loader)    | Set `options.json.table` to `true` |
+| [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader) |                                    |
+| [`CSVLoader`](/docs/modules/tables/csv/api-reference/csv-loader)       |                                    |
+| [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader)    | Set `options.json.table` to `true` |
 
 ## Supported shapes
 
@@ -64,10 +64,10 @@ worker, scan, renderer, or writer boundary.
 
 | Shape | Loaders | Notes |
 | --- | --- | --- |
-| `arrow-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader) | Default for Arrow IPC parsing can still be overridden with `options.arrow.shape`. |
-| `columnar-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader) | Column-major output for Arrow data. |
-| `array-row-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | Row arrays. Scoped overrides: `options.arrow.shape`, `options.csv.shape`, `options.json.shape`. |
-| `object-row-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | Row objects. Default for CSV. |
+| `arrow-table` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader) | Default for Arrow IPC parsing can still be overridden with `options.arrow.shape`. |
+| `columnar-table` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader) | Column-major output for Arrow data. |
+| `array-row-table` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/tables/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader) | Row arrays. Scoped overrides: `options.arrow.shape`, `options.csv.shape`, `options.json.shape`. |
+| `object-row-table` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/tables/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader) | Row objects. Default for CSV. |
 
 `GeoJSONLoader` uses `options.geojson.shape` for GIS-specific output shapes such as `geojson-table`, `binary-feature-collection`, and `arrow-table`.
 

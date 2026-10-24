@@ -53,7 +53,7 @@ decoded extension data.
 :::info[Start with the output you need]
 
 - Use `GLTFLoader` when you need the glTF document, linked resources, or extension processing.
-- Use [`postProcessGLTF`](post-process-gltf) or [`GLTFScenegraph`](gltf-scenegraph) when traversal
+- Use [`GLTFIterator`](gltf-iterator) or [`GLTFScenegraph`](gltf-scenegraph) when traversal
   should be more convenient than following indices in the source JSON.
 - Use [`convertGLTFToMeshArrow()`](/docs/specifications/category-mesh#mesh-arrow-tables) when
   static primitive attributes should enter a shared Mesh Arrow table without baking scene
@@ -219,7 +219,7 @@ draft glTF 2.1 files, enable the matching `gltf.load*` options described below.
 
 The `GLTFLoader` aims to take care of as much processing as possible, while remaining framework-independent.
 
-Draft glTF 2.1 readiness includes the [new accessor component type definitions](/docs/modules/gltf/formats/gltf#accessor-component-types). `GLTFScenegraph` and `postProcessGLTF` expose these values through the corresponding JavaScript typed arrays.
+Draft glTF 2.1 readiness includes the [new accessor component type definitions](/docs/modules/gltf/formats/gltf#accessor-component-types). `GLTFScenegraph` and `getGLTFAccessorValue` expose these values through the corresponding JavaScript typed arrays.
 
 The loader also supports draft glTF 2.1 [thumbnails](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails). When `asset.thumbnail` references an image, `gltf.loadImages: true` loads that image even if it is not used by a texture.
 
@@ -263,7 +263,7 @@ attributes are projected as columns, including normals, tangents, texture coordi
 joints, and weights. Standard glTF point, line, and triangle modes are represented by the table's
 `topology` metadata. The converter does not modify the input JSON or buffers.
 
-Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
+Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](https://luma.gl/docs/api-reference/gltf/post-process-gltf) for details.
 
 In addition, certain glTF extensions, including Draco and [meshopt compression](/docs/modules/gltf/formats/gltf#meshopt-compression), can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.
 
@@ -333,10 +333,10 @@ The job of `GLTFLoader` is to open the glTF container file(s) and extract the gl
 
 If you already have access to libraries or code that process standard glTF JSON directly, this format may be appropriate. However, in this storage-optimized form, traversing the loaded glTF scene graph tends to require verbose and repetitive code with many checks and guards.
 
-To simplify traversal and manipulation of glTF data, loaders.gl provides three separate mechanisms:
+To simplify traversal and manipulation of glTF data, loaders.gl provides indexed traversal and editing APIs:
 
 - The [`GLTFIterator`](./gltf-iterator) class lazily resolves references while preserving the original glTF JSON objects, making it suitable for extension transformations.
-- The [`postProcessGLTF()`](./post-process-gltf) function converts the glTF JSON into a largely equivalent JavaScript structure that is simpler to work with.
+- For rendering, luma.gl owns [`postProcessGLTF()`](https://luma.gl/docs/api-reference/gltf/post-process-gltf), which creates a separate resolved document.
 - The [`GLTFScenegraph`](./gltf-scenegraph) class accepts glTF data and provides methods for accessing or modifying APIs.
 
 The gltf module provides typescript definitions for the glTF JSON that align with the glTF specification, and all APIs and return values are strongly typed to assist applications to write robust code.
@@ -358,7 +358,7 @@ The standard glTF JSON structure will be available in the `json` field.
 }
 ```
 
-However, the objects inside these arrays will have been pre-processed to simplify usage. For details on changes and extra fields added to the various glTF objects, see [post processing](post-process-gltf).
+References inside these arrays remain numeric. Resource decoding may replace compressed storage with decoded accessors; use `getGLTFAccessorValue` or `GLTFIterator` to read them.
 
 ```typescript
 {

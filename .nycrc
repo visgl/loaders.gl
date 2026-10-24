@@ -20,7 +20,7 @@
     "modules/compression/src/brotli/decode.ts",
     "modules/raster/src/terrain/lib/delatin/index.ts",
     "modules/crypto/src/lib/algorithms/md5-wasm.ts",
-    "modules/wms/src/lib/parsers/gml/deep-strict-equal.ts",
+    "modules/ogc/src/wms/lib/parsers/gml/deep-strict-equal.ts",
     "**3d-tiles/src/styles/**",
     "modules/tables/src/parquet/parquetjs/parquet-thrift/**",
     "modules/traces/src/otlp-proto/generated/**",

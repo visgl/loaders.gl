@@ -3,17 +3,20 @@
 // Copyright (c) vis.gl contributors
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
-import type {GLTFMaterialPostprocessed, GLTFImagePostprocessed} from '@loaders.gl/gltf';
+import type {GLTFMaterial, GLTFImage, GLTFWithBuffers} from '@loaders.gl/gltf';
+import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshTileSampler, MeshTileTexture, MeshTileTextureTransform} from './mesh.js';
 
 /** Maps a buffer-view or base64 PNG/JPEG image, sampling and UV transform without decoding pixels. */
 export function mapMeshSourceTexture(
-  textureInfo: NonNullable<GLTFMaterialPostprocessed['pbrMetallicRoughness']>['baseColorTexture']
+  gltf: GLTFWithBuffers,
+  textureInfo: NonNullable<GLTFMaterial['pbrMetallicRoughness']>['baseColorTexture']
 ): MeshTileTexture {
-  const texture = textureInfo?.texture;
-  const image = texture?.source;
-  const sampler = texture?.sampler;
+  const texture = textureInfo ? gltf.json.textures?.[textureInfo.index] : undefined;
+  const image = texture?.source === undefined ? undefined : gltf.json.images?.[texture.source];
+  const sampler =
+    texture?.sampler === undefined ? undefined : gltf.json.samplers?.[texture.sampler];
   const extensions = textureInfo?.extensions || {};
   const hasTransform = Object.hasOwn(extensions, 'KHR_texture_transform');
   const transform = extensions.KHR_texture_transform;
@@ -43,8 +46,9 @@ export function mapMeshSourceTexture(
     (image.uri !== undefined && image.bufferView !== undefined) ||
     Object.keys(image.extensions || {}).length ||
     (image.uri === undefined &&
-      (!(image.bufferView?.data instanceof Uint8Array) ||
-        Object.keys(image.bufferView.extensions || {}).length ||
+      (image.bufferView === undefined ||
+        !gltf.json.bufferViews?.[image.bufferView] ||
+        Object.keys(gltf.json.bufferViews?.[image.bufferView!]?.extensions || {}).length ||
         !['image/png', 'image/jpeg'].includes(image.mimeType || ''))) ||
     (sampler &&
       (Object.keys(sampler.extensions || {}).length ||
@@ -77,7 +81,7 @@ export function mapMeshSourceTexture(
       } as MeshTileSampler)
     : undefined;
   return {
-    ...mapMeshSourceImage(image),
+    ...mapMeshSourceImage(gltf, image),
     ...(hasTransform
       ? {
           transform: {
@@ -95,10 +99,14 @@ export function mapMeshSourceTexture(
 
 /** Reads self-contained encoded bytes without fetch, pixel decoding, or Node APIs. */
 function mapMeshSourceImage(
-  image: GLTFImagePostprocessed
+  gltf: GLTFWithBuffers,
+  image: GLTFImage
 ): Pick<MeshTileTexture, 'data' | 'mimeType'> {
   if (image.uri === undefined) {
-    return {data: image.bufferView!.data, mimeType: image.mimeType as MeshTileTexture['mimeType']};
+    return {
+      data: new GLTFScenegraph(gltf).getTypedArrayForBufferView(image.bufferView!),
+      mimeType: image.mimeType as MeshTileTexture['mimeType']
+    };
   }
   const match =
     typeof image.uri === 'string'
@@ -124,16 +132,18 @@ function mapMeshSourceImage(
 
 /** Resolves one external encoded image through an explicitly supplied application reader. */
 export async function resolveMeshSourceTexture(
-  textureInfo: NonNullable<GLTFMaterialPostprocessed['pbrMetallicRoughness']>['baseColorTexture'],
+  gltf: GLTFWithBuffers,
+  textureInfo: NonNullable<GLTFMaterial['pbrMetallicRoughness']>['baseColorTexture'],
   readExternalResource:
     | ((uri: string, contentUri: string | undefined, signal?: AbortSignal) => Promise<Uint8Array>)
     | undefined,
   contentUri: string | undefined,
   signal?: AbortSignal
 ): Promise<MeshTileTexture> {
-  const image = textureInfo?.texture?.source;
+  const texture = textureInfo ? gltf.json.textures?.[textureInfo.index] : undefined;
+  const image = texture?.source === undefined ? undefined : gltf.json.images?.[texture.source];
   if (!image || image.uri === undefined || image.uri.startsWith('data:'))
-    return mapMeshSourceTexture(textureInfo);
+    return mapMeshSourceTexture(gltf, textureInfo);
   if (!readExternalResource || image.bufferView !== undefined)
     throw new TileConversionError(
       'MESH_SOURCE_TEXTURE_UNSUPPORTED',
@@ -158,12 +168,32 @@ export async function resolveMeshSourceTexture(
       'External images require matching PNG/JPEG headers'
     );
   // Select encoded bytes without decoding pixels or modifying the caller-owned glTF image.
-  const resolved = {
-    ...textureInfo,
-    texture: {
-      ...textureInfo!.texture,
-      source: {...image, uri: undefined, mimeType: metadata.mimeType, bufferView: {data}}
+  const resolvedImage = {
+    ...image,
+    uri: undefined,
+    mimeType: metadata.mimeType,
+    bufferView: (gltf.json.bufferViews || []).length
+  };
+  const resolved: GLTFWithBuffers = {
+    ...gltf,
+    buffers: [
+      ...gltf.buffers,
+      {
+        arrayBuffer: data.buffer as ArrayBuffer,
+        byteOffset: data.byteOffset,
+        byteLength: data.byteLength
+      }
+    ],
+    json: {
+      ...gltf.json,
+      images: gltf.json.images!.map((entry, index) =>
+        index === texture!.source ? resolvedImage : entry
+      ),
+      bufferViews: [
+        ...(gltf.json.bufferViews || []),
+        {buffer: gltf.buffers.length, byteLength: data.byteLength}
+      ]
     }
   };
-  return mapMeshSourceTexture(resolved as typeof textureInfo);
+  return mapMeshSourceTexture(resolved, textureInfo);
 }

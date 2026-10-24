@@ -8,7 +8,7 @@ node scripts/validate-token.js
   cd ..
   # Source imports reference the generated ESM decoder assets, even without a package build.
   (cd modules/draco && node ../../scripts/build-library-modules.mjs draco)
-  npm run --silent build-source-worker --prefix modules/parquet -- --log-level=error
+  npm run --silent build-source-worker-parquet --prefix modules/tables -- --log-level=error
   npm run --silent i3s-build-worker --prefix modules/tiles-3d -- --log-level=error
 )
 

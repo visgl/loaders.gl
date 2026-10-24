@@ -52,8 +52,8 @@ them because the GeoArrow collection member union cannot recursively contain Geo
 - The GIS compatibility package is removed; see the [replacement import map](./modules/geoarrow/gis-migration.md).
 - `@loaders.gl/geoarrow` owns conversion, layout inspection, validation, bounds, coordinate
   iteration, canonicalization, and metadata operations.
-- `@loaders.gl/parquet` owns GeoParquet I/O and remains independent of GeoArrow processing code.
-- `@loaders.gl/arrow/transport` owns worker transfer and sliced-buffer isolation.
+- `@loaders.gl/tables/parquet` owns GeoParquet I/O and remains independent of GeoArrow processing code.
+- `@loaders.gl/tables/arrow/transport` owns worker transfer and sliced-buffer isolation.
 
 These boundaries are part of the foundation review. Moving more code between packages requires a
 measured bundle or ownership benefit, not just conceptual neatness.

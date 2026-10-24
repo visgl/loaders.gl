@@ -1,8 +1,9 @@
+import {getMeshAttributes} from '../modules/gltf/test/utils/get-mesh-attributes';
 import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {parse} from '@loaders.gl/core';
-import {GLTFScenegraph, GLTFWriter, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLTFScenegraph, GLTFWriter, GLTFLoader} from '@loaders.gl/gltf';
 import {I3SContentLoader, parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
@@ -229,16 +230,15 @@ test('browser 3TZ preserves normalized colors and one selected material, while I
   );
   const reader = new Tiles3DArchive(new ArrayBufferFile(await result.file.arrayBuffer()));
   try {
-    const gltf = postProcessGLTF(
-      await parse(await reader.getFile('meshes/0.glb'), GLTFLoader, {
-        worker: false,
-        gltf: {loadImages: false}
-      })
-    );
-    const primitive = gltf.meshes![0].primitives[0];
-    expect(primitive.material).toMatchObject(MATERIAL);
-    expect(primitive.attributes.COLOR_0.normalized).toBe(true);
-    expect(primitive.attributes.COLOR_0.value).toEqual(
+    const gltf = await parse(await reader.getFile('meshes/0.glb'), GLTFLoader, {
+      worker: false,
+      gltf: {loadImages: false}
+    });
+    const primitive = gltf.json.meshes![0].primitives[0];
+    const attributes = getMeshAttributes(gltf);
+    expect(gltf.json.materials![primitive.material!]).toMatchObject(MATERIAL);
+    expect(attributes.COLOR_0.normalized).toBe(true);
+    expect(attributes.COLOR_0.value).toEqual(
       new Uint8Array(Array(6).fill([255, 128, 0, 255]).flat())
     );
   } finally {

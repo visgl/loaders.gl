@@ -8,7 +8,7 @@ const {binaryData, repeatedData} = getBinaryData();
 const TEST_CASES = [
   {
     title: 'streaming CSV',
-    url: '@loaders.gl/csv/test/data/sample-very-long.csv',
+    url: '@loaders.gl/tables/csv/test/data/sample-very-long.csv',
     digests: {
       crc32: 'W5bZ9Q==',
       crc32c: 'YPBZXg==',

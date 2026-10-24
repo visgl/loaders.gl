@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-`@loaders.gl/orc` currently targets common primitive ORC tables and returns Apache Arrow tables; the writer remains uncompressed.
+`@loaders.gl/tables/orc` currently targets common primitive ORC tables and returns Apache Arrow tables; the writer remains uncompressed.
 
 Apache ORC is a self-describing, stripe-oriented columnar format. A complete ORC implementation includes protobuf metadata, stripe indexes, stream encodings, compression, nested types, statistics, and optional encryption.
 

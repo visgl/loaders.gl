@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Use it when', value: 'Several formats feed the same table processing path'},
     {label: 'Core representation', value: 'Typed columns, record batches, and tables'},
     {label: 'Useful properties', value: 'Binary layout, zero-copy views, and shared schemas'},
-    {label: 'Packages', value: '@loaders.gl/arrow, @loaders.gl/geoarrow, and @loaders.gl/parquet'}
+    {label: 'Packages', value: '@loaders.gl/tables/arrow, @loaders.gl/geoarrow, and @loaders.gl/tables/parquet'}
   ]}
 />
 
@@ -56,9 +56,9 @@ To work effectively with in-memory Apache Arrow data, a library is needed, and l
 
 A subset of modules that import the Apache Arrow JS library:
 
-- `@loaders.gl/arrow`
+- `@loaders.gl/tables/arrow`
 - `@loaders.gl/geoarrow`
-- `@loaders.gl/parquet`
+- `@loaders.gl/tables/parquet`
 - `@loaders.gl/core/schema`
 - `@loaders.gl/core/schema-utils`
 
@@ -79,14 +79,14 @@ You may still want to specify `apache-arrow` explicitly in your app to avoid bei
 ### Recommended install pattern
 
 ```bash
-npm install apache-arrow @loaders.gl/core @loaders.gl/arrow
+npm install apache-arrow @loaders.gl/core @loaders.gl/tables/arrow
 # plus any other loaders you use
 ```
 
 or:
 
 ```bash
-yarn add apache-arrow @loaders.gl/core @loaders.gl/arrow
+yarn add apache-arrow @loaders.gl/core @loaders.gl/tables/arrow
 ```
 
 ### Troubleshooting
@@ -101,10 +101,10 @@ Most package managers have a way to check a dependency:
 
 ```bash
 $ yarn why apache-arrow
-├─ @loaders.gl/arrow@workspace:modules/arrow [c7e01]
+├─ @loaders.gl/tables/arrow@workspace:modules/arrow [c7e01]
 │  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 │
-├─ @loaders.gl/arrow@workspace:modules/arrow
+├─ @loaders.gl/tables/arrow@workspace:modules/arrow
 │  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 │
 ├─ @loaders.gl/geoarrow@workspace:modules/geoarrow [49c26]

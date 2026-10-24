@@ -4,12 +4,8 @@
 
 import {Matrix4} from '@math.gl/core';
 import type {MeshAttribute} from '@loaders.gl/core/schema';
-import type {
-  GLTFPostprocessed,
-  GLTFNodePostprocessed,
-  GLTFMeshPrimitivePostprocessed,
-  GLTFMaterialPostprocessed
-} from '@loaders.gl/gltf';
+import type {GLTFWithBuffers, GLTFMeshPrimitive, GLTFMaterial} from '@loaders.gl/gltf';
+import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/gltf';
 import type {Tileset3D, TilesetSourceMetadata} from '@loaders.gl/tiles-3d';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionSource} from '@loaders.gl/tile-converter/v5/core';
@@ -50,7 +46,7 @@ export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions
  * optional buffer-view or base64 data-URI PNG/JPEG images, TEXCOORD_0, glTF sampling and
  * KHR_texture_transform controls on TEXCOORD_0. Decode content with
  * `gltf.excludeExtensions: {KHR_texture_transform: false}` to retain authored UVs/transforms.
- * Triangle strips are expanded with alternating winding; the glTF loader already expands fans.
+ * Triangle strips are expanded with alternating winding; fans are expanded explicitly at the mesh boundary.
  * Shared traversal retains placement identity and unloads content according to the supplied policy.
  * The adapter applies node transforms, glTF up-axis correction, RTC translation, and tile placement
  * once, retaining Float64 absolute positions and inverse-transpose unit normals. Animation, skins,
@@ -120,7 +116,7 @@ export function createMeshTilesetConversionSource(
               'Content metadata requires a separate mapping'
             );
           const payload = content.payload as {
-            gltf?: GLTFPostprocessed;
+            gltf?: GLTFWithBuffers;
             gltfUpAxis?: string;
             rtcCenter?: number[];
             type?: string;
@@ -137,7 +133,8 @@ export function createMeshTilesetConversionSource(
               'Mesh extraction requires decoded GLB/glTF or B3DM content'
             );
           }
-          const gltf = payload.gltf;
+          const gltfWithBuffers = payload.gltf;
+          const gltf = gltfWithBuffers.json;
           if (
             gltf.animations?.length ||
             gltf.skins?.length ||
@@ -154,7 +151,9 @@ export function createMeshTilesetConversionSource(
           if (!['X', 'Y', 'Z'].includes(axis))
             throw new TileConversionError('MESH_SOURCE_AXIS_UNSUPPORTED', 'Unknown glTF up axis');
           const placement = new Matrix4(item.tile.computedTransform);
-          const rtc = payload.rtcCenter || gltf.extensions?.CESIUM_RTC?.center;
+          const rtc =
+            payload.rtcCenter ||
+            (gltf.extensions?.CESIUM_RTC as {center?: number[]} | undefined)?.center;
           if (rtc) {
             if (rtc.length !== 3 || rtc.some((value: number) => !Number.isFinite(value)))
               throw new TileConversionError(
@@ -168,19 +167,21 @@ export function createMeshTilesetConversionSource(
           if (axis === 'X')
             placement.multiplyRight(new Matrix4([0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1]));
           const roots =
-            gltf.scene?.nodes || (gltf.scenes?.length === 1 ? gltf.scenes[0].nodes : undefined);
+            (gltf.scene !== undefined ? gltf.scenes?.[gltf.scene]?.nodes : undefined) ||
+            (gltf.scenes?.length === 1 ? gltf.scenes[0].nodes : undefined);
           if (!roots?.length)
             throw new TileConversionError(
               'MESH_SOURCE_SCENE_UNSUPPORTED',
               'A default scene or exactly one scene is required'
             );
           let primitiveIndex = 0;
-          const primitives = traverseMeshNodes(roots, placement);
+          const primitives = traverseMeshNodes(gltfWithBuffers, roots, placement);
           let current = primitives.next();
           while (!current.done) {
             const selected = current.value;
             const next = primitives.next();
             const resource = await extractPrimitive(
+              gltfWithBuffers,
               selected.primitive,
               selected.transform,
               `${item.tile.id}/${content.index}/${primitiveIndex++}`,
@@ -189,7 +190,7 @@ export function createMeshTilesetConversionSource(
               signal
             );
             const features = extractMeshFeatures(
-              gltf,
+              gltfWithBuffers,
               selected.primitive,
               payload,
               resource.mesh,
@@ -213,16 +214,19 @@ export function createMeshTilesetConversionSource(
   };
 }
 
-/** Walks scene placements without deduplicating a shared mesh or mutating postprocessed nodes. */
+/** Walks scene placements without deduplicating a shared mesh or mutating source nodes. */
 function* traverseMeshNodes(
-  nodes: readonly GLTFNodePostprocessed[],
+  gltf: GLTFWithBuffers,
+  nodes: readonly number[],
   parent: Matrix4,
-  ancestors = new Set<GLTFNodePostprocessed>()
-): Generator<{primitive: GLTFMeshPrimitivePostprocessed; transform: Matrix4}> {
-  for (const node of nodes) {
+  ancestors = new Set<number>()
+): Generator<{primitive: GLTFMeshPrimitive; transform: Matrix4}> {
+  for (const nodeIndex of nodes) {
+    const node = gltf.json.nodes![nodeIndex];
     if (
-      ancestors.has(node) ||
-      node.skin ||
+      !node ||
+      ancestors.has(nodeIndex) ||
+      node.skin !== undefined ||
       node.weights ||
       Object.keys(node.extensions || {}).length
     )
@@ -238,21 +242,28 @@ function* traverseMeshNodes(
             .multiplyRight(new Matrix4().fromQuaternion(node.rotation || [0, 0, 0, 1]))
             .scale(node.scale || [1, 1, 1])
     );
-    if (node.mesh) {
-      if (node.mesh.weights || Object.keys(node.mesh.extensions || {}).length)
+    if (node.mesh !== undefined) {
+      const mesh = gltf.json.meshes![node.mesh];
+      if (mesh.weights || Object.keys(mesh.extensions || {}).length)
         throw new TileConversionError(
           'MESH_SOURCE_NODE_UNSUPPORTED',
           'Morph weights and mesh extensions are unsupported'
         );
-      for (const primitive of node.mesh.primitives) yield {primitive, transform};
+      for (const primitive of mesh.primitives) yield {primitive, transform};
     }
-    yield* traverseMeshNodes(node.children || [], transform, new Set([...ancestors, node]));
+    yield* traverseMeshNodes(
+      gltf,
+      node.children || [],
+      transform,
+      new Set([...ancestors, nodeIndex])
+    );
   }
 }
 
 /** Copies one packed primitive, places it once, and derives a useful ECEF local origin. */
 async function extractPrimitive(
-  primitive: GLTFMeshPrimitivePostprocessed,
+  gltf: GLTFWithBuffers,
+  primitive: GLTFMeshPrimitive,
   transform: Matrix4,
   id: string,
   readExternalResource: MeshTilesetSourceOptions['readExternalResource'],
@@ -280,7 +291,8 @@ async function extractPrimitive(
       'Mesh placement requires a finite invertible affine transform with positive determinant'
     );
   const attributes: Record<string, MeshAttribute> = {};
-  for (const [name, accessor] of Object.entries(primitive.attributes)) {
+  for (const [name, reference] of Object.entries(primitive.attributes)) {
+    const accessor = getGLTFAccessor(gltf, reference);
     if (name === '_BATCHID' || /^_FEATURE_ID_\d+$/.test(name)) continue;
     if (!['POSITION', 'NORMAL', 'COLOR_0', 'TEXCOORD_0'].includes(name))
       throw new TileConversionError(
@@ -288,17 +300,17 @@ async function extractPrimitive(
         `Unsupported mesh attribute ${name}`
       );
     attributes[name] = {
-      value: accessor.value as MeshAttribute['value'],
-      size: accessor.components,
+      value: getGLTFAccessorValue(gltf, reference) as MeshAttribute['value'],
+      size: accessor.type === 'SCALAR' ? 1 : Number(accessor.type.slice(3)),
       ...(accessor.normalized ? {normalized: true} : {})
     };
   }
   const mesh = validateMeshGeometry(
     {
       topology: 'triangle-list',
-      mode: primitive.mode === 5 ? 4 : (primitive.mode ?? 4),
+      mode: [5, 6].includes(primitive.mode ?? 4) ? 4 : (primitive.mode ?? 4),
       attributes,
-      indices: createTriangleIndices(primitive, (attributes.POSITION?.value.length ?? 0) / 3)
+      indices: createTriangleIndices(gltf, primitive, (attributes.POSITION?.value.length ?? 0) / 3)
     },
     true
   );
@@ -336,20 +348,22 @@ async function extractPrimitive(
     mesh,
     origin: minimum.map((value, axis) => value / 2 + maximum[axis] / 2) as [number, number, number],
     material: await mapMeshSourceMaterial(
-      primitive.material,
+      primitive.material === undefined ? undefined : gltf.json.materials?.[primitive.material],
       readExternalResource,
       contentUri,
-      signal
+      signal,
+      gltf
     )
   };
 }
 
 /** Maps supported PBR controls and an embedded base-color image, rejecting unmapped semantics. */
 export async function mapMeshSourceMaterial(
-  material: GLTFMaterialPostprocessed | undefined,
+  material: GLTFMaterial | undefined,
   readExternalResource: MeshTilesetSourceOptions['readExternalResource'],
   contentUri: string | undefined,
-  signal?: AbortSignal
+  signal: AbortSignal | undefined,
+  gltf: GLTFWithBuffers
 ): Promise<MeshTileMaterial | undefined> {
   if (!material) return undefined;
   const pbr = material.pbrMetallicRoughness;
@@ -384,6 +398,7 @@ export async function mapMeshSourceMaterial(
     ...('baseColorTexture' in (pbr || {})
       ? {
           baseColorTexture: await resolveMeshSourceTexture(
+            gltf,
             pbr!.baseColorTexture,
             readExternalResource,
             contentUri,
@@ -401,17 +416,20 @@ export async function mapMeshSourceMaterial(
 
 /** Expands a strip without changing vertex storage, feature IDs, source indices, or parity. */
 function createTriangleIndices(
-  primitive: GLTFMeshPrimitivePostprocessed,
+  gltf: GLTFWithBuffers,
+  primitive: GLTFMeshPrimitive,
   vertexCount: number
 ): MeshAttribute | undefined {
-  const attribute = primitive.indices
+  const accessor =
+    primitive.indices === undefined ? undefined : getGLTFAccessor(gltf, primitive.indices);
+  const attribute = accessor
     ? {
-        value: primitive.indices.value as MeshAttribute['value'],
-        size: primitive.indices.components,
-        normalized: primitive.indices.normalized
+        value: getGLTFAccessorValue(gltf, accessor) as MeshAttribute['value'],
+        size: 1,
+        normalized: accessor.normalized
       }
     : undefined;
-  if (primitive.mode !== 5) return attribute;
+  if (primitive.mode !== 5 && primitive.mode !== 6) return attribute;
   const sourceIndices = validateMeshIndices(attribute, vertexCount, 5);
   const indexCount = sourceIndices?.length ?? vertexCount;
   if (!Number.isSafeInteger(indexCount) || indexCount < 3) {
@@ -424,9 +442,10 @@ function createTriangleIndices(
   const indices = new IndexArray((indexCount - 2) * 3);
   for (let triangle = 0; triangle < indexCount - 2; triangle++) {
     // Match the glTF strip equation, including degenerate connectors; they advance parity too.
-    const second = triangle + 1 + (triangle % 2);
-    const third = triangle + 2 - (triangle % 2);
-    indices[triangle * 3] = sourceIndices?.[triangle] ?? triangle;
+    const second = primitive.mode === 6 ? triangle + 1 : triangle + 1 + (triangle % 2);
+    const third = primitive.mode === 6 ? triangle + 2 : triangle + 2 - (triangle % 2);
+    const first = primitive.mode === 6 ? 0 : triangle;
+    indices[triangle * 3] = sourceIndices?.[first] ?? first;
     indices[triangle * 3 + 1] = sourceIndices?.[second] ?? second;
     indices[triangle * 3 + 2] = sourceIndices?.[third] ?? third;
   }

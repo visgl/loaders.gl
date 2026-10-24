@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {STACSource} from '@loaders.gl/stac/stac-source';
+import {STACSource} from '@loaders.gl/ogc/stac/stac-source';
 import type {
   STACCatalog,
   STACCollection,
   STACItem,
   STACLink
-} from '@loaders.gl/stac';
+} from '@loaders.gl/ogc/stac';
 import type {
   ParquetDatasetFile,
   ParquetDatasetFileQuery
-} from '@loaders.gl/parquet/parquet-dataset-source';
+} from '@loaders.gl/tables/parquet/parquet-dataset-source';
 
 const OVERTURE_STAC_ROOT = 'https://stac.overturemaps.org/catalog.json';
 const PARQUET_MEDIA_TYPE = 'application/vnd.apache.parquet';

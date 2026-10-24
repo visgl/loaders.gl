@@ -33,7 +33,7 @@ const SERVICE_CONTENT = {
     requestTags: ['layers', 'bbox', 'datetime', 'format'],
     result: 'ImageSource · VectorSource · RasterSource',
     resultNote: 'Decoded results can move into maps, analysis, scans, or application-owned code.',
-    link: '/docs/modules/wms'
+    link: '/docs/modules/ogc/wms'
   }
 } as const;
 

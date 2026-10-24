@@ -16,10 +16,10 @@ export type GeoPackageDocsTabId = 'overview' | 'try-it' | 'format' | 'loader' | 
 
 const GEOPACKAGE_DOCS_TABS: GeoPackageDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/geospatial/geopackage'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/geopackage/formats/geopackage'},
-  {id: 'format', label: 'Format', href: '/docs/modules/geopackage/format'},
-  {id: 'loader', label: 'GeoPackageLoader', href: '/docs/modules/geopackage/api-reference/geopackage-loader'},
-  {id: 'source', label: 'GeoPackageSource', href: '/docs/modules/geopackage/api-reference/geopackage-source'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/geospatial/geopackage/formats/geopackage'},
+  {id: 'format', label: 'Format', href: '/docs/modules/geospatial/geopackage/format'},
+  {id: 'loader', label: 'GeoPackageLoader', href: '/docs/modules/geospatial/geopackage/api-reference/geopackage-loader'},
+  {id: 'source', label: 'GeoPackageSource', href: '/docs/modules/geospatial/geopackage/api-reference/geopackage-source'}
 ];
 
 /**

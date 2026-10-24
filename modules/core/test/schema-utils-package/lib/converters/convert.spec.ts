@@ -9,7 +9,7 @@ import {
   type Converter,
   TableConverter
 } from '@loaders.gl/core/schema-utils';
-import {ArrowConverter} from '@loaders.gl/arrow';
+import {ArrowConverter} from '@loaders.gl/tables/arrow/index';
 test('convert() selects direct converter over longer path', async () => {
   const calls: string[] = [];
   const directConverter: Converter<'start' | 'middle' | 'target'> = {
