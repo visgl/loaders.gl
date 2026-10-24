@@ -3,7 +3,7 @@ import {isBrowser} from '@loaders.gl/core';
 
 const {fetchNode} = globalThis.loaders || {};
 
-const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/';
+const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/4.4-release/modules/';
 const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
 const TEXT_URL = `@loaders.gl/polyfills/test/data/data.txt`;
 const TEXT_URL_GZIPPED = `@loaders.gl/polyfills/test/data/data.txt.gz`;
