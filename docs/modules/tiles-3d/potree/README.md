@@ -86,8 +86,7 @@ that distinction so applications do not confuse correct results with selective d
 ## Installation
 
 ```bash
-npm install @loaders.gl/tiles-3d/potree
-npm install @loaders.gl/core
+npm install @loaders.gl/core @loaders.gl/tiles-3d
 ```
 
 ## Usage

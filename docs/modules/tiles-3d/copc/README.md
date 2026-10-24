@@ -62,7 +62,7 @@ The `@loaders.gl/tiles-3d/copc` module loads and writes the [COPC](/docs/modules
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/tiles-3d/copc
+npm install @loaders.gl/core @loaders.gl/tiles-3d
 ```
 
 ## APIs
