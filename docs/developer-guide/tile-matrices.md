@@ -96,7 +96,7 @@ See [WMTS](/docs/modules/wms/formats/wmts), [OGC API Tiles](/docs/modules/wms/se
 
 ## GeoPackage payloads and GeoTIFF storage tiles
 
-GeoPackage sources expose explicit-table `getTile()` lookups for bounded encoded payloads. Missing rows return `null`; matrix geometry does not imply that every position is populated. See [GeoPackageSource](/docs/modules/geopackage/api-reference/geopackage-source).
+GeoPackage sources expose explicit-table `getTile()` lookups for bounded encoded payloads. Missing rows return `null`; matrix geometry does not imply that every position is populated. See [GeoPackageSource](/docs/modules/geospatial/geopackage/api-reference/geopackage-source).
 
 GeoTIFF/COG raster sources expose optional `tileGrid` metadata for representable tiled overview hierarchies. Native IFD identifiers, unequal pixel sizes, and padded edge tiles are preserved. Stripped or rotated hierarchies retain their native raster APIs without an invented tile matrix. See [GeoTIFFSourceLoader](/docs/modules/geotiff/api-reference/geotiff-source-loader).
 

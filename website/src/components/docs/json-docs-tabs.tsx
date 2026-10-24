@@ -26,26 +26,26 @@ export type JsonDocsTabId =
 
 const JSON_DOCS_TABS: JsonDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/table/json'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/json/formats/json'},
-  {id: 'format', label: 'Format', href: '/docs/modules/json/format'},
-  {id: 'jsonloader', label: 'JSONLoader', href: '/docs/modules/json/api-reference/json-loader'},
+  {id: 'overview', label: 'Overview', href: '/docs/modules/tables/json/formats/json'},
+  {id: 'format', label: 'Format', href: '/docs/modules/tables/json/format'},
+  {id: 'jsonloader', label: 'JSONLoader', href: '/docs/modules/tables/json/api-reference/json-loader'},
   {
     id: 'jsontableloader',
     label: 'JSONTableLoader',
-    href: '/docs/modules/json/api-reference/json-table-loader'
+    href: '/docs/modules/tables/json/api-reference/json-table-loader'
   },
-  {id: 'ndjsonloader', label: 'NDJSONLoader', href: '/docs/modules/json/api-reference/ndjson-loader'},
-  {id: 'geojsonloader', label: 'GeoJSONLoader', href: '/docs/modules/json/api-reference/geojson-loader'},
+  {id: 'ndjsonloader', label: 'NDJSONLoader', href: '/docs/modules/tables/json/api-reference/ndjson-loader'},
+  {id: 'geojsonloader', label: 'GeoJSONLoader', href: '/docs/modules/tables/json/api-reference/geojson-loader'},
   {
     id: 'ndgeojsonloader',
     label: 'NDGeoJSONLoader',
-    href: '/docs/modules/json/api-reference/ndgeojson-loader'
+    href: '/docs/modules/tables/json/api-reference/ndgeojson-loader'
   },
-  {id: 'jsonwriter', label: 'JSONWriter', href: '/docs/modules/json/api-reference/json-writer'},
+  {id: 'jsonwriter', label: 'JSONWriter', href: '/docs/modules/tables/json/api-reference/json-writer'},
   {
     id: 'geojsonwriter',
     label: 'GeoJSONWriter',
-    href: '/docs/modules/json/api-reference/geojson-writer'
+    href: '/docs/modules/tables/json/api-reference/geojson-writer'
   }
 ];
 

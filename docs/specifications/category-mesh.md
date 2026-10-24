@@ -16,7 +16,7 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
   tone="blue"
   links={[
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'},
-    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'}
+    {label: 'Arrow format', to: '/docs/modules/tables/arrow/formats/arrow'}
   ]}
 />
 

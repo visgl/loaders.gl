@@ -15,7 +15,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
   meta={['TableConverter', 'ArrowConverter', 'GeoArrow']}
   links={[
-    {label: 'Arrow format', to: '/docs/modules/arrow/formats/arrow'},
+    {label: 'Arrow format', to: '/docs/modules/tables/arrow/formats/arrow'},
     {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'}
   ]}
 />

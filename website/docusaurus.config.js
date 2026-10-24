@@ -365,6 +365,10 @@ const config = {
       '@docusaurus/plugin-client-redirects',
       {
         createRedirects(existingPath) {
+          const consolidatedModuleDocs = {
+            tables: ['arrow', 'avro', 'bson', 'csv', 'excel', 'json', 'lance', 'orc', 'parquet'],
+            geospatial: ['flatgeobuf', 'geopackage', 'kml', 'shapefile']
+          };
           const pageRedirects = {
             '/docs/modules/gis': '/docs/modules/geoarrow/gis-migration',
             '/docs/modules/gis/api-reference/geojson-to-binary': '/docs/modules/geoarrow/api-reference/convert-geojson-to-binary-feature-collection',
@@ -374,9 +378,9 @@ const config = {
             '/examples/geoparquet': '/examples/geospatial/geoparquet',
             '/examples/geojson': '/examples/geospatial/geojson',
 
-            '/docs/modules/parquet/benchmarks': '/docs/modules/parquet/api-reference/parquet-loader',
-            '/docs/modules/parquet/api-reference/parquet-js-loader': '/docs/modules/parquet/api-reference/parquet-loader',
-            '/docs/modules/parquet/api-reference/parquet-js-writer': '/docs/modules/parquet/api-reference/parquet-writer',
+            '/docs/modules/parquet/benchmarks': '/docs/modules/tables/parquet/api-reference/parquet-loader',
+            '/docs/modules/parquet/api-reference/parquet-js-loader': '/docs/modules/tables/parquet/api-reference/parquet-loader',
+            '/docs/modules/parquet/api-reference/parquet-js-writer': '/docs/modules/tables/parquet/api-reference/parquet-writer',
 
             '/examples/pmtiles': '/examples/tiles/pmtiles',
             '/examples/wms': '/examples/tiles/wms',
@@ -399,6 +403,17 @@ const config = {
             '/examples/table/xml': '/docs/modules/xml/try-it'
           };
           const redirectSources = [];
+          for (const [group, formats] of Object.entries(consolidatedModuleDocs)) {
+            for (const format of formats) {
+              const currentPrefix = `/docs/modules/${group}/${format}`;
+              if (existingPath === currentPrefix || existingPath.startsWith(`${currentPrefix}/`)) {
+                const oldPath = existingPath.replace(currentPrefix, `/docs/modules/${format}`);
+                if (!pageRedirects[oldPath] || pageRedirects[oldPath] === existingPath) {
+                  redirectSources.push(oldPath);
+                }
+              }
+            }
+          }
           if (legacyTryItRedirects[existingPath]) {
             redirectSources.push(legacyTryItRedirects[existingPath]);
           }

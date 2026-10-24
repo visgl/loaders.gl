@@ -15,7 +15,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
   meta={['GeoArrow tables', 'Geometry encodings', 'Metadata-aware conversion']}
   links={[
-    {label: 'GeoArrow format', to: '/docs/modules/arrow/formats/geoarrow'},
+    {label: 'GeoArrow format', to: '/docs/modules/tables/arrow/formats/geoarrow'},
     {label: 'Table converters', to: '/docs/developer-guide/converters/table-and-arrow-converters'}
   ]}
 />
