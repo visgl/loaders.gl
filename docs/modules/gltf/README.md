@@ -33,7 +33,7 @@ The `@loaders.gl/gltf` module provides loaders and writers of the GLB/glTF forma
 <DocOrientation
   eyebrow="The glTF module"
   title="Keep the scene graph, add the processing you need."
-  description="The module exposes standards-shaped scene data while providing focused APIs for traversal, post-processing, writing, compression, and conversion into application-friendly geometry."
+  description="The module exposes standards-shaped scene data while providing focused APIs for traversal, writing, compression, and conversion into application-friendly geometry."
   tone="pink"
   items={[
     {label: 'Read', value: 'Load glTF and GLB with linked resources resolved on demand'},
@@ -45,7 +45,7 @@ The `@loaders.gl/gltf` module provides loaders and writers of the GLB/glTF forma
 
 <ReferenceBoundary
   title="Module APIs and format boundaries"
-  description="The reference below covers installation, scenegraph helpers, post-processing, GLB containers, extension handling, compression, and writers."
+  description="The reference below covers installation, scenegraph helpers, GLB containers, extension handling, compression, and writers."
   tone="pink"
 />
 
@@ -86,7 +86,7 @@ buffers; a post-processed renderer object is not a substitute for that structure
 
 ## GLTF Post Processing
 
-The [`postProcessGLTF`](/docs/modules/gltf/api-reference/post-process-gltf) function implements a number of transformations on the loaded glTF data that would typically need to be performed by the application after loading the data, and is provided as an optional function that applications can call after loading glTF data. Refer to the reference page for details on what transformations are performed.
+Rendering postprocessing and resolved glTF types are owned by [`@luma.gl/gltf`](https://luma.gl/docs/api-reference/gltf/post-process-gltf). Loaders return indexed JSON and decoded resources; use accessor helpers or `GLTFIterator` for traversal and editing.
 
 Context: the glTF data object returned by the GLTF loader contains the "raw" glTF JSON structure (to ensure generality and "data fidelity" reasons). However, most applications that are going to use the glTF data to visualize it in (typically in WebGL) will need to do some processing of the loaded data before using it.
 

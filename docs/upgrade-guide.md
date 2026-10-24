@@ -40,6 +40,15 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
+## Removed glTF rendering postprocessing
+
+`@loaders.gl/gltf` no longer exports `postProcessGLTF` or `GLTF*Postprocessed` types.
+Import them from [`@luma.gl/gltf`](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
+when preparing data for rendering. Pass the `GLTFLoader` result directly to the luma.gl function.
+Keep `GLTFWithBuffers` and indexed JSON for loader-side processing, writing, and conversion;
+use `getGLTFAccessorValue` and `GLTFIterator` to read resources without linking a second document.
+`_getMemoryUsageGLTF` now accepts only the indexed `GLTFWithBuffers` container.
+
 ## 3D Tiles decoded glTF content
 
 With `3d-tiles.loadGLTF: true`, `tile.gltf` now contains `GLTFWithBuffers` rather than a
@@ -48,7 +57,7 @@ references remain numeric indices. Read typed values with `getGLTFAccessorValue(
 and replace transformed storage with `setGLTFAccessorValue`. Vector-content descriptors retain raw
 primitive definitions. The tile converter consumes this indexed representation directly.
 
-`postProcessGLTF` remains available as an explicit application API. A renderer that requires linked
+Luma.gl provides `postProcessGLTF` as an explicit application API. A renderer that requires linked
 objects can call it at its rendering boundary. It is no longer called by the tile parsers.
 See [glTF accessor helpers](./modules/gltf/api-reference/gltf-accessors).
 

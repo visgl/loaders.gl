@@ -29,7 +29,7 @@ const GLTF_DOCS_TABS: GltfDocsTab[] = [
   {
     id: 'post-processing',
     label: 'Post-processing',
-    href: '/docs/modules/gltf/api-reference/post-process-gltf'
+    href: 'https://luma.gl/docs/api-reference/gltf/post-process-gltf'
   }
 ];
 

@@ -1,6 +1,6 @@
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {GLTFLoader, GLTFScenegraph, GLTFWriter, postProcessGLTF} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
@@ -124,15 +124,14 @@ test.each([
       [6378239.5, 5, 7.5]
     ]);
     for (const [index, tile] of document.root.children.entries()) {
-      const gltf = postProcessGLTF(
-        await parse(await archive.getFile(tile.content.uri), GLTFLoader, {
-          core: {worker: false, useLocalLibraries: true},
-          gltf: {loadImages: false}
-        })
-      );
-      expect(gltf.meshes[0].primitives[0].material!.pbrMetallicRoughness!.baseColorFactor).toEqual(
-        profile === 'nodes' || index === 0 ? [1, 0, 0, 1] : [0, 0, 1, 1]
-      );
+      const gltf = await parse(await archive.getFile(tile.content.uri), GLTFLoader, {
+        core: {worker: false, useLocalLibraries: true},
+        gltf: {loadImages: false}
+      });
+      expect(
+        gltf.json.materials![gltf.json.meshes![0].primitives[0].material!].pbrMetallicRoughness!
+          .baseColorFactor
+      ).toEqual(profile === 'nodes' || index === 0 ? [1, 0, 0, 1] : [0, 0, 1, 1]);
     }
   } finally {
     await reader.close();

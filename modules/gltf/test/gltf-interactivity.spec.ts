@@ -8,7 +8,6 @@ import {
   GLTFLoader,
   GLTFWriter,
   getGLTFInteractivity,
-  postProcessGLTF,
   type GLTF,
   type GLTFWithBuffers,
   type GLTFInteractivityValue,
@@ -36,15 +35,6 @@ test('getGLTFInteractivity returns null for absent extensions', () => {
   expect(getGLTFInteractivity({json})).toBeNull();
   expect(getGLTFInteractivity({...json, extensions: {}})).toBeNull();
   expect(getGLTFInteractivity({...json, json: null})).toBeNull();
-});
-
-test('postprocessing retains interactivity indices, pointers, and metadata', () => {
-  const original = structuredClone(parsed);
-  const snapshot = structuredClone(original.json.extensions?.KHR_interactivity);
-  const processed = postProcessGLTF(original);
-  expect(processed.extensions?.KHR_interactivity).toEqual(snapshot);
-  expect(original.json.extensions?.KHR_interactivity).toEqual(snapshot);
-  expect(processed.extensionsUsed).toContain('KHR_interactivity');
 });
 
 test('GLTFWriter preserves interactivity through a GLB round trip', async () => {

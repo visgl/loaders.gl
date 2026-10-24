@@ -126,18 +126,6 @@ export {
 export {name as EXT_STRUCTURAL_METADATA} from './lib/extensions/EXT_structural_metadata';
 export {name as EXT_FEATURE_METADATA} from './lib/extensions/deprecated/EXT_feature_metadata';
 
-// Postprocessed types (modified GLTF types)
-export type {
-  GLTFPostprocessed,
-  GLTFAccessorPostprocessed,
-  GLTFNodePostprocessed,
-  GLTFMaterialPostprocessed,
-  GLTFMeshPostprocessed,
-  GLTFMeshPrimitivePostprocessed,
-  GLTFImagePostprocessed,
-  GLTFTexturePostprocessed
-} from './lib/types/gltf-postprocessed-schema';
-
 export type {
   GLTFWithBuffers,
   GLTFExternalFile,
@@ -226,7 +214,6 @@ export {
   type GLTFTextureReferences
 } from './lib/api/gltf-iterator';
 export {getGLTFCullingShape, getGLTFNodeCullingShape} from './lib/api/gltf-culling';
-export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {
   convertGLTFV1ToGLTF2,
   normalizeGLTFV1,
