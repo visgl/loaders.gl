@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/tables/parquet/index'
+title: '@loaders.gl/tables/parquet'
 description: Read and write Parquet with selective scans, Arrow output, and cloud-friendly ranges.
 hide_title: true
 page_style: designed
@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <CapabilityHero
   capability="columnar"
   eyebrow="Module overview"
-  title="@loaders.gl/tables/parquet/index"
+  title="@loaders.gl/tables/parquet"
   description="Use Parquet when column selection, metadata pruning, and Arrow-compatible results matter more than reading the whole file."
   logos={[
     {alt: 'Apache Parquet', format: 'parquet'}

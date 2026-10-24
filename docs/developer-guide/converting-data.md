@@ -40,7 +40,7 @@ The loaders.gl converter system is a graph of small, explicit converter objects.
 
 ```ts
 import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
-import {ArrowConverter} from '@loaders.gl/tables/arrow/index';
+import {ArrowConverter} from '@loaders.gl/tables/arrow';
 import {
   FeatureCollectionConverter,
   GeometryConverter

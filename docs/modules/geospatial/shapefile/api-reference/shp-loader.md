@@ -51,7 +51,7 @@ Note: Most applications will want to use the `ShapefileLoader` instead of this l
 ## Usage
 
 ```typescript
-import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {SHPLoader} from '@loaders.gl/geospatial/shapefile';
 import {load} from '@loaders.gl/core';
 
 const table = await load(url, SHPLoader);

@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/geospatial/flatgeobuf/index'
+title: '@loaders.gl/geospatial/flatgeobuf'
 description: Read FlatGeobuf vector data with spatial indexing, range requests, and Arrow feature tables.
 hide_title: true
 page_style: designed

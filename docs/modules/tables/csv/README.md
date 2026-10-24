@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/tables/csv/index'
+title: '@loaders.gl/tables/csv'
 description: Stream CSV and TSV data into reusable table shapes and write it back as text.
 hide_title: true
 page_style: designed
@@ -14,7 +14,7 @@ import {ClientExample} from '@site/src/components';
 <DocPageHeader
   format="csv"
   eyebrow="Table module"
-  title="@loaders.gl/tables/csv/index"
+  title="@loaders.gl/tables/csv"
   description="The CSV module handles CSV and TSV input through the same loaders.gl APIs used by binary table formats. It can materialize a table, emit batches as records arrive, or write compatible data back to text."
   tone="cyan"
   meta={['CSV / TSV', 'Streaming', 'Table output']}

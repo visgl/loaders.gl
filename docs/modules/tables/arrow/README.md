@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/tables/arrow/index'
+title: '@loaders.gl/tables/arrow'
 description: Arrow and GeoArrow loaders, writers, and utilities for typed columnar data.
 hide_title: true
 page_style: designed
@@ -14,7 +14,7 @@ import apacheLogo from '../../../images/logos/apache-logo.png';
 <CapabilityHero
   capability="arrow"
   eyebrow="Module overview"
-  title="@loaders.gl/tables/arrow/index"
+  title="@loaders.gl/tables/arrow"
   description="Use Apache Arrow as the common table shape between format loaders, workers, transforms, and writers."
   logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
   links={[

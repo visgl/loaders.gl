@@ -74,7 +74,7 @@ For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/table
 ## Usage
 
 ```typescript
-import {ExcelLoader} from '@loaders.gl/tables/excel/index';
+import {ExcelLoader} from '@loaders.gl/tables/excel';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, ExcelLoader, {excel: options});
@@ -84,7 +84,7 @@ Load an Excel worksheet as a loaders.gl `ArrowTable` by setting `excel.shape: 'a
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ExcelLoader} from '@loaders.gl/tables/excel/index';
+import {ExcelLoader} from '@loaders.gl/tables/excel';
 
 const table = await load(url, ExcelLoader, {
   excel: {

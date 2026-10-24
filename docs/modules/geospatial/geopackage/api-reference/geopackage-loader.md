@@ -75,7 +75,7 @@ The loader returns one selected vector table. With no table name supplied it use
 single table, the metadata-marked default, or the first vector table as a fallback:
 
 ```typescript
-import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
+import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 import {load} from '@loaders.gl/core';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 
@@ -85,7 +85,7 @@ const table: ArrowTable = await load(url, GeoPackageLoader);
 To load a specific table named `feature_table` in a GeoPackage file as GeoJSON:
 
 ```typescript
-import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geospatial/geopackage/index';
+import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geospatial/geopackage';
 import {load} from '@loaders.gl/core';
 import type {GeoJSONTable} from '@loaders.gl/core/schema';
 

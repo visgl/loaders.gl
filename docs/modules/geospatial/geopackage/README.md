@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/geospatial/geopackage/index'
+title: '@loaders.gl/geospatial/geopackage'
 description: Read GeoPackage layers and tables through loader and source APIs.
 hide_title: true
 page_style: designed
@@ -14,7 +14,7 @@ import {ClientExample} from '@site/src/components';
 <DocPageHeader
   format="geopackage"
   eyebrow="Geospatial database module"
-  title="@loaders.gl/geospatial/geopackage/index"
+  title="@loaders.gl/geospatial/geopackage"
   description="GeoPackage is a SQLite-based container for vector features, tiles, and metadata. The loader reads one selected table, while the source path handles discovery and multi-table access."
   tone="orange"
   meta={['OGC GeoPackage', 'SQLite', 'Layer and table access']}

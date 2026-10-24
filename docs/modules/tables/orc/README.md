@@ -14,7 +14,7 @@ import apacheLogo from '../../../images/logos/apache-logo.png';
 <DocPageHeader
   format="orc"
   eyebrow="ORC module"
-  title="@loaders.gl/tables/orc/index"
+  title="@loaders.gl/tables/orc"
   description="`@loaders.gl/tables/orc` reads and writes Apache ORC files. Its source API exposes metadata and a portable scan contract while keeping the current materialized execution model explicit."
   tone="yellow"
   logos={[{alt: 'Apache Software Foundation', src: apacheLogo}]}
@@ -83,7 +83,7 @@ pushdown.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ORCSourceLoader} from '@loaders.gl/tables/orc/index';
+import {ORCSourceLoader} from '@loaders.gl/tables/orc';
 import {parseSQLPredicate} from '@loaders.gl/scan';
 
 const source = createDataSource('events.orc', [ORCSourceLoader]);

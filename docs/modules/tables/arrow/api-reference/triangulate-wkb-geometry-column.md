@@ -50,7 +50,7 @@ input geometry row. Null input rows produce null output rows.
 ## Usage
 
 ```ts
-import {triangulateWKBGeometryColumn} from '@loaders.gl/tables/arrow/index';
+import {triangulateWKBGeometryColumn} from '@loaders.gl/tables/arrow';
 
 const {vertexIndices, vertices} = triangulateWKBGeometryColumn(geometryColumn);
 ```

@@ -5,56 +5,56 @@
 import {expect, test} from 'vitest';
 import {load, parse, parseSync} from '@loaders.gl/core';
 import {CSVLoader, AvroLoader, AvroSchemaLoader, BSONLoader, ExcelLoader} from '@loaders.gl/tables';
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv';
-import {AvroLoaderWithParser} from '@loaders.gl/tables/avro';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
+import {AvroLoaderWithParser} from '@loaders.gl/tables/avro/avro-loader';
 import {AvroSchemaLoaderWithParser} from '@loaders.gl/tables/avro-schema';
-import {CSVLoader as LegacyCSVLoader} from '@loaders.gl/tables/csv/index';
-import {AvroLoader as LegacyAvroLoader} from '@loaders.gl/tables/avro/index';
-import {BSONLoaderWithParser} from '@loaders.gl/tables/bson';
-import {BSONLoader as LegacyBSONLoader} from '@loaders.gl/tables/bson/index';
-import {ExcelLoaderWithParser} from '@loaders.gl/tables/excel';
-import {ExcelLoader as LegacyExcelLoader} from '@loaders.gl/tables/excel/index';
+import {CSVLoader as FormatCSVLoader} from '@loaders.gl/tables/csv';
+import {AvroLoader as FormatAvroLoader} from '@loaders.gl/tables/avro';
+import {BSONLoaderWithParser} from '@loaders.gl/tables/bson/bson-loader';
+import {BSONLoader as FormatBSONLoader} from '@loaders.gl/tables/bson';
+import {ExcelLoaderWithParser} from '@loaders.gl/tables/excel/excel-loader';
+import {ExcelLoader as FormatExcelLoader} from '@loaders.gl/tables/excel';
 
 import {ArrowLoader} from '@loaders.gl/tables';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
-import {ArrowLoader as LegacyArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow/arrow-loader';
+import {ArrowLoader as FormatArrowLoader} from '@loaders.gl/tables/arrow';
 
 import {JSONLoader} from '@loaders.gl/tables';
-import {JSONLoaderWithParser} from '@loaders.gl/tables/json';
-import {JSONLoader as LegacyJSONLoader} from '@loaders.gl/tables/json/index';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json/json-loader';
+import {JSONLoader as FormatJSONLoader} from '@loaders.gl/tables/json';
 
 import {LanceLoader} from '@loaders.gl/tables';
-import {LanceLoaderWithParser} from '@loaders.gl/tables/lance';
-import {LanceLoader as LegacyLanceLoader} from '@loaders.gl/tables/lance/index';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance/lance-loader';
+import {LanceLoader as FormatLanceLoader} from '@loaders.gl/tables/lance';
 
 import {ORCLoader} from '@loaders.gl/tables';
-import {ORCLoaderWithParser} from '@loaders.gl/tables/orc';
-import {ORCLoader as LegacyORCLoader} from '@loaders.gl/tables/orc/index';
+import {ORCLoaderWithParser} from '@loaders.gl/tables/orc/orc-loader';
+import {ORCLoader as FormatORCLoader} from '@loaders.gl/tables/orc';
 
 import {ParquetLoader} from '@loaders.gl/tables';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
-import {ParquetLoader as LegacyParquetLoader} from '@loaders.gl/tables/parquet/index';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-loader';
+import {ParquetLoader as FormatParquetLoader} from '@loaders.gl/tables/parquet';
 
 import {GeoArrowLoader} from '@loaders.gl/tables';
-import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
+import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/arrow/geoarrow-loader';
 
 import {JSONTableLoader} from '@loaders.gl/tables';
-import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json';
+import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json/json-table-loader';
 
 import {NDJSONLoader} from '@loaders.gl/tables';
-import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json/ndjson-loader';
 
 import {GeoJSONLoader} from '@loaders.gl/tables';
-import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/json';
+import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/json/geojson-loader';
 
 import {NDGeoJSONLoader} from '@loaders.gl/tables';
-import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/json';
+import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/json/ndgeojson-loader';
 
 import {ParquetJSLoader} from '@loaders.gl/tables';
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-js-loader';
 
 import {GeoParquetLoader} from '@loaders.gl/tables';
-import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
+import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/parquet/geoparquet-loader';
 
 test.each(
   [
@@ -84,9 +84,9 @@ test.each(
   expect(implementation.module).toBe('tables');
 });
 
-test('legacy table roots share their implementation owner', () => {
-  expect(LegacyCSVLoader).toBe(CSVLoader);
-  expect(LegacyAvroLoader).toBe(AvroLoader);
+test('format table roots share their implementation owner', () => {
+  expect(FormatCSVLoader).toBe(CSVLoader);
+  expect(FormatAvroLoader).toBe(AvroLoader);
 });
 
 test('core parses CSV from group metadata and a synchronous parser subpath', async () => {
@@ -98,14 +98,14 @@ test('core parses CSV from group metadata and a synchronous parser subpath', asy
   expect(synchronous).toEqual(asynchronous);
 });
 
-test('legacy bson metadata shares its grouped owner', () => {
-  expect(LegacyBSONLoader).toBe(BSONLoader);
+test('format bson metadata shares its grouped owner', () => {
+  expect(FormatBSONLoader).toBe(BSONLoader);
 });
 
-test('legacy Excel retains transport hooks while grouped metadata stays lightweight', () => {
-  expect(LegacyExcelLoader).toMatchObject(ExcelLoader);
-  expect(LegacyExcelLoader.serializeWorkerResult).toBe(ExcelLoaderWithParser.serializeWorkerResult);
-  expect(LegacyExcelLoader.deserializeWorkerResult).toBe(
+test('format Excel retains transport hooks while grouped metadata stays lightweight', () => {
+  expect(FormatExcelLoader).toMatchObject(ExcelLoader);
+  expect(FormatExcelLoader.serializeWorkerResult).toBe(ExcelLoaderWithParser.serializeWorkerResult);
+  expect(FormatExcelLoader.deserializeWorkerResult).toBe(
     ExcelLoaderWithParser.deserializeWorkerResult
   );
   expect(ExcelLoader).not.toHaveProperty('serializeWorkerResult');
@@ -120,24 +120,24 @@ test('grouped BSON supports asynchronous metadata and synchronous parser access'
   expect(parseSync(data, BSONLoaderWithParser)).toEqual(input);
 });
 
-test('legacy arrow metadata shares its grouped owner', () => {
-  expect(LegacyArrowLoader).toBe(ArrowLoader);
+test('format arrow metadata shares its grouped owner', () => {
+  expect(FormatArrowLoader).toBe(ArrowLoader);
 });
 
-test('legacy json metadata shares its grouped owner', () => {
-  expect(LegacyJSONLoader).toBe(JSONLoader);
+test('format json metadata shares its grouped owner', () => {
+  expect(FormatJSONLoader).toBe(JSONLoader);
 });
 
-test('legacy lance metadata shares its grouped owner', () => {
-  expect(LegacyLanceLoader).toBe(LanceLoader);
+test('format lance metadata shares its grouped owner', () => {
+  expect(FormatLanceLoader).toBe(LanceLoader);
 });
 
-test('legacy orc metadata shares its grouped owner', () => {
-  expect(LegacyORCLoader).toBe(ORCLoader);
+test('format orc metadata shares its grouped owner', () => {
+  expect(FormatORCLoader).toBe(ORCLoader);
 });
 
-test('legacy parquet metadata shares its grouped owner', () => {
-  expect(LegacyParquetLoader).toBe(ParquetLoader);
+test('format parquet metadata shares its grouped owner', () => {
+  expect(FormatParquetLoader).toBe(ParquetLoader);
 });
 
 test('grouped JSON metadata supports synchronous and asynchronous entrypoints', async () => {
@@ -158,11 +158,11 @@ test('grouped Lance source metadata defers synchronous source construction', asy
   expect(LanceSourceLoader.testURL('dataset.csv')).toBe(false);
 });
 
-test('legacy GeoJSON metadata keeps transport hooks outside grouped metadata', async () => {
-  const {GeoJSONLoader: legacy} = await import('@loaders.gl/tables/json/index');
-  expect(legacy).toMatchObject(GeoJSONLoader);
-  expect(legacy.serializeWorkerResult).toBe(GeoJSONLoaderWithParser.serializeWorkerResult);
-  expect(legacy.deserializeWorkerResult).toBe(GeoJSONLoaderWithParser.deserializeWorkerResult);
+test('format GeoJSON metadata keeps transport hooks outside grouped metadata', async () => {
+  const {GeoJSONLoader: format} = await import('@loaders.gl/tables/json');
+  expect(format).toMatchObject(GeoJSONLoader);
+  expect(format.serializeWorkerResult).toBe(GeoJSONLoaderWithParser.serializeWorkerResult);
+  expect(format.deserializeWorkerResult).toBe(GeoJSONLoaderWithParser.deserializeWorkerResult);
   expect(GeoJSONLoader).not.toHaveProperty('serializeWorkerResult');
 });
 

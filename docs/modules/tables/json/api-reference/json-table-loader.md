@@ -62,7 +62,7 @@ Streaming loader for JSON files that must resolve to loaders.gl table output.
 Load JSON as an Arrow table (the default):
 
 ```typescript
-import {JSONTableLoader} from '@loaders.gl/tables/json/index';
+import {JSONTableLoader} from '@loaders.gl/tables/json';
 import {load} from '@loaders.gl/core';
 
 const table = await load(url, JSONTableLoader);
@@ -102,7 +102,7 @@ If the selected JSON value is not a row array, atomic parsing throws instead of 
 For larger JSON files, `JSONTableLoader` streams rows from one array. Set `json.jsonpaths` when the row array is embedded in a larger document.
 
 ```typescript
-import {JSONTableLoader} from '@loaders.gl/tables/json/index';
+import {JSONTableLoader} from '@loaders.gl/tables/json';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('rows.json', JSONTableLoader, {

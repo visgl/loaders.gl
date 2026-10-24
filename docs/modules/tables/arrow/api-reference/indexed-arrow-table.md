@@ -58,7 +58,7 @@ column data immediately. The view stores row indexes and only copies values when
 
 ```typescript
 import * as arrow from 'apache-arrow';
-import {IndexedArrowTable} from '@loaders.gl/tables/arrow/index';
+import {IndexedArrowTable} from '@loaders.gl/tables/arrow';
 
 const table = new arrow.Table({
   name: arrow.vectorFromArray(['alpha', 'beta', 'gamma'], new arrow.Utf8()),

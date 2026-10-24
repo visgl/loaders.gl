@@ -56,7 +56,7 @@ Loader for the [FlatGeobuf](/docs/modules/geospatial/flatgeobuf/formats/flatgeob
 ## Usage
 
 ```typescript
-import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
+import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
 import {load} from '@loaders.gl/core';
 
 const arrowTable = await load(url, FlatGeobufLoader);

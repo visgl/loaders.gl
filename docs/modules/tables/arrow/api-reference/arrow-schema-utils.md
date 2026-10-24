@@ -54,7 +54,7 @@ id.
 
 ```typescript
 import * as arrow from 'apache-arrow';
-import {validateArrowTableSchema} from '@loaders.gl/tables/arrow/index';
+import {validateArrowTableSchema} from '@loaders.gl/tables/arrow';
 
 const expectedSchema = new arrow.Schema([
   new arrow.Field('record_id', new arrow.Utf8(), false),
@@ -102,7 +102,7 @@ JavaScript-oriented field names such as `recordId` and `itemCount`.
 
 ```typescript
 import * as arrow from 'apache-arrow';
-import {renameArrowColumns} from '@loaders.gl/tables/arrow/index';
+import {renameArrowColumns} from '@loaders.gl/tables/arrow';
 
 const sourceSchema = new arrow.Schema([
   new arrow.Field('record_id', new arrow.Utf8(), false),

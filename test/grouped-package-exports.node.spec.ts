@@ -28,25 +28,26 @@ test.each([
   }
 });
 
-test('grouped CommonJS roots expose metadata loaders for every former package', () => {
-  for (const [group, loader] of [
-    ['tables', 'ArrowLoader'],
-    ['tables', 'JSONLoader'],
-    ['tables', 'LanceLoader'],
-    ['tables', 'ORCLoader'],
-    ['tables', 'ParquetLoader'],
-    ['tables', 'BSONLoader'],
-    ['tables', 'ExcelLoader'],
-    ['tables', 'CSVLoader'],
-    ['tables', 'AvroLoader'],
-    ['geospatial', 'FlatGeobufLoader'],
-    ['geospatial', 'GeoPackageLoader'],
-    ['geospatial', 'KMLLoader'],
-    ['geospatial', 'ShapefileLoader']
+test('grouped CommonJS format exports expose metadata loaders for every former package', () => {
+  for (const [group, format, loader] of [
+    ['tables', 'arrow', 'ArrowLoader'],
+    ['tables', 'json', 'JSONLoader'],
+    ['tables', 'lance', 'LanceLoader'],
+    ['tables', 'orc', 'ORCLoader'],
+    ['tables', 'parquet', 'ParquetLoader'],
+    ['tables', 'bson', 'BSONLoader'],
+    ['tables', 'excel', 'ExcelLoader'],
+    ['tables', 'csv', 'CSVLoader'],
+    ['tables', 'avro', 'AvroLoader'],
+    ['geospatial', 'flatgeobuf', 'FlatGeobufLoader'],
+    ['geospatial', 'geopackage', 'GeoPackageLoader'],
+    ['geospatial', 'kml', 'KMLLoader'],
+    ['geospatial', 'shapefile', 'ShapefileLoader']
   ]) {
-    const metadataLoader = requirePackage('@loaders.gl/' + group)[loader];
+    const metadataLoader = requirePackage(`@loaders.gl/${group}/${format}`)[loader];
     expect(metadataLoader.id).toBeTruthy();
     expect(metadataLoader).not.toHaveProperty('parse');
+    expect(metadataLoader.preload).toBeTypeOf('function');
   }
 });
 

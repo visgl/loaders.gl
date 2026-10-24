@@ -56,7 +56,7 @@ import {ClientExample} from '@site/src/components';
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {GeoParquetLoader} from '@loaders.gl/tables/parquet/index';
+import {GeoParquetLoader} from '@loaders.gl/tables/parquet';
 
 const arrowTable = await load(url, GeoParquetLoader);
 const rowTable = await load(url, GeoParquetLoader, {

@@ -15,7 +15,7 @@ npm install @loaders.gl/tables @loaders.gl/core
 
 ```typescript
 import {load, encode} from '@loaders.gl/core';
-import {AvroLoader, AvroWriter} from '@loaders.gl/tables/avro/index';
+import {AvroLoader, AvroWriter} from '@loaders.gl/tables/avro';
 
 const table = await load('records.avro', AvroLoader);
 const bytes = await encode(table, AvroWriter);

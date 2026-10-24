@@ -64,7 +64,7 @@ For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/table
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {BSONLoader} from '@loaders.gl/tables/bson/index';
+import {BSONLoader} from '@loaders.gl/tables/bson';
 
 const data = await load(url, BSONLoader, {bson: options});
 ```

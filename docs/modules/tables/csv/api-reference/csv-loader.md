@@ -55,24 +55,24 @@ import {ClientExample} from '@site/src/components';
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const table = await load(url, CSVLoader);
 ```
 
-The root CSV export is metadata-only and works with async core APIs such as `load`, `parse`, and `parseInBatches`, which preload the parser implementation when needed. Applications that need a parser-bearing loader object directly can import the same named loader from `@loaders.gl/tables/csv/bundled`:
+The CSV format export is metadata-only and works with async core APIs such as `load`, `parse`, and `parseInBatches`, which preload the parser implementation when needed. Applications that need a parser-bearing loader object directly can import it from the explicit loader subpath:
 
 ```typescript
-import {CSVLoader} from '@loaders.gl/tables/csv/bundled';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
 ```
 
-Applications that want an explicit metadata-only import can use the `unbundled` subpath. Core async APIs call `preload()` and dynamically import the parser-bearing implementation when parsing starts.
+The bare `@loaders.gl/tables/csv` entry point is the metadata-only import. Core async APIs call `preload()` and dynamically import the parser-bearing implementation when parsing starts.
 
 See [Using Unbundled Loaders](/docs/developer-guide/using-unbundled-loaders) for the bundle-splitting model and preload behavior.
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const data = await parse(csvText, CSVLoader);
 ```
@@ -83,7 +83,7 @@ A complication with the CSV format is that CSV files can come with or without an
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const data = await load(urlToCSVWithHeader, CSVLoader, {csv: {header: true}});
 const rows = await load(urlToCSVWithoutHeader, CSVLoader, {
@@ -101,7 +101,7 @@ When `csv.shape: 'arrow-table'` is selected, `CSVLoader` returns a loaders.gl `A
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const table = await load(url, CSVLoader, {
   csv: {shape: 'arrow-table', dynamicTyping: false}

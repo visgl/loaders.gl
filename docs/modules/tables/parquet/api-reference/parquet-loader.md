@@ -63,7 +63,7 @@ which [Parquet format features](/docs/modules/tables/parquet/formats/parquet) ar
 Load a Parquet file as object rows when a row-oriented result is required.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet/parquet-js-loader';
 import {load} from '@loaders.gl/core';
 
@@ -80,7 +80,7 @@ parser-bearing loader directly can import `ParquetLoaderWithParser` from
 Load a Parquet file as Arrow using the primary loader.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import {load} from '@loaders.gl/core';
 
 const abortController = new AbortController();
@@ -109,7 +109,7 @@ Both `ParquetLoader` and `ParquetJSLoader` return loaders.gl `ArrowTable` object
 The ParquetLoader supports streaming parsing, in which case it will yield "batches" of rows.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('geo.parquet', ParquetLoader, {

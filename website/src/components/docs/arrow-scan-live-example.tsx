@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {ScanQueryMetadata} from '@loaders.gl/scan';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';

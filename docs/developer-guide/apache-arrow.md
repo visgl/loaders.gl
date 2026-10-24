@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Use it when', value: 'Several formats feed the same table processing path'},
     {label: 'Core representation', value: 'Typed columns, record batches, and tables'},
     {label: 'Useful properties', value: 'Binary layout, zero-copy views, and shared schemas'},
-    {label: 'Packages', value: '@loaders.gl/tables/arrow, @loaders.gl/geoarrow, and @loaders.gl/tables/parquet/index'}
+    {label: 'Packages', value: '@loaders.gl/tables/arrow, @loaders.gl/geoarrow, and @loaders.gl/tables/parquet'}
   ]}
 />
 

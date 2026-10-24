@@ -80,7 +80,7 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 
 ```ts
 import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
-import {ArrowConverter} from '@loaders.gl/tables/arrow/index';
+import {ArrowConverter} from '@loaders.gl/tables/arrow';
 
 const objectRows = convert(arrowTable, 'object-row-table', [ArrowConverter, TableConverter]);
 const rawArrow = convert(objectRows, 'arrow', [TableConverter, ArrowConverter]);

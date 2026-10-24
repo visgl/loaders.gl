@@ -64,7 +64,7 @@ For grouped imports, install `@loaders.gl/tables` in place of `@loaders.gl/table
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {BSONWriter} from '@loaders.gl/tables/bson/index';
+import {BSONWriter} from '@loaders.gl/tables/bson';
 
 const arrayBuffer = await encode(data, BSONWriter);
 ```

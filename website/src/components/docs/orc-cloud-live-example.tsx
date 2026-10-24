@@ -1,7 +1,7 @@
 import React, {useCallback, useState} from 'react';
 
 import {load} from '@loaders.gl/core';
-import {ORCLoader} from '@loaders.gl/tables/orc/index';
+import {ORCLoader} from '@loaders.gl/tables/orc';
 
 const ORC_FILE =
   'https://raw.githubusercontent.com/apache/orc/rel/release-2.0.1/examples/demo-11-none.orc';

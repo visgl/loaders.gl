@@ -62,7 +62,7 @@ Streaming loader for JSON encoded files.
 For simple usage, load and parse a JSON file atomically:
 
 ```typescript
-import {JSONLoader} from '@loaders.gl/tables/json/index';
+import {JSONLoader} from '@loaders.gl/tables/json';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, JSONLoader, {json: options});
@@ -71,7 +71,7 @@ const data = await load(url, JSONLoader, {json: options});
 For larger files, `JSONLoader` supports streaming JSON parsing. It yields batches of rows from one array. To parse a stream of GeoJSON, specify `options.json.jsonpaths` to stream the `features` array.
 
 ```typescript
-import {JSONLoader} from '@loaders.gl/tables/json/index';
+import {JSONLoader} from '@loaders.gl/tables/json';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('geojson.json', JSONLoader, {json: {jsonpaths: ['$.features']}});
@@ -102,7 +102,7 @@ const batches = await loadInBatches('geojson.json', JSONLoader, {
 When batch parsing an embedded JSON array as a table, set `metadata: true` to access the containing object. The loader yields an initial and final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result`.
 
 ```typescript
-import {JSONLoader} from '@loaders.gl/tables/json/index';
+import {JSONLoader} from '@loaders.gl/tables/json';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('geojson.json', JSONLoader, {metadata: true});

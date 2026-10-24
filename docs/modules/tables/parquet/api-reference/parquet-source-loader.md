@@ -55,7 +55,7 @@ reads.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {ParquetSourceLoader} from '@loaders.gl/tables/parquet/index';
+import {ParquetSourceLoader} from '@loaders.gl/tables/parquet';
 
 const abortController = new AbortController();
 const source = await load(

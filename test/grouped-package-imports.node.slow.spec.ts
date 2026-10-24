@@ -24,8 +24,8 @@ test.each([
   'published %s %s ESM metadata preloads through real package exports',
   (group, metadata, subpath, parser) => {
     // A separate Node process bypasses Vitest source aliases and checks the published layout.
-    const source = `import {${metadata}} from '@loaders.gl/${group}';
-    import {${parser}} from '@loaders.gl/${group}/${subpath}';
+    const source = `import {${metadata}} from '@loaders.gl/${group}/${subpath}';
+    import {${parser}} from '@loaders.gl/${group}/${subpath}/${subpath}-loader';
     if (await ${metadata}.preload() !== ${parser}) process.exit(1);`;
     expect(() =>
       execFileSync(process.execPath, ['--input-type=module', '-e', source], {

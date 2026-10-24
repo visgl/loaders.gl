@@ -89,7 +89,7 @@ column uses the loaders.gl GeoArrow/WKB table representation.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {KMZLoader} from '@loaders.gl/geospatial/kml/index';
+import {KMZLoader} from '@loaders.gl/geospatial/kml';
 
 const table = await load('map.kmz', KMZLoader);
 ```
@@ -209,7 +209,7 @@ For a KML document:
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
+import {KMLLoader} from '@loaders.gl/geospatial/kml';
 
 const data = await parse(kmlBytes, KMLLoader);
 ```
@@ -218,7 +218,7 @@ For a KMZ archive, use the ZIP loader as an intermediate step:
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
+import {KMLLoader} from '@loaders.gl/geospatial/kml';
 import {ZipLoader} from '@loaders.gl/zip';
 
 const files = await parse(kmzBytes, ZipLoader);

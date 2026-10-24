@@ -76,7 +76,7 @@ GeoJSON is a geospatial interchange format that uses JSON encoding. Use `GeoJSON
 For simple usage, load a GeoJSON `FeatureCollection` as a loaders.gl Arrow table:
 
 ```typescript
-import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
+import {GeoJSONLoader} from '@loaders.gl/tables/json';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, GeoJSONLoader);
@@ -106,7 +106,7 @@ const nativeTable = await load(url, GeoJSONLoader, {
 For larger files, GeoJSONLoader supports streaming JSON parsing, in which case it yields batches of rows from one array. By default, streamed GeoJSON reads `$.features`. You can override `options.json.jsonpaths` when the feature array is stored elsewhere.
 
 ```typescript
-import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
+import {GeoJSONLoader} from '@loaders.gl/tables/json';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('geojson.json', GeoJSONLoader);
@@ -127,7 +127,7 @@ When batch parsing an embedded JSON array as a table, it is possible to get acce
 The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result` respectively.
 
 ```typescript
-import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
+import {GeoJSONLoader} from '@loaders.gl/tables/json';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('geojson.json', GeoJSONLoader);

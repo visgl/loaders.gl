@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/tables/json/index'
+title: '@loaders.gl/tables/json'
 description: Parse JSON, newline-delimited JSON, and GeoJSON into document, table, or feature data.
 hide_title: true
 page_style: designed
@@ -12,7 +12,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 <DocPageHeader
   format="json"
   eyebrow="Structured data module"
-  title="@loaders.gl/tables/json/index"
+  title="@loaders.gl/tables/json"
   description="The JSON module covers arbitrary documents, newline-delimited records, tabular arrays, and GeoJSON. Applications can preserve nested structures or ask for table and feature outputs when that is the better next step."
   tone="yellow"
   meta={['JSON / NDJSON', 'GeoJSON', 'Table and feature output']}

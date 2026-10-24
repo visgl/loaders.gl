@@ -58,7 +58,7 @@ Use `load` to fetch and parse a URL. Use `parse` when you already have the data,
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const data = await load('data.csv', CSVLoader);
 ```
@@ -70,7 +70,7 @@ to `load` or `parse`. Existing applications can still register loaders once:
 
 ```typescript
 import {registerLoaders} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 registerLoaders([CSVLoader]);
 ```
 

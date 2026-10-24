@@ -47,9 +47,9 @@ export function FederatedScanLiveExample(): JSX.Element {
         const [arrowModule, arrowLoaderModule, csvModule, jsonModule, loaderUtilsModule, scanModule] =
           await Promise.all([
             import('apache-arrow'),
-            import('@loaders.gl/tables/arrow/index'),
-            import('@loaders.gl/tables/csv/index'),
-            import('@loaders.gl/tables/json/index'),
+            import('@loaders.gl/tables/arrow'),
+            import('@loaders.gl/tables/csv'),
+            import('@loaders.gl/tables/json'),
             import('@loaders.gl/core/loader-utils'),
             import('@loaders.gl/scan')
           ]);
