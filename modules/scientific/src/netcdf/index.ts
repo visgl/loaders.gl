@@ -16,3 +16,6 @@ export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf-sourc
 export {NetCDF4Source} from './netcdf4-source';
 
 export {openNetCDF4Source} from './open-netcdf4-source';
+
+export {parseCFVariableMetadata, decodeCFNumericValues} from './cf-conventions';
+export type {CFVariableMetadata} from './cf-conventions';
