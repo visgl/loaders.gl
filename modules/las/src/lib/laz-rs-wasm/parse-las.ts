@@ -169,7 +169,13 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
       progress: lasHeader.totalRead / lasHeader.totalToRead
     };
 
-    options?.onProgress?.(meshBatch);
+    options?.onProgress?.({
+      ...meshBatch,
+      phase: 'decode',
+      completed: lasHeader.totalRead,
+      total: lasHeader.totalToRead,
+      unit: 'points'
+    });
   });
   /* eslint-enable max-statements */
 

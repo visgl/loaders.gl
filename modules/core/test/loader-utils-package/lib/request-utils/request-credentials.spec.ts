@@ -332,3 +332,83 @@ test('provider replay exceptions cannot bypass a nonreplayable signed body', asy
   expect(transport).toHaveBeenCalledTimes(1);
   expect(token).toHaveBeenCalledTimes(1);
 });
+
+test.each([
+  {label: 'Error', abortReason: new Error('cancel request')},
+  {label: 'null', abortReason: null},
+  {label: 'string', abortReason: 'cancel request'},
+  {label: 'default', abortReason: undefined}
+])('preserves $label abort reasons before authentication and transport', async ({abortReason}) => {
+  const controller = new AbortController();
+  controller.abort(abortReason);
+  const transport = vi.fn(async () => new Response('ok'));
+  const fetchFunction = createAuthenticatedFetch({
+    fetch: transport,
+    credentials: [],
+    fetchOptions: {signal: controller.signal}
+  });
+  await expect(fetchFunction('https://example.com/data')).rejects.toBe(controller.signal.reason);
+  expect(transport).not.toHaveBeenCalled();
+});
+
+test.each([
+  'token',
+  'signer'
+] as const)('preserves cancellation during %s authentication', async stage => {
+  const controller = new AbortController();
+  const abortReason = new Error('cancel authentication');
+  const transport = vi.fn(async () => new Response('ok'));
+  const fetchFunction = createAuthenticatedFetch({
+    fetch: transport,
+    fetchOptions: {signal: controller.signal},
+    credentials: [
+      createBearerTokenCredential({
+        id: 'token',
+        origins: ['https://example.com'],
+        token: () => {
+          if (stage === 'token') controller.abort(abortReason);
+          return 'secret';
+        }
+      }),
+      {
+        id: 'signer',
+        type: 'request',
+        origins: ['https://example.com'],
+        authenticate: ({url, options}) => {
+          if (stage === 'signer') controller.abort(abortReason);
+          return {url, options};
+        }
+      }
+    ]
+  });
+  await expect(fetchFunction('https://example.com/data')).rejects.toBe(abortReason);
+  expect(transport).not.toHaveBeenCalled();
+});
+
+test.each([
+  'response',
+  'refresh'
+] as const)('preserves cancellation during %s before replay', async stage => {
+  const controller = new AbortController();
+  const abortReason = new Error('cancel replay');
+  const transport = vi.fn(async () => {
+    if (stage === 'response') controller.abort(abortReason);
+    return new Response('', {status: 401});
+  });
+  const fetchFunction = createAuthenticatedFetch({
+    fetch: transport,
+    fetchOptions: {signal: controller.signal},
+    credentials: [
+      createBearerTokenCredential({
+        id: 'refreshing',
+        origins: ['https://example.com'],
+        token: context => {
+          if (stage === 'refresh' && context.reason === 'refresh') controller.abort(abortReason);
+          return context.reason === 'refresh' ? 'fresh' : 'expired';
+        }
+      })
+    ]
+  });
+  await expect(fetchFunction('https://example.com/data')).rejects.toBe(abortReason);
+  expect(transport).toHaveBeenCalledOnce();
+});

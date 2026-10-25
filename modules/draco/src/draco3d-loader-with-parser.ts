@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {DracoMesh} from './lib/draco-types';
 import {loadDracoDecoderModuleFromDraco3D} from './lib/draco-module-loader';
@@ -15,11 +15,12 @@ const {preload: _DracoLoaderPreload, ...DracoLoaderMetadataWithoutPreload} = Dra
 /** Parser-bearing Draco loader backed by an injected `draco3d` package. */
 export const Draco3DLoaderWithParser = {
   ...DracoLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions, context?: LoaderContext) =>
     await parseDraco(
       arrayBuffer,
       options,
-      async () => await loadDracoDecoderModuleFromDraco3D(getDraco3DModule(options))
+      async () => await loadDracoDecoderModuleFromDraco3D(getDraco3DModule(options)),
+      context
     )
 } as const satisfies LoaderWithParser<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
 

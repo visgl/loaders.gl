@@ -150,10 +150,11 @@ export function encodeDracoInBatches(
 ): AsyncIterable<DracoEncodingResult> {
   const normalizedData = normalizeDracoInputBatches(data);
   if (canEncodeWithWorker(DracoWriterWorker, options)) {
+    const {onProgress: _onProgress, ...workerOptions} = options;
     return processOnWorkerInBatches<DracoBuilderMesh[], DracoEncodingResult>(
       DracoWriterWorker,
       normalizedData,
-      options
+      workerOptions
     );
   }
   return encodeDracoInBatchesLocally(normalizedData, options);

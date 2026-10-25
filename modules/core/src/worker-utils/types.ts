@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/**
- * Worker Options
- */
 /** Progress measured independently within a named phase. */
 export type WorkerProgress = {
   /** Operation being measured. */
@@ -17,6 +14,7 @@ export type WorkerProgress = {
   unit: string;
 };
 
+/** Shared worker execution options. */
 export type WorkerOptions = {
   /** Cancels queued or running work. */
   signal?: AbortSignal;

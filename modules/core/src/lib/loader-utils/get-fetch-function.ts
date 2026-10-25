@@ -35,13 +35,11 @@ export function getFetchFunction(
   }
 
   const signal = loaderOptions.signal || context?.signal;
-  const authenticatedFetch = createAuthenticatedFetch({
+  const requestOptions = isObject(fetchOption) ? (fetchOption as RequestInit) : undefined;
+  return createAuthenticatedFetch({
     fetch: fetchFunction,
     credentials: loaderOptions.core?.credentials || [],
     authentications: loaderOptions.core?.authentications,
-    fetchOptions: isObject(fetchOption) ? (fetchOption as RequestInit) : undefined
+    fetchOptions: signal ? {...requestOptions, signal} : requestOptions
   });
-  return signal
-    ? (input, init) => authenticatedFetch(input, {...init, signal: init?.signal || signal})
-    : authenticatedFetch;
 }

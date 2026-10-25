@@ -83,6 +83,7 @@ export async function processOnWorker(
   );
 
   try {
+    if (options.signal?.aborted) job.abort(getAbortReason(options.signal));
     // AbortSignal cannot be structured-cloned. It controls the job on this thread only.
     const {signal: _signal, onProgress: _onProgress, ...workerOptions} = options;
     const transferableOptions = getTransferListForWriter(workerOptions);
@@ -137,8 +138,17 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
   const inputIterator = getAsyncIterator(input);
   let outputFinished = false;
   let inputFinished = false;
+  let inputCleanupRequested = false;
   let inputRequest = Promise.resolve();
   const batchJobFailed = new Error('Worker batch job failed');
+
+  /** Requests cleanup even when the output consumer is paused after yielding a batch. */
+  const closeJobInput = (): void => {
+    if (!inputFinished && !inputCleanupRequested) {
+      inputCleanupRequested = true;
+      closeInputIterator(inputIterator);
+    }
+  };
 
   const finishOutput = (): void => {
     if (!outputFinished) {
@@ -166,6 +176,7 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
           case 'input-request':
             inputRequest = inputRequest
               .then(async () => {
+                if (!activeJob.isRunning) return;
                 const nextBatch = await inputIterator.next();
                 if (!activeJob.isRunning) {
                   return;
@@ -212,11 +223,14 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
       options.signal
     )
     .catch(error => {
-      closeInputIterator(inputIterator);
+      closeJobInput();
       throw error;
     });
 
-  void job.result.catch(failOutput);
+  void job.result.catch(error => {
+    failOutput(error);
+    closeJobInput();
+  });
 
   try {
     const {signal: _signal, onProgress: _onProgress, ...workerOptions} = options;
@@ -245,9 +259,7 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
     if (job.isRunning) {
       job.abort(createAbortError('Worker batch iterator was closed'));
     }
-    if (!inputFinished) {
-      closeInputIterator(inputIterator);
-    }
+    closeJobInput();
   }
 }
 

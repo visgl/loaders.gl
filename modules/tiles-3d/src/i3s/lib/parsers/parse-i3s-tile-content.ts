@@ -79,7 +79,7 @@ export async function parseI3STileContent(
   options?: StrictLoaderOptions,
   context?: LoaderContext
 ): Promise<I3STileContent> {
-  const geometryMode = options?.i3s?.geometryMode ?? 'render';
+  const geometryMode = (options?.i3s as I3SLoaderOptions['i3s'])?.geometryMode ?? 'render';
   if (geometryMode !== 'render' && geometryMode !== 'source') {
     throw new Error('Unsupported I3S geometry mode');
   }
@@ -182,7 +182,7 @@ async function loadI3STexture(
 
   const textureArrayBuffer = await response.arrayBuffer();
 
-  if (!options?.i3s?.decodeTextures) {
+  if (!(options?.i3s as I3SLoaderOptions['i3s'])?.decodeTextures) {
     return textureArrayBuffer;
   }
 

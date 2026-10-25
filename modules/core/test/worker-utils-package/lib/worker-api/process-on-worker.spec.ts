@@ -242,3 +242,32 @@ test('already aborted processing does not detach its input', async () => {
   );
   expect(input.byteLength).toBe(8);
 });
+
+test('queued processing aborts promptly without transferring input or affecting the active job', async () => {
+  const firstController = new AbortController();
+  const secondController = new AbortController();
+  let markStarted!: () => void;
+  const started = new Promise<void>(resolve => {
+    markStarted = resolve;
+  });
+  const source = `self.onmessage = () => self.postMessage({source: 'loaders.gl', type: 'progress', payload: {progress: {phase: 'start', completed: 0, unit: 'tasks'}}});`;
+  const first = processOnWorker(NullWorker, 'active', {
+    source,
+    maxConcurrency: 1,
+    signal: firstController.signal,
+    onProgress: markStarted
+  });
+  const firstRejection = expect(first).rejects.toBe('stop active');
+  await started;
+  const input = new ArrayBuffer(8);
+  const second = processOnWorker(NullWorker, input, {
+    source,
+    maxConcurrency: 1,
+    signal: secondController.signal
+  });
+  secondController.abort('stop queued');
+  await expect(second).rejects.toBe('stop queued');
+  expect(input.byteLength).toBe(8);
+  firstController.abort('stop active');
+  await firstRejection;
+});

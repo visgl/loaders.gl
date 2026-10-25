@@ -50,7 +50,9 @@ type QueuedJob = {
   onError: OnError;
   onStart: (value: any) => void; // Resolve job start promise
   onReject: (reason: unknown) => void; // Reject job start promise
+  /** Removes the queued cancellation listener when the job leaves the queue. */
   removeAbortListener: () => void;
+  /** Cancels this queued or active job. */
   signal?: AbortSignal;
 };
 
@@ -238,6 +240,8 @@ export default class WorkerPool {
         this.activeJobs.delete(job);
         this.returnWorkerToQueue(workerThread);
       }
+    } else {
+      this.returnWorkerToQueue(workerThread);
     }
   }
 

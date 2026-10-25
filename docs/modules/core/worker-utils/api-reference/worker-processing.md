@@ -181,3 +181,43 @@ WorkerFarm.getWorkerFarm().destroy();
 Set concurrency according to CPU and memory cost, particularly for WebAssembly codecs that create
 one heap per worker. A stateful batch session occupies one concurrency slot until its output
 iterator completes, is closed, fails, or is aborted.
+
+
+## Cancellation and progress
+
+Async loader calls (`parse`, `parseInBatches`, `load`, and `loadInBatches`) and worker processing
+accept top-level `signal` and `onProgress` options:
+
+```javascript
+const controller = new AbortController();
+const result = await parse(data, loader, {
+  signal: controller.signal,
+  onProgress: ({phase, completed, total, unit}) => {
+    console.log(phase, completed, total, unit);
+  }
+});
+// Call this from a cancel button while parsing is pending:
+controller.abort();
+```
+
+Already aborted worker calls reject before scheduling or transferring input. Queued jobs reject
+immediately without waiting for a free worker. Cancelling running work terminates its worker,
+rejects with the signal's reason, and frees pool capacity for a replacement. Streaming cancellation
+requests input iterator cleanup without waiting for a blocked `return()`. Completion and cancellation
+settle a job once. `parquet.signal` remains a compatibility fallback; top-level `signal` takes priority.
+
+Progress has the shape `{phase, completed, total?, unit}`. Measurements belong to their phase;
+`total` is optional for indeterminate work. Do not combine download bytes and decoded rows into an
+overall percentage. Parquet batch parsing reports decoded rows; Draco reports decode start and
+completion in tasks. Other loaders and older/custom workers may produce no progress events.
+
+Worker implementations call `context.reportProgress?.(...)` from their processor or loader context.
+Frequent same-phase reports are coalesced before posting, phase changes are retained, and final
+progress is flushed before completion. Reports stop after settlement. Signals and progress callbacks
+stay on the calling thread. If a callback throws, the worker job is terminated and rejects with that
+error. Callbacks should handle their own display errors when parsing should continue.
+
+Cancellation also reaches fetch and nested parsing through loader context where supported.
+Authenticated fetch, signing, and refresh/retry checks preserve the caller's abort reason.
+Synchronous main-thread parsing cannot be interrupted while it blocks the event loop. Transferred
+input buffers remain detached after cancellation; retain a copy if the application needs to retry.

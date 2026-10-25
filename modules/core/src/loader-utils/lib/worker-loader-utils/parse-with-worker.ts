@@ -292,7 +292,10 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
     ...(options.core ? {core: {...options.core, authentications: undefined}} : {})
   };
   const serializedOptions = JSON.parse(
-    JSON.stringify(optionsToSerialize, (_key, value) => (typeof value === 'bigint' ? null : value))
+    JSON.stringify(optionsToSerialize, (_key, value) => {
+      if (typeof AbortSignal !== 'undefined' && value instanceof AbortSignal) return undefined;
+      return typeof value === 'bigint' ? null : value;
+    })
   );
   restoreBigIntOptions(optionsToSerialize, serializedOptions);
   const workerOptions: Record<string, any> = {

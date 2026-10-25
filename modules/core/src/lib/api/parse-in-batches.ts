@@ -97,6 +97,7 @@ export async function parseInBatches(
     loaders = undefined;
   }
 
+  (options?.signal || context?.signal)?.throwIfAborted();
   data = await data; // Resolve any promise
   options = options || {};
   (options.signal || context?.signal)?.throwIfAborted();

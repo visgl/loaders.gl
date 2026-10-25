@@ -97,6 +97,7 @@ export async function parse(
     loaders = undefined;
   }
 
+  (options?.signal || context?.signal)?.throwIfAborted();
   data = await data; // Resolve any promise
   options = options || ({} as LoaderOptions);
   (options.signal || context?.signal)?.throwIfAborted(); // Could be invalid...
