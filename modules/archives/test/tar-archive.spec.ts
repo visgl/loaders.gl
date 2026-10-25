@@ -35,6 +35,10 @@ test('TAR rejects unsafe paths and links', async () => {
   driveBuilder.addFile('C:/escape', new Uint8Array([1]).buffer);
   const driveArchive = await driveBuilder.build();
   expect(() => readTarArchive(driveArchive)).toThrow(/Unsafe TAR path/);
+  const disguisedDriveBuilder = new TarBuilder();
+  disguisedDriveBuilder.addFile('./C:/escape', new Uint8Array([1]).buffer);
+  const disguisedDriveArchive = await disguisedDriveBuilder.build();
+  expect(() => readTarArchive(disguisedDriveArchive)).toThrow(/Unsafe TAR path/);
   const archive = await TarWriter.encode({'file.txt': 'data'});
   const bytes = new Uint8Array(archive);
   bytes[156] = 50;
@@ -62,5 +66,8 @@ test('TAR writer preserves UTF-8 names and ustar prefix paths', async () => {
   const files = readTarArchive(archive);
   expect(new TextDecoder().decode(files['café.txt'])).toBe('coffee');
   expect(new TextDecoder().decode(files[longPath])).toBe('long');
+  const reverseArchive = await TarWriter.encode({[longPath]: 'long', 'café.txt': 'coffee'});
+  expect(new Uint8Array(reverseArchive)).toEqual(new Uint8Array(archive));
+  await expect(TarWriter.encode({'./C:/escape': 'invalid'})).rejects.toThrow(/Unsafe TAR path/);
   await expect(TarWriter.encode({['x'.repeat(101)]: 'invalid'})).rejects.toThrow(/header capacity/);
 });

@@ -25,13 +25,14 @@ function writeOctal(header: Uint8Array, offset: number, width: number, value: nu
 
 /** Splits a UTF-8 path at a slash for the ustar name and prefix fields. */
 function splitPath(path: string): {name: Uint8Array; prefix: Uint8Array} {
+  const components = path.split('/').filter(part => part && part !== '.');
   if (
     !path ||
     path.startsWith('/') ||
     path.includes('\\') ||
     path.includes('\0') ||
-    /^[A-Za-z]:/.test(path) ||
-    path.split('/').some(part => part === '..')
+    /^[A-Za-z]:/.test(components[0] ?? '') ||
+    components.includes('..')
   ) {
     throw new Error(`Unsafe TAR path: ${path}`);
   }
@@ -47,7 +48,9 @@ function splitPath(path: string): {name: Uint8Array; prefix: Uint8Array} {
 
 /** Encodes named files with UTF-8 ustar names and deterministic metadata. */
 export async function encodeTar(files: TarWriterFiles): Promise<ArrayBuffer> {
-  const entries = Object.entries(files).sort(([left], [right]) => left.localeCompare(right));
+  const entries = Object.keys(files)
+    .sort()
+    .map(path => [path, files[path]] as const);
   const prepared = entries.map(([path, value]) => {
     const directory = path.endsWith('/');
     const bytes =

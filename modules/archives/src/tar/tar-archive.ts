@@ -35,6 +35,7 @@ function normalizePath(path: string, directory: boolean): string | null {
   }
   const components = path.split('/').filter(part => part && part !== '.');
   if (components.includes('..')) throw new Error(`Unsafe TAR path: ${path}`);
+  if (/^[A-Za-z]:/.test(components[0] ?? '')) throw new Error(`Unsafe TAR path: ${path}`);
   if (!components.length) {
     if (directory) return null;
     throw new Error(`Unsafe TAR path: ${path}`);
