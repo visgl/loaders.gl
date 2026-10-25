@@ -51,7 +51,7 @@ const CLIENT_EXAMPLE_COMPONENTS: Record<ClientExampleKind, ClientExampleComponen
   'arcgis-raster': React.lazy(() => import('../../examples/arcgis-raster-app')),
   '3d-tiles': React.lazy(() => import('examples/website/3d-tiles/app')),
   benchmarks: React.lazy(() => import('../../examples/benchmarks-app')),
-  clustering: React.lazy(() => import('examples/website/clustering/app')),
+  clustering: React.lazy(() => import('../../examples/clustering-app')),
   geospatial: React.lazy(() => import('examples/website/geospatial/app')),
   geotiff: React.lazy(() => import('examples/website/geotiff/app')),
   gltf: React.lazy(() => import('../../examples/gltf-demo-app')),
