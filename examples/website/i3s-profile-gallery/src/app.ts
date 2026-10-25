@@ -27,7 +27,7 @@ const PROFILES = [
 
 /** Mounts the I3S profile gallery into a host element and returns its cleanup function. */
 export function renderToDOM(container: HTMLElement): () => void {
-  const page = document.createElement('main');
+  const page = document.createElement('div');
   page.className = 'i3s-gallery-page';
   page.innerHTML = `
     <header class="i3s-gallery-header">
@@ -178,7 +178,8 @@ function createMetadataCard(metadata: I3SServiceMetadata): HTMLElement {
     const featureStatus = String(status);
     const item = document.createElement('li');
     const name = createTextElement('span', feature);
-    const value = createTextElement('strong', featureStatus);
+    const value = createTextElement('span', featureStatus);
+    value.className = 'i3s-gallery-status';
     value.dataset.status = featureStatus;
     item.append(name, value);
     featureList.append(item);
