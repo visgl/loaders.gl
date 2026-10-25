@@ -59,7 +59,7 @@ export async function openH5WasmBackend(input: ArrayBuffer | Uint8Array): Promis
   const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
   if (!isHDF5(bytes)) throw new Error('HDF5: invalid file signature');
   const imported = await import('h5wasm');
-  const wasm = (imported.default ?? imported) as unknown as WasmModule;
+  const wasm = imported as unknown as WasmModule;
   const {FS} = await wasm.ready;
   const path = '/loaders-scientific-' + ++nextFileId + '.h5';
   FS.writeFile(path, bytes);
@@ -87,12 +87,12 @@ export async function openH5WasmBackend(input: ArrayBuffer | Uint8Array): Promis
         const dtype = (() => {
           const m = sample.metadata;
           if (!m) return 'unknown';
-          if (m.type === 1) return m.size === 8 ? 'float64' : 'float32';
+          if (m.type === 1) return m.size === 8 ? 'float64' : m.size === 4 ? 'float32' : 'unknown';
           if (m.type === 0) return (m.signed ? 'int' : 'uint') + String((m.size ?? 0) * 8);
           return 'unknown';
         })();
         datasets.push({path: name, dataset: {
-          shape: [...child.shape], dtype, attributes: child.attrs,
+          shape: [...child.shape], dtype, attributes: Object.fromEntries(Object.entries(child.attrs ?? {}).map(([key, attribute]) => [key, (attribute as {value?: unknown})?.value ?? attribute])),
           async read() {
             assertOpen();
             const data = numericValues(sample.value);
