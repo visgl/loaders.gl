@@ -35,3 +35,20 @@ test('HDF5 fill-value decoding and sparse chunk materialization', async () => {
     ])
   ).rejects.toThrow(/unallocated chunks/);
 });
+
+test('HDF5 fill values handle version 2, defaults, and malformed numeric metadata', () => {
+  const type = {kind: 'float' as const, size: 4, littleEndian: true, signed: true};
+  const v2 = new Uint8Array(12);
+  v2.set([2, 0, 0, 1, 4, 0, 0, 0]);
+  new DataView(v2.buffer).setFloat32(8, 2.5, true);
+  expect(parseHDF5FillValue(v2, type)).toBe(2.5);
+  expect(parseHDF5FillValue(Uint8Array.from([3, 0]), type)).toBeUndefined();
+  expect(parseHDF5FillValue(Uint8Array.from([2, 0, 0, 0, 0, 0, 0, 0]), type)).toBeUndefined();
+  expect(() => parseHDF5FillValue(new Uint8Array(1), type)).toThrow(/truncated/);
+  expect(() => parseHDF5FillValue(Uint8Array.from([3, 0x20]), type)).toThrow(/length/);
+  expect(() => parseHDF5FillValue(Uint8Array.from([2, 0, 0, 1]), type)).toThrow(/truncated/);
+  expect(() => parseHDF5FillValue(Uint8Array.from([4, 0]), type)).toThrow(/unsupported/);
+  const invalid = v2.slice();
+  invalid[4] = 8;
+  expect(() => parseHDF5FillValue(invalid, type)).toThrow(/invalid numeric/);
+});
