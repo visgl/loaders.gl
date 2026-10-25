@@ -5865,6 +5865,7 @@ __metadata:
   resolution: "@loaders.gl/scientific@workspace:modules/scientific"
   dependencies:
     "@math.gl/geospatial": "npm:5.0.0-alpha.19"
+    fast-xml-parser: "npm:^5.3.6"
     h5wasm: "npm:^0.10.3"
     zarr: "npm:^0.5.0"
     zarrita: "npm:~0.7.1"
