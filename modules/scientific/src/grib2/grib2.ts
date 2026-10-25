@@ -12,17 +12,25 @@ import type {
 
 /** Initial GRIB2 scope: edition 2, regular lat/lon grid template 3.0, simple packing 5.0. */
 export type GRIB2Message = {
+  /** Discipline code from the indicator section. */
   discipline: number;
+  /** Parameter category code. */
   category: number;
+  /** Parameter number within the category. */
   parameter: number;
+  /** Forecast time encoded by product template 4.0. */
   forecastTime: number;
+  /** Grid dimensions and original scanning-mode flags. */
   grid: {width: number; height: number; scanningMode: number};
+  /** Decoded values in encoded scanning order, with NaN for missing cells. */
   values: Float32Array;
 };
 
+/** Require a valid GRIB2 condition and report a format-specific error. */
 function check(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error('GRIB2: ' + message);
 }
+/** Read an unsigned packed value at an arbitrary bit offset. */
 function bits(data: Uint8Array, offset: number, count: number): number {
   let value = 0;
   for (let i = 0; i < count; i++) {
@@ -32,6 +40,7 @@ function bits(data: Uint8Array, offset: number, count: number): number {
   }
   return value;
 }
+/** Decode a GRIB2 signed-magnitude scale factor. */
 function signedMagnitude(view: DataView, offset: number, bytes: 2 | 4): number {
   const raw = bytes === 2 ? view.getUint16(offset) : view.getUint32(offset);
   const sign = bytes === 2 ? 0x8000 : 0x80000000;
@@ -133,7 +142,7 @@ export function parseGRIB2(input: ArrayBuffer | Uint8Array): GRIB2Message[] {
             values[i] = NaN;
           } else {
             values[i] =
-              (reference + bits(payload, packedIndex++ * bitWidth, bitWidth)) * binary * decimal;
+              (reference + bits(payload, packedIndex++ * bitWidth, bitWidth) * binary) * decimal;
           }
         }
       }
@@ -155,16 +164,20 @@ export function parseGRIB2(input: ArrayBuffer | Uint8Array): GRIB2Message[] {
 
 /** In-memory scientific adapter; full-grid decoding is residual, not remote pushdown. */
 export class GRIB2Source implements ScientificArraySource {
+  /** Capabilities of this in-memory source. */
   readonly scientificCapabilities: ScientificSourceCapabilities = {
     selection: 'residual',
     remoteRanges: false,
     streaming: false,
     cancellation: false
   };
+  /** Decoded GRIB2 messages in stream order. */
   private readonly messages: GRIB2Message[];
+  /** Decode an in-memory GRIB2 message stream. */
   constructor(data: ArrayBuffer | Uint8Array) {
     this.messages = parseGRIB2(data);
   }
+  /** Describe message variables and grid dimensions. */
   async getScientificMetadata(): Promise<ScientificDatasetMetadata> {
     return {
       dimensions: this.messages.flatMap((message, index) => [
@@ -186,6 +199,7 @@ export class GRIB2Source implements ScientificArraySource {
       }))
     };
   }
+  /** Read a message variable and apply a residual grid selection. */
   async readScientificVariable(
     name: string,
     selection: ScientificSelection = {}
