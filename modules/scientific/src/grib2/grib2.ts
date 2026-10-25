@@ -62,7 +62,7 @@ export function parseGRIB2(input: ArrayBuffer | Uint8Array): GRIB2Message[] {
       const section = data[offset + 4];
       check(size >= 5 && offset + size <= end - 4, 'invalid section length');
       check(section >= 1 && section <= 7, 'invalid section number');
-      check(section >= lastSection || section === 2, 'out-of-order sections');
+      check(section >= lastSection || (lastSection === 7 && section === 3), 'out-of-order sections');
       lastSection = section;
       if (section === 3) {
         check(size >= 72, 'grid definition too short');
@@ -132,7 +132,10 @@ export class GRIB2Source implements ScientificArraySource {
   }
   async getScientificMetadata(): Promise<ScientificDatasetMetadata> {
     return {
-      dimensions: [],
+      dimensions: this.messages.flatMap((message, index) => [
+        {name: 'y_' + index, length: message.grid.height},
+        {name: 'x_' + index, length: message.grid.width}
+      ]),
       variables: this.messages.map((message, index) => ({
         name: 'message_' + index, dimensions: ['y_' + index, 'x_' + index],
         shape: [message.grid.height, message.grid.width], dtype: 'float32',
