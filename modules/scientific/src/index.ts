@@ -51,4 +51,12 @@ export type {
   GetGeoZarrParameters
 } from './zarr/geo-zarr-source-loader';
 
-export type {ScientificArraySource, ScientificArray, ScientificDatasetMetadata, ScientificDimension, ScientificVariable, ScientificSelection, ScientificSourceCapabilities} from './scientific-array';
+export type {
+  ScientificArraySource,
+  ScientificArray,
+  ScientificDatasetMetadata,
+  ScientificDimension,
+  ScientificVariable,
+  ScientificSelection,
+  ScientificSourceCapabilities
+} from './scientific-array';
