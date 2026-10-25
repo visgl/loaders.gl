@@ -1,0 +1,205 @@
+.i3s-gallery-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 48px max(24px, calc((100vw - 1100px) / 2));
+  background: #10151c;
+  color: #e8edf3;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.i3s-gallery-header h1 {
+  margin: 8px 0;
+  font-size: 42px;
+}
+
+.i3s-gallery-eyebrow {
+  margin: 0;
+  color: #66d9ef;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.i3s-gallery-lead {
+  max-width: 680px;
+  color: #a9b5c2;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.i3s-gallery-card,
+.i3s-gallery-profile-card {
+  margin-top: 28px;
+  padding: 24px;
+  border: 1px solid #2c3743;
+  border-radius: 12px;
+  background: #171e27;
+}
+
+.i3s-gallery-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.i3s-gallery-url-row,
+.i3s-gallery-metadata-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.i3s-gallery-url-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #465463;
+  border-radius: 6px;
+  background: #0f141a;
+  color: #e8edf3;
+  font-size: 14px;
+}
+
+.i3s-gallery-submit {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 6px;
+  background: #66d9ef;
+  color: #091016;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.i3s-gallery-submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.i3s-gallery-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.i3s-gallery-preset {
+  padding: 7px 10px;
+  border: 1px solid #465463;
+  border-radius: 5px;
+  background: transparent;
+  color: #b9c6d3;
+  cursor: pointer;
+}
+
+.i3s-gallery-error {
+  color: #ff8b8b;
+  white-space: pre-wrap;
+}
+
+.i3s-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.i3s-gallery-profile-card {
+  margin-top: 0;
+  padding: 20px;
+}
+
+.i3s-gallery-profile-card h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.i3s-gallery-profile-card p {
+  min-height: 48px;
+  color: #a9b5c2;
+  line-height: 1.4;
+}
+
+.i3s-gallery-badge,
+.i3s-gallery-version {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: #263543;
+  color: #9eabba;
+  font-size: 12px;
+}
+
+.i3s-gallery-metadata-header {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.i3s-gallery-metadata-header h2 {
+  margin: 6px 0 0;
+  font-size: 28px;
+}
+
+.i3s-gallery-version {
+  background: #234453;
+  color: #8ee8f5;
+  white-space: nowrap;
+}
+
+.i3s-gallery-metadata-grid {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 10px 16px;
+  margin-top: 24px;
+}
+
+.i3s-gallery-metadata-grid dd {
+  margin: 0;
+}
+
+.i3s-gallery-url-value {
+  overflow-wrap: anywhere;
+}
+
+.i3s-gallery-metadata h3 {
+  margin: 26px 0 10px;
+  font-size: 16px;
+}
+
+.i3s-gallery-support-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.i3s-gallery-support-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.i3s-gallery-support-list strong {
+  color: #8ee8f5;
+}
+
+@media (max-width: 600px) {
+  .i3s-gallery-page {
+    padding: 28px 18px;
+  }
+
+  .i3s-gallery-url-row,
+  .i3s-gallery-metadata-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .i3s-gallery-metadata-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .i3s-gallery-metadata-grid dd {
+    margin-bottom: 12px;
+  }
+}
