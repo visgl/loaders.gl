@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arcgis",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "ArcGIS REST data sources for geospatial visualization",
   "license": "MIT",
   "type": "module",
@@ -81,11 +81,11 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
-    "@loaders.gl/images": "5.0.0-alpha.13",
-    "@loaders.gl/raster": "5.0.0-alpha.13",
-    "@loaders.gl/tiles": "5.0.0-alpha.13",
-    "@loaders.gl/tiles-3d": "5.0.0-alpha.13",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.14",
+    "@loaders.gl/images": "5.0.0-alpha.14",
+    "@loaders.gl/raster": "5.0.0-alpha.14",
+    "@loaders.gl/tiles": "5.0.0-alpha.14",
+    "@loaders.gl/tiles-3d": "5.0.0-alpha.14",
     "lerc": "^4.2.0"
   },
   "peerDependencies": {

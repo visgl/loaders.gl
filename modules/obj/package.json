@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/obj",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Framework-independent loader for the OBJ format",
   "license": "MIT",
   "type": "module",
@@ -53,7 +53,7 @@
     "build-worker": "node ../../scripts/build-codec-worker.mjs src/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/tables": "5.0.0-alpha.13"
+    "@loaders.gl/tables": "5.0.0-alpha.14"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

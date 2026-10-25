@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geospatial",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Grouped geospatial loaders (package consolidation proof of concept)",
   "license": "MIT",
   "type": "module",
@@ -267,9 +267,9 @@
     "build-worker-flatgeobuf": "node ../../scripts/build-codec-worker.mjs src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/archives": "5.0.0-alpha.13",
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
-    "@loaders.gl/xml": "5.0.0-alpha.13",
+    "@loaders.gl/archives": "5.0.0-alpha.14",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.14",
+    "@loaders.gl/xml": "5.0.0-alpha.14",
     "@math.gl/geospatial": "5.0.0-alpha.20",
     "@types/sql.js": "^1.4.5",
     "apache-arrow": ">= 17.0.0"

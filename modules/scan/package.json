@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/scan",
   "description": "Optional scan planning and execution for loaders.gl",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -39,7 +39,7 @@
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/sql": "5.0.0-alpha.13",
+    "@loaders.gl/sql": "5.0.0-alpha.14",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

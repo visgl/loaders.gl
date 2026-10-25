@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scientific",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Scientific data format loaders with metadata roots and explicit format subpaths",
   "license": "MIT",
   "type": "module",

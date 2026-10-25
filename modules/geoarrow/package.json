@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geoarrow",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "GeoArrow columnar geometry encoding and decoding",
   "license": "MIT",
   "type": "module",
@@ -105,8 +105,8 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
-    "@loaders.gl/wkt": "5.0.0-alpha.13",
+    "@loaders.gl/arrow-geometry": "5.0.0-alpha.14",
+    "@loaders.gl/wkt": "5.0.0-alpha.14",
     "@math.gl/core": "5.0.0-alpha.20",
     "@math.gl/geometry": "5.0.0-alpha.20",
     "@math.gl/geospatial": "5.0.0-alpha.20",
