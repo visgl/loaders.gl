@@ -12,3 +12,5 @@ export {
   NetCDFSource
 } from './netcdf-source-loader';
 export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf-source-loader';
+
+export {NetCDF4Source} from './netcdf4-source';
