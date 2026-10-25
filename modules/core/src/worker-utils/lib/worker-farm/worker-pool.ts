@@ -50,6 +50,8 @@ type QueuedJob = {
   onError: OnError;
   onStart: (value: any) => void; // Resolve job start promise
   onReject: (reason: unknown) => void; // Reject job start promise
+  removeAbortListener: () => void;
+  signal?: AbortSignal;
 };
 
 /**
@@ -99,9 +101,13 @@ export default class WorkerPool {
    */
   destroy(reason: unknown = new Error('Worker pool was destroyed')): void {
     // Abort active jobs so callers receive an error when a development worker is invalidated.
+    this.isDestroyed = true;
     this.activeJobs.forEach(job => job.abort(reason));
     const queuedJobs = this.jobQueue.splice(0);
-    queuedJobs.forEach(queuedJob => queuedJob.onReject(reason));
+    queuedJobs.forEach(queuedJob => {
+      queuedJob.removeAbortListener();
+      queuedJob.onReject(reason);
+    });
     this.idleQueue.forEach(worker => worker.destroy());
     this.isDestroyed = true;
   }
@@ -129,15 +135,37 @@ export default class WorkerPool {
   async startJob(
     name: string,
     onMessage: OnMessage = (job, type, data) => job.done(data),
-    onError: OnError = (job, error) => job.error(error)
+    onError: OnError = (job, error) => job.error(error),
+    signal?: AbortSignal
   ): Promise<WorkerJob> {
+    if (signal?.aborted) {
+      throw signal.reason;
+    }
     if (this.isDestroyed) {
       return Promise.reject(new Error('Worker pool was destroyed'));
     }
     // Promise resolves when thread starts working on this job
     const startPromise = new Promise<WorkerJob>((onStart, onReject) => {
       // Promise resolves when thread completes or fails working on this job
-      this.jobQueue.push({name, onMessage, onError, onStart, onReject});
+      const abortQueuedJob = (): void => {
+        const index = this.jobQueue.indexOf(queuedJob);
+        if (index >= 0) {
+          this.jobQueue.splice(index, 1);
+          queuedJob.removeAbortListener();
+          onReject(signal?.reason);
+        }
+      };
+      const queuedJob: QueuedJob = {
+        name,
+        onMessage,
+        onError,
+        onStart,
+        onReject,
+        signal,
+        removeAbortListener: () => signal?.removeEventListener('abort', abortQueuedJob)
+      };
+      this.jobQueue.push(queuedJob);
+      signal?.addEventListener('abort', abortQueuedJob, {once: true});
       return this;
     });
     this._startQueuedJob(); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -155,7 +183,16 @@ export default class WorkerPool {
       return;
     }
 
-    const workerThread = this._getAvailableWorker();
+    let workerThread: WorkerThread | null;
+    try {
+      workerThread = this._getAvailableWorker();
+    } catch (error) {
+      const queuedJob = this.jobQueue.shift();
+      queuedJob?.removeAbortListener();
+      queuedJob?.onReject(error);
+      void this._startQueuedJob();
+      return;
+    }
     if (!workerThread) {
       return;
     }
@@ -174,11 +211,17 @@ export default class WorkerPool {
 
       // Create a worker job to let the app access thread and manage job completion
       const job = new WorkerJob(queuedJob.name, workerThread);
+      queuedJob.removeAbortListener();
+      const abortJob = (): void => job.abort(queuedJob.signal?.reason);
+      queuedJob.signal?.addEventListener('abort', abortJob, {once: true});
+      if (queuedJob.signal?.aborted) abortJob();
       this.activeJobs.add(job);
       workerThread.ref();
 
       // Set the worker thread's message handlers
-      workerThread.onMessage = data => queuedJob.onMessage(job, data.type, data.payload);
+      workerThread.onMessage = data => {
+        if (job.isRunning) queuedJob.onMessage(job, data.type, data.payload);
+      };
       workerThread.onError = error => queuedJob.onError(job, error);
 
       // Resolve the start promise so that the app can start sending messages to worker
@@ -191,6 +234,7 @@ export default class WorkerPool {
         // The job result promise carries worker errors back to the caller; do not duplicate-log
         // handled rejections here.
       } finally {
+        queuedJob.signal?.removeEventListener('abort', abortJob);
         this.activeJobs.delete(job);
         this.returnWorkerToQueue(workerThread);
       }
@@ -244,13 +288,18 @@ export default class WorkerPool {
     if (this.count < this._getMaxConcurrency()) {
       this.count++;
       const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
-      return new WorkerThread({
-        name,
-        source: this.source,
-        url: this.url,
-        getUrl: this.getUrl,
-        loadWorker: this.loadWorker
-      });
+      try {
+        return new WorkerThread({
+          name,
+          source: this.source,
+          url: this.url,
+          getUrl: this.getUrl,
+          loadWorker: this.loadWorker
+        });
+      } catch (error) {
+        this.count--;
+        throw error;
+      }
     }
 
     // No worker available, have to wait
