@@ -4,7 +4,13 @@
 
 import type {HDF5ObjectMessage} from './hdf5-object-header';
 
-export type HDF5HardLink = {name: string; address: bigint};
+/** Compact hard link to an object header in the same HDF5 file. */
+export type HDF5HardLink = {
+  /** Link name within its group. */
+  name: string;
+  /** Target object-header address. */
+  address: bigint;
+};
 
 function unsigned(data: Uint8Array, offset: number, length: number): bigint {
   if (length < 1 || length > 8 || offset < 0 || offset + length > data.length) {
@@ -50,6 +56,7 @@ export function parseHDF5HardLink(payload: Uint8Array, offsetSize: number): HDF5
   return {name, address: unsigned(payload, cursor, offsetSize)};
 }
 
+/** Collect unique compact hard links while rejecting unsupported dense storage. */
 export function getHDF5CompactLinks(
   messages: readonly HDF5ObjectMessage[],
   offsetSize: number

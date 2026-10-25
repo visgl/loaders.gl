@@ -6,23 +6,40 @@ import type {HDF5ByteSource, HDF5Superblock} from './hdf5-binary';
 import {hdf5Checksum} from './hdf5-binary';
 import {readHDF5Unsigned} from './hdf5-dataset-messages';
 
+/** Validated B-tree v2 header metadata; records are not traversed. */
 export type HDF5BTreeV2Header = {
+  /** B-tree client identifier. */
   type: number;
+  /** Bytes in each B-tree node. */
   nodeSize: number;
+  /** Bytes in each record. */
   recordSize: number;
+  /** Number of tree levels below the root. */
   depth: number;
+  /** Root-node address, if allocated. */
   rootAddress: bigint | null;
+  /** Number of records in the root node. */
   rootRecords: number;
+  /** Total number of records in the tree. */
   totalRecords: bigint;
 };
+/** Validated extensible-array header metadata; records are not traversed. */
 export type HDF5ExtensibleArrayHeader = {
+  /** Extensible-array client identifier. */
   client: number;
+  /** Bytes in each array element. */
   elementSize: number;
+  /** Maximum array index width. */
   maxElementsBits: number;
+  /** Elements in the index block. */
   indexBlockElements: number;
+  /** Minimum elements in each data block. */
   dataBlockMinElements: number;
+  /** Minimum pointers in each secondary block. */
   secondaryBlockMinPointers: number;
+  /** Page-size exponent for data blocks. */
   dataBlockPageBits: number;
+  /** Index-block address, if allocated. */
   indexBlockAddress: bigint | null;
 };
 function check(condition: unknown, reason: string): asserts condition {

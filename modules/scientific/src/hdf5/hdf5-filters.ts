@@ -3,7 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 /** Common HDF5 filter identifiers. */
-export type HDF5Filter = {id: number; flags: number; clientData: readonly number[]};
+export type HDF5Filter = {
+  /** Filter identifier. */
+  id: number;
+  /** Optional and configuration flags. */
+  flags: number;
+  /** Filter-specific parameters. */
+  clientData: readonly number[];
+};
 function requireFilter(value: unknown, message: string): asserts value {
   if (!value) throw new Error('HDF5: ' + message);
 }
@@ -11,6 +18,7 @@ function uint16(bytes: Uint8Array, offset: number): number {
   requireFilter(offset + 2 <= bytes.length, 'truncated filter metadata');
   return bytes[offset] | (bytes[offset + 1] << 8);
 }
+/** Decode a bounded HDF5 v1 or v2 filter pipeline message. */
 export function parseHDF5FilterPipeline(bytes: Uint8Array): HDF5Filter[] {
   requireFilter(bytes.length >= 2, 'truncated filter pipeline');
   const version = bytes[0],
@@ -49,6 +57,7 @@ export function parseHDF5FilterPipeline(bytes: Uint8Array): HDF5Filter[] {
   }
   return filters;
 }
+/** Reverse byte shuffling for fixed-width HDF5 elements. */
 export function unshuffleHDF5(bytes: Uint8Array, elementSize: number): Uint8Array {
   requireFilter(
     Number.isSafeInteger(elementSize) && elementSize > 0,
@@ -62,6 +71,7 @@ export function unshuffleHDF5(bytes: Uint8Array, elementSize: number): Uint8Arra
   output.set(bytes.subarray(count * elementSize), count * elementSize);
   return output;
 }
+/** Validate and remove an HDF5 Fletcher32 trailer. */
 export function verifyHDF5Fletcher32(bytes: Uint8Array): Uint8Array {
   requireFilter(bytes.length >= 4, 'truncated Fletcher32 checksum');
   const end = bytes.length - 4;

@@ -12,19 +12,29 @@ export type HDF5ChunkEntry = {
   origin: readonly number[];
   /** Absolute byte address of the compressed chunk. */
   address: bigint;
+  /** Number of stored bytes before decompression. */
   storedByteLength: number;
+  /** Bit mask of filters skipped for this chunk. */
   filterMask: number;
 };
+/** Resolved metadata needed to read a numeric chunked dataset. */
 export type HDF5ChunkedDataset = {
+  /** Dataset shape in elements. */
   shape: readonly number[];
+  /** Shape of each chunk in elements. */
   chunkShape: readonly number[];
+  /** Primitive numeric datatype. */
   type: HDF5Primitive;
+  /** Filters applied during storage. */
   filters: readonly HDF5Filter[];
+  /** Located chunk entries. */
   chunks: readonly HDF5ChunkEntry[];
-  /** Value of unallocated chunks; defaults to zero for numeric datasets. */
+  /** Value of unallocated chunks; required when the selection includes sparse chunks. */
   fillValue?: number | bigint;
 };
+/** Number of chunks and bytes fetched for a selection. */
 export type HDF5ChunkReadStats = {chunksFetched: number; bytesFetched: number};
+/** Half-open bounds for each dataset dimension. */
 export type HDF5ChunkSelection = readonly (readonly [number, number])[];
 
 function check(condition: unknown, message: string): asserts condition {

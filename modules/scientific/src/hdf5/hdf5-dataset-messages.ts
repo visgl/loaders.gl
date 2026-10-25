@@ -4,12 +4,18 @@
 
 /** Bounded parsing of HDF5 simple dataspaces, primitive types and contiguous layouts. */
 export type HDF5Primitive = {
+  /** Numeric class of the stored values. */
   kind: 'integer' | 'float';
+  /** Bytes per element. */
   size: number;
+  /** Whether multibyte values are little-endian. */
   littleEndian: boolean;
+  /** Whether integer values are signed. */
   signed: boolean;
 };
+/** Shape and element count of a simple numeric dataspace. */
 export type HDF5Dataspace = {shape: number[]; elementCount: number};
+/** Location and byte length of contiguous dataset storage. */
 export type HDF5ContiguousLayout = {address: bigint; byteLength: number};
 function fail(message: string): never {
   throw new Error('HDF5: ' + message);
@@ -17,6 +23,7 @@ function fail(message: string): never {
 function requireLength(bytes: Uint8Array, count: number): void {
   if (bytes.length < count) fail('truncated metadata message');
 }
+/** Read a bounded little-endian unsigned integer from HDF5 metadata. */
 export function readHDF5Unsigned(bytes: Uint8Array, offset: number, size: number): bigint {
   if (offset < 0 || size < 1 || size > 8 || offset + size > bytes.length) fail('truncated integer');
   let value = 0n;
@@ -27,6 +34,7 @@ function safe(value: bigint): number {
   if (value > BigInt(Number.MAX_SAFE_INTEGER)) fail('integer exceeds JS safe range');
   return Number(value);
 }
+/** Decode a bounded simple HDF5 dataspace and its dimensions. */
 export function parseHDF5Dataspace(bytes: Uint8Array, lengthSize: number): HDF5Dataspace {
   requireLength(bytes, 4);
   const version = bytes[0];
@@ -49,6 +57,7 @@ export function parseHDF5Dataspace(bytes: Uint8Array, lengthSize: number): HDF5D
   }, 1);
   return {shape, elementCount};
 }
+/** Decode a supported fixed-width integer or floating-point datatype. */
 export function parseHDF5PrimitiveType(bytes: Uint8Array): HDF5Primitive {
   requireLength(bytes, 12);
   const kind = bytes[0] & 15,
@@ -67,6 +76,7 @@ export function parseHDF5PrimitiveType(bytes: Uint8Array): HDF5Primitive {
   }
   return {kind: kind === 0 ? 'integer' : 'float', size, littleEndian, signed};
 }
+/** Decode the address and byte length of a contiguous HDF5 dataset. */
 export function parseHDF5ContiguousLayout(
   bytes: Uint8Array,
   offsetSize: number,
@@ -80,6 +90,7 @@ export function parseHDF5ContiguousLayout(
   if (address === (1n << BigInt(offsetSize * 8)) - 1n) fail('unallocated contiguous storage');
   return {address, byteLength};
 }
+/** Decode primitive values into a typed array using the datatype's byte order. */
 export function decodeHDF5Primitive(bytes: Uint8Array, type: HDF5Primitive): ArrayBufferView {
   if (bytes.length % type.size) fail('misaligned primitive payload');
   const count = bytes.length / type.size;

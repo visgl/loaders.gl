@@ -5,14 +5,22 @@
 import type {HDF5ByteSource, HDF5Superblock} from './hdf5-binary';
 import {readHDF5Unsigned} from './hdf5-dataset-messages';
 
+/** One decoded message from an HDF5 v2 object header. */
 export type HDF5ObjectMessage = {
+  /** HDF5 message type identifier. */
   type: number;
+  /** Message flags, including shared-message state. */
   flags: number;
+  /** Message payload bytes. */
   payload: Uint8Array;
 };
+/** A decoded HDF5 v2 object header. */
 export type HDF5ObjectHeader = {
+  /** Object-header version. */
   version: 2;
+  /** Object-header flags. */
   flags: number;
+  /** Non-continuation messages. */
   messages: readonly HDF5ObjectMessage[];
 };
 

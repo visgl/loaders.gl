@@ -4,13 +4,18 @@
 
 /** Random-access byte provider. All offsets are absolute file offsets. */
 export interface HDF5ByteSource {
+  /** Read a byte range from an absolute file offset. */
   read(offset: number, length: number, signal?: AbortSignal): Promise<Uint8Array>;
 }
+/** In-memory byte source for bounded HDF5 reads. */
 export class HDF5MemorySource implements HDF5ByteSource {
+  /** File bytes retained by the source. */
   private readonly bytes: Uint8Array;
+  /** Create a byte source from a buffer or typed array. */
   constructor(data: ArrayBuffer | Uint8Array) {
     this.bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
   }
+  /** Read a validated byte range without copying it. */
   async read(offset: number, length: number): Promise<Uint8Array> {
     if (
       !Number.isSafeInteger(offset) ||
@@ -24,15 +29,25 @@ export class HDF5MemorySource implements HDF5ByteSource {
     return this.bytes.subarray(offset, offset + length);
   }
 }
+/** Parsed HDF5 v2/v3 superblock address metadata. */
 export type HDF5Superblock = {
+  /** Superblock version. */
   version: 2 | 3;
+  /** Bytes used for file addresses. */
   offsetSize: number;
+  /** Bytes used for stored lengths. */
   lengthSize: number;
+  /** Base address for relative HDF5 addresses. */
   baseAddress: bigint;
+  /** Optional superblock extension address. */
   extensionAddress: bigint | null;
+  /** Address of the logical end of the file. */
   endOfFileAddress: bigint;
+  /** Root group object-header address. */
   rootObjectHeaderAddress: bigint;
+  /** Stored superblock checksum. */
   checksum: number;
+  /** Absolute offset where the superblock was found. */
   superblockOffset: number;
 };
 const SIGNATURE = [137, 72, 68, 70, 13, 10, 26, 10];
