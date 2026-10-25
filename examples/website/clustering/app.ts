@@ -65,6 +65,11 @@ class ExampleClusterLayer extends CompositeLayer<ExampleClusterLayerProps> {
     this.setState({nodes: []});
   }
 
+  /** Runs viewport queries after camera changes as well as data updates. */
+  shouldUpdateState(): boolean {
+    return true;
+  }
+
   /** Requeries indexed clusters after data or viewport changes. */
   updateState({changeFlags}: UpdateParameters<this>): void {
     if (!changeFlags.dataChanged && !changeFlags.viewportChanged) return;
@@ -77,21 +82,21 @@ class ExampleClusterLayer extends CompositeLayer<ExampleClusterLayerProps> {
     return [
       new ScatterplotLayer<ClusterNode>({
         ...this.getSubLayerProps({id: 'markers'}),
-        data: this.state.nodes,
-        ...this.props.markerProps,
         radiusUnits: 'pixels',
         getRadius: node => (node.isCluster ? 18 : 6),
         getFillColor: node => (node.isCluster ? [25, 110, 190, 230] : [50, 160, 120, 230]),
+        ...this.props.markerProps,
+        data: this.state.nodes,
         getPosition: node => node.position
       }),
       new TextLayer<ClusterNode>({
         ...this.getSubLayerProps({id: 'counts'}),
-        data: this.state.nodes,
-        ...this.props.labelProps,
-        getPosition: node => node.position,
-        getText: node => (node.isCluster ? String(node.pointCount) : ''),
         getSize: 12,
-        getColor: [255, 255, 255, 255]
+        getColor: [255, 255, 255, 255],
+        ...this.props.labelProps,
+        data: this.state.nodes,
+        getPosition: node => node.position,
+        getText: node => (node.isCluster ? String(node.pointCount) : '')
       })
     ];
   }
