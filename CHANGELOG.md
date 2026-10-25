@@ -11,6 +11,9 @@
 - Authenticated loading preserves caller abort reasons through signing, credential refresh, and replay.
 
 
+- Route batched parsing through explicit loader/worker capabilities, including opt-in custom and Node workers.
+- Preserve CSV Arrow batch-worker support and pass loader identity through batch dispatch.
+
 ### v5.0.0-alpha.13
 
 - chore(math.gl): upgrade to alpha.19 and migrate removed leaf packages to grouped subpaths

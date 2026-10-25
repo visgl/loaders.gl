@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
+import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {
   processLoaderWorkerBatches,
   processLoaderWorkerData
@@ -53,7 +54,11 @@ describe('processLoaderWorkerData', () => {
   });
 
   test('retains parser state and serializes each output batch', async () => {
-    const parseInBatches = vi.fn(async function* (inputIterator: AsyncIterable<number>) {
+    const parseInBatches = vi.fn(async function* (
+      inputIterator: AsyncIterable<number>,
+      options: LoaderOptions
+    ) {
+      expect(options.core?.worker).toBe(false);
       let total = 0;
       for await (const input of inputIterator) {
         total += input;
@@ -73,7 +78,7 @@ describe('processLoaderWorkerData', () => {
         serializeWorkerBatch
       } as any,
       [1, 2, 3] as any,
-      {core: {worker: false}}
+      {core: {worker: true}}
     )) {
       batches.push(batch);
     }

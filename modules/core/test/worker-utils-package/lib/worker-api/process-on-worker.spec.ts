@@ -1,6 +1,7 @@
 import {expect, test, vi} from 'vitest';
 import {
   canProcessOnWorker,
+  canProcessOnWorkerInBatches,
   processOnWorker,
   processOnWorkerInBatches,
   preloadWorker,
@@ -270,4 +271,63 @@ test('queued processing aborts promptly without transferring input or affecting 
   expect(input.byteLength).toBe(8);
   firstController.abort('stop active');
   await firstRejection;
+});
+
+test.each([
+  {
+    name: 'declared built-in worker',
+    descriptor: {workerInBatches: true},
+    options: {},
+    expected: true
+  },
+  {name: 'undeclared worker', descriptor: {}, options: {}, expected: false},
+  {
+    name: 'disabled worker',
+    descriptor: {workerInBatches: true},
+    options: {worker: false},
+    expected: false
+  },
+  {
+    name: 'disabled batching',
+    descriptor: {workerInBatches: true},
+    options: {workerInBatches: false},
+    expected: false
+  },
+  {
+    name: 'local test URL',
+    descriptor: {workerInBatches: true},
+    options: {_workerType: 'test'},
+    expected: true
+  },
+  {
+    name: 'unknown custom URL',
+    descriptor: {workerInBatches: true},
+    options: {null: {workerUrl: 'custom.js'}},
+    expected: false
+  },
+  {
+    name: 'declared custom URL',
+    descriptor: {workerInBatches: true},
+    options: {null: {workerUrl: 'custom.js'}, workerInBatches: true},
+    expected: true
+  },
+  {
+    name: 'unknown inline source',
+    descriptor: {workerInBatches: true},
+    options: {source: 'custom'},
+    expected: false
+  },
+  {
+    name: 'declared inline source',
+    descriptor: {},
+    options: {source: 'custom', workerInBatches: true},
+    expected: true
+  }
+])('batch capability: $name', ({descriptor, options, expected}) => {
+  expect(
+    canProcessOnWorkerInBatches(
+      {...NullWorker, worker: true, ...descriptor},
+      {worker: true, ...options}
+    )
+  ).toBe(expected);
 });

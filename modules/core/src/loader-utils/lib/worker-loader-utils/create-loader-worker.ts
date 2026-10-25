@@ -4,7 +4,13 @@
 
 /* eslint-disable no-restricted-globals */
 import type {CoreAPI} from '../sources/data-source';
-import type {LoaderWithParser, LoaderOptions, LoaderContext, Loader} from '../../loader-types';
+import type {
+  LoaderWithParser,
+  LoaderOptions,
+  StrictLoaderOptions,
+  LoaderContext,
+  Loader
+} from '../../loader-types';
 import type {WorkerContext} from '@loaders.gl/core/worker-utils';
 import {createWorker} from '@loaders.gl/core/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
@@ -83,7 +89,8 @@ export async function* processLoaderWorkerBatches(
     throw new Error(`${loader.id} loader does not support batched parsing`);
   }
 
-  const resultIterator = loader.parseInBatches(inputIterator, options, {
+  const parserOptions = getWorkerLoaderOptions(loader, options);
+  const resultIterator = loader.parseInBatches(inputIterator, parserOptions, {
     ...loaderContext,
     reportProgress: workerContext?.reportProgress,
     coreApi: createWorkerCoreApi(),
@@ -231,17 +238,19 @@ async function parseData({
   // Preserve worker-supplied module overrides (for example a caller-provided
   // Draco URL) while still applying the loader's defaults. Functions cannot be
   // structured-cloned, but URL strings and other serializable options can.
-  options = {
-    ...options,
-    modules: {
-      ...((loader && loader.options && loader.options.modules) || {}),
-      ...(options.modules || {})
-    },
-    core: {
-      ...options.core,
-      worker: false
-    }
-  };
+  options = getWorkerLoaderOptions(loader, options);
 
   return await parser(data, {...options}, context, loader);
+}
+
+/** Applies loader module defaults and prevents recursive worker dispatch inside a worker parser. */
+function getWorkerLoaderOptions(
+  loader: LoaderWithParser,
+  options: LoaderOptions
+): StrictLoaderOptions {
+  return {
+    ...options,
+    modules: {...loader.options?.modules, ...options.modules},
+    core: {...options.core, worker: false}
+  } as StrictLoaderOptions;
 }

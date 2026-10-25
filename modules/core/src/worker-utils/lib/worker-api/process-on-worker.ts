@@ -16,6 +16,7 @@ import WorkerFarm from '../worker-farm/worker-farm';
 import type {WorkerPoolTarget} from '../worker-farm/worker-pool';
 import {
   getCustomWorkerURL,
+  getConfiguredWorkerURL,
   getDefaultWorkerURL,
   getWorkerURL,
   getWorkerName
@@ -52,6 +53,22 @@ export function canProcessOnWorker(worker: WorkerObject, options?: WorkerOptions
   const workerOptions = options?.[worker.id];
   return Boolean(
     (worker.worker || worker.loadWorker || workerOptions?.workerUrl) && options?.worker
+  );
+}
+
+/**
+ * Checks whether a worker supports stateful batch processing.
+ * @param worker Worker descriptor declaring built-in batch support.
+ * @param options Worker options, including an explicit capability for custom URLs or source.
+ */
+export function canProcessOnWorkerInBatches(
+  worker: WorkerObject,
+  options: WorkerOptions = {}
+): boolean {
+  if (!canProcessOnWorker(worker, options)) return false;
+  if (options.workerInBatches !== undefined) return options.workerInBatches;
+  return Boolean(
+    worker.workerInBatches && !options.source && !getConfiguredWorkerURL(worker, options)
   );
 }
 

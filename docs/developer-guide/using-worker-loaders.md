@@ -361,3 +361,38 @@ Cancellation also reaches fetch and nested parsing through loader context where 
 Authenticated fetch, signing, and refresh/retry checks preserve the caller's abort reason.
 Synchronous main-thread parsing cannot be interrupted while it blocks the event loop. Transferred
 input buffers remain detached after cancellation; retain a copy if the application needs to retry.
+
+## Batch-worker capability
+
+`parseInBatches()` and `loadInBatches()` use a worker when the selected parser implements
+`parseInBatches`, the loader declares `workerInBatches: true`, and the ordinary worker-selection
+checks permit it. The worker stays leased for the iterator lifetime. Input is requested on demand;
+output batches are acknowledged before more output is produced.
+
+CSV Arrow-table output is the initial built-in capability. Loader authors can enable other loaders
+by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`,
+and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs
+need transport conversion. Metadata entry points stay free of parser implementations.
+
+```javascript
+const batches = await parseInBatches(input, CSVLoader, {
+  core: {worker: true},
+  csv: {shape: 'arrow-table'}
+});
+for await (const batch of batches) {
+  consume(batch);
+}
+```
+
+An explicit worker URL or inline worker source has unknown protocol support. To use a compatible
+custom worker, set `core.workerInBatches: true` as well as the loader capability. Set it to `false`
+to keep batch parsing on the main thread. Existing atomic-only custom workers retain main-thread
+batch parsing by default. Generated local test-worker URLs keep the built-in capability.
+
+Node workers retain the experimental `core._nodeWorkers: true` opt-in and require a Node-loadable
+worker artifact, such as a local `.cjs` worker. Worker-utils callers use the top-level
+`workerInBatches` option and can inspect `canProcessOnWorkerInBatches()`.
+
+Batch output and incremental input are separate capabilities. A parser that concatenates its input
+still buffers the complete input inside the worker. Parser options disable recursive worker dispatch
+inside a worker; input transforms and loader selection remain on the caller.
