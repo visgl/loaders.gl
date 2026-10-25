@@ -311,7 +311,10 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses"
   ],
   "scripts": {
     "copy-libs": "mkdir -p dist/terrain/libs dist/lerc/libs && cp -R src/terrain/libs/. dist/terrain/libs/ && cp -R src/lerc/libs/. dist/lerc/libs/",

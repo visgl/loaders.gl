@@ -16,6 +16,22 @@ To contribute, you will likely want to clone the loaders.gl repository and start
 
 See the [developer guide](https://loaders.gl/docs/developer-guide/dev-env) on the loaders.gl website for more information on how to get your environment set up for loaders.gl development, including for Linux and Windows.
 
+## Preserving attribution
+
+When adapting code, retain upstream authors, copyright headers, complete license
+texts and applicable NOTICE files. Record the source URL, version or commit, and
+material modifications in the owning package’s `THIRD-PARTY-NOTICES.md`. Update
+[References and credits](https://loaders.gl/docs/references-and-credits) as needed.
+A renamed package or removed dependency does not remove retained code’s provenance.
+
+Credit algorithm references and inspiration separately from copied implementations.
+For datasets and binary assets, record authors, source, version, terms, transformations
+and checksums where available. Do not infer an unknown historical source version.
+
+Run `yarn check-attributions` and inspect packed package contents. Ensure licenses
+and notices accompany source, runtime libraries, bundles and workers. This structural
+check does not replace reviewing the provenance of new contributions.
+
 ## Community Governance
 
 vis.gl is part of the [OpenJS Foundation](https://openjsf.org/). See the organization's [Technical Charter](https://github.com/visgl/tsc/blob/master/Technical%20Charter.md).

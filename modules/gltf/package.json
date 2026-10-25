@@ -57,7 +57,10 @@
     "src",
     "dist",
     "bin",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses"
   ],
   "scripts": {
     "pre-build": "npm run copy-libs && npm run build-cjs && npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",

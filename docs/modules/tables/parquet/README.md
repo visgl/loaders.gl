@@ -86,15 +86,17 @@ geometry encodings onto field-level GeoArrow metadata.
 On write, GeoArrow field metadata can be used to synthesize missing or invalid GeoParquet `geo`
 metadata before Parquet encoding.
 
-# Attribution
+## Attribution
 
 - Based on a fork of https://github.com/ironSource/parquetjs and https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.).
 - Delta decoder improvements include adaptations from https://github.com/hyparam/hyparquet under the MIT license (Copyright (c) Hyperparam contributors).
 - Documentation was inspired by [parquet-go](https://github.com/xitongsys/parquet-go/blob/master/LICENSE) under Apache 2 license.
 
-# License
+## License
 
-`@loaders.gl/tables/parquet` module is based on Apache 2.0 licensed code.
+The retained parquetjs/parquets implementation and hyparquet adaptations use MIT terms.
+The optional parquet-wasm backend and its dependencies retain their own licenses.
+See the [tables package notice inventory](https://github.com/visgl/loaders.gl/blob/master/modules/tables/THIRD-PARTY-NOTICES.md).
 
 LZO decompression is supported through compress-utils 0.10.1. Parquet Hadoop block framing is handled in TypeScript. LZO compression is not supported.
 

@@ -7,3 +7,8 @@ This package owns the CSV, Avro, BSON, and Excel implementations. Its root expor
 See [the POC guide](../../docs/developer-guide/grouped-packages.md) for examples, compatibility limits, and dependency tradeoffs.
 
 The full table group includes Arrow/GeoArrow, Avro, BSON, CSV, Excel, JSON/GeoJSON/NDJSON/NDGeoJSON, Lance, ORC, and Parquet/GeoParquet. Import metadata from the root and parser-bearing loaders from the corresponding format subpath. See the [grouped package guide](../../docs/developer-guide/grouped-packages.md).
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

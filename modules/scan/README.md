@@ -217,3 +217,8 @@ ArcGIS FeatureServer. Tile coordinates, selected layers, service bounds, and CRS
 source parameters; predicates, projection, ordering, aggregates, and limits remain portable query
 operators. Both adapters cache the addressed result between metadata discovery and execution, so a
 query panel does not repeat the network request.
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

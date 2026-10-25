@@ -24,3 +24,8 @@ const tileset = new Tileset3D(source, options);
 
 Use `@loaders.gl/tiles-3d/i3s` for I3S and SLPK formats. The older package
 names `@loaders.gl/3d-tiles` and `@loaders.gl/i3s` are removed in v5.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/tiles-3d/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

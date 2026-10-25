@@ -196,3 +196,8 @@ Writers and shared public types remain available from `@loaders.gl/traces`.
   than Arrow batches.
 - Use `parseChromeTrace(...)` when an application needs semantic Chrome processes, threads, spans,
   counters, flows, and instants instead of raw event rows.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/traces/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

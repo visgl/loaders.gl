@@ -70,3 +70,8 @@ Loaders with limited functionality but with minimal bundle size impact:
 | ------------ | -------------------------------------------------------------------------------- |
 | `JSONLoader` | A minimal non-streaming JSON loader that uses the built-in `JSON.parse` function |
 | `NullLoader` | A loader-object that ignores input data and always returns `null`.               |
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

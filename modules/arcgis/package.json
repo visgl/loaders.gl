@@ -78,7 +78,9 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "dependencies": {
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",

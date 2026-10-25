@@ -94,7 +94,9 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "browser": {
     "fs": false

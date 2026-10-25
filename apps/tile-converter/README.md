@@ -684,3 +684,7 @@ limits are separate bounds. They do not bound total heap, COPC decompression or
 COPC writer temporaries. Potree authoring and COPC writing operate on decoded
 in-memory inputs; these APIs do not assemble a large source into one output
 out of core. Applications own downloading Blobs and revoking object URLs.
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for contributors and dependency attribution.

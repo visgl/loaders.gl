@@ -14,6 +14,12 @@
 
 loaders.gl is extensively documented on the [loaders.gl](https://loaders.gl) website.
 
+## References and credits
+
+See [References and credits](https://loaders.gl/docs/references-and-credits) for the
+people, upstream implementations, specifications and datasets behind loaders.gl.
+Each published package includes a source and license notice inventory.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -37,6 +43,6 @@ loaders.gl uses the MIT license.
 
 Some individual loaders are forked from other open source code bases that are licensed under different but compatible permissive licenses such as Apache 2 or BSD.
 
-No code that uses proprietary, copy-left or non-permissive licenses is included in loaders.gl.
+Data, imagery and service content have their own terms, separate from the code license.
 
 You can check the "Attributions" section for each loader module before you install it if the details matter to you.

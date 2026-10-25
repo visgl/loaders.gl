@@ -45,7 +45,9 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "scripts": {
     "pre-build": "echo \"Nothing to build in @loaders.gl/graphs\""

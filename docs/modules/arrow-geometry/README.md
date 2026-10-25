@@ -70,3 +70,8 @@ canonical geometry representation or a converter registry.
 The GIS compatibility package has been removed; see the
 [replacement import map](../geoarrow/gis-migration.md). Rich conversion registries,
 spatial processing and application APIs belong in GeoArrow, not in this construction package.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/arrow-geometry/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

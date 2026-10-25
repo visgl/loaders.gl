@@ -42,7 +42,10 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses"
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",

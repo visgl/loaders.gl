@@ -442,6 +442,9 @@ jobs:
       - name: Run Vitest async guardrails
         run: yarn run test-vitest-async-guardrails
 
+      - name: Check attribution inventories
+        run: yarn run check-attributions
+
       - name: Run test-suite audit
         run: yarn run test-audit
 

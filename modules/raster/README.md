@@ -59,3 +59,8 @@ Terrain workers are shipped at `@loaders.gl/raster/terrain-worker.js` and
 
 The standalone GeoTIFF, LERC, and terrain packages have been removed. Loader IDs, format option
 names, default output shapes, and writer behavior are preserved; loader `module` is now `raster`.
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

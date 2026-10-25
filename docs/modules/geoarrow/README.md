@@ -43,3 +43,8 @@ for column selection and encoding support, and
 [spatial queries](/docs/developer-guide/spatial-queries) for index usage and CRS requirements.
 Loader implementations should use the focused helpers in `@loaders.gl/arrow-geometry`
 instead of depending on the larger processing module.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/geoarrow/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

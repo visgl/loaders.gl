@@ -26,3 +26,8 @@ should be included in the import, or `@loaders.gl/config/unbundled` for lazy par
 
 The YAML and TOML implementations are maintained in this repository and do not import third-party
 YAML or TOML parser packages.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/config/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

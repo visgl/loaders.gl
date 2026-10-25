@@ -20,3 +20,8 @@ The package groups two independently documented formats:
 - [Zarr](/docs/modules/scientific/zarr/formats/zarr): chunked arrays, GeoZarr, OME-Zarr, and SpatialData sources.
 
 Zarr v2 and v3 storage support is provided by the `zarr` and `zarrita` packages, installed as dependencies of `@loaders.gl/scientific`.
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

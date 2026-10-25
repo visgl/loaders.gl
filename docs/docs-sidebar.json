@@ -4,6 +4,7 @@
     "label": "Overview",
     "items": [
       "README",
+      "references-and-credits",
       "developer-guide/get-started",
       "developer-guide/standards",
       "developer-guide/3d-data-formats",
