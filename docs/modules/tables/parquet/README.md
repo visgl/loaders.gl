@@ -57,10 +57,15 @@ Experimental loader and writer for the Apache Parquet format.
 - [`ParquetDatasetSource`](/docs/modules/tables/parquet/api-reference/parquet-source-loader#multi-file-datasets) coordinates catalog-backed, multi-file Parquet reads with file pruning and bounded concurrency. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - The optional WASM reader is available as `ParquetWasmLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-wasm-loader`. Install `parquet-wasm` when using this reader or `ParquetWriter`; it is an optional dependency. `ParquetJSLoaderWithParser` shares the TypeScript reader used by the canonical loader. `ParquetJSWriter` provides the TypeScript writer.
 - `ParquetLoader` returns an Arrow table by default and `ParquetWriter` accepts loaders.gl Arrow tables.
-- Iceberg and Delta table-format adapters incubate under the optional
-  [`@loaders.gl/scan`](/docs/modules/scan) package. Import them from
-  `@loaders.gl/scan/iceberg` or `@loaders.gl/scan/delta`; Parquet remains the physical file
-  executor and stays focused on the Parquet format.
+- Iceberg, Delta Lake, and Hudi table-format sources are available from
+  `@loaders.gl/tables/iceberg`, `@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`.
+  They use Parquet for physical file reads and the shared
+  scan contracts from core; installing `@loaders.gl/scan` is unnecessary to use them.
+
+The read-only Hudi Copy-on-Write proof of concept is available from
+`@loaders.gl/tables/hudi`. It consumes a JSON snapshot descriptor listing
+Parquet base files. Merge-on-Read logs, incremental timeline queries, deletes, and compaction are
+not supported.
 
 <ReferenceBoundary
   title="Parquet APIs and dataset integrations"

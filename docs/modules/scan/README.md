@@ -48,25 +48,13 @@ Format packages do not depend on this runtime. They implement lightweight contra
 `@loaders.gl/core/loader-utils`, so applications that only load or decode a format do not pay the scan
 runtime bundle cost.
 
-## Incubating Hudi source
+## Table-format sources
 
-The opt-in `@loaders.gl/scan/hudi` subpath provides a minimal, read-only Hudi Copy-on-Write proof
-of concept. It consumes a JSON snapshot descriptor listing Parquet base files and delegates query
-execution to the shared Parquet dataset source.
-
-```ts
-import {HudiTableSource} from '@loaders.gl/scan/hudi';
-
-const source = new HudiTableSource(snapshotDescriptorBlob);
-const fragments = await source.getScanFragments();
-```
-
-Merge-on-Read logs, incremental timeline queries, deletes/updates, compaction, and the Hudi
-metadata table are intentionally unsupported until a dedicated decoder is available. The Hudi
-adapter is not imported by the scan root.
-
-See the [common scan architecture](/docs/developer-guide/common-scan-architecture) for the complete
-support matrix and execution semantics.
+Iceberg, Delta Lake, and Hudi sources live under `@loaders.gl/tables/iceberg`, `/delta`, and `/hudi`.
+The scan runtime
+does not depend on table-format implementations. See the
+[Parquet module](/docs/modules/tables/parquet) and the
+[common scan architecture](/docs/developer-guide/common-scan-architecture) for source APIs.
 
 <ReferenceBoundary
   title="Scan APIs and execution semantics"
@@ -79,20 +67,6 @@ support matrix and execution semantics.
 ```bash
 npm install @loaders.gl/scan apache-arrow
 ```
-
-## Incubating table formats
-
-Iceberg and Delta Lake adapters are currently incubating behind explicit subpaths:
-
-```ts
-import {IcebergTableSource} from '@loaders.gl/scan/iceberg';
-import {DeltaTableSource} from '@loaders.gl/scan/delta';
-```
-
-These adapters discover snapshots and files, then delegate physical Parquet reads to the Parquet
-module. They are not imported by `@loaders.gl/scan` itself, so applications using only the core
-query engine do not pay for table-format code. The subpaths are experimental and may become
-dedicated packages after their APIs stabilize.
 
 ## Query an Arrow table
 

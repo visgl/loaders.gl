@@ -13,9 +13,6 @@
   },
   "references": [
     {
-      "path": "../tables"
-    },
-    {
       "path": "../core"
     },
     {
