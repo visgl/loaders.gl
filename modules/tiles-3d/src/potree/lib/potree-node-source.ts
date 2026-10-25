@@ -993,7 +993,8 @@ export class PotreeNodesSource
       const loaderOptions: LoaderOptions = {
         las: {
           colorDepth: 'auto',
-          colorFormat: this.loadOptions.potree?.colorFormat || 'uint8norm'
+          colorFormat:
+            (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
         }
       };
       if (this.loadOptions.core) {
@@ -1016,7 +1017,8 @@ export class PotreeNodesSource
         scale: this.metadata.scale,
         positionOrigin,
         nodeBoundingBox: tileBoundingBox,
-        colorFormat: this.loadOptions.potree?.colorFormat || 'uint8norm'
+        colorFormat:
+          (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
       }
     };
   }

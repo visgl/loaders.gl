@@ -17,7 +17,7 @@ const {preload: _CesiumIonLoaderPreload, ...CesiumIonLoaderMetadataWithoutPreloa
 
 /** Resolves a Cesium ion asset before the parser requests its root tileset. */
 async function preload(url: string, options: StrictLoaderOptions = {}) {
-  const cesiumIonOptions = options['cesium-ion'] || {};
+  const cesiumIonOptions = (options['cesium-ion'] as Record<string, unknown> | undefined) || {};
   const {accessToken, onError} = cesiumIonOptions;
   let {assetId} = cesiumIonOptions;
   if (!Number.isFinite(assetId)) {

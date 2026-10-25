@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {Loader, LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {extractLoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {DracoMesh} from './lib/draco-types';
@@ -35,7 +35,8 @@ export const DracoLoaderWithParser = {
 
 async function parse(
   arrayBuffer: ArrayBuffer,
-  options?: DracoLoaderOptions
+  options?: DracoLoaderOptions,
+  context?: LoaderContext
 ): Promise<DracoMesh | ArrowTable> {
   return await parseDraco(
     arrayBuffer,
@@ -47,6 +48,7 @@ async function parse(
           ? 'js'
           : 'wasm',
         options?.draco?.decoderProfile
-      )
+      ),
+    context
   );
 }

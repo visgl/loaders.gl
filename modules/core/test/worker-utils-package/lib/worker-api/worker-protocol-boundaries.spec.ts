@@ -103,8 +103,7 @@ describe('single worker protocol', () => {
             })
           };
     const result = processOnWorker(worker, 'input', {source: 'in-memory'}, context);
-    await Promise.resolve();
-    expect(harness.postMessage).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(harness.postMessage).toHaveBeenCalledTimes(1));
     await harness.emit('process', {id: 7, input: 'nested'});
     expect(harness.postMessage).toHaveBeenLastCalledWith({
       source: 'loaders.gl',
@@ -123,9 +122,8 @@ describe('single worker protocol', () => {
     await expect(result).resolves.toBe('finished');
   });
 
-  test('strips the abort signal, forwards context, and removes the listener', async () => {
+  test('strips the abort signal and forwards it to the pool and delegated processing', async () => {
     const controller = new AbortController();
-    const removeListener = vi.spyOn(controller.signal, 'removeEventListener');
     const harness = createJobHarness();
     const process = vi.fn(async () => 'delegated');
     const result = processOnWorker(
@@ -135,15 +133,19 @@ describe('single worker protocol', () => {
       {process},
       {token: 'context'}
     );
-    await Promise.resolve();
-    expect(harness.postMessage).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(harness.postMessage).toHaveBeenCalledTimes(1));
     expect(harness.postMessage.mock.calls[0][0].payload).toEqual({
       input: 1,
       options: {source: 'in-memory', jobName: 'named'},
       context: {token: 'context'}
     });
     await harness.emit('process', {id: 2, input: 'nested', options: {flag: true}});
-    expect(process).toHaveBeenCalledWith('nested', {flag: true}, undefined, {});
+    expect(process).toHaveBeenCalledWith(
+      'nested',
+      {flag: true, signal: controller.signal, onProgress: undefined},
+      undefined,
+      {}
+    );
     expect(harness.postMessage).toHaveBeenLastCalledWith({
       source: 'loaders.gl',
       type: 'done',
@@ -151,7 +153,12 @@ describe('single worker protocol', () => {
     });
     harness.emit('done', {result: 'finished'});
     await expect(result).resolves.toBe('finished');
-    expect(removeListener).toHaveBeenCalledWith('abort', expect.any(Function));
+    expect(harness.startJob).toHaveBeenCalledWith(
+      'named',
+      expect.any(Function),
+      undefined,
+      controller.signal
+    );
   });
 
   test('cancellation while leasing a job prevents input dispatch', async () => {
@@ -173,10 +180,7 @@ describe('single worker protocol', () => {
     const harness = createJobHarness();
     const controller = new AbortController();
     controller.abort(null);
-    await expect(processOnWorker(worker, 1, {signal: controller.signal})).rejects.toMatchObject({
-      name: 'AbortError',
-      message: 'Worker job was aborted'
-    });
+    await expect(processOnWorker(worker, 1, {signal: controller.signal})).rejects.toBe(null);
     expect(harness.startJob).not.toHaveBeenCalled();
   });
 });
@@ -197,8 +201,7 @@ describe('batch worker failure and cleanup', () => {
         ? 'Worker batch processing failed'
         : 'Unexpected worker batch message: preload'
     );
-    await Promise.resolve();
-    expect(harness.postMessage).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(harness.postMessage).toHaveBeenCalledTimes(1));
     harness.emit(type);
     await rejected;
     expect(returnInput).toHaveBeenCalledTimes(1);
@@ -221,8 +224,7 @@ describe('batch worker failure and cleanup', () => {
       Symbol.asyncIterator
     ]();
     const pending = iterator.next();
-    await Promise.resolve();
-    expect(harness.postMessage).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(harness.postMessage).toHaveBeenCalledTimes(1));
     harness.emit('output-batch', {result: 'one'});
     await expect(pending).resolves.toEqual({value: 'one', done: false});
     await iterator.return?.();
@@ -249,8 +251,7 @@ describe('batch worker failure and cleanup', () => {
     ]();
     const pending = iterator.next();
     const rejected = expect(pending).rejects.toBe(failure);
-    await Promise.resolve();
-    expect(harness.postMessage).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(harness.postMessage).toHaveBeenCalledTimes(1));
     harness.emit('input-request');
     await rejected;
     expect(harness.destroy).toHaveBeenCalledTimes(1);

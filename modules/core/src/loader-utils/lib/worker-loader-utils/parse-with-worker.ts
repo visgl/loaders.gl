@@ -118,11 +118,15 @@ export async function parseWithWorker(
   parseOnMainThread?: ParseOnMainThread,
   signal?: AbortSignal
 ) {
-  const workerSignal = signal || getWorkerAbortSignal(options);
+  const workerSignal = signal || getWorkerAbortSignal(options) || context?.signal;
   const result = await processOnWorker(
     loader,
     data,
-    {...getWorkerOptions(options, loader), signal: workerSignal},
+    {
+      ...getWorkerOptions(options, loader),
+      signal: workerSignal,
+      onProgress: options?.onProgress || context?.reportProgress
+    },
     {
       process: async (input, processOptions, _workerContext, parseContext) => {
         if (!parseOnMainThread) {
@@ -168,11 +172,15 @@ export async function* parseWithWorkerInBatches(
   parseOnMainThread?: ParseOnMainThread,
   signal?: AbortSignal
 ): AsyncIterable<unknown> {
-  const workerSignal = signal || getWorkerAbortSignal(options);
+  const workerSignal = signal || getWorkerAbortSignal(options) || context?.signal;
   const outputIterator = processOnWorkerInBatches(
     loader,
     inputIterator,
-    {...getWorkerOptions(options), signal: workerSignal},
+    {
+      ...getWorkerOptions(options),
+      signal: workerSignal,
+      onProgress: options?.onProgress || context?.reportProgress
+    },
     {
       process: async (input, processOptions, _workerContext, parseContext) => {
         if (!parseOnMainThread) {
@@ -204,6 +212,7 @@ export async function* parseWithWorkerInBatches(
 
 /** Returns the loader-specific abort signal used to cancel a worker job. */
 function getWorkerAbortSignal(options?: StrictLoaderOptions): AbortSignal | undefined {
+  if (options?.signal) return options.signal;
   const parquetSignal = (options as {parquet?: {signal?: unknown}} | undefined)?.parquet?.signal;
   if (typeof AbortSignal !== 'undefined' && parquetSignal instanceof AbortSignal) {
     return parquetSignal;
@@ -278,10 +287,15 @@ function resolveWorkerLoaders(
 function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
   const optionsToSerialize = {
     ...options,
+    signal: undefined,
+    onProgress: undefined,
     ...(options.core ? {core: {...options.core, authentications: undefined}} : {})
   };
   const serializedOptions = JSON.parse(
-    JSON.stringify(optionsToSerialize, (_key, value) => (typeof value === 'bigint' ? null : value))
+    JSON.stringify(optionsToSerialize, (_key, value) => {
+      if (typeof AbortSignal !== 'undefined' && value instanceof AbortSignal) return undefined;
+      return typeof value === 'bigint' ? null : value;
+    })
   );
   restoreBigIntOptions(optionsToSerialize, serializedOptions);
   const workerOptions: Record<string, any> = {
@@ -317,8 +331,17 @@ function getSerializableLoaderContext(context?: LoaderContext) {
   if (!context) {
     return {};
   }
-  const {fetch, loaders, coreApi, _parse, _parseSync, _parseInBatches, ...serializableContext} =
-    context;
+  const {
+    fetch,
+    loaders,
+    coreApi,
+    signal,
+    reportProgress,
+    _parse,
+    _parseSync,
+    _parseInBatches,
+    ...serializableContext
+  } = context;
   return JSON.parse(JSON.stringify(serializableContext));
 }
 

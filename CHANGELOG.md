@@ -4,6 +4,13 @@
 
 ### Unreleased
 
+- Worker cancellation now promptly removes queued jobs and replaces terminated running workers.
+- Async loader and worker APIs accept shared `signal` and `onProgress` options, with typed phase
+  progress and worker-local `context.reportProgress` support for atomic and streaming work.
+- Parquet batch decoding reports rows; Draco decoding reports task start and completion.
+- Authenticated loading preserves caller abort reasons through signing, credential refresh, and replay.
+
+
 ### v5.0.0-alpha.13
 
 - chore(math.gl): upgrade to alpha.19 and migrate removed leaf packages to grouped subpaths

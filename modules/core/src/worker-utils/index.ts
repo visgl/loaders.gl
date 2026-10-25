@@ -10,6 +10,7 @@ export type {
   LoadWorker,
   WorkerObject,
   WorkerOptions,
+  WorkerProgress,
   WorkerContext,
   WorkerJobContext,
   Process,

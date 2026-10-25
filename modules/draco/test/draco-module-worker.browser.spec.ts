@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
 import {processOnWorker} from '@loaders.gl/core/worker-utils';
@@ -25,6 +25,7 @@ test.each([
     loadWorker: () =>
       new Worker(new URL('/modules/draco/dist/draco-worker.js', location.href), {type: 'module'})
   };
+  const onProgress = vi.fn();
   const mesh = await processOnWorker(loader, encoded, {
     ...getDracoLibraryOptions(
       libraryMode === 'custom'
@@ -39,7 +40,14 @@ test.each([
         : {}
     ),
     draco: {shape: 'mesh'},
+    onProgress,
     reuseWorkers: false
+  });
+  expect(onProgress).toHaveBeenLastCalledWith({
+    phase: 'decode',
+    completed: 1,
+    total: 1,
+    unit: 'tasks'
   });
   expect(mesh.attributes.POSITION.value).toHaveLength(9);
   expect(mesh.indices.value).toHaveLength(3);

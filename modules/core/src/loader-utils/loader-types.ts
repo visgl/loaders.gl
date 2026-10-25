@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Format} from './format-types';
-import type {LoadWorker} from '@loaders.gl/core/worker-utils';
+import type {LoadWorker, WorkerOptions, WorkerProgress} from '@loaders.gl/core/worker-utils';
 import {DataType, FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 import type {CoreAPI} from './lib/sources/data-source';
@@ -18,7 +18,7 @@ export type SearchParams = Record<string, string | number | boolean>;
 /**
  * Core Loader Options
  */
-export type StrictLoaderOptions = {
+export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
   /** Experimental common scan request. Format loaders implement the fields they support. */
   _scan?: ExperimentalScanOptions;
   /** Query parameters appended to the initial URL request. */
@@ -97,13 +97,17 @@ export type StrictLoaderOptions = {
   modules?: Record<string, unknown>;
 
   // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
-  [loaderId: string]: Record<string, unknown> | undefined;
+  [loaderId: string]:
+    | Record<string, unknown>
+    | AbortSignal
+    | ((progress: WorkerProgress) => void)
+    | undefined;
 };
 
 /**
  * Core Loader Options
  */
-export type LoaderOptions = {
+export type LoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
   /** Experimental common scan request. Format loaders implement the fields they support. */
   _scan?: ExperimentalScanOptions;
   /** Query parameters appended to the initial URL request. */
@@ -332,6 +336,10 @@ export type LoaderWithParser<
  *   threads back to main thread.
  */
 export type LoaderContext = {
+  /** Cancels nested asynchronous operations where supported. */
+  signal?: AbortSignal;
+  /** Reports progress within a loader-defined phase. */
+  reportProgress?: (progress: WorkerProgress) => void;
   /** Loader list provided to top-level loader call plus any sub loaders */
   loaders?: Loader[] | null;
   /** If URL is available.  */
