@@ -412,3 +412,21 @@ test.each([
   await expect(fetchFunction('https://example.com/data')).rejects.toBe(abortReason);
   expect(transport).toHaveBeenCalledOnce();
 });
+
+test('source fetch applies the shared signal and preserves per-request overrides', async () => {
+  const controller = new AbortController();
+  const requestController = new AbortController();
+  const fetchFunction = vi.fn(async (_url: string, _options?: RequestInit) => new Response('ok'));
+  const authenticatedFetch = getAuthenticatedFetch({
+    signal: controller.signal,
+    core: {fetch: fetchFunction}
+  });
+  await authenticatedFetch('/source');
+  expect(fetchFunction.mock.calls[0][1]?.signal).toBe(controller.signal);
+  await authenticatedFetch('/source', {signal: requestController.signal});
+  expect(fetchFunction.mock.calls[1][1]?.signal).toBe(requestController.signal);
+  const reason = new Error('source cancelled');
+  controller.abort(reason);
+  await expect(authenticatedFetch('/source')).rejects.toBe(reason);
+  expect(fetchFunction).toHaveBeenCalledTimes(2);
+});

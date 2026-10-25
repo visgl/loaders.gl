@@ -342,9 +342,10 @@ export function getAuthenticatedFetch(options: LoaderOptions = {}): FetchLike {
     fetchFunction = (url, requestOptions) => fetch(url, requestOptions);
   }
 
+  const fetchOptions = typeof fetchOption === 'object' && fetchOption ? fetchOption : undefined;
   return createAuthenticatedFetch({
     fetch: fetchFunction,
-    fetchOptions: typeof fetchOption === 'object' && fetchOption ? fetchOption : undefined,
+    fetchOptions: options.signal ? {...fetchOptions, signal: options.signal} : fetchOptions,
     credentials: options.core?.credentials || [],
     authentications: options.core?.authentications
   });

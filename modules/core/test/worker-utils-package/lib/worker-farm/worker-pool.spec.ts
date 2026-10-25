@@ -187,3 +187,15 @@ test('an already aborted job does not create a worker', async () => {
   expect(loadWorker).not.toHaveBeenCalled();
   pool.destroy();
 });
+
+test('explicit undefined job abort reasons are preserved', async () => {
+  const pool = new WorkerPool({source: testWorkerSource});
+  try {
+    const job = await pool.startJob('undefined reason');
+    job.abort(undefined);
+    await expect(job.result).rejects.toBeUndefined();
+    expect(job.workerThread.terminated).toBe(true);
+  } finally {
+    pool.destroy();
+  }
+});

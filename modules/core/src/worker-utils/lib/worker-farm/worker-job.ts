@@ -66,12 +66,14 @@ export default class WorkerJob {
    * Terminates the worker executing this job and rejects its result.
    * @param reason Abort reason supplied by the caller, or a cross-runtime `AbortError`.
    */
-  abort(reason: unknown = createAbortError(`Worker job "${this.name}" was aborted`)): void {
+  abort(reason?: unknown): void {
     if (!this.isRunning) {
       return;
     }
     this.workerThread.destroy();
-    this.error(reason);
+    this.error(
+      arguments.length ? reason : createAbortError(`Worker job "${this.name}" was aborted`)
+    );
   }
 }
 
