@@ -21,7 +21,9 @@ const numeric = (value: unknown): number | undefined =>
 const string = (value: unknown): string | undefined =>
   typeof value === 'string' ? value : undefined;
 /** Decode common CF attributes without conflating raw and scaled values. */
-export function parseCFVariableMetadata(attributes: Readonly<Record<string, unknown>>): CFVariableMetadata {
+export function parseCFVariableMetadata(
+  attributes: Readonly<Record<string, unknown>>
+): CFVariableMetadata {
   const range = attributes.valid_range;
   return {
     units: string(attributes.units),
@@ -35,8 +37,10 @@ export function parseCFVariableMetadata(attributes: Readonly<Record<string, unkn
     missingValue: numeric(attributes.missing_value),
     scaleFactor: numeric(attributes.scale_factor),
     addOffset: numeric(attributes.add_offset),
-    validRange: Array.isArray(range) && range.length === 2 &&
-      range.every(v => numeric(v) !== undefined) ? [range[0], range[1]] : undefined
+    validRange:
+      Array.isArray(range) && range.length === 2 && range.every(v => numeric(v) !== undefined)
+        ? [range[0], range[1]]
+        : undefined
   };
 }
 /** Apply CF packing and missing-data rules to numeric samples. */
@@ -47,12 +51,13 @@ export function decodeCFNumericValues(
   const result = new Float64Array(values.length);
   for (let i = 0; i < values.length; i++) {
     const raw = values[i];
-    const invalid = !Number.isFinite(raw) ||
-      raw === metadata.fillValue || raw === metadata.missingValue ||
+    const invalid =
+      !Number.isFinite(raw) ||
+      raw === metadata.fillValue ||
+      raw === metadata.missingValue ||
       (metadata.validRange !== undefined &&
         (raw < metadata.validRange[0] || raw > metadata.validRange[1]));
-    result[i] = invalid ? NaN :
-      raw * (metadata.scaleFactor ?? 1) + (metadata.addOffset ?? 0);
+    result[i] = invalid ? NaN : raw * (metadata.scaleFactor ?? 1) + (metadata.addOffset ?? 0);
   }
   return result;
 }

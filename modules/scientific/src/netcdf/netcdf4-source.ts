@@ -31,10 +31,12 @@ export class NetCDF4Source {
     const metadata = await this.hdf5.getScientificMetadata();
     return {
       ...metadata,
-      variables: metadata.variables.map((variable): ScientificVariable => ({
-        ...variable,
-        units: parseCFVariableMetadata(variable.attributes ?? {}).units
-      }))
+      variables: metadata.variables.map(
+        (variable): ScientificVariable => ({
+          ...variable,
+          units: parseCFVariableMetadata(variable.attributes ?? {}).units
+        })
+      )
     };
   }
   /** Read a variable through the underlying HDF5 source. */
@@ -47,7 +49,7 @@ export class NetCDF4Source {
     const values = raw.data;
     if (!('length' in values)) throw new Error('NetCDF-4: numeric array required');
     const metadata = parseCFVariableMetadata(raw.attributes ?? {});
-    const data = decodeCFNumericValues(values as ArrayLike<number>, metadata);
+    const data = decodeCFNumericValues(values as unknown as ArrayLike<number>, metadata);
     return {...raw, data, attributes: {...raw.attributes, ...metadata}};
   }
   /** Close the underlying HDF5 source. */

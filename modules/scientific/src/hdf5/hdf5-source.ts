@@ -94,7 +94,9 @@ export class HDF5Source implements ScientificArraySource {
       return [start, end];
     });
     const pushedDown = Boolean(dataset.readSelection);
-    const input = dataset.readSelection ? await dataset.readSelection(ranges) : await dataset.read();
+    const input = dataset.readSelection
+      ? await dataset.readSelection(ranges)
+      : await dataset.read();
     requireValid(
       ArrayBuffer.isView(input) && 'length' in input && typeof input.length === 'number',
       'backend must return a numeric typed array'

@@ -28,22 +28,31 @@ type WasmNode = {
   close?: () => void;
 };
 type WasmModule = {
-  ready: Promise<{FS: {writeFile(path: string, data: Uint8Array): void;
-    unlink(path: string): void}}>;
+  ready: Promise<{
+    FS: {writeFile(path: string, data: Uint8Array): void; unlink(path: string): void};
+  }>;
   File: new (path: string, mode: string) => WasmNode;
 };
 
+/** Require a numeric typed array from an HDF5 dataset. */
 function numericValues(value: unknown): ArrayBufferView {
   if (ArrayBuffer.isView(value) && !(value instanceof DataView)) return value;
   throw new Error('HDF5: dataset is not a supported numeric typed array');
 }
+/** Map an HDF5 numeric typed array to the scientific dtype name. */
 function numericType(value: ArrayBufferView): string {
   const name = value.constructor.name;
   const types: Record<string, string> = {
-    Int8Array: 'int8', Uint8Array: 'uint8', Int16Array: 'int16',
-    Uint16Array: 'uint16', Int32Array: 'int32', Uint32Array: 'uint32',
-    Float32Array: 'float32', Float64Array: 'float64',
-    BigInt64Array: 'int64', BigUint64Array: 'uint64'
+    Int8Array: 'int8',
+    Uint8Array: 'uint8',
+    Int16Array: 'int16',
+    Uint16Array: 'uint16',
+    Int32Array: 'int32',
+    Uint32Array: 'uint32',
+    Float32Array: 'float32',
+    Float64Array: 'float64',
+    BigInt64Array: 'int64',
+    BigUint64Array: 'uint64'
   };
   if (!types[name]) throw new Error('HDF5: unsupported numeric type ' + name);
   return types[name];
@@ -91,23 +100,42 @@ export async function openH5WasmBackend(input: ArrayBuffer | Uint8Array): Promis
           if (m.type === 0) return (m.signed ? 'int' : 'uint') + String((m.size ?? 0) * 8);
           return 'unknown';
         })();
-        datasets.push({path: name, dataset: {
-          shape: [...child.shape], dtype, attributes: Object.fromEntries(Object.entries(child.attrs ?? {}).map(([key, attribute]) => [key, (attribute as {value?: unknown})?.value ?? attribute])),
-          async read() {
-            assertOpen();
-            const data = numericValues(sample.value);
-            numericType(data);
-            return data;
+        datasets.push({
+          path: name,
+          dataset: {
+            shape: [...child.shape],
+            dtype,
+            attributes: Object.fromEntries(
+              Object.entries(child.attrs ?? {}).map(([key, attribute]) => [
+                key,
+                (attribute as {value?: unknown})?.value ?? attribute
+              ])
+            ),
+            async read() {
+              assertOpen();
+              const data = numericValues(sample.value);
+              numericType(data);
+              return data;
+            }
           }
-        }});
+        });
       } else if (child.keys) {
         visit(child, name, depth + 1);
       }
     }
   };
-  try {visit(file, '', 0);} catch (error) {file.close?.(); FS.unlink(path); throw error;}
+  try {
+    visit(file, '', 0);
+  } catch (error) {
+    file.close?.();
+    FS.unlink(path);
+    throw error;
+  }
   return {
-    async listDatasets() {assertOpen(); return datasets;},
+    async listDatasets() {
+      assertOpen();
+      return datasets;
+    },
     close() {
       if (closed) return;
       closed = true;

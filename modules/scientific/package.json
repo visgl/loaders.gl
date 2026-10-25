@@ -72,9 +72,9 @@
   },
   "dependencies": {
     "@math.gl/geospatial": "5.0.0-alpha.19",
+    "h5wasm": "^0.10.3",
     "zarr": "^0.5.0",
-    "zarrita": "~0.7.1",
-    "h5wasm": "^0.10.3"
+    "zarrita": "~0.7.1"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
