@@ -31,6 +31,10 @@ test('TAR rejects unsafe paths and links', async () => {
   builder.addFile('../escape', new Uint8Array([1]).buffer);
   const unsafeArchive = await builder.build();
   expect(() => readTarArchive(unsafeArchive)).toThrow(/Unsafe TAR path/);
+  const driveBuilder = new TarBuilder();
+  driveBuilder.addFile('C:/escape', new Uint8Array([1]).buffer);
+  const driveArchive = await driveBuilder.build();
+  expect(() => readTarArchive(driveArchive)).toThrow(/Unsafe TAR path/);
   const archive = await TarWriter.encode({'file.txt': 'data'});
   const bytes = new Uint8Array(archive);
   bytes[156] = 50;
