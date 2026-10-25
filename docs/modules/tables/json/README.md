@@ -89,7 +89,10 @@ blocked input read and rejects with the caller's reason; underlying iterator cle
 and cannot delay cancellation. Already transferred input buffers remain detached.
 
 Set `core.workerInBatches: false` to retain caller-side batch parsing. Custom worker URLs require
-`core.workerInBatches: true` to declare protocol support. Node workers remain experimental and require
+`core.workerInBatches: true` to declare protocol support. Browser workers use the published CDN
+asset by default, so bundling the application does not require copying a worker beside it. To
+self-host, set `json.workerUrl`, `json-table.workerUrl`, or `ndjson.workerUrl` for the chosen loader.
+Node workers remain experimental and require
 `core._nodeWorkers: true`; browser and CommonJS Node worker bundles are included in the package.
 `GeoJSONLoader`, `NDGeoJSONLoader`, and the experimental `FastJSONLoader` do not opt into this new
 worker. Use `JSONLoader` with `json.backend: 'fast'` for fast-backend worker batches.

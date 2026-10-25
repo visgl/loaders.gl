@@ -6,7 +6,7 @@ import {afterEach, expect, test, vi} from 'vitest';
 import {Field, Int32, Schema, Table, Utf8} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {WorkerFarm, getWorkerURL} from '@loaders.gl/core/worker-utils';
 import {JSONLoader, JSONTableLoader, NDJSONLoader} from '@loaders.gl/tables/json';
 import {JSONLoaderWithParser} from '@loaders.gl/tables/json/json-loader';
 import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json/json-table-loader';
@@ -104,7 +104,11 @@ test.each([
   expect(schema.metadata.get('origin')).toBe('worker-test');
   const atomic: any = await parse(encoder.encode(text), loader, {
     ...options,
-    core: {...options.core, _workerType: 'classic'}
+    core: {...options.core, _workerType: 'classic'},
+    [loader.id]: {
+      ...options[namespace],
+      workerUrl: new URL('/modules/tables/dist/json-worker.js', location.href).href
+    }
   });
   expect(atomic.data).toBeInstanceOf(Table);
   expect(Array.from(atomic.data, (row: any) => row.toJSON())).toEqual(rows);
@@ -198,4 +202,13 @@ test.each([
   );
   expect(batches.map(batch => batch.shape)).toEqual([shape, shape]);
   expect(batches.flatMap(batch => batch.data)).toEqual(expected);
+});
+
+test('JSON loaders resolve their shared published browser asset outside test mode', () => {
+  for (const loader of [JSONLoader, JSONTableLoader, NDJSONLoader]) {
+    expect(loader.worker).toBe(true);
+    expect(getWorkerURL(loader, {_workerType: 'classic'})).toMatch(
+      /^https:\/\/unpkg\.com\/@loaders\.gl\/tables@[^/]+\/dist\/json-worker\.js$/
+    );
+  }
 });
