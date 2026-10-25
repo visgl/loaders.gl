@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import {HDF5Source, type HDF5Backend} from '../hdf5/index';
+import {parseCFVariableMetadata, decodeCFNumericValues} from './cf-conventions';
 import type {
   ScientificArray,
   ScientificDatasetMetadata,
@@ -30,18 +31,24 @@ export class NetCDF4Source {
     const metadata = await this.hdf5.getScientificMetadata();
     return {
       ...metadata,
-      variables: metadata.variables.map(
-        (variable): ScientificVariable => ({
-          ...variable,
-          units:
-            typeof variable.attributes?.units === 'string' ? variable.attributes.units : undefined
-        })
-      )
+      variables: metadata.variables.map((variable): ScientificVariable => ({
+        ...variable,
+        units: parseCFVariableMetadata(variable.attributes ?? {}).units
+      }))
     };
   }
   /** Read a variable through the underlying HDF5 source. */
   readScientificVariable(name: string, selection?: ScientificSelection): Promise<ScientificArray> {
     return this.hdf5.readScientificVariable(name, selection);
+  }
+  /** Opt-in CF packing/missing-value decoding; raw reads remain lossless. */
+  async readCFVariable(name: string, selection?: ScientificSelection): Promise<ScientificArray> {
+    const raw = await this.readScientificVariable(name, selection);
+    const values = raw.data;
+    if (!('length' in values)) throw new Error('NetCDF-4: numeric array required');
+    const metadata = parseCFVariableMetadata(raw.attributes ?? {});
+    const data = decodeCFNumericValues(values as ArrayLike<number>, metadata);
+    return {...raw, data, attributes: {...raw.attributes, ...metadata}};
   }
   /** Close the underlying HDF5 source. */
   close(): Promise<void> {
