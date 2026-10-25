@@ -5,7 +5,7 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import type {Mesh} from '@loaders.gl/core/schema';
 import {parse} from '@loaders.gl/core';
-import {PotreeBinLoader} from '@loaders.gl/potree';
+import {PotreeBinLoader} from '@loaders.gl/tiles-3d/potree';
 import {
   PointCloudTiler,
   convertTableToMesh,

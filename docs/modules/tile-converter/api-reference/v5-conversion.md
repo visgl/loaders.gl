@@ -913,7 +913,7 @@ const result = await convertPointCloudToPotree(decodedPoints, {
 ```
 
 The projection is written verbatim; it does not validate or transform the coordinates.
-Version and attribute support follow the [Potree writer](/docs/modules/potree/api-reference/potree-writer):
+Version and attribute support follow the [Potree writer](/docs/modules/tiles-3d/potree/api-reference/potree-writer):
 1.0–1.8 binary output or 2.0 DEFAULT output. Unsupported attributes and positional
 rounding outside the chosen version's precision gate fail; no attributes are silently
 removed. Modern output retains numeric attributes, including exact 64-bit IDs.
@@ -945,7 +945,7 @@ import {
   openPointCloudFile,
   extractMeshVertices
 } from '@loaders.gl/tile-converter/v5/browser';
-import {COPCWriter} from '@loaders.gl/copc';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc';
 
 // Opt in to one point per stored vertex of already placed triangle geometry.
 const points = extractMeshVertices(meshResource.mesh, {

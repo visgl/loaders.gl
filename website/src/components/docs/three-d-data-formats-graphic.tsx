@@ -21,7 +21,7 @@ const FORMAT_LANES = [
     formats: [
       {label: '3D Tiles 1.0 / 1.1', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
       {label: 'I3S 1.7 / 1.8 + PC 2.x', to: '/docs/modules/i3s/formats/i3s'},
-      {label: 'COPC 1.0 · Potree 1.x', to: '/docs/modules/copc/formats/copc'}
+      {label: 'COPC 1.0 · Potree 1.x', to: '/docs/modules/tiles-3d/copc/formats/copc'}
     ]
   },
   {

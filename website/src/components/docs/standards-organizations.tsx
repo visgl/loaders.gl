@@ -34,7 +34,7 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
       {label: 'KTX / KTX2', to: '/docs/modules/textures/formats/ktx'},
       {label: 'Basis', to: '/docs/modules/textures/formats/basis'},
       {label: 'LAS / LAZ', to: '/docs/modules/las/formats/las'},
-      {label: 'COPC', to: '/docs/modules/copc/formats/copc'},
+      {label: 'COPC', to: '/docs/modules/tiles-3d/copc/formats/copc'},
       {label: 'OpenUSD', to: '/docs/modules/scene/formats/usd'}
     ]
   },
@@ -146,7 +146,7 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
       {label: 'ASPRS LAS / LAZ', to: '/docs/modules/las/formats/las'},
       {label: 'Cesium 3D Tiles', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
       {label: 'AOUSD OpenUSD', to: '/docs/modules/scene/formats/usd'},
-      {label: 'COPC', to: '/docs/modules/copc/formats/copc'}
+      {label: 'COPC', to: '/docs/modules/tiles-3d/copc/formats/copc'}
     ]
   }
 ];

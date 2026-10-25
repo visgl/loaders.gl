@@ -239,7 +239,7 @@ const loaderDocumentationLinks = {
   ParquetLoader: '/docs/modules/tables/parquet/api-reference/parquet-loader',
   PCDLoader: '/docs/modules/pcd/api-reference/pcd-loader',
   PLYLoader: '/docs/modules/ply/api-reference/ply-loader',
-  PotreeLoader: '/docs/modules/potree/api-reference/potree-loader',
+  PotreeLoader: '/docs/modules/tiles-3d/potree/api-reference/potree-loader',
   QuantizedMeshLoader: '/docs/modules/terrain/api-reference/quantized-mesh-loader',
   RadianceHDRLoader: '/docs/modules/textures/api-reference/radiance-hdr-loader',
   ShapefileLoader: '/docs/modules/geospatial/shapefile/api-reference/shapefile-loader',

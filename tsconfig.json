@@ -189,11 +189,11 @@
       "@loaders.gl/compression/test": [
         "modules/compression/test"
       ],
-      "@loaders.gl/copc": [
-        "modules/copc/src"
+      "@loaders.gl/tiles-3d/copc": [
+        "modules/tiles-3d/src/copc"
       ],
-      "@loaders.gl/copc/test": [
-        "modules/copc/test"
+      "@loaders.gl/tiles-3d/copc/test": [
+        "modules/tiles-3d/test/copc"
       ],
       "@loaders.gl/crypto": [
         "modules/crypto/src"
@@ -363,14 +363,14 @@
       "@loaders.gl/scene/test": [
         "modules/scene/test"
       ],
-      "@loaders.gl/potree/potree-loader": [
-        "modules/potree/src/potree-loader.ts"
+      "@loaders.gl/tiles-3d/potree/potree-loader": [
+        "modules/tiles-3d/src/potree/potree-loader.ts"
       ],
-      "@loaders.gl/potree": [
-        "modules/potree/src"
+      "@loaders.gl/tiles-3d/potree": [
+        "modules/tiles-3d/src/potree"
       ],
-      "@loaders.gl/potree/test": [
-        "modules/potree/test"
+      "@loaders.gl/tiles-3d/potree/test": [
+        "modules/tiles-3d/test/potree"
       ],
       "@loaders.gl/tiles-3d/point-cloud-tile-source": [
         "modules/tiles-3d/src/point-cloud-tile-source.ts"

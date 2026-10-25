@@ -62,7 +62,7 @@ function makeAliases() {
     '@loaders.gl/ogc/stac/test': resolveTestPath('./modules/ogc/test/stac'),
     '@loaders.gl/tiles/pmtiles/test': resolveTestPath('./modules/tiles/test/pmtiles'),
     '@loaders.gl/core/polyfills/test': resolveTestPath('./modules/core/test/polyfills-package'),
-    '@loaders.gl/potree/test': resolveTestPath('./modules/potree/test'),
+    '@loaders.gl/tiles-3d/potree/test': resolveTestPath('./modules/tiles-3d/test/potree'),
     '@loaders.gl/geospatial/shapefile/test': resolveTestPath('./modules/geospatial/test/shapefile'),
     '@loaders.gl/core/schema/test': resolveTestPath('./modules/core/test/schema-package'),
     '@loaders.gl/raster/test/terrain': resolveTestPath('./modules/raster/test/terrain'),

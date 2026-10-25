@@ -5451,18 +5451,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/copc@npm:5.0.0-alpha.13, @loaders.gl/copc@workspace:*, @loaders.gl/copc@workspace:modules/copc":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/copc@workspace:modules/copc"
-  dependencies:
-    "@loaders.gl/las": "npm:5.0.0-alpha.13"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.19"
-    copc: "npm:0.0.8"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
-
 "@loaders.gl/core@npm:^5.0.0-alpha.0, @loaders.gl/core@workspace:modules/core":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/core@workspace:modules/core"
@@ -5786,19 +5774,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/potree@npm:5.0.0-alpha.13, @loaders.gl/potree@workspace:*, @loaders.gl/potree@workspace:modules/potree":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/potree@workspace:modules/potree"
-  dependencies:
-    "@loaders.gl/compression": "npm:5.0.0-alpha.13"
-    "@loaders.gl/las": "npm:5.0.0-alpha.13"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.19"
-    zod: "npm:^4.1.12"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
-
 "@loaders.gl/raster@npm:^5.0.0-alpha.0, @loaders.gl/raster@workspace:modules/raster":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/raster@workspace:modules/raster"
@@ -5990,13 +5965,11 @@ __metadata:
   resolution: "@loaders.gl/tile-converter@workspace:apps/tile-converter"
   dependencies:
     "@loaders.gl/compression": "npm:5.0.0-alpha.13"
-    "@loaders.gl/copc": "npm:5.0.0-alpha.13"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/crypto": "npm:5.0.0-alpha.13"
     "@loaders.gl/draco": "npm:5.0.0-alpha.13"
     "@loaders.gl/gltf": "npm:5.0.0-alpha.13"
     "@loaders.gl/images": "npm:5.0.0-alpha.13"
-    "@loaders.gl/potree": "npm:5.0.0-alpha.13"
     "@loaders.gl/textures": "npm:5.0.0-alpha.13"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.13"
     "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.13"
@@ -6032,6 +6005,7 @@ __metadata:
     "@loaders.gl/draco": "npm:5.0.0-alpha.13"
     "@loaders.gl/gltf": "npm:5.0.0-alpha.13"
     "@loaders.gl/images": "npm:5.0.0-alpha.13"
+    "@loaders.gl/las": "npm:5.0.0-alpha.13"
     "@loaders.gl/textures": "npm:5.0.0-alpha.13"
     "@loaders.gl/zip": "npm:5.0.0-alpha.13"
     "@math.gl/core": "npm:5.0.0-alpha.19"
@@ -6039,6 +6013,7 @@ __metadata:
     "@math.gl/earth": "npm:5.0.0-alpha.19"
     "@math.gl/geometry": "npm:5.0.0-alpha.19"
     "@math.gl/geospatial": "npm:5.0.0-alpha.19"
+    copc: "npm:0.0.8"
     probe.gl: "npm:^5.0.0"
     zod: "npm:^4.1.12"
   peerDependencies:
@@ -27201,11 +27176,10 @@ __metadata:
     "@deck.gl/layers": "npm:^9.4.0"
     "@deck.gl/mesh-layers": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
-    "@loaders.gl/copc": "workspace:*"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
-    "@loaders.gl/potree": "workspace:*"
     "@loaders.gl/tiles": "workspace:*"
+    "@loaders.gl/tiles-3d": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"

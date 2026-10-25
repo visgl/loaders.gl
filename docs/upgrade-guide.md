@@ -362,13 +362,19 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
   Set `gml.shape: 'geojson'` for the previous geometry/FeatureCollection/null result, including
   FeatureCollection batches. WFS source format selection is unchanged.
 
-**@loaders.gl/draco, @loaders.gl/potree, and @loaders.gl/raster/terrain/index**
+**@loaders.gl/draco, @loaders.gl/tiles-3d/potree, and @loaders.gl/raster/terrain/index**
 
  - `DracoLoader`, `PotreeBinLoader`, `TerrainLoader`, and `QuantizedMeshLoader` now return Mesh
    Arrow tables by default. Set the corresponding loader option to `shape: 'mesh'` to preserve
    the legacy Mesh object shape. Arrow results stay on the calling thread when worker execution
    would strip Arrow table methods.
  - `draco.decoderType` has been removed. Use `draco.backend: 'wasm' | 'javascript' | 'draco3d'`.
+
+**COPC and Potree package consolidation**
+
+- Replace imports from `@loaders.gl/copc` with `@loaders.gl/tiles-3d/copc`.
+- Replace imports from `@loaders.gl/potree` with `@loaders.gl/tiles-3d/potree`.
+- Install `@loaders.gl/tiles-3d` in place of the removed COPC and Potree packages.
 
 **Removed GIS package**
 

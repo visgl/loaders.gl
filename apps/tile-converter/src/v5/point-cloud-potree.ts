@@ -4,8 +4,12 @@
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {PointCloudTiler, type PointCloudTilerOptions} from '@loaders.gl/core/schema-utils';
-import {encodePotreeDataset} from '@loaders.gl/potree';
-import type {PotreeDataset, PotreeWriterNode, PotreeWriterOptions} from '@loaders.gl/potree';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import type {
+  PotreeDataset,
+  PotreeWriterNode,
+  PotreeWriterOptions
+} from '@loaders.gl/tiles-3d/potree';
 import {encodePotreeDatasetArchive} from './point-cloud-file.js';
 
 /** Bounded authoring of one decoded dataset in its already placed native coordinates. */

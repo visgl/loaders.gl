@@ -2,7 +2,7 @@
 
 ## Sample Data Licenses
 
-- `ellipsoid-1.4.laz` is copied from `modules/copc/test/data/ellipsoid-1.4.laz`. The original sample data was forked from https://github.com/connormanning/copc.js under the MIT License, Copyright (c) 2021 Connor Manning.
+- `ellipsoid-1.4.laz` is copied from `modules/tiles-3d/test/copc/data/ellipsoid-1.4.laz`. The original sample data was forked from https://github.com/connormanning/copc.js under the MIT License, Copyright (c) 2021 Connor Manning.
 - `points-1.4.las` is a generated loaders.gl test fixture under the loaders.gl MIT License. It contains three LAS 1.4 point-format 7 records with RGB color.
 - `pdrf6-1.4.las` and `pdrf6-1.4.laz` are deterministic 1,024-point LAS 1.4 point-format 6 fixtures generated with the laz-perf 3.4.0 `random` tool. They include four Extra Bytes per point; the LAZ file uses four 256-point chunks.
 - `pdrf7-v4-1.4.las` and `pdrf7-v4-1.4.laz` are deterministic 1,024-point LAS 1.4 point-format 7 fixtures compressed and decompressed byte-for-byte with LASzip commit `b17291d`. The LAZ fixture uses Point14, RGB14, and Byte14 item version 4, all four scanner channels, varied return and classification flags, GPS time, RGB, and four Extra Bytes per point. It retains 18 legal user-header bytes because LASzip version 4 was requested through a temporary LAS 1.5 header before restoring the published file's version to LAS 1.4.

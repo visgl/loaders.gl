@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/tiles-3d",
   "version": "5.0.0-alpha.13",
-  "description": "3D tilesets, 3D Tiles, and I3S loaders",
+  "description": "3D tilesets, 3D Tiles, I3S, COPC, and Potree loaders",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -26,6 +26,35 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./copc": {
+      "types": "./dist/copc/index.d.ts",
+      "import": "./dist/copc/index.js",
+      "require": "./dist/copc/index.cjs"
+    },
+    "./potree": {
+      "types": "./dist/potree/index.d.ts",
+      "import": "./dist/potree/index.js",
+      "require": "./dist/potree/index.cjs"
+    },
+    "./potree/unbundled": {
+      "types": "./dist/potree/unbundled.d.ts",
+      "import": "./dist/potree/unbundled.js"
+    },
+    "./potree/bundled": {
+      "types": "./dist/potree/bundled.d.ts",
+      "import": "./dist/potree/bundled.js"
+    },
+    "./potree/potree-loader": {
+      "types": "./dist/potree/potree-loader.d.ts",
+      "import": "./dist/potree/potree-loader.js",
+      "require": "./dist/potree/potree-loader.cjs"
+    },
+    "./potree/potree-metadata-schema": {
+      "types": "./dist/potree/potree-metadata-schema.d.ts",
+      "import": "./dist/potree/potree-metadata-schema.js",
+      "require": "./dist/potree/potree-metadata-schema.cjs"
+    },
+    "./potree/potree-metadata.schema.json": "./dist/potree/potree-metadata.schema.json",
     "./point-cloud-tile-source": {
       "types": "./dist/point-cloud-tile-source.d.ts",
       "import": "./dist/point-cloud-tile-source.js",
@@ -138,7 +167,10 @@
     "i3s-build-worker-node": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "i3s-build-lepcc-worker": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-lepcc-worker.ts --outfile=dist/i3s-lepcc-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "i3s-build-lepcc-worker-node": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-lepcc-worker-node.ts --outfile=dist/i3s-lepcc-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "pre-build": "npm run 3d-tiles-pre-build && npm run i3s-pre-build && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run 3d-tiles-pre-build && npm run i3s-pre-build && npm run potree-generate-json-schema && npm run potree-build-bundle && npm run potree-build-bundle-dev && npm run build-bundle && npm run build-bundle-dev",
+    "potree-generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/potree/potree-metadata-schema.js --export PotreeMetadataSchema --output ./dist/potree/potree-metadata.schema.json --id https://unpkg.com/@loaders.gl/tiles-3d/potree/potree-metadata.schema.json --title 'Potree 1.x cloud.js metadata'",
+    "potree-build-bundle": "node ../../scripts/build-codec-bundle.mjs ./potree/bundle.ts --output=dist/potree/dist.min.js",
+    "potree-build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./potree/bundle.ts --env=dev --output=dist/potree/dist.dev.js",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker-i3s-content": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-content-worker.ts --outfile=dist/i3s-content-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -151,6 +183,7 @@
     "@loaders.gl/draco": "5.0.0-alpha.13",
     "@loaders.gl/gltf": "5.0.0-alpha.13",
     "@loaders.gl/images": "5.0.0-alpha.13",
+    "@loaders.gl/las": "5.0.0-alpha.13",
     "@loaders.gl/textures": "5.0.0-alpha.13",
     "@loaders.gl/zip": "5.0.0-alpha.13",
     "@math.gl/core": "5.0.0-alpha.19",
@@ -163,7 +196,8 @@
   },
   "devDependencies": {
     "@deck.gl/core": "^9.4.0",
-    "@math.gl/dggs": "5.0.0-alpha.19"
+    "@math.gl/dggs": "5.0.0-alpha.19",
+    "copc": "0.0.8"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

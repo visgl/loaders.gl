@@ -15,7 +15,7 @@ type PointCloudFormatNode = {
 const INPUTS: readonly PointCloudFormatNode[] = [
   {label: 'LAS', detail: 'uncompressed records', to: '/docs/modules/las/formats/las'},
   {label: 'LAZ', detail: 'lossless compression', to: '/docs/modules/las/formats/las#las-laz-and-copc'},
-  {label: 'COPC', detail: 'hierarchy + ranges', to: '/docs/modules/copc/formats/copc'}
+  {label: 'COPC', detail: 'hierarchy + ranges', to: '/docs/modules/tiles-3d/copc/formats/copc'}
 ];
 
 const OUTPUTS: readonly PointCloudFormatNode[] = [
