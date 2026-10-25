@@ -4,6 +4,7 @@
 
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
+import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/ellipsoid';
 import {Tile3D} from '../common/tile-3d';
 import {FrameState} from './frame-state';
 
@@ -76,7 +77,7 @@ export function getProjectedRadius(tile: Tile3D, frameState: FrameState): number
   // ---------------------------
   toEye.copy(cameraPositionCartesian).subtract(mbsCenterCartesian).normalize();
   // Add extra vector to form plane
-  Ellipsoid.WGS84.eastNorthUpToFixedFrame(mbsCenterCartesian, enuToCartesianMatrix);
+  eastNorthUpToFixedFrame(Ellipsoid.WGS84, mbsCenterCartesian, enuToCartesianMatrix);
   cartesianToEnuMatrix.copy(enuToCartesianMatrix).invert();
   cameraPositionEnu.copy(cameraPositionCartesian).transform(cartesianToEnuMatrix);
   // Mean Proportionals in Right Triangles - Altitude rule

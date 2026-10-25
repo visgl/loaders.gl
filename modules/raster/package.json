@@ -322,7 +322,7 @@
   },
   "dependencies": {
     "@loaders.gl/images": "5.0.0-alpha.13",
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
     "fast-xml-parser": "^5.3.6"
   },
   "peerDependencies": {

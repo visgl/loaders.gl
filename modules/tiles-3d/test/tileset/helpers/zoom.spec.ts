@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
+import {BoundingSphere, makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
 import {Vector3} from '@math.gl/core';
 import {
   getZoomFromBoundingVolume,
@@ -11,7 +11,7 @@ test('Tiles zoom#getZoomFromBoundingVolume', () => {
   const cartographicCenter = new Vector3([
     -122.46338343363956, 37.791575759047028, 87.413529296405613
   ]);
-  const obb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
+  const obb = makeOrientedBoundingBoxFromQuaternion(
     [-122.46338343363956, 37.791575759047028, 87.413529296405613],
     [860.66259765625, 1499.0565185546875, 72.744453430175781],
     [0.833251953125, -0.34349745512008667, 0.10557035356760025, -0.42018508911132813]
