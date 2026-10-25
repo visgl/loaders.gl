@@ -4,6 +4,8 @@
 
 ### Unreleased
 
+### v5.0.0-alpha.14
+
 - Worker cancellation now promptly removes queued jobs and replaces terminated running workers.
 - Async loader and worker APIs accept shared `signal` and `onProgress` options, with typed phase
   progress and worker-local `context.reportProgress` support for atomic and streaming work.
