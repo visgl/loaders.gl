@@ -75,6 +75,11 @@ export function canParseWithWorkerInBatches(
   loader: Loader,
   options?: StrictLoaderOptions
 ): boolean {
+  // Encryption key callbacks must stay on the caller; JSON worker options omit functions.
+  const parquetOptions = options?.parquet as {keyRetriever?: unknown} | undefined;
+  if (loader.id === 'parquet' && typeof parquetOptions?.keyRetriever === 'function') {
+    return false;
+  }
   return Boolean(
     loader.workerInBatches &&
       canParseWithWorker(loader, options) &&

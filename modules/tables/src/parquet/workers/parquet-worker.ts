@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {ParquetLoaderWithParser} from '../parquet-loader';
+import {ParquetWorkerLoaderWithParser} from '../parquet-worker-loader';
 
-createLoaderWorker(ParquetLoaderWithParser);
+createLoaderWorker(ParquetWorkerLoaderWithParser);

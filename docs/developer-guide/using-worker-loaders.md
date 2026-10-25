@@ -369,7 +369,8 @@ input buffers remain detached after cancellation; retain a copy if the applicati
 checks permit it. The worker stays leased for the iterator lifetime. Input is requested on demand;
 output batches are acknowledged before more output is produced.
 
-CSV Arrow-table output is the initial built-in capability. Loader authors can enable other loaders
+Built-in support includes CSV Arrow-table output and canonical Parquet Arrow/object-row batches.
+Loader authors can enable other loaders
 by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`,
 and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs
 need transport conversion. Metadata entry points stay free of parser implementations.
@@ -394,5 +395,8 @@ worker artifact, such as a local `.cjs` worker. Worker-utils callers use the top
 `workerInBatches` option and can inspect `canProcessOnWorkerInBatches()`.
 
 Batch output and incremental input are separate capabilities. A parser that concatenates its input
-still buffers the complete input inside the worker. Parser options disable recursive worker dispatch
+still buffers the complete input inside the worker. Parquet currently has this behavior: output is
+batched, but its input is collected before decoding. Parquet key-retriever callbacks keep parsing on
+the caller, and the explicit WASM/GeoParquet loaders do not opt into this batch worker.
+Parser options disable recursive worker dispatch
 inside a worker; input transforms and loader selection remain on the caller.
