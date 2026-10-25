@@ -171,14 +171,18 @@ subpaths are import paths, not separate npm packages.
 
 `OGCAPITilesSource` now discovers matrix metadata for canonical `/{tileMatrix}` templates by default. Failed discovery rejects the request instead of silently substituting numeric zoom levels. Await `getMetadata()` before calling synchronous `getTileURL()`, or set `ogc-api.discoverTileMatrixSet: false` to retain the previous numeric-template behavior. Configured `tileMatrixSet` documents take precedence over discovery. See the [OGC API Tiles documentation](./modules/ogc/wms/services/ogc-api.md).
 
-**@loaders.gl/zip**
+**@loaders.gl/zip package removal**
+
+Install `@loaders.gl/archives` and replace `@loaders.gl/zip` imports with `@loaders.gl/archives/zip`. Direct parser access moves from `@loaders.gl/zip/zip-loader` to `@loaders.gl/archives/zip/zip-loader`. Import `TarBuilder` from `@loaders.gl/archives/tar`.
+
+**ZIP archive API changes**
 
 - Removed JSZip passthrough options. Replace `jszip.compression: 'STORE' | 'DEFLATE'` with
   `zip.compression: 'store' | 'deflate'` and use the typed native ZIP options. Writing now uses
   deterministic sorted paths, a fixed UTC timestamp and automatic ZIP64; exact legacy bytes are
   not preserved. `zip.onUpdate` reports start/completion only.
 - Removed `/bundled` and `/unbundled`. Import metadata `ZipLoader` from the package root;
-  direct parser access is `ZipLoaderWithParser` from `@loaders.gl/zip/zip-loader`.
+  direct parser access is `ZipLoaderWithParser` from `@loaders.gl/archives/zip/zip-loader`.
 - `ZipLoader` returns ArrayBuffer values only and rejects invalid entries instead of placing
   errors in the map. Complete reads verify CRCs. The total decoded file-map default is 64 MiB;
   set `zip.maxTotalDecodedBytes` explicitly for larger maps. The independent per-entry limits
@@ -1135,7 +1139,3 @@ Worker URLs move to the raster package root; the LERC WASM export moves to `rast
 Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends.
 GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit
 source subpath when using synchronous `createDataSource()`.
-
-**@loaders.gl/zip package removal**
-
-Install `@loaders.gl/archives` and replace `@loaders.gl/zip` imports with `@loaders.gl/archives/zip`. Replace `@loaders.gl/zip/zip-loader` with `@loaders.gl/archives/zip/zip-loader`. Import `TarBuilder` from `@loaders.gl/archives/tar`.
