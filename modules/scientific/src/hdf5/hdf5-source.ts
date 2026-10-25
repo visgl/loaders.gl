@@ -21,6 +21,8 @@ export interface HDF5Dataset {
   readonly attributes?: Readonly<Record<string, unknown>>;
   /** Full data materialization. Backends may implement optimized slicing later. */
   read(): Promise<ArrayBufferView>;
+  /** Optional storage-level hyperslab read. Must return a dense array in row-major order. */
+  readSelection?(ranges: readonly (readonly [number, number])[]): Promise<ArrayBufferView>;
 }
 /** Backend contract for enumerating and reading HDF5 datasets. */
 export interface HDF5Backend {
@@ -91,16 +93,22 @@ export class HDF5Source implements ScientificArraySource {
       );
       return [start, end];
     });
-    const input = await dataset.read();
+    const pushedDown = Boolean(dataset.readSelection);
+    const input = dataset.readSelection ? await dataset.readSelection(ranges) : await dataset.read();
     requireValid(
       ArrayBuffer.isView(input) && 'length' in input && typeof input.length === 'number',
       'backend must return a numeric typed array'
     );
     const values = input as unknown as {readonly length: number; [index: number]: number};
     const total = dataset.shape.reduce((a, b) => a * b, 1);
-    requireValid(values.length === total, 'dataset shape does not match values');
     const outputShape = ranges.map(([a, b]) => b - a);
     const length = outputShape.reduce((a, b) => a * b, 1);
+    requireValid(
+      values.length === (pushedDown ? length : total),
+      'dataset shape does not match values'
+    );
+    if (pushedDown)
+      return {data: input, dimensions: names, shape: outputShape, attributes: dataset.attributes};
     const constructor = input.constructor as {
       new (length: number): ArrayBufferView & {[index: number]: number};
     };
