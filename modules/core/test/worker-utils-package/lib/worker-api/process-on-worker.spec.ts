@@ -1,4 +1,4 @@
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {
   canProcessOnWorker,
   processOnWorker,
@@ -197,4 +197,48 @@ test('WorkerBody filters browser messages and manages listeners', async () => {
   expect(receivedMessages).toEqual([{type: 'done', payload: {result: 'accepted'}}]);
   await WorkerBody.removeEventListener(onMessage);
   await WorkerBody.removeEventListener(onMessage);
+});
+
+const progressWorkerSource = `
+self.onmessage = ({data}) => {
+  self.postMessage({source: 'loaders.gl', type: 'progress', payload: {progress: {phase: 'decode', completed: 1, total: 1, unit: 'tasks'}}});
+  self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: data.payload.input}});
+  self.postMessage({source: 'loaders.gl', type: 'progress', payload: {progress: {phase: 'late', completed: 2, unit: 'tasks'}}});
+};
+`;
+
+test('progress precedes completion, is not serialized, and stops at settlement', async () => {
+  const progress = vi.fn();
+  const result = await processOnWorker(NullWorker, 'done', {
+    source: progressWorkerSource,
+    onProgress: progress,
+    reuseWorkers: false
+  });
+  expect(result).toBe('done');
+  expect(progress.mock.calls).toEqual([[{phase: 'decode', completed: 1, total: 1, unit: 'tasks'}]]);
+});
+
+test('a throwing progress callback rejects and leaves the pool usable', async () => {
+  const reason = new Error('callback failed');
+  await expect(
+    processOnWorker(NullWorker, 'first', {
+      source: progressWorkerSource,
+      onProgress: () => {
+        throw reason;
+      }
+    })
+  ).rejects.toBe(reason);
+  await expect(processOnWorker(NullWorker, 'second', {source: progressWorkerSource})).resolves.toBe(
+    'second'
+  );
+});
+
+test('already aborted processing does not detach its input', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  const input = new ArrayBuffer(8);
+  await expect(processOnWorker(NullWorker, input, {signal: controller.signal})).rejects.toBe(
+    controller.signal.reason
+  );
+  expect(input.byteLength).toBe(8);
 });

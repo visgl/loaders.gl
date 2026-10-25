@@ -198,3 +198,27 @@ describe('processLoaderWorkerData', () => {
     ).rejects.toThrow('Worker not set up to parse on main thread');
   });
 });
+
+test('loader workers expose progress context for atomic and batched parsers', async () => {
+  const reportProgress = vi.fn();
+  const progress = {phase: 'decode', completed: 1, unit: 'rows'};
+  const loader = {
+    ...BASE_LOADER,
+    parse: async (_input, _options, context) => {
+      context.reportProgress(progress);
+      return 1;
+    },
+    async *parseInBatches(_input, _options, context) {
+      context.reportProgress(progress);
+      yield 2;
+    }
+  };
+  await expect(
+    processLoaderWorkerData(loader as any, new ArrayBuffer(0), {}, {reportProgress})
+  ).resolves.toBe(1);
+  const results = [];
+  for await (const batch of processLoaderWorkerBatches(loader as any, [], {}, {reportProgress}))
+    results.push(batch);
+  expect(results).toEqual([2]);
+  expect(reportProgress.mock.calls).toEqual([[progress], [progress]]);
+});

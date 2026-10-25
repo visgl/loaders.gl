@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  WorkerProgress,
   WorkerMessageType,
   WorkerMessagePayload,
   WorkerContext,
@@ -42,6 +43,9 @@ export async function createWorker(
 
   // eslint-disable-next-line complexity
   WorkerBody.onmessage = async (type: WorkerMessageType, payload: WorkerMessagePayload) => {
+    const reporter =
+      type === 'process' || type === 'process-in-batches' ? createProgressReporter() : undefined;
+    const jobContext = {...context, reportProgress: reporter?.report};
     try {
       switch (type) {
         case 'preload':
@@ -55,9 +59,10 @@ export async function createWorker(
           const result = await process(
             payload.input,
             payload.options || {},
-            context,
+            jobContext,
             payload.context || {}
           );
+          reporter?.finish();
           WorkerBody.postMessage('done', {result});
           break;
 
@@ -73,13 +78,14 @@ export async function createWorker(
             const resultIterator = processInBatches(
               createDemandDrivenIterator(inputBatches),
               payload.options || {},
-              context,
+              jobContext,
               payload.context || {}
             );
             for await (const batch of resultIterator) {
               await WorkerBody.postMessage('output-batch', {result: batch});
               await outputAcknowledgements.next();
             }
+            reporter?.finish();
             await WorkerBody.postMessage('done', {});
           } finally {
             activeInputBatches = null;
@@ -111,6 +117,7 @@ export async function createWorker(
         default:
       }
     } catch (error) {
+      reporter?.finish();
       const message = error instanceof Error ? error.message : '';
       WorkerBody.postMessage('error', {error: message});
     }
@@ -163,4 +170,36 @@ function processOnMainThread(arrayBuffer: ArrayBuffer, options = {}, jobContext 
     const payload = {id, input: arrayBuffer, options, context: jobContext};
     WorkerBody.postMessage('process', payload);
   });
+}
+
+/** Coalesces same-phase reports per event-loop turn and flushes before settlement. */
+function createProgressReporter() {
+  let pending: WorkerProgress | undefined;
+  let finished = false;
+  let scheduled = false;
+  /** Posts the latest pending measurement. */
+  const flush = (): void => {
+    scheduled = false;
+    if (pending) {
+      WorkerBody.postMessage('progress', {progress: pending});
+      pending = undefined;
+    }
+  };
+  return {
+    /** Records progress while retaining phase transitions. */
+    report(progress: WorkerProgress): void {
+      if (finished) return;
+      if (pending && pending.phase !== progress.phase) flush();
+      pending = {...progress};
+      if (!scheduled) {
+        scheduled = true;
+        setTimeout(flush, 0);
+      }
+    },
+    /** Flushes final progress and suppresses reports from stale callbacks. */
+    finish(): void {
+      flush();
+      finished = true;
+    }
+  };
 }

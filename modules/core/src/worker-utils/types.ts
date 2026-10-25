@@ -5,7 +5,23 @@
 /**
  * Worker Options
  */
+/** Progress measured independently within a named phase. */
+export type WorkerProgress = {
+  /** Operation being measured. */
+  phase: string;
+  /** Work completed in this phase. */
+  completed: number;
+  /** Expected work, when known. */
+  total?: number;
+  /** Measurement unit, such as bytes, rows, or tasks. */
+  unit: string;
+};
+
 export type WorkerOptions = {
+  /** Cancels queued or running work. */
+  signal?: AbortSignal;
+  /** Receives phase progress. Throwing aborts the job with that error. */
+  onProgress?: (progress: WorkerProgress) => void;
   // Worker farm options
   CDN?: string | null;
   worker?: boolean;
@@ -26,6 +42,8 @@ export type WorkerOptions = {
 export type LoadWorker = () => Worker | null;
 
 export type WorkerContext = {
+  /** Reports progress from the active worker job. */
+  reportProgress?: (progress: WorkerProgress) => void;
   process?: Process;
   processInBatches?: ProcessInBatches;
 };
@@ -93,6 +111,7 @@ export type WorkerObject = {
               <= error
  */
 export type WorkerMessageType =
+  | 'progress'
   | 'preload'
   | 'process'
   | 'done'
@@ -105,6 +124,8 @@ export type WorkerMessageType =
   | 'output-ack';
 
 export type WorkerMessagePayload = {
+  /** Phase progress from the worker. */
+  progress?: WorkerProgress;
   id?: number;
   options?: {[key: string]: any};
   context?: WorkerJobContext;

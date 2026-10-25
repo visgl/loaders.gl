@@ -1,4 +1,4 @@
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {NullWorker, processOnWorkerInBatches, WorkerFarm} from '@loaders.gl/core/worker-utils';
 
 test('processOnWorkerInBatches keeps state on one worker', async () => {
@@ -75,4 +75,33 @@ test('processOnWorkerInBatches propagates input iterator failures', async () => 
       }
     })()
   ).rejects.toThrow('input failed');
+});
+
+test('aborting blocked streaming input requests cleanup without awaiting it', async () => {
+  const controller = new AbortController();
+  const cleanup = vi.fn(() => new Promise<IteratorResult<string>>(() => {}));
+  let markRequested!: () => void;
+  const requested = new Promise<void>(resolve => {
+    markRequested = resolve;
+  });
+  const input = {
+    [Symbol.asyncIterator]() {
+      return {
+        next: () => {
+          markRequested();
+          return new Promise<IteratorResult<string>>(() => {});
+        },
+        return: cleanup
+      };
+    }
+  };
+  const output = processOnWorkerInBatches(NullWorker, input, {
+    _workerType: 'test',
+    signal: controller.signal
+  })[Symbol.asyncIterator]();
+  const next = output.next();
+  await requested;
+  controller.abort('stop blocked input');
+  await expect(next).rejects.toBe('stop blocked input');
+  expect(cleanup).toHaveBeenCalledOnce();
 });

@@ -99,6 +99,7 @@ export async function parseInBatches(
 
   data = await data; // Resolve any promise
   options = options || {};
+  (options.signal || context?.signal)?.throwIfAborted();
 
   // Extract a url for auto detection
   const url = getResourceUrl(data);

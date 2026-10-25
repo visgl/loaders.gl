@@ -5,6 +5,7 @@
 /* eslint-disable no-restricted-globals */
 import type {CoreAPI} from '../sources/data-source';
 import type {LoaderWithParser, LoaderOptions, LoaderContext, Loader} from '../../loader-types';
+import type {WorkerContext} from '@loaders.gl/core/worker-utils';
 import {createWorker} from '@loaders.gl/core/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
 
@@ -43,6 +44,7 @@ export async function processLoaderWorkerData(
   input: ArrayBuffer,
   options: {[key: string]: any} = {},
   workerContext?: {
+    reportProgress?: WorkerContext['reportProgress'];
     process?: (data: any, options?: LoaderOptions, context?: Record<string, any>) => any;
   },
   loaderContext: Record<string, any> = {}
@@ -53,6 +55,7 @@ export async function processLoaderWorkerData(
     options,
     context: {
       ...loaderContext,
+      reportProgress: workerContext?.reportProgress,
       coreApi: createWorkerCoreApi(),
       _parse: createParseOnMainThread(workerContext?.process)
     } as LoaderContext
@@ -71,6 +74,7 @@ export async function* processLoaderWorkerBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: {[key: string]: any} = {},
   workerContext?: {
+    reportProgress?: WorkerContext['reportProgress'];
     process?: (data: any, options?: LoaderOptions, context?: Record<string, any>) => any;
   },
   loaderContext: Record<string, any> = {}
@@ -81,6 +85,7 @@ export async function* processLoaderWorkerBatches(
 
   const resultIterator = loader.parseInBatches(inputIterator, options, {
     ...loaderContext,
+    reportProgress: workerContext?.reportProgress,
     coreApi: createWorkerCoreApi(),
     _parse: createParseOnMainThread(workerContext?.process)
   } as LoaderContext);
@@ -181,8 +186,17 @@ function getSerializableLoaderContext(context?: LoaderContext) {
   if (!context) {
     return undefined;
   }
-  const {fetch, loaders, coreApi, _parse, _parseSync, _parseInBatches, ...serializableContext} =
-    context;
+  const {
+    fetch,
+    loaders,
+    coreApi,
+    signal,
+    reportProgress,
+    _parse,
+    _parseSync,
+    _parseInBatches,
+    ...serializableContext
+  } = context;
   return JSON.parse(JSON.stringify(serializableContext));
 }
 

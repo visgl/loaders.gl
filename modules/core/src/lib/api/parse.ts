@@ -98,7 +98,8 @@ export async function parse(
   }
 
   data = await data; // Resolve any promise
-  options = options || ({} as LoaderOptions); // Could be invalid...
+  options = options || ({} as LoaderOptions);
+  (options.signal || context?.signal)?.throwIfAborted(); // Could be invalid...
 
   // Extract a url for auto detection
   const url = getResourceUrl(data);
@@ -144,7 +145,6 @@ export async function parse(
   return await parseWithLoader(loader, data, strictOptions, context);
 }
 
-// TODO: support progress and abort
 // TODO - should accept loader.parseAsyncIterator and concatenate.
 async function parseWithLoader(
   loader: Loader,
@@ -152,6 +152,7 @@ async function parseWithLoader(
   options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<unknown> {
+  (options.signal || context.signal)?.throwIfAborted();
   validateWorkerVersion(loader);
 
   options = mergeOptions(loader.options, options);

@@ -31,6 +31,8 @@ export function getLoaderContext(
   if (parentContext) {
     return {
       ...parentContext,
+      signal: options.signal || parentContext.signal,
+      reportProgress: options.onProgress || parentContext.reportProgress,
       coreApi: parentContext.coreApi || context.coreApi || coreApi,
       _parse: parentContext._parse || context._parse,
       fetch: getFetchFunction(options, parentContext)
@@ -39,6 +41,8 @@ export function getLoaderContext(
 
   const newContext: LoaderContext = {
     ...context,
+    signal: options.signal || context.signal,
+    reportProgress: options.onProgress || context.reportProgress,
     fetch: getFetchFunction(options, context),
     coreApi: context.coreApi || coreApi
   };
