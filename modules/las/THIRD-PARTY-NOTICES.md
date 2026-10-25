@@ -4,6 +4,8 @@ Uday Verma and Howard Butler's [plasio](https://github.com/verma/plasio) supplie
 
 LAZ decoding integrations use [laz-perf](https://github.com/hobuinc/laz-perf) and [laz-rs](https://github.com/laz-rs/laz-rs). Compatibility reconstruction follows LASzip by rapidlasso GmbH: [Apache-2.0 license](./src/lib/LASZIP-LICENSE) and [notice](./src/lib/LASZIP-NOTICE). Runtime/backend choices do not erase the original parser lineage. The embedded laz-rs-wasm 0.1.0 manifest credits Thomas Montaigu and Chris Lee; its exact build revision/full notice is not recorded. The legacy embedded laz-perf asset also has conflicting SPDX/comment license labels. These historical gaps are tracked in the [repository audit](https://github.com/visgl/loaders.gl/blob/master/dev-docs/attribution-audit.md); the npm backend’s current license is not used to infer the older binary’s terms.
 
+The Plasio license text is copied from [upstream license commit 2a3856699c5416b8a609ad496f22e25f5cf60315](https://github.com/verma/plasio/blob/2a3856699c5416b8a609ad496f22e25f5cf60315/LICENSE). This identifies the license source, not an inferred parser fork revision.
+
 ## Scope and maintenance
 
 Original loaders.gl contributions are covered by [LICENSE](./LICENSE). The upstream
