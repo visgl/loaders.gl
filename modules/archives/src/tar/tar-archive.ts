@@ -22,17 +22,24 @@ function readOctal(bytes: Uint8Array): number {
   return number;
 }
 
-/** Rejects paths that could escape an extraction root. */
-function validatePath(path: string): void {
+/** Normalizes harmless current-directory components and rejects paths outside the archive root. */
+function normalizePath(path: string, directory: boolean): string | null {
   if (
     !path ||
     path.startsWith('/') ||
     path.includes('\\') ||
     path.includes('\0') ||
-    path.split('/').some(part => part === '..' || part === '.')
+    /^[A-Za-z]:/.test(path)
   ) {
     throw new Error(`Unsafe TAR path: ${path}`);
   }
+  const components = path.split('/').filter(part => part && part !== '.');
+  if (components.includes('..')) throw new Error(`Unsafe TAR path: ${path}`);
+  if (!components.length) {
+    if (directory) return null;
+    throw new Error(`Unsafe TAR path: ${path}`);
+  }
+  return components.join('/');
 }
 
 /** Decode regular files in a TAR archive, validating headers and allocation limits. */
@@ -70,15 +77,15 @@ export function readTarArchive(
     if (++entries > maxEntries) throw new RangeError('TAR entry limit exceeded');
     const name = readString(header.subarray(0, 100));
     const prefix = readString(header.subarray(345, 500));
-    const path = prefix ? `${prefix}/${name}` : name;
-    validatePath(path);
+    const type = header[156];
+    const path = normalizePath(prefix ? `${prefix}/${name}` : name, type === 53);
     const size = readOctal(header.subarray(124, 136));
     const dataOffset = offset + BLOCK_SIZE;
     if (size > bytes.length - dataOffset) throw new Error('Truncated TAR entry');
-    const type = header[156];
     if (type === 0 || type === 48) {
       totalBytes += size;
       if (totalBytes > maxBytes) throw new RangeError('TAR decoded-byte limit exceeded');
+      if (path === null) throw new Error('Invalid TAR file path');
       if (Object.hasOwn(files, path)) throw new Error(`Duplicate TAR path: ${path}`);
       files[path] = bytes.slice(dataOffset, dataOffset + size).buffer;
     } else if (type !== 53) {

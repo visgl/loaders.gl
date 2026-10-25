@@ -40,3 +40,23 @@ test('TAR rejects unsafe paths and links', async () => {
   bytes.set(new TextEncoder().encode(`${checksum}\0 `), 148);
   expect(() => readTarArchive(archive)).toThrow(/Unsupported TAR entry type/);
 });
+
+test('TAR reads harmless dot paths and a root directory', async () => {
+  const archive = await TarWriter.encode({
+    './': '',
+    './folder/': '',
+    './folder/hello.txt': 'hello'
+  });
+  const files = readTarArchive(archive);
+  expect(Object.keys(files)).toEqual(['folder/hello.txt']);
+  expect(new TextDecoder().decode(files['folder/hello.txt'])).toBe('hello');
+});
+
+test('TAR writer preserves UTF-8 names and ustar prefix paths', async () => {
+  const longPath = `${'nested/'.repeat(18)}日本語.txt`;
+  const archive = await TarWriter.encode({'café.txt': 'coffee', [longPath]: 'long'});
+  const files = readTarArchive(archive);
+  expect(new TextDecoder().decode(files['café.txt'])).toBe('coffee');
+  expect(new TextDecoder().decode(files[longPath])).toBe('long');
+  await expect(TarWriter.encode({['x'.repeat(101)]: 'invalid'})).rejects.toThrow(/header capacity/);
+});
