@@ -85,3 +85,77 @@ test('GRIB2 decodes an independent ecCodes regular latitude/longitude sample', (
   expect(message.values).toHaveLength(496);
   expect(Array.from(message.values).every(value => value === Math.fround(273.15))).toBe(true);
 });
+
+test('GRIB2 applies an explicit bitmap to missing grid cells', () => {
+  const original = createFixture();
+  const bitmapSectionOffset = 16 + 21 + 72 + 34 + 21;
+  const dataSectionOffset = bitmapSectionOffset + 6;
+  const input = new Uint8Array(original.length + 1);
+  input.set(original.subarray(0, dataSectionOffset));
+  input[dataSectionOffset] = 0b10100000;
+  input.set(original.subarray(dataSectionOffset), dataSectionOffset + 1);
+  const view = new DataView(input.buffer);
+  view.setBigUint64(8, BigInt(input.length));
+  view.setUint32(bitmapSectionOffset, 7);
+  input[bitmapSectionOffset + 5] = 0;
+  view.setUint32(bitmapSectionOffset - 21 + 5, 2);
+  expect(Array.from(parseGRIB2(input)[0].values)).toEqual([11, NaN, 12, NaN]);
+});
+
+const INVALID_MESSAGES: [string, (input: Uint8Array) => void, RegExp][] = [
+  [
+    'wrong edition',
+    input => {
+      input[7] = 1;
+    },
+    /only edition 2/
+  ],
+  [
+    'missing end marker',
+    input => {
+      input[input.length - 1] = 0;
+    },
+    /missing end marker/
+  ],
+  [
+    'unsupported grid template',
+    input => {
+      new DataView(input.buffer).setUint16(49, 1);
+    },
+    /only grid template/
+  ],
+  [
+    'unsupported product template',
+    input => {
+      new DataView(input.buffer).setUint16(116, 1);
+    },
+    /only product template/
+  ],
+  [
+    'unsupported packing template',
+    input => {
+      new DataView(input.buffer).setUint16(152, 1);
+    },
+    /only simple packing/
+  ],
+  [
+    'unsupported bitmap indicator',
+    input => {
+      input[169] = 1;
+    },
+    /unsupported bitmap indicator/
+  ],
+  [
+    'too few packed bits',
+    input => {
+      input[162] = 16;
+    },
+    /data section truncated/
+  ]
+];
+
+test.each(INVALID_MESSAGES)('GRIB2 rejects %s', (_name, changeMessage, errorPattern) => {
+  const input = createFixture();
+  changeMessage(input);
+  expect(() => parseGRIB2(input)).toThrow(errorPattern);
+});
