@@ -64,7 +64,7 @@ const CLIENT_EXAMPLE_COMPONENTS: Record<ClientExampleKind, ClientExampleComponen
     () => import('examples/website/i3s-colorization-by-attributes/src/app')
   ),
   'i3s-profile-gallery': React.lazy(
-    () => import('examples/website/i3s-profile-gallery/src/app')
+    () => import('../../examples/i3s-profile-gallery-app')
   ),
   'i3s-picking': React.lazy(() => import('examples/website/i3s-picking/src/app')),
   'pmtiles-authoring': React.lazy(() => import('examples/website/tiles/authoring-app')),
