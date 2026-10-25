@@ -26,7 +26,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     "@math.gl/core": "npm:5.0.0-alpha.19"
     "@math.gl/geospatial": "npm:5.0.0-alpha.19"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     marked: "npm:^0.7.0"
     probe.gl: "npm:^5.0.0"
     prop-types: "npm:^15.7.2"
@@ -6275,6 +6275,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mapbox/jsonlint-lines-primitives@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "@mapbox/jsonlint-lines-primitives@npm:2.0.3"
+  checksum: 10c0/e114b27757a21ccbf20e3c99761e8b48d2527cb321f47e5a4d9aa4b5781b16f15b1f6f4ab678a4329f93668956281a05b56387331dc0260981a2ef695414fc1d
+  languageName: node
+  linkType: hard
+
 "@mapbox/martini@npm:0.2.0, @mapbox/martini@npm:^0.2.0":
   version: 0.2.0
   resolution: "@mapbox/martini@npm:0.2.0"
@@ -6289,7 +6296,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mapbox/point-geometry@npm:^1.1.0":
+"@mapbox/point-geometry@npm:^1.1.0, @mapbox/point-geometry@npm:~1.1.0":
   version: 1.1.0
   resolution: "@mapbox/point-geometry@npm:1.1.0"
   checksum: 10c0/fe43d00a92592a28835090722df771be50182ff5fc40705cbd571534e2397beef884a97f701869b4a99a61289700cf709f588883f4b085c034bbe722cf17155d
@@ -6303,10 +6310,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mapbox/tiny-sdf@npm:^2.2.0":
+  version: 2.3.0
+  resolution: "@mapbox/tiny-sdf@npm:2.3.0"
+  checksum: 10c0/999e2e94d97804346fe8c3a01d97263c43dfe65210bef6d1e20698c9d52e28e13e9093d0526e0dcd503ab2dde37f60d6158a2bb766d6bbe82b823430e3dc5515
+  languageName: node
+  linkType: hard
+
 "@mapbox/unitbezier@npm:^0.0.1":
   version: 0.0.1
   resolution: "@mapbox/unitbezier@npm:0.0.1"
   checksum: 10c0/97f39d4fbdf9579d0a1a8be0d536eb113a805d36459e774014f488a7ca6cc9dcfc77ab7a2ebe5af395ad50da6efb4dbf2566de0db3f62b6b8675cddbace8f86a
+  languageName: node
+  linkType: hard
+
+"@mapbox/unitbezier@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@mapbox/unitbezier@npm:1.0.0"
+  checksum: 10c0/40749dd7f4fa2a3e6e3a881faf0cdfb14d47fefdea028e0191c750fca8e2203f976d8ef07ab7f704a59b9e7a4354d088fc92b86316d5479e0c49b5d3263dfc60
   languageName: node
   linkType: hard
 
@@ -6319,10 +6340,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mapbox/vector-tile@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@mapbox/vector-tile@npm:3.0.0"
+  dependencies:
+    "@mapbox/point-geometry": "npm:~1.1.0"
+    "@types/geojson": "npm:^7946.0.16"
+    pbf: "npm:^5.0.0"
+  checksum: 10c0/ccede784967394a171956376de98b9cc9d5683ae67e3516246082d7bd5a157f711777955d111cd4885cc9dc4e22ef26e8b9af70ef6c8746392dd8de84e201ba6
+  languageName: node
+  linkType: hard
+
 "@mapbox/whoots-js@npm:^3.1.0":
   version: 3.1.0
   resolution: "@mapbox/whoots-js@npm:3.1.0"
   checksum: 10c0/fe9e959a9049bcbc2c05d9d1156e050191ad697a1bd95e41cdfa069051ff1d6f2930ced234a8d68d5a0bf78091feab30d76497418ec800d90f0aac8691fe4fd4
+  languageName: node
+  linkType: hard
+
+"@maplibre/geojson-vt@npm:^6.1.1":
+  version: 6.3.0
+  resolution: "@maplibre/geojson-vt@npm:6.3.0"
+  dependencies:
+    kdbush: "npm:^4.1.0"
+  checksum: 10c0/64f28e38cb27d43c49ce26f8b8b7f113daaa611192f49de1a03ca622a67cacaa926c4dce30fdbd5bd5bcabbded03bdb3bed78df2b41870bb1c785e889b063388
   languageName: node
   linkType: hard
 
@@ -6344,12 +6385,50 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@maplibre/maplibre-gl-style-spec@npm:^26.2.1":
+  version: 26.4.4
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.4.4"
+  dependencies:
+    "@mapbox/jsonlint-lines-primitives": "npm:^2.0.3"
+    "@mapbox/unitbezier": "npm:^1.0.0"
+    json-stringify-pretty-compact: "npm:^4.0.0"
+    minimist: "npm:^1.2.8"
+    quickselect: "npm:^3.0.0"
+    tinyqueue: "npm:^3.0.0"
+  bin:
+    gl-style-format: dist/gl-style-format.mjs
+    gl-style-migrate: dist/gl-style-migrate.mjs
+    gl-style-validate: dist/gl-style-validate.mjs
+  checksum: 10c0/a5af3e5c7e7b3ab5c427d9e51a9b5ba54981faeee9c46085fa765a043947cf327514e39e28ff488b5812620961ad315f0080acb1cdb940e626c7ba0d72f24651
+  languageName: node
+  linkType: hard
+
+"@maplibre/mlt@npm:^1.1.12":
+  version: 1.3.0
+  resolution: "@maplibre/mlt@npm:1.3.0"
+  dependencies:
+    "@mapbox/point-geometry": "npm:^1.1.0"
+  checksum: 10c0/b5a62767c49e56e68031d9b2b9c2284e8694946a1d6f12db361118d0c0d0a6c3961c04f0361ce44921692752c266bfe3f72b39a979db289e5479f6b511482b5a
+  languageName: node
+  linkType: hard
+
 "@maplibre/mlt@npm:^1.1.6":
   version: 1.1.8
   resolution: "@maplibre/mlt@npm:1.1.8"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
   checksum: 10c0/633eaad44b26cbc2404cd4867b2050766c5ed9dcbcb886e7ba3ae407a7958a5df2209317a1fc24bf0f40cf4ad3079f084f1baa91c917e3b7ab6a066bbec28400
+  languageName: node
+  linkType: hard
+
+"@maplibre/vt-pbf@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "@maplibre/vt-pbf@npm:4.3.2"
+  dependencies:
+    "@mapbox/point-geometry": "npm:^1.1.0"
+    "@types/geojson": "npm:^7946.0.16"
+    pbf: "npm:^5.1.0"
+  checksum: 10c0/3fd235b16f8070b2c1eabc8c68b44d60d4585db59f28821c846d25b2c84eabc3dc78c9a417b711e104819962ea0bede36770bc22a92c17e530c5ecce84a66ec5
   languageName: node
   linkType: hard
 
@@ -6782,10 +6861,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/env@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/env@npm:15.5.27"
-  checksum: 10c0/37037e339c9c1f1a6e3054dcbd9ff72a921cfce590fb8cb48b13cffe62e0cba0e3881067c92f97d5430a71f9086d0bc0e87dc630ced832573d0e3e4f6b3f7404
+"@next/env@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/env@npm:15.5.28"
+  checksum: 10c0/2a8e93431b239293187f685259529272e879a3663b7b6a8d568c75a3b85cc6e879d105fe6f3802108dc8ecf5eb4934bba3c9471d659094969824db3a956ac283
   languageName: node
   linkType: hard
 
@@ -6805,58 +6884,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-arm64@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-darwin-arm64@npm:15.5.27"
+"@next/swc-darwin-arm64@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-darwin-arm64@npm:15.5.28"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-x64@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-darwin-x64@npm:15.5.27"
+"@next/swc-darwin-x64@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-darwin-x64@npm:15.5.28"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-gnu@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-linux-arm64-gnu@npm:15.5.27"
+"@next/swc-linux-arm64-gnu@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-linux-arm64-gnu@npm:15.5.28"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-musl@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-linux-arm64-musl@npm:15.5.27"
+"@next/swc-linux-arm64-musl@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-linux-arm64-musl@npm:15.5.28"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-gnu@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-linux-x64-gnu@npm:15.5.27"
+"@next/swc-linux-x64-gnu@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-linux-x64-gnu@npm:15.5.28"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-musl@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-linux-x64-musl@npm:15.5.27"
+"@next/swc-linux-x64-musl@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-linux-x64-musl@npm:15.5.28"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-win32-arm64-msvc@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-win32-arm64-msvc@npm:15.5.27"
+"@next/swc-win32-arm64-msvc@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-win32-arm64-msvc@npm:15.5.28"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-win32-x64-msvc@npm:15.5.27":
-  version: 15.5.27
-  resolution: "@next/swc-win32-x64-msvc@npm:15.5.27"
+"@next/swc-win32-x64-msvc@npm:15.5.28":
+  version: 15.5.28
+  resolution: "@next/swc-win32-x64-msvc@npm:15.5.28"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -7422,13 +7501,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oxc-project/types@npm:=0.151.0":
-  version: 0.151.0
-  resolution: "@oxc-project/types@npm:0.151.0"
-  checksum: 10c0/7dac5399345abf368449735c31c218439e6c3a2acf7b8cbc715a88b45989390208f61bea0f3eb28bee5a034a509a7f4142ae60069e6611b07c70a30867c8ca84
-  languageName: node
-  linkType: hard
-
 "@parcel/watcher-android-arm64@npm:2.5.6":
   version: 2.5.6
   resolution: "@parcel/watcher-android-arm64@npm:2.5.6"
@@ -7811,118 +7883,6 @@ __metadata:
   version: 4.1.1
   resolution: "@probe.gl/stats@npm:4.1.1"
   checksum: 10c0/7fd49d891e5ecfc82330c0db9180cc6a3fae0f78062570fabdc1860f79f09b612c53af08b9d6e2bb701b79fb7156ec2c9c0ddf53e5dba12b0560c7bbc957afc7
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-android-arm-eabi@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-android-arm-eabi@npm:1.2.11"
-  conditions: os=android & cpu=arm
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-android-arm64@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-android-arm64@npm:1.2.11"
-  conditions: os=android & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-darwin-arm64@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-darwin-arm64@npm:1.2.11"
-  conditions: os=darwin & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-darwin-x64@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-darwin-x64@npm:1.2.11"
-  conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-freebsd-x64@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-freebsd-x64@npm:1.2.11"
-  conditions: os=freebsd & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-arm-gnueabihf@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-linux-arm-gnueabihf@npm:1.2.11"
-  conditions: os=linux & cpu=arm
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-arm64-gnu@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-linux-arm64-gnu@npm:1.2.11"
-  conditions: os=linux & cpu=arm64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-arm64-musl@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-linux-arm64-musl@npm:1.2.11"
-  conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-ppc64-gnu@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-linux-ppc64-gnu@npm:1.2.11"
-  conditions: os=linux & cpu=ppc64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-s390x-gnu@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-linux-s390x-gnu@npm:1.2.11"
-  conditions: os=linux & cpu=s390x & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-x64-gnu@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-linux-x64-gnu@npm:1.2.11"
-  conditions: os=linux & cpu=x64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-x64-musl@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-linux-x64-musl@npm:1.2.11"
-  conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-openharmony-arm64@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-openharmony-arm64@npm:1.2.11"
-  conditions: os=openharmony & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-win32-arm64-msvc@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-win32-arm64-msvc@npm:1.2.11"
-  conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-win32-x64-msvc@npm:1.2.11":
-  version: 1.2.11
-  resolution: "@rolldown/binding-win32-x64-msvc@npm:1.2.11"
-  conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rolldown/pluginutils@npm:^1.0.0":
-  version: 1.0.1
-  resolution: "@rolldown/pluginutils@npm:1.0.1"
-  checksum: 10c0/99d9b06d90196823e4d8c841f258db7a16e5dbba5824a2962b05d907b79f1ba929d56f22dd744fd530936e568c865ee56a719dc31e57e13bc0a8eb4764a8d8dd
   languageName: node
   linkType: hard
 
@@ -8820,107 +8780,107 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/html-darwin-arm64@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-darwin-arm64@npm:1.15.46"
+"@swc/html-darwin-arm64@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-darwin-arm64@npm:1.16.20"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/html-darwin-x64@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-darwin-x64@npm:1.15.46"
+"@swc/html-darwin-x64@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-darwin-x64@npm:1.16.20"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/html-linux-arm-gnueabihf@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-linux-arm-gnueabihf@npm:1.15.46"
+"@swc/html-linux-arm-gnueabihf@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-linux-arm-gnueabihf@npm:1.16.20"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@swc/html-linux-arm64-gnu@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-linux-arm64-gnu@npm:1.15.46"
+"@swc/html-linux-arm64-gnu@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-linux-arm64-gnu@npm:1.16.20"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/html-linux-arm64-musl@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-linux-arm64-musl@npm:1.15.46"
+"@swc/html-linux-arm64-musl@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-linux-arm64-musl@npm:1.16.20"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/html-linux-ppc64-gnu@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-linux-ppc64-gnu@npm:1.15.46"
+"@swc/html-linux-ppc64-gnu@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-linux-ppc64-gnu@npm:1.16.20"
   conditions: os=linux & cpu=ppc64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/html-linux-s390x-gnu@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-linux-s390x-gnu@npm:1.15.46"
+"@swc/html-linux-s390x-gnu@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-linux-s390x-gnu@npm:1.16.20"
   conditions: os=linux & cpu=s390x & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/html-linux-x64-gnu@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-linux-x64-gnu@npm:1.15.46"
+"@swc/html-linux-x64-gnu@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-linux-x64-gnu@npm:1.16.20"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/html-linux-x64-musl@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-linux-x64-musl@npm:1.15.46"
+"@swc/html-linux-x64-musl@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-linux-x64-musl@npm:1.16.20"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/html-win32-arm64-msvc@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-win32-arm64-msvc@npm:1.15.46"
+"@swc/html-win32-arm64-msvc@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-win32-arm64-msvc@npm:1.16.20"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/html-win32-ia32-msvc@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-win32-ia32-msvc@npm:1.15.46"
+"@swc/html-win32-ia32-msvc@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-win32-ia32-msvc@npm:1.16.20"
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
-"@swc/html-win32-x64-msvc@npm:1.15.46":
-  version: 1.15.46
-  resolution: "@swc/html-win32-x64-msvc@npm:1.15.46"
+"@swc/html-win32-x64-msvc@npm:1.16.20":
+  version: 1.16.20
+  resolution: "@swc/html-win32-x64-msvc@npm:1.16.20"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
 "@swc/html@npm:^1.15.40":
-  version: 1.15.46
-  resolution: "@swc/html@npm:1.15.46"
+  version: 1.16.20
+  resolution: "@swc/html@npm:1.16.20"
   dependencies:
     "@swc/counter": "npm:^0.1.3"
-    "@swc/html-darwin-arm64": "npm:1.15.46"
-    "@swc/html-darwin-x64": "npm:1.15.46"
-    "@swc/html-linux-arm-gnueabihf": "npm:1.15.46"
-    "@swc/html-linux-arm64-gnu": "npm:1.15.46"
-    "@swc/html-linux-arm64-musl": "npm:1.15.46"
-    "@swc/html-linux-ppc64-gnu": "npm:1.15.46"
-    "@swc/html-linux-s390x-gnu": "npm:1.15.46"
-    "@swc/html-linux-x64-gnu": "npm:1.15.46"
-    "@swc/html-linux-x64-musl": "npm:1.15.46"
-    "@swc/html-win32-arm64-msvc": "npm:1.15.46"
-    "@swc/html-win32-ia32-msvc": "npm:1.15.46"
-    "@swc/html-win32-x64-msvc": "npm:1.15.46"
+    "@swc/html-darwin-arm64": "npm:1.16.20"
+    "@swc/html-darwin-x64": "npm:1.16.20"
+    "@swc/html-linux-arm-gnueabihf": "npm:1.16.20"
+    "@swc/html-linux-arm64-gnu": "npm:1.16.20"
+    "@swc/html-linux-arm64-musl": "npm:1.16.20"
+    "@swc/html-linux-ppc64-gnu": "npm:1.16.20"
+    "@swc/html-linux-s390x-gnu": "npm:1.16.20"
+    "@swc/html-linux-x64-gnu": "npm:1.16.20"
+    "@swc/html-linux-x64-musl": "npm:1.16.20"
+    "@swc/html-win32-arm64-msvc": "npm:1.16.20"
+    "@swc/html-win32-ia32-msvc": "npm:1.16.20"
+    "@swc/html-win32-x64-msvc": "npm:1.16.20"
   dependenciesMeta:
     "@swc/html-darwin-arm64":
       optional: true
@@ -8946,7 +8906,7 @@ __metadata:
       optional: true
     "@swc/html-win32-x64-msvc":
       optional: true
-  checksum: 10c0/ce10a58dcd464036ae82bf6dfebcaa6ac06485c819c9c0359b899a885c92339622f32fd67bfb048ce2d1a9aad0b976f0d0685fcc9cd8a3a2a8735d1f12a23837
+  checksum: 10c0/5efa6f34742ef17b3eb5e6e323ddd170483d7ca36befe73e13bdea563b363919e662dfa956f31c23493512c3708ba93dd9e2ce76ae4856b73713e317cfd9f083
   languageName: node
   linkType: hard
 
@@ -13338,7 +13298,7 @@ __metadata:
     "@loaders.gl/scientific": "workspace:*"
     icechunk-js: "npm:^0.6.0"
     typescript: "npm:^6.0.3"
-    vite: "npm:^8.0.0"
+    vite: "npm:^7.3.7"
     vitest: "npm:5.0.2"
     zarrita: "npm:~0.7.1"
   languageName: unknown
@@ -14111,7 +14071,7 @@ __metadata:
     deck.gl: "npm:^9.4.0"
     eslint: "npm:8.33.0"
     eslint-config-next: "npm:13.1.6"
-    next: "npm:15.5.27"
+    next: "npm:15.5.28"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     sass: "npm:^1.58.0"
@@ -14818,7 +14778,7 @@ __metadata:
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^7.1.7"
@@ -17344,7 +17304,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     apache-arrow: "npm:^21.2.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^7.1.7"
@@ -17387,6 +17347,13 @@ __metadata:
   version: 2.2.4
   resolution: "earcut@npm:2.2.4"
   checksum: 10c0/01ca51830edd2787819f904ae580087d37351f6048b4565e7add4b3da8a86b7bc19262ab2aa7fdc64129ab03af2d9cec8cccee4d230c82275f97ef285c79aafb
+  languageName: node
+  linkType: hard
+
+"earcut@npm:^3.2.3":
+  version: 3.2.4
+  resolution: "earcut@npm:3.2.4"
+  checksum: 10c0/c50c93a6a0b56aadbe9d225322184f93b6b6dff81f2ca6e6bd8bb1141eaefc5116aac4c969f576bc2569d9c6ddd5108d74bf3825b3fd5529ebcc59c9f2b55e5a
   languageName: node
   linkType: hard
 
@@ -18715,9 +18682,9 @@ __metadata:
   linkType: hard
 
 "fast-uri@npm:^3.0.1":
-  version: 3.1.8
-  resolution: "fast-uri@npm:3.1.8"
-  checksum: 10c0/c9c47860a7f9110176d94bb30a02942182f0bfc8d6780e9702f320336dc2dadb83b1d9879cceaf8d4b439642d1ec6d78c317cb808ab155455551bd5d9d7c22d8
+  version: 3.1.9
+  resolution: "fast-uri@npm:3.1.9"
+  checksum: 10c0/052757540d8c0bbc16bb124a45b8f5cb5d0932f9b89f019221ee41cdb3cafc1db44b2e809d6b888b87922af3e5560a863124454e9d9193e1fc955887357b5add
   languageName: node
   linkType: hard
 
@@ -19385,7 +19352,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     apache-arrow: "npm:^21.1.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^7.1.7"
@@ -19507,7 +19474,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     apache-arrow: "npm:^21.1.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     node-stdlib-browser: "npm:^1.2.0"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
@@ -19533,7 +19500,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     geotiff: "npm:^2.1.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^7.1.7"
@@ -19570,7 +19537,7 @@ __metadata:
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^7.1.7"
@@ -19748,7 +19715,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gl-matrix@npm:^3.0.0, gl-matrix@npm:^3.4.3":
+"gl-matrix@npm:^3.0.0, gl-matrix@npm:^3.4.3, gl-matrix@npm:^3.4.4":
   version: 3.4.4
   resolution: "gl-matrix@npm:3.4.4"
   checksum: 10c0/9aa022ffac0d158212ad0cd29939864ad919ac31cd5dc5a5d35e9d66bb62679ddf152ff7b2173ded20131045e40572b87f31b26a920be2a7583a1516b13b5b4b
@@ -20755,9 +20722,9 @@ __metadata:
   linkType: hard
 
 "http-cache-semantics@npm:^4.1.1":
-  version: 4.2.0
-  resolution: "http-cache-semantics@npm:4.2.0"
-  checksum: 10c0/45b66a945cf13ec2d1f29432277201313babf4a01d9e52f44b31ca923434083afeca03f18417f599c9ab3d0e7b618ceb21257542338b57c54b710463b4a53e37
+  version: 4.3.0
+  resolution: "http-cache-semantics@npm:4.3.0"
+  checksum: 10c0/b9668e271b4a99cba067bfa6f286b12eff1408a24e090ca16f0f5fa826ac07f67b4b8c7aa6e7458596d890683f3c172f647a00ca516a8f0158c80d7e4ebe0316
   languageName: node
   linkType: hard
 
@@ -21005,7 +20972,7 @@ __metadata:
     "@luma.gl/core": "npm:^9.4.0"
     deck.gl: "npm:^9.4.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     prop-types: "npm:^15.7.2"
     react: "npm:^19.2.5"
     react-color: "npm:^2.19.3"
@@ -21027,7 +20994,7 @@ __metadata:
     "@loaders.gl/tiles-3d": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     prop-types: "npm:^15.7.2"
     react: "npm:^19.2.5"
     react-color: "npm:^2.19.3"
@@ -21059,7 +21026,7 @@ __metadata:
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     prop-types: "npm:^15.7.2"
     react: "npm:^19.2.5"
     react-color: "npm:^2.19.3"
@@ -21101,7 +21068,7 @@ __metadata:
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@types/styled-components": "npm:^5.1.36"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^7.1.7"
@@ -22573,6 +22540,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-stringify-pretty-compact@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "json-stringify-pretty-compact@npm:4.0.0"
+  checksum: 10c0/505781b4be7c72047ae8dfa667b520d20461ceac451b6516cb8ac5e12a758fbd7491d99d5e3f7e60423ce9d26ed4e4bcaccab3420bf651298901635c849017cf
+  languageName: node
+  linkType: hard
+
 "json-stringify-safe@npm:~5.0.1":
   version: 5.0.1
   resolution: "json-stringify-safe@npm:5.0.1"
@@ -22769,7 +22743,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kdbush@npm:^4.0.2":
+"kdbush@npm:^4.0.2, kdbush@npm:^4.1.0":
   version: 4.1.0
   resolution: "kdbush@npm:4.1.0"
   checksum: 10c0/b47c8a27de438df1e60080f73e3793217b4542a62bed7f07c8c29b0bf53359bbdba1e97305e396f7f4d28f98e31ce3fd21500dc3de03a44d8cda71a3d70ff7bb
@@ -22832,7 +22806,7 @@ __metadata:
     "@deck.gl/layers": "npm:^9.4.0"
     "@loaders.gl/tables": "workspace:*"
     typescript: "npm:^5.6.0"
-    vite: "npm:^8.0.0"
+    vite: "npm:^7.3.7"
   languageName: unknown
   linkType: soft
 
@@ -23071,7 +23045,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightningcss@npm:^1.27.0, lightningcss@npm:^1.33.0":
+"lightningcss@npm:^1.27.0":
   version: 1.33.0
   resolution: "lightningcss@npm:1.33.0"
   dependencies:
@@ -23291,7 +23265,7 @@ __metadata:
     pre-push: "npm:^0.1.1"
     probe.gl: "npm:^5.0.0"
     save-pixels: "npm:^2.3.6"
-    vite: "npm:^8.0.0"
+    vite: "npm:^7.3.7"
     vitest: "npm:5.0.2"
     yaml: "npm:^2.8.1"
     zod: "npm:^4.1.12"
@@ -23603,7 +23577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mapbox-gl@npm:maplibre-gl@^3.6.2, maplibre-gl@npm:^3.6.2":
+"mapbox-gl@npm:maplibre-gl@^3.6.2":
   version: 3.6.2
   resolution: "maplibre-gl@npm:3.6.2"
   dependencies:
@@ -23633,6 +23607,31 @@ __metadata:
     tinyqueue: "npm:^2.0.3"
     vt-pbf: "npm:^3.1.3"
   checksum: 10c0/51245b634087dd5f2a971b1dfa4170b98e10472e0d00859774d2ab1bd646de9a78342616862f4a66e932d0a75a6a5695258ce044f128a26e77d2f6b9efe7dafe
+  languageName: node
+  linkType: hard
+
+"maplibre-gl@npm:^6.4.1":
+  version: 6.4.1
+  resolution: "maplibre-gl@npm:6.4.1"
+  dependencies:
+    "@mapbox/point-geometry": "npm:^1.1.0"
+    "@mapbox/tiny-sdf": "npm:^2.2.0"
+    "@mapbox/unitbezier": "npm:^1.0.0"
+    "@mapbox/vector-tile": "npm:^3.0.0"
+    "@maplibre/geojson-vt": "npm:^6.1.1"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.2.1"
+    "@maplibre/mlt": "npm:^1.1.12"
+    "@maplibre/vt-pbf": "npm:^4.3.2"
+    "@types/geojson": "npm:^7946.0.16"
+    earcut: "npm:^3.2.3"
+    gl-matrix: "npm:^3.4.4"
+    kdbush: "npm:^4.1.0"
+    murmurhash-js: "npm:^1.0.0"
+    pbf: "npm:^5.1.2"
+    potpack: "npm:^2.1.0"
+    quickselect: "npm:^3.0.0"
+    tinyqueue: "npm:^3.0.0"
+  checksum: 10c0/622aa7d247d999481edd3db9bd4191f09163d4cbc6faae1f990d526cc93945dad9f68867c413a76b4ced7477164ac1db9dbb05c52fa61b36d866ecb629d5ac1e
   languageName: node
   linkType: hard
 
@@ -25243,23 +25242,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:15.5.27":
-  version: 15.5.27
-  resolution: "next@npm:15.5.27"
+"next@npm:15.5.28":
+  version: 15.5.28
+  resolution: "next@npm:15.5.28"
   dependencies:
-    "@next/env": "npm:15.5.27"
-    "@next/swc-darwin-arm64": "npm:15.5.27"
-    "@next/swc-darwin-x64": "npm:15.5.27"
-    "@next/swc-linux-arm64-gnu": "npm:15.5.27"
-    "@next/swc-linux-arm64-musl": "npm:15.5.27"
-    "@next/swc-linux-x64-gnu": "npm:15.5.27"
-    "@next/swc-linux-x64-musl": "npm:15.5.27"
-    "@next/swc-win32-arm64-msvc": "npm:15.5.27"
-    "@next/swc-win32-x64-msvc": "npm:15.5.27"
+    "@next/env": "npm:15.5.28"
+    "@next/swc-darwin-arm64": "npm:15.5.28"
+    "@next/swc-darwin-x64": "npm:15.5.28"
+    "@next/swc-linux-arm64-gnu": "npm:15.5.28"
+    "@next/swc-linux-arm64-musl": "npm:15.5.28"
+    "@next/swc-linux-x64-gnu": "npm:15.5.28"
+    "@next/swc-linux-x64-musl": "npm:15.5.28"
+    "@next/swc-win32-arm64-msvc": "npm:15.5.28"
+    "@next/swc-win32-x64-msvc": "npm:15.5.28"
     "@swc/helpers": "npm:0.5.15"
     caniuse-lite: "npm:^1.0.30001579"
     postcss: "npm:8.4.31"
-    sharp: "npm:^0.34.3 || ^0.35.4"
+    sharp: "npm:^0.34.3 || ^0.35.5"
     styled-jsx: "npm:5.1.6"
   peerDependencies:
     "@opentelemetry/api": ^1.1.0
@@ -25298,7 +25297,7 @@ __metadata:
       optional: true
   bin:
     next: dist/bin/next
-  checksum: 10c0/01cce4723e81d29f1a9b9986ed52d96c3b23d3cfe4908329bfa3886af57ffd90e4c75caf2b26eb412460cf5186e76faaf0b39e15f47eee94419f3d48ded61467
+  checksum: 10c0/c4cc5354cde0bd88fa9e8e5bcbc719e1c0985751db2061cebb1d130ef28d9edd6b0d77424fe980d23bdee59d80d3b61afa30297e6e8b055b9399bbbb4f6f236f
   languageName: node
   linkType: hard
 
@@ -26336,7 +26335,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     apache-arrow: "npm:^21.1.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^7.1.7"
@@ -26950,9 +26949,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pbf@npm:^5.0.0, pbf@npm:^5.1.0, pbf@npm:^5.1.2":
+  version: 5.1.2
+  resolution: "pbf@npm:5.1.2"
+  dependencies:
+    resolve-protobuf-schema: "npm:^2.1.0"
+  bin:
+    pbf: bin/pbf
+  checksum: 10c0/e28e901d61a66c7afdeac881b3e2b0ad2c09df98bcd3bc3447c1a55d7bc866d71415bd7d8fcc8273f23828c0169cc60cb5f7c5beb4a5829e23506c8196460e83
+  languageName: node
+  linkType: hard
+
 "pbkdf2@npm:^3.1.2, pbkdf2@npm:^3.1.5":
-  version: 3.1.6
-  resolution: "pbkdf2@npm:3.1.6"
+  version: 3.1.7
+  resolution: "pbkdf2@npm:3.1.7"
   dependencies:
     create-hash: "npm:^1.2.0"
     create-hmac: "npm:^1.1.7"
@@ -26960,7 +26970,7 @@ __metadata:
     safe-buffer: "npm:^5.2.1"
     sha.js: "npm:^2.4.12"
     to-buffer: "npm:^1.2.2"
-  checksum: 10c0/828be4a5eed15c502dfa490247506c6abd4e539f6e1ea265d2b8a668292c9e07af4e6d4d7a5d3aa8ad12274da7cea1bf1b3dfc1f5f19bcdeee5157d1bf83f7f3
+  checksum: 10c0/0de7dd4c90313f4ca6ed87dbc763dded1490409e6c784028e2b178f8e9431c826571c62ebc633a08eadafc6c327c86f22975e291ad48e42fcca081e40e1f9277
   languageName: node
   linkType: hard
 
@@ -27183,7 +27193,7 @@ __metadata:
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
     "@luma.gl/webgl": "npm:^9.4.0"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:19.2.3"
     react-dom: "npm:19.2.3"
     react-map-gl: "npm:^7.1.7"
@@ -28074,7 +28084,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.21, postcss@npm:^8.4.24, postcss@npm:^8.4.33, postcss@npm:^8.5.28, postcss@npm:^8.5.4, postcss@npm:^8.5.6":
+"postcss@npm:^8.4.21, postcss@npm:^8.4.24, postcss@npm:^8.4.33, postcss@npm:^8.5.4, postcss@npm:^8.5.6":
   version: 8.5.28
   resolution: "postcss@npm:8.5.28"
   dependencies:
@@ -28085,7 +28095,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"potpack@npm:^2.0.0":
+"potpack@npm:^2.0.0, potpack@npm:^2.1.0":
   version: 2.1.0
   resolution: "potpack@npm:2.1.0"
   checksum: 10c0/25fb86728e2eba7d67928ba770cecf76d1d09e82ca2fe090a20ad573fee20ed67e727b353aeef99d03dbc32c7bf76bdcdf0f6466f25d0cd66a40b9776e607e56
@@ -28300,7 +28310,7 @@ __metadata:
     hyparquet: "npm:1.29.0"
     hyparquet-compressors: "npm:1.1.1"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     marked: "npm:^0.7.0"
     monaco-editor: "npm:^0.53.0"
     pako: "npm:^2.1.0"
@@ -29837,64 +29847,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rolldown@npm:~1.2.9":
-  version: 1.2.11
-  resolution: "rolldown@npm:1.2.11"
-  dependencies:
-    "@oxc-project/types": "npm:=0.151.0"
-    "@rolldown/binding-android-arm-eabi": "npm:1.2.11"
-    "@rolldown/binding-android-arm64": "npm:1.2.11"
-    "@rolldown/binding-darwin-arm64": "npm:1.2.11"
-    "@rolldown/binding-darwin-x64": "npm:1.2.11"
-    "@rolldown/binding-freebsd-x64": "npm:1.2.11"
-    "@rolldown/binding-linux-arm-gnueabihf": "npm:1.2.11"
-    "@rolldown/binding-linux-arm64-gnu": "npm:1.2.11"
-    "@rolldown/binding-linux-arm64-musl": "npm:1.2.11"
-    "@rolldown/binding-linux-ppc64-gnu": "npm:1.2.11"
-    "@rolldown/binding-linux-s390x-gnu": "npm:1.2.11"
-    "@rolldown/binding-linux-x64-gnu": "npm:1.2.11"
-    "@rolldown/binding-linux-x64-musl": "npm:1.2.11"
-    "@rolldown/binding-openharmony-arm64": "npm:1.2.11"
-    "@rolldown/binding-win32-arm64-msvc": "npm:1.2.11"
-    "@rolldown/binding-win32-x64-msvc": "npm:1.2.11"
-    "@rolldown/pluginutils": "npm:^1.0.0"
-  dependenciesMeta:
-    "@rolldown/binding-android-arm-eabi":
-      optional: true
-    "@rolldown/binding-android-arm64":
-      optional: true
-    "@rolldown/binding-darwin-arm64":
-      optional: true
-    "@rolldown/binding-darwin-x64":
-      optional: true
-    "@rolldown/binding-freebsd-x64":
-      optional: true
-    "@rolldown/binding-linux-arm-gnueabihf":
-      optional: true
-    "@rolldown/binding-linux-arm64-gnu":
-      optional: true
-    "@rolldown/binding-linux-arm64-musl":
-      optional: true
-    "@rolldown/binding-linux-ppc64-gnu":
-      optional: true
-    "@rolldown/binding-linux-s390x-gnu":
-      optional: true
-    "@rolldown/binding-linux-x64-gnu":
-      optional: true
-    "@rolldown/binding-linux-x64-musl":
-      optional: true
-    "@rolldown/binding-openharmony-arm64":
-      optional: true
-    "@rolldown/binding-win32-arm64-msvc":
-      optional: true
-    "@rolldown/binding-win32-x64-msvc":
-      optional: true
-  bin:
-    rolldown: ./bin/cli.mjs
-  checksum: 10c0/43dfd083fb625a254c039bddfe04f3dd1d7cf8b84291ead835e3702e8050b7fee5e702c8280d3000b2541c0e24aaa3110bac4251bc2ca50a85fe1c8bbb48d2f5
-  languageName: node
-  linkType: hard
-
 "rollup@npm:^3.17.0":
   version: 3.30.0
   resolution: "rollup@npm:3.30.0"
@@ -30577,7 +30529,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sharp@npm:^0.34.3 || ^0.35.4":
+"sharp@npm:^0.34.3 || ^0.35.5":
   version: 0.35.5
   resolution: "sharp@npm:0.35.5"
   dependencies:
@@ -30700,9 +30652,9 @@ __metadata:
   linkType: hard
 
 "shell-quote@npm:^1.8.4":
-  version: 1.10.0
-  resolution: "shell-quote@npm:1.10.0"
-  checksum: 10c0/46ee59bfd972ce6a45500c44ed130dff2d0a7d6fbac9841e59d548518cad8060a06393c9a5dcbc0cede294ad80b2a2cd8c904679e09265f53efc0a0879f30961
+  version: 1.12.0
+  resolution: "shell-quote@npm:1.12.0"
+  checksum: 10c0/1605a4ed6a758bf13de7cb8197a4184d8015f7a4dbdcd6cd4a717d5b30b3ae7666300cc4ae7f3155cf80ace9739e9e82061ee5aa1a648f53f5fab31a220816d0
   languageName: node
   linkType: hard
 
@@ -31017,9 +30969,9 @@ __metadata:
   linkType: hard
 
 "source-map-js@npm:>=0.6.2 <2.0.0, source-map-js@npm:^1.0.1, source-map-js@npm:^1.0.2, source-map-js@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "source-map-js@npm:1.2.1"
-  checksum: 10c0/7bda1fc4c197e3c6ff17de1b8b2c20e60af81b63a52cb32ec5a5d67a20a7d42651e2cb34ebe93833c5a2a084377e17455854fee3e21e7925c64a51b6a52b0faf
+  version: 1.2.2
+  resolution: "source-map-js@npm:1.2.2"
+  checksum: 10c0/d5d6dec62266834f83dd4f8a2606a196fb1a006ca5d53b0ef80ee513b7eba2f4e2ae241f4bc129ae7e9b80dea24f6e3d92b446b7e6e96be7653cab8888168a94
   languageName: node
   linkType: hard
 
@@ -32049,7 +32001,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     geotiff: "npm:^2.1.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^7.1.7"
@@ -32748,9 +32700,9 @@ __metadata:
   linkType: hard
 
 "undici@npm:^6.25.0":
-  version: 6.29.0
-  resolution: "undici@npm:6.29.0"
-  checksum: 10c0/3fb2117985be977ba8b6bd6a242fec915e1b1d0f9681f5adb3f508fb1717352452d65bcfd3bed09e7c776cfda403a4e8edb24a318492f8b2d793439af2b8699b
+  version: 6.29.1
+  resolution: "undici@npm:6.29.1"
+  checksum: 10c0/2d6970289fcbaca69a484e968fbb5e6fdadf7d9bff30bb5476f71b619d143ec76df1c75a309ac3cb3b3d78238793c613dcaad47dc9d92b63f9e8e73b86ffec23
   languageName: node
   linkType: hard
 
@@ -33354,9 +33306,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^7.2.7":
-  version: 7.3.6
-  resolution: "vite@npm:7.3.6"
+"vite@npm:^7.2.7, vite@npm:^7.3.7":
+  version: 7.3.7
+  resolution: "vite@npm:7.3.7"
   dependencies:
     esbuild: "npm:^0.27.0 || ^0.28.0"
     fdir: "npm:^6.5.0"
@@ -33405,64 +33357,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/c6d359f84ad362f5c97ff7988b77c90add04162c60cdf6059375a7d9e3217848c53a8cb6b6c48517bef84b6bba4c9bc85319a889b5236acb7d5a2bc8cb7b9a8d
-  languageName: node
-  linkType: hard
-
-"vite@npm:^8.0.0":
-  version: 8.3.1
-  resolution: "vite@npm:8.3.1"
-  dependencies:
-    fsevents: "npm:~2.3.3"
-    lightningcss: "npm:^1.33.0"
-    picomatch: "npm:^4.0.7"
-    postcss: "npm:^8.5.28"
-    rolldown: "npm:~1.2.9"
-    tinyglobby: "npm:^0.2.17"
-  peerDependencies:
-    "@types/node": ^20.19.0 || >=22.12.0
-    "@vitejs/devtools": ^0.7.1
-    esbuild: ^0.27.0 || ^0.28.0
-    jiti: ">=1.21.0"
-    less: ^4.0.0
-    sass: ^1.70.0
-    sass-embedded: ^1.70.0
-    stylus: ">=0.54.8"
-    sugarss: ^5.0.0
-    terser: ^5.16.0
-    tsx: ^4.8.1
-    yaml: ^2.4.2
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  peerDependenciesMeta:
-    "@types/node":
-      optional: true
-    "@vitejs/devtools":
-      optional: true
-    esbuild:
-      optional: true
-    jiti:
-      optional: true
-    less:
-      optional: true
-    sass:
-      optional: true
-    sass-embedded:
-      optional: true
-    stylus:
-      optional: true
-    sugarss:
-      optional: true
-    terser:
-      optional: true
-    tsx:
-      optional: true
-    yaml:
-      optional: true
-  bin:
-    vite: bin/vite.js
-  checksum: 10c0/a91f4fee1cd331912ee3ac45f49900044846e28b8632ae734fe1978630e643e503d04181b2aeac59f70556fc51137dd49179fd39cbeb72a3e5f0bce88d2bcd30
+  checksum: 10c0/6a3f868a33b849383e29c4e39550155563cf0522b5b6504ab60ff5e44dd07ad472ff87a4d5d2c08f1f70cc6602357f95c38d27371b7612d84801cb790f325a7e
   languageName: node
   linkType: hard
 
@@ -34272,7 +34167,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     "@monaco-editor/react": "npm:^4.5.0"
     mapbox-gl: "npm:maplibre-gl@^3.6.2"
-    maplibre-gl: "npm:^3.6.2"
+    maplibre-gl: "npm:^6.4.1"
     monaco-editor: "npm:^0.52.2"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
