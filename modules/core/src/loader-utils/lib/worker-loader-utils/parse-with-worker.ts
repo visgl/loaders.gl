@@ -4,6 +4,7 @@
 
 import {
   canProcessOnWorker,
+  canProcessOnWorkerInBatches,
   isBrowser,
   processOnWorker,
   processOnWorkerInBatches
@@ -63,6 +64,27 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
   }
 
   return Boolean(canProcessOnWorker(loader, workerOptions));
+}
+
+/**
+ * Checks loader batch-parser transport capability and the selected worker's batch protocol.
+ * @param loader Loader declaring compatible batch parsing and transport.
+ * @param options Loader and worker selection options.
+ */
+export function canParseWithWorkerInBatches(
+  loader: Loader,
+  options?: StrictLoaderOptions
+): boolean {
+  // Encryption key callbacks must stay on the caller; JSON worker options omit functions.
+  const parquetOptions = options?.parquet as {keyRetriever?: unknown} | undefined;
+  if (loader.id === 'parquet' && typeof parquetOptions?.keyRetriever === 'function') {
+    return false;
+  }
+  return Boolean(
+    loader.workerInBatches &&
+      canParseWithWorker(loader, options) &&
+      canProcessOnWorkerInBatches(loader, getWorkerOptions(options))
+  );
 }
 
 /**
@@ -177,7 +199,7 @@ export async function* parseWithWorkerInBatches(
     loader,
     inputIterator,
     {
-      ...getWorkerOptions(options),
+      ...getWorkerOptions(options, loader),
       signal: workerSignal,
       onProgress: options?.onProgress || context?.reportProgress
     },

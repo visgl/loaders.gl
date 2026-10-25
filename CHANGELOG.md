@@ -9,7 +9,10 @@
   progress and worker-local `context.reportProgress` support for atomic and streaming work.
 - Parquet batch decoding reports rows; Draco decoding reports task start and completion.
 - Authenticated loading preserves caller abort reasons through signing, credential refresh, and replay.
-
+- Route batched parsing through explicit loader/worker capabilities, including opt-in custom and Node workers.
+- Preserve CSV Arrow batch-worker support and pass loader identity through batch dispatch.
+- Enable canonical Parquet worker batches for Arrow and object rows, preserving selection, schema,
+  binary buffers, cancellation, and progress. Encryption callbacks retain main-thread parsing.
 
 ### v5.0.0-alpha.13
 

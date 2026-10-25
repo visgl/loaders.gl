@@ -22,6 +22,7 @@ import {
 } from './lib/parsers/parse-parquet-to-arrow-js';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {
+  deserializeParquetWorkerBatch,
   deserializeParquetWorkerResult,
   serializeParquetWorkerResult
 } from './lib/parquet-worker-transport';
@@ -56,7 +57,8 @@ export const ParquetLoaderWithParser = {
     yield* parseParquetTableInBatches(new BlobFile(arrayBuffer), options, context);
   },
   serializeWorkerResult: serializeParquetWorkerResult,
-  deserializeWorkerResult: deserializeParquetWorkerResult
+  deserializeWorkerResult: deserializeParquetWorkerResult,
+  deserializeWorkerBatch: deserializeParquetWorkerBatch
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrowTable,
   ObjectRowTableBatch | ArrowTableBatch,

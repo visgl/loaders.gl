@@ -77,6 +77,8 @@ export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> &
     CDN?: string | null;
     /** Set to `false` to disable workers, or `'auto'` to use loader work estimates. */
     worker?: boolean | 'auto';
+    /** Declares batch support for a custom worker URL, or disables batch offloading. The loader must also advertise workerInBatches. */
+    workerInBatches?: boolean;
     /** Work-score threshold used by `worker: 'auto'`. */
     workerThreshold?: number;
     /** Number of concurrent workers (per loader) on desktop browser */
@@ -197,6 +199,8 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   version: string;
   /** A boolean, or a URL */
   worker?: string | boolean;
+  /** Whether the worker and its batch transport support this loader's batch parser. */
+  workerInBatches?: boolean;
   /** Browser worker filename when it differs from the loader id. */
   workerFile?: string;
   /** Optional Node.js worker filename, such as a CommonJS `.cjs` bundle. */

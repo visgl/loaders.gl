@@ -26,4 +26,5 @@ test('Parquet WASM reader is explicit and never exported from the root', () => {
   expect(parquetModule).not.toHaveProperty('ParquetWasmLoaderWithParser');
   expect(ParquetWasmLoaderWithParser.parse).toBeTypeOf('function');
   expect(ParquetWasmLoaderWithParser.worker).toBe(false);
+  expect(ParquetWasmLoaderWithParser.workerInBatches).toBe(false);
 });

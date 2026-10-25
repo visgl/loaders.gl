@@ -31,6 +31,7 @@ export const CSVLoader = {
   version: CSV_LOADER_VERSION,
   text: true,
   worker: true,
+  workerInBatches: true,
   options: CSV_LOADER_OPTIONS,
   preload: preloadCSVLoader
 } as const satisfies Loader<

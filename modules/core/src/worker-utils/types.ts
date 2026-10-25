@@ -23,6 +23,8 @@ export type WorkerOptions = {
   // Worker farm options
   CDN?: string | null;
   worker?: boolean;
+  /** Declares batch-protocol support for a custom worker, or disables batch offloading. */
+  workerInBatches?: boolean;
   maxConcurrency?: number;
   maxMobileConcurrency?: number;
   reuseWorkers?: boolean;
@@ -74,6 +76,8 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
+  /** Whether the built-in worker accepts stateful batch requests. */
+  workerInBatches?: boolean;
   /** Browser worker filename when it differs from the worker id. */
   workerFile?: string;
   /** Creates a built-in browser worker, typically using `type: 'module'`. */

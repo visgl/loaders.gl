@@ -112,6 +112,7 @@ export {
   parseWithWorker,
   parseWithWorkerInBatches,
   canParseWithWorker,
+  canParseWithWorkerInBatches,
   shouldParseWithWorker
 } from './lib/worker-loader-utils/parse-with-worker';
 export {canEncodeWithWorker} from './lib/worker-loader-utils/encode-with-worker';

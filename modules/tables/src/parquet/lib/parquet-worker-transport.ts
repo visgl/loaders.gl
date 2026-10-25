@@ -7,12 +7,28 @@ import {
   deserializeArrowTableFromIPC,
   serializeArrowTableToIPC
 } from '@loaders.gl/core/schema-utils/arrow-transport';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {
+  ArrowTable,
+  ObjectRowTable,
+  ArrowTableBatch,
+  ObjectRowTableBatch
+} from '@loaders.gl/core/schema';
+
+import type {ParquetLoaderOptions} from '../parquet-loader-options';
+import {convertArrowBatchToObjectRows} from './parsers/convert-parquet-tables';
 
 type ParquetWorkerResult = ArrowTable | ObjectRowTable;
 
 type SerializedArrowTable = Omit<ArrowTable, 'data'> & {
   /** Transferable Arrow IPC payload produced by the worker. */
+  data: SerializedArrowTableIPC;
+};
+
+/** Wire representation shared by both public Parquet batch shapes. */
+type SerializedParquetBatch = Pick<ArrowTableBatch, 'batchType' | 'length' | 'schema'> & {
+  /** Output shape requested by the caller. */
+  shape: 'arrow-table' | 'object-row-table';
+  /** Independently owned decoded Arrow IPC bytes. */
   data: SerializedArrowTableIPC;
 };
 
@@ -57,4 +73,34 @@ function isSerializedArrowTable(value: unknown): value is SerializedArrowTable {
       table.data &&
       table.data.transport === 'arrow-ipc'
   );
+}
+
+/**
+ * Transports decoded Arrow batches with owned IPC bytes and the caller's requested output shape.
+ * The worker retains columnar batches so nested Arrow values never enter structured clone.
+ */
+export function serializeParquetWorkerBatch(
+  batch: unknown,
+  options?: ParquetLoaderOptions
+): unknown {
+  const serialized = serializeParquetWorkerResult(batch) as SerializedParquetBatch;
+  return {...serialized, shape: options?.parquet?.shape || serialized.shape};
+}
+
+/** Rehydrates IPC batches and materializes object rows on the caller when requested. */
+export function deserializeParquetWorkerBatch(
+  batch: unknown
+): ArrowTableBatch | ObjectRowTableBatch {
+  const serialized = batch as SerializedParquetBatch;
+  if (serialized.shape === 'object-row-table' && serialized.data?.transport === 'arrow-ipc') {
+    return {
+      ...serialized,
+      ...convertArrowBatchToObjectRows({
+        ...serialized,
+        shape: 'arrow-table',
+        data: deserializeArrowTableFromIPC(serialized.data)
+      })
+    };
+  }
+  return deserializeParquetWorkerResult(batch) as ArrowTableBatch | ObjectRowTableBatch;
 }
