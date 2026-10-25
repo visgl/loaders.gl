@@ -77,4 +77,4 @@ import '@loaders.gl/xml/test';
 // Archive Formats
 import '@loaders.gl/compression/test';
 import '@loaders.gl/crypto/test';
-import '@loaders.gl/zip/test';
+import '@loaders.gl/archives/zip/test';

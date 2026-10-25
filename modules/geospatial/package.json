@@ -267,9 +267,9 @@
     "build-worker-flatgeobuf": "node ../../scripts/build-codec-worker.mjs src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
+    "@loaders.gl/archives": "5.0.0-alpha.13",
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
     "@loaders.gl/xml": "5.0.0-alpha.13",
-    "@loaders.gl/zip": "5.0.0-alpha.13",
     "@math.gl/geospatial": "5.0.0-alpha.19",
     "@types/sql.js": "^1.4.5",
     "apache-arrow": ">= 17.0.0"

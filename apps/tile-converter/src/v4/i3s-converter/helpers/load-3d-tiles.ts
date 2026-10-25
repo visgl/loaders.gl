@@ -8,7 +8,7 @@ import {parse3DTilesArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {LoaderWithParser, load} from '@loaders.gl/core';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {HttpFile, NodeFile, isBrowser} from '@loaders.gl/core/loader-utils';
-import {ZipFileSystem} from '@loaders.gl/zip';
+import {ZipFileSystem} from '@loaders.gl/archives/zip';
 
 /**
  * Load nested 3DTiles tileset. If the sourceTile is not nested tileset - do nothing

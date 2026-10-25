@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {encodeIndexedZip} from '@loaders.gl/zip/indexed-zip-writer';
+import {encodeIndexedZip} from '@loaders.gl/archives/zip/indexed-zip-writer';
 import {expect, test, vi} from 'vitest';
 import {coreApi, load, parseFile} from '@loaders.gl/core';
 import {Tiles3DArchiveFileLoader, Tiles3DArchiveSource, Tiles3DLoader} from '../../src/3d-tiles';

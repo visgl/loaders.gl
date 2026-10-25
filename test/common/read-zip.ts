@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {openZipArchive} from '@loaders.gl/zip';
-import type {ZipArchiveInput, ZipEntry} from '@loaders.gl/zip';
+import {openZipArchive} from '@loaders.gl/archives/zip';
+import type {ZipArchiveInput, ZipEntry} from '@loaders.gl/archives/zip';
 
 /** Reads small archive fixtures with complete size/CRC validation and closes their transport. */
 export async function readZip(input: ZipArchiveInput): Promise<{

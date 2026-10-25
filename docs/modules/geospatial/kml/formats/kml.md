@@ -200,7 +200,7 @@ can leave icons, models, or descriptions unresolved. Treat archive paths as case
 the extracted directory structure when an application needs to resolve those assets.
 
 `@loaders.gl/geospatial/kml` currently advertises and parses `.kml` XML documents. It does not automatically
-unwrap `.kmz` archives or execute `NetworkLink` requests. Use `@loaders.gl/zip` (or another ZIP
+unwrap `.kmz` archives or execute `NetworkLink` requests. Use `@loaders.gl/archives/zip` (or another ZIP
 implementation) to inspect and extract a KMZ, then pass the selected KML entry to `KMLLoader`.
 
 ## Loading KML and KMZ with loaders.gl
@@ -219,7 +219,7 @@ For a KMZ archive, use the ZIP loader as an intermediate step:
 ```typescript
 import {parse} from '@loaders.gl/core';
 import {KMLLoader} from '@loaders.gl/geospatial/kml';
-import {ZipLoader} from '@loaders.gl/zip';
+import {ZipLoader} from '@loaders.gl/archives/zip';
 
 const files = await parse(kmzBytes, ZipLoader);
 const kmlBytes = files['doc.kml'];
@@ -253,6 +253,6 @@ When diagnosing a KML or KMZ file, check the following:
 - [Google KML tutorial](https://developers.google.com/kml/documentation/kml_tut)
 - [Google KML reference](https://developers.google.com/kml/documentation/kmlreference)
 - [KMLLoader API reference](/docs/modules/geospatial/kml/api-reference/kml-loader)
-- [ZipLoader API reference](/docs/modules/zip/api-reference/zip-loader)
+- [ZipLoader API reference](/docs/modules/archives/zip/api-reference/zip-loader)
 
 [kml_ogc_standard]: https://www.ogc.org/standards/kml

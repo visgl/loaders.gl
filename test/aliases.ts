@@ -77,7 +77,7 @@ function makeAliases() {
       './modules/core/test/worker-utils-package'
     ),
     '@loaders.gl/xml/test': resolveTestPath('./modules/xml/test'),
-    '@loaders.gl/zip/test': resolveTestPath('./modules/zip/test'),
+    '@loaders.gl/archives/zip/test': resolveTestPath('./modules/archives/test'),
     // eslint-disable-next-line camelcase
     node_modules: resolveTestPath('./node_modules')
   };

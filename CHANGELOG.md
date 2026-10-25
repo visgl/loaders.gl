@@ -3090,7 +3090,7 @@ See `4.3-release` branch for additional CHANGELOGS
 
 - New @loaders.gl/images module (#86)
 - Move core-node to experimental (#87)
-- New module @loaders.gl/zip (#88)
+- New module @loaders.gl/archives/zip (#88)
 - Documentation pass (#89)
 - Add worker loaders for mesh modules (#84)
 - Add driver functions for "writer objects" (encodeFile, writeFile, saveFile) (#85)

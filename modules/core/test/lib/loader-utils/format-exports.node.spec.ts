@@ -93,7 +93,9 @@ const FORMAT_EXPORTS = {
     'WMSLayerDescriptionFormat'
   ],
   xml: ['XMLFormat', 'HTMLFormat'],
-  zip: ['ZipFormat']
+  archives: ['ZipFormat', 'TarFormat'],
+  'archives/zip': ['ZipFormat'],
+  'archives/tar': ['TarFormat']
 } as const;
 
 describe('Format exports', () => {

@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {load, fetchFile} from '@loaders.gl/core';
-import {ZipLoader} from '@loaders.gl/zip';
+import {ZipLoader} from '@loaders.gl/archives/zip';
 import {writeFile} from '../lib/utils/file-utils';
 import {join, dirname} from 'path';
 import {ChildProcessProxy} from '@loaders.gl/core/worker-utils';

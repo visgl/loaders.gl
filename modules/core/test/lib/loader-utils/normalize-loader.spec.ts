@@ -16,7 +16,7 @@ import * as las from '@loaders.gl/las';
 import * as obj from '@loaders.gl/obj';
 import * as pcd from '@loaders.gl/pcd';
 import * as ply from '@loaders.gl/ply';
-import * as zip from '@loaders.gl/zip';
+import * as zip from '@loaders.gl/archives/zip';
 const modules = [
   threeDTiles,
   arrow,

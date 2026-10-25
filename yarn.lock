@@ -5390,6 +5390,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/archives@npm:^5.0.0-alpha.0, @loaders.gl/archives@workspace:modules/archives":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/archives@workspace:modules/archives"
+  dependencies:
+    "@loaders.gl/compression": "npm:5.0.0-alpha.13"
+    "@loaders.gl/crypto": "npm:5.0.0-alpha.13"
+  peerDependencies:
+    "@loaders.gl/core": ~5.0.0-alpha.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/arrow-geometry@npm:5.0.0-alpha.13, @loaders.gl/arrow-geometry@workspace:*, @loaders.gl/arrow-geometry@workspace:modules/arrow-geometry":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow-geometry@workspace:modules/arrow-geometry"
@@ -5492,12 +5503,12 @@ __metadata:
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
+    "@loaders.gl/archives": "npm:5.0.0-alpha.13"
     "@loaders.gl/compression": "npm:5.0.0-alpha.13"
     "@loaders.gl/geoarrow": "npm:5.0.0-alpha.13"
     "@loaders.gl/tables": "npm:5.0.0-alpha.13"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.13"
     "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.13"
-    "@loaders.gl/zip": "npm:5.0.0-alpha.13"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
@@ -5555,9 +5566,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geospatial@workspace:modules/geospatial"
   dependencies:
+    "@loaders.gl/archives": "npm:5.0.0-alpha.13"
     "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.13"
     "@loaders.gl/xml": "npm:5.0.0-alpha.13"
-    "@loaders.gl/zip": "npm:5.0.0-alpha.13"
     "@math.gl/geospatial": "npm:5.0.0-alpha.19"
     "@types/sql.js": "npm:^1.4.5"
     apache-arrow: "npm:>= 17.0.0"
@@ -5963,6 +5974,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tile-converter@workspace:apps/tile-converter"
   dependencies:
+    "@loaders.gl/archives": "npm:5.0.0-alpha.13"
     "@loaders.gl/compression": "npm:5.0.0-alpha.13"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/crypto": "npm:5.0.0-alpha.13"
@@ -5972,7 +5984,6 @@ __metadata:
     "@loaders.gl/textures": "npm:5.0.0-alpha.13"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.13"
     "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.13"
-    "@loaders.gl/zip": "npm:5.0.0-alpha.13"
     "@math.gl/core": "npm:5.0.0-alpha.19"
     "@math.gl/earth": "npm:5.0.0-alpha.19"
     "@math.gl/geometry": "npm:5.0.0-alpha.19"
@@ -6000,13 +6011,13 @@ __metadata:
   resolution: "@loaders.gl/tiles-3d@workspace:modules/tiles-3d"
   dependencies:
     "@deck.gl/core": "npm:^9.4.0"
+    "@loaders.gl/archives": "npm:5.0.0-alpha.13"
     "@loaders.gl/compression": "npm:5.0.0-alpha.13"
     "@loaders.gl/draco": "npm:5.0.0-alpha.13"
     "@loaders.gl/gltf": "npm:5.0.0-alpha.13"
     "@loaders.gl/images": "npm:5.0.0-alpha.13"
     "@loaders.gl/las": "npm:5.0.0-alpha.13"
     "@loaders.gl/textures": "npm:5.0.0-alpha.13"
-    "@loaders.gl/zip": "npm:5.0.0-alpha.13"
     "@math.gl/core": "npm:5.0.0-alpha.19"
     "@math.gl/dggs": "npm:5.0.0-alpha.19"
     "@math.gl/earth": "npm:5.0.0-alpha.19"
@@ -6133,16 +6144,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/zip@npm:^5.0.0-alpha.0, @loaders.gl/zip@workspace:modules/zip":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/zip@workspace:modules/zip"
+"@loaders.gl/zip@npm:4.5.4":
+  version: 4.5.4
+  resolution: "@loaders.gl/zip@npm:4.5.4"
   dependencies:
-    "@loaders.gl/compression": "npm:5.0.0-alpha.13"
-    "@loaders.gl/crypto": "npm:5.0.0-alpha.13"
+    "@loaders.gl/compression": "npm:4.5.4"
+    "@loaders.gl/crypto": "npm:4.5.4"
+    "@loaders.gl/loader-utils": "npm:4.5.4"
+    jszip: "npm:^3.1.5"
+    md5: "npm:^2.3.0"
   peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
+    "@loaders.gl/core": ~4.5.0
+  checksum: 10c0/65bc7d84deca7187c3231f85dcb00320eb96eaf39d5cee819ce66874b9336c701aeec773f5ca3454ff2a10b47f72b1ba5799237293ae4cff7b877a60c75410f9
+  languageName: node
+  linkType: hard
 
 "@luma.gl/constants@npm:^9.0.0":
   version: 9.3.2
@@ -14515,6 +14530,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"charenc@npm:0.0.2":
+  version: 0.0.2
+  resolution: "charenc@npm:0.0.2"
+  checksum: 10c0/a45ec39363a16799d0f9365c8dd0c78e711415113c6f14787a22462ef451f5013efae8a28f1c058f81fc01f2a6a16955f7a5fd0cd56247ce94a45349c89877d8
+  languageName: node
+  linkType: hard
+
 "cheerio-select@npm:^2.1.0":
   version: 2.1.0
   resolution: "cheerio-select@npm:2.1.0"
@@ -15614,6 +15636,13 @@ __metadata:
     shebang-command: "npm:^2.0.0"
     which: "npm:^2.0.1"
   checksum: 10c0/053ea8b2135caff68a9e81470e845613e374e7309a47731e81639de3eaeb90c3d01af0e0b44d2ab9d50b43467223b88567dfeb3262db942dc063b9976718ffc1
+  languageName: node
+  linkType: hard
+
+"crypt@npm:0.0.2":
+  version: 0.0.2
+  resolution: "crypt@npm:0.0.2"
+  checksum: 10c0/adbf263441dd801665d5425f044647533f39f4612544071b1471962209d235042fb703c27eea2795c7c53e1dfc242405173003f83cf4f4761a633d11f9653f18
   languageName: node
   linkType: hard
 
@@ -21208,6 +21237,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"immediate@npm:~3.0.5":
+  version: 3.0.6
+  resolution: "immediate@npm:3.0.6"
+  checksum: 10c0/f8ba7ede69bee9260241ad078d2d535848745ff5f6995c7c7cb41cfdc9ccc213f66e10fa5afb881f90298b24a3f7344b637b592beb4f54e582770cdce3f1f039
+  languageName: node
+  linkType: hard
+
 "immutable@npm:^5.1.5":
   version: 5.1.9
   resolution: "immutable@npm:5.1.9"
@@ -21640,7 +21676,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-buffer@npm:^1.0.2, is-buffer@npm:^1.1.5":
+"is-buffer@npm:^1.0.2, is-buffer@npm:^1.1.5, is-buffer@npm:~1.1.6":
   version: 1.1.6
   resolution: "is-buffer@npm:1.1.6"
   checksum: 10c0/ae18aa0b6e113d6c490ad1db5e8df9bdb57758382b313f5a22c9c61084875c6396d50bbf49315f5b1926d142d74dfb8d31b40d993a383e0a158b15fea7a82234
@@ -22744,6 +22780,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jszip@npm:^3.1.5":
+  version: 3.10.2
+  resolution: "jszip@npm:3.10.2"
+  dependencies:
+    lie: "npm:~3.3.0"
+    pako: "npm:~1.0.2"
+    readable-stream: "npm:~2.3.6"
+    setimmediate: "npm:^1.0.5"
+  checksum: 10c0/c51b1473062bb7ac81c0c76047d99a2b56a062f2427ac989e28b46b31ecab636a440f137d15ff6320a961b7e1048c802f0bed83a2e10ed0ba9c2cfd84e818bc6
+  languageName: node
+  linkType: hard
+
 "just-diff-apply@npm:^5.2.0":
   version: 5.5.0
   resolution: "just-diff-apply@npm:5.5.0"
@@ -22991,6 +23039,15 @@ __metadata:
     sigstore: "npm:^4.0.0"
     ssri: "npm:^12.0.0"
   checksum: 10c0/213cd2aeb65822892c3723a81d191a385e97f126ec63800f7051609e24c38c3fa36ea529b26739dc56dfba21f7f456347889f3aa1e6024c8c6a40bfa4cd9d184
+  languageName: node
+  linkType: hard
+
+"lie@npm:~3.3.0":
+  version: 3.3.0
+  resolution: "lie@npm:3.3.0"
+  dependencies:
+    immediate: "npm:~3.0.5"
+  checksum: 10c0/56dd113091978f82f9dc5081769c6f3b947852ecf9feccaf83e14a123bc630c2301439ce6182521e5fbafbde88e88ac38314327a4e0493a1bea7e0699a7af808
   languageName: node
   linkType: hard
 
@@ -23697,6 +23754,17 @@ __metadata:
     inherits: "npm:^2.0.1"
     safe-buffer: "npm:^5.1.2"
   checksum: 10c0/b7bd75077f419c8e013fc4d4dada48be71882e37d69a44af65a2f2804b91e253441eb43a0614423a1c91bb830b8140b0dc906bc797245e2e275759584f4efcc5
+  languageName: node
+  linkType: hard
+
+"md5@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "md5@npm:2.3.0"
+  dependencies:
+    charenc: "npm:0.0.2"
+    crypt: "npm:0.0.2"
+    is-buffer: "npm:~1.1.6"
+  checksum: 10c0/14a21d597d92e5b738255fbe7fe379905b8cb97e0a49d44a20b58526a646ec5518c337b817ce0094ca94d3e81a3313879c4c7b510d250c282d53afbbdede9110
   languageName: node
   linkType: hard
 
@@ -26607,7 +26675,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pako@npm:~1.0.5":
+"pako@npm:~1.0.2, pako@npm:~1.0.5":
   version: 1.0.11
   resolution: "pako@npm:1.0.11"
   checksum: 10c0/86dd99d8b34c3930345b8bbeb5e1cd8a05f608eeb40967b293f72fe469d0e9c88b783a8777e4cc7dc7c91ce54c5e93d88ff4b4f060e6ff18408fd21030d9ffbe
@@ -30534,7 +30602,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"setimmediate@npm:^1.0.4":
+"setimmediate@npm:^1.0.4, setimmediate@npm:^1.0.5":
   version: 1.0.5
   resolution: "setimmediate@npm:1.0.5"
   checksum: 10c0/5bae81bfdbfbd0ce992893286d49c9693c82b1bcc00dcaaf3a09c8f428fdeacf4190c013598b81875dfac2b08a572422db7df779a99332d0fce186d15a3e4d49
