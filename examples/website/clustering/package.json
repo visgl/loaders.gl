@@ -11,19 +11,16 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@deck.gl-community/panels": "^9.4.0-alpha.3",
+    "@deck.gl-community/widgets": "^9.4.0-alpha.3",
     "@deck.gl/core": "^9.4.0",
     "@deck.gl/layers": "^9.4.0",
-    "@deck.gl/react": "^9.4.0",
-    "@loaders.gl/deck-layers": "workspace:*",
+    "@deck.gl/mapbox": "^9.4.0",
     "@loaders.gl/geoarrow": "workspace:*",
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",
-    "mapbox-gl": "npm:maplibre-gl@^3.6.2",
-    "maplibre-gl": "^3.6.2",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "react-map-gl": "^7.1.7"
+    "maplibre-gl": "^3.6.2"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

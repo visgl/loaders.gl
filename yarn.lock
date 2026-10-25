@@ -17,7 +17,6 @@ __metadata:
     "@deck.gl/react": "npm:^9.4.0"
     "@deck.gl/widgets": "npm:^9.4.0"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/gltf": "workspace:*"
     "@loaders.gl/services": "workspace:*"
     "@loaders.gl/tiles-3d": "workspace:*"
@@ -3012,7 +3011,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@deck.gl/mapbox@npm:9.4.0":
+"@deck.gl/mapbox@npm:9.4.0, @deck.gl/mapbox@npm:^9.4.0":
   version: 9.4.0
   resolution: "@deck.gl/mapbox@npm:9.4.0"
   dependencies:
@@ -14833,19 +14832,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "clustering-loaders-example@workspace:examples/website/clustering"
   dependencies:
+    "@deck.gl-community/panels": "npm:^9.4.0-alpha.3"
+    "@deck.gl-community/widgets": "npm:^9.4.0-alpha.3"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
-    "@deck.gl/react": "npm:^9.4.0"
+    "@deck.gl/mapbox": "npm:^9.4.0"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/geoarrow": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
-    mapbox-gl: "npm:maplibre-gl@^3.6.2"
     maplibre-gl: "npm:^3.6.2"
-    react: "npm:^19.2.5"
-    react-dom: "npm:^19.2.5"
-    react-map-gl: "npm:^7.1.7"
     typescript: "npm:^5.6.0"
     vite: "npm:^7.2.7"
   languageName: unknown
