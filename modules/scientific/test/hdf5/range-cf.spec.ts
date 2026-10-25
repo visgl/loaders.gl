@@ -23,6 +23,29 @@ test('strict HTTP byte-range transport', async () => {
   ).rejects.toThrow(/206 required/);
 });
 
+test('HTTP byte ranges reject invalid requests and mismatched responses', async () => {
+  const reader = new HTTPRangeReader(
+    'https://example.invalid/data.nc',
+    async () =>
+      new Response(new Uint8Array([1, 2]), {
+        status: 206,
+        headers: {'Content-Range': 'bytes 4-5/10'}
+      })
+  );
+  await expect(reader.read(-1, 2)).rejects.toThrow(/invalid HTTP byte range/);
+  await expect(reader.read(0, 0)).rejects.toThrow(/invalid HTTP byte range/);
+  await expect(reader.read(2, 2)).rejects.toThrow(/unexpected Content-Range/);
+  const truncated = new HTTPRangeReader(
+    'https://example.invalid/data.nc',
+    async () =>
+      new Response(new Uint8Array([1]), {
+        status: 206,
+        headers: {'Content-Range': 'bytes 2-3/10'}
+      })
+  );
+  await expect(truncated.read(2, 2)).rejects.toThrow(/truncated range response/);
+});
+
 test('CF packed values and backend selection pushdown', async () => {
   const cfMetadata = parseCFVariableMetadata({
     units: 'K',
