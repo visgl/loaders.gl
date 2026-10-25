@@ -72,7 +72,7 @@ import {
   WMTSCapabilitiesFormat
 } from '@loaders.gl/ogc/wms';
 import {HTMLFormat, XMLFormat} from '@loaders.gl/xml';
-import {ZipFormat} from '@loaders.gl/zip';
+import {ZipFormat} from '@loaders.gl/archives/zip';
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
 import {FlatGeobufFormat} from '@loaders.gl/geospatial/flatgeobuf/index';
 import {MVTLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';

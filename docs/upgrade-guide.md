@@ -1135,3 +1135,7 @@ Worker URLs move to the raster package root; the LERC WASM export moves to `rast
 Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends.
 GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit
 source subpath when using synchronous `createDataSource()`.
+
+**@loaders.gl/zip package removal**
+
+Install `@loaders.gl/archives` and replace `@loaders.gl/zip` imports with `@loaders.gl/archives/zip`. Replace `@loaders.gl/zip/zip-loader` with `@loaders.gl/archives/zip/zip-loader`. Import `TarBuilder` from `@loaders.gl/archives/tar`.

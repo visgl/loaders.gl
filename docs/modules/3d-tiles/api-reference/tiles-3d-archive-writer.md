@@ -39,7 +39,7 @@ single-mesh output. Existing 3TZ readers can read the resulting indexed archive.
 
 `createTileConversionArchive` also provides a general finalized-resource Blob handoff for
 3TZ and SLPK. Each format requires already-authored resources in its own layout. The shared
-`@loaders.gl/zip/indexed-zip-writer` encoder retains the existing deterministic 3TZ layout.
+`@loaders.gl/archives/zip/indexed-zip-writer` encoder retains the existing deterministic 3TZ layout.
 
 ### Cancellation and temporary buffers
 

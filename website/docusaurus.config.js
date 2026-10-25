@@ -320,7 +320,7 @@ const config = {
             '@loaders.gl/arcgis': resolve('../modules/arcgis/src'),
             '@loaders.gl/services': resolve('../modules/services/src'),
             '@loaders.gl/xml': resolve('../modules/xml/src'),
-            '@loaders.gl/zip': resolve('../modules/zip/src'),
+            '@loaders.gl/archives/zip': resolve('../modules/archives/src/zip'),
             'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 
             // '@deck.gl/react': resolve()

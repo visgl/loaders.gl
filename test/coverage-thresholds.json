@@ -525,21 +525,6 @@
         "branches": 80
       }
     },
-    "@loaders.gl/zip": {
-      "path": "modules/zip",
-      "browser": {
-        "statements": 71,
-        "lines": 71,
-        "functions": 73,
-        "branches": 65
-      },
-      "merged": {
-        "statements": 86,
-        "lines": 87,
-        "functions": 91,
-        "branches": 72
-      }
-    },
     "@loaders.gl/ogc": {
       "path": "modules/ogc",
       "browser": {
@@ -554,22 +539,61 @@
         "functions": 64,
         "branches": 57
       }
+    },
+    "@loaders.gl/archives": {
+      "path": "modules/archives",
+      "browser": {
+        "statements": 71,
+        "lines": 71,
+        "functions": 73,
+        "branches": 65
+      },
+      "merged": {
+        "statements": 86,
+        "lines": 87,
+        "functions": 91,
+        "branches": 72
+      }
     }
   },
   "formats": {
     "copc": {
       "path": "modules/tiles-3d/src/copc",
-      "browser": {"statements": 90, "lines": 90, "functions": 90, "branches": 90},
-      "merged": {"statements": 90, "lines": 90, "functions": 90, "branches": 90},
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
       "owner": "@loaders.gl/tiles-3d",
-      "sourcePaths": ["modules/tiles-3d/src/copc/"]
+      "sourcePaths": [
+        "modules/tiles-3d/src/copc/"
+      ]
     },
     "potree": {
       "path": "modules/tiles-3d/src/potree",
-      "browser": {"statements": 82, "lines": 83, "functions": 82, "branches": 66},
-      "merged": {"statements": 81, "lines": 83, "functions": 78, "branches": 66},
+      "browser": {
+        "statements": 82,
+        "lines": 83,
+        "functions": 82,
+        "branches": 66
+      },
+      "merged": {
+        "statements": 81,
+        "lines": 83,
+        "functions": 78,
+        "branches": 66
+      },
       "owner": "@loaders.gl/tiles-3d",
-      "sourcePaths": ["modules/tiles-3d/src/potree/"]
+      "sourcePaths": [
+        "modules/tiles-3d/src/potree/"
+      ]
     },
     "geotiff": {
       "path": "modules/raster/src/geotiff",
@@ -1103,6 +1127,25 @@
       "owner": "@loaders.gl/ogc",
       "sourcePaths": [
         "modules/ogc/src/wms/"
+      ]
+    },
+    "zip": {
+      "path": "modules/archives/src/zip",
+      "browser": {
+        "statements": 71,
+        "lines": 71,
+        "functions": 73,
+        "branches": 65
+      },
+      "merged": {
+        "statements": 86,
+        "lines": 87,
+        "functions": 91,
+        "branches": 72
+      },
+      "owner": "@loaders.gl/archives",
+      "sourcePaths": [
+        "modules/archives/src/zip/"
       ]
     }
   }

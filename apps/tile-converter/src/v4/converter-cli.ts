@@ -11,7 +11,7 @@ import {
   getURLValue,
   validateOptionsWithEqual
 } from './lib/utils/cli-utils';
-import {addOneFile, composeHashFile, openZipArchive} from '@loaders.gl/zip';
+import {addOneFile, composeHashFile, openZipArchive} from '@loaders.gl/archives/zip';
 import {NodeFile} from '@loaders.gl/core/loader-utils';
 // @ts-ignore
 import {copyFile} from 'node:fs/promises';

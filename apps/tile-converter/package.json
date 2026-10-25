@@ -79,6 +79,7 @@
     "build-v5-entrypoints": "esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=esm && esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs && esbuild src/v5/node.ts src/v5/converter-cli.ts --bundle --packages=external --external:@loaders.gl/* --platform=node --outdir=dist/v5 --format=esm && esbuild src/v5/node.ts --bundle --packages=external --external:@loaders.gl/* --platform=node --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs"
   },
   "dependencies": {
+    "@loaders.gl/archives": "5.0.0-alpha.13",
     "@loaders.gl/compression": "5.0.0-alpha.13",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/crypto": "5.0.0-alpha.13",
@@ -88,7 +89,6 @@
     "@loaders.gl/textures": "5.0.0-alpha.13",
     "@loaders.gl/tiles": "5.0.0-alpha.13",
     "@loaders.gl/tiles-3d": "5.0.0-alpha.13",
-    "@loaders.gl/zip": "5.0.0-alpha.13",
     "@math.gl/core": "5.0.0-alpha.19",
     "@math.gl/earth": "5.0.0-alpha.19",
     "@math.gl/geometry": "5.0.0-alpha.19",

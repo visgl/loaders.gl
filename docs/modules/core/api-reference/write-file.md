@@ -28,7 +28,7 @@ use [`encode`](./encode) to produce bytes and a platform storage API to save the
 ```typescript
 import {writeFile} from 'node:fs/promises';
 import {encode} from '@loaders.gl/core';
-import {ZipWriter} from '@loaders.gl/zip';
+import {ZipWriter} from '@loaders.gl/archives/zip';
 
 const bytes = await encode({'message.txt': 'Hello'}, ZipWriter);
 await writeFile('example.zip', new Uint8Array(bytes));

@@ -30,7 +30,7 @@ import {
 import type {I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
 import {getNodeCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
 import type {I3SLoaderOptions} from '@loaders.gl/tiles-3d/i3s';
-import type {ZipFileSystem} from '@loaders.gl/zip';
+import type {ZipFileSystem} from '@loaders.gl/archives/zip';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
 import {Progress} from '../i3s-converter/helpers/progress';
 import {PromptModule} from 'inquirer';

@@ -17,7 +17,7 @@ import {
   parseKMLDocument,
   resolveKMZResourcePath
 } from '@loaders.gl/geospatial/kml/index';
-import {ZipWriter, ZipFileSystem} from '@loaders.gl/zip';
+import {ZipWriter, ZipFileSystem} from '@loaders.gl/archives/zip';
 import {validateLoader, validateWriter} from 'test/common/conformance';
 import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kml/kmz-loader';
 

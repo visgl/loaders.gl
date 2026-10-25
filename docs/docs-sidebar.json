@@ -85,7 +85,7 @@
       "modules/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
       "modules/scientific/zarr/formats/zarr",
-      "modules/zip/formats/zip"
+      "modules/archives/zip/formats/zip"
     ]
   },
   {
@@ -199,7 +199,7 @@
           "modules/wkt/api-reference/wkt-loader",
           "modules/ogc/wms/api-reference/wms-capabilities-loader",
           "modules/xml/api-reference/xml-loader",
-          "modules/zip/api-reference/zip-loader"
+          "modules/archives/zip/api-reference/zip-loader"
         ]
       },
       {
@@ -231,7 +231,7 @@
           "modules/wkt/api-reference/wkb-writer",
           "modules/wkt/api-reference/twkb-writer",
           "modules/wkt/api-reference/wkt-crs-writer",
-          "modules/zip/api-reference/zip-writer",
+          "modules/archives/zip/api-reference/zip-writer",
           "modules/pmtiles/api-reference/pmtiles-writer",
           "modules/pmtiles/api-reference/geoarrow-pmtiles",
           "modules/pmtiles/api-reference/raster-pmtiles"
@@ -789,12 +789,14 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/zip",
+        "label": "@loaders.gl/archives",
         "items": [
-          "modules/zip/README",
-          "modules/zip/api-reference/zip-archive",
-          "modules/zip/api-reference/zip-filesystem",
-          "modules/zip/api-reference/encode-zip"
+          "modules/archives/README",
+          "modules/archives/zip/README",
+          "modules/archives/tar/README",
+          "modules/archives/zip/api-reference/zip-archive",
+          "modules/archives/zip/api-reference/zip-filesystem",
+          "modules/archives/zip/api-reference/encode-zip"
         ]
       },
       {
