@@ -47,6 +47,53 @@ The `@loaders.gl/tables/json` module parses JSON, tabular JSON, and geospatial f
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
 to avoid blocking for tens of seconds.
 
+## Parsing batches in workers
+
+`JSONLoader`, `JSONTableLoader`, and `NDJSONLoader` support incremental worker parsing.
+Core enables supported browser workers by default. Set `core.worker: false` to retain caller-side
+parsing and logging. The following example makes worker selection explicit while consuming results
+as an async iterator:
+
+```typescript
+import {loadInBatches} from '@loaders.gl/core';
+import {NDJSONLoader} from '@loaders.gl/tables/json';
+
+const controller = new AbortController();
+const batches = await loadInBatches('records.ndjson', NDJSONLoader, {
+  core: {worker: true, batchSize: 1024},
+  ndjson: {shape: 'arrow-table'},
+  signal: controller.signal,
+  onProgress: ({phase, completed, unit}) => console.log(phase, completed, unit)
+});
+for await (const batch of batches) {
+  consume(batch.data); // Hydrated Apache Arrow Table for arrow-table output.
+}
+```
+
+One worker retains parser state across byte chunks, including split UTF-8 sequences. It requests
+input as needed and waits for the consumer before advancing past an output batch. Completed rows
+can arrive before EOF; a large incomplete JSON value or input chunk can still require substantial
+memory. NDJSON keeps one inferred Arrow schema across batches, or uses `ndjson.schema` when supplied.
+JSONTable uses `json.schema`. Both portable loaders.gl schemas and Apache Arrow `Schema` instances
+are supported, including schema/field metadata and conversion policies.
+
+JSON supports both `clarinet` and `fast` backends, JSONPath selection, and partial/final container
+metadata, with the selected backend's existing behavior. The fast backend currently retains
+container fields before the selected array; use clarinet when trailing container fields are needed.
+Row-table batches cross as plain data; Arrow batches use owned buffers and are hydrated
+on the caller. Worker progress counts decoded rows within the `decode` phase; it is not a byte or
+overall download percentage.
+
+Breaking out of the loop closes the input and releases the worker. Aborting also interrupts a
+blocked input read and rejects with the caller's reason; underlying iterator cleanup is best effort
+and cannot delay cancellation. Already transferred input buffers remain detached.
+
+Set `core.workerInBatches: false` to retain caller-side batch parsing. Custom worker URLs require
+`core.workerInBatches: true` to declare protocol support. Node workers remain experimental and require
+`core._nodeWorkers: true`; browser and CommonJS Node worker bundles are included in the package.
+`GeoJSONLoader`, `NDGeoJSONLoader`, and the experimental `FastJSONLoader` do not opt into this new
+worker. Use `JSONLoader` with `json.backend: 'fast'` for fast-backend worker batches.
+
 For configuration formats with the same general object/array data model, see the dependency-free
 [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) and
 [`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) in `@loaders.gl/config`.

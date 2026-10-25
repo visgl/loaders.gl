@@ -168,3 +168,9 @@ JSONPaths are used only to identify which array should be streamed, so selectors
 ## Attribution
 
 This loader is based on a fork of dscape's [`clarinet`](https://github.com/dscape/clarinet) under BSD 2-clause license.
+
+## Worker batches
+
+This loader supports stateful worker batch parsing with `core.worker: true`, cancellation via
+`signal`, and decoded-row progress via `onProgress`. See [JSON worker batches](/docs/modules/tables/json#parsing-batches-in-workers)
+for streaming behavior, schemas, backpressure, and Node/custom-worker options.
