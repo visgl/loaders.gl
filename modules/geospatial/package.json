@@ -270,7 +270,7 @@
     "@loaders.gl/archives": "5.0.0-alpha.13",
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
     "@loaders.gl/xml": "5.0.0-alpha.13",
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
     "@types/sql.js": "^1.4.5",
     "apache-arrow": ">= 17.0.0"
   },

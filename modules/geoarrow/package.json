@@ -107,9 +107,9 @@
   "dependencies": {
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
     "@loaders.gl/wkt": "5.0.0-alpha.13",
-    "@math.gl/core": "5.0.0-alpha.19",
-    "@math.gl/geometry": "5.0.0-alpha.19",
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@math.gl/core": "5.0.0-alpha.20",
+    "@math.gl/geometry": "5.0.0-alpha.20",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

@@ -131,8 +131,8 @@
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/schema/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/schema/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'"
   },
   "dependencies": {
-    "@math.gl/core": "5.0.0-alpha.19",
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@math.gl/core": "5.0.0-alpha.20",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0",

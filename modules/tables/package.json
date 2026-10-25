@@ -663,7 +663,7 @@
   "dependencies": {
     "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
     "@loaders.gl/compression": "5.0.0-alpha.13",
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0"
   },

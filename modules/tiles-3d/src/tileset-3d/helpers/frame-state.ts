@@ -6,6 +6,7 @@ import type {Tile3D} from '../common/tile-3d';
 import {Vector3} from '@math.gl/core';
 import {CullingVolume, Plane} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
+import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/ellipsoid';
 import {GeospatialViewport, Viewport} from '../../types';
 
 export type FrameState = {
@@ -99,10 +100,8 @@ export function getFrameState(
   const cameraDirection = viewport.cameraDirection as number[] | undefined;
   const {metersPerUnit} = viewport.distanceScales;
 
-  // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
-  // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
   const viewportCenterCartesian = worldToCartesian(viewport, viewport.center);
-  const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
+  const enuToFixedTransform = eastNorthUpToFixedFrame(Ellipsoid.WGS84, viewportCenterCartesian);
 
   const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
   const cameraPositionCartesian = Ellipsoid.WGS84.cartographicToCartesian(

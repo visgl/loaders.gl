@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {OrientedBoundingBox} from '@math.gl/geometry/culling';
+import {makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles-3d';
 import I3SNodePagesTiles from '../helpers/i3s-nodepages-tiles';
@@ -220,7 +220,7 @@ export function normalizeTileNonUrlData(tile: I3SMinimalNodeData): I3STileHeader
       ...tile.obb.halfSize, // halfSize
       ...tile.obb.quaternion // quaternion
     ];
-    const obb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
+    const obb = makeOrientedBoundingBoxFromQuaternion(
       boundingVolume.box.slice(0, 3),
       tile.obb.halfSize,
       tile.obb.quaternion

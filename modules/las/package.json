@@ -77,7 +77,7 @@
     "build-worker": "esbuild src/workers/las-worker.ts --bundle --outfile=dist/las-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@math.gl/geospatial": "5.0.0-alpha.19"
+    "@math.gl/geospatial": "5.0.0-alpha.20"
   },
   "optionalDependencies": {
     "copc": "0.0.8",
