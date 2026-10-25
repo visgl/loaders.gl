@@ -19,13 +19,13 @@
     "@deck.gl/react": "^9.4.0",
     "@loaders.gl/core": "5.0.0-alpha.12",
     "@loaders.gl/tiles-3d": "workspace:*",
-    "maplibre-gl": "^4.7.1",
+    "maplibre-gl": "^6.16.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-map-gl": "^7.1.7"
   },
   "devDependencies": {
     "typescript": "^5.3.0",
-    "vite": "^7.2.7"
+    "vite": "^8.3.5"
   }
 }
