@@ -31,7 +31,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
 
   if (shouldRunBenchmark('geoarrow')) {
     const {default: geoarrowBench} = await import(
-      '@loaders.gl/geoarrow/test/binary-features/geoarrow.bench'
+      '@loaders.gl/core/geoarrow/test/binary-features/geoarrow.bench'
     );
     await geoarrowBench(suite);
   }

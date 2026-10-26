@@ -1,0 +1,633 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import * as arrow from 'apache-arrow';
+import {expect, test} from 'vitest';
+import type {ArrowTable} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+
+import {
+  ARROW_TABLE_QUERY_CAPABILITIES,
+  bindSQLPredicate,
+  parseSQLPredicate,
+  planTableQuery,
+  queryArrowTable
+} from '@loaders.gl/core/scan';
+import {ArrowTableSource} from '@loaders.gl/sql';
+
+test('Arrow executor advertises portable query capabilities', () => {
+  expect(ARROW_TABLE_QUERY_CAPABILITIES).toEqual({
+    projection: 'residual',
+    predicate: 'residual',
+    limit: 'residual',
+    streaming: false,
+    cancellation: true,
+    expressions: 'residual',
+    orderBy: 'residual',
+    aggregates: 'residual'
+  });
+  expect(Object.isFrozen(ARROW_TABLE_QUERY_CAPABILITIES)).toBe(true);
+});
+
+test('Arrow executor explains operators as residual work', () => {
+  const source = new ArrowTableSource(makeArrowTable({id: [1], value: [10]}));
+  const explanation = source.explain({
+    predicate: {op: '>', args: [{property: 'value'}, 5]},
+    columns: ['id'],
+    limit: 1
+  });
+
+  expect(explanation.operators).toEqual({
+    projection: {enabled: true, support: 'residual'},
+    predicate: {enabled: true, support: 'residual'},
+    limit: {enabled: true, support: 'residual'}
+  });
+});
+
+test('ArrowTableSource exposes shared metadata and bounded scan batches', async () => {
+  const source = new ArrowTableSource(makeArrowTable({x: [1, 2], value: [10, 20]}));
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.queryType).toBe('table');
+  expect(metadata.execution).toEqual({status: 'supported', method: 'read'});
+  expect(metadata.columns.map(column => [column.name, column.role])).toEqual([
+    ['x', 'x'],
+    ['value', 'attribute']
+  ]);
+  expect(metadata.statistics?.rowCount).toBe(2);
+
+  const batches = [];
+  for await (const batch of source.read({columns: ['value'], limit: 1})) {
+    batches.push(batch);
+  }
+  expect(batches).toHaveLength(1);
+  expect(batches[0].length).toBe(1);
+  expect(batches[0].data.schema.fields.map(field => field.name)).toEqual(['value']);
+});
+
+test('ArrowTableSource assigns coordinate, time, and attribute roles', async () => {
+  const source = new ArrowTableSource(
+    makeArrowTable({
+      longitude: [1],
+      lat: [2],
+      elevation: [3],
+      event_time: [4],
+      label: ['x'],
+      y: [5],
+      z: [6],
+      altitude: [7],
+      time: [8],
+      updatedTimestamp: [9]
+    })
+  );
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.columns.map(column => [column.name, column.role])).toEqual([
+    ['longitude', 'longitude'],
+    ['lat', 'latitude'],
+    ['elevation', 'attribute'],
+    ['event_time', 'time'],
+    ['label', 'attribute'],
+    ['y', 'y'],
+    ['z', 'z'],
+    ['altitude', 'attribute'],
+    ['time', 'time'],
+    ['updatedTimestamp', 'time']
+  ]);
+});
+
+test('ArrowTableSource rejects already-aborted metadata requests', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  const source = new ArrowTableSource(makeArrowTable({value: [1]}));
+
+  await expect(source.getQueryMetadata({signal: controller.signal})).rejects.toThrow(/aborted/);
+});
+
+test('queryArrowTable filters, projects, and limits Arrow data', () => {
+  const table = makeArrowTable({
+    year: [2023, 2024, 2025, 2026],
+    cancelled: [false, true, false, false],
+    carrier: ['AA', 'BB', 'CC', 'DD'],
+    fare: [120, 240, 180, 320]
+  });
+
+  const result = queryArrowTable(table, {
+    predicate: parseSQLPredicate('year >= 2024 AND cancelled = FALSE'),
+    columns: ['carrier', 'fare'],
+    limit: 1
+  });
+
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(['carrier', 'fare']);
+  expect(toRows(result)).toEqual([{carrier: 'CC', fare: 180}]);
+});
+
+test('queryArrowTable applies SQL null semantics and keeps predicate columns internal', () => {
+  const table = makeArrowTable({
+    status: ['valid', null, 'invalid', 'valid'],
+    payload: [1, 2, 3, 4]
+  });
+
+  const result = queryArrowTable(table, {
+    predicate: parseSQLPredicate("NOT (status = 'invalid')"),
+    columns: ['payload']
+  });
+
+  expect(toRows(result)).toEqual([{payload: 1}, {payload: 4}]);
+});
+
+test('queryArrowTable permits a projected column to also appear in the predicate', () => {
+  const table = makeArrowTable({status: ['valid', 'invalid', 'valid']});
+
+  const result = queryArrowTable(table, {
+    predicate: parseSQLPredicate("status = 'valid'"),
+    columns: ['status']
+  });
+
+  expect(toRows(result)).toEqual([{status: 'valid'}, {status: 'valid'}]);
+});
+
+test('planTableQuery retains predicate columns before projecting the requested output', () => {
+  const predicate = parseSQLPredicate('year >= 2024 AND cancelled = FALSE');
+
+  expect(
+    planTableQuery(['year', 'cancelled', 'carrier', 'fare'], {
+      predicate,
+      columns: ['carrier', 'fare'],
+      limit: 20
+    })
+  ).toEqual([
+    {kind: 'scan', columns: ['year', 'cancelled', 'carrier', 'fare']},
+    {kind: 'filter', predicate},
+    {kind: 'project', columns: ['carrier', 'fare']},
+    {kind: 'limit', limit: 20}
+  ]);
+});
+
+test('queryArrowTable requires named parameters to be bound immediately before execution', () => {
+  const predicate = parseSQLPredicate('value >= :minimum', {preserveParameters: true});
+  const table = makeArrowTable({value: [1, 2, 3]});
+
+  expect(() => queryArrowTable(table, {predicate})).toThrow(/must be bound/);
+  expect(
+    toRows(queryArrowTable(table, {predicate: bindSQLPredicate(predicate, {minimum: 2})}))
+  ).toEqual([{value: 2}, {value: 3}]);
+});
+
+test('queryArrowTable retains zero-copy Arrow views for projection and limit without filtering', () => {
+  const table = makeArrowTable({first: [1, 2, 3], second: ['a', 'b', 'c']});
+
+  const result = queryArrowTable(table, {columns: ['second'], limit: 2});
+
+  expect(result.data.numRows).toBe(2);
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(['second']);
+  expect(toRows(result)).toEqual([{second: 'a'}, {second: 'b'}]);
+});
+
+test('queryArrowTable evaluates expressions, ordering, and global limits', () => {
+  const result = queryArrowTable(makeArrowTable({id: [1, 2, 3], value: [4, 1, 3]}), {
+    expressions: [{name: 'score', expression: {op: 'multiply', left: 'value', right: 'value'}}],
+    columns: ['id', 'score'],
+    orderBy: [{column: 'score', direction: 'desc'}],
+    limit: 2
+  });
+
+  expect(toRows(result)).toEqual([
+    {id: 1, score: 16},
+    {id: 3, score: 9}
+  ]);
+});
+
+test('queryArrowTable performs SQL-like grouped aggregates and null handling', () => {
+  const result = queryArrowTable(makeArrowTable({group: ['a', 'a', 'b'], value: [2, null, 5]}), {
+    groupBy: ['group'],
+    aggregates: [
+      {name: 'countValues', function: 'count', column: 'value'},
+      {name: 'total', function: 'sum', column: 'value'},
+      {name: 'average', function: 'avg', column: 'value'}
+    ],
+    columns: ['group', 'countValues', 'total', 'average'],
+    orderBy: [{column: 'total', direction: 'desc'}]
+  });
+
+  expect(toRows(result)).toEqual([
+    {group: 'b', countValues: 1, total: 5, average: 5},
+    {group: 'a', countValues: 1, total: 2, average: 2}
+  ]);
+});
+
+test('queryArrowTable keeps explicit null placement independent of descending order', () => {
+  const result = queryArrowTable(makeArrowTable({value: [null, 3, 1]}), {
+    columns: ['value'],
+    orderBy: [{column: 'value', direction: 'desc', nulls: 'last'}]
+  });
+
+  expect(toRows(result)).toEqual([{value: 3}, {value: 1}, {value: null}]);
+});
+
+test('queryArrowTable preserves output schema for empty relational results', () => {
+  const result = queryArrowTable(makeArrowTable({value: [1, 2]}), {
+    columns: ['value', 'total'],
+    groupBy: ['value'],
+    aggregates: [{name: 'total', function: 'sum', column: 'value'}],
+    limit: 0
+  });
+
+  expect(result.data.numRows).toBe(0);
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(['value', 'total']);
+});
+
+test('queryArrowTable groups bigint keys and rejects incomplete aggregates', () => {
+  const result = queryArrowTable(makeArrowTable({group: [1n, 1n, 2n], value: [2, 3, 4]}), {
+    groupBy: ['group'],
+    aggregates: [{name: 'total', function: 'sum', column: 'value'}],
+    columns: ['group', 'total'],
+    orderBy: [{column: 'group'}]
+  });
+
+  expect(toRows(result)).toEqual([
+    {group: 1n, total: 5},
+    {group: 2n, total: 4}
+  ]);
+  expect(() =>
+    queryArrowTable(makeArrowTable({value: [1]}), {
+      aggregates: [{name: 'invalid', function: 'sum'}]
+    })
+  ).toThrow(/requires a column/);
+});
+
+test('queryArrowTable unions child tables and performs an equi-join', () => {
+  const archived = makeArrowTable({id: [3], value: [30]});
+  const unionResult = queryArrowTable(makeArrowTable({id: [1, 2], value: [10, 20]}), {
+    columns: ['id', 'value'],
+    union: [{source: 'archive', query: {columns: ['id', 'value']}}],
+    tables: {archive: archived},
+    orderBy: [{column: 'id'}]
+  });
+  expect(toRows(unionResult)).toEqual([
+    {id: 1, value: 10},
+    {id: 2, value: 20},
+    {id: 3, value: 30}
+  ]);
+
+  const joined = queryArrowTable(makeArrowTable({id: [1, 2], value: [10, 20]}), {
+    columns: ['id', 'lookup.code'],
+    join: {child: {source: 'lookup'}, left: 'id', right: 'id'},
+    tables: {lookup: makeArrowTable({id: [2], code: ['two']})}
+  });
+  expect(toRows(joined)).toEqual([{id: 2, 'lookup.code': 'two'}]);
+
+  expect(() =>
+    queryArrowTable(makeArrowTable({id: [1]}), {
+      join: {child: {source: 'lookup'}, left: 'id', right: 'id'},
+      union: [{source: 'lookup'}],
+      tables: {lookup: archived}
+    })
+  ).toThrow(/cannot yet be combined/);
+});
+
+test('queryArrowTable does not require base-only predicate columns in UNION children', () => {
+  const result = queryArrowTable(makeArrowTable({id: [1, 2], active: [true, false]}), {
+    columns: ['id'],
+    predicate: parseSQLPredicate('active = TRUE'),
+    union: [{source: 'archive'}],
+    tables: {archive: makeArrowTable({id: [3]})}
+  });
+
+  expect(toRows(result)).toEqual([{id: 1}, {id: 3}]);
+});
+
+test('queryArrowTable validates join projections and preserves empty child field types', () => {
+  const sourceTable = makeArrowTable({id: [1]});
+  const childTable = makeArrowTable({id: [1], value: [42]});
+  const join = {child: {source: 'lookup'}, left: 'id', right: 'id'} as const;
+  const tables = {lookup: childTable};
+
+  expect(() => queryArrowTable(sourceTable, {join, tables, limit: -1})).toThrow(/non-negative/);
+  expect(() => queryArrowTable(sourceTable, {join, tables, columns: ['missing']})).toThrow(
+    /column not found/
+  );
+  expect(() => queryArrowTable(sourceTable, {join, tables, columns: ['lookup.missing']})).toThrow(
+    /lookup\.missing/
+  );
+
+  const emptyResult = queryArrowTable(sourceTable, {
+    join,
+    tables,
+    columns: ['id', 'lookup.value'],
+    limit: 0
+  });
+  expect(emptyResult.data.numRows).toBe(0);
+  expect(
+    emptyResult.data.schema.fields.find(field => field.name === 'lookup.value')?.type.toString()
+  ).toBe(childTable.data.schema.fields.find(field => field.name === 'value')?.type.toString());
+});
+
+test.each([
+  [{columns: ['missing']}, /column not found/],
+  [{columns: ['value', 'value']}, /more than once/],
+  [{limit: -1}, /non-negative/],
+  [{limit: 1.5}, /safe integer/]
+])('queryArrowTable rejects invalid query options %o', (options, expectedError) => {
+  const table = makeArrowTable({value: [1, 2, 3]});
+  expect(() => queryArrowTable(table, options)).toThrow(expectedError);
+});
+
+test('queryArrowTable reports cancellation before scanning', () => {
+  const controller = new AbortController();
+  controller.abort();
+
+  expect(() => queryArrowTable(makeArrowTable({value: [1]}), {signal: controller.signal})).toThrow(
+    /aborted/
+  );
+});
+
+test.each([
+  ['=', [{value: 2}]],
+  ['<>', [{value: 1}, {value: 3}]],
+  ['<', [{value: 1}]],
+  ['<=', [{value: 1}, {value: 2}]],
+  ['>', [{value: 3}]],
+  ['>=', [{value: 2}, {value: 3}]]
+])('queryArrowTable evaluates comparison operator %s', (operator, expected) => {
+  const result = queryArrowTable(makeArrowTable({value: [1, 2, 3]}), {
+    predicate: parseSQLPredicate(`value ${operator} 2`)
+  });
+  expect(toRows(result)).toEqual(expected);
+});
+
+test('queryArrowTable handles IN, NOT, null predicates, and empty matches', () => {
+  const table = makeArrowTable({value: [1, 2, null, 4], label: ['a', 'b', 'c', 'd']});
+  expect(toRows(queryArrowTable(table, {predicate: parseSQLPredicate('value IN (1, 4)')}))).toEqual(
+    [
+      {value: 1, label: 'a'},
+      {value: 4, label: 'd'}
+    ]
+  );
+  expect(
+    toRows(queryArrowTable(table, {predicate: parseSQLPredicate('NOT (value IN (1, 4))')}))
+  ).toEqual([{value: 2, label: 'b'}]);
+  expect(toRows(queryArrowTable(table, {predicate: parseSQLPredicate('value = 99')}))).toEqual([]);
+});
+
+test('queryArrowTable computes min, max, count-all, and empty aggregates', () => {
+  const result = queryArrowTable(makeArrowTable({group: ['a', 'a', 'b'], value: [2, null, 5]}), {
+    groupBy: ['group'],
+    aggregates: [
+      {name: 'rows', function: 'count'},
+      {name: 'minimum', function: 'min', column: 'value'},
+      {name: 'maximum', function: 'max', column: 'value'}
+    ],
+    columns: ['group', 'rows', 'minimum', 'maximum'],
+    orderBy: [{column: 'group'}]
+  });
+  expect(toRows(result)).toEqual([
+    {group: 'a', rows: 2, minimum: 2, maximum: 2},
+    {group: 'b', rows: 1, minimum: 5, maximum: 5}
+  ]);
+  expect(
+    toRows(
+      queryArrowTable(makeArrowTable({value: [1]}), {
+        groupBy: ['value'],
+        aggregates: [{name: 'total', function: 'sum', column: 'value'}],
+        predicate: parseSQLPredicate('value > 10')
+      })
+    )
+  ).toEqual([]);
+});
+
+test('queryArrowTable evaluates scalar expression edge cases', () => {
+  const result = queryArrowTable(
+    makeArrowTable({left: [8, null], right: [2, 0], label: ['x', 'y']}),
+    {
+      expressions: [
+        {name: 'difference', expression: {op: 'subtract', left: 'left', right: 'right'}},
+        {name: 'ratio', expression: {op: 'divide', left: 'left', right: 'right'}},
+        {name: 'literal', expression: {op: 'literal', value: 'constant'}},
+        {name: 'copied', expression: {op: 'column', column: 'label'}}
+      ],
+      columns: ['difference', 'ratio', 'literal', 'copied']
+    }
+  );
+
+  expect(toRows(result)).toEqual([
+    {difference: 6, ratio: 4, literal: 'constant', copied: 'x'},
+    {difference: null, ratio: null, literal: 'constant', copied: 'y'}
+  ]);
+  expect(() =>
+    queryArrowTable(makeArrowTable({left: ['x'], right: [1]}), {
+      expressions: [{name: 'invalid', expression: {op: 'add', left: 'left', right: 'right'}}]
+    })
+  ).toThrow(/numeric operands/);
+});
+
+test('queryArrowTable orders supported scalar types and rejects unsupported types', () => {
+  const result = queryArrowTable(
+    makeArrowTable({
+      date: [new Date(2), new Date(1)],
+      bytes: [new Uint8Array([2]), new Uint8Array([1])],
+      flag: [false, true]
+    }),
+    {columns: ['date'], orderBy: [{column: 'date'}]}
+  );
+  expect(toRows(result).map(row => row.date)).toEqual([1, 2]);
+
+  expect(() =>
+    queryArrowTable(makeArrowTable({bytes: [new Uint8Array([1]), new Uint8Array([2])]}), {
+      orderBy: [{column: 'bytes'}]
+    })
+  ).toThrow(/cannot compare/);
+  expect(
+    toRows(
+      queryArrowTable(makeArrowTable({flag: [false, true]}), {
+        columns: ['flag'],
+        orderBy: [{column: 'flag', direction: 'desc'}]
+      })
+    )
+  ).toEqual([{flag: true}, {flag: false}]);
+});
+
+test('queryArrowTable reports missing UNION and JOIN sources', () => {
+  const table = makeArrowTable({id: [1]});
+  expect(() => queryArrowTable(table, {union: [{source: 'missing'}], tables: {}})).toThrow(
+    /union source not found/
+  );
+  expect(() =>
+    queryArrowTable(table, {
+      join: {child: {source: 'missing'}, left: 'id', right: 'id'},
+      tables: {}
+    })
+  ).toThrow(/join source not found/);
+  expect(() =>
+    queryArrowTable(table, {
+      join: {child: {source: 'child'}, left: 'id', right: 'id'},
+      tables: {child: makeArrowTable({id: [1]})},
+      columns: ['id', 'child.id', 'child.id']
+    })
+  ).toThrow(/more than once/);
+});
+
+test('queryArrowTable evaluates every relational expression and aggregate boundary', () => {
+  const table = makeArrowTable({
+    group: ['a', 'a', 'b'],
+    left: [8, 4, null],
+    right: [2, 0, 3]
+  });
+  const expressions = [
+    {name: 'literal', expression: {op: 'literal' as const, value: true}},
+    {name: 'copy', expression: {op: 'column' as const, column: 'left'}},
+    {name: 'add', expression: {op: 'add' as const, left: 'left', right: 'right'}},
+    {name: 'subtract', expression: {op: 'subtract' as const, left: 'left', right: 'right'}},
+    {name: 'divide', expression: {op: 'divide' as const, left: 'left', right: 'right'}}
+  ];
+  const result = queryArrowTable(table, {
+    expressions,
+    columns: ['group', 'literal', 'copy', 'add', 'subtract', 'divide']
+  });
+  expect(toRows(result)).toEqual([
+    {group: 'a', literal: true, copy: 8, add: 10, subtract: 6, divide: 4},
+    {group: 'a', literal: true, copy: 4, add: 4, subtract: 4, divide: null},
+    {group: 'b', literal: true, copy: null, add: null, subtract: null, divide: null}
+  ]);
+
+  const aggregates = queryArrowTable(table, {
+    aggregates: [
+      {name: 'rows', function: 'count'},
+      {name: 'values', function: 'count', column: 'left'},
+      {name: 'minimum', function: 'min', column: 'left'},
+      {name: 'maximum', function: 'max', column: 'left'}
+    ]
+  });
+  expect(toRows(aggregates)).toEqual([{rows: 3, values: 2, minimum: 4, maximum: 8}]);
+
+  expect(() =>
+    queryArrowTable(makeArrowTable({left: ['x'], right: [1]}), {
+      expressions: [{name: 'bad', expression: {op: 'add', left: 'left', right: 'right'}}]
+    })
+  ).toThrow(/requires numeric operands/);
+  expect(() =>
+    queryArrowTable(makeArrowTable({value: ['x']}), {
+      aggregates: [{name: 'bad', function: 'sum', column: 'value'}]
+    })
+  ).toThrow(/requires numeric values/);
+});
+
+test('queryArrowTable covers empty-result schemas for computed values', () => {
+  const source = makeArrowTable({number: [1], label: ['x']});
+  const result = queryArrowTable(source, {
+    expressions: [
+      {name: 'flag', expression: {op: 'literal', value: true}},
+      {name: 'constant', expression: {op: 'literal', value: 2}},
+      {name: 'text', expression: {op: 'literal', value: 'x'}},
+      {name: 'copy', expression: {op: 'column', column: 'label'}},
+      {name: 'sum', expression: {op: 'add', left: 'number', right: 'number'}}
+    ],
+    columns: ['flag', 'constant', 'text', 'copy', 'sum'],
+    limit: 0
+  });
+  expect(result.data.numRows).toBe(0);
+  expect(result.data.schema.fields.map(field => field.type.toString())).toEqual([
+    'Bool',
+    'Float64',
+    'Utf8',
+    'Dictionary<Int32, Utf8>',
+    'Float64'
+  ]);
+
+  const aggregateResult = queryArrowTable(source, {
+    aggregates: [
+      {name: 'count', function: 'count'},
+      {name: 'knownTotal', function: 'sum', column: 'number'}
+    ],
+    columns: ['count', 'knownTotal'],
+    limit: 0
+  });
+  expect(aggregateResult.data.schema.fields.map(field => field.type.toString())).toEqual([
+    'Int32',
+    'Float64'
+  ]);
+});
+
+test('queryArrowTable covers scalar ordering and grouping key kinds', () => {
+  const dates = [new Date(2), new Date(1)];
+  const orderedDates = queryArrowTable(makeArrowTable({date: dates}), {
+    orderBy: [{column: 'date'}]
+  });
+  expect(toRows(orderedDates).map(row => Number(row.date))).toEqual([1, 2]);
+
+  const orderedBigints = queryArrowTable(makeArrowTable({value: [2n, 1n, 2n]}), {
+    orderBy: [{column: 'value'}]
+  });
+  expect(toRows(orderedBigints).map(row => row.value)).toEqual([1n, 2n, 2n]);
+
+  const grouped = queryArrowTable(
+    makeArrowTable({
+      date: [new Date(1), new Date(1)],
+      bytes: [new Uint8Array([1, 2]), new Uint8Array([1, 2])],
+      nullable: [null, null]
+    }),
+    {
+      groupBy: ['date', 'bytes', 'nullable'],
+      aggregates: [{name: 'rows', function: 'count'}]
+    }
+  );
+  expect(toRows(grouped)).toHaveLength(1);
+  expect(toRows(grouped)[0].rows).toBe(2);
+
+  expect(() =>
+    queryArrowTable(makeArrowTable({left: [Number.POSITIVE_INFINITY]}), {
+      predicate: {op: '>', args: [{property: 'left'}, 1]}
+    })
+  ).toThrow(/non-finite/);
+});
+
+test('queryArrowTable validates all join projection boundaries', () => {
+  const source = makeArrowTable({id: [1], value: [10]});
+  const child = makeArrowTable({key: [1], label: ['one']});
+  const baseJoin = {child: {source: 'child'}, left: 'id', right: 'key'} as const;
+
+  expect(() =>
+    queryArrowTable(source, {
+      join: {...baseJoin, left: 'missing'},
+      tables: {child}
+    })
+  ).toThrow(/join column not found: missing/);
+  expect(() =>
+    queryArrowTable(source, {
+      join: {...baseJoin, right: 'missing'},
+      tables: {child}
+    })
+  ).toThrow(/join column not found: missing/);
+  expect(() =>
+    queryArrowTable(source, {
+      join: {child: {source: 'child', query: {columns: ['label']}}, left: 'id', right: 'key'},
+      tables: {child}
+    })
+  ).toThrow(/child projection must include/);
+  expect(() =>
+    queryArrowTable(source, {
+      join: baseJoin,
+      tables: {child},
+      columns: ['id', 'child.missing']
+    })
+  ).toThrow(/join column not found/);
+  expect(() =>
+    queryArrowTable(source, {
+      join: {child: {source: 'child', query: {columns: ['key']}}, left: 'id', right: 'key'},
+      tables: {child},
+      columns: ['id', 'child.label']
+    })
+  ).toThrow(/child projection does not include/);
+});
+
+/** Wraps simple test columns in the loaders.gl Arrow table shape. */
+function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
+  const data = arrow.tableFromArrays(columns);
+  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+}
+
+/** Converts Arrow rows to plain objects for readable assertions. */
+function toRows(table: ArrowTable): Record<string, unknown>[] {
+  return table.data.toArray().map(row => row?.toJSON() ?? {});
+}

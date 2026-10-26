@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import type {Table as ArrowTable} from 'apache-arrow';
 import type {ParquetPredicate} from '@loaders.gl/tables/parquet';
-import type {ScanQueryMetadata} from '@loaders.gl/scan';
+import type {ScanQueryMetadata} from '@loaders.gl/core/scan';
 import {ExampleUrlInputCard, type UrlOption} from 'examples/website/shared/url-input-card';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 

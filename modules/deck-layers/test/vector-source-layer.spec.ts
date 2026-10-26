@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {VectorSourceLayer, type VectorSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {VectorSet} from '../src/vector-source-layer/vector-set';

@@ -16,7 +16,7 @@ import {
   type ScatterplotLayerProps,
   type SolidPolygonLayerProps
 } from '@deck.gl/layers';
-import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/geoarrow';
+import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/core/geoarrow';
 import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';
 
 /** Props for {@link GeoArrowLayer}. */

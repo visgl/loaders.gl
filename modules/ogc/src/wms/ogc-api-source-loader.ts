@@ -18,8 +18,8 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {GeoJSONTable, Schema} from '@loaders.gl/core/schema';
-import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
-import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import {getServiceCRSAxisOrder} from './crs-utils';
 import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
 import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';

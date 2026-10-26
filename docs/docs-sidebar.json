@@ -432,19 +432,19 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/geoarrow",
+        "label": "@loaders.gl/core/geoarrow",
         "items": [
-          "modules/geoarrow/README",
-          "modules/geoarrow/gis-migration",
-          "modules/geoarrow/api-reference/convert-geojson-to-binary-feature-collection",
-          "modules/geoarrow/api-reference/convert-binary-feature-collection-to-geojson"
+          "modules/core/geoarrow/README",
+          "modules/core/geoarrow/gis-migration",
+          "modules/core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection",
+          "modules/core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/arrow-geometry",
+        "label": "@loaders.gl/core/arrow-geometry",
         "items": [
-          "modules/arrow-geometry/README"
+          "modules/core/arrow-geometry/README"
         ]
       },
       {
@@ -689,9 +689,9 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/scan",
+        "label": "@loaders.gl/core/scan",
         "items": [
-          "modules/scan/README"
+          "modules/core/scan/README"
         ]
       },
       {

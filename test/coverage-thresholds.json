@@ -17,21 +17,6 @@
         "branches": 77
       }
     },
-    "@loaders.gl/arrow-geometry": {
-      "path": "modules/arrow-geometry",
-      "browser": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      },
-      "merged": {
-        "statements": 90,
-        "lines": 90,
-        "functions": 90,
-        "branches": 90
-      }
-    },
     "@loaders.gl/compression": {
       "path": "modules/compression",
       "browser": {
@@ -109,21 +94,6 @@
         "lines": 37,
         "functions": 40,
         "branches": 25
-      }
-    },
-    "@loaders.gl/geoarrow": {
-      "path": "modules/geoarrow",
-      "browser": {
-        "statements": 66,
-        "lines": 66,
-        "functions": 69,
-        "branches": 51
-      },
-      "merged": {
-        "statements": 65,
-        "lines": 66,
-        "functions": 68,
-        "branches": 51
       }
     },
     "@loaders.gl/geospatial": {
@@ -271,21 +241,6 @@
         "branches": 90
       }
     },
-    "@loaders.gl/scan": {
-      "path": "modules/scan",
-      "browser": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
-      },
-      "merged": {
-        "statements": 100,
-        "lines": 100,
-        "functions": 100,
-        "branches": 100
-      }
-    },
     "@loaders.gl/scene": {
       "path": "modules/scene",
       "browser": {
@@ -395,7 +350,21 @@
         "lines": 66,
         "functions": 63,
         "branches": 49
-      }
+      },
+      "sourcePaths": [
+        "modules/sql/src/",
+        "modules/core/src/scan/arrow-query.ts",
+        "modules/core/src/scan/bind-sql-predicate.ts",
+        "modules/core/src/scan/parse-sql-predicate.ts",
+        "modules/core/src/scan/query-arrow-table.ts",
+        "modules/core/src/scan/sql-predicate-schema.ts",
+        "modules/core/src/scan/sql-predicate-types.ts",
+        "modules/core/src/scan/sql-predicate-zod.ts",
+        "modules/core/src/scan/sql-predicate.ts",
+        "modules/core/src/scan/table-query.ts",
+        "modules/core/src/scan/table-query-capabilities.ts",
+        "modules/core/src/scan/rows-to-arrow.ts"
+      ]
     },
     "@loaders.gl/tables": {
       "path": "modules/tables",
@@ -1146,6 +1115,67 @@
       "owner": "@loaders.gl/archives",
       "sourcePaths": [
         "modules/archives/src/zip/"
+      ]
+    },
+    "core/arrow-geometry": {
+      "path": "modules/core/src/arrow-geometry",
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 90
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/arrow-geometry/"
+      ]
+    },
+    "core/geoarrow": {
+      "path": "modules/core/src/geoarrow",
+      "browser": {
+        "statements": 66,
+        "lines": 66,
+        "functions": 69,
+        "branches": 51
+      },
+      "merged": {
+        "statements": 65,
+        "lines": 66,
+        "functions": 68,
+        "branches": 51
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/geoarrow/"
+      ]
+    },
+    "core/scan": {
+      "path": "modules/core/src/scan",
+      "browser": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "merged": {
+        "statements": 100,
+        "lines": 100,
+        "functions": 100,
+        "branches": 100
+      },
+      "owner": "@loaders.gl/core",
+      "sourcePaths": [
+        "modules/core/src/scan/scan-engine.ts",
+        "modules/core/src/scan/scan-query.ts",
+        "modules/core/src/scan/index.ts",
+        "modules/core/src/scan/federated-table-scan-source.ts",
+        "modules/core/src/scan/vector-table-scan-source.ts"
       ]
     }
   }

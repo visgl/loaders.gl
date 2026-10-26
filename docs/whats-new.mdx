@@ -164,7 +164,7 @@ explicit implementation subpaths; see the [upgrade guide](/docs/upgrade-guide#al
 Package barrels now list their exports explicitly.
 
 - GIS retirement: Arrow parsing and triangulation now use focused
-  [Arrow geometry helpers](/docs/modules/arrow-geometry). Geometry metadata
+  [Arrow geometry helpers](/docs/modules/core/arrow-geometry). Geometry metadata
   validators move to a dedicated schema subpath, and geometry codecs use math.gl-backed
   codecs. Legacy GeoJSON/FlatGeoJSON binary materialization is shared through
   `arrow-geometry/legacy-binary`, removing direct GIS dependencies from ArcGIS,
@@ -293,7 +293,7 @@ evidence, cancellation, counts, IDs, extents, nonspatial tables, and queryable M
 ### Clustering
 
 - Add an independent [`ClusterIndex`](/docs/developer-guide/clustering) engine and experimental
-  [`ClusterSource`](/docs/developer-guide/clustering) adapter to `@loaders.gl/geoarrow`, with typed
+  [`ClusterSource`](/docs/developer-guide/clustering) adapter to `@loaders.gl/core/geoarrow`, with typed
   coordinate input, a zoom hierarchy, antimeridian-aware grouping, counts, numeric aggregates,
   member pagination, and expansion queries.
 - Add explicit representative-point policies for non-point geometries and an internal
@@ -504,9 +504,9 @@ Release Date: 2026
 
 - The new lightweight `@loaders.gl/compression/native-decompression` entrypoint probes runtime support for gzip, deflate, raw deflate, Brotli, and future Zstandard decompression without importing codec fallbacks. Parquet and SPZ use it before lazily loading codec-backed implementations; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed parsing.
 
-**@loaders.gl/core/schema and @loaders.gl/geoarrow**
+**@loaders.gl/core/schema and @loaders.gl/core/geoarrow**
 
-- The GIS compatibility package is removed in 5.0. GeoArrow owns application-facing conversion and processing; see the [GIS migration map](/docs/modules/geoarrow/gis-migration). Legacy binary layouts remain supported as explicit, allocating rendering representations.
+- The GIS compatibility package is removed in 5.0. GeoArrow owns application-facing conversion and processing; see the [GIS migration map](/docs/modules/core/geoarrow/gis-migration). Legacy binary layouts remain supported as explicit, allocating rendering representations.
 - Handwritten, documented GeoParquet and GeoArrow metadata types are exported from `@loaders.gl/core/schema`, while matching runtime validators are available from `@loaders.gl/core/schema/geospatial-metadata-zod-schema` without adding Zod to the lightweight root import.
 - Draft-07 `geoparquet.schema.json` and `geoarrow-metadata.schema.json` assets are published for validation and editor integrations.
 
@@ -515,7 +515,7 @@ Release Date: 2026
 - Handwritten I3S metadata types are paired with runtime scene-layer and node-page validators from `@loaders.gl/tiles-3d/i3s/i3s-zod-schema`, plus published draft-07 JSON Schema assets.
 - Legacy textured I3S materials retain their texture reference, and explicit zero alpha cutoffs are preserved.
 
-**@loaders.gl/geoarrow and @loaders.gl/flatgeobuf**
+**@loaders.gl/core/geoarrow and @loaders.gl/flatgeobuf**
 
 - GeoArrow conversion preserves separated XYM measure coordinates and infers nested collection dimensions from their physical Arrow children.
 - FlatGeobuf rejects property values that overrun their declared property buffer instead of consuming adjacent feature data.

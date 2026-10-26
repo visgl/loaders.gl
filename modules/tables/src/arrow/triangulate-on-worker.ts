@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import type {WorkerOptions} from '@loaders.gl/core/worker-utils';
 import {processOnWorker} from '@loaders.gl/core/worker-utils';
-import type {BinaryDataFromGeoArrow} from '@loaders.gl/arrow-geometry/binary-features';
+import type {BinaryDataFromGeoArrow} from '@loaders.gl/core/arrow-geometry/binary-features';
 import type {GeoArrowEncoding} from '@loaders.gl/core/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline

@@ -8,7 +8,7 @@ import type {
   ArrowTable,
   ArrowTableBatch
 } from '@loaders.gl/core/schema';
-import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/arrow-geometry/geojson-table';
+import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
 
 // Parses arrow to a columnar table

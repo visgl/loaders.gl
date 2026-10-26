@@ -41,11 +41,6 @@
     },
     "./wkt-worker.js": {
       "import": "./dist/wkt-worker.js"
-    },
-    "./twkb": {
-      "types": "./dist/twkb/index.d.ts",
-      "import": "./dist/twkb/index.js",
-      "require": "./dist/twkb/index.cjs"
     }
   },
   "sideEffects": false,
@@ -64,7 +59,6 @@
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.14",
     "@math.gl/geospatial": "5.0.0-alpha.20"
   },
   "peerDependencies": {

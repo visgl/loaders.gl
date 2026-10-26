@@ -40,12 +40,31 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
+### Geometry and scan utility packages move into core
+
+The standalone `@loaders.gl/scan`, `@loaders.gl/arrow-geometry`, and `@loaders.gl/geoarrow` packages have been removed, without forwarding packages.
+
+| Removed import | Replacement |
+| --- | --- |
+| `@loaders.gl/scan` | `@loaders.gl/core/scan` |
+| `@loaders.gl/arrow-geometry` | `@loaders.gl/core/arrow-geometry` |
+| `@loaders.gl/arrow-geometry/<utility>` | `@loaders.gl/core/arrow-geometry/<utility>` |
+| `@loaders.gl/geoarrow` | `@loaders.gl/core/geoarrow` |
+| `@loaders.gl/geoarrow/<utility>` | `@loaders.gl/core/geoarrow/<utility>` |
+| `@loaders.gl/wkt/twkb` | `@loaders.gl/core/wkt/twkb` |
+| `@loaders.gl/sql/arrow-query` | `@loaders.gl/core/scan/arrow-query` |
+| `@loaders.gl/sql/table-query` | `@loaders.gl/core/scan/table-query` |
+| `@loaders.gl/sql/sql-predicate` | `@loaders.gl/core/scan/sql-predicate` |
+| `@loaders.gl/sql/sql-predicate-zod` | `@loaders.gl/core/scan/sql-predicate-zod` |
+
+Remove the three deleted packages from dependencies and install `@loaders.gl/core`. Subpaths are imports, not separately installable packages. Format loaders and writers remain in `@loaders.gl/wkt`; database adapters remain in `@loaders.gl/sql`.
+
 ## Table-format scan subpaths
 
 The experimental `@loaders.gl/scan/iceberg`, `/delta`, and `/hudi` subpaths have been removed.
 Import their source implementations from `@loaders.gl/tables/iceberg`,
 `@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`, respectively. `IcebergRestCatalog`
-is also exported from `@loaders.gl/tables/iceberg`. The `@loaders.gl/scan` root continues
+is also exported from `@loaders.gl/tables/iceberg`. The `@loaders.gl/core/scan` root continues
 to provide the query engine and federation APIs without depending on `@loaders.gl/tables`.
 
 ## OGC service and STAC package imports
@@ -391,7 +410,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 **Removed GIS package**
 
 - `@loaders.gl/gis` is removed in 5.0. Applications should replace it with
-  `@loaders.gl/geoarrow` for conversion and processing. Use `GEOARROW_CONVERTERS`
+  `@loaders.gl/core/geoarrow` for conversion and processing. Use `GEOARROW_CONVERTERS`
   instead of `GIS_CONVERTERS`.
 - Import geometry and metadata types from `@loaders.gl/core/schema`. Runtime validators
   use `@loaders.gl/core/schema/geospatial-metadata-zod-schema`; generated schemas use
@@ -401,7 +420,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
   `convertBinaryFeatureCollectionToGeojson` from GeoArrow instead of the old
   `geojsonToBinary` and `binaryToGeojson` aliases. Existing binary layouts are unchanged;
   these conversions allocate and do not promise borrowed batch views.
-- See the [complete replacement import map](./modules/geoarrow/gis-migration.md),
+- See the [complete replacement import map](./modules/core/geoarrow/gis-migration.md),
   including the lower-level loader helpers, direct math.gl codecs/CRS, and WKT's TWKB subpath.
 
 **Removed compatibility aliases**

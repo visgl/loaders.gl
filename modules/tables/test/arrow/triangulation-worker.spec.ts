@@ -11,9 +11,9 @@ const workerMocks = vi.hoisted(() => ({
   triangulateWKBColumn: vi.fn()
 }));
 
-vi.mock('@loaders.gl/arrow-geometry/binary-features', async importOriginal => {
+vi.mock('@loaders.gl/core/arrow-geometry/binary-features', async importOriginal => {
   const original =
-    await importOriginal<typeof import('@loaders.gl/arrow-geometry/binary-features')>();
+    await importOriginal<typeof import('@loaders.gl/core/arrow-geometry/binary-features')>();
   return {
     ...original,
     getTriangleIndices: workerMocks.getTriangleIndices,

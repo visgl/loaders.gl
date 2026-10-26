@@ -105,10 +105,10 @@ must not be deferred as ordinary minor-release features.
 - **`@loaders.gl/core/schema-utils`**
   - Shared schema, table, mesh, and converter infrastructure.
 
-- **`@loaders.gl/arrow-geometry`**
+- **`@loaders.gl/core/arrow-geometry`**
   - Minimal geometry helpers needed by loaders, including GeoArrow WKB output.
 
-- **`@loaders.gl/geoarrow`**
+- **`@loaders.gl/core/geoarrow`**
   - Richer GeoArrow conversion and processing APIs for applications.
 
 - **Cloud native** (raster/data): `GeoTIFFLoader`, `ZarrLoader`, kerchunk, NetCDF4, ...
@@ -121,7 +121,7 @@ must not be deferred as ordinary minor-release features.
 - Loaders document supported shapes and defaults. `core.shape` supplies a shared default where
   supported, and loader-specific shape settings select the format explicitly.
 - Applications can also use explicit converters in `@loaders.gl/core/schema-utils` and
-  `@loaders.gl/geoarrow` to obtain other representations. Converters do not imply that every
+  `@loaders.gl/core/geoarrow` to obtain other representations. Converters do not imply that every
   loader-specific alternate shape has been removed.
 
 ## Geospatial service roadmap
@@ -172,9 +172,9 @@ implementation status is distinct from availability in a published release.
 
 “SOTA” describes the engineering target, not a measured claim of superiority or a promise of full
 OpenLayers parity. Protocol parsing belongs in loaders.gl; renderer tile selection and visual
-reprojection belong in deck.gl. Rich table processing belongs in `@loaders.gl/geoarrow`, while
-`@loaders.gl/arrow-geometry` supplies focused loader-output helpers. The GIS compatibility package has been removed;
-[replacement imports](./modules/geoarrow/gis-migration.md) document the migration.
+reprojection belong in deck.gl. Rich table processing belongs in `@loaders.gl/core/geoarrow`, while
+`@loaders.gl/core/arrow-geometry` supplies focused loader-output helpers. The GIS compatibility package has been removed;
+[replacement imports](./modules/core/geoarrow/gis-migration.md) document the migration.
 
 The order below prioritizes the remaining source/rendering gap, then scalable query execution.
 Each tranche needs its own bounded API, hermetic boundary tests, and documented unsupported cases.
@@ -182,11 +182,11 @@ Each tranche needs its own bounded API, hermetic boundary tests, and documented 
 | Priority | Tranche and current gap | Owner | Completion evidence |
 | --- | --- | --- | --- |
 | 1 | Arbitrary tile grids and raster reprojection: first-level normalized origin/tile size and standard XYZ rendering currently limit heterogeneous matrices | loaders.gl metadata; deck.gl rendering | Retain per-level origins, tile sizes, matrix bounds, and supported unit resolutions; render a non-XYZ geographic/projected grid correctly; explicitly test antimeridian and polar coverage |
-| 2 | Portable service predicate pushdown: relational filters currently run locally; WFS accepts caller-authored FES, OGC API does not translate CQL2 | `@loaders.gl/ogc/wms` and `@loaders.gl/scan` | Translate an advertised supported subset, report pushdown versus residual execution in `explain()`, preserve results with safe local fallback, and verify reduced requests/bytes |
+| 2 | Portable service predicate pushdown: relational filters currently run locally; WFS accepts caller-authored FES, OGC API does not translate CQL2 | `@loaders.gl/ogc/wms` and `@loaders.gl/core/scan` | Translate an advertised supported subset, report pushdown versus residual execution in `explain()`, preserve results with safe local fallback, and verify reduced requests/bytes |
 | 3 | Schema and queryables discovery: WFS `getSchema()` and OGC API Features schema currently lack automatic service schema negotiation | `@loaders.gl/ogc/wms` | Negotiate `DescribeFeatureType`/queryables, preserve typed/null/geometry/CRS metadata, reconcile heterogeneous pages, and expose unsupported schema constructs explicitly |
-| 4 | Progressive bounded-memory scans: pages and GML batches exist, but the common vector scan adapter materializes a whole bound result | `@loaders.gl/ogc/wms` and `@loaders.gl/scan` | Stream GeoJSON/GML into Arrow batches with backpressure, cancellation, and a measured memory bound; plan blocking sorts/aggregates separately; never certify incomplete extent coverage |
-| 5 | Spatial-index scale and updates: the immutable minimum-X index can visit every row in the worst case | `@loaders.gl/geoarrow` | Benchmark representative points/lines/polygons, pruning, memory, and build costs; add a packed tree or another measured improvement plus explicit rebuild/update semantics without losing deterministic results |
-| 6 | Global spatial semantics and robust topology: local queries are planar XY with ordinary floating-point predicates | `@loaders.gl/geoarrow` and projection utilities | Define CRS/unit-aware distance, antimeridian handling, tolerance and precision policy; add independently validated edge cases before claiming geodesic or arbitrary geometry-predicate support |
+| 4 | Progressive bounded-memory scans: pages and GML batches exist, but the common vector scan adapter materializes a whole bound result | `@loaders.gl/ogc/wms` and `@loaders.gl/core/scan` | Stream GeoJSON/GML into Arrow batches with backpressure, cancellation, and a measured memory bound; plan blocking sorts/aggregates separately; never certify incomplete extent coverage |
+| 5 | Spatial-index scale and updates: the immutable minimum-X index can visit every row in the worst case | `@loaders.gl/core/geoarrow` | Benchmark representative points/lines/polygons, pruning, memory, and build costs; add a packed tree or another measured improvement plus explicit rebuild/update semantics without losing deterministic results |
+| 6 | Global spatial semantics and robust topology: local queries are planar XY with ordinary floating-point predicates | `@loaders.gl/core/geoarrow` and projection utilities | Define CRS/unit-aware distance, antimeridian handling, tolerance and precision policy; add independently validated edge cases before claiming geodesic or arbitrary geometry-predicate support |
 | 7 | Feature-info interoperability and coordinate helpers: WMTS callers supply tile/I/J and responses retain service-native schemas | loaders.gl service adapters; deck.gl interaction | Derive tile/pixel indices from source-grid coordinates, connect screen interactions through renderer transforms, and offer optional typed JSON/GML normalization while preserving the raw-response path |
 | 8 | Temporal/elevation dimension semantics: advertised values and defaults are preserved but not interpreted or validated | `@loaders.gl/ogc/wms` | Support explicitly defined interval/value validation and nearest-time selection with documented calendar, timezone, current-value, and boundary policies; avoid silent substitutions |
 | 9 | Operational and standards hardening: runtime policy exists; persistent caching and blanket optional conformance do not | Service adapters and application fetch layer | Validate cache freshness, retry/cancellation/auth boundaries and complete multi-provider reports; add targeted optional conformance classes with fixtures and published limitations |

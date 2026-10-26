@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {decodeTile} from '@maplibre/mlt';
 import {encode} from '@loaders.gl/core';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import type {Geometry} from '@loaders.gl/core/schema';
 import {MLTWriter} from '../../src/mlt';
 import {MLTLoaderWithParser} from '../../src/mlt/mlt-loader-with-parser';

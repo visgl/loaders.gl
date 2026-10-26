@@ -9,7 +9,7 @@ import type {
   ArrayRowTable,
   ObjectRowTable
 } from '@loaders.gl/core/schema';
-import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {
   convertCSVRowTableToArrowTable,
   parseCSVArrayBufferAsArrow,

@@ -19,7 +19,7 @@ import {ColumnPanel, CustomPanel} from '@deck.gl-community/panels';
 import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 
 import {load} from '@loaders.gl/core';
-import {getDeckBinaryDataFromArrowMesh, getBoundingBoxFromArrowPositions} from '@loaders.gl/geoarrow';
+import {getDeckBinaryDataFromArrowMesh, getBoundingBoxFromArrowPositions} from '@loaders.gl/core/geoarrow';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {DracoArrowLoader} from '@loaders.gl/draco';
 import {LASArrowLoader} from '@loaders.gl/las';

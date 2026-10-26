@@ -8,7 +8,7 @@ import {expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/parquet-dataset-source';
-import {queryArrowTable} from '@loaders.gl/sql/arrow-query';
+import {queryArrowTable} from '@loaders.gl/core/scan/arrow-query';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 

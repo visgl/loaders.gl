@@ -6,7 +6,7 @@ import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-uti
 import type {Geometry} from '@loaders.gl/core/schema';
 import {VERSION} from './lib/version';
 import {WKTFormat} from './wkt-format';
-import {convertGeometryToWKT} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertGeometryToWKT} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 
 export type WKTWriterOptions = WriterOptions & {
   wkt?: {};

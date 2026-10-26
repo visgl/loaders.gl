@@ -10,12 +10,12 @@ import type {
 } from '@loaders.gl/core/schema';
 import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
-} from '@loaders.gl/arrow-geometry/geometry-field';
+} from '@loaders.gl/core/arrow-geometry/geometry-field';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {parseSHP, parseSHPInBatches} from './parse-shp';
 import {parseSHPHeader, type SHPHeader} from './parse-shp-header';

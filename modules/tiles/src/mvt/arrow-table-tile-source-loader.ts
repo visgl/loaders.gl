@@ -18,8 +18,8 @@ import type {ArrowTable, Schema, GeoArrowEncoding} from '@loaders.gl/core/schema
 import {
   convertWKBToGeometry,
   convertWKTToGeometry
-} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {getGeoArrowNativeGeometry} from '@loaders.gl/arrow-geometry/native-geometry';
+} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
+import {getGeoArrowNativeGeometry} from '@loaders.gl/core/arrow-geometry/native-geometry';
 import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {TableVectorTileSource, TableTileSourceLoader} from './table-tile-source-loader';

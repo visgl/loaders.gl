@@ -14,7 +14,7 @@ import {
   type ScatterplotLayerProps,
   type TextLayerProps
 } from '@deck.gl/layers';
-import type {ClusterNode, ClusterSource} from '@loaders.gl/geoarrow';
+import type {ClusterNode, ClusterSource} from '@loaders.gl/core/geoarrow';
 
 /** Props for the internal cluster rendering integration. Picking returns a ClusterNode. */
 export type ClusterLayerProps = Omit<CompositeLayerProps, 'data'> & {

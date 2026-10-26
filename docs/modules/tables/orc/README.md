@@ -84,7 +84,7 @@ pushdown.
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {ORCSourceLoader} from '@loaders.gl/tables/orc';
-import {parseSQLPredicate} from '@loaders.gl/scan';
+import {parseSQLPredicate} from '@loaders.gl/core/scan';
 
 const source = createDataSource('events.orc', [ORCSourceLoader]);
 const metadata = await source.getQueryMetadata();

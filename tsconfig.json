@@ -159,12 +159,6 @@
       "@loaders.gl/core/polyfills/test": [
         "modules/core/test/polyfills-package"
       ],
-      "@loaders.gl/geoarrow": [
-        "modules/geoarrow/src"
-      ],
-      "@loaders.gl/geoarrow/test": [
-        "modules/geoarrow/test"
-      ],
       "@loaders.gl/core": [
         "modules/core/src"
       ],
@@ -212,12 +206,6 @@
       ],
       "@loaders.gl/tiles-3d/3d-tiles/test": [
         "modules/tiles-3d/test/3d-tiles"
-      ],
-      "@loaders.gl/arrow-geometry": [
-        "modules/arrow-geometry/src"
-      ],
-      "@loaders.gl/arrow-geometry/*": [
-        "modules/arrow-geometry/src/*"
       ],
       "@loaders.gl/draco": [
         "modules/draco/src"
@@ -329,12 +317,6 @@
       ],
       "@loaders.gl/sql": [
         "modules/sql/src"
-      ],
-      "@loaders.gl/scan": [
-        "modules/scan/src"
-      ],
-      "@loaders.gl/scan/test": [
-        "modules/scan/test"
       ],
       "@loaders.gl/sql/test": [
         "modules/sql/test"
@@ -584,6 +566,66 @@
       ],
       "@loaders.gl/ogc/stac/test": [
         "modules/ogc/test/stac"
+      ],
+      "@loaders.gl/core/arrow-geometry": [
+        "modules/core/src/arrow-geometry/index.ts"
+      ],
+      "@loaders.gl/core/arrow-geometry/*": [
+        "modules/core/src/arrow-geometry/*"
+      ],
+      "@loaders.gl/core/arrow-geometry/test": [
+        "modules/core/test/arrow-geometry"
+      ],
+      "@loaders.gl/core/geoarrow": [
+        "modules/core/src/geoarrow/index.ts"
+      ],
+      "@loaders.gl/core/geoarrow/*": [
+        "modules/core/src/geoarrow/*"
+      ],
+      "@loaders.gl/core/geoarrow/test": [
+        "modules/core/test/geoarrow"
+      ],
+      "@loaders.gl/core/scan": [
+        "modules/core/src/scan/index.ts"
+      ],
+      "@loaders.gl/core/scan/*": [
+        "modules/core/src/scan/*"
+      ],
+      "@loaders.gl/core/scan/test": [
+        "modules/core/test/scan"
+      ],
+      "@loaders.gl/core/wkt": [
+        "modules/core/src/wkt/index.ts"
+      ],
+      "@loaders.gl/core/wkt/*": [
+        "modules/core/src/wkt/*"
+      ],
+      "@loaders.gl/core/wkt/test": [
+        "modules/core/test/wkt"
+      ],
+      "@loaders.gl/core/scan/test/*": [
+        "modules/core/test/scan/*"
+      ],
+      "@loaders.gl/core/geoarrow/test/*": [
+        "modules/core/test/geoarrow/*"
+      ],
+      "@loaders.gl/core/arrow-geometry/test/*": [
+        "modules/core/test/arrow-geometry/*"
+      ],
+      "@loaders.gl/core/wkt/test/*": [
+        "modules/core/test/wkt/*"
+      ],
+      "@loaders.gl/core/geoarrow/cluster-index": [
+        "modules/core/src/geoarrow/clustering/cluster-index.ts"
+      ],
+      "@loaders.gl/core/geoarrow/cluster-source": [
+        "modules/core/src/geoarrow/clustering/cluster-source.ts"
+      ],
+      "@loaders.gl/core/geoarrow/get-representative-point": [
+        "modules/core/src/geoarrow/clustering/get-representative-point.ts"
+      ],
+      "@loaders.gl/core/geoarrow/geoarrow-geometry-converter": [
+        "modules/core/src/geoarrow/geoarrow-converter/geoarrow-geometry-converter.ts"
       ]
     },
     "plugins": [
