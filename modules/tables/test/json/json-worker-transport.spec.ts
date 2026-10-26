@@ -9,7 +9,7 @@ import {serializeArrowWorkerResult} from '@loaders.gl/core/schema-utils/arrow-tr
 import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {serializeJSONWorkerBatch} from '../../src/json/lib/json-worker-transport';
 
-test('JSON Arrow transport owns outgoing IPC buffers and rejects decoded object payloads', () => {
+test('JSON Arrow transport owns outgoing IPC buffers and encodes metadata as binary JSON', () => {
   const values = new Int32Array([1, 2, 3]);
   const table = tableFromArrays({id: values});
   const serialized = serializeJSONWorkerBatch({
@@ -26,10 +26,9 @@ test('JSON Arrow transport owns outgoing IPC buffers and rejects decoded object 
   expect(table.getChild('id')?.get(2)).toBe(3);
   expect(Array.from(values)).toEqual([1, 2, 3]);
   const metadata = {shape: 'json', batchType: 'final-result', container: {tail: true}};
-  expect(() => serializeJSONWorkerBatch(metadata)).toThrow('Arrow table output');
-  expect(() => serializeJSONWorkerBatch({shape: 'object-row-table', data: [{id: 1}]})).toThrow(
-    'Arrow table output'
-  );
+  const serializedMetadata = serializeJSONWorkerBatch(metadata);
+  expect(serializedMetadata).toMatchObject({transport: 'json-utf8', data: expect.any(Uint8Array)});
+  expect(deserializeJSONWorkerResult(serializedMetadata)).toEqual(metadata);
 });
 
 test('JSON hydrates legacy Arrow custom-worker payloads', () => {

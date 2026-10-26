@@ -126,9 +126,10 @@ Arrow `data` batches use a frozen schema. If `json.schema` is supplied, that sch
 
 ## Worker batches
 
-This loader supports stateful worker batch parsing for `arrow-table` output with `core.worker: true`, cancellation via
+This loader supports stateful worker batch parsing with `core.worker: true`, cancellation via
 `signal`, and decoded-row progress via `onProgress`. See [JSON worker batches](/docs/modules/tables/json#parsing-batches-in-workers)
 for streaming behavior, schemas, backpressure, and Node/custom-worker options.
 
-Row-table requests and container metadata requests parse on the caller to preserve arbitrary JSON values.
-Worker data payloads are transferable Arrow IPC bytes, never decoded row objects.
+Arrow tables return as transferable Arrow IPC bytes. Row tables and container metadata return as
+binary JSON frames decoded on the caller, preserving heterogeneous values without Arrow coercion.
+Decoded row objects are never structured-cloned across the worker boundary.

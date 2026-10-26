@@ -4,6 +4,7 @@
 
 import type {Batch, TableBatch} from '@loaders.gl/core/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import {JSON_WORKER_URL} from './json-worker-url';
 import {JSONFormat} from './json-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -50,6 +51,11 @@ export const JSONLoader = {
 
   ...JSONFormat,
   version: VERSION,
+  worker: JSON_WORKER_URL,
+  workerFile: 'json-worker.js',
+  workerNode: 'json-worker-node.cjs',
+  workerSourceNode: 'json/workers/json-worker.ts',
+  workerInBatches: true,
   options: {
     json: {
       backend: 'clarinet',

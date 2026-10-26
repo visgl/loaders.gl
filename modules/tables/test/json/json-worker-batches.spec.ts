@@ -8,6 +8,7 @@ import {parse, parseInBatches} from '@loaders.gl/core';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {WorkerFarm, getWorkerURL} from '@loaders.gl/core/worker-utils';
 import {JSONLoader, JSONTableLoader, NDJSONLoader} from '@loaders.gl/tables/json';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json/json-loader';
 import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json/json-table-loader';
 import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json/ndjson-loader';
 
@@ -31,6 +32,7 @@ async function collectBatches(batches: AsyncIterable<any>): Promise<any[]> {
 }
 
 test.each([
+  ['JSON', JSONLoader, JSONLoaderWithParser, '[{"id":1},', '{"id":2}]'],
   ['JSONTable', JSONTableLoader, JSONTableLoaderWithParser, '[{"id":1},', '{"id":2}]'],
   ['NDJSON', NDJSONLoader, NDJSONLoaderWithParser, '{"id":1}\n', '{"id":2}\n']
 ] as const)('%s yields before EOF, applies backpressure, and closes input on return', async (_name, metadata, implementation, firstChunk, lastChunk) => {
@@ -115,7 +117,7 @@ test.each([
 test.each([
   'clarinet',
   'fast'
-] as const)('JSON preserves path/container metadata on the caller with %s backend', async backend => {
+] as const)('JSON worker preserves path/container metadata with %s backend', async backend => {
   const batches = await collectBatches(
     await parseInBatches(
       [
@@ -203,7 +205,7 @@ test.each([
 });
 
 test('JSON loaders resolve their shared published browser asset outside test mode', () => {
-  for (const loader of [JSONTableLoader, NDJSONLoader]) {
+  for (const loader of [JSONLoader, JSONTableLoader, NDJSONLoader]) {
     expect(loader.worker).toBe(true);
     expect(getWorkerURL(loader, {_workerType: 'classic'})).toMatch(
       /^https:\/\/unpkg\.com\/@loaders\.gl\/tables@[^/]+\/dist\/json-worker\.js$/
@@ -219,7 +221,7 @@ test.each([
     '[{"id":1},{"id":"different","extra":true}]'
   ],
   [NDJSONLoader, NDJSONLoaderWithParser, 'ndjson', '{"id":1}\n{"id":"different","extra":true}\n']
-] as const)('$0.id keeps heterogeneous rows on the caller without Arrow coercion', async (metadata, implementation, namespace, text) => {
+] as const)('$0.id transfers heterogeneous rows as binary JSON without Arrow coercion', async (metadata, implementation, namespace, text) => {
   const {loader, mainParser} = observeLoader(metadata, implementation);
   const batches = await collectBatches(
     await parseInBatches([encoder.encode(text)], loader, {
@@ -227,11 +229,11 @@ test.each([
       [namespace]: {shape: 'object-row-table'}
     })
   );
-  expect(mainParser).toHaveBeenCalledOnce();
+  expect(mainParser).not.toHaveBeenCalled();
   expect(batches.flatMap(batch => batch.data)).toEqual([{id: 1}, {id: 'different', extra: true}]);
 });
 
-test('JSONTable container metadata stays on the caller with Arrow output', async () => {
+test('JSONTable transfers binary container metadata alongside Arrow output', async () => {
   const {loader, mainParser} = observeLoader(JSONTableLoader, JSONTableLoaderWithParser);
   const batches = await collectBatches(
     await parseInBatches([encoder.encode('{"label":"before","rows":[{"id":1}]}')], loader, {
@@ -239,7 +241,31 @@ test('JSONTable container metadata stays on the caller with Arrow output', async
       json: {shape: 'arrow-table', jsonpaths: ['$.rows']}
     })
   );
-  expect(mainParser).toHaveBeenCalledOnce();
+  expect(mainParser).not.toHaveBeenCalled();
   expect(batches.find(batch => batch.batchType === 'data').data).toBeInstanceOf(Table);
   expect(batches.at(-1)).toMatchObject({batchType: 'final-result', container: {label: 'before'}});
+});
+
+test('JSON documents use binary results with a self-hosted worker URL', async () => {
+  const document = {
+    shape: 'arrow-table',
+    data: {batches: []},
+    rows: [{id: 1}, {id: 'different', extra: true}],
+    metadata: {nested: [null, false]}
+  };
+  const options = {
+    core: {worker: true, _workerType: 'classic' as const},
+    json: {workerUrl: new URL('/modules/tables/dist/json-worker.js', location.href).href}
+  };
+  const deserialize = vi.fn(JSONLoaderWithParser.deserializeWorkerResult);
+  const loader = {
+    ...JSONLoader,
+    preload: async () => ({...JSONLoaderWithParser, deserializeWorkerResult: deserialize})
+  };
+  expect(await parse(encoder.encode(JSON.stringify(document)), loader, options)).toEqual(document);
+  expect(deserialize).toHaveBeenCalledOnce();
+  expect(deserialize.mock.calls[0][0]).toMatchObject({
+    transport: 'json-utf8',
+    data: expect.any(Uint8Array)
+  });
 });

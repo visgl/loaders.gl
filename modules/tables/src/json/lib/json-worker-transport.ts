@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {
+  serializeBinaryJSON,
+  deserializeBinaryJSON,
+  type BinaryJSONResult
+} from './json-binary-transport';
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {
   serializeArrowIPCResult,
@@ -27,11 +32,16 @@ export function serializeJSONWorkerOptions(options: LoaderOptions): LoaderOption
 
 /** Owns all outgoing Arrow buffers so retained parser state cannot be detached by a transfer. */
 export function serializeJSONWorkerBatch(batch: unknown): unknown {
-  return serializeArrowIPCResult(batch);
+  return (batch as {shape?: string})?.shape === 'arrow-table'
+    ? serializeArrowIPCResult(batch)
+    : serializeBinaryJSON(batch);
 }
 
 /** Reads owned IPC while retaining compatibility with older Arrow-only custom workers. */
 export function deserializeJSONWorkerResult(result: unknown) {
+  if ((result as BinaryJSONResult)?.transport === 'json-utf8') {
+    return deserializeBinaryJSON(result as BinaryJSONResult);
+  }
   const table = result as {data?: {transport?: string}};
   return table?.data?.transport === 'arrow-ipc'
     ? deserializeArrowIPCBatch(result)
