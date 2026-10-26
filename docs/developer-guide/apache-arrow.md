@@ -79,14 +79,14 @@ You may still want to specify `apache-arrow` explicitly in your app to avoid bei
 ### Recommended install pattern
 
 ```bash
-npm install apache-arrow @loaders.gl/core @loaders.gl/tables/arrow
+npm install apache-arrow @loaders.gl/core @loaders.gl/tables
 # plus any other loaders you use
 ```
 
 or:
 
 ```bash
-yarn add apache-arrow @loaders.gl/core @loaders.gl/tables/arrow
+yarn add apache-arrow @loaders.gl/core @loaders.gl/tables
 ```
 
 ### Troubleshooting

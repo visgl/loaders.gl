@@ -6,7 +6,7 @@ Load scene graphs and meshes from glTF/GLB, OBJ/MTL and OpenUSD. Install one pac
 | --- | --- | --- |
 | [gltf](./gltf/README.md) | glTF and GLB | `GLTFLoader`, `GLBLoader` |
 | [obj](./obj/README.md) | OBJ and MTL | `OBJLoader`, `MTLLoader` |
-| [OpenUSD](./api-reference/usd-loader.md) (`/usd`) | USD ASCII layers and uncompressed USDZ archives | `USDLoader` |
+| [OpenUSD](./usd/api-reference/usd-loader.md) (`/usd`) | USD ASCII layers and uncompressed USDZ archives | `USDLoader` |
 
 ```bash
 npm install @loaders.gl/core @loaders.gl/scene

@@ -378,11 +378,17 @@ const config = {
           const consolidatedModuleDocs = {
             tables: ['arrow', 'avro', 'bson', 'csv', 'excel', 'json', 'lance', 'orc', 'parquet'],
             geospatial: ['flatgeobuf', 'geopackage', 'kml', 'shapefile', 'wkt'],
-            core: ['scan', 'arrow-geometry', 'geoarrow'],
+            core: ['scan', 'arrow-geometry', 'geoarrow', 'schema', 'schema-utils', 'polyfills'],
+            raster: ['geotiff', 'lerc', 'terrain'],
+            tiles: ['mvt', 'mlt', 'pmtiles'],
+            'tiles-3d': ['3d-tiles', 'i3s'],
             pointclouds: ['las', 'pcd', 'ply'],
             scene: ['obj', 'gltf']
           };
           const pageRedirects = {
+            '/docs/developer-guide/using-unbundled-loaders': '/docs/developer-guide/using-metadata-loaders',
+            '/docs/modules/scene/api-reference/usd-loader': '/docs/modules/scene/usd/api-reference/usd-loader',
+            '/docs/modules/scene/formats/usd': '/docs/modules/scene/usd/formats/usd',
             '/docs/modules/gis': '/docs/modules/core/geoarrow/gis-migration',
             '/docs/modules/gis/api-reference/geojson-to-binary': '/docs/modules/core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection',
             '/docs/modules/gis/api-reference/binary-to-geojson': '/docs/modules/core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson',

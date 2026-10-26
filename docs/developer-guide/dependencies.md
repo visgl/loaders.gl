@@ -15,7 +15,7 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   tone="violet"
   meta={['JavaScript modules', 'WebAssembly', 'Application-controlled']}
   links={[
-    {label: 'Unbundled loaders', to: '/docs/developer-guide/using-unbundled-loaders'},
+    {label: 'Metadata loaders', to: '/docs/developer-guide/using-metadata-loaders'},
     {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'}
   ]}
 />

@@ -36,8 +36,8 @@ type LoaderLiveExampleConfig =
     };
 
 const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
-  'modules/3d-tiles/api-reference/tiles-3d-loader': {kind: '3d-tiles'},
-  'modules/3d-tiles/api-reference/cesium-ion-loader': {kind: '3d-tiles'},
+  'modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader': {kind: '3d-tiles'},
+  'modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader': {kind: '3d-tiles'},
   'modules/tables/arrow/api-reference/geoarrow-loader': {kind: 'geospatial', format: 'GeoArrow'},
   'modules/tables/excel/api-reference/excel-loader': {
     kind: 'table',
@@ -55,8 +55,8 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
       url: `${LOADERS_URL}/modules/tables/test/json/data/ndjson.ndjson`
     }
   },
-  'modules/mlt/api-reference/mlt-loader': {kind: 'tiles', format: 'MLT'},
-  'modules/mvt/api-reference/mvt-loader': {kind: 'tiles', format: 'MVT'},
+  'modules/tiles/mlt/api-reference/mlt-loader': {kind: 'tiles', format: 'MLT'},
+  'modules/tiles/mvt/api-reference/mvt-loader': {kind: 'tiles', format: 'MVT'},
   'modules/scene/obj/api-reference/obj-loader': {kind: 'pointcloud', format: 'OBJ'}
 };
 

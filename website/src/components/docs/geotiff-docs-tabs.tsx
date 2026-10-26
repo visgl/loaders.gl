@@ -25,27 +25,27 @@ export type GeoTiffDocsTabId =
 const GEOTIFF_DOCS_TABS: GeoTiffDocsTab[] = [
   {id: 'geotiff-example', label: 'Try GeoTIFF', href: '/examples/geospatial/geotiff'},
   {id: 'ometiff-example', label: 'Try OME-TIFF', href: '/examples/bioimaging/ome-tiff'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/geotiff'},
-  {id: 'format', label: 'Format', href: '/docs/modules/geotiff/formats/geotiff'},
+  {id: 'overview', label: 'Overview', href: '/docs/modules/raster/geotiff'},
+  {id: 'format', label: 'Format', href: '/docs/modules/raster/geotiff/formats/geotiff'},
   {
     id: 'geotiffloader',
     label: 'GeoTIFFLoader',
-    href: '/docs/modules/geotiff/api-reference/geotiff-loader'
+    href: '/docs/modules/raster/geotiff/api-reference/geotiff-loader'
   },
   {
     id: 'geotiffrasterloader',
     label: 'GeoTIFFRasterLoader',
-    href: '/docs/modules/geotiff/api-reference/geotiff-raster-loader'
+    href: '/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader'
   },
   {
     id: 'geotiffsource',
     label: 'GeoTIFFSourceLoader',
-    href: '/docs/modules/geotiff/api-reference/geotiff-source-loader'
+    href: '/docs/modules/raster/geotiff/api-reference/geotiff-source-loader'
   },
   {
     id: 'ometiffsource',
     label: 'OMETiffSourceLoader',
-    href: '/docs/modules/geotiff/api-reference/ometiff-source-loader'
+    href: '/docs/modules/raster/geotiff/api-reference/ometiff-source-loader'
   }
 ];
 

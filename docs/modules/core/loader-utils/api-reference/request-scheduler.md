@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Concurrency limits', 'Dynamic priorities', 'Cancellation-aware']}
   links={[
     {label: 'Loader utilities', to: '/docs/modules/core/loader-utils'},
-    {label: '3D Tiles priorities', to: '/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities'},
+    {label: '3D Tiles priorities', to: '/docs/modules/tiles-3d/3d-tiles/concepts/request-scheduling-and-priorities'},
     {label: 'Request cache', to: '/docs/modules/core/loader-utils/api-reference/request-cache'}
   ]}
 />

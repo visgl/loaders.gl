@@ -21,8 +21,7 @@ npm install @loaders.gl/core @loaders.gl/config
 | [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) | Loads YAML documents from `.yaml` and `.yml` files. |
 | [`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) | Loads TOML documents from `.toml` files. |
 
-The package root exports metadata-only loaders. Use `@loaders.gl/config/bundled` when the parser
-should be included in the import, or `@loaders.gl/config/unbundled` for lazy parser loading.
+The package root and `/yaml` and `/toml` subpaths export metadata-only loaders. Async core APIs preload the parser automatically. For synchronous parsing, import `YAMLLoaderWithParser` from `@loaders.gl/config/yaml-loader` or `TOMLLoaderWithParser` from `@loaders.gl/config/toml-loader`.
 
 The YAML and TOML implementations are maintained in this repository and do not import third-party
 YAML or TOML parser packages.

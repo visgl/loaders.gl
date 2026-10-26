@@ -21,7 +21,7 @@ Import format loaders and writers from separate subpaths:
 | PMTiles archive | `@loaders.gl/tiles/pmtiles` |
 
 Install `@loaders.gl/tiles` once; the subpaths are not separate npm packages.
-For 3D Tiles and I3S, use [the 3D tiles module](/docs/modules/tiles-3d/README).
+For 3D Tiles and I3S, use [the 3D tiles module](/docs/modules/tiles-3d).
 The root still reexports `Tileset3D`, `TILE_TYPE`, `TILESET_TYPE`, and
 `LOD_METRIC_TYPE` for deck.gl 9 compatibility. These deprecated exports will
 be removed after deck.gl imports the 3D module directly.

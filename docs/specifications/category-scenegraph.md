@@ -50,7 +50,7 @@ typed representation close to its source format.
 | ------------------------------------------------------------ | ----- |
 | [`GLTFLoader`](/docs/modules/scene/gltf/api-reference/gltf-loader) |       |
 | [`GLBLoader`](/docs/modules/scene/gltf/api-reference/glb-loader)   |       |
-| [`USDLoader`](/docs/modules/scene/api-reference/usd-loader)   |       |
+| [`USDLoader`](/docs/modules/scene/usd/api-reference/usd-loader)   |       |
 
 ## glTF Data Format
 
@@ -85,5 +85,5 @@ To simplify higher-level processing of the loaded, raw glTF data, several helper
 
 `USDLoader` returns a `USDStage` with root-layer metadata, a hierarchy of typed `USDPrim` objects,
 and the URLs of layers used during composition. See the
-[`USDLoader`](/docs/modules/scene/api-reference/usd-loader) reference for supported OpenUSD
+[`USDLoader`](/docs/modules/scene/usd/api-reference/usd-loader) reference for supported OpenUSD
 features and current limitations.

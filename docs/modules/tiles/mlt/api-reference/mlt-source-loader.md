@@ -1,0 +1,87 @@
+---
+title: MLTSourceLoader
+description: Read MapLibre Tile data from URL-addressed tile services.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  eyebrow="MLT source loader"
+  title="Fetch compact vector tiles through a source."
+  description="`MLTSourceLoader` connects URL-addressed MapLibre Tile services to the loaders.gl source API. It resolves tile URLs, decodes MLT payloads, and returns Arrow tables with GeoArrow geometry by default."
+  tone="blue"
+  meta={['MapLibre Tile', 'URL tile services', 'Arrow and GeoArrow by default']}
+  links={[
+    {label: 'MLT module', to: '/docs/modules/tiles/mlt'},
+    {label: 'MLT format', to: '/docs/modules/tiles/mlt/formats/mlt'},
+    {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The MLT source boundary"
+  title="Keep tile addressing separate from tile decoding."
+  description="The source owns service URLs and metadata, while `MLTLoader` owns the compact binary payload. Applications can request tiles through the common source lifecycle."
+  tone="blue"
+  items={[
+    {label: 'Input', value: 'Tile service URL and optional metadata URL'},
+    {label: 'Addressing', value: 'z/x/y tile coordinates with configurable extension'},
+    {label: 'Decode', value: 'MLT layers, attributes, and geometry'},
+    {label: 'Output', value: 'Arrow table with GeoArrow geometry by default'}
+  ]}
+/>
+
+<p className="badges">
+  <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+</p>
+
+The `MLTSourceLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL based tile services.
+
+| Source         | Characteristic                                 |
+| -------------- | ---------------------------------------------- |
+| File Extension | `.mlt`                                         |
+| File Type      | Binary Archive                                 |
+| File Format    | [MapLibre Tile](/docs/modules/tiles/mlt/formats/mlt) |
+| Data Format    | Arrow with GeoArrow, GeoJSON, or binary geometry |
+
+## Usage
+
+<ReferenceBoundary
+  title="Source options and output details"
+  description="The reference below documents construction, URL and metadata options, coordinate output, layer filtering, and related loader APIs."
+  tone="blue"
+/>
+
+```typescript
+import {createDataSource} from '@loaders.gl/core';
+import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
+
+const source = createDataSource('https://example.com/tiles', [MLTSourceLoader]);
+const arrowTable = await source.getTile({x: 0, y: 0, z: 0});
+```
+
+## Options
+
+For shared loading controls and parser configuration, see
+[Source options](/docs/developer-guide/using-sources#options). The settings below are specific to this source.
+
+| Option            | Type                                      | Default           | Description                                                        |
+| ----------------- | ----------------------------------------- | ----------------- | ------------------------------------------------------------------ |
+| `mlt.extension`   | `string`                                  | `.mlt`            | Tile URL extension.                                                |
+| `mlt.metadataUrl` | `string \| null`                          | `null`            | Optional metadata URL override (`tile.json` by default is not assumed). |
+| `mlt.coordinates` | `'wgs84' \| 'local'`                      | `wgs84`           | Coordinates output from parsed tiles.                              |
+| `mlt.shape`       | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `arrow-table` | Returned geometry shape. |
+| `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference. |
+| `mlt.layers`      | `string[]`                                | `N/A`             | Optional layer filter before decoding geometry.                    |
+
+## Additional references
+
+- [MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-loader)
+- [MLT format](/docs/modules/tiles/mlt/formats/mlt)
+
+## Attribution
+
+`MLTSourceLoader` fetches URL-addressed MLT tiles and parses them via [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader), which uses the [@maplibre/mlt](https://github.com/maplibre/mlt) decoder implementation.
