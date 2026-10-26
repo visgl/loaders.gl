@@ -171,6 +171,6 @@ This loader is based on a fork of dscape's [`clarinet`](https://github.com/dscap
 
 ## Worker batches
 
-This loader supports stateful worker batch parsing with `core.worker: true`, cancellation via
-`signal`, and decoded-row progress via `onProgress`. See [JSON worker batches](/docs/modules/tables/json#parsing-batches-in-workers)
-for streaming behavior, schemas, backpressure, and Node/custom-worker options.
+`JSONLoader` parses on the calling thread, including when `core.worker` is enabled. Arbitrary
+JSON documents and heterogeneous rows are not coerced to Arrow or structured-cloned across workers.
+Use `JSONTableLoader` with `json.shape: 'arrow-table'` for columnar worker batch parsing.

@@ -460,6 +460,12 @@ Release Date: 2026
 - [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) NEW - loads GaussianSplats3D `.ksplat` files into Mesh Arrow tables.
 - Handwritten RAD and RADC metadata types are paired with runtime validators from `@loaders.gl/splats/rad-zod-schema`, plus published draft-07 JSON Schema assets.
 
+**@loaders.gl/tables worker transports**
+
+- Arrow and GeoArrow now support stateful worker batches with owned Arrow IPC buffers and caller-side hydration. Atomic row and GeoJSON conversion also runs on the caller.
+- Parquet atomic worker parsing now follows its batch transport: decode columnar data in the worker, transfer Arrow IPC, and materialize requested rows on the caller.
+- JSONTable and NDJSON workers transfer Arrow IPC only. Arbitrary JSON documents, row-table output, and container metadata stay on the caller to preserve heterogeneous values without cloning decoded object graphs.
+
 **@loaders.gl/core/worker-utils**
 
 - `processOnWorkerInBatches()` streams input and output through one leased worker, preserving

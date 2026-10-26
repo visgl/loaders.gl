@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {JSONLoaderWithParser} from '../json-loader';
 import {JSONTableLoaderWithParser} from '../json-table-loader';
 import {NDJSONLoaderWithParser} from '../ndjson-loader';
 
@@ -12,9 +11,6 @@ function selectLoader(options: Record<string, unknown>): LoaderWithParser {
   let loader: LoaderWithParser;
   switch (options._workerLoaderId) {
     case undefined:
-    case 'json':
-      loader = JSONLoaderWithParser;
-      break;
     case 'json-table':
       loader = JSONTableLoaderWithParser;
       break;
@@ -41,4 +37,4 @@ function selectLoader(options: Record<string, unknown>): LoaderWithParser {
   };
 }
 
-createLoaderWorker(JSONLoaderWithParser, selectLoader);
+createLoaderWorker(JSONTableLoaderWithParser, selectLoader);

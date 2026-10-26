@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
+import {ARROW_WORKER_URL} from '../arrow-worker-url';
 import {ArrowFormat} from './arrow-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -33,16 +34,20 @@ async function preload() {
 
 /** Metadata-only ArrowJS table worker loader. */
 export const ArrowWorkerLoader = {
-  dataType: null as unknown as ArrowTable,
-  batchType: null as never,
+  dataType: null as unknown as Table,
+  batchType: null as unknown as ArrowTableBatch,
 
   ...ArrowFormat,
   version: VERSION,
-  // worker: true,
+  worker: ARROW_WORKER_URL,
+  workerNode: 'arrow-worker-node.cjs',
+  workerSourceNode: 'arrow/workers/arrow-worker.ts',
+  workerFile: 'arrow-worker.js',
+  workerInBatches: true,
   options: {
     arrow: {
       shape: 'columnar-table'
     }
   },
   preload
-} as const satisfies Loader<ArrowTable, never, ArrowLoaderOptions>;
+} as const satisfies Loader<Table, ArrowTableBatch, ArrowLoaderOptions>;

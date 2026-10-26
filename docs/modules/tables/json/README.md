@@ -49,7 +49,9 @@ to avoid blocking for tens of seconds.
 
 ## Parsing batches in workers
 
-`JSONLoader`, `JSONTableLoader`, and `NDJSONLoader` support incremental worker parsing.
+`JSONTableLoader` and `NDJSONLoader` support incremental worker parsing for `arrow-table` output.
+`JSONLoader`, row-table requests, and requests for container metadata stay on the caller so
+heterogeneous JSON values retain their existing semantics without structured-cloning decoded objects.
 Core enables supported browser workers by default. Set `core.worker: false` to retain caller-side
 parsing and logging. The following example makes worker selection explicit while consuming results
 as an async iterator:
@@ -80,8 +82,8 @@ are supported, including schema/field metadata and conversion policies.
 JSON supports both `clarinet` and `fast` backends, JSONPath selection, and partial/final container
 metadata, with the selected backend's existing behavior. The fast backend currently retains
 container fields before the selected array; use clarinet when trailing container fields are needed.
-Row-table batches cross as plain data; Arrow batches use owned buffers and are hydrated
-on the caller. Worker progress counts decoded rows within the `decode` phase; it is not a byte or
+Worker results contain owned Arrow IPC buffers and small table/protocol descriptors; decoded
+row arrays and container objects never cross the worker boundary. Arrow tables are hydrated on the caller. Worker progress counts decoded rows within the `decode` phase; it is not a byte or
 overall download percentage.
 
 Breaking out of the loop closes the input and releases the worker. Aborting also interrupts a
@@ -91,11 +93,11 @@ and cannot delay cancellation. Already transferred input buffers remain detached
 Set `core.workerInBatches: false` to retain caller-side batch parsing. Custom worker URLs require
 `core.workerInBatches: true` to declare protocol support. Browser workers use the published CDN
 asset by default, so bundling the application does not require copying a worker beside it. To
-self-host, set `json.workerUrl`, `json-table.workerUrl`, or `ndjson.workerUrl` for the chosen loader.
+self-host, set `json-table.workerUrl` or `ndjson.workerUrl` for the chosen loader.
 Node workers remain experimental and require
 `core._nodeWorkers: true`; browser and CommonJS Node worker bundles are included in the package.
 `GeoJSONLoader`, `NDGeoJSONLoader`, and the experimental `FastJSONLoader` do not opt into this new
-worker. Use `JSONLoader` with `json.backend: 'fast'` for fast-backend worker batches.
+worker. Use `JSONTableLoader` with `json.backend: 'fast'` for fast-backend Arrow worker batches.
 
 For configuration formats with the same general object/array data model, see the dependency-free
 [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) and

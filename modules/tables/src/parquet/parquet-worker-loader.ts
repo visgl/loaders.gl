@@ -10,6 +10,17 @@ import {serializeParquetWorkerBatch} from './lib/parquet-worker-transport';
 /** Worker implementation that keeps batches columnar until their IPC transport is hydrated. */
 export const ParquetWorkerLoaderWithParser = {
   ...ParquetLoaderWithParser,
+  /** Keeps atomic decoding columnar; caller-side hydration materializes requested rows. */
+  parse(input: ArrayBuffer, options?: ParquetLoaderOptions, context?: LoaderContext) {
+    return ParquetLoaderWithParser.parse(
+      input,
+      {
+        ...options,
+        parquet: {...options?.parquet, shape: 'arrow-table'}
+      },
+      context
+    );
+  },
   /** Decodes to Arrow for both public shapes; the serializer retains the requested shape. */
   parseInBatches(
     input:

@@ -11,19 +11,22 @@ import {
   serializeParquetWorkerResult
 } from '../../src/parquet/lib/parquet-worker-transport';
 
-test('Parquet worker transport round-trips Arrow IPC and preserves row tables', () => {
+test('Parquet worker transport round-trips Arrow IPC and rejects row serialization', () => {
   const table = {shape: 'arrow-table', data: arrow.tableFromArrays({value: [1, 2]})} as const;
   const serialized = serializeParquetWorkerResult(table) as any;
   const hydrated = deserializeParquetWorkerResult(serialized) as any;
 
+  expect(
+    deserializeParquetWorkerResult(serialized, {parquet: {shape: 'object-row-table'}})
+  ).toMatchObject({shape: 'object-row-table', data: [{value: 1}, {value: 2}]});
   expect(serialized.data.transport).toBe('arrow-ipc');
   expect(hydrated.data).toBeInstanceOf(arrow.Table);
   expect(hydrated.data.getChild('value')?.toArray()).toEqual(new Float64Array([1, 2]));
 
   const rows = {shape: 'object-row-table', data: [{value: 1}]} as any;
-  expect(serializeParquetWorkerResult(rows)).toBe(rows);
+  expect(() => serializeParquetWorkerResult(rows)).toThrow('Arrow table output');
   expect(deserializeParquetWorkerResult(rows)).toBe(rows);
-  expect(serializeParquetWorkerResult(null)).toBeNull();
+  expect(() => serializeParquetWorkerResult(null)).toThrow('Arrow table output');
 });
 
 test.each([

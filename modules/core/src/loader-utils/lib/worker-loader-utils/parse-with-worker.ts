@@ -44,6 +44,19 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
     )
   )
     return false;
+  // JSON documents and row output can contain heterogeneous values that Arrow cannot
+  // represent losslessly. Keep those parses on the caller instead of cloning row graphs.
+  if (loader.id === 'json-table' || loader.id === 'ndjson') {
+    const jsonOptions = options?.json as {shape?: string} | undefined;
+    const ndjsonOptions = options?.ndjson as {shape?: string} | undefined;
+    const shape =
+      loader.id === 'ndjson'
+        ? ndjsonOptions?.shape || jsonOptions?.shape || 'arrow-table'
+        : jsonOptions?.shape || 'arrow-table';
+    if (shape !== 'arrow-table' || options?.core?.metadata || options?.metadata) {
+      return false;
+    }
+  }
   const workerOptions = getWorkerOptions(options);
   const nodeWorkers = workerOptions._nodeWorkers;
   if (!isBrowser && !nodeWorkers) {
