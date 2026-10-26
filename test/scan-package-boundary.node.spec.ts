@@ -12,14 +12,23 @@ const REPOSITORY_ROOT = process.cwd();
 const MAXIMUM_SCAN_BUNDLE_BYTES = 310 * 1024;
 const MAXIMUM_PREDICATE_ONLY_BUNDLE_BYTES = 40 * 1024;
 
-test('implementations do not import the removed utility packages', () => {
+test('implementations and tests do not import removed utility entrypoints', () => {
   const violations: string[] = [];
-  for (const moduleDirectory of listDirectories(path.join(REPOSITORY_ROOT, 'modules'))) {
-    const sourceDirectory = path.join(moduleDirectory, 'src');
+  const sourceDirectories = [
+    path.join(REPOSITORY_ROOT, 'test'),
+    ...listDirectories(path.join(REPOSITORY_ROOT, 'modules')).flatMap(directory => [
+      path.join(directory, 'src'),
+      path.join(directory, 'test')
+    ])
+  ];
+  for (const sourceDirectory of sourceDirectories) {
     if (!fs.existsSync(sourceDirectory)) continue;
     for (const filename of listSourceFiles(sourceDirectory)) {
       const source = fs.readFileSync(filename, 'utf8');
-      if (/['"]@loaders\.gl\/(?:scan|arrow-geometry|geoarrow)(?:\/[^'"]*)?['"]/.test(source)) {
+      if (
+        /['"]@loaders\.gl\/(?:scan|arrow-geometry|geoarrow)(?:\/[^'"]*)?['"]/.test(source) ||
+        /['"]@loaders\.gl\/sql\/(?:arrow-query|table-query|sql-predicate(?:-zod)?)['"]/.test(source)
+      ) {
         violations.push(path.relative(REPOSITORY_ROOT, filename));
       }
     }

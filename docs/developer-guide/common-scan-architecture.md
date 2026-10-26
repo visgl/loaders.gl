@@ -241,13 +241,14 @@ logical plan while adding row-group, page-index, Bloom-filter, range, and worker
 | --- | --- | --- |
 | Portable values and predicates | `@loaders.gl/core/loader-utils` | AST types, paths, traversal, validation, immutable binding |
 | Logical table query | `@loaders.gl/core/loader-utils` | query options, canonical plan, capability vocabulary |
-| SQL syntax and compilation | `@loaders.gl/sql` | parser, SQL validation, identifier quoting, placeholders and bindings |
-| In-memory execution | `@loaders.gl/sql/arrow-query` | exact Arrow semantics for the portable query |
+| Predicate parsing and validation | `@loaders.gl/core/scan` | portable SQL predicate syntax, validation, and binding |
+| SQL compilation | `@loaders.gl/sql` | database query compilation, identifier quoting, placeholders and bindings |
+| In-memory execution | `@loaders.gl/core/scan/arrow-query` | exact Arrow semantics for the portable query |
 | Physical columnar scans | `@loaders.gl/tables/parquet` | files, ranges, pruning, decoding, residual filtering, batches |
 | Table-format planning | `IcebergTableSource` and future peers | snapshots, manifests/logs, deletes, file selection |
 
 Keeping the common contracts in loader-utils avoids making Parquet or GPU code depend on a database
-adapter. SQL retains compatibility exports from `@loaders.gl/sql/table-query` while new generic
+adapter. Core provides the query helpers from `@loaders.gl/core/scan/table-query` while generic
 planners can import the lower-level contract directly.
 
 ### Optional scan runtime
