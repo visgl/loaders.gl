@@ -44,18 +44,15 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
     )
   )
     return false;
+  // Multifile workers cannot transfer an application's custom fetch callback.
+  if (
+    loader.id === 'shapefile' &&
+    (typeof options?.fetch === 'function' || typeof options?.core?.fetch === 'function')
+  )
+    return false;
   const workerOptions = getWorkerOptions(options);
   const nodeWorkers = workerOptions._nodeWorkers;
   if (!isBrowser && !nodeWorkers) {
-    return false;
-  }
-
-  // LAS has no Arrow worker transport yet, so keep its Arrow path on the main thread.
-  if (
-    loader.id === 'las' &&
-    ((options as {las?: {shape?: string}} | undefined)?.las?.shape ?? 'arrow-table') ===
-      'arrow-table'
-  ) {
     return false;
   }
 

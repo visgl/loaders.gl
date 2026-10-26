@@ -17,6 +17,8 @@ export type ChromeTraceLoaderOptions = LoaderOptions &
     shape?: 'json' | 'arrow-table';
     /** Chrome trace loader-specific options. */
     chromeTrace?: {
+      /** Overrides the shared browser worker bundle URL. */
+      workerUrl?: string;
       /** Selects the returned data shape for whole-file parsing. */
       shape?: 'json' | 'arrow-table';
       /** Maximum number of events emitted in one Arrow record batch. */
@@ -37,6 +39,9 @@ export const ChromeTraceLoader = {
   name: 'Chrome Trace Loader',
   id: 'chromeTrace',
   module: 'traces',
+  worker: true,
+  workerInBatches: true,
+  workerFile: 'trace-worker.js',
   version: 'latest',
   extensions: ['json'],
   mimeTypes: ['application/json', 'application/x-chrome-trace+json'],

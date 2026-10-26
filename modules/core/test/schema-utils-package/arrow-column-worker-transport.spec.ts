@@ -93,3 +93,23 @@ test.each([
   expect(data.getChild('label')!.get(2)).toBe('third');
   expect(received).toMatchObject({batchType: 'data', length: 2});
 });
+
+test('Column worker transport owns retained header and sidecar buffers as well as columns', () => {
+  const data = tableFromArrays({value: [1, 2]});
+  const headerBytes = new Uint8Array([7, 8]);
+  const sidecarIndex = new Int32Array([100, 200]);
+  const metadata = {header: {bytes: headerBytes}, shx: {offsets: sidecarIndex}};
+  for (const offset of [0, 1]) {
+    const payload = serializeArrowWorkerTable({
+      shape: 'arrow-table',
+      data: data.slice(offset, offset + 1),
+      loaderData: metadata
+    });
+    const transferred = structuredClone(payload, {transfer: getTransferList(payload)});
+    const result = deserializeArrowWorkerTable(transferred);
+    expect(result.loaderData).toEqual(metadata);
+    expect(result.data.getChild('value').get(0)).toBe(offset + 1);
+  }
+  expect(Array.from(headerBytes)).toEqual([7, 8]);
+  expect(Array.from(sidecarIndex)).toEqual([100, 200]);
+});

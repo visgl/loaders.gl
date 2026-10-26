@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {Buffers} from 'apache-arrow/data';
-import type {DataType, Schema, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {DataType, Schema} from '@loaders.gl/core/schema';
 import {
   deserializeArrowSchema,
   deserializeArrowType,
@@ -131,11 +131,12 @@ export function serializeArrowWorkerTable(result: unknown): unknown {
   if (!isArrowTableWrapper(result)) {
     throw new Error('Workers require Arrow table output');
   }
-  const indices = (result as unknown as MeshArrowTable).indices;
+  const {data, ...metadata} = result;
+  // Headers, sidecar indexes, and mesh indices can also retain parser-owned binary buffers.
+  // Clone only this small envelope; the Arrow table always uses column-buffer transfer.
   return {
-    ...result,
-    data: dehydrateArrowTable(result.data, {copy: 'all'}),
-    ...(indices ? {indices: {...indices, value: indices.value.slice()}} : {})
+    ...structuredClone(metadata),
+    data: dehydrateArrowTable(data, {copy: 'all'})
   };
 }
 

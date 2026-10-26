@@ -287,6 +287,14 @@ export function buildChromeTraceArrowSchemaMetadata(
   traceFile: Pick<ChromeTraceFileSchema, 'displayTimeUnit' | 'metadata'>
 ): Map<string, string> {
   const metadata = new Map<string, string>();
+  const {
+    traceEvents: _traceEvents,
+    displayTimeUnit: _displayTimeUnit,
+    metadata: _metadata,
+    ...container
+  } = traceFile as ChromeTraceFileSchema;
+  if (Object.keys(container).length > 0)
+    metadata.set('chromeTrace.containerJson', JSON.stringify(container));
 
   if (traceFile.displayTimeUnit) {
     metadata.set(CHROME_TRACE_ARROW_METADATA_DISPLAY_TIME_UNIT_KEY, traceFile.displayTimeUnit);

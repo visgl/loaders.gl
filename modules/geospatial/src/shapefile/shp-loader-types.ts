@@ -47,6 +47,7 @@ export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
   ...SHPFormat,
   version: VERSION,
   worker: true,
+  workerInBatches: true,
   options: {
     shp: {
       _maxDimensions: 4,
