@@ -39,7 +39,7 @@ export type OGCTileMatrix = {
   matrixWidth?: number;
   /** Matrix height in tiles. */
   matrixHeight?: number;
-  /** Coalesced rows; nonempty declarations are rejected until variable-width geometry is supported. */
+  /** Coalesced row bands in native row numbering; complete geometry validates their bounds. */
   variableMatrixWidths?: readonly import('@math.gl/geospatial/tile-matrix').VariableMatrixWidth[];
 };
 
