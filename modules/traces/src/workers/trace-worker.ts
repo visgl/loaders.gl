@@ -11,7 +11,7 @@ import {JaegerTraceLoaderWithParser} from '../jaeger-trace-loader';
 import {ZipkinTraceLoaderWithParser} from '../zipkin-trace-loader';
 
 /** Selects the requested trace parser without transferring parser functions. */
-function selectLoader(options: Record<string, any>): LoaderWithParser {
+export function selectTraceWorkerLoader(options: Record<string, any>): LoaderWithParser {
   switch (options._workerLoaderId) {
     case 'chromeTrace':
       return {
@@ -40,4 +40,4 @@ function selectLoader(options: Record<string, any>): LoaderWithParser {
   }
 }
 
-createLoaderWorker(ChromeTraceLoaderWithParser, selectLoader);
+createLoaderWorker(ChromeTraceLoaderWithParser, selectTraceWorkerLoader);
