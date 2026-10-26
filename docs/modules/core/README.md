@@ -82,7 +82,7 @@ Reusable scan, geometry construction, geometry processing, and codec APIs are av
 | `@loaders.gl/core/geoarrow` | GeoArrow inspection, validation, conversion, coordinate operations, clustering, and spatial indexes. |
 | `@loaders.gl/core/wkt` | Geometry codec helpers; TWKB is also available from `@loaders.gl/core/wkt/twkb`. |
 
-Import these APIs through their subpaths. The core root entrypoint keeps its existing exports. Format loader and writer descriptors remain in their format modules, including `@loaders.gl/wkt`; database adapters remain in `@loaders.gl/sql`.
+Import these APIs through their subpaths. The core root entrypoint keeps its existing exports. Format loader and writer descriptors remain in their format modules, including `@loaders.gl/geospatial/wkt`; database adapters remain in `@loaders.gl/sql`.
 
 ```typescript
 import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/scan';

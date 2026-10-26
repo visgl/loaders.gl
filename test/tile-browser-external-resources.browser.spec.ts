@@ -4,7 +4,7 @@
 
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';

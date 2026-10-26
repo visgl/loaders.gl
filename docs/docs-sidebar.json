@@ -4,6 +4,7 @@
     "label": "Overview",
     "items": [
       "README",
+      "packages",
       "developer-guide/get-started",
       "developer-guide/standards",
       "developer-guide/3d-data-formats",
@@ -49,8 +50,8 @@
       "modules/geospatial/geopackage/formats/geopackage",
       "modules/tables/parquet/formats/geoparquet",
       "modules/geotiff/formats/geotiff",
-      "modules/gltf/formats/glb",
-      "modules/gltf/formats/gltf",
+      "modules/scene/gltf/formats/glb",
+      "modules/scene/gltf/formats/gltf",
       "modules/ogc/wms/formats/gml",
       "modules/geospatial/kml/formats/gpx",
       "modules/textures/formats/hdr",
@@ -59,19 +60,19 @@
       "modules/tables/json/formats/json",
       "modules/geospatial/kml/formats/kml",
       "modules/textures/formats/ktx",
-      "modules/las/formats/las",
+      "modules/pointclouds/las/formats/las",
       "modules/lerc/formats/lerc",
       "modules/mvt/formats/map-style",
       "modules/mlt/formats/mlt",
       "modules/mvt/formats/mvt",
       "modules/scientific/netcdf/formats/netcdf",
-      "modules/obj/formats/obj",
+      "modules/scene/obj/formats/obj",
       "modules/tables/orc/formats/orc",
       "modules/ogc/wms/formats/ows-context",
       "modules/tables/parquet/formats/parquet",
       "modules/traces/formats/perfetto-trace",
-      "modules/pcd/formats/pcd",
-      "modules/ply/formats/ply",
+      "modules/pointclouds/pcd/formats/pcd",
+      "modules/pointclouds/ply/formats/ply",
       "modules/pmtiles/formats/pmtiles",
       "modules/tiles-3d/potree/formats/potree",
       "modules/textures/formats/pvr",
@@ -80,9 +81,9 @@
       "modules/geospatial/kml/formats/tcx",
       "modules/mvt/formats/tilejson",
       "modules/scene/formats/usd",
-      "modules/wkt/formats/wkb",
-      "modules/wkt/formats/wkt",
-      "modules/wkt/formats/wkt-crs",
+      "modules/geospatial/wkt/formats/wkb",
+      "modules/geospatial/wkt/formats/wkt",
+      "modules/geospatial/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
       "modules/scientific/zarr/formats/zarr",
       "modules/archives/zip/formats/zip"
@@ -155,8 +156,8 @@
           "modules/geospatial/geopackage/api-reference/geopackage-loader",
           "modules/geotiff/api-reference/geotiff-loader",
           "modules/geotiff/api-reference/geotiff-raster-loader",
-          "modules/gltf/api-reference/glb-loader",
-          "modules/gltf/api-reference/gltf-loader",
+          "modules/scene/gltf/api-reference/glb-loader",
+          "modules/scene/gltf/api-reference/gltf-loader",
           "modules/geospatial/kml/api-reference/gpx-loader",
           "modules/i3s/api-reference/i3s-loader",
           "modules/i3s/api-reference/slpk-writer",
@@ -169,18 +170,18 @@
           "modules/config/api-reference/yaml-loader",
           "modules/geospatial/kml/api-reference/kml-loader",
           "modules/mvt/api-reference/map-style-loader",
-          "modules/las/api-reference/las-loader",
+          "modules/pointclouds/las/api-reference/las-loader",
           "modules/mlt/api-reference/mlt-loader",
           "modules/mlt/api-reference/mlt-source-loader",
           "modules/mvt/api-reference/mvt-loader",
           "modules/tables/json/api-reference/ndgeojson-loader",
           "modules/tables/json/api-reference/ndjson-loader",
           "modules/textures/api-reference/npy-loader",
-          "modules/obj/api-reference/obj-loader",
+          "modules/scene/obj/api-reference/obj-loader",
           "modules/tables/parquet/api-reference/parquet-loader",
           "modules/traces/api-reference/perfetto-trace-loader",
-          "modules/pcd/api-reference/pcd-loader",
-          "modules/ply/api-reference/ply-loader",
+          "modules/pointclouds/pcd/api-reference/pcd-loader",
+          "modules/pointclouds/ply/api-reference/ply-loader",
           "modules/tiles-3d/potree/api-reference/potree-loader",
           "modules/terrain/api-reference/quantized-mesh-loader",
           "modules/textures/api-reference/radiance-hdr-loader",
@@ -190,13 +191,13 @@
           "modules/terrain/api-reference/heightmap",
           "modules/mvt/api-reference/tilejson-loader",
           "modules/3d-tiles/api-reference/tiles-3d-loader",
-          "modules/wkt/api-reference/twkb-loader",
+          "modules/geospatial/wkt/api-reference/twkb-loader",
           "modules/scene/api-reference/usd-loader",
           "modules/video/api-reference/video-loader",
-          "modules/wkt/api-reference/hex-wkb-loader",
-          "modules/wkt/api-reference/wkb-loader",
-          "modules/wkt/api-reference/wkt-crs-loader",
-          "modules/wkt/api-reference/wkt-loader",
+          "modules/geospatial/wkt/api-reference/hex-wkb-loader",
+          "modules/geospatial/wkt/api-reference/wkb-loader",
+          "modules/geospatial/wkt/api-reference/wkt-crs-loader",
+          "modules/geospatial/wkt/api-reference/wkt-loader",
           "modules/ogc/wms/api-reference/wms-capabilities-loader",
           "modules/xml/api-reference/xml-loader",
           "modules/archives/zip/api-reference/zip-loader"
@@ -212,25 +213,25 @@
           "modules/traces/api-reference/chrome-trace-writer",
           "modules/tables/csv/api-reference/csv-writer",
           "modules/draco/api-reference/draco-writer",
-          "modules/gltf/api-reference/gltf-writer",
-          "modules/gltf/api-reference/glb-writer",
+          "modules/scene/gltf/api-reference/gltf-writer",
+          "modules/scene/gltf/api-reference/glb-writer",
           "modules/images/api-reference/image-writer",
           "modules/tables/json/api-reference/geojson-writer",
           "modules/tables/json/api-reference/json-writer",
-          "modules/las/api-reference/las-writer",
+          "modules/pointclouds/las/api-reference/las-writer",
           "modules/mvt/api-reference/mvt-writer",
-          "modules/obj/api-reference/obj-writer",
+          "modules/scene/obj/api-reference/obj-writer",
           "modules/tables/parquet/api-reference/parquet-writer",
           "modules/traces/api-reference/perfetto-trace-writer",
-          "modules/pcd/api-reference/pcd-writer",
-          "modules/ply/api-reference/ply-writer",
+          "modules/pointclouds/pcd/api-reference/pcd-writer",
+          "modules/pointclouds/ply/api-reference/ply-writer",
           "modules/terrain/api-reference/quantized-mesh-writer",
           "modules/textures/api-reference/compressed-texture-writer",
           "modules/textures/api-reference/ktx2-basis-texture-writer",
-          "modules/wkt/api-reference/wkt-writer",
-          "modules/wkt/api-reference/wkb-writer",
-          "modules/wkt/api-reference/twkb-writer",
-          "modules/wkt/api-reference/wkt-crs-writer",
+          "modules/geospatial/wkt/api-reference/wkt-writer",
+          "modules/geospatial/wkt/api-reference/wkb-writer",
+          "modules/geospatial/wkt/api-reference/twkb-writer",
+          "modules/geospatial/wkt/api-reference/wkt-crs-writer",
           "modules/archives/zip/api-reference/zip-writer",
           "modules/pmtiles/api-reference/pmtiles-writer",
           "modules/pmtiles/api-reference/geoarrow-pmtiles",
@@ -566,12 +567,12 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/gltf",
+        "label": "@loaders.gl/scene/gltf",
         "items": [
-          "modules/gltf/README",
-          "modules/gltf/api-reference/gltf-iterator",
-          "modules/gltf/api-reference/gltf-accessors",
-          "modules/gltf/api-reference/gltf-scenegraph"
+          "modules/scene/gltf/README",
+          "modules/scene/gltf/api-reference/gltf-iterator",
+          "modules/scene/gltf/api-reference/gltf-accessors",
+          "modules/scene/gltf/api-reference/gltf-scenegraph"
         ]
       },
       {
@@ -600,9 +601,9 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/las",
+        "label": "@loaders.gl/pointclouds/las",
         "items": [
-          "modules/las/README"
+          "modules/pointclouds/las/README"
         ]
       },
       {
@@ -621,9 +622,9 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/obj",
+        "label": "@loaders.gl/scene/obj",
         "items": [
-          "modules/obj/README"
+          "modules/scene/obj/README"
         ]
       },
       {
@@ -650,17 +651,17 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/pcd",
+        "label": "@loaders.gl/pointclouds/pcd",
         "items": [
-          "modules/pcd/README"
+          "modules/pointclouds/pcd/README"
         ]
       },
       {
         "type": "category",
-        "label": "@loaders.gl/ply",
+        "label": "@loaders.gl/pointclouds/ply",
         "items": [
-          "modules/ply/README",
-          "modules/ply/benchmarks"
+          "modules/pointclouds/ply/README",
+          "modules/pointclouds/ply/benchmarks"
         ]
       },
       {
@@ -773,9 +774,9 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/wkt",
+        "label": "@loaders.gl/geospatial/wkt",
         "items": [
-          "modules/wkt/README"
+          "modules/geospatial/wkt/README"
         ]
       },
       {

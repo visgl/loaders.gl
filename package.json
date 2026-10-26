@@ -117,11 +117,8 @@
     "@loaders.gl/crypto": "^5.0.0-alpha.0",
     "@loaders.gl/draco": "^5.0.0-alpha.0",
     "@loaders.gl/images": "^5.0.0-alpha.0",
-    "@loaders.gl/las": "^5.0.0-alpha.0",
     "@loaders.gl/core/loader-utils": "^5.0.0-alpha.0",
     "@loaders.gl/tiles": "^5.0.0-alpha.0",
-    "@loaders.gl/obj": "^5.0.0-alpha.0",
-    "@loaders.gl/ply": "^5.0.0-alpha.0",
     "@loaders.gl/splats": "^5.0.0-alpha.0",
     "@loaders.gl/sql": "^5.0.0-alpha.0",
     "@loaders.gl/scene": "^5.0.0-alpha.0",
@@ -133,6 +130,7 @@
     "@vitest/browser-playwright": "5.0.2",
     "@loaders.gl/raster": "^5.0.0-alpha.0",
     "@loaders.gl/geospatial": "^5.0.0-alpha.0",
-    "@loaders.gl/ogc": "^5.0.0-alpha.0"
+    "@loaders.gl/ogc": "^5.0.0-alpha.0",
+    "@loaders.gl/pointclouds": "^5.0.0-alpha.0"
   }
 }

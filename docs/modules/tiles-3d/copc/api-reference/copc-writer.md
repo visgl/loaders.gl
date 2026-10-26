@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'COPC format', to: '/docs/modules/tiles-3d/copc/formats/copc'},
     {label: 'COPC module', to: '/docs/modules/tiles-3d/copc'},
-    {label: 'LASWriter', to: '/docs/modules/las/api-reference/las-writer'}
+    {label: 'LASWriter', to: '/docs/modules/pointclouds/las/api-reference/las-writer'}
   ]}
 />
 

@@ -1,0 +1,270 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+/* eslint-disable camelcase, indent */
+export type {GLB, GLBChunk} from './lib/types/glb-types';
+
+// Raw GLTF Types (i.e. not post-processed)
+export type {
+  GLTF,
+  GLTFAccessor,
+  GLTFBuffer,
+  GLTFBufferView,
+  GLTFMeshPrimitive,
+  GLTFMesh,
+  GLTFNode,
+  GLTFMaterial,
+  GLTFSampler,
+  GLTFScene,
+  GLTFSkin,
+  GLTFTexture,
+  GLTFImage,
+  GLTFFile,
+  GLTFExternalAsset,
+  GLTFObject,
+  // The following extensions are handled by the GLTFLoader and removed from the parsed glTF (disable via options.gltf.excludeExtensions)
+  GLTF_KHR_binary_glTF,
+  GLTF_KHR_draco_mesh_compression,
+  GLTF_KHR_texture_basisu,
+  GLTF_KHR_meshopt_compression,
+  GLTF_EXT_meshopt_compression,
+  GLTF_EXT_texture_webp
+} from './lib/types/gltf-json-schema';
+
+export type {GLTFShape, GLTFBoundingVolume} from './lib/types/gltf-shape-schema';
+export type {
+  GLTF_MPEG_audio_spatial,
+  GLTFSpatialAudio,
+  GLTFSpatialAudioSource,
+  GLTFSpatialAudioListener,
+  GLTFSpatialAudioReverb,
+  GLTFSpatialAudioReverbProperty
+} from './lib/types/gltf-mpeg-audio-spatial-schema';
+export {name as MPEG_AUDIO_SPATIAL, getSpatialAudio} from './lib/extensions/MPEG_audio_spatial';
+export type {
+  GLTF_KHR_audio_emitter,
+  GLTFKHRAudioData,
+  GLTFKHRAudioSource,
+  GLTFKHRAudioPositional,
+  GLTFKHRAudioEmitter,
+  GLTFKHRAudioAttachment,
+  GLTFAudioClip,
+  GLTFAudioEmitterSource,
+  GLTFAudioEmitter
+} from './lib/types/gltf-khr-audio-emitter-schema';
+export {name as KHR_AUDIO_EMITTER} from './lib/extensions/KHR_audio_emitter';
+export type {
+  GLTF_EXT_mesh_polygon,
+  GLTFImplicitFeatureIdRange,
+  GLTFMeshPolygonData,
+  GLTFPolygon,
+  GLTFPrimitiveIndexRange,
+  GLTFPrimitiveRestartData
+} from './lib/types/gltf-vector-topology';
+export type {
+  GLTF_KHR_gaussian_splatting,
+  GLTF_KHR_gaussian_splatting_compression_spz_2,
+  GLTFGaussianSplatPrimitive
+} from './lib/types/gltf-ext-gaussian-splatting-schema';
+export type {
+  GLTF_EXT_primitive_voxels,
+  GLTFVoxelPrimitive
+} from './lib/types/gltf-ext-vector-voxel-schema';
+
+// 3DTiles extensions
+export type {
+  GLTF_EXT_feature_metadata_GLTF,
+  GLTF_EXT_feature_metadata_Schema,
+  GLTF_EXT_feature_metadata_Class,
+  GLTF_EXT_feature_metadata_ClassProperty,
+  GLTF_EXT_feature_metadata_Enum,
+  GLTF_EXT_feature_metadata_EnumValue,
+  GLTF_EXT_feature_metadata_FeatureTable,
+  GLTF_EXT_feature_metadata_FeatureTableProperty,
+  GLTF_EXT_feature_metadata_FeatureTexture,
+  GLTF_EXT_feature_metadata_TextureAccessor,
+  GLTF_EXT_feature_metadata_Statistics,
+  GLTF_EXT_feature_metadata_StatisticsClass,
+  GLTF_EXT_feature_metadata_StatisticsClassProperty,
+  GLTF_EXT_feature_metadata_Primitive,
+  GLTF_EXT_feature_metadata_FeatureIdAttribute,
+  GLTF_EXT_feature_metadata_FeatureIdAttributeFeatureIds,
+  GLTF_EXT_feature_metadata_FeatureIdTexture,
+  GLTF_EXT_feature_metadata_FeatureIdTextureAccessor
+} from './lib/types/gltf-ext-feature-metadata-schema';
+
+export type {
+  GLTF_EXT_structural_metadata_GLTF,
+  GLTF_EXT_structural_metadata_Schema,
+  GLTF_EXT_structural_metadata_PropertyTable,
+  GLTF_EXT_structural_metadata_PropertyTexture,
+  GLTF_EXT_structural_metadata_Class,
+  GLTF_EXT_structural_metadata_ClassProperty
+} from './lib/types/gltf-ext-structural-metadata-schema';
+
+export type {
+  GLTF_EXT_mesh_features,
+  GLTF_EXT_mesh_features_featureId
+} from './lib/types/gltf-ext-mesh-features-schema';
+
+export {name as EXT_MESH_FEATURES} from './lib/extensions/EXT_mesh_features';
+export {name as EXT_MESH_POLYGON} from './lib/extensions/EXT_mesh_polygon';
+export {
+  name as KHR_GAUSSIAN_SPLATTING,
+  SPZ_COMPRESSION_EXTENSION_NAME,
+  getGaussianSplatPrimitives
+} from './lib/extensions/KHR_gaussian_splatting';
+export {
+  name as EXT_PRIMITIVE_VOXELS,
+  getVoxelPrimitives
+} from './lib/extensions/EXT_primitive_voxels';
+export {
+  name as KHR_MESH_PRIMITIVE_RESTART,
+  getPrimitiveRestartRanges
+} from './lib/extensions/KHR_mesh_primitive_restart';
+export {name as EXT_STRUCTURAL_METADATA} from './lib/extensions/EXT_structural_metadata';
+export {name as EXT_FEATURE_METADATA} from './lib/extensions/deprecated/EXT_feature_metadata';
+
+export type {
+  GLTFWithBuffers,
+  GLTFExternalFile,
+  FeatureTableJson
+} from './lib/types/gltf-types';
+export {
+  GLTFSchema,
+  GLTFIdSchema,
+  GLTFObjectSchema,
+  GLTFAccessorSchema,
+  GLTFAccessorSparseSchema,
+  GLTFAccessorSparseIndicesSchema,
+  GLTFAccessorSparseValuesSchema,
+  GLTFAnimationSchema,
+  GLTFAnimationChannelSchema,
+  GLTFAnimationChannelTargetSchema,
+  GLTFAnimationSamplerSchema,
+  GLTFAssetSchema,
+  GLTFBufferSchema,
+  GLTFBufferViewSchema,
+  GLTFCameraSchema,
+  GLTFCameraOrthographicSchema,
+  GLTFCameraPerspectiveSchema,
+  GLTFImageSchema,
+  GLTFExternalAssetSchema,
+  GLTFMaterialSchema,
+  GLTFMaterialNormalTextureInfoSchema,
+  GLTFMaterialOcclusionTextureInfoSchema,
+  GLTFMaterialPbrMetallicRoughnessSchema,
+  GLTFMeshSchema,
+  GLTFMeshPrimitiveSchema,
+  GLTFNodeSchema,
+  GLTFSamplerSchema,
+  GLTFSceneSchema,
+  GLTFSkinSchema,
+  GLTFTextureSchema,
+  GLTFTextureInfoSchema,
+  GLTFTextureInfoMetadataSchema,
+  GLTFKHRBinarySchema,
+  GLTFKHRDracoMeshCompressionSchema,
+  GLTFKHRTextureBasisuSchema,
+  GLTFKHRMeshoptCompressionSchema,
+  GLTFEXTMeshoptCompressionSchema,
+  GLTFEXTTextureWebpSchema,
+  GLTFMSFTTextureDdsSchema,
+  GLTFShapeSchema,
+  GLTFBoundingVolumeSchema
+} from './lib/types/gltf-zod-schema';
+export {GLTFFormat, GLBFormat} from './gltf-format';
+
+// glTF loader/writer definition objects
+export {GLTFLoader} from './gltf-loader-types';
+export {GLTFSource, type GLTFSourceOptions} from './gltf-source';
+export {GLTFWriter} from './gltf-writer';
+export {
+  compressGLTFWithDraco,
+  type GLTFDracoWriterOptions
+} from './lib/encoders/encode-gltf-draco';
+
+// GLB Loader & Writer (for custom formats that want to leverage the GLB binary "envelope")
+export {GLBLoader} from './glb-loader-types';
+export {GLBWriter} from './glb-writer';
+
+// glTF Data Access Helper Class
+export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
+export {
+  GLTFIterator,
+  type GLTFIteratorType,
+  type GLTFIteratorMetadata,
+  type GLTFIteratorReferences,
+  type GLTFAccessorReferences,
+  type GLTFAnimationReferences,
+  type GLTFAnimationChannelReferences,
+  type GLTFAnimationChannelTargetReferences,
+  type GLTFAnimationSamplerReferences,
+  type GLTFBufferViewReferences,
+  type GLTFBufferViewOwnerReferences,
+  type GLTFExternalAssetReferences,
+  type GLTFMaterialReferences,
+  type GLTFTextureInfoReferences,
+  type GLTFMeshReferences,
+  type GLTFMeshPrimitiveReferences,
+  type GLTFNodeReferences,
+  type GLTFSceneReferences,
+  type GLTFSkinReferences,
+  type GLTFTextureReferences
+} from './lib/api/gltf-iterator';
+export {getGLTFCullingShape, getGLTFNodeCullingShape} from './lib/api/gltf-culling';
+export {
+  convertGLTFV1ToGLTF2,
+  normalizeGLTFV1,
+  type GLTFV1NormalizationLog,
+  type GLTFV1NormalizationOptions,
+  type GLTFV1NormalizationReport
+} from './lib/api/normalize-gltf-v1';
+export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
+export {
+  findGLTFFileIndex,
+  resolveGLTFFile
+} from './lib/gltf-utils/resolve-gltf-file';
+
+export {
+  createExtStructuralMetadata,
+  type PropertyAttribute
+} from './lib/extensions/EXT_structural_metadata';
+export {createExtMeshFeatures} from './lib/extensions/EXT_mesh_features';
+
+export {
+  getGLTFInteractivity,
+  type GLTF_KHR_interactivity,
+  type GLTFInteractivityGraph,
+  type GLTFInteractivityNode,
+  type GLTFInteractivityDeclaration,
+  type GLTFInteractivityValue,
+  type GLTFInteractivitySocket,
+  type GLTFInteractivityProperty,
+  type GLTFInteractivityConfiguration,
+  type GLTFInteractivityDeclarationSocket,
+  type GLTFInteractivityType,
+  type GLTFInteractivityEventValue,
+  type GLTFInteractivityVariable,
+  type GLTFInteractivityEvent
+} from './lib/types/gltf-interactivity';
+
+// Permissive extension schemas retain unknown properties and do not insert defaults.
+export * from './lib/types/gltf-additional-extension-schemas';
+export * from './lib/types/gltf-audio-extension-schemas';
+export * from './lib/types/gltf-extension-schemas';
+export {
+  getMaterialVariantMappings,
+  getMeshInstances,
+  getXMPMetadata
+} from './lib/api/gltf-extension-data';
+export type {GLTFMaterialVariantData, GLTFMeshInstanceData} from './lib/api/gltf-extension-data';
+
+export {
+  getGLTFAccessor,
+  getGLTFAccessorValue,
+  setGLTFAccessorValue
+} from './lib/api/gltf-accessors';
+
+export type {GLTFAccessorReference} from './lib/api/gltf-accessors';

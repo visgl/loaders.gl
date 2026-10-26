@@ -1,0 +1,333 @@
+---
+title: LAS and LAZ formats
+description: Open point-cloud exchange formats with typed records, lossless compression, and extensible metadata.
+hide_title: true
+page_style: designed
+---
+
+import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+import {PointCloudFormatGraphic} from '@site/src/components/docs/point-cloud-format-graphic';
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  format="las"
+  eyebrow="Point-cloud exchange formats"
+  title="Keep the point record useful at every layer."
+  description="LAS defines a widely used point-cloud record and metadata model. LAZ applies lossless compression without changing the logical records, so tools can exchange lidar data without giving up its attributes."
+  tone="blue"
+  meta={['LAS 1.0–1.5', 'LAZ lossless compression', 'Extensible VLR metadata']}
+  links={[
+    {label: 'LAS module', to: '/docs/modules/pointclouds/las'},
+    {label: 'Mesh category', to: '/docs/specifications/category-mesh'}
+  ]}
+/>
+
+<LasDocsTabs active="overview" />
+
+<PointCloudFormatGraphic />
+
+<DocOrientation
+  eyebrow="Three related layouts"
+  title="Exchange, compress, or query the same points."
+  description="LAS is the record model, LAZ compresses those records, and COPC adds a spatial hierarchy for cloud range reads. They belong to one point-cloud family but serve different delivery problems."
+  tone="blue"
+  items={[
+    {label: 'LAS', value: 'Uncompressed point records and metadata'},
+    {label: 'LAZ', value: 'LASzip-compatible lossless compressed records'},
+    {label: 'COPC', value: 'Range-readable LAZ with an octree index'},
+    {label: 'Attributes', value: 'Positions, returns, classification, color, time, and extensions'}
+  ]}
+/>
+
+- _[`@loaders.gl/pointclouds/las`](/docs/modules/pointclouds/las)_
+- _[ASPRS LAS 1.5](https://asprslas.org/latest/index.html)_ - _[ASPRS LAS 1.4 R15](https://www.asprs.org/wp-content/uploads/2019/07/LAS_1_4_r15.pdf)_ - _[COPC 1.0](https://copc.io/)_ - _[LASzip project](https://github.com/LASzip/LASzip)_ - _[LAZ spec](https://www.cs.unc.edu/~isenburg/lastools/download/laszip.pdf)_
+
+The _LASER file format_ (LAS) and its compressed version (LAZ) are public formats for the interchange of 3D point cloud data, developed for lidar mapping and related point cloud workflows.
+
+<ReferenceBoundary
+  title="Point-record and codec details"
+  description="The sections below cover the relationship between LAS, LAZ, and COPC, plus the exact implementation support and limits."
+  tone="blue"
+/>
+
+## LAS, LAZ, and COPC
+
+LAS is the uncompressed exchange format. LAZ is the losslessly compressed form defined by LASzip-compatible compression. COPC is a range-readable LAZ 1.4 layout that adds an octree hierarchy so applications can request spatial subsets without downloading the whole file.
+
+| Format | Description |
+| --- | --- |
+| LAS | Uncompressed LAS records in one file. |
+| LAZ | LAS records compressed with LASzip-compatible lossless compression. |
+| COPC | LAZ 1.4 organized as a clustered octree with range-readable chunk metadata. |
+
+## Current Implementation Limits
+
+`LASLoader` uses a pure TypeScript implementation. It is still incomplete and should not yet be treated as a complete LAS, LAZ, or COPC implementation.
+
+LAS file versions and LASzip codec versions are independent. A claim such as "LAZ 1.4 support" is therefore not precise enough: compatibility also depends on the PDRF, LASzip compressor and coder, item codec versions, chunk-table mode, and whether the caller needs complete raw records or only the fields exposed as Arrow columns.
+
+### TypeScript LAS Parser
+
+| Capability | TypeScript status |
+| --- | --- |
+| Uncompressed LAS 1.0-1.4 | ⚠️ Partial. Reads common public-header fields and PDRF 0-10 record layouts. Dedicated conformance fixtures do not yet cover every header version/PDRF combination. |
+| LAS 1.5 | ⚠️ Read support for the modern 1.5 form: validates the extended 393-byte header and PDRF 6-10 rule, parses Max/Min GPS Time and Time Offset, and fixture-tests PDRF 9/10. Writing and complete interoperability conformance remain future work. |
+| Arrow columns | ✅ `POSITION`, `intensity`, `classification`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `COLOR_0`, `GPS_TIME`, `NIR`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `WAVEFORM`, and `EXTRA_BYTES` where present. `WAVEFORM` is a fixed-width 29-byte LAS waveform packet reference column; `EXTRA_BYTES` is the fixed-width raw user-byte payload from each point record. With `las.extraBytes: 'typed'`, `EXTRA_BYTES` produces one prefixed typed Arrow attribute per descriptor. `las.columns` selects optional output columns; `POSITION` is always returned. |
+| GPS time | ✅ Exposed as `GPS_TIME` for PDRF 1, 3-5, and 6-10. |
+| NIR | ✅ Exposed as `NIR` for PDRF 8 and 10. |
+| Classification, return, and scanner flags | ✅ `synthetic`, `keyPoint`, `withheld`, `overlap`, return fields, flight-line flags, and scanner channel are exposed as typed Arrow columns. Legacy PDRF 0-5 records report `overlap` as zero. |
+| Waveform packet fields | ✅ PDRF 4/5/9/10 packet references are exposed as the optional fixed-width `WAVEFORM` Arrow column. Exact uint64 offsets, waveform descriptor VLRs, internal LAS and external WDP range reads, 2-32-bit uncompressed samples, and descriptor-scaled amplitudes are supported through the waveform helper APIs. |
+| Extra bytes | ✅ Extra Bytes VLR descriptors are exposed as typed metadata; the raw per-point payload is available through `EXTRA_BYTES`, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Scalar data types 1-10 and deprecated 2-component and 3-component vector codes are supported with per-component descriptor scale/offset. Integer types 7-8 use exact Arrow Uint64/Int64 columns backed by BigUint64Array/BigInt64Array, including vector components. Nonidentity scale/offset transforms produce Float64 values and may lose integer precision; identity transforms preserve BigInt. Raw Extra Bytes are opt-in when `las.columns` is omitted; list `EXTRA_BYTES` explicitly. Typed Extra Bytes are included by default when `las.extraBytes: 'typed'` and `las.columns` is omitted. |
+| VLRs, EVLRs, CRS, WKT, GeoTIFF records | ⚠️ VLRs and complete EVLRs are preserved in metadata. WKT CRS records (coordinate-system and math-transform), GeoTIFF CRS payloads and resolved GeoKey entries, Extra Bytes, waveform descriptors, and LASzip records are recognized. Full CRS reprojection is outside the loader. |
+| `parseInBatches` | ⚠️ Incremental for uncompressed LAS and fixed-size LAZ chunks. Legacy LAZ preserves arithmetic and item state across input chunks without replay; layered PDRF 6-10 emits selected Arrow rows once their required layers arrive. Waveform references do not wait for trailing Extra Bytes, while raw or typed Extra Bytes become ready after their Byte14 layers arrive. Variable-length waveform samples are intentionally separate range reads. |
+
+### TypeScript LAS Writer
+
+| Capability | TypeScript status |
+| --- | --- |
+| Uncompressed LAS writing | ⚠️ Partial. Supports LAS output for represented mesh/table fields, including LAS 1.5 modern records with WKT metadata. |
+| LAS versions | ⚠️ Versions 1.0-1.5 are selectable. LAS 1.5 requires `las.wkt` and modern PDRF 6-10. Round-trip coverage targets default LAS 1.2, LAS 1.4/PDRF 7, and LAS 1.5/PDRF 7; full version conformance is not claimed. |
+| Point data record formats | ✅ PDRF 0-10 are selectable. Position, intensity, classification, RGB, NIR, GPS time, return/scan fields, waveform packet references, and configured Extra Bytes are mapped from input attributes. Missing fields are zero-filled. |
+| LAZ writing | ✅ Supported for PDRF 0-10 with fixed-size or variable-size LASzip chunk tables. Legacy PDRFs use LASzip compressor 2/item version 2; modern PDRFs use layered compressor 3/item version 3. |
+| COPC writing | ✅ Supported by `@loaders.gl/tiles-3d/copc` through its separate `COPCWriter` entry point. |
+| VLRs, EVLRs, CRS, Extra Bytes VLRs | ⚠️ LASzip and configured Extra Bytes VLRs are written; broader metadata records remain incomplete. |
+| Streaming writing | ⚠️ `encodeInBatches` may buffer input so final counts, bounds, offsets, and headers can be written correctly. |
+
+### TypeScript LAZ Decoder
+
+#### LAZ Feature Support
+
+This matrix describes the TypeScript reader and `LASWriter`. Point data record format (PDRF), LAS header version, compressor, coder, and item version are separate compatibility dimensions. “Supported” applies to the combinations listed here, rather than every file carrying a `.laz` extension. Streaming describes forward-only `parseInBatches`; raw decompression preserves physical point-record bytes, while Arrow output exposes the selected logical fields.
+
+| LAZ feature / profile | Read support | Write support | Streaming behavior | Requirements and limits |
+| --- | --- | --- | --- | --- |
+| Legacy PDRF 0–3 | ✅ Supported: Point10, GPS time, RGB, and Byte10 item versions **1 or 2** as applicable. | ✅ Supported with item version **2**. | Incremental rows with persistent arithmetic/item state. | Arithmetic coder **0**; pointwise compressor **1** or chunked compressor **2**. Item versions are checked individually. |
+| Legacy waveform PDRF 4–5 | ✅ Supported: legacy items v1/v2 plus WavePacket13 **v1**. | ✅ Supported with legacy items v2 and WavePacket13 v1. | Incremental rows, including waveform packet references. | Waveform samples are separate from the 29-byte packet-reference records. |
+| Modern PDRF 6–8 | ✅ Supported: Point14, RGB14/RGBNIR14, and Byte14 item versions **2–4**. | ✅ Supported with item version **3**. | Selected Arrow rows become available after their required layers arrive. | Layered compressor **3**, arithmetic coder **0**. |
+| Modern waveform PDRF 9–10 | ✅ Supported: modern items v2–v4 and WavePacket14 **v3/v4**. | ✅ Supported with modern items v3 and WavePacket14 v3. | Waveform references can be emitted before unrequested trailing Byte14 layers. | Exact uint64 packet offsets are preserved; waveform sample access uses the waveform helpers. |
+| Pointwise legacy streams | ✅ Supported for PDRF 0–5, including legacy v1 files. | ❌ Not produced; the writer uses chunked compression. | Rows can be emitted before the stream finishes; bounded compressed input is retained. | Compressor **1** has no chunk-table pointer or chunk table. |
+| Fixed-size chunk tables | ✅ Supported: chunk-table **version 0**. | ✅ Supported. | Incremental legacy rows or progressive layered rows. | Final table entries are validated against decoded chunk lengths/counts. |
+| Variable-size chunk tables | ✅ Supported: chunk-table **version 0**. | ✅ Supported. | Forward-only sources are buffered until the EOF table is available. | Per-chunk point counts require the table; missing variable-size tables cannot be recovered. |
+| Missing-table recovery | ⚠️ **Opt-in** through `las.recoverMissingChunkTable: true`. | ❌ Not a writer mode; normal output includes its table. | Supported for fixed-size legacy and layered chunks. | Only the LASzip interrupted-write marker (pointer equals point-data offset) is accepted. Counts, point data, embedded layered counts, and EOF are validated. Truncated data, extra trailing bytes, and malformed existing tables remain errors. |
+| LASzip compatibility profiles | ✅ Supported: logical modern PDRF **6–10** stored in legacy records. | ❌ Not produced; the writer emits native requested PDRFs. | Complete and streaming parsing restore the same selected fields. | Requires the `lascompatible` control VLR, supported version/length, and exact named Extra Bytes layout. Default `las.compatibilityMode: 'auto'` restores classification, returns, scan angle, overlap, scanner channel, and optional NIR; `'raw'` retains legacy column values. |
+| Raw Extra Bytes | ✅ Lossless Byte10 **v1/v2** and Byte14 **v2–v4** payloads. | ✅ Supported through configured Extra Bytes. | Direct projection; layered payloads become ready after their Byte14 layers arrive. | Request `EXTRA_BYTES` explicitly for raw Arrow output. Raw record APIs always preserve the bytes. |
+| Typed Extra Bytes | ✅ Scalar descriptor types **1–10**, two-component types **11–20**, and three-component types **21–30**. | ✅ Configured descriptors and attributes are supported. | Shared typed projection for complete, streaming, and COPC output. | Use `las.extraBytes: 'typed'`; descriptor scale/offset applies per component. Type 0 remains a raw, undescribed byte payload. |
+| Signed/unsigned 64-bit Extra Bytes | ✅ Exact Arrow **Int64/Uint64**, including vector components and COPC scans. | ✅ Supported for configured 64-bit descriptors. | Exact BigInt values with identity transforms. | Types **7/8**, **17/18**, and **27/28** use BigUint64Array/BigInt64Array. Nonidentity scale/offset produces Float64 and can lose integer precision. |
+| Column selection | ✅ Supported with `las.columns`; `POSITION` is always returned. | Not applicable to decoding. | Modern omitted field layers can be skipped; legacy interleaved entropy must still be decoded. | Compatibility reconstruction reads its required extension fields even when raw Extra Bytes output is not requested. An empty column list requests positions only. |
+| COPC | ✅ Native hierarchy/range reading and modern LAZ node decoding through `@loaders.gl/tiles-3d/copc`. | ✅ `COPCWriter` is a separate entry point. | Bounded node range reads and selected-layer decoding. | COPC is an indexed LAZ layout, not an alternate legacy item codec. |
+| Complete raw point records | ✅ All supported profile fields are decoded byte-for-byte. | ✅ Raw chunk encoders preserve represented record bytes. | Raw cursors retain decoder state across feeds. | Raw decompression does not rewrite compatibility records into modern physical records. Logical reconstruction is applied to parsed columns. |
+| Unsupported codec combinations | ❌ Rejected with an error. | ❌ Not produced. | No fallback for an unknown codec. | Coders other than **0**, chunk-table versions other than **0**, legacy item versions outside **1/2**, and modern/waveform item versions outside the combinations above are unsupported. |
+
+Legacy v1 and compatibility-mode support are checked against small independent LASzip fixtures, including raw-record parity and reconstructed modern fields. The interrupted-file recovery tests cover complete, raw streaming, and Arrow streaming paths. Supported point-record codecs do not imply complete LAS 1.5 header/metadata conformance; see the parser limits above.
+
+For comparison, [PDAL's LAS reader](https://pdal.io/en/stable/stages/readers.las.html) reads LAS/LAZ but documents exclusions for waveform PDRFs 4, 5, 9, and 10. [GDAL's vector driver list](https://gdal.org/en/stable/drivers/vector/index.html) does not include a native lidar LAS/LAZ driver; its [LOSLAS driver](https://gdal.org/en/stable/drivers/raster/loslas.html) handles NADCON datum-shift grids with a `.las` extension. LASzip is the codec interoperability reference used for these LAZ profiles.
+
+### TypeScript LAZ Encoder
+
+`encodeLAZChunk()` and `createLAZChunkEncoder()` encode raw LAS point records into one LASzip layered chunk. They do not write the surrounding LAS header, LASzip VLR, chunk table, or `.laz` file container.
+
+`LASWriter` uses the chunk encoder to write complete `.laz` files for PDRF 0-10, including the LASzip VLR, fixed-size or variable-size chunks, chunk-table pointer, and version 0 chunk table.
+
+| LASzip feature | Supported TypeScript combinations |
+| --- | --- |
+| Legacy PDRF 0-5 items | Compressor 2, arithmetic coder 0, and Point10/GPS/RGB/Byte item version 2, with WavePacket13 item version 1 for PDRF 4-5. |
+| Modern PDRF 6-10 items | Layered compressor 3, arithmetic coder 0, and Point14/RGB14/RGBNIR14/Byte14 item version 3, with WavePacket14 item version 3 for PDRF 9-10. |
+| Extra Bytes | Byte14 item version 3 is losslessly encoded as independent layers. |
+| Input modes | Complete raw point buffers and feedable raw byte ranges. Feedable input is buffered until `close()` and `encode()` are called. |
+| Interoperability | PDRF 0-10 output is decoded through the TypeScript implementation. Independent LASzip fixtures cover legacy, modern, and waveform item sets; bundled WASM comparisons cover the item sets those variants support. |
+| Unsupported modes | Pointwise compressor 1, coders other than 0, and alternate emitted item versions. |
+
+#### Point Record Formats
+
+"Raw" below means that `decodeLAZChunk()` and raw file-batch APIs reproduce every byte in each LAS point record. Arrow output is intentionally narrower.
+
+| PDRF | Valid LAS versions | Raw LAZ decode | Arrow output | Dedicated fixture coverage |
+| --- | --- | --- | --- | --- |
+| 0 | 1.0-1.4 | ✅ Supported for the legacy codec combination above. | XYZ, intensity, classification. | Synthetic chunk unit test. |
+| 1 | 1.1-1.4 | ✅ Supported for the legacy codec combination above. | XYZ, intensity, classification, `GPS_TIME`. | Synthetic chunk unit test. |
+| 2 | 1.2-1.4 | ✅ Supported for the legacy codec combination above. | XYZ, intensity, classification, RGB. | Synthetic chunk unit test. |
+| 3 | 1.2-1.4 | ✅ Supported for the legacy codec combination above. | XYZ, intensity, classification, RGB, `GPS_TIME`. | Full-file parity with laz-rs on two LAS 1.2 files. |
+| 4 | 1.3-1.4 | ✅ Supported, including WavePacket13 and Extra Bytes. | XYZ, intensity, classification, `GPS_TIME`, `WAVEFORM`. | Byte-for-byte paired LAS/LAZ fixture. |
+| 5 | 1.3-1.4 | ✅ Supported, including RGB, WavePacket13, and Extra Bytes. | XYZ, intensity, classification, RGB, `GPS_TIME`, `WAVEFORM`. | Byte-for-byte paired LAS/LAZ fixture. |
+| 6 | 1.4-1.5 | ✅ Supported for Point14 item versions 2-4. | XYZ, intensity, classification, `GPS_TIME`. | LAS 1.4 byte parity plus COPC decoder parity. |
+| 7 | 1.4-1.5 | ✅ Supported for Point14/RGB14 item versions 2-4. | XYZ, intensity, classification, RGB, `GPS_TIME`. | LAS 1.4 v3 decoder parity and v4 byte parity across all scanner channels. |
+| 8 | 1.4-1.5 | ✅ Supported for Point14/RGBNIR14 item versions 2-4. | XYZ, intensity, classification, RGB, `GPS_TIME`, `NIR`. | LAS 1.4 byte parity including NIR and Extra Bytes. |
+| 9 | 1.4-1.5 | ✅ Supported, including WavePacket14 versions 3-4 and exact 64-bit offsets. | XYZ, intensity, classification, `GPS_TIME`, `WAVEFORM`. | LAS 1.4/v3 and LAS 1.5/v4 byte parity. |
+| 10 | 1.4-1.5 | ✅ Supported, including RGB, NIR, WavePacket14 versions 3-4, and exact 64-bit offsets. | XYZ, intensity, classification, RGB, `GPS_TIME`, `NIR`, `WAVEFORM`. | LAS 1.4/v3 and LAS 1.5/v4 byte parity. |
+
+#### Streaming Granularity
+
+| Input case | First output can be emitted | Retained input / limitation |
+| --- | --- | --- |
+| Uncompressed LAS | After the header and enough complete point records arrive. | Only incomplete framing and the current output batch are retained. |
+| Pointwise legacy LAZ PDRF 0-5 | Before the compressed stream is complete, after enough bytes decode complete rows. | One persistent cursor, no chunk-table pointer, and bounded retained compressed input. |
+| Fixed-chunk legacy LAZ PDRF 0-5 | Before the current compressed chunk is complete, after enough bytes decode complete rows. | Preserves arithmetic and item predictors across feeds, retains a bounded lookahead, and never replays emitted rows. |
+| Fixed-chunk layered LAZ PDRF 6-8 | After all compressed layers required by the requested Arrow columns arrive. | Unrequested trailing layers do not delay the first batch. Raw and typed Extra Bytes are projected directly after their trailing Byte14 layers arrive. |
+| Fixed-chunk layered LAZ PDRF 9-10 | After the required Point14, RGB/NIR, WavePacket14, or Byte14 layers arrive. | Waveform rows can precede trailing Extra Bytes. Selecting Extra Bytes requires their final layers but no complete raw-record decode or copy. |
+| Variable-chunk LAZ | After the EOF chunk table is available. | A forward-only source is buffered because per-chunk point counts are stored at EOF. |
+| COPC node | After the compressed layers required by the selected columns arrive. | Node ranges are fetched in bounded ordered requests; unrequested trailing layers do not delay the first PDRF 6-8 batch. |
+
+#### Selective LAZ 1.4 Decoding
+
+For complete-buffer `parse` and streaming `parseInBatches`, the TypeScript parser writes requested positions, intensity, classification, classification flags, RGB, GPS time, NIR, point metadata, waveform references, and Extra Bytes into Arrow column buffers. `las.columns` accepts `POSITION`, `intensity`, `classification`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `COLOR_0`, `GPS_TIME`, `NIR`, the remaining point metadata names, `WAVEFORM`, and `EXTRA_BYTES`; positions remain mandatory for point-cloud output. Omitting the option returns all represented fields, while an empty array returns positions only. Set `las.extraBytes` to `'typed'` together with `EXTRA_BYTES` to decode descriptor-defined numeric values into attributes named `EXTRA_BYTES_<descriptor-name>`. Names are sanitized and duplicate names receive numeric suffixes. In raw mode, `EXTRA_BYTES` must be listed explicitly; typed mode includes Extra Bytes when `las.columns` is omitted.
+
+PDRF 6-10 store groups of fields in independent compressed layers. Omitted intensity, classification, RGB, GPS time, and NIR layers are skipped without allocating their output arrays or constructing their arithmetic decoders and models. The parser also avoids arithmetic decoding for scan flags, scan angle, user data, point source ID, waveform packet references, and Extra Bytes layers that are not represented in the returned table. The COPC rendering path uses the same direct target to request positions and RGB only.
+
+Legacy PDRF 0-5 fields share an interleaved entropy stream. Column selection still avoids output arrays, color-depth detection, and field extraction for omitted columns, but it cannot skip the corresponding entropy decoding.
+
+Compressed field layers are decoded as bounded ranges of the original chunk instead of copied into per-layer readers. LASzip v3's historical item-context channel behavior is preserved separately from each point's actual scanner channel, while LASzip v4 uses the corrected context-switch behavior declared by each item in the LASzip VLR. These details reduce temporary allocation and property lookup overhead without changing the complete-record APIs.
+
+`decodeLAZChunk()` and the raw cursor API continue to decode every field and return complete LAS point records byte-for-byte. A cursor cannot switch between raw and selective output, or change its selected fields, after decoding starts because skipped arithmetic streams cannot be resumed at the corresponding point.
+
+Dedicated PDRF 4-10 fixtures compare every raw decoded byte and every represented Arrow attribute against matching uncompressed LAS records. LASzip-generated PDRF 4/5 fixtures validate legacy WavePacket13 and PDRF 5 field ordering. A current-LASzip PDRF 7 fixture verifies Point14, RGB14, and Byte14 item version 4 across all four scanner-channel contexts while retaining a LAS 1.4 header. The bundled COPC decoder misdecodes that fixture's RGB values after scanner-channel changes, and bundled laz-rs rejects item version 4, so current LASzip plus uncompressed LAS provide its correctness oracle. PDRF 8 coverage includes NIR, GPS time, Extra Bytes, and scanner-channel transitions. PDRF 9/10 coverage exercises all waveform-offset predictor modes, exact 64-bit offsets above `Number.MAX_SAFE_INTEGER`, packet sizes, float vector fields, GPS time, NIR, and Extra Bytes. LASzip-generated LAS 1.5 PDRF 9/10 fixtures additionally verify item version 4 across all four scanner-channel contexts. The `WAVEFORM` column is populated from the lossless packet reference bytes; sample payloads remain separate on-demand range reads instead of variable-width point-table columns.
+
+The slow conformance lane feeds PDRF 4-10 fixtures through multiple seeded arbitrary byte boundaries and compares every decoded point byte with independently generated uncompressed LAS records. It also rejects malformed headers, point-data offsets, chunk-table pointers, and truncated chunk tables. Fixed-chunk parsing validates the trailing chunk table after progressive point delivery, so a malformed file cannot complete successfully even when its point layers were independently decodable. The reader also supports LASzip's legal `-1` pointer layout for non-seekable writers, validates the table at the decoded fixed-chunk boundary, and verifies that the final eight-byte footer points back to that table without retaining intervening EVLR data.
+
+PDRF 7 performance checks combine deterministic memory invariants with conservative CPU-time floors. The Arrow streaming path must avoid raw-batch and decoded-chunk allocations, keep framing copies bounded by the input size, sustain at least 500,000 points per CPU second on the slow-test runner, and retain a measurable advantage when only `POSITION` and `COLOR_0` are requested. The benchmark suite remains the source for precise wall-clock throughput comparisons because short CI timing checks are intentionally broad regression alarms.
+
+### TypeScript COPC Path
+
+| Capability | TypeScript status |
+| --- | --- |
+| COPC header and metadata | ✅ Native TypeScript parsing for the LAS 1.4 header, VLR/EVLR descriptors, COPC info, WKT, and raw Extra Bytes metadata. |
+| COPC hierarchy and range selection | ✅ Native TypeScript hierarchy-page parsing, lazy child-page traversal, octree bounds, and node range selection. |
+| Node range fetching | ✅ Selected node ranges are fetched incrementally without downloading unrelated nodes or the complete file. |
+| Point decoding | ✅ Supported for COPC nodes using LAZ 1.4 PDRF 6, 7, or 8. |
+| Render attribute output | ✅ Positions, RGB, NIR, intensity, classification, GPS time, scan angle, and point source ID decode directly into Arrow buffers. Unrequested layers are skipped. |
+| Progressive point output while range data arrives | ✅ Implemented at layered LAZ readiness boundaries. Position-only rows can arrive before RGB and NIR layers. |
+| COPC writer | ✅ `COPCWriter` output includes range-readable LAZ node chunks, a variable chunk table, COPC info, and a paged hierarchy EVLR. |
+
+## Version History
+
+| Version | Point data record formats | Main additions | loaders.gl status |
+| --- | --- | --- | --- |
+| 1.5 | 6-10 in LAS 1.5 mode | Backward compatibility with LAS 1.1-1.4, stricter modern point record model, WKT CRS records, and an extended public header. | ⚠️ TypeScript reads and validates the modern header, parses its GPS-time fields, decodes PDRF 6-10, and writes modern records when WKT metadata is supplied. |
+| 1.4 | 0-10 | 64-bit point counts and offsets, EVLR refinements, WKT CRS support, Extra Bytes VLR, modern PDRFs 6-10. | ⚠️ Reads uncompressed LAS 1.4 and decodes LAZ chunks for PDRF 0-10. |
+| 1.3 | 0-5 | EVLRs and waveform packet support. | ⚠️ TypeScript LAZ decoding supports all PDRFs, including raw PDRF 4/5 waveform references. |
+| 1.2 | 0-3 | RGB point formats and broader geospatial metadata conventions. | ⚠️ Read and write support for common uncompressed LAS attributes. |
+| 1.1 | 0-1 | GPS time point format and early classification/metadata updates. | ⚠️ Read support for common attributes. |
+| 1.0 | 0 | Original LAS public header, VLRs, and core point record format. | ⚠️ Read support for common attributes. |
+
+## LAS 1.5
+
+LAS 1.5 is the current ASPRS LAS specification generation. It keeps backward compatibility with LAS 1.1 through LAS 1.4 while defining a modern LAS 1.5 mode around point data record formats 6 through 10. In LAS 1.5 mode, legacy PDRFs 0 through 5 are no longer valid point formats. CRS records use WKT.
+
+LAS 1.5 does not change the basic LAS idea: the public header identifies the file layout, point records are fixed length, and VLR/EVLR records carry metadata. The important implementation consequence is that readers need to understand both legacy-compatible files and LAS 1.5 files with modern point records.
+
+| Case | Streaming feasible? | Work needed |
+| --- | --- | --- |
+| LAS 1.5 uncompressed PDRF 6-8 | Yes | Header time fields, WKT validation, and LAS 1.5 conformance checks. |
+| LAS 1.5 uncompressed PDRF 9-10 | Yes | Raw point readers for waveform packet reference fields. |
+| LAZ 1.5 PDRF 6-8 | Yes, by compressed chunk | LASzip item version 4 context switching is supported; broader LAS 1.5 fixture coverage remains desirable. |
+| LAZ 1.5 PDRF 9-10 | Yes, at layered field boundaries | PDRF 9 and 10 item version 4 are validated across all scanner channels. Selected waveform references can be emitted before trailing Extra Bytes and are preserved byte-for-byte. |
+| LAS/LAZ 1.5 waveform payload bytes | Yes, on demand | Exact packet references select waveform descriptor VLRs and range-read internal LAS or external WDP packet bytes. Compression type 0 and sample widths 2-32 bits are decoded and scaled. |
+
+## LAS 1.4
+
+LAS 1.4 is the version used by COPC and by most modern LAZ delivery workflows. It moved LAS from legacy 32-bit limits toward 64-bit counts and offsets and introduced the modern point data record formats 6 through 10. These formats improve classification, return, scanner channel, overlap, GPS time, color, NIR, and waveform handling.
+
+LAS 1.4 can still carry legacy point formats 0 through 5 for compatibility. For new LAS 1.4 data, PDRFs 6 through 10 are preferred. WKT CRS records are required for PDRFs 6 through 10; GeoTIFF CRS records are retained for legacy PDRFs 0 through 5.
+
+## Geospatial Reference Systems
+
+The TypeScript parser preserves the LAS geospatial reference system metadata without changing coordinates. For WKT CRS VLRs, `loaderData.metadata.wkt` contains the OGC Coordinate System WKT (record ID 2112) and `loaderData.metadata.wktMathTransform` contains the OGC Math Transform WKT (record ID 2111). For legacy GeoTIFF CRS VLRs, `loaderData.metadata.geotiff` contains the raw GeoKey directory, double parameters, and ASCII parameters from record IDs 34735, 34736, and 34737. `geotiff.keyDirectory.entries` also resolves inline values and references into the double and ASCII parameter records while retaining each key's original tag location, count, and offset.
+
+This is metadata support, not a reprojection engine: `POSITION` values remain in the LAS file's declared coordinate reference system, with the LAS header scale and offset applied. Applications that need a different CRS should interpret the WKT or GeoTIFF metadata with a CRS library and perform reprojection explicitly. Raw VLR and EVLR records remain available for vendor-specific CRS extensions.
+
+## LAS 1.3
+
+LAS 1.3 introduced Extended Variable Length Records (EVLRs). EVLRs live after the point data records and support larger payloads than VLRs. This made them suitable for large metadata blocks and waveform-related payloads.
+
+PDRFs 4 and 5 add waveform packet references on top of the earlier GPS time and color formats. Waveform packet data can be stored internally or externally, depending on the file and application workflow.
+
+## LAS 1.2
+
+LAS 1.2 added RGB color point formats. PDRF 2 contains XYZ, intensity, classification, and RGB. PDRF 3 adds GPS time to the RGB record. LAS 1.2 is still common in older colorized lidar and photogrammetry point clouds.
+
+## LAS 1.1
+
+LAS 1.1 added the GPS time point format. PDRF 1 extends the original core record with GPS time, which made it possible to preserve timing information for many acquisition workflows.
+
+## LAS 1.0
+
+LAS 1.0 defined the core LAS layout: a public header block, optional VLRs, and fixed-length point data records. PDRF 0 contains the core fields: integer XYZ coordinates, intensity, return flags, classification, scan angle rank, user data, and point source ID.
+
+## File Structure
+
+A LAS file consists of sections:
+
+| Section                                 | Description                                                                                                                                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Public header block                     | Describes format, number of points, extent of the point cloud and other generic data.                                                                                                |
+| Variable length records (VLR)           | Any number of optional records (up to 64K bytes) to provide various data such as the spatial reference system used, metadata, waveform packet information and user application data. |
+| Point data records                      | Data for each of the individual points in the point cloud, including coordinates, classification (e.g. terrain or building), flight and scan data, etc.                              |
+| Extended variable length records (EVLR) | From v1.3. Similar to VLRs but located after the point data records and allow a much larger data payload per record due to the use of 8-byte size descriptors.                       |
+
+Notes:
+
+- All point data records in one LAS file use the same point data record format. The formats differ in the available fields, such as GPS time, RGB color, NIR color, scanner channel, classification flags, and waveform packet references.
+- The 3D point coordinates are represented within the point data records by 32-bit integers, to which a scaling and offset defined in the public header must be applied in order to obtain the actual coordinates.
+- As the number of bytes used per point data record is explicitly given in the public header block, it is possible to add user-defined "extra bytes" after the specification-defined fields. LAS 1.4 standardized an Extra Bytes VLR for describing these fields.
+
+## Point Data Record Formats
+
+| PDRF | Added by | Main fields |
+| --- | --- | --- |
+| 0 | LAS 1.0 | XYZ, intensity, return flags, classification, scan angle rank, user data, point source ID. |
+| 1 | LAS 1.1 | PDRF 0 + GPS time. |
+| 2 | LAS 1.2 | PDRF 0 + RGB. |
+| 3 | LAS 1.2 | PDRF 0 + GPS time + RGB. |
+| 4 | LAS 1.3 | PDRF 1 + waveform packet reference. |
+| 5 | LAS 1.3 | PDRF 3 + waveform packet reference. |
+| 6 | LAS 1.4 | Modern core record with 256 classes, overlap flag, scanner channel, larger return fields, GPS time. |
+| 7 | LAS 1.4 | PDRF 6 + RGB. |
+| 8 | LAS 1.4 | PDRF 7 + NIR. |
+| 9 | LAS 1.4 | PDRF 6 + waveform packet reference. |
+| 10 | LAS 1.4 | PDRF 7 + waveform packet reference. |
+
+## Waveform Packet Layout
+
+PDRF 4, 5, 9, and 10 append a 29-byte reference to each point record. The reference contains a waveform descriptor index, an unsigned 64-bit packet offset, packet byte length, return-point location, and three parametric direction values. Descriptor index `n` selects the `LASF_Spec` waveform descriptor VLR with record ID `n + 99`; index zero means that the point has no waveform packet.
+
+LAS global-encoding bit 1 selects waveform data stored inside the LAS file and bit 2 selects a companion WDP file. These bits are mutually exclusive. For internal data, a packet's absolute file position is:
+
+```text
+public-header waveform data offset + point-record waveform packet offset
+```
+
+For external WDP data, the point-record offset is already relative to the beginning of the WDP waveform data packet record. `readLASWaveformPacket` applies the correct rule and uses `ReadableFile.read()` to request only the packet range. Supply the LAS source for internal storage or the companion WDP source for external storage.
+
+Waveform descriptor compression type 0 stores unsigned samples without an additional waveform codec. The TypeScript helper decodes 2-32-bit little-endian packed samples and exposes both raw integer values and amplitudes calculated as `digitizerOffset + digitizerGain * sample`. Nonzero waveform compression types are not supported. Packet references and public-header offsets remain `bigint`, including values above `Number.MAX_SAFE_INTEGER`.
+
+## COPC Range Layout
+
+COPC is a LAZ 1.4 file with additional layout rules that make it efficient for HTTP range requests and other random-access readers. A COPC file must use PDRF 6, 7, or 8, must contain a COPC `info` VLR, and must contain a COPC `hierarchy` VLR.
+
+The COPC `info` VLR is the first VLR in the file and starts immediately after the 375-byte LAS 1.4 header. It records the octree center, half-size, root spacing, GPS time range, and the byte offset and byte size of the root hierarchy page.
+
+Hierarchy pages contain fixed-size entries for octree nodes. Each entry is keyed by level and integer x/y/z location. An entry can identify an empty node, point data for a node, or another hierarchy page. For point data entries, the hierarchy stores:
+
+| Field | Purpose |
+| --- | --- |
+| `pointDataOffset` | File byte offset where the node's compressed LAZ point chunk starts. |
+| `pointDataLength` | Number of bytes in that compressed chunk. |
+| `pointCount` | Number of points represented by the node. |
+
+A range-aware COPC reader first reads the LAS header and COPC VLRs, then reads the root hierarchy page. To load a tile or spatial subset, it traverses the hierarchy, issues a range request for `pointDataOffset..pointDataOffset + pointDataLength`, and passes that complete compressed LAZ chunk to a LAZ 1.4 chunk decoder. This is why COPC can avoid downloading unrelated point data while still being a valid LAZ file for sequential readers.
+
+## Remaining Roadmap
+
+Within the documented version, PDRF, and codec matrix, the TypeScript implementation now covers complete-file LAS/LAZ parsing, PDRF 0-10 point records, fixed and variable LAZ chunk tables, stateful legacy and selective layered streaming, progressive PDRF 6-10 delivery, direct raw and typed Extra Bytes projection, classification flags, on-demand internal LAS and external WDP waveform sample access, LAZ writing, native COPC hierarchy and range parsing, bounded parallel COPC node decoding through the single TypeScript LAS worker, independently validated paged COPC writing, seeded split conformance, malformed-input handling, and memory and throughput regression gates. The remaining format work is broader LAS 1.5 conformance rather than the primary LAS 1.4/COPC rendering path.
+
+| Order | Work item | Impact | Cost | Acceptance target |
+| --- | --- | --- | --- | --- |
+| 1 | Complete LAS 1.5 conformance and writing | Medium | Medium | Add broader independent-reader fixtures and validate LAS 1.5 output across WKT, extension, EVLR, and modern PDRF combinations. |
+
+### Missing chunk tables
+
+Like the LASzip reference reader, the TypeScript reader can recover fixed-size chunks from an interrupted writer's explicit missing-table marker. Enable `las.recoverMissingChunkTable` to request this behavior. Variable-size tables, truncated point data, and malformed existing tables remain errors.
+
+### LASzip compatibility profiles
+
+The TypeScript reader reconstructs modern point formats 6–10 stored in LASzip's legacy compatibility mode. The `lascompatible` control VLR and the exact named Extra Bytes descriptors are required. The output restores modern classification, return counts, scanner channel, overlap, scan angle, and optional NIR, while physical header metadata and raw bytes remain unchanged. Use `las.compatibilityMode: 'raw'` to retain the legacy columns. Independent LASzip fixtures validate the reconstruction for both uncompressed LAS and compressed LAZ.

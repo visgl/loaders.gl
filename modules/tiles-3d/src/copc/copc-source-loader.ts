@@ -59,7 +59,7 @@ import {
   type LASLoaderOptions,
   populateLASTypedExtraBytes,
   type LASTypedExtraBytesAttribute
-} from '@loaders.gl/las';
+} from '@loaders.gl/pointclouds/las';
 
 import {normalizeCOPCProjectionDefinition} from './lib/copc-wkt';
 

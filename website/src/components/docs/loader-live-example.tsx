@@ -57,7 +57,7 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
   },
   'modules/mlt/api-reference/mlt-loader': {kind: 'tiles', format: 'MLT'},
   'modules/mvt/api-reference/mvt-loader': {kind: 'tiles', format: 'MVT'},
-  'modules/obj/api-reference/obj-loader': {kind: 'pointcloud', format: 'OBJ'}
+  'modules/scene/obj/api-reference/obj-loader': {kind: 'pointcloud', format: 'OBJ'}
 };
 
 /**

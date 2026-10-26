@@ -7,9 +7,9 @@ import {
   convertWKBToGeometry
 } from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import type {Geometry, Position} from '@loaders.gl/core/schema';
-import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
-const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdata2d.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdataZ.json';
+import {parseTestCases} from '@loaders.gl/geospatial/wkt/test/data/wkt/parse-test-cases';
+const WKB_2D_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdata2d.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdataZ.json';
 
 test('triangulateWKB#2D matches GeoJSON earcut path', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);

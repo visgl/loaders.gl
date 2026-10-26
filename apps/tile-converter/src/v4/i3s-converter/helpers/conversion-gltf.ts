@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GLTFScenegraph, getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/gltf';
+import {GLTFScenegraph, getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
 import type {
   GLTFWithBuffers,
   GLTFAccessor,
@@ -11,7 +11,7 @@ import type {
   GLTFMaterial,
   GLTFTexture,
   GLTFImage
-} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
 import type {TypedArray} from '@math.gl/core';
 
 /** Packed geometry passed to the legacy conversion worker, independent of scene JSON. */

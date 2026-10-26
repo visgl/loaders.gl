@@ -5,12 +5,12 @@
 import {expect, test} from 'vitest';
 import {loadInBatches, fetchFile, isBrowser} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/tables/csv/index';
-import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
 import type {ObjectRowTableBatch} from '@loaders.gl/core/schema';
 
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/tables/csv/test/data/sample-very-long.csv';
-const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
+const OBJ_ASCII_URL = '@loaders.gl/scene/obj/test/data/bunny.obj';
 const KML_URL = '@loaders.gl/geospatial/kml/test/data/kml/KML_Samples.kml';
 
 test.runIf(isBrowser)('loadInBatches#FileList', async () => {

@@ -15,7 +15,7 @@ type GeoArrowNode = {
 const SOURCES: readonly GeoArrowNode[] = [
   {label: 'GeoParquet', detail: 'file-level metadata', to: '/docs/modules/tables/parquet/formats/geoparquet'},
   {label: 'GeoJSON', detail: 'features to columns', to: '/docs/modules/tables/json/formats/geojson'},
-  {label: 'WKB / WKT', detail: 'geometry wire formats', to: '/docs/modules/wkt/formats/wkb'}
+  {label: 'WKB / WKT', detail: 'geometry wire formats', to: '/docs/modules/geospatial/wkt/formats/wkb'}
 ];
 
 const CONSUMERS: readonly GeoArrowNode[] = [

@@ -22,10 +22,10 @@ import {load} from '@loaders.gl/core';
 import {getDeckBinaryDataFromArrowMesh, getBoundingBoxFromArrowPositions} from '@loaders.gl/core/geoarrow';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {DracoArrowLoader} from '@loaders.gl/draco';
-import {LASArrowLoader} from '@loaders.gl/las';
-import {OBJArrowLoader} from '@loaders.gl/obj';
-import {PCDArrowLoader} from '@loaders.gl/pcd';
-import {PLYArrowLoader} from '@loaders.gl/ply';
+import {LASArrowLoader} from '@loaders.gl/pointclouds/las';
+import {OBJArrowLoader} from '@loaders.gl/scene/obj';
+import {PCDArrowLoader} from '@loaders.gl/pointclouds/pcd';
+import {PLYArrowLoader} from '@loaders.gl/pointclouds/ply';
 
 import type {Example} from './examples';
 import {EXAMPLES} from './examples';

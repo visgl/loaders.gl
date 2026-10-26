@@ -1,0 +1,60 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader} from '@loaders.gl/core/loader-utils';
+import type {Geometry} from '@loaders.gl/core/schema';
+
+import type {WKBLoaderOptions} from './wkb-loader-types';
+import {WKBLoader} from './wkb-loader-types';
+import {VERSION} from './lib/version';
+import {HexWKBFormat} from './wkt-format';
+
+export type HexWKBLoaderOptions = WKBLoaderOptions;
+
+/**
+ * Preloads the parser-bearing Hex WKB loader implementation.
+ */
+async function preload() {
+  const {HexWKBLoaderWithParser} = await import('@loaders.gl/geospatial/wkt/hex-wkb-loader');
+  return HexWKBLoaderWithParser;
+}
+
+/**
+ * Metadata-only worker loader for Hex-encoded WKB (Well-Known Binary)
+ */
+export const HexWKBLoader = {
+  dataType: null as unknown as Geometry,
+  batchType: null as never,
+  ...HexWKBFormat,
+  version: VERSION,
+  worker: true,
+  options: WKBLoader.options,
+  text: true,
+  testText: isHexWKB,
+  preload
+} as const satisfies Loader<Geometry, never, HexWKBLoaderOptions>;
+
+/**
+ * Check if string is a valid Well-known binary (WKB) in HEX format
+ * https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry
+ *
+ * @param str input string
+ * @returns true if string is a valid WKB in HEX format
+ * @todo Avoid costly regex check
+ */
+export function isHexWKB(string: string | null): boolean {
+  if (!string) {
+    return false;
+  }
+  // check if the length of the string is even and is at least 10 characters long
+  if (string.length < 10 || string.length % 2 !== 0) {
+    return false;
+  }
+  // check if first two characters are 00 or 01
+  if (!string.startsWith('00') && !string.startsWith('01')) {
+    return false;
+  }
+  // check if the rest of the string is a valid hex
+  return /^[0-9a-fA-F]+$/.test(string.slice(2));
+}

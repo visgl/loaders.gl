@@ -27,13 +27,13 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
     title: '3D and graphics',
     description: 'Portable scene, tiled-world, point-cloud, mesh-compression, and GPU texture formats.',
     links: [
-      {label: 'glTF / GLB', to: '/docs/modules/gltf/formats/gltf'},
+      {label: 'glTF / GLB', to: '/docs/modules/scene/gltf/formats/gltf'},
       {label: '3D Tiles', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
       {label: 'I3S / SLPK', to: '/docs/modules/i3s/formats/i3s'},
       {label: 'Draco', to: '/docs/modules/draco/formats/draco'},
       {label: 'KTX / KTX2', to: '/docs/modules/textures/formats/ktx'},
       {label: 'Basis', to: '/docs/modules/textures/formats/basis'},
-      {label: 'LAS / LAZ', to: '/docs/modules/las/formats/las'},
+      {label: 'LAS / LAZ', to: '/docs/modules/pointclouds/las/formats/las'},
       {label: 'COPC', to: '/docs/modules/tiles-3d/copc/formats/copc'},
       {label: 'OpenUSD', to: '/docs/modules/scene/formats/usd'}
     ]
@@ -63,8 +63,8 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
       {label: 'GeoTIFF', to: '/docs/modules/geotiff/formats/geotiff'},
       {label: 'FlatGeobuf', to: '/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf'},
       {label: 'Shapefile', to: '/docs/modules/geospatial/shapefile/formats/shapefile'},
-      {label: 'WKT / WKB', to: '/docs/modules/wkt/formats/wkt'},
-      {label: 'WKT-CRS', to: '/docs/modules/wkt/formats/wkt-crs'},
+      {label: 'WKT / WKB', to: '/docs/modules/geospatial/wkt/formats/wkt'},
+      {label: 'WKT-CRS', to: '/docs/modules/geospatial/wkt/formats/wkt-crs'},
       {label: 'STAC', to: '/docs/modules/ogc/stac/formats/stac'}
     ]
   },
@@ -102,10 +102,10 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     title: 'Khronos',
     description: 'Scene and texture standards designed to move renderable assets between tools and runtimes.',
     links: [
-      {label: 'glTF', to: '/docs/modules/gltf/formats/gltf'},
-      {label: 'GLB', to: '/docs/modules/gltf/formats/glb'},
+      {label: 'glTF', to: '/docs/modules/scene/gltf/formats/gltf'},
+      {label: 'GLB', to: '/docs/modules/scene/gltf/formats/glb'},
       {label: 'KTX / KTX2', to: '/docs/modules/textures/formats/ktx'},
-      {label: 'Basis in glTF', to: '/docs/modules/gltf/formats/gltf#khr_texture_basisu'}
+      {label: 'Basis in glTF', to: '/docs/modules/scene/gltf/formats/gltf#khr_texture_basisu'}
     ]
   },
   {
@@ -119,7 +119,7 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
       {label: 'GeoTIFF', to: '/docs/modules/geotiff/formats/geotiff'},
       {label: 'KML', to: '/docs/modules/geospatial/kml/formats/kml'},
       {label: 'GML', to: '/docs/modules/ogc/wms/formats/gml'},
-      {label: 'WKT / WKB', to: '/docs/modules/wkt/formats/wkt'},
+      {label: 'WKT / WKB', to: '/docs/modules/geospatial/wkt/formats/wkt'},
       {label: 'Web services', to: '/docs/modules/ogc/wms'}
     ]
   },
@@ -143,7 +143,7 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     description: 'Important specifications stewarded outside the four largest format families.',
     links: [
       {label: 'IETF GeoJSON', to: '/docs/modules/tables/json/formats/geojson'},
-      {label: 'ASPRS LAS / LAZ', to: '/docs/modules/las/formats/las'},
+      {label: 'ASPRS LAS / LAZ', to: '/docs/modules/pointclouds/las/formats/las'},
       {label: 'Cesium 3D Tiles', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
       {label: 'AOUSD OpenUSD', to: '/docs/modules/scene/formats/usd'},
       {label: 'COPC', to: '/docs/modules/tiles-3d/copc/formats/copc'}

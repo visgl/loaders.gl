@@ -50,7 +50,7 @@ mode, nonempty kernel/color-space declarations, required uncompressed attributes
 and spherical-harmonic degree continuity. Scale and opacity range checks run when the corresponding
 accessor buffers are loaded. These are not exhaustive checks of every extension constraint or kernel.
 
-The pure `getGaussianSplatPrimitives(gltf)` helper from `@loaders.gl/gltf` extracts descriptors without
+The pure `getGaussianSplatPrimitives(gltf)` helper from `@loaders.gl/scene/gltf` extracts descriptors without
 mutating or validating input; plugin parsing performs validation separately. Each descriptor contains
 `meshIndex`, `primitiveIndex`, attribute references, and raw `extension` JSON.
 
@@ -70,7 +70,7 @@ array. The glTF package does not depend on the splats codec. Applications can su
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {parseSPZToGaussianSplats} from '@loaders.gl/splats';
 
 const gltf = await load('scene.glb', GLTFLoader, {
@@ -110,7 +110,7 @@ for draft names, vector-content access, and spatial behavior.
 
 ## Voxels
 
-`getVoxelPrimitives(gltf)` from `@loaders.gl/gltf` extracts mesh/primitive descriptors with attribute
+`getVoxelPrimitives(gltf)` from `@loaders.gl/scene/gltf` extracts mesh/primitive descriptors with attribute
 references and raw `EXT_primitive_voxels` JSON. Plugin validation checks a non-negative integer shape
 reference, three positive integer dimensions, the supported primitive-mode declaration, and accessor
 indexes. It does not resolve the referenced shape or decode a dense sample volume.

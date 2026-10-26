@@ -107,3 +107,7 @@
 - Core utility subpaths may contain format-neutral scan, geometry construction, conversion, and codec helpers. Actual format loader/writer descriptors and format-specific source adapters belong in their format modules.
 - Keep scan, arrow-geometry, geoarrow, and wkt out of the core root exports. Core implementations must not import other loaders.gl packages; database backends register against core scan APIs from the SQL package.
 - The standalone scan, arrow-geometry, and geoarrow packages are removed. Do not restore forwarding packages or compatibility dependency edges.
+
+- LAS/LAZ, PCD and PLY implementations belong in `@loaders.gl/pointclouds` format subpaths; PLY retains both point-cloud and mesh/face support. COPC and Potree remain in tiles-3d.
+- Scene owns OBJ/MTL, glTF/GLB and USD through `/obj`, `/gltf` and `/usd`; geospatial owns WKT/WKB/TWKB loaders and writers. Do not restore their removed standalone packages.
+- Pointclouds, scene and Draco use Arrow transport directly from core/schema-utils/arrow-transport, without tables forwarding imports or dependencies.

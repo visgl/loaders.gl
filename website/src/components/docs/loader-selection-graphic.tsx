@@ -15,8 +15,8 @@ type LoaderSelectionNode = {
 const INPUTS: readonly LoaderSelectionNode[] = [
   {label: 'Parquet', detail: 'columnar table', to: '/docs/modules/tables/parquet/formats/parquet'},
   {label: 'GeoJSON', detail: 'feature data', to: '/docs/modules/tables/json/formats/geojson'},
-  {label: 'glTF / GLB', detail: 'scenegraph', to: '/docs/modules/gltf/formats/gltf'},
-  {label: 'LAS / LAZ', detail: 'point cloud', to: '/docs/modules/las/formats/las'}
+  {label: 'glTF / GLB', detail: 'scenegraph', to: '/docs/modules/scene/gltf/formats/gltf'},
+  {label: 'LAS / LAZ', detail: 'point cloud', to: '/docs/modules/pointclouds/las/formats/las'}
 ];
 
 const OUTPUTS: readonly LoaderSelectionNode[] = [

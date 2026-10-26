@@ -51,13 +51,13 @@ The standalone `@loaders.gl/scan`, `@loaders.gl/arrow-geometry`, and `@loaders.g
 | `@loaders.gl/arrow-geometry/<utility>` | `@loaders.gl/core/arrow-geometry/<utility>` |
 | `@loaders.gl/geoarrow` | `@loaders.gl/core/geoarrow` |
 | `@loaders.gl/geoarrow/<utility>` | `@loaders.gl/core/geoarrow/<utility>` |
-| `@loaders.gl/wkt/twkb` | `@loaders.gl/core/wkt/twkb` |
+| `@loaders.gl/geospatial/wkt/twkb` | `@loaders.gl/core/wkt/twkb` |
 | `@loaders.gl/sql/arrow-query` | `@loaders.gl/core/scan/arrow-query` |
 | `@loaders.gl/sql/table-query` | `@loaders.gl/core/scan/table-query` |
 | `@loaders.gl/sql/sql-predicate` | `@loaders.gl/core/scan/sql-predicate` |
 | `@loaders.gl/sql/sql-predicate-zod` | `@loaders.gl/core/scan/sql-predicate-zod` |
 
-Remove the three deleted packages from dependencies and install `@loaders.gl/core`. Subpaths are imports, not separately installable packages. Format loaders and writers remain in `@loaders.gl/wkt`; database adapters remain in `@loaders.gl/sql`.
+Remove the three deleted packages from dependencies and install `@loaders.gl/core`. Subpaths are imports, not separately installable packages. Format loaders and writers remain in `@loaders.gl/geospatial/wkt`; database adapters remain in `@loaders.gl/sql`.
 
 ## Table-format scan subpaths
 
@@ -81,7 +81,7 @@ remain unchanged; their `module` ownership and default package asset paths becom
 
 ## Removed glTF rendering postprocessing
 
-`@loaders.gl/gltf` no longer exports `postProcessGLTF` or `GLTF*Postprocessed` types.
+`@loaders.gl/scene/gltf` no longer exports `postProcessGLTF` or `GLTF*Postprocessed` types.
 Import them from [`@luma.gl/gltf`](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
 in luma.gl v10 when preparing data for rendering. Pass the `GLTFLoader` result directly to the luma.gl function.
 Keep `GLTFWithBuffers` and indexed JSON for loader-side processing, writing, and conversion;
@@ -98,7 +98,7 @@ primitive definitions. The tile converter consumes this indexed representation d
 
 Luma.gl provides `postProcessGLTF` as an explicit application API. A renderer that requires linked
 objects can call it at its rendering boundary. It is no longer called by the tile parsers.
-See [glTF accessor helpers](./modules/gltf/api-reference/gltf-accessors).
+See [glTF accessor helpers](./modules/scene/gltf/api-reference/gltf-accessors).
 
 `GLTFScenegraph.getTypedArrayForAccessor()` now treats an omitted `bufferView` as implicit-zero
 storage, including any sparse substitutions, as required by glTF. It no longer falls back to buffer
@@ -251,9 +251,9 @@ Package roots expose the primary loader for each format. Alternate backend loade
 are available through implementation subpaths instead of root exports:
 
 ```typescript
-import {LASCOPCLoaderWithParser} from '@loaders.gl/las/las-copc-loader';
-import {LAZPerfLoaderWithParser} from '@loaders.gl/las/lazperf-loader';
-import {LAZRsLoaderWithParser} from '@loaders.gl/las/laz-rs-loader';
+import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/las/lazperf-loader';
+import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/las/laz-rs-loader';
 import {ParquetJSLoaderWithParser} from '@loaders.gl/parquet/parquet-js-loader';
 import {FastJSONLoader} from '@loaders.gl/json/fast-json-loader';
 ```
@@ -657,7 +657,7 @@ This unifies top-level loading behavior:
 - `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
 - `JSONTableLoader` and `NDJSONLoader` support strict schema-aware Arrow conversion through `json.schema`, `ndjson.schema`, `json.arrowConversion`, and `ndjson.arrowConversion`. These options require `shape: 'arrow-table'`.
 
-**@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
+**@loaders.gl/pointclouds/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
 
 - `PLYLoader` now returns a Mesh Arrow table by default. Set `ply.shape: 'mesh'` for the legacy Mesh object. `SPLATLoader` / `KSPLATLoader` also consume the Mesh Arrow path.
 - `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
@@ -736,11 +736,11 @@ This unifies top-level loading behavior:
 
 **Breaking Changes**
 
-- `@loaders.gl/wkt`- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
+- `@loaders.gl/geospatial/wkt`- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
 
 **Deprecations**
 
-- `@loaders.gl/wkt`- The `geometry` shape is deprecated, and now called `geojson-geometry`.
+- `@loaders.gl/geospatial/wkt`- The `geometry` shape is deprecated, and now called `geojson-geometry`.
 
 ## Upgrading to v4.0
 
@@ -961,7 +961,7 @@ Some iterator utilities that are mostly used internally have been changed.
 
 - The experimental `json._rootObjectBatches` option is now deprecated. Use the top-level `metadata: true` option instead. Note that the `batchType` names have also changed, see the JSONLoader docs for details.
 
-**`@loaders.gl/ply`**
+**`@loaders.gl/pointclouds/ply`**
 
 The experimental streaming `_PLYStreamingLoader` has been removed. Use the non-streaming `PLYLoader` instead.
 
@@ -1033,7 +1033,7 @@ Some general changes:
 
 - Loaders can no longer have a `loadAndParse` method. Remove it, and just make sure you define `parse` on your loaders instead.
 
-### `@loaders.gl/gltf`
+### `@loaders.gl/scene/gltf`
 
 The `GLTFLoader` now always uses the new v2 parser, and the original `GLTFParser` has been removed.
 
@@ -1095,7 +1095,7 @@ Also, Node support now requires installing `@loaders.gl/core/polyfills` before u
 
 - Removal: Node support for images now requires importing `@loaders.gl/core/polyfills` before use.
 
-### @loaders.gl/gltf
+### @loaders.gl/scene/gltf
 
 - Deprecation: `GLBParser`/`GLBBuilder` - These will be merged into GLTF classes..
 - Deprecation: `GLTFParser`/`GLTFBuilder` - The new `GLTF` class can hold GLTF data and lets application access/modify it.
@@ -1158,3 +1158,18 @@ Worker URLs move to the raster package root; the LERC WASM export moves to `rast
 Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends.
 GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit
 source subpath when using synchronous `createDataSource()`.
+
+## Point-cloud, scene and geometry package consolidation
+
+The standalone `@loaders.gl/las`, `@loaders.gl/pcd`, `@loaders.gl/ply`, `@loaders.gl/obj`, `@loaders.gl/gltf`, and `@loaders.gl/wkt` packages are removed without forwarding packages.
+
+| Removed package | Replacement format import |
+| --- | --- |
+| `@loaders.gl/las` | `@loaders.gl/pointclouds/las` |
+| `@loaders.gl/pcd` | `@loaders.gl/pointclouds/pcd` |
+| `@loaders.gl/ply` | `@loaders.gl/pointclouds/ply` |
+| `@loaders.gl/obj` | `@loaders.gl/scene/obj` |
+| `@loaders.gl/gltf` | `@loaders.gl/scene/gltf` |
+| `@loaders.gl/wkt` | `@loaders.gl/geospatial/wkt`, `/wkb`, `/twkb` |
+
+Install the owning package, not its subpath. Use parser-bearing loaders from named implementation subpaths such as `@loaders.gl/scene/gltf/gltf-loader` for synchronous parsing. PLY continues to support mesh faces. COPC and Potree stay in tiles-3d; geometry codec utilities stay in core/wkt. Rebuild custom workers and update worker/WASM asset paths to the new owners.

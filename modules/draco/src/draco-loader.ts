@@ -8,7 +8,7 @@ import type {DracoMesh} from './lib/draco-types';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/tables/arrow/transport';
+} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {VERSION} from './lib/utils/version';
 import {DracoFormat} from './draco-format';
 import {

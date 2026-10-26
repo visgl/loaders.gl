@@ -20,7 +20,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   PLY: {
     'Richmond Azaelias': {
       type: 'ply',
-      url: `${LOADERS_URI}/modules/ply/test/data/richmond-azaelias.ply`,
+      url: `${LOADERS_URI}/modules/pointclouds/test/ply/data/richmond-azaelias.ply`,
       pointCount: 359610
     },
     'Lucy 800K': {
@@ -35,12 +35,12 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     },
     Bunny: {
       type: 'ply',
-      url: `${LOADERS_URI}/modules/ply/test/data/bunny.ply`,
+      url: `${LOADERS_URI}/modules/pointclouds/test/ply/data/bunny.ply`,
       pointCount: 34834
     },
     'Bun Zipper (Text)': {
       type: 'ply',
-      url: `${LOADERS_URI}/modules/ply/test/data/bun_zipper.ply`,
+      url: `${LOADERS_URI}/modules/pointclouds/test/ply/data/bun_zipper.ply`,
       pointCount: 35947
     }
   },
@@ -74,26 +74,26 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   PCD: {
     Zaghetto: {
       type: 'pcd',
-      url: `${LOADERS_URI}/modules/pcd/test/data/Zaghetto.pcd`
+      url: `${LOADERS_URI}/modules/pointclouds/test/pcd/data/Zaghetto.pcd`
     },
     'Simple (Text)': {
       type: 'pcd',
-      url: `${LOADERS_URI}/modules/pcd/test/data/simple-ascii.pcd`
+      url: `${LOADERS_URI}/modules/pointclouds/test/pcd/data/simple-ascii.pcd`
     }
   },
 
   OBJ: {
     Bunny: {
       type: 'obj',
-      url: `${LOADERS_URI}/modules/obj/test/data/bunny.obj`
+      url: `${LOADERS_URI}/modules/scene/test/obj/data/bunny.obj`
     },
     Magnolia: {
       type: 'obj',
-      url: `${LOADERS_URI}/modules/obj/test/data/magnolia.obj`
+      url: `${LOADERS_URI}/modules/scene/test/obj/data/magnolia.obj`
     }
     // TODO need fix
     // Cube: {
-    //   url: `${LOADERS_URI}/modules/obj/test/data/cube.obj`
+    //   url: `${LOADERS_URI}/modules/scene/test/obj/data/cube.obj`
     // }
   }
 };
