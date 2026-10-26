@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {createRequire} from 'node:module';
 
 import {getVitestConfig} from '@vis.gl/dev-tools';
 import {playwright} from '@vitest/browser-playwright';
@@ -295,24 +294,6 @@ if (Array.isArray(vitestConfiguration.resolve?.alias)) {
   vitestConfiguration.resolve.alias = vitestConfiguration.resolve.alias.filter(
     alias => !alias.replacement.endsWith('.d.ts')
   );
-}
-
-// Vite 8 optimizes dependencies through aliases before ordinary resolveId hooks.
-// Keep published 9.x consumers on their installed glTF 4.x dependency until they upgrade to v10.
-if (Array.isArray(vitestConfiguration.resolve?.alias)) {
-  for (const alias of vitestConfiguration.resolve.alias) {
-    if (alias.find === '@loaders.gl/scene/gltf') {
-      alias.customResolver = function (source, importer, options) {
-        if (importer?.replace(/\\/g, '/').includes('/node_modules/')) {
-          const publishedEntry = createRequire(importer.split('?')[0]).resolve('@loaders.gl/scene/gltf');
-          if (publishedEntry.replace(/\\/g, '/').includes('/node_modules/')) {
-            return publishedEntry.replace(/\.cjs$/, '.js');
-          }
-        }
-        return this.resolve(source, importer, {...options, skipSelf: true});
-      };
-    }
-  }
 }
 
 export default vitestConfiguration;

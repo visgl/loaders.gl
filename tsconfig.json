@@ -223,7 +223,7 @@
         "modules/raster/test/geotiff"
       ],
       "@loaders.gl/scene/gltf": [
-        "modules/scene/src/gltf/index.ts"
+        "modules/scene/src/gltf"
       ],
       "@loaders.gl/scene/gltf/test": [
         "modules/scene/test/gltf"
@@ -253,7 +253,7 @@
         "modules/config/test"
       ],
       "@loaders.gl/pointclouds/las": [
-        "modules/pointclouds/src/las/index.ts"
+        "modules/pointclouds/src/las"
       ],
       "@loaders.gl/pointclouds/las/*": [
         "modules/pointclouds/src/las/*"
@@ -298,13 +298,13 @@
         "modules/scientific/test/*"
       ],
       "@loaders.gl/scene/obj": [
-        "modules/scene/src/obj/index.ts"
+        "modules/scene/src/obj"
       ],
       "@loaders.gl/scene/obj/test": [
         "modules/scene/test/obj"
       ],
       "@loaders.gl/pointclouds/pcd": [
-        "modules/pointclouds/src/pcd/index.ts"
+        "modules/pointclouds/src/pcd"
       ],
       "@loaders.gl/pointclouds/pcd/test": [
         "modules/pointclouds/test/pcd"
@@ -322,7 +322,7 @@
         "modules/sql/test"
       ],
       "@loaders.gl/pointclouds/ply": [
-        "modules/pointclouds/src/ply/index.ts"
+        "modules/pointclouds/src/ply"
       ],
       "@loaders.gl/pointclouds/ply/test": [
         "modules/pointclouds/test/ply"
@@ -412,7 +412,7 @@
         "modules/video/test"
       ],
       "@loaders.gl/geospatial/wkt": [
-        "modules/geospatial/src/wkt/index.ts"
+        "modules/geospatial/src/wkt"
       ],
       "@loaders.gl/geospatial/wkt/wkt-crs-loader": [
         "modules/geospatial/src/wkt/wkt-crs-loader.ts"
@@ -787,7 +787,7 @@
         "modules/scene/src/gltf/unbundled.ts"
       ],
       "@loaders.gl/scene/usd": [
-        "modules/scene/src/usd/index.ts"
+        "modules/scene/src/usd"
       ],
       "@loaders.gl/geospatial/kml/bundled": [
         "modules/geospatial/src/kml/bundled.ts"
@@ -989,6 +989,21 @@
       ],
       "@loaders.gl/scene/usd/usd-loader": [
         "modules/scene/src/usd/usd-loader.ts"
+      ],
+      "@loaders.gl/pointclouds/pcd/*": [
+        "modules/pointclouds/src/pcd/*"
+      ],
+      "@loaders.gl/pointclouds/ply/*": [
+        "modules/pointclouds/src/ply/*"
+      ],
+      "@loaders.gl/scene/obj/*": [
+        "modules/scene/src/obj/*"
+      ],
+      "@loaders.gl/scene/gltf/*": [
+        "modules/scene/src/gltf/*"
+      ],
+      "@loaders.gl/scene/usd/*": [
+        "modules/scene/src/usd/*"
       ]
     },
     "plugins": [

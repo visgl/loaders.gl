@@ -49,14 +49,14 @@ test('getWorkerURL', () => {
   );
   expect(
     getWorkerURL(
-      {...NullWorker, id: 'wkb', module: 'wkt', workerFile: 'wkt-worker.js'},
+      {...NullWorker, id: 'wkb', module: 'geospatial', workerFile: 'wkt-worker.js', workerSourceNode: 'wkt/workers/wkt-worker.ts'},
       {_workerType: 'test'}
     ),
     'test worker URL supports a shared worker filename'
   ).toBe(
     isBrowser
       ? 'modules/geospatial/dist/wkt-worker.js'
-      : 'modules/geospatial/src/wkt/workers/wkb-worker-node.ts'
+      : 'modules/geospatial/src/wkt/workers/wkt-worker.ts'
   );
 });
 test('getWorkerURL#grouped Node test workers', () => {
