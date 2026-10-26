@@ -52,7 +52,7 @@ Point-cloud tile traversal belongs in tiles-3d: decoding LAS points does not req
 | [`@loaders.gl/compression`](./modules/compression/README.md), [`@loaders.gl/crypto`](./modules/crypto/README.md) | Compression codecs, hashing and checksums. |
 | [`@loaders.gl/xml`](./modules/xml/README.md) | XML/HTML parsing and shared XML utilities. |
 
-Core utility subpaths are opt-in imports and are not re-exported from core's root. Core does not depend on domain packages. Published format packages declare core as a peer dependency.
+Specialized scan, arrow-geometry, geoarrow and WKT utilities are opt-in imports and are not re-exported from core's root. Core does not depend on domain packages. Published format packages declare core as a peer dependency.
 
 ## Graphics and media
 
