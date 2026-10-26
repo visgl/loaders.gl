@@ -4,6 +4,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import {createRequire} from 'node:module';
 import {build} from 'esbuild';
 import {expect, test} from 'vitest';
 
@@ -71,3 +72,24 @@ function listSourceFiles(directory: string): string[] {
         : [];
   });
 }
+
+test('CommonJS scan entrypoints share backend registrations and public function identities', async () => {
+  const require = createRequire(import.meta.url);
+  const scan = require('@loaders.gl/core/scan');
+  const engine = require('@loaders.gl/core/scan/scan-engine');
+  expect(scan.registerScanBackend).toBe(engine.registerScanBackend);
+  expect(scan.createScanEngine).toBe(engine.createScanEngine);
+  const query = () => ({shape: 'arrow-table'});
+  const explain = () => ({backend: 'test-shared-registry'});
+  engine.registerScanBackend('test-shared-registry', () => ({
+    name: 'test-shared-registry',
+    query,
+    explain
+  }));
+  const registeredEngine = await scan.createScanEngine({backend: 'test-shared-registry'});
+  expect(registeredEngine.name).toBe('test-shared-registry');
+  expect(registeredEngine.query()).toEqual({shape: 'arrow-table'});
+  const geometry = require('@loaders.gl/core/arrow-geometry');
+  const geoarrow = require('@loaders.gl/core/geoarrow');
+  expect(geoarrow.GeoArrowBuilder).toBe(geometry.GeoArrowBuilder);
+});
