@@ -29,7 +29,7 @@ afterEach(() => WorkerFarm.getWorkerFarm().destroy());
 test.each([
   'arrow-table',
   'mesh'
-] as const)('PCD worker batches transfer IPC before %s conversion', async shape => {
+] as const)('PCD worker batches transfer column transport before %s conversion', async shape => {
   const parser = await PCDLoader.preload();
   const mainParser = vi.fn(parser.parseInBatches);
   const deserialize = vi.fn(parser.deserializeWorkerBatch);
@@ -59,12 +59,12 @@ test.each([
   expect(mainParser).not.toHaveBeenCalled();
   expect(deserialize).toHaveBeenCalledTimes(2);
   for (const [payload] of deserialize.mock.calls) {
-    expect(payload).toMatchObject({shape: 'arrow-table', data: {transport: 'arrow-ipc'}});
-    expect((payload as any).data.data).toBeInstanceOf(Uint8Array);
+    expect(payload).toMatchObject({shape: 'arrow-table', data: {transport: 'arrow-js'}});
+    expect((payload as any).data.batches).toBeInstanceOf(Array);
   }
 });
 
-test('PCD atomic worker uses IPC before caller-side mesh conversion', async () => {
+test('PCD atomic worker uses column transport before caller-side mesh conversion', async () => {
   const parser = await PCDLoader.preload();
   const deserialize = vi.fn(parser.deserializeWorkerResult);
   const mesh = await parse(
@@ -75,7 +75,7 @@ test('PCD atomic worker uses IPC before caller-side mesh conversion', async () =
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
     shape: 'arrow-table',
-    data: {transport: 'arrow-ipc'}
+    data: {transport: 'arrow-js'}
   });
   expect(mesh.loader).toBe('pcd');
   expect(mesh.loaderData).toBeTruthy();
@@ -105,14 +105,18 @@ test('PCD binary worker batches preserve records split across input chunks', asy
   expect(positions).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 });
 
-test('Older custom workers keep legacy mesh payloads usable', async () => {
+test('Worker hydration rejects decoded mesh payloads', async () => {
   const parser = await PCDLoader.preload();
   const mesh = {attributes: {POSITION: {value: new Float32Array([1, 2, 3]), size: 3}}};
-  expect(parser.deserializeWorkerResult(mesh, {pcd: {shape: 'mesh'}})).toBe(mesh);
-  expect(parser.deserializeWorkerBatch(mesh, {pcd: {shape: 'mesh'}})).toBe(mesh);
+  expect(() => parser.deserializeWorkerResult(mesh, {pcd: {shape: 'mesh'}})).toThrow(
+    'Arrow column transport'
+  );
+  expect(() => parser.deserializeWorkerBatch(mesh, {pcd: {shape: 'mesh'}})).toThrow(
+    'Arrow column transport'
+  );
 });
 
-test('PCD IPC hydration defaults to Arrow when caller options are omitted', async () => {
+test('PCD column transport hydration defaults to Arrow when caller options are omitted', async () => {
   const parser = await PCDLoader.preload();
   const table = await parser.parse(new TextEncoder().encode(source).buffer, {
     pcd: {shape: 'arrow-table'}

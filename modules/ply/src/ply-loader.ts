@@ -9,8 +9,8 @@ import {makeTableScanBatch, type LoaderWithParser} from '@loaders.gl/core/loader
 import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
 import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
-  deserializeArrowIPCWorkerResult,
-  serializeArrowIPCWorkerResult
+  deserializeArrowWorkerTable,
+  serializeArrowWorkerTable
 } from '@loaders.gl/core/schema-utils/arrow-transport';
 import type {PLYHeader, PLYMesh} from './lib/ply-types';
 import {
@@ -80,9 +80,9 @@ export const PLYLoaderWithParser = {
       yield isMeshArrowTable(convertedData) ? makeTableScanBatch(convertedData) : convertedData;
     }
   },
-  serializeWorkerResult: serializeArrowIPCWorkerResult,
+  serializeWorkerResult: serializeArrowWorkerTable,
   deserializeWorkerResult: deserializePLYWorkerResult,
-  serializeWorkerBatch: serializeArrowIPCWorkerResult,
+  serializeWorkerBatch: serializeArrowWorkerTable,
   deserializeWorkerBatch: deserializePLYWorkerBatch
 } as const satisfies LoaderWithParser<
   PLYMesh | MeshArrowTable,
@@ -170,14 +170,13 @@ function deserializePLYWorkerResult(
   result: unknown,
   options?: PLYLoaderOptions
 ): PLYMesh | MeshArrowTable {
-  const table = deserializeArrowIPCWorkerResult(result);
-  if (table?.shape !== 'arrow-table') return table;
+  const table = deserializeArrowWorkerTable(result);
   return options?.ply?.shape === 'mesh'
     ? {...convertTableToMesh(table), loader: 'ply', loaderData: table.loaderData}
     : table;
 }
 
-/** Converts mesh batches only after the Arrow IPC payload reaches the caller. */
+/** Converts mesh batches only after the Arrow column buffers reach the caller. */
 function deserializePLYWorkerBatch(
   result: unknown,
   options?: PLYLoaderOptions

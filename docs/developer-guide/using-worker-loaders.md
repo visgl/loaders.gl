@@ -415,3 +415,17 @@ the caller and are removed from the serialized options after this hook runs.
 
 JSONTable and NDJSON use this hook to convert Apache Arrow schemas into loaders.gl schemas. Worker
 selection still uses the caller's options; the hook prepares parser options after that decision.
+
+
+### Arrow worker result ownership
+
+Built-in Arrow-capable workers transfer columns using `dehydrateArrowTable` and `hydrateArrowTable`,
+without an Arrow IPC encode/decode round trip. Shared worker serializers own outgoing copies of all
+column and dictionary buffers, plus separate mesh indices, before `postMessage` transfers them.
+Repeated references to the same typed-array view share one copy within a message. This prevents
+one batch transfer from detaching storage needed by later batches. The owned path always copies,
+including when `core.workerTransferBufferCopy` requests a weaker policy.
+
+Worker results use the current column-buffer wire format, or binary JSON for non-Arrow JSON.
+IPC and raw decoded-object worker results are rejected. Public shape conversion remains on the
+main thread. Custom workers must be rebuilt for this protocol.

@@ -13,8 +13,8 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
-  deserializeArrowIPCWorkerResult,
-  serializeArrowIPCWorkerResult
+  deserializeArrowWorkerTable,
+  serializeArrowWorkerTable
 } from '@loaders.gl/core/schema-utils/arrow-transport';
 import {
   convertMeshToTable,
@@ -66,9 +66,9 @@ export const OBJLoaderWithParser = {
 
     yield* parseOBJPointCloudInBatches(text, options, batchSize);
   },
-  serializeWorkerResult: serializeArrowIPCWorkerResult,
+  serializeWorkerResult: serializeArrowWorkerTable,
   deserializeWorkerResult: deserializeOBJWorkerResult,
-  serializeWorkerBatch: serializeArrowIPCWorkerResult,
+  serializeWorkerBatch: serializeArrowWorkerTable,
   deserializeWorkerBatch: deserializeOBJWorkerBatch
 } as const satisfies LoaderWithParser<Mesh | MeshArrowTable, OBJParsedBatch, OBJLoaderOptions>;
 
@@ -190,15 +190,13 @@ function deserializeOBJWorkerResult(
   result: unknown,
   options?: OBJLoaderOptions
 ): Mesh | MeshArrowTable {
-  const table = deserializeArrowIPCWorkerResult(result);
-  if (table?.shape !== 'arrow-table') return table;
+  const table = deserializeArrowWorkerTable(result);
   return options?.obj?.shape === 'mesh' ? convertTableToMesh(table) : table;
 }
 
 /** Restores the OBJ mesh batch envelope after caller-side conversion. */
 function deserializeOBJWorkerBatch(result: unknown, options?: OBJLoaderOptions): OBJParsedBatch {
-  const table = deserializeArrowIPCWorkerResult(result);
-  if (table?.shape !== 'arrow-table') return table;
+  const table = deserializeArrowWorkerTable(result);
   if (options?.obj?.shape !== 'mesh') return table;
   const mesh = convertTableToMesh(table);
   return {shape: 'mesh', batchType: 'data', data: mesh, length: table.length};

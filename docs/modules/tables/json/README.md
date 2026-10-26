@@ -50,7 +50,7 @@ to avoid blocking for tens of seconds.
 ## Parsing batches in workers
 
 `JSONLoader`, `JSONTableLoader`, and `NDJSONLoader` support incremental worker parsing.
-Arrow output transfers as owned Arrow IPC bytes. Arbitrary documents, heterogeneous row output,
+Arrow output transfers as owned Arrow column buffers. Arbitrary documents, heterogeneous row output,
 and container metadata transfer as owned UTF-8 JSON frames and are decoded on the caller.
 Core enables supported browser workers by default. Set `core.worker: false` to retain caller-side
 parsing and logging. The following example makes worker selection explicit while consuming results
@@ -82,7 +82,7 @@ are supported, including schema/field metadata and conversion policies.
 JSON supports both `clarinet` and `fast` backends, JSONPath selection, and partial/final container
 metadata, with the selected backend's existing behavior. The fast backend currently retains
 container fields before the selected array; use clarinet when trailing container fields are needed.
-Worker results contain owned Arrow IPC or binary JSON buffers and small transport descriptors;
+Worker results contain owned Arrow column buffers or binary JSON buffers and small transport descriptors;
 decoded row arrays and container objects are never structured-cloned across the boundary. The caller
 hydrates Arrow tables or decodes JSON frames. JSON frames preserve negative zero, nonfinite parser
 results, and undefined metadata fields, and do not coerce heterogeneous rows into an Arrow schema. Worker progress counts decoded rows within the `decode` phase; it is not a byte or

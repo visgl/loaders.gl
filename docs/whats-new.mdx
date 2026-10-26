@@ -460,13 +460,13 @@ Release Date: 2026
 - [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) NEW - loads GaussianSplats3D `.ksplat` files into Mesh Arrow tables.
 - Handwritten RAD and RADC metadata types are paired with runtime validators from `@loaders.gl/splats/rad-zod-schema`, plus published draft-07 JSON Schema assets.
 
-- OBJ, PLY, and PCD now support worker batches with owned Arrow IPC buffers and caller-side legacy mesh conversion. OBJ point clouds and PLY vertices can stream input; PCD still collects input before decoding.
+- OBJ, PLY, and PCD now support worker batches with owned Arrow column buffers and caller-side legacy mesh conversion. OBJ point clouds and PLY vertices can stream input; PCD still collects input before decoding.
 
 **@loaders.gl/tables worker transports**
 
-- Arrow and GeoArrow now support stateful worker batches with owned Arrow IPC buffers and caller-side hydration. Atomic row and GeoJSON conversion also runs on the caller.
-- Parquet atomic worker parsing now follows its batch transport: decode columnar data in the worker, transfer Arrow IPC, and materialize requested rows on the caller.
-- JSON, JSONTable, and NDJSON workers transfer Arrow IPC or binary JSON. Arbitrary documents, heterogeneous rows, and container metadata are decoded from transferred bytes on the caller, without cloning decoded object graphs.
+- Arrow and GeoArrow now support stateful worker batches with owned Arrow column buffers and caller-side hydration. Atomic row and GeoJSON conversion also runs on the caller.
+- Parquet atomic worker parsing now follows its batch transport: decode columnar data in the worker, transfer Arrow column buffers, and materialize requested rows on the caller.
+- JSON, JSONTable, and NDJSON workers transfer Arrow column buffers or binary JSON. Arbitrary documents, heterogeneous rows, and container metadata are decoded from transferred bytes on the caller, without cloning decoded object graphs.
 
 **@loaders.gl/core/worker-utils**
 
@@ -545,7 +545,7 @@ Release Date: 2026
 - `ParquetSourceLoader` now materializes selected columns directly into Arrow batches without an intermediate object-row table.
 - `ParquetJSLoader` now constructs flat Arrow Utf8 and Binary vectors directly from decoded Parquet byte arrays, avoiding decode-to-string, re-encode, and intermediate per-value copies.
 - `ParquetSourceLoader` can transfer selected compressed column chunks to a dedicated worker for decompression, page decoding, column materialization, and Arrow conversion. It returns Arrow tables through `@loaders.gl/arrow`'s direct transferable-buffer transport rather than Arrow IPC.
-- The wasm-backed `ParquetLoader` can decode in a cancellable worker, transfers Arrow output through Arrow IPC, and resolves its packaged worker and WASM assets without an implicit CDN dependency.
+- The wasm-backed `ParquetLoader` can decode in a cancellable worker, transfers Arrow output through column buffers, and resolves its packaged worker and WASM assets without an implicit CDN dependency.
 - The Parquet WASM backend is updated to 0.7.2, and `@loaders.gl/parquet/wasm` exposes its package-local binary URL for explicit asset workflows.
 - `HttpFile` now supports pinned object identity, strict or best-effort validator consistency, cancellable exact range reads, shared scheduling, and immutable request/byte/time telemetry.
 - The Parquet TypeScript backend now reads Data Page V2, `DELTA_BINARY_PACKED`, `DELTA_LENGTH_BYTE_ARRAY`, `DELTA_BYTE_ARRAY`, and legacy Hadoop-framed LZ4 data.

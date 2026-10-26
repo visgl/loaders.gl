@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {afterEach, expect, test, vi} from 'vitest';
 import {Table, tableFromArrays, tableToIPC} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
@@ -9,8 +10,8 @@ import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {ArrowLoader} from '../../src/arrow/arrow-loader-types';
 import {GeoArrowLoader} from '../../src/arrow/geoarrow-loader-types';
 import {
-  serializeArrowIPCResult,
-  deserializeArrowIPCBatch
+  serializeArrowTableResult,
+  deserializeArrowTableBatch
 } from '../../src/arrow/lib/arrow-worker-transport';
 
 afterEach(() => WorkerFarm.getWorkerFarm().destroy());
@@ -38,7 +39,7 @@ test.each([
   expect(labels).toEqual(['first', 'second']);
 });
 
-test('Arrow atomic worker returns IPC before caller-side row conversion', async () => {
+test('Arrow atomic worker returns columns before caller-side row conversion', async () => {
   const bytes = tableToIPC(tableFromArrays({id: new Int32Array([1, 2])}));
   const parser = await ArrowLoader.preload();
   const deserialize = vi.fn(parser.deserializeWorkerResult);
@@ -53,26 +54,26 @@ test('Arrow atomic worker returns IPC before caller-side row conversion', async 
   expect(deserialize).toHaveBeenCalledOnce();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
     shape: 'arrow-table',
-    data: {transport: 'arrow-ipc'}
+    data: {transport: 'arrow-js'}
   });
   expect(result).toMatchObject({shape: 'object-row-table', data: [{id: 1}, {id: 2}]});
 });
 
-test('Arrow batch serialization transfers owned IPC without detaching parser state', () => {
+test('Arrow batch serialization transfers owned column buffers without detaching parser state', () => {
   const table = tableFromArrays({label: ['first', 'second']});
-  const serialized = serializeArrowIPCResult({
+  const serialized = serializeArrowTableResult({
     shape: 'arrow-table',
     batchType: 'data',
     length: 1,
     data: table.slice(0, 1)
   });
   const transferred = structuredClone(serialized, {
-    transfer: [serialized.data.data.buffer as ArrayBuffer]
+    transfer: getTransferList(serialized)
   });
-  const received = deserializeArrowIPCBatch(transferred);
+  const received = deserializeArrowTableBatch(transferred);
   expect(received.data.getChild('label')?.get(0)).toBe('first');
   expect(table.getChild('label')?.get(1)).toBe('second');
-  expect(() => serializeArrowIPCResult({shape: 'object-row-table', data: [{id: 1}]})).toThrow(
+  expect(() => serializeArrowTableResult({shape: 'object-row-table', data: [{id: 1}]})).toThrow(
     'Arrow table output'
   );
 });
@@ -93,7 +94,7 @@ test('GeoArrow atomic feature conversion happens after transferring extension me
   expect(deserialize).toHaveBeenCalledOnce();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
     shape: 'arrow-table',
-    data: {transport: 'arrow-ipc'}
+    data: {transport: 'arrow-js'}
   });
   expect(result).toMatchObject({
     shape: 'geojson-table',

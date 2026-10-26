@@ -8,7 +8,7 @@ import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {PLYFormat} from './ply-format';
-import {serializeArrowIPCWorkerResult} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {serializeArrowWorkerTable} from '@loaders.gl/core/schema-utils/arrow-transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -50,7 +50,7 @@ export const PLYLoader = {
   worker: true,
   /** Enables the stateful input/output batch protocol on the built-in worker. */
   workerInBatches: true,
-  serializeWorkerResult: serializeArrowIPCWorkerResult,
+  serializeWorkerResult: serializeArrowWorkerTable,
   options: {
     ply: {shape: 'arrow-table', colorFormat: 'uint8norm'}
   },

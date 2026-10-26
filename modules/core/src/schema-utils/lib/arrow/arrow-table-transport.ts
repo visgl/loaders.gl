@@ -126,26 +126,25 @@ export function deserializeArrowTableFromIPC(
   return arrow.tableFromIPC(data);
 }
 
-/** Serializes an Arrow wrapper as independently owned IPC buffers for stateful worker jobs. */
-export function serializeArrowIPCWorkerResult(result: unknown): unknown {
+/** Serializes Arrow columns with owned buffers so transfers cannot detach retained parser state. */
+export function serializeArrowWorkerTable(result: unknown): unknown {
   if (!isArrowTableWrapper(result)) {
-    throw new Error('Worker results must be Arrow table wrappers');
+    throw new Error('Workers require Arrow table output');
   }
   const indices = (result as unknown as MeshArrowTable).indices;
   return {
     ...result,
-    data: serializeArrowTableToIPC(result.data),
+    data: dehydrateArrowTable(result.data, {copy: 'all'}),
     ...(indices ? {indices: {...indices, value: indices.value.slice()}} : {})
   };
 }
 
-/** Hydrates IPC worker wrappers while accepting older same-version Arrow worker payloads. */
-export function deserializeArrowIPCWorkerResult(result: unknown): any {
-  const table = result as {shape?: string; data?: SerializedArrowTableIPC} | null;
-  if (table?.shape === 'arrow-table' && table.data?.transport === 'arrow-ipc') {
-    return {...table, data: deserializeArrowTableFromIPC(table.data)};
+/** Hydrates the column-buffer worker protocol; other wire formats are rejected. */
+export function deserializeArrowWorkerTable(result: unknown): any {
+  if (!isDehydratedArrowTableWrapper(result)) {
+    throw new Error('Workers require Arrow column transport');
   }
-  return deserializeArrowWorkerResult(result);
+  return {...result, data: hydrateArrowTable(result.data)};
 }
 
 /** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */

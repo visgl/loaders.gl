@@ -5,7 +5,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {OBJFormat} from './obj-format';
-import {serializeArrowIPCWorkerResult} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {serializeArrowWorkerTable} from '@loaders.gl/core/schema-utils/arrow-transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -57,7 +57,7 @@ export const OBJLoader = {
   worker: true,
   /** Enables the stateful input/output batch protocol on the built-in worker. */
   workerInBatches: true,
-  serializeWorkerResult: serializeArrowIPCWorkerResult,
+  serializeWorkerResult: serializeArrowWorkerTable,
   text: true,
   testText: testOBJFile,
   options: {

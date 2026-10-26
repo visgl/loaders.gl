@@ -27,7 +27,7 @@ afterEach(() => WorkerFarm.getWorkerFarm().destroy());
 test.each([
   'arrow-table',
   'mesh'
-] as const)('PLY worker batches transfer IPC before %s conversion', async shape => {
+] as const)('PLY worker batches transfer column transport before %s conversion', async shape => {
   const parser = await PLYLoader.preload();
   const mainParser = vi.fn(parser.parseInBatches);
   const deserialize = vi.fn(parser.deserializeWorkerBatch);
@@ -57,12 +57,12 @@ test.each([
   expect(mainParser).not.toHaveBeenCalled();
   expect(deserialize).toHaveBeenCalledTimes(2);
   for (const [payload] of deserialize.mock.calls) {
-    expect(payload).toMatchObject({shape: 'arrow-table', data: {transport: 'arrow-ipc'}});
-    expect((payload as any).data.data).toBeInstanceOf(Uint8Array);
+    expect(payload).toMatchObject({shape: 'arrow-table', data: {transport: 'arrow-js'}});
+    expect((payload as any).data.batches).toBeInstanceOf(Array);
   }
 });
 
-test('PLY atomic worker uses IPC before caller-side mesh conversion', async () => {
+test('PLY atomic worker uses column transport before caller-side mesh conversion', async () => {
   const parser = await PLYLoader.preload();
   const deserialize = vi.fn(parser.deserializeWorkerResult);
   const mesh = await parse(
@@ -73,7 +73,7 @@ test('PLY atomic worker uses IPC before caller-side mesh conversion', async () =
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
     shape: 'arrow-table',
-    data: {transport: 'arrow-ipc'}
+    data: {transport: 'arrow-js'}
   });
   expect(mesh.loader).toBe('ply');
   expect(mesh.loaderData).toBeTruthy();
@@ -114,11 +114,15 @@ test('PLY binary worker batches preserve records split across input chunks', asy
   expect(positions).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 });
 
-test('Older custom workers keep legacy mesh payloads usable', async () => {
+test('Worker hydration rejects decoded mesh payloads', async () => {
   const parser = await PLYLoader.preload();
   const mesh = {attributes: {POSITION: {value: new Float32Array([1, 2, 3]), size: 3}}};
-  expect(parser.deserializeWorkerResult(mesh, {ply: {shape: 'mesh'}})).toBe(mesh);
-  expect(parser.deserializeWorkerBatch(mesh, {ply: {shape: 'mesh'}})).toBe(mesh);
+  expect(() => parser.deserializeWorkerResult(mesh, {ply: {shape: 'mesh'}})).toThrow(
+    'Arrow column transport'
+  );
+  expect(() => parser.deserializeWorkerBatch(mesh, {ply: {shape: 'mesh'}})).toThrow(
+    'Arrow column transport'
+  );
 });
 
 test('PLY worker mesh batches preserve faces and original header descriptors', async () => {
@@ -138,7 +142,7 @@ test('PLY worker mesh batches preserve faces and original header descriptors', a
   expect(meshes[0].loaderData.elements.map(element => element.name)).toEqual(['vertex', 'face']);
 });
 
-test('PLY IPC hydration defaults to Arrow when caller options are omitted', async () => {
+test('PLY column transport hydration defaults to Arrow when caller options are omitted', async () => {
   const parser = await PLYLoader.preload();
   const table = await parser.parse(new TextEncoder().encode(source).buffer, {
     ply: {shape: 'arrow-table'}

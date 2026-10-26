@@ -163,13 +163,24 @@ This path does more copying and encoding work, but it is the safer choice when t
 load different Apache Arrow JS versions.
 
 
-## IPC worker wrappers
+## Owned worker column buffers
 
-`serializeArrowIPCWorkerResult(result)` and `deserializeArrowIPCWorkerResult(result)` from
-`@loaders.gl/core/schema-utils/arrow-transport` preserve an Arrow table or batch wrapper while
-transporting its table data as owned IPC bytes. The serializer rejects non-Arrow output. IPC
-buffers and any separate mesh index buffer are independent of parser-owned storage, including
-shared dictionary buffers. Small schema and batch descriptors remain alongside the bytes.
+`serializeArrowWorkerTable(result)` and `deserializeArrowWorkerTable(result)` from
+`@loaders.gl/core/schema-utils/arrow-transport` transfer Arrow table and batch columns directly.
+The serializer uses `dehydrateArrowTable(table, {copy: 'all'})`; the receiver uses
+`hydrateArrowTable`. The worker protocol does not encode or decode Arrow IPC.
 
-The receiver hydrates the Arrow table before a loader converts it to requested rows or legacy
-meshes. It also accepts older `arrow-js` wrappers and passes through legacy custom-worker results.
+Every outgoing buffer is owned by the message, including dictionaries retained by a parser and
+separate mesh indices. Identical typed-array views referenced within one Arrow object reuse a
+single copy. This is a safe-copy transport, not a promise of zero-copy handoff from the parser.
+Small schema and batch descriptors accompany the transferable buffers.
+
+Built-in CSV, Parquet, Arrow, GeoArrow, JSONTable/NDJSON Arrow output, OBJ, PLY, and PCD workers
+use this shared path for atomic results and batches. Requested rows, GeoJSON features, and legacy
+meshes are materialized on the caller. Non-Arrow JSON uses binary JSON transport and caller-side
+decoding. Worker deserializers reject IPC and raw decoded-object payloads; custom workers must
+use the current wire format.
+
+These owned worker serializers always copy retained storage, regardless of
+`core.workerTransferBufferCopy`. The lower-level splitter and generic transport helpers retain
+explicit copy modes for applications that can establish exclusive buffer ownership.
