@@ -4,6 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {describe, expect, test} from 'vitest';
+import {waitForCondition} from '@loaders.gl/test-utils/vitest';
 import {
   createScanQueryMetadata,
   DataSource,
@@ -870,7 +871,9 @@ describe('FederatedTableScanSource', () => {
     });
 
     for await (const _batch of source.read()) break;
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await waitForCondition(
+      () => !dataSourceManager.contains('first') && !dataSourceManager.contains('second')
+    );
 
     expect(firstSource.iteratorCloseCount).toBe(1);
     expect(secondSource.readCount).toBe(0);
