@@ -45,7 +45,7 @@ The `@loaders.gl/pointclouds/ply` module handles the [Polygon file format](/docs
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/pointclouds/ply
+npm install @loaders.gl/core @loaders.gl/pointclouds
 ```
 
 ## Loaders and Writers

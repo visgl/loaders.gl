@@ -48,7 +48,7 @@ for the shared type model, format support, and reprojection roadmap.
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/geospatial/wkt @math.gl/geospatial
+npm install @loaders.gl/core @loaders.gl/geospatial @math.gl/geospatial
 ```
 
 ## Usage

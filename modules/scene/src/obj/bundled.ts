@@ -3,9 +3,9 @@
 // Copyright vis.gl contributors
 
 export {OBJFormat} from './obj-format';
-export type {OBJLoaderOptions} from './obj-loader';
+export type {OBJLoaderOptions} from './obj-loader-types';
 export {
-  OBJWorkerLoaderWithParser as OBJWorkerLoader,
+  OBJLoaderWithParser as OBJWorkerLoader,
   OBJLoaderWithParser as OBJLoader
 } from './obj-loader';
 export {MTLFormat} from './mtl-format';

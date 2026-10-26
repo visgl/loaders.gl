@@ -52,7 +52,7 @@ The `@loaders.gl/scene/gltf` module provides loaders and writers of the GLB/glTF
 ## Installation
 
 ```bash
-npm install @loaders.gl/scene/gltf
+npm install @loaders.gl/scene
 npm install @loaders.gl/core
 ```
 

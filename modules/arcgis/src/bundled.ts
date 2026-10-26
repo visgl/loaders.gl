@@ -67,7 +67,7 @@ export type {
   ArcGISItemLayer,
   ArcGISItemResolution,
   ArcGISItemOptions
-} from './';
+} from './index';
 export {
   getArcGISServices,
   discoverArcGISCapabilities,

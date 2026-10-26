@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {build} from 'esbuild';
 
+const packageManifest = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const sourceDirectories = [path.resolve('src')];
 // Emit each format module once. Independent bundles would duplicate module-local registries
 // and class identities when applications mix root and focused CommonJS entrypoints.
@@ -22,6 +23,7 @@ await build({
   platform: 'node',
   target: 'node22',
   sourcemap: true,
+  define: {__VERSION__: JSON.stringify(packageManifest.version)},
   plugins: [{
     name: 'shared-format-modules',
     setup(builder) {

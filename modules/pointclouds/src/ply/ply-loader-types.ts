@@ -4,14 +4,11 @@
 
 // PLY Loader
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {PLYFormat} from './ply-format';
-import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {serializeArrowWorkerTable} from '@loaders.gl/core/schema-utils/arrow-transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -45,19 +42,20 @@ async function preload() {
  */
 export const PLYLoader = {
   dataType: null as unknown as PLYMesh | MeshArrowTable,
-  batchType: null as never,
+  batchType: null as unknown as PLYMesh | ArrowTableBatch,
 
   ...PLYFormat,
   // shapes: ['mesh', 'gltf', 'columnar-table'],
   version: VERSION,
   worker: true,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
+  /** Enables the stateful input/output batch protocol on the built-in worker. */
+  workerInBatches: true,
+  serializeWorkerResult: serializeArrowWorkerTable,
   options: {
     ply: {shape: 'arrow-table', colorFormat: 'uint8norm'}
   },
   preload
-} as const satisfies Loader<PLYMesh | MeshArrowTable, never, LoaderOptions>;
+} as const satisfies Loader<PLYMesh | MeshArrowTable, PLYMesh | ArrowTableBatch, LoaderOptions>;
 
 /** @deprecated Use PLYLoader. */
 export const PLYWorkerLoader = PLYLoader;

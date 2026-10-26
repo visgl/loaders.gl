@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {OBJLoaderOptions, OBJParsedBatch} from './obj-loader-types';
+
 import {
   concatenateArrayBuffersAsync,
   makeLineIterator,
   makeTextDecoderIterator,
   makeTableScanBatch,
-  type Loader,
-  type LoaderOptions,
   type LoaderWithParser
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
+  deserializeArrowWorkerTable,
+  serializeArrowWorkerTable
 } from '@loaders.gl/core/schema-utils/arrow-transport';
 import {
   convertMeshToTable,
@@ -23,48 +23,14 @@ import {
 } from '@loaders.gl/core/schema-utils';
 import {getOBJSchema} from './lib/get-obj-schema';
 import {parseOBJ} from './lib/parse-obj';
-import {OBJWorkerLoader as OBJWorkerLoaderMetadata} from './obj-loader-types';
 import {OBJLoader as OBJLoaderMetadata} from './obj-loader-types';
 
-const {preload: _OBJWorkerLoaderPreload, ...OBJWorkerLoaderMetadataWithoutPreload} =
-  OBJWorkerLoaderMetadata;
 const {preload: _OBJLoaderPreload, ...OBJLoaderMetadataWithoutPreload} = OBJLoaderMetadata;
-
-export type OBJLoaderOptions = LoaderOptions & {
-  obj?: {
-    /** Output shape. Defaults to a Mesh Arrow table. */
-    shape?: 'mesh' | 'arrow-table';
-    /** Treat OBJ vertex records as a point cloud and stream `v` rows in batches. */
-    pointCloud?: boolean;
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
-
-type OBJMeshBatch = {
-  /** Batch shape for legacy Mesh output. */
-  shape: 'mesh';
-  /** Indicates a parsed data batch. */
-  batchType: 'data';
-  /** Parsed OBJ mesh. */
-  data: Mesh;
-  /** Number of vertices in the batch. */
-  length: number;
-};
-
-type OBJParsedBatch = OBJMeshBatch | ArrowTableBatch;
 
 function convertOBJMesh(mesh: Mesh, options?: OBJLoaderOptions): Mesh | MeshArrowTable {
   const table = convertMeshToTable(mesh, 'arrow-table');
   return options?.obj?.shape === 'mesh' ? convertTableToMesh(table) : table;
 }
-
-/**
- * Worker loader for the OBJ geometry format
- */
-export const OBJWorkerLoaderWithParser = {
-  ...OBJWorkerLoaderMetadataWithoutPreload
-} as const satisfies Loader<Mesh | MeshArrowTable, never, OBJLoaderOptions>;
 
 // OBJLoaderWithParser
 
@@ -100,8 +66,10 @@ export const OBJLoaderWithParser = {
 
     yield* parseOBJPointCloudInBatches(text, options, batchSize);
   },
-  serializeWorkerBatch: serializeArrowWorkerResult,
-  deserializeWorkerBatch: deserializeArrowWorkerResult
+  serializeWorkerResult: serializeArrowWorkerTable,
+  deserializeWorkerResult: deserializeOBJWorkerResult,
+  serializeWorkerBatch: serializeArrowWorkerTable,
+  deserializeWorkerBatch: deserializeOBJWorkerBatch
 } as const satisfies LoaderWithParser<Mesh | MeshArrowTable, OBJParsedBatch, OBJLoaderOptions>;
 
 /** Returns a numeric batch size when batching has an explicit row count. */
@@ -215,4 +183,21 @@ function makeOBJBatch(mesh: Mesh, options?: OBJLoaderOptions): OBJParsedBatch {
   }
 
   return makeTableScanBatch(table);
+}
+
+/** Hydrates worker columns before applying the requested legacy mesh shape on the caller. */
+function deserializeOBJWorkerResult(
+  result: unknown,
+  options?: OBJLoaderOptions
+): Mesh | MeshArrowTable {
+  const table = deserializeArrowWorkerTable(result);
+  return options?.obj?.shape === 'mesh' ? convertTableToMesh(table) : table;
+}
+
+/** Restores the OBJ mesh batch envelope after caller-side conversion. */
+function deserializeOBJWorkerBatch(result: unknown, options?: OBJLoaderOptions): OBJParsedBatch {
+  const table = deserializeArrowWorkerTable(result);
+  if (options?.obj?.shape !== 'mesh') return table;
+  const mesh = convertTableToMesh(table);
+  return {shape: 'mesh', batchType: 'data', data: mesh, length: table.length};
 }

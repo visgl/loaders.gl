@@ -45,7 +45,7 @@ The `@loaders.gl/pointclouds/pcd` module handles the [Point Cloud Data](/docs/mo
 ## Installation
 
 ```bash
-npm install @loaders.gl/pointclouds/pcd
+npm install @loaders.gl/pointclouds
 npm install @loaders.gl/core
 ```
 

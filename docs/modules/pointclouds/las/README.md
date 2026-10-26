@@ -56,7 +56,7 @@ The `@loaders.gl/pointclouds/las` module supports the [LAS file format](/docs/mo
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/pointclouds/las
+npm install @loaders.gl/core @loaders.gl/pointclouds
 ```
 
 The default TypeScript LAS/LAZ loader does not require the optional `copc` or `laz-perf` npm

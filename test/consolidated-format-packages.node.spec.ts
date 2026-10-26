@@ -4,6 +4,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import {createRequire} from 'node:module';
+import {execFileSync} from 'node:child_process';
 import {preProcessFile} from 'typescript';
 import {build} from 'esbuild';
 import {expect, test} from 'vitest';
@@ -99,4 +101,34 @@ test('every consolidated scene implementation remains covered by an owning cover
       filename => !scopes.some(scope => filename.startsWith(scope))
     )
   ).toEqual([]);
+});
+
+test.each([
+  ['pointclouds', 'LASLoader'],
+  ['pointclouds', 'PCDLoader'],
+  ['pointclouds', 'PLYLoader'],
+  ['scene', 'GLTFLoader'],
+  ['scene', 'OBJLoader'],
+  ['scene', 'USDLoader'],
+  ['geospatial', 'WKTLoader'],
+  ['geospatial', 'WKBLoader'],
+  ['geospatial', 'TWKBLoader']
+])('CommonJS %s %s uses the installed package version', (owner, loaderName) => {
+  const require = createRequire(import.meta.url);
+  const manifest = JSON.parse(fs.readFileSync(`modules/${owner}/package.json`, 'utf8'));
+  const entry = require(`@loaders.gl/${owner}`);
+  expect(entry[loaderName].version).toBe(manifest.version);
+});
+
+test('emitted bundled and unbundled ESM entrypoints keep valid index references', () => {
+  const result = execFileSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '--eval',
+      `await Promise.all(['@loaders.gl/services/bundled', '@loaders.gl/services/unbundled', '@loaders.gl/splats/bundled', '@loaders.gl/splats/unbundled'].map(specifier => import(specifier))); process.stdout.write('loaded');`
+    ],
+    {encoding: 'utf8'}
+  );
+  expect(result).toBe('loaded');
 });

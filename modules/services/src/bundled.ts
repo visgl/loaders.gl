@@ -10,10 +10,10 @@ export {
   createCesiumIonCredential,
   createGoogleMapsCredential,
   createMapboxCredential
-} from './';
+} from './index';
 export type {
   CesiumIonCredentialOptions,
   GoogleMapsCredentialOptions,
   MapboxCredentialOptions,
   ServiceCredentialOptions
-} from './';
+} from './index';

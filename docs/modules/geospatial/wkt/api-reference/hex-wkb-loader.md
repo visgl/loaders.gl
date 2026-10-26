@@ -63,7 +63,7 @@ Loader for hex encoded [Well-known binary][wkb] format for representation of geo
 ## Installation
 
 ```bash
-npm install @loaders.gl/geospatial/wkt
+npm install @loaders.gl/geospatial
 npm install @loaders.gl/core
 ```
 

@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {Buffers} from 'apache-arrow/data';
-import type {DataType, Schema} from '@loaders.gl/core/schema';
+import type {DataType, Schema, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowSchema,
   deserializeArrowType,
@@ -124,6 +124,27 @@ export function deserializeArrowTableFromIPC(
 ): arrow.Table {
   const data = isSerializedArrowTableIPC(table) ? table.data : table;
   return arrow.tableFromIPC(data);
+}
+
+/** Serializes Arrow columns with owned buffers so transfers cannot detach retained parser state. */
+export function serializeArrowWorkerTable(result: unknown): unknown {
+  if (!isArrowTableWrapper(result)) {
+    throw new Error('Workers require Arrow table output');
+  }
+  const indices = (result as unknown as MeshArrowTable).indices;
+  return {
+    ...result,
+    data: dehydrateArrowTable(result.data, {copy: 'all'}),
+    ...(indices ? {indices: {...indices, value: indices.value.slice()}} : {})
+  };
+}
+
+/** Hydrates the column-buffer worker protocol; other wire formats are rejected. */
+export function deserializeArrowWorkerTable(result: unknown): any {
+  if (!isDehydratedArrowTableWrapper(result)) {
+    throw new Error('Workers require Arrow column transport');
+  }
+  return {...result, data: hydrateArrowTable(result.data)};
 }
 
 /** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */

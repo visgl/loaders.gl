@@ -62,7 +62,7 @@ Loader for [Tiny Well-Known Binary](../formats/twkb), a compact geometry encodin
 ## Installation
 
 ```bash
-npm install @loaders.gl/geospatial/wkt
+npm install @loaders.gl/geospatial
 npm install @loaders.gl/core
 ```
 

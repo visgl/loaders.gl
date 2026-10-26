@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {PLYLoaderOptions} from './ply-loader';
+export type {PLYLoaderOptions} from './ply-loader-types';
 export {
-  PLYWorkerLoaderWithParser as PLYWorkerLoader,
+  PLYLoaderWithParser as PLYWorkerLoader,
   PLYLoaderWithParser as PLYLoader
 } from './ply-loader';

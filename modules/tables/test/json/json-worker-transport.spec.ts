@@ -5,11 +5,10 @@
 import {expect, test} from 'vitest';
 import {Table, tableFromArrays} from 'apache-arrow';
 import {deserializeJSONWorkerResult} from '../../src/json/lib/json-worker-transport';
-import {serializeArrowWorkerResult} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {serializeJSONWorkerBatch} from '../../src/json/lib/json-worker-transport';
 
-test('JSON Arrow transport owns outgoing IPC buffers and encodes metadata as binary JSON', () => {
+test('JSON Arrow transport owns outgoing column buffers and encodes metadata as binary JSON', () => {
   const values = new Int32Array([1, 2, 3]);
   const table = tableFromArrays({id: values});
   const serialized = serializeJSONWorkerBatch({
@@ -31,12 +30,11 @@ test('JSON Arrow transport owns outgoing IPC buffers and encodes metadata as bin
   expect(deserializeJSONWorkerResult(serializedMetadata)).toEqual(metadata);
 });
 
-test('JSON hydrates legacy Arrow custom-worker payloads', () => {
-  const serialized = serializeArrowWorkerResult({
-    shape: 'arrow-table',
-    data: tableFromArrays({id: new Int32Array([1])})
-  });
-  const received = deserializeJSONWorkerResult(serialized);
-  expect(received.data).toBeInstanceOf(Table);
-  expect(received.data.getChild('id')?.get(0)).toBe(1);
+test('JSON Arrow hydration rejects IPC payloads', () => {
+  expect(() =>
+    deserializeJSONWorkerResult({
+      shape: 'arrow-table',
+      data: {transport: 'arrow-ipc', data: new Uint8Array()}
+    })
+  ).toThrow('Arrow column transport');
 });

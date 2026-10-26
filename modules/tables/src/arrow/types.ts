@@ -65,7 +65,7 @@ export type {
   TriangulatedWKBGeometryColumns,
   ArrowWorkerLoader,
   GeoArrowWorkerLoader
-} from './';
+} from './index';
 // Keep the upstream surface compatible with the minimum supported Apache Arrow release.
 export type {
   TypeMap,

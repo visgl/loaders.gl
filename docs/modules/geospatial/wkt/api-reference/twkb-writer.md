@@ -62,7 +62,7 @@ Writer for the [Tiny Well-known binary][twkb] format for representation of geome
 ## Installation
 
 ```bash
-npm install @loaders.gl/geospatial/wkt
+npm install @loaders.gl/geospatial
 npm install @loaders.gl/core
 ```
 

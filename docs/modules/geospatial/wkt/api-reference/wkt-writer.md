@@ -55,7 +55,7 @@ Writer for the [Well-known text] format for representation of geometry.
 ## Installation
 
 ```bash
-npm install @loaders.gl/geospatial/wkt
+npm install @loaders.gl/geospatial
 npm install @loaders.gl/core
 ```
 

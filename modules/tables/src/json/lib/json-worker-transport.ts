@@ -9,10 +9,9 @@ import {
 } from './json-binary-transport';
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {
-  serializeArrowIPCResult,
-  deserializeArrowIPCBatch
+  serializeArrowTableResult,
+  deserializeArrowTableBatch
 } from '../../arrow/lib/arrow-worker-transport';
-import {deserializeArrowWorkerResult} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {normalizeJSONArrowSchema, type JSONArrowSchema} from './parsers/convert-row-table-to-arrow';
 
 /** Converts Arrow Schema instances to portable schemas without changing caller-owned options. */
@@ -33,17 +32,14 @@ export function serializeJSONWorkerOptions(options: LoaderOptions): LoaderOption
 /** Owns all outgoing Arrow buffers so retained parser state cannot be detached by a transfer. */
 export function serializeJSONWorkerBatch(batch: unknown): unknown {
   return (batch as {shape?: string})?.shape === 'arrow-table'
-    ? serializeArrowIPCResult(batch)
+    ? serializeArrowTableResult(batch)
     : serializeBinaryJSON(batch);
 }
 
-/** Reads owned IPC while retaining compatibility with older Arrow-only custom workers. */
+/** Hydrates transferred columns or decodes binary JSON on the caller. */
 export function deserializeJSONWorkerResult(result: unknown) {
   if ((result as BinaryJSONResult)?.transport === 'json-utf8') {
     return deserializeBinaryJSON(result as BinaryJSONResult);
   }
-  const table = result as {data?: {transport?: string}};
-  return table?.data?.transport === 'arrow-ipc'
-    ? deserializeArrowIPCBatch(result)
-    : deserializeArrowWorkerResult(result);
+  return deserializeArrowTableBatch(result);
 }

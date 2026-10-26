@@ -45,7 +45,7 @@ The `@loaders.gl/scene/obj` module handles the [Wavefront OBJ format](/docs/modu
 ## Installation
 
 ```bash
-npm install @loaders.gl/scene/obj
+npm install @loaders.gl/scene
 npm install @loaders.gl/core
 ```
 

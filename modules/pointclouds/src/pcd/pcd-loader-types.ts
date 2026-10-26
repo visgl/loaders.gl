@@ -3,13 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import type {PCDMesh} from './lib/pcd-types';
 import {PCDFormat} from './pcd-format';
-import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {serializeArrowWorkerTable} from '@loaders.gl/core/schema-utils/arrow-transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -40,16 +37,17 @@ async function preload() {
 export const PCDLoader = {
   ...PCDFormat,
   dataType: null as unknown as PCDMesh | MeshArrowTable,
-  batchType: null as never,
+  batchType: null as unknown as PCDMesh | ArrowTableBatch,
   version: VERSION,
   worker: true,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
+  /** Enables the stateful input/output batch protocol on the built-in worker. */
+  workerInBatches: true,
+  serializeWorkerResult: serializeArrowWorkerTable,
   options: {
     pcd: {shape: 'arrow-table', colorFormat: 'uint8norm'}
   },
   preload
-} as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;
+} as const satisfies Loader<PCDMesh | MeshArrowTable, PCDMesh | ArrowTableBatch, PCDLoaderOptions>;
 
 /** @deprecated Use PCDLoader. */
 export const PCDWorkerLoader = PCDLoader;

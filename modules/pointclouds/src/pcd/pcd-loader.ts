@@ -2,52 +2,33 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {PCDLoaderOptions} from './pcd-loader-types';
+
 import {
   concatenateArrayBuffersAsync,
   makeTableScanBatch,
-  type Loader,
-  type LoaderOptions,
   type LoaderWithParser
 } from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
+  deserializeArrowWorkerTable,
+  serializeArrowWorkerTable
 } from '@loaders.gl/core/schema-utils/arrow-transport';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import type {PCDMesh} from './lib/pcd-types';
 import {parsePCD, parsePCDHeader} from './lib/parse-pcd';
-import {PCDWorkerLoader as PCDWorkerLoaderMetadata} from './pcd-loader-types';
 import {PCDLoader as PCDLoaderMetadata} from './pcd-loader-types';
 
-const {preload: _PCDWorkerLoaderPreload, ...PCDWorkerLoaderMetadataWithoutPreload} =
-  PCDWorkerLoaderMetadata;
 const {preload: _PCDLoaderPreload, ...PCDLoaderMetadataWithoutPreload} = PCDLoaderMetadata;
-
-export type PCDLoaderOptions = LoaderOptions & {
-  pcd?: {
-    /** Output shape. Defaults to a Mesh Arrow table. */
-    shape?: 'mesh' | 'arrow-table';
-    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
-    colorFormat?: 'uint8norm' | 'float16' | 'float32';
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
 
 type PCDParsedBatch = PCDMesh | ArrowTableBatch;
 
 function convertPCDMesh(mesh: PCDMesh, options?: PCDLoaderOptions): PCDMesh | MeshArrowTable {
   const table = convertMeshToTable(mesh, 'arrow-table');
-  return options?.pcd?.shape === 'mesh' ? convertPCDTableToMesh(table, mesh) : table;
+  return options?.pcd?.shape === 'mesh'
+    ? convertPCDTableToMesh(table, mesh)
+    : {...table, loader: mesh.loader, loaderData: mesh.loaderData};
 }
-
-/**
- * Worker loader for PCD - Point Cloud Data
- */
-export const PCDWorkerLoaderWithParser = {
-  ...PCDWorkerLoaderMetadataWithoutPreload
-} as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;
 
 /**
  * Loader for PCD - Point Cloud Data
@@ -79,8 +60,10 @@ export const PCDLoaderWithParser = {
 
     yield makePCDBatch(parsePCD(data, options), options);
   },
-  serializeWorkerBatch: serializeArrowWorkerResult,
-  deserializeWorkerBatch: deserializeArrowWorkerResult
+  serializeWorkerResult: serializeArrowWorkerTable,
+  deserializeWorkerResult: deserializePCDWorkerResult,
+  serializeWorkerBatch: serializeArrowWorkerTable,
+  deserializeWorkerBatch: deserializePCDWorkerBatch
 } as const satisfies LoaderWithParser<PCDMesh | MeshArrowTable, PCDParsedBatch, PCDLoaderOptions>;
 
 /** Returns a numeric batch size when batching has an explicit row count. */
@@ -140,7 +123,11 @@ function makePCDBatch(mesh: PCDMesh, options?: PCDLoaderOptions): PCDParsedBatch
     return convertPCDTableToMesh(table, mesh);
   }
 
-  return makeTableScanBatch(table);
+  return makeTableScanBatch({
+    ...table,
+    loader: mesh.loader,
+    loaderData: mesh.loaderData
+  } as MeshArrowTable);
 }
 
 /** Convert the parser's Arrow table to legacy PCD mesh output. */
@@ -175,4 +162,18 @@ function makePCDHeaderText(pcdHeader: any, pointCount: number): string {
   }
 
   return `${lines.join('\n')}\n`;
+}
+
+/** Hydrates worker columns before reconstructing legacy PCD meshes on the caller. */
+function deserializePCDWorkerResult(
+  result: unknown,
+  options?: PCDLoaderOptions
+): PCDMesh | MeshArrowTable {
+  const table = deserializeArrowWorkerTable(result);
+  return options?.pcd?.shape === 'mesh' ? convertPCDTableToMesh(table, table) : table;
+}
+
+/** Restores the existing PCD batch shape after caller-side hydration. */
+function deserializePCDWorkerBatch(result: unknown, options?: PCDLoaderOptions): PCDParsedBatch {
+  return deserializePCDWorkerResult(result, options) as PCDParsedBatch;
 }
