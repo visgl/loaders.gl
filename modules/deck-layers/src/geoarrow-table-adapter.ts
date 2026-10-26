@@ -12,7 +12,7 @@ import {
 import {
   convertGeometryValuesToBinaryFeatureCollection,
   type GeometryColumnBinaryFeatureCollectionScratch
-} from '@loaders.gl/geoarrow';
+} from '@loaders.gl/core/geoarrow';
 import type {
   ArrowTable,
   BinaryAttribute,
@@ -23,11 +23,11 @@ import type {
   TypedArray
 } from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import type {BinaryDataFromGeoArrow, GeoArrowEncoding} from '@loaders.gl/geoarrow';
+import type {BinaryDataFromGeoArrow, GeoArrowEncoding} from '@loaders.gl/core/geoarrow';
 import {
   convertGeoArrowToBinaryFeatureCollection,
   getGeometryColumnsFromSchema
-} from '@loaders.gl/geoarrow';
+} from '@loaders.gl/core/geoarrow';
 
 /** GeoArrow table input accepted by the deck.gl Arrow adapter. */
 export type GeoArrowTableInput = ArrowTable | arrow.Table;

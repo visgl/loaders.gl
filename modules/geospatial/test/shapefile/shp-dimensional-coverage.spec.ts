@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {load} from '@loaders.gl/core';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {describe, expect, test} from 'vitest';
 

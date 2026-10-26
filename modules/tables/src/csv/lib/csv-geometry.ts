@@ -7,10 +7,10 @@ import {
   convertGeometryToWKB,
   convertWKBToGeometry,
   convertWKTToGeometry
-} from '@loaders.gl/arrow-geometry/geometry-codecs';
+} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {decodeHex} from '@loaders.gl/core/loader-utils';
 import {getGeoMetadata, setGeoMetadata, type GeoParquetGeometryType} from '@loaders.gl/core/schema';
-import {inferGeoParquetGeometryTypes} from '@loaders.gl/arrow-geometry/geometry-field';
+import {inferGeoParquetGeometryTypes} from '@loaders.gl/core/arrow-geometry/geometry-field';
 
 const GEOMETRY_COLUMN_NAMES = new Set(['geom', 'geometry', 'the_geom', 'wkt', 'wkb']);
 const MAX_GEOMETRY_SAMPLE_VALUES = 10;

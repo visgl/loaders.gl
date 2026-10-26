@@ -86,9 +86,9 @@
 - Keep the upgrade guide focused on deleted or deprecated functionality. New feature documentation belongs in the module docs and release notes instead.
 - Running module- or file-scoped commands such as `tsc` tends to generate `.js` and `.d.ts` files in this repo. After such commands, check for generated files and remove them before finishing.
 - Running tests that use workers requires `yarn build` first so the worker bundles exist before the tests run.
-- Loader-required geometry construction belongs in focused `@loaders.gl/arrow-geometry` entry points, with metadata types/helpers in `@loaders.gl/core/schema`. The GIS compatibility package has been removed; do not restore imports or implementations under that package.
-- `@loaders.gl/geoarrow` should provide the richer converter and processing APIs for geospatial tables, especially GeoArrow-formatted Arrow tables.
-- Loaders should not import the larger `@loaders.gl/geoarrow` module; applications can install and use it when they need more extensive geospatial processing.
+- Loader-required geometry construction belongs in focused `@loaders.gl/core/arrow-geometry` entry points, with metadata types/helpers in `@loaders.gl/core/schema`. The GIS compatibility package has been removed; do not restore imports or implementations under that package.
+- `@loaders.gl/core/geoarrow` is an opt-in utility subpath providing the richer converter and processing APIs for geospatial tables, especially GeoArrow-formatted Arrow tables.
+- Loaders should not import the larger `@loaders.gl/core/geoarrow` module; applications can install and use it when they need more extensive geospatial processing.
 
 ## Loader module structure
 
@@ -101,3 +101,9 @@
 - Keep writer entry points unchanged unless the package is intentionally splitting them as well.
 - In `package.json`, keep explicit subpath exports for parser entry points such as `./csv-loader` and `./csv-arrow-loader`. Root exports stay metadata-only; direct parser access happens through the subpath.
 - Core async APIs may accept metadata loaders and upgrade them through `preload()`. Sync parsing paths should continue to require a parser-bearing loader.
+
+## Core utility subpaths
+
+- Core utility subpaths may contain format-neutral scan, geometry construction, conversion, and codec helpers. Actual format loader/writer descriptors and format-specific source adapters belong in their format modules.
+- Keep scan, arrow-geometry, geoarrow, and wkt out of the core root exports. Core implementations must not import other loaders.gl packages; database backends register against core scan APIs from the SQL package.
+- The standalone scan, arrow-geometry, and geoarrow packages are removed. Do not restore forwarding packages or compatibility dependency edges.

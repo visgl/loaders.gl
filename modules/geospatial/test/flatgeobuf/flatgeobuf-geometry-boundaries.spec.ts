@@ -4,8 +4,8 @@
 
 import {Builder} from 'flatbuffers';
 import {expect, test, vi} from 'vitest';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {WKBBuilder} from '@loaders.gl/arrow-geometry';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
+import {WKBBuilder} from '@loaders.gl/core/arrow-geometry';
 import {
   decodeFlatGeobufGeometry,
   FlatGeobufGeometryType,

@@ -6,9 +6,9 @@ import { expect, test } from "vitest";
 // import {validateLoader} from 'test/common/conformance';
 import {load, loadInBatches, encode, fetchFile, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import type { ArrowTable, ObjectRowTable } from '@loaders.gl/core/schema';
-import { getGeometryColumnsFromSchema } from '@loaders.gl/geoarrow';
+import { getGeometryColumnsFromSchema } from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import { GeoParquetLoader, ParquetJSWriter, ParquetLoader, ParquetWriter } from '@loaders.gl/tables/parquet/index';
 import { ParquetLoader as BundledParquetLoader, ParquetJSLoader } from '@loaders.gl/tables/parquet/bundled';
 import * as arrow from 'apache-arrow';
@@ -369,7 +369,7 @@ test('ParquetWriter#replaces invalid GeoParquet metadata from GeoArrow input', a
     expect(geoMetadata?.columns.geometry.encoding, 'writer synthesizes missing geometry column metadata').toBe('wkb');
 });
 test('ParquetWriter#synthesizes native GeoParquet encoding from GeoArrow input', async () => {
-    const response = await fetchFile(new URL('../../../geoarrow/test/data/geoarrow/point.arrow', import.meta.url).href);
+    const response = await fetchFile(new URL('../../../core/test/geoarrow/data/geoarrow/point.arrow', import.meta.url).href);
     const arrayBuffer = await response.arrayBuffer();
     const pointTable = { shape: 'arrow-table' as const, data: arrow.tableFromIPC(arrayBuffer) };
     const parquetBuffer = await encode(pointTable, ParquetWriter, {

@@ -5379,7 +5379,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arcgis@workspace:modules/arcgis"
   dependencies:
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.14"
     "@loaders.gl/images": "npm:5.0.0-alpha.14"
     "@loaders.gl/raster": "npm:5.0.0-alpha.14"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.14"
@@ -5396,18 +5395,6 @@ __metadata:
   dependencies:
     "@loaders.gl/compression": "npm:5.0.0-alpha.14"
     "@loaders.gl/crypto": "npm:5.0.0-alpha.14"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
-
-"@loaders.gl/arrow-geometry@npm:5.0.0-alpha.14, @loaders.gl/arrow-geometry@workspace:*, @loaders.gl/arrow-geometry@workspace:modules/arrow-geometry":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/arrow-geometry@workspace:modules/arrow-geometry"
-  dependencies:
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
-    apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5467,6 +5454,7 @@ __metadata:
   resolution: "@loaders.gl/core@workspace:modules/core"
   dependencies:
     "@math.gl/core": "npm:5.0.0-alpha.20"
+    "@math.gl/geometry": "npm:5.0.0-alpha.20"
     "@math.gl/geospatial": "npm:5.0.0-alpha.20"
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 17.0.0"
@@ -5505,7 +5493,6 @@ __metadata:
     "@deck.gl/layers": "npm:^9.4.0"
     "@loaders.gl/archives": "npm:5.0.0-alpha.14"
     "@loaders.gl/compression": "npm:5.0.0-alpha.14"
-    "@loaders.gl/geoarrow": "npm:5.0.0-alpha.14"
     "@loaders.gl/tables": "npm:5.0.0-alpha.14"
     "@loaders.gl/tiles": "npm:5.0.0-alpha.14"
     "@loaders.gl/tiles-3d": "npm:5.0.0-alpha.14"
@@ -5547,27 +5534,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/geoarrow@npm:5.0.0-alpha.14, @loaders.gl/geoarrow@workspace:*, @loaders.gl/geoarrow@workspace:modules/geoarrow":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/geoarrow@workspace:modules/geoarrow"
-  dependencies:
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.14"
-    "@loaders.gl/wkt": "npm:5.0.0-alpha.14"
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
-    apache-arrow: "npm:>= 17.0.0"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
-  languageName: unknown
-  linkType: soft
-
 "@loaders.gl/geospatial@npm:^5.0.0-alpha.0, @loaders.gl/geospatial@workspace:modules/geospatial":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geospatial@workspace:modules/geospatial"
   dependencies:
     "@loaders.gl/archives": "npm:5.0.0-alpha.14"
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.14"
     "@loaders.gl/xml": "npm:5.0.0-alpha.14"
     "@math.gl/geospatial": "npm:5.0.0-alpha.20"
     "@types/sql.js": "npm:^1.4.5"
@@ -5753,7 +5724,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/ogc@workspace:modules/ogc"
   dependencies:
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.14"
     "@loaders.gl/images": "npm:5.0.0-alpha.14"
     "@loaders.gl/raster": "npm:5.0.0-alpha.14"
     "@loaders.gl/xml": "npm:5.0.0-alpha.14"
@@ -5804,17 +5774,6 @@ __metadata:
       optional: true
     lerc:
       optional: true
-  languageName: unknown
-  linkType: soft
-
-"@loaders.gl/scan@workspace:*, @loaders.gl/scan@workspace:modules/scan":
-  version: 0.0.0-use.local
-  resolution: "@loaders.gl/scan@workspace:modules/scan"
-  dependencies:
-    "@loaders.gl/sql": "npm:5.0.0-alpha.14"
-    apache-arrow: "npm:>= 17.0.0"
-  peerDependencies:
-    "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
   linkType: soft
 
@@ -5922,7 +5881,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tables@workspace:modules/tables"
   dependencies:
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.14"
     "@loaders.gl/compression": "npm:5.0.0-alpha.14"
     "@math.gl/geospatial": "npm:5.0.0-alpha.20"
     apache-arrow: "npm:>= 17.0.0"
@@ -6038,7 +5996,6 @@ __metadata:
   resolution: "@loaders.gl/tiles@workspace:modules/tiles"
   dependencies:
     "@deck.gl/core": "npm:^9.4.0"
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.14"
     "@loaders.gl/compression": "npm:5.0.0-alpha.14"
     "@loaders.gl/images": "npm:5.0.0-alpha.14"
     "@loaders.gl/tables": "npm:5.0.0-alpha.14"
@@ -6077,11 +6034,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/wkt@npm:5.0.0-alpha.14, @loaders.gl/wkt@workspace:modules/wkt":
+"@loaders.gl/wkt@workspace:modules/wkt":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/wkt@workspace:modules/wkt"
   dependencies:
-    "@loaders.gl/arrow-geometry": "npm:5.0.0-alpha.14"
     "@math.gl/geospatial": "npm:5.0.0-alpha.20"
     fuzzer: "npm:^0.2.1"
   peerDependencies:
@@ -14844,7 +14800,7 @@ __metadata:
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
     "@deck.gl/mapbox": "npm:^9.4.0"
-    "@loaders.gl/geoarrow": "workspace:*"
+    "@loaders.gl/core": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
@@ -19533,7 +19489,6 @@ __metadata:
     "@deck.gl/react": "npm:^9.4.0"
     "@deck.gl/widgets": "npm:^9.4.0"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/geoarrow": "workspace:*"
     "@loaders.gl/geospatial": "workspace:*"
     "@loaders.gl/tables": "workspace:*"
     "@luma.gl/core": "npm:^9.4.0"
@@ -28327,7 +28282,6 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^5.15.2"
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
     "@loaders.gl/arcgis": "workspace:*"
-    "@loaders.gl/arrow-geometry": "workspace:*"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/geospatial": "workspace:*"
@@ -28336,7 +28290,6 @@ __metadata:
     "@loaders.gl/ogc": "workspace:*"
     "@loaders.gl/ply": "workspace:*"
     "@loaders.gl/raster": "workspace:*"
-    "@loaders.gl/scan": "workspace:*"
     "@loaders.gl/scene": "workspace:*"
     "@loaders.gl/scientific": "workspace:*"
     "@loaders.gl/services": "workspace:*"

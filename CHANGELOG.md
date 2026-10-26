@@ -225,7 +225,7 @@
 
 ### v4.4.0-alpha.5
 
-- Make `@loaders.gl/scientific/zarr` and `@loaders.gl/geoarrow` libraries private
+- Make `@loaders.gl/scientific/zarr` and `@loaders.gl/core/geoarrow` libraries private
 
 ### v4.4.0-alpha.4
 

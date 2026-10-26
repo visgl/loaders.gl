@@ -12,15 +12,14 @@ const REPOSITORY_ROOT = process.cwd();
 const MAXIMUM_SCAN_BUNDLE_BYTES = 310 * 1024;
 const MAXIMUM_PREDICATE_ONLY_BUNDLE_BYTES = 40 * 1024;
 
-test('format implementations do not import the optional scan runtime', () => {
+test('implementations do not import the removed utility packages', () => {
   const violations: string[] = [];
   for (const moduleDirectory of listDirectories(path.join(REPOSITORY_ROOT, 'modules'))) {
-    if (path.basename(moduleDirectory) === 'scan') continue;
     const sourceDirectory = path.join(moduleDirectory, 'src');
     if (!fs.existsSync(sourceDirectory)) continue;
     for (const filename of listSourceFiles(sourceDirectory)) {
       const source = fs.readFileSync(filename, 'utf8');
-      if (/['"]@loaders\.gl\/scan(?:\/[^'"]*)?['"]/.test(source)) {
+      if (/['"]@loaders\.gl\/(?:scan|arrow-geometry|geoarrow)(?:\/[^'"]*)?['"]/.test(source)) {
         violations.push(path.relative(REPOSITORY_ROOT, filename));
       }
     }
@@ -29,7 +28,7 @@ test('format implementations do not import the optional scan runtime', () => {
 });
 
 test('scan and representative format packages remain tree-shakeable', () => {
-  for (const moduleName of ['scan', 'tables']) {
+  for (const moduleName of ['tables']) {
     const packageJson = JSON.parse(
       fs.readFileSync(path.join(REPOSITORY_ROOT, 'modules', moduleName, 'package.json'), 'utf8')
     ) as {sideEffects?: unknown};
@@ -39,7 +38,7 @@ test('scan and representative format packages remain tree-shakeable', () => {
 
 test('optional scan runtime stays within its v5 bundle budget', async () => {
   const result = await build({
-    entryPoints: [path.join(REPOSITORY_ROOT, 'modules/scan/bundle.ts')],
+    entryPoints: [path.join(REPOSITORY_ROOT, 'modules/core/scan-bundle.ts')],
     bundle: true,
     format: 'esm',
     minify: true,
@@ -54,7 +53,7 @@ test('optional scan runtime stays within its v5 bundle budget', async () => {
 test('query-vocabulary-only imports shake out the Arrow executor', async () => {
   const result = await build({
     stdin: {
-      contents: `import {parseSQLPredicate} from './modules/scan/src/index.ts';\nconsole.log(parseSQLPredicate('value >= 2'));`,
+      contents: `import {parseSQLPredicate} from './modules/core/src/scan/index.ts';\nconsole.log(parseSQLPredicate('value >= 2'));`,
       resolveDir: REPOSITORY_ROOT,
       sourcefile: 'scan-predicate-only.ts'
     },

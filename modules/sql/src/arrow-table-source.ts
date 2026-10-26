@@ -19,9 +19,9 @@ import {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,
   queryArrowTable
-} from './query-arrow-table';
-import type {ArrowQueryOptions} from './query-arrow-table';
-import type {TableQueryExplain} from './table-query';
+} from '@loaders.gl/core/scan/query-arrow-table';
+import type {ArrowQueryOptions} from '@loaders.gl/core/scan/query-arrow-table';
+import type {TableQueryExplain} from '@loaders.gl/core/scan/table-query';
 
 /** In-memory source options; the source owns the supplied Arrow table. */
 export type ArrowTableSourceOptions = DataSourceOptions;

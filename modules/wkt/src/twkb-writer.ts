@@ -4,7 +4,7 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {Geometry} from '@loaders.gl/core/schema';
-import {convertGeometryToTWKB} from './twkb/convert-geometry-to-twkb';
+import {convertGeometryToTWKB} from '@loaders.gl/core/wkt/twkb';
 import {VERSION} from './lib/version';
 import {TWKBFormat} from './wkt-format';
 

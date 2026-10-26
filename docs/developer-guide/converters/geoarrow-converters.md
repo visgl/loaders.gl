@@ -48,7 +48,7 @@ GeoArrow conversions split into two jobs:
 
 | Field | Value |
 | --- | --- |
-| Package | `@loaders.gl/geoarrow` |
+| Package | `@loaders.gl/core/geoarrow` |
 | `id` | `'geoarrow-table'` |
 | `from` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
 | `to` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
@@ -59,7 +59,7 @@ GeoArrow conversions split into two jobs:
 
 | Field | Value |
 | --- | --- |
-| Package | `@loaders.gl/geoarrow` |
+| Package | `@loaders.gl/core/geoarrow` |
 | `id` | `'geoarrow-geometry'` |
 | `from` | `'geoarrow'` |
 | `to` | `'geoarrow.geometry'`, `'geoarrow.geometrycollection'`, `'geoarrow.wkb'`, `'geoarrow.wkt'`, native point/line/polygon encodings |
@@ -88,7 +88,7 @@ polygons. It does not reconstruct MultiPolygon grouping or original feature iden
 import {
   makeGeoArrowColumnFromBinaryPolygon,
   getGeoArrowRowBounds
-} from '@loaders.gl/geoarrow';
+} from '@loaders.gl/core/geoarrow';
 import {getGeoArrowBounds} from '@math.gl/geospatial/geoarrow';
 
 const column = makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension: 'xym'});
@@ -147,7 +147,7 @@ If the target is `geoarrow.geometrycollection`, each row becomes a list of heter
 ## Example
 
 ```ts
-import {convertGeoArrowGeometry} from '@loaders.gl/geoarrow';
+import {convertGeoArrowGeometry} from '@loaders.gl/core/geoarrow';
 
 const wkbTable = convertGeoArrowGeometry(geoarrowTable, 'geoarrow.wkb');
 const mixedTable = convertGeoArrowGeometry(geoarrowTable, 'geoarrow.geometrycollection', {

@@ -17,11 +17,11 @@ import {
   convertSchemaToArrow,
   type ArrowViewTypeMode
 } from '@loaders.gl/core/schema-utils';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {
   convertWKBToGeometry,
   convertWKTToGeometry
-} from '@loaders.gl/arrow-geometry/geometry-codecs';
+} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import * as arrow from 'apache-arrow';
 
 import type {CSVLoaderOptions} from './csv-loader-options';

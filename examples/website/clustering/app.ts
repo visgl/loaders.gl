@@ -19,7 +19,7 @@ import {
 } from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel} from '@deck.gl-community/panels';
 import {SidebarPanelWidget} from '@deck.gl-community/widgets';
-import {ClusterSource, getRepresentativePoint, type ClusterNode} from '@loaders.gl/geoarrow';
+import {ClusterSource, getRepresentativePoint, type ClusterNode} from '@loaders.gl/core/geoarrow';
 import maplibregl from 'maplibre-gl';
 import {createSampleData, type SampleGeometry} from './sample-data';
 import './style.css';

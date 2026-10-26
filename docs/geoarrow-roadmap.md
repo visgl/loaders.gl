@@ -48,9 +48,9 @@ them because the GeoArrow collection member union cannot recursively contain Geo
 ## Package Boundaries
 
 - `@loaders.gl/core/schema` owns dependency-free wire types and metadata contracts.
-- `@loaders.gl/arrow-geometry` owns shared builders and focused loader-output helpers.
-- The GIS compatibility package is removed; see the [replacement import map](./modules/geoarrow/gis-migration.md).
-- `@loaders.gl/geoarrow` owns conversion, layout inspection, validation, bounds, coordinate
+- `@loaders.gl/core/arrow-geometry` owns shared builders and focused loader-output helpers.
+- The GIS compatibility package is removed; see the [replacement import map](./modules/core/geoarrow/gis-migration.md).
+- `@loaders.gl/core/geoarrow` owns conversion, layout inspection, validation, bounds, coordinate
   iteration, canonicalization, and metadata operations.
 - `@loaders.gl/tables/parquet` owns GeoParquet I/O and remains independent of GeoArrow processing code.
 - `@loaders.gl/tables/arrow/transport` owns worker transfer and sliced-buffer isolation.

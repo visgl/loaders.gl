@@ -4,8 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import type {ArrowTable} from '@loaders.gl/core/schema';
-import {makeWKBGeometryDataFromWriters} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
-import {type WKBBuilder} from '@loaders.gl/arrow-geometry';
+import {makeWKBGeometryDataFromWriters} from '@loaders.gl/core/arrow-geometry/wkb-arrow-utils';
+import {type WKBBuilder} from '@loaders.gl/core/arrow-geometry';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {ProtoTile} from './proto-tile';
 import type {ProtoFeature} from './features/proto-feature';

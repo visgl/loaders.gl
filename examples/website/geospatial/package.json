@@ -18,7 +18,6 @@
     "@deck.gl/react": "^9.4.0",
     "@deck.gl/widgets": "^9.4.0",
     "@loaders.gl/core": "workspace:*",
-    "@loaders.gl/geoarrow": "workspace:*",
     "@loaders.gl/geospatial": "workspace:*",
     "@loaders.gl/tables": "workspace:*",
     "@luma.gl/core": "^9.4.0",

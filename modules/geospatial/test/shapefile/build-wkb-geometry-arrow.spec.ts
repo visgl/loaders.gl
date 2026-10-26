@@ -5,7 +5,7 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 
 import {fetchFile} from '@loaders.gl/core';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {makeSHPWKBGeometryData} from '../../src/shapefile/lib/parsers/build-wkb-geometry-arrow';
 
 const FIXTURE_ROOT = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';

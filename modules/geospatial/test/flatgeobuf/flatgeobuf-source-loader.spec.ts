@@ -8,8 +8,8 @@ import {
   FlatGeobufSourceLoader,
   FlatGeobufVectorSource
 } from '@loaders.gl/geospatial/flatgeobuf/index';
-import {convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/geoarrow';
-import {convertGeoArrowToTable} from '@loaders.gl/geoarrow';
+import {convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/core/geoarrow';
+import {convertGeoArrowToTable} from '@loaders.gl/core/geoarrow';
 const FLATGEOBUF_COUNTRIES_DATA_URL = resolvePath(
   '@loaders.gl/geospatial/flatgeobuf/test/data/countries.fgb'
 );

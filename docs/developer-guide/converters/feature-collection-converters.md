@@ -15,7 +15,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
   meta={['GeoJSON and flat GeoJSON', 'Binary features', 'WKB / WKT / TWKB']}
   links={[
-    {label: 'GeoArrow module', to: '/docs/modules/geoarrow'},
+    {label: 'GeoArrow module', to: '/docs/modules/core/geoarrow'},
     {label: 'Render converters', to: '/docs/developer-guide/converters/render-converters'},
     {label: 'Format categories', to: '/docs/developer-guide/converters/format-categories'}
   ]}
@@ -46,7 +46,7 @@ The GIS converter surface covers both whole feature collections and single geome
 
 | Field | Value |
 | --- | --- |
-| Package | `@loaders.gl/geoarrow` |
+| Package | `@loaders.gl/core/geoarrow` |
 | `id` | `'feature-collection'` |
 | `from` | `'geojson'`, `'flat-geojson'`, `'binary-feature-collection'` |
 | `to` | `'geojson'`, `'flat-geojson'`, `'binary-feature-collection'` |
@@ -56,7 +56,7 @@ The GIS converter surface covers both whole feature collections and single geome
 
 | Field | Value |
 | --- | --- |
-| Package | `@loaders.gl/geoarrow` |
+| Package | `@loaders.gl/core/geoarrow` |
 | `id` | `'geometry'` |
 | `from` | `'geojson-geometry'`, `'wkb'`, `'wkt'`, `'twkb'` |
 | `to` | `'geojson-geometry'`, `'wkb'`, `'wkt'`, `'twkb'` |
@@ -100,7 +100,7 @@ For WKB/WKT render conversion:
 
 ```ts
 import {convert} from '@loaders.gl/core/schema-utils';
-import {FeatureCollectionConverter, GeometryConverter} from '@loaders.gl/geoarrow';
+import {FeatureCollectionConverter, GeometryConverter} from '@loaders.gl/core/geoarrow';
 
 const binary = convert(features, 'binary-feature-collection', [FeatureCollectionConverter]);
 const wkt = convert(binaryGeometry, 'wkt', [GeometryConverter]);
