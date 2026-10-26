@@ -1,3 +1,5 @@
+import {parseInBatches} from '@loaders.gl/core';
+import {PCDLoader} from '@loaders.gl/pcd';
 import {expect, test} from 'vitest';
 import {decompressLZF} from '../src/lib/decompress-lzf';
 import {getPCDSchema} from '../src/lib/get-pcd-schema';
@@ -131,7 +133,7 @@ DATA binary
   expect(Array.from(result.attributes.COLOR_0.value)).toEqual([10, 20, 30]);
 });
 
-test('parsePCD decodes binary_compressed point attributes', () => {
+test('PCD batches decode compressed attributes into one mesh batch', async () => {
   const headerText = `
 VERSION .7
 FIELDS x y z rgb normal_x normal_y normal_z intensity label
@@ -163,7 +165,14 @@ DATA binary_compressed
   sizes.setUint32(4, decompressed.length, true);
   new Uint8Array(buffer, headerBytes.length + 8).set(compressed);
 
-  const result = parsePCD(buffer);
+  const iterator = await parseInBatches([buffer], PCDLoader, {
+    core: {worker: false, batchSize: 1},
+    pcd: {shape: 'mesh'}
+  });
+  const batches = [];
+  for await (const batch of iterator) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  const result = batches[0];
   expect(Array.from(result.attributes.POSITION.value)).toEqual([1, 2, 3]);
   expect(Array.from(result.attributes.NORMAL.value)).toEqual([0, 1, 0]);
   expect(Array.from(result.attributes.COLOR_0.value)).toEqual([10, 20, 30]);
@@ -188,4 +197,19 @@ test('decompressLZF handles literal and back-reference blocks', () => {
   ]);
   expect(() => decompressLZF(new Uint8Array([2, 97]), 3)).toThrow('Invalid compressed data');
   expect(() => decompressLZF(new Uint8Array([32, 2]), 3)).toThrow('Invalid compressed data');
+});
+
+test('LZF expands extended overlapping back-references', () => {
+  expect(decompressLZF(new Uint8Array([0, 97, 224, 2, 0]), 12)).toEqual(
+    new Uint8Array(12).fill(97)
+  );
+});
+
+test.each([
+  [[2, 97, 98, 99], 2, 'Output buffer is not large enough'],
+  [[0, 97, 32, 0], 3, 'Output buffer is not large enough'],
+  [[0, 97, 224], 12, 'Invalid compressed data'],
+  [[0, 97, 224, 0], 12, 'Invalid compressed data']
+] as const)('LZF rejects truncated or overflowing input %j', (bytes, length, message) => {
+  expect(() => decompressLZF(new Uint8Array(bytes), length)).toThrow(message);
 });

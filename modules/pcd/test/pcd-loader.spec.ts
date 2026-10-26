@@ -195,3 +195,24 @@ test('PCDWorkerLoader#parse(binary)', async () => {
   expect(data.attributes.NORMAL, 'NORMAL attribute was not preset').toBeFalsy();
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(179250);
 });
+
+test('PCD parser subpath and batches honor point counts derived from dimensions', async () => {
+  const input = new TextEncoder().encode(
+    'VERSION .7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nWIDTH 2\nHEIGHT 1\nDATA ascii\n1 2 3\n4 5 6\n'
+  );
+  const parser = await PCDLoader.preload();
+  const mesh = parser.parseSync(input.buffer, {pcd: {shape: 'mesh'}});
+  expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6]);
+  const iterator = await parseInBatches([input], PCDLoader, {
+    core: {worker: false, batchSize: 1},
+    pcd: {shape: 'arrow-table'}
+  });
+  const batches = [];
+  for await (const batch of iterator) batches.push(batch);
+  expect(batches.map(batch => batch.length)).toEqual([1, 1]);
+  expect(batches.map(batch => batch.loaderData.points)).toEqual([1, 1]);
+  expect(batches.map(batch => Array.from(batch.data.getChild('POSITION')!.get(0)))).toEqual([
+    [1, 2, 3],
+    [4, 5, 6]
+  ]);
+});
