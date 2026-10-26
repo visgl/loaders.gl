@@ -313,6 +313,8 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
   };
   const serializedOptions = JSON.parse(
     JSON.stringify(optionsToSerialize, (_key, value) => {
+      if (typeof Headers !== 'undefined' && value instanceof Headers)
+        return Object.fromEntries(value.entries());
       if (typeof AbortSignal !== 'undefined' && value instanceof AbortSignal) return undefined;
       return typeof value === 'bigint' ? null : value;
     })

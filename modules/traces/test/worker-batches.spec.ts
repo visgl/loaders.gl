@@ -178,3 +178,19 @@ test('trace table collections and record batches retain source buffers after tra
   const untagged: any = serializeTraceWorkerBatch(table.batches[0]);
   expect(deserializeTraceWorkerBatch(untagged)).toBeInstanceOf(RecordBatch);
 });
+
+test.each([
+  {ph: 'i', s: 'g'},
+  {ph: 'i', scope: 'p'},
+  {ph: 'b', s: 't'},
+  {ph: 'b', scope: 'g'},
+  {ph: 'X', s: 'g', scope: 't'}
+])('Chrome worker JSON preserves exact scope fields %j', async scopeFields => {
+  const original = {traceEvents: [{name: 'scope', ts: 1, pid: 7, tid: 'main', ...scopeFields}]};
+  const result = await parse(
+    new TextEncoder().encode(JSON.stringify(original)),
+    ChromeTraceLoader,
+    {...workerOptions, chromeTrace: {shape: 'json'}}
+  );
+  expect(result).toEqual(original);
+});

@@ -46,8 +46,7 @@ const CHROME_TRACE_MODELED_EXTRA_KEYS = new Set([
   'tts',
   'id',
   'bind_id',
-  'args',
-  'scope'
+  'args'
 ]);
 
 /**
@@ -381,10 +380,6 @@ function buildChromeTraceExtraJson(event: ChromeTraceEventSchema): string | null
   const extraEntries = Object.entries(event).filter(([key, value]) => {
     if (CHROME_TRACE_MODELED_EXTRA_KEYS.has(key)) {
       return CHROME_TRACE_NUMERIC_ID_LIKE_KEYS.has(key) && typeof value === 'number';
-    }
-
-    if (key === 's' && event.scope == null) {
-      return false;
     }
 
     return true;
