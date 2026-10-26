@@ -8,4 +8,4 @@ This module contains:
 
 Please visit the [website](https://loaders.gl).
 
-Arrow table transport and buffer ownership helpers are available from `@loaders.gl/core/schema-utils/arrow-transport`, without depending on the grouped table format engines. See the [schema utilities documentation](../../docs/modules/schema-utils/README.md).
+Arrow table transport and buffer ownership helpers are available from `@loaders.gl/core/schema-utils/arrow-transport`, without depending on the grouped table format engines. See the [schema utilities documentation](../../docs/modules/core/schema-utils/README.md).

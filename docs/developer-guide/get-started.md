@@ -12,12 +12,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="First steps"
   title="Get started with loaders.gl"
-  description="Install the small core package, add only the format modules you need, and use one familiar API for local files, URLs, streams, and workers."
+  description="Install core and the packages that own your formats, and use one familiar API for local files, URLs, streams, and workers."
   tone="blue"
-  meta={['Install by format', 'load() and parse()', 'Browser and Node.js']}
+  meta={['Install by package', 'load() and parse()', 'Browser and Node.js']}
   links={[
     {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'},
-    {label: 'Browse modules', to: '/docs'}
+    {label: 'Browse packages', to: '/docs/packages'}
   ]}
 />
 
@@ -46,10 +46,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 Install loaders.gl core and the format modules you would like to use.
 
-Each format is published as a separate npm module.
+Related formats share a package. Install the owner package, then import a format subpath. See the [Packages overview](../packages.md) to choose the packages you need.
 
 ```shell
-yarn add @loaders.gl/core @loaders.gl/tables/csv
+yarn add @loaders.gl/core @loaders.gl/tables
 ```
 
 ## Usage

@@ -87,4 +87,4 @@ The [service guide](../arcgis-scene-server) provides source construction and req
 ## References
 
 - [Esri SceneServer REST reference](https://developers.arcgis.com/rest/services-reference/enterprise/scene-service/)
-- [I3S structure and encoding support](/docs/modules/i3s/formats/i3s)
+- [I3S structure and encoding support](/docs/modules/tiles-3d/i3s/formats/i3s)

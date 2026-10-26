@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Tile converter module', to: '/docs/modules/tile-converter'},
     {label: 'Tile Converter CLI', to: '/docs/modules/tile-converter/cli-reference/tile-converter'},
-    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'}
+    {label: 'I3S format', to: '/docs/modules/tiles-3d/i3s/formats/i3s'}
   ]}
 />
 

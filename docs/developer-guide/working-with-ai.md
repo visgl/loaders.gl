@@ -37,7 +37,7 @@ Installing it does not replace the application's instructions or authorize publi
 For asynchronous loading, metadata loaders can preload parser implementations.
 Synchronous parsing requires a parser-bearing loader; inspect the installed package's
 explicit subpath exports instead of guessing an import from an old example.
-See [unbundled loaders](./using-unbundled-loaders.md).
+See [unbundled loaders](./using-metadata-loaders.md).
 
 For worker loading, inspect the actual worker request, response content type, version,
 and deployment URL. An HTML fallback returned for a worker URL is a deployment error.

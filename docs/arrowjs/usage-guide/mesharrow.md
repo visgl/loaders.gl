@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Mesh category', to: '/docs/specifications/category-mesh'},
     {label: 'Apache Arrow guide', to: '/docs/developer-guide/apache-arrow'},
-    {label: 'Mesh Arrow package', to: '/docs/modules/schema/table-guide'}
+    {label: 'Mesh Arrow package', to: '/docs/modules/core/schema/table-guide'}
   ]}
 />
 

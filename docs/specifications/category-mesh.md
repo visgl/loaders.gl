@@ -52,15 +52,15 @@ The _mesh and pointcloud_ loader category is intended for simpler mesh and point
 | [`OBJLoader`](/docs/modules/scene/obj/api-reference/obj-loader)                                        | Mesh Arrow table          |
 | [`PCDLoader`](/docs/modules/pointclouds/pcd/api-reference/pcd-loader)                                        | Mesh Arrow table          |
 | [`PLYLoader`](/docs/modules/pointclouds/ply/api-reference/ply-loader)         | Mesh Arrow table          |
-| [`QuantizedMeshLoader`](/docs/modules/terrain/api-reference/quantized-mesh-loader) | Mesh Arrow table          |
-| [`TerrainLoader`](/docs/modules/terrain/api-reference/terrain-loader) | Mesh Arrow table          |
+| [`QuantizedMeshLoader`](/docs/modules/raster/terrain/api-reference/quantized-mesh-loader) | Mesh Arrow table          |
+| [`TerrainLoader`](/docs/modules/raster/terrain/api-reference/terrain-loader) | Mesh Arrow table          |
 | [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)                                  | Legacy Mesh object        |
 | [`LASLoader`](/docs/modules/pointclouds/las/api-reference/las-loader)                                        | Legacy PointCloud object  |
 | [`OBJLoader`](/docs/modules/scene/obj/api-reference/obj-loader) with `obj.shape: 'mesh'`               | Legacy Mesh object        |
 | [`PCDLoader`](/docs/modules/pointclouds/pcd/api-reference/pcd-loader) with `pcd.shape: 'mesh'`               | Legacy PointCloud object  |
 | [`PLYLoader`](/docs/modules/pointclouds/ply/api-reference/ply-loader) with `ply.shape: 'mesh'` | Legacy Mesh object        |
-| [`QuantizedMeshLoader`](/docs/modules/terrain/api-reference/quantized-mesh-loader) with `quantized-mesh.shape: 'mesh'` | Legacy Mesh object        |
-| [`TerrainLoader`](/docs/modules/terrain/api-reference/terrain-loader) with `terrain.shape: 'mesh'` | Legacy Mesh object        |
+| [`QuantizedMeshLoader`](/docs/modules/raster/terrain/api-reference/quantized-mesh-loader) with `quantized-mesh.shape: 'mesh'` | Legacy Mesh object        |
+| [`TerrainLoader`](/docs/modules/raster/terrain/api-reference/terrain-loader) with `terrain.shape: 'mesh'` | Legacy Mesh object        |
 
 ## Mesh/PointCloud Category Writers
 
@@ -73,7 +73,7 @@ Mesh category writers accept Mesh Arrow tables and legacy Mesh objects. Legacy M
 | [`OBJWriter`](/docs/modules/scene/obj/api-reference/obj-writer)                                   | Writes OBJ mesh text                   |
 | [`PCDWriter`](/docs/modules/pointclouds/pcd/api-reference/pcd-writer)                                   | Writes ASCII PCD point clouds          |
 | [`PLYWriter`](/docs/modules/pointclouds/ply/api-reference/ply-writer)                                   | Writes ASCII PLY meshes                |
-| [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer)          | Writes quantized mesh terrain          |
+| [`QuantizedMeshWriter`](/docs/modules/raster/terrain/api-reference/quantized-mesh-writer)          | Writes quantized mesh terrain          |
 
 ## Data Format
 
