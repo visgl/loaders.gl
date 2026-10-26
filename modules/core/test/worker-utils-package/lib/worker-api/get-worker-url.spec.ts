@@ -49,7 +49,13 @@ test('getWorkerURL', () => {
   );
   expect(
     getWorkerURL(
-      {...NullWorker, id: 'wkb', module: 'geospatial', workerFile: 'wkt-worker.js', workerSourceNode: 'wkt/workers/wkt-worker.ts'},
+      {
+        ...NullWorker,
+        id: 'wkb',
+        module: 'geospatial',
+        workerFile: 'wkt-worker.js',
+        workerSourceNode: 'wkt/workers/wkt-worker.ts'
+      },
       {_workerType: 'test'}
     ),
     'test worker URL supports a shared worker filename'
