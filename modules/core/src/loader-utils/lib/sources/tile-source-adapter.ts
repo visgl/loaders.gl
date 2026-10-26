@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getTileBounds, isTileIndexInRange, validateTileMatrix} from '@math.gl/geospatial';
+import {getTileBounds} from '@math.gl/geospatial/tile-matrix';
 import type {TileSource, GetTileParameters, GetTileDataParameters, TileGrid} from './tile-source';
 import type {ImageSource, ImageSourceMetadata} from './image-source';
-import {getRequestedTileMatrix} from './tile-grid';
+import {getRequestedTileMatrix, validateTileGrid, resolveTileGridTile} from './tile-grid';
 
 /** Converts image-window requests into tiles in a configured grid, or legacy geographic XYZ. */
 export class TileSourceAdapter<ImageSourceT extends ImageSource> implements TileSource {
@@ -16,15 +16,9 @@ export class TileSourceAdapter<ImageSourceT extends ImageSource> implements Tile
 
   /** Wraps an image source, optionally using an authoritative matrix set. */
   constructor(source: ImageSourceT, tileGrid?: TileGrid) {
-    if (
-      tileGrid &&
-      (!tileGrid.tileMatrixSet?.crs ||
-        !tileGrid.tileMatrixSet.matrices.length ||
-        new Set(tileGrid.tileMatrixSet.matrices.map(matrix => matrix.id)).size !==
-          tileGrid.tileMatrixSet.matrices.length)
-    )
+    if (tileGrid && (!tileGrid.tileMatrixSet?.crs || !tileGrid.tileMatrixSet.matrices.length))
       throw new Error('TileSourceAdapter requires complete tile matrix geometry.');
-    for (const matrix of tileGrid?.tileMatrixSet?.matrices || []) validateTileMatrix(matrix);
+    if (tileGrid) validateTileGrid(tileGrid);
     this.viewportSource = source;
     this.tileGrid = tileGrid;
   }
@@ -46,12 +40,9 @@ export class TileSourceAdapter<ImageSourceT extends ImageSource> implements Tile
         throw new Error('TileSourceAdapter does not support reprojection.');
       const matrix = getRequestedTileMatrix(set.matrices, level => level.id, parameters);
       if (!matrix) return Promise.resolve(null);
-      const limits = this.tileGrid?.limits?.find(limit => limit.tileMatrix === matrix.id);
-      if (
-        (this.tileGrid?.limits !== undefined && !limits) ||
-        !isTileIndexInRange(matrix, parameters.x, parameters.y, limits)
-      )
-        return Promise.resolve(null);
+      const resolved = resolveTileGridTile(this.tileGrid, parameters);
+      if (!resolved) return Promise.resolve(null);
+      parameters = resolved;
       [width, height] = matrix.tileSize;
       coordinateReferenceSystem = set.crs;
     } else if (parameters.tileMatrix !== undefined) {

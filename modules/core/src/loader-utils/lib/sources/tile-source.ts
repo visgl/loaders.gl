@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
-import type {TileMatrixLimits, TileMatrixSet} from '@math.gl/geospatial';
+import type {TileMatrixLimits, TileMatrixSet, VariableMatrixWidth} from '@math.gl/geospatial';
 
 /**
  * Props for a TileSource
@@ -131,6 +131,8 @@ export type TileGridMatrix = {
   tileSize?: [number, number];
   /** Matrix width and height in tile units. */
   matrixSize?: [number, number];
+  /** Native row bands coalescing base-grid columns; omitted rows remain regular. */
+  variableMatrixWidths?: readonly VariableMatrixWidth[];
 };
 
 /**

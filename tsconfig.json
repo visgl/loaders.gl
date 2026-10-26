@@ -147,6 +147,9 @@
       "@loaders.gl/core/worker-utils/test": [
         "modules/core/test/worker-utils-package"
       ],
+      "@loaders.gl/core/loader-utils/tile-grid": [
+        "modules/core/src/loader-utils/tile-grid"
+      ],
       "@loaders.gl/core/loader-utils": [
         "modules/core/src/loader-utils"
       ],

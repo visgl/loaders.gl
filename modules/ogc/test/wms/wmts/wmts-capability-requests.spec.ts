@@ -293,3 +293,9 @@ test('WMTS asynchronously loaded capabilities enforce coverage before any tile r
   expect(source.fetch).toHaveBeenCalledTimes(1);
   expect(source.isTileAvailable({x: 2, y: 1, z: 1})).toBe(true);
 });
+
+test('WMTS metadata validates coverage identities against its normalized grid', async () => {
+  const {source, suppliedCapabilities} = createSource();
+  suppliedCapabilities.contents.layers[0].tileMatrixSetLinks[0].limits![0].tileMatrix = 'missing';
+  await expect(source.getMetadata()).rejects.toThrow('unknown matrix');
+});

@@ -134,7 +134,7 @@ test.each([
   {
     tileMatrixSet: {
       ...GRID.tileMatrixSet!,
-      matrices: [{...MATRIX, variableMatrixWidths: [{coalesce: 3, minTileRow: 0, maxTileRow: 0}]}]
+      matrices: [{...MATRIX, variableMatrixWidths: [{coalesce: 2, minTileRow: 0, maxTileRow: 0}]}]
     }
   }
 ])('rejects incomplete, invalid or unsupported geometry %j', grid => {
@@ -211,5 +211,50 @@ test('empty coalescence metadata remains a regular grid, malformed bands reject'
       },
       FRAME
     )
-  ).toThrow('variable-width');
+  ).toThrow(/ariable-width/);
+});
+
+test.each([
+  'topLeft',
+  'bottomLeft'
+] as const)('coalesced selection budgets canonical tiles across %s row bands', cornerOfOrigin => {
+  const matrix: TileMatrix = {
+    ...MATRIX,
+    cornerOfOrigin,
+    matrixSize: [4, 3],
+    variableMatrixWidths: [
+      {coalesce: 2, minTileRow: 0, maxTileRow: 0},
+      {coalesce: 4, minTileRow: 2, maxTileRow: 2}
+    ]
+  };
+  const grid = {tileMatrixSet: {crs: FRAME.crs, matrices: [matrix]}};
+  const frame = {...FRAME, extent: [0, 0, 1000, 1000] as const};
+  const tiles = selectTileMatrixTiles(grid, frame, {maximumTileCount: 7});
+  expect(tiles.map(tile => tile.index)).toEqual([
+    {x: 0, y: 0, z: 0},
+    {x: 2, y: 0, z: 0},
+    {x: 0, y: 1, z: 0},
+    {x: 1, y: 1, z: 0},
+    {x: 2, y: 1, z: 0},
+    {x: 3, y: 1, z: 0},
+    {x: 0, y: 2, z: 0}
+  ]);
+  expect(new Set(tiles.map(tile => tile.id)).size).toBe(7);
+  expect(tiles[0].bbox.right - tiles[0].bbox.left).toBe(40);
+  expect(tiles[6].bbox.right - tiles[6].bbox.left).toBe(80);
+  expect(tiles[6].tileSize).toEqual([10, 5]);
+  expect(() => selectTileMatrixTiles(grid, frame, {maximumTileCount: 6})).toThrow(
+    'maximumTileCount'
+  );
+  expect(
+    selectTileMatrixTiles(
+      {
+        ...grid,
+        limits: [
+          {tileMatrix: matrix.id, minTileColumn: 1, maxTileColumn: 1, minTileRow: 0, maxTileRow: 2}
+        ]
+      },
+      frame
+    ).map(tile => tile.index.x)
+  ).toEqual([0, 1, 0]);
 });
