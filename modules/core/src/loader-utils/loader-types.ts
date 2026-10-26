@@ -219,6 +219,8 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
     url: string,
     options: LoaderOptions
   ) => readonly AuthenticationConstructor[] | Promise<readonly AuthenticationConstructor[]>;
+  /** Converts loader-specific option values to portable data before worker dispatch. Must not mutate options. */
+  serializeWorkerOptions?: (options: LoaderOptionsT) => LoaderOptions;
   /** Serializes parser output before returning it from a worker. */
   serializeWorkerResult?: (
     result: DataT,

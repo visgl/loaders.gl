@@ -307,11 +307,12 @@ function resolveWorkerLoaders(
  * @param loader Loader whose parser will handle the worker request.
  */
 function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
+  const portableOptions = loader?.serializeWorkerOptions?.(options) || options;
   const optionsToSerialize = {
-    ...options,
+    ...portableOptions,
     signal: undefined,
     onProgress: undefined,
-    ...(options.core ? {core: {...options.core, authentications: undefined}} : {})
+    ...(portableOptions.core ? {core: {...portableOptions.core, authentications: undefined}} : {})
   };
   const serializedOptions = JSON.parse(
     JSON.stringify(optionsToSerialize, (_key, value) => {

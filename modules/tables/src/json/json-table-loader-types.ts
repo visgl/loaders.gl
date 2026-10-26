@@ -5,6 +5,7 @@
 import type {ArrowTable, ArrowTableBatch, Schema, Table, TableBatch} from '@loaders.gl/core/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type * as arrow from 'apache-arrow';
+import {JSON_WORKER_URL} from './json-worker-url';
 import {JSONFormat} from './json-format';
 import type {JSONBatch, MetadataBatch} from './json-loader-types';
 import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
@@ -56,6 +57,11 @@ export const JSONTableLoader = {
   name: 'JSON Table',
   id: 'json-table',
   version: VERSION,
+  worker: JSON_WORKER_URL,
+  workerFile: 'json-worker.js',
+  workerNode: 'json-worker-node.cjs',
+  workerSourceNode: 'json/workers/json-worker.ts',
+  workerInBatches: true,
   options: {
     json: {
       backend: 'clarinet',

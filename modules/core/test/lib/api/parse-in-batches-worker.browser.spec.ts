@@ -80,3 +80,46 @@ test.each([false, true])('custom workers require explicit batch support: %s', as
   expect(loadWorker).not.toHaveBeenCalled();
   expect(mainParser).toHaveBeenCalledTimes(supported ? 0 : 1);
 });
+
+test('loader option serialization runs before dispatch without mutating caller options', async () => {
+  const source = BATCH_WORKER_SOURCE.replace(
+    'loaderId = payload.options._workerLoaderId;',
+    'loaderId = payload.options.contract.value;'
+  );
+  const workerUrl = URL.createObjectURL(new Blob([source], {type: 'application/javascript'}));
+  workerUrls.push(workerUrl);
+  const loadWorker = vi.fn(() => new Worker(workerUrl));
+  const {loader} = createBatchTestLoader(loadWorker);
+  const serializeWorkerOptions = vi.fn(options => ({...options, contract: {value: 'portable'}}));
+  const options = {core: {worker: true, _workerType: 'module'}, contract: {value: 'original'}};
+  const batches = await parseInBatches(
+    [new TextEncoder().encode('input')],
+    {...loader, serializeWorkerOptions},
+    options
+  );
+  const results = [];
+  for await (const batch of batches) results.push(batch);
+  expect(results[0].loaderId).toBe('portable');
+  expect(serializeWorkerOptions).toHaveBeenCalledOnce();
+  expect(options.contract.value).toBe('original');
+});
+
+test('option serialization failures reject before creating a worker or transferring input', async () => {
+  const loadWorker = vi.fn(() => new Worker(createWorkerUrl()));
+  const {loader} = createBatchTestLoader(loadWorker);
+  const input = new TextEncoder().encode('retained');
+  const reason = new Error('invalid worker options');
+  const batches = await parseInBatches(
+    [input],
+    {
+      ...loader,
+      serializeWorkerOptions() {
+        throw reason;
+      }
+    },
+    {core: {worker: true}}
+  );
+  await expect(batches[Symbol.asyncIterator]().next()).rejects.toBe(reason);
+  expect(loadWorker).not.toHaveBeenCalled();
+  expect(new TextDecoder().decode(input)).toBe('retained');
+});

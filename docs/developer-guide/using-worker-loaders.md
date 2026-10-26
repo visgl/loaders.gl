@@ -155,7 +155,8 @@ restore richer values after the boundary. For example, CSV Arrow batches use the
 transport helpers so the application receives real Arrow tables with methods such as
 `getChild()` rather than structured-cloned plain objects.
 
-The current 5.0 pilot is CSV with `csv.shape: 'arrow-table'`. Other loaders continue to use
+CSV Arrow, Parquet, JSON, JSONTable, and NDJSON support worker batches. Loaders without explicit
+batch capability continue to use
 their existing main-thread or atomic-worker paths until they opt into the same stateful
 batch contract. If a loader or runtime cannot provide a compatible worker, `parseInBatches`
 falls back to the loader's main-thread parser without changing its batch ordering.
@@ -369,7 +370,8 @@ input buffers remain detached after cancellation; retain a copy if the applicati
 checks permit it. The worker stays leased for the iterator lifetime. Input is requested on demand;
 output batches are acknowledged before more output is produced.
 
-Built-in support includes CSV Arrow-table output and canonical Parquet Arrow/object-row batches.
+Built-in support includes CSV Arrow-table output, canonical Parquet Arrow/object-row batches,
+and incremental JSON, JSONTable, and NDJSON batches.
 Loader authors can enable other loaders
 by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`,
 and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs
@@ -400,3 +402,14 @@ batched, but its input is collected before decoding. Parquet key-retriever callb
 the caller, and the explicit WASM/GeoParquet loaders do not opt into this batch worker.
 Parser options disable recursive worker dispatch
 inside a worker; input transforms and loader selection remain on the caller.
+
+### Portable loader options
+
+A parser-bearing loader can provide `serializeWorkerOptions(options)` to convert option values
+such as class instances into portable data before atomic or batch dispatch. The hook is synchronous,
+must not mutate caller options, and returns the complete options object. Throwing rejects before a
+worker job is scheduled or input buffers are transferred. Signals and progress callbacks remain on
+the caller and are removed from the serialized options after this hook runs.
+
+JSONTable and NDJSON use this hook to convert Apache Arrow schemas into loaders.gl schemas. Worker
+selection still uses the caller's options; the hook prepares parser options after that decision.

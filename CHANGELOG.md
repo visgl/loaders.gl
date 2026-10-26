@@ -4,6 +4,10 @@
 
 ### Unreleased
 
+- Enable incremental JSON, JSONTable, and NDJSON worker batches with backpressure, decoded-row
+  progress, portable Arrow schemas, owned Arrow transport, and browser/Node worker bundles.
+- Add the `serializeWorkerOptions` loader hook for portable atomic and batch parser options.
+
 ### v5.0.0-alpha.14
 
 - Worker cancellation now promptly removes queued jobs and replaces terminated running workers.
