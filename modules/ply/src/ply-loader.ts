@@ -92,17 +92,21 @@ export const PLYLoaderWithParser = {
 
 /** Return requested public PLY shape from the parser's Arrow table. */
 function convertPLYTable(
-  table: MeshArrowTable,
+  table: MeshArrowTable & {
+    /** Original source header retained by the streaming parser. */
+    loaderData?: PLYHeader;
+  },
   options?: PLYLoaderOptions,
   header?: PLYHeader
 ): PLYMesh | MeshArrowTable {
+  const loaderData = header || table.loaderData || {comments: [], elements: []};
   const result =
     options?.ply?.shape === 'arrow-table'
-      ? {...table, loader: 'ply' as const, loaderData: header || {comments: [], elements: []}}
+      ? {...table, loader: 'ply' as const, loaderData}
       : {
           ...(convertTableToMesh(table) as PLYMesh),
           loader: 'ply',
-          loaderData: header || {comments: [], elements: []}
+          loaderData
         };
   const colorFormat = options?.ply?.colorFormat || 'uint8norm';
   if (colorFormat === 'uint8norm') {
@@ -118,7 +122,7 @@ function convertPLYTable(
     ? {
         ...convertMeshToTable(formattedMesh, 'arrow-table'),
         loader: 'ply' as const,
-        loaderData: header || {comments: [], elements: []}
+        loaderData
       }
     : (formattedMesh as PLYMesh);
 }

@@ -88,28 +88,28 @@ async function* parseBinaryPLYToArrowInBatches(
 ): AsyncIterable<MeshArrowTable> {
   const byteIterator = toArrayBufferIterator(iterator)[Symbol.asyncIterator]();
   const {header, initialBodyBytes} = await readPLYHeader(byteIterator, options);
+  let tables: AsyncIterable<MeshArrowTable>;
   if (header.format === 'ascii') {
-    yield* parseASCIIPLYToArrowInBatches(byteIterator, header, initialBodyBytes, options);
-    return;
+    tables = parseASCIIPLYToArrowInBatches(byteIterator, header, initialBodyBytes, options);
+  } else {
+    const vertexElement = getVertexElement(header, options);
+    tables = vertexElement.properties.some(property => property.type === 'list')
+      ? parseBinaryVariableWidthVertexPLYToArrowInBatches(
+          byteIterator,
+          header,
+          initialBodyBytes,
+          options
+        )
+      : parseBinaryFixedWidthVertexPLYToArrowInBatches(
+          byteIterator,
+          header,
+          initialBodyBytes,
+          options
+        );
   }
-
-  const vertexElement = getVertexElement(header, options);
-  if (vertexElement.properties.some(property => property.type === 'list')) {
-    yield* parseBinaryVariableWidthVertexPLYToArrowInBatches(
-      byteIterator,
-      header,
-      initialBodyBytes,
-      options
-    );
-    return;
+  for await (const table of tables) {
+    yield {...table, loaderData: header} as MeshArrowTable;
   }
-
-  yield* parseBinaryFixedWidthVertexPLYToArrowInBatches(
-    byteIterator,
-    header,
-    initialBodyBytes,
-    options
-  );
 }
 
 /** Parse fixed-width binary PLY vertices into Arrow table batches. */

@@ -105,6 +105,8 @@ test('PLY binary worker batches preserve records split across input chunks', asy
   const lengths: number[] = [];
   const positions: number[] = [];
   for await (const batch of batches) {
+    expect(batch.loaderData.format).toBe('binary_little_endian');
+    expect(batch.loaderData.elements[0].count).toBe(3);
     lengths.push(batch.length);
     for (const position of batch.data.getChild('POSITION')!) positions.push(...position);
   }
@@ -146,4 +148,33 @@ test('PLY IPC hydration defaults to Arrow when caller options are omitted', asyn
   expect(parser.deserializeWorkerResult(payload, {}).data).toBeInstanceOf(Table);
   expect(parser.deserializeWorkerBatch(payload).data).toBeInstanceOf(Table);
   expect(parser.deserializeWorkerBatch(payload, {}).data).toBeInstanceOf(Table);
+});
+
+test.each([
+  false,
+  true
+])('PLY source headers survive color conversion with worker=%s', async worker => {
+  const text = source
+    .replace('format ascii 1.0', 'format ascii 1.0\ncomment retained source header')
+    .replace(
+      'end_header',
+      'property uchar red\nproperty uchar green\nproperty uchar blue\nend_header'
+    )
+    .replace('1 2 3\n', '1 2 3 255 0 0\n')
+    .replace('4 5 6\n', '4 5 6 0 255 0\n')
+    .replace('7 8 9\n', '7 8 9 0 0 255\n');
+  const batches = await parseInBatches([new TextEncoder().encode(text)], PLYLoader, {
+    core: {worker, _workerType: 'test', batchSize: 2},
+    ply: {shape: 'arrow-table', pointCloud: true, colorFormat: 'float32'}
+  });
+  let count = 0;
+  for await (const batch of batches) {
+    expect(batch.loaderData).toMatchObject({
+      format: 'ascii',
+      comments: ['retained source header'],
+      elements: [{name: 'vertex', count: 3}]
+    });
+    count++;
+  }
+  expect(count).toBe(2);
 });

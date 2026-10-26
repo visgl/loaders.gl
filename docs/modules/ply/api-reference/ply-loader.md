@@ -96,6 +96,8 @@ for await (const batch of batches) {
 `PLYLoader` supports `parseInBatches()` on its built-in browser worker. The worker stays
 leased for the input iterator and transfers independently owned Arrow IPC buffers. The caller
 hydrates Mesh Arrow tables and performs any requested legacy `shape: 'mesh'` conversion.
+`loaderData` on Arrow batches retains the parsed source header, including comments and elements.
+Its element counts describe the source; use `batch.length` for the current batch row count.
 Schemas and small loader/batch descriptors accompany the binary buffers; decoded row objects
 are not sent from the worker. JSON conversion, if needed by an application, happens on the caller.
 
