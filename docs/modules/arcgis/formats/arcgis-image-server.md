@@ -86,4 +86,4 @@ The [service guide](../arcgis-image-server) provides source construction and req
 ## References
 
 - [Esri ImageServer REST reference](https://developers.arcgis.com/rest/services-reference/enterprise/image-service/)
-- [LERC encoding](/docs/modules/lerc/formats/lerc)
+- [LERC encoding](/docs/modules/raster/lerc/formats/lerc)

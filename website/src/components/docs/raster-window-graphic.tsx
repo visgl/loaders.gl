@@ -23,7 +23,7 @@ const RASTER_CONTENT = {
     output: 'Typed raster result',
     outputNote: 'Pixels, dimensions, transform, and CRS stay available to the application.',
     outputTags: ['pixels', 'transform', 'CRS'],
-    link: '/docs/modules/geotiff/api-reference/geotiff-source-loader'
+    link: '/docs/modules/raster/geotiff/api-reference/geotiff-source-loader'
   },
   zarr: {
     source: 'Zarr / GeoZarr / OME-Zarr',

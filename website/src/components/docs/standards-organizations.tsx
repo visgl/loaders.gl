@@ -28,14 +28,14 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
     description: 'Portable scene, tiled-world, point-cloud, mesh-compression, and GPU texture formats.',
     links: [
       {label: 'glTF / GLB', to: '/docs/modules/scene/gltf/formats/gltf'},
-      {label: '3D Tiles', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
-      {label: 'I3S / SLPK', to: '/docs/modules/i3s/formats/i3s'},
+      {label: '3D Tiles', to: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'},
+      {label: 'I3S / SLPK', to: '/docs/modules/tiles-3d/i3s/formats/i3s'},
       {label: 'Draco', to: '/docs/modules/draco/formats/draco'},
       {label: 'KTX / KTX2', to: '/docs/modules/textures/formats/ktx'},
       {label: 'Basis', to: '/docs/modules/textures/formats/basis'},
       {label: 'LAS / LAZ', to: '/docs/modules/pointclouds/las/formats/las'},
       {label: 'COPC', to: '/docs/modules/tiles-3d/copc/formats/copc'},
-      {label: 'OpenUSD', to: '/docs/modules/scene/formats/usd'}
+      {label: 'OpenUSD', to: '/docs/modules/scene/usd/formats/usd'}
     ]
   },
   {
@@ -60,7 +60,7 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
       {label: 'GeoJSON', to: '/docs/modules/tables/json/formats/geojson'},
       {label: 'KML / KMZ', to: '/docs/modules/geospatial/kml/formats/kml'},
       {label: 'GeoPackage', to: '/docs/modules/geospatial/geopackage/formats/geopackage'},
-      {label: 'GeoTIFF', to: '/docs/modules/geotiff/formats/geotiff'},
+      {label: 'GeoTIFF', to: '/docs/modules/raster/geotiff/formats/geotiff'},
       {label: 'FlatGeobuf', to: '/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf'},
       {label: 'Shapefile', to: '/docs/modules/geospatial/shapefile/formats/shapefile'},
       {label: 'WKT / WKB', to: '/docs/modules/geospatial/wkt/formats/wkt'},
@@ -113,10 +113,10 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     title: 'OGC',
     description: 'File formats, geometry models, coordinate descriptions, tiled scenes, and web-service protocols.',
     links: [
-      {label: '3D Tiles', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
-      {label: 'I3S', to: '/docs/modules/i3s/formats/i3s'},
+      {label: '3D Tiles', to: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'},
+      {label: 'I3S', to: '/docs/modules/tiles-3d/i3s/formats/i3s'},
       {label: 'GeoPackage', to: '/docs/modules/geospatial/geopackage/formats/geopackage'},
-      {label: 'GeoTIFF', to: '/docs/modules/geotiff/formats/geotiff'},
+      {label: 'GeoTIFF', to: '/docs/modules/raster/geotiff/formats/geotiff'},
       {label: 'KML', to: '/docs/modules/geospatial/kml/formats/kml'},
       {label: 'GML', to: '/docs/modules/ogc/wms/formats/gml'},
       {label: 'WKT / WKB', to: '/docs/modules/geospatial/wkt/formats/wkt'},
@@ -128,8 +128,8 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     title: 'Esri / ArcGIS',
     description: 'Scene layers, raster compression, and ArcGIS REST services connected to common loaders.gl sources.',
     links: [
-      {label: 'I3S / SLPK', to: '/docs/modules/i3s/formats/i3s'},
-      {label: 'LERC', to: '/docs/modules/lerc/formats/lerc'},
+      {label: 'I3S / SLPK', to: '/docs/modules/tiles-3d/i3s/formats/i3s'},
+      {label: 'LERC', to: '/docs/modules/raster/lerc/formats/lerc'},
       {label: 'FeatureServer', to: '/docs/modules/arcgis/arcgis-feature-server'},
       {label: 'MapServer', to: '/docs/modules/arcgis/arcgis-map-server'},
       {label: 'ImageServer', to: '/docs/modules/arcgis/arcgis-image-server'},
@@ -144,8 +144,8 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     links: [
       {label: 'IETF GeoJSON', to: '/docs/modules/tables/json/formats/geojson'},
       {label: 'ASPRS LAS / LAZ', to: '/docs/modules/pointclouds/las/formats/las'},
-      {label: 'Cesium 3D Tiles', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
-      {label: 'AOUSD OpenUSD', to: '/docs/modules/scene/formats/usd'},
+      {label: 'Cesium 3D Tiles', to: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'},
+      {label: 'AOUSD OpenUSD', to: '/docs/modules/scene/usd/formats/usd'},
       {label: 'COPC', to: '/docs/modules/tiles-3d/copc/formats/copc'}
     ]
   }

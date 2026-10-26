@@ -17,7 +17,7 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
   tone="violet"
   links={[
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'},
-    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'}
+    {label: '3D Tiles format', to: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'}
   ]}
 />
 
@@ -72,9 +72,9 @@ the application needs repeated, viewport-driven requests:
 
 | Need | Entry point | Role |
 | --- | --- | --- |
-| Parse a 3D Tiles resource | [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader) | Decode a tileset or tile payload |
-| Resolve Cesium ion data | [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader) | Resolve ion credentials and tileset URLs |
-| Parse I3S resources | [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader) | Decode I3S metadata, nodes, and content |
+| Parse a 3D Tiles resource | [`Tiles3DLoader`](/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader) | Decode a tileset or tile payload |
+| Resolve Cesium ion data | [`CesiumIonLoader`](/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader) | Resolve ion credentials and tileset URLs |
+| Parse I3S resources | [`I3SLoader`](/docs/modules/tiles-3d/i3s/api-reference/i3s-loader) | Decode I3S metadata, nodes, and content |
 | Parse Potree resources | [`PotreeLoader`](/docs/modules/tiles-3d/potree/api-reference/potree-loader) | Decode Potree hierarchy and point data |
 | Traverse a tiled world | [`Tileset3D`](/docs/modules/tiles-3d/api-reference/tileset-3d) | Select, request, cache, and release visible tiles |
 
@@ -116,7 +116,7 @@ renderer boundary.
 
 The following fields are common entry points, but a source may add format-specific metadata. Use
 the [`Tile3D` reference](/docs/modules/tiles-3d/api-reference/tile-3d) for runtime state and the
-[3D Tiles format page](/docs/modules/3d-tiles/formats/3d-tiles) for payload conformance.
+[3D Tiles format page](/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles) for payload conformance.
 
 | Object | Common fields | Meaning |
 | --- | --- | --- |
@@ -137,7 +137,7 @@ Tile positions may be represented in:
 - local or cartographic coordinates relative to a tile origin, with positions in meters
 
 Transforms and origins are source data, not assumptions hidden by the category. I3S can additionally
-request explicit horizontal and vertical placement; see [I3S coordinate reference systems](/docs/modules/i3s/concepts/coordinate-reference-systems)
+request explicit horizontal and vertical placement; see [I3S coordinate reference systems](/docs/modules/tiles-3d/i3s/concepts/coordinate-reference-systems)
 and [vertical coordinate systems](/docs/developer-guide/vertical-coordinate-systems).
 
 ## Standards and format details
@@ -145,5 +145,5 @@ and [vertical coordinate systems](/docs/developer-guide/vertical-coordinate-syst
 - [OGC 3D Tiles standard](https://www.ogc.org/standards/3DTiles)
 - [OGC I3S standard](https://www.ogc.org/standards/i3s)
 - [Potree format](https://potree.github.io/)
-- [3D Tiles format compatibility matrix](/docs/modules/3d-tiles/formats/3d-tiles)
+- [3D Tiles format compatibility matrix](/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles)
 - [Tiles runtime module](/docs/modules/tiles)

@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Core module', to: '/docs/modules/core'},
     {label: 'Loader options', to: '/docs/modules/core/api-reference/loader-options'},
-    {label: 'Resource resolution', to: '/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection'}
+    {label: 'Resource resolution', to: '/docs/modules/tiles-3d/3d-tiles/concepts/resource-resolution-and-content-detection'}
   ]}
 />
 
