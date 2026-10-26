@@ -142,3 +142,7 @@ Supports the table category options such as `batchSize`.
 This loader supports stateful worker batch parsing with `core.worker: true`, cancellation via
 `signal`, and decoded-row progress via `onProgress`. See [JSON worker batches](/docs/modules/tables/json#parsing-batches-in-workers)
 for streaming behavior, schemas, backpressure, and Node/custom-worker options.
+
+Arrow tables return as transferable Arrow IPC bytes. Row tables and container metadata return as
+binary JSON frames decoded on the caller, preserving heterogeneous values without Arrow coercion.
+Decoded row objects are never structured-cloned across the worker boundary.

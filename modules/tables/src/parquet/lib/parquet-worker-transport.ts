@@ -15,7 +15,10 @@ import type {
 } from '@loaders.gl/core/schema';
 
 import type {ParquetLoaderOptions} from '../parquet-loader-options';
-import {convertArrowBatchToObjectRows} from './parsers/convert-parquet-tables';
+import {
+  convertArrowBatchToObjectRows,
+  convertArrowTableToObjectRows
+} from './parsers/convert-parquet-tables';
 
 type ParquetWorkerResult = ArrowTable | ObjectRowTable;
 
@@ -35,7 +38,7 @@ type SerializedParquetBatch = Pick<ArrowTableBatch, 'batchType' | 'length' | 'sc
 /** Serializes a Parquet worker result so Arrow buffers are transferred without cloning. */
 export function serializeParquetWorkerResult(result: unknown): unknown {
   if (!isArrowTable(result)) {
-    return result;
+    throw new Error('Parquet workers require Arrow table output');
   }
   return {
     ...result,
@@ -44,9 +47,15 @@ export function serializeParquetWorkerResult(result: unknown): unknown {
 }
 
 /** Rehydrates a transferred Parquet Arrow result into main-thread Arrow class instances. */
-export function deserializeParquetWorkerResult(result: unknown): ParquetWorkerResult {
+export function deserializeParquetWorkerResult(
+  result: unknown,
+  options?: ParquetLoaderOptions
+): ParquetWorkerResult {
   if (isSerializedArrowTable(result)) {
-    return {...result, data: deserializeArrowTableFromIPC(result.data)};
+    const table = {...result, data: deserializeArrowTableFromIPC(result.data)};
+    return options?.parquet?.shape === 'object-row-table'
+      ? convertArrowTableToObjectRows(table)
+      : table;
   }
   return result as ParquetWorkerResult;
 }

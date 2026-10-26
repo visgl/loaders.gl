@@ -155,7 +155,7 @@ restore richer values after the boundary. For example, CSV Arrow batches use the
 transport helpers so the application receives real Arrow tables with methods such as
 `getChild()` rather than structured-cloned plain objects.
 
-CSV Arrow, Parquet, JSON, JSONTable, and NDJSON support worker batches. Loaders without explicit
+CSV Arrow, Parquet, Arrow, GeoArrow, JSON, JSONTable, and NDJSON support worker batches. Loaders without explicit
 batch capability continue to use
 their existing main-thread or atomic-worker paths until they opt into the same stateful
 batch contract. If a loader or runtime cannot provide a compatible worker, `parseInBatches`
@@ -371,7 +371,7 @@ checks permit it. The worker stays leased for the iterator lifetime. Input is re
 output batches are acknowledged before more output is produced.
 
 Built-in support includes CSV Arrow-table output, canonical Parquet Arrow/object-row batches,
-and incremental JSON, JSONTable, and NDJSON batches.
+and incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches.
 Loader authors can enable other loaders
 by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`,
 and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs

@@ -96,7 +96,7 @@ test.each([
   expect(batches.flatMap(batch => Array.from(batch.data, (row: any) => row.toJSON()))).toEqual(
     rows
   );
-  expect(batches[0].data.schema.fields[0].type).toBeInstanceOf(Int32);
+  expect(batches[0].data.schema.fields[0].type).toMatchObject({isSigned: true, bitWidth: 32});
   expect(batches[0].schema.metadata.origin).toBe('worker-test');
   expect(batches[0].data.schema.fields[0].metadata.get('meaning')).toBe('identifier');
   expect(onProgress).toHaveBeenLastCalledWith({phase: 'decode', completed: 2, unit: 'rows'});
@@ -211,4 +211,61 @@ test('JSON loaders resolve their shared published browser asset outside test mod
       /^https:\/\/unpkg\.com\/@loaders\.gl\/tables@[^/]+\/dist\/json-worker\.js$/
     );
   }
+});
+
+test.each([
+  [
+    JSONTableLoader,
+    JSONTableLoaderWithParser,
+    'json',
+    '[{"id":1},{"id":"different","extra":true}]'
+  ],
+  [NDJSONLoader, NDJSONLoaderWithParser, 'ndjson', '{"id":1}\n{"id":"different","extra":true}\n']
+] as const)('$0.id transfers heterogeneous rows as binary JSON without Arrow coercion', async (metadata, implementation, namespace, text) => {
+  const {loader, mainParser} = observeLoader(metadata, implementation);
+  const batches = await collectBatches(
+    await parseInBatches([encoder.encode(text)], loader, {
+      core: {worker: true, batchSize: 1},
+      [namespace]: {shape: 'object-row-table'}
+    })
+  );
+  expect(mainParser).not.toHaveBeenCalled();
+  expect(batches.flatMap(batch => batch.data)).toEqual([{id: 1}, {id: 'different', extra: true}]);
+});
+
+test('JSONTable transfers binary container metadata alongside Arrow output', async () => {
+  const {loader, mainParser} = observeLoader(JSONTableLoader, JSONTableLoaderWithParser);
+  const batches = await collectBatches(
+    await parseInBatches([encoder.encode('{"label":"before","rows":[{"id":1}]}')], loader, {
+      core: {worker: true, metadata: true},
+      json: {shape: 'arrow-table', jsonpaths: ['$.rows']}
+    })
+  );
+  expect(mainParser).not.toHaveBeenCalled();
+  expect(batches.find(batch => batch.batchType === 'data').data).toBeInstanceOf(Table);
+  expect(batches.at(-1)).toMatchObject({batchType: 'final-result', container: {label: 'before'}});
+});
+
+test('JSON documents use binary results with a self-hosted worker URL', async () => {
+  const document = {
+    shape: 'arrow-table',
+    data: {batches: []},
+    rows: [{id: 1}, {id: 'different', extra: true}],
+    metadata: {nested: [null, false]}
+  };
+  const options = {
+    core: {worker: true, _workerType: 'classic' as const},
+    json: {workerUrl: new URL('/modules/tables/dist/json-worker.js', location.href).href}
+  };
+  const deserialize = vi.fn(JSONLoaderWithParser.deserializeWorkerResult);
+  const loader = {
+    ...JSONLoader,
+    preload: async () => ({...JSONLoaderWithParser, deserializeWorkerResult: deserialize})
+  };
+  expect(await parse(encoder.encode(JSON.stringify(document)), loader, options)).toEqual(document);
+  expect(deserialize).toHaveBeenCalledOnce();
+  expect(deserialize.mock.calls[0][0]).toMatchObject({
+    transport: 'json-utf8',
+    data: expect.any(Uint8Array)
+  });
 });

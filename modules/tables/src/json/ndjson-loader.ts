@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/core/schema-utils/arrow-transport';
-import {serializeJSONWorkerOptions, serializeJSONWorkerBatch} from './lib/json-worker-transport';
+  serializeJSONWorkerOptions,
+  serializeJSONWorkerBatch,
+  deserializeJSONWorkerResult
+} from './lib/json-worker-transport';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ObjectRowTable,
@@ -33,10 +33,10 @@ const {preload: _NDJSONLoaderPreload, ...NDJSONLoaderMetadataWithoutPreload} = N
 export const NDJSONLoaderWithParser = {
   ...NDJSONLoaderMetadataWithoutPreload,
   serializeWorkerOptions: serializeJSONWorkerOptions,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
+  serializeWorkerResult: serializeJSONWorkerBatch,
+  deserializeWorkerResult: deserializeJSONWorkerResult,
   serializeWorkerBatch: serializeJSONWorkerBatch,
-  deserializeWorkerBatch: deserializeArrowWorkerResult,
+  deserializeWorkerBatch: deserializeJSONWorkerResult,
   parse: async (arrayBuffer: ArrayBuffer, options?: NDJSONLoaderOptions) =>
     parseNDJSONText(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: NDJSONLoaderOptions) => parseNDJSONText(text, options),

@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {
+  serializeArrowIPCResult,
+  deserializeArrowIPCResult,
+  deserializeArrowIPCBatch
+} from './lib/arrow-worker-transport';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
@@ -15,6 +20,10 @@ const {preload: _ArrowLoaderPreload, ...ArrowLoaderMetadataWithoutPreload} = Arr
 /** ArrowJS table loader */
 export const ArrowLoaderWithParser = {
   ...ArrowLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeArrowIPCResult,
+  deserializeWorkerResult: deserializeArrowIPCResult,
+  serializeWorkerBatch: serializeArrowIPCResult,
+  deserializeWorkerBatch: deserializeArrowIPCBatch,
   parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) => {
     await preloadArrowCompressionDecoders();
     return parseArrowSync(arraybuffer, options?.arrow);

@@ -11,11 +11,12 @@ import type {
   TableBatch
 } from '@loaders.gl/core/schema';
 import {convertTable, makeTableFromData} from '@loaders.gl/core/schema-utils';
+
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/core/schema-utils/arrow-transport';
-import {serializeJSONWorkerOptions, serializeJSONWorkerBatch} from './lib/json-worker-transport';
+  serializeJSONWorkerOptions,
+  serializeJSONWorkerBatch,
+  deserializeJSONWorkerResult
+} from './lib/json-worker-transport';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
@@ -41,10 +42,10 @@ const {preload: _JSONTableLoaderPreload, ...JSONTableLoaderMetadataWithoutPreloa
 export const JSONTableLoaderWithParser = {
   ...JSONTableLoaderMetadataWithoutPreload,
   serializeWorkerOptions: serializeJSONWorkerOptions,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
+  serializeWorkerResult: serializeJSONWorkerBatch,
+  deserializeWorkerResult: deserializeJSONWorkerResult,
   serializeWorkerBatch: serializeJSONWorkerBatch,
-  deserializeWorkerBatch: deserializeArrowWorkerResult,
+  deserializeWorkerBatch: deserializeJSONWorkerResult,
   parse,
   parseTextSync,
   parseInBatches
