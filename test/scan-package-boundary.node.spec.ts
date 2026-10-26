@@ -7,6 +7,7 @@ import path from 'node:path';
 
 import {build} from 'esbuild';
 import {expect, test} from 'vitest';
+import {preProcessFile} from 'typescript';
 
 const REPOSITORY_ROOT = process.cwd();
 const MAXIMUM_SCAN_BUNDLE_BYTES = 310 * 1024;
@@ -25,9 +26,15 @@ test('implementations and tests do not import removed utility entrypoints', () =
     if (!fs.existsSync(sourceDirectory)) continue;
     for (const filename of listSourceFiles(sourceDirectory)) {
       const source = fs.readFileSync(filename, 'utf8');
+      const imports = preProcessFile(source, true, true).importedFiles.map(file => file.fileName);
       if (
-        /['"]@loaders\.gl\/(?:scan|arrow-geometry|geoarrow)(?:\/[^'"]*)?['"]/.test(source) ||
-        /['"]@loaders\.gl\/sql\/(?:arrow-query|table-query|sql-predicate(?:-zod)?)['"]/.test(source)
+        imports.some(
+          specifier =>
+            /^@loaders\.gl\/(?:scan|arrow-geometry|geoarrow)(?:\/|$)/.test(specifier) ||
+            /^@loaders\.gl\/sql\/(?:arrow-query|table-query|sql-predicate(?:-zod)?)$/.test(
+              specifier
+            )
+        )
       ) {
         violations.push(path.relative(REPOSITORY_ROOT, filename));
       }

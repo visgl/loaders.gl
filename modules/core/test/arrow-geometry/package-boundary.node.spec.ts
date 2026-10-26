@@ -35,10 +35,10 @@ test.each([
   const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
   for (const section of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
     expect(manifest[section] ?? {}).not.toHaveProperty('@loaders.gl/gis');
-    expect(manifest[section] ?? {}).not.toHaveProperty('@loaders.gl/core/geoarrow');
+    expect(manifest[section] ?? {}).not.toHaveProperty('@loaders.gl/geoarrow');
   }
   expect(readSources(join(directory, 'src'))).not.toMatch(
-    /(?:from\s+|import\s*\()(['"])@loaders\.gl\/(?:gis|geoarrow)(?:\/|\1)/
+    /(?:from\s+|import\s*\()(['"])@loaders\.gl\/(?:gis|geoarrow|core\/geoarrow)(?:\/|\1)/
   );
   expect(readSources(join(directory, 'src'))).not.toMatch(
     /(?:from\s+|import\s*\()(['"])@loaders\.gl\/core\1/
@@ -116,9 +116,10 @@ test('published consumers and their tests no longer require the GIS compatibilit
     expect(collectDependencies(moduleName), moduleName).not.toContain('gis');
     const project = join(directory, 'tsconfig.json');
     if (existsSync(project)) {
-      expect(readFileSync(project, 'utf8'), moduleName).not.toContain(
-        '../../../arrow-geometry/gis'
-      );
+      const projectConfiguration = JSON.parse(readFileSync(project, 'utf8'));
+      for (const reference of projectConfiguration.references || []) {
+        expect(reference.path, moduleName).not.toMatch(/(?:^|\/)gis(?:\/|$)/);
+      }
     }
     for (const folder of ['src', 'test']) {
       if (!existsSync(join(directory, folder))) continue;
