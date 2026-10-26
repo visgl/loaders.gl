@@ -2,62 +2,184 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {PLYLoaderOptions} from './ply-loader-types';
+
 // PLY Loader
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import type {PLYMesh} from './lib/ply-types';
-import type {ParsePLYOptions} from './lib/parse-ply';
-import {PLYFormat} from './ply-format';
+import {makeTableScanBatch, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
+import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/tables/arrow/transport';
+  deserializeArrowWorkerTable,
+  serializeArrowWorkerTable
+} from '@loaders.gl/core/schema-utils/arrow-transport';
+import type {PLYHeader, PLYMesh} from './lib/ply-types';
+import {
+  convertMeshToTable,
+  convertTableToMesh,
+  deduceMeshSchema
+} from '@loaders.gl/core/schema-utils';
+import {parsePLY, parsePLYHeader, parsePLYToArrowTable} from './lib/parse-ply';
+import {
+  convertPLYElementTablesToMeshArrowTable,
+  parsePLYToElementTables
+} from './lib/parse-ply-arrow';
+import {parsePLYInBatches} from './lib/parse-ply-in-batches';
+import {PLYLoader as PLYLoaderMetadata} from './ply-loader-types';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const {preload: _PLYLoaderPreload, ...PLYLoaderMetadataWithoutPreload} = PLYLoaderMetadata;
 
-export type PLYLoaderOptions = LoaderOptions & {
-  ply?: ParsePLYOptions & {
-    /** Output shape. Defaults to a Mesh Arrow table. */
-    shape?: 'mesh' | 'arrow-table';
-    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
-    colorFormat?: 'uint8norm' | 'float16' | 'float32';
-    /** Treat PLY data as a point cloud by reading only the leading vertex element. */
-    pointCloud?: boolean;
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
+function convertPLYMesh(mesh: PLYMesh, options?: PLYLoaderOptions): PLYMesh | MeshArrowTable {
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  return convertPLYTable(table, options, mesh.loaderData);
+}
 
-/**
- * Preloads the parser-bearing PLY loader implementation.
- */
-async function preload() {
-  const {PLYLoaderWithParser} = await import('./ply-loader-with-parser');
-  return PLYLoaderWithParser;
+/** Parse PLY data using a direct Arrow path when requested and supported. */
+function parsePLYData(
+  data: ArrayBuffer | string,
+  options?: PLYLoaderOptions
+): PLYMesh | MeshArrowTable {
+  if (options?.ply?._useLegacyParser) {
+    return convertPLYMesh(parsePLY(data, options?.ply), options);
+  }
+
+  const arrowTable = parsePLYToArrowTable(data, options?.ply);
+  if (arrowTable) {
+    return convertPLYTable(arrowTable, options, parsePLYHeader(data, options?.ply));
+  }
+
+  const elementTables = parsePLYToElementTables(data, options?.ply);
+  return convertPLYTable(
+    convertPLYElementTablesToMeshArrowTable(elementTables),
+    options,
+    elementTables.header
+  );
 }
 
 /**
- * Metadata-only worker loader for PLY - Polygon File Format (aka Stanford Triangle Format)'
- * links: ['http://paulbourke.net/dataformats/ply/',
- * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
+ * Loader for PLY - Polygon File Format
  */
-export const PLYLoader = {
-  dataType: null as unknown as PLYMesh | MeshArrowTable,
-  batchType: null as never,
-
-  ...PLYFormat,
-  // shapes: ['mesh', 'gltf', 'columnar-table'],
-  version: VERSION,
-  worker: true,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
-  options: {
-    ply: {shape: 'arrow-table', colorFormat: 'uint8norm'}
+export const PLYLoaderWithParser = {
+  ...PLYLoaderMetadataWithoutPreload,
+  parse: async (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
+  parseTextSync: (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
+  parseSync: (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
+  parseInBatches: async function* (
+    arrayBuffer:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options
+  ) {
+    const plyOptions = {
+      ...options?.ply,
+      batchSize: options?.batchSize ?? options?.core?.batchSize
+    };
+    for await (const meshOrTable of parsePLYInBatches(arrayBuffer, plyOptions)) {
+      const convertedData = isMeshArrowTable(meshOrTable)
+        ? convertPLYTable(meshOrTable, options)
+        : convertPLYMesh(meshOrTable, options);
+      yield isMeshArrowTable(convertedData) ? makeTableScanBatch(convertedData) : convertedData;
+    }
   },
-  preload
-} as const satisfies Loader<PLYMesh | MeshArrowTable, never, LoaderOptions>;
+  serializeWorkerResult: serializeArrowWorkerTable,
+  deserializeWorkerResult: deserializePLYWorkerResult,
+  serializeWorkerBatch: serializeArrowWorkerTable,
+  deserializeWorkerBatch: deserializePLYWorkerBatch
+} as const satisfies LoaderWithParser<
+  PLYMesh | MeshArrowTable,
+  PLYMesh | ArrowTableBatch,
+  PLYLoaderOptions
+>;
 
-/** @deprecated Use PLYLoader. */
-export const PLYWorkerLoader = PLYLoader;
+/** Return requested public PLY shape from the parser's Arrow table. */
+function convertPLYTable(
+  table: MeshArrowTable & {
+    /** Original source header retained by the streaming parser. */
+    loaderData?: PLYHeader;
+  },
+  options?: PLYLoaderOptions,
+  header?: PLYHeader
+): PLYMesh | MeshArrowTable {
+  const loaderData = header || table.loaderData || {comments: [], elements: []};
+  const result =
+    options?.ply?.shape === 'arrow-table'
+      ? {...table, loader: 'ply' as const, loaderData}
+      : {
+          ...(convertTableToMesh(table) as PLYMesh),
+          loader: 'ply',
+          loaderData
+        };
+  const colorFormat = options?.ply?.colorFormat || 'uint8norm';
+  if (colorFormat === 'uint8norm') {
+    return result as PLYMesh | MeshArrowTable;
+  }
+
+  const resultData = result as PLYMesh | MeshArrowTable;
+  const formattedMesh = formatPLYMeshColors(
+    (isMeshArrowTable(resultData) ? convertTableToMesh(resultData) : resultData) as PLYMesh,
+    colorFormat
+  );
+  return options?.ply?.shape === 'arrow-table'
+    ? {
+        ...convertMeshToTable(formattedMesh, 'arrow-table'),
+        loader: 'ply' as const,
+        loaderData
+      }
+    : (formattedMesh as PLYMesh);
+}
+
+/** Apply the requested normalized color representation to a decoded PLY mesh. */
+function formatPLYMeshColors(
+  mesh: PLYMesh,
+  colorFormat: 'uint8norm' | 'float16' | 'float32'
+): PLYMesh {
+  const colorAttribute = mesh.attributes.COLOR_0;
+  if (!colorAttribute) {
+    return mesh;
+  }
+
+  const sourceScale = colorAttribute.value instanceof Uint16Array ? 65535 : 255;
+  const value =
+    colorFormat === 'float16'
+      ? convertColorArrayToFloat16(colorAttribute.value, sourceScale)
+      : convertColorArrayToFloat32(colorAttribute.value, sourceScale);
+  const attributes = {...mesh.attributes};
+  for (const [attributeName, attribute] of Object.entries(attributes)) {
+    if (attribute.value === colorAttribute.value) {
+      attributes[attributeName] = {
+        ...attribute,
+        value,
+        normalized: false,
+        ...(colorFormat === 'float16' ? {componentType: 'float16' as const} : {})
+      };
+    }
+  }
+  return {
+    ...mesh,
+    attributes,
+    schema: deduceMeshSchema(attributes, mesh.schema.metadata)
+  };
+}
+
+/** Return true if a parsed PLY batch is already a Mesh Arrow table. */
+function isMeshArrowTable(data: PLYMesh | MeshArrowTable): data is MeshArrowTable {
+  return 'shape' in data && data.shape === 'arrow-table';
+}
+
+/** Hydrates worker columns and applies the requested PLY shape on the caller. */
+function deserializePLYWorkerResult(
+  result: unknown,
+  options?: PLYLoaderOptions
+): PLYMesh | MeshArrowTable {
+  const table = deserializeArrowWorkerTable(result);
+  return options?.ply?.shape === 'mesh'
+    ? {...convertTableToMesh(table), loader: 'ply', loaderData: table.loaderData}
+    : table;
+}
+
+/** Converts mesh batches only after the Arrow column buffers reach the caller. */
+function deserializePLYWorkerBatch(
+  result: unknown,
+  options?: PLYLoaderOptions
+): PLYMesh | ArrowTableBatch {
+  return deserializePLYWorkerResult(result, options) as PLYMesh | ArrowTableBatch;
+}

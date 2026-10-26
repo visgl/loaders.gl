@@ -371,7 +371,9 @@ checks permit it. The worker stays leased for the iterator lifetime. Input is re
 output batches are acknowledged before more output is produced.
 
 Built-in support includes CSV Arrow-table output, canonical Parquet Arrow/object-row batches,
-and incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches.
+incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches, and OBJ, PLY, and PCD
+mesh batches. OBJ point-cloud and PLY vertex paths support incremental input; PCD currently
+collects the complete input before returning output batches.
 Loader authors can enable other loaders
 by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`,
 and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs
@@ -413,3 +415,17 @@ the caller and are removed from the serialized options after this hook runs.
 
 JSONTable and NDJSON use this hook to convert Apache Arrow schemas into loaders.gl schemas. Worker
 selection still uses the caller's options; the hook prepares parser options after that decision.
+
+
+### Arrow worker result ownership
+
+Built-in Arrow-capable workers transfer columns using `dehydrateArrowTable` and `hydrateArrowTable`,
+without an Arrow IPC encode/decode round trip. Shared worker serializers own outgoing copies of all
+column and dictionary buffers, plus separate mesh indices, before `postMessage` transfers them.
+Repeated references to the same typed-array view share one copy within a message. This prevents
+one batch transfer from detaching storage needed by later batches. The owned path always copies,
+including when `core.workerTransferBufferCopy` requests a weaker policy.
+
+Worker results use the current column-buffer wire format, or binary JSON for non-Arrow JSON.
+IPC and raw decoded-object worker results are rejected. Public shape conversion remains on the
+main thread. Custom workers must be rebuilt for this protocol.

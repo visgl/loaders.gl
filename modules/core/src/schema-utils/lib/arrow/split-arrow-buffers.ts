@@ -37,6 +37,12 @@ export type SplitArrowBuffersOptions = {
   copy?: 'none' | 'sliced' | 'all';
 };
 
+/** Copy ownership is scoped to one outgoing Arrow object. */
+type SplitArrowBuffersContext = SplitArrowBuffersOptions & {
+  /** Reuses a copy when multiple columns or dictionaries reference the same typed-array view. */
+  copies: WeakMap<object, ArrowTypedArray>;
+};
+
 /**
  * Rebuilds an Arrow object so sliced internal typed-array buffers are split into standalone
  * ArrayBuffers, while whole-buffer typed arrays are reused by default.
@@ -64,19 +70,20 @@ export function splitArrowBuffers<T extends SplitArrowBuffersInput>(
   input: T,
   options: SplitArrowBuffersOptions = {}
 ): T {
+  const context: SplitArrowBuffersContext = {...options, copies: new WeakMap()};
   if (isArrowTable(input)) {
-    return splitArrowTableBuffersInternal(input, options) as T;
+    return splitArrowTableBuffersInternal(input, context) as T;
   }
 
   if (isArrowRecordBatch(input)) {
-    return splitArrowRecordBatchBuffers(input, options) as T;
+    return splitArrowRecordBatchBuffers(input, context) as T;
   }
 
   if (isArrowVector(input)) {
-    return splitArrowVectorBuffers(input, options) as T;
+    return splitArrowVectorBuffers(input, context) as T;
   }
 
-  return splitArrowDataBuffers(input, options) as T;
+  return splitArrowDataBuffers(input, context) as T;
 }
 
 /**
@@ -90,7 +97,7 @@ export function splitArrowTableBuffers<T extends arrow.TypeMap>(
   table: arrow.Table<T>,
   options?: SplitArrowBuffersOptions
 ): arrow.Table<T> {
-  return splitArrowTableBuffersInternal(table, options ?? {});
+  return splitArrowBuffers(table, options);
 }
 
 /**
@@ -128,7 +135,7 @@ function isArrowVector(input: SplitArrowBuffersInput): input is arrow.Vector {
  */
 function splitArrowTableBuffersInternal<T extends arrow.TypeMap>(
   table: arrow.Table<T>,
-  options: SplitArrowBuffersOptions
+  options: SplitArrowBuffersContext
 ): arrow.Table<T> {
   const recordBatches = table.batches.map(recordBatch =>
     splitArrowRecordBatchBuffers(recordBatch, options)
@@ -144,7 +151,7 @@ function splitArrowTableBuffersInternal<T extends arrow.TypeMap>(
  */
 function splitArrowRecordBatchBuffers<T extends arrow.TypeMap>(
   recordBatch: arrow.RecordBatch<T>,
-  options: SplitArrowBuffersOptions
+  options: SplitArrowBuffersContext
 ): arrow.RecordBatch<T> {
   return new arrow.RecordBatch(
     recordBatch.schema,
@@ -160,7 +167,7 @@ function splitArrowRecordBatchBuffers<T extends arrow.TypeMap>(
  */
 function splitArrowDataBuffers<T extends arrow.DataType>(
   data: arrow.Data<T>,
-  options: SplitArrowBuffersOptions
+  options: SplitArrowBuffersContext
 ): arrow.Data<T> {
   const children = data.children.map(childData => splitArrowDataBuffers(childData, options));
   const dictionary = data.dictionary
@@ -194,7 +201,7 @@ function splitArrowDataBuffers<T extends arrow.DataType>(
  */
 function splitArrowVectorBuffers<T extends arrow.DataType>(
   vector: arrow.Vector<T>,
-  options: SplitArrowBuffersOptions
+  options: SplitArrowBuffersContext
 ): arrow.Vector<T> {
   return new arrow.Vector(vector.data.map(data => splitArrowDataBuffers(data, options)));
 }
@@ -205,7 +212,7 @@ function splitArrowVectorBuffers<T extends arrow.DataType>(
  * @param options Buffer splitting options.
  * @returns The original typed array or a copied typed array with a standalone buffer.
  */
-function splitArrowBuffer<T>(array: T, options: SplitArrowBuffersOptions): T {
+function splitArrowBuffer<T>(array: T, options: SplitArrowBuffersContext): T {
   if (!isArrowTypedArray(array)) {
     return array;
   }
@@ -222,7 +229,12 @@ function splitArrowBuffer<T>(array: T, options: SplitArrowBuffersOptions): T {
     return array;
   }
 
-  return array.slice() as T;
+  let copy = options.copies.get(array);
+  if (!copy) {
+    copy = array.slice();
+    options.copies.set(array, copy);
+  }
+  return copy as T;
 }
 
 /**

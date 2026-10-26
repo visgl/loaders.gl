@@ -60,9 +60,8 @@ export function serializeBinaryJSON(result: unknown): BinaryJSONResult {
 /** Materializes JSON values on the caller, preserving negative zero and parser overflow values. */
 export function deserializeBinaryJSON(result: unknown): any {
   const frame = result as BinaryJSONResult;
-  // Older custom JSON workers return decoded values directly, including arbitrary tag-like fields.
   if (frame?.transport !== 'json-utf8' || !(frame.data instanceof Uint8Array)) {
-    return result;
+    throw new Error('Workers require binary JSON transport');
   }
   let [value, exceptionalValues] = JSON.parse(new TextDecoder().decode(frame.data)) as [
     any,

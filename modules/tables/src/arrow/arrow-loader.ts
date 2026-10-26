@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  serializeArrowIPCResult,
-  deserializeArrowIPCResult,
-  deserializeArrowIPCBatch
+  serializeArrowTableResult,
+  deserializeArrowTableResult,
+  deserializeArrowTableBatch
 } from './lib/arrow-worker-transport';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
@@ -20,10 +20,10 @@ const {preload: _ArrowLoaderPreload, ...ArrowLoaderMetadataWithoutPreload} = Arr
 /** ArrowJS table loader */
 export const ArrowLoaderWithParser = {
   ...ArrowLoaderMetadataWithoutPreload,
-  serializeWorkerResult: serializeArrowIPCResult,
-  deserializeWorkerResult: deserializeArrowIPCResult,
-  serializeWorkerBatch: serializeArrowIPCResult,
-  deserializeWorkerBatch: deserializeArrowIPCBatch,
+  serializeWorkerResult: serializeArrowTableResult,
+  deserializeWorkerResult: deserializeArrowTableResult,
+  serializeWorkerBatch: serializeArrowTableResult,
+  deserializeWorkerBatch: deserializeArrowTableBatch,
   parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) => {
     await preloadArrowCompressionDecoders();
     return parseArrowSync(arraybuffer, options?.arrow);

@@ -38,6 +38,10 @@
     },
     "./pcd-worker.js": {
       "import": "./dist/pcd-worker.js"
+    },
+    "./pcd-loader": {
+      "types": "./dist/pcd-loader.d.ts",
+      "import": "./dist/pcd-loader.js"
     }
   },
   "sideEffects": false,

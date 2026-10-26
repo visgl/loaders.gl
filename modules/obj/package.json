@@ -38,6 +38,10 @@
     },
     "./obj-worker.js": {
       "import": "./dist/obj-worker.js"
+    },
+    "./obj-loader": {
+      "types": "./dist/obj-loader.d.ts",
+      "import": "./dist/obj-loader.js"
     }
   },
   "sideEffects": false,

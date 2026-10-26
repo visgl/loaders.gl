@@ -16,6 +16,8 @@ setLoaderOptions({
 test('OBJLoader#loader objects', () => {
   validateLoader(OBJLoader, 'OBJLoader');
   validateLoader(OBJWorkerLoader, 'OBJWorkerLoader');
+  expect(OBJLoader.testText('v 1 2 3')).toBe(true);
+  expect(OBJLoader.testText('# comment')).toBe(false);
 });
 test('OBJLoader#parseText', async () => {
   const data = await load(OBJ_ASCII_URL, OBJLoader, {obj: {shape: 'mesh'}});
@@ -54,6 +56,7 @@ test('OBJLoader#parseInBatches(vertex-only point cloud, arrow-table)', async () 
     [new TextEncoder().encode(['v 0 0 0', 'v 1 1 1', 'v 2 2 2', 'v 3 3 3', ''].join('\n')).buffer],
     OBJLoader,
     {
+      core: {worker: false},
       batchSize: 2,
       obj: {shape: 'arrow-table'}
     }
@@ -76,6 +79,7 @@ test('OBJLoader#parseInBatches(pointCloud flag streams vertices without geometry
     ],
     OBJLoader,
     {
+      core: {worker: false},
       batchSize: 2,
       obj: {shape: 'arrow-table', pointCloud: true}
     }
@@ -93,6 +97,7 @@ test('OBJLoader#parseInBatches(faces, arrow-table) falls back to atomic parse', 
     [new TextEncoder().encode(['v 0 0 0', 'v 1 0 0', 'v 0 1 0', 'f 1 2 3', ''].join('\n')).buffer],
     OBJLoader,
     {
+      core: {worker: false},
       batchSize: 1,
       obj: {shape: 'arrow-table'}
     }
@@ -172,4 +177,37 @@ test('OBJWorkerLoader#parse(text)', async () => {
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(14904 * 3);
   expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
+});
+
+test.each([
+  undefined,
+  2
+])('OBJ mesh batching supports default and explicit size %s', async batchSize => {
+  const input = new TextEncoder().encode('v 1 2 3\nv 4 5 6\nv 7 8 9\n');
+  const iterator = await parseInBatches([input], OBJLoader, {
+    core: {worker: false, ...(batchSize === undefined ? {} : {batchSize})},
+    obj: {shape: 'mesh', pointCloud: true}
+  });
+  const batches = [];
+  for await (const batch of iterator) batches.push(batch);
+  const expectedLengths = batchSize === undefined ? [3] : [2, 1];
+  expect(batches.map(batch => batch.length)).toEqual(expectedLengths);
+  expect(batches.every(batch => batch.shape === 'mesh')).toBe(true);
+  expect(batches.flatMap(batch => Array.from(batch.data.attributes.POSITION.value))).toEqual([
+    1, 2, 3, 4, 5, 6, 7, 8, 9
+  ]);
+  expect(batches.at(-1).data.topology).toBe('point-list');
+});
+
+test.each([
+  false,
+  true
+])('OBJ empty input produces no batches with pointCloud=%s', async pointCloud => {
+  const iterator = await parseInBatches([], OBJLoader, {
+    core: {worker: false},
+    obj: {shape: 'arrow-table', pointCloud}
+  });
+  const batches = [];
+  for await (const batch of iterator) batches.push(batch);
+  expect(batches).toEqual([]);
 });
