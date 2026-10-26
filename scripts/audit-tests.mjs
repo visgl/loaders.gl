@@ -36,11 +36,13 @@ if (updateAllowlists) {
 const largeFixtureAllowlist = readAllowlist(largeFixtureAllowlistPath);
 const emptyTestFiles = testFiles.filter(testFile => !containsTestRegistration(testFile));
 const remoteFetches = findRemoteFetches(fastTestFiles);
+const fixtureBranchViolations = findFixtureBranchViolations();
 const coverageExclusionViolations = auditCoverageExclusions();
 const violations = [
   ...tapeFiles.map(testFile => `Tape import is no longer supported: ${testFile}`),
   ...emptyTestFiles.map(testFile => `Empty test file: ${testFile}`),
   ...remoteFetches.map(remoteFetch => `Remote fetch in hermetic test: ${remoteFetch}`),
+  ...fixtureBranchViolations,
   ...findAllowlistViolations(
     'Large fixture reference',
     largeFixtureReferences,
@@ -70,11 +72,13 @@ const report = {
     }, 0),
     emptyTestFiles: emptyTestFiles.length,
     remoteFetches: remoteFetches.length,
+    fixtureBranchViolations: fixtureBranchViolations.length,
     largeFixtureReferences: largeFixtureReferences.length
   },
   tapeFiles,
   emptyTestFiles,
   remoteFetches,
+  fixtureBranchViolations,
   largeFixtureReferences,
   exactDuplicateGroups: findExactDuplicateGroups(testFiles),
   violations
@@ -195,6 +199,61 @@ function findRemoteFetches(files) {
     }
   }
   return remoteFetches;
+}
+
+/**
+ * Checks that remote loaders.gl fixture URLs in tests point at the branch they run on.
+ * A release branch that fetches fixtures from `master` breaks when fixtures move on `master`.
+ */
+function findFixtureBranchViolations() {
+  const remoteFixturesPath = 'test/common/remote-fixtures.ts';
+  const fixtureBranch = /LOADERS_GL_FIXTURE_BRANCH = '([^']+)'/.exec(
+    fs.readFileSync(remoteFixturesPath, 'utf8')
+  )?.[1];
+  if (!fixtureBranch) {
+    return [`Missing LOADERS_GL_FIXTURE_BRANCH in ${remoteFixturesPath}`];
+  }
+
+  const violations = [];
+  // Pull requests report their target branch in GITHUB_BASE_REF; pushes report it in GITHUB_REF_NAME.
+  const targetBranch = process.env.GITHUB_BASE_REF || process.env.GITHUB_REF_NAME;
+  if (
+    targetBranch &&
+    /^(?:master|\d+\.\d+-release)$/.test(targetBranch) &&
+    targetBranch !== fixtureBranch
+  ) {
+    violations.push(
+      `LOADERS_GL_FIXTURE_BRANCH is '${fixtureBranch}' but tests run on '${targetBranch}': set it to '${targetBranch}' in ${remoteFixturesPath}`
+    );
+  }
+
+  const fixtureUrlPattern =
+    /(?:raw\.githubusercontent\.com\/visgl\/loaders\.gl|github\.com\/visgl\/loaders\.gl\/raw)\/([^/'"`\s]+)\//g;
+  const sourceFiles = testRoots
+    .flatMap(testRoot => walkFiles(path.resolve(testRoot)))
+    .map(toRepositoryPath)
+    .filter(
+      sourceFile =>
+        /(?:^|\/)test\//.test(sourceFile) &&
+        /\.(?:[cm]?[jt]sx?|json)$/.test(sourceFile) &&
+        sourceFile !== remoteFixturesPath &&
+        fs.statSync(sourceFile).size <= 1024 * 1024
+    );
+  const mismatchedUrls = [];
+  for (const sourceFile of sourceFiles) {
+    const source = fs.readFileSync(sourceFile, 'utf8');
+    for (const match of source.matchAll(fixtureUrlPattern)) {
+      if (match[1] !== fixtureBranch) {
+        mismatchedUrls.push(`${sourceFile}:${source.slice(0, match.index).split('\n').length}`);
+      }
+    }
+  }
+  for (const mismatchedUrl of mismatchedUrls.sort()) {
+    violations.push(
+      `loaders.gl fixture URL does not use LOADERS_GL_FIXTURE_BRANCH '${fixtureBranch}' (import from test/common/remote-fixtures): ${mismatchedUrl}`
+    );
+  }
+  return violations;
 }
 
 /** Finds fast tests that reference fixture files larger than one MiB. */
