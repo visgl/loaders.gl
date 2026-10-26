@@ -87,7 +87,7 @@ function createBundlerPlugin() {
           }),
           new bundler.NormalModuleReplacementPlugin(/^@loaders\.gl\/gltf$/, resource => {
             if (resource.context?.replace(/\\/g, '/').includes('/node_modules/')) {
-              const publishedEntry = createRequire(resolve(resource.context, '__resolve__.js')).resolve('@loaders.gl/scene/gltf');
+              const publishedEntry = createRequire(resolve(resource.context, '__resolve__.js')).resolve('@loaders.gl/gltf');
               if (publishedEntry.replace(/\\/g, '/').includes('/node_modules/')) {
                 resource.request = publishedEntry.replace(/\.cjs$/, '.js');
               }
