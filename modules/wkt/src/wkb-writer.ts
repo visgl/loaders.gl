@@ -4,7 +4,7 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {Geometry, Feature} from '@loaders.gl/core/schema';
-import {convertGeometryToWKB} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {VERSION} from './lib/version';
 import {WKBFormat} from './wkt-format';
 

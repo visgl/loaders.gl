@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {validateSQLPredicate} from './sql-predicate-schema';
+import {validateSQLPredicate} from '@loaders.gl/core/scan/sql-predicate-schema';
 import {
   isSQLPredicateParameter,
   type SQLPredicate,
   type SQLPredicateParameterValues,
   type SQLPredicateScalar,
   type SQLPredicateValue
-} from './sql-predicate-types';
-import type {TableQueryOptions} from './table-query';
+} from '@loaders.gl/core/scan/sql-predicate-types';
+import type {TableQueryOptions} from '@loaders.gl/core/scan/table-query';
 import type {
   RelationalAggregate,
   RelationalExpression,

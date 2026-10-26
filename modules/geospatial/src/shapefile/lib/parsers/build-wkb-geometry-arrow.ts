@@ -4,13 +4,13 @@
 
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/core/schema';
-import {WKBBuilder} from '@loaders.gl/arrow-geometry';
-import {type CoordinateTransform} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
+import {WKBBuilder} from '@loaders.gl/core/arrow-geometry';
+import {type CoordinateTransform} from '@loaders.gl/core/arrow-geometry/binary-geometry-to-wkb';
 import {
   makeWKBGeometryArrowTable as makeSharedWKBGeometryArrowTable,
   makeWKBGeometryArrowTableFromData,
   makeWKBGeometryDataFromArray
-} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
+} from '@loaders.gl/core/arrow-geometry/wkb-arrow-utils';
 import type {SHPLoaderOptions} from './types';
 import {getRecordWKBOptions, writeRecordToWKB} from './parse-shp-geometry';
 

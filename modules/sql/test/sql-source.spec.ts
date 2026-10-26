@@ -4,12 +4,8 @@
 
 import {expect, test} from 'vitest';
 import type {Schema} from '@loaders.gl/core/schema';
-import {
-  SQLDataSource,
-  getSQLAdapterFactory,
-  parseSQLPredicate,
-  registerSQLAdapter
-} from '@loaders.gl/sql';
+import {SQLDataSource, getSQLAdapterFactory, registerSQLAdapter} from '@loaders.gl/sql';
+import {parseSQLPredicate} from '@loaders.gl/core/scan';
 import {convertRowsToArrowTable} from '../src/sql-utils';
 import type {
   SQLAdapter,

@@ -126,7 +126,6 @@
     "build-worker-mvt": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.14",
     "@loaders.gl/compression": "5.0.0-alpha.14",
     "@loaders.gl/images": "5.0.0-alpha.14",
     "@loaders.gl/tables": "5.0.0-alpha.14",

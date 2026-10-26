@@ -26,9 +26,6 @@
       "path": "../crypto"
     },
     {
-      "path": "../geoarrow"
-    },
-    {
       "path": "../tiles"
     },
     {

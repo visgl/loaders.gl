@@ -18,11 +18,11 @@ import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata
-} from '@loaders.gl/arrow-geometry/geometry-field';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {reprojectWKBInPlace} from '@loaders.gl/arrow-geometry/binary-geometry-to-wkb';
-import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+} from '@loaders.gl/core/arrow-geometry/geometry-field';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
+import {reprojectWKBInPlace} from '@loaders.gl/core/arrow-geometry/binary-geometry-to-wkb';
+import {transformGeoJsonCoords} from '@loaders.gl/core/arrow-geometry/legacy-binary';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {projectionEngine} from '@math.gl/geospatial/projection';
 import type {Projection} from '@math.gl/geospatial/projection';
 import {

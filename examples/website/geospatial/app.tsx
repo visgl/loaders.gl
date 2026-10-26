@@ -35,7 +35,7 @@ import {
   getGeometryColumnsFromSchema,
   type GeoArrowEncoding,
   type GeoArrowMetadata
-} from '@loaders.gl/geoarrow';
+} from '@loaders.gl/core/geoarrow';
 import {GeoParquetLoader, ParquetLoader, preloadCompressions} from '@loaders.gl/tables/parquet/index';
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
 import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
@@ -43,7 +43,7 @@ import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/geospatial/kml/index';
 import {CSVLoader} from '@loaders.gl/tables/csv/index';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
-import {convertWKBTableToGeoJSON} from '@loaders.gl/geoarrow';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/core/schema-utils';
 

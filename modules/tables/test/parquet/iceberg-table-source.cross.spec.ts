@@ -8,7 +8,7 @@ import * as arrow from 'apache-arrow';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
 import {encode} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {FederatedTableScanSource} from '@loaders.gl/scan';
+import {FederatedTableScanSource} from '@loaders.gl/core/scan';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';
 import {AvroWriter} from '@loaders.gl/tables/avro/index';
 import {ParquetJSWriter} from '../../src/parquet/parquet-js-writer';

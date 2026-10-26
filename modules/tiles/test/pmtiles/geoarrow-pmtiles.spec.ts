@@ -9,7 +9,7 @@ import {PMTiles, type Source} from 'pmtiles';
 import {parse} from '@loaders.gl/core';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {encodeGeoArrowPMTiles} from '../../src/pmtiles/geoarrow';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import type {GeoArrowEncodingPreference, Geometry} from '@loaders.gl/core/schema';
 
 /** Two separated source points make partial selection and empty-address handling observable. */

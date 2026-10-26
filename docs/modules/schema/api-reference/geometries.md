@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['GeoJSON tables', 'Binary geometry', 'GeoArrow-compatible']}
   links={[
     {label: 'Schema module', to: '/docs/modules/schema'},
-    {label: 'GeoArrow module', to: '/docs/modules/geoarrow'},
+    {label: 'GeoArrow module', to: '/docs/modules/core/geoarrow'},
     {label: 'GeoArrow', to: '/docs/modules/tables/arrow/formats/geoarrow'}
   ]}
 />
@@ -51,7 +51,7 @@ loaders.gl defines a Binary Geometry Format.
 
 The format is designed to work directly with the binary support in deck.gl layers.
 
-See the [binary feature layout](../../geoarrow/api-reference/convert-geojson-to-binary-feature-collection.md) for the retained rendering representation.
+See the [binary feature layout](../../core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection.md) for the retained rendering representation.
 
 ##
 

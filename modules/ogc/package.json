@@ -76,7 +76,6 @@
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.14",
     "@loaders.gl/images": "5.0.0-alpha.14",
     "@loaders.gl/raster": "5.0.0-alpha.14",
     "@loaders.gl/xml": "5.0.0-alpha.14",

@@ -7,7 +7,7 @@ import {createRoot} from 'react-dom/client';
 import {afterEach, expect, test, vi} from 'vitest';
 import {PMTiles, type Source} from 'pmtiles';
 import {tableToIPC} from 'apache-arrow';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/index';
 import {createTiffFixture} from '../modules/raster/test/geotiff/lib/tiff/tiff-fixture';
 import PMTilesAuthoringApp from '../examples/website/tiles/authoring-app';

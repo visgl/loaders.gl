@@ -248,7 +248,7 @@ const config = {
             '@loaders.gl/3d-tiles$': resolve('../modules/tiles-3d/src/3d-tiles'),
             '@loaders.gl/tiles-3d/3d-tiles': resolve('../modules/tiles-3d/src/3d-tiles'),
             '@loaders.gl/tables/arrow/index': resolve('../modules/tables/src/arrow'),
-            '@loaders.gl/arrow-geometry': resolve('../modules/arrow-geometry/src'),
+            '@loaders.gl/core/arrow-geometry': resolve('../modules/core/src/arrow-geometry'),
             '@loaders.gl/tables/avro/index': resolve('../modules/tables/src/avro'),
             '@loaders.gl/tables/bson/index': resolve('../modules/tables/src/bson'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
@@ -266,7 +266,7 @@ const config = {
             '@loaders.gl/geospatial/geopackage/index': resolve('../modules/geospatial/src/geopackage'),
             '@loaders.gl/raster': resolve('../modules/raster/src'),
             '@loaders.gl/raster/geotiff/index': resolve('../modules/raster/src/geotiff/index.ts'),
-            '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
+            '@loaders.gl/core/geoarrow': resolve('../modules/core/src/geoarrow'),
             '@loaders.gl/gltf': resolve('../modules/gltf/src'),
             '@loaders.gl/tiles-3d/i3s': resolve('../modules/tiles-3d/src/i3s'),
             '@loaders.gl/images': resolve('../modules/images/src'),
@@ -285,7 +285,7 @@ const config = {
             '@loaders.gl/tiles/pmtiles': resolve('../modules/tiles/src/pmtiles'),
             '@loaders.gl/core/polyfills': resolve('../modules/core/src/polyfills'),
             '@loaders.gl/tiles-3d/potree': resolve('../modules/tiles-3d/src/potree'),
-            '@loaders.gl/scan': resolve('../modules/scan/src'),
+            '@loaders.gl/core/scan': resolve('../modules/core/src/scan'),
             '@loaders.gl/core/schema': resolve('../modules/core/src/schema'),
             '@loaders.gl/core/schema-utils': resolve('../modules/core/src/schema-utils'),
             '@loaders.gl/scene': resolve('../modules/scene/src'),
@@ -377,12 +377,13 @@ const config = {
         createRedirects(existingPath) {
           const consolidatedModuleDocs = {
             tables: ['arrow', 'avro', 'bson', 'csv', 'excel', 'json', 'lance', 'orc', 'parquet'],
-            geospatial: ['flatgeobuf', 'geopackage', 'kml', 'shapefile']
+            geospatial: ['flatgeobuf', 'geopackage', 'kml', 'shapefile'],
+            core: ['scan', 'arrow-geometry', 'geoarrow']
           };
           const pageRedirects = {
-            '/docs/modules/gis': '/docs/modules/geoarrow/gis-migration',
-            '/docs/modules/gis/api-reference/geojson-to-binary': '/docs/modules/geoarrow/api-reference/convert-geojson-to-binary-feature-collection',
-            '/docs/modules/gis/api-reference/binary-to-geojson': '/docs/modules/geoarrow/api-reference/convert-binary-feature-collection-to-geojson',
+            '/docs/modules/gis': '/docs/modules/core/geoarrow/gis-migration',
+            '/docs/modules/gis/api-reference/geojson-to-binary': '/docs/modules/core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection',
+            '/docs/modules/gis/api-reference/binary-to-geojson': '/docs/modules/core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson',
             '/examples/flatgeobuf': '/examples/geospatial/flatgeobuf',
             '/examples/geoarrow': '/examples/geospatial/geoarrow',
             '/examples/geoparquet': '/examples/geospatial/geoparquet',

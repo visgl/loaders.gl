@@ -291,12 +291,12 @@ This split keeps responsibilities clear:
 
 ### Use the manager for scan federation
 
-`@loaders.gl/scan` reuses this manager rather than defining a scan-only registry. Register each
+`@loaders.gl/core/scan` reuses this manager rather than defining a scan-only registry. Register each
 `TableScanSource` under a stable id, then reference those ids from `FederatedTableScanSource`:
 
 ```ts
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {FederatedTableScanSource} from '@loaders.gl/scan';
+import {FederatedTableScanSource} from '@loaders.gl/core/scan';
 
 const dataSourceManager = new DataSourceManager();
 dataSourceManager.add({dataSourceId: 'today', dataSource: todaySource});

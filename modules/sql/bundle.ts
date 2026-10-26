@@ -93,12 +93,14 @@ export {
   DuckDBSQLDataSource,
   SnowflakeSQLSource,
   SnowflakeSQLDataSource,
+  compileSQLTableQuery
+} from '@loaders.gl/sql';
+export {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,
   queryArrowTable,
   parseSQLPredicate,
   bindSQLPredicate,
-  compileSQLTableQuery,
   explainTableQuery,
   getSQLPredicateColumnNames,
   planTableQuery,
@@ -107,7 +109,7 @@ export {
   isSQLPredicate,
   SQL_PREDICATE_JSON_SCHEMA,
   validateSQLPredicate
-} from '@loaders.gl/sql';
+} from '@loaders.gl/core/scan';
 export type {
   BoundSQLPredicate,
   SQLComparisonPredicate,
@@ -122,6 +124,16 @@ export type {
   SQLPredicateProperty,
   SQLPredicateScalar,
   SQLPredicateValue,
+  ArrowQueryOptions,
+  TableQueryFilterStep,
+  TableQueryLimitStep,
+  TableQueryOptions,
+  TableQueryPlan,
+  TableQueryPlanStep,
+  TableQueryProjectStep,
+  TableQueryScanStep
+} from '@loaders.gl/core/scan';
+export type {
   SQLAdapter,
   SQLAdapterCapabilities,
   SQLAdapterFactory,
@@ -135,7 +147,6 @@ export type {
   SQLSchemaInfo,
   SQLSourceOptions,
   SQLTableInfo,
-  ArrowQueryOptions,
   ArrowTableSourceOptions,
   CompiledSQLTableQuery,
   SQLTableQuery,
@@ -143,12 +154,5 @@ export type {
   SQLTableQueryDialect,
   RelationalAggregate,
   RelationalExpression,
-  RelationalOrderKey,
-  TableQueryFilterStep,
-  TableQueryLimitStep,
-  TableQueryOptions,
-  TableQueryPlan,
-  TableQueryPlanStep,
-  TableQueryProjectStep,
-  TableQueryScanStep
+  RelationalOrderKey
 } from '@loaders.gl/sql';

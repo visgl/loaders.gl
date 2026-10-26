@@ -268,7 +268,6 @@
   },
   "dependencies": {
     "@loaders.gl/archives": "5.0.0-alpha.14",
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.14",
     "@loaders.gl/xml": "5.0.0-alpha.14",
     "@math.gl/geospatial": "5.0.0-alpha.20",
     "@types/sql.js": "^1.4.5",

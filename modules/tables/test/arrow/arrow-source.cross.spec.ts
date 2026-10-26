@@ -1,6 +1,6 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {parseSQLPredicate} from '@loaders.gl/sql';
+import {parseSQLPredicate} from '@loaders.gl/core/scan';
 import {ArrowSourceLoader, ArrowTableSource} from '../../src/arrow/arrow-source';
 
 test('ArrowTableSource discovers schema and applies projection and limit', async () => {

@@ -70,3 +70,23 @@ Loaders with limited functionality but with minimal bundle size impact:
 | ------------ | -------------------------------------------------------------------------------- |
 | `JSONLoader` | A minimal non-streaming JSON loader that uses the built-in `JSON.parse` function |
 | `NullLoader` | A loader-object that ignores input data and always returns `null`.               |
+
+## Utility subpaths
+
+Reusable scan, geometry construction, geometry processing, and codec APIs are available through independent subpaths:
+
+| Import | Utilities |
+| --- | --- |
+| `@loaders.gl/core/scan` | Scan planning and execution, Arrow queries, portable predicates, and format-neutral source wrappers. |
+| `@loaders.gl/core/arrow-geometry` | Geometry builders and loader-facing conversion helpers. |
+| `@loaders.gl/core/geoarrow` | GeoArrow inspection, validation, conversion, coordinate operations, clustering, and spatial indexes. |
+| `@loaders.gl/core/wkt` | Geometry codec helpers; TWKB is also available from `@loaders.gl/core/wkt/twkb`. |
+
+Import these APIs through their subpaths. The core root entrypoint keeps its existing exports. Format loader and writer descriptors remain in their format modules, including `@loaders.gl/wkt`; database adapters remain in `@loaders.gl/sql`.
+
+```typescript
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {GeoArrowBuilder} from '@loaders.gl/core/arrow-geometry';
+import {inspectGeoArrowVector} from '@loaders.gl/core/geoarrow';
+import {convertWKTToGeometry} from '@loaders.gl/core/wkt';
+```

@@ -23,17 +23,17 @@ import {
   type ColumnarPredicate,
   type TableQueryOptions
 } from '@loaders.gl/core/loader-utils';
-import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
-import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/core/arrow-geometry/legacy-binary';
+import {transformGeoJsonCoords} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import {
   encodeWKBGeometryValue,
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
-} from '@loaders.gl/arrow-geometry/geometry-field';
-import {makeWKBGeometryDataFromArray} from '@loaders.gl/arrow-geometry/wkb-arrow-utils';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+} from '@loaders.gl/core/arrow-geometry/geometry-field';
+import {makeWKBGeometryDataFromArray} from '@loaders.gl/core/arrow-geometry/wkb-arrow-utils';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
-import {WKBBuilder} from '@loaders.gl/arrow-geometry';
+import {WKBBuilder} from '@loaders.gl/core/arrow-geometry';
 import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/core/schema-utils';
 import {
   decodeFlatGeobufGeometry,

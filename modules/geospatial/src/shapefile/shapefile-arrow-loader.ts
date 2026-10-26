@@ -17,13 +17,13 @@ import type {
   Schema as TableSchema
 } from '@loaders.gl/core/schema';
 import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
-} from '@loaders.gl/arrow-geometry/geometry-field';
+} from '@loaders.gl/core/arrow-geometry/geometry-field';
 import {projectionEngine} from '@math.gl/geospatial/projection';
 import type {ReadonlyCRSDefinition, WKTCRSDefinition} from '@math.gl/geospatial/crs';
 import {SHPLoaderWithParser} from './shp-loader';

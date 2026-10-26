@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {serializeArrowIPCResult, deserializeArrowIPCBatch} from './lib/arrow-worker-transport';
-import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/arrow-geometry/geojson-table';
+import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
