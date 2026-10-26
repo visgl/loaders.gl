@@ -88,3 +88,30 @@ for await (const batch of batches) {
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `pcd.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects PointCloud or Mesh Arrow table output. |
+
+
+## Worker batches
+
+`PCDLoader` supports `parseInBatches()` on its built-in browser worker. The worker stays
+leased for the input iterator and transfers independently owned Arrow IPC buffers. The caller
+hydrates Mesh Arrow tables and performs any requested legacy `shape: 'mesh'` conversion.
+Schemas and small loader/batch descriptors accompany the binary buffers; decoded row objects
+are not sent from the worker. JSON conversion, if needed by an application, happens on the caller.
+
+```typescript
+const batches = await parseInBatches(input, PCDLoader, {
+  core: {worker: true, batchSize: 1000},
+  pcd: {shape: 'arrow-table'}
+});
+for await (const batch of batches) {
+  consume(batch.data);
+}
+```
+
+PCD currently collects the complete input before decoding. ASCII and uncompressed binary output is split by `core.batchSize`; compressed input may produce a single batch.
+
+Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker;
+transferred input buffers remain detached. Self-hosted workers must implement the batch protocol
+and opt in with `core.workerInBatches: true`. Older atomic-only custom workers retain caller-side
+batch parsing. This module ships a browser worker; Node workers require a compatible Node artifact.
+The parser-bearing loader is available from `@loaders.gl/pcd/pcd-loader`.

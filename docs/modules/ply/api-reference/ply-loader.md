@@ -89,3 +89,30 @@ for await (const batch of batches) {
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `ply.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table or legacy Mesh output. |
+
+
+## Worker batches
+
+`PLYLoader` supports `parseInBatches()` on its built-in browser worker. The worker stays
+leased for the input iterator and transfers independently owned Arrow IPC buffers. The caller
+hydrates Mesh Arrow tables and performs any requested legacy `shape: 'mesh'` conversion.
+Schemas and small loader/batch descriptors accompany the binary buffers; decoded row objects
+are not sent from the worker. JSON conversion, if needed by an application, happens on the caller.
+
+```typescript
+const batches = await parseInBatches(input, PLYLoader, {
+  core: {worker: true, batchSize: 1000},
+  ply: {shape: 'arrow-table', pointCloud: true}
+});
+for await (const batch of batches) {
+  consume(batch.data);
+}
+```
+
+Use `ply.pointCloud: true` for incremental vertex batches in ASCII and binary PLY. General meshes may require the remaining elements before they can be returned.
+
+Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker;
+transferred input buffers remain detached. Self-hosted workers must implement the batch protocol
+and opt in with `core.workerInBatches: true`. Older atomic-only custom workers retain caller-side
+batch parsing. This module ships a browser worker; Node workers require a compatible Node artifact.
+The parser-bearing loader is available from `@loaders.gl/ply/ply-loader`.

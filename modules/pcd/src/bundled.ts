@@ -1,9 +1,9 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright vis.gl contributors
+// Copyright (c) vis.gl contributors
 
-export type {PCDLoaderOptions} from './pcd-loader-with-parser';
+export type {PCDLoaderOptions} from './pcd-loader-types';
 export {
-  PCDWorkerLoaderWithParser as PCDWorkerLoader,
+  PCDLoaderWithParser as PCDWorkerLoader,
   PCDLoaderWithParser as PCDLoader
-} from './pcd-loader-with-parser';
+} from './pcd-loader';

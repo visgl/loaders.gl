@@ -38,6 +38,10 @@
     },
     "./ply-worker.js": {
       "import": "./dist/ply-worker.js"
+    },
+    "./ply-loader": {
+      "types": "./dist/ply-loader.d.ts",
+      "import": "./dist/ply-loader.js"
     }
   },
   "sideEffects": false,

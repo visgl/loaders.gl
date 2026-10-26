@@ -2,54 +2,179 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import type {PCDMesh} from './lib/pcd-types';
-import {PCDFormat} from './pcd-format';
+import type {PCDLoaderOptions} from './pcd-loader-types';
+
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/tables/arrow/transport';
+  concatenateArrayBuffersAsync,
+  makeTableScanBatch,
+  type LoaderWithParser
+} from '@loaders.gl/core/loader-utils';
+import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
+import {
+  deserializeArrowIPCWorkerResult,
+  serializeArrowIPCWorkerResult
+} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import type {PCDMesh} from './lib/pcd-types';
+import {parsePCD, parsePCDHeader} from './lib/parse-pcd';
+import {PCDLoader as PCDLoaderMetadata} from './pcd-loader-types';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const {preload: _PCDLoaderPreload, ...PCDLoaderMetadataWithoutPreload} = PCDLoaderMetadata;
 
-export type PCDLoaderOptions = LoaderOptions & {
-  pcd?: {
-    /** Output shape. Defaults to a Mesh Arrow table. */
-    shape?: 'mesh' | 'arrow-table';
-    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
-    colorFormat?: 'uint8norm' | 'float16' | 'float32';
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
+type PCDParsedBatch = PCDMesh | ArrowTableBatch;
 
-/**
- * Preloads the parser-bearing PCD loader implementation.
- */
-async function preload() {
-  const {PCDLoaderWithParser} = await import('./pcd-loader-with-parser');
-  return PCDLoaderWithParser;
+function convertPCDMesh(mesh: PCDMesh, options?: PCDLoaderOptions): PCDMesh | MeshArrowTable {
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  return options?.pcd?.shape === 'mesh'
+    ? convertPCDTableToMesh(table, mesh)
+    : {...table, loader: mesh.loader, loaderData: mesh.loaderData};
 }
 
 /**
- * Metadata-only worker loader for PCD - Point Cloud Data
+ * Loader for PCD - Point Cloud Data
  */
-export const PCDLoader = {
-  ...PCDFormat,
-  dataType: null as unknown as PCDMesh | MeshArrowTable,
-  batchType: null as never,
-  version: VERSION,
-  worker: true,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
-  options: {
-    pcd: {shape: 'arrow-table', colorFormat: 'uint8norm'}
-  },
-  preload
-} as const satisfies Loader<PCDMesh | MeshArrowTable, never, PCDLoaderOptions>;
+export const PCDLoaderWithParser = {
+  ...PCDLoaderMetadataWithoutPreload,
+  parse: async (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer, options), options),
+  parseSync: (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer, options), options),
+  parseInBatches: async function* (
+    arrayBuffer:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options
+  ): AsyncIterable<PCDParsedBatch> {
+    const batchSize = getNumericBatchSize(options);
+    const data = await concatenateArrayBuffersAsync(arrayBuffer);
+    const textData = new TextDecoder().decode(data);
+    const pcdHeader = parsePCDHeader(textData);
 
-/** @deprecated Use PCDLoader. */
-export const PCDWorkerLoader = PCDLoader;
+    if (pcdHeader.data === 'ascii') {
+      yield* parsePCDASCIIInBatches(data, options, batchSize);
+      return;
+    }
+
+    if (pcdHeader.data === 'binary') {
+      yield* parsePCDBinaryInBatches(data, options, batchSize);
+      return;
+    }
+
+    yield makePCDBatch(parsePCD(data, options), options);
+  },
+  serializeWorkerResult: serializeArrowIPCWorkerResult,
+  deserializeWorkerResult: deserializePCDWorkerResult,
+  serializeWorkerBatch: serializeArrowIPCWorkerResult,
+  deserializeWorkerBatch: deserializePCDWorkerBatch
+} as const satisfies LoaderWithParser<PCDMesh | MeshArrowTable, PCDParsedBatch, PCDLoaderOptions>;
+
+/** Returns a numeric batch size when batching has an explicit row count. */
+function getNumericBatchSize(options?: PCDLoaderOptions): number | undefined {
+  const batchSize = options?.batchSize ?? options?.core?.batchSize;
+  return typeof batchSize === 'number' ? batchSize : undefined;
+}
+
+function* parsePCDASCIIInBatches(
+  data: ArrayBuffer,
+  options?: PCDLoaderOptions,
+  batchSize?: number
+): Iterable<PCDParsedBatch> {
+  const textData = new TextDecoder().decode(data);
+  const pcdHeader = parsePCDHeader(textData);
+  const lines = textData
+    .slice(pcdHeader.headerLen)
+    .split(/\r?\n/)
+    .filter(line => line.trim().length > 0);
+  const normalizedBatchSize = batchSize || lines.length || 1;
+
+  for (let rowIndex = 0; rowIndex < lines.length; rowIndex += normalizedBatchSize) {
+    const batchLines = lines.slice(rowIndex, rowIndex + normalizedBatchSize);
+    const batchText = `${makePCDHeaderText(pcdHeader, batchLines.length)}${batchLines.join('\n')}\n`;
+    yield makePCDBatch(parsePCD(new TextEncoder().encode(batchText).buffer, options), options);
+  }
+}
+
+function* parsePCDBinaryInBatches(
+  data: ArrayBuffer,
+  options?: PCDLoaderOptions,
+  batchSize?: number
+): Iterable<PCDParsedBatch> {
+  const textData = new TextDecoder().decode(data);
+  const pcdHeader = parsePCDHeader(textData);
+  const normalizedBatchSize = batchSize || pcdHeader.points || 1;
+  const dataBytes = new Uint8Array(data);
+
+  for (let pointIndex = 0; pointIndex < pcdHeader.points; pointIndex += normalizedBatchSize) {
+    const pointCount = Math.min(normalizedBatchSize, pcdHeader.points - pointIndex);
+    const headerBytes = new TextEncoder().encode(makePCDHeaderText(pcdHeader, pointCount));
+    const rowByteOffset = pcdHeader.headerLen + pointIndex * pcdHeader.rowSize;
+    const rowByteLength = pointCount * pcdHeader.rowSize;
+    const batchBytes = new Uint8Array(headerBytes.length + rowByteLength);
+    batchBytes.set(headerBytes, 0);
+    batchBytes.set(
+      dataBytes.subarray(rowByteOffset, rowByteOffset + rowByteLength),
+      headerBytes.length
+    );
+    yield makePCDBatch(parsePCD(batchBytes.buffer, options), options);
+  }
+}
+
+function makePCDBatch(mesh: PCDMesh, options?: PCDLoaderOptions): PCDParsedBatch {
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  if (options?.pcd?.shape === 'mesh') {
+    return convertPCDTableToMesh(table, mesh);
+  }
+
+  return makeTableScanBatch({
+    ...table,
+    loader: mesh.loader,
+    loaderData: mesh.loaderData
+  } as MeshArrowTable);
+}
+
+/** Convert the parser's Arrow table to legacy PCD mesh output. */
+function convertPCDTableToMesh(table: MeshArrowTable, sourceMesh: PCDMesh): PCDMesh {
+  return {
+    ...(convertTableToMesh(table) as PCDMesh),
+    loader: sourceMesh.loader,
+    loaderData: sourceMesh.loaderData
+  };
+}
+
+function makePCDHeaderText(pcdHeader: any, pointCount: number): string {
+  const lines = pcdHeader.str
+    .split(/\r?\n/)
+    .filter(line => line.trim().length > 0)
+    .map(line => {
+      if (/^WIDTH\s+/i.test(line)) {
+        return `WIDTH ${pointCount}`;
+      }
+      if (/^HEIGHT\s+/i.test(line)) {
+        return 'HEIGHT 1';
+      }
+      if (/^POINTS\s+/i.test(line)) {
+        return `POINTS ${pointCount}`;
+      }
+      return line;
+    });
+
+  if (!lines.some(line => /^POINTS\s+/i.test(line))) {
+    const dataLineIndex = lines.findIndex(line => /^DATA\s+/i.test(line));
+    lines.splice(dataLineIndex >= 0 ? dataLineIndex : lines.length, 0, `POINTS ${pointCount}`);
+  }
+
+  return `${lines.join('\n')}\n`;
+}
+
+/** Hydrates worker columns before reconstructing legacy PCD meshes on the caller. */
+function deserializePCDWorkerResult(
+  result: unknown,
+  options?: PCDLoaderOptions
+): PCDMesh | MeshArrowTable {
+  const table = deserializeArrowIPCWorkerResult(result);
+  if (table?.shape !== 'arrow-table') return table;
+  return options?.pcd?.shape === 'mesh' ? convertPCDTableToMesh(table, table) : table;
+}
+
+/** Restores the existing PCD batch shape after caller-side hydration. */
+function deserializePCDWorkerBatch(result: unknown, options?: PCDLoaderOptions): PCDParsedBatch {
+  return deserializePCDWorkerResult(result, options) as PCDParsedBatch;
+}

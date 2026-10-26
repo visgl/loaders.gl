@@ -371,7 +371,9 @@ checks permit it. The worker stays leased for the iterator lifetime. Input is re
 output batches are acknowledged before more output is produced.
 
 Built-in support includes CSV Arrow-table output, canonical Parquet Arrow/object-row batches,
-and incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches.
+incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches, and OBJ, PLY, and PCD
+mesh batches. OBJ point-cloud and PLY vertex paths support incremental input; PCD currently
+collects the complete input before returning output batches.
 Loader authors can enable other loaders
 by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`,
 and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs

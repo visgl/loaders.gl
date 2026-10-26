@@ -161,3 +161,15 @@ const restoredTable = deserializeArrowTableFromIPC(payload);
 
 This path does more copying and encoding work, but it is the safer choice when the app and worker may
 load different Apache Arrow JS versions.
+
+
+## IPC worker wrappers
+
+`serializeArrowIPCWorkerResult(result)` and `deserializeArrowIPCWorkerResult(result)` from
+`@loaders.gl/core/schema-utils/arrow-transport` preserve an Arrow table or batch wrapper while
+transporting its table data as owned IPC bytes. The serializer rejects non-Arrow output. IPC
+buffers and any separate mesh index buffer are independent of parser-owned storage, including
+shared dictionary buffers. Small schema and batch descriptors remain alongside the bytes.
+
+The receiver hydrates the Arrow table before a loader converts it to requested rows or legacy
+meshes. It also accepts older `arrow-js` wrappers and passes through legacy custom-worker results.

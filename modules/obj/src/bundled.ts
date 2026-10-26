@@ -3,11 +3,11 @@
 // Copyright vis.gl contributors
 
 export {OBJFormat} from './obj-format';
-export type {OBJLoaderOptions} from './obj-loader-with-parser';
+export type {OBJLoaderOptions} from './obj-loader-types';
 export {
-  OBJWorkerLoaderWithParser as OBJWorkerLoader,
+  OBJLoaderWithParser as OBJWorkerLoader,
   OBJLoaderWithParser as OBJLoader
-} from './obj-loader-with-parser';
+} from './obj-loader';
 export {MTLFormat} from './mtl-format';
 export type {MTLLoaderOptions} from './mtl-loader-with-parser';
 export {

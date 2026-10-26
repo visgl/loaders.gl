@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {Buffers} from 'apache-arrow/data';
-import type {DataType, Schema} from '@loaders.gl/core/schema';
+import type {DataType, Schema, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowSchema,
   deserializeArrowType,
@@ -124,6 +124,28 @@ export function deserializeArrowTableFromIPC(
 ): arrow.Table {
   const data = isSerializedArrowTableIPC(table) ? table.data : table;
   return arrow.tableFromIPC(data);
+}
+
+/** Serializes an Arrow wrapper as independently owned IPC buffers for stateful worker jobs. */
+export function serializeArrowIPCWorkerResult(result: unknown): unknown {
+  if (!isArrowTableWrapper(result)) {
+    throw new Error('Worker results must be Arrow table wrappers');
+  }
+  const indices = (result as unknown as MeshArrowTable).indices;
+  return {
+    ...result,
+    data: serializeArrowTableToIPC(result.data),
+    ...(indices ? {indices: {...indices, value: indices.value.slice()}} : {})
+  };
+}
+
+/** Hydrates IPC worker wrappers while accepting older same-version Arrow worker payloads. */
+export function deserializeArrowIPCWorkerResult(result: unknown): any {
+  const table = result as {shape?: string; data?: SerializedArrowTableIPC} | null;
+  if (table?.shape === 'arrow-table' && table.data?.transport === 'arrow-ipc') {
+    return {...table, data: deserializeArrowTableFromIPC(table.data)};
+  }
+  return deserializeArrowWorkerResult(result);
 }
 
 /** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */
