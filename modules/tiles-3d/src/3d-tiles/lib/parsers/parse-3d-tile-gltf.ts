@@ -11,8 +11,8 @@ import {
   getGLTFAccessor,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from '@loaders.gl/gltf';
-import type {GLTF, GLTFWithBuffers} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
+import type {GLTF, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles-3d';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles-3d';
 import {Matrix4} from '@math.gl/core';

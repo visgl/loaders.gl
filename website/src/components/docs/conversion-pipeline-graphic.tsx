@@ -16,14 +16,14 @@ const INPUTS: readonly ConversionPipelineNode[] = [
   {label: 'CSV / JSONL', detail: 'records and streams', to: '/docs/modules/tables/csv/formats/csv'},
   {label: 'GeoJSON', detail: 'features and geometry', to: '/docs/modules/tables/json/formats/geojson'},
   {label: 'Parquet', detail: 'columns and row groups', to: '/docs/modules/tables/parquet/formats/parquet'},
-  {label: 'glTF / GLB', detail: 'scenes and meshes', to: '/docs/modules/gltf/formats/gltf'}
+  {label: 'glTF / GLB', detail: 'scenes and meshes', to: '/docs/modules/scene/gltf/formats/gltf'}
 ];
 
 const OUTPUTS: readonly ConversionPipelineNode[] = [
   {label: 'Arrow IPC', detail: 'typed batches', to: '/docs/modules/tables/arrow/formats/arrow'},
   {label: 'GeoParquet', detail: 'columnar geospatial data', to: '/docs/modules/tables/parquet/formats/geoparquet'},
-  {label: 'LAS / LAZ', detail: 'point cloud data', to: '/docs/modules/las/formats/las'},
-  {label: 'glTF / GLB', detail: 'portable scene assets', to: '/docs/modules/gltf/formats/gltf'}
+  {label: 'LAS / LAZ', detail: 'point cloud data', to: '/docs/modules/pointclouds/las/formats/las'},
+  {label: 'glTF / GLB', detail: 'portable scene assets', to: '/docs/modules/scene/gltf/formats/gltf'}
 ];
 
 /** Shows how format-specific data can pass through a shared application shape. */

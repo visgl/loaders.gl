@@ -61,7 +61,7 @@ it does not turn an asynchronous parser into a synchronous one.
 
 ```typescript
 import {fetchFile, parseSync, preload} from '@loaders.gl/core';
-import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 
 const response = await fetchFile(url);
 const arrayBuffer = await response.arrayBuffer();

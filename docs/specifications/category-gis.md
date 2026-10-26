@@ -61,7 +61,7 @@ Each loader reference documents its alternate shapes and format-specific fields.
 | [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader) | `ArrowTable` | Features from a FlatGeobuf file. |
 | [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | `ArrowTable` | Features from selected vector-tile layers. |
 | [`GeoPackageLoader`](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader) | `ArrowTable` | Features from a selected table. |
-| [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader), [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) | GeoJSON geometry | One geometry, without a feature/property wrapper. |
+| [`WKBLoader`](/docs/modules/geospatial/wkt/api-reference/wkb-loader), [`WKTLoader`](/docs/modules/geospatial/wkt/api-reference/wkt-loader) | GeoJSON geometry | One geometry, without a feature/property wrapper. |
 
 ## Supported shapes
 
@@ -77,7 +77,7 @@ For loaders with shape selection, `options.core.shape` sets the default return s
 | `geojson` | [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader), `MLTLoader` | Array of GeoJSON features instead of a table wrapper. |
 | `binary` | [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader), [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader), `MLTLoader`, [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | Binary feature representations vary by loader. |
 | `binary-geometry` | [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | Geometry-only binary output. |
-| `geojson-geometry` | [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader), [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) | Single geometry output. |
+| `geojson-geometry` | [`WKBLoader`](/docs/modules/geospatial/wkt/api-reference/wkb-loader), [`WKTLoader`](/docs/modules/geospatial/wkt/api-reference/wkt-loader) | Single geometry output. |
 | `raw` | [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | Raw parsed XML/document output where supported. |
 | `v3` | `ShapefileLoader` | Legacy shapefile feature array shape. |
 

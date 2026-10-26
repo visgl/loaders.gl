@@ -69,8 +69,8 @@ As shown above, loaders can be specified directly in a call to `load` or any of 
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {PCDLoader} from '@loaders.gl/pcd';
-import {LASLoader} from '@loaders.gl/las';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 
 const pointCloud = await load(url, [PCDLoader, LASLoader]);
 
@@ -86,8 +86,8 @@ Note that type inference only works when single loader is provided:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {PCDLoader} from '@loaders.gl/pcd';
-import {LASLoader} from '@loaders.gl/las';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 
 // Single loader infers type
 const pcdPointCloud = await load(url, PCDLoader); // => type MeshArrowTable
@@ -100,8 +100,8 @@ You can use `selectLoader` and a `switch` statement when the input format is unk
 
 ```typescript
 import {load, selectLoader} from '@loaders.gl/core';
-import {PCDLoader} from '@loaders.gl/pcd';
-import {LASLoader} from '@loaders.gl/las';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 
 const loader = await selectLoader(url, [PCDLoader, LASLoader]);
 switch (loader.id) {

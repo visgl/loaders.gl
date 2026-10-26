@@ -25,7 +25,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   }
 
   if (shouldRunBenchmark('las')) {
-    const {default: lasBench} = await import('@loaders.gl/las/test/las-loader.bench');
+    const {default: lasBench} = await import('@loaders.gl/pointclouds/las/test/las-loader.bench');
     await lasBench(suite);
   }
 
@@ -76,7 +76,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
     await parquetBench(suite);
   }
   if (shouldRunBenchmark('ply')) {
-    const {default: plyBench} = await import('@loaders.gl/ply/test/ply-loader.bench');
+    const {default: plyBench} = await import('@loaders.gl/pointclouds/ply/test/ply-loader.bench');
     await plyBench(suite);
   }
 

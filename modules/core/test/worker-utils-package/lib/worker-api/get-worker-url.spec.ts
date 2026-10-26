@@ -54,7 +54,9 @@ test('getWorkerURL', () => {
     ),
     'test worker URL supports a shared worker filename'
   ).toBe(
-    isBrowser ? 'modules/wkt/dist/wkt-worker.js' : 'modules/wkt/src/workers/wkb-worker-node.ts'
+    isBrowser
+      ? 'modules/geospatial/dist/wkt-worker.js'
+      : 'modules/geospatial/src/wkt/workers/wkb-worker-node.ts'
   );
 });
 test('getWorkerURL#grouped Node test workers', () => {

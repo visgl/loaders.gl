@@ -9,8 +9,8 @@ import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
-import {GLTFLoader} from '@loaders.gl/gltf/bundled';
-import {GLTFScenegraph} from '@loaders.gl/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {
   convertTableToMesh,
   makeMeshArrowTable,

@@ -160,7 +160,7 @@ Both schemas enforce the same structural constraints, including that a tileset c
 | `3d-tiles.assetGltfUpAxis` | `'x' \| 'y' \| 'z' \| null` | `null` | Override the up axis used when interpreting linked glTF assets. |
 
 General request options such as headers are supplied through the shared loaders.gl options. When
-`3d-tiles.loadGLTF` is enabled, use [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader)
+`3d-tiles.loadGLTF` is enabled, use [`GLTFLoader` options](/docs/modules/scene/gltf/api-reference/gltf-loader)
 under `options.gltf` to control linked scene resources.
 
 Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
@@ -174,8 +174,8 @@ recursively and accepts replacements through the flat `core.subloaders` map.
 
 | Override name | Default implementation | Purpose and compatibility |
 | --- | --- | --- |
-| `GLTFLoader` | [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) | Parse glTF tile content and linked resources. Replacements must support asynchronous parsing of JSON and binary glTF and return the compatible glTF scene structure. |
-| `GLBLoader` | [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader) | Inspect GLB containers when classifying tile content. Replacements must support synchronous GLB parsing and expose the compatible JSON chunk. |
+| `GLTFLoader` | [`GLTFLoader`](/docs/modules/scene/gltf/api-reference/gltf-loader) | Parse glTF tile content and linked resources. Replacements must support asynchronous parsing of JSON and binary glTF and return the compatible glTF scene structure. |
+| `GLBLoader` | [`GLBLoader`](/docs/modules/scene/gltf/api-reference/glb-loader) | Inspect GLB containers when classifying tile content. Replacements must support synchronous GLB parsing and expose the compatible JSON chunk. |
 
 ```typescript
 import {preload, parse} from '@loaders.gl/core';
@@ -300,12 +300,12 @@ Scenegraph Fields
 
 | Field  | Type     | Contents                                                                                             |
 | ------ | -------- | ---------------------------------------------------------------------------------------------------- |
-| `gltf` | `Object` | See the [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) reference for linked scene content. |
+| `gltf` | `Object` | See the [`GLTFLoader`](/docs/modules/scene/gltf/api-reference/gltf-loader) reference for linked scene content. |
 
 ### Decoded glTF content
 
 When `3d-tiles.loadGLTF` is enabled, `tile.gltf` is a `GLTFWithBuffers` container. Its `.json` member
 retains glTF indices; `.buffers` and `.images` hold loaded resources. Use
-[`getGLTFAccessorValue`](../../gltf/api-reference/gltf-accessors) for geometry arrays and
+[`getGLTFAccessorValue`](../../scene/gltf/api-reference/gltf-accessors) for geometry arrays and
 `setGLTFAccessorValue` for replacements. This applies to standalone glTF and legacy B3DM/I3DM
 containers. Deferred content continues to expose `gltfArrayBuffer`.

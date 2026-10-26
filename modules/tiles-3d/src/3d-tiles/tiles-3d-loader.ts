@@ -3,11 +3,11 @@
 // Copyright vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-// / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
+// / import type { GLTFLoaderOptions } from '@loaders.gl/scene/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 
-import {GLTFLoader, GLBLoader} from '@loaders.gl/gltf';
+import {GLTFLoader, GLBLoader} from '@loaders.gl/scene/gltf';
 import {VERSION} from './lib/utils/version';
 import type {Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 import {Tiles3DFormat} from './tiles-3d-format';

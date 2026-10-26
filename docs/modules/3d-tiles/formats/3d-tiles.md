@@ -170,7 +170,7 @@ called out explicitly rather than being counted as parser support.
 | Payload | `i3dm` instanced model | ✅ | Parse | Feature and instance transforms are decoded, including oct-encoded orientations. |
 | Payload | `pnts` point cloud | ✅ | Parse | Draco point attributes are supported when the Draco decoder is available. |
 | Payload | `cmpt` composite | ✅ | Parse | Child payloads are parsed recursively through the composite loader. |
-| Payload | glTF / GLB tile content | ✅ | Parse + normalize | Embedded and external content are accepted; glTF extensions are handled by `@loaders.gl/gltf`. |
+| Payload | glTF / GLB tile content | ✅ | Parse + normalize | Embedded and external content are accepted; glTF extensions are handled by `@loaders.gl/scene/gltf`. |
 | Payload | External tileset content | ✅ | Traversal | Nested roots are installed below the owning tile and participate in selection. |
 | Payload | Multiple contents per tile | ✅ v5.0 | Parse + traversal | Source order is preserved in `Tile3D.contents`; `Tile3D.content` remains the primary payload. |
 | Hierarchy | Explicit child hierarchy | ✅ | Traversal | Visibility, distance, refinement, and loading are evaluated per tile. |

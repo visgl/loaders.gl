@@ -9,8 +9,8 @@ const FORMAT_LANES = [
     detail: 'Hierarchy, materials, transforms, and animation',
     tone: 'pink',
     formats: [
-      {label: 'glTF 2.0 + draft 2.1', to: '/docs/modules/gltf/formats/gltf'},
-      {label: 'GLB', to: '/docs/modules/gltf/formats/glb'},
+      {label: 'glTF 2.0 + draft 2.1', to: '/docs/modules/scene/gltf/formats/gltf'},
+      {label: 'GLB', to: '/docs/modules/scene/gltf/formats/glb'},
       {label: 'OpenUSD', to: '/docs/modules/scene/formats/usd'}
     ]
   },
@@ -30,7 +30,7 @@ const FORMAT_LANES = [
     tone: 'cyan',
     formats: [
       {label: 'Draco', to: '/docs/modules/draco/formats/draco'},
-      {label: 'Meshopt compression', to: '/docs/modules/gltf/formats/gltf#meshopt-compression'},
+      {label: 'Meshopt compression', to: '/docs/modules/scene/gltf/formats/gltf#meshopt-compression'},
       {label: 'Basis Universal / KTX2', to: '/docs/modules/textures/formats/ktx'}
     ]
   }

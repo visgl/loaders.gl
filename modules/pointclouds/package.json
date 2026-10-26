@@ -1,0 +1,233 @@
+{
+  "name": "@loaders.gl/pointclouds",
+  "version": "5.0.0-alpha.14",
+  "description": "LAS, LAZ, PCD and PLY point-cloud and mesh loaders",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "3d",
+    "mesh",
+    "point cloud",
+    "LAS",
+    "LAZ"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./las": {
+      "types": "./dist/las/index.d.ts",
+      "import": "./dist/las/index.js",
+      "require": "./dist/las/index.cjs"
+    },
+    "./las/bundled": {
+      "types": "./dist/las/bundled.d.ts",
+      "import": "./dist/las/bundled.js",
+      "require": "./dist/las/bundled.cjs"
+    },
+    "./las/index": {
+      "types": "./dist/las/index.d.ts",
+      "import": "./dist/las/index.js",
+      "require": "./dist/las/index.cjs"
+    },
+    "./las/las-copc-loader-types": {
+      "types": "./dist/las/las-copc-loader-types.d.ts",
+      "import": "./dist/las/las-copc-loader-types.js",
+      "require": "./dist/las/las-copc-loader-types.cjs"
+    },
+    "./las/las-copc-loader": {
+      "types": "./dist/las/las-copc-loader.d.ts",
+      "import": "./dist/las/las-copc-loader.js",
+      "require": "./dist/las/las-copc-loader.cjs"
+    },
+    "./las/las-format": {
+      "types": "./dist/las/las-format.d.ts",
+      "import": "./dist/las/las-format.js",
+      "require": "./dist/las/las-format.cjs"
+    },
+    "./las/las-loader-shared": {
+      "types": "./dist/las/las-loader-shared.d.ts",
+      "import": "./dist/las/las-loader-shared.js",
+      "require": "./dist/las/las-loader-shared.cjs"
+    },
+    "./las/las-loader-types": {
+      "types": "./dist/las/las-loader-types.d.ts",
+      "import": "./dist/las/las-loader-types.js",
+      "require": "./dist/las/las-loader-types.cjs"
+    },
+    "./las/las-loader": {
+      "types": "./dist/las/las-loader.d.ts",
+      "import": "./dist/las/las-loader.js",
+      "require": "./dist/las/las-loader.cjs"
+    },
+    "./las/las-writer": {
+      "types": "./dist/las/las-writer.d.ts",
+      "import": "./dist/las/las-writer.js",
+      "require": "./dist/las/las-writer.cjs"
+    },
+    "./las/laz-rs-loader-types": {
+      "types": "./dist/las/laz-rs-loader-types.d.ts",
+      "import": "./dist/las/laz-rs-loader-types.js",
+      "require": "./dist/las/laz-rs-loader-types.cjs"
+    },
+    "./las/laz-rs-loader": {
+      "types": "./dist/las/laz-rs-loader.d.ts",
+      "import": "./dist/las/laz-rs-loader.js",
+      "require": "./dist/las/laz-rs-loader.cjs"
+    },
+    "./las/lazperf-loader-types": {
+      "types": "./dist/las/lazperf-loader-types.d.ts",
+      "import": "./dist/las/lazperf-loader-types.js",
+      "require": "./dist/las/lazperf-loader-types.cjs"
+    },
+    "./las/lazperf-loader": {
+      "types": "./dist/las/lazperf-loader.d.ts",
+      "import": "./dist/las/lazperf-loader.js",
+      "require": "./dist/las/lazperf-loader.cjs"
+    },
+    "./las/unbundled": {
+      "types": "./dist/las/unbundled.d.ts",
+      "import": "./dist/las/unbundled.js",
+      "require": "./dist/las/unbundled.cjs"
+    },
+    "./pcd": {
+      "types": "./dist/pcd/index.d.ts",
+      "import": "./dist/pcd/index.js",
+      "require": "./dist/pcd/index.cjs"
+    },
+    "./pcd/bundled": {
+      "types": "./dist/pcd/bundled.d.ts",
+      "import": "./dist/pcd/bundled.js",
+      "require": "./dist/pcd/bundled.cjs"
+    },
+    "./pcd/index": {
+      "types": "./dist/pcd/index.d.ts",
+      "import": "./dist/pcd/index.js",
+      "require": "./dist/pcd/index.cjs"
+    },
+    "./pcd/pcd-format": {
+      "types": "./dist/pcd/pcd-format.d.ts",
+      "import": "./dist/pcd/pcd-format.js",
+      "require": "./dist/pcd/pcd-format.cjs"
+    },
+    "./pcd/pcd-loader-types": {
+      "types": "./dist/pcd/pcd-loader-types.d.ts",
+      "import": "./dist/pcd/pcd-loader-types.js",
+      "require": "./dist/pcd/pcd-loader-types.cjs"
+    },
+    "./pcd/pcd-loader": {
+      "types": "./dist/pcd/pcd-loader.d.ts",
+      "import": "./dist/pcd/pcd-loader.js",
+      "require": "./dist/pcd/pcd-loader.cjs"
+    },
+    "./pcd/pcd-writer": {
+      "types": "./dist/pcd/pcd-writer.d.ts",
+      "import": "./dist/pcd/pcd-writer.js",
+      "require": "./dist/pcd/pcd-writer.cjs"
+    },
+    "./pcd/unbundled": {
+      "types": "./dist/pcd/unbundled.d.ts",
+      "import": "./dist/pcd/unbundled.js",
+      "require": "./dist/pcd/unbundled.cjs"
+    },
+    "./ply": {
+      "types": "./dist/ply/index.d.ts",
+      "import": "./dist/ply/index.js",
+      "require": "./dist/ply/index.cjs"
+    },
+    "./ply/bundled": {
+      "types": "./dist/ply/bundled.d.ts",
+      "import": "./dist/ply/bundled.js",
+      "require": "./dist/ply/bundled.cjs"
+    },
+    "./ply/index": {
+      "types": "./dist/ply/index.d.ts",
+      "import": "./dist/ply/index.js",
+      "require": "./dist/ply/index.cjs"
+    },
+    "./ply/ply-format": {
+      "types": "./dist/ply/ply-format.d.ts",
+      "import": "./dist/ply/ply-format.js",
+      "require": "./dist/ply/ply-format.cjs"
+    },
+    "./ply/ply-loader-types": {
+      "types": "./dist/ply/ply-loader-types.d.ts",
+      "import": "./dist/ply/ply-loader-types.js",
+      "require": "./dist/ply/ply-loader-types.cjs"
+    },
+    "./ply/ply-loader": {
+      "types": "./dist/ply/ply-loader.d.ts",
+      "import": "./dist/ply/ply-loader.js",
+      "require": "./dist/ply/ply-loader.cjs"
+    },
+    "./ply/ply-writer": {
+      "types": "./dist/ply/ply-writer.d.ts",
+      "import": "./dist/ply/ply-writer.js",
+      "require": "./dist/ply/ply-writer.cjs"
+    },
+    "./ply/unbundled": {
+      "types": "./dist/ply/unbundled.d.ts",
+      "import": "./dist/ply/unbundled.js",
+      "require": "./dist/ply/unbundled.cjs"
+    },
+    "./las-worker.js": {
+      "import": "./dist/las-worker.js"
+    },
+    "./pcd-worker.js": {
+      "import": "./dist/pcd-worker.js"
+    },
+    "./ply-worker.js": {
+      "import": "./dist/ply-worker.js"
+    }
+  },
+  "sideEffects": false,
+  "browser": {
+    "crypto": false,
+    "fs": false,
+    "path": false,
+    "ws": false
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "LAS-README.md",
+    "PCD-README.md",
+    "PLY-README.md"
+  ],
+  "scripts": {
+    "copy-wasm-files-las": "cp src/las/libs/laz-rs-wasm/*.wasm* dist/las/libs/laz-rs-wasm/",
+    "build-worker-las": "esbuild src/las/workers/las-worker.ts --bundle --outfile=dist/las-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-pcd": "node ../../scripts/build-codec-worker.mjs src/pcd/workers/pcd-worker.ts --bundle --outfile=dist/pcd-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-ply": "node ../../scripts/build-codec-worker.mjs src/ply/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
+    "pre-build": "npm run copy-wasm-files-las && npm run build-worker-las && npm run build-worker-pcd && npm run build-worker-ply && npm run build-format-subpaths && npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
+  },
+  "dependencies": {
+    "@math.gl/geospatial": "5.0.0-alpha.20",
+    "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  },
+  "optionalDependencies": {
+    "copc": "0.0.8",
+    "laz-perf": "^0.0.7"
+  }
+}

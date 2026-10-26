@@ -51,7 +51,7 @@ The return value from `fetch` or `fetchFile` is a `Promise` that resolves to the
 
 ```typescript
 import {fetchFile, parse} from '@loaders.gl/core';
-import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 
 const data = await parse(fetchFile(url), OBJLoader);
 // Application code here

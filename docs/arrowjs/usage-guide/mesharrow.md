@@ -87,7 +87,7 @@ Mesh-category loaders expose Arrow output through a loader-specific `shape: 'arr
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {LASLoader} from '@loaders.gl/las';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
 const pointCloud = (await load('point-cloud.laz', LASLoader, {
@@ -119,12 +119,12 @@ Use `convertMeshToTable(mesh, 'arrow-table')` when starting from a legacy loader
 
 ### Project a glTF scene
 
-`@loaders.gl/gltf/mesh-arrow` converts an already loaded glTF scene into reusable Mesh Arrow geometries and separate scene placements. Each source primitive is converted once even when its mesh is referenced by multiple nodes.
+`@loaders.gl/scene/gltf/mesh-arrow` converts an already loaded glTF scene into reusable Mesh Arrow geometries and separate scene placements. Each source primitive is converted once even when its mesh is referenced by multiple nodes.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
-import {convertGLTFToMeshArrow} from '@loaders.gl/gltf/mesh-arrow';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {convertGLTFToMeshArrow} from '@loaders.gl/scene/gltf/mesh-arrow';
 
 const gltf = await load('scene.glb', GLTFLoader);
 const meshArrow = convertGLTFToMeshArrow(gltf);

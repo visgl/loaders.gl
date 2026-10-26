@@ -301,10 +301,10 @@ if (Array.isArray(vitestConfiguration.resolve?.alias)) {
 // Keep published 9.x consumers on their installed glTF 4.x dependency until they upgrade to v10.
 if (Array.isArray(vitestConfiguration.resolve?.alias)) {
   for (const alias of vitestConfiguration.resolve.alias) {
-    if (alias.find === '@loaders.gl/gltf') {
+    if (alias.find === '@loaders.gl/scene/gltf') {
       alias.customResolver = function (source, importer, options) {
         if (importer?.replace(/\\/g, '/').includes('/node_modules/')) {
-          const publishedEntry = createRequire(importer.split('?')[0]).resolve('@loaders.gl/gltf');
+          const publishedEntry = createRequire(importer.split('?')[0]).resolve('@loaders.gl/scene/gltf');
           if (publishedEntry.replace(/\\/g, '/').includes('/node_modules/')) {
             return publishedEntry.replace(/\.cjs$/, '.js');
           }

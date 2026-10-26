@@ -16,10 +16,10 @@ export type PcdDocsTabId = 'overview' | 'format' | 'pcdloader' | 'pcdwriter' | '
 
 const PCD_DOCS_TABS: PcdDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/pointclouds/pcd'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/pcd/formats/pcd'},
-  {id: 'format', label: 'Format', href: '/docs/modules/pcd/format'},
-  {id: 'pcdloader', label: 'PCDLoader', href: '/docs/modules/pcd/api-reference/pcd-loader'},
-  {id: 'pcdwriter', label: 'PCDWriter', href: '/docs/modules/pcd/api-reference/pcd-writer'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/pointclouds/pcd/formats/pcd'},
+  {id: 'format', label: 'Format', href: '/docs/modules/pointclouds/pcd/format'},
+  {id: 'pcdloader', label: 'PCDLoader', href: '/docs/modules/pointclouds/pcd/api-reference/pcd-loader'},
+  {id: 'pcdwriter', label: 'PCDWriter', href: '/docs/modules/pointclouds/pcd/api-reference/pcd-writer'}
 ];
 
 /**

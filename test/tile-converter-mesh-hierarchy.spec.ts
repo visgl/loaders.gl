@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
 import {parse} from '@loaders.gl/core';
-import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/gltf';
+import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {
   createBrowserTilesetConversionSource,
   createTiles3DConversionSpatialContext

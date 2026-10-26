@@ -111,21 +111,6 @@
         "branches": 55
       }
     },
-    "@loaders.gl/gltf": {
-      "path": "modules/gltf",
-      "browser": {
-        "statements": 85,
-        "lines": 85,
-        "functions": 85,
-        "branches": 73
-      },
-      "merged": {
-        "statements": 84,
-        "lines": 85,
-        "functions": 84,
-        "branches": 73
-      }
-    },
     "@loaders.gl/graphs": {
       "path": "modules/graphs",
       "browser": {
@@ -154,66 +139,6 @@
         "lines": 82,
         "functions": 89,
         "branches": 74
-      }
-    },
-    "@loaders.gl/las": {
-      "path": "modules/las",
-      "browser": {
-        "statements": 48,
-        "lines": 48,
-        "functions": 46,
-        "branches": 46
-      },
-      "merged": {
-        "statements": 48,
-        "lines": 48,
-        "functions": 45,
-        "branches": 46
-      }
-    },
-    "@loaders.gl/obj": {
-      "path": "modules/obj",
-      "browser": {
-        "statements": 72,
-        "lines": 72,
-        "functions": 76,
-        "branches": 54
-      },
-      "merged": {
-        "statements": 70,
-        "lines": 72,
-        "functions": 74,
-        "branches": 54
-      }
-    },
-    "@loaders.gl/pcd": {
-      "path": "modules/pcd",
-      "browser": {
-        "statements": 68,
-        "lines": 68,
-        "functions": 83,
-        "branches": 53
-      },
-      "merged": {
-        "statements": 67,
-        "lines": 68,
-        "functions": 83,
-        "branches": 53
-      }
-    },
-    "@loaders.gl/ply": {
-      "path": "modules/ply",
-      "browser": {
-        "statements": 82,
-        "lines": 82,
-        "functions": 91,
-        "branches": 60
-      },
-      "merged": {
-        "statements": 81,
-        "lines": 82,
-        "functions": 90,
-        "branches": 60
       }
     },
     "@loaders.gl/raster": {
@@ -254,7 +179,12 @@
         "lines": 87,
         "functions": 100,
         "branches": 73
-      }
+      },
+      "sourcePaths": [
+        "modules/scene/src/usd/",
+        "modules/scene/src/index.ts"
+      ],
+      "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf gates; every scene implementation belongs to one of these gates."
     },
     "@loaders.gl/scientific": {
       "path": "modules/scientific",
@@ -464,21 +394,6 @@
         "branches": 60
       }
     },
-    "@loaders.gl/wkt": {
-      "path": "modules/wkt",
-      "browser": {
-        "statements": 57,
-        "lines": 60,
-        "functions": 29,
-        "branches": 46
-      },
-      "merged": {
-        "statements": 49,
-        "lines": 56,
-        "functions": 21,
-        "branches": 46
-      }
-    },
     "@loaders.gl/xml": {
       "path": "modules/xml",
       "browser": {
@@ -523,6 +438,22 @@
         "functions": 91,
         "branches": 72
       }
+    },
+    "@loaders.gl/pointclouds": {
+      "path": "modules/pointclouds",
+      "browser": {
+        "statements": 48,
+        "lines": 48,
+        "functions": 46,
+        "branches": 46
+      },
+      "merged": {
+        "statements": 48,
+        "lines": 48,
+        "functions": 45,
+        "branches": 46
+      },
+      "baselineReason": "The aggregate baseline inherits the strictest floor shared by all three existing implementations. Their original per-format thresholds remain unchanged in pointclouds/las, pointclouds/pcd, and pointclouds/ply."
     }
   },
   "formats": {
@@ -1176,6 +1107,120 @@
         "modules/core/src/scan/index.ts",
         "modules/core/src/scan/federated-table-scan-source.ts",
         "modules/core/src/scan/vector-table-scan-source.ts"
+      ]
+    },
+    "pointclouds/las": {
+      "path": "modules/pointclouds/src/las",
+      "browser": {
+        "statements": 48,
+        "lines": 48,
+        "functions": 46,
+        "branches": 46
+      },
+      "merged": {
+        "statements": 48,
+        "lines": 48,
+        "functions": 45,
+        "branches": 46
+      },
+      "owner": "@loaders.gl/pointclouds",
+      "sourcePaths": [
+        "modules/pointclouds/src/las/"
+      ]
+    },
+    "pointclouds/pcd": {
+      "path": "modules/pointclouds/src/pcd",
+      "browser": {
+        "statements": 68,
+        "lines": 68,
+        "functions": 83,
+        "branches": 53
+      },
+      "merged": {
+        "statements": 67,
+        "lines": 68,
+        "functions": 83,
+        "branches": 53
+      },
+      "owner": "@loaders.gl/pointclouds",
+      "sourcePaths": [
+        "modules/pointclouds/src/pcd/"
+      ]
+    },
+    "pointclouds/ply": {
+      "path": "modules/pointclouds/src/ply",
+      "browser": {
+        "statements": 82,
+        "lines": 82,
+        "functions": 91,
+        "branches": 60
+      },
+      "merged": {
+        "statements": 81,
+        "lines": 82,
+        "functions": 90,
+        "branches": 60
+      },
+      "owner": "@loaders.gl/pointclouds",
+      "sourcePaths": [
+        "modules/pointclouds/src/ply/"
+      ]
+    },
+    "scene/obj": {
+      "path": "modules/scene/src/obj",
+      "browser": {
+        "statements": 72,
+        "lines": 72,
+        "functions": 76,
+        "branches": 54
+      },
+      "merged": {
+        "statements": 70,
+        "lines": 72,
+        "functions": 74,
+        "branches": 54
+      },
+      "owner": "@loaders.gl/scene",
+      "sourcePaths": [
+        "modules/scene/src/obj/"
+      ]
+    },
+    "scene/gltf": {
+      "path": "modules/scene/src/gltf",
+      "browser": {
+        "statements": 85,
+        "lines": 85,
+        "functions": 85,
+        "branches": 73
+      },
+      "merged": {
+        "statements": 84,
+        "lines": 85,
+        "functions": 84,
+        "branches": 73
+      },
+      "owner": "@loaders.gl/scene",
+      "sourcePaths": [
+        "modules/scene/src/gltf/"
+      ]
+    },
+    "geospatial/wkt": {
+      "path": "modules/geospatial/src/wkt",
+      "browser": {
+        "statements": 57,
+        "lines": 60,
+        "functions": 29,
+        "branches": 46
+      },
+      "merged": {
+        "statements": 49,
+        "lines": 56,
+        "functions": 21,
+        "branches": 46
+      },
+      "owner": "@loaders.gl/geospatial",
+      "sourcePaths": [
+        "modules/geospatial/src/wkt/"
       ]
     }
   }

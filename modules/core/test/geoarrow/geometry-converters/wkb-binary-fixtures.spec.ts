@@ -5,10 +5,10 @@
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {convertWKBToBinaryGeometry, isWKB} from '@loaders.gl/core/geoarrow';
-import {parseTestCases} from '@loaders.gl/wkt/test/data/wkt/parse-test-cases';
+import {parseTestCases} from '@loaders.gl/geospatial/wkt/test/data/wkt/parse-test-cases';
 
-const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdata2d.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkt/wkb-testdataZ.json';
+const WKB_2D_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdata2d.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdataZ.json';
 
 /** Normalizes typed arrays for legacy binary fixture comparisons. */
 function normalizeTypedArrays(value: unknown): unknown {

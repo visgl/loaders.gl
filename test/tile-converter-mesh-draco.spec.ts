@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {validateBytes} from 'gltf-validator';
-import {GLBLoader, GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
+import {GLBLoader, GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {
   convertTileset,
   createMeshConversionCodec,

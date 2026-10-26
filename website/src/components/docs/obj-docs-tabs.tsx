@@ -16,10 +16,10 @@ export type ObjDocsTabId = 'overview' | 'try-it' | 'format' | 'objloader' | 'obj
 
 const OBJ_DOCS_TABS: ObjDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/pointclouds/obj'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/obj/formats/obj'},
-  {id: 'format', label: 'Format', href: '/docs/modules/obj/format'},
-  {id: 'objloader', label: 'OBJLoader', href: '/docs/modules/obj/api-reference/obj-loader'},
-  {id: 'objwriter', label: 'OBJWriter', href: '/docs/modules/obj/api-reference/obj-writer'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/scene/obj/formats/obj'},
+  {id: 'format', label: 'Format', href: '/docs/modules/scene/obj/format'},
+  {id: 'objloader', label: 'OBJLoader', href: '/docs/modules/scene/obj/api-reference/obj-loader'},
+  {id: 'objwriter', label: 'OBJWriter', href: '/docs/modules/scene/obj/api-reference/obj-writer'}
 ];
 
 /**

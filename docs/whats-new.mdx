@@ -201,7 +201,7 @@ Package barrels now list their exports explicitly.
 
 - Further expand glTF 1 conversion with common-ancestor multi-root skins, translation-only animated matrix decomposition, index widening, vertex count/index range checks, and independent inverse-bind and missing-influence validation. Safe conversions preserve source data; ambiguous or invalid cases use the supplied logger and normalization report.
 
-- Expand [glTF 1 conversion](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion) with
+- Expand [glTF 1 conversion](/docs/modules/scene/gltf/formats/gltf#gltf-1-to-gltf-2-conversion) with
   smaller skin influence padding, safe detached skeleton scene attachment, required position/time
   bounds, and focused skin, animation, and camera checks. Best effort reports unsupported cases;
   strict mode rejects them. Conversion notes use the supplied logger.
@@ -351,7 +351,7 @@ Release Date: 2026
 - **Unbundled loaders** - Loader modules can expose metadata-only loaders from `/unbundled` subpaths, using imports such as `import {CSVLoader} from '@loaders.gl/csv/unbundled';`, so applications can support rarely used formats without putting every parser implementation in the main bundle.
 - **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
 - **Coverage expansion and test modernization** - Broad, fast, hermetic Vitest coverage has raised combined line-and-branch coverage from about 70% to over 90%, while completing the migration of legacy Tape tests to native Vitest syntax. Compact boundary suites cover binary point-cloud decoders, CSV and Parquet Arrow output, geometry conversion, 3D Tiles traversal, raster and splat sources, and streaming file and worker lifecycles. Large compatibility fixtures remain in the slow lane, and boundary checks use small deterministic inputs.
-- **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
+- **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/pointclouds/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/scene/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pointclouds/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/pointclouds/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`OMEZarrSourceLoader`](/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF / OME-Zarr website examples.
 - **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
 - **Module workers by default** - Worker descriptors can create bundler-resolved ES module workers as their default browser path while retaining explicit worker URLs and pre-built classic-worker fallbacks. Arrow triangulation is the first API to use this path; existing classic workers are not deprecated.
@@ -420,18 +420,18 @@ Release Date: 2026
 
 **@loaders.gl/gltf**
 
-- **[glTF 2.1](/docs/modules/gltf/formats/gltf#loadersgl-gltf-feature-coverage)** (draft): Adds accessor component types, unified file references, external asset composition, thumbnails, and shape and bounding volume helpers. The support table distinguishes implemented features from partial and planned runtime support.
-- **[glTF 1](/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion)**: Automatically attempts best-effort conversion to glTF 2, with strict mode and diagnostics. Converts compatible integer normals/tangents, infers bounded dense accessor-view lengths, and omits legacy empty child/scene lists. The [glTF example](/examples/gltf) includes original Box and BoxAnimated files. The conversion table details supported transformations and limitations; techniques and shaders are preserved without equivalent rendering behavior.
-- **[GLB 3](/docs/modules/gltf/formats/glb#glb-3-support)** (draft): Parses and writes 64-bit container lengths and multiple binary chunks, with explicit `buffer.chunk` references. Writing is opt-in; GLB 2 remains the default. The support table lists container capabilities and limits.
+- **[glTF 2.1](/docs/modules/scene/gltf/formats/gltf#loadersgl-gltf-feature-coverage)** (draft): Adds accessor component types, unified file references, external asset composition, thumbnails, and shape and bounding volume helpers. The support table distinguishes implemented features from partial and planned runtime support.
+- **[glTF 1](/docs/modules/scene/gltf/formats/gltf#gltf-1-to-gltf-2-conversion)**: Automatically attempts best-effort conversion to glTF 2, with strict mode and diagnostics. Converts compatible integer normals/tangents, infers bounded dense accessor-view lengths, and omits legacy empty child/scene lists. The [glTF example](/examples/gltf) includes original Box and BoxAnimated files. The conversion table details supported transformations and limitations; techniques and shaders are preserved without equivalent rendering behavior.
+- **[GLB 3](/docs/modules/scene/gltf/formats/glb#glb-3-support)** (draft): Parses and writes 64-bit container lengths and multiple binary chunks, with explicit `buffer.chunk` references. Writing is opt-in; GLB 2 remains the default. The support table lists container capabilities and limits.
 - [`postProcessGLTF()`](https://luma.gl/docs/api-reference/gltf/post-process-gltf) expands WebGL-only `LINE_LOOP` and `TRIANGLE_FAN` primitives into portable indexed `LINES` and `TRIANGLES` without mutating the loaded source data.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) loads draft glTF 2.1 [thumbnail images](/docs/modules/gltf/formats/gltf#draft-gltf-21-thumbnails) referenced by `asset.thumbnail`, and [`postProcessGLTF()`](https://luma.gl/docs/api-reference/gltf/post-process-gltf) resolves the thumbnail index to the processed image.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) supports the release-candidate [`KHR_meshopt_compression`](/docs/modules/gltf/formats/gltf#meshopt-compression) extension, including version 1 attribute streams and the `COLOR` filter, while retaining `EXT_meshopt_compression` support.
-- [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) selects `EXT_texture_avif` image sources when the active image decoder supports AVIF, and applies independent `KHR_texture_transform` transforms for textures that share a UV attribute.
+- [`GLTFLoader`](/docs/modules/scene/gltf/api-reference/gltf-loader) loads draft glTF 2.1 [thumbnail images](/docs/modules/scene/gltf/formats/gltf#draft-gltf-21-thumbnails) referenced by `asset.thumbnail`, and [`postProcessGLTF()`](https://luma.gl/docs/api-reference/gltf/post-process-gltf) resolves the thumbnail index to the processed image.
+- [`GLTFLoader`](/docs/modules/scene/gltf/api-reference/gltf-loader) supports the release-candidate [`KHR_meshopt_compression`](/docs/modules/scene/gltf/formats/gltf#meshopt-compression) extension, including version 1 attribute streams and the `COLOR` filter, while retaining `EXT_meshopt_compression` support.
+- [`GLTFLoader`](/docs/modules/scene/gltf/api-reference/gltf-loader) selects `EXT_texture_avif` image sources when the active image decoder supports AVIF, and applies independent `KHR_texture_transform` transforms for textures that share a UV attribute.
 
 **@loaders.gl/las** 
 
-- [`LASWriter`](/docs/modules/las/api-reference/las-writer) NEW -writes uncompressed LAS point cloud data.
-- [`LASLoader`](/docs/modules/las/api-reference/las-loader) now uses the pure TypeScript implementation and ships the only prebuilt LAS worker. Compatibility loaders are available through explicit imports and can use an application-provided `las.workerUrl`.
+- [`LASWriter`](/docs/modules/pointclouds/las/api-reference/las-writer) NEW -writes uncompressed LAS point cloud data.
+- [`LASLoader`](/docs/modules/pointclouds/las/api-reference/las-loader) now uses the pure TypeScript implementation and ships the only prebuilt LAS worker. Compatibility loaders are available through explicit imports and can use an application-provided `las.workerUrl`.
 - `LASLoader` adds `las.columns` projection for Arrow point attributes. Layered PDRF 6-10 LAZ input skips omitted intensity, classification, RGB, GPS time, and NIR decoder layers and output allocations.
 - `LASLoader` now reads legacy LASzip Point10/GPS/RGB/Extra Bytes item version 1 and pointwise compressor 1 files, including incremental Arrow and raw point batches.
 - TypeScript LAS parses now attach typed VLR/EVLR, Extra Bytes, waveform-descriptor, WKT, and GeoTIFF metadata to `loaderData.metadata`.
@@ -439,19 +439,19 @@ Release Date: 2026
 
 **@loaders.gl/obj**
 
-- [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader) adds batched parsing for vertex-only point-cloud OBJ inputs, including `obj.pointCloud: true` for explicit streaming of `v` records and atomic fallback when face or line records are present.
-- [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer) NEW - writes Wavefront OBJ mesh data.
+- [`OBJLoader`](/docs/modules/scene/obj/api-reference/obj-loader) adds batched parsing for vertex-only point-cloud OBJ inputs, including `obj.pointCloud: true` for explicit streaming of `v` records and atomic fallback when face or line records are present.
+- [`OBJWriter`](/docs/modules/scene/obj/api-reference/obj-writer) NEW - writes Wavefront OBJ mesh data.
 
 **@loaders.gl/pcd**
 
-- [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader) adds batched parsing for ASCII and uncompressed binary point clouds, yielding `ArrowTableBatch` values when `pcd.shape: 'arrow-table'` is enabled.
-- [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer) NEW - writes ASCII Point Cloud Data (PCD).
+- [`PCDLoader`](/docs/modules/pointclouds/pcd/api-reference/pcd-loader) adds batched parsing for ASCII and uncompressed binary point clouds, yielding `ArrowTableBatch` values when `pcd.shape: 'arrow-table'` is enabled.
+- [`PCDWriter`](/docs/modules/pointclouds/pcd/api-reference/pcd-writer) NEW - writes ASCII Point Cloud Data (PCD).
 
 **@loaders.gl/ply**
 
-- [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
-- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
-- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) now returns loaders.gl `ArrowTableBatch` values from batched Arrow table parsing, enabling progressive point cloud and Gaussian splat rendering.
+- [`PLYWriter`](/docs/modules/pointclouds/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
+- [`PLYLoader`](/docs/modules/pointclouds/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
+- [`PLYLoader`](/docs/modules/pointclouds/ply/api-reference/ply-loader) now returns loaders.gl `ArrowTableBatch` values from batched Arrow table parsing, enabling progressive point cloud and Gaussian splat rendering.
 - Streaming PLY preserves byte-valued mesh colors, isolates concurrent header state, and handles CRLF header terminators split across input chunks.
 
 **@loaders.gl/splats**
@@ -867,11 +867,11 @@ A major release that brings:
 
 **@loaders.gl/wkt**
 
-- New [`WKTCRSLoader`](/docs/modules/wkt/api-reference/wkt-crs-loader) (WKT Coordinate Reference System loader)
-- New [`WKTCRSWriter`](/docs/modules/wkt/api-reference/wkt-crs-writer) (WKT Coordinate Reference System writer)
-- New [`TWKBLoader`](/docs/modules/wkt/api-reference/twkb-loader) (Tiny Well-Known Binary loader)
-- New [`TWKBWriter`](/docs/modules/wkt/api-reference/twkb-writer) (Tiny Well-Known Binary writer)
-- New [`HexWKBLoader`](/docs/modules/wkt/api-reference/hex-wkb-loader) (Hex Well-Known Binary loader)
+- New [`WKTCRSLoader`](/docs/modules/geospatial/wkt/api-reference/wkt-crs-loader) (WKT Coordinate Reference System loader)
+- New [`WKTCRSWriter`](/docs/modules/geospatial/wkt/api-reference/wkt-crs-writer) (WKT Coordinate Reference System writer)
+- New [`TWKBLoader`](/docs/modules/geospatial/wkt/api-reference/twkb-loader) (Tiny Well-Known Binary loader)
+- New [`TWKBWriter`](/docs/modules/geospatial/wkt/api-reference/twkb-writer) (Tiny Well-Known Binary writer)
+- New [`HexWKBLoader`](/docs/modules/geospatial/wkt/api-reference/hex-wkb-loader) (Hex Well-Known Binary loader)
 
 **@loaders.gl/zip**
 
@@ -984,11 +984,11 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 **@loaders.gl/pcd**
 
-- [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader) now supports loading `intensity` and `label` columns if present in the PCD file.
+- [`PCDLoader`](/docs/modules/pointclouds/pcd/api-reference/pcd-loader) now supports loading `intensity` and `label` columns if present in the PCD file.
 
 **@loaders.gl/ply**
 
-- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) now supports custom attributes such as `intensity` and `confidence` if present in the PLY file.
+- [`PLYLoader`](/docs/modules/pointclouds/ply/api-reference/ply-loader) now supports custom attributes such as `intensity` and `confidence` if present in the PLY file.
 
 **@loaders.gl/tiles**
 
@@ -1568,7 +1568,7 @@ Release Date: Aug 8, 2019
 - `@loaders.gl/core/polyfills`: Fixed `TextEncoder` warnings
 - `@loaders.gl/arrow`: Improved Node 8 support
 - `@loaders.gl/images`: Image file extensions now added to loader object
-- `@loaders.gl/gltf`: Generate default sampler parameters if none provided in gltf file
+- `@loaders.gl/scene/gltf`: Generate default sampler parameters if none provided in gltf file
 
 **@loaders.gl/tiles-3d/3d-tiles** (EXPERIMENTAL)
 

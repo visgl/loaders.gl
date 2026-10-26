@@ -14,7 +14,7 @@ import {DracoFormat} from '@loaders.gl/draco';
 import {ExcelFormat} from '@loaders.gl/tables/excel/index';
 import {GeoPackageFormat} from '@loaders.gl/geospatial/geopackage/index';
 import {GeoTIFFFormat, OMETiffFormat} from '@loaders.gl/raster';
-import {GLBFormat, GLTFFormat} from '@loaders.gl/gltf';
+import {GLBFormat, GLTFFormat} from '@loaders.gl/scene/gltf';
 import {
   ArcGISWebSceneFormat,
   I3SAttributeFormat,
@@ -32,14 +32,14 @@ import {
   NDJSONFormat
 } from '@loaders.gl/tables/json/index';
 import {GPXFormat, KMLFormat, KMZFormat, TCXFormat} from '@loaders.gl/geospatial/kml/index';
-import {LASFormat} from '@loaders.gl/las';
+import {LASFormat} from '@loaders.gl/pointclouds/las';
 import {LERCFormat} from '@loaders.gl/raster';
 import {MLTFormat} from '@loaders.gl/tiles/mlt';
 import {MapStyleFormat, MVTFormat, TileJSONFormat} from '@loaders.gl/tiles/mvt';
 import {NetCDFFormat} from '@loaders.gl/scientific/netcdf';
-import {MTLFormat, OBJFormat} from '@loaders.gl/obj';
+import {MTLFormat, OBJFormat} from '@loaders.gl/scene/obj';
 import {ParquetFormat} from '@loaders.gl/tables/parquet/index';
-import {PCDFormat} from '@loaders.gl/pcd';
+import {PCDFormat} from '@loaders.gl/pointclouds/pcd';
 import {PMTilesFormat} from '@loaders.gl/tiles/pmtiles';
 import {
   PotreeBinFormat,
@@ -57,7 +57,13 @@ import {
   NPYFormat,
   RadianceHDRFormat
 } from '@loaders.gl/textures';
-import {HexWKBFormat, TWKBFormat, WKBFormat, WKTCRSFormat, WKTFormat} from '@loaders.gl/wkt';
+import {
+  HexWKBFormat,
+  TWKBFormat,
+  WKBFormat,
+  WKTCRSFormat,
+  WKTFormat
+} from '@loaders.gl/geospatial/wkt';
 import {
   CSWCapabilitiesFormat,
   CSWDomainFormat,
@@ -76,8 +82,8 @@ import {ZipFormat} from '@loaders.gl/archives/zip';
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
 import {FlatGeobufFormat} from '@loaders.gl/geospatial/flatgeobuf/index';
 import {MVTLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
-import {PLYLoader} from '@loaders.gl/ply';
-import {PLYFormat} from '@loaders.gl/ply';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
+import {PLYFormat} from '@loaders.gl/pointclouds/ply';
 import {VideoFormat} from '../../../../video/src/video-format';
 
 const FORMAT_EXPORTS = [

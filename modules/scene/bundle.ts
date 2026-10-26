@@ -95,3 +95,5 @@ export type {
   USDValue,
   USDVariant
 } from '@loaders.gl/scene';
+
+export * from './src/index';

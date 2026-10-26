@@ -37,10 +37,10 @@ application owns, then follow the links to the payload and runtime formats it co
 
 | Layer | Formats | loaders.gl entry points |
 | --- | --- | --- |
-| Scene descriptions | [glTF 2.0 and selected draft 2.1 features](/docs/modules/gltf/formats/gltf), [GLB](/docs/modules/gltf/formats/glb), [OpenUSD](/docs/modules/scene/formats/usd) | [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader), [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader), [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) |
+| Scene descriptions | [glTF 2.0 and selected draft 2.1 features](/docs/modules/scene/gltf/formats/gltf), [GLB](/docs/modules/scene/gltf/formats/glb), [OpenUSD](/docs/modules/scene/formats/usd) | [`GLTFLoader`](/docs/modules/scene/gltf/api-reference/gltf-loader), [`GLBLoader`](/docs/modules/scene/gltf/api-reference/glb-loader), [`USDLoader`](/docs/modules/scene/api-reference/usd-loader) |
 | Tiled worlds | [3D Tiles 1.0/1.1](/docs/modules/3d-tiles/formats/3d-tiles), [I3S 1.7/1.8 and Point Cloud 2.x](/docs/modules/i3s/formats/i3s) | [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader), [`I3SSource`](/docs/modules/tiles-3d/api-reference/i3s-source) |
-| Point-cloud delivery | [COPC 1.0](/docs/modules/tiles-3d/copc/formats/copc), [Potree 1.4–1.8](/docs/modules/tiles-3d/potree), [LAS/LAZ](/docs/modules/las/formats/las) | [`COPCSourceLoader`](/docs/modules/tiles-3d/copc/api-reference/copc-source-loader), [`PotreeSourceLoader`](/docs/modules/tiles-3d/potree/api-reference/potree-source-loader), [`LASLoader`](/docs/modules/las/api-reference/las-loader) |
-| Geometry compression | [Draco](/docs/modules/draco/formats/draco), [meshopt compression](/docs/modules/gltf/formats/gltf#meshopt-compression) | [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader), [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer), glTF extension processing |
+| Point-cloud delivery | [COPC 1.0](/docs/modules/tiles-3d/copc/formats/copc), [Potree 1.4–1.8](/docs/modules/tiles-3d/potree), [LAS/LAZ](/docs/modules/pointclouds/las/formats/las) | [`COPCSourceLoader`](/docs/modules/tiles-3d/copc/api-reference/copc-source-loader), [`PotreeSourceLoader`](/docs/modules/tiles-3d/potree/api-reference/potree-source-loader), [`LASLoader`](/docs/modules/pointclouds/las/api-reference/las-loader) |
+| Geometry compression | [Draco](/docs/modules/draco/formats/draco), [meshopt compression](/docs/modules/scene/gltf/formats/gltf#meshopt-compression) | [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader), [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer), glTF extension processing |
 | Texture delivery | [Basis Universal](/docs/modules/textures/formats/basis), [KTX/KTX2](/docs/modules/textures/formats/ktx) | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader), [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader), [`KTX2BasisWriter`](/docs/modules/textures/api-reference/ktx2-basis-texture-writer) |
 
 ## What the loaders preserve
@@ -76,8 +76,8 @@ unified file references, external assets, and culling shapes. It also processes 
 KTX2/Basis extensions, with the standards-shaped source document available when applications need
 to make their own decisions.
 
-Read the [glTF format coverage](/docs/modules/gltf/formats/gltf) and the
-[`GLTFLoader` API](/docs/modules/gltf/api-reference/gltf-loader).
+Read the [glTF format coverage](/docs/modules/scene/gltf/formats/gltf) and the
+[`GLTFLoader` API](/docs/modules/scene/gltf/api-reference/gltf-loader).
 
 ### OpenUSD
 
@@ -104,7 +104,7 @@ standards-focused sequential format underneath many point-cloud workflows.
 
 - [COPC compatibility and scan behavior](/docs/modules/tiles-3d/copc/formats/copc)
 - [Potree compatibility and source behavior](/docs/modules/tiles-3d/potree)
-- [LAS/LAZ compatibility](/docs/modules/las/formats/las)
+- [LAS/LAZ compatibility](/docs/modules/pointclouds/las/formats/las)
 - [Mesh and point-cloud data shapes](/docs/specifications/category-mesh)
 
 ## Compression and textures
@@ -115,6 +115,6 @@ delivery paths, so their compatibility pages are part of the 3D story rather tha
 documentation.
 
 - [Draco format and writer boundaries](/docs/modules/draco/formats/draco)
-- [Meshopt support in glTF](/docs/modules/gltf/formats/gltf#meshopt-compression)
+- [Meshopt support in glTF](/docs/modules/scene/gltf/formats/gltf#meshopt-compression)
 - [Basis Universal](/docs/modules/textures/formats/basis)
 - [KTX/KTX2](/docs/modules/textures/formats/ktx)

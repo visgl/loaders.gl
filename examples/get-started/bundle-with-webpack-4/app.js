@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {parse} from '@loaders.gl/core';
-import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 
 const OBJ_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/obj/test/data/cube.obj';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/scene/test/obj/data/cube.obj';
 
 async function main() {
   const data = await parse(fetch(OBJ_URL), OBJLoader);

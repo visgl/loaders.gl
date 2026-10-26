@@ -1,4 +1,4 @@
-This is a standalone web app using `@loaders.gl/las`.
+This is a standalone web app using `@loaders.gl/pointclouds/las`.
 
 ### Usage
 
