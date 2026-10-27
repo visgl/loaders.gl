@@ -42,12 +42,7 @@ and load HTTP URLs.
 loaders.gl supports all current Node.js [LTS releases](https://nodejs.org/en/about/previous-releases).
 End-of-life Node.js versions are not supported.
 
-Node.js ships security fixes only as patch releases, so use the latest patch release of
-your Node.js version. This matters in particular when loading data from untrusted sources:
-under Node.js, Brotli-compressed data is decoded by the Brotli decoder bundled with Node.js.
-This includes `.br` files loaded through `@loaders.gl/core/polyfills`, responses with Brotli
-`content-encoding` returned by the built-in `fetch()`, and `BrotliDecompressor` in
-`@loaders.gl/compression`.
+Use the latest Node.js patch release when loading untrusted Brotli data. Node.js’s bundled decoder is used by `fetch()`, `@loaders.gl/core/polyfills`, and `BrotliDecompressor`. See the [October 2026 Node.js security notice](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
 
 ## Node.js adapters
 
