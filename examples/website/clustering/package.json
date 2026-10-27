@@ -20,7 +20,7 @@
     "@luma.gl/core": "^9.4.0",
     "@luma.gl/engine": "^9.4.0",
     "@luma.gl/shadertools": "^9.4.0",
-    "maplibre-gl": "^3.6.2"
+    "maplibre-gl": "^6.4.1"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
