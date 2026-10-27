@@ -48,11 +48,7 @@ The `@loaders.gl/tables/excel` module handles tabular data stored in the Excel f
 npm install @loaders.gl/core @loaders.gl/tables xlsx@^0.18.5
 ```
 
-`xlsx` is an optional dependency of `@loaders.gl/tables` and is required for Excel parsing. If optional dependencies were omitted or failed to install, install it explicitly. For the grouped package:
-
-```bash
-npm install @loaders.gl/core @loaders.gl/tables xlsx@^0.18.5
-```
+`xlsx` is an optional dependency of `@loaders.gl/tables` and is required for Excel parsing. If optional dependencies were omitted or failed to install, install it explicitly. The installation command above includes the required backend.
 
 ## Loaders and Writers
 

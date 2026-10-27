@@ -20,11 +20,9 @@ manage requests for the visible area. Neither path requires an ArcGIS Maps SDK v
 | VectorTileServer | Decoded MVT geometry | SourceLayer's vector tile adapter | Styling comes from your layer props; not a complete ArcGIS style renderer |
 | SceneServer | Delegated I3S source | Profile-compatible 3D adapter | Inspect profile, coordinate system and renderer support separately |
 
-## Source-driven loading
+## Source-driven repository examples
 
-```sh
-npm install @loaders.gl/deck-layers
-```
+The repository examples use `SourceLayer` from the private `@loaders.gl/deck-layers` workspace. This is not a published package or an application installation path. The example below describes that internal adapter. For application code, use the public ArcGIS sources to fetch data and pass the result to a deck.gl layer, as shown in the [quickstart](/docs/developer-guide/arcgis).
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';

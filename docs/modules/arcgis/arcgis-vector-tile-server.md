@@ -23,7 +23,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
     {label: 'Protocol and formats', to: '/docs/modules/arcgis/formats/arcgis-vector-tile-server'},
     {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
-    {label: 'MVT format', to: '/docs/modules/mvt/formats/mvt'}
+    {label: 'MVT format', to: '/docs/modules/tiles/mvt/formats/mvt'}
   ]}
 />
 

@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Concurrent request sharing', 'Entry and byte budgets', 'Abort-aware']}
   links={[
     {label: 'Loader utilities', to: '/docs/modules/core/loader-utils'},
-    {label: '3D Tiles cache', to: '/docs/modules/3d-tiles/concepts/caching-and-memory'},
+    {label: '3D Tiles cache', to: '/docs/modules/tiles-3d/3d-tiles/concepts/caching-and-memory'},
     {label: 'Request scheduling', to: '/docs/modules/core/loader-utils/api-reference/request-scheduler'}
   ]}
 />

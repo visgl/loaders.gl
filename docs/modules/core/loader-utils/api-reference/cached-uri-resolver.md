@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Relative references', 'String-only cache', 'Dataset-scoped']}
   links={[
     {label: 'Loader utilities', to: '/docs/modules/core/loader-utils'},
-    {label: '3D Tiles resources', to: '/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection'},
+    {label: '3D Tiles resources', to: '/docs/modules/tiles-3d/3d-tiles/concepts/resource-resolution-and-content-detection'},
     {label: 'Path prefixes', to: '/docs/modules/core/api-reference/set-path-prefix'}
   ]}
 />
@@ -71,4 +71,4 @@ The cache contains strings only; it does not fetch or retain resource bodies. Sc
 
 Clears derived strings while retaining the parsed base URL. Call this when state outside the URI spelling changes how a caller interprets the result.
 
-The [3D Tiles resource guide](/docs/modules/3d-tiles/concepts/resource-resolution-and-content-detection) describes how this helper is scoped during tileset-header normalization and how the separate source query cache is invalidated.
+The [3D Tiles resource guide](/docs/modules/tiles-3d/3d-tiles/concepts/resource-resolution-and-content-detection) describes how this helper is scoped during tileset-header normalization and how the separate source query cache is invalidated.

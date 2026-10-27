@@ -22,7 +22,7 @@ import {ClientExample} from '@site/src/components';
     {label: 'ArcGIS module', to: '/docs/modules/arcgis'},
     {label: 'Protocol and formats', to: '/docs/modules/arcgis/formats/arcgis-scene-server'},
     {label: 'ArcGIS service API', to: '/docs/modules/arcgis/api-reference/arcgis'},
-    {label: 'I3S format', to: '/docs/modules/i3s/formats/i3s'}
+    {label: 'I3S format', to: '/docs/modules/tiles-3d/i3s/formats/i3s'}
   ]}
 />
 
@@ -31,7 +31,7 @@ import {ClientExample} from '@site/src/components';
 </DocLiveExample>
 
 The embedded inspector loads SceneServer metadata through this module. It does not render the
-scene. For 3D rendering, use the [I3S examples](/docs/modules/i3s/recipes/profile-gallery); building
+scene. For 3D rendering, use the [I3S examples](/docs/modules/tiles-3d/i3s/recipes/profile-gallery); building
 roots use a separate I3S loader.
 
 <ServiceSourceGraphic kind="arcgis" />

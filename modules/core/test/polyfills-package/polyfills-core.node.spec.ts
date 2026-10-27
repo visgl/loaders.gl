@@ -7,11 +7,6 @@ import {expect, test} from 'vitest';
 
 import {atob, btoa} from '../../src/polyfills/buffer/btoa.node';
 import {addAliases, resolvePath, setPathPrefix} from '../../src/polyfills/utils/path-utils';
-import {decodeDataUri} from '../../src/polyfills/fetch/decode-data-uri';
-import {Headers} from '../../src/polyfills/fetch/headers-polyfill';
-import {Response} from '../../src/polyfills/fetch/response-polyfill';
-import {BlobPolyfill} from '../../src/polyfills/file/blob';
-import {FilePolyfill} from '../../src/polyfills/file/file';
 import {FileReaderPolyfill} from '../../src/polyfills/file/file-reader';
 import {
   concatenateArrayBuffers,
@@ -30,66 +25,8 @@ test('polyfills path aliases and prefixes are independent', () => {
   }
 });
 
-test('HeadersPolyfill normalizes and iterates header values', () => {
-  const headers = new Headers([
-    ['Accept', 'application/json'],
-    ['Accept', 'text/plain']
-  ]);
-  headers.set('X-Test', 42);
-  expect(headers.get('accept')).toBe('application/json, text/plain');
-  expect(headers.get('X-TEST')).toBe('42');
-  expect([...headers]).toEqual([
-    ['accept', 'application/json, text/plain'],
-    ['x-test', '42']
-  ]);
-  headers.delete('x-test');
-  expect(headers.has('X-Test')).toBe(false);
-  expect(() => headers.set('', 'invalid')).toThrow(TypeError);
-});
-
-test('decodeDataUri handles encoded and base64 data', () => {
-  expect(new TextDecoder().decode(decodeDataUri('data:text/plain,hello%20world').arrayBuffer)).toBe(
-    'hello world'
-  );
-  expect(decodeDataUri('data:;charset=utf-8,hello').mimeType).toBe('text/plain;charset=utf-8');
-  expect(
-    new TextDecoder().decode(decodeDataUri('data:text/plain;base64,aGVsbG8=').arrayBuffer)
-  ).toBe('hello');
-});
-
-test('ResponsePolyfill reads strings, JSON, streams, and compressed bodies', async () => {
-  const response = new Response('{"answer":42}', {url: 'memory:'});
-  expect(response.ok).toBe(true);
-  expect(await response.json()).toEqual({answer: 42});
-  expect(await new Response('hello', {url: 'memory:'}).text()).toBe('hello');
-
-  const streamResponse = new Response(Readable.from([Buffer.from('streamed')]), {url: 'memory:'});
-  expect(new TextDecoder().decode(await streamResponse.arrayBuffer())).toBe('streamed');
-  expect(await new Response(new Uint8Array([1, 2]), {url: 'memory:'}).blob()).toBeInstanceOf(Blob);
-});
-
-test('BlobPolyfill handles parts, slices, streams, and File metadata', async () => {
-  const blob = new BlobPolyfill(['hello', new Uint8Array([32, 119, 111, 114, 108, 100])], {
-    type: 'TEXT/PLAIN'
-  });
-  expect(blob.size).toBe(11);
-  expect(blob.type).toBe('text/plain');
-  expect(await blob.text()).toBe('hello world');
-  expect(await blob.slice(-5).text()).toBe('world');
-  const streamedBytes: number[] = [];
-  for await (const chunk of blob.stream()) {
-    streamedBytes.push(...chunk);
-  }
-  expect(new Uint8Array(streamedBytes)).toEqual(new Uint8Array(await blob.arrayBuffer()));
-
-  const file = new FilePolyfill(['data'], 'folder/name.txt', {lastModified: 123});
-  expect(file.name).toBe('folder:name.txt');
-  expect(file.lastModified).toBe(123);
-  expect(file[Symbol.toStringTag]).toBe('File');
-});
-
 test('FileReaderPolyfill reports text, bytes, and data URLs', async () => {
-  const blob = new BlobPolyfill(['hello']);
+  const blob = new Blob(['hello']);
   const reader = new FileReaderPolyfill();
   const results: unknown[] = [];
   reader.onload = event => results.push(event.target.result);

@@ -13,9 +13,8 @@ vi.mock('ndarray', () => {
 
 test('Node transports and native blob streams load without optional image codecs', async () => {
   await import('../../src/polyfills/index');
-  const {BlobPolyfill} = await import('../../src/polyfills/file/blob');
   expect(typeof globalThis.loaders.NodeFileSystem).toBe('function');
-  const stream = new BlobPolyfill(['native']).stream();
+  const stream = new Blob(['native']).stream();
   expect(stream).toBeInstanceOf(ReadableStream);
   const reader = stream.getReader();
   expect(new TextDecoder().decode((await reader.read()).value)).toBe('native');

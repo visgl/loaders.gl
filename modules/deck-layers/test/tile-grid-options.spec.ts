@@ -78,3 +78,33 @@ test.each([
     })
   ).toEqual({minZoom: 0, maxZoom: 0, tileSize: 512});
 });
+
+test('Default XYZ renderer rejects coalesced rows even when nominal geometry is canonical', () => {
+  const matrix = createMatrix(1);
+  const grid = {
+    tileMatrixSet: {
+      crs: 'EPSG:3857',
+      matrices: [{...matrix, variableMatrixWidths: [{coalesce: 2, minTileRow: 0, maxTileRow: 0}]}]
+    }
+  };
+  expect(() => getTileGridLayerOptions({tileGrid: grid})).toThrow('custom tile selector');
+  expect(
+    getTileGridLayerOptions({
+      tileGrid: {
+        tileMatrixSet: {...grid.tileMatrixSet, matrices: [{...matrix, variableMatrixWidths: []}]}
+      }
+    })
+  ).toEqual({minZoom: 1, maxZoom: 1, tileSize: 512});
+});
+
+test('Default XYZ renderer rejects coalesced partial metadata before geometry is complete', () => {
+  expect(() =>
+    getTileGridLayerOptions({
+      tileGrid: {
+        matrices: [
+          {id: 'partial', variableMatrixWidths: [{coalesce: 2, minTileRow: 0, maxTileRow: 0}]}
+        ]
+      }
+    })
+  ).toThrow('custom tile selector');
+});

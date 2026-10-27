@@ -33,9 +33,13 @@ export const nodeVersion = parseInt(versions.node.split('.')[0]);
 // STREAM POLYFILLS
 import {makeNodeStream} from './streams/make-node-stream';
 
-// BLOB AND FILE POLYFILLS
-export {Blob_ as Blob} from './file/install-blob-polyfills';
-export {File_ as File} from './file/install-file-polyfills';
+// Native Blob and File constructors and the FileReader adapter.
+import {installFilePolyfills} from './file/install-file-polyfills';
+/** Native Node.js Blob constructor. */
+export const Blob = globalThis.Blob;
+/** Native Node.js File constructor. */
+export const File = globalThis.File;
+installFilePolyfills();
 
 if (isBrowser) {
   // eslint-disable-next-line no-console
@@ -124,31 +128,5 @@ globalThis.loaders.readFileAsText = readFileAsText;
 globalThis.loaders.requireFromFile = requireFromFile;
 globalThis.loaders.requireFromString = requireFromString;
 
-export {installFilePolyfills} from './file/install-file-polyfills';
+export {installFilePolyfills};
 export {setPathPrefix, addAliases} from './utils/path-utils';
-
-// DEPRECATED POLYFILL:
-// - Node v18+: No, not needed
-// - Node v16 and lower: Yes
-// - Browsers (evergreen): Not needed.
-// - IE11: No. This polyfill is node only, install external polyfill
-import {Headers as HeadersNode} from './fetch/headers-polyfill';
-import {Response as ResponseNode} from './fetch/response-polyfill';
-import {fetchNode as fetchNodePolyfill} from './fetch/fetch-polyfill';
-
-if (nodeVersion < 18) {
-  if (!('Headers' in globalThis) && HeadersNode) {
-    // @ts-ignore
-    globalThis.Headers = HeadersNode;
-  }
-
-  if (!('Response' in globalThis) && ResponseNode) {
-    // @ts-ignore
-    globalThis.Response = ResponseNode;
-  }
-
-  if (!('fetch' in globalThis) && fetchNodePolyfill) {
-    // @ts-ignore
-    globalThis.fetch = fetchNodePolyfill;
-  }
-}

@@ -87,4 +87,4 @@ The [service guide](../arcgis-vector-tile-server) provides source construction a
 ## References
 
 - [Esri VectorTileServer REST reference](https://developers.arcgis.com/rest/services-reference/enterprise/vector-tile-service/)
-- [MVT encoding](/docs/modules/mvt/formats/mvt)
+- [MVT encoding](/docs/modules/tiles/mvt/formats/mvt)

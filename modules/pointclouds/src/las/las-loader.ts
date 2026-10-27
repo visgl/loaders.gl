@@ -11,6 +11,10 @@ import {
   LAS_LOADER_METADATA,
   type LASLoaderOptions
 } from './las-loader-shared';
+import {
+  serializeArrowWorkerTable,
+  deserializeArrowWorkerTable
+} from '@loaders.gl/core/schema-utils/arrow-transport';
 import type {LASMesh} from './lib/las-types';
 import {
   decodeLAZChunkToArrowTable,
@@ -34,6 +38,11 @@ type LASWorkerOptions = LASLoaderOptions & {
 export const LASLoaderWithParser = {
   ...LAS_LOADER_METADATA,
   worker: true,
+  workerInBatches: true,
+  serializeWorkerResult: serializeArrowWorkerTable,
+  serializeWorkerBatch: serializeArrowWorkerTable,
+  deserializeWorkerResult: deserializeLASWorkerTable,
+  deserializeWorkerBatch: deserializeLASWorkerTable,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
     convertLASMesh(parseLASTable(arrayBuffer, options), options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
@@ -89,4 +98,12 @@ async function* convertLASMeshBatches(
   for await (const table of tableBatches) {
     yield convertLASMesh(table, options);
   }
+}
+
+/** Hydrates transferred columns and applies the requested mesh and color representation on the caller. */
+function deserializeLASWorkerTable(
+  result: unknown,
+  options?: LASLoaderOptions
+): LASMesh | MeshArrowTable {
+  return convertLASMesh(deserializeArrowWorkerTable(result), options);
 }

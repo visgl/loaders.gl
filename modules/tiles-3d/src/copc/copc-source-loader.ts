@@ -6,16 +6,17 @@ import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.g
 import type {
   Schema,
   Field,
-  Mesh,
   MeshArrowTable,
   ArrowTableBatch,
   MeshAttribute
 } from '@loaders.gl/core/schema';
 import {
   ArrowTableBuilder,
+  convertTableToMesh,
   makeMeshArrowTable,
   type MeshArrowAttributes
 } from '@loaders.gl/core/schema-utils';
+import {deserializeArrowWorkerTable} from '@loaders.gl/core/schema-utils/arrow-transport';
 import type {
   CoreAPI,
   SourceLoader,
@@ -1118,14 +1119,15 @@ export class COPCTileSource
       return null;
     }
     const input = getStandaloneArrayBuffer(compressed);
-    const mesh = (await parseWithWorker(
+    const result = await parseWithWorker(
       LASLoader,
       input,
       workerOptions,
       undefined,
       undefined,
       signal
-    )) as Mesh;
+    );
+    const mesh = convertTableToMesh(deserializeArrowWorkerTable(result));
     const nativePositions = mesh.attributes.POSITION?.value;
     const colors = mesh.attributes.COLOR_0?.value || null;
     if (

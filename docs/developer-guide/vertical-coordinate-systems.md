@@ -256,5 +256,5 @@ epoch; local or unknown tilesets remain unresolved until the application supplie
 override.
 
 See [Coordinate Reference Systems](./coordinate-reference-systems) for the cross-format model and
-[Coordinate reference systems in I3S](/docs/modules/i3s/concepts/coordinate-reference-systems) for
+[Coordinate reference systems in I3S](/docs/modules/tiles-3d/i3s/concepts/coordinate-reference-systems) for
 I3S-specific discovery and source examples.

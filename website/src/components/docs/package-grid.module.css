@@ -1,0 +1,58 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin: 1.25rem 0 2rem;
+}
+
+.tile {
+  min-width: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-top: 3px solid var(--ifm-color-primary);
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+  overflow-wrap: anywhere;
+}
+
+.tile h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.3rem;
+  line-height: 1.4;
+}
+
+.logos {
+  --format-logo-height: 40px;
+  --format-logo-image-height: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.logoLink {
+  display: inline-flex;
+  border-radius: 8px;
+}
+
+.logoLink > span {
+  width: 160px;
+  max-width: 100%;
+  zoom: 0.7;
+}
+
+.tile p {
+  margin: 0 0 0.85rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.tile > :last-child {
+  margin-bottom: 0;
+}
+
+.tile a:focus-visible {
+  outline: 3px solid var(--ifm-color-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}

@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['From v5.0', '2D tile runtime', 'Shared cache']}
   links={[
     {label: 'Tiles module', to: '/docs/modules/tiles'},
-    {label: 'MVT source', to: '/docs/modules/mvt/api-reference/mvt-source-loader'},
+    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source-loader'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />

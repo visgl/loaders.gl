@@ -16,7 +16,6 @@ import type {DBFHeader, DBFRowsOutput, DBFTableOutput} from './lib/parsers/types
 import {DBFWorkerLoader as DBFWorkerLoaderMetadata} from './dbf-loader-types';
 import {DBFLoader as DBFLoaderMetadata} from './dbf-loader-types';
 import {
-  deserializeShapefileWorkerBatch,
   deserializeShapefileWorkerResult,
   serializeShapefileWorkerBatch,
   serializeShapefileWorkerResult
@@ -69,11 +68,29 @@ export const DBFLoaderWithParser: LoaderWithParser<
       : parseDBFToObjectRowsInBatches(arrayBufferIterator, options);
   },
   serializeWorkerResult: serializeShapefileWorkerResult,
-  deserializeWorkerResult: deserializeShapefileWorkerResult,
+  deserializeWorkerResult: deserializeDBFWorkerResult,
   serializeWorkerBatch: serializeShapefileWorkerBatch,
-  deserializeWorkerBatch: deserializeShapefileWorkerBatch
+  deserializeWorkerBatch: deserializeDBFWorkerBatch
 };
 
 function getDBFShape(options?: DBFLoaderOptions): NonNullable<DBFLoaderOptions['dbf']>['shape'] {
   return options?.dbf?.shape || 'arrow-table';
+}
+
+/** Converts hydrated Arrow scalars to the requested legacy row output on the caller. */
+function deserializeDBFWorkerResult(result: unknown, options?: DBFLoaderOptions): any {
+  const table = deserializeShapefileWorkerResult<ArrowTable>(result);
+  const shape = getDBFShape(options);
+  if (shape === 'arrow-table') return table;
+  const rows = table.data.toArray().map(row => row.toJSON());
+  if (shape === 'rows') return rows;
+  if (shape === 'table') return {schema: table.schema, rows};
+  return {shape: 'object-row-table', schema: table.schema, data: rows};
+}
+
+/** Keeps the legacy initial header and row-array batch contract on the caller. */
+function deserializeDBFWorkerBatch(result: unknown, options?: DBFLoaderOptions): any {
+  if (getDBFShape(options) === 'arrow-table') return deserializeShapefileWorkerResult(result);
+  const table = deserializeShapefileWorkerResult<any>(result);
+  return table.shape === 'arrow-table' ? table.data.toArray().map(row => row.toJSON()) : table;
 }

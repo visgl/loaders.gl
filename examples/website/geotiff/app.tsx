@@ -7,7 +7,7 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {MapController, type MapViewState} from '@deck.gl/core';
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff/index';
+import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff/geotiff-source-loader';
 import type {
   RangeRequestEvent,
   RangeStats,

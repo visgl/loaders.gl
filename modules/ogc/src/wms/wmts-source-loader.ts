@@ -16,6 +16,7 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
+import {validateTileGridLimits} from '@loaders.gl/core/loader-utils/tile-grid';
 import {parseXMLTextSync} from './lib/parsers/xml/parse-xml-text';
 import type {
   WMTSCapabilities,
@@ -124,6 +125,7 @@ export class WMTSImageTileSource
         minTileRow: limit.minimumTileRow,
         maxTileRow: limit.maximumTileRow
       }));
+      validateTileGridLimits(grid);
     }
     return {
       format: wmts.format || layer?.formats[0] || 'image/png',

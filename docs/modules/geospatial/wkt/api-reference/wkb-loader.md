@@ -90,7 +90,7 @@ Asynchronous parsing uses the bundled worker automatically when workers are enab
 bundling with Vite, the worker URL can be supplied explicitly:
 
 ```typescript
-import WKT_WORKER_URL from '@loaders.gl/geospatial/wkt/wkt-worker.js?url';
+import WKT_WORKER_URL from '@loaders.gl/geospatial/wkt-worker.js?url';
 import {parse} from '@loaders.gl/core';
 import {WKBLoader} from '@loaders.gl/geospatial/wkt';
 

@@ -19,7 +19,7 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
   links={[
     {label: 'WMS module', to: '/docs/modules/ogc/wms'},
     {label: 'WCS source', to: '/docs/modules/ogc/wms/formats/wcs'},
-    {label: 'GeoTIFF format', to: '/docs/modules/geotiff/formats/geotiff'}
+    {label: 'GeoTIFF format', to: '/docs/modules/raster/geotiff/formats/geotiff'}
   ]}
 />
 
@@ -92,7 +92,7 @@ loader when decoded pixels are required.
 
 ## Analytical LERC
 
-When the requested format contains `lerc`, the response is decoded through `@loaders.gl/raster/lerc/index`:
+When the requested format contains `lerc`, the response is decoded through `@loaders.gl/raster/lerc`:
 
 ```ts
 const raster = await source.getCoverage({

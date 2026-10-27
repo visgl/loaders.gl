@@ -20,10 +20,10 @@ export type Tiles3DDocsTabId =
   | 'source';
 
 const TILES_3D_DOCS_TABS: Tiles3DDocsTab[] = [
-  {id: 'module', label: 'Module', href: '/docs/modules/3d-tiles'},
-  {id: 'format', label: 'Format', href: '/docs/modules/3d-tiles/formats/3d-tiles'},
-  {id: 'loader', label: 'Loader API', href: '/docs/modules/3d-tiles/api-reference/tiles-3d-loader'},
-  {id: 'runtime', label: 'Runtime guides', href: '/docs/modules/3d-tiles/concepts'},
+  {id: 'module', label: 'Module', href: '/docs/modules/tiles-3d/3d-tiles'},
+  {id: 'format', label: 'Format', href: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'},
+  {id: 'loader', label: 'Loader API', href: '/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader'},
+  {id: 'runtime', label: 'Runtime guides', href: '/docs/modules/tiles-3d/3d-tiles/concepts'},
   {
     id: 'source',
     label: 'Source API',
