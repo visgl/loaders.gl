@@ -63,10 +63,10 @@ when loading the selected requests; selection itself is synchronous and does not
 ## Current scope and example
 
 Our current thinking is that a renderer-independent native frame can provide a useful selection
-boundary while traversal ownership and deck.gl APIs are discussed. This first step does not wire
-into `Tileset2D`, infer parent relationships, modify its cache keys, or enable projected deck.gl
-rendering. A viewport adapter and compatible renderer still need to supply and interpret the
-frame, bounds and per-axis tile dimensions. We would welcome feedback before extending that seam.
+boundary while traversal ownership and deck.gl APIs are discussed. An explicit adapter below
+connects it to the loaders.gl `Tileset2D` shared cache without inferring parent relationships.
+A viewport adapter and compatible renderer still need to supply and interpret the frame, bounds
+and per-axis tile dimensions. Projected deck.gl rendering remains separate work.
 
 Regular and variable-width/coalesced rows are supported through math.gl's row-band ranges.
 Columns advance by each band's coalescence factor; the selector emits each canonical tile once.
@@ -83,3 +83,61 @@ The runnable [fixed-frame example](https://github.com/visgl/loaders.gl/tree/mast
 uses an illustrative UTM31 grid and the actual OGC source with an offline transport. Its integration
 test asserts exact native request URLs, limits and cancellation-signal forwarding, without a live
 service. See also [tile matrix concepts](/docs/developer-guide/tile-matrices).
+
+
+## TileMatrix traversal in `Tileset2D`
+
+`createTileMatrixTileset2DAdapter(grid, options)` connects the fixed-frame selector to the
+shared [`Tileset2D`](/docs/modules/tiles/api-reference/tileset-2d) cache. It accepts complete
+regular or coalesced geometry and an explicit native-CRS frame. It retains opaque matrix IDs,
+source coverage, canonical aliases, native bounds, CRS and per-level logical tile dimensions.
+It returns no parent relationship: arbitrary matrix sets need not form a quadtree.
+
+```typescript
+import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles';
+
+const metadata = await tileSource.getMetadata();
+if (!metadata.tileGrid) throw new Error('Source has no tile grid');
+const adapter = createTileMatrixTileset2DAdapter(metadata.tileGrid, {
+  cacheNamespace: 'source-version:style:time',
+  maximumTileCount: 4096
+});
+const tileset = Tileset2D.fromTileSource(tileSource, {adapter});
+const indices = tileset.getTileIndices({
+  viewState: {crs: 'EPSG:32631', extent: [500000, 5199000, 501000, 5200000], resolution: 2},
+  zRange: null
+});
+const consumer = Symbol('native-frame');
+tileset.attachConsumer(consumer);
+const tiles = indices.map(index => tileset.getTile(index, true));
+tileset.updateConsumer(consumer, tiles, tiles);
+const payloads = await Promise.all(tiles.map(tile => tile.data));
+// Detach when this consumer no longer needs the tiles.
+tileset.detachConsumer(consumer);
+```
+
+Use the **exact** CRS identifier from the source grid. `cacheNamespace` identifies the source,
+grid version and content dimensions such as style, time and band selection. Change it and replace
+the adapter when those change. Treat the grid as immutable while the adapter is in use. A source
+or adapter change clears cached tiles and consumer selections so old content cannot be reused.
+The namespace is caller-owned and is not a globally unique identifier by itself.
+
+The adapter selects from the native frame and `grid.limits`. An explicitly supplied `extent` clips
+the frame in the grid CRS. Source metadata's geographic `boundingBox` is not used as a native
+extent, because it may be in a different CRS. Explicit `minZoom` and `maxZoom` restrict matrix
+**array indices**; they are not interpreted as native service zoom IDs. An integer `zoomOffset`
+scales the target resolution by `2 ** -zoomOffset`, including for irregular level spacing.
+
+A frame must already account for the relevant viewport and layer transform. Identity model matrices
+are accepted; non-identity matrices and non-null elevation ranges throw instead of silently
+producing an incorrect selection. A viewport integration must produce a conservative native frame
+for transformed or elevated views before calling the adapter. Numeric `z` remains a compatibility
+array index, independent of the native matrix identifier.
+
+The adapter supports source requests and shared cache participation. Applications still provide
+native frames, per-view selection and a compatible renderer. This does not transform a viewport,
+reproject content, establish parent relationships, or automatically enable projected rendering in
+deck.gl. The adapter extends the community-style traversal seam with optional identity, metadata,
+normalization and parent hooks; existing adapters keep their XYZ defaults. Use this adapter with
+loaders.gl `Tileset2D`: current deck.gl and deck.gl-community runtimes do not yet consume these
+additional hooks, so passing it directly to them would lose native identity and parent semantics.

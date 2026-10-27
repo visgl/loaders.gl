@@ -25,7 +25,7 @@
     "@luma.gl/shadertools": "^9.4.0",
     "apache-arrow": "^21.1.0",
     "mapbox-gl": "npm:maplibre-gl@^3.6.2",
-    "maplibre-gl": "^6.4.1",
+    "maplibre-gl": "^3.6.2",
     "node-stdlib-browser": "^1.2.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
