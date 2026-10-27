@@ -2,82 +2,61 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableOptions} from 'stream';
-import * as Stream from 'stream';
-
-class _Readable {}
-
-type ReadableType = Stream.Readable | _Readable;
-const Readable = Stream.Readable || _Readable;
+import {Readable, getDefaultHighWaterMark} from 'node:stream';
+import type {ReadableOptions} from 'node:stream';
 
 export type MakeStreamOptions = ReadableOptions;
 
-/** Builds a node stream from an iterator */
-export function makeNodeStream<ArrayBuffer>(
-  source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
+/** Builds a Node stream of byte chunks from a synchronous or asynchronous iterable. */
+export function makeNodeStream<Value>(
+  source: Iterable<Value> | AsyncIterable<Value>,
   options?: ReadableOptions
-): ReadableType {
-  // @ts-ignore AsyncGenerator
-  // biome-ignore format: preserve intentional fixture layout
-  const iterator = source[Symbol.asyncIterator]
-    ? // @ts-ignore AsyncGenerator
-    source[Symbol.asyncIterator]()
-    : // @ts-ignore AsyncGenerator
-    source[Symbol.iterator]();
-  return new AsyncIterableReadable(iterator, options);
-}
-
-class AsyncIterableReadable extends Readable {
-  private _pulling: boolean;
-  private _bytesMode: boolean;
-  private _iterator: AsyncIterator<ArrayBuffer>;
-
-  constructor(it: AsyncIterator<ArrayBuffer>, options?: ReadableOptions) {
-    super(options);
-    this._iterator = it;
-    this._pulling = false;
-    this._bytesMode = !options || !options.objectMode;
-  }
-
-  async _read(size: number): Promise<void> {
-    if (!this._pulling) {
-      this._pulling = true;
-      this._pulling = await this._pull(size, this._iterator);
-    }
-  }
-
-  async _destroy(error: Error | null, cb: (e: Error | null) => void): Promise<void> {
-    if (!this._iterator) {
-      return;
-    }
-    if (error) {
-      await this._iterator?.throw?.(error);
-    } else {
-      await this._iterator?.return?.(error);
-    }
-    cb?.(null);
-  }
-
-  // eslint-disable-next-line complexity
-  private async _pull(size: number, it: AsyncIterator<ArrayBuffer>): Promise<boolean> {
-    const bm = this._bytesMode;
-    let r: IteratorResult<ArrayBuffer> | null = null;
-    // while (this.readable && !(r = await it.next(bm ? size : null)).done) {
-    while (this.readable) {
-      r = await it.next();
-      if (r.done) {
-        break;
+): Readable {
+  const iterator =
+    Symbol.asyncIterator in source ? source[Symbol.asyncIterator]() : source[Symbol.iterator]();
+  let iteratorFailed = false;
+  const convertedIterator: AsyncIterableIterator<Uint8Array> = {
+    async next() {
+      let result: IteratorResult<Value>;
+      try {
+        result = await iterator.next();
+      } catch (error) {
+        iteratorFailed = true;
+        throw error;
       }
-      if (size !== null) {
-        size -= bm && ArrayBuffer.isView(r.value) ? r.value.byteLength : 1;
+      if (result.done) {
+        await iterator.return?.();
+        return {done: true, value: undefined};
       }
-      if (!this.push(new Uint8Array(r.value)) || size <= 0) {
-        break;
+      return {done: false, value: new Uint8Array(result.value as ArrayBuffer)};
+    },
+    async return(value?: unknown) {
+      await iterator.return?.(value as never);
+      return {done: true, value: undefined};
+    },
+    async throw(error?: unknown) {
+      if (iterator.throw) {
+        await iterator.throw(error);
       }
+      return {done: true, value: undefined};
+    },
+    [Symbol.asyncIterator]() {
+      return this;
     }
-    if ((r?.done || !this.readable) && (this.push(null) || true)) {
-      it?.return?.();
-    }
-    return !this.readable;
-  }
+  };
+
+  const objectMode = options?.objectMode ?? false;
+  const stream = Readable.from(convertedIterator, {
+    highWaterMark: getDefaultHighWaterMark(objectMode),
+    ...options,
+    objectMode
+  });
+  const destroyStream = stream._destroy;
+  stream._destroy = function (error, callback) {
+    destroyStream.call(this, error, destroyError => {
+      // The previous adapter consumed explicit destroy errors after forwarding them to the iterator.
+      callback(!iteratorFailed && destroyError === error ? null : destroyError);
+    });
+  };
+  return stream;
 }
