@@ -2,71 +2,55 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  DehydratedArrowTable,
-  SplitArrowBuffersOptions
-} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {
-  dehydrateArrowTable,
-  hydrateArrowTable
+  serializeArrowWorkerTable,
+  deserializeArrowWorkerTable
 } from '@loaders.gl/core/schema-utils/arrow-transport';
-import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 
-type SerializedArrowTable = Omit<ArrowTable, 'data'> & {
-  data: DehydratedArrowTable;
-};
-
-/** Serializes Shapefile-family worker results so Arrow tables survive structured clone. */
-export function serializeShapefileWorkerResult(result: unknown, options?: LoaderOptions): unknown {
-  if (!isArrowTable(result)) {
-    return result;
+/** Transfers owned Arrow columns or WKB buffers, with small SHP/DBF header envelopes. */
+export function serializeShapefileWorkerResult(result: any): unknown {
+  if (result?.shape === 'arrow-table') return serializeArrowWorkerTable(result);
+  if (
+    Array.isArray(result) &&
+    result.every(value => value === null || value instanceof Uint8Array)
+  ) {
+    return {transport: 'shp-wkb', geometries: result.map(value => value?.slice() ?? null)};
   }
-  const bufferCopyMode = getWorkerTransferBufferCopyMode(options);
-  return {
-    ...result,
-    data: dehydrateArrowTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
-  };
+  if (result && 'geometries' in result) {
+    return {
+      ...(serializeShapefileWorkerResult(result.geometries) as object),
+      header: result.header,
+      progress: result.progress,
+      currentIndex: result.currentIndex,
+      error: result.error
+    };
+  }
+  if (result && ('magic' in result || 'nRecords' in result))
+    return {transport: 'shapefile-header', header: result};
+  throw new Error('Shapefile workers require Arrow columns or WKB buffers');
 }
 
-/** Deserializes a Shapefile-family worker result into a real Arrow table. */
-export function deserializeShapefileWorkerResult<T>(result: unknown): T {
-  if (isSerializedArrowTable(result)) {
-    return {...result, data: hydrateArrowTable(result.data)} as T;
+/** Restores Arrow instances and binary geometry envelopes without accepting decoded row payloads. */
+export function deserializeShapefileWorkerResult<T>(result: any): T {
+  if (result?.shape === 'arrow-table') return deserializeArrowWorkerTable(result);
+  if (result?.transport === 'shapefile-header') return result.header as T;
+  if (result?.transport === 'shp-wkb') {
+    return (
+      result.header
+        ? {
+            header: result.header,
+            geometries: result.geometries,
+            ...(result.progress ? {progress: result.progress} : {}),
+            ...(result.currentIndex !== undefined ? {currentIndex: result.currentIndex} : {}),
+            ...(result.error !== undefined ? {error: result.error} : {})
+          }
+        : result.geometries
+    ) as T;
   }
-  return result as T;
+  throw new Error('Shapefile workers require Arrow columns or WKB buffers');
 }
 
-/** Serializes one Shapefile-family Arrow batch using the same transport as an atomic result. */
+/** Serializes one Arrow, binary geometry, or header batch. */
 export const serializeShapefileWorkerBatch = serializeShapefileWorkerResult;
-
-/** Deserializes one Shapefile-family Arrow batch. */
+/** Hydrates one Arrow, binary geometry, or header batch. */
 export const deserializeShapefileWorkerBatch = deserializeShapefileWorkerResult;
-
-function isArrowTable(value: unknown): value is ArrowTable {
-  const table = value as ArrowTable;
-  return Boolean(
-    table &&
-      typeof table === 'object' &&
-      table.shape === 'arrow-table' &&
-      table.data &&
-      'batches' in table.data
-  );
-}
-
-function isSerializedArrowTable(value: unknown): value is SerializedArrowTable {
-  const table = value as SerializedArrowTable;
-  return Boolean(
-    table &&
-      typeof table === 'object' &&
-      table.shape === 'arrow-table' &&
-      table.data &&
-      table.data.transport === 'arrow-js'
-  );
-}
-
-function getWorkerTransferBufferCopyMode(
-  options?: LoaderOptions
-): SplitArrowBuffersOptions['copy'] | undefined {
-  return options?.core?.workerTransferBufferCopy ?? options?.workerTransferBufferCopy;
-}

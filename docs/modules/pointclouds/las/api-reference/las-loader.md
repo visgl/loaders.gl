@@ -113,11 +113,32 @@ Set `las.compatibilityMode: 'raw'` to retain the physical legacy column values; 
 
 ## Worker Execution
 
-Atomic `load` and `parse` calls with `LASLoader` use the package's single prebuilt `las-worker.js` when workers are enabled and mesh output is requested. Arrow output stays on the calling thread because structured cloning would strip methods from the Arrow table wrapper. The compatibility loaders parse on the calling thread by default and do not add more worker artifacts to the package.
 
-Applications that need a compatibility loader in a worker can build one and provide it through `options.las.workerUrl`.
+The primary TypeScript `LASLoader` supports browser workers for atomic parsing and
+`parseInBatches`, including LAZ decoding. One worker retains decoder state for the entire
+input stream. Results transfer owned Arrow column buffers, including safe copies of retained
+binary file metadata. No Arrow IPC encoding is involved. Requested mesh output and color
+format conversion run on the caller after column hydration.
 
-`parseInBatches` runs on the calling thread because its async input and output iterators provide the streaming boundary directly. Set `core.worker: false` on atomic calls when the same main-thread behavior is required for mesh output as well.
+```typescript
+import {parseInBatches} from '@loaders.gl/core';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
+
+const controller = new AbortController();
+const batches = await parseInBatches(response, LASLoader, {
+  core: {worker: true, batchSize: 10000},
+  signal: controller.signal,
+  las: {shape: 'arrow-table'}
+});
+for await (const batch of batches) {
+  consume(batch.data);
+}
+```
+
+Abort or close the iterator to release its worker. Already transferred input buffers remain
+detached. LAZPerf and LAZ-RS implementation subpaths are unchanged and do not gain prebuilt
+worker batch support. COPC range/chunk APIs are separate from this full-file stream.
+
 
 ## TypeScript LAZ Streaming
 

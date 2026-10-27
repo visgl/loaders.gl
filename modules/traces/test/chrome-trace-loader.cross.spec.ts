@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {setLoaderOptions} from '@loaders.gl/core';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {describe, expect, it} from 'vitest';
@@ -9,6 +10,9 @@ import {describe, expect, it} from 'vitest';
 import {ChromeTraceLoader} from '../src';
 
 import type {ChromeTraceFileSchema} from '../src';
+
+// Parser ownership tests run instrumented source; worker conformance has its own suite.
+setLoaderOptions({worker: false});
 
 /**
  * Builds a compact Chrome trace fixture that exercises Arrow encoding edge cases.

@@ -9,6 +9,8 @@ import type {OtlpTrace, OtlpTraceBatch} from './otlp-trace-arrow-schema';
 /** Options for the Jaeger JSON trace loader. */
 export type JaegerTraceLoaderOptions = LoaderOptions & {
   jaegerTrace?: {
+    /** Overrides the shared browser worker bundle URL. */
+    workerUrl?: string;
     /** Maximum rows emitted in one tagged Arrow record batch. */
     batchSize?: number;
   };
@@ -24,6 +26,9 @@ export const JaegerTraceLoader = {
   name: 'Jaeger Trace Loader',
   id: 'jaegerTrace',
   module: 'traces',
+  worker: true,
+  workerInBatches: true,
+  workerFile: 'trace-worker.js',
   version: 'latest',
   extensions: ['jaeger.json', 'jaeger.jsonl'],
   mimeTypes: ['application/json', 'application/jsonl', 'application/x-ndjson'],

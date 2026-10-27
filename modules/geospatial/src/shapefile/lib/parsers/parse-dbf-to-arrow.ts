@@ -106,20 +106,32 @@ export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFLoaderOptions = {
  * @param asyncIterator
  * @param options
  */
-export async function* parseDBFInBatches(
+export function parseDBFInBatches(
+  iterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: DBFLoaderOptions
+): AsyncIterable<ArrowTableBatch> {
+  return parseDBFArrowBatches(iterator, options) as AsyncIterable<ArrowTableBatch>;
+}
+
+/** Streams the DBF header and Arrow batches for caller-side legacy row conversion. */
+export async function* parseDBFArrowBatches(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
-  options: DBFLoaderOptions = {}
-): AsyncIterable<ArrowTableBatch> {
+  options: DBFLoaderOptions = {},
+  includeHeader = false
+): AsyncIterable<ArrowTableBatch | DBFHeader> {
   const batchSize = options.dbf?.batchSize || Number.POSITIVE_INFINITY;
 
   const parser = new DBFParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
     parser.write(arrayBuffer);
-    if (!headerReturned && parser.result.dbfHeader) {
+    if (!headerReturned && parser.result.dbfHeader && parser.result.tableBuilder) {
       headerReturned = true;
+      if (includeHeader) yield parser.result.dbfHeader;
       const tableBuilder = parser.result.tableBuilder!;
       if (tableBuilder.length === 0) {
         const tableBatch = tableBuilder.firstBatch();
@@ -128,7 +140,8 @@ export async function* parseDBFInBatches(
         }
       }
     }
-    const tableBuilder = parser.result.tableBuilder!;
+    const tableBuilder = parser.result.tableBuilder;
+    if (!tableBuilder) continue;
     while (
       batchSize === Number.POSITIVE_INFINITY
         ? tableBuilder.length > 0

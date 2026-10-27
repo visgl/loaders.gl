@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {setLoaderOptions} from '@loaders.gl/core';
 import {encodeSync, parse, parseInBatches, parseSync} from '@loaders.gl/core';
 import {describe, expect, it} from 'vitest';
 
@@ -15,6 +16,9 @@ import {
 } from '../src';
 import {JaegerTraceLoaderWithParser} from '../src/jaeger-trace-loader';
 import officialJaegerTrace from './data/jaeger/trace.json' with {type: 'json'};
+
+// Parser ownership tests run instrumented source; worker conformance has its own suite.
+setLoaderOptions({worker: false});
 
 const TRACE_ID = '2be38093ead7a083';
 

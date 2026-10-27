@@ -221,3 +221,34 @@ test('parseWithWorker#nested preserves legacy parseOnMainThread options argument
   expect(result.custom).toBe('custom-option');
   expect(result.worker).toBe(false);
 });
+
+test('worker options retain Headers instances in namespaced and legacy fetch options', async () => {
+  const source = `self.onmessage = event => {
+    if (event.data.type !== 'process') return;
+    const options = event.data.payload.options;
+    const result = new TextEncoder().encode(JSON.stringify({core: options.core.fetch, legacy: options.fetch}));
+    self.postMessage({source: 'loaders.gl', type: 'done', payload: {result}}, [result.buffer]);
+  };`;
+  const loader = {
+    id: 'request-headers',
+    name: 'Request headers',
+    module: 'core',
+    version: '1',
+    extensions: [],
+    mimeTypes: [],
+    worker: true
+  };
+  const result = await parseWithWorker(loader, new ArrayBuffer(0), {
+    core: {
+      worker: true,
+      source,
+      reuseWorkers: false,
+      fetch: {headers: new Headers({Authorization: 'Bearer test', 'X-Sidecar': 'dbf'})}
+    },
+    fetch: {headers: new Headers({'X-Legacy': 'retained'})}
+  });
+  expect(JSON.parse(new TextDecoder().decode(result))).toEqual({
+    core: {headers: {authorization: 'Bearer test', 'x-sidecar': 'dbf'}},
+    legacy: {headers: {'x-legacy': 'retained'}}
+  });
+});

@@ -9,6 +9,8 @@ import type {OtlpTrace, OtlpTraceBatch} from './otlp-trace-arrow-schema';
 /** Options for the Zipkin v2 JSON trace loader. */
 export type ZipkinTraceLoaderOptions = LoaderOptions & {
   zipkinTrace?: {
+    /** Overrides the shared browser worker bundle URL. */
+    workerUrl?: string;
     /** Maximum rows emitted in one tagged Arrow record batch. */
     batchSize?: number;
   };
@@ -24,6 +26,9 @@ export const ZipkinTraceLoader = {
   name: 'Zipkin Trace Loader',
   id: 'zipkinTrace',
   module: 'traces',
+  worker: true,
+  workerInBatches: true,
+  workerFile: 'trace-worker.js',
   version: 'latest',
   extensions: ['zipkin.json', 'zipkin.jsonl'],
   mimeTypes: ['application/json', 'application/jsonl', 'application/x-ndjson'],

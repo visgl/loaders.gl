@@ -1,3 +1,9 @@
+import {
+  serializeTraceWorkerResult,
+  deserializeTraceWorkerResult,
+  serializeTraceWorkerBatch,
+  deserializeTraceWorkerBatch
+} from './trace-worker-transport';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -17,6 +23,10 @@ const {preload: _preload, ...JaegerTraceLoaderMetadataWithoutPreload} = JaegerTr
 /** Parser-bearing loader for Jaeger JSON and JSON Lines traces. */
 export const JaegerTraceLoaderWithParser = {
   ...JaegerTraceLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeTraceWorkerResult,
+  deserializeWorkerResult: deserializeTraceWorkerResult,
+  serializeWorkerBatch: serializeTraceWorkerBatch,
+  deserializeWorkerBatch: deserializeTraceWorkerBatch,
   parse: async (arrayBuffer: ArrayBuffer) => parseJaegerTraceJson(decodeBytes(arrayBuffer)),
   parseSync: (arrayBuffer: ArrayBuffer) => parseJaegerTraceJson(decodeBytes(arrayBuffer)),
   parseText: async (text: string) => parseJaegerTraceJson(text),

@@ -19,6 +19,7 @@ async function preload() {
 export const LASLoader = {
   ...LAS_LOADER_METADATA,
   worker: true,
+  workerInBatches: true,
   preload
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;
 
