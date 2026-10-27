@@ -15,7 +15,7 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   tone="blue"
   meta={['Node.js', 'Portable APIs', 'Optional polyfills']}
   links={[
-    {label: 'Polyfills module', to: '/docs/modules/polyfills/api-reference'},
+    {label: 'Polyfills module', to: '/docs/modules/core/polyfills/api-reference'},
     {label: 'Preferred JavaScript APIs', to: '/docs/developer-guide/concepts/javascript-apis'}
   ]}
 />
@@ -71,4 +71,4 @@ Global polyfills are installed only when the corresponding global is absent.
 Import another polyfill first if you want its implementation to take precedence.
 The loaders.gl adapters are registered separately from these globals.
 
-See the [polyfills API reference](/docs/modules/polyfills/api-reference) for details.
+See the [polyfills API reference](/docs/modules/core/polyfills/api-reference) for details.

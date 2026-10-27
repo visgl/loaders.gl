@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {COPCSourceLoader} from '@loaders.gl/copc';
-import type {COPCTileSource, COPCSourceLoaderOptions} from '@loaders.gl/copc';
-import {PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/potree';
+import {COPCSourceLoader} from '@loaders.gl/tiles-3d/copc';
+import type {COPCTileSource, COPCSourceLoaderOptions} from '@loaders.gl/tiles-3d/copc';
+import {PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import type {
   PotreeDataset,
   PotreeWriterNode,
   PotreeWriterOptions,
   PotreeSourceLoaderOptions
-} from '@loaders.gl/potree';
+} from '@loaders.gl/tiles-3d/potree';
 import type {Mesh, MeshArrowTable, MeshGeometry} from '@loaders.gl/core/schema';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
-import {encodeZip, openZipArchive} from '@loaders.gl/zip';
-import type {ZipArchive, ZipEntry} from '@loaders.gl/zip';
+import {encodeZip, openZipArchive} from '@loaders.gl/archives/zip';
+import type {ZipArchive, ZipEntry} from '@loaders.gl/archives/zip';
 
 /** Explicit local-file input; no format is inferred from an extension. */
 export type OpenPointCloudFileOptions = {

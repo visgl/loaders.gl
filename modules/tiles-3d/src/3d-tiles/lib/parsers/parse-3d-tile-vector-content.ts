@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {getGLTFAccessor} from '@loaders.gl/gltf';
-import type {GLTFWithBuffers, GLTF_EXT_mesh_polygon} from '@loaders.gl/gltf';
+import {getGLTFAccessor} from '@loaders.gl/scene/gltf';
+import type {GLTFWithBuffers, GLTF_EXT_mesh_polygon} from '@loaders.gl/scene/gltf';
 import type {Tiles3DVectorContent, Tiles3DVectorPrimitive} from '../../types';
 
 /**

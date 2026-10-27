@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Get started', to: '/docs/developer-guide/get-started'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
-    {label: 'Polyfills', to: '/docs/modules/polyfills/api-reference'}
+    {label: 'Polyfills', to: '/docs/modules/core/polyfills/api-reference'}
   ]}
 />
 

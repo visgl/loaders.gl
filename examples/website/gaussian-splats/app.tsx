@@ -15,7 +15,7 @@ import {
 import {webgpuAdapter} from '@luma.gl/webgpu';
 import {loadInBatches} from '@loaders.gl/core';
 import {SplatLayer} from '@loaders.gl/deck-layers';
-import {PLYLoader} from '@loaders.gl/ply';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
 import {FullscreenWidget, _StatsWidget as StatsWidget} from '@deck.gl/widgets';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';

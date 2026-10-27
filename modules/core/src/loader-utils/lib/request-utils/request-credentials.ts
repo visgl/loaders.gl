@@ -211,7 +211,9 @@ export class BearerTokenAuthentication extends TokenAuthentication {
   }
 }
 
-/** Wraps a fetch function with exact-origin credential application and one refresh replay. */
+/**
+ * Wraps fetch with exact-origin credentials and one refresh replay, preserving abort reasons.
+ */
 export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): FetchLike {
   const suppliedFetch = options.fetch || ((url, requestOptions) => fetch(url, requestOptions));
   const existingMetadata = (
@@ -253,7 +255,7 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
 
   const authenticatedFetch: FetchLike = async (url, requestOptions = {}) => {
     requestOptions = mergeFetchOptions(fetchOptions, requestOptions);
-    if (requestOptions.signal?.aborted) throw createAbortError();
+    requestOptions.signal?.throwIfAborted();
     // Request defaults alone must not normalize URLs or defer the transport invocation.
     if (!credentials.length) return baseFetch(url, requestOptions);
     const resolvedURL = parseHTTPURL(url);
@@ -283,7 +285,7 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
         credential.refreshStatusCodes?.includes(response.status)
       );
     if (!refreshableCredentials.length && !shouldRetrySignature) return response;
-    if (requestOptions.signal?.aborted) throw createAbortError();
+    requestOptions.signal?.throwIfAborted();
 
     const refreshedTokens = new Map<RequestCredential, string>();
     await Promise.all(
@@ -295,7 +297,7 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
     if (!refreshedTokens.size && !shouldRetrySignature) return response;
 
     await response.body?.cancel().catch(() => {});
-    if (requestOptions.signal?.aborted) throw createAbortError();
+    requestOptions.signal?.throwIfAborted();
     const replayAuthorization = resolvedURL
       ? await authorizeRequest(
           resolvedURL,
@@ -340,9 +342,10 @@ export function getAuthenticatedFetch(options: LoaderOptions = {}): FetchLike {
     fetchFunction = (url, requestOptions) => fetch(url, requestOptions);
   }
 
+  const fetchOptions = typeof fetchOption === 'object' && fetchOption ? fetchOption : undefined;
   return createAuthenticatedFetch({
     fetch: fetchFunction,
-    fetchOptions: typeof fetchOption === 'object' && fetchOption ? fetchOption : undefined,
+    fetchOptions: options.signal ? {...fetchOptions, signal: options.signal} : fetchOptions,
     credentials: options.core?.credentials || [],
     authentications: options.core?.authentications
   });
@@ -395,7 +398,7 @@ async function authenticateRequest(
   for (const credential of credentials) {
     const origin = getRequestOrigin(request.url);
     if (!origin || !normalizeRequestOrigins(credential.origins).includes(origin)) continue;
-    if (signal?.aborted) throw createAbortError();
+    signal?.throwIfAborted();
     const authenticatedRequest = await credential.authenticate({
       url: request.url,
       options: {...request.options, headers: new Headers(request.options.headers)},
@@ -418,7 +421,7 @@ async function authenticateRequest(
     };
     appliedCredentials.push(credential);
   }
-  if (signal?.aborted) throw createAbortError();
+  signal?.throwIfAborted();
   return {...request, credentials: appliedCredentials};
 }
 
@@ -568,9 +571,4 @@ function isReplayableRequest(options: RequestInit): boolean {
     typeof ReadableStream !== 'undefined' &&
     options.body instanceof ReadableStream
   );
-}
-
-/** Creates the standard DOM exception used for an aborted fetch. */
-function createAbortError(): DOMException {
-  return new DOMException('The operation was aborted.', 'AbortError');
 }

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {setLoaderOptions} from '@loaders.gl/core';
 import {encode, encodeSync, parse, parseInBatches} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {describe, expect, it} from 'vitest';
@@ -32,6 +33,9 @@ import type {
   PerfettoTrace,
   TraceStreamChunk
 } from '../src';
+
+// Parser ownership tests run instrumented source; worker conformance has its own suite.
+setLoaderOptions({worker: false});
 
 /** Encodes a JSON value for the public loader API. */
 function encodeJson(value: unknown): ArrayBuffer {

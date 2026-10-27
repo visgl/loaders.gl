@@ -6,7 +6,7 @@ import type {
   GLTF_EXT_structural_metadata_Class,
   GLTF_EXT_structural_metadata_ClassProperty,
   GLTF_EXT_structural_metadata_PropertyTable
-} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
 
 /** A decoded row from a structural-metadata property table. */
 export type StructuralMetadataRow = Record<string, unknown>;

@@ -3,11 +3,11 @@
 // Copyright vis.gl contributors
 
 import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/core/schema';
-import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
 import {
   convertFlatGeojsonToBinaryFeatureCollection as flatGeojsonToBinary,
   type GeojsonGeometryInfo
-} from '@loaders.gl/arrow-geometry/legacy-binary';
+} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import {log} from '@loaders.gl/core/loader-utils';
 import Protobuf from 'pbf';
 

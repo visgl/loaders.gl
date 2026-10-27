@@ -98,7 +98,7 @@ transformation or a spatial index.
 
 ## Spatial query support
 
-`@loaders.gl/geoarrow` provides geometry processing over materialized Arrow columns alongside
+`@loaders.gl/core/geoarrow` provides geometry processing over materialized Arrow columns alongside
 conversion and metadata tools. The index covers every supplied row, including offscreen features;
 [it is separate from screen picking](/docs/developer-guide/spatial-queries).
 
@@ -153,7 +153,7 @@ The [GeoParquet](/docs/modules/tables/parquet/formats/geoparquet) [specification
 
 ## Metadata Evolution
 
-`@loaders.gl/geoarrow` exposes `mergeGeoArrowMetadata()` for concatenation, projection, joins,
+`@loaders.gl/core/geoarrow` exposes `mergeGeoArrowMetadata()` for concatenation, projection, joins,
 and derived columns. It unions geometry types in canonical order, preserves structurally equal
 CRS and unknown metadata, and reports scalar conflicts. Use `strict` to reject unsafe claims,
 `permissive` to retain the first value with a diagnostic, or `repair` to drop conflicting keys.
@@ -197,7 +197,7 @@ or row-table return values.
 For controlled conversions, exact native targets remain available:
 
 ```typescript
-import {convertTableToGeoArrow} from '@loaders.gl/geoarrow';
+import {convertTableToGeoArrow} from '@loaders.gl/core/geoarrow';
 
 const polygons = convertTableToGeoArrow(table, {
   geoarrow: {encoding: 'geoarrow.polygon', coordinates: 'separated'}
@@ -239,7 +239,7 @@ preference. For Shapefile, the legacy `shp.geoarrowEncoding: 'geoarrow'` option 
 supported and means `optimized`.
 
 The lightweight format loaders only construct the requested Arrow geometry column. They do not
-depend on the full `@loaders.gl/geoarrow` package. Install that package when you need conversion,
+depend on the full `@loaders.gl/core/geoarrow` package. Install that package when you need conversion,
 validation, bounds, coordinate iteration, or other processing APIs.
 
 Use `convertGeoArrowGeometry(table, 'native')` when a table will be processed or rendered from

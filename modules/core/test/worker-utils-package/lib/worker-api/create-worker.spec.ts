@@ -77,6 +77,25 @@ describe('createWorker', () => {
     expect(throwingWorker.postMessage).toHaveBeenCalledWith('error', {error: ''});
   });
 
+  test('coalesces progress, preserves phase order, flushes completion, and ignores stale reports', async () => {
+    let report;
+    const {handler, postMessage} = await installWorker(async (_input, _options, context) => {
+      report = context.reportProgress;
+      report({phase: 'read', completed: 1, unit: 'bytes'});
+      report({phase: 'read', completed: 2, unit: 'bytes'});
+      report({phase: 'decode', completed: 0, total: 1, unit: 'tasks'});
+      report({phase: 'decode', completed: 1, total: 1, unit: 'tasks'});
+      return 'result';
+    });
+    await handler('process', {});
+    report({phase: 'late', completed: 3, unit: 'bytes'});
+    expect(postMessage.mock.calls).toEqual([
+      ['progress', {progress: {phase: 'read', completed: 2, unit: 'bytes'}}],
+      ['progress', {progress: {phase: 'decode', completed: 1, total: 1, unit: 'tasks'}}],
+      ['done', {result: 'result'}]
+    ]);
+  });
+
   test('routes nested processing requests through the main thread', async () => {
     let mainThreadListener: ((type: string, payload: any) => void) | undefined;
     vi.spyOn(WorkerBody, 'addEventListener').mockImplementation(async listener => {

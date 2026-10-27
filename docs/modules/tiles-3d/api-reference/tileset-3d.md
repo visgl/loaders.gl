@@ -45,7 +45,7 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
 
 The `Tileset3D` class is the shared runtime for traversal, culling, selection, cache management, and request scheduling across source-backed 3D tilesets.
 
-For deterministic traversal snapshots and request/cache diagnostics, see [Runtime observability and benchmark baselines](/docs/modules/3d-tiles/concepts/observability-and-benchmarks).
+For deterministic traversal snapshots and request/cache diagnostics, see [Runtime observability and benchmark baselines](/docs/modules/tiles-3d/3d-tiles/concepts/observability-and-benchmarks).
 
 It is constructed with a [`Tileset3DSource`](/docs/modules/tiles-3d/api-reference/tileset-3d-source), such as [`Tiles3DSource`](/docs/modules/tiles-3d/api-reference/tiles-3d-source) or [`I3SSource`](/docs/modules/tiles-3d/api-reference/i3s-source).
 
@@ -110,12 +110,12 @@ Parameters:
   - `options.throttleRequests`=`true` (`Boolean`) - Determines whether or not to throttle tile fetching requests. Throttled requests are prioritized according to tile visibility.
   - `options.maxRequests`=`64` (`Number`) - When throttling tile fetching, the maximum number of simultaneous requests.
   - `options.modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix this transforms the entire tileset.
-  - `options.cacheBytes`=`536870912` (`Number`) - Soft target in bytes for estimated cached 3D Tiles content. Current-frame tiles remain protected. I3S retains a `33554432` default. See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory).
+  - `options.cacheBytes`=`536870912` (`Number`) - Soft target in bytes for estimated cached 3D Tiles content. Current-frame tiles remain protected. I3S retains a `33554432` default. See [Caching and memory](/docs/modules/tiles-3d/3d-tiles/concepts/caching-and-memory).
   - `options.maximumCacheOverflowBytes`=`536870912` (`Number`) - Additional current-frame headroom in bytes before cache pressure raises the active SSE threshold. I3S retains a `1048576` default.
   - `options.memoryAdjustedScreenSpaceError`=`true` (`Boolean`) - Adapts the active SSE threshold when estimated usage exceeds `cacheBytes + maximumCacheOverflowBytes`. I3S retains its `false` default.
-  - `options.viewDistanceScale`=`1.0` (`Number`) - Multiplies calculated screen-space error. Lower values stop refinement earlier; higher values select more detail. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
-  - `options.progressiveResolutionHeightFraction`=`0.3` (`Number`) - Prioritizes coarse viewport coverage using SSE at a reduced logical viewport height. Set to `0` to disable; values above `0.5` are ignored. See [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities).
-  - `options.foveatedScreenSpaceError`=`true` (`Boolean`) - Prioritizes perspective requests near the camera view axis before peripheral detail. This changes request timing, not the final LOD target. See [Request scheduling and priorities](/docs/modules/3d-tiles/concepts/request-scheduling-and-priorities).
+  - `options.viewDistanceScale`=`1.0` (`Number`) - Multiplies calculated screen-space error. Lower values stop refinement earlier; higher values select more detail. See [Screen-space error and level of detail](/docs/modules/tiles-3d/3d-tiles/concepts/screen-space-error-and-lod).
+  - `options.progressiveResolutionHeightFraction`=`0.3` (`Number`) - Prioritizes coarse viewport coverage using SSE at a reduced logical viewport height. Set to `0` to disable; values above `0.5` are ignored. See [Request scheduling and priorities](/docs/modules/tiles-3d/3d-tiles/concepts/request-scheduling-and-priorities).
+  - `options.foveatedScreenSpaceError`=`true` (`Boolean`) - Prioritizes perspective requests near the camera view axis before peripheral detail. This changes request timing, not the final LOD target. See [Request scheduling and priorities](/docs/modules/tiles-3d/3d-tiles/concepts/request-scheduling-and-priorities).
   - `options.foveatedConeSize`=`0.1` (`Number`) - Fraction of the perspective field of view that receives no foveated SSE relaxation. Set to `1` to disable peripheral deferral.
   - `options.foveatedMinimumScreenSpaceErrorRelaxation`=`0` (`Number`) - Minimum logical-pixel SSE relaxation immediately outside the center cone.
   - `options.foveatedInterpolationCallback`=`linear interpolation` (`Function`) - Interpolates logical-pixel SSE relaxation from the cone edge toward the viewport edge.
@@ -143,7 +143,7 @@ For format-specific source behavior, see:
 
 Cesium 3D tiles specific options:
 
-- `options.maximumScreenSpaceError`=`8` (`Number`) - The maximum screen-space error used to drive level-of-detail refinement. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
+- `options.maximumScreenSpaceError`=`8` (`Number`) - The maximum screen-space error used to drive level-of-detail refinement. See [Screen-space error and level of detail](/docs/modules/tiles-3d/3d-tiles/concepts/screen-space-error-and-lod).
 - `options.dynamicScreenSpaceError`=`true` (`Boolean`) - Reduces refinement for distant,
   horizon-facing tiles in perspective views. Orthographic traversal is unaffected.
 - `options.dynamicScreenSpaceErrorDensity`=`0.0002` (`Number`) - Base fog density, in inverse
@@ -153,7 +153,7 @@ Cesium 3D tiles specific options:
 - `options.dynamicScreenSpaceErrorHeightFalloff`=`0.25` (`Number`) - Fraction of the root tileset
   height at which dynamic SSE starts to fade as the camera rises. Values are clamped to `[0, 1]`.
 
-See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod#dynamic-perspective-sse)
+See [Screen-space error and level of detail](/docs/modules/tiles-3d/3d-tiles/concepts/screen-space-error-and-lod#dynamic-perspective-sse)
 for the formulas, worked example, projection boundaries, and tuning guidance.
 
 ## Properties
@@ -175,7 +175,7 @@ When centering a standalone deck.gl view on an elevated geospatial tileset, use 
 for the camera target as well as its longitude and latitude, for example
 `position: [0, 0, tileset.cartographicCenter[2]]`. Preserve any explicit application camera
 placement. This center is a viewing target, not necessarily ground height. See
-[Camera elevation and high-altitude content](/docs/modules/3d-tiles/concepts/coordinate-reference-systems#camera-elevation-and-high-altitude-content)
+[Camera elevation and high-altitude content](/docs/modules/tiles-3d/3d-tiles/concepts/coordinate-reference-systems#camera-elevation-and-high-altitude-content)
 for terrain-aware navigation and host-map integration.
 
 ###### `ellipsoid` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid))
@@ -251,7 +251,7 @@ radius equal to the tile's <b>geometric error</b> were rendered at the tile's po
 
 Depending on the tileset, `maximumScreenSpaceError` may need to be tweaked to achieve the right balance between performance with visual quality. \*
 
-For formulas, projection-specific behavior, transform scaling, and tuning guidance, see [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
+For formulas, projection-specific behavior, transform scaling, and tuning guidance, see [Screen-space error and level of detail](/docs/modules/tiles-3d/3d-tiles/concepts/screen-space-error-and-lod).
 
 ^default 8 \*
 ^exception `maximumScreenSpaceError` must be greater than or equal to zero.

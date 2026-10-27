@@ -3,7 +3,7 @@
 Picking identifies rendered objects under screen coordinates. Data queries operate on a source or
 materialized table, including offscreen features. Keep these operations separate: use deck.gl
 picking for hover/click feedback, a vector source for remote extent requests, and
-`GeoArrowSpatialIndex` from `@loaders.gl/geoarrow` for local selection and snapping.
+`GeoArrowSpatialIndex` from `@loaders.gl/core/geoarrow` for local selection and snapping.
 
 ## Load an extent from WFS
 
@@ -90,12 +90,12 @@ rendered hover/click interactions.
 
 ## Use the common scan/query interface
 
-Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/scan`
+Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/core/scan`
 package. WFS, OGC API Features, and other sources that honor `format: 'arrow'` can use the same
 interface. Bind the service layers, extent, and input/output CRS when creating the table view:
 
 ```ts
-import {VectorFeatureTableScanSource} from '@loaders.gl/scan';
+import {VectorFeatureTableScanSource} from '@loaders.gl/core/scan';
 
 const scanSource = new VectorFeatureTableScanSource(source, {
   request: {
@@ -140,7 +140,7 @@ needed.
 ## Query a materialized GeoArrow table
 
 ```ts
-import {GeoArrowSpatialIndex, getGeoArrowFieldInfo} from '@loaders.gl/geoarrow';
+import {GeoArrowSpatialIndex, getGeoArrowFieldInfo} from '@loaders.gl/core/geoarrow';
 
 // `result` is an ArrowTable from WFS getFeatures() or the scan adapter query().
 const table = result.data;

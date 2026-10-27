@@ -13,13 +13,13 @@
     "@deck.gl/mesh-layers": "^9.4.0",
     "@deck.gl/react": "^9.4.0",
     "@loaders.gl/core": "4.4.0-alpha.1",
-    "@loaders.gl/gltf": "4.4.0-alpha.1",
     "@luma.gl/constants": "^9.4.0",
     "@luma.gl/gltf": "^9.4.0",
     "maplibre-gl": "^2.4.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-map-gl": "^7.0.0"
+    "react-map-gl": "^7.0.0",
+    "@loaders.gl/scene": "4.4.0-alpha.1"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
@@ -30,6 +30,6 @@
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.1"
+    "webpack-dev-server": "^3.11.3"
   }
 }

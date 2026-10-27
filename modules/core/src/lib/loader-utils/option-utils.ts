@@ -219,7 +219,7 @@ function validateOptionsObject(
   for (const key in options) {
     // If top level option value is an object it could options for a loader, so ignore
     const isSubOptions = !id && isObject(options[key]);
-    const isBaseUriOption = key === 'baseUri' && !id;
+    const isBaseUriOption = !id && ['baseUri', 'signal', 'onProgress'].includes(key);
     const isWorkerUrlOption = key === 'workerUrl' && id;
     // <loader>.workerUrl requires special handling as it is now auto-generated and no longer specified as a default option.
     if (!(key in defaultOptions) && !isBaseUriOption && !isWorkerUrlOption) {

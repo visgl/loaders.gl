@@ -58,20 +58,23 @@ export function decodeChromeTraceArrowSource(
       event.bind_id = bindIdValue;
     }
 
-    const eventScopeValue = getOptionalChromeTraceString(row.s);
-    if (eventScopeValue) {
-      event.s = eventScopeValue as 'g' | 'p' | 't';
-    }
+    // New encoders preserve exact scope fields in extraJson; normalized external tables still use the column fallback.
+    if (!extra || (!('s' in extra) && !('scope' in extra))) {
+      const eventScopeValue = getOptionalChromeTraceString(row.s);
+      if (eventScopeValue) {
+        event.s = eventScopeValue as 'g' | 'p' | 't';
+      }
 
-    const scopeValue = getOptionalChromeTraceString(row.scope);
-    if (scopeValue && !eventScopeValue) {
-      if (phase === 'b' || phase === 'e' || phase === 'n') {
-        event.s = scopeValue as 'g' | 'p' | 't';
-      } else {
+      const scopeValue = getOptionalChromeTraceString(row.scope);
+      if (scopeValue && !eventScopeValue) {
+        if (phase === 'b' || phase === 'e' || phase === 'n') {
+          event.s = scopeValue as 'g' | 'p' | 't';
+        } else {
+          event.scope = scopeValue as 'g' | 'p' | 't';
+        }
+      } else if (scopeValue) {
         event.scope = scopeValue as 'g' | 'p' | 't';
       }
-    } else if (scopeValue) {
-      event.scope = scopeValue as 'g' | 'p' | 't';
     }
 
     const argsValue = parseChromeTraceArrowJson(row.args);

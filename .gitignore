@@ -1,7 +1,7 @@
 # tests
 test/data/test.png
 tmp
-!modules/zip/test/data/**/*.zip
+!modules/archives/test/data/**/*.zip
 .vitest-attachments/
 .vitest-reports*/
 test-results/

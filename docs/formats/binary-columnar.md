@@ -136,7 +136,7 @@ Iceberg or Delta Lake supplies the metadata and transaction layer above the file
 
 In loaders.gl, Iceberg planning is intentionally layered above Parquet. The
 [`IcebergTableSource`](/docs/modules/tables/parquet/api-reference/iceberg-table-source) from
-`@loaders.gl/scan/iceberg` reads metadata and
+`@loaders.gl/tables/iceberg` reads metadata and
 manifests, prunes candidate files, and delegates selected Parquet files to the existing dataset
 source. This preserves Parquet's range requests, workers, projection, predicates, and Arrow batches
 without exposing Parquet page or encoding details in the Iceberg API. Position and Avro equality

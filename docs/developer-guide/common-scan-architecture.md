@@ -241,22 +241,23 @@ logical plan while adding row-group, page-index, Bloom-filter, range, and worker
 | --- | --- | --- |
 | Portable values and predicates | `@loaders.gl/core/loader-utils` | AST types, paths, traversal, validation, immutable binding |
 | Logical table query | `@loaders.gl/core/loader-utils` | query options, canonical plan, capability vocabulary |
-| SQL syntax and compilation | `@loaders.gl/sql` | parser, SQL validation, identifier quoting, placeholders and bindings |
-| In-memory execution | `@loaders.gl/sql/arrow-query` | exact Arrow semantics for the portable query |
+| Predicate parsing and validation | `@loaders.gl/core/scan` | portable SQL predicate syntax, validation, and binding |
+| SQL compilation | `@loaders.gl/sql` | database query compilation, identifier quoting, placeholders and bindings |
+| In-memory execution | `@loaders.gl/core/scan/arrow-query` | exact Arrow semantics for the portable query |
 | Physical columnar scans | `@loaders.gl/tables/parquet` | files, ranges, pruning, decoding, residual filtering, batches |
 | Table-format planning | `IcebergTableSource` and future peers | snapshots, manifests/logs, deletes, file selection |
 
 Keeping the common contracts in loader-utils avoids making Parquet or GPU code depend on a database
-adapter. SQL retains compatibility exports from `@loaders.gl/sql/table-query` while new generic
+adapter. Core provides the query helpers from `@loaders.gl/core/scan/table-query` while generic
 planners can import the lower-level contract directly.
 
 ### Optional scan runtime
 
 Applications that want the shared planner and reference executor can opt into the single
-`@loaders.gl/scan` package:
+`@loaders.gl/core/scan` package:
 
 ```ts
-import {createScanEngine, parseSQLPredicate} from '@loaders.gl/scan';
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/scan';
 
 const engine = await createScanEngine();
 const result = engine.query(table, {
@@ -277,7 +278,7 @@ The same optional package is also the application-facing home for the source-neu
 and metadata vocabulary:
 
 ```ts
-import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/scan';
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/core/scan';
 
 const query: ScanQuery = {columns: ['name'], limit: 25};
 async function describe(source: {getQueryMetadata(): Promise<ScanQueryMetadata>}) {
@@ -788,7 +789,7 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    `TableQueryOptions`, point-cloud and raster siblings, canonical planning, late-bound parameters,
    capability vocabulary, ordered scan tasks, Arrow execution, and lazy DuckDB compilation stable.
 1. **Optional package boundary — implemented in this stack.** Keep query state, metadata contracts,
-   and the reference runtime in `@loaders.gl/scan`, while format adapters retain lightweight
+   and the reference runtime in `@loaders.gl/core/scan`, while format adapters retain lightweight
    `@loaders.gl/core/loader-utils` dependencies. No UI or GPU code crosses this boundary.
 2. **Panel everywhere — concluded for support signaling.** The shared panel consumes package-level
    metadata/query types, renders discovered raster overviews, and is exercised by FlatGeobuf,
@@ -813,7 +814,7 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
    and named dimension index or half-open range slices with typed output. Terrain and LERC remain
    explicitly not implemented.
 7. **Tiles and services bridge — feature-table slice landed.** MVT/PMTiles vector tiles and bounded
-   WFS/ArcGIS feature requests can now be bound through opt-in `@loaders.gl/scan` adapters. The
+   WFS/ArcGIS feature requests can now be bound through opt-in `@loaders.gl/core/scan` adapters. The
    physical tile address, layers, bounds, and CRS remain outside `TableQuery`; the resolved Arrow
    feature table exposes shared metadata, explain, cancellation, residual predicates, projection,
    relational operators, and limits. 3D Tiles, I3S, WMS imagery, and STAC remain specialized while

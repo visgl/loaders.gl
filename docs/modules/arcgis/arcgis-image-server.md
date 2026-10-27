@@ -159,7 +159,7 @@ const validMask = raster.mask;
 ```
 
 For tiled analysis, set `format: 'lerc'` under `arcgis-image-server-tiles`. The source decodes each
-tile directly with `@loaders.gl/raster/lerc/index`; it does not convert values through an 8-bit display image.
+tile directly with `@loaders.gl/raster/lerc`; it does not convert values through an 8-bit display image.
 
 LERC data is deliberately not colorized automatically. Applications should choose a band, value
 domain, color ramp, and NoData policy appropriate to the dataset before uploading values to the GPU.

@@ -9,8 +9,8 @@ import type {
   VectorSourceData,
   VectorSourceMetadata
 } from '@loaders.gl/core/loader-utils';
-import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
-import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import {areServiceCRSEquivalent, normalizeServiceCRS} from './crs-utils';
 
 /** Closed extent in canonical XY order. */

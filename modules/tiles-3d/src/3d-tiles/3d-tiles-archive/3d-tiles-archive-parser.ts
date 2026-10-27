@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import type {ZipArchiveOptions} from '@loaders.gl/zip';
+import type {ZipArchiveOptions} from '@loaders.gl/archives/zip';
 import {Tiles3DArchive} from './3d-tiles-archive-archive';
 
 /** Opens the indexed archive through the shared ZIP transport, retaining format path policy. */

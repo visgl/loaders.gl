@@ -3,8 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/zip/indexed-zip-writer';
-import type {IndexedZipOptions} from '@loaders.gl/zip/indexed-zip-writer';
+import {
+  encodeIndexedZip,
+  encodeIndexedZipInBatches
+} from '@loaders.gl/archives/zip/indexed-zip-writer';
+import type {IndexedZipOptions} from '@loaders.gl/archives/zip/indexed-zip-writer';
 import {ThreeTZFormat} from './tiles-3d-format';
 import {VERSION} from './lib/utils/version';
 

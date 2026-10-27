@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
+import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {
   processLoaderWorkerBatches,
   processLoaderWorkerData
@@ -53,7 +54,11 @@ describe('processLoaderWorkerData', () => {
   });
 
   test('retains parser state and serializes each output batch', async () => {
-    const parseInBatches = vi.fn(async function* (inputIterator: AsyncIterable<number>) {
+    const parseInBatches = vi.fn(async function* (
+      inputIterator: AsyncIterable<number>,
+      options: LoaderOptions
+    ) {
+      expect(options.core?.worker).toBe(false);
       let total = 0;
       for await (const input of inputIterator) {
         total += input;
@@ -73,7 +78,7 @@ describe('processLoaderWorkerData', () => {
         serializeWorkerBatch
       } as any,
       [1, 2, 3] as any,
-      {core: {worker: false}}
+      {core: {worker: true}}
     )) {
       batches.push(batch);
     }
@@ -197,4 +202,28 @@ describe('processLoaderWorkerData', () => {
       )
     ).rejects.toThrow('Worker not set up to parse on main thread');
   });
+});
+
+test('loader workers expose progress context for atomic and batched parsers', async () => {
+  const reportProgress = vi.fn();
+  const progress = {phase: 'decode', completed: 1, unit: 'rows'};
+  const loader = {
+    ...BASE_LOADER,
+    parse: async (_input, _options, context) => {
+      context.reportProgress(progress);
+      return 1;
+    },
+    async *parseInBatches(_input, _options, context) {
+      context.reportProgress(progress);
+      yield 2;
+    }
+  };
+  await expect(
+    processLoaderWorkerData(loader as any, new ArrayBuffer(0), {}, {reportProgress})
+  ).resolves.toBe(1);
+  const results = [];
+  for await (const batch of processLoaderWorkerBatches(loader as any, [], {}, {reportProgress}))
+    results.push(batch);
+  expect(results).toEqual([2]);
+  expect(reportProgress.mock.calls).toEqual([[progress], [progress]]);
 });

@@ -32,6 +32,7 @@ export default class WorkerJob {
    * @param data any data structure, ideally consisting mostly of transferrable objects
    */
   postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): void {
+    if (!this.isRunning) return;
     this.workerThread.postMessage({
       source: 'loaders.gl', // Lets worker ignore unrelated messages
       type,
@@ -69,9 +70,10 @@ export default class WorkerJob {
     if (!this.isRunning) {
       return;
     }
-    const error = reason ?? createAbortError(`Worker job "${this.name}" was aborted`);
     this.workerThread.destroy();
-    this.error(error);
+    this.error(
+      arguments.length ? reason : createAbortError(`Worker job "${this.name}" was aborted`)
+    );
   }
 }
 

@@ -4,7 +4,7 @@
 
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {mapMeshSourceTexture as mapRawMeshSourceTexture} from '../apps/tile-converter/src/v5/mesh-source-texture';
 import {
   createTexturedTriangle,

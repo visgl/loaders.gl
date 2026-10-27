@@ -12,6 +12,7 @@ import type {
   TableBatch
 } from '@loaders.gl/core/schema';
 import type * as arrow from 'apache-arrow';
+import {JSON_WORKER_URL} from './json-worker-url';
 import {NDJSONFormat} from './json-format';
 import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
 
@@ -52,6 +53,11 @@ export const NDJSONLoader = {
 
   ...NDJSONFormat,
   version: VERSION,
+  worker: JSON_WORKER_URL,
+  workerFile: 'json-worker.js',
+  workerNode: 'json-worker-node.cjs',
+  workerSourceNode: 'json/workers/json-worker.ts',
+  workerInBatches: true,
   options: {
     ndjson: {
       shape: 'arrow-table',

@@ -18,9 +18,9 @@ import type {
   SQLTableInfo
 } from './sql-types';
 import {compileSQLTableQuery, type SQLTableQueryDialect} from './compile-table-query';
-import type {SQLPredicateParameterValues} from './sql-predicate-types';
+import type {SQLPredicateParameterValues} from '@loaders.gl/core/scan/sql-predicate-types';
 import {convertRowsToArrowTable, isNodeRuntime} from './sql-utils';
-import {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
+import {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from '@loaders.gl/core/scan/table-query-capabilities';
 
 const SQL_ADAPTER_FACTORIES = new Map<string, SQLAdapterFactory>();
 

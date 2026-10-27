@@ -37,6 +37,7 @@ const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
 export const ParquetWasmLoaderWithParser = {
   ...ParquetLoaderMetadataWithoutPreload,
   worker: false,
+  workerInBatches: false,
   /** Parses a complete Parquet payload with the optional WASM backend. */
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
     return parseParquetTable(new BlobFile(arrayBuffer), options);

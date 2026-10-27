@@ -12,7 +12,7 @@ import type {
   Position
 } from '@loaders.gl/core/schema';
 import {KMLFormat, KMZFormat} from './kml-format';
-import {ZipWriter} from '@loaders.gl/zip';
+import {ZipWriter} from '@loaders.gl/archives/zip';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

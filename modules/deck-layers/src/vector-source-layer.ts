@@ -14,7 +14,7 @@ import {
 import type {GeoJsonLayerProps} from '@deck.gl/layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {createDataSource} from '@loaders.gl/core';
-import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/geoarrow';
+import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/core/geoarrow';
 import type {GeoJSONTable} from '@loaders.gl/core/schema';
 import type {
   DataSourceOptions,

@@ -196,3 +196,35 @@ Writers and shared public types remain available from `@loaders.gl/traces`.
   than Arrow batches.
 - Use `parseChromeTrace(...)` when an application needs semantic Chrome processes, threads, spans,
   counters, flows, and instants instead of raw event rows.
+
+
+## Worker parsing
+
+All six trace loaders support browser workers for atomic parsing and `parseInBatches`:
+`ChromeTraceLoader`, `PerfettoTraceLoader`, `OtlpTraceLoader`, `OtlpTraceJsonLoader`,
+`JaegerTraceLoader`, and `ZipkinTraceLoader`. They share the published `trace-worker.js` bundle.
+
+Workers transfer owned Arrow column buffers through the existing Arrow column utilities,
+without IPC encoding. Atomic results retain their Arrow table or logical-table collection
+shape. Streaming results retain real Arrow record batches and their logical-table tags,
+including bigint timestamps, schemas, and metadata. Each parser keeps its state for the
+entire stream; a format that collects a JSON document still needs that complete document
+before emitting batches.
+
+```typescript
+import {parseInBatches} from '@loaders.gl/core';
+import {OtlpTraceJsonLoader} from '@loaders.gl/traces';
+
+const batches = await parseInBatches(response, OtlpTraceJsonLoader, {
+  core: {worker: true},
+  otlpTrace: {batchSize: 1000}
+});
+for await (const {table, data} of batches) {
+  consume(table, data);
+}
+```
+
+Chrome trace whole-file `shape: 'json'` converts hydrated Arrow events into the validated
+JSON container on the caller, preserving passthrough event and container fields. Chrome
+trace batches continue to require `shape: 'arrow-table'`. Use an abort signal or close the
+iterator to release the worker. Input buffers already transferred remain detached.

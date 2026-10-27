@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@loaders.gl/core": "workspace:*",
-    "@loaders.gl/obj": "workspace:*"
+    "@loaders.gl/scene": "workspace:*"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^4.0.3",

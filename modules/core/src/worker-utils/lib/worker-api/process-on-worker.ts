@@ -16,6 +16,7 @@ import WorkerFarm from '../worker-farm/worker-farm';
 import type {WorkerPoolTarget} from '../worker-farm/worker-pool';
 import {
   getCustomWorkerURL,
+  getConfiguredWorkerURL,
   getDefaultWorkerURL,
   getWorkerURL,
   getWorkerName
@@ -56,6 +57,22 @@ export function canProcessOnWorker(worker: WorkerObject, options?: WorkerOptions
 }
 
 /**
+ * Checks whether a worker supports stateful batch processing.
+ * @param worker Worker descriptor declaring built-in batch support.
+ * @param options Worker options, including an explicit capability for custom URLs or source.
+ */
+export function canProcessOnWorkerInBatches(
+  worker: WorkerObject,
+  options: WorkerOptions = {}
+): boolean {
+  if (!canProcessOnWorker(worker, options)) return false;
+  if (options.workerInBatches !== undefined) return options.workerInBatches;
+  return Boolean(
+    worker.workerInBatches && !options.source && !getConfiguredWorkerURL(worker, options)
+  );
+}
+
+/**
  * This function expects that the worker thread sends certain messages,
  * Creating such a worker can be automated if the worker is wrapper by a call to
  * createWorker in @loaders.gl/core/worker-utils.
@@ -77,18 +94,15 @@ export async function processOnWorker(
   const job = await workerPool.startJob(
     jobName,
     // eslint-disable-next-line
-    onMessage.bind(null, context)
+    onMessage.bind(null, context, options),
+    undefined,
+    options.signal
   );
 
-  const abortJob = (): void => job.abort(getAbortReason(options.signal));
-  options.signal?.addEventListener('abort', abortJob, {once: true});
-  if (options.signal?.aborted) {
-    abortJob();
-  }
-
   try {
+    if (options.signal?.aborted) job.abort(getAbortReason(options.signal));
     // AbortSignal cannot be structured-cloned. It controls the job on this thread only.
-    const {signal: _signal, ...workerOptions} = options;
+    const {signal: _signal, onProgress: _onProgress, ...workerOptions} = options;
     const transferableOptions = getTransferListForWriter(workerOptions);
     const transferableContext = getTransferListForWriter(jobContext);
     if (job.isRunning) {
@@ -101,8 +115,9 @@ export async function processOnWorker(
 
     const result = await job.result;
     return result.result;
-  } finally {
-    options.signal?.removeEventListener('abort', abortJob);
+  } catch (error) {
+    job.abort(error);
+    throw error;
   }
 }
 
@@ -140,8 +155,17 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
   const inputIterator = getAsyncIterator(input);
   let outputFinished = false;
   let inputFinished = false;
+  let inputCleanupRequested = false;
   let inputRequest = Promise.resolve();
   const batchJobFailed = new Error('Worker batch job failed');
+
+  /** Requests cleanup even when the output consumer is paused after yielding a batch. */
+  const closeJobInput = (): void => {
+    if (!inputFinished && !inputCleanupRequested) {
+      inputCleanupRequested = true;
+      closeInputIterator(inputIterator);
+    }
+  };
 
   const finishOutput = (): void => {
     if (!outputFinished) {
@@ -157,66 +181,76 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
     }
   };
 
-  const job = await workerPool.startJob(
-    options.jobName || worker.name,
-    (activeJob, type, payload) => {
-      switch (type) {
-        case 'input-request':
-          inputRequest = inputRequest
-            .then(async () => {
-              const nextBatch = await inputIterator.next();
-              if (!activeJob.isRunning) {
-                return;
-              }
-              if (nextBatch.done) {
-                inputFinished = true;
-                activeJob.postMessage('input-done', {});
-              } else {
-                activeJob.postMessage('input-batch', {input: nextBatch.value});
-              }
-            })
-            .catch(error => activeJob.abort(error));
-          break;
+  const job = await workerPool
+    .startJob(
+      options.jobName || worker.name,
+      (activeJob, type, payload) => {
+        switch (type) {
+          case 'progress':
+            reportProgress(activeJob, options, payload);
+            break;
 
-        case 'output-batch':
-          outputBatches.push(payload.result as OutputBatch);
-          break;
+          case 'input-request':
+            inputRequest = inputRequest
+              .then(async () => {
+                if (!activeJob.isRunning) return;
+                const nextBatch = await inputIterator.next();
+                if (!activeJob.isRunning) {
+                  return;
+                }
+                if (nextBatch.done) {
+                  inputFinished = true;
+                  activeJob.postMessage('input-done', {});
+                } else {
+                  activeJob.postMessage('input-batch', {input: nextBatch.value});
+                }
+              })
+              .catch(error => activeJob.abort(error));
+            break;
 
-        case 'done':
-          activeJob.done(payload);
-          finishOutput();
-          break;
+          case 'output-batch':
+            outputBatches.push(payload.result as OutputBatch);
+            break;
 
-        case 'error': {
-          const error = new Error(payload.error || 'Worker batch processing failed');
-          activeJob.error(error);
-          failOutput(error);
-          break;
+          case 'done':
+            activeJob.done(payload);
+            finishOutput();
+            break;
+
+          case 'error': {
+            const error = new Error(payload.error || 'Worker batch processing failed');
+            activeJob.error(error);
+            failOutput(error);
+            break;
+          }
+
+          case 'process':
+            void onMessage(context, options, activeJob, type, payload);
+            break;
+
+          default: {
+            const error = new Error(`Unexpected worker batch message: ${type}`);
+            activeJob.error(error);
+            failOutput(error);
+            break;
+          }
         }
+      },
+      undefined,
+      options.signal
+    )
+    .catch(error => {
+      closeJobInput();
+      throw error;
+    });
 
-        case 'process':
-          void onMessage(context, activeJob, type, payload);
-          break;
-
-        default: {
-          const error = new Error(`Unexpected worker batch message: ${type}`);
-          activeJob.error(error);
-          failOutput(error);
-          break;
-        }
-      }
-    }
-  );
-
-  const abortJob = (): void => job.abort(getAbortReason(options.signal));
-  options.signal?.addEventListener('abort', abortJob, {once: true});
-  if (options.signal?.aborted) {
-    abortJob();
-  }
-  void job.result.catch(failOutput);
+  void job.result.catch(error => {
+    failOutput(error);
+    closeJobInput();
+  });
 
   try {
-    const {signal: _signal, ...workerOptions} = options;
+    const {signal: _signal, onProgress: _onProgress, ...workerOptions} = options;
     if (job.isRunning) {
       job.postMessage('process-in-batches', {
         options: getTransferListForWriter(workerOptions),
@@ -239,13 +273,10 @@ async function* processOnWorkerInBatchesIterator<InputBatch, OutputBatch>(
     }
     await job.result;
   } finally {
-    options.signal?.removeEventListener('abort', abortJob);
     if (job.isRunning) {
       job.abort(createAbortError('Worker batch iterator was closed'));
     }
-    if (!inputFinished) {
-      closeInputIterator(inputIterator);
-    }
+    closeJobInput();
   }
 }
 
@@ -259,7 +290,7 @@ function throwIfAborted(signal?: AbortSignal): void {
 
 /** Returns a caller-provided abort reason or a cross-runtime `AbortError`. */
 function getAbortReason(signal?: AbortSignal): unknown {
-  return signal?.reason ?? createAbortError('Worker job was aborted');
+  return signal ? signal.reason : createAbortError('Worker job was aborted');
 }
 
 /** Creates an abort error without requiring the DOMException global. */
@@ -353,11 +384,16 @@ function getWorkerPoolTarget(
  */
 async function onMessage(
   context: WorkerContext,
+  options: ProcessOnWorkerOptions,
   job: WorkerJob,
   type: WorkerMessageType,
   payload: WorkerMessagePayload
 ) {
   switch (type) {
+    case 'progress':
+      reportProgress(job, options, payload);
+      break;
+
     case 'done':
       // Worker is done
       job.done(payload);
@@ -370,13 +406,18 @@ async function onMessage(
 
     case 'process':
       // Worker is asking for us (main thread) to process something
-      const {id, input, options} = payload;
+      const {id, input, options: processOptions} = payload;
       try {
         if (!context.process) {
           job.postMessage('error', {id, error: 'Worker not set up to process on main thread'});
           return;
         }
-        const result = await context.process(input, options, undefined, payload.context || {});
+        const result = await context.process(
+          input,
+          {...processOptions, signal: options.signal, onProgress: options.onProgress},
+          undefined,
+          payload.context || {}
+        );
         job.postMessage('done', {id, result});
       } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown error';
@@ -409,5 +450,19 @@ function onPreloadMessage(job: WorkerJob, type: WorkerMessageType, payload: Work
     default:
       // eslint-disable-next-line
       console.warn(`process-on-worker: unknown preload message ${type}`);
+  }
+}
+
+/** Delivers progress; callback failures terminate the job and settle its caller. */
+function reportProgress(
+  job: WorkerJob,
+  options: ProcessOnWorkerOptions,
+  payload: WorkerMessagePayload
+): void {
+  if (!job.isRunning || !payload.progress) return;
+  try {
+    options.onProgress?.(payload.progress);
+  } catch (error) {
+    job.abort(error);
   }
 }

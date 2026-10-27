@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scene",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Framework-independent loaders for scene description formats",
   "license": "MIT",
   "type": "module",
@@ -30,22 +30,193 @@
       "require": "./dist/index.cjs"
     },
     "./usd-loader": {
-      "types": "./dist/usd-loader.d.ts",
-      "import": "./dist/usd-loader.js"
+      "types": "./dist/usd/usd-loader.d.ts",
+      "import": "./dist/usd/usd-loader.js",
+      "require": "./dist/usd/usd-loader.cjs"
+    },
+    "./obj": {
+      "types": "./dist/obj/index.d.ts",
+      "import": "./dist/obj/index.js",
+      "require": "./dist/obj/index.cjs"
+    },
+    "./obj/bundled": {
+      "types": "./dist/obj/bundled.d.ts",
+      "import": "./dist/obj/bundled.js",
+      "require": "./dist/obj/bundled.cjs"
+    },
+    "./obj/index": {
+      "types": "./dist/obj/index.d.ts",
+      "import": "./dist/obj/index.js",
+      "require": "./dist/obj/index.cjs"
+    },
+    "./obj/mtl-format": {
+      "types": "./dist/obj/mtl-format.d.ts",
+      "import": "./dist/obj/mtl-format.js",
+      "require": "./dist/obj/mtl-format.cjs"
+    },
+    "./obj/mtl-loader-types": {
+      "types": "./dist/obj/mtl-loader-types.d.ts",
+      "import": "./dist/obj/mtl-loader-types.js",
+      "require": "./dist/obj/mtl-loader-types.cjs"
+    },
+    "./obj/mtl-loader": {
+      "types": "./dist/obj/mtl-loader.d.ts",
+      "import": "./dist/obj/mtl-loader.js",
+      "require": "./dist/obj/mtl-loader.cjs"
+    },
+    "./obj/obj-format": {
+      "types": "./dist/obj/obj-format.d.ts",
+      "import": "./dist/obj/obj-format.js",
+      "require": "./dist/obj/obj-format.cjs"
+    },
+    "./obj/obj-loader-types": {
+      "types": "./dist/obj/obj-loader-types.d.ts",
+      "import": "./dist/obj/obj-loader-types.js",
+      "require": "./dist/obj/obj-loader-types.cjs"
+    },
+    "./obj/obj-loader": {
+      "types": "./dist/obj/obj-loader.d.ts",
+      "import": "./dist/obj/obj-loader.js",
+      "require": "./dist/obj/obj-loader.cjs"
+    },
+    "./obj/obj-writer": {
+      "types": "./dist/obj/obj-writer.d.ts",
+      "import": "./dist/obj/obj-writer.js",
+      "require": "./dist/obj/obj-writer.cjs"
+    },
+    "./obj/unbundled": {
+      "types": "./dist/obj/unbundled.d.ts",
+      "import": "./dist/obj/unbundled.js",
+      "require": "./dist/obj/unbundled.cjs"
+    },
+    "./gltf": {
+      "types": "./dist/gltf/index.d.ts",
+      "import": "./dist/gltf/index.js",
+      "require": "./dist/gltf/index.cjs"
+    },
+    "./gltf/bundled": {
+      "types": "./dist/gltf/bundled.d.ts",
+      "import": "./dist/gltf/bundled.js",
+      "require": "./dist/gltf/bundled.cjs"
+    },
+    "./gltf/glb-loader-types": {
+      "types": "./dist/gltf/glb-loader-types.d.ts",
+      "import": "./dist/gltf/glb-loader-types.js",
+      "require": "./dist/gltf/glb-loader-types.cjs"
+    },
+    "./gltf/glb-loader": {
+      "types": "./dist/gltf/glb-loader.d.ts",
+      "import": "./dist/gltf/glb-loader.js",
+      "require": "./dist/gltf/glb-loader.cjs"
+    },
+    "./gltf/glb-writer": {
+      "types": "./dist/gltf/glb-writer.d.ts",
+      "import": "./dist/gltf/glb-writer.js",
+      "require": "./dist/gltf/glb-writer.cjs"
+    },
+    "./gltf/gltf-format": {
+      "types": "./dist/gltf/gltf-format.d.ts",
+      "import": "./dist/gltf/gltf-format.js",
+      "require": "./dist/gltf/gltf-format.cjs"
+    },
+    "./gltf/gltf-loader-types": {
+      "types": "./dist/gltf/gltf-loader-types.d.ts",
+      "import": "./dist/gltf/gltf-loader-types.js",
+      "require": "./dist/gltf/gltf-loader-types.cjs"
+    },
+    "./gltf/gltf-loader": {
+      "types": "./dist/gltf/gltf-loader.d.ts",
+      "import": "./dist/gltf/gltf-loader.js",
+      "require": "./dist/gltf/gltf-loader.cjs"
+    },
+    "./gltf/gltf-source": {
+      "types": "./dist/gltf/gltf-source.d.ts",
+      "import": "./dist/gltf/gltf-source.js",
+      "require": "./dist/gltf/gltf-source.cjs"
+    },
+    "./gltf/gltf-writer": {
+      "types": "./dist/gltf/gltf-writer.d.ts",
+      "import": "./dist/gltf/gltf-writer.js",
+      "require": "./dist/gltf/gltf-writer.cjs"
+    },
+    "./gltf/index": {
+      "types": "./dist/gltf/index.d.ts",
+      "import": "./dist/gltf/index.js",
+      "require": "./dist/gltf/index.cjs"
+    },
+    "./gltf/mesh-arrow": {
+      "types": "./dist/gltf/mesh-arrow.d.ts",
+      "import": "./dist/gltf/mesh-arrow.js"
+    },
+    "./gltf/schema": {
+      "types": "./dist/gltf/schema.d.ts",
+      "import": "./dist/gltf/schema.js"
+    },
+    "./gltf/unbundled": {
+      "types": "./dist/gltf/unbundled.d.ts",
+      "import": "./dist/gltf/unbundled.js",
+      "require": "./dist/gltf/unbundled.cjs"
+    },
+    "./gltf/gltf.schema.json": "./dist/gltf/gltf.schema.json",
+    "./gltf/gltf-1.schema.json": "./dist/gltf/gltf-1.schema.json",
+    "./gltf/gltf-2.schema.json": "./dist/gltf/gltf-2.schema.json",
+    "./gltf/gltf-2.1.schema.json": "./dist/gltf/gltf-2.1.schema.json",
+    "./gltf/gltf-all.schema.json": "./dist/gltf/gltf-all.schema.json",
+    "./gltf/schemas/*": "./dist/gltf/schemas/*",
+    "./usd": {
+      "types": "./dist/usd/index.d.ts",
+      "import": "./dist/usd/index.js",
+      "require": "./dist/usd/index.cjs"
+    },
+    "./obj-worker.js": {
+      "import": "./dist/obj-worker.js"
+    },
+    "./usd/index": {
+      "types": "./dist/usd/index.d.ts",
+      "import": "./dist/usd/index.js",
+      "require": "./dist/usd/index.cjs"
+    },
+    "./usd/usd-loader-types": {
+      "types": "./dist/usd/usd-loader-types.d.ts",
+      "import": "./dist/usd/usd-loader-types.js",
+      "require": "./dist/usd/usd-loader-types.cjs"
+    },
+    "./usd/usd-loader": {
+      "types": "./dist/usd/usd-loader.d.ts",
+      "import": "./dist/usd/usd-loader.js",
+      "require": "./dist/usd/usd-loader.cjs"
     }
   },
   "sideEffects": false,
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "OBJ-README.md",
+    "GLTF-README.md",
+    "bin"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker-obj": "node ../../scripts/build-codec-worker.mjs src/obj/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
+    "generate-gltf-schemas": "node scripts/gltf/generate-json-schema.mjs",
+    "copy-libs-gltf": "mkdir -p dist/gltf/libs && cp -rf src/gltf/libs/. dist/gltf/libs/"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
+  },
+  "dependencies": {
+    "@loaders.gl/draco": "5.0.0-alpha.14",
+    "@loaders.gl/images": "5.0.0-alpha.14",
+    "@loaders.gl/textures": "5.0.0-alpha.14",
+    "@math.gl/core": "5.0.0-alpha.20",
+    "@math.gl/geometry": "5.0.0-alpha.20",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "meshoptimizer": "1.3.0"
   }
 }

@@ -6,8 +6,8 @@ import type {
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_Primitive,
   GLTF_EXT_mesh_features
-} from '@loaders.gl/gltf';
-import {EXT_MESH_FEATURES, EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
+import {EXT_MESH_FEATURES, EXT_FEATURE_METADATA} from '@loaders.gl/scene/gltf';
 import {Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
 import {emod} from '@math.gl/geometry/utils';
 import {TypedArray} from '@math.gl/core';

@@ -5,8 +5,8 @@ import styles from './vector-tile-delivery-graphic.module.css';
 
 const REQUESTS = [
   {label: 'Viewport', detail: 'bounds and zoom'},
-  {label: 'TileJSON', detail: 'scheme and limits', to: '/docs/modules/mvt/formats/tilejson'},
-  {label: 'Map style', detail: 'layers and sources', to: '/docs/modules/mvt/formats/map-style'}
+  {label: 'TileJSON', detail: 'scheme and limits', to: '/docs/modules/tiles/mvt/formats/tilejson'},
+  {label: 'Map style', detail: 'layers and sources', to: '/docs/modules/tiles/mvt/formats/map-style'}
 ] as const;
 
 const RESULTS = [

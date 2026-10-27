@@ -25,7 +25,7 @@ export function getFetchFunction(
 
   // options.fetch can be a function
   if (typeof fetchOption === 'function') {
-    fetchFunction = fetchOption;
+    fetchFunction = fetchOption as FetchLike;
   } else if (isObject(fetchOption)) {
     fetchFunction = context?.fetch || fetchFile;
   } else if (context?.fetch) {
@@ -34,10 +34,12 @@ export function getFetchFunction(
     fetchFunction = fetchFile;
   }
 
+  const signal = loaderOptions.signal || context?.signal;
+  const requestOptions = isObject(fetchOption) ? (fetchOption as RequestInit) : undefined;
   return createAuthenticatedFetch({
     fetch: fetchFunction,
     credentials: loaderOptions.core?.credentials || [],
     authentications: loaderOptions.core?.authentications,
-    fetchOptions: isObject(fetchOption) ? (fetchOption as RequestInit) : undefined
+    fetchOptions: signal ? {...requestOptions, signal} : requestOptions
   });
 }

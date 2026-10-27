@@ -10,7 +10,7 @@ import {
   GLTFWriter,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
@@ -321,7 +321,7 @@ test('unannotated real source conversion succeeds; GLB codec preserves feature-b
     dracoLibraryOptions: {useLocalLibraries: true}
   });
   const output = await codec.convert(resource, undefined)[Symbol.asyncIterator]().next();
-  const gltf = await parse(output.value.glb, (await import('@loaders.gl/gltf')).GLTFLoader, {
+  const gltf = await parse(output.value.glb, (await import('@loaders.gl/scene/gltf')).GLTFLoader, {
     core: {worker: false, useLocalLibraries: true},
     gltf: {loadImages: false}
   });

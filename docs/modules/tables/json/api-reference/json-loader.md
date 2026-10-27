@@ -168,3 +168,12 @@ JSONPaths are used only to identify which array should be streamed, so selectors
 ## Attribution
 
 This loader is based on a fork of dscape's [`clarinet`](https://github.com/dscape/clarinet) under BSD 2-clause license.
+
+## Worker batches
+
+`JSONLoader` supports stateful worker parsing, including self-hosted `json.workerUrl` assets.
+Atomic documents and batches return as transferable binary JSON frames. The caller decodes these
+bytes into JSON values; decoded object graphs never enter structured clone. Heterogeneous rows,
+container metadata, negative zero, and nonfinite numbers produced by parsing retain their semantics.
+See [JSON worker batches](/docs/modules/tables/json#parsing-batches-in-workers) for cancellation,
+progress, backpressure, and Node worker options.

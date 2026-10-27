@@ -15,7 +15,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
   meta={['WKB / WKT / GeoArrow', 'BinaryFeatureCollection', 'Direct render path']}
   links={[
-    {label: 'GeoArrow module', to: '/docs/modules/geoarrow'},
+    {label: 'GeoArrow module', to: '/docs/modules/core/geoarrow'},
     {label: 'Feature collection converters', to: '/docs/developer-guide/converters/feature-collection-converters'},
     {label: 'GIS category', to: '/docs/specifications/category-gis'}
   ]}
@@ -46,8 +46,8 @@ These APIs skip generic shape dispatch and produce render-oriented GIS structure
 
 | API | Package | Input | Output |
 | --- | --- | --- | --- |
-| `convertGeometryColumnToBinaryFeatureCollection()` | `@loaders.gl/geoarrow` | table + geometry column | `BinaryFeatureCollection` |
-| `convertGeometryValuesToBinaryFeatureCollection()` | `@loaders.gl/geoarrow` | geometry value list | `BinaryFeatureCollection` |
+| `convertGeometryColumnToBinaryFeatureCollection()` | `@loaders.gl/core/geoarrow` | table + geometry column | `BinaryFeatureCollection` |
+| `convertGeometryValuesToBinaryFeatureCollection()` | `@loaders.gl/core/geoarrow` | geometry value list | `BinaryFeatureCollection` |
 
 ## Supported Inputs
 

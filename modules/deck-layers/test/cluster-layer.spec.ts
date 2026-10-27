@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {ClusterLayer} from '@loaders.gl/deck-layers';
-import {ClusterSource} from '@loaders.gl/geoarrow';
+import {ClusterSource} from '@loaders.gl/core/geoarrow';
 import {VectorSet} from '../src/vector-source-layer/vector-set';
 import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 

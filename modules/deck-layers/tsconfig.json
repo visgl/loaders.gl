@@ -26,16 +26,13 @@
       "path": "../crypto"
     },
     {
-      "path": "../geoarrow"
-    },
-    {
       "path": "../tiles"
     },
     {
       "path": "../tiles-3d"
     },
     {
-      "path": "../zip"
+      "path": "../archives"
     }
   ]
 }

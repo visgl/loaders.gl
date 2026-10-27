@@ -8,11 +8,11 @@
   },
   "dependencies": {
     "@loaders.gl/core": "workspace:*",
-    "@loaders.gl/obj": "workspace:*"
+    "@loaders.gl/scene": "workspace:*"
   },
   "devDependencies": {
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.1.1"
+    "webpack-dev-server": "^3.11.3"
   }
 }

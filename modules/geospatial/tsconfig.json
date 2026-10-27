@@ -13,16 +13,13 @@
   },
   "references": [
     {
-      "path": "../arrow-geometry"
-    },
-    {
       "path": "../core"
     },
     {
       "path": "../xml"
     },
     {
-      "path": "../zip"
+      "path": "../archives"
     }
   ]
 }

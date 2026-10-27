@@ -18,8 +18,8 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {GeoJSONTable, Schema} from '@loaders.gl/core/schema';
-import {convertFeaturesToWKBArrowTable} from '@loaders.gl/arrow-geometry/feature-collection-to-arrow';
-import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/arrow-geometry/legacy-binary';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
+import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import {getServiceCRSAxisOrder} from './crs-utils';
 import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
 import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
@@ -28,6 +28,7 @@ import {
   convertOGCTileMatrixLimits,
   isOGCTileAvailable
 } from './lib/parsers/ogc-api/tile-matrix-limits';
+import {resolveTileGridTile} from '@loaders.gl/core/loader-utils/tile-grid';
 import {getTileGridMatrixId, validateMetersPerUnit} from './lib/tile-grid';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {
@@ -543,7 +544,8 @@ export class OGCAPITilesSource
     const template = this.options['ogc-api']?.tileTemplate;
     if (!template) throw new Error('OGC API Tiles requires ogc-api.tileTemplate');
     const loadedGrid = this.getLoadedTileGrid();
-    if (!isOGCTileAvailable(parameters, loadedGrid)) {
+    const resolvedParameters = resolveTileGridTile(loadedGrid, parameters);
+    if (!resolvedParameters) {
       throw new RangeError('OGC tile is outside advertised coverage');
     }
     // XYZ placeholders keep numeric z; only OGC placeholders substitute a matrix identifier.
@@ -560,10 +562,10 @@ export class OGCAPITilesSource
     const tileUrl = template
       .replaceAll('{tileMatrix}', encodeURIComponent(tileMatrixId))
       .replaceAll('{tileRow}', String(parameters.y))
-      .replaceAll('{tileCol}', String(parameters.x))
+      .replaceAll('{tileCol}', String(resolvedParameters.x))
       .replaceAll('{z}', String(parameters.z))
       .replaceAll('{y}', String(parameters.y))
-      .replaceAll('{x}', String(parameters.x));
+      .replaceAll('{x}', String(resolvedParameters.x));
     return resolveLink(tileUrl, this.url);
   }
 

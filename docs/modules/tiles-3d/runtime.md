@@ -126,6 +126,6 @@ content. Depending on the source and requested options, applications may work wi
 - local or cartographic positions relative to a tile origin, with positions expressed in meters
 
 I3S adds explicit horizontal and vertical placement options; see
-[I3S coordinate reference systems](/docs/modules/i3s/concepts/coordinate-reference-systems) and
+[I3S coordinate reference systems](/docs/modules/tiles-3d/i3s/concepts/coordinate-reference-systems) and
 [vertical coordinate systems](/docs/developer-guide/vertical-coordinate-systems). For 3D Tiles
-payload and metadata details, see the [3D Tiles format page](/docs/modules/3d-tiles/formats/3d-tiles).
+payload and metadata details, see the [3D Tiles format page](/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles).

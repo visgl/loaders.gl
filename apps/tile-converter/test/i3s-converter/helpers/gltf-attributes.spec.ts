@@ -6,7 +6,7 @@ import {BoundingSphere} from '@math.gl/geometry/culling';
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
 import {load} from '@loaders.gl/core';
-import {GLTFScenegraph} from '@loaders.gl/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   calculateTransformProps,

@@ -9,8 +9,8 @@ import {
   parseFromContext,
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
-import {transformGeoJsonCoords} from '@loaders.gl/arrow-geometry/legacy-binary';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
+import {transformGeoJsonCoords} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import type {
   Feature,
   GeoJsonProperties,

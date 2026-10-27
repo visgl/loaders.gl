@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Use it when', value: 'Several formats feed the same table processing path'},
     {label: 'Core representation', value: 'Typed columns, record batches, and tables'},
     {label: 'Useful properties', value: 'Binary layout, zero-copy views, and shared schemas'},
-    {label: 'Packages', value: '@loaders.gl/tables/arrow, @loaders.gl/geoarrow, and @loaders.gl/tables/parquet'}
+    {label: 'Packages', value: '@loaders.gl/tables/arrow, @loaders.gl/core/geoarrow, and @loaders.gl/tables/parquet'}
   ]}
 />
 
@@ -57,7 +57,7 @@ To work effectively with in-memory Apache Arrow data, a library is needed, and l
 A subset of modules that import the Apache Arrow JS library:
 
 - `@loaders.gl/tables/arrow`
-- `@loaders.gl/geoarrow`
+- `@loaders.gl/core/geoarrow`
 - `@loaders.gl/tables/parquet`
 - `@loaders.gl/core/schema`
 - `@loaders.gl/core/schema-utils`
@@ -79,14 +79,14 @@ You may still want to specify `apache-arrow` explicitly in your app to avoid bei
 ### Recommended install pattern
 
 ```bash
-npm install apache-arrow @loaders.gl/core @loaders.gl/tables/arrow
+npm install apache-arrow @loaders.gl/core @loaders.gl/tables
 # plus any other loaders you use
 ```
 
 or:
 
 ```bash
-yarn add apache-arrow @loaders.gl/core @loaders.gl/tables/arrow
+yarn add apache-arrow @loaders.gl/core @loaders.gl/tables
 ```
 
 ### Troubleshooting
@@ -101,30 +101,9 @@ Most package managers have a way to check a dependency:
 
 ```bash
 $ yarn why apache-arrow
-├─ @loaders.gl/tables/arrow@workspace:modules/arrow [c7e01]
+├─ @loaders.gl/tables@workspace:modules/tables
 │  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 │
-├─ @loaders.gl/tables/arrow@workspace:modules/arrow
-│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
-│
-├─ @loaders.gl/geoarrow@workspace:modules/geoarrow [49c26]
-│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
-│
-├─ @loaders.gl/geoarrow@workspace:modules/geoarrow [eeaaa]
-│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
-│
-├─ @loaders.gl/geoarrow@workspace:modules/geoarrow
-│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
-│
-├─ @loaders.gl/core/schema-utils@workspace:modules/schema-utils [3820d]
-│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
-│
-├─ @loaders.gl/core/schema-utils@workspace:modules/schema-utils [b9e22]
-│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
-│
-├─ @loaders.gl/core/schema-utils@workspace:modules/schema-utils
-│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
-│
-└─ @loaders.gl/core/schema@workspace:modules/schema
+└─ @loaders.gl/core@workspace:modules/core
    └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
 ```

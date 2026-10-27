@@ -194,8 +194,8 @@ partial output on failure. ZIP64 and broader independent-viewer qualification re
 work. The browser example can also interrupt synchronous work by terminating its disposable
 worker. Applications own input qualification, download UI and object-URL lifetime.
 
-See [SLPKWriter](/docs/modules/i3s/api-reference/slpk-writer) and
-[Tiles3DArchiveWriter](/docs/modules/3d-tiles/api-reference/tiles-3d-archive-writer).
+See [SLPKWriter](/docs/modules/tiles-3d/i3s/api-reference/slpk-writer) and
+[Tiles3DArchiveWriter](/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-archive-writer).
 
 ## Original I3S mesh sources
 
@@ -420,7 +420,7 @@ the decoded encoded-image bytes count against the input gates. External image UR
 Other data-URI encodings/MIME types,
 other UV sets, texture-info extensions other than `KHR_texture_transform`,
 texture/image/sampler extensions and other texture maps are
-rejected. I3S preserves PNG/JPEG bytes and UVs, bakes the selected UV transform, and maps wrapping. Explicit texture filtering and vertex colors remain unsupported for I3S. GLB feature output supports one inline structural metadata table and one attribute-backed feature set. Scalar integer and float32/float64 columns and UTF-8 strings are supported; exact int64/uint64 values remain binary integers. Nullable scalar/string columns use an unused `noData` sentinel, failing if no collision-free sentinel exists. Nested/boolean/enum columns remain unsupported. Stable IDs must be unique; shared vertices are expanded to preserve triangle ownership through Draco. See [I3S mesh authoring](/docs/modules/i3s/api-reference/i3s-mesh-writer) for the
+rejected. I3S preserves PNG/JPEG bytes and UVs, bakes the selected UV transform, and maps wrapping. Explicit texture filtering and vertex colors remain unsupported for I3S. GLB feature output supports one inline structural metadata table and one attribute-backed feature set. Scalar integer and float32/float64 columns and UTF-8 strings are supported; exact int64/uint64 values remain binary integers. Nullable scalar/string columns use an unused `noData` sentinel, failing if no collision-free sentinel exists. Nested/boolean/enum columns remain unsupported. Stable IDs must be unique; shared vertices are expanded to preserve triangle ownership through Draco. See [I3S mesh authoring](/docs/modules/tiles-3d/i3s/api-reference/i3s-mesh-writer) for the
 precise target property/null profile.
 
 ### Browser example
@@ -913,7 +913,7 @@ const result = await convertPointCloudToPotree(decodedPoints, {
 ```
 
 The projection is written verbatim; it does not validate or transform the coordinates.
-Version and attribute support follow the [Potree writer](/docs/modules/potree/api-reference/potree-writer):
+Version and attribute support follow the [Potree writer](/docs/modules/tiles-3d/potree/api-reference/potree-writer):
 1.0–1.8 binary output or 2.0 DEFAULT output. Unsupported attributes and positional
 rounding outside the chosen version's precision gate fail; no attributes are silently
 removed. Modern output retains numeric attributes, including exact 64-bit IDs.
@@ -945,7 +945,7 @@ import {
   openPointCloudFile,
   extractMeshVertices
 } from '@loaders.gl/tile-converter/v5/browser';
-import {COPCWriter} from '@loaders.gl/copc';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc';
 
 // Opt in to one point per stored vertex of already placed triangle geometry.
 const points = extractMeshVertices(meshResource.mesh, {

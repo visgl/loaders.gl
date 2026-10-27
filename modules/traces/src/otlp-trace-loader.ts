@@ -1,3 +1,9 @@
+import {
+  serializeTraceWorkerResult,
+  deserializeTraceWorkerResult,
+  serializeTraceWorkerBatch,
+  deserializeTraceWorkerBatch
+} from './trace-worker-transport';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -20,6 +26,10 @@ const {preload: _preload, ...OtlpTraceLoaderMetadataWithoutPreload} = OtlpTraceL
 /** Parser-bearing loader for OTLP protobuf traces. */
 export const OtlpTraceLoaderWithParser = {
   ...OtlpTraceLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeTraceWorkerResult,
+  deserializeWorkerResult: deserializeTraceWorkerResult,
+  serializeWorkerBatch: serializeTraceWorkerBatch,
+  deserializeWorkerBatch: deserializeTraceWorkerBatch,
   parse: async (arrayBuffer: ArrayBuffer) => parseOtlpTraceProtobuf(new Uint8Array(arrayBuffer)),
   parseSync: (arrayBuffer: ArrayBuffer) => parseOtlpTraceProtobuf(new Uint8Array(arrayBuffer)),
   parseInBatches: parseOtlpTraceInBatches

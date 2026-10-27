@@ -56,8 +56,8 @@ shared loader selector choose between them:
 
 ```typescript
 import {load, registerLoaders} from '@loaders.gl/core';
-import {LASLoader} from '@loaders.gl/las';
-import {PCDLoader} from '@loaders.gl/pcd';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
 
 registerLoaders([LASLoader, PCDLoader]);
 

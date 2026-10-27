@@ -60,7 +60,7 @@ A conceptual example of a 3D Tiles loader calling the `GLTFLoader` with some add
 
 ```typescript
 import {parseFromContext} from '@loaders.gl/core/loader-utils';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 
 export async function parse3DTile(arrayBuffer, options, context) {
   const tile = {};

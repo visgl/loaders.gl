@@ -10,8 +10,8 @@ import type {
   GLTFNode,
   GLTFShape,
   GLTFWithBuffers
-} from '@loaders.gl/gltf';
-import {GLTFScenegraph} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {CachedUriResolver} from '@loaders.gl/core/loader-utils';

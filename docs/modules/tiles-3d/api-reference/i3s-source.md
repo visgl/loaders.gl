@@ -15,9 +15,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
   meta={['I3S source', 'Tileset3D', 'Lazy node loading']}
   links={[
-    {label: 'I3S loader', to: '/docs/modules/i3s/api-reference/i3s-loader'},
+    {label: 'I3S loader', to: '/docs/modules/tiles-3d/i3s/api-reference/i3s-loader'},
     {label: 'Tileset source contract', to: '/docs/modules/tiles-3d/api-reference/tileset-3d-source'},
-    {label: 'CRS in I3S', to: '/docs/modules/i3s/concepts/coordinate-reference-systems'}
+    {label: 'CRS in I3S', to: '/docs/modules/tiles-3d/i3s/concepts/coordinate-reference-systems'}
   ]}
 />
 
@@ -38,7 +38,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 
-The `I3SSource` class implements [`Tileset3DSource`](/docs/modules/tiles-3d/api-reference/tileset-3d-source) for datasets loaded with the [I3SLoader](/docs/modules/i3s/api-reference/i3s-loader).
+The `I3SSource` class implements [`Tileset3DSource`](/docs/modules/tiles-3d/api-reference/tileset-3d-source) for datasets loaded with the [I3SLoader](/docs/modules/tiles-3d/i3s/api-reference/i3s-loader).
 
 ## Usage
 
@@ -96,7 +96,7 @@ Set `Tileset3D`'s `spatial.targetCrs` to request geographic, projected, or WGS84
 Common Proj4 definitions work directly; custom definitions and datum grids must be registered
 before tileset initialization. Ground-relative modes require `spatial.terrainElevationProvider`;
 `relativeToScene` requires `spatial.sceneElevationProvider`. See [Coordinate reference systems in
-I3S](/docs/modules/i3s/concepts/coordinate-reference-systems) and [Vertical Coordinate Systems and
+I3S](/docs/modules/tiles-3d/i3s/concepts/coordinate-reference-systems) and [Vertical Coordinate Systems and
 Elevation Placement](/docs/developer-guide/vertical-coordinate-systems).
 
 ## Key Methods

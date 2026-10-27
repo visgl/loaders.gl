@@ -15,8 +15,8 @@ type BundleBoundaryNode = {
 const FORMAT_NODES: readonly BundleBoundaryNode[] = [
   {label: 'CSV', detail: 'delimited tables', to: '/docs/modules/tables/csv/formats/csv'},
   {label: 'Parquet', detail: 'columnar files', to: '/docs/modules/tables/parquet/formats/parquet'},
-  {label: 'glTF', detail: 'scene assets', to: '/docs/modules/gltf/formats/gltf'},
-  {label: 'LAS / LAZ', detail: 'point clouds', to: '/docs/modules/las/formats/las'}
+  {label: 'glTF', detail: 'scene assets', to: '/docs/modules/scene/gltf/formats/gltf'},
+  {label: 'LAS / LAZ', detail: 'point clouds', to: '/docs/modules/pointclouds/las/formats/las'}
 ];
 
 const RESULT_NODES: readonly BundleBoundaryNode[] = [

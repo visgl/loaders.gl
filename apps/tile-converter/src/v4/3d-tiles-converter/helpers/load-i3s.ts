@@ -8,7 +8,7 @@ import {
   parseSLPKArchive
 } from '@loaders.gl/tiles-3d/i3s';
 import {NodeFile} from '@loaders.gl/core/loader-utils';
-import {ZipFileSystem} from '@loaders.gl/zip';
+import {ZipFileSystem} from '@loaders.gl/archives/zip';
 
 export type SLPKUrlParts = {slpkFileName: string; internalFileName: string};
 

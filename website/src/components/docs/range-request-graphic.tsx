@@ -15,8 +15,8 @@ type RangeRequestNode = {
 const LOGICAL_REQUESTS: readonly RangeRequestNode[] = [
   {label: 'A tile', detail: 'visible scene content', to: '/docs/modules/tiles'},
   {label: 'A column', detail: 'selected table data', to: '/docs/modules/tables/parquet/formats/parquet'},
-  {label: 'A window', detail: 'selected raster pixels', to: '/docs/modules/geotiff/formats/geotiff'},
-  {label: 'A point region', detail: 'bounded cloud data', to: '/docs/modules/copc/formats/copc'}
+  {label: 'A window', detail: 'selected raster pixels', to: '/docs/modules/raster/geotiff/formats/geotiff'},
+  {label: 'A point region', detail: 'bounded cloud data', to: '/docs/modules/tiles-3d/copc/formats/copc'}
 ];
 
 const RANGE_RESULTS: readonly RangeRequestNode[] = [

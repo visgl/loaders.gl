@@ -9,14 +9,14 @@ import * as arrow from '@loaders.gl/tables/arrow/index';
 import * as csv from '@loaders.gl/tables/csv/index';
 import * as draco from '@loaders.gl/draco';
 import * as tables from '@loaders.gl/core/schema-utils';
-import * as gltf from '@loaders.gl/gltf';
+import * as gltf from '@loaders.gl/scene/gltf';
 import * as images from '@loaders.gl/images';
 import * as kml from '@loaders.gl/geospatial/kml/index';
-import * as las from '@loaders.gl/las';
-import * as obj from '@loaders.gl/obj';
-import * as pcd from '@loaders.gl/pcd';
-import * as ply from '@loaders.gl/ply';
-import * as zip from '@loaders.gl/zip';
+import * as las from '@loaders.gl/pointclouds/las';
+import * as obj from '@loaders.gl/scene/obj';
+import * as pcd from '@loaders.gl/pointclouds/pcd';
+import * as ply from '@loaders.gl/pointclouds/ply';
+import * as zip from '@loaders.gl/archives/zip';
 const modules = [
   threeDTiles,
   arrow,

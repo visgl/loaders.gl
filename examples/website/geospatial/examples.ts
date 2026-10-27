@@ -75,37 +75,37 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   GeoArrow: {
     Point: {
       format: 'geoarrow',
-      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/point.arrow`,
+      data: `${LOADERS_URL}/modules/core/test/geoarrow/data/geoarrow/point.arrow`,
       viewState: {longitude: 30, latitude: 10, zoom: 4.5}
     },
     'Point (WKT)': {
       format: 'geoarrow',
-      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/point_wkt.arrow`,
+      data: `${LOADERS_URL}/modules/core/test/geoarrow/data/geoarrow/point_wkt.arrow`,
       viewState: {longitude: 25, latitude: 25, zoom: 3}
     },
     'Point (WKB)': {
       format: 'geoarrow',
-      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/point_wkb.arrow`,
+      data: `${LOADERS_URL}/modules/core/test/geoarrow/data/geoarrow/point_wkb.arrow`,
       viewState: {longitude: 25, latitude: 25, zoom: 3}
     },
     LineString: {
       format: 'geoarrow',
-      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/line.arrow`,
+      data: `${LOADERS_URL}/modules/core/test/geoarrow/data/geoarrow/line.arrow`,
       viewState: {longitude: 25, latitude: 25, zoom: 3}
     },
     Polygon: {
       format: 'geoarrow',
-      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/polygon.arrow`,
+      data: `${LOADERS_URL}/modules/core/test/geoarrow/data/geoarrow/polygon.arrow`,
       viewState: {longitude: 25, latitude: 25, zoom: 3}
     },
     MultiPolygon: {
       format: 'geoarrow',
-      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/multipolygon.arrow`,
+      data: `${LOADERS_URL}/modules/core/test/geoarrow/data/geoarrow/multipolygon.arrow`,
       viewState: {longitude: 25, latitude: 25, zoom: 3}
     },
     'MultiPolygon Hole': {
       format: 'geoarrow',
-      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/multipolygon_hole.arrow`,
+      data: `${LOADERS_URL}/modules/core/test/geoarrow/data/geoarrow/multipolygon_hole.arrow`,
       viewState: {longitude: 25, latitude: 25, zoom: 3}
     },
     'GeometryCollection (WKB)': {
@@ -115,7 +115,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     },
     'MultiPolygon Hole (WKB)': {
       format: 'geoarrow',
-      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/multipolygon_hole_wkb.arrow`,
+      data: `${LOADERS_URL}/modules/core/test/geoarrow/data/geoarrow/multipolygon_hole_wkb.arrow`,
       viewState: {longitude: 25, latitude: 25, zoom: 3}
     }
   },

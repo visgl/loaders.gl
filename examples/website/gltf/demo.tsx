@@ -8,7 +8,7 @@ import {COORDINATE_SYSTEM, OrbitView} from '@deck.gl/core';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 import type {GLTFScenegraphs} from '@luma.gl/gltf';
 import {load} from '@loaders.gl/core';
-import {GLTFLoader, type GLTFWithBuffers} from '@loaders.gl/gltf';
+import {GLTFLoader, type GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {GLTF1_MODELS} from './components/gltf1-models';
 import {GLTF_BASE_URL, loadModelList} from './components/examples';
 
@@ -156,7 +156,7 @@ export default function GLTFDemo(): React.ReactElement {
         {hasLimitations && (
           <p style={{margin: '8px 0'}}>
             Legacy materials use an approximate appearance. Shader behavior is not converted.{' '}
-            <a href="/docs/modules/gltf/formats/gltf#gltf-1-to-gltf-2-conversion">
+            <a href="/docs/modules/scene/gltf/formats/gltf#gltf-1-to-gltf-2-conversion">
               Conversion support
             </a>
           </p>

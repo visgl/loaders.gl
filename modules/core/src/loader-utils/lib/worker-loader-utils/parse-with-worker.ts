@@ -4,6 +4,7 @@
 
 import {
   canProcessOnWorker,
+  canProcessOnWorkerInBatches,
   isBrowser,
   processOnWorker,
   processOnWorkerInBatches
@@ -43,18 +44,15 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
     )
   )
     return false;
+  // Multifile workers cannot transfer an application's custom fetch callback.
+  if (
+    loader.id === 'shapefile' &&
+    (typeof options?.fetch === 'function' || typeof options?.core?.fetch === 'function')
+  )
+    return false;
   const workerOptions = getWorkerOptions(options);
   const nodeWorkers = workerOptions._nodeWorkers;
   if (!isBrowser && !nodeWorkers) {
-    return false;
-  }
-
-  // LAS has no Arrow worker transport yet, so keep its Arrow path on the main thread.
-  if (
-    loader.id === 'las' &&
-    ((options as {las?: {shape?: string}} | undefined)?.las?.shape ?? 'arrow-table') ===
-      'arrow-table'
-  ) {
     return false;
   }
 
@@ -63,6 +61,27 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
   }
 
   return Boolean(canProcessOnWorker(loader, workerOptions));
+}
+
+/**
+ * Checks loader batch-parser transport capability and the selected worker's batch protocol.
+ * @param loader Loader declaring compatible batch parsing and transport.
+ * @param options Loader and worker selection options.
+ */
+export function canParseWithWorkerInBatches(
+  loader: Loader,
+  options?: StrictLoaderOptions
+): boolean {
+  // Encryption key callbacks must stay on the caller; JSON worker options omit functions.
+  const parquetOptions = options?.parquet as {keyRetriever?: unknown} | undefined;
+  if (loader.id === 'parquet' && typeof parquetOptions?.keyRetriever === 'function') {
+    return false;
+  }
+  return Boolean(
+    loader.workerInBatches &&
+      canParseWithWorker(loader, options) &&
+      canProcessOnWorkerInBatches(loader, getWorkerOptions(options))
+  );
 }
 
 /**
@@ -118,11 +137,15 @@ export async function parseWithWorker(
   parseOnMainThread?: ParseOnMainThread,
   signal?: AbortSignal
 ) {
-  const workerSignal = signal || getWorkerAbortSignal(options);
+  const workerSignal = signal || getWorkerAbortSignal(options) || context?.signal;
   const result = await processOnWorker(
     loader,
     data,
-    {...getWorkerOptions(options, loader), signal: workerSignal},
+    {
+      ...getWorkerOptions(options, loader),
+      signal: workerSignal,
+      onProgress: options?.onProgress || context?.reportProgress
+    },
     {
       process: async (input, processOptions, _workerContext, parseContext) => {
         if (!parseOnMainThread) {
@@ -168,11 +191,15 @@ export async function* parseWithWorkerInBatches(
   parseOnMainThread?: ParseOnMainThread,
   signal?: AbortSignal
 ): AsyncIterable<unknown> {
-  const workerSignal = signal || getWorkerAbortSignal(options);
+  const workerSignal = signal || getWorkerAbortSignal(options) || context?.signal;
   const outputIterator = processOnWorkerInBatches(
     loader,
     inputIterator,
-    {...getWorkerOptions(options), signal: workerSignal},
+    {
+      ...getWorkerOptions(options, loader),
+      signal: workerSignal,
+      onProgress: options?.onProgress || context?.reportProgress
+    },
     {
       process: async (input, processOptions, _workerContext, parseContext) => {
         if (!parseOnMainThread) {
@@ -204,6 +231,7 @@ export async function* parseWithWorkerInBatches(
 
 /** Returns the loader-specific abort signal used to cancel a worker job. */
 function getWorkerAbortSignal(options?: StrictLoaderOptions): AbortSignal | undefined {
+  if (options?.signal) return options.signal;
   const parquetSignal = (options as {parquet?: {signal?: unknown}} | undefined)?.parquet?.signal;
   if (typeof AbortSignal !== 'undefined' && parquetSignal instanceof AbortSignal) {
     return parquetSignal;
@@ -276,12 +304,20 @@ function resolveWorkerLoaders(
  * @param loader Loader whose parser will handle the worker request.
  */
 function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
+  const portableOptions = loader?.serializeWorkerOptions?.(options) || options;
   const optionsToSerialize = {
-    ...options,
-    ...(options.core ? {core: {...options.core, authentications: undefined}} : {})
+    ...portableOptions,
+    signal: undefined,
+    onProgress: undefined,
+    ...(portableOptions.core ? {core: {...portableOptions.core, authentications: undefined}} : {})
   };
   const serializedOptions = JSON.parse(
-    JSON.stringify(optionsToSerialize, (_key, value) => (typeof value === 'bigint' ? null : value))
+    JSON.stringify(optionsToSerialize, (_key, value) => {
+      if (typeof Headers !== 'undefined' && value instanceof Headers)
+        return Object.fromEntries(value.entries());
+      if (typeof AbortSignal !== 'undefined' && value instanceof AbortSignal) return undefined;
+      return typeof value === 'bigint' ? null : value;
+    })
   );
   restoreBigIntOptions(optionsToSerialize, serializedOptions);
   const workerOptions: Record<string, any> = {
@@ -317,8 +353,17 @@ function getSerializableLoaderContext(context?: LoaderContext) {
   if (!context) {
     return {};
   }
-  const {fetch, loaders, coreApi, _parse, _parseSync, _parseInBatches, ...serializableContext} =
-    context;
+  const {
+    fetch,
+    loaders,
+    coreApi,
+    signal,
+    reportProgress,
+    _parse,
+    _parseSync,
+    _parseInBatches,
+    ...serializableContext
+  } = context;
   return JSON.parse(JSON.stringify(serializableContext));
 }
 

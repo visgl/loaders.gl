@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {BinaryGeometryType} from '@loaders.gl/core/schema';
-import {GeoArrowBuilder, WKBBuilder} from '@loaders.gl/arrow-geometry';
+import {GeoArrowBuilder, WKBBuilder} from '@loaders.gl/core/arrow-geometry';
 import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;

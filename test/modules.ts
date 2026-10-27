@@ -7,7 +7,7 @@ import './init-tests';
 // Utility modules
 import '@loaders.gl/core/polyfills/test';
 import '@loaders.gl/core/worker-utils/test';
-import '@loaders.gl/geoarrow/test';
+import '@loaders.gl/core/geoarrow/test';
 
 // Core
 import '@loaders.gl/core/loader-utils/test';
@@ -26,21 +26,21 @@ import '@loaders.gl/scientific/test/zarr';
 
 // Pointcloud/Mesh Formats
 import '@loaders.gl/draco/test';
-// import '@loaders.gl/las/test';
-import '@loaders.gl/obj/test';
-import '@loaders.gl/pcd/test';
-import '@loaders.gl/ply/test';
+// import '@loaders.gl/pointclouds/las/test';
+import '@loaders.gl/scene/obj/test';
+import '@loaders.gl/pointclouds/pcd/test';
+import '@loaders.gl/pointclouds/ply/test';
 import '@loaders.gl/splats/test';
 import '@loaders.gl/raster/test/terrain';
 
 // Scenegraph Formats
-import '@loaders.gl/gltf/test';
+import '@loaders.gl/scene/gltf/test';
 
 // 3D Tile Formats
 import '@loaders.gl/tiles-3d/3d-tiles/test';
 import '@loaders.gl/tiles-3d/i3s/test';
 import '@loaders.gl/tiles-3d/test';
-import '@loaders.gl/potree/test';
+import '@loaders.gl/tiles-3d/potree/test';
 import '@loaders.gl/tiles/test';
 
 // Geospatial Formats
@@ -49,7 +49,7 @@ import '@loaders.gl/geospatial/flatgeobuf/test';
 import '@loaders.gl/geospatial/geopackage/test';
 import '@loaders.gl/geospatial/kml/test';
 import '@loaders.gl/geospatial/shapefile/test';
-import '@loaders.gl/wkt/test';
+import '@loaders.gl/geospatial/wkt/test';
 import '@loaders.gl/ogc/wms/test';
 import '@loaders.gl/ogc/stac/test';
 
@@ -77,4 +77,4 @@ import '@loaders.gl/xml/test';
 // Archive Formats
 import '@loaders.gl/compression/test';
 import '@loaders.gl/crypto/test';
-import '@loaders.gl/zip/test';
+import '@loaders.gl/archives/zip/test';

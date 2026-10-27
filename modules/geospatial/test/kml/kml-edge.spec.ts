@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
-import {ZipWriter} from '@loaders.gl/zip';
+import {ZipWriter} from '@loaders.gl/archives/zip';
 import {
   KMLWriter,
   KMZSourceLoader,

@@ -12,7 +12,8 @@ export const MATRIX_SET = {
     {id: '1', cellSize: 4, pointOfOrigin: [500000, 5200000], cornerOfOrigin: 'topLeft',
       tileWidth: 256, tileHeight: 256, matrixWidth: 1, matrixHeight: 2},
     {id: 'survey:detail', cellSize: 2, pointOfOrigin: [500000, 5200000], cornerOfOrigin: 'topLeft',
-      tileWidth: 256, tileHeight: 128, matrixWidth: 2, matrixHeight: 8}
+      tileWidth: 256, tileHeight: 128, matrixWidth: 2, matrixHeight: 8,
+      variableMatrixWidths: [{coalesce: 2, minTileRow: 1, maxTileRow: 2}]}
   ]
 };
 

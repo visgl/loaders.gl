@@ -77,7 +77,7 @@ import {TILE_REFINEMENT, createBoundingVolume} from '@loaders.gl/tiles-3d';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
 import {Progress} from './helpers/progress';
-import {composeHashFile, createZip} from '@loaders.gl/zip';
+import {composeHashFile, createZip} from '@loaders.gl/archives/zip';
 import {ConversionDump, ConversionDumpOptions, DumpMetadata} from '../lib/utils/conversion-dump';
 import {PromptModule} from 'inquirer';
 

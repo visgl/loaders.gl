@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {setLoaderOptions} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {
   encode,
@@ -26,6 +27,9 @@ import {
   type OtlpTrace,
   type OtlpTraceBatch
 } from '../src';
+
+// Parser ownership tests run instrumented source; worker conformance has its own suite.
+setLoaderOptions({worker: false});
 
 const TRACE_ID = '5b8efff798038103d269b633813fc60c';
 const SPAN_ID = 'eee19b7ec3c1b174';

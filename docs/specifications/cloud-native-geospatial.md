@@ -60,9 +60,9 @@ data from object storage without downloading a complete dataset.
 | --- | --- | --- |
 | FlatGeobuf | Indexed feature access | [FlatGeobuf](/docs/modules/geospatial/flatgeobuf) |
 | GeoParquet | Columnar rows with geospatial metadata | [GeoParquet](/docs/modules/tables/parquet/formats/geoparquet) |
-| COG | Tiled TIFF raster ranges | [GeoTIFF](/docs/modules/geotiff) |
-| COPC | Indexed LAS/LAZ point-cloud ranges | [COPC](/docs/modules/copc) |
-| PMTiles | Tile archive ranges | [PMTiles](/docs/modules/pmtiles) |
+| COG | Tiled TIFF raster ranges | [GeoTIFF](/docs/modules/raster/geotiff) |
+| COPC | Indexed LAS/LAZ point-cloud ranges | [COPC](/docs/modules/tiles-3d/copc) |
+| PMTiles | Tile archive ranges | [PMTiles](/docs/modules/tiles/pmtiles) |
 | Zarr | Chunked multidimensional arrays | [Zarr](/docs/modules/scientific/zarr) |
 | STAC | Catalog and asset discovery | [STAC](/docs/modules/ogc/stac) |
 

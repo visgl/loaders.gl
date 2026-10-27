@@ -10,6 +10,7 @@ export type {
   LoadWorker,
   WorkerObject,
   WorkerOptions,
+  WorkerProgress,
   WorkerContext,
   WorkerJobContext,
   Process,
@@ -41,7 +42,8 @@ export {
   processOnWorker,
   processOnWorkerInBatches,
   preloadWorker,
-  canProcessOnWorker
+  canProcessOnWorker,
+  canProcessOnWorkerInBatches
 } from './lib/worker-api/process-on-worker';
 export {createWorker} from './lib/worker-api/create-worker';
 

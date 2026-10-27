@@ -6,13 +6,15 @@ From the repository root, after `yarn` and `yarn build`:
 node examples-experimental/tile-matrix-fixed-frame/run.mjs
 ```
 
-This small offline walkthrough uses the real `OGCAPITilesSource` and regular-grid selector.
+This small offline walkthrough uses the real `OGCAPITilesSource` and TileMatrix selector.
 A caller-supplied frame in EPSG:32631 selects the `survey:detail` matrix independently of its
-array index. Its rectangular 256 × 128 pixel tiles and advertised limits yield only these requests:
+array index. Detail rows 1–2 coalesce two base columns into one tile. Coverage advertises only
+base column 1, so selection returns canonical column 0 while retaining the covered footprint.
+Its rectangular 256 × 128 pixel tiles and advertised limits yield only these requests:
 
 ```text
-/ogc/tiles/survey%3Adetail/1/1
-/ogc/tiles/survey%3Adetail/2/1
+/ogc/tiles/survey%3Adetail/1/0
+/ogc/tiles/survey%3Adetail/2/0
 ```
 
 The transport returns a landing document and tiny placeholder encoded payloads. It does not decode
@@ -26,11 +28,11 @@ would still need to compute an extent and resolution in the grid CRS, with appro
 
 | Capability | This example |
 | --- | --- |
-| Complete regular-grid metadata | Yes |
+| Complete grid metadata | Yes |
 | Fixed native-frame selection and limits | Yes |
 | Native matrix IDs through source requests | Yes |
 | Viewport conversion, arbitrary-CRS rendering | Not supplied |
-| Coalesced rows | Explicitly rejected by this selector |
+| Coalesced rows | Canonical columns and full native footprints |
 
 The frame uses the exact CRS identifier from metadata. Equivalent-looking URI/URN forms are not
 silently substituted. Native bounds and logical tile dimensions are returned without reprojection.

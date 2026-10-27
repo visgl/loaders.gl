@@ -398,10 +398,12 @@ test.each([
   expect(grid.matrices?.[0].tileSize).toEqual(tileHeight === undefined ? undefined : [256, 0]);
 });
 
-test('rejects coalesced rows instead of publishing incorrect rectangular geometry', () => {
+test('preserves coalesced rows in normalized geometry', () => {
   const document = structuredClone(WEB_MERCATOR_QUAD);
   document.tileMatrices[1].variableMatrixWidths = [{coalesce: 2, minTileRow: 0, maxTileRow: 0}];
-  expect(() => convertOGCTileMatrixSetToTileGrid(document)).toThrow('variableMatrixWidths');
+  expect(
+    convertOGCTileMatrixSetToTileGrid(document).tileMatrixSet?.matrices[1].variableMatrixWidths
+  ).toEqual(document.tileMatrices[1].variableMatrixWidths);
   document.tileMatrices[1].variableMatrixWidths = [];
   expect(convertOGCTileMatrixSetToTileGrid(document).tileMatrixSet).toBeDefined();
 });

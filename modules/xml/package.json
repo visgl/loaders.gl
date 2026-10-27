@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/xml",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Framework-independent loaders for the XML (eXtensible Markup Language) format",
   "license": "MIT",
   "type": "module",

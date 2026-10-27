@@ -12,7 +12,7 @@ const FORMAT_EXPORTS = {
   'tiles-3d/3d-tiles': ['Tiles3DFormat', 'Tile3DSubtreeFormat', 'ThreeTZFormat'],
   'tables/arrow': ['ArrowFormat'],
   'tables/bson': ['BSONFormat'],
-  copc: ['COPCFormat'],
+  'tiles-3d/copc': ['COPCFormat'],
   'tables/csv': ['CSVFormat'],
   tables: [
     'CSVFormat',
@@ -44,7 +44,7 @@ const FORMAT_EXPORTS = {
   'geospatial/flatgeobuf': ['FlatGeobufFormat'],
   'geospatial/geopackage': ['GeoPackageFormat'],
   raster: ['GeoTIFFFormat', 'OMETiffFormat', 'LERCFormat', 'TerrainFormat', 'QuantizedMeshFormat'],
-  gltf: ['GLTFFormat', 'GLBFormat'],
+  'scene/gltf': ['GLTFFormat', 'GLBFormat'],
   'tiles-3d/i3s': [
     'ArcGISWebSceneFormat',
     'I3SAttributeFormat',
@@ -57,16 +57,16 @@ const FORMAT_EXPORTS = {
   images: ['ImageFormat', 'ImageBitmapFormat'],
   'tables/json': ['JSONFormat', 'GeoJSONFormat', 'NDJSONFormat', 'NDGeoJSONFormat'],
   'geospatial/kml': ['KMLFormat', 'KMZFormat', 'GPXFormat', 'TCXFormat'],
-  las: ['LASFormat'],
+  'pointclouds/las': ['LASFormat'],
   'tiles/mlt': ['MLTFormat'],
   'tiles/mvt': ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
   scientific: ['NetCDFFormat'],
-  obj: ['OBJFormat', 'MTLFormat'],
+  'scene/obj': ['OBJFormat', 'MTLFormat'],
   'tables/parquet': ['ParquetFormat'],
-  pcd: ['PCDFormat'],
-  ply: ['PLYFormat'],
+  'pointclouds/pcd': ['PCDFormat'],
+  'pointclouds/ply': ['PLYFormat'],
   'tiles/pmtiles': ['PMTilesFormat'],
-  potree: ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
+  'tiles-3d/potree': ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
   'geospatial/shapefile': ['ShapefileFormat', 'SHPFormat', 'DBFFormat'],
   textures: [
     'BasisTextureFormat',
@@ -78,7 +78,7 @@ const FORMAT_EXPORTS = {
     'KTX2BasisTextureFormat'
   ],
   video: ['VideoFormat'],
-  wkt: ['WKTFormat', 'WKBFormat', 'HexWKBFormat', 'TWKBFormat', 'WKTCRSFormat'],
+  'geospatial/wkt': ['WKTFormat', 'WKBFormat', 'HexWKBFormat', 'TWKBFormat', 'WKTCRSFormat'],
   'ogc/wms': [
     'GMLFormat',
     'WMSCapabilitiesFormat',
@@ -93,7 +93,9 @@ const FORMAT_EXPORTS = {
     'WMSLayerDescriptionFormat'
   ],
   xml: ['XMLFormat', 'HTMLFormat'],
-  zip: ['ZipFormat']
+  archives: ['ZipFormat', 'TarFormat'],
+  'archives/zip': ['ZipFormat'],
+  'archives/tar': ['TarFormat']
 } as const;
 
 describe('Format exports', () => {

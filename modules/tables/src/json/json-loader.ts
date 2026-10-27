@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {serializeBinaryJSON, deserializeBinaryJSON} from './lib/json-binary-transport';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
@@ -20,6 +21,10 @@ const {preload: _JSONLoaderPreload, ...JSONLoaderMetadataWithoutPreload} = JSONL
 /** Loader for JSON documents, including tabular JSON and streaming table extraction. */
 export const JSONLoaderWithParser = {
   ...JSONLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeBinaryJSON,
+  deserializeWorkerResult: deserializeBinaryJSON,
+  serializeWorkerBatch: serializeBinaryJSON,
+  deserializeWorkerBatch: deserializeBinaryJSON,
   parse,
   parseTextSync,
   parseInBatches

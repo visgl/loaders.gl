@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {GLBLoader} from '@loaders.gl/gltf';
+import {GLBLoader} from '@loaders.gl/scene/gltf';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';

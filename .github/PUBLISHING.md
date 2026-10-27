@@ -1,6 +1,6 @@
-# Publishing COPC and Zarr
+# Publishing Zarr
 
-`@loaders.gl/copc` and `@loaders.gl/zarr` are public packages. Their versions follow
+`@loaders.gl/zarr` is a public package. Its version follows
 other loaders.gl packages. Publish 5.0 prereleases with the `beta` dist-tag.
 
 ## Bootstrap a package
@@ -17,9 +17,7 @@ yarn build-workers
 yarn test-node
 yarn test-headless
 yarn lint fix
-npm pack ./modules/copc --dry-run
 npm pack ./modules/zarr --dry-run
-npm publish ./modules/copc --access public --tag beta
 npm publish ./modules/zarr --access public --tag beta
 ```
 
@@ -33,9 +31,7 @@ Use npm 11.15.0 or newer with a 2FA-enabled maintainer account. Inspect existing
 relationships before creating one:
 
 ```sh
-npm trust list @loaders.gl/copc
 npm trust list @loaders.gl/zarr
-npm trust github @loaders.gl/copc --repo visgl/loaders.gl --file release.yml --allow-publish
 npm trust github @loaders.gl/zarr --repo visgl/loaders.gl --file release.yml --allow-publish
 ```
 
@@ -55,7 +51,7 @@ list` for each package.
 The existing `.github/workflows/release.yml` uses GitHub-hosted runners, a recent
 npm CLI, and `id-token: write`. Tagged releases on `master` or a `*-release` branch
 run tests and publish through `ocular-publish from-git`. The first subsequent
-release must succeed for both packages before OIDC publishing is verified end to
+release must succeed for Zarr before OIDC publishing is verified end to
 end. Never use a previously published version to test this workflow.
 
 See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) and

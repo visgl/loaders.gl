@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/zip';
+import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/archives/zip';
 
 /**
  * Class for handling information about 3tz file

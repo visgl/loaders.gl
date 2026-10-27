@@ -16,7 +16,7 @@ import type {
   GLTF_EXT_structural_metadata_GLTF,
   GLTF_EXT_structural_metadata_PropertyTable,
   GLTF_EXT_structural_metadata_PropertyTexture
-} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -66,7 +66,7 @@ import type {GLTFAttributesData, TextureImageProperties} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 
-import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
+import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/scene/gltf';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;

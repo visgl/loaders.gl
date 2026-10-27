@@ -1,6 +1,7 @@
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {
   canProcessOnWorker,
+  canProcessOnWorkerInBatches,
   processOnWorker,
   processOnWorkerInBatches,
   preloadWorker,
@@ -197,4 +198,136 @@ test('WorkerBody filters browser messages and manages listeners', async () => {
   expect(receivedMessages).toEqual([{type: 'done', payload: {result: 'accepted'}}]);
   await WorkerBody.removeEventListener(onMessage);
   await WorkerBody.removeEventListener(onMessage);
+});
+
+const progressWorkerSource = `
+self.onmessage = ({data}) => {
+  self.postMessage({source: 'loaders.gl', type: 'progress', payload: {progress: {phase: 'decode', completed: 1, total: 1, unit: 'tasks'}}});
+  self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: data.payload.input}});
+  self.postMessage({source: 'loaders.gl', type: 'progress', payload: {progress: {phase: 'late', completed: 2, unit: 'tasks'}}});
+};
+`;
+
+test('progress precedes completion, is not serialized, and stops at settlement', async () => {
+  const progress = vi.fn();
+  const result = await processOnWorker(NullWorker, 'done', {
+    source: progressWorkerSource,
+    onProgress: progress,
+    reuseWorkers: false
+  });
+  expect(result).toBe('done');
+  expect(progress.mock.calls).toEqual([[{phase: 'decode', completed: 1, total: 1, unit: 'tasks'}]]);
+});
+
+test('a throwing progress callback rejects and leaves the pool usable', async () => {
+  const reason = new Error('callback failed');
+  await expect(
+    processOnWorker(NullWorker, 'first', {
+      source: progressWorkerSource,
+      onProgress: () => {
+        throw reason;
+      }
+    })
+  ).rejects.toBe(reason);
+  await expect(processOnWorker(NullWorker, 'second', {source: progressWorkerSource})).resolves.toBe(
+    'second'
+  );
+});
+
+test('already aborted processing does not detach its input', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  const input = new ArrayBuffer(8);
+  await expect(processOnWorker(NullWorker, input, {signal: controller.signal})).rejects.toBe(
+    controller.signal.reason
+  );
+  expect(input.byteLength).toBe(8);
+});
+
+test('queued processing aborts promptly without transferring input or affecting the active job', async () => {
+  const firstController = new AbortController();
+  const secondController = new AbortController();
+  let markStarted!: () => void;
+  const started = new Promise<void>(resolve => {
+    markStarted = resolve;
+  });
+  const source = `self.onmessage = () => self.postMessage({source: 'loaders.gl', type: 'progress', payload: {progress: {phase: 'start', completed: 0, unit: 'tasks'}}});`;
+  const first = processOnWorker(NullWorker, 'active', {
+    source,
+    maxConcurrency: 1,
+    signal: firstController.signal,
+    onProgress: markStarted
+  });
+  const firstRejection = expect(first).rejects.toBe('stop active');
+  await started;
+  const input = new ArrayBuffer(8);
+  const second = processOnWorker(NullWorker, input, {
+    source,
+    maxConcurrency: 1,
+    signal: secondController.signal
+  });
+  secondController.abort('stop queued');
+  await expect(second).rejects.toBe('stop queued');
+  expect(input.byteLength).toBe(8);
+  firstController.abort('stop active');
+  await firstRejection;
+});
+
+test.each([
+  {
+    name: 'declared built-in worker',
+    descriptor: {workerInBatches: true},
+    options: {},
+    expected: true
+  },
+  {name: 'undeclared worker', descriptor: {}, options: {}, expected: false},
+  {
+    name: 'disabled worker',
+    descriptor: {workerInBatches: true},
+    options: {worker: false},
+    expected: false
+  },
+  {
+    name: 'disabled batching',
+    descriptor: {workerInBatches: true},
+    options: {workerInBatches: false},
+    expected: false
+  },
+  {
+    name: 'local test URL',
+    descriptor: {workerInBatches: true},
+    options: {_workerType: 'test'},
+    expected: true
+  },
+  {
+    name: 'unknown custom URL',
+    descriptor: {workerInBatches: true},
+    options: {null: {workerUrl: 'custom.js'}},
+    expected: false
+  },
+  {
+    name: 'declared custom URL',
+    descriptor: {workerInBatches: true},
+    options: {null: {workerUrl: 'custom.js'}, workerInBatches: true},
+    expected: true
+  },
+  {
+    name: 'unknown inline source',
+    descriptor: {workerInBatches: true},
+    options: {source: 'custom'},
+    expected: false
+  },
+  {
+    name: 'declared inline source',
+    descriptor: {},
+    options: {source: 'custom', workerInBatches: true},
+    expected: true
+  }
+])('batch capability: $name', ({descriptor, options, expected}) => {
+  expect(
+    canProcessOnWorkerInBatches(
+      {...NullWorker, worker: true, ...descriptor},
+      {worker: true, ...options}
+    )
+  ).toBe(expected);
 });

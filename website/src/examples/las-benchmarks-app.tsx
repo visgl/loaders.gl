@@ -7,16 +7,16 @@ import React, {useEffect, useState} from 'react';
 import {Bench, type BenchProps, type LogEntry, type LogFunction} from 'probe.gl/bench';
 import {BenchResults} from '../components/bench-results';
 import {parse, parseInBatches} from '@loaders.gl/core';
-import {LASLoaderWithParser as LASLoader} from '@loaders.gl/las/las-loader';
-import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/las/lazperf-loader';
-import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/las/laz-rs-loader';
+import {LASLoaderWithParser as LASLoader} from '@loaders.gl/pointclouds/las/las-loader';
+import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/las/lazperf-loader';
+import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/las/laz-rs-loader';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
 // probe.gl/bench reads this process-wide configuration without guarding its existence.
 globalThis.probe ||= {};
 
 const FIXTURE_BASE_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/las/test/data';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/pointclouds/test/las/data';
 const LAZ_1_2_PDRF_3_URL = `${FIXTURE_BASE_URL}/indoor.laz`;
 const LAZ_1_4_PDRF_7_URL = `${FIXTURE_BASE_URL}/ellipsoid-1.4.laz`;
 const LAZ_1_2_PDRF_3 = 3;

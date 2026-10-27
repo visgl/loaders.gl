@@ -11,7 +11,7 @@ export {
   inferGeoArrowEncodingFromArrowType,
   inferGeoArrowDimensionFromArrowType,
   inferGeoArrowCoordinateLayoutFromArrowType
-} from '@loaders.gl/arrow-geometry';
+} from '@loaders.gl/core/arrow-geometry';
 export type {
   GeoArrowBuilderEncoding,
   GeoArrowCoordinateTransform,
@@ -36,4 +36,4 @@ export type {
   WKBGeometryWriter,
   WKBCoordinateTransform,
   MakeGeoArrowColumnFromArrowVectorOptions
-} from '@loaders.gl/arrow-geometry';
+} from '@loaders.gl/core/arrow-geometry';

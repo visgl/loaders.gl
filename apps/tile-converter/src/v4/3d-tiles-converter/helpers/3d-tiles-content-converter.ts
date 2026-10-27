@@ -10,7 +10,7 @@ import {
   createExtStructuralMetadata,
   createExtMeshFeatures,
   type PropertyAttribute
-} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
 import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {isTypedArray} from '@math.gl/core/types';

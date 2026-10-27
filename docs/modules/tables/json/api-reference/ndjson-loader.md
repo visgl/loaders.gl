@@ -136,3 +136,13 @@ Supports the table category options such as `batchSize`.
 | `ndjson.arrowConversion` | `object`                | strict recovery policy | Optional Arrow conversion policy. Supports `onTypeMismatch`, `onMissingField`, `onExtraField`, `integerConversion`, and `logRecoveries`. |
 | `ndjson.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'` | `'never'` | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
 | `json.shape`             | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `'arrow-table'` | Deprecated alias for `ndjson.shape`; `ndjson.shape` takes precedence. |
+
+## Worker batches
+
+This loader supports stateful worker batch parsing with `core.worker: true`, cancellation via
+`signal`, and decoded-row progress via `onProgress`. See [JSON worker batches](/docs/modules/tables/json#parsing-batches-in-workers)
+for streaming behavior, schemas, backpressure, and Node/custom-worker options.
+
+Arrow tables return as directly transferred column buffers. Row tables and container metadata return as
+binary JSON frames decoded on the caller, preserving heterogeneous values without Arrow coercion.
+Decoded row objects are never structured-cloned across the worker boundary.

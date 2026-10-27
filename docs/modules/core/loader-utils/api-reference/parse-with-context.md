@@ -47,7 +47,7 @@ its loader context. They are exported from `@loaders.gl/core/loader-utils`.
 
 ```typescript
 import {parseFromContext} from '@loaders.gl/core/loader-utils';
-import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 
 async function parseEmbeddedMesh(arrayBuffer, options, context) {
   const meshBytes = arrayBuffer.slice(100, 200);

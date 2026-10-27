@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
-import type {GLTFMaterial, GLTFImage, GLTFWithBuffers} from '@loaders.gl/gltf';
-import {GLTFScenegraph} from '@loaders.gl/gltf';
+import type {GLTFMaterial, GLTFImage, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshTileSampler, MeshTileTexture, MeshTileTextureTransform} from './mesh.js';
 

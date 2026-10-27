@@ -1,4 +1,4 @@
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {WorkerPool} from '@loaders.gl/core/worker-utils';
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
@@ -123,4 +123,79 @@ test('WorkerPool destroy rejects queued jobs with its reason', async () => {
 
   await expect(queuedJobPromise).rejects.toBe(reason);
   await expect(activeJob.result).rejects.toBe(reason);
+});
+
+test('queued cancellation settles before an active job and removes its listener', async () => {
+  const pool = new WorkerPool({source: testWorkerSource, maxConcurrency: 1});
+  try {
+    const active = await pool.startJob('active');
+    const controller = new AbortController();
+    const removeListener = vi.spyOn(controller.signal, 'removeEventListener');
+    const queued = pool.startJob('queued', undefined, undefined, controller.signal);
+    const reason = new Error('queued cancellation');
+    controller.abort(reason);
+    await expect(queued).rejects.toBe(reason);
+    expect(active.isRunning).toBe(true);
+    expect(removeListener).toHaveBeenCalledWith('abort', expect.any(Function));
+    active.done('finished');
+    const next = await pool.startJob('next');
+    expect(next.workerThread).toBe(active.workerThread);
+    next.done('finished');
+  } finally {
+    pool.destroy();
+  }
+});
+
+test('running cancellation replaces only its worker and completion wins a later abort', async () => {
+  const pool = new WorkerPool({source: testWorkerSource, maxConcurrency: 2});
+  try {
+    const controller = new AbortController();
+    const removeListener = vi.spyOn(controller.signal, 'removeEventListener');
+    const active = await pool.startJob('cancel', undefined, undefined, controller.signal);
+    const other = await pool.startJob('other');
+    controller.abort(null);
+    await expect(active.result).rejects.toBe(null);
+    expect(active.workerThread.terminated).toBe(true);
+    expect(other.isRunning).toBe(true);
+    expect(removeListener).toHaveBeenCalledWith('abort', expect.any(Function));
+    const completedController = new AbortController();
+    const next = await pool.startJob(
+      'replacement',
+      undefined,
+      undefined,
+      completedController.signal
+    );
+    expect(next.workerThread).not.toBe(active.workerThread);
+    next.done('complete');
+    completedController.abort();
+    await expect(next.result).resolves.toBe('complete');
+    expect(next.workerThread.terminated).toBe(false);
+    other.done('complete');
+  } finally {
+    pool.destroy();
+  }
+});
+
+test('an already aborted job does not create a worker', async () => {
+  const loadWorker = vi.fn();
+  const pool = new WorkerPool({loadWorker});
+  const controller = new AbortController();
+  controller.abort('cancelled');
+  await expect(pool.startJob('cancelled', undefined, undefined, controller.signal)).rejects.toBe(
+    'cancelled'
+  );
+  expect(loadWorker).not.toHaveBeenCalled();
+  pool.destroy();
+});
+
+test('explicit undefined job abort reasons are preserved', async () => {
+  const pool = new WorkerPool({source: testWorkerSource});
+  try {
+    const job = await pool.startJob('undefined reason');
+    job.abort(undefined);
+    await expect(job.result).rejects.toBeUndefined();
+    expect(job.workerThread.terminated).toBe(true);
+  } finally {
+    pool.destroy();
+  }
 });

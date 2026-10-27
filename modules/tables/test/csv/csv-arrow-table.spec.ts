@@ -896,6 +896,6 @@ test('CSVLoader#worker transport serializes and hydrates Arrow table results', a
   expect(serializedWithDeprecatedOption.data.transport).toBe('arrow-js');
 
   const plainResult = {shape: 'object-row-table', data: [{city: 'Paris'}]};
-  expect(serializeCSVWorkerResult(plainResult)).toBe(plainResult);
-  expect(deserializeCSVWorkerResult(plainResult)).toBe(plainResult);
+  expect(() => serializeCSVWorkerResult(plainResult)).toThrow('Arrow table output');
+  expect(() => deserializeCSVWorkerResult(plainResult)).toThrow('Arrow column transport');
 });

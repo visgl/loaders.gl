@@ -68,3 +68,24 @@ const data = await load(url, GeoArrowLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+
+## Worker parsing
+
+Atomic parsing and `parseInBatches()` support workers with `core.worker: true`. Each batch session
+retains one Arrow IPC reader, requests input on demand, and waits for the consumer before advancing
+past an output batch. Batches retain the existing `arrow-table` output shape. Atomic parsing converts
+to the requested output shape on the caller after hydrating the transferred Arrow data.
+
+Workers return owned Arrow column buffers, preserving dictionaries and extension metadata
+without transferring buffers still referenced by the reader. Decoded JSON rows and GeoJSON features
+are never structured-cloned across the worker boundary. Small table and protocol descriptors accompany
+the buffers. Input chunks can still be large; backpressure does not bound an individual input chunk.
+
+Pass `signal` to cancel a queued or running job. Breaking from iteration closes the input and releases
+the worker. Iterator cleanup is best effort and does not delay cancellation. Transferred inputs remain
+detached after cancellation.
+
+Browser workers use the published asset fallback; set `arrow.workerUrl` to self-host the matching
+worker bundle. Node worker threads require `core._nodeWorkers: true` and use the packaged CommonJS
+bundle. Set `core.workerInBatches: false` to keep batches on the caller. Custom worker URLs require
+`core.workerInBatches: true` to declare compatibility with the batch protocol.

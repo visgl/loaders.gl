@@ -13,15 +13,15 @@ type PointCloudFormatNode = {
 };
 
 const INPUTS: readonly PointCloudFormatNode[] = [
-  {label: 'LAS', detail: 'uncompressed records', to: '/docs/modules/las/formats/las'},
-  {label: 'LAZ', detail: 'lossless compression', to: '/docs/modules/las/formats/las#las-laz-and-copc'},
-  {label: 'COPC', detail: 'hierarchy + ranges', to: '/docs/modules/copc/formats/copc'}
+  {label: 'LAS', detail: 'uncompressed records', to: '/docs/modules/pointclouds/las/formats/las'},
+  {label: 'LAZ', detail: 'lossless compression', to: '/docs/modules/pointclouds/las/formats/las#las-laz-and-copc'},
+  {label: 'COPC', detail: 'hierarchy + ranges', to: '/docs/modules/tiles-3d/copc/formats/copc'}
 ];
 
 const OUTPUTS: readonly PointCloudFormatNode[] = [
   {label: 'Arrow point table', detail: 'typed columns', to: '/docs/developer-guide/apache-arrow'},
   {label: 'Mesh / point cloud', detail: 'render-ready positions', to: '/docs/specifications/category-mesh'},
-  {label: 'LAS / LAZ writer', detail: 'exchange the records', to: '/docs/modules/las/api-reference/las-writer'}
+  {label: 'LAS / LAZ writer', detail: 'exchange the records', to: '/docs/modules/pointclouds/las/api-reference/las-writer'}
 ];
 
 /** Shows how LAS-family files preserve point records across compressed, cloud, and table paths. */

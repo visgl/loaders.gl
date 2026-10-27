@@ -1,3 +1,9 @@
+import {
+  serializeTraceWorkerResult,
+  deserializeTraceWorkerResult,
+  serializeTraceWorkerBatch,
+  deserializeTraceWorkerBatch
+} from './trace-worker-transport';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -23,6 +29,10 @@ const {preload: _preload, ...PerfettoTraceLoaderMetadataWithoutPreload} =
 /** Parser-bearing loader for Perfetto protobuf traces. */
 export const PerfettoTraceLoaderWithParser = {
   ...PerfettoTraceLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeTraceWorkerResult,
+  deserializeWorkerResult: deserializeTraceWorkerResult,
+  serializeWorkerBatch: serializeTraceWorkerBatch,
+  deserializeWorkerBatch: deserializeTraceWorkerBatch,
   parse: async (arrayBuffer: ArrayBuffer, options?: PerfettoTraceLoaderOptions) =>
     parsePerfettoTrace(new Uint8Array(arrayBuffer), options?.perfettoTrace),
   parseSync: (arrayBuffer: ArrayBuffer, options?: PerfettoTraceLoaderOptions) =>

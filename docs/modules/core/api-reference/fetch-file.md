@@ -119,7 +119,7 @@ The `Response` object from `fetchFile` is usually passed to `parse` as follows:
 
 ```typescript
 import {fetchFile, parse} from '@loaders.gl/core';
-import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 
 const data = await parse(fetchFile(url), OBJLoader);
 ```
@@ -128,7 +128,7 @@ Note that if you don't need the extra features in `fetchFile`, you can just use 
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 
 const data = await parse(fetch(url), OBJLoader);
 ```

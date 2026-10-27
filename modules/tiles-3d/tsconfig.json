@@ -26,16 +26,19 @@
       "path": "../draco"
     },
     {
-      "path": "../gltf"
+      "path": "../scene"
     },
     {
       "path": "../images"
     },
     {
+      "path": "../pointclouds"
+    },
+    {
       "path": "../textures"
     },
     {
-      "path": "../zip"
+      "path": "../archives"
     }
   ]
 }

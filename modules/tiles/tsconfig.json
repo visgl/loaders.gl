@@ -28,9 +28,6 @@
       "path": "../tables"
     },
     {
-      "path": "../arrow-geometry"
-    },
-    {
       "path": "../compression"
     },
     {

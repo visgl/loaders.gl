@@ -21,6 +21,7 @@ yarn build
 yarn workspace clustering-loaders-example build
 ```
 
-The dataset is generated locally with a fixed seed. The CARTO basemap requires network access;
-clustering and member selection do not fetch data. The website embeds this app at
+The dataset is generated locally with a fixed seed. The OpenFreeMap basemap requires network access;
+clustering and member selection do not fetch data. The app mounts Deck and MapLibre directly and
+uses deck.gl-community panels for its controls, without a React renderer. The website embeds this app at
 `/examples/geospatial/clustering`.

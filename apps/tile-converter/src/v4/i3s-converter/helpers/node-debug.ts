@@ -1,5 +1,9 @@
 import type {Mbs, Node3DIndexDocument, Obb} from '@loaders.gl/tiles-3d/i3s';
-import {OrientedBoundingBox, BoundingSphere} from '@math.gl/geometry/culling';
+import {
+  OrientedBoundingBox,
+  BoundingSphere,
+  makeOrientedBoundingBoxFromQuaternion
+} from '@math.gl/geometry/culling';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -85,7 +89,7 @@ function createBoundingSphereFromTileMbs(mbs: Mbs): BoundingSphere {
  */
 function createBoundingBoxFromTileObb(obb: Obb): OrientedBoundingBox {
   const {center, halfSize, quaternion} = obb;
-  return new OrientedBoundingBox().fromCenterHalfSizeQuaternion(center, halfSize, quaternion);
+  return makeOrientedBoundingBoxFromQuaternion(center, halfSize, quaternion);
 }
 
 /**
