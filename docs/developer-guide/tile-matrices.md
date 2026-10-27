@@ -146,7 +146,7 @@ not to a renderer's assumption that every tile exists.
 
 ## Explicit frame selection
 
-For complete regular or coalesced grids, [`selectTileMatrixTiles`](/docs/modules/tiles/api-reference/tile-matrix) accepts an extent and resolution already expressed in the grid CRS, applies advertised limits, and returns native source requests. Our current thinking is that this may be a useful renderer-independent boundary. It does not yet connect arbitrary matrix sets to `Tileset2D` or enable projected rendering. The fixed-frame OGC walkthrough provides a small, tested example for discussing that next step.
+For complete regular or coalesced grids, [`selectTileMatrixTiles`](/docs/modules/tiles/api-reference/tile-matrix) accepts an extent and resolution already expressed in the grid CRS, applies advertised limits, and returns native source requests. Our current thinking is that this may be a useful renderer-independent boundary. An explicit native-frame adapter connects this selector to the shared `Tileset2D` cache without inferring parents. Viewport conversion and projected rendering remain separate; the fixed-frame OGC walkthrough provides a small, tested request example.
 
 
 ## Shared validation and coalesced requests

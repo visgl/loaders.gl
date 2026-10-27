@@ -1,84 +1,16 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import {validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
+import {getXYZTileGridOptions} from '@loaders.gl/core/loader-utils/tile-grid';
 import type {TileSourceMetadata} from '@loaders.gl/core/loader-utils';
-
-/** Standard identifiers for the same Web Mercator CRS returned by tile services. */
-const WEB_MERCATOR_COORDINATE_REFERENCE_SYSTEMS = new Set([
-  'EPSG:3857',
-  'urn:ogc:def:crs:EPSG::3857',
-  'urn:x-ogc:def:crs:EPSG::3857',
-  'http://www.opengis.net/def/crs/EPSG/0/3857',
-  'https://www.opengis.net/def/crs/EPSG/0/3857'
-]);
+import type {XYZTileGridOptions} from '@loaders.gl/core/loader-utils/tile-grid';
 
 /** Options supported by the default deck.gl XYZ selector. */
-export type TileGridLayerOptions = {
-  /** Minimum native zoom. */
-  minZoom: number;
-  /** Maximum native zoom. */
-  maxZoom: number;
-  /** Logical square tile size. */
-  tileSize: number;
-};
+export type TileGridLayerOptions = XYZTileGridOptions;
 
 /** Rejects incompatible complete grids rather than rendering them in unrelated XYZ geometry. */
 export function getTileGridLayerOptions(
   metadata?: TileSourceMetadata | null
 ): TileGridLayerOptions {
-  const options = {
-    minZoom: metadata?.minZoom ?? 0,
-    maxZoom: metadata?.maxZoom ?? 30,
-    tileSize: 256
-  };
-  if (metadata?.tileGrid) validateTileGrid(metadata.tileGrid);
-  const set = metadata?.tileGrid?.tileMatrixSet;
-  if (!set) {
-    if (metadata?.tileGrid?.matrices?.some(matrix => matrix.variableMatrixWidths?.length)) {
-      throw new Error('TileSourceLayer requires a custom tile selector for coalesced rows.');
-    }
-    return options;
-  }
-  if (!WEB_MERCATOR_COORDINATE_REFERENCE_SYSTEMS.has(set.crs) || !set.matrices.length)
-    throw new Error(
-      'TileSourceLayer requires canonical Web Mercator XYZ geometry; use a custom tile selector and compatible projection.'
-    );
-  let previousZoom: number | undefined;
-  for (const matrix of set.matrices) {
-    const zoom = Math.log2(matrix.matrixSize[0]);
-    const size = matrix.tileSize[0];
-    const halfWorld = 20037508.342789244;
-    if (
-      Boolean(matrix.variableMatrixWidths?.length) ||
-      !Number.isInteger(zoom) ||
-      zoom < 0 ||
-      zoom > 31 ||
-      matrix.id !== String(zoom) ||
-      matrix.matrixSize[1] !== matrix.matrixSize[0] ||
-      matrix.cornerOfOrigin !== 'topLeft' ||
-      !Number.isSafeInteger(size) ||
-      size <= 0 ||
-      size !== matrix.tileSize[1] ||
-      (previousZoom !== undefined && (zoom !== previousZoom + 1 || size !== options.tileSize)) ||
-      !isClose(matrix.origin[0], -halfWorld) ||
-      !isClose(matrix.origin[1], halfWorld) ||
-      !isClose(matrix.resolution, (halfWorld * 2) / (size * 2 ** zoom)) ||
-      !isClose(matrix.resolutionY ?? matrix.resolution, matrix.resolution)
-    ) {
-      throw new Error(
-        'TileSourceLayer requires contiguous canonical XYZ levels; use a custom tile selector for this grid.'
-      );
-    }
-    if (previousZoom === undefined) options.minZoom = zoom;
-    options.maxZoom = zoom;
-    options.tileSize = size;
-    previousZoom = zoom;
-  }
-  return options;
-}
-
-/** Compares canonical coordinates with a small relative serialization tolerance. */
-function isClose(actual: number, expected: number): boolean {
-  return Number.isFinite(actual) && Math.abs(actual - expected) <= Math.abs(expected) * 1e-10;
+  return getXYZTileGridOptions(metadata).options;
 }

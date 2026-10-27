@@ -36,8 +36,30 @@ export type Tileset2DTileContext<ViewStateT> = {
 
 /** Adapter used by {@link Tileset2D} to compute traversal and tile bounds. */
 export type Tileset2DAdapter<ViewStateT> = {
+  /** Whether a source's geographic metadata bounding box can be used as traversal extent. */
+  useSourceExtent?: boolean;
+  /** Validates a caller-supplied extent before traversal. */
+  validateExtent?: (extent: readonly number[]) => void;
   /** Returns tile indices that should be selected for one traversal context. */
   getTileIndices: (context: Tileset2DTraversalContext<ViewStateT>) => TileIndex[];
+  /** Normalizes an index before cache lookup and source loading. */
+  resolveTileIndex?: (index: TileIndex) => TileIndex;
+  /** Returns a source/grid-scoped cache ID; omitted uses the legacy XYZ ID. */
+  getTileId?: (index: TileIndex) => string;
+  /** Returns an established parent, or null when no parent relationship is known. */
+  getParentIndex?: (index: TileIndex) => TileIndex | null;
+  /** Returns native metadata carried to the tile header and source request. */
+  getTileMetadata?: (
+    context: Tileset2DTileContext<ViewStateT>,
+    index: TileIndex
+  ) => {
+    /** Native matrix identifier. */
+    tileMatrix?: string;
+    /** Native CRS identifier. */
+    crs?: string;
+    /** Logical tile dimensions in pixels. */
+    tileSize?: readonly [number, number];
+  };
   /** Returns the structured bounding box for one tile index. */
   getTileBoundingBox: (
     context: Tileset2DTileContext<ViewStateT>,

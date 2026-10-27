@@ -530,3 +530,5 @@ export type {
 } from './lib/sources/tile-grid';
 
 export {createWebMercatorTileGrid, resolveXYZTileParameters} from './lib/sources/xyz-grid';
+export {getXYZTileGridOptions} from './lib/sources/xyz-grid-options';
+export type {XYZTileGridAssessment, XYZTileGridOptions} from './lib/sources/xyz-grid-options';

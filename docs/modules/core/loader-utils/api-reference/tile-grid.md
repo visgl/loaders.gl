@@ -61,3 +61,13 @@ math.gl validation, including divisibility, disjoint bands and representable ext
 Current thinking is to keep these source checks small and use upstream geometry APIs. A prepared
 query/cache abstraction should follow workload measurements and explicit metadata invalidation
 semantics; these helpers validate the supplied data on each call.
+
+
+## `getXYZTileGridOptions(metadata?)`
+
+Assesses metadata for a default Web Mercator XYZ selector and returns `{status, options}`. A
+`compatible` result means complete geometry matches the supported canonical XYZ contract;
+`unknown` means complete geometry was not advertised and preserves legacy zoom/tile-size defaults.
+Invalid metadata, coalesced partial rows and incompatible complete geometry throw rather than
+silently treating them as XYZ. Unknown metadata is not proof of compatibility. This shared helper
+is available from `@loaders.gl/core/loader-utils/tile-grid`; it does not enable projected rendering.
