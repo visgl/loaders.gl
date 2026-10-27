@@ -102,6 +102,7 @@ Key options:
 - `zoomOffset`: integer zoom adjustment
 - `onTileLoad`: callback after a tile loads successfully
 - `onTileUnload`: callback after a tile is evicted
+- `onTileDiscard`: callback with the tile and discarded content when an aborted or superseded request nevertheless succeeds. Use the content argument to release resources; `tile.content` may already contain a newer result. The callback configured when the request started owns that result. No automatic disposal occurs if no callback is provided.
 - `onTileError`: callback after a tile load fails
 
 ## Properties
@@ -182,6 +183,8 @@ for example with `reloadAll()`.
 implementation. Its required `getTileIndices(context)` and `getTileBoundingBox(context, index)`
 retain the deck.gl-community-style traversal contract. The optional hooks extend that contract:
 
+- `useSourceExtent: false` prevents a source's geographic metadata bounds from being mistaken for
+  a native projected extent. `validateExtent(extent)` can reject unsupported explicit extents.
 - `resolveTileIndex(index)` canonicalizes an index before cache lookup and source loading.
 - `getTileId(index)` returns a stable source/grid-scoped cache key.
 - `getTileMetadata(context, index)` supplies `tileMatrix`, `crs` and logical `[width, height]`.

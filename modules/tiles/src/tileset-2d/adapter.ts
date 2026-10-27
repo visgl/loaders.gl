@@ -36,6 +36,10 @@ export type Tileset2DTileContext<ViewStateT> = {
 
 /** Adapter used by {@link Tileset2D} to compute traversal and tile bounds. */
 export type Tileset2DAdapter<ViewStateT> = {
+  /** Whether a source's geographic metadata bounding box can be used as traversal extent. */
+  useSourceExtent?: boolean;
+  /** Validates a caller-supplied extent before traversal. */
+  validateExtent?: (extent: readonly number[]) => void;
   /** Returns tile indices that should be selected for one traversal context. */
   getTileIndices: (context: Tileset2DTraversalContext<ViewStateT>) => TileIndex[];
   /** Normalizes an index before cache lookup and source loading. */

@@ -14,6 +14,8 @@ export type Tile2DLoadDataProps<DataT = any> = {
   getData: (props: TileLoadProps) => Promise<DataT | null> | DataT | null;
   /** Callback fired after tile content resolves successfully. */
   onLoad: (tile: SharedTile2DHeader<DataT>) => void;
+  /** Callback fired when canceled or superseded work returns a non-null payload. */
+  onDiscard?: (content: DataT, tile: SharedTile2DHeader<DataT>) => void;
   /** Callback fired after tile content fails to load. */
   onError: (error: any, tile: SharedTile2DHeader<DataT>) => void;
 };
@@ -133,11 +135,13 @@ export class SharedTile2DHeader<DataT = any> {
     getData,
     requestScheduler,
     onLoad,
+    onDiscard,
     onError
   }: Tile2DLoadDataProps<DataT>): Promise<void> {
     /** Publishes only the current, uncanceled request's content or error. */
     const completeLoad = (tileData: DataT | null, error: unknown, loaderId: number): void => {
       if (loaderId !== this._loaderId || this._isCancelled) {
+        if (tileData != null && !error) onDiscard?.(tileData, this);
         return;
       }
 

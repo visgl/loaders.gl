@@ -117,7 +117,12 @@ test('source and adapter changes invalidate cached content and stale metadata', 
   const oldSource = {getMetadata: () => oldMetadata, getTileData: async () => 'old'};
   const newSource = {getMetadata: async () => ({minZoom: 3}), getTileData: async () => 'new'};
   const adapter = createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'content-v1'});
-  const tileset = new Tileset2D({tileSource: oldSource as any, adapter});
+  const cleanupOwners: string[] = [];
+  const tileset = new Tileset2D({
+    tileSource: oldSource as any,
+    adapter,
+    onTileUnload: () => cleanupOwners.push('old')
+  });
   const [index] = tileset.getTileIndices({viewState: FRAME, zRange: null});
   const first = tileset.getTile(index, true);
   await first.data;
@@ -126,8 +131,9 @@ test('source and adapter changes invalidate cached content and stale metadata', 
   tileset.updateConsumer(consumer, [first], [first]);
   const unloaded: string[] = [];
   tileset.subscribe({onTileUnload: tile => unloaded.push(tile.id)});
-  tileset.setOptions({tileSource: newSource as any});
+  tileset.setOptions({tileSource: newSource as any, onTileUnload: () => cleanupOwners.push('new')});
   expect(unloaded).toEqual([first.id]);
+  expect(cleanupOwners).toEqual(['old']);
   expect(tileset.tiles).toEqual([]);
   expect(tileset.selectedTiles).toEqual([]);
   resolveOldMetadata({minZoom: 99});
@@ -208,9 +214,12 @@ test('switching a source aborts pending requests and suppresses their late resul
     }
   };
   const replacement = {getMetadata: async () => ({}), getTileData: async () => 'new'};
+  const oldDiscards: string[] = [];
+  const newDiscards: string[] = [];
   const tileset = new Tileset2D({
     tileSource: oldSource as any,
-    adapter: createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'source'})
+    adapter: createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'source'}),
+    onTileDiscard: (_tile, content) => oldDiscards.push(content as string)
   });
   const [index] = tileset.getTileIndices({viewState: FRAME, zRange: null});
   const oldTile = tileset.getTile(index, true);
@@ -218,14 +227,175 @@ test('switching a source aborts pending requests and suppresses their late resul
   tileset.subscribe({onTileLoad: () => loads++});
   await started;
   const oldLoad = oldTile.data as Promise<unknown>;
-  tileset.setOptions({tileSource: replacement as any});
+  tileset.setOptions({
+    tileSource: replacement as any,
+    onTileDiscard: (_tile, content) => newDiscards.push(content as string)
+  });
   expect(oldSignal?.aborted).toBe(true);
   resolveOld('stale');
   await oldLoad;
+  expect(oldDiscards).toEqual(['stale']);
+  expect(newDiscards).toEqual([]);
   expect(loads).toBe(0);
   const [newIndex] = tileset.getTileIndices({viewState: FRAME, zRange: null});
   const newTile = tileset.getTile(newIndex, true);
   expect(await newTile.data).toBe('new');
   expect(loads).toBe(1);
+  tileset.finalize();
+});
+
+test('native extent and compatibility level limits are applied before selection', () => {
+  const unrestricted = {tileMatrixSet: GRID.tileMatrixSet};
+  const adapter = createTileMatrixTileset2DAdapter(unrestricted, {cacheNamespace: 'bounded'});
+  const tileset = new Tileset2D({
+    adapter,
+    getTileData: () => null,
+    minZoom: 1,
+    maxZoom: 1,
+    extent: [100, 198, 108, 200]
+  });
+  const coarseFrame = {...FRAME, resolution: 4};
+  expect(tileset.getTileIndices({viewState: coarseFrame, zRange: null})).toEqual([
+    {x: 0, y: 0, z: 1, tileMatrix: 'detail'}
+  ]);
+  expect(
+    tileset.getTileIndices({viewState: coarseFrame, minZoom: 0, maxZoom: 0, zRange: null})
+  ).toEqual([{x: 0, y: 0, z: 0, tileMatrix: '1'}]);
+  tileset.setOptions({extent: [108, 196, 109, 200]});
+  expect(tileset.getTileIndices({viewState: FRAME, zRange: null})).toEqual([]);
+  tileset.setOptions({extent: [101, 199, 101, 199]});
+  expect(tileset.getTileIndices({viewState: FRAME, zRange: null})).toHaveLength(1);
+  tileset.setOptions({extent: [1, 2, 3]});
+  expect(() => tileset.getTileIndices({viewState: FRAME, zRange: null})).toThrow('extent');
+  tileset.finalize();
+});
+
+test('zoom offset scales sampling resolution while preserving original native level indices', () => {
+  const adapter = createTileMatrixTileset2DAdapter(
+    {tileMatrixSet: GRID.tileMatrixSet},
+    {cacheNamespace: 'zoom'}
+  );
+  const context = {viewState: {...FRAME, resolution: 4}, tileSize: 256};
+  expect(adapter.getTileIndices(context).map(index => index.tileMatrix)).toEqual(['1']);
+  expect(
+    adapter.getTileIndices({...context, zoomOffset: 1}).map(index => [index.tileMatrix, index.z])
+  ).toEqual([
+    ['detail', 1],
+    ['detail', 1]
+  ]);
+  expect(
+    adapter.getTileIndices({...context, minZoom: 1, maxZoom: 1}).map(index => index.z)
+  ).toEqual([1, 1]);
+  expect(adapter.getTileIndices({...context, minZoom: 3})).toEqual([]);
+  expect(() => adapter.getTileIndices({...context, zoomOffset: 0.5})).toThrow('integer');
+  expect(() => adapter.getTileIndices({...context, zoomOffset: 2000})).toThrow('resolution');
+  expect(() => adapter.getTileIndices({...context, minZoom: Infinity})).toThrow('finite');
+});
+
+test('native-frame traversal rejects unsupported model transforms and elevation clipping', () => {
+  const adapter = createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'transform'});
+  const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+  const context = {viewState: FRAME, tileSize: 256};
+  expect(
+    adapter.getTileIndices({...context, modelMatrix: identity, modelMatrixInverse: identity})
+  ).toHaveLength(2);
+  expect(() =>
+    adapter.getTileIndices({...context, modelMatrix: [...identity.slice(0, 12), 1, 0, 0, 1]})
+  ).toThrow('already-transformed');
+  expect(() => adapter.getTileIndices({...context, modelMatrixInverse: [1]})).toThrow(
+    'already-transformed'
+  );
+  expect(() => adapter.getTileIndices({...context, zRange: [0, 10]})).toThrow('elevation-aware');
+  expect(() =>
+    adapter.getTileIndices({...context, viewState: {...FRAME, resolution: 0}, extent: [0, 0, 1, 1]})
+  ).toThrow('resolution');
+});
+
+test('source geographic metadata bounds do not clip a projected native frame', async () => {
+  const source = {
+    getMetadata: async () => ({
+      boundingBox: [
+        [1, 2],
+        [3, 4]
+      ]
+    }),
+    getTileData: async () => null
+  };
+  const adapter = createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'projected'});
+  const tileset = new Tileset2D({tileSource: source as any, adapter});
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(tileset.sourceMetadata?.boundingBox).toEqual([
+    [1, 2],
+    [3, 4]
+  ]);
+  expect(tileset.getTileIndices({viewState: FRAME, zRange: null})).toHaveLength(2);
+  tileset.finalize();
+});
+
+test('source-switch unload callbacks see the old tile but may safely reselect with the new source', async () => {
+  const adapter = createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'reentrant'});
+  const oldSource = {getMetadata: async () => ({}), getTileData: async () => 'old'};
+  const newSource = {getMetadata: async () => ({}), getTileData: async () => 'new'};
+  let replacement: ReturnType<Tileset2D['getTile']>;
+  let tileset: Tileset2D<any, TileMatrixViewFrame>;
+  tileset = new Tileset2D({
+    tileSource: oldSource as any,
+    adapter,
+    onTileUnload: () => {
+      const [index] = tileset.getTileIndices({viewState: FRAME, zRange: null});
+      replacement = tileset.getTile(index, true);
+    }
+  });
+  const [index] = tileset.getTileIndices({viewState: FRAME, zRange: null});
+  const oldTile = tileset.getTile(index, true);
+  await oldTile.data;
+  tileset.setOptions({tileSource: newSource as any, onTileUnload: () => {}});
+  expect(replacement!).not.toBe(oldTile);
+  expect(await replacement!.data).toBe('new');
+  expect(tileset.getTile(index)).toBe(replacement);
+  tileset.finalize();
+});
+
+test('malformed and sparse extents reject rather than yielding an empty selection', () => {
+  const adapter = createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'extent'});
+  expect(() =>
+    adapter.getTileIndices({viewState: {...FRAME, extent: new Array(4) as any}, tileSize: 256})
+  ).toThrow('extent');
+  const tileset = new Tileset2D({adapter, getTileData: () => null, extent: new Array(4)});
+  expect(() => tileset.getTileIndices({viewState: FRAME, zRange: null})).toThrow('extent');
+  tileset.finalize();
+});
+
+test('superseded requests deliver discarded content without overwriting the new tile', async () => {
+  let resolveOld!: (value: string) => void;
+  let resolveStarted!: () => void;
+  const started = new Promise<void>(resolve => {
+    resolveStarted = resolve;
+  });
+  const oldData = new Promise<string>(resolve => {
+    resolveOld = resolve;
+  });
+  let requests = 0;
+  const discarded: string[] = [];
+  const tileset = new Tileset2D({
+    adapter: createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'reload'}),
+    getTileData: () => (++requests === 1 ? (resolveStarted(), oldData) : 'new'),
+    onTileDiscard: (_tile, content) => discarded.push(content)
+  });
+  const listenerDiscards: string[] = [];
+  tileset.subscribe({onTileDiscard: (_tile, content) => listenerDiscards.push(content)});
+  const [index] = tileset.getTileIndices({viewState: FRAME, zRange: null});
+  const tile = tileset.getTile(index, true);
+  await started;
+  const oldLoad = tile.data as Promise<unknown>;
+  tile.setNeedsReload();
+  tileset.getTile(index, true);
+  expect(await tile.data).toBe('new');
+  resolveOld('stale');
+  await oldLoad;
+  expect(tile.content).toBe('new');
+  expect(discarded).toEqual(['stale']);
+  expect(listenerDiscards).toEqual(['stale']);
   tileset.finalize();
 });

@@ -122,11 +122,17 @@ the adapter when those change. Treat the grid as immutable while the adapter is 
 or adapter change clears cached tiles and consumer selections so old content cannot be reused.
 The namespace is caller-owned and is not a globally unique identifier by itself.
 
-The adapter selects from the supplied native frame and `grid.limits`. It does not interpret the
-runtime's XYZ `minZoom`, `maxZoom`, `zoomOffset` or `extent` options, or apply its model matrix,
-inverse matrix or elevation range. Prepare and clip the frame in the grid CRS before traversal;
-restrict native coverage through the grid limits. Numeric `z` is a compatibility array index,
-not a service zoom identifier.
+The adapter selects from the native frame and `grid.limits`. An explicitly supplied `extent` clips
+the frame in the grid CRS. Source metadata's geographic `boundingBox` is not used as a native
+extent, because it may be in a different CRS. Explicit `minZoom` and `maxZoom` restrict matrix
+**array indices**; they are not interpreted as native service zoom IDs. An integer `zoomOffset`
+scales the target resolution by `2 ** -zoomOffset`, including for irregular level spacing.
+
+A frame must already account for the relevant viewport and layer transform. Identity model matrices
+are accepted; non-identity matrices and non-null elevation ranges throw instead of silently
+producing an incorrect selection. A viewport integration must produce a conservative native frame
+for transformed or elevated views before calling the adapter. Numeric `z` remains a compatibility
+array index, independent of the native matrix identifier.
 
 The adapter supports source requests and shared cache participation. Applications still provide
 native frames, per-view selection and a compatible renderer. This does not transform a viewport,

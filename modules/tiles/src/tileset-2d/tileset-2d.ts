@@ -67,6 +67,8 @@ export type Tileset2DBaseProps<DataT = any, ViewStateT = unknown> = {
   zoomOffset?: number;
   /** Callback fired when a tile loads successfully. */
   onTileLoad?: (tile: SharedTile2DHeader<DataT>) => void;
+  /** Callback for a late payload discarded after cancellation or supersession. */
+  onTileDiscard?: (tile: SharedTile2DHeader<DataT>, content: DataT) => void;
   /** Callback fired when a tile is evicted from cache. */
   onTileUnload?: (tile: SharedTile2DHeader<DataT>) => void;
   /** Callback fired when a tile request fails. */
@@ -90,6 +92,8 @@ export type Tile2DListener<DataT = any> = {
   onTileLoad?: (tile: SharedTile2DHeader<DataT>) => void;
   /** Fired after a tile request fails. */
   onTileError?: (error: any, tile: SharedTile2DHeader<DataT>) => void;
+  /** Fired when canceled or superseded work returns a non-null payload. */
+  onTileDiscard?: (tile: SharedTile2DHeader<DataT>, content: DataT) => void;
   /** Fired after a tile is evicted from cache. */
   onTileUnload?: (tile: SharedTile2DHeader<DataT>) => void;
   /** Fired when metadata or effective configuration changes. */
@@ -119,6 +123,7 @@ const DEFAULT_TILESET2D_PROPS: Omit<Required<Tileset2DProps>, 'getTileData'> = {
   debounceTime: 0,
   zoomOffset: 0,
   onTileLoad: () => {},
+  onTileDiscard: () => {},
   onTileUnload: () => {},
   onTileError: () => {},
   tileSource: null
@@ -285,6 +290,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   setOptions(opts: Partial<Tileset2DProps<DataT, ViewStateT>>): void {
     const previousSource = this.opts.tileSource ?? null;
     const previousAdapter = this.opts.adapter ?? null;
+    const previousOnTileUnload = this.opts.onTileUnload;
     this._rememberExplicitOptions(opts);
     this._baseOpts = {...this._baseOpts, ...opts};
     const sourceChanged = previousSource !== (this._baseOpts.tileSource ?? null);
@@ -298,7 +304,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     const previousDebounceTime = this.opts.debounceTime;
     this._applyResolvedOptions();
     if (sourceChanged || adapterChanged) {
-      this._clearTileCache();
+      this._clearTileCache(tile => previousOnTileUnload?.(tile));
     }
     if (sourceChanged && this.opts.tileSource) {
       this._initializeTileSource(this.opts.tileSource).catch(() => {});
@@ -395,14 +401,17 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     if (!adapter) {
       throw new Error('Tileset2D requires an adapter before tile traversal can be used.');
     }
+    const traversalExtent =
+      adapter.useSourceExtent === false && !this._explicitOptionKeys.has('extent') ? null : extent;
+    if (traversalExtent) adapter.validateExtent?.(traversalExtent);
     this._lastTileContext = {viewState, tileSize};
     return adapter.getTileIndices({
       viewState,
-      maxZoom,
-      minZoom,
+      maxZoom: maxZoom ?? (this._explicitOptionKeys.has('maxZoom') ? this._maxZoom : undefined),
+      minZoom: minZoom ?? (this._explicitOptionKeys.has('minZoom') ? this._minZoom : undefined),
       zRange,
       tileSize,
-      extent: normalizeBounds(extent),
+      extent: normalizeBounds(traversalExtent),
       modelMatrix,
       modelMatrixInverse,
       zoomOffset
@@ -470,11 +479,17 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
 
     if (tile && needsReload && create) {
       const wasLoading = tile.isLoading;
+      const onTileDiscard = this.opts.onTileDiscard;
       tile
         .loadData({
           getData: this.opts.getTileData,
           requestScheduler: this._requestScheduler,
           onLoad: this._handleTileLoad.bind(this),
+          onDiscard: (content, discardedTile) => {
+            onTileDiscard?.(discardedTile, content);
+            for (const listener of this._listeners)
+              listener.onTileDiscard?.(discardedTile, content);
+          },
           onError: this._handleTileError.bind(this)
         })
         .catch(() => {});
@@ -618,10 +633,13 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Handles tile eviction from cache. */
-  private _handleTileUnload(tile: SharedTile2DHeader<DataT>): void {
+  private _handleTileUnload(
+    tile: SharedTile2DHeader<DataT>,
+    onTileUnload: (tile: SharedTile2DHeader<DataT>) => void = this.opts.onTileUnload
+  ): void {
     tile.abort();
     this._unloadedTileCount++;
-    this.opts.onTileUnload?.(tile);
+    onTileUnload?.(tile);
     for (const listener of this._listeners) {
       listener.onTileUnload?.(tile);
     }
@@ -739,7 +757,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Clears source-dependent cache entries and consumer selections when identity changes. */
-  private _clearTileCache(): void {
+  private _clearTileCache(onTileUnload: (tile: SharedTile2DHeader<DataT>) => void): void {
     const discardedTiles = Array.from(this._cache.values());
     this._cache.clear();
     this._tiles = [];
@@ -752,7 +770,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     }
     for (const tile of discardedTiles) {
       tile.abort();
-      this._handleTileUnload(tile);
+      this._handleTileUnload(tile, onTileUnload);
     }
     this._updateStats();
   }
