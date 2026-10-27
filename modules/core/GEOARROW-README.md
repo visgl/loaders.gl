@@ -87,3 +87,11 @@ offscreen rows and use planar XY in a shared CRS; rebuild after modifying the in
 See [spatial queries beyond picking](https://loaders.gl/docs/developer-guide/spatial-queries)
 for APIs and [GeoArrow feature support](https://loaders.gl/docs/modules/tables/arrow/formats/geoarrow#spatial-query-support)
 for implementation boundaries.
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).
+
+Kyle Barron’s [GeoArrow work](https://github.com/geoarrow/geoarrow-js) inspired
+loaders.gl’s GeoArrow integration and geospatial Arrow conversion and processing APIs.

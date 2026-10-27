@@ -207,7 +207,10 @@
     "README.md",
     "LAS-README.md",
     "PCD-README.md",
-    "PLY-README.md"
+    "PLY-README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses"
   ],
   "scripts": {
     "copy-wasm-files-las": "cp src/las/libs/laz-rs-wasm/*.wasm* dist/las/libs/laz-rs-wasm/",

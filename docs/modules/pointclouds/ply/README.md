@@ -60,3 +60,8 @@ npm install @loaders.gl/core @loaders.gl/pointclouds
 PLYLoader is a fork of the THREE.js PLYLoader under MIT License. The THREE.js source files contained the following attributions:
 
 @author Wei Meng / http://about.me/menway
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

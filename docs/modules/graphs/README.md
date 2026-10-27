@@ -215,3 +215,8 @@ unsupported attribute types, and document type declarations are rejected explici
 Duplicate IDs or attribute declarations, undeclared application attributes, missing
 required record attributes, and endpoints referencing undeclared nodes are rejected.
 Foreign namespace extensions are ignored. See the [GEXF specification](https://gexf.net/schema.html).
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/graphs/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

@@ -203,3 +203,8 @@ Cube manifests use luma.gl-style face names: `'+X'`, `'-X'`, `'+Y'`, `'-Y'`, `'+
 If you parse an in-memory manifest instead of loading from a URL, provide `options.core.baseUrl` so relative member URLs can still be resolved.
 
 For documentation please visit the [website](https://loaders.gl).
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

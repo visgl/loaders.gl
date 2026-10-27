@@ -179,3 +179,8 @@ service response; table operators run locally and do not imply pagination or ser
 - Register optional backends with a loader function so their implementation can remain in a
   separate dynamic chunk.
 - UI components remain in the website/application layer and are not runtime dependencies.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

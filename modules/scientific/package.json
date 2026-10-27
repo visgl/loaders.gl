@@ -69,7 +69,10 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses"
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field",

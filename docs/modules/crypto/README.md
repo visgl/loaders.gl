@@ -112,3 +112,8 @@ Cryptographic Hash
 ├─ MD5Hash#run(): 75.8M bytes/s
 ├─ SHA256Hash#run(SHA256): 30.6M bytes/s
 ```
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

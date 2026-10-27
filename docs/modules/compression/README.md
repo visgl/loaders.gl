@@ -337,3 +337,8 @@ Use bounded input chunks. The decoder retains a fixed history plus the current u
 `maxOutputByteLength` limits cumulative emitted bytes (512 MiB by default). Output is provisional
 until the iterator completes and validates the block ending. Stopping iteration releases the
 native stream. LZO encoding and raw LZ4 incremental encoding are not supported.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/compression/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

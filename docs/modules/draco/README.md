@@ -143,3 +143,8 @@ tracked as compatibility and lifecycle improvements rather than a worker-pool ab
 The browser encoder uses the versioned Draco 1.5.7 wrapper and WebAssembly pair. This keeps the
 default writer path independent of the Node-only `draco3d` package entry point; applications that
 need offline or worker-local loading can opt into the checked-in assets with `useLocalLibraries`.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/draco/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

@@ -21,3 +21,8 @@ const stage = await load('scene.usda', USDLoader);
 
 The loader can compose referenced layers, authored variants, and local overrides. Binary USDC
 crate layers are not yet supported.
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

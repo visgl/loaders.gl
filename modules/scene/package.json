@@ -194,7 +194,10 @@
     "README.md",
     "OBJ-README.md",
     "GLTF-README.md",
-    "bin"
+    "bin",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses"
   ],
   "scripts": {
     "pre-build": "npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev",

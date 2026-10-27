@@ -4,6 +4,7 @@
     "label": "Overview",
     "items": [
       "README",
+      "references-and-credits",
       "packages",
       "developer-guide/get-started",
       "developer-guide/standards",

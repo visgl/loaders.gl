@@ -46,3 +46,8 @@ selection and optional Pako adapters remain available.
 
 See [compression benchmarks](https://loaders.gl/docs/modules/compression/benchmarks)
 for a live internal-versus-upstream comparison.
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

@@ -92,3 +92,8 @@ The parsed image APIs support multiple image representations.
 - `data` - Raw binary memory representing the image pixels. This remains supported by helper APIs and can be produced from images with `getImageData(image)`.
 
 Prefer [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) for new code. See deprecated [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for compatibility behavior and legacy options.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/images/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

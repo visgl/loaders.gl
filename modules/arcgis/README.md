@@ -47,3 +47,8 @@ not reproduced automatically.
 - [Service protocols, formats and support](https://loaders.gl/docs/modules/arcgis)
 - [Complete service inventory and limitations](https://loaders.gl/docs/modules/arcgis/services)
 - [Examples](https://loaders.gl/examples/arcgis)
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

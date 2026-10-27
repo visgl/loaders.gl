@@ -72,3 +72,8 @@ The `WKTLoader` is based on a fork of the Mapbox [`wellknown`](https://github.co
 The `WKBLoader` and `WKBWriter` are forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz.
 The `WKTCRSLoader` and `WKTCRSWriter` are thin adapters over the dependency-free syntax codecs in
 `@math.gl/geospatial/crs`.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/geospatial/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

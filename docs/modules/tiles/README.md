@@ -30,3 +30,8 @@ See the [`Tileset2D` API](/docs/modules/tiles/api-reference/tileset-2d)
 and [`RasterSet` API](/docs/modules/tiles/api-reference/raster-set).
 
 For explicit native-CRS frames, see [TileMatrix selection and shared runtime traversal](/docs/modules/tiles/api-reference/tile-matrix). Viewport conversion and projected rendering remain application responsibilities.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/tiles/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

@@ -73,3 +73,8 @@ await source.insertArrowTable(arrowTable, {tableName: 'events'});
 await source.insertArrowTable(moreEvents, {tableName: 'events', create: false});
 const result = await source.queryArrow('SELECT * FROM events');
 ```
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/sql/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

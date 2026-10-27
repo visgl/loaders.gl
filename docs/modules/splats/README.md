@@ -68,3 +68,8 @@ npm install @loaders.gl/core @loaders.gl/splats
 | Format                                      | Description                                          |
 | ------------------------------------------- | ---------------------------------------------------- |
 | [SPLAT / KSPLAT / SPZ / RAD](/docs/modules/splats/formats/splats) | Binary Gaussian splat formats for real-time scenes. |
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/splats/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

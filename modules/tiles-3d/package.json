@@ -152,7 +152,11 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses",
+    "potree/LICENSE"
   ],
   "scripts": {
     "3d-tiles-pre-build": "npm run 3d-tiles-generate-json-schema && npm run 3d-tiles-build-bundle && npm run 3d-tiles-build-bundle-dev",

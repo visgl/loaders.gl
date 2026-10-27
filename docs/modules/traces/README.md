@@ -228,3 +228,8 @@ Chrome trace whole-file `shape: 'json'` converts hydrated Arrow events into the 
 JSON container on the caller, preserving passthrough event and container fields. Chrome
 trace batches continue to require `shape: 'arrow-table'`. Use an abort signal or close the
 iterator to release the worker. Input buffers already transferred remain detached.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/traces/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

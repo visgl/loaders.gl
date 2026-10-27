@@ -358,7 +358,10 @@
     "SCHEMA-README.md",
     "SCHEMA-UTILS-README.md",
     "GEOARROW-README.md",
-    "SCAN-README.md"
+    "SCAN-README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses"
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-worker-utils-worker && npm run build-worker-utils-worker-node && npm run build-polyfills-node-entrypoint && npm run build-schema-subpaths && npm run generate-json-schema && npm run build-utility-subpaths && npm run build-constants",

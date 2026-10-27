@@ -42,7 +42,9 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
