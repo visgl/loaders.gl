@@ -183,3 +183,35 @@ test.each([
   );
   expect(requestedUrls).toEqual([]);
 });
+
+test('OGC canonical URLs and availability agree for a covered coalesced alias', async () => {
+  const source = OGCAPITilesSourceLoader.createDataSource(API_URL, {
+    'ogc-api': {
+      tileTemplate: `${API_URL}/{tileMatrix}/{tileRow}/{tileCol}`,
+      tileMatrixSet: {
+        crs: 'EPSG:3857',
+        tileMatrices: [
+          {
+            id: 'native/detail',
+            cellSize: 1,
+            pointOfOrigin: [0, 0],
+            cornerOfOrigin: 'bottomLeft',
+            tileWidth: 2,
+            tileHeight: 1,
+            matrixWidth: 4,
+            matrixHeight: 2,
+            variableMatrixWidths: [{coalesce: 2, minTileRow: 0, maxTileRow: 0}]
+          }
+        ]
+      },
+      tileMatrixSetLimits: [
+        {tileMatrix: 'native/detail', minTileCol: 1, maxTileCol: 1, minTileRow: 0, maxTileRow: 0}
+      ]
+    }
+  });
+  for (const x of [0, 1]) {
+    expect(source.isTileAvailable({z: 0, x, y: 0})).toBe(true);
+    expect(source.getTileURL({z: 0, x, y: 0})).toBe(`${API_URL}/native%2Fdetail/0/0`);
+  }
+  expect(source.isTileAvailable({z: 0, x: 2, y: 0})).toBe(false);
+});

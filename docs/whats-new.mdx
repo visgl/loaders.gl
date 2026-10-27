@@ -40,6 +40,15 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## TileMatrix validation and coalesced rows
+
+Shared grid utilities now report complete, partial and invalid metadata consistently. OGC API
+Tiles preserves variable-width row bands; native request resolution, the image adapter and
+fixed-frame selection support canonical columns and base-grid coverage. Selection budgets count
+unique coalesced tiles. The default XYZ renderer explicitly rejects coalesced geometry.
+See [grid validation](/docs/modules/core/loader-utils/api-reference/tile-grid) and
+[frame selection](/docs/modules/tiles/api-reference/tile-matrix).
+
 ## Services package consolidation
 
 WMS, WFS, WMTS, CSW, OGC API, and STAC sources live in `@loaders.gl/ogc` under `/wms` and `/stac` subpaths. `@loaders.gl/services` provides provider authentication presets. See the [OGC guide](/docs/modules/ogc) and [migration guidance](/docs/upgrade-guide#ogc-service-and-stac-package-imports).

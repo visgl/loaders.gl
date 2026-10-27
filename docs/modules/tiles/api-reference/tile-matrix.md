@@ -1,4 +1,4 @@
-# Regular-grid frame selection
+# TileMatrix frame selection
 
 `selectTileMatrixTiles` selects tiles from complete `TileGrid.tileMatrixSet` geometry using an
 explicit frame in that grid's CRS. Its `TileMatrixSelectionGrid` type describes only the geometry and coverage fields it reads; existing `TileGrid` objects are structurally compatible. It is available from the lightweight
@@ -68,9 +68,16 @@ into `Tileset2D`, infer parent relationships, modify its cache keys, or enable p
 rendering. A viewport adapter and compatible renderer still need to supply and interpret the
 frame, bounds and per-axis tile dimensions. We would welcome feedback before extending that seam.
 
-Variable-width/coalesced rows are explicitly rejected. Their row-dependent ranges require the
-separate upstream model and adoption work. Complete regular geometry is not a promise that a
-particular renderer supports the CRS.
+Regular and variable-width/coalesced rows are supported through math.gl's row-band ranges.
+Columns advance by each band's coalescence factor; the selector emits each canonical tile once.
+Limits remain in base-grid coordinates. A tile is available when any of its base-column aliases
+is covered, so its returned canonical column can precede `minTileColumn`. Bounds cover the whole
+coalesced footprint while `tileSize` retains the declared pixel dimensions. Level selection uses
+nominal resolution; the tile budget counts canonical tiles across all bands before allocation.
+
+Complete geometry is not a promise that a renderer supports the grid. The default XYZ renderer
+explicitly rejects coalesced grids. See [shared grid validation](/docs/modules/core/loader-utils/api-reference/tile-grid)
+for diagnostics and canonical request resolution.
 
 The runnable [fixed-frame example](https://github.com/visgl/loaders.gl/tree/master/examples-experimental/tile-matrix-fixed-frame)
 uses an illustrative UTM31 grid and the actual OGC source with an offline transport. Its integration

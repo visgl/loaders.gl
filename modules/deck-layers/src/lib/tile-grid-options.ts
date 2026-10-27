@@ -1,6 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+import {validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
 import type {TileSourceMetadata} from '@loaders.gl/core/loader-utils';
 
 /** Standard identifiers for the same Web Mercator CRS returned by tile services. */
@@ -31,8 +32,14 @@ export function getTileGridLayerOptions(
     maxZoom: metadata?.maxZoom ?? 30,
     tileSize: 256
   };
+  if (metadata?.tileGrid) validateTileGrid(metadata.tileGrid);
   const set = metadata?.tileGrid?.tileMatrixSet;
-  if (!set) return options;
+  if (!set) {
+    if (metadata?.tileGrid?.matrices?.some(matrix => matrix.variableMatrixWidths?.length)) {
+      throw new Error('TileSourceLayer requires a custom tile selector for coalesced rows.');
+    }
+    return options;
+  }
   if (!WEB_MERCATOR_COORDINATE_REFERENCE_SYSTEMS.has(set.crs) || !set.matrices.length)
     throw new Error(
       'TileSourceLayer requires canonical Web Mercator XYZ geometry; use a custom tile selector and compatible projection.'
@@ -43,6 +50,7 @@ export function getTileGridLayerOptions(
     const size = matrix.tileSize[0];
     const halfWorld = 20037508.342789244;
     if (
+      Boolean(matrix.variableMatrixWidths?.length) ||
       !Number.isInteger(zoom) ||
       zoom < 0 ||
       zoom > 31 ||

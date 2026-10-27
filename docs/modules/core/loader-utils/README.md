@@ -63,3 +63,7 @@ The `@loaders.gl/core/loader-utils` contains utilities for creating loaders.
 Source implementations can share `createTileGrid(crs, matrices)`, `createTileGridMatrix(fields)`, `getRequestedTileMatrix(matrices, getId, parameters)`, and `getTileGridMatrixId(grid, parameters)`. Grid construction preserves incomplete advertised metadata and exposes complete math.gl geometry only when every level validates. Matrix fields may include `resolutionY` for vertical pixel size; `resolution` is horizontal and remains the default for both axes.
 
 Protocol-specific CRS and scale interpretation belongs in source modules. These helpers perform no reprojection, extent-based inference, or source fetching. See [Tile matrices and tile matrix sets](/docs/developer-guide/tile-matrices).
+
+## Tile grids
+
+[Grid validation and addressing](./api-reference/tile-grid.md) covers complete versus partial metadata, coverage diagnostics and canonical coalesced tile requests.

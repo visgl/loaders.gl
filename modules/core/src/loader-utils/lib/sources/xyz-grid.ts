@@ -49,6 +49,12 @@ export function resolveXYZTileParameters(
   grid: TileGrid | undefined,
   parameters: GetTileParameters
 ): GetTileParameters | null {
+  if (
+    grid?.tileMatrixSet?.matrices.some(matrix => matrix.variableMatrixWidths?.length) ||
+    grid?.matrices?.some(matrix => matrix.variableMatrixWidths?.length)
+  ) {
+    throw new RangeError('XYZ addressing does not support coalesced rows.');
+  }
   if (!grid?.matrices) {
     if (parameters.tileMatrix !== undefined)
       throw new RangeError('Tile matrix selection requires an established XYZ grid.');

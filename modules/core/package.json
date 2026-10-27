@@ -33,6 +33,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./loader-utils/tile-grid": {
+      "types": "./dist/loader-utils/tile-grid.d.ts",
+      "import": "./dist/loader-utils/tile-grid.js",
+      "require": "./dist/loader-utils/tile-grid.cjs"
+    },
     "./loader-utils": {
       "types": "./dist/loader-utils/index.d.ts",
       "import": "./dist/loader-utils/index.js",

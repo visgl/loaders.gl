@@ -516,8 +516,17 @@ export {
   createTileGrid,
   createTileGridMatrix,
   getRequestedTileMatrix,
-  getTileGridMatrixId
+  getTileGridMatrixId,
+  getTileGridValidation,
+  validateTileGrid,
+  validateTileGridLimits,
+  resolveTileGridTile
 } from './lib/sources/tile-grid';
-export type {TileMatrixFields} from './lib/sources/tile-grid';
+export type {
+  TileMatrixFields,
+  TileGridValidation,
+  TileGridValidationIssue,
+  TileGridValidationInput
+} from './lib/sources/tile-grid';
 
 export {createWebMercatorTileGrid, resolveXYZTileParameters} from './lib/sources/xyz-grid';
