@@ -104,32 +104,13 @@ The Node image decoder support remains limited to the formats supported by the e
 
 `@loaders.gl/core/loader-utils` exports `NodeFile` and `NodeFilesystem` wrappers that are installed by this polyfill package. They mirror the browser `HttpFile`/`BlobFile` implementations, exposing a consistent `ReadableFile` interface for local and remote assets without bundling Node built-ins directly into application code.
 
-## Deprecated polyfills
+## Native Node.js APIs
 
-The package installs legacy `fetch`, `Response`, and `Headers` fallbacks only when those globals are missing. Supported Node.js versions already provide them; importing polyfills does not replace native network fetch.
-
-### fetch Polyfill
-
-The Node.js `fetch`, `Response` and `Headers` polyfills supports a large subset of the browser fetch API, including:
-
-- `Response.text()`, `Response.arrayBuffer()`, `Response.json()`
-- `Response.body` stream
-- `headers`, `status`, `statusText` etc.
-- data uri / base64 decoding
-- automatic gzip, brotli and deflate decompression support for responses with `content-encoding` headers.
-- Files ending with `.gz` are automatically decompressed with gzip decompression (this is only done on Node.js, in the browser the content-encoding header must be set).
-
-The Node.js `fetch` is able to follow 30X redirect: if `Response` has status 300-399 and `location` header is set, the `fetch` polyfill re-requests data from `location`.
+Supported Node.js versions provide `Blob`, `File`, `fetch`, `Headers`, and `Response`. The polyfills entry point preserves these native globals and exports the native `Blob` and `File` constructors. The filesystem fetch adapter remains available for local files. The `File` export now refers to the native constructor; previously it incorrectly referred to the Node global object.
 
 ## Remarks
 
 - The polyfills module can safely be imported in the browser. It is designed to be a no-op in this case, though if you are using new cutting-edge bundlers, they may not respect this configuration.
-
-## Attribution
-
-- The `Header` polyfill (for Node.js `fetch`) is a fork of the implementation in https://github.com/github/fetch (MIT license).
-- The `Blob` and `File` polyfills are forks of @gozala's [`web-blob`](https://github.com/Gozala/web-blob) and [`web-file`](https://github.com/Gozala/web-file) modules respectively, under MIT license.
-
 
 ## Optional Node image codecs
 
