@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {LOADERS_GL_RAW_FIXTURE_URL} from '@loaders.gl/core/constants';
+
 type TestGlobalThis = typeof globalThis & {
   fetch: typeof fetch;
 };
@@ -9,7 +11,6 @@ type TestGlobalThis = typeof globalThis & {
 declare const __TEST_REPOSITORY_ROOT__: string;
 
 const LOCAL_FIXTURE_PREFIX = '/__loaders_gl_test_fixtures__/';
-const LOADERS_GL_RAW_GITHUB_PREFIX = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/';
 const SQL_JS_WASM_URL = 'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/sql-wasm-browser.wasm';
 
 /** Configures browser globals and rewrites repository file paths through the raw fixture server. */
@@ -57,8 +58,8 @@ export function setupBrowserFileFetch(options?: {rewriteRemoteFixtures?: boolean
 
 /** Maps an approved remote URL to its hermetic repository-local equivalent. */
 function getRemoteFixturePath(url: string): string | null {
-  if (url.startsWith(LOADERS_GL_RAW_GITHUB_PREFIX)) {
-    return url.slice(LOADERS_GL_RAW_GITHUB_PREFIX.length).split(/[?#]/, 1)[0];
+  if (url.startsWith(LOADERS_GL_RAW_FIXTURE_URL)) {
+    return url.slice(LOADERS_GL_RAW_FIXTURE_URL.length).split(/[?#]/, 1)[0];
   }
   if (url === SQL_JS_WASM_URL) {
     return 'node_modules/sql.js/dist/sql-wasm-browser.wasm';

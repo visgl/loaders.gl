@@ -234,6 +234,9 @@ jobs:
       - name: Build workers
         run: yarn build-workers
 
+      - name: Verify embedded package versions
+        run: node scripts/check-built-versions.mjs
+
       # ocular-publish creates the GitHub Release before publishing the tagged packages to npm.
       - name: Post GitHub release and publish to NPM
         env:

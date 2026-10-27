@@ -77,6 +77,7 @@ Reusable scan, geometry construction, geometry processing, and codec APIs are av
 
 | Import | Utilities |
 | --- | --- |
+| [`@loaders.gl/core/constants`](./api-reference/constants.md) | Branch, repository URL, and worker tag constants. |
 | [`@loaders.gl/core/loader-utils`](./loader-utils/README.md) | Loader contracts, streams, file systems, and source utilities. |
 | [`@loaders.gl/core/worker-utils`](./worker-utils/README.md) | Worker pools, messaging, and transfer helpers. |
 | [`@loaders.gl/core/schema`](./schema/README.md) | Shared schemas, table and geometry types. |
