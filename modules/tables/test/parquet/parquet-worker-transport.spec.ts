@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getTransferList} from '@loaders.gl/core/worker-utils';
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {
@@ -11,7 +12,7 @@ import {
   serializeParquetWorkerResult
 } from '../../src/parquet/lib/parquet-worker-transport';
 
-test('Parquet worker transport round-trips Arrow IPC and rejects row serialization', () => {
+test('Parquet worker transport round-trips Arrow columns and rejects row serialization', () => {
   const table = {shape: 'arrow-table', data: arrow.tableFromArrays({value: [1, 2]})} as const;
   const serialized = serializeParquetWorkerResult(table) as any;
   const hydrated = deserializeParquetWorkerResult(serialized) as any;
@@ -19,13 +20,13 @@ test('Parquet worker transport round-trips Arrow IPC and rejects row serializati
   expect(
     deserializeParquetWorkerResult(serialized, {parquet: {shape: 'object-row-table'}})
   ).toMatchObject({shape: 'object-row-table', data: [{value: 1}, {value: 2}]});
-  expect(serialized.data.transport).toBe('arrow-ipc');
+  expect(serialized.data.transport).toBe('arrow-js');
   expect(hydrated.data).toBeInstanceOf(arrow.Table);
   expect(hydrated.data.getChild('value')?.toArray()).toEqual(new Float64Array([1, 2]));
 
   const rows = {shape: 'object-row-table', data: [{value: 1}]} as any;
   expect(() => serializeParquetWorkerResult(rows)).toThrow('Arrow table output');
-  expect(deserializeParquetWorkerResult(rows)).toBe(rows);
+  expect(() => deserializeParquetWorkerResult(rows)).toThrow('Arrow column transport');
   expect(() => serializeParquetWorkerResult(null)).toThrow('Arrow table output');
 });
 
@@ -53,7 +54,7 @@ test.each([
     data: arrowTable.slice(0, 1)
   };
   const serialized = serializeParquetWorkerBatch(batch, {parquet: {shape}}) as any;
-  const transferred = structuredClone(serialized, {transfer: [serialized.data.data.buffer]});
+  const transferred = structuredClone(serialized, {transfer: getTransferList(serialized)});
   const hydrated = deserializeParquetWorkerBatch(transferred);
   expect(hydrated).toMatchObject({batchType: 'data', length: 1, shape});
   expect(bytes).toEqual(new Uint8Array([1, 2, 3, 4]));
@@ -64,7 +65,7 @@ test.each([
   expect((row.record as {label: string}).label).toBe('first');
 });
 
-test('Parquet batch hydration keeps legacy object-row payloads usable', () => {
+test('Parquet batch hydration rejects decoded object-row payloads', () => {
   const batch = {shape: 'object-row-table', batchType: 'data', length: 1, data: [{value: 1}]};
-  expect(deserializeParquetWorkerBatch(batch)).toBe(batch);
+  expect(() => deserializeParquetWorkerBatch(batch)).toThrow('Arrow column transport');
 });

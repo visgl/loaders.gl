@@ -30,6 +30,8 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     shapefile?: {
+      /** Overrides the browser worker bundle URL. */
+      workerUrl?: string;
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
       geoarrowEncoding?: SHPGeoArrowEncoding;
       /** Preferred encoding for Arrow geometry output. */
@@ -54,6 +56,8 @@ export const ShapefileLoader = {
   batchType: null as unknown as ShapefileOutput | Batch | ArrowTableBatch,
   ...ShapefileFormat,
   version: VERSION,
+  worker: true,
+  workerInBatches: true,
   options: {
     shapefile: {
       shape: 'arrow-table'

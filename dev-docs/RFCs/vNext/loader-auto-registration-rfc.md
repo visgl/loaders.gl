@@ -26,7 +26,7 @@ BEFORE
 
 ```js
 import {registerLoaders} from '@loaders.gl/core';
-import {LASLoader} from '@loaders.gl/las';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 registerLoaders(LASLoader);
 
 new PointCloudLayer({data: LAZ_SAMPLE_URL});
@@ -35,7 +35,7 @@ new PointCloudLayer({data: LAZ_SAMPLE_URL});
 AFTER
 
 ```js
-import '@loaders.gl/las'; // Simply importing it makes this loader available
+import '@loaders.gl/pointclouds/las'; // Simply importing it makes this loader available
 
 new PointCloudLayer({data: LAZ_SAMPLE_URL});
 ```
@@ -46,7 +46,7 @@ BEFORE
 
 ```js
 import {registerLoaders} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 
 new ScenegraphLayer({
@@ -58,7 +58,7 @@ new ScenegraphLayer({
 AFTER
 
 ```js
-import '@loaders.gl/gltf';
+import '@loaders.gl/scene/gltf';
 import '@loaders.gl/draco'; // Simply importing it makes this loader available
 
 new ScenegraphLayer({scenegraph: DRACO_COMPRESSED_GLTF_URL});

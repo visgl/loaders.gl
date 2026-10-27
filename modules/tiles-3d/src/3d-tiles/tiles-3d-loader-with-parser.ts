@@ -8,11 +8,11 @@ import type {
   StrictLoaderOptions,
   LoaderContext
 } from '@loaders.gl/core/loader-utils';
-// / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
+// / import type { GLTFLoaderOptions } from '@loaders.gl/scene/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
-import {GLBLoader, GLTFLoader} from '@loaders.gl/gltf';
-import type {GLTFWithBuffers} from '@loaders.gl/gltf';
+import {GLBLoader, GLTFLoader} from '@loaders.gl/scene/gltf';
+import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 
 import {path} from '@loaders.gl/core/loader-utils';
 import {get3DTilesSpatialReference, TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles-3d';

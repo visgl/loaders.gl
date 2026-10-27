@@ -29,7 +29,7 @@ Start the application and pass the path to your local dataset as url parameter.
 On load, the example targets the tileset's geographic center, including its elevation. An example
 can override the camera target with `viewState.position: [east, north, elevation]` in meters;
 `[0, 0, 0]` explicitly retains a sea-level target. This is an initial viewing target, not automatic
-terrain following. See the [camera elevation guide](https://loaders.gl/docs/modules/3d-tiles/concepts/coordinate-reference-systems#camera-elevation-and-high-altitude-content).
+terrain following. See the [camera elevation guide](https://loaders.gl/docs/modules/tiles-3d/3d-tiles/concepts/coordinate-reference-systems#camera-elevation-and-high-altitude-content).
 
 The flat MapLibre background does not consume deck.gl's elevated `position`, so it is a geographic
 backdrop rather than a registered terrain overlay for elevated views. Applications requiring

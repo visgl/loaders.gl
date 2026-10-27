@@ -1,4 +1,4 @@
-import {getGLTFAccessorValue} from '@loaders.gl/gltf';
+import {getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
 import {expect, test} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {loadI3STile} from '@loaders.gl/tiles-3d/i3s/test/test-utils/load-utils';

@@ -93,3 +93,32 @@ test('Legacy XYZ bounds use exponentiation and report their actual longitude/lat
   expect(() => adapter.getTile({z: 0, x: 0, y: 0, tileMatrix: 'x'})).toThrow(/configured grid/);
   expect(() => new TileSourceAdapter({} as any, {matrices: [{id: 'partial'}]})).toThrow(/complete/);
 });
+
+test('Image adapter reads the entire coalesced footprint when only a noncanonical alias is covered', async () => {
+  const grid = {
+    ...createTileGrid('native', [
+      {
+        id: 'wide',
+        resolution: 1,
+        origin: [0, 0],
+        cornerOfOrigin: 'bottomLeft',
+        tileSize: [4, 2],
+        matrixSize: [4, 2],
+        variableMatrixWidths: [{coalesce: 2, minTileRow: 0, maxTileRow: 0}]
+      }
+    ]),
+    limits: [{tileMatrix: 'wide', minTileColumn: 1, maxTileColumn: 1, minTileRow: 0, maxTileRow: 0}]
+  };
+  const getImage = vi.fn(async parameters => parameters);
+  const adapter = new TileSourceAdapter({getMetadata: async () => ({}), getImage} as any, grid);
+  expect(await adapter.getTile({z: 0, x: 0, y: 0})).toMatchObject({
+    boundingBox: [
+      [0, 0],
+      [8, 2]
+    ],
+    width: 4,
+    height: 2
+  });
+  expect(await adapter.getTile({z: 0, x: 2, y: 0})).toBeNull();
+  expect(getImage).toHaveBeenCalledOnce();
+});

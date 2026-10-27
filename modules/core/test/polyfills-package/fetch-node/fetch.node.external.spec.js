@@ -7,8 +7,8 @@ import {fetchFile} from '@loaders.gl/core';
 import {
   LOADERS_GL_RAW_FIXTURE_URL,
   LOADERS_GL_REDIRECTING_FIXTURE_URL
-} from 'test/common/remote-fixtures';
-const PLY_CUBE_ATT_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/ply/test/data/cube_att.ply`;
+} from '@loaders.gl/core/constants';
+const PLY_CUBE_ATT_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/pointclouds/test/ply/data/cube_att.ply`;
 const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = `@loaders.gl/core/polyfills/test/data/data.txt`;
 const TEXT_URL_GZIPPED = `@loaders.gl/core/polyfills/test/data/data.txt.gz`;

@@ -5,8 +5,8 @@
 import {expect, test} from 'vitest';
 import {Table, tableFromArrays} from 'apache-arrow';
 import {
-  serializeArrowIPCResult,
-  deserializeArrowIPCResult
+  serializeArrowTableResult,
+  deserializeArrowTableResult
 } from '../../src/arrow/lib/arrow-worker-transport';
 import {GeoArrowLoaderWithParser} from '../../src/arrow/geoarrow-loader';
 import type {ArrowLoaderOptions} from '../../src/arrow/exports/arrow-loader';
@@ -16,12 +16,12 @@ test.each([
   [{}, 'columnar-table'],
   [{arrow: {shape: 'arrow-table'}}, 'arrow-table'],
   [{arrow: {shape: 'array-row-table'}}, 'array-row-table']
-] as const)('Arrow IPC hydration honors options %j', (options, shape) => {
-  const serialized = serializeArrowIPCResult({
+] as const)('Arrow column hydration honors options %j', (options, shape) => {
+  const serialized = serializeArrowTableResult({
     shape: 'arrow-table',
     data: tableFromArrays({id: new Int32Array([1])})
   });
-  const result = deserializeArrowIPCResult(serialized, options as ArrowLoaderOptions | undefined);
+  const result = deserializeArrowTableResult(serialized, options as ArrowLoaderOptions | undefined);
   expect(result.shape).toBe(shape);
   if (result.shape === 'arrow-table') {
     expect(result.data).toBeInstanceOf(Table);
@@ -38,11 +38,11 @@ test.each([
   {shape: 'arrow-table'},
   {shape: 'arrow-table', data: {}}
 ])('Arrow serialization rejects malformed table %j', result => {
-  expect(() => serializeArrowIPCResult(result)).toThrow('Arrow table output');
+  expect(() => serializeArrowTableResult(result)).toThrow('Arrow table output');
 });
 
 test('GeoArrow hydration requires wrapper schema only when materializing features', () => {
-  const serialized = serializeArrowIPCResult({
+  const serialized = serializeArrowTableResult({
     shape: 'arrow-table',
     data: tableFromArrays({id: new Int32Array([1])})
   });

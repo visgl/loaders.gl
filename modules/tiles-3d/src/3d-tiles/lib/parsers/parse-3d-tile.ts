@@ -17,7 +17,7 @@ import {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../types';
 import type {Tiles3DBinaryContentType, Tiles3DContentType} from './preprocess-3d-tile-content';
-import type {GLTFWithBuffers} from '@loaders.gl/gltf';
+import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 
 /**
  * Parses one binary or JSON glTF 3D Tiles content payload.

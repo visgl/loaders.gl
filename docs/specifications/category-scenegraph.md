@@ -16,7 +16,7 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
   tone="pink"
   links={[
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'},
-    {label: 'glTF format', to: '/docs/modules/gltf/formats/gltf'}
+    {label: 'glTF format', to: '/docs/modules/scene/gltf/formats/gltf'}
   ]}
 />
 
@@ -48,9 +48,9 @@ typed representation close to its source format.
 
 | Loader                                                       | Notes |
 | ------------------------------------------------------------ | ----- |
-| [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) |       |
-| [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader)   |       |
-| [`USDLoader`](/docs/modules/scene/api-reference/usd-loader)   |       |
+| [`GLTFLoader`](/docs/modules/scene/gltf/api-reference/gltf-loader) |       |
+| [`GLBLoader`](/docs/modules/scene/gltf/api-reference/glb-loader)   |       |
+| [`USDLoader`](/docs/modules/scene/usd/api-reference/usd-loader)   |       |
 
 ## glTF Data Format
 
@@ -74,7 +74,7 @@ Buffers can be objects in the shape of `{buffer, byteOffset, byteLength}`.
 
 ## Helper Classes
 
-To simplify higher-level processing of the loaded, raw glTF data, several helper classes are provided in the `@loaders.gl/gltf` module, these can:
+To simplify higher-level processing of the loaded, raw glTF data, several helper classes are provided in the `@loaders.gl/scene/gltf` module, these can:
 
 - unpack and remove certain glTF extensions
 - extract typed array views from the JSON objects into the binary buffers
@@ -85,5 +85,5 @@ To simplify higher-level processing of the loaded, raw glTF data, several helper
 
 `USDLoader` returns a `USDStage` with root-layer metadata, a hierarchy of typed `USDPrim` objects,
 and the URLs of layers used during composition. See the
-[`USDLoader`](/docs/modules/scene/api-reference/usd-loader) reference for supported OpenUSD
+[`USDLoader`](/docs/modules/scene/usd/api-reference/usd-loader) reference for supported OpenUSD
 features and current limitations.

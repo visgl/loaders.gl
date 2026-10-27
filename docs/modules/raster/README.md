@@ -36,7 +36,7 @@ const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 
 GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronous `load()`
 with metadata or import an explicit source implementation for synchronous `createDataSource()`.
-The format `*/index` paths retain the existing advanced format APIs.
+Use the named source, discovery, and heightmap subpaths for advanced APIs; their references list the exported constructors and helpers.
 
 ## Optional decoder packages
 

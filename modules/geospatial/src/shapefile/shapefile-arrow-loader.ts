@@ -45,7 +45,7 @@ export async function parseShapefileToArrow(
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): Promise<ArrowTable> {
-  const {cpg, prj} = await loadShapefileSidecarFiles(options, context);
+  const {cpg, prj, shx} = await loadShapefileSidecarFiles(options, context);
   const transform = getReprojectionTransform(prj, options);
   const geoArrowEncoding = getTypedGeoArrowEncoding(options);
   let header: SHPHeader | undefined;
@@ -113,9 +113,10 @@ export async function parseShapefileToArrow(
   }
 
   const schema = buildOutputSchema(propertySchema, header, geometryTable.schema);
-  return propertyTable
+  const table = propertyTable
     ? appendGeometryColumnToArrowTable(propertyTable, geometryTable, schema)
     : geometryTable;
+  return Object.assign(table, {loaderData: {header, encoding: cpg, prj, shx}});
 }
 
 /** Parses a shapefile into Arrow batches while keeping DBF-derived schema stable. */
@@ -130,7 +131,7 @@ export async function* parseShapefileToArrowInBatches(
     throw new Error('Typed GeoArrow shapefile output is only supported for non-streaming parse.');
   }
 
-  const {cpg, prj} = await loadShapefileSidecarFiles(options, context);
+  const {cpg, prj, shx} = await loadShapefileSidecarFiles(options, context);
   const batchSize =
     options?.shapefile?.batchSize || options?.shp?.batchSize || options?.dbf?.batchSize || 10000;
 
@@ -236,10 +237,10 @@ export async function* parseShapefileToArrowInBatches(
         outputSchema
       );
       yieldedDataBatch = true;
-      yield makeTableScanBatch(batch);
+      yield {...makeTableScanBatch(batch), loaderData: {header, encoding: cpg, prj, shx}};
     }
     if (!yieldedDataBatch) {
-      yield makeEmptyArrowBatch(outputSchema);
+      yield {...makeEmptyArrowBatch(outputSchema), loaderData: {header, encoding: cpg, prj, shx}};
     }
     return;
   }
@@ -262,10 +263,13 @@ export async function* parseShapefileToArrowInBatches(
       transform
     );
     yieldedDataBatch = true;
-    yield makeTableScanBatch({...arrowTable, schema: outputSchema});
+    yield {
+      ...makeTableScanBatch({...arrowTable, schema: outputSchema}),
+      loaderData: {header, encoding: cpg, prj, shx}
+    };
   }
   if (!yieldedDataBatch) {
-    yield makeEmptyArrowBatch(outputSchema);
+    yield {...makeEmptyArrowBatch(outputSchema), loaderData: {header, encoding: cpg, prj, shx}};
   }
 }
 

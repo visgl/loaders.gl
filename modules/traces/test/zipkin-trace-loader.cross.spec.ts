@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {setLoaderOptions} from '@loaders.gl/core';
 import {encodeSync, parse, parseInBatches, parseSync} from '@loaders.gl/core';
 import {describe, expect, it} from 'vitest';
 
@@ -15,6 +16,9 @@ import {
 } from '../src';
 import {ZipkinTraceLoaderWithParser} from '../src/zipkin-trace-loader';
 import zipkinTraceFixture from './data/zipkin/trace.json' with {type: 'json'};
+
+// Parser ownership tests run instrumented source; worker conformance has its own suite.
+setLoaderOptions({worker: false});
 
 /** Encodes one JSON value as UTF-8 bytes. */
 function encodeJson(value: unknown): Uint8Array {

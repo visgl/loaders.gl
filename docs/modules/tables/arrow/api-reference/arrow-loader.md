@@ -84,7 +84,7 @@ retains one Arrow IPC reader, requests input on demand, and waits for the consum
 past an output batch. Batches retain the existing `arrow-table` output shape. Atomic parsing converts
 to the requested output shape on the caller after hydrating the transferred Arrow data.
 
-Workers return independently owned Arrow IPC buffers, preserving dictionaries and extension metadata
+Workers return owned Arrow column buffers, preserving dictionaries and extension metadata
 without transferring buffers still referenced by the reader. Decoded JSON rows and GeoJSON features
 are never structured-cloned across the worker boundary. Small table and protocol descriptors accompany
 the buffers. Input chunks can still be large; backpressure does not bound an individual input chunk.

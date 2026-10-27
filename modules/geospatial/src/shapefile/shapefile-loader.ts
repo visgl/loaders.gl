@@ -1,3 +1,4 @@
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -21,7 +22,6 @@ import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {parseShapefileToArrow, parseShapefileToArrowInBatches} from './shapefile-arrow-loader';
 import {ShapefileLoader as ShapefileLoaderMetadata} from './shapefile-loader-types';
 import {
-  deserializeShapefileWorkerBatch,
   deserializeShapefileWorkerResult,
   serializeShapefileWorkerBatch,
   serializeShapefileWorkerResult
@@ -36,6 +36,8 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     shapefile?: {
+      /** Overrides the browser worker bundle URL. */
+      workerUrl?: string;
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
       geoarrowEncoding?: SHPGeoArrowEncoding;
       /** Preferred encoding for Arrow geometry output. */
@@ -60,9 +62,9 @@ export const ShapefileLoaderWithParser = {
       ? parseShapefileToArrowInBatches(asyncIterator, options, context)
       : parseShapefileInBatches(asyncIterator, options, context),
   serializeWorkerResult: serializeShapefileWorkerResult,
-  deserializeWorkerResult: deserializeShapefileWorkerResult,
+  deserializeWorkerResult: deserializeShapefileOutput,
   serializeWorkerBatch: serializeShapefileWorkerBatch,
-  deserializeWorkerBatch: deserializeShapefileWorkerBatch
+  deserializeWorkerBatch: deserializeShapefileOutput
 } as const satisfies LoaderWithParser<
   ShapefileOutput | GeoJSONTable | ArrowTable,
   ShapefileOutput | Batch | ArrowTableBatch,
@@ -73,4 +75,31 @@ function getShapefileShape(
   options?: ShapefileLoaderOptions
 ): NonNullable<ShapefileLoaderOptions['shapefile']>['shape'] {
   return options?.shapefile?.shape || 'arrow-table';
+}
+
+/** Materializes requested GeoJSON features from hydrated WKB and property columns on the caller. */
+function deserializeShapefileOutput(result: unknown, options?: ShapefileLoaderOptions): any {
+  const table = deserializeShapefileWorkerResult<ArrowTable & {loaderData?: object}>(result);
+  if (getShapefileShape(options) === 'arrow-table') return table;
+  const features = table.data.toArray().map(row => {
+    const {geometry, ...properties} = row.toJSON();
+    return {
+      type: 'Feature',
+      geometry: geometry ? convertWKBToGeometry(geometry.slice().buffer) : null,
+      properties
+    };
+  });
+  if (getShapefileShape(options) === 'geojson-table' && !('batchType' in table)) {
+    return {
+      ...table.loaderData,
+      shape: 'geojson-table',
+      type: 'FeatureCollection',
+      schema: {
+        fields: table.schema?.fields.filter(field => field.name !== 'geometry') || [],
+        metadata: {}
+      },
+      features
+    };
+  }
+  return {...table.loaderData, data: features};
 }

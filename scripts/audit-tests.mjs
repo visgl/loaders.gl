@@ -206,7 +206,7 @@ function findRemoteFetches(files) {
  * A release branch that fetches fixtures from `master` breaks when fixtures move on `master`.
  */
 function findFixtureBranchViolations() {
-  const remoteFixturesPath = 'test/common/remote-fixtures.ts';
+  const remoteFixturesPath = 'modules/core/src/constants/index.ts';
   const fixtureBranch = /LOADERS_GL_FIXTURE_BRANCH = '([^']+)'/.exec(
     fs.readFileSync(remoteFixturesPath, 'utf8')
   )?.[1];
@@ -217,6 +217,13 @@ function findFixtureBranchViolations() {
   const violations = [];
   // Pull requests report their target branch in GITHUB_BASE_REF; pushes report it in GITHUB_REF_NAME.
   const targetBranch = process.env.GITHUB_BASE_REF || process.env.GITHUB_REF_NAME;
+  if (targetBranch && /^(?:master|\d+\.\d+-release)$/.test(targetBranch)) {
+    const npmTag = /NPM_TAG = '([^']+)'/.exec(fs.readFileSync(remoteFixturesPath, 'utf8'))?.[1];
+    const expectedTag = targetBranch === 'master' ? 'beta' : 'latest';
+    if (npmTag !== expectedTag) {
+      violations.push(`NPM_TAG must be '${expectedTag}' on '${targetBranch}' in ${remoteFixturesPath}`);
+    }
+  }
   if (
     targetBranch &&
     /^(?:master|\d+\.\d+-release)$/.test(targetBranch) &&
@@ -250,7 +257,7 @@ function findFixtureBranchViolations() {
   }
   for (const mismatchedUrl of mismatchedUrls.sort()) {
     violations.push(
-      `loaders.gl fixture URL does not use LOADERS_GL_FIXTURE_BRANCH '${fixtureBranch}' (import from test/common/remote-fixtures): ${mismatchedUrl}`
+      `loaders.gl fixture URL does not use LOADERS_GL_FIXTURE_BRANCH '${fixtureBranch}' (import from @loaders.gl/core/constants): ${mismatchedUrl}`
     );
   }
   return violations;

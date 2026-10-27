@@ -50,7 +50,9 @@ test('every explicit core utility export has emitted types, ESM, and CommonJS ta
   const manifest = JSON.parse(fs.readFileSync('modules/core/package.json', 'utf8'));
   const missing: string[] = [];
   for (const [specifier, target] of Object.entries(manifest.exports)) {
-    if (!utilityNames.some(name => specifier === `./${name}` || specifier.startsWith(`./${name}/`)))
+    if (
+      !utilityNames.some(name => specifier === `./${name}/` || specifier.startsWith(`./${name}/`))
+    )
       continue;
     for (const condition of ['types', 'import', 'require']) {
       const filename = (target as Record<string, string>)[condition];

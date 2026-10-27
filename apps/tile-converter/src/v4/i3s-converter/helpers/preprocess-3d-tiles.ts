@@ -8,7 +8,7 @@ import {
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_structural_metadata_GLTF,
   EXT_FEATURE_METADATA
-} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
 import {parse} from '@loaders.gl/core';
 
 /**

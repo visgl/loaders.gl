@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {LOADERS_GL_RAW_FIXTURE_URL} from 'test/common/remote-fixtures';
+import {LOADERS_GL_RAW_FIXTURE_URL} from '@loaders.gl/core/constants';
 const {fetchNode} = globalThis.loaders || {};
-const PLY_CUBE_ATT_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/ply/test/data/cube_att.ply`;
+const PLY_CUBE_ATT_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/pointclouds/test/ply/data/cube_att.ply`;
 const TEXT_URL = 'modules/core/test/polyfills-package/data/data.txt';
 const TEXT_URL_GZIPPED = 'modules/core/test/polyfills-package/data/data.txt.gz';
 test('polyfills#fetchNode() (NODE)', async () => {

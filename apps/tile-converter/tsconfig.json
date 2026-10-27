@@ -22,7 +22,7 @@
       "path": "../../modules/draco"
     },
     {
-      "path": "../../modules/gltf"
+      "path": "../../modules/scene"
     },
     {
       "path": "../../modules/images"

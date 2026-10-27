@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Get started', to: '/docs/developer-guide/get-started'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'},
-    {label: 'Polyfills', to: '/docs/modules/polyfills/api-reference'}
+    {label: 'Polyfills', to: '/docs/modules/core/polyfills/api-reference'}
   ]}
 />
 
@@ -55,8 +55,7 @@ Over the years, a number of different JavaScript APIs have emerged. Depending on
 loaders.gl standardizes on the `fetch()` API. The result of a `fetch` operation is a `Response` object which can be passed to many loaders.gl functions, meaning that the application can call `fetch()` itself to fully control the requests.
 
 :::info
-The `fetch()` API emerged in browsers, but is now also supported natively on Node, starting with Node.js v18.
-For older Node.js versions, `@loaders.gl/core/polyfills` installs polyfills of `fetch`, `Response` and `Headers` classes.
+`fetch()` is available natively in browsers and all [supported Node.js versions](/docs/developer-guide/node#supported-nodejs-versions).
 :::
 
 ## Local file access
@@ -64,7 +63,7 @@ For older Node.js versions, `@loaders.gl/core/polyfills` installs polyfills of `
 loaders.gl offers a `FileSystem`, `ReadableFile` and `WritableFile` interfaces, and various implementations of these.
 
 For local file access in the browser, the `File` class (a derivate of `Blob`, see below) is the tool of choice.
-It is not clear if a counterpart to the `File` class will eventually be supported by Node.js.
+Supported Node.js versions also provide the `File` class.
 
 > Note that reading local files in the browser has limitations. Actual file paths are obscured and files can only be created as a result of an interactive file selection or file drop action by the user.
 
@@ -116,7 +115,7 @@ The `Buffer` class in Node.js is not supported by browsers. Polyfills are availa
 Therefore loaders.gl tries to avoid use of the `Buffer` class in its core libraries and loaders, preferring to use `ArrayBuffer`, typed arrays and `Blob`s.
 :::
 
-The `Blob` (and `File`) classes in the browser have some unique advantages. They leverage an efficient blob storage mechanism in the browser, and they also enable partial, random-access reads from large blobs in that storage or from local files. `Blob`s are available in Node starting with Node.js v18. For lower versions, a polyfill will be installed by `@laoders.gl/polyfills`.
+`Blob` and `File` support partial, random-access reads from browser storage or local files. Both are available natively in [supported Node.js versions](/docs/developer-guide/node#supported-nodejs-versions).
 
 ## Image APIs
 

@@ -1,0 +1,39 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
+import type {Geometry} from '@loaders.gl/core/schema';
+import {VERSION} from './lib/version';
+import {WKTFormat} from './wkt-format';
+import {convertGeometryToWKT} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
+
+export type WKTWriterOptions = WriterOptions & {
+  wkt?: {};
+};
+
+/**
+ * WKT exporter
+ */
+export const WKTWriter = {
+  ...WKTFormat,
+  name: 'WKT (Well Known Text)',
+  id: 'wkt',
+  module: 'geospatial',
+  version: VERSION,
+  extensions: ['wkt'],
+  mimeTypes: ['application/wkt', 'text/plain'],
+  text: true,
+  encode: async (geometry: Geometry) => convertGeometryToWKTSync(geometry),
+  encodeSync: convertGeometryToWKTSync,
+  encodeTextSync: (geometry: Geometry) => convertGeometryToWKT(geometry),
+  options: {
+    wkt: {}
+  }
+} as const satisfies WriterWithEncoder<Geometry, never, WKTWriterOptions>;
+
+function convertGeometryToWKTSync(geometry: Geometry): ArrayBuffer {
+  const wktString = convertGeometryToWKT(geometry);
+  const wktTypedArray = new TextEncoder().encode(wktString);
+  return wktTypedArray.buffer;
+}

@@ -1,9 +1,9 @@
-import {getMeshAttributes} from '../modules/gltf/test/utils/get-mesh-attributes';
+import {getMeshAttributes} from '../modules/scene/test/gltf/utils/get-mesh-attributes';
 import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {parse} from '@loaders.gl/core';
-import {GLTFScenegraph, GLTFWriter, GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFScenegraph, GLTFWriter, GLTFLoader} from '@loaders.gl/scene/gltf';
 import {I3SContentLoader, parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';

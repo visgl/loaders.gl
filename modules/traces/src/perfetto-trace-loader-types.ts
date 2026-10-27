@@ -10,6 +10,8 @@ import {testPerfettoTrace} from './perfetto-trace-detector';
 /** Perfetto protobuf trace loader options. */
 export type PerfettoTraceLoaderOptions = LoaderOptions & {
   perfettoTrace?: {
+    /** Overrides the shared browser worker bundle URL. */
+    workerUrl?: string;
     /** Maximum rows emitted in one tagged Arrow record batch. */
     batchSize?: number;
     /** Maximum number of incremental-state entries retained per parser. */
@@ -29,6 +31,9 @@ export const PerfettoTraceLoader = {
   name: 'Perfetto Trace Loader',
   id: 'perfettoTrace',
   module: 'traces',
+  worker: true,
+  workerInBatches: true,
+  workerFile: 'trace-worker.js',
   version: 'latest',
   extensions: ['perfetto-trace', 'pftrace'],
   mimeTypes: ['application/x-perfetto-trace', 'application/vnd.google.protobuf'],

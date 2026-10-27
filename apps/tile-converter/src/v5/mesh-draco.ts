@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {DracoLoader, encodeDraco, type DracoMesh} from '@loaders.gl/draco';
-import type {GLTFAccessor} from '@loaders.gl/gltf';
+import type {GLTFAccessor} from '@loaders.gl/scene/gltf';
 import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';

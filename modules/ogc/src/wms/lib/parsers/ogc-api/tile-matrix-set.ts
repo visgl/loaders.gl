@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TileGrid, TileGridMatrix} from '@loaders.gl/core/loader-utils';
+import {validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
 import {getServiceCRSAxisOrder} from '../../../crs-utils';
 import {
   createTileGrid,
@@ -38,8 +39,8 @@ export type OGCTileMatrix = {
   matrixWidth?: number;
   /** Matrix height in tiles. */
   matrixHeight?: number;
-  /** Coalesced rows; nonempty declarations are rejected until variable-width geometry is supported. */
-  variableMatrixWidths?: unknown[];
+  /** Coalesced row bands in native row numbering; complete geometry validates their bounds. */
+  variableMatrixWidths?: readonly import('@math.gl/geospatial/tile-matrix').VariableMatrixWidth[];
 };
 
 /** An OGC TileMatrixSet 2.0 JSON document (OGC 17-083r4). */
@@ -89,7 +90,9 @@ export function convertOGCTileMatrixSetToTileGrid(
   if (new Set(matrices.map(matrix => matrix.id)).size !== matrices.length) {
     throw new Error('OGC TileMatrixSet requires unique tile matrix identifiers');
   }
-  return createTileGrid(crs, matrices);
+  const grid = createTileGrid(crs, matrices);
+  if (matrices.some(matrix => matrix.variableMatrixWidths?.length)) validateTileGrid(grid);
+  return grid;
 }
 
 /** Converts one tile matrix, keeping only the fields the document provides. */
@@ -101,11 +104,8 @@ function toTileGridMatrix(
   if (typeof matrix?.id !== 'string' || !matrix.id) {
     throw new Error('OGC TileMatrixSet tile matrices require a string id');
   }
-  if (
-    matrix.variableMatrixWidths !== undefined &&
-    (!Array.isArray(matrix.variableMatrixWidths) || matrix.variableMatrixWidths.length > 0)
-  ) {
-    throw new Error('OGC TileMatrixSet variableMatrixWidths are not supported');
+  if (matrix.variableMatrixWidths !== undefined && !Array.isArray(matrix.variableMatrixWidths)) {
+    throw new Error('OGC TileMatrixSet variableMatrixWidths require an array');
   }
   if (
     matrix.cellSize !== undefined &&
@@ -136,7 +136,8 @@ function toTileGridMatrix(
     tileWidth: matrix.tileWidth,
     tileHeight: matrix.tileHeight,
     matrixWidth: matrix.matrixWidth,
-    matrixHeight: matrix.matrixHeight
+    matrixHeight: matrix.matrixHeight,
+    variableMatrixWidths: matrix.variableMatrixWidths
   });
 }
 

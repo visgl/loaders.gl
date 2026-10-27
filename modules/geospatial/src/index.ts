@@ -28,3 +28,5 @@ export {FlatGeobufWorkerLoader} from './flatgeobuf/flatgeobuf-loader-types';
 export {GeoPackageFormat} from './geopackage/geopackage-format';
 export {GeoPackageLoader} from './geopackage/geopackage-loader-types';
 export type {GeoPackageLoaderOptions} from './geopackage/geopackage-loader-types';
+
+export * from './wkt/index';

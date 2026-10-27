@@ -1,3 +1,13 @@
+import {
+  decodeChromeTraceArrowSource,
+  readChromeTraceArrowSourceMetadata
+} from './chrome-trace-arrow-adapter';
+import {
+  serializeTraceWorkerResult,
+  deserializeTraceWorkerResult,
+  serializeTraceWorkerBatch,
+  deserializeTraceWorkerBatch
+} from './trace-worker-transport';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -27,6 +37,10 @@ const {preload: _preload, ...ChromeTraceLoaderMetadataWithoutPreload} = ChromeTr
  */
 export const ChromeTraceLoaderWithParser = {
   ...ChromeTraceLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeTraceWorkerResult,
+  deserializeWorkerResult: deserializeChromeTraceWorkerResult,
+  serializeWorkerBatch: serializeTraceWorkerBatch,
+  deserializeWorkerBatch: deserializeTraceWorkerBatch,
   parse: async (arrayBuffer: ArrayBuffer, options?: ChromeTraceLoaderOptions) =>
     parseChromeTraceArrayBuffer(arrayBuffer, options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: ChromeTraceLoaderOptions) =>
@@ -133,5 +147,19 @@ function resolveChromeTraceValidationOptions(
 ): ChromeTraceValidationOptions {
   return {
     maxLength: options?.maxLength
+  };
+}
+
+/** Reconstructs requested Chrome trace JSON only after column hydration on the caller. */
+function deserializeChromeTraceWorkerResult(
+  result: unknown,
+  options?: ChromeTraceLoaderOptions
+): ChromeTraceFileSchema | ChromeTraceEventArrowTable {
+  const table = deserializeTraceWorkerResult(result) as ChromeTraceEventArrowTable;
+  if (resolveChromeTraceLoaderShape(options) === 'arrow-table') return table;
+  return {
+    ...JSON.parse(table.schema.metadata.get('chromeTrace.containerJson') || '{}'),
+    traceEvents: decodeChromeTraceArrowSource(table),
+    ...readChromeTraceArrowSourceMetadata(table)
   };
 }

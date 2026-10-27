@@ -138,12 +138,6 @@
       "types": "./dist/shapefile/unbundled.d.ts",
       "import": "./dist/shapefile/unbundled.js"
     },
-    "./shp-worker.js": {
-      "import": "./dist/shp-worker.js"
-    },
-    "./dbf-worker.js": {
-      "import": "./dist/dbf-worker.js"
-    },
     "./kml": {
       "types": "./dist/kml/index.d.ts",
       "import": "./dist/kml/index.js",
@@ -212,9 +206,6 @@
       "import": "./dist/flatgeobuf/index.js",
       "require": "./dist/flatgeobuf/index.cjs"
     },
-    "./flatgeobuf-worker.js": {
-      "import": "./dist/flatgeobuf-worker.js"
-    },
     "./geopackage/geopackage-format": {
       "types": "./dist/geopackage/geopackage-format.d.ts",
       "import": "./dist/geopackage/geopackage-format.js"
@@ -252,19 +243,134 @@
     "./geopackage/geopackage-loader-options": {
       "types": "./dist/geopackage/geopackage-loader-options.d.ts",
       "import": "./dist/geopackage/geopackage-loader-options.js"
+    },
+    "./wkt": {
+      "types": "./dist/wkt/index.d.ts",
+      "import": "./dist/wkt/index.js",
+      "require": "./dist/wkt/index.cjs"
+    },
+    "./wkt/bundled": {
+      "types": "./dist/wkt/bundled.d.ts",
+      "import": "./dist/wkt/bundled.js",
+      "require": "./dist/wkt/bundled.cjs"
+    },
+    "./wkt/hex-wkb-loader-types": {
+      "types": "./dist/wkt/hex-wkb-loader-types.d.ts",
+      "import": "./dist/wkt/hex-wkb-loader-types.js",
+      "require": "./dist/wkt/hex-wkb-loader-types.cjs"
+    },
+    "./wkt/hex-wkb-loader": {
+      "types": "./dist/wkt/hex-wkb-loader.d.ts",
+      "import": "./dist/wkt/hex-wkb-loader.js",
+      "require": "./dist/wkt/hex-wkb-loader.cjs"
+    },
+    "./wkt/index": {
+      "types": "./dist/wkt/index.d.ts",
+      "import": "./dist/wkt/index.js",
+      "require": "./dist/wkt/index.cjs"
+    },
+    "./wkt/twkb-loader-types": {
+      "types": "./dist/wkt/twkb-loader-types.d.ts",
+      "import": "./dist/wkt/twkb-loader-types.js",
+      "require": "./dist/wkt/twkb-loader-types.cjs"
+    },
+    "./wkt/twkb-loader": {
+      "types": "./dist/wkt/twkb-loader.d.ts",
+      "import": "./dist/wkt/twkb-loader.js",
+      "require": "./dist/wkt/twkb-loader.cjs"
+    },
+    "./wkt/twkb-writer": {
+      "types": "./dist/wkt/twkb-writer.d.ts",
+      "import": "./dist/wkt/twkb-writer.js",
+      "require": "./dist/wkt/twkb-writer.cjs"
+    },
+    "./wkt/unbundled": {
+      "types": "./dist/wkt/unbundled.d.ts",
+      "import": "./dist/wkt/unbundled.js",
+      "require": "./dist/wkt/unbundled.cjs"
+    },
+    "./wkt/wkb-loader-types": {
+      "types": "./dist/wkt/wkb-loader-types.d.ts",
+      "import": "./dist/wkt/wkb-loader-types.js",
+      "require": "./dist/wkt/wkb-loader-types.cjs"
+    },
+    "./wkt/wkb-loader": {
+      "types": "./dist/wkt/wkb-loader.d.ts",
+      "import": "./dist/wkt/wkb-loader.js",
+      "require": "./dist/wkt/wkb-loader.cjs"
+    },
+    "./wkt/wkb-writer": {
+      "types": "./dist/wkt/wkb-writer.d.ts",
+      "import": "./dist/wkt/wkb-writer.js",
+      "require": "./dist/wkt/wkb-writer.cjs"
+    },
+    "./wkt/wkt-crs-loader-types": {
+      "types": "./dist/wkt/wkt-crs-loader-types.d.ts",
+      "import": "./dist/wkt/wkt-crs-loader-types.js",
+      "require": "./dist/wkt/wkt-crs-loader-types.cjs"
+    },
+    "./wkt/wkt-crs-loader": {
+      "types": "./dist/wkt/wkt-crs-loader.d.ts",
+      "import": "./dist/wkt/wkt-crs-loader.js",
+      "require": "./dist/wkt/wkt-crs-loader.cjs"
+    },
+    "./wkt/wkt-crs-writer": {
+      "types": "./dist/wkt/wkt-crs-writer.d.ts",
+      "import": "./dist/wkt/wkt-crs-writer.js",
+      "require": "./dist/wkt/wkt-crs-writer.cjs"
+    },
+    "./wkt/wkt-format": {
+      "types": "./dist/wkt/wkt-format.d.ts",
+      "import": "./dist/wkt/wkt-format.js",
+      "require": "./dist/wkt/wkt-format.cjs"
+    },
+    "./wkt/wkt-loader-types": {
+      "types": "./dist/wkt/wkt-loader-types.d.ts",
+      "import": "./dist/wkt/wkt-loader-types.js",
+      "require": "./dist/wkt/wkt-loader-types.cjs"
+    },
+    "./wkt/wkt-loader": {
+      "types": "./dist/wkt/wkt-loader.d.ts",
+      "import": "./dist/wkt/wkt-loader.js",
+      "require": "./dist/wkt/wkt-loader.cjs"
+    },
+    "./wkt/wkt-writer": {
+      "types": "./dist/wkt/wkt-writer.d.ts",
+      "import": "./dist/wkt/wkt-writer.js",
+      "require": "./dist/wkt/wkt-writer.cjs"
+    },
+    "./wkb": {
+      "types": "./dist/wkb.d.ts",
+      "import": "./dist/wkb.js",
+      "require": "./dist/wkb.cjs"
+    },
+    "./twkb": {
+      "types": "./dist/twkb.d.ts",
+      "import": "./dist/twkb.js",
+      "require": "./dist/twkb.cjs"
+    },
+    "./wkt-worker.js": {
+      "import": "./dist/wkt-worker.js"
+    },
+    "./shapefile-worker.js": {
+      "import": "./dist/shapefile-worker.js"
     }
   },
   "sideEffects": false,
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "WKT-README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker-shp-shapefile && npm run build-worker-dbf-shapefile && npm run build-worker-flatgeobuf",
+    "pre-build": "npm run build-worker-shp-shapefile && npm run build-worker-dbf-shapefile && npm run build-worker-flatgeobuf && npm run build-worker-wkt && npm run build-format-subpaths && npm run build-worker-shapefile",
     "build-worker-shp-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-dbf-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-flatgeobuf": "node ../../scripts/build-codec-worker.mjs src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-flatgeobuf": "node ../../scripts/build-codec-worker.mjs src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-wkt": "esbuild src/wkt/workers/wkt-worker.ts --bundle --outfile=dist/wkt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
+    "build-worker-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/shapefile-worker.ts --bundle --outfile=dist/shapefile-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/archives": "5.0.0-alpha.14",
@@ -286,6 +392,7 @@
     }
   },
   "devDependencies": {
+    "fuzzer": "^0.2.1",
     "sql.js": "1.14.1"
   }
 }

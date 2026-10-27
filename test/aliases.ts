@@ -38,12 +38,12 @@ function makeAliases() {
       './modules/geospatial/test/geopackage'
     ),
     '@loaders.gl/raster/test/geotiff': resolveTestPath('./modules/raster/test/geotiff'),
-    '@loaders.gl/gltf/test': resolveTestPath('./modules/gltf/test'),
+    '@loaders.gl/scene/gltf/test': resolveTestPath('./modules/scene/test/gltf'),
     '@loaders.gl/tiles-3d/i3s/test': resolveTestPath('./modules/tiles-3d/test/i3s'),
     '@loaders.gl/images/test': resolveTestPath('./modules/images/test'),
     '@loaders.gl/tables/json/test': resolveTestPath('./modules/tables/test/json'),
     '@loaders.gl/geospatial/kml/test': resolveTestPath('./modules/geospatial/test/kml'),
-    '@loaders.gl/las/test': resolveTestPath('./modules/las/test'),
+    '@loaders.gl/pointclouds/las/test': resolveTestPath('./modules/pointclouds/test/las'),
     '@loaders.gl/core/loader-utils/test': resolveTestPath(
       './modules/core/test/loader-utils-package'
     ),
@@ -52,12 +52,12 @@ function makeAliases() {
     '@loaders.gl/tiles/mvt/test': resolveTestPath('./modules/tiles/test/mvt'),
     '@loaders.gl/scientific/test/netcdf': resolveTestPath('./modules/scientific/test/netcdf'),
     '@loaders.gl/scientific/test/zarr': resolveTestPath('./modules/scientific/test/zarr'),
-    '@loaders.gl/obj/test': resolveTestPath('./modules/obj/test'),
+    '@loaders.gl/scene/obj/test': resolveTestPath('./modules/scene/test/obj'),
     '@loaders.gl/tables/parquet/test': resolveTestPath('./modules/tables/test/parquet'),
     '@loaders.gl/tables/lance/test': resolveTestPath('./modules/tables/test/lance'),
     '@loaders.gl/tables/orc/test': resolveTestPath('./modules/tables/test/orc'),
-    '@loaders.gl/pcd/test': resolveTestPath('./modules/pcd/test'),
-    '@loaders.gl/ply/test': resolveTestPath('./modules/ply/test'),
+    '@loaders.gl/pointclouds/pcd/test': resolveTestPath('./modules/pointclouds/test/pcd'),
+    '@loaders.gl/pointclouds/ply/test': resolveTestPath('./modules/pointclouds/test/ply'),
     '@loaders.gl/splats/test': resolveTestPath('./modules/splats/test'),
     '@loaders.gl/ogc/stac/test': resolveTestPath('./modules/ogc/test/stac'),
     '@loaders.gl/tiles/pmtiles/test': resolveTestPath('./modules/tiles/test/pmtiles'),
@@ -71,7 +71,7 @@ function makeAliases() {
     '@loaders.gl/tiles/test': resolveTestPath('./modules/tiles/test'),
     '@loaders.gl/traces/test': resolveTestPath('./modules/traces/test'),
     '@loaders.gl/video/test': resolveTestPath('./modules/video/test'),
-    '@loaders.gl/wkt/test': resolveTestPath('./modules/wkt/test'),
+    '@loaders.gl/geospatial/wkt/test': resolveTestPath('./modules/geospatial/test/wkt'),
     '@loaders.gl/ogc/wms/test': resolveTestPath('./modules/ogc/test/wms'),
     '@loaders.gl/core/worker-utils/test': resolveTestPath(
       './modules/core/test/worker-utils-package'

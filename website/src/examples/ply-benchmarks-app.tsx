@@ -7,10 +7,10 @@ import React, {useEffect, useState} from 'react';
 import {Bench, type LogEntry} from 'probe.gl/bench';
 import {BenchResults} from '../components/bench-results';
 import {parse} from '@loaders.gl/core';
-import {PLYLoader} from '@loaders.gl/ply/bundled';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply/bundled';
 
 const GAUSSIAN_SPLAT_PLY_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/ply/test/data/gaussian/train-1000.ply';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/pointclouds/test/ply/data/gaussian/train-1000.ply';
 const SPLAT_COUNT = 1000;
 const BENCHMARK_OPTIONS = {minIterations: 3, multiplier: SPLAT_COUNT, unit: 'splats'};
 

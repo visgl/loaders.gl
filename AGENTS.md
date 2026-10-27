@@ -19,7 +19,7 @@
 - Chromium is the canonical runtime for browser-capable behavior. Plain `*.spec.ts` files run in Chromium; use `*.browser.spec.ts` when the test specifically requires browser APIs, `*.cross.spec.ts` only for the small compatibility set that also runs in Node, and `*.node.spec.ts` only for genuine Node-only APIs or behavior.
 - Keep required pull-request tests fast and hermetic. Put expensive exhaustive matrices, large-fixture parses, and long fuzz corpora in `*.slow.spec.ts` (or `*.node.slow.spec.ts`), and put live-service checks in `*.external.spec.ts`. Fast and slow-hermetic projects must not access the public network.
 - Prefer high-signal behavior and boundary coverage over test count. Test an implementation exhaustively in its owning module, then keep only focused public-entrypoint or integration conformance in wrapper modules; do not duplicate the same fixture, call, and assertions across packages.
-- Build remote loaders.gl fixture URLs from `test/common/remote-fixtures`. Its `LOADERS_GL_FIXTURE_BRANCH` names the branch the tests live on (`master`, or e.g. `4.4-release` on a release branch); change it when cutting a release branch. `yarn test-audit` fails when a test hard-codes another branch, or when CI targets a branch other than `LOADERS_GL_FIXTURE_BRANCH`.
+- Build remote loaders.gl fixture URLs from `@loaders.gl/core/constants`. Its `LOADERS_GL_FIXTURE_BRANCH` names the branch the tests live on (`master`, or e.g. `4.4-release` on a release branch); change it when cutting a release branch. `yarn test-audit` fails when a test hard-codes another branch, or when CI targets a branch other than `LOADERS_GL_FIXTURE_BRANCH`.
 - Use the smallest deterministic fixture that exercises the behavior. Fixtures over 1 MiB require an audited exception in the fast suite. Keep one representative large end-to-end parse in the slow lane when scale itself is meaningful.
 - Parse immutable fixture data once with `beforeAll` when multiple assertions inspect the same result. Tests that mutate a result must clone it or parse independently so state cannot leak between cases.
 - Write every new test case, and every substantially revised test, with native Vitest syntax (`test`, `describe`, `test.each`, lifecycle hooks, mocks, and `expect`). Do not use Tape or its retired compatibility shim; the test audit rejects these imports.
@@ -80,6 +80,8 @@
 
 ## Notes
 
+- Keep `NPM_TAG` in `modules/core/src/constants/index.ts` set to `beta` on `master` and `latest` on release branches. Update `LOADERS_GL_FIXTURE_BRANCH` when cutting a release branch.
+
 - Keep `@loaders.gl/core/polyfills` independent: its implementation must not import the core root, other core subpath entry points, or other `@loaders.gl/*` modules. Put the small Node-specific helpers it needs inside the polyfills subpath instead of creating package or entry-point cycles.
 - Published loaders.gl modules may import independent `@loaders.gl/core/*` subpaths when they need those APIs. Declare `@loaders.gl/core` as a peer dependency, not an exact runtime dependency, and never list a subpath as a package dependency. Keep the core root entry point independent of optional subpath dependencies.
 - Avoid importing node specific files unless in specific functions that are intentionally designed to handle both cases. For instance, `fetchFile` handles both browser and Node.js, so importing `fs` is almost never required.
@@ -108,3 +110,7 @@
 - Core utility subpaths may contain format-neutral scan, geometry construction, conversion, and codec helpers. Actual format loader/writer descriptors and format-specific source adapters belong in their format modules.
 - Keep scan, arrow-geometry, geoarrow, and wkt out of the core root exports. Core implementations must not import other loaders.gl packages; database backends register against core scan APIs from the SQL package.
 - The standalone scan, arrow-geometry, and geoarrow packages are removed. Do not restore forwarding packages or compatibility dependency edges.
+
+- LAS/LAZ, PCD and PLY implementations belong in `@loaders.gl/pointclouds` format subpaths; PLY retains both point-cloud and mesh/face support. COPC and Potree remain in tiles-3d.
+- Scene owns OBJ/MTL, glTF/GLB and USD through `/obj`, `/gltf` and `/usd`; geospatial owns WKT/WKB/TWKB loaders and writers. Do not restore their removed standalone packages.
+- Pointclouds, scene and Draco use Arrow transport directly from core/schema-utils/arrow-transport, without tables forwarding imports or dependencies.

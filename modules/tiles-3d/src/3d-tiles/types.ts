@@ -10,7 +10,7 @@ import type {
   GLTFVoxelPrimitive,
   GLTFPrimitiveIndexRange,
   FeatureTableJson
-} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
 export type {FeatureTableJson};
 
 import {LoaderWithParser} from '@loaders.gl/core/loader-utils';

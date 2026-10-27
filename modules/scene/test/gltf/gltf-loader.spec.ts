@@ -1,0 +1,432 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {expect, test, vi} from 'vitest';
+import {validateLoader} from 'test/common/conformance';
+import {registerLoaders, load, parse, parseSync, fetchFile, encodeSync} from '@loaders.gl/core';
+import {
+  GLTFLoader,
+  GLTFWriter,
+  getGLTFAccessorValue,
+  type GLTFLoaderOptions
+} from '@loaders.gl/scene/gltf';
+import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
+import {DracoLoader} from '@loaders.gl/draco';
+import {ImageBitmapLoader} from '@loaders.gl/images';
+import {getGLTFImageOptions} from '../../src/gltf/lib/parsers/parse-gltf';
+import {createGLBV3} from './test-utils/create-glb-v3';
+import {createGLBV1} from './test-utils/create-glb-v1';
+import {createSkinAsset, BAKED_MATRICES} from './test-utils/create-gltf-v1-skin';
+import {createAccessorAsset} from './test-utils/create-gltf-v1-accessor';
+import {createGLTFV1ConformanceAsset} from './test-utils/create-gltf-v1-conformance';
+import {getTypedArrayForAccessor} from '../../src/gltf/lib/gltf-utils/get-typed-array';
+const GLTF_BINARY_URL = '@loaders.gl/scene/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
+const GLTF_JSON_URL = '@loaders.gl/scene/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
+const PNG_DATA_URL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';
+
+test('GLTFLoader forwards core.log to diagnostics after linked glTF 1 buffers load', async () => {
+  const emitWarning = vi.fn();
+  const logger = {log: vi.fn(() => vi.fn()), warn: vi.fn(() => emitWarning)};
+  const source = createAccessorAsset(
+    {
+      accessors: {color: {bufferView: 'view', componentType: 5121, count: 1, type: 'VEC4'}},
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {COLOR: 'color'}}]}}
+    },
+    4
+  );
+  (source.json.buffers as any).data.uri = 'data:application/octet-stream;base64,/4AA/w==';
+  const parsed = await parse(JSON.stringify(source.json), GLTFLoader, {
+    core: {log: logger},
+    gltf: {loadImages: false}
+  });
+  expect(parsed.json.accessors![0].normalized).toBe(true);
+  expect(logger.warn).toHaveBeenCalledWith(
+    expect.stringContaining('assumes normalized unsigned values')
+  );
+  expect(emitWarning).toHaveBeenCalledOnce();
+});
+// Extracted from Cesium 3D Tiles
+const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/scene/gltf/test/data/3d-tiles/143.glb';
+const GLB_V1_TILE_CESIUM_AIR_URL = '@loaders.gl/scene/gltf/test/data/3d-tiles/Cesium_Air.glb';
+const GLB_TILE_URL = '@loaders.gl/scene/gltf/test/data/3d-tiles/tile.glb';
+test('GLTFLoader#loader conformance', () => {
+  validateLoader(GLTFLoader, 'GLTFLoader');
+});
+test('GLTFLoader#parseSync()', async () => {
+  const response = await fetchFile(GLTF_JSON_URL);
+  const data = await response.text();
+  expect(
+    () => parseSync(data, GLTFLoader),
+    'GLTFLoader throws when synchronously parsing gltfs'
+  ).toThrow();
+});
+test('GLTFLoader#load(binary)', async () => {
+  const data = await load(GLTF_BINARY_URL, GLTFLoader);
+  expect(data.json.asset, 'GLTFLoader returned parsed data').toBeTruthy();
+});
+test('GLTFLoader#parse() loads a draft glTF 2.1 thumbnail image', async () => {
+  const gltf = await parse(
+    JSON.stringify({
+      asset: {version: '2.1', thumbnail: 0},
+      images: [{uri: PNG_DATA_URL}]
+    }),
+    GLTFLoader
+  );
+  expect(gltf.images?.[0], 'loads an image referenced only by asset.thumbnail').toBeTruthy();
+});
+test('GLTFLoader#parse(v1) converts a reordered binary body and a data-URI buffer by default', async () => {
+  const binary = createGLBV1(
+    {
+      asset: {version: '1.0'},
+      buffers: {
+        '0': {uri: 'data:application/octet-stream;base64,AQIDBA==', byteLength: 4},
+        binary_glTF: {uri: 'data:,', byteLength: 4}
+      },
+      bufferViews: {
+        external: {buffer: '0', byteLength: 4},
+        embedded: {buffer: 'binary_glTF', byteLength: 4}
+      }
+    },
+    new Uint8Array([5, 6, 7, 8])
+  );
+
+  const gltf = await parse(binary, GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+
+  expect(gltf.json.asset.version).toBe('2.0');
+  expect(gltf.json.bufferViews).toMatchObject([{buffer: 1}, {buffer: 0}]);
+  expect(
+    gltf.buffers.map(buffer =>
+      Array.from(new Uint8Array(buffer.arrayBuffer, buffer.byteOffset, buffer.byteLength))
+    )
+  ).toEqual([
+    [5, 6, 7, 8],
+    [1, 2, 3, 4]
+  ]);
+});
+test.each([
+  'JSON',
+  'GLB 1'
+])('GLTFLoader bakes legacy bind shapes after loading %s buffers', async container => {
+  const source = createSkinAsset({bufferId: container === 'JSON' ? 'external' : 'binary_glTF'});
+  const buffer = source.buffers[0];
+  const payload = buffer.arrayBuffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  );
+  const rawJson = source.json as unknown as Record<string, unknown>;
+  if (container === 'JSON') {
+    (rawJson.buffers as Record<string, {uri: string}>).external.uri =
+      `data:application/octet-stream;base64,${encodeArrayBufferToBase64(payload)}`;
+  }
+  const input =
+    container === 'JSON' ? JSON.stringify(rawJson) : createGLBV1(rawJson, new Uint8Array(payload));
+  const converted = await parse(input, GLTFLoader, {
+    gltf: {normalize: 'strict', loadImages: false}
+  });
+  expect(converted.json.skins?.[0]).not.toHaveProperty('bindShapeMatrix');
+  expect(converted.buffers).toHaveLength(1);
+  expect(
+    Array.from(
+      getTypedArrayForAccessor(
+        converted.json,
+        converted.buffers,
+        converted.json.skins![0].inverseBindMatrices!
+      )
+    )
+  ).toEqual(BAKED_MATRICES);
+  const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+  expect(roundTrip.json.asset.version).toBe('2.0');
+  expect(
+    Array.from(
+      getTypedArrayForAccessor(
+        roundTrip.json,
+        roundTrip.buffers,
+        roundTrip.json.skins![0].inverseBindMatrices!
+      )
+    )
+  ).toEqual(BAKED_MATRICES);
+});
+
+test('GLTFLoader strict bind baking requires linked buffers to be loaded', async () => {
+  const source = createSkinAsset({bufferId: 'external', uri: 'matrices.bin'});
+  await expect(
+    parse(JSON.stringify(source.json), GLTFLoader, {
+      gltf: {normalize: 'strict', loadBuffers: false, loadImages: false}
+    })
+  ).rejects.toThrow(/loaded inverse-bind buffer/);
+});
+
+test('GLTFLoader repairs loaded glTF 1 strides and joint types before a GLB 2 round trip', async () => {
+  const source = createAccessorAsset(
+    {
+      accessors: {
+        joints: {bufferView: 'view', componentType: 5126, count: 1, type: 'VEC4'},
+        matrix: {bufferView: 'view', byteOffset: 16, componentType: 5121, count: 1, type: 'MAT3'}
+      },
+      meshes: {mesh: {primitives: [{mode: 0, attributes: {JOINT: 'joints'}}]}}
+    },
+    25
+  );
+  new Float32Array(source.buffers[0].arrayBuffer, 0, 4).set([0, 256, 1, 2]);
+  new Uint8Array(source.buffers[0].arrayBuffer, 16, 9).set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  const rawJson = source.json as unknown as Record<string, unknown>;
+  (rawJson.buffers as Record<string, {uri: string}>).data.uri =
+    `data:application/octet-stream;base64,${encodeArrayBufferToBase64(source.buffers[0].arrayBuffer.slice(0, 25))}`;
+  const converted = await parse(JSON.stringify(rawJson), GLTFLoader, {
+    gltf: {normalize: 'strict', loadImages: false}
+  });
+  const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+  expect(roundTrip.json.accessors![0].componentType).toBe(5123);
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 0))).toEqual([
+    0, 256, 1, 2
+  ]);
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 1))).toEqual([
+    1, 2, 3, 4, 5, 6, 7, 8, 9
+  ]);
+});
+
+test('GLTFLoader#parse(v3) resolves explicit buffer chunk indices', async () => {
+  const data = createGLBV3(
+    {
+      asset: {version: '2.1'},
+      buffers: [
+        {byteLength: 4, chunk: 3},
+        {byteLength: 4, chunk: 2}
+      ]
+    },
+    [new Uint8Array([1, 2, 3, 4]), new Uint8Array([5, 6, 7, 8])],
+    [{type: 0x54534554, data: new Uint8Array([9, 10, 11, 12])}]
+  );
+  const gltf = await parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}});
+  const firstBuffer = new Uint8Array(
+    gltf.buffers[0].arrayBuffer,
+    gltf.buffers[0].byteOffset,
+    gltf.buffers[0].byteLength
+  );
+  const secondBuffer = new Uint8Array(
+    gltf.buffers[1].arrayBuffer,
+    gltf.buffers[1].byteOffset,
+    gltf.buffers[1].byteLength
+  );
+  expect(Array.from(firstBuffer), 'resolves buffer 0 from chunk 3').toEqual([5, 6, 7, 8]);
+  expect(Array.from(secondBuffer), 'resolves buffer 1 from chunk 2').toEqual([1, 2, 3, 4]);
+});
+test('GLTFLoader#parse(v3) preserves legacy implicit buffer mapping', async () => {
+  const data = createGLBV3({asset: {version: '2.1'}, buffers: [{byteLength: 4}]}, [
+    new Uint8Array([1, 2, 3, 4])
+  ]);
+  const gltf = await parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}});
+  const buffer = new Uint8Array(
+    gltf.buffers[0].arrayBuffer,
+    gltf.buffers[0].byteOffset,
+    gltf.buffers[0].byteLength
+  );
+  expect(Array.from(buffer), 'maps the classic JSON-then-BIN layout').toEqual([1, 2, 3, 4]);
+});
+test('GLTFLoader#parse(v3) rejects implicit buffers outside the legacy layout', async () => {
+  const data = createGLBV3(
+    {asset: {version: '2.1'}, buffers: [{byteLength: 4}]},
+    [new Uint8Array([1, 2, 3, 4])],
+    [{type: 0x54534554, data: new Uint8Array([9, 10, 11, 12])}]
+  );
+  await expect(
+    parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}}),
+    'does not replace an unresolved buffer with zero-filled bytes'
+  ).rejects.toThrow(/buffer 0 without a uri must define a valid GLB v3 chunk/);
+});
+test('GLTFLoader#parse(v3) rejects missing buffer chunks', async () => {
+  const data = createGLBV3({
+    asset: {version: '2.1'},
+    buffers: [{byteLength: 4, chunk: 2}]
+  });
+  await expect(
+    parse(data, GLTFLoader, {gltf: {loadBuffers: true, loadImages: false}}),
+    'rejects a chunk index that does not select a BIN chunk'
+  ).rejects.toThrow(/buffer 0 references missing GLB BIN chunk 2/);
+});
+test('GLTFLoader#parse(v3) loads embedded glTF 2.1 files', async () => {
+  const data = createGLBV3(
+    {
+      asset: {version: '2.1'},
+      buffers: [{byteLength: 4}],
+      bufferViews: [{buffer: 0, byteLength: 4}],
+      files: [{name: 'nested.glb', mimeType: 'model/gltf-binary', bufferView: 0}]
+    },
+    [new Uint8Array([1, 2, 3, 4])]
+  );
+  const gltf = await parse(data, GLTFLoader, {
+    gltf: {loadBuffers: true, loadFiles: true, loadImages: false}
+  });
+  const file = gltf.files?.[0];
+  expect(file, 'returns a parallel resolved file entry').toBeTruthy();
+  if (!file) {
+    return;
+  }
+  expect(file.name, 'preserves the virtual package name').toBe('nested.glb');
+  expect(
+    Array.from(new Uint8Array(file.arrayBuffer, file.byteOffset, file.byteLength)),
+    'loads file bytes from its buffer view'
+  ).toEqual([1, 2, 3, 4]);
+});
+test('GLTFLoader#load(binary)', async () => {
+  const data = await load(GLTF_BINARY_URL, GLTFLoader);
+  expect(data.buffers, 'GLTFLoader without post-processing returned data.buffers').toBeTruthy();
+  expect(data.images, 'GLTFLoader without post-processing returned data.images').toBeTruthy();
+  expect(data.json, 'GLTFLoader without post-processing returned data.json').toBeTruthy();
+  expect((data as any)._glb, 'GLTFLoader without post-processing returned data._glb').toBeTruthy();
+});
+test('GLTFLoader#load(text)', async () => {
+  const data = await load(GLTF_JSON_URL, GLTFLoader, {gltf: {loadImages: false}});
+  expect(data.json.asset, 'GLTFLoader returned parsed data').toBeTruthy();
+});
+test('GLTFLoader#Basis image options', () => {
+  const loaderOptions: GLTFLoaderOptions = {
+    core: {worker: true},
+    basis: {
+      supportedTextureFormats: ['bc3-rgba-unorm'],
+      containerFormat: 'ktx2'
+    }
+  };
+  const imageOptions = getGLTFImageOptions(loaderOptions, 'image/ktx2');
+  expect(
+    imageOptions.basis,
+    'preserves automatic selection until the worker can inspect the source codec'
+  ).toEqual({
+    supportedTextureFormats: ['bc3-rgba-unorm'],
+    containerFormat: 'ktx2',
+    format: 'auto'
+  });
+  expect(imageOptions.core?.worker, 'preserves core options').toBe(true);
+  expect(imageOptions.core?.mimeType, 'sets the image MIME type').toBe('image/ktx2');
+  expect(loaderOptions.basis?.format, 'does not mutate the supplied options').toBeFalsy();
+  const explicitFormatOptions = getGLTFImageOptions({
+    basis: {
+      format: 'rgba32'
+    }
+  });
+  expect(explicitFormatOptions.basis, 'preserves an explicit Basis format').toEqual({
+    format: 'rgba32'
+  });
+});
+test('GLTFLoader#load(3d tile GLB)', async () => {
+  const result = await load(GLB_TILE_URL, [GLTFLoader, DracoLoader]);
+  expect(result, 'Test that GLB from 3D tile parses').toBeTruthy();
+  const result2 = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageBitmapLoader]);
+  expect(result2, 'Parses Draco GLB with supplied DracoLoader').toBeTruthy();
+  // TODO - prone to flakiness since we have async unregisterLoaders calls
+  registerLoaders([DracoLoader, ImageBitmapLoader]);
+  const gltf2 = await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader);
+  expect(gltf2, 'Parses Draco GLB with default registered DracoLoader').toBeTruthy();
+});
+test('GLTFLoader#load(glTF v1)', async () => {
+  await expect(
+    load(GLB_V1_TILE_CESIUM_AIR_URL, GLTFLoader, {gltf: {normalize: false}}),
+    'glTF v1 generates error message'
+  ).rejects.toThrow(/glTF v1 is not supported/);
+  const gltf1 = await load(GLB_V1_TILE_CESIUM_AIR_URL, GLTFLoader, {gltf: {normalize: true}});
+  expect(gltf1, 'glTF v1 was normalized without errors').toBeTruthy();
+});
+// Check load options
+test('GLTFLoader#options+getGLTFAccessorValue', async () => {
+  const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
+  const value = getGLTFAccessorValue(
+    gltfWithBuffers,
+    gltfWithBuffers.json.meshes![0].primitives[0].attributes.POSITION
+  );
+  expect(
+    ArrayBuffer.isView(value),
+    'GLTFLoader+getGLTFAccessorValue() resolves accessor value as typed array'
+  ).toBeTruthy();
+  expect(value.length, 'GLTFLoader+getGLTFAccessorValue() resolves accessor value length').toBe(
+    6036
+  );
+});
+
+test.each([
+  'JSON',
+  'GLB 1'
+])('GLTFLoader completes multi-root, matrix, influence, and bounds conversion after loading %s buffers', async container => {
+  const source = createGLTFV1ConformanceAsset();
+  const json = source.json as any;
+  json.nodes.root.matrix = [0, 2, 0, 0, -3, 0, 0, 0, 0, 0, 4, 0, 7, 0, 0, 1];
+  delete json.nodes.root.translation;
+  delete json.nodes.root.children;
+  json.nodes.common = {children: ['root', 'child'], translation: [5, 6, 7]};
+  json.nodes.instance.skeletons = ['root', 'child'];
+  const buffer = source.buffers[0];
+  const payload = buffer.arrayBuffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  );
+  if (container === 'GLB 1') {
+    json.buffers.binary_glTF = json.buffers.data;
+    delete json.buffers.data;
+    json.bufferViews.view.buffer = 'binary_glTF';
+  } else {
+    json.buffers.data.uri = `data:application/octet-stream;base64,${encodeArrayBufferToBase64(payload)}`;
+  }
+  const input =
+    container === 'JSON' ? JSON.stringify(json) : createGLBV1(json, new Uint8Array(payload));
+  const converted = await parse(input, GLTFLoader, {
+    gltf: {normalize: 'strict', loadImages: false}
+  });
+  const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+  expect(roundTrip.json.scenes![0].nodes).toEqual([2, 3]);
+  expect(roundTrip.json.skins![0]).toMatchObject({joints: [0, 1], skeleton: 3});
+  expect(roundTrip.json.nodes![0]).toMatchObject({translation: [7, 0, 0], scale: [2, 3, 4]});
+  expect(roundTrip.json.nodes![0].matrix).toBeUndefined();
+  expect(roundTrip.json.nodes![0].rotation![2]).toBeCloseTo(Math.SQRT1_2);
+  expect(roundTrip.json.nodes![0].rotation![3]).toBeCloseTo(Math.SQRT1_2);
+  expect(roundTrip.json.nodes![3]).toMatchObject({translation: [5, 6, 7], children: [0, 1]});
+  expect(roundTrip.json.accessors![0]).toMatchObject({min: [-1, 2, 2], max: [1, 5, 3]});
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 2))).toEqual([
+    0.25, 0.75, 0, 0, 1, 0, 0, 0
+  ]);
+});
+
+test('GLTFLoader widens loaded legacy byte indices before a GLB 2 round trip', async () => {
+  const positions = new Float32Array(256 * 3);
+  positions[255 * 3] = 1;
+  const payload = new Uint8Array(positions.byteLength + 1);
+  payload.set(new Uint8Array(positions.buffer));
+  payload[positions.byteLength] = 255;
+  const source = {
+    asset: {version: '1.0'},
+    buffers: {
+      data: {
+        byteLength: payload.byteLength,
+        uri: `data:application/octet-stream;base64,${encodeArrayBufferToBase64(payload.buffer)}`
+      }
+    },
+    bufferViews: {
+      positions: {buffer: 'data', byteLength: positions.byteLength},
+      indices: {buffer: 'data', byteOffset: positions.byteLength, byteLength: 1}
+    },
+    accessors: {
+      positions: {bufferView: 'positions', componentType: 5126, type: 'VEC3', count: 256},
+      indices: {bufferView: 'indices', componentType: 5121, type: 'SCALAR', count: 1}
+    },
+    meshes: {
+      mesh: {primitives: [{mode: 0, attributes: {POSITION: 'positions'}, indices: 'indices'}]}
+    }
+  };
+  const converted = await parse(JSON.stringify(source), GLTFLoader, {
+    gltf: {normalize: 'strict', loadImages: false}
+  });
+  const roundTrip = await parse(encodeSync(converted, GLTFWriter), GLTFLoader, {
+    gltf: {loadImages: false}
+  });
+  expect(roundTrip.json.accessors![1].componentType).toBe(5123);
+  expect(Array.from(getTypedArrayForAccessor(roundTrip.json, roundTrip.buffers, 1))).toEqual([255]);
+  expect(roundTrip.json.accessors![0]).toMatchObject({min: [0, 0, 0], max: [1, 0, 0]});
+});

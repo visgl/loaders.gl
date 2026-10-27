@@ -144,7 +144,7 @@ test('encrypted Parquet batches retain their key callback on the caller', async 
   expect(batches.reduce((total, batch) => total + batch.length, 0)).toBe(rows.length);
 });
 
-test('Parquet atomic object rows are materialized after receiving Arrow IPC', async () => {
+test('Parquet atomic object rows are materialized after receiving Arrow columns', async () => {
   const deserialize = vi.fn(ParquetLoaderWithParser.deserializeWorkerResult);
   const result = await parse(
     input.slice(0),
@@ -157,7 +157,7 @@ test('Parquet atomic object rows are materialized after receiving Arrow IPC', as
   expect(deserialize).toHaveBeenCalledOnce();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
     shape: 'arrow-table',
-    data: {transport: 'arrow-ipc'}
+    data: {transport: 'arrow-js'}
   });
   expect(result.shape).toBe('object-row-table');
   expect(result.data).toHaveLength(5);

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {I3STileContent, I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
-import type {GLTFMaterial, GLTFWithBuffers} from '@loaders.gl/gltf';
+import type {GLTFMaterial, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshTilesetSourceOptions} from './mesh-source.js';

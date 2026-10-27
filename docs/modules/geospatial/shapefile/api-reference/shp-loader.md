@@ -100,3 +100,15 @@ for the meaning of the numeric types.
   currentIndex: 2
 }
 ```
+
+
+## Worker batches
+
+`SHPLoader` supports browser worker parsing and `parseInBatches`. Arrow output uses
+owned Arrow column buffers; WKB output transfers binary geometry buffers and a small header
+envelope. Streaming WKB preserves the initial SHP header followed by geometry arrays.
+No Arrow IPC is used. Split input headers and records are supported.
+
+Set `core.worker: true` to enable workers and `core.worker: false` to use the main thread.
+An abort signal or iterator closure releases the worker; already transferred input buffers
+remain detached. These prebuilt bundles target browser workers.

@@ -46,8 +46,7 @@ const CHROME_TRACE_MODELED_EXTRA_KEYS = new Set([
   'tts',
   'id',
   'bind_id',
-  'args',
-  'scope'
+  'args'
 ]);
 
 /**
@@ -287,6 +286,14 @@ export function buildChromeTraceArrowSchemaMetadata(
   traceFile: Pick<ChromeTraceFileSchema, 'displayTimeUnit' | 'metadata'>
 ): Map<string, string> {
   const metadata = new Map<string, string>();
+  const {
+    traceEvents: _traceEvents,
+    displayTimeUnit: _displayTimeUnit,
+    metadata: _metadata,
+    ...container
+  } = traceFile as ChromeTraceFileSchema;
+  if (Object.keys(container).length > 0)
+    metadata.set('chromeTrace.containerJson', JSON.stringify(container));
 
   if (traceFile.displayTimeUnit) {
     metadata.set(CHROME_TRACE_ARROW_METADATA_DISPLAY_TIME_UNIT_KEY, traceFile.displayTimeUnit);
@@ -373,10 +380,6 @@ function buildChromeTraceExtraJson(event: ChromeTraceEventSchema): string | null
   const extraEntries = Object.entries(event).filter(([key, value]) => {
     if (CHROME_TRACE_MODELED_EXTRA_KEYS.has(key)) {
       return CHROME_TRACE_NUMERIC_ID_LIKE_KEYS.has(key) && typeof value === 'number';
-    }
-
-    if (key === 's' && event.scope == null) {
-      return false;
     }
 
     return true;

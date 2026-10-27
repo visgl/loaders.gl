@@ -50,6 +50,6 @@ test.each([
   null,
   {rows: [{id: 1}]},
   {transport: 'json-utf8', data: 'ordinary document field'}
-])('binary JSON reader accepts legacy custom-worker value %j', value => {
-  expect(deserializeBinaryJSON(value)).toBe(value);
+])('binary JSON reader rejects non-binary worker value %j', value => {
+  expect(() => deserializeBinaryJSON(value)).toThrow('binary JSON transport');
 });

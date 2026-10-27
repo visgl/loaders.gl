@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LOADERS_GL_RAW_FIXTURE_URL} from './common/remote-fixtures';
+import {LOADERS_GL_RAW_FIXTURE_URL} from '@loaders.gl/core/constants';
 
 type TestGlobalThis = typeof globalThis & {
   fetch: typeof fetch;

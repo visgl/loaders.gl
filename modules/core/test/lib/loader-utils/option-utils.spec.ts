@@ -11,8 +11,8 @@ import {
   setGlobalOptions,
   applySearchParamsToUrl
 } from '@loaders.gl/core/lib/loader-utils/option-utils';
-import {GLTFLoader} from '@loaders.gl/gltf';
-import {LASLoader} from '@loaders.gl/las';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
 const TEST_CASES = [
   {

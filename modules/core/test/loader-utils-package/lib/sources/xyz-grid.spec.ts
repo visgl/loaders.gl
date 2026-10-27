@@ -70,3 +70,37 @@ test('XYZ zoom 31 retains unsigned dimensions and boundary indices', () => {
   ).toBe(31);
   expect(resolveXYZTileParameters(grid, {z: 31, x: 2147483648, y: 0})).toBeNull();
 });
+
+test('XYZ addressing rejects coalescence in authoritative or advertised metadata', () => {
+  const bands = [{coalesce: 2, minTileRow: 0, maxTileRow: 0}];
+  const grid = createWebMercatorTileGrid(1, 1);
+  expect(() =>
+    resolveXYZTileParameters(
+      {
+        tileMatrixSet: {
+          ...grid.tileMatrixSet!,
+          matrices: [{...grid.tileMatrixSet!.matrices[0], variableMatrixWidths: bands}]
+        }
+      },
+      {z: 1, x: 1, y: 0}
+    )
+  ).toThrow('coalesced');
+  expect(() =>
+    resolveXYZTileParameters(
+      {...grid, matrices: [{...grid.matrices![0], variableMatrixWidths: bands}]},
+      {z: 1, x: 1, y: 0}
+    )
+  ).toThrow('coalesced');
+  expect(() =>
+    resolveXYZTileParameters(
+      {
+        ...grid,
+        tileMatrixSet: {
+          ...grid.tileMatrixSet!,
+          matrices: [{...grid.tileMatrixSet!.matrices[0], variableMatrixWidths: bands}]
+        }
+      },
+      {z: 1, x: 1, y: 0}
+    )
+  ).toThrow('coalesced');
+});
