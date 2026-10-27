@@ -37,8 +37,25 @@ test.each([
     import {pathToFileURL} from 'node:url';
     import path from 'node:path';
     const require = createRequire(import.meta.url);
+    const nativeGlobals = {Blob, File, fetch, Headers, Response};
     const polyfills = ${format === 'esm' ? "await import('@loaders.gl/core/polyfills')" : "require('@loaders.gl/core/polyfills')"};
     assert.equal(typeof polyfills.installFilePolyfills, 'function');
+    assert.equal(typeof globalThis.FileReader, 'function');
+    for (const [name, value] of Object.entries(nativeGlobals)) assert.equal(globalThis[name], value);
+    assert.equal(polyfills.Blob, nativeGlobals.Blob);
+    assert.equal(polyfills.File, nativeGlobals.File);
+    const file = new polyfills.File([new Uint8Array([0, 255])], 'sample.bin', {type: 'application/octet-stream', lastModified: 123});
+    assert.ok(file instanceof polyfills.Blob);
+    assert.equal(file.name, 'sample.bin');
+    assert.equal(file.lastModified, 123);
+    assert.deepEqual([...new Uint8Array(await file.arrayBuffer())], [0, 255]);
+    assert.equal(await (await fetch('data:text/plain,hello%20world')).text(), 'hello world');
+    const fixture = 'modules/core/test/polyfills-package/data/data.txt';
+    for (const filename of [fixture, fixture + '.gz']) {
+      const response = await globalThis.loaders.fetchNode(filename);
+      assert.equal(response.ok, true);
+      assert.equal(await response.text(), '123456');
+    }
     assert.equal(typeof globalThis.loaders.NodeFileSystem, 'function');
     assert.equal(typeof globalThis.loaders.requireFromFile, 'function');
     assert.equal(typeof globalThis.loaders.readFileAsArrayBuffer, 'function');
