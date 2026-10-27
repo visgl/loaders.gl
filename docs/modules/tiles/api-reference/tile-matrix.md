@@ -122,6 +122,12 @@ the adapter when those change. Treat the grid as immutable while the adapter is 
 or adapter change clears cached tiles and consumer selections so old content cannot be reused.
 The namespace is caller-owned and is not a globally unique identifier by itself.
 
+The adapter selects from the supplied native frame and `grid.limits`. It does not interpret the
+runtime's XYZ `minZoom`, `maxZoom`, `zoomOffset` or `extent` options, or apply its model matrix,
+inverse matrix or elevation range. Prepare and clip the frame in the grid CRS before traversal;
+restrict native coverage through the grid limits. Numeric `z` is a compatibility array index,
+not a service zoom identifier.
+
 The adapter supports source requests and shared cache participation. Applications still provide
 native frames, per-view selection and a compatible renderer. This does not transform a viewport,
 reproject content, establish parent relationships, or automatically enable projected rendering in
