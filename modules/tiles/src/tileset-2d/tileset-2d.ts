@@ -151,6 +151,8 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   private _statsUpdateScheduled = false;
   /** Invalidates pending metadata initialization when the tileset is finalized. */
   private _lifecycleVersion = 0;
+  /** Invalidates metadata requests when the source changes. */
+  private _sourceMetadataGeneration = 0;
 
   /** Creates a tileset from either `getTileData` or a loaders.gl `TileSource`. */
   constructor(opts: Tileset2DProps<DataT, ViewStateT>) {
@@ -198,11 +200,11 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Convenience factory for wrapping a loaders.gl `TileSource`. */
-  static fromTileSource<DataT = any>(
+  static fromTileSource<DataT = any, ViewStateT = unknown>(
     tileSource: TileSource,
-    opts: Omit<Tileset2DProps<DataT>, 'tileSource' | 'getTileData'> = {}
-  ): Tileset2D<DataT> {
-    return new Tileset2D<DataT>({...opts, tileSource});
+    opts: Omit<Tileset2DProps<DataT, ViewStateT>, 'tileSource' | 'getTileData'> = {}
+  ): Tileset2D<DataT, ViewStateT> {
+    return new Tileset2D<DataT, ViewStateT>({...opts, tileSource});
   }
 
   /** All tiles currently present in the shared cache. */
@@ -281,11 +283,27 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
 
   /** Updates tileset options and reapplies TileSource metadata overrides. */
   setOptions(opts: Partial<Tileset2DProps<DataT, ViewStateT>>): void {
+    const previousSource = this.opts.tileSource ?? null;
+    const previousAdapter = this.opts.adapter ?? null;
     this._rememberExplicitOptions(opts);
     this._baseOpts = {...this._baseOpts, ...opts};
+    const sourceChanged = previousSource !== (this._baseOpts.tileSource ?? null);
+    const adapterChanged = previousAdapter !== (this._baseOpts.adapter ?? null);
+    if (sourceChanged) {
+      this._sourceMetadataGeneration++;
+      this.sourceMetadata = null;
+      this._sourceMetadataOverrides = {};
+    }
     const previousMaxRequests = this.opts.maxRequests;
     const previousDebounceTime = this.opts.debounceTime;
     this._applyResolvedOptions();
+    if (sourceChanged || adapterChanged) {
+      this._clearTileCache();
+    }
+    if (sourceChanged && this.opts.tileSource) {
+      this._initializeTileSource(this.opts.tileSource).catch(() => {});
+    }
+    if (sourceChanged || adapterChanged) this._notifyUpdate();
     if (
       previousMaxRequests !== this.opts.maxRequests ||
       previousDebounceTime !== this.opts.debounceTime
@@ -393,7 +411,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
 
   /** Returns the stable cache id for a tile index. */
   getTileId(index: TileIndex): string {
-    return `${index.x}-${index.y}-${index.z}`;
+    return this.opts.adapter?.getTileId?.(index) ?? `${index.x}-${index.y}-${index.z}`;
   }
 
   /** Returns the zoom level represented by a tile index. */
@@ -409,11 +427,15 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     if (!this.opts.adapter) {
       throw new Error('Tileset2D requires an adapter before tile metadata can be derived.');
     }
-    return {bbox: this.opts.adapter.getTileBoundingBox(this._lastTileContext, index)};
+    return {
+      ...this.opts.adapter.getTileMetadata?.(this._lastTileContext, index),
+      bbox: this.opts.adapter.getTileBoundingBox(this._lastTileContext, index)
+    };
   }
 
   /** Returns the parent tile index in the quadtree. */
-  getParentIndex(index: TileIndex): TileIndex {
+  getParentIndex(index: TileIndex): TileIndex | null {
+    if (this.opts.adapter?.getParentIndex) return this.opts.adapter.getParentIndex(index);
     return {x: Math.floor(index.x / 2), y: Math.floor(index.y / 2), z: index.z - 1};
   }
 
@@ -424,6 +446,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   getTile(index: TileIndex, create: true): SharedTile2DHeader<DataT>;
   getTile(index: TileIndex, create?: false): SharedTile2DHeader<DataT> | undefined;
   getTile(index: TileIndex, create?: boolean): SharedTile2DHeader<DataT> | undefined {
+    index = this.opts.adapter?.resolveTileIndex?.(index) ?? index;
     const id = this.getTileId(index);
     let tile = this._cache.get(id);
     let needsReload = false;
@@ -467,9 +490,14 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   /** Loads metadata from a TileSource and reapplies derived option overrides. */
   private async _initializeTileSource(tileSource: TileSource): Promise<void> {
     const lifecycleVersion = this._lifecycleVersion;
+    const sourceGeneration = this._sourceMetadataGeneration;
     try {
       const metadata = await tileSource.getMetadata();
-      if (lifecycleVersion !== this._lifecycleVersion) {
+      if (
+        lifecycleVersion !== this._lifecycleVersion ||
+        sourceGeneration !== this._sourceMetadataGeneration ||
+        tileSource !== this.opts.tileSource
+      ) {
         return;
       }
       this.sourceMetadata = metadata;
@@ -477,7 +505,11 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
       this._applyResolvedOptions();
       this._notifyUpdate();
     } catch (error: any) {
-      if (lifecycleVersion !== this._lifecycleVersion) {
+      if (
+        lifecycleVersion !== this._lifecycleVersion ||
+        sourceGeneration !== this._sourceMetadataGeneration ||
+        tileSource !== this.opts.tileSource
+      ) {
         return;
       }
       const normalizedError =
@@ -706,6 +738,25 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     }
   }
 
+  /** Clears source-dependent cache entries and consumer selections when identity changes. */
+  private _clearTileCache(): void {
+    const discardedTiles = Array.from(this._cache.values());
+    this._cache.clear();
+    this._tiles = [];
+    this._cacheByteSize = 0;
+    this._lastTileContext = null;
+    this._dirty = false;
+    for (const consumer of this._consumers.values()) {
+      consumer.selectedTiles.clear();
+      consumer.visibleTiles.clear();
+    }
+    for (const tile of discardedTiles) {
+      tile.abort();
+      this._handleTileUnload(tile);
+    }
+    this._updateStats();
+  }
+
   /** Rebuilds parent and child links for all cached tiles. */
   private _rebuildTree(): void {
     for (const tile of this._cache.values()) {
@@ -762,7 +813,12 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     const {_minZoom = 0} = this;
     let index = tile.index;
     while (this.getTileZoom(index) > _minZoom) {
-      index = this.getParentIndex(index);
+      const parentIndex = this.getParentIndex(index);
+      if (!parentIndex) return null;
+      if (this.getTileZoom(parentIndex) >= this.getTileZoom(index)) {
+        throw new RangeError('A tile parent must have a lower level index.');
+      }
+      index = parentIndex;
       const parent = this._cache.get(this.getTileId(index));
       if (parent) {
         return parent;

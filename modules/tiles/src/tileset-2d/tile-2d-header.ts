@@ -34,6 +34,12 @@ export class SharedTile2DHeader<DataT = any> {
   id!: string;
   /** Resolved zoom level for the tile. */
   zoom!: number;
+  /** Native tile matrix identifier, when the traversal adapter supplies it. */
+  tileMatrix?: string;
+  /** Native tile CRS, when the traversal adapter supplies it. */
+  crs?: string;
+  /** Logical pixel dimensions, when the traversal adapter supplies them. */
+  tileSize?: readonly [number, number];
   /** Optional application data associated with the tile. */
   userData?: Record<string, any>;
   /** Bounds represented as `[[minX, minY], [maxX, maxY]]` for loaders.gl compatibility. */
@@ -81,8 +87,8 @@ export class SharedTile2DHeader<DataT = any> {
       ];
     } else {
       this.boundingBox = [
-        [value.left, value.top],
-        [value.right, value.bottom]
+        [Math.min(value.left, value.right), Math.min(value.top, value.bottom)],
+        [Math.max(value.left, value.right), Math.max(value.top, value.bottom)]
       ];
     }
   }
@@ -149,7 +155,7 @@ export class SharedTile2DHeader<DataT = any> {
       onLoad(this);
     };
 
-    const {index, id, bbox, userData, zoom} = this;
+    const {index, id, bbox, userData, zoom, tileMatrix, crs, tileSize} = this;
     const loaderId = this._loaderId;
 
     this._abortController = new AbortController();
@@ -171,7 +177,17 @@ export class SharedTile2DHeader<DataT = any> {
     let tileData: DataT | null = null;
     let error;
     try {
-      tileData = await getData({index, id, bbox, userData, zoom, signal});
+      tileData = await getData({
+        index,
+        id,
+        bbox,
+        userData,
+        zoom,
+        signal,
+        tileMatrix,
+        crs,
+        tileSize
+      });
     } catch (err) {
       error = err || true;
     } finally {

@@ -9,7 +9,8 @@ import type {
   TileMatrixSet
 } from '@math.gl/geospatial/tile-matrix';
 import type {NonGeoBoundingBox, TileIndex} from './tileset-2d/types';
-import {validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
+import {resolveTileGridTile, validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
+import type {Tileset2DAdapter} from './tileset-2d/adapter';
 import type {GetTileDataParameters} from '@loaders.gl/core/loader-utils';
 
 /** Renderer-independent view frame, already expressed in the grid's canonical X/Y coordinates. */
@@ -122,4 +123,70 @@ export function selectTileMatrixTiles(
     }
   }
   return tiles;
+}
+
+/** Options for an explicit native-frame Tileset2D traversal adapter. */
+export type TileMatrixTileset2DAdapterOptions = TileMatrixSelectionOptions & {
+  /**
+   * Caller-owned content namespace. Change it when source, grid geometry or content dimensions
+   * change; identical values intentionally share cache identity within a tileset.
+   */
+  cacheNamespace: string;
+};
+
+/**
+ * Adapts complete TileMatrix geometry to the shared Tileset2D cache using native-CRS frames.
+ * Selection, bounds, native IDs and logical dimensions come from the existing fixed-frame
+ * selector. No parent relationships are inferred. The caller supplies viewport conversion and
+ * an explicit namespace covering source identity, grid version and content dimensions.
+ * Treat grid metadata as immutable for the lifetime of this adapter; replace the adapter and
+ * namespace when the grid or content changes. This does not configure a deck.gl renderer.
+ */
+export function createTileMatrixTileset2DAdapter(
+  grid: TileMatrixSelectionGrid,
+  options: TileMatrixTileset2DAdapterOptions
+): Tileset2DAdapter<TileMatrixViewFrame> {
+  if (!grid.tileMatrixSet) throw new Error('TileMatrix traversal requires complete geometry.');
+  validateTileGrid(grid);
+  if (typeof options.cacheNamespace !== 'string' || !options.cacheNamespace.trim()) {
+    throw new RangeError('TileMatrix traversal requires a nonempty cache namespace.');
+  }
+  const matrixSet = grid.tileMatrixSet;
+  const cacheNamespace = options.cacheNamespace;
+  const maximumTileCount = options.maximumTileCount;
+  /** Resolves coverage and native identity, including canonical coalesced aliases. */
+  function resolveMatrixIndex(index: TileIndex) {
+    if (!index.tileMatrix)
+      throw new RangeError('TileMatrix traversal requires a native matrix ID.');
+    const matrix = matrixSet.matrices.find(candidate => candidate.id === index.tileMatrix);
+    if (!matrix) throw new RangeError(`Unknown tile matrix "${index.tileMatrix}"`);
+    const resolved = resolveTileGridTile(grid, {...index, tileMatrix: index.tileMatrix});
+    if (!resolved) throw new RangeError('Tile is outside the matrix or advertised coverage.');
+    return {matrix, resolved};
+  }
+  return {
+    getTileIndices: ({viewState}) =>
+      selectTileMatrixTiles(grid, viewState, {maximumTileCount}).map(tile => ({
+        ...tile.index,
+        tileMatrix: tile.tileMatrix
+      })),
+    resolveTileIndex: index => {
+      const {matrix, resolved} = resolveMatrixIndex(index);
+      return {...index, x: resolved.x, tileMatrix: matrix.id};
+    },
+    getTileId: index => {
+      const {matrix, resolved} = resolveMatrixIndex(index);
+      return JSON.stringify([cacheNamespace, matrixSet.crs, matrix.id, resolved.x, resolved.y]);
+    },
+    getTileBoundingBox: (_context, index) => {
+      const {matrix, resolved} = resolveMatrixIndex(index);
+      const [left, bottom, right, top] = getTileBounds(matrix, resolved.x, resolved.y);
+      return {left, bottom, right, top};
+    },
+    getTileMetadata: (_context, index) => {
+      const {matrix} = resolveMatrixIndex(index);
+      return {tileMatrix: matrix.id, crs: matrixSet.crs, tileSize: matrix.tileSize};
+    },
+    getParentIndex: () => null
+  };
 }

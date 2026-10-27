@@ -78,7 +78,10 @@ When constructed from a `TileSource`, `Tileset2D` loads source metadata once and
 - `maxZoom`
 - `boundingBox` as `extent`
 
-Explicit constructor options still take precedence.
+Explicit constructor options still take precedence. For complete regular or coalesced TileMatrix
+sets, pass the explicit [native-frame TileMatrix adapter](/docs/modules/tiles/api-reference/tile-matrix#tilematrix-traversal-in-tileset2d).
+The adapter carries native matrix identity and rectangular tile dimensions through the cache and
+source request. Replacing a source or adapter clears source-dependent cache and selections.
 
 ## Constructor
 
@@ -172,3 +175,25 @@ Failed tile requests are cached as settled tile entries with:
 
 This prevents repeated requests for the same failing tile until the tileset is explicitly reloaded,
 for example with `reloadAll()`.
+
+## Traversal adapter and native identity
+
+`Tileset2DAdapter` keeps selection independent from the shared cache and from any one viewport
+implementation. Its required `getTileIndices(context)` and `getTileBoundingBox(context, index)`
+retain the deck.gl-community-style traversal contract. The optional hooks extend that contract:
+
+- `resolveTileIndex(index)` canonicalizes an index before cache lookup and source loading.
+- `getTileId(index)` returns a stable source/grid-scoped cache key.
+- `getTileMetadata(context, index)` supplies `tileMatrix`, `crs` and logical `[width, height]`.
+  These fields are retained on the tile header and passed to `getTileData`.
+- `getParentIndex(index)` returns an established parent or `null`. A returned parent must have a
+  lower compatibility level index; a non-decreasing parent throws rather than looping forever.
+
+When these hooks are omitted, identity and parents retain their existing XYZ behavior. Custom
+non-quadtree adapters should explicitly return `null` for an unknown parent. Changing the source
+or adapter clears cache entries and consumer selections, aborts pending requests, and prevents
+late metadata from the previous source from replacing the new metadata. Consumers must reselect.
+
+These hooks are loaders.gl extensions under discussion for the shared runtime; current deck.gl and
+deck.gl-community adapters do not yet consume them. See the [TileMatrix adapter](/docs/modules/tiles/api-reference/tile-matrix#tilematrix-traversal-in-tileset2d)
+for a working native-frame integration.

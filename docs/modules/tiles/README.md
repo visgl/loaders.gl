@@ -29,4 +29,4 @@ be removed after deck.gl imports the 3D module directly.
 See the [`Tileset2D` API](/docs/modules/tiles/api-reference/tileset-2d)
 and [`RasterSet` API](/docs/modules/tiles/api-reference/raster-set).
 
-For explicit native-CRS frames, see [regular-grid TileMatrix selection](/docs/modules/tiles/api-reference/tile-matrix). This selector does not require a viewport or change the current rendering adapters.
+For explicit native-CRS frames, see [TileMatrix selection and shared runtime traversal](/docs/modules/tiles/api-reference/tile-matrix). Viewport conversion and projected rendering remain application responsibilities.

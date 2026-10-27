@@ -18,12 +18,27 @@ export type NonGeoBoundingBox = {left: number; top: number; right: number; botto
 export type TileBoundingBox = NonGeoBoundingBox | GeoBoundingBox;
 
 /** Tile coordinate in an x/y/z pyramid. */
-export type TileIndex = {x: number; y: number; z: number};
+export type TileIndex = {
+  /** Native column. */
+  x: number;
+  /** Native row. */
+  y: number;
+  /** Compatibility level index. */
+  z: number;
+  /** Opaque native matrix identifier, when the source uses TileMatrix geometry. */
+  tileMatrix?: string;
+};
 
 /** Information passed to a tile loader for fetching tile content. */
 export type TileLoadProps = {
   /** x/y/z tile coordinate. */
   index: TileIndex;
+  /** Native matrix identifier, when available. */
+  tileMatrix?: string;
+  /** Native coordinate reference system, when available. */
+  crs?: string;
+  /** Logical width and height of the tile in pixels, when available. */
+  tileSize?: readonly [number, number];
   /** Stable cache identifier for the tile. */
   id: string;
   /** Bounds covered by the tile in the active coordinate system. */

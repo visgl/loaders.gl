@@ -40,6 +40,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## TileMatrix traversal and XYZ assessment
+
+`Tileset2D` can use an explicit native-frame TileMatrix adapter with source-scoped cache IDs,
+coalesced aliases, rectangular per-level dimensions and no inferred parents. Shared XYZ assessment
+helps consumers identify complete compatible grids while retaining an explicit unknown state for
+partial metadata. See [TileMatrix traversal](/docs/modules/tiles/api-reference/tile-matrix#tilematrix-traversal-in-tileset2d).
+
 ## TileMatrix validation and coalesced rows
 
 Shared grid utilities now report complete, partial and invalid metadata consistently. OGC API
@@ -69,7 +76,7 @@ Related formats now share owner packages, including tables, geospatial, pointclo
 
 ## Regular-grid TileMatrix frame selection
 
-`@loaders.gl/tiles/tile-matrix` adds `selectTileMatrixTiles` for explicit native-CRS frames, complete regular grids, native matrix IDs and advertised limits. A deterministic offline UTM/OGC example exercises the request path. This is a renderer-independent selection step; existing traversal and rendering adapters remain unchanged. See the [API guide](/docs/modules/tiles/api-reference/tile-matrix).
+`@loaders.gl/tiles/tile-matrix` adds `selectTileMatrixTiles` for explicit native-CRS frames, complete regular grids, native matrix IDs and advertised limits. A deterministic offline UTM/OGC example exercises the request path. The renderer-independent selector is also available through the explicit shared-runtime adapter described above; deck.gl rendering remains separate. See the [API guide](/docs/modules/tiles/api-reference/tile-matrix).
 
 ## Tile matrix source adapters
 
