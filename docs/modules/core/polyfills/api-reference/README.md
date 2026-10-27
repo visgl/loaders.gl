@@ -80,7 +80,7 @@ The polyfills module installs the following capabilities.
 - Node Filesystem implementation
 - Node ReadableFile and WritableFile implementations
 - Node Crypto class
-- Node Stream support
+- Node Stream support, including propagation of errors raised while reading an iterable
 - Node library loading
 - Image parsing and encoding under Node.js
 - A minimal global `ImageBitmap` polyfill plus a global `getImageBitmapData(image)` helper under Node.js

@@ -3,6 +3,7 @@
 // Copyright vis.gl contributors
 
 import {once} from 'node:events';
+import {getDefaultHighWaterMark} from 'node:stream';
 import {fileURLToPath} from 'node:url';
 import {describe, expect, test, vi} from 'vitest';
 import {
@@ -26,6 +27,61 @@ describe('makeNodeStream boundaries', () => {
     expect(Array.from(Buffer.concat(chunks))).toEqual([1, 2, 3]);
   });
 
+  test('preserves byte mode, default buffering and typed-array conversion', async () => {
+    const bytes = Uint8Array.from([9, 1, 2, 9]);
+    const stream = makeNodeStream([bytes.subarray(1, 3), new Uint8Array([3, 4]).buffer]);
+    expect(stream.readableObjectMode).toBe(false);
+    expect(stream.readableHighWaterMark).toBe(getDefaultHighWaterMark(false));
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    expect([...Buffer.concat(chunks)]).toEqual([1, 2, 3, 4]);
+  });
+
+  test('preserves explicit object mode and high water mark', async () => {
+    const stream = makeNodeStream([new Uint16Array([258, 3])], {
+      objectMode: true,
+      highWaterMark: 2
+    });
+    expect(stream.readableObjectMode).toBe(true);
+    expect(stream.readableHighWaterMark).toBe(2);
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    expect(chunks.map(chunk => [...chunk])).toEqual([[2, 3]]);
+  });
+
+  test('respects backpressure and returns the iterator on early exit', async () => {
+    const next = vi.fn(async () => ({done: false as const, value: new Uint8Array([1])}));
+    const returnHandler = vi.fn(async () => ({done: true as const, value: undefined}));
+    const stream = makeNodeStream(
+      {[Symbol.asyncIterator]: () => ({next, return: returnHandler})},
+      {
+        highWaterMark: 1
+      }
+    );
+    await once(stream, 'readable');
+    expect(next).toHaveBeenCalledTimes(1);
+    stream.destroy();
+    await once(stream, 'close');
+    expect(returnHandler).toHaveBeenCalledTimes(1);
+  });
+
+  test('forwards iterator failures to the stream', async () => {
+    const error = new Error('iterator failed');
+    const source = {
+      [Symbol.asyncIterator]() {
+        return {
+          next: async () => {
+            throw error;
+          }
+        };
+      }
+    };
+    const stream = makeNodeStream(source);
+    await expect(async () => {
+      for await (const chunk of stream) void chunk;
+    }).rejects.toBe(error);
+  });
+
   test('reads asynchronous iterables in object mode', async () => {
     async function* generateValues() {
       yield Uint8Array.from([7]);
@@ -37,6 +93,40 @@ describe('makeNodeStream boundaries', () => {
       chunks.push(chunk);
     }
     expect(chunks.map(chunk => Array.from(chunk))).toEqual([[7], [8, 9]]);
+  });
+
+  test('forwards chunk conversion failures', async () => {
+    const stream = makeNodeStream([Symbol('invalid')]);
+    await expect(async () => {
+      for await (const chunk of stream) void chunk;
+    }).rejects.toThrow(TypeError);
+  });
+
+  test('forwards iterator cleanup failures on completion', async () => {
+    const error = new Error('cleanup failed');
+    const source = {
+      [Symbol.asyncIterator]: () => ({
+        next: async () => ({done: true as const, value: undefined}),
+        return: async () => {
+          throw error;
+        }
+      })
+    };
+    await expect(async () => {
+      for await (const chunk of makeNodeStream(source)) void chunk;
+    }).rejects.toBe(error);
+  });
+
+  test('returns the iterator on completion', async () => {
+    const returnHandler = vi.fn(async () => ({done: true, value: undefined}));
+    const source = {
+      [Symbol.asyncIterator]: () => ({
+        next: async () => ({done: true as const, value: undefined}),
+        return: returnHandler
+      })
+    };
+    for await (const chunk of makeNodeStream(source)) void chunk;
+    expect(returnHandler).toHaveBeenCalled();
   });
 
   test('returns the iterator when destroyed normally', async () => {
@@ -61,9 +151,9 @@ describe('makeNodeStream boundaries', () => {
     };
     const source = {[Symbol.asyncIterator]: () => iterator};
     const stream = makeNodeStream(source);
-    stream.on('error', () => {});
+    const closed = once(stream, 'close');
     stream.destroy(error);
-    await once(stream, 'close');
+    await closed;
     expect(throwHandler).toHaveBeenCalledWith(error);
   });
 });
