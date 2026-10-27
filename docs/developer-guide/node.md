@@ -37,6 +37,13 @@ loaders.gl uses portable Web APIs such as `ArrayBuffer`, `Response`, and Web
 Streams. Modern Node.js provides the basic APIs needed to parse in-memory data
 and load HTTP URLs.
 
+## Supported Node.js versions
+
+loaders.gl supports all current Node.js [LTS releases](https://nodejs.org/en/about/previous-releases).
+End-of-life Node.js versions are not supported.
+
+Use the latest Node.js patch release when loading untrusted Brotli data. Node.js’s bundled decoder is used by `fetch()`, `@loaders.gl/core/polyfills`, and `BrotliDecompressor`. See the [October 2026 Node.js security notice](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+
 ## Node.js adapters
 
 Install and import `@loaders.gl/core/polyfills` before using features that require its

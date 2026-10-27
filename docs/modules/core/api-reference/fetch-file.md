@@ -79,11 +79,6 @@ Local file paths require the filesystem adapter installed by importing
 `fetchFile` will delegate any url that starts with `http://` `https://` or `data:`
 to the built-in `fetch` function. Other URLs will be interpreted as local files.
 
-:::caution
-loaders.gl v4.0+ applications no longer need to install the `@loaders.gl/core/polyfills`
-module to get `fetch` support under Node.js v18+.
-:::
-
 ## Path prefix resolution
 
 `fetchFile()` injects any prefix set by the `setPathPrefix()` API.
@@ -135,7 +130,7 @@ const data = await parse(fetch(url), OBJLoader);
 
 ## Remarks
 
-- `fetch` is supported in Node.js from v18+.
+- `fetch` is available in [supported Node.js versions](/docs/developer-guide/node#supported-nodejs-versions).
 - For `string` URLs - `fetchFile` will delegate to `fetch` after resolving the URL.
 - For `File`/`Blob` - a `Response` object will be returned. Any `RequestInit` options are ignored in this case.
 - `Response.headers` (`Content-Length` and `Content-Type`) are populated (on a best effort basis for `File`, `Blob` and under Node.js).
