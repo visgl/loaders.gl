@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Polyfills module"
   title="Give Node.js the platform APIs loaders expect."
-  description="@loaders.gl/core/polyfills installs compatibility shims for file access, fetch, streams, crypto, images, and library loading when the runtime does not provide the browser-shaped API directly."
+  description="@loaders.gl/core/polyfills provides Node.js adapters for file access, streams, crypto, images, and library loading."
   tone="blue"
   meta={['Node.js support', 'Fetch and files', 'ImageBitmap and streams']}
   links={[
@@ -36,7 +36,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <ReferenceBoundary
   title="Polyfill installation and limits"
-  description="The sections below cover installation, installed capabilities, image behavior, readable files, deprecated fetch support, and attribution."
+  description="The sections below cover installation, Node.js adapters, image behavior, and readable files."
   tone="blue"
 />
 
@@ -103,10 +103,6 @@ The Node image decoder support remains limited to the formats supported by the e
 ## ReadableFile utilities
 
 `@loaders.gl/core/loader-utils` exports `NodeFile` and `NodeFilesystem` wrappers that are installed by this polyfill package. They mirror the browser `HttpFile`/`BlobFile` implementations, exposing a consistent `ReadableFile` interface for local and remote assets without bundling Node built-ins directly into application code.
-
-## Native Node.js APIs
-
-Supported Node.js versions provide `Blob`, `File`, `fetch`, `Headers`, and `Response`. The polyfills entry point preserves these native globals and exports the native `Blob` and `File` constructors. The filesystem fetch adapter remains available for local files. The `File` export now refers to the native constructor; previously it incorrectly referred to the Node global object.
 
 ## Remarks
 
