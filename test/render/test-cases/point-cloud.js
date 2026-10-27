@@ -4,12 +4,12 @@
 
 import {load, fetchFile, parse, encode} from '@loaders.gl/core';
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
-import {LASLoader} from '@loaders.gl/las';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
 
 // LAZ
-const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
+const LAS_BINARY_URL = '@loaders.gl/pointclouds/las/test/data/indoor.laz';
 
 // Raw point cloud data URLS
 const KITTI_POSITIONS_URL =

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/draco",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Framework-independent loader and writer for Draco compressed meshes and point clouds",
   "license": "MIT",
   "type": "module",
@@ -82,9 +82,6 @@
     "build-loader-worker-node": "node ../../scripts/build-codec-worker.mjs src/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-writer-worker": "node ../../scripts/build-codec-worker.mjs src/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-writer-worker-node": "node ../../scripts/build-codec-worker.mjs src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
-  },
-  "dependencies": {
-    "@loaders.gl/tables": "5.0.0-alpha.13"
   },
   "optionalDependencies": {
     "draco3d": "1.5.7"

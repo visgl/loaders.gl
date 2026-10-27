@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/traces",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Trace format parsers for Chrome Trace, Perfetto Trace, OpenTelemetry OTLP, Jaeger, and Zipkin",
   "license": "MIT",
   "type": "module",
@@ -61,6 +61,9 @@
       "types": "./dist/zipkin-trace-loader.d.ts",
       "import": "./dist/zipkin-trace-loader.js",
       "require": "./dist/zipkin-trace-loader.cjs"
+    },
+    "./trace-worker.js": {
+      "import": "./dist/trace-worker.js"
     }
   },
   "sideEffects": false,
@@ -72,7 +75,8 @@
     "THIRD-PARTY-NOTICES.md"
   ],
   "scripts": {
-    "pre-build": "echo \"Nothing to build in @loaders.gl/traces\""
+    "pre-build": "npm run build-worker",
+    "build-worker": "node ../../scripts/build-codec-worker.mjs src/workers/trace-worker.ts --bundle --outfile=dist/trace-worker.js"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.14.0",

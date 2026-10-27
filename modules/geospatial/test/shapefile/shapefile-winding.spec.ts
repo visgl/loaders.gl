@@ -5,8 +5,8 @@
 import {expect, test} from 'vitest';
 
 import {load} from '@loaders.gl/core';
-import {GeoArrowTableConverter} from '@loaders.gl/geoarrow';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {GeoArrowTableConverter} from '@loaders.gl/core/geoarrow';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import type {ArrowTable, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 import {convert} from '@loaders.gl/core/schema-utils';
 import {ShapefileLoader, SHPLoader} from '@loaders.gl/geospatial/shapefile/index';

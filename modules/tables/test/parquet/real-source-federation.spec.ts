@@ -14,9 +14,9 @@ import {DeltaTableSource} from '@loaders.gl/tables/delta';
 import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
 import {ParquetSource} from '@loaders.gl/tables/parquet/parquet-source-loader';
 import type {Schema} from '@loaders.gl/core/schema';
-import {parseSQLPredicate} from '@loaders.gl/sql';
+import {parseSQLPredicate} from '@loaders.gl/core/scan';
 
-import {FederatedTableScanSource} from '@loaders.gl/scan';
+import {FederatedTableScanSource} from '@loaders.gl/core/scan';
 
 const OUTPUT_SCHEMA: Schema = {
   fields: [

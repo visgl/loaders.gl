@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/services",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Authentication presets for geospatial service providers",
   "license": "MIT",
   "type": "module",

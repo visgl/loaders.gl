@@ -181,3 +181,96 @@ WorkerFarm.getWorkerFarm().destroy();
 Set concurrency according to CPU and memory cost, particularly for WebAssembly codecs that create
 one heap per worker. A stateful batch session occupies one concurrency slot until its output
 iterator completes, is closed, fails, or is aborted.
+
+
+## Cancellation and progress
+
+Async loader calls (`parse`, `parseInBatches`, `load`, and `loadInBatches`) and worker processing
+accept top-level `signal` and `onProgress` options:
+
+```javascript
+const controller = new AbortController();
+const result = await parse(data, loader, {
+  signal: controller.signal,
+  onProgress: ({phase, completed, total, unit}) => {
+    console.log(phase, completed, total, unit);
+  }
+});
+// Call this from a cancel button while parsing is pending:
+controller.abort();
+```
+
+Already aborted worker calls reject before scheduling or transferring input. Queued jobs reject
+immediately without waiting for a free worker. Cancelling running work terminates its worker,
+rejects with the signal's reason, and frees pool capacity for a replacement. Streaming cancellation
+requests input iterator cleanup without waiting for a blocked `return()`. Completion and cancellation
+settle a job once. `parquet.signal` remains a compatibility fallback; top-level `signal` takes priority.
+
+Progress has the shape `{phase, completed, total?, unit}`. Measurements belong to their phase;
+`total` is optional for indeterminate work. Do not combine download bytes and decoded rows into an
+overall percentage. Parquet batch parsing reports decoded rows; Draco reports decode start and
+completion in tasks. Other loaders and older/custom workers may produce no progress events.
+
+Worker implementations call `context.reportProgress?.(...)` from their processor or loader context.
+Frequent same-phase reports are coalesced before posting, phase changes are retained, and final
+progress is flushed before completion. Reports stop after settlement. Signals and progress callbacks
+stay on the calling thread. If a callback throws, the worker job is terminated and rejects with that
+error. Callbacks should handle their own display errors when parsing should continue.
+
+Cancellation also reaches fetch and nested parsing through loader context where supported.
+Authenticated fetch, signing, and refresh/retry checks preserve the caller's abort reason.
+Synchronous main-thread parsing cannot be interrupted while it blocks the event loop. Transferred
+input buffers remain detached after cancellation; retain a copy if the application needs to retry.
+
+## Batch-worker capability
+
+`parseInBatches()` and `loadInBatches()` use a worker when the selected parser implements
+`parseInBatches`, the loader declares `workerInBatches: true`, and the ordinary worker-selection
+checks permit it. The worker stays leased for the iterator lifetime. Input is requested on demand;
+output batches are acknowledged before more output is produced.
+
+Built-in support includes CSV Arrow-table output, canonical Parquet Arrow/object-row batches,
+incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches, and OBJ, PLY, and PCD
+mesh batches. OBJ point-cloud and PLY vertex paths support incremental input; PCD currently
+collects the complete input before returning output batches.
+Loader authors can enable other loaders
+by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`,
+and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs
+need transport conversion. Metadata entry points stay free of parser implementations.
+
+```javascript
+const batches = await parseInBatches(input, CSVLoader, {
+  core: {worker: true},
+  csv: {shape: 'arrow-table'}
+});
+for await (const batch of batches) {
+  consume(batch);
+}
+```
+
+An explicit worker URL or inline worker source has unknown protocol support. To use a compatible
+custom worker, set `core.workerInBatches: true` as well as the loader capability. Set it to `false`
+to keep batch parsing on the main thread. Existing atomic-only custom workers retain main-thread
+batch parsing by default. Generated local test-worker URLs keep the built-in capability.
+
+Node workers retain the experimental `core._nodeWorkers: true` opt-in and require a Node-loadable
+worker artifact, such as a local `.cjs` worker. Worker-utils callers use the top-level
+`workerInBatches` option and can inspect `canProcessOnWorkerInBatches()`.
+
+Batch output and incremental input are separate capabilities. A parser that concatenates its input
+still buffers the complete input inside the worker. Parquet currently has this behavior: output is
+batched, but its input is collected before decoding. Parquet key-retriever callbacks keep parsing on
+the caller, and the explicit WASM/GeoParquet loaders do not opt into this batch worker.
+Parser options disable recursive worker dispatch
+inside a worker; input transforms and loader selection remain on the caller.
+
+### Portable loader options
+
+A parser-bearing loader can provide `serializeWorkerOptions(options)` to convert option values
+such as class instances into portable data before atomic or batch dispatch. The hook is synchronous,
+must not mutate caller options, and returns the complete options object. Throwing rejects before a
+worker job is scheduled or input buffers are transferred. Signals and progress callbacks remain on
+the caller and are removed from the serialized options after this hook runs.
+
+JSONTable and NDJSON use this hook to convert Apache Arrow schemas into loaders.gl schemas. Worker
+selection still uses the caller's options; the hook prepares parser options after that decision.

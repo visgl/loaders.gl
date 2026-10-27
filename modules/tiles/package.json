@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "2D tilesets, MLT, MVT, and PMTiles loaders",
   "license": "MIT",
   "type": "module",
@@ -129,14 +129,13 @@
     "build-worker-mvt": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
-    "@loaders.gl/compression": "5.0.0-alpha.13",
-    "@loaders.gl/images": "5.0.0-alpha.13",
-    "@loaders.gl/tables": "5.0.0-alpha.13",
-    "@loaders.gl/tiles-3d": "5.0.0-alpha.13",
+    "@loaders.gl/compression": "5.0.0-alpha.14",
+    "@loaders.gl/images": "5.0.0-alpha.14",
+    "@loaders.gl/tables": "5.0.0-alpha.14",
+    "@loaders.gl/tiles-3d": "5.0.0-alpha.14",
     "@maplibre/mlt": "^1.1.6",
-    "@math.gl/geometry": "5.0.0-alpha.19",
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@math.gl/geometry": "5.0.0-alpha.20",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
     "apache-arrow": "^21.2.0",
     "pbf": "^3.2.1",
     "pmtiles": "^4.5.0",

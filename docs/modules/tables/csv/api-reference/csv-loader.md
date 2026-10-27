@@ -68,7 +68,7 @@ import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
 
 The bare `@loaders.gl/tables/csv` entry point is the metadata-only import. Core async APIs call `preload()` and dynamically import the parser-bearing implementation when parsing starts.
 
-See [Using Unbundled Loaders](/docs/developer-guide/using-unbundled-loaders) for the bundle-splitting model and preload behavior.
+See [Metadata loaders and parser loading](/docs/developer-guide/using-metadata-loaders) for the bundle-splitting model and preload behavior.
 
 ```typescript
 import {parse} from '@loaders.gl/core';

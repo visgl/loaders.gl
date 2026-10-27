@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {encodeSync, parse} from '@loaders.gl/core';
-import {GLTFLoader, GLBWriter} from '@loaders.gl/gltf';
-import {createGLBV1} from '../../../../modules/gltf/test/test-utils/create-glb-v1';
+import {GLTFLoader, GLBWriter} from '@loaders.gl/scene/gltf';
+import {createGLBV1} from '../../../../modules/scene/test/gltf/test-utils/create-glb-v1';
 
 /** Tiny static legacy mesh with an ECEF RTC center, inverse up-axis rotation and two features. */
 export async function createLegacyB3dm(modern = false) {

@@ -1,4 +1,4 @@
-This is a standalone web app using `@loaders.gl/ply` and `@loaders.gl/deck-layers`.
+This is a standalone web app using `@loaders.gl/pointclouds/ply` and `@loaders.gl/deck-layers`.
 
 ### Usage
 

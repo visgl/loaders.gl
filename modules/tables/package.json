@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tables",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Table format loaders with metadata and explicit parser subpaths",
   "license": "MIT",
   "type": "module",
@@ -638,6 +638,21 @@
     },
     "./triangulation-worker-node.js": {
       "import": "./dist/triangulation-worker-node.js"
+    },
+    "./json-worker.js": {
+      "import": "./dist/json-worker.js"
+    },
+    "./json-worker-node.cjs": {
+      "import": "./dist/json-worker-node.cjs",
+      "require": "./dist/json-worker-node.cjs"
+    },
+    "./arrow-worker-node.cjs": {
+      "import": "./dist/arrow-worker-node.cjs",
+      "require": "./dist/arrow-worker-node.cjs"
+    },
+    "./geoarrow-worker-node.cjs": {
+      "import": "./dist/geoarrow-worker-node.cjs",
+      "require": "./dist/geoarrow-worker-node.cjs"
     }
   },
   "sideEffects": false,
@@ -650,7 +665,7 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run copy-wasm && npm run build-worker-csv && npm run build-worker-node-csv && npm run build-worker-excel && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet",
+    "pre-build": "npm run copy-wasm && npm run build-worker-csv && npm run build-worker-node-csv && npm run build-worker-excel && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet && npm run build-worker-json-tables && npm run build-worker-node-json-tables && npm run build-worker-geoarrow && npm run build-worker-node-arrow && npm run build-worker-node-geoarrow",
     "build-worker-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-excel": "node ../../scripts/build-codec-worker.mjs src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -661,12 +676,16 @@
     "copy-wasm": "mkdir -p dist/parquet && cp ../../node_modules/parquet-wasm/esm/parquet_wasm_bg.wasm dist/parquet/parquet_wasm_bg.wasm",
     "build-worker-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/parquet/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-worker.ts --outfile=dist/parquet-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-source-worker-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-source-worker.ts --outfile=dist/parquet-source-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/parquet/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-source-worker-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-source-worker.ts --outfile=dist/parquet-source-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/parquet/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-json-tables": "node ../../scripts/build-codec-worker.mjs src/json/workers/json-worker.ts --bundle --outfile=dist/json-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node-json-tables": "node ../../scripts/build-codec-worker.mjs src/json/workers/json-worker.ts --outfile=dist/json-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-geoarrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/geoarrow-worker.ts --bundle --outfile=dist/geoarrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/arrow-worker.ts --outfile=dist/arrow-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node-geoarrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/geoarrow-worker.ts --outfile=dist/geoarrow-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/arrow-geometry": "5.0.0-alpha.13",
-    "@loaders.gl/compression": "5.0.0-alpha.13",
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@loaders.gl/compression": "5.0.0-alpha.14",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0"
   },

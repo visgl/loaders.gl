@@ -16,7 +16,7 @@
     "paths": {
       "@loaders.gl/*": ["../../../modules/*/dist"]
     },
-    "jsx": "react-jsx"
+      "jsx": "react-jsx"
   },
-  "include": ["./app.tsx", "./sample-data.ts", "./react-dom-client.d.ts", "./style-modules.d.ts"]
+  "include": ["./app.ts", "./sample-data.ts", "./style-modules.d.ts"]
 }

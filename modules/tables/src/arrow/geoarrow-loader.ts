@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {serializeArrowTableResult, deserializeArrowTableBatch} from './lib/arrow-worker-transport';
+import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
@@ -23,6 +25,19 @@ const {preload: _GeoArrowLoaderPreload, ...GeoArrowLoaderMetadataWithoutPreload}
  */
 export const GeoArrowLoaderWithParser = {
   ...GeoArrowLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeArrowTableResult,
+  /** Converts geometry on the caller after restoring Arrow extension metadata. */
+  deserializeWorkerResult(result: unknown, options?: GeoArrowLoaderOptions) {
+    const table = deserializeArrowTableBatch(result);
+    if (options?.arrow?.shape === 'geojson-table' && !table.schema) {
+      throw new Error('Arrow table is missing its schema');
+    }
+    return options?.arrow?.shape === 'geojson-table'
+      ? convertGeoArrowTableToGeoJSON(table.data, table.schema!)
+      : table;
+  },
+  serializeWorkerBatch: serializeArrowTableResult,
+  deserializeWorkerBatch: deserializeArrowTableBatch,
   parse: async (arraybuffer: ArrayBuffer, options?: GeoArrowLoaderOptions) => {
     await preloadArrowCompressionDecoders();
     return parseGeoArrowSync(arraybuffer, options?.arrow);

@@ -10,7 +10,7 @@ import {
   type WriterOptions,
   type WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
-import {LASWriter, type LASExtraBytesWriter} from '@loaders.gl/las';
+import {LASWriter, type LASExtraBytesWriter} from '@loaders.gl/pointclouds/las';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
 import {COPCFormat} from './copc-format';

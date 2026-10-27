@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {
+  serializeJSONWorkerOptions,
+  serializeJSONWorkerBatch,
+  deserializeJSONWorkerResult
+} from './lib/json-worker-transport';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ObjectRowTable,
@@ -27,6 +32,11 @@ const {preload: _NDJSONLoaderPreload, ...NDJSONLoaderMetadataWithoutPreload} = N
 /** Loader for newline-delimited JSON row and Arrow tables. */
 export const NDJSONLoaderWithParser = {
   ...NDJSONLoaderMetadataWithoutPreload,
+  serializeWorkerOptions: serializeJSONWorkerOptions,
+  serializeWorkerResult: serializeJSONWorkerBatch,
+  deserializeWorkerResult: deserializeJSONWorkerResult,
+  serializeWorkerBatch: serializeJSONWorkerBatch,
+  deserializeWorkerBatch: deserializeJSONWorkerResult,
   parse: async (arrayBuffer: ArrayBuffer, options?: NDJSONLoaderOptions) =>
     parseNDJSONText(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: NDJSONLoaderOptions) => parseNDJSONText(text, options),

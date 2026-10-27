@@ -1,6 +1,6 @@
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {OrientedBoundingBox} from '@math.gl/geometry/culling';
+import {makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
 // @ts-expect-error
 import {GeoidHeightModel} from '@loaders.gl/tile-converter/lib/geoid-height-model';
 
@@ -24,7 +24,7 @@ export function i3sObbTo3dTilesObb(
     i3SObb.center[2] + geoidHeightModel.getHeight(i3SObb.center[1], i3SObb.center[0])
   ];
   const cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(tiles3DCenter, new Vector3());
-  const tiles3DObb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
+  const tiles3DObb = makeOrientedBoundingBoxFromQuaternion(
     cartesianCenter,
     i3SObb.halfSize,
     i3SObb.quaternion

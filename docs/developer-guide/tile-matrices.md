@@ -67,7 +67,7 @@ JSON `cellSize` directly supplies resolution. A scale denominator uses the OGC n
 resolution = scaleDenominator * 0.00028 / metersPerUnit
 ```
 
-Known geographic and Web Mercator units are built in. For other CRSs, supply `metersPerUnit` when needed (for example, `1` for meters). This option describes units; it does not transform coordinates. Embedded CRS definitions and unsupported variable-width rows do not become usable rectangular geometry.
+Known geographic and Web Mercator units are built in. For other CRSs, supply `metersPerUnit` when needed (for example, `1` for meters). This option describes units; it does not transform coordinates. Embedded CRS definitions alone do not establish complete geometry. Coalesced row bands are retained and validated when the required matrix geometry is available.
 
 ## Examples of different grids
 
@@ -98,7 +98,7 @@ See [WMTS](/docs/modules/ogc/wms/formats/wmts), [OGC API Tiles](/docs/modules/og
 
 GeoPackage sources expose explicit-table `getTile()` lookups for bounded encoded payloads. Missing rows return `null`; matrix geometry does not imply that every position is populated. See [GeoPackageSource](/docs/modules/geospatial/geopackage/api-reference/geopackage-source).
 
-GeoTIFF/COG raster sources expose optional `tileGrid` metadata for representable tiled overview hierarchies. Native IFD identifiers, unequal pixel sizes, and padded edge tiles are preserved. Stripped or rotated hierarchies retain their native raster APIs without an invented tile matrix. See [GeoTIFFSourceLoader](/docs/modules/geotiff/api-reference/geotiff-source-loader).
+GeoTIFF/COG raster sources expose optional `tileGrid` metadata for representable tiled overview hierarchies. Native IFD identifiers, unequal pixel sizes, and padded edge tiles are preserved. Stripped or rotated hierarchies retain their native raster APIs without an invented tile matrix. See [GeoTIFFSourceLoader](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader).
 
 ## Requesting a non-default grid through an image source
 
@@ -146,4 +146,19 @@ not to a renderer's assumption that every tile exists.
 
 ## Explicit frame selection
 
-For complete regular grids, [`selectTileMatrixTiles`](/docs/modules/tiles/api-reference/tile-matrix) accepts an extent and resolution already expressed in the grid CRS, applies advertised limits, and returns native source requests. Our current thinking is that this may be a useful renderer-independent boundary. It does not yet connect arbitrary matrix sets to `Tileset2D` or enable projected rendering. The fixed-frame OGC walkthrough provides a small, tested example for discussing that next step.
+For complete regular or coalesced grids, [`selectTileMatrixTiles`](/docs/modules/tiles/api-reference/tile-matrix) accepts an extent and resolution already expressed in the grid CRS, applies advertised limits, and returns native source requests. Our current thinking is that this may be a useful renderer-independent boundary. An explicit native-frame adapter connects this selector to the shared `Tileset2D` cache without inferring parents. Viewport conversion and projected rendering remain separate; the fixed-frame OGC walkthrough provides a small, tested request example.
+
+
+## Shared validation and coalesced requests
+
+`getTileGridValidation` distinguishes complete geometry, partial advertised metadata and invalid
+geometry or coverage, with diagnostics. `validateTileGrid` rejects invalid inputs while allowing
+partial metadata; `resolveTileGridTile` applies shared matrix identity and coverage rules.
+See [grid utilities](/docs/modules/core/loader-utils/api-reference/tile-grid).
+
+OGC API Tiles preserves `variableMatrixWidths` in native row numbering, regardless of coordinate
+axis normalization. Fixed-frame selection enumerates canonical columns only. OGC URLs and the
+explicit image adapter use the same coalesced footprint/coverage semantics, including a canonical
+column before the minimum covered alias. No source dimensions, CRS equivalence, or renderer
+capabilities are inferred. Coalesced requests require complete geometry; partial metadata remains
+inspectable. WMTS variable-width extensions are not parsed by this change.

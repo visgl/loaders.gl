@@ -126,6 +126,28 @@ export function deserializeArrowTableFromIPC(
   return arrow.tableFromIPC(data);
 }
 
+/** Serializes Arrow columns with owned buffers so transfers cannot detach retained parser state. */
+export function serializeArrowWorkerTable(result: unknown): unknown {
+  if (!isArrowTableWrapper(result)) {
+    throw new Error('Workers require Arrow table output');
+  }
+  const {data, ...metadata} = result;
+  // Headers, sidecar indexes, and mesh indices can also retain parser-owned binary buffers.
+  // Clone only this small envelope; the Arrow table always uses column-buffer transfer.
+  return {
+    ...structuredClone(metadata),
+    data: dehydrateArrowTable(data, {copy: 'all'})
+  };
+}
+
+/** Hydrates the column-buffer worker protocol; other wire formats are rejected. */
+export function deserializeArrowWorkerTable(result: unknown): any {
+  if (!isDehydratedArrowTableWrapper(result)) {
+    throw new Error('Workers require Arrow column transport');
+  }
+  return {...result, data: hydrateArrowTable(result.data)};
+}
+
 /** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */
 export function serializeArrowWorkerResult(result: unknown, options?: unknown): unknown {
   if (!isArrowTableWrapper(result)) {

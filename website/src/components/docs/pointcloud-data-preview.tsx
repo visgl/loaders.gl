@@ -1,10 +1,10 @@
 import React, {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {load} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
-import {LASLoader} from '@loaders.gl/las';
-import {OBJLoader} from '@loaders.gl/obj';
-import {PCDLoader} from '@loaders.gl/pcd';
-import {PLYLoader} from '@loaders.gl/ply';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
+import {OBJLoader} from '@loaders.gl/scene/obj';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {EXAMPLES, type Example} from 'examples/website/pointcloud/examples';

@@ -72,7 +72,7 @@
   border: 1px solid #e4e9ef;
   border-radius: 8px;
   display: flex;
-  height: 48px;
+  height: var(--format-logo-height, 48px);
   justify-content: center;
   justify-self: center;
   max-width: 220px;
@@ -86,7 +86,7 @@
 }
 
 .logo {
-  height: 36px;
+  height: var(--format-logo-image-height, 36px);
   object-fit: contain;
   width: calc(100% - 24px);
 }
@@ -97,7 +97,7 @@
 }
 
 .ogcBadge .badgeName {
-  font-size: 15px;
+  font-size: 19px;
 }
 
 .ogcIdentity {
@@ -107,14 +107,14 @@
   border-radius: 4px;
   color: white;
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 700;
-  gap: 4px;
-  padding: 4px 6px;
+  gap: 3px;
+  padding: 3px 4px;
 }
 .ogcLogo {
-  height: 22px;
-  width: 19px;
+  height: 16px;
+  width: 14px;
   object-fit: contain;
 }
 .compositeLogo {
@@ -123,7 +123,7 @@
 }
 .darkVisual .badgeName {
   color: white;
-  font-size: 15px;
+  font-size: 18px;
 }
 .smallLogo {
   flex: 0 0 44px;
@@ -135,21 +135,23 @@
   object-fit: contain;
 }
 .arcgisLogo {
-  flex: 0 0 88px;
-  height: 36px;
+  flex: 0 0 32px;
+  height: 34px;
   overflow: hidden;
   position: relative;
 }
 .arcgisLogo img {
-  height: 84px;
-  width: 148px;
+  height: 105px;
+  width: 185px;
   max-width: none;
   position: absolute;
-  left: -30px;
-  top: -24px;
+  left: -76px;
+  top: -27px;
 }
 
 .badgeName {
+  white-space: nowrap;
+  overflow-wrap: normal;
   color: #263747;
   font-family: var(--ifm-font-family-base);
   font-size: 17px;
@@ -157,6 +159,22 @@
   letter-spacing: -0.02em;
   line-height: 1.15;
   text-align: center;
+}
+
+.visual[data-name-size='medium'] .badgeName {
+  font-size: 14px;
+}
+
+.visual[data-name-size='long'] .badgeName {
+  font-size: 12px;
+}
+
+.darkVisual[data-name-size='medium'] .badgeName {
+  font-size: 16px;
+}
+
+.darkVisual[data-name-size='long'] .badgeName {
+  font-size: 14px;
 }
 
 .formatBadge {
@@ -174,6 +192,22 @@
 
 .formatBadge[data-category='tables'] {
   --badge-accent: #2563eb;
+}
+
+.formatBadge[data-category='graphs'] {
+  --badge-accent: #7c3aed;
+}
+
+.formatBadge[data-category='traces'] {
+  --badge-accent: #b45309;
+}
+
+.formatBadge[data-category='archives'] {
+  --badge-accent: #a16207;
+}
+
+.formatBadge[data-category='splats'] {
+  --badge-accent: #be185d;
 }
 
 .formatBadge[data-category='geospatial'] {
@@ -205,4 +239,37 @@
   max-width: 100%;
   vertical-align: middle;
   width: 220px;
+}
+
+.logoContainer[data-format-logo='orc'] img {
+  filter: brightness(0.7) contrast(2.5);
+}
+
+.logoContainer[data-format-logo='perfetto-trace'] .smallLogo {
+  flex-basis: 30px;
+  height: 30px;
+  overflow: hidden;
+}
+
+.logoContainer[data-format-logo='perfetto-trace'] .smallLogo img {
+  width: 110px;
+  height: 30px;
+  max-width: none;
+}
+
+.logoContainer[data-format-logo='perfetto-trace'] .badgeName {
+  font-size: 18px;
+}
+
+.logoContainer[data-format-logo='chrome-trace'] .smallLogo {
+  flex-basis: 24px;
+  height: 24px;
+}
+
+.logoContainer[data-format-logo='chrome-trace'] .compositeLogo {
+  gap: 5px;
+}
+
+.logoContainer[data-format-logo='chrome-trace'] .badgeName {
+  font-size: 14px;
 }

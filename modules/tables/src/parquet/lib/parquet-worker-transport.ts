@@ -2,59 +2,51 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {SerializedArrowTableIPC} from '@loaders.gl/core/schema-utils/arrow-transport';
 import {
-  deserializeArrowTableFromIPC,
-  serializeArrowTableToIPC
+  serializeArrowWorkerTable,
+  deserializeArrowWorkerTable
 } from '@loaders.gl/core/schema-utils/arrow-transport';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {
+  ArrowTable,
+  ObjectRowTable,
+  ArrowTableBatch,
+  ObjectRowTableBatch
+} from '@loaders.gl/core/schema';
+import type {ParquetLoaderOptions} from '../parquet-loader-options';
+import {
+  convertArrowBatchToObjectRows,
+  convertArrowTableToObjectRows
+} from './parsers/convert-parquet-tables';
 
-type ParquetWorkerResult = ArrowTable | ObjectRowTable;
+/** Transfers owned Arrow column buffers for an atomic Parquet result. */
+export const serializeParquetWorkerResult = serializeArrowWorkerTable;
 
-type SerializedArrowTable = Omit<ArrowTable, 'data'> & {
-  /** Transferable Arrow IPC payload produced by the worker. */
-  data: SerializedArrowTableIPC;
-};
-
-/** Serializes a Parquet worker result so Arrow buffers are transferred without cloning. */
-export function serializeParquetWorkerResult(result: unknown): unknown {
-  if (!isArrowTable(result)) {
-    return result;
-  }
-  return {
-    ...result,
-    data: serializeArrowTableToIPC(result.data)
-  };
+/** Hydrates columns before optional caller-side row conversion. */
+export function deserializeParquetWorkerResult(
+  result: unknown,
+  options?: ParquetLoaderOptions
+): ArrowTable | ObjectRowTable {
+  const table = deserializeArrowWorkerTable(result);
+  return options?.parquet?.shape === 'object-row-table'
+    ? convertArrowTableToObjectRows(table)
+    : table;
 }
 
-/** Rehydrates a transferred Parquet Arrow result into main-thread Arrow class instances. */
-export function deserializeParquetWorkerResult(result: unknown): ParquetWorkerResult {
-  if (isSerializedArrowTable(result)) {
-    return {...result, data: deserializeArrowTableFromIPC(result.data)};
-  }
-  return result as ParquetWorkerResult;
+/** Keeps the requested public shape separate from the columnar wire shape. */
+export function serializeParquetWorkerBatch(
+  batch: unknown,
+  options?: ParquetLoaderOptions
+): unknown {
+  const serialized = serializeArrowWorkerTable(batch) as object;
+  return {...serialized, resultShape: options?.parquet?.shape || 'arrow-table'};
 }
 
-/** Returns true when a parser result wraps an Apache Arrow table. */
-function isArrowTable(value: unknown): value is ArrowTable {
-  const table = value as ArrowTable;
-  return Boolean(
-    table &&
-      typeof table === 'object' &&
-      table.shape === 'arrow-table' &&
-      table.data &&
-      'batches' in table.data
-  );
-}
-
-/** Returns true when a worker result contains the loaders.gl Arrow IPC transport format. */
-function isSerializedArrowTable(value: unknown): value is SerializedArrowTable {
-  const table = value as SerializedArrowTable;
-  return Boolean(
-    table &&
-      typeof table === 'object' &&
-      table.shape === 'arrow-table' &&
-      table.data &&
-      table.data.transport === 'arrow-ipc'
-  );
+/** Converts requested rows only after the column buffers reach the caller. */
+export function deserializeParquetWorkerBatch(
+  batch: unknown
+): ArrowTableBatch | ObjectRowTableBatch {
+  const table = deserializeArrowWorkerTable(batch);
+  return table.resultShape === 'object-row-table'
+    ? {...table, ...convertArrowBatchToObjectRows(table)}
+    : table;
 }

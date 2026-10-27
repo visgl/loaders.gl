@@ -14,6 +14,15 @@
   "references": [
     {
       "path": "../core"
+    },
+    {
+      "path": "../draco"
+    },
+    {
+      "path": "../images"
+    },
+    {
+      "path": "../textures"
     }
   ]
 }

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {setLoaderOptions} from '@loaders.gl/core';
 import {encodeSync, parse, parseInBatches} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -14,6 +15,9 @@ import {
 } from '../src';
 
 import type {ChromeTraceEventArrowTable, PerfettoTrace, PerfettoTraceBatch} from '../src';
+
+// Parser ownership tests run instrumented source; worker conformance has its own suite.
+setLoaderOptions({worker: false});
 
 let officialTraceBytes: Uint8Array;
 let officialTrace: PerfettoTrace;

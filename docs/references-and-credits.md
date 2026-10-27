@@ -24,25 +24,18 @@ lineage, rather than every transitive npm dependency.
 | --- | --- |
 | [arcgis](https://github.com/visgl/loaders.gl/blob/master/modules/arcgis/THIRD-PARTY-NOTICES.md) | ArcGIS REST specifications; separately installed LERC. |
 | [archives](https://github.com/visgl/loaders.gl/blob/master/modules/archives/THIRD-PARTY-NOTICES.md) | T. Jameson Little’s tar-js; original ZIP and indexed archive APIs. |
-| [arrow-geometry](https://github.com/visgl/loaders.gl/blob/master/modules/arrow-geometry/THIRD-PARTY-NOTICES.md) | Mapbox earcut adaptations; Apache Arrow and math.gl. |
 | [compression](https://github.com/visgl/loaders.gl/blob/master/modules/compression/THIRD-PARTY-NOTICES.md) | Arjun Barrett’s fflate; Pierre Curto’s LZ4; optional codec providers. |
 | [config](https://github.com/visgl/loaders.gl/blob/master/modules/config/THIRD-PARTY-NOTICES.md) | Original YAML/TOML parsing against community specifications. |
-| [core](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md) | Apache Arrow type definitions; Karl Cheng’s binary-gltf-utils; Axel Rauschmayer’s async queue; Vsevolod Strukchinsky’s require-from-string; LASzip algorithms. |
+| [core](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md) | Apache Arrow; Mapbox earcut; Kyle Barron’s GeoArrow work; Karl Cheng’s binary-gltf-utils; Axel Rauschmayer’s async queue; Vsevolod Strukchinsky’s require-from-string; LASzip; Christian Schwarz’s wkx/TWKB; original scans. |
 | [crypto](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md) | Brian Todd Button’s md5-wasm; jsdom abab; CRC32 inspiration from wqli78; hash integration. |
 | [draco](https://github.com/visgl/loaders.gl/blob/master/modules/draco/THIRD-PARTY-NOTICES.md) | Google Draco 1.5.7 runtimes and adapted Web IDL types. |
-| [geoarrow](https://github.com/visgl/loaders.gl/blob/master/modules/geoarrow/THIRD-PARTY-NOTICES.md) | GeoArrow community conventions; Apache Arrow and math.gl. |
-| [geospatial](https://github.com/visgl/loaders.gl/blob/master/modules/geospatial/THIRD-PARTY-NOTICES.md) | Björn Harrtell’s FlatGeobuf; SQL.js/SQLite; original shapefile parsing. |
-| [gltf](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/THIRD-PARTY-NOTICES.md) | Benjamin Wasty’s gltf-loader-ts types; Arseny Kapoulkine’s meshoptimizer. |
+| [geospatial](https://github.com/visgl/loaders.gl/blob/master/modules/geospatial/THIRD-PARTY-NOTICES.md) | Björn Harrtell’s FlatGeobuf; SQL.js/SQLite; original shapefile parsing. Christian Schwarz’s wkx/TWKB; historical Mapbox wellknown; current math.gl codecs. |
 | [graphs](https://github.com/visgl/loaders.gl/blob/master/modules/graphs/THIRD-PARTY-NOTICES.md) | Original graph loaders; fast-xml-parser and Apache Arrow. |
 | [images](https://github.com/visgl/loaders.gl/blob/master/modules/images/THIRD-PARTY-NOTICES.md) | Karl Cheng’s binary image utilities; Sindre Sorhus and file-type contributors. |
-| [las](https://github.com/visgl/loaders.gl/blob/master/modules/las/THIRD-PARTY-NOTICES.md) | Uday Verma and Howard Butler’s Plasio; laz-perf, laz-rs and rapidlasso’s LASzip. |
-| [obj](https://github.com/visgl/loaders.gl/blob/master/modules/obj/THIRD-PARTY-NOTICES.md) | Ricardo Cabello (mrdoob) and three.js OBJLoader contributors. |
 | [ogc](https://github.com/visgl/loaders.gl/blob/master/modules/ogc/THIRD-PARTY-NOTICES.md) | OGC specifications; Thomas Robinson’s comparison utility; separate OpenLayers fixtures. |
-| [pcd](https://github.com/visgl/loaders.gl/blob/master/modules/pcd/THIRD-PARTY-NOTICES.md) | Filipe Caixeta, Mugen87 and three.js PCDLoader contributors. |
-| [ply](https://github.com/visgl/loaders.gl/blob/master/modules/ply/THIRD-PARTY-NOTICES.md) | Wei Meng and three.js PLYLoader contributors. |
+| [pointclouds](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md) | Uday Verma and Howard Butler’s Plasio; laz-perf, laz-rs and rapidlasso’s LASzip. Filipe Caixeta, Mugen87 and three.js PCDLoader contributors. Wei Meng and three.js PLYLoader contributors. |
 | [raster](https://github.com/visgl/loaders.gl/blob/master/modules/raster/THIRD-PARTY-NOTICES.md) | geotiff.js; Esri’s LERC; Vladimir Agafonkin’s MARTINI; Michael Fogleman and Vladimir Agafonkin’s Delatin; HERE’s quantized-mesh-decoder. |
-| [scan](https://github.com/visgl/loaders.gl/blob/master/modules/scan/THIRD-PARTY-NOTICES.md) | Original scan planning and federation; Apache Arrow. |
-| [scene](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md) | Original scene loaders; Pixar and OpenUSD format work. |
+| [scene](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md) | Original scene loaders; Pixar and OpenUSD format work. Benjamin Wasty’s gltf-loader-ts types; Arseny Kapoulkine’s meshoptimizer. Ricardo Cabello (mrdoob) and three.js OBJLoader contributors. |
 | [scientific](https://github.com/visgl/loaders.gl/blob/master/modules/scientific/THIRD-PARTY-NOTICES.md) | cheminfo/netcdfjs; Michaël Zasso’s IOBuffer; zarrita.js and zarr.js. |
 | [services](https://github.com/visgl/loaders.gl/blob/master/modules/services/THIRD-PARTY-NOTICES.md) | Original service abstractions and adapters; provider specifications. |
 | [splats](https://github.com/visgl/loaders.gl/blob/master/modules/splats/THIRD-PARTY-NOTICES.md) | Original splat loaders; community format and research foundations. |
@@ -53,7 +46,6 @@ lineage, rather than every transitive npm dependency.
 | [tiles-3d](https://github.com/visgl/loaders.gl/blob/master/modules/tiles-3d/THIRD-PARTY-NOTICES.md) | CesiumJS ports and collaboration; Markus Schütz’s Potree; Connor Manning’s copc.js lineage; Esri I3S and converter contributions. |
 | [traces](https://github.com/visgl/loaders.gl/blob/master/modules/traces/THIRD-PARTY-NOTICES.md) | Trace format communities; Buf protobuf runtime; original parsers. |
 | [video](https://github.com/visgl/loaders.gl/blob/master/modules/video/THIRD-PARTY-NOTICES.md) | Yahoo gifshot; Anthony Dekker’s NeuQuant; Kevin Weiner and Thibault Imbert. |
-| [wkt](https://github.com/visgl/loaders.gl/blob/master/modules/wkt/THIRD-PARTY-NOTICES.md) | Christian Schwarz’s wkx/TWKB; historical Mapbox wellknown; current math.gl codecs. |
 | [xml](https://github.com/visgl/loaders.gl/blob/master/modules/xml/THIRD-PARTY-NOTICES.md) | Isaac Schlueter’s sax-js through Maxim Mazurok’s sax-ts; fast-xml-parser. |
 
 The separately published [tile-converter application](https://github.com/visgl/loaders.gl/blob/master/apps/tile-converter/THIRD-PARTY-NOTICES.md)
@@ -88,6 +80,9 @@ builds on the separately installed deck.gl and luma.gl projects.
   cross-library table exchange possible. Some Arrow-like type definitions were
   adapted from ArrowJS and retain Apache-2.0 terms. **Paul Taylor at Graphistry**
   provided extensive technical advice for loaders.gl's Arrow integration.
+- **Kyle Barron’s [GeoArrow work](https://github.com/geoarrow/geoarrow-js)** inspired
+  loaders.gl’s GeoArrow integration and its geospatial Arrow conversion and
+  processing APIs. We thank Kyle for helping establish these foundations.
 - **MongoDB's js-bson contributors** and **SheetJS contributors** supply the optional
   [BSON](https://github.com/mongodb/js-bson) and
   [spreadsheet](https://github.com/SheetJS/sheetjs) implementations. Wrapping these
@@ -203,7 +198,7 @@ builds on the separately installed deck.gl and luma.gl projects.
 - **Brian Todd Button** supplied md5-wasm, the foundation of the retained MD5
   implementation and adapter. **jsdom’s abab contributors** supplied the base64
   decoding foundation. **wqli78’s CRC32 gist** is cited in source as inspiration.
-- **Gozala** supplied web-file and web-blob polyfills. **GitHub’s fetch contributors**
+- **Gozala** supplied historical web-file and web-blob polyfills. **GitHub’s fetch contributors**
   supplied the Headers polyfill; **Anthum, Inc.** supplied fetch-progress-indicators.
   **BTOdell** supplied path-resolve, and **Jesse Tane** supplied hex-transcoder.
 - **Joshua Bell and text-encoding contributors**, and the **WHATWG Encoding Standard
@@ -240,7 +235,7 @@ asset's own authorship, terms and modifications when reusing it.
 
 | Material | Credits and provenance |
 | --- | --- |
-| glTF sample models | [Fixture inventory](https://github.com/visgl/loaders.gl/blob/master/modules/gltf/test/data/README.md), including Khronos sample models and the separately licensed Damaged Helmet asset. |
+| glTF sample models | [Fixture inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/data/README.md), including Khronos sample models and the separately licensed Damaged Helmet asset. |
 | 3D Tiles samples | [Cesium-origin fixtures and exceptions](https://github.com/visgl/loaders.gl/blob/master/modules/tiles-3d/test/3d-tiles/data/README.md). |
 | Parquet and GeoParquet | [Apache parquet-testing fixtures, generated benchmark data and pinned GeoParquet example](https://github.com/visgl/loaders.gl/blob/master/modules/tables/test/parquet/data/README.md). |
 | Terrain imagery | [Mapbox Terrain RGB, Mapzen terrain and Cesium terrain fixtures](https://github.com/visgl/loaders.gl/blob/master/modules/raster/test/terrain/data/README.md). |

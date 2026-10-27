@@ -6,7 +6,7 @@ import type {
   GLTF,
   GLTF_EXT_structural_metadata_ClassProperty,
   GLTF_EXT_structural_metadata_GLTF
-} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
 import type {DataType, Field} from '@loaders.gl/core/schema';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';

@@ -7,7 +7,7 @@
 
 import Protobuf from 'pbf';
 import {VectorTileFeature} from './vector-tile-feature';
-import type {GeojsonGeometryInfo} from '@loaders.gl/arrow-geometry/legacy-binary';
+import type {GeojsonGeometryInfo} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 
 export class VectorTileLayer {
   version: number;

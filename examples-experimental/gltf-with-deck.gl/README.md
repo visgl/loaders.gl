@@ -1,4 +1,4 @@
-This is a standalone web app using `@loaders.gl/gltf` to render a glTF model in a deck.gl `ScenegraphLayer`.
+This is a standalone web app using `@loaders.gl/scene/gltf` to render a glTF model in a deck.gl `ScenegraphLayer`.
 
 ### Usage
 

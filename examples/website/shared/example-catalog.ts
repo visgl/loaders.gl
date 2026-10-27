@@ -66,7 +66,7 @@ export const CURATED_EXAMPLES: readonly CuratedExample[] = [
     id: 'pointcloud-bunny',
     label: 'Stanford bunny',
     format: 'PLY',
-    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/ply/test/data/bunny.ply',
+    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/pointclouds/test/ply/data/bunny.ply',
     surface: 'pointcloud',
     description: 'A small point cloud for a fast first render.',
     thumbnail: 'images/examples/pointclouds/ply.jpg',

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 import {expect, test} from 'vitest';
-import type {GLTFWithBuffers} from '@loaders.gl/gltf';
+import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {
   get3DTiles2SubtreeBufferIndices,
   get3DTiles2SubtreeBufferViewIndices,

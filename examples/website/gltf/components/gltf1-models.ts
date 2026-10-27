@@ -6,11 +6,11 @@
 export const GLTF1_MODELS = [
   {
     name: 'Box (glTF 1)',
-    url: new URL('../../../../modules/gltf/test/data/gltf-1.0/Box.gltf', import.meta.url).href
+    url: new URL('../../../../modules/scene/test/gltf/data/gltf-1.0/Box.gltf', import.meta.url).href
   },
   {
     name: 'Box Animated (glTF 1)',
-    url: new URL('../../../../modules/gltf/test/data/gltf-1.0/BoxAnimated.gltf', import.meta.url)
+    url: new URL('../../../../modules/scene/test/gltf/data/gltf-1.0/BoxAnimated.gltf', import.meta.url)
       .href
   }
 ];

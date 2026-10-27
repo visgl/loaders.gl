@@ -15,7 +15,7 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   tone="blue"
   meta={['Node.js', 'Portable APIs', 'Optional polyfills']}
   links={[
-    {label: 'Polyfills module', to: '/docs/modules/polyfills/api-reference'},
+    {label: 'Polyfills module', to: '/docs/modules/core/polyfills/api-reference'},
     {label: 'Preferred JavaScript APIs', to: '/docs/developer-guide/concepts/javascript-apis'}
   ]}
 />
@@ -36,6 +36,13 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
 loaders.gl uses portable Web APIs such as `ArrayBuffer`, `Response`, and Web
 Streams. Modern Node.js provides the basic APIs needed to parse in-memory data
 and load HTTP URLs.
+
+## Supported Node.js versions
+
+loaders.gl supports all current Node.js [LTS releases](https://nodejs.org/en/about/previous-releases).
+End-of-life Node.js versions are not supported.
+
+Use the latest Node.js patch release when loading untrusted Brotli data. Node.js’s bundled decoder is used by `fetch()`, `@loaders.gl/core/polyfills`, and `BrotliDecompressor`. See the [October 2026 Node.js security notice](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
 
 ## Node.js adapters
 
@@ -64,4 +71,4 @@ Global polyfills are installed only when the corresponding global is absent.
 Import another polyfill first if you want its implementation to take precedence.
 The loaders.gl adapters are registered separately from these globals.
 
-See the [polyfills API reference](/docs/modules/polyfills/api-reference) for details.
+See the [polyfills API reference](/docs/modules/core/polyfills/api-reference) for details.

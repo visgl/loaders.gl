@@ -85,6 +85,7 @@ export async function parseFile(
   }
 
   options = options || {};
+  (options.signal || context?.signal)?.throwIfAborted();
   const url = file.url || '';
   const typedLoaders = loaders as Loader | Loader[] | undefined;
   const candidateLoaders = getLoadersFromContext(typedLoaders, context);
@@ -134,6 +135,7 @@ async function parseFileWithLoader(
   options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<unknown> {
+  (options.signal || context.signal)?.throwIfAborted();
   validateWorkerVersion(loader);
   options = mergeOptions(loader.options, options);
 

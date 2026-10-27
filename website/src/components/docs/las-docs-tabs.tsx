@@ -22,11 +22,11 @@ export type LasDocsTabId =
 
 const LAS_DOCS_TABS: LasDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/pointclouds/las'},
-  {id: 'benchmarks', label: 'Benchmarks', href: '/docs/modules/las/benchmarks'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/las/formats/las'},
-  {id: 'format', label: 'Format', href: '/docs/modules/las/format'},
-  {id: 'lasloader', label: 'LASLoader', href: '/docs/modules/las/api-reference/las-loader'},
-  {id: 'laswriter', label: 'LASWriter', href: '/docs/modules/las/api-reference/las-writer'}
+  {id: 'benchmarks', label: 'Benchmarks', href: '/docs/modules/pointclouds/las/benchmarks'},
+  {id: 'overview', label: 'Overview', href: '/docs/modules/pointclouds/las/formats/las'},
+  {id: 'format', label: 'Format', href: '/docs/modules/pointclouds/las/format'},
+  {id: 'lasloader', label: 'LASLoader', href: '/docs/modules/pointclouds/las/api-reference/las-loader'},
+  {id: 'laswriter', label: 'LASWriter', href: '/docs/modules/pointclouds/las/api-reference/las-writer'}
 ];
 
 /**

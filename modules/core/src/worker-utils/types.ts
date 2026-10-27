@@ -2,13 +2,29 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/**
- * Worker Options
- */
+/** Progress measured independently within a named phase. */
+export type WorkerProgress = {
+  /** Operation being measured. */
+  phase: string;
+  /** Work completed in this phase. */
+  completed: number;
+  /** Expected work, when known. */
+  total?: number;
+  /** Measurement unit, such as bytes, rows, or tasks. */
+  unit: string;
+};
+
+/** Shared worker execution options. */
 export type WorkerOptions = {
+  /** Cancels queued or running work. */
+  signal?: AbortSignal;
+  /** Receives phase progress. Throwing aborts the job with that error. */
+  onProgress?: (progress: WorkerProgress) => void;
   // Worker farm options
   CDN?: string | null;
   worker?: boolean;
+  /** Declares batch-protocol support for a custom worker, or disables batch offloading. */
+  workerInBatches?: boolean;
   maxConcurrency?: number;
   maxMobileConcurrency?: number;
   reuseWorkers?: boolean;
@@ -26,6 +42,8 @@ export type WorkerOptions = {
 export type LoadWorker = () => Worker | null;
 
 export type WorkerContext = {
+  /** Reports progress from the active worker job. */
+  reportProgress?: (progress: WorkerProgress) => void;
   process?: Process;
   processInBatches?: ProcessInBatches;
 };
@@ -58,6 +76,8 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
+  /** Whether the built-in worker accepts stateful batch requests. */
+  workerInBatches?: boolean;
   /** Browser worker filename when it differs from the worker id. */
   workerFile?: string;
   /** Creates a built-in browser worker, typically using `type: 'module'`. */
@@ -93,6 +113,7 @@ export type WorkerObject = {
               <= error
  */
 export type WorkerMessageType =
+  | 'progress'
   | 'preload'
   | 'process'
   | 'done'
@@ -105,6 +126,8 @@ export type WorkerMessageType =
   | 'output-ack';
 
 export type WorkerMessagePayload = {
+  /** Phase progress from the worker. */
+  progress?: WorkerProgress;
   id?: number;
   options?: {[key: string]: any};
   context?: WorkerJobContext;

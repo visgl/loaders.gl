@@ -14,8 +14,8 @@ import {
   getGLTFAccessor,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from '@loaders.gl/gltf';
-import type {GLTFMeshPrimitive} from '@loaders.gl/gltf';
+} from '@loaders.gl/scene/gltf';
+import type {GLTFMeshPrimitive} from '@loaders.gl/scene/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import {Matrix4} from '@math.gl/core';
 import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';

@@ -4,6 +4,22 @@
 
 ### Unreleased
 
+- Enable incremental JSON, JSONTable, and NDJSON worker batches with backpressure, decoded-row
+  progress, portable Arrow schemas, owned Arrow transport, and browser/Node worker bundles.
+- Add the `serializeWorkerOptions` loader hook for portable atomic and batch parser options.
+
+### v5.0.0-alpha.14
+
+- Worker cancellation now promptly removes queued jobs and replaces terminated running workers.
+- Async loader and worker APIs accept shared `signal` and `onProgress` options, with typed phase
+  progress and worker-local `context.reportProgress` support for atomic and streaming work.
+- Parquet batch decoding reports rows; Draco decoding reports task start and completion.
+- Authenticated loading preserves caller abort reasons through signing, credential refresh, and replay.
+- Route batched parsing through explicit loader/worker capabilities, including opt-in custom and Node workers.
+- Preserve CSV Arrow batch-worker support and pass loader identity through batch dispatch.
+- Enable canonical Parquet worker batches for Arrow and object rows, preserving selection, schema,
+  binary buffers, cancellation, and progress. Encryption callbacks retain main-thread parsing.
+
 ### v5.0.0-alpha.13
 
 - chore(math.gl): upgrade to alpha.19 and migrate removed leaf packages to grouped subpaths
@@ -209,7 +225,7 @@
 
 ### v4.4.0-alpha.5
 
-- Make `@loaders.gl/scientific/zarr` and `@loaders.gl/geoarrow` libraries private
+- Make `@loaders.gl/scientific/zarr` and `@loaders.gl/core/geoarrow` libraries private
 
 ### v4.4.0-alpha.4
 

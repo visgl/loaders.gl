@@ -120,3 +120,20 @@ for the meaning of the numeric types.
   data: [ { type: 'Feature', geometry: [Object], properties: [Object] } ]
 }
 ```
+
+
+## Worker batches
+
+`ShapefileLoader` supports browser worker parsing and `loadInBatches` / `parseInBatches`.
+The worker joins streamed SHP geometry with DBF attributes and fetches available `.shx`,
+`.cpg`, and `.prj` sidecars using the source URL. Request options in `core.fetch` are forwarded
+to those requests. An application-supplied fetch function keeps parsing on the caller.
+
+Worker results use owned Arrow column buffers. Requests for `geojson-table` or `v3` use WKB
+geometry columns in transit; feature and property objects are constructed only on the caller.
+Reprojection still runs during geometry decoding. Typed GeoArrow output retains its existing
+atomic-only restriction; batched Arrow output uses WKB geometry. No Arrow IPC is used.
+
+Set `core.worker: true` to enable workers and `core.worker: false` to use the main thread.
+An abort signal or iterator closure releases the worker; already transferred input buffers
+remain detached. These prebuilt bundles target browser workers.

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scientific",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "Scientific data format loaders with metadata roots and explicit format subpaths",
   "license": "MIT",
   "type": "module",
@@ -48,6 +48,21 @@
       "types": "./dist/scientific-array.d.ts",
       "import": "./dist/scientific-array.js",
       "require": "./dist/scientific-array.cjs"
+    },
+    "./hdf5": {
+      "types": "./dist/hdf5/index.d.ts",
+      "import": "./dist/hdf5/index.js",
+      "require": "./dist/hdf5/index.cjs"
+    },
+    "./vtk": {
+      "types": "./dist/vtk/index.d.ts",
+      "import": "./dist/vtk/index.js",
+      "require": "./dist/vtk/index.cjs"
+    },
+    "./vector-field": {
+      "types": "./dist/vector-field/index.d.ts",
+      "import": "./dist/vector-field/index.js",
+      "require": "./dist/vector-field/index.cjs"
     }
   },
   "sideEffects": false,
@@ -60,15 +75,20 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field",
     "build-bundle": "ocular-bundle ./netcdf-bundle.ts --output=dist/netcdf.min.js && ocular-bundle ./zarr-bundle.ts --output=dist/zarr.min.js",
     "build-bundle-dev": "ocular-bundle ./netcdf-bundle.ts --env=dev --output=dist/netcdf.dev.js && ocular-bundle ./zarr-bundle.ts --env=dev --output=dist/zarr.dev.js",
     "build-cjs-netcdf": "esbuild src/netcdf/*.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist/netcdf --out-extension:.js=.cjs --external:@loaders.gl/* --external:@math.gl/*",
     "build-cjs-zarr": "esbuild src/zarr/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr/index.cjs --external:@loaders.gl/* --external:@math.gl/*",
-    "build-cjs-grib2": "esbuild src/grib2/index.ts src/scientific-array.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist --out-extension:.js=.cjs --external:@loaders.gl/*"
+    "build-cjs-grib2": "esbuild src/grib2/index.ts src/scientific-array.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist --out-extension:.js=.cjs --external:@loaders.gl/*",
+    "build-cjs-hdf5": "esbuild src/hdf5/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/hdf5/index.cjs --external:@loaders.gl/*",
+    "build-cjs-vtk": "esbuild src/vtk/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vtk/index.cjs --external:@loaders.gl/*",
+    "build-cjs-vector-field": "esbuild src/vector-field/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vector-field/index.cjs --external:@loaders.gl/*"
   },
   "dependencies": {
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
+    "fast-xml-parser": "^5.3.6",
+    "h5wasm": "^0.10.3",
     "zarr": "^0.5.0",
     "zarrita": "~0.7.1"
   },

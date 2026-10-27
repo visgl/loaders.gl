@@ -8,7 +8,14 @@ import type {OtlpTrace, OtlpTraceBatch} from './otlp-trace-arrow-schema';
 
 /** Shared options for OTLP trace loaders. */
 export type OtlpTraceLoaderOptions = LoaderOptions & {
+  /** Worker selection for the JSON parser, which shares the OTLP decoding options. */
+  otlpTraceJson?: {
+    /** Overrides the shared browser worker bundle URL. */
+    workerUrl?: string;
+  };
   otlpTrace?: {
+    /** Overrides the shared browser worker bundle URL. */
+    workerUrl?: string;
     /** Maximum rows emitted in one tagged Arrow record batch. */
     batchSize?: number;
   };
@@ -24,6 +31,9 @@ export const OtlpTraceLoader = {
   name: 'OTLP Trace Loader',
   id: 'otlpTrace',
   module: 'traces',
+  worker: true,
+  workerInBatches: true,
+  workerFile: 'trace-worker.js',
   version: 'latest',
   extensions: ['otlp', 'otlp-trace'],
   mimeTypes: ['application/x-protobuf', 'application/vnd.google.protobuf'],
@@ -39,6 +49,9 @@ export const OtlpTraceJsonLoader = {
   name: 'OTLP Trace JSON Loader',
   id: 'otlpTraceJson',
   module: 'traces',
+  worker: true,
+  workerInBatches: true,
+  workerFile: 'trace-worker.js',
   version: 'latest',
   extensions: ['otlp.json', 'otlp.jsonl'],
   mimeTypes: ['application/json', 'application/jsonl', 'application/x-ndjson'],

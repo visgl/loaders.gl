@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Format} from './format-types';
-import type {LoadWorker} from '@loaders.gl/core/worker-utils';
+import type {LoadWorker, WorkerOptions, WorkerProgress} from '@loaders.gl/core/worker-utils';
 import {DataType, FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 import type {CoreAPI} from './lib/sources/data-source';
@@ -18,7 +18,7 @@ export type SearchParams = Record<string, string | number | boolean>;
 /**
  * Core Loader Options
  */
-export type StrictLoaderOptions = {
+export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
   /** Experimental common scan request. Format loaders implement the fields they support. */
   _scan?: ExperimentalScanOptions;
   /** Query parameters appended to the initial URL request. */
@@ -77,6 +77,8 @@ export type StrictLoaderOptions = {
     CDN?: string | null;
     /** Set to `false` to disable workers, or `'auto'` to use loader work estimates. */
     worker?: boolean | 'auto';
+    /** Declares batch support for a custom worker URL, or disables batch offloading. The loader must also advertise workerInBatches. */
+    workerInBatches?: boolean;
     /** Work-score threshold used by `worker: 'auto'`. */
     workerThreshold?: number;
     /** Number of concurrent workers (per loader) on desktop browser */
@@ -97,13 +99,17 @@ export type StrictLoaderOptions = {
   modules?: Record<string, unknown>;
 
   // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
-  [loaderId: string]: Record<string, unknown> | undefined;
+  [loaderId: string]:
+    | Record<string, unknown>
+    | AbortSignal
+    | ((progress: WorkerProgress) => void)
+    | undefined;
 };
 
 /**
  * Core Loader Options
  */
-export type LoaderOptions = {
+export type LoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
   /** Experimental common scan request. Format loaders implement the fields they support. */
   _scan?: ExperimentalScanOptions;
   /** Query parameters appended to the initial URL request. */
@@ -193,6 +199,8 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   version: string;
   /** A boolean, or a URL */
   worker?: string | boolean;
+  /** Whether the worker and its batch transport support this loader's batch parser. */
+  workerInBatches?: boolean;
   /** Browser worker filename when it differs from the loader id. */
   workerFile?: string;
   /** Optional Node.js worker filename, such as a CommonJS `.cjs` bundle. */
@@ -211,6 +219,8 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
     url: string,
     options: LoaderOptions
   ) => readonly AuthenticationConstructor[] | Promise<readonly AuthenticationConstructor[]>;
+  /** Converts loader-specific option values to portable data before worker dispatch. Must not mutate options. */
+  serializeWorkerOptions?: (options: LoaderOptionsT) => LoaderOptions;
   /** Serializes parser output before returning it from a worker. */
   serializeWorkerResult?: (
     result: DataT,
@@ -332,6 +342,10 @@ export type LoaderWithParser<
  *   threads back to main thread.
  */
 export type LoaderContext = {
+  /** Cancels nested asynchronous operations where supported. */
+  signal?: AbortSignal;
+  /** Reports progress within a loader-defined phase. */
+  reportProgress?: (progress: WorkerProgress) => void;
   /** Loader list provided to top-level loader call plus any sub loaders */
   loaders?: Loader[] | null;
   /** If URL is available.  */

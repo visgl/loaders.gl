@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, Geometry} from '@loaders.gl/core/schema';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import {convertWKBToGeometry} from '@loaders.gl/arrow-geometry/geometry-codecs';
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {fromVectorTileJs} from './mapbox-vt-pbf/to-vector-tile';
 import type {MVTTile} from './mvt-pbf/mvt-types';
 import type {MVTWriterOptions} from './encode-mvt';

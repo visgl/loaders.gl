@@ -15,7 +15,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
   meta={['From v5.0', '3D Tiles source', 'Lazy hierarchy']}
   links={[
-    {label: '3D Tiles format', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
+    {label: '3D Tiles format', to: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'},
     {label: 'Tileset3D', to: '/docs/modules/tiles-3d/api-reference/tileset-3d'},
     {label: 'Tiles module', to: '/docs/modules/tiles'}
   ]}
@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
 />
 
-The `Tiles3DSource` class implements [`Tileset3DSource`](/docs/modules/tiles-3d/api-reference/tileset-3d-source) for datasets loaded with the [Tiles3DLoader](/docs/modules/3d-tiles/api-reference/tiles-3d-loader).
+The `Tiles3DSource` class implements [`Tileset3DSource`](/docs/modules/tiles-3d/api-reference/tileset-3d-source) for datasets loaded with the [Tiles3DLoader](/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader).
 
 ## Usage
 
@@ -105,7 +105,7 @@ Loads and installs one lazy implicit subtree. Traversal calls this hook only aft
 
 ### `getImplicitTilingStats()`
 
-Returns request, parsed-cache, pending, and materialized-header counters for implicit traversal. See [Implicit tiling and lazy subtrees](/docs/modules/3d-tiles/concepts/implicit-tiling-and-subtrees#runtime-diagnostics).
+Returns request, parsed-cache, pending, and materialized-header counters for implicit traversal. See [Implicit tiling and lazy subtrees](/docs/modules/tiles-3d/3d-tiles/concepts/implicit-tiling-and-subtrees#runtime-diagnostics).
 
 ### `getTileUrl(tilePath)`
 

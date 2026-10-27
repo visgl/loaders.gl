@@ -23,10 +23,10 @@ import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
 import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {DracoLoader} from '@loaders.gl/draco';
-import {LASLoader} from '@loaders.gl/las';
-import {OBJLoader} from '@loaders.gl/obj';
-import {PCDLoader} from '@loaders.gl/pcd';
-import {PLYLoader} from '@loaders.gl/ply';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
+import {OBJLoader} from '@loaders.gl/scene/obj';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
 import type {Example} from './examples';
 import {EXAMPLES} from './examples';

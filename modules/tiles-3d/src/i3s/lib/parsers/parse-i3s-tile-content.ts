@@ -6,6 +6,7 @@ import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
 import type {TypedArray} from '@loaders.gl/core/schema';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
+import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/ellipsoid';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
@@ -79,7 +80,7 @@ export async function parseI3STileContent(
   options?: StrictLoaderOptions,
   context?: LoaderContext
 ): Promise<I3STileContent> {
-  const geometryMode = options?.i3s?.geometryMode ?? 'render';
+  const geometryMode = (options?.i3s as I3SLoaderOptions['i3s'])?.geometryMode ?? 'render';
   if (geometryMode !== 'render' && geometryMode !== 'source') {
     throw new Error('Unsupported I3S geometry mode');
   }
@@ -182,7 +183,7 @@ async function loadI3STexture(
 
   const textureArrayBuffer = await response.arrayBuffer();
 
-  if (!options?.i3s?.decodeTextures) {
+  if (!(options?.i3s as I3SLoaderOptions['i3s'])?.decodeTextures) {
     return textureArrayBuffer;
   }
 
@@ -777,7 +778,7 @@ function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): M
   const cartographicOrigin = new Vector3(mbs[0], mbs[1], mbs[2]);
   const cartesianOrigin = new Vector3();
   Ellipsoid.WGS84.cartographicToCartesian(cartographicOrigin, cartesianOrigin);
-  Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin, enuMatrix);
+  eastNorthUpToFixedFrame(Ellipsoid.WGS84, cartesianOrigin, enuMatrix);
   attribute.value = offsetsToCartesians(value, metadata, cartographicOrigin);
 
   return enuMatrix;

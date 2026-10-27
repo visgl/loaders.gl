@@ -171,4 +171,4 @@ const arrowTableCopy = tableFromIPC(bytes);
 console.log(arrowTableCopy.numRows); // 3
 ```
 
-For loaders.gl table-shape conversion, see [schema utilities](/docs/modules/schema-utils).
+For loaders.gl table-shape conversion, see [schema utilities](/docs/modules/core/schema-utils).

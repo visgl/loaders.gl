@@ -127,6 +127,38 @@ for await (const batch of batches) {
 }
 ```
 
+### Worker batches
+
+The canonical `ParquetLoader` supports worker batches for both `arrow-table` and
+`object-row-table` output. Enable workers with `core.worker: true`, or set
+`core.workerInBatches: false` to keep batch parsing on the caller. Explicit custom worker URLs
+also require `core.workerInBatches: true` to confirm support for the batch protocol.
+
+```typescript
+const controller = new AbortController();
+const batches = await loadInBatches('data.parquet', ParquetLoader, {
+  core: {worker: true},
+  parquet: {shape: 'arrow-table', batchSize: 1024},
+  signal: controller.signal,
+  onProgress: ({phase, completed, unit}) => console.log(phase, completed, unit)
+});
+for await (const batch of batches) {
+  consume(batch.data); // A hydrated Apache Arrow Table on the caller.
+}
+```
+
+One worker retains parser state until the iterator completes or is closed. Projection, row-group
+selection, offset, limit, and `parquet.batchSize` apply inside that worker. Owned Arrow column buffers transport each
+batch and preserves Arrow types, nested values, and metadata without detaching retained parser
+buffers. Object rows are materialized on the caller after the decoded Arrow batch is hydrated. Progress reports decoded rows. Aborting terminates the worker,
+rejects with the caller's abort reason, and leaves pool capacity available for subsequent work.
+
+Parquet input chunks are currently collected into a complete file inside the worker before decoding.
+This reduces parsing work on the caller but does not provide incremental input decoding or bounded
+whole-file memory. For random-access/range reads, use `ParquetSource` and its source-worker options.
+Calls with `parquet.keyRetriever` run on the caller to preserve the encryption callback. The explicit
+WASM backend, `ParquetJSLoader`, and `GeoParquetLoader` are not enabled by this capability.
+
 ## Geospatial Metadata
 
 When `ParquetLoader` reads a GeoParquet file as Arrow:
@@ -244,7 +276,7 @@ explicitly.
 
 ## Worker Execution
 
-The primary `ParquetLoader` can decode on a worker when workers are enabled. The Parquet bytes are transferred into the worker, and Arrow output returns as a transferable Arrow IPC payload that is rehydrated into Apache Arrow class instances on the main thread. Aborting `parquet.signal` terminates the active worker rather than waiting for a non-cancellable WASM call to finish.
+The primary `ParquetLoader` can decode on a worker when workers are enabled. The Parquet bytes are transferred into the worker, and all decoded data returns as directly transferable Arrow column buffers; requested object rows are materialized on the caller after hydration. Arrow output is rehydrated into Apache Arrow class instances on the caller. Aborting `parquet.signal` terminates the active worker rather than waiting for a non-cancellable WASM call to finish.
 
 The package publishes `parquet-worker.js` and `parquet_wasm_bg.wasm` beside its JavaScript output. The metadata loader resolves the worker with a module-relative `new URL(..., import.meta.url)`, while the worker resolves the WASM file beside itself. This lets compatible bundlers copy and fingerprint both assets without an implicit CDN request. Use `parquet.workerUrl` or `parquet.wasmUrl` when an application serves assets from a custom location.
 

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import type {ParquetSource} from '@loaders.gl/tables/parquet';
 import type {ArrowTable} from '@loaders.gl/core/schema';
-import type {ScanQueryMetadata} from '@loaders.gl/scan';
+import type {ScanQueryMetadata} from '@loaders.gl/core/scan';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
 type ParquetDemoState = Readonly<{

@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
+import {BoundingSphere, makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
 import {convertBoundingVolumeToI3SFullExtent} from '../../../src/v4/i3s-converter/helpers/coordinate-converter';
 import {Ellipsoid} from '@math.gl/geospatial';
 test('tile-converter(i3s)#convertBoundingVolumeToI3SFullExtent', async () => {
@@ -16,7 +16,7 @@ test('tile-converter(i3s)#convertBoundingVolumeToI3SFullExtent', async () => {
     zmin: expect.closeTo(-4505.453647678357, 7),
     zmax: expect.closeTo(4754.999977323874, 7)
   });
-  const boundingBox = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
+  const boundingBox = makeOrientedBoundingBoxFromQuaternion(
     cartesianCenter,
     [6821.31591796875, 7171.64501953125, 704.45751953125],
     [-0.49739304184913635, 0.74555933475494385, 0.18463276326656342, 0.40330156683921814]

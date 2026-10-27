@@ -15,7 +15,7 @@ import {
   openCOPC,
   type COPCRangeReader
 } from '@loaders.gl/tiles-3d/copc';
-import {LASLoader} from '@loaders.gl/las';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/core/loader-utils';
 import {
   deduceMeshSchema,

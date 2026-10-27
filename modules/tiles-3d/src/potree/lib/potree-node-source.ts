@@ -24,7 +24,7 @@ import {
   validatePointCloudQueryOptions,
   type PointCloudQueryCapabilities
 } from '@loaders.gl/core/loader-utils';
-import {LASLoader} from '@loaders.gl/las';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 import type {
   ArrowTableBatch,
   DataType,
@@ -43,7 +43,7 @@ import {PotreeHierarchyChunkLoaderWithParser} from '../potree-hierarchy-chunk-lo
 import {PotreeBinLoaderWithParser} from '../potree-bin-loader-with-parser';
 import {parseVersion} from '../utils/parse-version';
 import type {Projection} from '@math.gl/geospatial/projection';
-import type {LASMesh} from '@loaders.gl/las';
+import type {LASMesh} from '@loaders.gl/pointclouds/las';
 import {createProjection} from '../utils/projection-utils';
 import {
   getCartographicOriginFromBoundingBox,
@@ -993,7 +993,8 @@ export class PotreeNodesSource
       const loaderOptions: LoaderOptions = {
         las: {
           colorDepth: 'auto',
-          colorFormat: this.loadOptions.potree?.colorFormat || 'uint8norm'
+          colorFormat:
+            (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
         }
       };
       if (this.loadOptions.core) {
@@ -1016,7 +1017,8 @@ export class PotreeNodesSource
         scale: this.metadata.scale,
         positionOrigin,
         nodeBoundingBox: tileBoundingBox,
-        colorFormat: this.loadOptions.potree?.colorFormat || 'uint8norm'
+        colorFormat:
+          (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
       }
     };
   }

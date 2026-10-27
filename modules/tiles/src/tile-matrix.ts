@@ -2,19 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  getTileBounds,
-  getTileRange,
-  isTileIndexInRange,
-  selectTileMatrix
-} from '@math.gl/geospatial/tile-matrix';
+import {getTileBounds, getTileRanges, selectTileMatrix} from '@math.gl/geospatial/tile-matrix';
 import type {
-  TileMatrix,
   TileMatrixBounds,
   TileMatrixLimits,
   TileMatrixSet
 } from '@math.gl/geospatial/tile-matrix';
 import type {NonGeoBoundingBox, TileIndex} from './tileset-2d/types';
+import {resolveTileGridTile, validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
+import type {Tileset2DAdapter, Tileset2DTraversalContext} from './tileset-2d/adapter';
 import type {GetTileDataParameters} from '@loaders.gl/core/loader-utils';
 
 /** Renderer-independent view frame, already expressed in the grid's canonical X/Y coordinates. */
@@ -61,12 +57,11 @@ export type TileMatrixSelectionOptions = {
 };
 
 /**
- * Selects regular-grid tiles for an explicit native-CRS frame, with source coverage applied.
+ * Selects regular or coalesced-grid tiles for an explicit native-CRS frame, with source coverage applied.
  * Uses math.gl's coarsest level meeting the target, or its finest available fallback. z is the
  * matrix's array index for compatibility; tileMatrix is authoritative. Cache ids encode the CRS,
  * native matrix id and column/row, and are scoped to this source/grid, not globally unique.
- * Returns an empty array outside the grid or available coverage. Partial geometry, coalesced
- * rows, mismatched CRS identifiers and invalid coverage reject rather than approximating XYZ.
+ * Returns an empty array outside the grid or available coverage. Partial geometry, mismatched CRS identifiers and invalid coverage reject rather than approximating XYZ.
  * This does not infer parents, transform a viewport, reproject content or configure a renderer.
  */
 export function selectTileMatrixTiles(
@@ -74,65 +69,224 @@ export function selectTileMatrixTiles(
   frame: TileMatrixViewFrame,
   options: TileMatrixSelectionOptions = {}
 ): TileMatrixTile[] {
+  const {matrixSet, maximumTileCount} = validateTileMatrixSelection(grid, frame, options);
+  const selectedMatrix = selectTileMatrix(matrixSet, frame.resolution);
+  const coverage = new Map<string, NonNullable<TileMatrixSelectionGrid['limits']>[number]>();
+  for (const limit of grid.limits ?? []) {
+    coverage.set(limit.tileMatrix, limit);
+  }
+  if (!selectedMatrix || (grid.limits !== undefined && !coverage.has(selectedMatrix.id))) return [];
+  const ranges = getTileRanges(selectedMatrix, frame.extent, coverage.get(selectedMatrix.id));
+  let tileCount = 0;
+  for (const range of ranges) {
+    const width = (range.maxTileColumn - range.minTileColumn) / range.columnStep + 1;
+    const height = range.maxTileRow - range.minTileRow + 1;
+    if (width > (maximumTileCount - tileCount) / height)
+      throw new RangeError('Tile selection exceeds maximumTileCount.');
+    tileCount += width * height;
+  }
+  const matrixIndex = matrixSet.matrices.indexOf(selectedMatrix);
+  const tiles: TileMatrixTile[] = [];
+  for (const range of ranges) {
+    for (let row = range.minTileRow; row <= range.maxTileRow; row++) {
+      for (
+        let column = range.minTileColumn;
+        column <= range.maxTileColumn;
+        column += range.columnStep
+      ) {
+        const [left, bottom, right, top] = getTileBounds(selectedMatrix, column, row);
+        tiles.push({
+          index: {x: column, y: row, z: matrixIndex},
+          tileMatrix: selectedMatrix.id,
+          id: JSON.stringify([matrixSet.crs, selectedMatrix.id, column, row]),
+          bbox: {left, bottom, right, top},
+          crs: matrixSet.crs,
+          tileSize: [selectedMatrix.tileSize[0], selectedMatrix.tileSize[1]]
+        } satisfies TileMatrixTile & GetTileDataParameters);
+      }
+    }
+  }
+  return tiles;
+}
+
+/** Validates selection inputs before clipping or restricting levels, without mutating them. */
+function validateTileMatrixSelection(
+  grid: TileMatrixSelectionGrid,
+  frame: TileMatrixViewFrame,
+  options: TileMatrixSelectionOptions
+): {matrixSet: TileMatrixSet; maximumTileCount: number} {
   const matrixSet = grid.tileMatrixSet;
   if (!matrixSet || !matrixSet.crs || frame.crs !== matrixSet.crs) {
     throw new Error('Tile selection requires complete geometry and a frame in the exact grid CRS.');
   }
-  if (
-    frame.extent.length !== 4 ||
-    !frame.extent.every(Number.isFinite) ||
-    frame.extent[0] > frame.extent[2] ||
-    frame.extent[1] > frame.extent[3]
-  ) {
-    throw new RangeError('Tile frame extent must be finite and ordered.');
+  validateTileMatrixExtent(frame.extent);
+  if (!Number.isFinite(frame.resolution) || frame.resolution <= 0) {
+    throw new RangeError('Tile frame resolution must be positive and finite.');
   }
   const maximumTileCount = options.maximumTileCount ?? 4096;
   if (!Number.isSafeInteger(maximumTileCount) || maximumTileCount < 0) {
     throw new RangeError('maximumTileCount must be a nonnegative safe integer.');
   }
-  for (const matrix of matrixSet.matrices) {
-    // Newer math.gl models can describe coalescence; this selector deliberately accepts regular grids only.
-    const coalescenceBands = (matrix as TileMatrix & {variableMatrixWidths?: readonly unknown[]})
-      .variableMatrixWidths;
+  validateTileGrid(grid);
+  return {matrixSet, maximumTileCount};
+}
+
+/** Validates a native X/Y extent, including the zero-area point-query case. */
+function validateTileMatrixExtent(extent: readonly number[]): void {
+  if (
+    !Array.isArray(extent) ||
+    extent.length !== 4 ||
+    !Array.from(extent).every(Number.isFinite) ||
+    extent[0] > extent[2] ||
+    extent[1] > extent[3]
+  ) {
+    throw new RangeError('Tile frame extent must be finite and ordered.');
+  }
+}
+
+/** A no-op 4x4 model transform; frames already describe coordinates in the native grid CRS. */
+function isIdentityTileMatrixTransform(matrix: readonly number[]): boolean {
+  return (
+    matrix.length === 16 &&
+    Array.from(matrix).every((value, index) => value === (index % 5 === 0 ? 1 : 0))
+  );
+}
+
+/** Clips one frame against an explicit native extent without inventing overlap at a touched edge. */
+function clipTileMatrixFrame(
+  frame: TileMatrixViewFrame,
+  extent: readonly number[]
+): TileMatrixViewFrame | null {
+  validateTileMatrixExtent(extent);
+  const clipped: TileMatrixBounds = [
+    Math.max(frame.extent[0], extent[0]),
+    Math.max(frame.extent[1], extent[1]),
+    Math.min(frame.extent[2], extent[2]),
+    Math.min(frame.extent[3], extent[3])
+  ];
+  for (let axis = 0; axis < 2; axis++) {
     if (
-      coalescenceBands !== undefined &&
-      (!Array.isArray(coalescenceBands) || coalescenceBands.length > 0)
-    ) {
-      throw new Error('Regular-grid selection does not support variable-width rows.');
-    }
+      clipped[axis] > clipped[axis + 2] ||
+      (clipped[axis] === clipped[axis + 2] &&
+        frame.extent[axis] !== frame.extent[axis + 2] &&
+        extent[axis] !== extent[axis + 2])
+    )
+      return null;
   }
-  const selectedMatrix = selectTileMatrix(matrixSet, frame.resolution);
-  const coverage = new Map<string, NonNullable<TileMatrixSelectionGrid['limits']>[number]>();
-  for (const limit of grid.limits ?? []) {
-    const matrix = matrixSet.matrices.find(candidate => candidate.id === limit.tileMatrix);
-    if (!matrix || coverage.has(limit.tileMatrix)) {
-      throw new RangeError('Tile coverage must reference unique, known matrix ids.');
-    }
-    // math.gl validates every endpoint of the inclusive rectangle, not just these two indices.
-    isTileIndexInRange(matrix, limit.minTileColumn, limit.minTileRow, limit);
-    coverage.set(limit.tileMatrix, limit);
+  return {...frame, extent: clipped};
+}
+
+/** Options for an explicit native-frame Tileset2D traversal adapter. */
+export type TileMatrixTileset2DAdapterOptions = TileMatrixSelectionOptions & {
+  /**
+   * Caller-owned content namespace. Change it when source, grid geometry or content dimensions
+   * change; identical values intentionally share cache identity within a tileset.
+   */
+  cacheNamespace: string;
+};
+
+/**
+ * Adapts complete TileMatrix geometry to the shared Tileset2D cache using native-CRS frames.
+ * Selection, bounds, native IDs and logical dimensions come from the existing fixed-frame
+ * selector. No parent relationships are inferred. The caller supplies viewport conversion and
+ * an explicit namespace covering source identity, grid version and content dimensions.
+ * Treat grid metadata as immutable for the lifetime of this adapter; replace the adapter and
+ * namespace when the grid or content changes. This does not configure a deck.gl renderer.
+ */
+export function createTileMatrixTileset2DAdapter(
+  grid: TileMatrixSelectionGrid,
+  options: TileMatrixTileset2DAdapterOptions
+): Tileset2DAdapter<TileMatrixViewFrame> {
+  if (!grid.tileMatrixSet) throw new Error('TileMatrix traversal requires complete geometry.');
+  validateTileGrid(grid);
+  if (typeof options.cacheNamespace !== 'string' || !options.cacheNamespace.trim()) {
+    throw new RangeError('TileMatrix traversal requires a nonempty cache namespace.');
   }
-  if (!selectedMatrix || (grid.limits !== undefined && !coverage.has(selectedMatrix.id))) return [];
-  const range = getTileRange(selectedMatrix, frame.extent, coverage.get(selectedMatrix.id));
-  if (!range) return [];
-  const width = range.maxTileColumn - range.minTileColumn + 1;
-  const height = range.maxTileRow - range.minTileRow + 1;
-  if (width > maximumTileCount / height)
-    throw new RangeError('Tile selection exceeds maximumTileCount.');
-  const matrixIndex = matrixSet.matrices.indexOf(selectedMatrix);
-  const tiles: TileMatrixTile[] = [];
-  for (let row = range.minTileRow; row <= range.maxTileRow; row++) {
-    for (let column = range.minTileColumn; column <= range.maxTileColumn; column++) {
-      const [left, bottom, right, top] = getTileBounds(selectedMatrix, column, row);
-      tiles.push({
-        index: {x: column, y: row, z: matrixIndex},
-        tileMatrix: selectedMatrix.id,
-        id: JSON.stringify([matrixSet.crs, selectedMatrix.id, column, row]),
-        bbox: {left, bottom, right, top},
-        crs: matrixSet.crs,
-        tileSize: [selectedMatrix.tileSize[0], selectedMatrix.tileSize[1]]
-      } satisfies TileMatrixTile & GetTileDataParameters);
-    }
+  const matrixSet = grid.tileMatrixSet;
+  const cacheNamespace = options.cacheNamespace;
+  const maximumTileCount = options.maximumTileCount;
+  /** Resolves coverage and native identity, including canonical coalesced aliases. */
+  function resolveMatrixIndex(index: TileIndex) {
+    if (!index.tileMatrix)
+      throw new RangeError('TileMatrix traversal requires a native matrix ID.');
+    const matrix = matrixSet.matrices.find(candidate => candidate.id === index.tileMatrix);
+    if (!matrix) throw new RangeError(`Unknown tile matrix "${index.tileMatrix}"`);
+    const resolved = resolveTileGridTile(grid, {...index, tileMatrix: index.tileMatrix});
+    if (!resolved) throw new RangeError('Tile is outside the matrix or advertised coverage.');
+    return {matrix, resolved};
   }
-  return tiles;
+  return {
+    useSourceExtent: false,
+    validateExtent: validateTileMatrixExtent,
+    getTileIndices: (context: Tileset2DTraversalContext<TileMatrixViewFrame>) => {
+      validateTileMatrixSelection(grid, context.viewState, {maximumTileCount});
+      if (context.zRange != null)
+        throw new Error(
+          'TileMatrix traversal requires an elevation-aware native frame; zRange is not supported.'
+        );
+      for (const transform of [context.modelMatrix, context.modelMatrixInverse]) {
+        if (transform && !isIdentityTileMatrixTransform(transform)) {
+          throw new Error(
+            'TileMatrix traversal requires an already-transformed native frame; model matrices are not supported.'
+          );
+        }
+      }
+      const zoomOffset = context.zoomOffset ?? 0;
+      if (!Number.isInteger(zoomOffset)) throw new RangeError('zoomOffset must be an integer.');
+      const resolution = context.viewState.resolution / 2 ** zoomOffset;
+      if (!Number.isFinite(resolution) || resolution <= 0)
+        throw new RangeError('zoomOffset produces an invalid frame resolution.');
+      for (const level of [context.minZoom, context.maxZoom]) {
+        if (level !== undefined && !Number.isFinite(level))
+          throw new RangeError('Matrix level limits must be finite.');
+      }
+      const minimumLevel = Math.max(0, Math.ceil(context.minZoom ?? 0));
+      const maximumLevel = Math.min(
+        matrixSet.matrices.length - 1,
+        Math.floor(context.maxZoom ?? matrixSet.matrices.length - 1)
+      );
+      const frame = context.extent
+        ? clipTileMatrixFrame(context.viewState, context.extent)
+        : context.viewState;
+      if (!frame) return [];
+      const matrices = matrixSet.matrices.filter(
+        (_matrix, index) => index >= minimumLevel && index <= maximumLevel
+      );
+      const identifiers = new Set(matrices.map(matrix => matrix.id));
+      const selectedGrid = {
+        tileMatrixSet: {...matrixSet, matrices},
+        ...(grid.limits === undefined
+          ? {}
+          : {limits: grid.limits.filter(limit => identifiers.has(limit.tileMatrix))})
+      };
+      const originalIndices = new Map(
+        matrixSet.matrices.map((matrix, index) => [matrix.id, index])
+      );
+      return selectTileMatrixTiles(selectedGrid, {...frame, resolution}, {maximumTileCount}).map(
+        tile => ({
+          ...tile.index,
+          z: originalIndices.get(tile.tileMatrix)!,
+          tileMatrix: tile.tileMatrix
+        })
+      );
+    },
+    resolveTileIndex: index => {
+      const {matrix, resolved} = resolveMatrixIndex(index);
+      return {...index, x: resolved.x, tileMatrix: matrix.id};
+    },
+    getTileId: index => {
+      const {matrix, resolved} = resolveMatrixIndex(index);
+      return JSON.stringify([cacheNamespace, matrixSet.crs, matrix.id, resolved.x, resolved.y]);
+    },
+    getTileBoundingBox: (_context, index) => {
+      const {matrix, resolved} = resolveMatrixIndex(index);
+      const [left, bottom, right, top] = getTileBounds(matrix, resolved.x, resolved.y);
+      return {left, bottom, right, top};
+    },
+    getTileMetadata: (_context, index) => {
+      const {matrix} = resolveMatrixIndex(index);
+      return {tileMatrix: matrix.id, crs: matrixSet.crs, tileSize: matrix.tileSize};
+    },
+    getParentIndex: () => null
+  };
 }

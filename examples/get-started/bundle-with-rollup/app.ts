@@ -3,14 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {parse} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {CompressedTextureLoader} from '@loaders.gl/textures';
 
 const TEXTURE_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/shannon-astc-12x12.pvr';
 
 const GLTF_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/gltf/test/data/glb/DamagedHelmet.glb';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/scene/test/gltf/data/glb/DamagedHelmet.glb';
 
 const getTextureBytes = (texture) => texture.map(level => level.data.byteLength).join(',')
 

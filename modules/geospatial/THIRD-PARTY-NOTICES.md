@@ -4,6 +4,8 @@ Björn Harrtell's [FlatGeobuf](https://github.com/flatgeobuf/flatgeobuf) supplie
 
 The GeoPackage adapter uses separately installed [SQL.js](https://github.com/sql-js/sql.js), which compiles SQLite to WebAssembly. Shapefile parsing was developed for loaders.gl; the presence of upstream shapefile test fixtures does not mean the production parser was copied from them. math.gl and Apache Arrow provide separately installed geometry and table foundations.
 
+WKT/WKB/TWKB loaders use the geometry codecs owned by core. See the [core notice inventory](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md) for Christian Schwarz’s wkx contribution and the full retained terms.
+
 ## Scope and maintenance
 
 Original loaders.gl contributions are covered by [LICENSE](./LICENSE). The upstream

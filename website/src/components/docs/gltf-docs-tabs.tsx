@@ -21,11 +21,11 @@ export type GltfDocsTabId =
   | 'post-processing';
 
 const GLTF_DOCS_TABS: GltfDocsTab[] = [
-  {id: 'overview', label: 'Overview', href: '/docs/modules/gltf'},
-  {id: 'format', label: 'glTF Format', href: '/docs/modules/gltf/formats/gltf'},
-  {id: 'gltf-loader', label: 'GLTFLoader', href: '/docs/modules/gltf/api-reference/gltf-loader'},
-  {id: 'iterator', label: 'Iterator', href: '/docs/modules/gltf/api-reference/gltf-iterator'},
-  {id: 'scenegraph', label: 'Scenegraph', href: '/docs/modules/gltf/api-reference/gltf-scenegraph'},
+  {id: 'overview', label: 'Overview', href: '/docs/modules/scene/gltf'},
+  {id: 'format', label: 'glTF Format', href: '/docs/modules/scene/gltf/formats/gltf'},
+  {id: 'gltf-loader', label: 'GLTFLoader', href: '/docs/modules/scene/gltf/api-reference/gltf-loader'},
+  {id: 'iterator', label: 'Iterator', href: '/docs/modules/scene/gltf/api-reference/gltf-iterator'},
+  {id: 'scenegraph', label: 'Scenegraph', href: '/docs/modules/scene/gltf/api-reference/gltf-scenegraph'},
   {
     id: 'post-processing',
     label: 'Post-processing',

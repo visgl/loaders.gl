@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "5.0.0-alpha.13",
+  "version": "5.0.0-alpha.14",
   "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
   "type": "module",
@@ -32,6 +32,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./loader-utils/tile-grid": {
+      "types": "./dist/loader-utils/tile-grid.d.ts",
+      "import": "./dist/loader-utils/tile-grid.js",
+      "require": "./dist/loader-utils/tile-grid.cjs"
     },
     "./loader-utils": {
       "types": "./dist/loader-utils/index.d.ts",
@@ -82,6 +87,236 @@
       "types": "./dist/schema-utils/arrow-transport.d.ts",
       "import": "./dist/schema-utils/arrow-transport.js",
       "require": "./dist/schema-utils/arrow-transport.cjs"
+    },
+    "./arrow-geometry": {
+      "types": "./dist/arrow-geometry/index.d.ts",
+      "import": "./dist/arrow-geometry/index.js",
+      "require": "./dist/arrow-geometry/index.cjs"
+    },
+    "./arrow-geometry/legacy-binary": {
+      "types": "./dist/arrow-geometry/legacy-binary.d.ts",
+      "import": "./dist/arrow-geometry/legacy-binary.js",
+      "require": "./dist/arrow-geometry/legacy-binary.cjs"
+    },
+    "./arrow-geometry/geometry-codecs": {
+      "types": "./dist/arrow-geometry/geometry-codecs.d.ts",
+      "import": "./dist/arrow-geometry/geometry-codecs.js",
+      "require": "./dist/arrow-geometry/geometry-codecs.cjs"
+    },
+    "./arrow-geometry/geometry-field": {
+      "types": "./dist/arrow-geometry/geometry-field.d.ts",
+      "import": "./dist/arrow-geometry/geometry-field.js",
+      "require": "./dist/arrow-geometry/geometry-field.cjs"
+    },
+    "./arrow-geometry/wkb-arrow-utils": {
+      "types": "./dist/arrow-geometry/wkb-arrow-utils.d.ts",
+      "import": "./dist/arrow-geometry/wkb-arrow-utils.js",
+      "require": "./dist/arrow-geometry/wkb-arrow-utils.cjs"
+    },
+    "./arrow-geometry/feature-collection-to-arrow": {
+      "types": "./dist/arrow-geometry/feature-collection-to-arrow.d.ts",
+      "import": "./dist/arrow-geometry/feature-collection-to-arrow.js",
+      "require": "./dist/arrow-geometry/feature-collection-to-arrow.cjs"
+    },
+    "./arrow-geometry/feature-table": {
+      "types": "./dist/arrow-geometry/feature-table.d.ts",
+      "import": "./dist/arrow-geometry/feature-table.js",
+      "require": "./dist/arrow-geometry/feature-table.cjs"
+    },
+    "./arrow-geometry/geojson-table": {
+      "types": "./dist/arrow-geometry/geojson-table.d.ts",
+      "import": "./dist/arrow-geometry/geojson-table.js",
+      "require": "./dist/arrow-geometry/geojson-table.cjs"
+    },
+    "./arrow-geometry/binary-features": {
+      "types": "./dist/arrow-geometry/binary-features.d.ts",
+      "import": "./dist/arrow-geometry/binary-features.js",
+      "require": "./dist/arrow-geometry/binary-features.cjs"
+    },
+    "./arrow-geometry/sampled-bounds": {
+      "types": "./dist/arrow-geometry/sampled-bounds.d.ts",
+      "import": "./dist/arrow-geometry/sampled-bounds.js",
+      "require": "./dist/arrow-geometry/sampled-bounds.cjs"
+    },
+    "./arrow-geometry/binary-geometry-to-wkb": {
+      "types": "./dist/arrow-geometry/binary-geometry-to-wkb.d.ts",
+      "import": "./dist/arrow-geometry/binary-geometry-to-wkb.js",
+      "require": "./dist/arrow-geometry/binary-geometry-to-wkb.cjs"
+    },
+    "./arrow-geometry/wkb-table": {
+      "types": "./dist/arrow-geometry/wkb-table.d.ts",
+      "import": "./dist/arrow-geometry/wkb-table.js",
+      "require": "./dist/arrow-geometry/wkb-table.cjs"
+    },
+    "./arrow-geometry/wkb-statistics": {
+      "types": "./dist/arrow-geometry/wkb-statistics.d.ts",
+      "import": "./dist/arrow-geometry/wkb-statistics.js",
+      "require": "./dist/arrow-geometry/wkb-statistics.cjs"
+    },
+    "./arrow-geometry/native-geometry": {
+      "types": "./dist/arrow-geometry/native-geometry.d.ts",
+      "import": "./dist/arrow-geometry/native-geometry.js",
+      "require": "./dist/arrow-geometry/native-geometry.cjs"
+    },
+    "./geoarrow/cluster-index": {
+      "types": "./dist/geoarrow/clustering/cluster-index.d.ts",
+      "import": "./dist/geoarrow/clustering/cluster-index.js",
+      "require": "./dist/geoarrow/clustering/cluster-index.cjs"
+    },
+    "./geoarrow/cluster-source": {
+      "types": "./dist/geoarrow/clustering/cluster-source.d.ts",
+      "import": "./dist/geoarrow/clustering/cluster-source.js",
+      "require": "./dist/geoarrow/clustering/cluster-source.cjs"
+    },
+    "./geoarrow/get-representative-point": {
+      "types": "./dist/geoarrow/clustering/get-representative-point.d.ts",
+      "import": "./dist/geoarrow/clustering/get-representative-point.js",
+      "require": "./dist/geoarrow/clustering/get-representative-point.cjs"
+    },
+    "./geoarrow": {
+      "types": "./dist/geoarrow/index.d.ts",
+      "import": "./dist/geoarrow/index.js",
+      "require": "./dist/geoarrow/index.cjs"
+    },
+    "./geoarrow/geoarrow-capabilities": {
+      "types": "./dist/geoarrow/geoarrow-capabilities.d.ts",
+      "import": "./dist/geoarrow/geoarrow-capabilities.js",
+      "require": "./dist/geoarrow/geoarrow-capabilities.cjs"
+    },
+    "./geoarrow/geoarrow-inspection": {
+      "types": "./dist/geoarrow/geoarrow-inspection.d.ts",
+      "import": "./dist/geoarrow/geoarrow-inspection.js",
+      "require": "./dist/geoarrow/geoarrow-inspection.cjs"
+    },
+    "./geoarrow/geoarrow-layout": {
+      "types": "./dist/geoarrow/geoarrow-layout.d.ts",
+      "import": "./dist/geoarrow/geoarrow-layout.js",
+      "require": "./dist/geoarrow/geoarrow-layout.cjs"
+    },
+    "./geoarrow/geoarrow-bounds": {
+      "types": "./dist/geoarrow/geoarrow-bounds.d.ts",
+      "import": "./dist/geoarrow/geoarrow-bounds.js",
+      "require": "./dist/geoarrow/geoarrow-bounds.cjs"
+    },
+    "./geoarrow/map-geoarrow-coordinates": {
+      "types": "./dist/geoarrow/map-geoarrow-coordinates.d.ts",
+      "import": "./dist/geoarrow/map-geoarrow-coordinates.js",
+      "require": "./dist/geoarrow/map-geoarrow-coordinates.cjs"
+    },
+    "./geoarrow/geoarrow-stream": {
+      "types": "./dist/geoarrow/geoarrow-stream.d.ts",
+      "import": "./dist/geoarrow/geoarrow-stream.js",
+      "require": "./dist/geoarrow/geoarrow-stream.cjs"
+    },
+    "./geoarrow/rewind-geoarrow": {
+      "types": "./dist/geoarrow/rewind-geoarrow.d.ts",
+      "import": "./dist/geoarrow/rewind-geoarrow.js",
+      "require": "./dist/geoarrow/rewind-geoarrow.cjs"
+    },
+    "./geoarrow/geoarrow-conformance": {
+      "types": "./dist/geoarrow/geoarrow-conformance.d.ts",
+      "import": "./dist/geoarrow/geoarrow-conformance.js",
+      "require": "./dist/geoarrow/geoarrow-conformance.cjs"
+    },
+    "./geoarrow/geoarrow-geometry-converter": {
+      "types": "./dist/geoarrow/geoarrow-converter/geoarrow-geometry-converter.d.ts",
+      "import": "./dist/geoarrow/geoarrow-converter/geoarrow-geometry-converter.js",
+      "require": "./dist/geoarrow/geoarrow-converter/geoarrow-geometry-converter.cjs"
+    },
+    "./geoarrow/geoarrow-builder": {
+      "types": "./dist/geoarrow/geoarrow-builder.d.ts",
+      "import": "./dist/geoarrow/geoarrow-builder.js",
+      "require": "./dist/geoarrow/geoarrow-builder.cjs"
+    },
+    "./scan": {
+      "types": "./dist/scan/index.d.ts",
+      "import": "./dist/scan/index.js",
+      "require": "./dist/scan/index.cjs"
+    },
+    "./scan/arrow-query": {
+      "types": "./dist/scan/arrow-query.d.ts",
+      "import": "./dist/scan/arrow-query.js",
+      "require": "./dist/scan/arrow-query.cjs"
+    },
+    "./scan/bind-sql-predicate": {
+      "types": "./dist/scan/bind-sql-predicate.d.ts",
+      "import": "./dist/scan/bind-sql-predicate.js",
+      "require": "./dist/scan/bind-sql-predicate.cjs"
+    },
+    "./scan/parse-sql-predicate": {
+      "types": "./dist/scan/parse-sql-predicate.d.ts",
+      "import": "./dist/scan/parse-sql-predicate.js",
+      "require": "./dist/scan/parse-sql-predicate.cjs"
+    },
+    "./scan/query-arrow-table": {
+      "types": "./dist/scan/query-arrow-table.d.ts",
+      "import": "./dist/scan/query-arrow-table.js",
+      "require": "./dist/scan/query-arrow-table.cjs"
+    },
+    "./scan/sql-predicate-schema": {
+      "types": "./dist/scan/sql-predicate-schema.d.ts",
+      "import": "./dist/scan/sql-predicate-schema.js",
+      "require": "./dist/scan/sql-predicate-schema.cjs"
+    },
+    "./scan/sql-predicate-types": {
+      "types": "./dist/scan/sql-predicate-types.d.ts",
+      "import": "./dist/scan/sql-predicate-types.js",
+      "require": "./dist/scan/sql-predicate-types.cjs"
+    },
+    "./scan/sql-predicate-zod": {
+      "types": "./dist/scan/sql-predicate-zod.d.ts",
+      "import": "./dist/scan/sql-predicate-zod.js",
+      "require": "./dist/scan/sql-predicate-zod.cjs"
+    },
+    "./scan/sql-predicate": {
+      "types": "./dist/scan/sql-predicate.d.ts",
+      "import": "./dist/scan/sql-predicate.js",
+      "require": "./dist/scan/sql-predicate.cjs"
+    },
+    "./scan/table-query": {
+      "types": "./dist/scan/table-query.d.ts",
+      "import": "./dist/scan/table-query.js",
+      "require": "./dist/scan/table-query.cjs"
+    },
+    "./scan/table-query-capabilities": {
+      "types": "./dist/scan/table-query-capabilities.d.ts",
+      "import": "./dist/scan/table-query-capabilities.js",
+      "require": "./dist/scan/table-query-capabilities.cjs"
+    },
+    "./scan/rows-to-arrow": {
+      "types": "./dist/scan/rows-to-arrow.d.ts",
+      "import": "./dist/scan/rows-to-arrow.js",
+      "require": "./dist/scan/rows-to-arrow.cjs"
+    },
+    "./scan/scan-engine": {
+      "types": "./dist/scan/scan-engine.d.ts",
+      "import": "./dist/scan/scan-engine.js",
+      "require": "./dist/scan/scan-engine.cjs"
+    },
+    "./scan/scan-query": {
+      "types": "./dist/scan/scan-query.d.ts",
+      "import": "./dist/scan/scan-query.js",
+      "require": "./dist/scan/scan-query.cjs"
+    },
+    "./scan/federated-table-scan-source": {
+      "types": "./dist/scan/federated-table-scan-source.d.ts",
+      "import": "./dist/scan/federated-table-scan-source.js",
+      "require": "./dist/scan/federated-table-scan-source.cjs"
+    },
+    "./scan/vector-table-scan-source": {
+      "types": "./dist/scan/vector-table-scan-source.d.ts",
+      "import": "./dist/scan/vector-table-scan-source.js",
+      "require": "./dist/scan/vector-table-scan-source.cjs"
+    },
+    "./wkt": {
+      "types": "./dist/wkt/index.d.ts",
+      "import": "./dist/wkt/index.js",
+      "require": "./dist/wkt/index.cjs"
+    },
+    "./wkt/twkb": {
+      "types": "./dist/wkt/twkb/index.d.ts",
+      "import": "./dist/wkt/twkb/index.js",
+      "require": "./dist/wkt/twkb/index.cjs"
     }
   },
   "sideEffects": [
@@ -117,12 +352,14 @@
     "README.md",
     "SCHEMA-README.md",
     "SCHEMA-UTILS-README.md",
+    "GEOARROW-README.md",
+    "SCAN-README.md",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-worker-utils-worker && npm run build-worker-utils-worker-node && npm run build-polyfills-node-entrypoint && npm run build-schema-subpaths && npm run generate-json-schema",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-worker-utils-worker && npm run build-worker-utils-worker-node && npm run build-polyfills-node-entrypoint && npm run build-schema-subpaths && npm run generate-json-schema && npm run build-utility-subpaths",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -131,11 +368,13 @@
     "build-worker-utils-worker-node": "esbuild src/worker-utils/workers/null-worker.ts --outfile=dist/worker-utils/null-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-polyfills-node-entrypoint": "esbuild src/polyfills/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/polyfills/index.cjs",
     "build-schema-subpaths": "esbuild src/schema/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/index.cjs && esbuild src/schema/geospatial-metadata-zod-schema.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/geospatial-metadata-zod-schema.cjs && esbuild src/schema-utils/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/index.cjs && esbuild src/schema-utils/arrow-transport.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/arrow-transport.cjs",
-    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/schema/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/schema/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'"
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/schema/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/schema/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'",
+    "build-utility-subpaths": "node ../../scripts/build-core-utility-subpaths.mjs"
   },
   "dependencies": {
-    "@math.gl/core": "5.0.0-alpha.19",
-    "@math.gl/geospatial": "5.0.0-alpha.19",
+    "@math.gl/core": "5.0.0-alpha.20",
+    "@math.gl/geometry": "5.0.0-alpha.20",
+    "@math.gl/geospatial": "5.0.0-alpha.20",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0",

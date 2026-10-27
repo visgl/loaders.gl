@@ -1,0 +1,44 @@
+import {expect, test} from 'vitest';
+import {fetchFile, encodeSync} from '@loaders.gl/core';
+import {WKBWriter} from '@loaders.gl/geospatial/wkt';
+import {parseTestCases} from '@loaders.gl/geospatial/wkt/test/data/wkt/parse-test-cases';
+const WKB_2D_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdata2d.json';
+const WKB_2D_NAN_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdata2d-nan.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdataZ.json';
+const WKB_Z_NAN_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdataZ-nan.json';
+test('WKBWriter#2D', async () => {
+  const response = await fetchFile(WKB_2D_TEST_CASES);
+  const TEST_CASES = parseTestCases(await response.json());
+  for (const testCase of Object.values(TEST_CASES)) {
+    const {geoJSON, wkb} = testCase;
+    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: false, hasM: false}});
+    expect(encoded).toEqual(wkb);
+  }
+});
+test('WKBWriter#2D NaN', async () => {
+  const response = await fetchFile(WKB_2D_NAN_TEST_CASES);
+  const TEST_CASES = parseTestCases(await response.json());
+  for (const testCase of Object.values(TEST_CASES)) {
+    const {geoJSON, wkb} = testCase;
+    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: false, hasM: false}});
+    expect(encoded).toEqual(wkb);
+  }
+});
+test('WKBWriter#Z', async () => {
+  const response = await fetchFile(WKB_Z_TEST_CASES);
+  const TEST_CASES = parseTestCases(await response.json());
+  for (const testCase of Object.values(TEST_CASES)) {
+    const {geoJSON, wkb} = testCase;
+    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: true, hasM: false}});
+    expect(encoded).toEqual(wkb);
+  }
+});
+test('WKBWriter#Z NaN', async () => {
+  const response = await fetchFile(WKB_Z_NAN_TEST_CASES);
+  const TEST_CASES = parseTestCases(await response.json());
+  for (const testCase of Object.values(TEST_CASES)) {
+    const {geoJSON, wkb} = testCase;
+    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: true, hasM: false}});
+    expect(encoded).toEqual(wkb);
+  }
+});

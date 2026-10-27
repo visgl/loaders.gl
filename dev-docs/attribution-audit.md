@@ -9,7 +9,7 @@ geospatial, raster, scientific, archives, core, tiles and tiles-3d implementatio
 Private deck-layers is acknowledged separately. This is a direct-source inventory,
 not a complete transitive software bill of materials.
 
-## Package checklist
+## Original package checklist (before consolidation)
 
 - [x] arcgis: source/dependency classification and packaged notice index.
 - [x] archives: source/dependency classification and packaged notice index.
@@ -95,3 +95,10 @@ license targets survive packaging. Bundlers may omit comments; consumers copying
 standalone workers/bundles must retain their owning package's applicable notices.
 Website build checks navigation and Markdown rendering. Existing runtime tests
 remain the behavior gate; this change does not alter parser implementations.
+
+## Package consolidation follow-up
+
+The current master consolidation moves Arrow geometry, GeoArrow and scan notices
+into core, WKT loaders into geospatial and retained TWKB codecs into core, glTF/OBJ into scene, and LAS/PCD/PLY into pointclouds.
+Their attribution and applicable license texts follow those owners. Kyle Barron
+is explicitly credited for the GeoArrow work that inspired loaders.gl.

@@ -1,5 +1,5 @@
 import React, {useEffect, useId, useState} from 'react';
-import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/scan';
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/core/scan';
 
 import styles from './scan-query-panel.module.css';
 

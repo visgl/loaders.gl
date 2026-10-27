@@ -40,15 +40,38 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
-## Table-format scan subpaths
+## Upgrading to v5.0
+
+Install the current owner packages and update format imports and worker asset URLs together. See the [Packages overview](./packages.md) for the supported package structure. The sections below describe removed or deprecated paths and their replacements.
+
+### Geometry and scan utility packages move into core
+
+The standalone `@loaders.gl/scan`, `@loaders.gl/arrow-geometry`, and `@loaders.gl/geoarrow` packages have been removed, without forwarding packages.
+
+| Removed import | Replacement |
+| --- | --- |
+| `@loaders.gl/scan` | `@loaders.gl/core/scan` |
+| `@loaders.gl/arrow-geometry` | `@loaders.gl/core/arrow-geometry` |
+| `@loaders.gl/arrow-geometry/<utility>` | `@loaders.gl/core/arrow-geometry/<utility>` |
+| `@loaders.gl/geoarrow` | `@loaders.gl/core/geoarrow` |
+| `@loaders.gl/geoarrow/<utility>` | `@loaders.gl/core/geoarrow/<utility>` |
+| `@loaders.gl/wkt/twkb` | `@loaders.gl/core/wkt/twkb` |
+| `@loaders.gl/sql/arrow-query` | `@loaders.gl/core/scan/arrow-query` |
+| `@loaders.gl/sql/table-query` | `@loaders.gl/core/scan/table-query` |
+| `@loaders.gl/sql/sql-predicate` | `@loaders.gl/core/scan/sql-predicate` |
+| `@loaders.gl/sql/sql-predicate-zod` | `@loaders.gl/core/scan/sql-predicate-zod` |
+
+Remove the three deleted packages from dependencies and install `@loaders.gl/core`. Subpaths are imports, not separately installable packages. Format loaders and writers remain in `@loaders.gl/geospatial/wkt`; database adapters remain in `@loaders.gl/sql`.
+
+### Table-format scan subpaths
 
 The experimental `@loaders.gl/scan/iceberg`, `/delta`, and `/hudi` subpaths have been removed.
 Import their source implementations from `@loaders.gl/tables/iceberg`,
 `@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`, respectively. `IcebergRestCatalog`
-is also exported from `@loaders.gl/tables/iceberg`. The `@loaders.gl/scan` root continues
+is also exported from `@loaders.gl/tables/iceberg`. The `@loaders.gl/core/scan` root continues
 to provide the query engine and federation APIs without depending on `@loaders.gl/tables`.
 
-## OGC service and STAC package imports
+### OGC service and STAC package imports
 
 The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in v5. Install
 `@loaders.gl/ogc` for OGC service protocols and STAC catalogs. Replace imports from
@@ -60,16 +83,16 @@ The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in 
 and Cesium ion. ArcGIS remains in `@loaders.gl/arcgis`. OGC loader IDs and option namespaces
 remain unchanged; their `module` ownership and default package asset paths become `ogc`.
 
-## Removed glTF rendering postprocessing
+### Removed glTF rendering postprocessing
 
-`@loaders.gl/gltf` no longer exports `postProcessGLTF` or `GLTF*Postprocessed` types.
+`@loaders.gl/scene/gltf` no longer exports `postProcessGLTF` or `GLTF*Postprocessed` types.
 Import them from [`@luma.gl/gltf`](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
 in luma.gl v10 when preparing data for rendering. Pass the `GLTFLoader` result directly to the luma.gl function.
 Keep `GLTFWithBuffers` and indexed JSON for loader-side processing, writing, and conversion;
 use `getGLTFAccessorValue` and `GLTFIterator` to read resources without linking a second document.
 `_getMemoryUsageGLTF` now accepts only the indexed `GLTFWithBuffers` container.
 
-## 3D Tiles decoded glTF content
+### 3D Tiles decoded glTF content
 
 With `3d-tiles.loadGLTF: true`, `tile.gltf` now contains `GLTFWithBuffers` rather than a
 postprocessed scene. Read metadata from `tile.gltf.json`. Scene, mesh, material, texture and accessor
@@ -79,25 +102,80 @@ primitive definitions. The tile converter consumes this indexed representation d
 
 Luma.gl provides `postProcessGLTF` as an explicit application API. A renderer that requires linked
 objects can call it at its rendering boundary. It is no longer called by the tile parsers.
-See [glTF accessor helpers](./modules/gltf/api-reference/gltf-accessors).
+See [glTF accessor helpers](./modules/scene/gltf/api-reference/gltf-accessors).
 
 `GLTFScenegraph.getTypedArrayForAccessor()` now treats an omitted `bufferView` as implicit-zero
 storage, including any sparse substitutions, as required by glTF. It no longer falls back to buffer
 view 0. An explicit `bufferView: 0` continues to read the first buffer view.
 
-## Upgrading to v4.5
+### ArcGIS package extraction (v5)
 
-v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.
+ArcGIS exports have moved out of `@loaders.gl/services` into the `@loaders.gl/arcgis` package.
+`SERVICE_LOADERS` and `getServiceLoader` are replaced by `ARCGIS_LOADERS` and `getArcGISLoader`.
+No ArcGIS compatibility exports remain in services. Other providers’ credential helpers stay there.
 
-**@loaders.gl/splats**
+The package root now exports lightweight service loaders for async `load()`. Synchronous
+`createDataSource()` and direct source-class imports move to `@loaders.gl/arcgis/bundled`, using the
+same export names. Credentials, discovery and aggregation helpers move to `/authentication`,
+`/discovery` and `/scene-aggregation`, respectively, and remain available through `/bundled`.
+Shared types remain at the root, including source instance types.
+Explicit per-service subpaths export `*WithParser` loaders for synchronous construction.
 
-- SPZ decoding requires an application-provided `zstd-codec` module passed through `options.modules`. RAD gzip chunks are decompressed internally and do not require `zstd-codec`.
+#### ArcGIS single-response feature queries
 
-**@loaders.gl/textures**
+`ArcGISVectorSource.getFeatures()` no longer returns a potentially truncated single response.
+It retrieves a bounded complete query and throws when completeness cannot be established. Migrate
+applications that intentionally consume partial data to `queryFeaturePage()` or inspect the
+explicit `complete`/`reason` fields from `queryFeatures()` before displaying results. Spatial
+GeoJSON output is restricted to EPSG:4326; use `requestCrs` for projected input bounds. See the
+[query guide](/docs/developer-guide/arcgis/feature-layers) for the replacement contracts.
 
-- `@loaders.gl/textures` no longer installs the deprecated `texture-compressor` package for every consumer. Applications that use the experimental `CompressedTextureWriter` must install `texture-compressor` explicitly. The CLI is invoked with `npx --no`, so it is never downloaded on demand; all other loaders and writers are unaffected.
+### Scientific format package consolidation (v5)
 
-## Upgrading to v5.0
+NetCDF and Zarr now share the public `@loaders.gl/scientific` package. Replace dependencies on `@loaders.gl/netcdf` or the previously private `@loaders.gl/zarr` package with `@loaders.gl/scientific`. Metadata loaders are exported from the package root; import implementation APIs from a format subpath:
+
+```ts
+import {NetCDFLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
+import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
+import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
+```
+
+The NetCDF and Zarr documentation now lives under [the scientific module](/docs/modules/scientific). Zarr storage engines are installed as dependencies of the scientific package.
+
+### Raster package consolidation
+
+`@loaders.gl/geotiff`, `@loaders.gl/lerc`, and `@loaders.gl/terrain` have been removed.
+Install `@loaders.gl/raster` and use its metadata-only root or explicit parser entry points.
+
+| Removed import | Replacement |
+| --- | --- |
+| `@loaders.gl/geotiff` | `@loaders.gl/raster` for loader metadata; named `raster/geotiff/*` subpaths for source constructors and helpers |
+| `@loaders.gl/lerc` | `@loaders.gl/raster` for metadata; `@loaders.gl/raster/lerc` for the parser |
+| `@loaders.gl/terrain` | `@loaders.gl/raster` for metadata and writer; `@loaders.gl/raster/terrain` for advanced APIs |
+| `@loaders.gl/terrain/heightmap` | `@loaders.gl/raster/terrain/heightmap` |
+
+Direct parser filenames now use `*-loader` and metadata filenames use `*-loader-types`.
+Replace `*-loader-with-parser` imports with their corresponding `@loaders.gl/raster/<format>/*-loader`.
+Use `@loaders.gl/raster/quantized-mesh` for `QuantizedMeshLoaderWithParser`.
+Worker URLs move to the raster package root; the LERC WASM export moves to `raster/lerc/lerc-wasm.wasm`.
+Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends.
+GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit
+source subpath when using synchronous `createDataSource()`.
+
+### Point-cloud, scene and geometry package consolidation
+
+The standalone `@loaders.gl/las`, `@loaders.gl/pcd`, `@loaders.gl/ply`, `@loaders.gl/obj`, `@loaders.gl/gltf`, and `@loaders.gl/wkt` packages are removed without forwarding packages.
+
+| Removed package | Replacement format import |
+| --- | --- |
+| `@loaders.gl/las` | `@loaders.gl/pointclouds/las` |
+| `@loaders.gl/pcd` | `@loaders.gl/pointclouds/pcd` |
+| `@loaders.gl/ply` | `@loaders.gl/pointclouds/ply` |
+| `@loaders.gl/obj` | `@loaders.gl/scene/obj` |
+| `@loaders.gl/gltf` | `@loaders.gl/scene/gltf` |
+| `@loaders.gl/wkt` | `@loaders.gl/geospatial/wkt`, `/wkb`, `/twkb` |
+
+Install the owning package, not its subpath. Use parser-bearing loaders from named implementation subpaths such as `@loaders.gl/scene/gltf/gltf-loader` for synchronous parsing. PLY continues to support mesh faces. COPC and Potree stay in tiles-3d; geometry codec utilities stay in core/wkt. Rebuild custom workers and update worker/WASM asset paths to the new owners.
 
 ### Table and geospatial package consolidation
 
@@ -221,7 +299,7 @@ and content-security-policy limitations.
 `lz4js`, `pako`, `snappyjs`, or `zstd-codec`. They are optional peer dependencies.
 Default codecs continue to use native streams or the required `compress-utils` dependency.
 Applications importing a backend-specific entry point must install its corresponding package
-explicitly, for example `npm install pako` before importing `@loaders.gl/compression/gzip-pako`.
+explicitly, for example `npm install pako` before importing `@loaders.gl/compression`.
 Injectable Brotli and Zstandard implementations still require `modules` registration.
 The deprecated `zstd-compression` asynchronous fallback needs an explicit `fzstd` installation;
 prefer the default `ZstdDecompressor` if no reference backend is required.
@@ -232,9 +310,9 @@ Package roots expose the primary loader for each format. Alternate backend loade
 are available through implementation subpaths instead of root exports:
 
 ```typescript
-import {LASCOPCLoaderWithParser} from '@loaders.gl/las/las-copc-loader';
-import {LAZPerfLoaderWithParser} from '@loaders.gl/las/lazperf-loader';
-import {LAZRsLoaderWithParser} from '@loaders.gl/las/laz-rs-loader';
+import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/las/lazperf-loader';
+import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/las/laz-rs-loader';
 import {ParquetJSLoaderWithParser} from '@loaders.gl/parquet/parquet-js-loader';
 import {FastJSONLoader} from '@loaders.gl/json/fast-json-loader';
 ```
@@ -308,7 +386,7 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 - `Tileset3D.maximumMemoryUsage`, `maximumMemoryUsage`, and `memoryCacheOverflow` have been removed. Use `cacheBytes` and `maximumCacheOverflowBytes`, passing byte counts (for example, `256 * 1024 * 1024` for 256 MiB).
 - The default 3D Tiles cache policy is now a 512 MiB base target plus 512 MiB of current-view overflow headroom, with memory-adjusted SSE enabled. To preserve the previous 32 MiB/1 MiB policy, configure both byte budgets explicitly and set `memoryAdjustedScreenSpaceError: false`.
 
-See [Caching and memory](/docs/modules/3d-tiles/concepts/caching-and-memory) for migration examples and runtime behavior.
+See [Caching and memory](/docs/modules/tiles-3d/3d-tiles/concepts/caching-and-memory) for migration examples and runtime behavior.
 
 **@loaders.gl/core**
 
@@ -374,7 +452,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
   Set `gml.shape: 'geojson'` for the previous geometry/FeatureCollection/null result, including
   FeatureCollection batches. WFS source format selection is unchanged.
 
-**@loaders.gl/draco, @loaders.gl/tiles-3d/potree, and @loaders.gl/raster/terrain/index**
+**@loaders.gl/draco, @loaders.gl/tiles-3d/potree, and @loaders.gl/raster/terrain**
 
  - `DracoLoader`, `PotreeBinLoader`, `TerrainLoader`, and `QuantizedMeshLoader` now return Mesh
    Arrow tables by default. Set the corresponding loader option to `shape: 'mesh'` to preserve
@@ -391,7 +469,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
 **Removed GIS package**
 
 - `@loaders.gl/gis` is removed in 5.0. Applications should replace it with
-  `@loaders.gl/geoarrow` for conversion and processing. Use `GEOARROW_CONVERTERS`
+  `@loaders.gl/core/geoarrow` for conversion and processing. Use `GEOARROW_CONVERTERS`
   instead of `GIS_CONVERTERS`.
 - Import geometry and metadata types from `@loaders.gl/core/schema`. Runtime validators
   use `@loaders.gl/core/schema/geospatial-metadata-zod-schema`; generated schemas use
@@ -401,7 +479,7 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
   `convertBinaryFeatureCollectionToGeojson` from GeoArrow instead of the old
   `geojsonToBinary` and `binaryToGeojson` aliases. Existing binary layouts are unchanged;
   these conversions allocate and do not promise borrowed batch views.
-- See the [complete replacement import map](./modules/geoarrow/gis-migration.md),
+- See the [complete replacement import map](./modules/core/geoarrow/gis-migration.md),
   including the lower-level loader helpers, direct math.gl codecs/CRS, and WKT's TWKB subpath.
 
 **Removed compatibility aliases**
@@ -638,7 +716,7 @@ This unifies top-level loading behavior:
 - `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
 - `JSONTableLoader` and `NDJSONLoader` support strict schema-aware Arrow conversion through `json.schema`, `ndjson.schema`, `json.arrowConversion`, and `ndjson.arrowConversion`. These options require `shape: 'arrow-table'`.
 
-**@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
+**@loaders.gl/pointclouds/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
 
 - `PLYLoader` now returns a Mesh Arrow table by default. Set `ply.shape: 'mesh'` for the legacy Mesh object. `SPLATLoader` / `KSPLATLoader` also consume the Mesh Arrow path.
 - `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
@@ -659,6 +737,18 @@ This unifies top-level loading behavior:
 **@loaders.gl/tiles**
 
 - `Tileset3D` now requires a `Tile3DSource` and can no longer be instantiated with a JSON payload.
+
+## Upgrading to v4.5
+
+v4.5 is additive. Existing loaders and defaults continue to work unchanged, except for the explicit installation requirement for the experimental texture writer noted below.
+
+**@loaders.gl/splats**
+
+- SPZ decoding requires an application-provided `zstd-codec` module passed through `options.modules`. RAD gzip chunks are decompressed internally and do not require `zstd-codec`.
+
+**@loaders.gl/textures**
+
+- `@loaders.gl/textures` no longer installs the deprecated `texture-compressor` package for every consumer. Applications that use the experimental `CompressedTextureWriter` must install `texture-compressor` explicitly. The CLI is invoked with `npx --no`, so it is never downloaded on demand; all other loaders and writers are unaffected.
 
 ## Upgrading to v4.4
 
@@ -717,11 +807,11 @@ This unifies top-level loading behavior:
 
 **Breaking Changes**
 
-- `@loaders.gl/wkt`- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
+- `@loaders.gl/geospatial/wkt`- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
 
 **Deprecations**
 
-- `@loaders.gl/wkt`- The `geometry` shape is deprecated, and now called `geojson-geometry`.
+- `@loaders.gl/geospatial/wkt`- The `geometry` shape is deprecated, and now called `geojson-geometry`.
 
 ## Upgrading to v4.0
 
@@ -942,7 +1032,7 @@ Some iterator utilities that are mostly used internally have been changed.
 
 - The experimental `json._rootObjectBatches` option is now deprecated. Use the top-level `metadata: true` option instead. Note that the `batchType` names have also changed, see the JSONLoader docs for details.
 
-**`@loaders.gl/ply`**
+**`@loaders.gl/pointclouds/ply`**
 
 The experimental streaming `_PLYStreamingLoader` has been removed. Use the non-streaming `PLYLoader` instead.
 
@@ -1014,7 +1104,7 @@ Some general changes:
 
 - Loaders can no longer have a `loadAndParse` method. Remove it, and just make sure you define `parse` on your loaders instead.
 
-### `@loaders.gl/gltf`
+### `@loaders.gl/scene/gltf`
 
 The `GLTFLoader` now always uses the new v2 parser, and the original `GLTFParser` has been removed.
 
@@ -1076,7 +1166,7 @@ Also, Node support now requires installing `@loaders.gl/core/polyfills` before u
 
 - Removal: Node support for images now requires importing `@loaders.gl/core/polyfills` before use.
 
-### @loaders.gl/gltf
+### @loaders.gl/scene/gltf
 
 - Deprecation: `GLBParser`/`GLBBuilder` - These will be merged into GLTF classes..
 - Deprecation: `GLTFParser`/`GLTFBuilder` - The new `GLTF` class can hold GLTF data and lets application access/modify it.
@@ -1085,57 +1175,3 @@ Also, Node support now requires installing `@loaders.gl/core/polyfills` before u
 ## v1.0
 
 First official release of loaders.gl.
-
-## ArcGIS package extraction (v5)
-
-ArcGIS exports have moved out of `@loaders.gl/services` into the `@loaders.gl/arcgis` package.
-`SERVICE_LOADERS` and `getServiceLoader` are replaced by `ARCGIS_LOADERS` and `getArcGISLoader`.
-No ArcGIS compatibility exports remain in services. Other providers’ credential helpers stay there.
-
-The package root now exports lightweight service loaders for async `load()`. Synchronous
-`createDataSource()` and direct source-class imports move to `@loaders.gl/arcgis/bundled`, using the
-same export names. Credentials, discovery and aggregation helpers move to `/authentication`,
-`/discovery` and `/scene-aggregation`, respectively, and remain available through `/bundled`.
-Shared types remain at the root, including source instance types.
-Explicit per-service subpaths export `*WithParser` loaders for synchronous construction.
-
-### ArcGIS single-response feature queries
-
-`ArcGISVectorSource.getFeatures()` no longer returns a potentially truncated single response.
-It retrieves a bounded complete query and throws when completeness cannot be established. Migrate
-applications that intentionally consume partial data to `queryFeaturePage()` or inspect the
-explicit `complete`/`reason` fields from `queryFeatures()` before displaying results. Spatial
-GeoJSON output is restricted to EPSG:4326; use `requestCrs` for projected input bounds. See the
-[query guide](/docs/developer-guide/arcgis/feature-layers) for the replacement contracts.
-
-## Scientific format package consolidation (v5)
-
-NetCDF and Zarr now share the public `@loaders.gl/scientific` package. Replace dependencies on `@loaders.gl/netcdf` or the previously private `@loaders.gl/zarr` package with `@loaders.gl/scientific`. Metadata loaders are exported from the package root; import implementation APIs from a format subpath:
-
-```ts
-import {NetCDFLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
-import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
-import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
-```
-
-The NetCDF and Zarr documentation now lives under [the scientific module](/docs/modules/scientific). Zarr storage engines are installed as dependencies of the scientific package.
-
-## Raster package consolidation
-
-`@loaders.gl/geotiff`, `@loaders.gl/lerc`, and `@loaders.gl/terrain` have been removed.
-Install `@loaders.gl/raster` and use its metadata-only root or explicit parser entry points.
-
-| Removed import | Replacement |
-| --- | --- |
-| `@loaders.gl/geotiff` | `@loaders.gl/raster/geotiff/index` for existing advanced APIs; root for loader metadata |
-| `@loaders.gl/lerc` | `@loaders.gl/raster` for metadata; `@loaders.gl/raster/lerc` for the parser |
-| `@loaders.gl/terrain` | `@loaders.gl/raster` for metadata and writer; `@loaders.gl/raster/terrain/index` for advanced APIs |
-| `@loaders.gl/terrain/heightmap` | `@loaders.gl/raster/terrain/heightmap` |
-
-Direct parser filenames now use `*-loader` and metadata filenames use `*-loader-types`.
-Replace `*-loader-with-parser` imports with their corresponding `@loaders.gl/raster/<format>/*-loader`.
-Use `@loaders.gl/raster/quantized-mesh` for `QuantizedMeshLoaderWithParser`.
-Worker URLs move to the raster package root; the LERC WASM export moves to `raster/lerc/lerc-wasm.wasm`.
-Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends.
-GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit
-source subpath when using synchronous `createDataSource()`.

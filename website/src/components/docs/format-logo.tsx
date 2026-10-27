@@ -3,7 +3,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import copcLogo from '../../../../docs/images/logos/copc-logo-80.png';
 import styles from './format-logo-gallery.module.css';
 
-export type FormatTag = 'tables' | 'geospatial' | 'services' | 'textures' | 'pointclouds' | 'meshes';
+export type FormatTag = 'tables' | 'geospatial' | 'services' | 'textures' | 'pointclouds' | 'meshes' | 'graphs' | 'traces' | 'archives' | 'splats';
 
 export type FormatMetadata = {
   readonly label: string;
@@ -25,17 +25,39 @@ export type FormatMetadata = {
 
 /** Metadata used to label, classify, and select an asset for every format and service in the gallery. */
 export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
+  {slug: 'avro', label: 'Avro', logo: 'avro-logo.svg', logoText: 'Avro', tags: ['tables']},
+  {slug: 'excel', label: 'Excel', mark: 'Excel', tags: ['tables']},
+  {slug: 'lance', label: 'Lance', mark: 'Lance', tags: ['tables']},
+  {slug: 'twkb', label: 'TWKB', mark: 'TWKB', tags: ['geospatial']},
+  {slug: 'terrain', label: 'Terrain', mark: 'Terrain', tags: ['geospatial']},
+  {slug: 'hdf5', label: 'HDF5', mark: 'HDF5', tags: []},
+  {slug: 'grib2', label: 'GRIB2', mark: 'GRIB2', tags: []},
+  {slug: 'vtk', label: 'VTK', logo: 'vtk-logo.png', tags: []},
+  {slug: 'tar', label: 'TAR', mark: 'TAR', tags: ['archives']},
+  {slug: 'dot', label: 'DOT', mark: 'DOT', tags: ['graphs']},
+  {slug: 'graphml', label: 'GraphML', mark: 'GraphML', tags: ['graphs']},
+  {slug: 'gexf', label: 'GEXF', mark: 'GEXF', tags: ['graphs']},
+  {slug: 'otlp-trace', label: 'OTLP', logo: 'opentelemetry-logo.svg', logoText: 'OTLP', tags: ['traces']},
+  {slug: 'jaeger-trace', label: 'Jaeger', logo: 'jaeger-logo.svg', logoText: 'Jaeger', tags: ['traces']},
+  {slug: 'zipkin-trace', label: 'Zipkin', logo: 'zipkin-logo.svg', logoText: 'Zipkin', tags: ['traces']},
+  {slug: 'splat', label: 'Splat', mark: 'Splat', tags: ['splats']},
+  {slug: 'ksplat', label: 'KSplat', mark: 'KSplat', tags: ['splats']},
+  {slug: 'spz', label: 'SPZ', mark: 'SPZ', tags: ['splats']},
+  {slug: 'rad', label: 'RAD', mark: 'RAD', tags: ['splats']},
+  {slug: 'image', label: 'Images', mark: 'Images', tags: ['textures']},
+  {slug: 'video', label: 'Video', mark: 'Video', tags: ['textures']},
+  {slug: 'gif', label: 'GIF', mark: 'GIF', tags: ['textures']},
   {slug: 'arrow', label: 'Arrow', logo: 'apache-arrow-logo.png', tags: ['tables']},
   {slug: 'basis', label: 'Basis', mark: 'BASIS', tags: ['textures']},
   {slug: 'bson', label: 'BSON', logo: 'bson-logo.png', tags: []},
-  {slug: 'chrome-trace', label: 'Chrome Trace', logo: '/images/examples/traces/chrome.svg', logoText: 'Trace', tags: []},
+  {slug: 'chrome-trace', label: 'Chrome Trace', logo: '/images/examples/traces/chrome.svg', logoText: 'Chrome Trace', tags: ['traces']},
   {slug: 'compressed-textures', label: 'Compressed Textures', mark: 'GPU', tags: ['textures']},
   {slug: 'copc', label: 'COPC', logo: copcLogo, tags: ['geospatial', 'pointclouds']},
   {slug: 'crunch', label: 'Crunch', mark: 'Crunch', tags: ['textures']},
   {slug: 'csv', label: 'CSV', mark: 'CSV', tags: ['tables']},
   {slug: 'csw', label: 'CSW', ogc: true, tags: ['geospatial', 'services']},
   {slug: 'dds', label: 'DDS', mark: 'DDS', tags: ['textures']},
-  {slug: 'draco', label: 'Draco', logo: 'draco-logo.svg', tags: ['pointclouds', 'meshes']},
+  {slug: 'draco', label: 'Draco', logo: 'draco-logo.svg', logoScale: 1.8, tags: ['pointclouds', 'meshes']},
   {slug: 'flatgeobuf', label: 'FlatGeobuf', logo: 'flatgeobuf-logo.png', tags: ['geospatial']},
   {slug: 'geoarrow', label: 'GeoArrow', logo: 'geoarrow-logo.png', logoText: 'GeoArrow', tags: ['tables', 'geospatial']},
   {slug: 'geojson', label: 'GeoJSON', mark: 'GeoJSON', tags: ['geospatial']},
@@ -66,13 +88,13 @@ export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'orc', label: 'ORC', logo: 'orc-logo.png', tags: ['tables']},
   {slug: 'parquet', label: 'Parquet', logo: 'parquet-logo.png', tags: ['tables']},
   {slug: 'pcd', label: 'PCD', mark: 'PCD', tags: ['pointclouds']},
-  {slug: 'perfetto-trace', label: 'Perfetto Trace', logo: 'perfetto-logo.png', logoText: 'Perfetto', tags: []},
+  {slug: 'perfetto-trace', label: 'Perfetto Trace', logo: 'perfetto-logo.png', logoText: 'Perfetto', tags: ['traces']},
   {slug: 'ply', label: 'PLY', mark: 'PLY', tags: ['pointclouds', 'meshes']},
   {slug: 'pmtiles', label: 'PMTiles', mark: 'PMTiles', tags: ['geospatial']},
   {slug: 'potree', label: 'Potree', mark: 'Potree', tags: ['geospatial', 'pointclouds']},
   {slug: 'pvr', label: 'PVR', mark: 'PVR', tags: ['textures']},
   {slug: 'shapefile', label: 'Shapefile', mark: 'SHP', tags: ['geospatial']},
-  {slug: 'stac', label: 'STAC', logo: 'stac-logo.png', logoScale: 1.15, tags: ['geospatial', 'services']},
+  {slug: 'stac', label: 'STAC', logo: 'stac-logo.png', logoText: 'STAC', tags: ['geospatial', 'services']},
   {slug: 'tcx', label: 'TCX', mark: 'TCX', tags: ['geospatial']},
   {slug: 'tilejson', label: 'TileJSON', mark: 'TileJSON', tags: ['geospatial', 'services']},
   {slug: 'usd', label: 'OpenUSD', logo: 'openusd-logo.svg', logoText: 'OpenUSD', tags: ['meshes']},
@@ -81,8 +103,8 @@ export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'wkt-crs', label: 'WKT-CRS', ogc: true, tags: ['geospatial']},
   {slug: 'xml', label: 'XML', mark: 'XML', tags: []},
   {slug: 'yaml', label: 'YAML', logo: 'yaml-logo.svg', tags: []},
-  {slug: 'zarr', label: 'Zarr', logo: 'zarr-logo.svg', tags: ['geospatial', 'tables']},
-  {slug: 'zip', label: 'ZIP', mark: 'ZIP', tags: []},
+  {slug: 'zarr', label: 'Zarr', logo: 'zarr-logo.svg', logoScale: 1.15, tags: ['geospatial', 'tables']},
+  {slug: 'zip', label: 'ZIP', mark: 'ZIP', tags: ['archives']},
   {slug: 'wcs', label: 'WCS', ogc: true, tags: ['geospatial', 'services']},
   {slug: 'wfs', label: 'WFS', ogc: true, tags: ['geospatial', 'services']},
   {slug: 'wmc', label: 'WMC', ogc: true, tags: ['geospatial', 'services']},
@@ -106,7 +128,15 @@ function getLogoUrl(logo: string, logoBaseUrl: string): string {
 /** Draws a simple category symbol for a format without an official logo. */
 function FormatSymbol({format}: {format: FormatMetadata}) {
   let drawing: React.ReactNode;
-  if (format.tags.includes('tables')) {
+  if (format.tags.includes('splats')) {
+    drawing = <><ellipse cx="9" cy="10" rx="7" ry="4" transform="rotate(-30 9 10)" fill="currentColor" fillOpacity="0.2" /><ellipse cx="15" cy="14" rx="7" ry="4" transform="rotate(30 15 14)" fill="currentColor" fillOpacity="0.2" /><circle cx="9" cy="10" r="1" fill="currentColor" /><circle cx="15" cy="14" r="1" fill="currentColor" /></>;
+  } else if (format.tags.includes('archives')) {
+    drawing = <><rect x="3" y="3" width="18" height="5" rx="1" /><path d="M5 8v12h14V8M9 12h6" /></>;
+  } else if (format.tags.includes('graphs')) {
+    drawing = <><path d="m6 6 12 2M6 6l4 12M18 8l-8 10" /><circle cx="6" cy="6" r="3" fill="white" /><circle cx="18" cy="8" r="3" fill="white" /><circle cx="10" cy="18" r="3" fill="white" /></>;
+  } else if (format.tags.includes('traces')) {
+    drawing = <><path d="M3 3v18M3 21h18" /><rect x="6" y="5" width="14" height="3" rx="1" /><rect x="9" y="10" width="8" height="3" rx="1" /><rect x="12" y="15" width="7" height="3" rx="1" /></>;
+  } else if (format.tags.includes('tables')) {
     drawing = <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M3 14h18M9 9v11M15 9v11" /></>;
   } else if (format.tags.includes('textures')) {
     drawing = <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /><path d="M3 3h6v6H3zM9 9h6v6H9zM15 15h6v6h-6z" fill="currentColor" stroke="none" /></>;
@@ -131,11 +161,14 @@ function FormatVisual({
   logoBaseUrl: string;
 }) {
   const visualClass = `${styles.visual} ${format.logoSurface === 'dark' ? styles.darkVisual : ''}`;
+  const badgeName = format.label === 'OGC API Services' ? 'API' : format.logoText ?? format.mark ?? format.label;
+  const nameSize = badgeName.length > 10 ? 'long' : badgeName.length > 7 ? 'medium' : 'short';
 
   if (format.ogc) {
     return (
       <span
         className={`${visualClass} ${styles.ogcBadge}`}
+        data-name-size={nameSize}
         role="img"
         aria-label={`${format.label.startsWith('OGC') ? format.label : `OGC ${format.label}`} format badge`}
       >
@@ -154,6 +187,7 @@ function FormatVisual({
     return (
       <span
         className={`${visualClass} ${styles.formatBadge}`}
+        data-name-size={nameSize}
         data-category={format.tags[0] ?? 'other'}
         role="img"
         aria-label={`${format.label} format badge`}
@@ -167,7 +201,7 @@ function FormatVisual({
   }
 
   if (format.logoText) {
-    return <span className={`${visualClass} ${styles.compositeLogo}`} role="img" aria-label={`${format.label} logo`}>
+    return <span className={`${visualClass} ${styles.compositeLogo}`} data-name-size={nameSize} role="img" aria-label={`${format.label} logo`}>
       <span className={format.logoSurface === 'dark' ? styles.arcgisLogo : styles.smallLogo}>
         <img alt="" loading="lazy" src={getLogoUrl(format.logo, logoBaseUrl)} />
       </span>

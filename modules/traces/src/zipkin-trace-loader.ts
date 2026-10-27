@@ -1,3 +1,9 @@
+import {
+  serializeTraceWorkerResult,
+  deserializeTraceWorkerResult,
+  serializeTraceWorkerBatch,
+  deserializeTraceWorkerBatch
+} from './trace-worker-transport';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -17,6 +23,10 @@ const {preload: _preload, ...ZipkinTraceLoaderMetadataWithoutPreload} = ZipkinTr
 /** Parser-bearing loader for Zipkin v2 JSON and JSON Lines traces. */
 export const ZipkinTraceLoaderWithParser = {
   ...ZipkinTraceLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeTraceWorkerResult,
+  deserializeWorkerResult: deserializeTraceWorkerResult,
+  serializeWorkerBatch: serializeTraceWorkerBatch,
+  deserializeWorkerBatch: deserializeTraceWorkerBatch,
   parse: async (arrayBuffer: ArrayBuffer) => parseZipkinTraceJson(decodeBytes(arrayBuffer)),
   parseSync: (arrayBuffer: ArrayBuffer) => parseZipkinTraceJson(decodeBytes(arrayBuffer)),
   parseText: async (text: string) => parseZipkinTraceJson(text),

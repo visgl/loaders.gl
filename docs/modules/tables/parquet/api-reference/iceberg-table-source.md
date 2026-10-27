@@ -256,7 +256,7 @@ schedulers are intentionally separate because catalog JSON requests and byte-ran
 different coalescing and validation semantics.
 
 Arrow batches are the stable output boundary. Applications can pass those batches to
-`@loaders.gl/geoarrow` for GeoArrow conversion or to their GPU upload layer without making the
+`@loaders.gl/core/geoarrow` for GeoArrow conversion or to their GPU upload layer without making the
 Parquet module depend on either heavier consumer package. The scan engine preserves typed arrays,
 projection, workers, and range access; GPU representation remains an application-level handoff.
 

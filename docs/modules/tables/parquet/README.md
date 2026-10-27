@@ -60,7 +60,7 @@ Experimental loader and writer for the Apache Parquet format.
 - Iceberg, Delta Lake, and Hudi table-format sources are available from
   `@loaders.gl/tables/iceberg`, `@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`.
   They use Parquet for physical file reads and the shared
-  scan contracts from core; installing `@loaders.gl/scan` is unnecessary to use them.
+  scan contracts from core; installing `@loaders.gl/core/scan` is unnecessary to use them.
 
 The read-only Hudi Copy-on-Write proof of concept is available from
 `@loaders.gl/tables/hudi`. It consumes a JSON snapshot descriptor listing

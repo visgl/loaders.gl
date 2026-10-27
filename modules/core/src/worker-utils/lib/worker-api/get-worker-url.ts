@@ -32,23 +32,10 @@ export function getCustomWorkerURL(
   worker: WorkerObject,
   options: WorkerOptions = {}
 ): string | null {
-  const workerOptions = options[worker.id] || {};
-
   const workerFile = isBrowser
     ? worker.workerFile || `${worker.id}-worker.js`
     : worker.workerNode || `${worker.id}-worker-node.js`;
-
-  let url = workerOptions.workerUrl;
-
-  // HACK: Allow for non-nested workerUrl for the CompressionWorker.
-  // For the compression worker, workerOptions is currently not nested correctly. For most loaders,
-  // you'd have options within an object, i.e. `{mvt: {coordinates: ...}}` but the CompressionWorker
-  // puts options at the top level, not within a `compression` key (its `id`). For this reason, the
-  // above `workerOptions` will always be a string (i.e. `'gzip'`) for the CompressionWorker. To not
-  // break backwards compatibility, we allow the CompressionWorker to have options at the top level.
-  if (!url && worker.id === 'compression') {
-    url = options.workerUrl;
-  }
+  let url = getConfiguredWorkerURL(worker, options);
 
   // If URL is test, generate local loaders.gl url
   // @ts-ignore _workerType
@@ -69,6 +56,18 @@ export function getCustomWorkerURL(
   }
 
   return url || null;
+}
+
+/** Returns an explicit worker URL override, excluding generated local test URLs. */
+export function getConfiguredWorkerURL(
+  worker: WorkerObject,
+  options: WorkerOptions = {}
+): string | null {
+  const workerOptions = options[worker.id] || {};
+  // Compression also supports the historical non-nested URL override.
+  return (
+    workerOptions.workerUrl || (worker.id === 'compression' ? options.workerUrl : null) || null
+  );
 }
 
 /**

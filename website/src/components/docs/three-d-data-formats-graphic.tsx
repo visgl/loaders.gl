@@ -9,9 +9,9 @@ const FORMAT_LANES = [
     detail: 'Hierarchy, materials, transforms, and animation',
     tone: 'pink',
     formats: [
-      {label: 'glTF 2.0 + draft 2.1', to: '/docs/modules/gltf/formats/gltf'},
-      {label: 'GLB', to: '/docs/modules/gltf/formats/glb'},
-      {label: 'OpenUSD', to: '/docs/modules/scene/formats/usd'}
+      {label: 'glTF 2.0 + draft 2.1', to: '/docs/modules/scene/gltf/formats/gltf'},
+      {label: 'GLB', to: '/docs/modules/scene/gltf/formats/glb'},
+      {label: 'OpenUSD', to: '/docs/modules/scene/usd/formats/usd'}
     ]
   },
   {
@@ -19,8 +19,8 @@ const FORMAT_LANES = [
     detail: 'Spatial hierarchy, level of detail, and selective delivery',
     tone: 'violet',
     formats: [
-      {label: '3D Tiles 1.0 / 1.1', to: '/docs/modules/3d-tiles/formats/3d-tiles'},
-      {label: 'I3S 1.7 / 1.8 + PC 2.x', to: '/docs/modules/i3s/formats/i3s'},
+      {label: '3D Tiles 1.0 / 1.1', to: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'},
+      {label: 'I3S 1.7 / 1.8 + PC 2.x', to: '/docs/modules/tiles-3d/i3s/formats/i3s'},
       {label: 'COPC 1.0 · Potree 1.x', to: '/docs/modules/tiles-3d/copc/formats/copc'}
     ]
   },
@@ -30,7 +30,7 @@ const FORMAT_LANES = [
     tone: 'cyan',
     formats: [
       {label: 'Draco', to: '/docs/modules/draco/formats/draco'},
-      {label: 'Meshopt compression', to: '/docs/modules/gltf/formats/gltf#meshopt-compression'},
+      {label: 'Meshopt compression', to: '/docs/modules/scene/gltf/formats/gltf#meshopt-compression'},
       {label: 'Basis Universal / KTX2', to: '/docs/modules/textures/formats/ktx'}
     ]
   }

@@ -1,7 +1,7 @@
 # GeoArrow Conformance Ledger
 
 The loaders.gl GeoArrow contract has a lazily generated case ledger exported from
-`@loaders.gl/geoarrow/geoarrow-conformance`. Its identifiers coordinate focused fast tests, slow
+`@loaders.gl/core/geoarrow/geoarrow-conformance`. Its identifiers coordinate focused fast tests, slow
 interoperability tests, and benchmarks. Generating the ledger does not itself certify a case;
 executable tests and benchmark results provide that evidence.
 
@@ -23,7 +23,7 @@ serialized column has been inspected, and the requested physical contract must r
 ## Programmatic Use
 
 ```ts
-import {getGeoArrowConformanceMatrix} from '@loaders.gl/geoarrow/geoarrow-conformance';
+import {getGeoArrowConformanceMatrix} from '@loaders.gl/core/geoarrow/geoarrow-conformance';
 
 for (const testCase of getGeoArrowConformanceMatrix()) {
   // Use testCase.id as the stable fixture and benchmark key.

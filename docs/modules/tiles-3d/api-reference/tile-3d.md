@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Tiles runtime', to: '/docs/modules/tiles'},
     {label: 'Tileset3D', to: '/docs/modules/tiles-3d/api-reference/tileset-3d'},
-    {label: '3D Tiles runtime', to: '/docs/modules/3d-tiles/concepts'}
+    {label: '3D Tiles runtime', to: '/docs/modules/tiles-3d/3d-tiles/concepts'}
   ]}
 />
 
@@ -122,7 +122,7 @@ Ordered content resource URLs resolved from the normalized header.
 For `Tiles3DSource` tiles, ordered renderer-neutral descriptors with `index`, optional `uri`, `type`, and `group`, plus
 `payload`, `metadata`, `boundingVolume`, `featureIds`, and `renderable`. Entries exist before their
 payloads load; nested tileset content is not reported as renderable. Re-read entries after lifecycle
-updates. See the [contract fields](../../3d-tiles/concepts/renderer-contracts-and-metadata#tile3dcontent).
+updates. See the [contract fields](../3d-tiles/concepts/renderer-contracts-and-metadata#tile3dcontent).
 
 This is source-dependent, not a universal contract for every `Tile3D`. The current `I3SSource`
 leaves `contentEntries` empty. Custom sources need normalized `header.content` descriptors with
@@ -132,7 +132,7 @@ matching ordered load-result payloads, or explicit `TileContentLoadResult.conten
 
 Raw tileset, group, tile, primary-content, and subtree metadata references, plus the optional groups
 array. For another content entry, inspect its `metadata` and `group`. This context is not a decoded
-property-table row; see [raw versus decoded metadata](../../3d-tiles/concepts/renderer-contracts-and-metadata#raw-context-versus-decoded-properties).
+property-table row; see [raw versus decoded metadata](../3d-tiles/concepts/renderer-contracts-and-metadata#raw-context-versus-decoded-properties).
 
 ### `featureIdSets` (Tile3DFeatureIdSet[])
 
@@ -168,7 +168,7 @@ the camera, or zero when the camera is inside the volume.
 ### `screenSpaceError` (Number)
 
 Calculated error in logical/CSS pixels used for LOD selection. See
-[screen-space error and LOD](../../3d-tiles/concepts/screen-space-error-and-lod).
+[screen-space error and LOD](../3d-tiles/concepts/screen-space-error-and-lod).
 
 ### `lodMetricValue` (Number)
 

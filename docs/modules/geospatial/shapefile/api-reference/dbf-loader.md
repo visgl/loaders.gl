@@ -71,3 +71,16 @@ ESRI Shapefiles are a popular file format for storing geospatial vector data.
 The format consists of a number of files that must be stored together and with
 the same file name. Files with extensions `.shp`, `.shx`, `.dbf` must exist;
 additional files with other extensions such as `.prj` and `.cpg` may exist.
+
+
+## Worker batches
+
+`DBFLoader` supports browser worker parsing and `parseInBatches`. The worker decodes
+attributes into Arrow columns for every requested shape. `rows`, `table`, and
+`object-row-table` conversion runs on the caller after hydration. Legacy batches retain the
+initial DBF header followed by row arrays. Dates remain millisecond timestamps.
+No Arrow IPC or decoded row objects are returned by the worker.
+
+Set `core.worker: true` to enable workers and `core.worker: false` to use the main thread.
+An abort signal or iterator closure releases the worker; already transferred input buffers
+remain detached. These prebuilt bundles target browser workers.

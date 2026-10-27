@@ -7,7 +7,7 @@ import * as arrow from 'apache-arrow';
 import Protobuf from 'pbf';
 import {encode, parse} from '@loaders.gl/core';
 import {MVTLoader, MVTWriter} from '@loaders.gl/tiles/mvt';
-import {convertFeaturesToGeoArrowTable} from '@loaders.gl/arrow-geometry/feature-table';
+import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import type {Geometry} from '@loaders.gl/core/schema';
 import {VectorTile} from '../../src/mvt/lib/vector-tile/vector-tile';
 

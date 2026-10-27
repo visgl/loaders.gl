@@ -5,6 +5,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {
   OrientedBoundingBox,
   makeOrientedBoundingBoxFromPoints,
+  getOrientedBoundingBoxQuaternion,
   makeBoundingSphereFromPoints,
   BoundingSphere
 } from '@math.gl/geometry/culling';
@@ -38,7 +39,7 @@ export function createBoundingVolumes(
   if (sourceBoundingVolume instanceof OrientedBoundingBox) {
     halfSize = sourceBoundingVolume.halfSize;
     radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
-    quaternion = sourceBoundingVolume.quaternion;
+    quaternion = getOrientedBoundingBoxQuaternion(sourceBoundingVolume);
   } else {
     radius = sourceBoundingVolume.radius;
     halfSize = [radius, radius, radius];
@@ -84,7 +85,7 @@ export function createBoundingVolumesFromGeometry(
     obb: {
       center: obbCenter,
       halfSize: geometryObb.halfSize,
-      quaternion: geometryObb.quaternion
+      quaternion: getOrientedBoundingBoxQuaternion(geometryObb)
     }
   };
 }

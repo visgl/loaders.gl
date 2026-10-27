@@ -2,7 +2,7 @@
 
 > **Experimental:** `ClusterSource` and its construction options may change in future releases.
 
-`@loaders.gl/geoarrow` provides an independent, immutable clustering engine and a `ClusterSource`
+`@loaders.gl/core/geoarrow` provides an independent, immutable clustering engine and a `ClusterSource`
 adapter for complete, materialized GeoJSON and GeoArrow tables. It does not depend on Supercluster.
 Clusters retain original row references, counts, numeric aggregates, and a hierarchy for member
 selection and click-to-expand interactions.
@@ -14,7 +14,7 @@ Its standalone source is in `examples/website/clustering`.
 ## Cluster a table
 
 ```typescript
-import {ClusterSource} from '@loaders.gl/geoarrow/cluster-source';
+import {ClusterSource} from '@loaders.gl/core/geoarrow/cluster-source';
 
 const source = new ClusterSource(table, {
   radiusPixels: 40,
@@ -66,7 +66,7 @@ WKB output. `getMetadata()` advertises one layer named `clusters`.
 ## Work directly with coordinate buffers
 
 ```typescript
-import {ClusterIndex} from '@loaders.gl/geoarrow/cluster-index';
+import {ClusterIndex} from '@loaders.gl/core/geoarrow/cluster-index';
 
 const index = new ClusterIndex(new Float64Array([
   -122.40, 37.78,
@@ -137,7 +137,7 @@ const source = new ClusterSource(table, {
 
 The callback takes precedence over `positionStrategy` and runs once per original row. The
 `getRepresentativePoint()` helper is also available independently from
-`@loaders.gl/geoarrow/get-representative-point`. Native GeoArrow Point input uses direct buffer
+`@loaders.gl/core/geoarrow/get-representative-point`. Native GeoArrow Point input uses direct buffer
 bounds to extract coordinates without creating GeoJSON feature objects. Other encodings and
 custom callbacks decode one geometry at a time during construction.
 
