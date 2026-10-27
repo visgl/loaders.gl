@@ -17,18 +17,17 @@ export function makeNodeStream<Value>(
   let iteratorFailed = false;
   const convertedIterator: AsyncIterableIterator<Uint8Array> = {
     async next() {
-      let result: IteratorResult<Value>;
       try {
-        result = await iterator.next();
+        const result = await iterator.next();
+        if (result.done) {
+          await iterator.return?.();
+          return {done: true, value: undefined};
+        }
+        return {done: false, value: new Uint8Array(result.value as ArrayBuffer)};
       } catch (error) {
         iteratorFailed = true;
         throw error;
       }
-      if (result.done) {
-        await iterator.return?.();
-        return {done: true, value: undefined};
-      }
-      return {done: false, value: new Uint8Array(result.value as ArrayBuffer)};
     },
     async return(value?: unknown) {
       await iterator.return?.(value as never);

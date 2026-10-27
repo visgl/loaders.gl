@@ -95,6 +95,28 @@ describe('makeNodeStream boundaries', () => {
     expect(chunks.map(chunk => Array.from(chunk))).toEqual([[7], [8, 9]]);
   });
 
+  test('forwards chunk conversion failures', async () => {
+    const stream = makeNodeStream([Symbol('invalid')]);
+    await expect(async () => {
+      for await (const chunk of stream) void chunk;
+    }).rejects.toThrow(TypeError);
+  });
+
+  test('forwards iterator cleanup failures on completion', async () => {
+    const error = new Error('cleanup failed');
+    const source = {
+      [Symbol.asyncIterator]: () => ({
+        next: async () => ({done: true as const, value: undefined}),
+        return: async () => {
+          throw error;
+        }
+      })
+    };
+    await expect(async () => {
+      for await (const chunk of makeNodeStream(source)) void chunk;
+    }).rejects.toBe(error);
+  });
+
   test('returns the iterator on completion', async () => {
     const returnHandler = vi.fn(async () => ({done: true, value: undefined}));
     const source = {
