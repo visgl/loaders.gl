@@ -4,16 +4,18 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
+import {
+  LOADERS_GL_RAW_FIXTURE_URL,
+  LOADERS_GL_REDIRECTING_FIXTURE_URL
+} from '@loaders.gl/core/constants';
 
-const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/';
-const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
+const PLY_CUBE_ATT_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/pointclouds/test/ply/data/cube_att.ply`;
 const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = '@loaders.gl/core/polyfills/test/data/data.txt';
 const TEXT_URL_GZIPPED = '@loaders.gl/core/polyfills/test/data/data.txt.gz';
 const TEXT_URL_WITH_REDIRECT =
   'https://unpkg.com/@loaders.gl/textures@beta/dist/libs/basis_encoder.js';
-const REDIRECT_URL =
-  'https://github.com/visgl/loaders.gl/raw/master/modules/core/test/polyfills-package/data/data.txt';
+const REDIRECT_URL = `${LOADERS_GL_REDIRECTING_FIXTURE_URL}modules/core/test/polyfills-package/data/data.txt`;
 
 test('fetchFile() (NODE)', async () => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);

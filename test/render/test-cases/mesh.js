@@ -5,9 +5,9 @@
 import {load} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
+import {LOADERS_GL_RAW_FIXTURE_URL} from '@loaders.gl/core/constants';
 
-const PLY_BINARY_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/pointclouds/test/ply/data/bun_zipper.ply';
+const PLY_BINARY_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/pointclouds/test/ply/data/bun_zipper.ply`;
 
 export default [
   {

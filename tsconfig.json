@@ -141,6 +141,9 @@
       "@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader": [
         "modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader"
       ],
+      "@loaders.gl/core/constants": [
+        "modules/core/src/constants"
+      ],
       "@loaders.gl/core/worker-utils": [
         "modules/core/src/worker-utils"
       ],

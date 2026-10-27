@@ -317,6 +317,11 @@
       "types": "./dist/wkt/twkb/index.d.ts",
       "import": "./dist/wkt/twkb/index.js",
       "require": "./dist/wkt/twkb/index.cjs"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "import": "./dist/constants/index.js",
+      "require": "./dist/constants/index.cjs"
     }
   },
   "sideEffects": [
@@ -356,7 +361,7 @@
     "SCAN-README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-worker-utils-worker && npm run build-worker-utils-worker-node && npm run build-polyfills-node-entrypoint && npm run build-schema-subpaths && npm run generate-json-schema && npm run build-utility-subpaths",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-worker-utils-worker && npm run build-worker-utils-worker-node && npm run build-polyfills-node-entrypoint && npm run build-schema-subpaths && npm run generate-json-schema && npm run build-utility-subpaths && npm run build-constants",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -366,7 +371,8 @@
     "build-polyfills-node-entrypoint": "esbuild src/polyfills/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/polyfills/index.cjs",
     "build-schema-subpaths": "esbuild src/schema/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/index.cjs && esbuild src/schema/geospatial-metadata-zod-schema.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/geospatial-metadata-zod-schema.cjs && esbuild src/schema-utils/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/index.cjs && esbuild src/schema-utils/arrow-transport.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/arrow-transport.cjs",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/schema/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/schema/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'",
-    "build-utility-subpaths": "node ../../scripts/build-core-utility-subpaths.mjs"
+    "build-utility-subpaths": "node ../../scripts/build-core-utility-subpaths.mjs",
+    "build-constants": "esbuild src/constants/index.ts --bundle --platform=node --format=cjs --outfile=dist/constants/index.cjs"
   },
   "dependencies": {
     "@math.gl/core": "5.0.0-alpha.20",

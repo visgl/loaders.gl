@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
+import {NPM_TAG} from '@loaders.gl/core/constants';
 import {NullWorker} from '@loaders.gl/core/worker-utils';
 import type {WorkerObject} from '../../../../src/worker-utils/types';
 import {
@@ -115,7 +116,7 @@ test('getWorkerURL#version fallback warning', () => {
       ? 'worker-utils/latest-test-worker.js'
       : 'worker-utils/latest-test-worker-node.js';
     expect(latestWorkerUrl, 'worker url falls back to npm tag').toBe(
-      `https://unpkg.com/@loaders.gl/core@latest/dist/${latestWorkerFile}`
+      `https://unpkg.com/@loaders.gl/core@${NPM_TAG}/dist/${latestWorkerFile}`
     );
     expect(warnings.length, 'emits one warning for latest worker fallback').toBe(1);
     expect(

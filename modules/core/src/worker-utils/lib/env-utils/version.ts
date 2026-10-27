@@ -4,22 +4,15 @@
 
 import {NPM_TAG} from '../npm-tag';
 
-// Version constant cannot be imported, it needs to correspond to the build version of **this** module.
 declare let __VERSION__: string;
 
-/** Get the injected loaders.gl package version, or the npm tag used for unpublished builds. */
-function getVersion() {
-  if (!globalThis._loadersgl_?.version) {
-    globalThis._loadersgl_ = globalThis._loadersgl_ || {};
-    // __VERSION__ is injected by babel-plugin-version-inline
-    if (typeof __VERSION__ === 'undefined') {
-      globalThis._loadersgl_.version = NPM_TAG;
-    } else {
-      globalThis._loadersgl_.version = __VERSION__;
-    }
-  }
-
-  return globalThis._loadersgl_.version;
+/** Return this package's injected version, independent of other loaded versions. */
+function getVersion(): string {
+  const version = typeof __VERSION__ === 'undefined' ? NPM_TAG : __VERSION__;
+  globalThis._loadersgl_ = globalThis._loadersgl_ || {};
+  globalThis._loadersgl_.version ||= version;
+  return version;
 }
 
+/** Version of this worker-utils build, or the branch's npm fallback tag. */
 export const VERSION = getVersion();
