@@ -96,3 +96,8 @@ import {GeoArrowBuilder} from '@loaders.gl/core/arrow-geometry';
 import {inspectGeoArrowVector} from '@loaders.gl/core/geoarrow';
 import {convertWKTToGeometry} from '@loaders.gl/core/wkt';
 ```
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

@@ -33,3 +33,8 @@ names `@loaders.gl/3d-tiles` and `@loaders.gl/i3s` are removed in v5.
 | Potree | [Potree](./potree/README.md) |
 
 LAS/LAZ, PCD, and PLY file loaders belong to [pointclouds](../pointclouds/README.md).
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/tiles-3d/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

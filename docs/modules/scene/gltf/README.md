@@ -174,3 +174,8 @@ normalize glTF 1, evict individual resources, or expose per-request cancellation
 Use [glTF accessor helpers](/docs/modules/scene/gltf/api-reference/gltf-accessors) to read packed typed
 values from indexed `GLTFWithBuffers` data or replace accessor storage. The helpers support sparse,
 interleaved, implicit-zero and decoder-provided accessors without linking the scene graph.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

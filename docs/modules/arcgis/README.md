@@ -302,3 +302,8 @@ remain the responsibility of the consuming renderer.
 Use `resolveArcGISItem` from `@loaders.gl/arcgis/items` to resolve service-backed portal items into
 explicit layer/table choices. See the [item guide and embedded example](/docs/developer-guide/arcgis/items)
 for supported item types, metadata, authentication and deployment verification.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/arcgis/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

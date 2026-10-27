@@ -13,3 +13,8 @@ const toml = await parse('enabled = true', TOMLLoader);
 ```
 
 The parser implementations are included in this package and do not depend on third-party YAML or TOML parser packages.
+
+## Sources and credits
+
+See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
+and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).

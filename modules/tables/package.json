@@ -659,7 +659,10 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "third-party-licenses"
   ],
   "scripts": {
     "pre-build": "npm run copy-wasm && npm run build-worker-csv && npm run build-worker-node-csv && npm run build-worker-excel && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet && npm run build-worker-json-tables && npm run build-worker-node-json-tables && npm run build-worker-geoarrow && npm run build-worker-node-arrow && npm run build-worker-node-geoarrow",

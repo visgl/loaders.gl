@@ -12,3 +12,8 @@ import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
 ```
 
 WMS, WMTS, WFS, WCS, CSW, GML, and OGC API Features, Tiles, EDR, and Coverages live here. Provider credentials remain in [`@loaders.gl/services`](/docs/modules/services), and ArcGIS has its own [`@loaders.gl/arcgis`](/docs/modules/arcgis) package.
+
+## Sources and credits
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/ogc/THIRD-PARTY-NOTICES.md)
+and the project-wide [References and credits](/docs/references-and-credits).

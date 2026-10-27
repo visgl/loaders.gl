@@ -69,7 +69,9 @@
   "files": [
     "src",
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run build-bundle && npm run build-bundle-dev",

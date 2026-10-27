@@ -74,7 +74,8 @@
     "test-fast": "yarn lint && yarn test-node",
     "pre-commit": "yarn lint",
     "pre-push": "yarn lint",
-    "metrics": "./scripts/metrics.sh && ocular-metrics"
+    "metrics": "./scripts/metrics.sh && ocular-metrics",
+    "check-attributions": "node ./scripts/check-attributions.mjs"
   },
   "devDependencies": {
     "@loaders.gl/tiles-3d": "^5.0.0-alpha.0",
