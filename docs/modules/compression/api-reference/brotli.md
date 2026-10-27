@@ -69,4 +69,6 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 
 Built-in Brotli availability is runtime-dependent. The [live benchmarks](/docs/modules/compression/benchmarks) show what the current browser supports.
 
+Under Node.js, built-in streams and `brotli.useZlib` use Node’s Brotli decoder. Use the latest patch release; see the [October 2026 Node.js security notice](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+
 For sync methods, preload first; root callers should use `{useNative: false}` when selecting a WASM implementation for synchronous work.
