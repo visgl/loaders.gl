@@ -4,9 +4,17 @@
 
 ### Unreleased
 
+### v5.0.0-beta.1
+
 - Enable incremental JSON, JSONTable, and NDJSON worker batches with backpressure, decoded-row
   progress, portable Arrow schemas, owned Arrow transport, and browser/Node worker bundles.
 - Add the `serializeWorkerOptions` loader hook for portable atomic and batch parser options.
+- Extend worker batches to columnar Arrow and GeoArrow tables, meshes, LAS, Shapefile, and traces.
+- Consolidate point-cloud loaders into `@loaders.gl/pointclouds`, scene formats into
+  `@loaders.gl/scene`, and geometry and scan utilities into focused `@loaders.gl/core` subpaths.
+- Add validated TileMatrix traversal and coalesced tile rows to `Tileset2D`.
+- Remove obsolete Node web API polyfills and simplify Node stream creation.
+- Expand package references, credits, notices, and migration documentation.
 
 ### v5.0.0-alpha.14
 

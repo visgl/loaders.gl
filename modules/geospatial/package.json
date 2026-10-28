@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geospatial",
-  "version": "5.0.0-alpha.14",
+  "version": "5.0.0-beta.1",
   "description": "Grouped geospatial loaders (package consolidation proof of concept)",
   "license": "MIT",
   "type": "module",
@@ -375,8 +375,8 @@
     "build-worker-shapefile": "node ../../scripts/build-codec-worker.mjs src/workers/shapefile-worker.ts --bundle --outfile=dist/shapefile-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/archives": "5.0.0-alpha.14",
-    "@loaders.gl/xml": "5.0.0-alpha.14",
+    "@loaders.gl/archives": "5.0.0-beta.1",
+    "@loaders.gl/xml": "5.0.0-beta.1",
     "@math.gl/geospatial": "5.0.0-alpha.20",
     "@types/sql.js": "^1.4.5",
     "apache-arrow": ">= 17.0.0"

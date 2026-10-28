@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scene",
-  "version": "5.0.0-alpha.14",
+  "version": "5.0.0-beta.1",
   "description": "Framework-independent loaders for scene description formats",
   "license": "MIT",
   "type": "module",
@@ -212,9 +212,9 @@
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "dependencies": {
-    "@loaders.gl/draco": "5.0.0-alpha.14",
-    "@loaders.gl/images": "5.0.0-alpha.14",
-    "@loaders.gl/textures": "5.0.0-alpha.14",
+    "@loaders.gl/draco": "5.0.0-beta.1",
+    "@loaders.gl/images": "5.0.0-beta.1",
+    "@loaders.gl/textures": "5.0.0-beta.1",
     "@math.gl/core": "5.0.0-alpha.20",
     "@math.gl/geometry": "5.0.0-alpha.20",
     "zod": "^4.1.12"

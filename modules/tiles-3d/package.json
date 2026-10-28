@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles-3d",
-  "version": "5.0.0-alpha.14",
+  "version": "5.0.0-beta.1",
   "description": "3D tilesets, 3D Tiles, I3S, COPC, and Potree loaders",
   "license": "MIT",
   "type": "module",
@@ -183,13 +183,13 @@
     "build-worker-i3s-lepcc-node": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-lepcc-worker-node.ts --outfile=dist/i3s-lepcc-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/archives": "5.0.0-alpha.14",
-    "@loaders.gl/compression": "5.0.0-alpha.14",
-    "@loaders.gl/draco": "5.0.0-alpha.14",
-    "@loaders.gl/images": "5.0.0-alpha.14",
-    "@loaders.gl/pointclouds": "5.0.0-alpha.14",
-    "@loaders.gl/scene": "5.0.0-alpha.14",
-    "@loaders.gl/textures": "5.0.0-alpha.14",
+    "@loaders.gl/archives": "5.0.0-beta.1",
+    "@loaders.gl/compression": "5.0.0-beta.1",
+    "@loaders.gl/draco": "5.0.0-beta.1",
+    "@loaders.gl/images": "5.0.0-beta.1",
+    "@loaders.gl/pointclouds": "5.0.0-beta.1",
+    "@loaders.gl/scene": "5.0.0-beta.1",
+    "@loaders.gl/textures": "5.0.0-beta.1",
     "@math.gl/core": "5.0.0-alpha.20",
     "@math.gl/dggs": "5.0.0-alpha.20",
     "@math.gl/earth": "5.0.0-alpha.20",
