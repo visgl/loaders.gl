@@ -12,7 +12,7 @@ import type {
 } from '@loaders.gl/core/schema';
 import {getGeometryMetadataForField} from './metadata/geoarrow-metadata';
 import {getGeoArrowGeometryInfoFromLayout} from './get-geoarrow-geometry-info';
-import {scanWKB} from '@math.gl/geospatial/wkb';
+import {scanWKB} from '@math.gl/geospatial';
 import {convertWKTToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {inspectGeoArrowLayout} from './geoarrow-layout';
 

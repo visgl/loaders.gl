@@ -9,7 +9,7 @@ import {
   makeBoundingSphereFromPoints,
   BoundingSphere
 } from '@math.gl/geometry/culling';
-import {Geoid} from '@math.gl/earth/geoid';
+import {Geoid} from '@math.gl/earth';
 
 /**
  * Create bounding volumes object from tile and geoid height model.

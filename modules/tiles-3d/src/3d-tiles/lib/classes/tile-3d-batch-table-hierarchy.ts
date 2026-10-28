@@ -8,7 +8,7 @@
 // TODO - Finish hierarchy suypport: this file is only half ported
 /* eslint-disable */
 // @ts-nocheck
-import {GL} from '@math.gl/geometry/utils';
+import {GL} from '@math.gl/geometry';
 import {createTypedArrayFromAccessor} from './helpers/tile-3d-accessor-utils';
 
 const defined = x => x !== undefined;

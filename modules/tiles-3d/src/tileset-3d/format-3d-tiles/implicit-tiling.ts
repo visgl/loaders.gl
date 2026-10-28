@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '../../constants';
-import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs/s2';
+import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs';
 import {convertS2BoundingVolumeToOBB, type S2VolumeInfo} from '../helpers/s2-bounding-volume';
 
 const QUADTREE_CHILD_COUNT = 4;

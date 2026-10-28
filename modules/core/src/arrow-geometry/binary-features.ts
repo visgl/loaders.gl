@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {earcut} from '@math.gl/geometry/polygon';
+import {earcut} from '@math.gl/geometry';
 import type {BinaryFeatureCollection, GeoArrowEncoding} from '@loaders.gl/core/schema';
 import type {TypedArray} from '@loaders.gl/core/schema';
 import {updateBoundsFromGeoArrowSamples} from './sampled-bounds';

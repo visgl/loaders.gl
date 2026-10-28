@@ -2,7 +2,7 @@
 
 These helpers are available from `@loaders.gl/core/loader-utils` and the focused
 `@loaders.gl/core/loader-utils/tile-grid` subpath. Geometry algorithms are supplied
-by `@math.gl/geospatial/tile-matrix`; source-level partial metadata and coverage are handled here.
+by `@math.gl/geospatial`; source-level partial metadata and coverage are handled here.
 
 ```typescript
 import {getTileGridValidation, resolveTileGridTile} from '@loaders.gl/core/loader-utils';

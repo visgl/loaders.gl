@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {scanWKB} from '@math.gl/geospatial/wkb';
+import {scanWKB} from '@math.gl/geospatial';
 import {makeGeoArrowColumnFromArrowVector} from '@loaders.gl/core/arrow-geometry';
 import type {BinaryPolygonGeometry, GeoArrowEncoding} from '@loaders.gl/core/schema';
 import {getGeoArrowRowBounds as getMathGeoArrowRowBounds} from '@math.gl/geospatial/geoarrow';

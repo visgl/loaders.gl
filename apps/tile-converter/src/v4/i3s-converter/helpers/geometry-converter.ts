@@ -51,16 +51,16 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/tiles-3d/i3s';
-import {Geoid} from '@math.gl/earth/geoid';
+import {Geoid} from '@math.gl/earth';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {GL} from '@math.gl/geometry/utils';
+import {GL} from '@math.gl/geometry';
 
 /*
-  At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/core/types'.
+  At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/core'.
   So the following import is replaced with the local import
-  import type {TypedArrayConstructor} from '@math.gl/core/types';
+  import type {TypedArrayConstructor} from '@math.gl/core';
 */
 import type {GLTFAttributesData, TextureImageProperties} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';

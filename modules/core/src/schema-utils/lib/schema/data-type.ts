@@ -9,7 +9,7 @@ import {
   TypedArrayConstructor,
   ArrayType
 } from '@loaders.gl/core/schema';
-import {getFloat16ArrayConstructor} from '@math.gl/core/types';
+import {getFloat16ArrayConstructor} from '@math.gl/core';
 
 /** Deduce column types from values */
 export function getDataTypeFromValue(

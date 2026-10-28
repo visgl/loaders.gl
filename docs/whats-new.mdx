@@ -40,6 +40,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+## math.gl 5 beta
+
+All direct math.gl dependencies now use `5.0.0-beta.1` across published modules, applications,
+and examples. Imports now use the beta package roots for shared types, geometry utilities,
+WKB, tile matrices, ellipsoids, S2, and geoids. See the
+[math.gl migration guidance](/docs/upgrade-guide#mathgl-package-consolidation).
+
 ## TileMatrix traversal and XYZ assessment
 
 `Tileset2D` can use an explicit native-frame TileMatrix adapter with source-scoped cache IDs,
@@ -409,7 +416,7 @@ Release Date: 2026
   ECEF/geographic bounds so culling and LOD remain compatible with existing runtimes.
 - I3S mesh and Point Cloud sources normalize vertical units and offsets, apply all
   `elevationInfo` placement modes with application terrain or scene providers, and use registered
-  `@math.gl/earth/geoid` models for ellipsoidal/orthometric conversion. The [vertical coordinate systems
+  `@math.gl/earth` models for ellipsoidal/orthometric conversion. The [vertical coordinate systems
   guide](/docs/developer-guide/vertical-coordinate-systems) documents formulas, provider
   contracts, and deterministic failure behavior.
 

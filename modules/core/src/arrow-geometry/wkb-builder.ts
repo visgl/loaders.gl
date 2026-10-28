@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {WKBBuilder as MathWKBBuilder} from '@math.gl/geospatial/wkb';
-import type {
-  WellKnownDimension,
-  WKBGeometryType as MathWKBGeometryType
-} from '@math.gl/geospatial/wkb';
+import {WKBBuilder as MathWKBBuilder} from '@math.gl/geospatial';
+import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@math.gl/geospatial';
 import {WKBGeometryType} from './wkb-types';
 
 /** Function that writes one WKB geometry into a builder. */
@@ -50,7 +47,7 @@ export type WKBGeometryArray = {
 };
 
 /**
- * Compatibility facade over the Arrow-independent `@math.gl/geospatial/wkb` builder.
+ * Compatibility facade over the Arrow-independent `@math.gl/geospatial` builder.
  *
  * The loaders.gl API retains its legacy `hasZ` and `hasM` options while math.gl owns byte
  * measurement, bounds checking, endian handling, and WKB emission.

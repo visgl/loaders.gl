@@ -173,7 +173,7 @@ independently of the renderer's requested output CRS.
 | Supported geographic/projected vertices, normals, origins, and bounds | ✅ Implemented for mesh and Point Cloud sources |
 | Vertical source units and elevation-offset units | ✅ Implemented for common metric, international, US survey, and legacy ArcGIS units |
 | All elevation placement modes | ✅ Implemented for mesh and Point Cloud; ground/scene modes require an application provider |
-| Provider and output height-reference conversion | ✅ Implemented with an application-supplied `@math.gl/earth/geoid` model |
+| Provider and output height-reference conversion | ✅ Implemented with an application-supplied `@math.gl/earth` model |
 | Dynamic coordinate-epoch operations | ❌ Not yet executable |
 
 Missing metadata or registered resources cause an actionable error. A requested operation never

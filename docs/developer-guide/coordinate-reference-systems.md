@@ -229,7 +229,7 @@ network and licensing behavior, and lets each application choose its accuracy/re
 | --- | --- | --- |
 | `@math.gl/geospatial/crs` | Typed identifiers, WKT/PROJ syntax, and PROJJSON definitions | Does not look up definitions or transform coordinates |
 | `@math.gl/geospatial/projection` | Horizontal/projected/geocentric transformations and NTv2 grid registration | Not assumed to perform vertical datum or epoch operations |
-| `@math.gl/earth/geoid` | GeographicLib-compatible interpolation from application-supplied PGM data | Is not terrain and does not load a model automatically |
+| `@math.gl/earth` | GeographicLib-compatible interpolation from application-supplied PGM data | Is not terrain and does not load a model automatically |
 | `@math.gl/geospatial` | Ellipsoid, cartographic/ECEF, and local-frame mathematics | Does not interpret format metadata |
 | loaders.gl adapters | Axis normalization, profile semantics, bounds, origins, normals, elevation placement, and diagnostics | Never silently invent missing metadata |
 

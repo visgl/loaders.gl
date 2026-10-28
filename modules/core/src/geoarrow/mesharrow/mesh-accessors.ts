@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {TypedArray} from '@math.gl/core/types';
+import {TypedArray} from '@math.gl/core';
 import {getFixedSizeListSize} from './arrow-fixed-size-list-utils';
 import * as arrow from 'apache-arrow';
 

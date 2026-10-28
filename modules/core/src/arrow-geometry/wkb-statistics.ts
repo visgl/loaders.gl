@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {scanWKB} from '@math.gl/geospatial/wkb';
-import type {WellKnownDimension, WKBGeometryType} from '@math.gl/geospatial/wkb';
+import {scanWKB} from '@math.gl/geospatial';
+import type {WellKnownDimension, WKBGeometryType} from '@math.gl/geospatial';
 
 /** Coordinate bounds extracted directly from one WKB geometry. */
 export type WKBGeometryBoundingBox = {
@@ -37,7 +37,7 @@ export type WKBGeometryStatistics = {
  * Extracts ISO geometry type and coordinate bounds directly from WKB or EWKB bytes.
  *
  * This compatibility wrapper delegates allocation-free traversal, mixed endian handling, and
- * defensive nesting limits to `@math.gl/geospatial/wkb`.
+ * defensive nesting limits to `@math.gl/geospatial`.
  */
 export function getWKBGeometryStatistics(
   input: ArrayBufferLike | ArrayBufferView

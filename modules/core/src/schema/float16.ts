@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getFloat16ArrayConstructor, NativeFloat16ArrayConstructor} from '@math.gl/core/types';
+import {getFloat16ArrayConstructor, NativeFloat16ArrayConstructor} from '@math.gl/core';
 
 /** Array storage used for logical Float16 values. */
 export type Float16ArrayStorage = Float16Array | Uint16Array;

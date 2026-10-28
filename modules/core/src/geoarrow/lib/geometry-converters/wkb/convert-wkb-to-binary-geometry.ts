@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {BinaryGeometry} from '@loaders.gl/core/schema';
-import {getWellKnownDimensionSize, scanWKB, visitWKB} from '@math.gl/geospatial/wkb';
+import {getWellKnownDimensionSize, scanWKB, visitWKB} from '@math.gl/geospatial';
 
 /**
  * Materializes legacy vertex-indexed binary geometry using math.gl's WKB traversal.

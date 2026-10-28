@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {fetchFile, parse, parseSync} from '@loaders.gl/core';
-import {inspectWKBHeader} from '@math.gl/geospatial/wkb';
+import {inspectWKBHeader} from '@math.gl/geospatial';
 import {WKBLoader, WKTLoader} from '@loaders.gl/geospatial/wkt/bundled';
 import {parseTestCases} from '@loaders.gl/geospatial/wkt/test/data/wkt/parse-test-cases';
 const WKB_2D_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdata2d.json';

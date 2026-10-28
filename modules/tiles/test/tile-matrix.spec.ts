@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import type {TileGrid} from '@loaders.gl/core/loader-utils';
-import type {TileMatrix} from '@math.gl/geospatial/tile-matrix';
+import type {TileMatrix} from '@math.gl/geospatial';
 import {selectTileMatrixTiles} from '../src/tile-matrix';
 
 /** Small regular matrices with opaque native identifiers, deliberately not sorted by resolution. */

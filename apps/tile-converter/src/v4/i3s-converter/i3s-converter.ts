@@ -23,7 +23,7 @@ import type {
 } from '@loaders.gl/tiles-3d/i3s';
 import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Geoid} from '@math.gl/earth/geoid';
+import {Geoid} from '@math.gl/earth';
 import {join} from 'path';
 import {randomUUID} from 'node:crypto';
 import process from 'process';

@@ -13,7 +13,7 @@ import type {
   Table
 } from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
-import {earcut} from '@math.gl/geometry/polygon';
+import {earcut} from '@math.gl/geometry';
 import type {GeoArrowBuilderEncoding} from '@loaders.gl/core/arrow-geometry';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {convertWKTToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';

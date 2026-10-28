@@ -13,7 +13,6 @@ import {
 } from '@loaders.gl/scene/gltf';
 import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
-import {isTypedArray} from '@math.gl/core/types';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
@@ -261,7 +260,7 @@ export class Tiles3DContentConverter {
       componentType,
       values: []
     };
-    if (isTypedArray(attributeValues)) {
+    if (ArrayBuffer.isView(attributeValues) && !(attributeValues instanceof DataView)) {
       propertyAttribute.values = Array.from(attributeValues);
     } else if (attributeValues !== null) {
       propertyAttribute.values = attributeValues;

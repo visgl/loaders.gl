@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {getS2Bounds} from '@math.gl/dggs/s2';
+import {getS2Bounds} from '@math.gl/dggs';
 import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 
 /** Serialized S2 cell metadata used by 3D Tiles bounding-volume extensions. */
