@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Geoid, parsePGM} from '@math.gl/earth/geoid';
+import {Geoid, parsePGM} from '@math.gl/earth';
 import {FullProjectionEngine, parseNTv2Grid} from '@math.gl/geospatial/projection';
 import type {DatumGrid, ProjectionEngine} from '@math.gl/geospatial/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
@@ -47,7 +47,7 @@ export function registerSpatialDatumGrid(name: string, data: ArrayBuffer): void 
  * Registers an already parsed geoid model.
  *
  * @param name - Stable application-local model name.
- * @param geoid - Parsed `@math.gl/earth/geoid` model.
+ * @param geoid - Parsed `@math.gl/earth` model.
  */
 export function registerGeoidModel(name: string, geoid: Geoid): void {
   validateResourceName(name, 'geoid model');
@@ -59,7 +59,7 @@ export function registerGeoidModel(name: string, geoid: Geoid): void {
  *
  * @param name - Stable application-local model name.
  * @param data - Complete PGM model bytes.
- * @param options - Interpolation options forwarded to `@math.gl/earth/geoid`.
+ * @param options - Interpolation options forwarded to `@math.gl/earth`.
  * @returns The parsed and registered geoid model.
  */
 export function registerGeoidModelFromPgm(

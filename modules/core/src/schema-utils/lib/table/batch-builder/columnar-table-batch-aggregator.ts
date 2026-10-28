@@ -8,7 +8,6 @@ import type {
   ArrowTableBatch,
   TypedArray
 } from '@loaders.gl/core/schema';
-import {isTypedArray} from '@math.gl/core/types';
 import {getArrayTypeFromDataType} from '../../schema/data-type';
 import {TableBatchAggregator} from './table-batch-aggregator';
 type ColumnarTableBatchOptions = {};
@@ -85,7 +84,7 @@ export class ColumnarTableBatchAggregator implements TableBatchAggregator {
       } else if (Array.isArray(oldColumn)) {
         // Plain array, just increase its size
         oldColumn.length = this.allocated;
-      } else if (isTypedArray(oldColumn)) {
+      } else if (ArrayBuffer.isView(oldColumn) && !(oldColumn instanceof DataView)) {
         const typedArray = new ArrayType(this.allocated) as TypedArray;
         // Copy the old data to the new array
         typedArray.set(oldColumn);

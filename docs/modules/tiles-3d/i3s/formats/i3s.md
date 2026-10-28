@@ -235,7 +235,7 @@ contracts.
 | Cartesian meter-offset output | ✅ **Supported** | v2.0 | This is the default geometry representation for deck.gl-compatible rendering. |
 | Longitude/latitude-offset output | ✅ **Supported** | v3.1 | Select with `i3s.coordinateSystem: 'lnglat-offsets'`. |
 | Projected or custom horizontal CRS | ✅ **Supported** | **v5.0** | Mesh and Point Cloud sources transform vertices, stable origins, normals, and parallel `spatialBoundingVolume` metadata into supported Proj4 target definitions while retaining WGS84 traversal bounds. EPSG:4978 uses the WGS84 geocentric path. Custom definitions must be registered explicitly. The WebScene loader retains its WGS84 boundary. |
-| Vertical CRS, units, and height models | ✅ **Supported** | **v5.0** | Mesh and Point Cloud sources normalize `ZFactor` or `heightUnit`, preserve VCS metadata, and convert ellipsoidal/orthometric heights with an application-supplied `@math.gl/earth/geoid` model. |
+| Vertical CRS, units, and height models | ✅ **Supported** | **v5.0** | Mesh and Point Cloud sources normalize `ZFactor` or `heightUnit`, preserve VCS metadata, and convert ellipsoidal/orthometric heights with an application-supplied `@math.gl/earth` model. |
 | `elevationInfo` placement modes | ✅ **Supported** | **v5.0** | `absoluteHeight`, `onTheGround`, `relativeToGround`, and `relativeToScene` are applied to content and bounds. Ground and scene modes require the corresponding application elevation provider; feature-expression evaluation remains renderer work. |
 
 ### Authoring, conversion, and validation

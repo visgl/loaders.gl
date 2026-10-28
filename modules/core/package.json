@@ -378,9 +378,9 @@
     "build-constants": "esbuild src/constants/index.ts --bundle --platform=node --format=cjs --outfile=dist/constants/index.cjs"
   },
   "dependencies": {
-    "@math.gl/core": "5.0.0-alpha.20",
-    "@math.gl/geometry": "5.0.0-alpha.20",
-    "@math.gl/geospatial": "5.0.0-alpha.20",
+    "@math.gl/core": "5.0.0-beta.1",
+    "@math.gl/geometry": "5.0.0-beta.1",
+    "@math.gl/geospatial": "5.0.0-beta.1",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0",

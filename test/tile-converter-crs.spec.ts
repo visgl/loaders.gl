@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {transformPointCloudSourceTile as transformRootPointTile} from '@loaders.gl/tile-converter/v5';
-import type {Geoid} from '@math.gl/earth/geoid';
+import type {Geoid} from '@math.gl/earth';
 import {Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {parse} from '@loaders.gl/core';

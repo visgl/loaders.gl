@@ -5,8 +5,8 @@
 import * as arrow from 'apache-arrow';
 import {getWKTDimension} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {getWKTGeometryType} from './lib/geometry-converters/wkb/helpers/parse-wkb-header';
-import {inspectWKBHeader} from '@math.gl/geospatial/wkb';
-import type {WKBGeometryType} from '@math.gl/geospatial/wkb';
+import {inspectWKBHeader} from '@math.gl/geospatial';
+import type {WKBGeometryType} from '@math.gl/geospatial';
 import type {GeoArrowEncoding, GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {
   getGeoArrowUnionDimension,

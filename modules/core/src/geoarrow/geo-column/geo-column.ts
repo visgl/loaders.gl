@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // GIS
-import type {TypedArray} from '@math.gl/core/types';
+import type {TypedArray} from '@math.gl/core';
 
 // BINARY FORMAT GEOMETRY
 

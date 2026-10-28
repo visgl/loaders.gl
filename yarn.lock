@@ -24,8 +24,8 @@ __metadata:
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     maplibre-gl: "npm:^3.6.2"
     marked: "npm:^0.7.0"
     probe.gl: "npm:^5.0.0"
@@ -5493,9 +5493,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/core@workspace:modules/core"
   dependencies:
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
+    "@math.gl/geometry": "npm:5.0.0-beta.1"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 17.0.0"
     probe.gl: "npm:^5.0.0"
@@ -5539,9 +5539,9 @@ __metadata:
     "@luma.gl/core": "npm:^9.4.0"
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
-    "@math.gl/web-mercator": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
+    "@math.gl/geometry": "npm:5.0.0-beta.1"
+    "@math.gl/web-mercator": "npm:5.0.0-beta.1"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5579,7 +5579,7 @@ __metadata:
   dependencies:
     "@loaders.gl/archives": "npm:5.0.0-beta.1"
     "@loaders.gl/xml": "npm:5.0.0-beta.1"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     "@types/sql.js": "npm:^1.4.5"
     apache-arrow: "npm:>= 17.0.0"
     fuzzer: "npm:^0.2.1"
@@ -5724,7 +5724,7 @@ __metadata:
     "@loaders.gl/images": "npm:5.0.0-beta.1"
     "@loaders.gl/raster": "npm:5.0.0-beta.1"
     "@loaders.gl/xml": "npm:5.0.0-beta.1"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5735,7 +5735,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/pointclouds@workspace:modules/pointclouds"
   dependencies:
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     apache-arrow: "npm:>= 17.0.0"
     copc: "npm:0.0.8"
     laz-perf: "npm:^0.0.7"
@@ -5755,7 +5755,7 @@ __metadata:
   dependencies:
     "@loaders.gl/images": "npm:5.0.0-beta.1"
     "@mapbox/martini": "npm:0.2.0"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     fast-xml-parser: "npm:^5.3.6"
     geotiff: "npm:^2.1.0"
     lerc: "npm:^4.2.0"
@@ -5778,8 +5778,8 @@ __metadata:
     "@loaders.gl/draco": "npm:5.0.0-beta.1"
     "@loaders.gl/images": "npm:5.0.0-beta.1"
     "@loaders.gl/textures": "npm:5.0.0-beta.1"
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
+    "@math.gl/geometry": "npm:5.0.0-beta.1"
     meshoptimizer: "npm:1.3.0"
     zod: "npm:^4.1.12"
   peerDependencies:
@@ -5825,7 +5825,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/scientific@workspace:modules/scientific"
   dependencies:
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     fast-xml-parser: "npm:^5.3.6"
     h5wasm: "npm:^0.10.3"
     zarr: "npm:^0.5.0"
@@ -5884,7 +5884,7 @@ __metadata:
   resolution: "@loaders.gl/tables@workspace:modules/tables"
   dependencies:
     "@loaders.gl/compression": "npm:5.0.0-beta.1"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     apache-arrow: "npm:>= 17.0.0"
     bson: "npm:4.2.0"
     parquet-wasm: "npm:0.7.2"
@@ -5921,7 +5921,7 @@ __metadata:
   resolution: "@loaders.gl/textures@workspace:modules/textures"
   dependencies:
     "@loaders.gl/images": "npm:5.0.0-beta.1"
-    "@math.gl/core": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
     zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5946,10 +5946,10 @@ __metadata:
     "@loaders.gl/textures": "npm:5.0.0-beta.1"
     "@loaders.gl/tiles": "npm:5.0.0-beta.1"
     "@loaders.gl/tiles-3d": "npm:5.0.0-beta.1"
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-    "@math.gl/earth": "npm:5.0.0-alpha.20"
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
+    "@math.gl/earth": "npm:5.0.0-beta.1"
+    "@math.gl/geometry": "npm:5.0.0-beta.1"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     "@types/express": "npm:^4.17.17"
     "@types/inquirer": "npm:^9.0.7"
     ajv: "npm:^8.12.0"
@@ -5980,11 +5980,11 @@ __metadata:
     "@loaders.gl/pointclouds": "npm:5.0.0-beta.1"
     "@loaders.gl/scene": "npm:5.0.0-beta.1"
     "@loaders.gl/textures": "npm:5.0.0-beta.1"
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-    "@math.gl/dggs": "npm:5.0.0-alpha.20"
-    "@math.gl/earth": "npm:5.0.0-alpha.20"
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
+    "@math.gl/dggs": "npm:5.0.0-beta.1"
+    "@math.gl/earth": "npm:5.0.0-beta.1"
+    "@math.gl/geometry": "npm:5.0.0-beta.1"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     copc: "npm:0.0.8"
     probe.gl: "npm:^5.0.0"
     zod: "npm:^4.1.12"
@@ -6003,8 +6003,8 @@ __metadata:
     "@loaders.gl/tables": "npm:5.0.0-beta.1"
     "@loaders.gl/tiles-3d": "npm:5.0.0-beta.1"
     "@maplibre/mlt": "npm:^1.1.6"
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/geometry": "npm:5.0.0-beta.1"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     "@types/pbf": "npm:^3.0.2"
     apache-arrow: "npm:^21.2.0"
     pbf: "npm:^3.2.1"
@@ -6467,10 +6467,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@math.gl/core@npm:5.0.0-alpha.20":
-  version: 5.0.0-alpha.20
-  resolution: "@math.gl/core@npm:5.0.0-alpha.20"
-  checksum: 10c0/16990133de34b703d510e5cdc54fcdae33be74c63e3f5f7812be2e943ecefd1c469cd93a31549ab01a93bc68122552e6bcb428c479eb61551d664949f5a1c859
+"@math.gl/core@npm:5.0.0-beta.1":
+  version: 5.0.0-beta.1
+  resolution: "@math.gl/core@npm:5.0.0-beta.1"
+  checksum: 10c0/939f810f452ad4a0e5881c88e8fde43fc41aa50b637d4c02e6014afe3b6968d35fe930ec381859a0c53c959cfd4211fe734e865fc7ff62f6bda62b05d60fff3e
   languageName: node
   linkType: hard
 
@@ -6484,50 +6484,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@math.gl/dggs@npm:5.0.0-alpha.20":
-  version: 5.0.0-alpha.20
-  resolution: "@math.gl/dggs@npm:5.0.0-alpha.20"
+"@math.gl/dggs@npm:5.0.0-beta.1":
+  version: 5.0.0-beta.1
+  resolution: "@math.gl/dggs@npm:5.0.0-beta.1"
   dependencies:
-    "@math.gl/core": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
     a5-js: "npm:^0.10.0"
     h3-js: "npm:^4.5.0"
     open-location-code: "npm:^1.0.3"
-  checksum: 10c0/6efe48463f2f502298987b8d0dae6862599164956693339d05b4ef330d942bcab36a14aff2b4d73c0646cd664cc23c296f9af47735738be1de02ad5e3bdfe439
+  checksum: 10c0/d5aa32512af791b0f631c57ac927a9c43f2e266a1de634481b0fa8a15be623d443a62e80f6fb3c5b409c15aa71bc459975f8354222a8663a59cd8f2835b102f2
   languageName: node
   linkType: hard
 
-"@math.gl/earth@npm:5.0.0-alpha.20":
-  version: 5.0.0-alpha.20
-  resolution: "@math.gl/earth@npm:5.0.0-alpha.20"
+"@math.gl/earth@npm:5.0.0-beta.1":
+  version: 5.0.0-beta.1
+  resolution: "@math.gl/earth@npm:5.0.0-beta.1"
   dependencies:
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-  peerDependencies:
-    astronomy-engine: ^2.1.19
-  peerDependenciesMeta:
-    astronomy-engine:
-      optional: true
-  checksum: 10c0/599d82baa75bc0abf3e36c7af906aece1d248bcdee8f6fdfb58265b573d0a8862799fbe82026a963dcb3929688cd056e7e1035096587336e6785ccb5a86418f3
+    "@math.gl/core": "npm:5.0.0-beta.1"
+    astronomy-engine: "npm:2.1.19"
+  checksum: 10c0/d34471beb9918606e98028971e5e07b7c7d97d9db55eda712005a14ee9f04462417a5c9acad6f92c79837ee4ba3a64c478542cf838969788d91ddb43d1386e9d
   languageName: node
   linkType: hard
 
-"@math.gl/geometry@npm:5.0.0-alpha.20":
-  version: 5.0.0-alpha.20
-  resolution: "@math.gl/geometry@npm:5.0.0-alpha.20"
+"@math.gl/geometry@npm:5.0.0-beta.1":
+  version: 5.0.0-beta.1
+  resolution: "@math.gl/geometry@npm:5.0.0-beta.1"
   dependencies:
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-  checksum: 10c0/b51dce3a223b24a20404b927d395243f29629a62f76bc8833546eca77d407d123a43709635cd8ec985dc0df77096f230819c495d5ea8b43bdc998c7d0a202e94
+    "@math.gl/core": "npm:5.0.0-beta.1"
+  checksum: 10c0/f8e0421e7839853f6765ce5016d27473890b0b2be23b3b2d9b45e211d3942e5fbb7495d700b8ffce8b797b69b3af6bc8054fd21cd187dabcb8dff2c4ece2dba4
   languageName: node
   linkType: hard
 
-"@math.gl/geospatial@npm:5.0.0-alpha.20":
-  version: 5.0.0-alpha.20
-  resolution: "@math.gl/geospatial@npm:5.0.0-alpha.20"
+"@math.gl/geospatial@npm:5.0.0-beta.1":
+  version: 5.0.0-beta.1
+  resolution: "@math.gl/geospatial@npm:5.0.0-beta.1"
   dependencies:
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-    "@math.gl/geometry": "npm:5.0.0-alpha.20"
-    "@math.gl/web-mercator": "npm:5.0.0-alpha.20"
+    "@mapbox/martini": "npm:0.2.0"
+    "@math.gl/core": "npm:5.0.0-beta.1"
+    "@math.gl/geometry": "npm:5.0.0-beta.1"
+    "@math.gl/web-mercator": "npm:5.0.0-beta.1"
     polygon-clipping: "npm:0.15.7"
-  checksum: 10c0/69d32bafda6dbee45e2528fb5376d798058c419c4dee9cce7c07b069bbc38a7009db7a2fab4b87efb2b753fe705fd130913fc2a61562409cf58c0ccb58014cfe
+  checksum: 10c0/d8fdcef29d666ffa1b79a253968c7e33fb92e9f3b2d683cf7c225e0d12853f120b33b84d6bf16947cee0e2fe1582cc81db4cb1804f7296de25032867a1f124e5
   languageName: node
   linkType: hard
 
@@ -6564,12 +6561,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@math.gl/web-mercator@npm:5.0.0-alpha.20":
-  version: 5.0.0-alpha.20
-  resolution: "@math.gl/web-mercator@npm:5.0.0-alpha.20"
+"@math.gl/web-mercator@npm:5.0.0-beta.1":
+  version: 5.0.0-beta.1
+  resolution: "@math.gl/web-mercator@npm:5.0.0-beta.1"
   dependencies:
-    "@math.gl/core": "npm:5.0.0-alpha.20"
-  checksum: 10c0/6b5f8ee0562e2ae299ca71bbc7bf9cba759d195f63e0b65cc9c5f7bef465a86d06e3c0948e827fa93bc8c28e5771bd2b1bddca52e1212ee71ab91ede42684c73
+    "@math.gl/core": "npm:5.0.0-beta.1"
+  checksum: 10c0/0595264edd1d724b10fc988d7c2ec60d4b2f6319811974b4570d9a4f647118a1a3e8f88b26bf7b03ce255c4e99a105913a808558d61a54daffa4ad225cecdd17
   languageName: node
   linkType: hard
 
@@ -13252,6 +13249,13 @@ __metadata:
   bin:
     astring: bin/astring
   checksum: 10c0/e7519544d9824494e80ef0e722bb3a0c543a31440d59691c13aeaceb75b14502af536b23f08db50aa6c632dafaade54caa25f0788aa7550b6b2d6e2df89e0830
+  languageName: node
+  linkType: hard
+
+"astronomy-engine@npm:2.1.19":
+  version: 2.1.19
+  resolution: "astronomy-engine@npm:2.1.19"
+  checksum: 10c0/585ee4a1fc220713660413369922f0be59ce287a4941364fb8072282b88c1bc366b6eda1a96e0b10057c8e135af5f74fb5b6de6cd6b3f8a0c7bb8f973f61db7b
   languageName: node
   linkType: hard
 
@@ -19977,7 +19981,7 @@ __metadata:
     "@luma.gl/engine": "npm:^9.4.0"
     "@luma.gl/gltf": "npm:^9.4.0"
     "@luma.gl/shadertools": "npm:^9.4.0"
-    "@math.gl/core": "npm:5.0.0-alpha.20"
+    "@math.gl/core": "npm:5.0.0-beta.1"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
@@ -21080,7 +21084,7 @@ __metadata:
     "@loaders.gl/tile-converter": "workspace:*"
     "@loaders.gl/tiles": "workspace:*"
     "@loaders.gl/tiles-3d": "workspace:*"
-    "@math.gl/geospatial": "npm:5.0.0-alpha.20"
+    "@math.gl/geospatial": "npm:5.0.0-beta.1"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@types/styled-components": "npm:^5.1.36"

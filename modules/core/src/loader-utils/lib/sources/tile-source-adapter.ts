@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getTileBounds} from '@math.gl/geospatial/tile-matrix';
+import {getTileBounds} from '@math.gl/geospatial';
 import type {TileSource, GetTileParameters, GetTileDataParameters, TileGrid} from './tile-source';
 import type {ImageSource, ImageSourceMetadata} from './image-source';
 import {getRequestedTileMatrix, validateTileGrid, resolveTileGridTile} from './tile-grid';

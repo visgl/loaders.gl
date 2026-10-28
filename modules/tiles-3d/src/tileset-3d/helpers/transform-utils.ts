@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Ellipsoid} from '@math.gl/geospatial';
-import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/ellipsoid';
+import {eastNorthUpToFixedFrame} from '@math.gl/geospatial';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {assert} from '@loaders.gl/core/loader-utils';
 

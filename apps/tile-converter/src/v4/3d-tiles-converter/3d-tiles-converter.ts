@@ -11,7 +11,7 @@ import {join} from 'path';
 import process from 'process';
 import {load, isBrowser} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s';
-import {Geoid} from '@math.gl/earth/geoid';
+import {Geoid} from '@math.gl/earth';
 
 import {validateI3SConversionSpatialReference} from './helpers/validate-i3s-spatial-reference';
 import {PGMLoader} from '../pgm-loader';

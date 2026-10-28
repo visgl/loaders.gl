@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {getPolygonSignedArea} from '@math.gl/geometry/polygon';
+import {getPolygonSignedArea} from '@math.gl/geometry';
 import {FlatIndexedGeometry, FlatPolygon} from '@loaders.gl/core/schema';
 
 /**

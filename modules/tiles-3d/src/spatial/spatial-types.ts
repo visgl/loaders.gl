@@ -13,7 +13,7 @@ import {
   type SpatialReferenceRepresentation,
   type SpatialReferenceState
 } from '@math.gl/geospatial/crs';
-import type {Geoid} from '@math.gl/earth/geoid';
+import type {Geoid} from '@math.gl/earth';
 import {getSpatialCoordinateFrame} from './get-spatial-coordinate-frame';
 
 /** How height values in a 3D dataset relate to the earth. */

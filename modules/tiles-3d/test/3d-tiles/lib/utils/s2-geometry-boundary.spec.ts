@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs/s2';
+import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs';
 import {convertS2BoundingVolumetoOBB} from '../../../../src/3d-tiles/lib/utils/obb/s2-corners-to-obb';
 
 test('S2 hierarchy addresses convert to runtime oriented bounding boxes', () => {

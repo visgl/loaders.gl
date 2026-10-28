@@ -192,23 +192,31 @@ The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` pa
 ### math.gl package consolidation
 
 math.gl alpha.19 removes the standalone leaf packages. Applications importing their APIs or types
-alongside loaders.gl should install the grouped package and use its public subpath:
+alongside loaders.gl should install the grouped package and use the following public imports
+for math.gl `5.0.0-beta.1`:
 
 | Removed package | Replacement import |
 | --- | --- |
-| `@math.gl/types` | `@math.gl/core/types` |
+| `@math.gl/types` | `@math.gl/core` |
 | `@math.gl/culling` | `@math.gl/geometry/culling` |
-| `@math.gl/geometry-utils` | `@math.gl/geometry/utils` |
-| `@math.gl/polygon` | `@math.gl/geometry/polygon` |
+| `@math.gl/geometry-utils` | `@math.gl/geometry` |
+| `@math.gl/polygon` | `@math.gl/geometry` |
 | `@math.gl/crs` | `@math.gl/geospatial/crs` |
 | `@math.gl/projection` | `@math.gl/geospatial/projection` |
-| `@math.gl/wkb` | `@math.gl/geospatial/wkb` |
+| `@math.gl/wkb` | `@math.gl/geospatial` |
 | `@math.gl/geoarrow` | `@math.gl/geospatial/geoarrow` |
-| `@math.gl/geoid` | `@math.gl/earth/geoid` |
+| `@math.gl/geoid` | `@math.gl/earth` |
 
 Install the package name before the subpath, such as `@math.gl/geospatial`. Nested entry points move
 with their parent API, for example `@math.gl/geospatial/projection/bulk`. TypeScript consumers need a
 module resolver that reads package exports, such as `bundler`, `node16`, or `nodenext`.
+
+The beta also removes several alpha subpaths. Replace `@math.gl/core/types` with `@math.gl/core`;
+`@math.gl/geometry/polygon` and `@math.gl/geometry/utils` with `@math.gl/geometry`;
+`@math.gl/geospatial/wkb`, `@math.gl/geospatial/ellipsoid`, and
+`@math.gl/geospatial/tile-matrix` with `@math.gl/geospatial`; `@math.gl/dggs/s2` with
+`@math.gl/dggs`; and `@math.gl/earth/geoid` with `@math.gl/earth`. Geoid grid assets remain
+available under `@math.gl/earth/geoid/`.
 
 ### Core utility subpaths
 
@@ -354,7 +362,7 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 **@loaders.gl/math**
 
 - The temporary `@loaders.gl/math` package has been removed. Install `@math.gl/geometry`
-  and update imports to `@math.gl/geometry/utils` for GL constants, typed-array, geometry, color, and attribute-compression
+  and update imports to `@math.gl/geometry` for GL constants, typed-array, geometry, color, and attribute-compression
   utilities.
 
 **CRS and @loaders.gl/wkt**

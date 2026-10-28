@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {Tile3DBatchTable} from '@loaders.gl/tiles-3d/3d-tiles';
-import {concatTypedArrays} from '@math.gl/geometry/utils';
+import {concatTypedArrays} from '@math.gl/geometry';
 // import {loadTileset} from '../utils/load-utils';
 // const WITH_BATCH_TABLE_URL =
 //  '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBatchTable/tileset.json';

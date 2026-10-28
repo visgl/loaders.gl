@@ -9,7 +9,7 @@ import type {
 } from '@loaders.gl/scene/gltf';
 import {EXT_MESH_FEATURES, EXT_FEATURE_METADATA} from '@loaders.gl/scene/gltf';
 import {Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
-import {emod} from '@math.gl/geometry/utils';
+import {emod} from '@math.gl/geometry';
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../types';
 

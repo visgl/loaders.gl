@@ -19,7 +19,7 @@
     "@loaders.gl/tile-converter": "workspace:*",
     "@loaders.gl/tiles": "workspace:*",
     "@loaders.gl/tiles-3d": "workspace:*",
-    "@math.gl/geospatial": "5.0.0-alpha.20",
+    "@math.gl/geospatial": "5.0.0-beta.1",
     "maplibre-gl": "^3.6.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

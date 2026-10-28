@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {convertWKTToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import {scanWKB} from '@math.gl/geospatial/wkb';
+import {scanWKB} from '@math.gl/geospatial';
 import type {GeoArrowDimension, GeoArrowEncoding} from '@loaders.gl/core/schema';
 
 type BoxDimension = 2 | 3 | 4;
