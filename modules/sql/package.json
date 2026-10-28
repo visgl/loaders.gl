@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/sql",
   "description": "Framework-independent SQL data sources",
-  "version": "5.0.0-alpha.14",
+  "version": "5.0.0-beta.1",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
