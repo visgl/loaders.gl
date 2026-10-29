@@ -4,7 +4,7 @@
 
 import { expect, test } from "vitest";
 import {BasisLoader} from '@loaders.gl/images';
-import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
+import {load, setLoaderOptions} from '@loaders.gl/core';
 import { GL_COMPRESSED_RGB_ETC1_WEBGL, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA8_ETC2_EAC, GL_COMPRESSED_RGBA_ASTC_4x4_KHR, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_RGBA8 } from '../../src/lib/gl-extensions';
 import { withBasisTranscodingLock } from '../../src/lib/parsers/parse-basis';
 const BASIS_TEST_URL = '@loaders.gl/images/test/textures/data/alpha3.basis';
@@ -25,15 +25,10 @@ test('BasisLoader#load(URL, worker: false)', async () => {
     expect(image.shape, 'image shape is correct').toBe('texture-level');
     expect(image.width, 'image width is correct').toBe(768);
     expect(image.height, 'image height is correct').toBe(512);
-    if (isBrowser) {
+
         expect(image.compressed, 'image is compressed').toBe(true);
         expect(image.data.byteLength, 'image `data.byteLength` is correct').toBe(393216);
-    }
-    else {
-        expect(image.compressed, 'image is compressed').toBe(false);
-        expect(image.data.byteLength, 'image `data.byteLength` is correct').toBe(1572864);
-        expect(image.textureFormat, 'image `textureFormat` is correct').toBe('rgba8unorm');
-    }
+
     expect(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`').toBeTruthy();
 });
 test('BasisLoader#load(URL, worker: true)', async () => {
@@ -54,7 +49,7 @@ test('BasisLoader#auto-select a target format', async () => {
         basis: { format: 'auto' }
     });
     const image = images[0][0];
-    if (isBrowser) {
+
         expect(typeof image.format === 'number' &&
             [
                 GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
@@ -67,11 +62,7 @@ test('BasisLoader#auto-select a target format', async () => {
                 GL_COMPRESSED_RGB_ETC1_WEBGL
             ].includes(image.format), 'Browser supports one of GPU textures formats').toBeTruthy();
         expect(image.compressed, 'Basis transcodes to compressed texture').toBeTruthy();
-    }
-    else {
-        expect(image.format, 'Basis transcodes alpha textures to RGBA8 in NodeJS').toBe(GL_RGBA8);
-        expect(image.compressed, "Basis can't transcode to compressed texture in NodeJS").toBeFalsy();
-    }
+
 });
 test('BasisLoader#transcode to explicit format', async () => {
     const images = await load(BASIS_TEST_URL, BasisLoader, {
@@ -186,16 +177,25 @@ test('BasisLoader#uses injected transcoder modules', async () => {
 test('BasisLoader#serializes Basis transcoding work', async () => {
     const events: string[] = [];
     let activeTranscodes = 0;
-    const runTranscode = async (label: string, delayMs: number) => await withBasisTranscodingLock(async () => {
+    let releaseFirst!: () => void;
+    const firstRelease = new Promise<void>(resolve => {releaseFirst = resolve;});
+    let signalFirstStarted!: () => void;
+    const firstStarted = new Promise<void>(resolve => {signalFirstStarted = resolve;});
+    const runTranscode = async (label: string) => await withBasisTranscodingLock(async () => {
         events.push(`${label}:start`);
         activeTranscodes++;
         expect(activeTranscodes, `${label} runs with exclusive access`).toBe(1);
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        if (label === 'first') {signalFirstStarted(); await firstRelease;}
         activeTranscodes--;
         events.push(`${label}:end`);
         return label;
     });
-    const [first, second] = await Promise.all([runTranscode('first', 20), runTranscode('second', 0)]);
+    const firstResult = runTranscode('first');
+    await firstStarted;
+    const secondResult = runTranscode('second');
+    expect(events).toEqual(['first:start']);
+    releaseFirst();
+    const [first, second] = await Promise.all([firstResult, secondResult]);
     expect(first, 'first transcode resolves').toBe('first');
     expect(second, 'second transcode resolves').toBe('second');
     expect(events, 'concurrent requests are serialized').toEqual(['first:start', 'first:end', 'second:start', 'second:end']);

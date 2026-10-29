@@ -71,3 +71,17 @@ test.each(['webp', 'avif'])('Node image codecs support %s without a MIME hint', 
   expect(decodedImage).toMatchObject({width: 1, height: 1, components: 4});
   expect(decodedImage.data).toHaveLength(4);
 });
+
+test.each([
+  undefined,
+  'jpeg',
+  'image/jpeg',
+  'jpg',
+  'image/jpg',
+  'IMAGE/JPEG'
+])('encodeImageNode normalizes JPEG format %s', async type => {
+  const image = {data: new Uint8Array([255, 0, 0, 255]), width: 1, height: 1};
+  const encodedImage = await encodeImageNode(image, {type});
+  expect(Array.from(new Uint8Array(encodedImage).subarray(0, 3))).toEqual([255, 216, 255]);
+  expect(await parseImageNode(encodedImage)).toMatchObject({width: 1, height: 1});
+});

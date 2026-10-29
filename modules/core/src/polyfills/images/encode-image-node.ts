@@ -28,7 +28,8 @@ export async function encodeImageNode(
   options: NodeImageEncoderOptions = {}
 ): Promise<ArrayBuffer> {
   const sharp = await loadSharp();
-  const format = (options.type || 'jpeg').replace('image/', '').replace('jpg', 'jpeg');
+  const requestedFormat = (options.type || 'jpeg').toLowerCase().replace(/^image\//, '');
+  const format = requestedFormat === 'jpg' ? 'jpeg' : requestedFormat;
   const encodedImage = await sharp(Buffer.from(image.data), {
     raw: {width: image.width, height: image.height, channels: 4}
   })

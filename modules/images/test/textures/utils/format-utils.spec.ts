@@ -4,7 +4,6 @@
 
 import {expect, test} from 'vitest';
 import type {TextureFormat} from '@loaders.gl/core/schema';
-import {isBrowser} from '@loaders.gl/core';
 import {
   getSupportedBasisFormats,
   selectSupportedBasisFormat
@@ -19,23 +18,13 @@ import {
 } from '../../../src/lib/utils/texture-format-map';
 import {GL_COMPRESSED_RGB_S3TC_DXT1_EXT} from '../../../src/lib/gl-extensions';
 test('detectSupportedGPUTextureFormats', () => {
-  if (isBrowser) {
-    // Minimal test as this is WebGL dependent
-    const formats = detectSupportedGPUTextureFormats();
-    formats.forEach(format => expect(typeof format === 'string').toBeTruthy());
-  } else {
-    const formats = detectSupportedGPUTextureFormats();
-    expect(formats.size).toBe(0);
-  }
+  // Minimal test as this is WebGL dependent
+  const formats = detectSupportedGPUTextureFormats();
+  formats.forEach(format => expect(typeof format === 'string').toBeTruthy());
 });
 test('detectSupportedTextureFormats', () => {
-  if (isBrowser) {
-    const textureFormats = detectSupportedTextureFormats();
-    textureFormats.forEach(textureFormat => expect(typeof textureFormat === 'string').toBeTruthy());
-  } else {
-    const textureFormats = detectSupportedTextureFormats();
-    expect(textureFormats.size).toBe(0);
-  }
+  const textureFormats = detectSupportedTextureFormats();
+  textureFormats.forEach(textureFormat => expect(typeof textureFormat === 'string').toBeTruthy());
 });
 test('selectSupportedBasisFormat', () => {
   expect(

@@ -89,11 +89,7 @@ test('isTextureCompressorMissing only accepts a missing optional peer', () => {
     'does not hide a missing transitive dependency'
   ).toBeFalsy();
 });
-test('CompressedTextureWriter#write-and-read-image', async () => {
-  if (isBrowser) {
-    console.log('CompressedTextureWriter only supported on Node.js');
-    return;
-  }
+test.skipIf(isBrowser)('CompressedTextureWriter#write-and-read-image', async () => {
   // The `texture-compressor` CLI is an optional, application-supplied prerequisite,
   // so skip (rather than fail) when it is not installed in this environment.
   if (!(await isTextureCompressorAvailable())) {

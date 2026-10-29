@@ -53,6 +53,9 @@ test('full dependency installation requests published workers and installs the D
   vi.mocked(fetchFile).mockImplementation(async () => new Response(new Uint8Array([1, 2, 3])));
   vi.spyOn(ChildProcessProxy.prototype, 'start').mockResolvedValue(undefined);
   await new DepsInstaller().install('deps');
+  expect(ChildProcessProxy.prototype.start).toHaveBeenCalledWith(
+    expect.objectContaining({arguments: ['install', 'sharp@0.35.5', 'join-images@1.5.0']})
+  );
   const requestedUrls = vi.mocked(fetchFile).mock.calls.map(([url]) => String(url));
   expect(requestedUrls.filter(url => url.includes('worker-node'))).toEqual([
     `https://unpkg.com/@loaders.gl/tiles-3d@${tileConverterPackage.version}/dist/i3s-content-worker-node.js`,

@@ -46,76 +46,76 @@ test('CompressedTextureLoader#PVR', async () => {
   expect(texture[0].format, 'PVR WebGL format is set').toBe(GL_COMPRESSED_RGB_ETC1_WEBGL);
   expect(texture[0].textureFormat, 'PVR texture format is set').toBe('etc1-rgb-unorm-webgl');
 });
-test('CompressedTextureLoader#uses injected transcoder modules for KTX2 Basis textures', async () => {
-  if (isBrowser) {
-    return;
+test.skipIf(isBrowser)(
+  'CompressedTextureLoader#uses injected transcoder modules for KTX2 Basis textures',
+  async () => {
+    class FakeKTX2File {
+      constructor(data: Uint8Array) {
+        expect(data.byteLength).toBe(4);
+      }
+      startTranscoding() {
+        return true;
+      }
+      isValid() {
+        return true;
+      }
+      getHeader() {
+        return {pixelDepth: 0};
+      }
+      getLayers() {
+        return 0;
+      }
+      getFaces() {
+        return 1;
+      }
+      getBasisTexFormat() {
+        return 0;
+      }
+      isHDR() {
+        return false;
+      }
+      isSRGB() {
+        return false;
+      }
+      getHasAlpha() {
+        return false;
+      }
+      getBlockWidth() {
+        return 4;
+      }
+      getBlockHeight() {
+        return 4;
+      }
+      getLevels() {
+        return 1;
+      }
+      getImageLevelInfo() {
+        return {
+          alphaFlag: false,
+          height: 2,
+          width: 2
+        };
+      }
+      getImageTranscodedSizeInBytes() {
+        return 8;
+      }
+      transcodeImage(decodedData: Uint8Array) {
+        decodedData.set([1, 2, 3, 4, 5, 6, 7, 8]);
+        return true;
+      }
+      close() {}
+      delete() {}
+    }
+    const texture = await load(new Uint8Array([1, 2, 3, 4]).buffer, CompressedTextureLoader, {
+      'compressed-texture': {useBasis: true},
+      basis: {format: 'bc1'},
+      modules: {
+        basis: {KTX2File: FakeKTX2File}
+      }
+    });
+    expect(texture[0].width).toBe(2);
+    expect(texture[0].height).toBe(2);
+    expect(texture[0].data.byteLength).toBe(8);
+    expect(texture[0].format).toBe(GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
   }
-  class FakeKTX2File {
-    constructor(data: Uint8Array) {
-      expect(data.byteLength).toBe(4);
-    }
-    startTranscoding() {
-      return true;
-    }
-    isValid() {
-      return true;
-    }
-    getHeader() {
-      return {pixelDepth: 0};
-    }
-    getLayers() {
-      return 0;
-    }
-    getFaces() {
-      return 1;
-    }
-    getBasisTexFormat() {
-      return 0;
-    }
-    isHDR() {
-      return false;
-    }
-    isSRGB() {
-      return false;
-    }
-    getHasAlpha() {
-      return false;
-    }
-    getBlockWidth() {
-      return 4;
-    }
-    getBlockHeight() {
-      return 4;
-    }
-    getLevels() {
-      return 1;
-    }
-    getImageLevelInfo() {
-      return {
-        alphaFlag: false,
-        height: 2,
-        width: 2
-      };
-    }
-    getImageTranscodedSizeInBytes() {
-      return 8;
-    }
-    transcodeImage(decodedData: Uint8Array) {
-      decodedData.set([1, 2, 3, 4, 5, 6, 7, 8]);
-      return true;
-    }
-    close() {}
-    delete() {}
-  }
-  const texture = await load(new Uint8Array([1, 2, 3, 4]).buffer, CompressedTextureLoader, {
-    'compressed-texture': {useBasis: true},
-    basis: {format: 'bc1'},
-    modules: {
-      basis: {KTX2File: FakeKTX2File}
-    }
-  });
-  expect(texture[0].width).toBe(2);
-  expect(texture[0].height).toBe(2);
-  expect(texture[0].data.byteLength).toBe(8);
-  expect(texture[0].format).toBe(GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
-});
+);
