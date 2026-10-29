@@ -11,32 +11,52 @@ vi.mock('../website/src/components/docs/example-panel-host', async () => {
   const {createElement} = await import('react');
   return {
     ReactExamplePanel: ({children}: {children: React.ReactNode}) =>
-      createElement('div', null, children)
+      createElement('div', null, children),
+    ReactExampleSidebar: ({open, children}: {open: boolean; children: React.ReactNode}) =>
+      open
+        ? createElement(
+            'div',
+            {style: {position: 'absolute', inset: 0, pointerEvents: 'none'}},
+            children
+          )
+        : null
   };
 });
 
 test('keeps entries and long previews bounded and clears details when the source changes', async () => {
   const source = {
-    capabilities: {search: true},
-    getMetadata: async () => ({root: {title: 'Fixture catalog'}}),
+    capabilities: {search: true, collections: true},
+    getMetadata: async () => ({mode: 'static', root: {title: 'Fixture catalog'}}),
+    getCollections: async () => [
+      {
+        id: 'fixture-collection',
+        title: 'Alpine glacier reconstruction',
+        description: 'Native ice-sheet model grids.'
+      }
+    ],
     search: async function* () {
       for (let index = 0; index < 25; index++) {
         yield {
           id: `entry-${index}`,
+          collection: index === 4 ? 'fixture-collection' : undefined,
           properties: {
             model: 'EGM96',
             title:
-              index === 1 || index === 2
-                ? `entry-${index}`
-                : index === 3
-                  ? 'CC0 Geoid entry-3'
-                  : `Geoid entry-${index}`,
+              index === 4
+                ? undefined
+                : index === 1 || index === 2
+                  ? `entry-${index}`
+                  : index === 3
+                    ? 'CC0 Geoid entry-3'
+                    : `Geoid entry-${index}`,
             description:
-              index === 1
-                ? 'CC-BY-4.0 Human-readable geoid preview. Heights are meters.'
-                : index === 2
-                  ? 'Public-domain NGA geoid grid. Heights are meters.'
-                  : 'A geoid snapshot'
+              index === 4
+                ? undefined
+                : index === 1
+                  ? 'CC-BY-4.0 Human-readable geoid preview. Heights are meters.'
+                  : index === 2
+                    ? 'Public-domain NGA geoid grid. Heights are meters.'
+                    : 'A geoid snapshot'
           },
           assets: {
             data: {href: 'https://example.org/data.parquet'},
@@ -64,11 +84,16 @@ test('keeps entries and long previews bounded and clears details when the source
       .toContain('entry-0');
     const explorer = container.querySelector<HTMLElement>('[aria-label="Catalog explorer"]')!;
     const entries = container.querySelector<HTMLElement>('[aria-label="Catalog entries"]')!;
-    const inspector = container.querySelector<HTMLElement>('[aria-label="Catalog inspector"]')!;
     const height = explorer.getBoundingClientRect().height;
+    const fullListWidth = entries.getBoundingClientRect().width;
+    expect(container.querySelector('[aria-label="Catalog inspector"]')).toBeNull();
+    await expect.poll(() => entries.textContent).toContain('Alpine glacier reconstruction');
+    expect(entries.textContent).toContain('Native ice-sheet model grids.');
     expect(entries.scrollHeight).toBeGreaterThan(entries.clientHeight);
     expect(entries.clientHeight).toBeGreaterThan(0);
     await act(async () => entries.querySelector('button')!.click());
+    const inspector = container.querySelector<HTMLElement>('[aria-label="Catalog inspector"]')!;
+    expect(entries.getBoundingClientRect().width).toBeLessThan(fullListWidth);
     await expect.poll(() => inspector.textContent).toContain('EGM96');
     expect(inspector.textContent).toContain('Geoid entry-0');
     expect(inspector.textContent).toContain('A geoid snapshot');
@@ -127,10 +152,8 @@ test('keeps entries and long previews bounded and clears details when the source
         })
       )
     );
-    await expect
-      .poll(() => inspector.querySelector('[aria-label="Catalog entry details"]'))
-      .toBeNull();
-    expect(inspector.textContent).toContain('Select an entry');
+    await expect.poll(() => container.querySelector('[aria-label="Catalog inspector"]')).toBeNull();
+    expect(entries.getBoundingClientRect().width).toBe(fullListWidth);
     const onClosePreview = vi.fn();
     await act(async () =>
       root.render(
@@ -142,9 +165,12 @@ test('keeps entries and long previews bounded and clears details when the source
         })
       )
     );
-    expect(inspector.querySelector('button')?.textContent).toBe('Close preview');
-    expect(inspector.textContent).not.toContain('Back to entry details');
-    await act(async () => inspector.querySelector('button')!.click());
+    const standaloneInspector = container.querySelector<HTMLElement>(
+      '[aria-label="Catalog inspector"]'
+    )!;
+    expect(standaloneInspector.querySelector('button')?.textContent).toBe('Close preview');
+    expect(standaloneInspector.textContent).not.toContain('Back to entry details');
+    await act(async () => standaloneInspector.querySelector('button')!.click());
     expect(onClosePreview).toHaveBeenCalledOnce();
   } finally {
     await act(async () => root.unmount());

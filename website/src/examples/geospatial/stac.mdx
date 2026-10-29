@@ -16,9 +16,11 @@ Choose the **deck.gl-data Earth** preset to browse the
 [Earth dataset catalog](https://github.com/visgl/deck.gl-data/tree/master/earth/stac), or switch to
 **Overture Maps**. You can also enter any STAC catalog or API URL directly.
 
-Select an entry to open its infobox beside the results. The list uses metadata titles and descriptions;
+The list fills the available workspace when the inspector is closed. Select an entry to open its
+infobox in an attached right SidebarPanelContainer. The list uses metadata titles and descriptions;
 when a title repeats the technical ID, it uses the description's first sentence and shows the ID as a
-secondary label. Leading public-domain and Creative Commons labels are omitted from browsing text;
+secondary label. For static catalogs, parent Collection titles and descriptions are used when an
+Item lacks useful labels; collection discovery is bounded to one hierarchy level and 50 requests. Leading public-domain and Creative Commons labels are omitted from browsing text;
 the full license-bearing description stays in Details and Attribution. The infobox offers **Details**, **Table**, **Manifest**, and **Attribution** tabs
 when those assets are available. Multiple Parquet assets receive separate table tabs.
 Expand **Full entry JSON** in Details to explore the complete record one level at a time.
@@ -32,7 +34,7 @@ encoded `ARROW:schema` payload is hidden.
 Use **Open original asset** to view or download the full file.
 Text previews are limited to 256 KiB. Parquet previews use range reads when available; otherwise,
 they download files up to 16 MiB, including the smaller GitHub-hosted Earth assets.
-The entries and inspector scroll independently inside a viewport-sized workspace. Search filters
+The entries and right sidebar scroll independently inside a viewport-sized workspace. Search filters
 are available in the expandable **Search filters** section.
 
 Recognized JSON assets use schema validation in the text panel. STAC Catalog,

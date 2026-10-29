@@ -1,6 +1,11 @@
-import React, {useEffect, useId, useMemo, useState} from 'react';
+import React, {useEffect, useId, useMemo, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
-import {CustomPanel, type Panel} from '@deck.gl-community/panels';
+import {
+  CustomPanel,
+  PanelManager,
+  SidebarPanelContainer,
+  type Panel
+} from '@deck.gl-community/panels';
 import {Panel as PanelHost} from '@deck.gl-community/react';
 
 /** Renders a panels-module definition through its official React adapter. */
@@ -50,6 +55,91 @@ export function ReactExamplePanel({
     <>
       <ExamplePanelHost panel={panel} />
       {contentElement ? createPortal(children, contentElement) : null}
+    </>
+  );
+}
+
+/** Attaches a native panels-module sidebar to the right edge of an example workspace. */
+export function ReactExampleSidebar({
+  open,
+  onClose,
+  children
+}: {
+  /** Whether the inspector is expanded. */
+  open: boolean;
+  /** Closes the selected entry when native sidebar controls request it. */
+  onClose: () => void;
+  /** React-owned inspector content. */
+  children: React.ReactNode;
+}): React.JSX.Element {
+  const panelId = useId();
+  const host = useRef<HTMLDivElement>(null);
+  const sidebar = useRef<SidebarPanelContainer | undefined>(undefined);
+  const onCloseReference = useRef(onClose);
+  onCloseReference.current = onClose;
+  const [contentElement, setContentElement] = useState<HTMLElement>();
+  useEffect(() => {
+    const parentElement = host.current;
+    if (!parentElement) return;
+    let mounted = true;
+    const panel = new CustomPanel({
+      id: `${panelId}-content`,
+      title: 'Catalog inspector',
+      onRenderHTML: element => {
+        element.style.height = '100%';
+        element.style.minHeight = '0';
+        if (mounted) setContentElement(element);
+        return () => {
+          if (mounted) setContentElement(undefined);
+        };
+      }
+    });
+    const container = new SidebarPanelContainer({
+      id: `${panelId}-sidebar`,
+      panel,
+      side: 'right',
+      title: 'Catalog inspector',
+      open: false,
+      hideTrigger: true,
+      showTitleBar: false,
+      viewportMarginPx: 0,
+      widthPx: Math.min(parentElement.clientWidth * 0.65, 700),
+      onOpenChange: nextOpen => {
+        if (!nextOpen) onCloseReference.current();
+      }
+    });
+    sidebar.current = container;
+    const manager = new PanelManager({parentElement});
+    manager.setProps({components: [container]});
+    const observer = new ResizeObserver(() =>
+      container.setProps({widthPx: Math.min(parentElement.clientWidth * 0.65, 700)})
+    );
+    observer.observe(parentElement);
+    return () => {
+      mounted = false;
+      observer.disconnect();
+      sidebar.current = undefined;
+      manager.finalize();
+    };
+  }, [panelId]);
+  useEffect(() => {
+    sidebar.current?.setProps({open});
+  }, [open]);
+  return (
+    <>
+      <div
+        ref={host}
+        style={
+          {
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 2,
+            '--widget-margin': '0px'
+          } as React.CSSProperties
+        }
+      />
+      {open && contentElement ? createPortal(children, contentElement) : null}
     </>
   );
 }
