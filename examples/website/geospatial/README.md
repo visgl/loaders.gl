@@ -1,3 +1,9 @@
+# geospatial-loaders-example
+
+Explore geospatial files with loaders.gl and deck.gl.
+
+Supported formats: KML, KMZ, GPX, TCX, Shapefile, FlatGeobuf, GeoPackage, CSV, GeoJSON, Arrow, GeoArrow, Parquet, GeoParquet.
+
 This is a standalone web app using `@loaders.gl/geospatial/geopackage`.
 
 ### Usage

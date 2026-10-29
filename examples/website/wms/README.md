@@ -1,3 +1,9 @@
+# wms-loaders-example
+
+Explore OGC web map services with loaders.gl.
+
+Supported formats: WMS, XML.
+
 This is a standalone web app using `@loaders.gl/geospatial/geopackage`.
 
 ### Usage

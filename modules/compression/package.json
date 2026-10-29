@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/compression",
   "version": "5.0.0-beta.1",
-  "description": "Decompression and compression plugins for loaders.gl",
+  "description": "Lossless compression and decompression codecs for loaders.gl",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -12,14 +12,19 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "compression",
-    "decompression",
-    "zip",
-    "gzip",
-    "deflate",
-    "lz4",
-    "zstd",
-    "brotli"
+    "loaders.gl",
+    "DEFLATE",
+    "zlib",
+    "GZIP",
+    "Brotli",
+    "Snappy",
+    "LZ4",
+    "LZO",
+    "BZip2",
+    "XZ",
+    "LZMA",
+    "Zstandard",
+    "Zstd"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

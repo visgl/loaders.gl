@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/services",
   "version": "5.0.0-beta.1",
-  "description": "Authentication presets for geospatial service providers",
+  "description": "Authentication presets for Mapbox, Google Maps, and Cesium ion services",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -14,7 +14,8 @@
   "keywords": [
     "authentication",
     "services",
-    "geospatial"
+    "geospatial",
+    "loaders.gl"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

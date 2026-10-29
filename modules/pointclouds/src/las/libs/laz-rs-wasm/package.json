@@ -15,5 +15,11 @@
   "types": "laz_rs_wasm.d.ts",
   "sideEffects": [
     "./snippets/*"
+  ],
+  "description": "WebAssembly bindings for laz-rs LAZ decompression",
+  "keywords": [
+    "loaders.gl",
+    "LAS",
+    "LAZ"
   ]
 }

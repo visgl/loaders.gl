@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/raster",
   "version": "5.0.0-beta.1",
-  "description": "GeoTIFF, LERC and terrain loaders with lazy format entry points",
+  "description": "GeoTIFF, OME-TIFF, LERC, and terrain raster loaders",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -345,5 +345,31 @@
     "@mapbox/martini": "0.2.0",
     "geotiff": "^2.1.0",
     "lerc": "^4.2.0"
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "GeoTIFF",
+    "TIFF",
+    "COG",
+    "OME-TIFF",
+    "LERC",
+    "LERC1",
+    "LERC2",
+    "quantized mesh",
+    "Mapbox Terrain-RGB",
+    "Terrarium",
+    "PNG",
+    "JPEG",
+    "GIF",
+    "WebP",
+    "BMP",
+    "geotif",
+    "jpg",
+    "lrc",
+    "ome.tif",
+    "ome.tiff",
+    "pngraw",
+    "terrain",
+    "tif"
+  ]
 }

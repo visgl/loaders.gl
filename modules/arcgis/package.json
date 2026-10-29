@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/arcgis",
   "version": "5.0.0-beta.1",
-  "description": "ArcGIS REST data sources for geospatial visualization",
+  "description": "ArcGIS REST sources for feature, map, imagery, vector tile, and scene services",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -18,7 +18,13 @@
     "ImageServer",
     "MapServer",
     "geospatial",
-    "loader"
+    "loader",
+    "loaders.gl",
+    "VectorTileServer",
+    "SceneServer",
+    "PBF",
+    "JSON",
+    "GeoJSON"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

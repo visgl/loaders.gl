@@ -30,5 +30,11 @@
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.11.3"
-  }
+  },
+  "description": "Render image-encoded terrain with loaders.gl and deck.gl",
+  "keywords": [
+    "loaders.gl",
+    "Mapbox Terrain-RGB",
+    "PNG"
+  ]
 }

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/sql",
-  "description": "Framework-independent SQL data sources",
+  "description": "DuckDB and Snowflake SQL data sources and portable SQL predicate parsing",
   "version": "5.0.0-beta.1",
   "license": "MIT",
   "type": "module",
@@ -15,7 +15,8 @@
     "sql",
     "duckdb",
     "snowflake",
-    "arrow"
+    "arrow",
+    "loaders.gl"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

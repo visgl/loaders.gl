@@ -1,5 +1,9 @@
 # Overture Parquet browser query
 
+Query Overture STAC catalogs and GeoParquet data in the browser.
+
+Supported formats: STAC, GeoParquet, Parquet.
+
 This example discovers the latest Overture Maps places release through STAC and queries its remote
 GeoParquet assets entirely in the browser. `ParquetDatasetSource` selects files and coordinates
 range-backed `ParquetSource` reads; Arrow batches render directly through `GeoArrowLayer`.

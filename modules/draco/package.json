@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/draco",
   "version": "5.0.0-beta.1",
-  "description": "Framework-independent loader and writer for Draco compressed meshes and point clouds",
+  "description": "Draco compressed mesh and point cloud loaders and writers",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -24,7 +24,9 @@
     "geometry",
     "geometry compression",
     "webgl",
-    "webgpu"
+    "webgpu",
+    "loaders.gl",
+    "drc"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

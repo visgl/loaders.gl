@@ -1,3 +1,9 @@
+# point-tile-source-example
+
+Visualize tiled point cloud data sources with deck.gl.
+
+Supported formats: Potree, LAS, LAZ.
+
 This is a standalone web app showing how to load and render pointcloud datasets.
 
 ### Usage

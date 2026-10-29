@@ -1,3 +1,9 @@
+# terrain
+
+Render image-encoded terrain with loaders.gl and deck.gl.
+
+Supported formats: Mapbox Terrain-RGB, PNG.
+
 This an example of using the `TerrainLoader`
 on [deck.gl](http://deck.gl) website.
 

@@ -1,6 +1,8 @@
 # @loaders.gl/textures
 
-[loaders.gl](https://loaders.gl/docs) is a collection of framework-independent 3D and geospatial parsers and encoders.
+Compressed texture, Basis Universal, Radiance HDR, and NPY loaders and texture writers.
+
+Supported formats: KTX, KTX2, DDS, PVR, Basis Universal, Basis, Crunch, CRN, Radiance HDR, HDR, NPY.
 
 This module contains loaders for compressed textures, Radiance HDR textures, and [basis universal textures](https://github.com/BinomialLLC/basis_universal).
 

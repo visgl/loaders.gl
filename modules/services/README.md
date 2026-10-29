@@ -1,6 +1,6 @@
 # @loaders.gl/services
 
-Provider authentication presets for Mapbox, Google Maps, and Cesium ion.
+Authentication presets for Mapbox, Google Maps, and Cesium ion services.
 
 ```ts
 import {MapboxAuthentication, GoogleMapsAuthentication, CesiumIonAuthentication} from '@loaders.gl/services';

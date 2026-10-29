@@ -1,6 +1,8 @@
 # @loaders.gl/crypto
 
-This module contains compression/decompression "transforms" for loaders.gl, a collection of framework-independent 3D and geospatial loaders (parsers).
+Checksum and cryptographic hash utilities for loaders.gl.
+
+Formats and encodings: CRC32, CRC32C, MD5, SHA-256.
 
 For documentation please visit the [website](https://loaders.gl).
 

@@ -1,3 +1,9 @@
+# i3s-building-scene-layer-loaders-example
+
+Render I3S building scene layers with deck.gl.
+
+Supported formats: I3S.
+
 This is a standalone web app using `@loaders.gl/tiles-3d/i3s-tiles`.
 
 ### Usage

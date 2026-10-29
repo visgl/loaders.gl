@@ -1,5 +1,7 @@
 # @loaders.gl/deck-layers
 
+Source-oriented deck.gl layers for loaders.gl data sources.
+
 Source-oriented deck.gl adapters maintained in loaders.gl while their APIs are prepared for
 upstreaming to deck.gl-community. The package is private today, but the primary layers have typed
 props, lifecycle tests, and no example-specific imports.

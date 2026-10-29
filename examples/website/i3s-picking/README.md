@@ -1,3 +1,9 @@
+# i3s-picking-loaders-example
+
+Pick features in I3S scene layers with deck.gl.
+
+Supported formats: I3S.
+
 This is a standalone web app using `@loaders.gl/tiles-3d/i3s`.
 
 ### Usage

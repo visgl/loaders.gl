@@ -1,3 +1,9 @@
+# loaders.gl-example-gaussian-splats
+
+Load and render Gaussian splat datasets in the browser.
+
+Supported formats: PLY.
+
 This is a standalone web app using `@loaders.gl/pointclouds/ply` and `@loaders.gl/deck-layers`.
 
 ### Usage

@@ -1,5 +1,9 @@
 # Tile archive viewer and browser conversion
 
+Render local and remote SLPK and 3TZ archives in the browser.
+
+Supported formats: I3S, SLPK, 3D Tiles, 3TZ.
+
 Build workspace packages from the repository root with `yarn build` and `yarn build-workers`,
 then run `yarn workspace i3s-slpk-loaders-example start`. The standalone example resolves built
 workspace exports and their browser replacements; rebuild packages after library edits.

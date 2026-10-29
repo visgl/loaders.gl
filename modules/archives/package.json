@@ -16,7 +16,8 @@
     "loader",
     "archive",
     "ZIP",
-    "TAR"
+    "TAR",
+    "loaders.gl"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

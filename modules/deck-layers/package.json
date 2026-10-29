@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/deck-layers",
   "version": "5.0.0-beta.1",
-  "description": "Private internal deck.gl layers used by loaders.gl examples",
+  "description": "Source-oriented deck.gl layers for loaders.gl data sources",
   "license": "MIT",
   "type": "module",
   "private": true,
@@ -13,7 +13,8 @@
     "deck.gl",
     "layer",
     "examples",
-    "loader"
+    "loader",
+    "loaders.gl"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

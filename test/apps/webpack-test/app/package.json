@@ -9,5 +9,11 @@
   "devDependencies": {
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.1"
-  }
+  },
+  "description": "Webpack bundling fixture for luma.gl glTF imports",
+  "keywords": [
+    "webpack",
+    "luma.gl",
+    "glTF"
+  ]
 }

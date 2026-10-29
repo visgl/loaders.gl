@@ -1,5 +1,9 @@
 # FSQ Places browser query
 
+Query FSQ Places GeoParquet data using browser range requests.
+
+Supported formats: GeoParquet, Parquet.
+
 This example queries the Apache-2.0 FSQ Open Source Places dataset entirely in the browser. It uses
 the spatially partitioned GeoParquet snapshot published by Fused on Source Cooperative. Standard
 aggregate Parquet metadata discovers 81 files and their extents; `ParquetDatasetSource` then prunes

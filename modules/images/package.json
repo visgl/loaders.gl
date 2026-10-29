@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/images",
   "version": "5.0.0-beta.1",
-  "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
+  "description": "Image loaders and writers using browser and Node.js image codecs",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -12,12 +12,16 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "3d",
-    "mesh",
-    "point cloud",
-    "PLY"
+    "loaders.gl",
+    "PNG",
+    "JPEG",
+    "JPG",
+    "GIF",
+    "WebP",
+    "BMP",
+    "ICO",
+    "SVG",
+    "AVIF"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

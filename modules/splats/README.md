@@ -1,6 +1,8 @@
 # @loaders.gl/splats
 
-Loaders for Gaussian splat binary formats.
+Gaussian splat loaders for SPLAT, KSPLAT, SPZ, and RAD.
+
+Supported formats: SPLAT, KSPLAT, SPZ, RAD.
 
 ## Sources and credits
 

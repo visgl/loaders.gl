@@ -1,3 +1,9 @@
+# point-tile-source-website-example
+
+Explore Potree and COPC point cloud sources with PointCloudTileset.
+
+Supported formats: Potree, COPC, LAS, LAZ.
+
 This is a standalone website example for the source-backed point-cloud tileset flow.
 
 It demonstrates:

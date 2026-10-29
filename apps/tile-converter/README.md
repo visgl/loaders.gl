@@ -1,5 +1,9 @@
 # @loaders.gl/tile-converter
 
+Convert between 3D Tiles and I3S tilesets and package tile archives.
+
+Supported formats: 3D Tiles, I3S, SLPK, 3TZ.
+
 [loaders.gl](https://loaders.gl/docs) is a collection of framework independent 3D and geospatial parsers and encoders.
 
 This module contains command line scripts and JavaScript APIs for converting between formats, for instance between 3D Tiles and I3S tilesets.

@@ -1,6 +1,8 @@
 # @loaders.gl/scientific
 
-Scientific and multidimensional data formats for loaders.gl.
+Scientific array sources and readers for NetCDF, Zarr, GRIB2, HDF5, and VTK.
+
+Supported formats: NetCDF, NetCDF-4, Zarr, GeoZarr, OME-Zarr, SpatialData, GRIB2, HDF5, VTK, VTI, VTR, VTS, VTU, VTP. GRIB2, HDF5, NetCDF-4, and VTK readers have the implementation limits documented below.
 
 ```bash
 npm install @loaders.gl/core @loaders.gl/scientific

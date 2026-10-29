@@ -1,5 +1,9 @@
 # Tile viewing and browser PMTiles export
 
+View tiled data and export vector and raster PMTiles archives in the browser.
+
+Supported formats: MLT, MVT, PMTiles, GeoJSON, GeoArrow, Arrow, Feather, GeoTIFF, COG.
+
 Run `yarn` and `yarn build` from the repository root, then
 `yarn workspace tiles-loaders-example start`. Open `/authoring.html` for the export form;
 the website embeds the same component at `/examples/tiles/pmtiles-authoring`.

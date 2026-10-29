@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/core",
   "version": "5.0.0-beta.1",
-  "description": "The core API for working with loaders.gl loaders and writers",
+  "description": "Core loading and writing APIs, workers, schemas, and geometry utilities for loaders.gl",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -22,7 +22,13 @@
     "mesh",
     "point cloud",
     "webgl",
-    "webgpu"
+    "webgpu",
+    "loaders.gl",
+    "Arrow",
+    "GeoArrow",
+    "GeoJSON",
+    "WKT",
+    "WKB"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

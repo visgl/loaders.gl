@@ -1,5 +1,9 @@
 # @loaders.gl/compression
 
+Lossless compression and decompression codecs for loaders.gl.
+
+Supported formats: DEFLATE, zlib, GZIP, Brotli, Snappy, LZ4, LZO, BZip2, XZ, LZMA, Zstandard, Zstd.
+
 Lossless compression and decompression for loaders.gl, with a bundle-conscious choice of built-in,
 compact JavaScript, and optional codec implementations.
 

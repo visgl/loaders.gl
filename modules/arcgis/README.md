@@ -1,5 +1,9 @@
 # @loaders.gl/arcgis
 
+ArcGIS REST sources for feature, map, imagery, vector tile, and scene services.
+
+Supported formats: ArcGIS, FeatureServer, MapServer, ImageServer, VectorTileServer, SceneServer, PBF, JSON, GeoJSON.
+
 Use data already published in ArcGIS Online or ArcGIS Enterprise from your own JavaScript
 application. Connect to existing feature, map, imagery, vector tile and scene services without
 exporting or republishing the data.

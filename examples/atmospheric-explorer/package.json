@@ -20,5 +20,10 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.0",
     "vitest": "5.0.2"
-  }
+  },
+  "description": "Explore ECMWF atmospheric fields from Zarr arrays in the browser",
+  "keywords": [
+    "loaders.gl",
+    "Zarr"
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "geospatial-loaders-example",
-  "description": "Minimal example of using loaders.gl with vite.",
+  "description": "Explore geospatial files with loaders.gl and deck.gl",
   "version": "0.0.0",
   "license": "MIT",
   "type": "module",
@@ -34,5 +34,21 @@
   "devDependencies": {
     "typescript": "^5.6.0",
     "vite": "^7.2.7"
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "KML",
+    "KMZ",
+    "GPX",
+    "TCX",
+    "Shapefile",
+    "FlatGeobuf",
+    "GeoPackage",
+    "CSV",
+    "GeoJSON",
+    "Arrow",
+    "GeoArrow",
+    "Parquet",
+    "GeoParquet"
+  ]
 }

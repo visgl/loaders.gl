@@ -1,5 +1,9 @@
 # @loaders.gl/tiles-3d
 
+3D tileset runtime and loaders for 3D Tiles, I3S, COPC, and Potree.
+
+Supported formats: 3D Tiles, B3DM, I3DM, PNTS, CMPT, subtree, 3TZ, I3S, SLPK, LEPCC, ArcGIS Web Scene, COPC, LAS, LAZ, Potree.
+
 Three-dimensional tileset traversal and format loaders share this package.
 
 | Entry point | Purpose |

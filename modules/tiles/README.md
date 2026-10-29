@@ -1,5 +1,9 @@
 # @loaders.gl/tiles
 
+2D tileset runtime and MLT, MVT, TileJSON, and PMTiles loaders and writers.
+
+Supported formats: MLT, MapLibre Tile, MVT, Mapbox Vector Tile, TileJSON, Mapbox Style, PMTiles.
+
 Two-dimensional tilesets and tiled-data formats share this package. Import the
 selection and cache runtime from the root, and import each format from its own
 subpath so a format-specific decoder is loaded only when needed.

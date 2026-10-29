@@ -1,5 +1,9 @@
 # I3S profile gallery
 
+Inspect I3S profile metadata and conformance capabilities.
+
+Supported formats: I3S.
+
 This example is a metadata-first companion to the I3S rendering examples. Paste an ArcGIS
 SceneServer layer URL to inspect its normalized profile, version, CRS, capabilities, and feature
 support report. The gallery deliberately does not evaluate Arcade, renderers, or popups; those

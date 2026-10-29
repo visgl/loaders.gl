@@ -1,3 +1,9 @@
+# loadersgl-gltf-with-deckgl-example
+
+Render glTF scenes with loaders.gl and deck.gl.
+
+Supported formats: glTF, GLB.
+
 This is a standalone web app using `@loaders.gl/scene/gltf` to render a glTF model in a deck.gl `ScenegraphLayer`.
 
 ### Usage

@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/scientific",
   "version": "5.0.0-beta.1",
-  "description": "Scientific data format loaders with metadata roots and explicit format subpaths",
+  "description": "Scientific array sources and readers for NetCDF, Zarr, GRIB2, HDF5, and VTK",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -94,5 +94,24 @@
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "NetCDF",
+    "NetCDF-4",
+    "Zarr",
+    "GeoZarr",
+    "OME-Zarr",
+    "SpatialData",
+    "GRIB2",
+    "HDF5",
+    "VTK",
+    "VTI",
+    "VTR",
+    "VTS",
+    "VTU",
+    "VTP",
+    "cdf",
+    "nc"
+  ]
 }

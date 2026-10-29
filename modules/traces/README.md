@@ -2,10 +2,9 @@
 
 # @loaders.gl/traces
 
-[loaders.gl](https://loaders.gl/docs) is a collection of framework-independent 3D and geospatial parsers and encoders.
+Trace loaders and writers for Chrome Trace, Perfetto, OTLP, Jaeger, and Zipkin.
 
-The `@loaders.gl/traces` module hosts trace format parsers for Chrome Trace, Perfetto Trace,
-OpenTelemetry OTLP, Jaeger, and Zipkin trace data.
+Supported formats: Chrome Trace, Perfetto Trace, OpenTelemetry, OTLP, OTLP JSON, OTLP Protobuf, Jaeger, Zipkin, JSON, JSON Lines, NDJSON.
 
 ## Choosing a Format
 
