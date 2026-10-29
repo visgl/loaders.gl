@@ -116,6 +116,21 @@ test('keeps entries and long previews bounded and clears details when the source
       .poll(() => inspector.querySelector('[aria-label="Catalog entry details"]'))
       .toBeNull();
     expect(inspector.textContent).toContain('Select an entry');
+    const onClosePreview = vi.fn();
+    await act(async () =>
+      root.render(
+        React.createElement(CatalogExplorerPanel, {
+          ...props,
+          previewAssetHref: 'https://example.org/catalog.json',
+          preview: React.createElement('div', null, 'Catalog JSON preview'),
+          onClosePreview
+        })
+      )
+    );
+    expect(inspector.querySelector('button')?.textContent).toBe('Close preview');
+    expect(inspector.textContent).not.toContain('Back to entry details');
+    await act(async () => inspector.querySelector('button')!.click());
+    expect(onClosePreview).toHaveBeenCalledOnce();
   } finally {
     await act(async () => root.unmount());
     container.remove();

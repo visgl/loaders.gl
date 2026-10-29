@@ -299,7 +299,10 @@ export function CatalogExplorerPanel({
                 aria-label="Catalog inspector"
                 tabIndex={0}
               >
-                {preview && previewAssetHref && previewAssetHref !== activeAssetHref ? (
+                {selectedRecord !== undefined &&
+                preview &&
+                previewAssetHref &&
+                previewAssetHref !== activeAssetHref ? (
                   <>
                     <button
                       type="button"
