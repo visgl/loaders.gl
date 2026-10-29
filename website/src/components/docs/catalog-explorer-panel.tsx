@@ -583,7 +583,7 @@ const Input = styled.input`border:1px solid #d0d5dd;border-radius:5px;padding:7p
 const Select = styled.select`border:1px solid #d0d5dd;border-radius:5px;padding:7px;background:#fff;`;
 const ApplyButton = styled.button`&&{border:0;border-radius:5px;padding:8px 12px;color:#fff;background:#475467;cursor:pointer;}&&:disabled{background:#98a2b3;cursor:not-allowed;}`;
 const ErrorMessage = styled.div`color:#b42318;font-size:.82rem;margin-top:10px;`;
-const ResultsHeader = styled.div`display:flex;justify-content:space-between;margin-top:0;padding-bottom:6px;border-bottom:1px solid #eaecf0;font-size:.82rem;color:var(--ifm-color-emphasis-700);`;
+const ResultsHeader = styled.div`display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-top:0;padding-bottom:6px;border-bottom:1px solid #eaecf0;font-size:.82rem;color:var(--ifm-color-emphasis-700);`;
 const ResultList = styled.div`display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;`;
 const ResultRow = styled.button`&&{display:block;text-align:left;width:100%;min-width:0;flex-shrink:0;border:0;border-bottom:1px solid var(--ifm-color-emphasis-300);border-left:3px solid transparent;background:transparent;color:inherit;padding:12px 8px;cursor:pointer;}&&[aria-pressed="true"]{border-left-color:var(--ifm-color-primary);background:var(--ifm-color-emphasis-100);}&&:hover{background:var(--ifm-color-emphasis-100);}`;
 const ResultTitle = styled.span`display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.86rem;font-weight:600;color:var(--ifm-color-primary);`;
