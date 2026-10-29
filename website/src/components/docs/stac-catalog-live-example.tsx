@@ -3,7 +3,7 @@ import {STACSource} from '@loaders.gl/ogc/stac/stac-source';
 
 import {CatalogExplorerPanel} from './catalog-explorer-panel';
 import {CatalogAssetPreview, type CatalogPreviewAsset} from './catalog-asset-preview';
-import {ReactExamplePanel} from './example-panel-host';
+import styled from 'styled-components';
 
 /** Public catalogs available from the example's preset selector. */
 const STAC_CATALOG_PRESETS = [
@@ -22,12 +22,11 @@ export function STACCatalogLiveExample(): React.JSX.Element {
 
   return (
     <div>
-      <ReactExamplePanel title="Choose a catalog">
-        <div style={{padding: 14}}>
-          <label htmlFor="stac-catalog-preset">Catalog preset</label>
+      <CatalogControls aria-label="Choose a catalog">
+        <label>
+          Catalog preset
           <select
             id="stac-catalog-preset"
-            style={{display: 'block', width: '100%', margin: '6px 0', padding: 7}}
             value={STAC_CATALOG_PRESETS.some(preset => preset.url === url) ? url : ''}
             onChange={event => {
               setUrl(event.target.value);
@@ -43,29 +42,48 @@ export function STACCatalogLiveExample(): React.JSX.Element {
               </option>
             ))}
           </select>
-          <label htmlFor="stac-catalog-url">STAC catalog URL</label>
+        </label>
+        <label>
+          STAC catalog URL
           <input
             id="stac-catalog-url"
-            style={{display: 'block', width: '100%', margin: '6px 0', padding: 7}}
             value={url}
             onChange={event => {
               setUrl(event.target.value);
               setSelectedAsset(undefined);
             }}
           />
-          <button type="button" onClick={() => setSelectedAsset({key: 'Catalog JSON', href: url})}>
-            Preview catalog JSON
-          </button>
-        </div>
-      </ReactExamplePanel>
+        </label>
+        <button type="button" onClick={() => setSelectedAsset({key: 'Catalog JSON', href: url})}>
+          Preview catalog JSON
+        </button>
+      </CatalogControls>
       <CatalogExplorerPanel
         sources={[{id: 'stac-source', title: 'STAC catalog', source}]}
         title="STAC catalog explorer"
         onSelectAsset={setSelectedAsset}
+        onSelectRecord={() => setSelectedAsset(undefined)}
+        preview={
+          selectedAsset ? (
+            <CatalogAssetPreview
+              key={selectedAsset.href}
+              asset={selectedAsset}
+              autoScroll={false}
+            />
+          ) : undefined
+        }
+        onClosePreview={() => setSelectedAsset(undefined)}
       />
-      {selectedAsset ? (
-        <CatalogAssetPreview key={selectedAsset.href} asset={selectedAsset} />
-      ) : null}
     </div>
   );
 }
+
+/** Keeps catalog selection compact above the bounded explorer workspace. */
+const CatalogControls = styled.div`
+  display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2fr) auto;gap:10px;
+  align-items:end;padding:12px;border:1px solid var(--ifm-color-emphasis-300);border-radius:8px;
+  label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;min-width:0;margin:0;}
+  input,select{width:100%;min-width:0;padding:6px;border:1px solid var(--ifm-color-emphasis-300);border-radius:4px;background:var(--ifm-background-color);color:inherit;}
+  button{font-size:.78rem;padding:6px;}
+  @media(max-width:700px){grid-template-columns:1fr auto;label:nth-child(2){grid-row:2;grid-column:1/-1;}}
+`;

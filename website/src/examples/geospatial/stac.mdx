@@ -17,16 +17,20 @@ Choose the **deck.gl-data Earth** preset to browse the
 **Overture Maps**. You can also enter any STAC catalog or API URL directly.
 
 Select an entry title to inspect its metadata in a dismissible details panel without leaving the example.
-Expand **View full JSON** for the complete record. Choose **Preview table** on a Parquet asset
-to inspect its contents in the Arrow table and schema panels below.
+Expand **Full entry JSON** to explore the complete record one level at a time. Choose **Preview table** on a Parquet asset
+to inspect its contents in the Arrow table and schema panels in the inspector.
 
-Select an asset link to preview its contents below the catalog. Manifests and other text assets
+Select an asset link to preview its contents beside the catalog. Manifests and other text assets
 appear in the panels module's read-only text editor with JSON highlighting; Parquet assets display
 its Arrow table and schema panels with the first 50 rows and 12 columns.
+The schema view keeps the decoded field list compact. Expand **Schema metadata** or **Field metadata**
+to recursively inspect nested JSON objects. Long values stay collapsed until opened; the redundant
+encoded `ARROW:schema` payload is hidden.
 Use **Open original asset** to view or download the full file.
 Text previews are limited to 256 KiB. Parquet previews use range reads when available; otherwise,
 they download files up to 16 MiB, including the smaller GitHub-hosted Earth assets.
-The entries list scrolls independently of the asset preview.
+The entries and inspector scroll independently inside a viewport-sized workspace. Search filters
+are available in the expandable **Search filters** section.
 
 Recognized JSON assets use schema validation in the text panel. STAC Catalog,
 Collection, and Item documents use locally bundled official STAC 1.0.0 or 1.1.0

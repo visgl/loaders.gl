@@ -1,8 +1,9 @@
-import React, {useEffect, useId, useState} from 'react';
+import React, {useEffect, useId, useRef, useState} from 'react';
 import styled from 'styled-components';
 import type {CatalogSource, CatalogSourceCapabilities} from '@loaders.gl/core/loader-utils';
 import {ReactExamplePanel} from './example-panel-host';
 import {getCatalogAssetUrl} from './catalog-asset-url';
+import {CatalogJsonTree} from './catalog-json-tree';
 
 /** A source registered with the catalog explorer. */
 export type CatalogExplorerSource = Readonly<{
@@ -38,6 +39,10 @@ export type CatalogExplorerPanelProps = Readonly<{
   onSelectRecord?: (record: unknown) => void;
   /** Opens a resolved asset in a host-provided preview. */
   onSelectAsset?: (asset: {key: string; href: string}) => void;
+  /** Selected asset content displayed beside the entries. */
+  preview?: React.ReactNode;
+  /** Returns from the asset preview to entry details. */
+  onClosePreview?: () => void;
   /** Optional heading. */
   title?: string;
 }>;
@@ -60,9 +65,12 @@ export function CatalogExplorerPanel({
   sourceId,
   onSelectRecord,
   onSelectAsset,
+  preview,
+  onClosePreview,
   title = 'Catalog explorer'
 }: CatalogExplorerPanelProps): React.JSX.Element {
   const panelId = useId().replace(/:/g, '');
+  const inspector = useRef<HTMLDivElement>(null);
   const [selectedSourceId, setSelectedSourceId] = useState(sourceId || sources[0]?.id || '');
   const [query, setQuery] = useState<CatalogExplorerQuery>({limit: 25});
   const [submittedQuery, setSubmittedQuery] = useState<CatalogExplorerQuery>({limit: 25});
@@ -123,184 +131,217 @@ export function CatalogExplorerPanel({
     return () => abortController.abort();
   }, [selectedSourceSource, submittedQuery, capabilities]);
 
+  useEffect(() => {
+    if (inspector.current) inspector.current.scrollTop = 0;
+  }, [selectedRecord, preview]);
+
   const supportsSearch = capabilities?.search ?? false;
   return (
     <ReactExamplePanel title={title}>
       <Panel aria-label={title}>
-        <PanelHeader>
-          <div>
-            <Hint>
-              {loading
-                ? 'Discovering catalog…'
-                : selectedSource
-                  ? selectedSource.title
-                  : 'Add a catalog source'}
-            </Hint>
-          </div>
-          {sources.length > 1 ? (
-            <Select
-              aria-label="Catalog source"
-              value={selectedSource?.id || ''}
-              onChange={event => setSelectedSourceId(event.target.value)}
-            >
-              {sources.map(source => (
-                <option key={source.id} value={source.id}>
-                  {source.title}
-                </option>
-              ))}
-            </Select>
-          ) : null}
-        </PanelHeader>
+        {sources.length > 1 ? (
+          <PanelHeader>
+            <div>
+              <Hint>
+                {loading
+                  ? 'Discovering catalog…'
+                  : selectedSource
+                    ? selectedSource.title
+                    : 'Add a catalog source'}
+              </Hint>
+            </div>
+            {sources.length > 1 ? (
+              <Select
+                aria-label="Catalog source"
+                value={selectedSource?.id || ''}
+                onChange={event => setSelectedSourceId(event.target.value)}
+              >
+                {sources.map(source => (
+                  <option key={source.id} value={source.id}>
+                    {source.title}
+                  </option>
+                ))}
+              </Select>
+            ) : null}
+          </PanelHeader>
+        ) : null}
         {selectedSource ? (
           <>
-            <CapabilityRow>
-              <Badge $active={supportsSearch}>{supportsSearch ? 'Search' : 'Metadata only'}</Badge>
-              {formatCapabilities(capabilities).map(capability => (
-                <span key={capability}>{capability}</span>
-              ))}
-            </CapabilityRow>
             <Metadata>{formatMetadata(metadata)}</Metadata>
-            <Controls
-              onSubmit={event => {
-                event.preventDefault();
-                setSubmittedQuery(query);
-              }}
-            >
-              {capabilities?.textFilter ? (
+            <details>
+              <summary>Search filters</summary>
+              <CapabilityRow>
+                <Badge $active={supportsSearch}>
+                  {supportsSearch ? 'Search' : 'Metadata only'}
+                </Badge>
+                {formatCapabilities(capabilities).map(capability => (
+                  <span key={capability}>{capability}</span>
+                ))}
+              </CapabilityRow>
+              <Controls
+                onSubmit={event => {
+                  event.preventDefault();
+                  setSubmittedQuery(query);
+                }}
+              >
+                {capabilities?.textFilter ? (
+                  <Field>
+                    <Label htmlFor={`${panelId}-text`}>Text</Label>
+                    <Input
+                      id={`${panelId}-text`}
+                      value={query.text || ''}
+                      placeholder="Search records"
+                      onChange={event => setQuery({...query, text: event.target.value})}
+                    />
+                  </Field>
+                ) : null}
+                {capabilities?.spatialFilter ? (
+                  <Field>
+                    <Label htmlFor={`${panelId}-bbox`}>Bounding box</Label>
+                    <Input
+                      id={`${panelId}-bbox`}
+                      value={query.boundingBox?.join(',') || ''}
+                      placeholder="minX,minY,maxX,maxY"
+                      onChange={event =>
+                        setQuery({...query, boundingBox: parseBounds(event.target.value)})
+                      }
+                    />
+                  </Field>
+                ) : null}
+                {capabilities?.temporalFilter ? (
+                  <Field>
+                    <Label htmlFor={`${panelId}-datetime`}>Date or interval</Label>
+                    <Input
+                      id={`${panelId}-datetime`}
+                      value={query.datetime || ''}
+                      placeholder="2024-01-01/.."
+                      onChange={event => setQuery({...query, datetime: event.target.value})}
+                    />
+                  </Field>
+                ) : null}
                 <Field>
-                  <Label htmlFor={`${panelId}-text`}>Text</Label>
+                  <Label htmlFor={`${panelId}-limit`}>Results</Label>
                   <Input
-                    id={`${panelId}-text`}
-                    value={query.text || ''}
-                    placeholder="Search records"
-                    onChange={event => setQuery({...query, text: event.target.value})}
-                  />
-                </Field>
-              ) : null}
-              {capabilities?.spatialFilter ? (
-                <Field>
-                  <Label htmlFor={`${panelId}-bbox`}>Bounding box</Label>
-                  <Input
-                    id={`${panelId}-bbox`}
-                    value={query.boundingBox?.join(',') || ''}
-                    placeholder="minX,minY,maxX,maxY"
+                    id={`${panelId}-limit`}
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={query.limit}
                     onChange={event =>
-                      setQuery({...query, boundingBox: parseBounds(event.target.value)})
+                      setQuery({...query, limit: Math.max(1, Number(event.target.value) || 1)})
                     }
                   />
                 </Field>
-              ) : null}
-              {capabilities?.temporalFilter ? (
-                <Field>
-                  <Label htmlFor={`${panelId}-datetime`}>Date or interval</Label>
-                  <Input
-                    id={`${panelId}-datetime`}
-                    value={query.datetime || ''}
-                    placeholder="2024-01-01/.."
-                    onChange={event => setQuery({...query, datetime: event.target.value})}
-                  />
-                </Field>
-              ) : null}
-              <Field>
-                <Label htmlFor={`${panelId}-limit`}>Results</Label>
-                <Input
-                  id={`${panelId}-limit`}
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={query.limit}
-                  onChange={event =>
-                    setQuery({...query, limit: Math.max(1, Number(event.target.value) || 1)})
-                  }
-                />
-              </Field>
-              <ApplyButton type="submit" disabled={!supportsSearch || loading}>
-                {loading ? 'Loading…' : 'Search'}
-              </ApplyButton>
-            </Controls>
+                <ApplyButton type="submit" disabled={!supportsSearch || loading}>
+                  {loading ? 'Loading…' : 'Search'}
+                </ApplyButton>
+              </Controls>
+            </details>
             {error ? <ErrorMessage role="alert">{error}</ErrorMessage> : null}
-            <ResultsHeader>
-              <strong>Results</strong>
-              <span>
-                {records.length}
-                {records.length === query.limit ? '+' : ''}
-              </span>
-            </ResultsHeader>
-            <ResultList role="region" aria-label="Catalog entries" tabIndex={0}>
-              {records.map((record, index) => (
-                <ResultRow key={`${recordKey(record)}-${index}`}>
-                  <ResultTitle
-                    type="button"
-                    onClick={() => {
-                      setSelectedRecord(record);
-                      onSelectRecord?.(record);
-                    }}
-                  >
-                    {recordTitle(record)}
-                  </ResultTitle>
-                  <ResultSummary>{recordSummary(record)}</ResultSummary>
-                  <Details>{recordAssets(record, selectedSourceSource, onSelectAsset)}</Details>
-                </ResultRow>
-              ))}
-            </ResultList>
-            {selectedRecord !== undefined ? (
-              <section aria-label="Catalog entry details">
+            <Workspace>
+              <EntriesPane>
                 <ResultsHeader>
-                  <strong>{recordTitle(selectedRecord)}</strong>
-                  <button
-                    type="button"
-                    aria-label="Close catalog entry details"
-                    onClick={() => setSelectedRecord(undefined)}
-                  >
-                    Close
-                  </button>
+                  <strong>Results</strong>
+                  <span>
+                    {records.length}
+                    {records.length === query.limit ? '+' : ''}
+                  </span>
                 </ResultsHeader>
-                <p>{recordSummary(selectedRecord)}</p>
-                <RecordMetadata>
-                  {Object.entries({
-                    ...asRecord(selectedRecord),
-                    ...asRecord(asRecord(selectedRecord)?.properties)
-                  })
-                    .filter(
-                      ([name, value]) =>
-                        ![
-                          'properties',
-                          'geometry',
-                          'assets',
-                          'links',
-                          'description',
-                          'title'
-                        ].includes(name) &&
-                        value !== null &&
-                        typeof value !== 'object'
-                    )
-                    .map(([name, value]) => (
-                      <React.Fragment key={name}>
-                        <dt>{name}</dt>
-                        <dd>{String(value)}</dd>
-                      </React.Fragment>
-                    ))}
-                </RecordMetadata>
-                {onSelectAsset ? (
-                  <div aria-label="Entry asset previews">
-                    {recordAssets(selectedRecord, selectedSourceSource, onSelectAsset)}
-                  </div>
+                <ResultList role="region" aria-label="Catalog entries" tabIndex={0}>
+                  {records.map((record, index) => (
+                    <ResultRow key={`${recordKey(record)}-${index}`}>
+                      <ResultTitle
+                        type="button"
+                        onClick={() => {
+                          setSelectedRecord(record);
+                          onSelectRecord?.(record);
+                        }}
+                      >
+                        {recordTitle(record)}
+                      </ResultTitle>
+                      <ResultSummary>{recordSummary(record)}</ResultSummary>
+                      <Details>{recordAssets(record, selectedSourceSource, onSelectAsset)}</Details>
+                    </ResultRow>
+                  ))}
+                </ResultList>
+                {!loading && !error && records.length === 0 ? (
+                  <EmptyState>
+                    {supportsSearch
+                      ? 'No records found.'
+                      : 'This source exposes metadata but not search.'}
+                  </EmptyState>
                 ) : null}
-                <details key={recordKey(selectedRecord)}>
-                  <summary>View full JSON</summary>
-                  <RecordDetails tabIndex={0}>
-                    {JSON.stringify(selectedRecord, null, 2)}
-                  </RecordDetails>
-                </details>
-              </section>
-            ) : null}
-            {!loading && !error && records.length === 0 ? (
-              <EmptyState>
-                {supportsSearch
-                  ? 'No records found.'
-                  : 'This source exposes metadata but not search.'}
-              </EmptyState>
-            ) : null}
+              </EntriesPane>
+              <PreviewPane
+                ref={inspector}
+                role="region"
+                aria-label="Catalog inspector"
+                tabIndex={0}
+              >
+                {preview ? (
+                  <>
+                    <button type="button" onClick={onClosePreview}>
+                      Back to entry details
+                    </button>
+                    {preview}
+                  </>
+                ) : selectedRecord !== undefined ? (
+                  <section aria-label="Catalog entry details">
+                    <ResultsHeader>
+                      <strong>{recordTitle(selectedRecord)}</strong>
+                      <button
+                        type="button"
+                        aria-label="Close catalog entry details"
+                        onClick={() => setSelectedRecord(undefined)}
+                      >
+                        Close
+                      </button>
+                    </ResultsHeader>
+                    <p>{recordSummary(selectedRecord)}</p>
+                    <RecordMetadata>
+                      {Object.entries({
+                        ...asRecord(selectedRecord),
+                        ...asRecord(asRecord(selectedRecord)?.properties)
+                      })
+                        .filter(
+                          ([name, value]) =>
+                            ![
+                              'properties',
+                              'geometry',
+                              'assets',
+                              'links',
+                              'description',
+                              'title'
+                            ].includes(name) &&
+                            value !== null &&
+                            typeof value !== 'object'
+                        )
+                        .map(([name, value]) => (
+                          <React.Fragment key={name}>
+                            <dt>{name}</dt>
+                            <dd>{String(value)}</dd>
+                          </React.Fragment>
+                        ))}
+                    </RecordMetadata>
+                    {onSelectAsset ? (
+                      <div aria-label="Entry asset previews">
+                        {recordAssets(selectedRecord, selectedSourceSource, onSelectAsset)}
+                      </div>
+                    ) : null}
+                    <CatalogJsonTree
+                      key={recordKey(selectedRecord)}
+                      label="Full entry JSON"
+                      value={selectedRecord}
+                    />
+                  </section>
+                ) : (
+                  <EmptyState>
+                    Select an entry to inspect its metadata, or choose Preview table to browse a
+                    Parquet asset.
+                  </EmptyState>
+                )}
+              </PreviewPane>
+            </Workspace>
           </>
         ) : (
           <EmptyState>No catalog source configured.</EmptyState>
@@ -329,12 +370,21 @@ function recordKey(value: unknown): string {
 /** Returns the best available human-readable title for a catalog record. */
 function recordTitle(value: unknown): string {
   const record = asRecord(value);
-  return String(record?.title || record?.id || 'Untitled record');
+  const properties = asRecord(record?.properties);
+  return String(record?.title || properties?.title || record?.id || 'Untitled record');
 }
 /** Returns a compact secondary description for a catalog record. */
 function recordSummary(value: unknown): string {
   const record = asRecord(value);
-  return String(record?.description || record?.collection || record?.datetime || '');
+  const properties = asRecord(record?.properties);
+  return String(
+    record?.description ||
+      properties?.description ||
+      record?.collection ||
+      record?.datetime ||
+      properties?.datetime ||
+      ''
+  );
 }
 /** Renders browser-downloadable assets, resolving them through protocol-specific helpers. */
 function recordAssets(
@@ -399,14 +449,20 @@ function formatMetadata(metadata: unknown): string {
       : 'Loading metadata…';
 }
 
-const Panel = styled.section`padding:14px;`;
+const Panel = styled.section`display:flex;flex-direction:column;gap:8px;height:clamp(300px,calc(100dvh - 340px),640px);min-height:0;`;
+/** Holds independently scrolling entry and inspector panes within the viewport. */
+const Workspace = styled.div`display:grid;grid-template-columns:minmax(180px,2fr) minmax(0,3fr);gap:14px;flex:1;min-height:0;@media(max-width:700px){grid-template-columns:minmax(120px,1fr) minmax(0,2fr);gap:8px;}`;
+/** Allows the entries list to shrink without expanding the page. */
+const EntriesPane = styled.div`display:flex;flex-direction:column;min-height:0;min-width:0;`;
+/** Contains metadata and asset previews without moving the surrounding page. */
+const PreviewPane = styled.div`min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;padding:0 8px;border-left:1px solid var(--ifm-color-emphasis-300);h3{font-size:1rem;margin:8px 0;}p{font-size:.8rem;margin:8px 0;}.deck-react-panel{margin:8px 0!important;padding:8px!important;}`;
 const PanelHeader = styled.div`display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px;`;
-const Hint = styled.span`color:#667085;font-size:.82rem;`;
-const CapabilityRow = styled.div`display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:#667085;font-size:.74rem;margin-bottom:8px;`;
+const Hint = styled.span`color:var(--ifm-color-emphasis-700);font-size:.82rem;`;
+const CapabilityRow = styled.div`display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--ifm-color-emphasis-700);font-size:.74rem;margin-bottom:8px;`;
 const Badge = styled.span<{
   $active: boolean;
 }>`border-radius:999px;padding:2px 8px;color:${({$active}) => ($active ? '#067647' : '#7a2e0e')};background:${({$active}) => ($active ? '#ecfdf3' : '#fff4ed')};font-weight:600;`;
-const Metadata = styled.div`color:#475467;font-size:.82rem;margin-bottom:12px;`;
+const Metadata = styled.div`color:var(--ifm-color-emphasis-700);font-size:.82rem;margin-bottom:0;`;
 const Controls = styled.form`display:flex;gap:10px;align-items:end;flex-wrap:wrap;`;
 const Field = styled.div`display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;`;
 const Label = styled.label`font-size:.78rem;font-weight:600;`;
@@ -414,17 +470,14 @@ const Input = styled.input`border:1px solid #d0d5dd;border-radius:5px;padding:7p
 const Select = styled.select`border:1px solid #d0d5dd;border-radius:5px;padding:7px;background:#fff;`;
 const ApplyButton = styled.button`&&{border:0;border-radius:5px;padding:8px 12px;color:#fff;background:#475467;cursor:pointer;}&&:disabled{background:#98a2b3;cursor:not-allowed;}`;
 const ErrorMessage = styled.div`color:#b42318;font-size:.82rem;margin-top:10px;`;
-const ResultsHeader = styled.div`display:flex;justify-content:space-between;margin-top:16px;padding-bottom:6px;border-bottom:1px solid #eaecf0;font-size:.82rem;color:#667085;`;
-const ResultList = styled.div`display:flex;flex-direction:column;max-height:420px;overflow-y:auto;overscroll-behavior:contain;`;
+const ResultsHeader = styled.div`display:flex;justify-content:space-between;margin-top:0;padding-bottom:6px;border-bottom:1px solid #eaecf0;font-size:.82rem;color:var(--ifm-color-emphasis-700);`;
+const ResultList = styled.div`display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;`;
 const ResultRow = styled.div`border-bottom:1px solid #eaecf0;padding:10px 2px;`;
-const ResultTitle = styled.button`&&{text-align:left;border:0;background:transparent;padding:0;font:inherit;font-weight:600;color:#344054;cursor:pointer;}&&:hover{text-decoration:underline;}`;
-const ResultSummary = styled.div`color:#667085;font-size:.78rem;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
+const ResultTitle = styled.button`&&{text-align:left;border:0;background:transparent;padding:0;font:inherit;font-weight:600;color:var(--ifm-color-primary);cursor:pointer;}&&:hover{text-decoration:underline;}`;
+const ResultSummary = styled.div`color:var(--ifm-color-emphasis-700);font-size:.78rem;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
 const Details = styled.div`margin-top:5px;font-size:.74rem;`;
 const AssetList = styled.div`display:flex;gap:10px;flex-wrap:wrap;a{color:#175cd3;}`;
-const EmptyState = styled.div`color:#667085;font-size:.84rem;padding:14px 0;`;
+const EmptyState = styled.div`color:var(--ifm-color-emphasis-700);font-size:.84rem;padding:14px 0;`;
 
 /** Aligns entry metadata labels and wraps long values on narrow screens. */
 const RecordMetadata = styled.dl`display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,3fr);gap:6px 12px;font-size:.82rem;dt{font-weight:600;}dd{margin:0;overflow-wrap:anywhere;}`;
-
-/** Keeps record metadata readable without expanding the results list. */
-const RecordDetails = styled.pre`max-height:420px;overflow:auto;overscroll-behavior:contain;font-size:.78rem;padding:14px;`;
