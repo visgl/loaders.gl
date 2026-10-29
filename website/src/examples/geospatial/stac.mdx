@@ -5,9 +5,10 @@ hide_title: true
 
 import {STACCatalogLiveExample} from '../../components/docs/stac-catalog-live-example';
 
-# Browse a STAC catalog
+<STACCatalogLiveExample>
 
-<STACCatalogLiveExample />
+The catalog tab is named after the loaded catalog. Switch to **Explanation** to read this guide;
+both views keep their scrolling inside the available workspace.
 
 The explorer uses the shared `CatalogSource` interface. It supports both static STAC catalogs and
 STAC APIs, and displays assets declared by returned Items.
@@ -44,3 +45,5 @@ JSON schemas. The panel displays the selected schema name and provides field
 help and validation diagnostics. Unknown JSON still receives syntax highlighting;
 truncated previews are not validated. Earth schemas allow additional fields and
 validate the supported core fields; they are editor aids, not published format contracts.
+
+</STACCatalogLiveExample>

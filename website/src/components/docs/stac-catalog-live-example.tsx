@@ -4,6 +4,8 @@ import {STACSource} from '@loaders.gl/ogc/stac/stac-source';
 import {CatalogExplorerPanel} from './catalog-explorer-panel';
 import {CatalogAssetPreview, type CatalogPreviewAsset} from './catalog-asset-preview';
 import styled from 'styled-components';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 /** Public catalogs available from the example's preset selector. */
 const STAC_CATALOG_PRESETS = [
@@ -15,67 +17,79 @@ const STAC_CATALOG_PRESETS = [
 ];
 
 /** Demonstrates the catalog explorer against an arbitrary STAC catalog URL. */
-export function STACCatalogLiveExample(): React.JSX.Element {
+export function STACCatalogLiveExample({
+  children
+}: {
+  /** Markdown explanation displayed separately from the catalog workspace. */
+  children?: React.ReactNode;
+}): React.JSX.Element {
+  const [catalogTitle, setCatalogTitle] = useState('vis.gl Earth datasets');
   const [url, setUrl] = useState(STAC_CATALOG_PRESETS[0].url);
   const source = useMemo(() => new STACSource(url, {}), [url]);
   const [selectedAsset, setSelectedAsset] = useState<CatalogPreviewAsset>();
 
   return (
-    <div>
-      <CatalogControls aria-label="Choose a catalog">
-        <label>
-          Catalog preset
-          <select
-            id="stac-catalog-preset"
-            value={STAC_CATALOG_PRESETS.some(preset => preset.url === url) ? url : ''}
-            onChange={event => {
-              setUrl(event.target.value);
-              setSelectedAsset(undefined);
-            }}
-          >
-            <option value="" disabled>
-              Custom URL
-            </option>
-            {STAC_CATALOG_PRESETS.map(preset => (
-              <option key={preset.url} value={preset.url}>
-                {preset.title}
+    <Tabs>
+      <TabItem value="catalog" label={catalogTitle}>
+        <CatalogControls aria-label="Choose a catalog">
+          <label>
+            Catalog preset
+            <select
+              id="stac-catalog-preset"
+              value={STAC_CATALOG_PRESETS.some(preset => preset.url === url) ? url : ''}
+              onChange={event => {
+                setUrl(event.target.value);
+                setSelectedAsset(undefined);
+              }}
+            >
+              <option value="" disabled>
+                Custom URL
               </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          STAC catalog URL
-          <input
-            id="stac-catalog-url"
-            value={url}
-            onChange={event => {
-              setUrl(event.target.value);
-              setSelectedAsset(undefined);
-            }}
-          />
-        </label>
-        <button type="button" onClick={() => setSelectedAsset({key: 'Catalog JSON', href: url})}>
-          Preview catalog JSON
-        </button>
-      </CatalogControls>
-      <CatalogExplorerPanel
-        sources={[{id: 'stac-source', title: 'STAC catalog', source}]}
-        title="STAC catalog explorer"
-        onSelectAsset={setSelectedAsset}
-        onSelectRecord={() => setSelectedAsset(undefined)}
-        preview={
-          selectedAsset ? (
-            <CatalogAssetPreview
-              key={selectedAsset.href}
-              asset={selectedAsset}
-              autoScroll={false}
+              {STAC_CATALOG_PRESETS.map(preset => (
+                <option key={preset.url} value={preset.url}>
+                  {preset.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            STAC catalog URL
+            <input
+              id="stac-catalog-url"
+              value={url}
+              onChange={event => {
+                setUrl(event.target.value);
+                setSelectedAsset(undefined);
+              }}
             />
-          ) : undefined
-        }
-        previewAssetHref={selectedAsset?.href}
-        onClosePreview={() => setSelectedAsset(undefined)}
-      />
-    </div>
+          </label>
+          <button type="button" onClick={() => setSelectedAsset({key: 'Catalog JSON', href: url})}>
+            Preview catalog JSON
+          </button>
+        </CatalogControls>
+        <CatalogExplorerPanel
+          sources={[{id: 'stac-source', title: 'STAC catalog', source}]}
+          title="STAC catalog explorer"
+          onCatalogTitle={setCatalogTitle}
+          onSelectAsset={setSelectedAsset}
+          onSelectRecord={() => setSelectedAsset(undefined)}
+          preview={
+            selectedAsset ? (
+              <CatalogAssetPreview
+                key={selectedAsset.href}
+                asset={selectedAsset}
+                autoScroll={false}
+              />
+            ) : undefined
+          }
+          previewAssetHref={selectedAsset?.href}
+          onClosePreview={() => setSelectedAsset(undefined)}
+        />
+      </TabItem>
+      <TabItem value="explanation" label="Explanation">
+        <Explanation>{children}</Explanation>
+      </TabItem>
+    </Tabs>
   );
 }
 
@@ -88,3 +102,6 @@ const CatalogControls = styled.div`
   button{font-size:.78rem;padding:6px;}
   @media(max-width:700px){grid-template-columns:1fr auto;label:nth-child(2){grid-row:2;grid-column:1/-1;}}
 `;
+
+/** Contains documentation scrolling within the same workspace as the catalog. */
+const Explanation = styled.div`height:calc(100dvh - 220px);min-height:200px;overflow:auto;overscroll-behavior:contain;`;

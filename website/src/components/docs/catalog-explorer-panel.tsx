@@ -45,6 +45,8 @@ export type CatalogExplorerPanelProps = Readonly<{
   previewAssetHref?: string;
   /** Returns from the asset preview to entry details. */
   onClosePreview?: () => void;
+  /** Reports the loaded catalog title for a host navigation tab. */
+  onCatalogTitle?: (title: string) => void;
   /** Optional heading. */
   title?: string;
 }>;
@@ -75,10 +77,30 @@ export function CatalogExplorerPanel({
   preview,
   previewAssetHref,
   onClosePreview,
+  onCatalogTitle,
   title = 'Catalog explorer'
 }: CatalogExplorerPanelProps): React.JSX.Element {
   const panelId = useId().replace(/:/g, '');
   const inspector = useRef<HTMLDivElement>(null);
+  const [workspace, setWorkspace] = useState<HTMLElement | null>(null);
+  const [workspaceHeight, setWorkspaceHeight] = useState<number>();
+  useEffect(() => {
+    const element = workspace;
+    if (!element) return;
+    /** Fits the workspace beneath the toolbar without adding page scroll. */
+    const resizeWorkspace = () => {
+      if (!element.getClientRects().length) return;
+      setWorkspaceHeight(Math.max(240, window.innerHeight - (element.getBoundingClientRect().top + window.scrollY) - 24));
+    };
+    resizeWorkspace();
+    const observer = new ResizeObserver(resizeWorkspace);
+    observer.observe(element);
+    window.addEventListener('resize', resizeWorkspace);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', resizeWorkspace);
+    };
+  }, [workspace]);
   const [selectedSourceId, setSelectedSourceId] = useState(sourceId || sources[0]?.id || '');
   const [query, setQuery] = useState<CatalogExplorerQuery>({limit: 25});
   const [submittedQuery, setSubmittedQuery] = useState<CatalogExplorerQuery>({limit: 25});
@@ -92,6 +114,11 @@ export function CatalogExplorerPanel({
   const selectedSource = sources.find(source => source.id === selectedSourceId) || sources[0];
   const selectedSourceSource = selectedSource?.source;
   const capabilities = selectedSourceSource?.capabilities;
+
+  useEffect(() => {
+    const root = asRecord(asRecord(metadata)?.root);
+    if (root) onCatalogTitle?.(String(root.title || root.id || 'Catalog'));
+  }, [metadata, onCatalogTitle]);
 
   useEffect(() => {
     if (!selectedSourceSource) return;
@@ -179,7 +206,7 @@ export function CatalogExplorerPanel({
   const supportsSearch = capabilities?.search ?? false;
   return (
     <ReactExamplePanel title={title}>
-      <Panel aria-label={title}>
+      <Panel ref={setWorkspace} aria-label={title} style={{height: workspaceHeight}}>
         {sources.length > 1 ? (
           <PanelHeader>
             <div>
