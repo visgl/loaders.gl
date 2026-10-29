@@ -25,10 +25,16 @@ test('keeps entries and long previews bounded and clears details when the source
           id: `entry-${index}`,
           properties: {
             model: 'EGM96',
-            title: `Geoid entry-${index}`,
-            description: 'A geoid snapshot'
+            title: index === 1 ? `entry-${index}` : `Geoid entry-${index}`,
+            description:
+              index === 1 ? 'Human-readable geoid preview. Heights are meters.' : 'A geoid snapshot'
           },
-          assets: {data: {href: 'https://example.org/data.parquet'}}
+          assets: {
+            data: {href: 'https://example.org/data.parquet'},
+            manifest: {href: 'https://example.org/manifest.json'},
+            attribution: {href: 'https://example.org/ATTRIBUTION.md'},
+            grid: {href: 'https://example.org/grid.pgm'}
+          }
         };
       }
     }
@@ -57,8 +63,21 @@ test('keeps entries and long previews bounded and clears details when the source
     await expect.poll(() => inspector.textContent).toContain('EGM96');
     expect(inspector.textContent).toContain('Geoid entry-0');
     expect(inspector.textContent).toContain('A geoid snapshot');
-    await act(async () => entries.querySelectorAll('a')[1].click());
-    expect(inspector.textContent).toContain('Geoid entry-1');
+    expect(entries.querySelectorAll('a')).toHaveLength(0);
+    expect(entries.textContent).toContain('Human-readable geoid preview');
+    await act(async () => entries.querySelectorAll('button')[1].click());
+    expect(inspector.textContent).toContain('Human-readable geoid preview');
+    const tabs = Array.from(inspector.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    expect(tabs.map(tab => tab.textContent)).toEqual([
+      'Details',
+      'Table',
+      'Manifest',
+      'Attribution'
+    ]);
+    await act(async () =>
+      tabs[0].dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true}))
+    );
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
     expect(props.onSelectAsset).toHaveBeenCalledWith({
       key: 'data',
       href: 'https://example.org/data.parquet'
@@ -74,6 +93,17 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(inspector.textContent).toContain('Long asset preview');
     expect(inspector.scrollHeight).toBeGreaterThan(inspector.clientHeight);
     expect(explorer.getBoundingClientRect().height).toBe(height);
+    await act(async () =>
+      root.render(
+        React.createElement(CatalogExplorerPanel, {
+          ...props,
+          previewAssetHref: 'https://example.org/catalog.json',
+          preview: React.createElement('div', null, 'Catalog JSON preview')
+        })
+      )
+    );
+    expect(inspector.textContent).toContain('Catalog JSON preview');
+    expect(inspector.querySelector('[role="tablist"]')).toBeNull();
     await act(async () =>
       root.render(
         React.createElement(CatalogExplorerPanel, {

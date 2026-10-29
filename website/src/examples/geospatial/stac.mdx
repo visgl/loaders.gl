@@ -16,13 +16,15 @@ Choose the **deck.gl-data Earth** preset to browse the
 [Earth dataset catalog](https://github.com/visgl/deck.gl-data/tree/master/earth/stac), or switch to
 **Overture Maps**. You can also enter any STAC catalog or API URL directly.
 
-Select an entry title to inspect its metadata in a dismissible details panel without leaving the example.
-Expand **Full entry JSON** to explore the complete record one level at a time. Choose **Preview table** on a Parquet asset
-to inspect its contents in the Arrow table and schema panels in the inspector.
+Select an entry to open its infobox beside the results. The list uses metadata titles and descriptions;
+when a title repeats the technical ID, it uses the description's first sentence and shows the ID as a
+secondary label. The infobox offers **Details**, **Table**, **Manifest**, and **Attribution** tabs
+when those assets are available. Multiple Parquet assets receive separate table tabs.
+Expand **Full entry JSON** in Details to explore the complete record one level at a time.
+The **Asset files** disclosure provides links to the original files.
 
-Select an asset link to preview its contents beside the catalog. Manifests and other text assets
-appear in the panels module's read-only text editor with JSON highlighting; Parquet assets display
-its Arrow table and schema panels with the first 50 rows and 12 columns.
+Text assets appear in a read-only editor with JSON highlighting. Parquet assets display Arrow table
+and schema views with the first 50 rows and 12 columns.
 The schema view keeps the decoded field list compact. Expand **Schema metadata** or **Field metadata**
 to recursively inspect nested JSON objects. Long values stay collapsed until opened; the redundant
 encoded `ARROW:schema` payload is hidden.

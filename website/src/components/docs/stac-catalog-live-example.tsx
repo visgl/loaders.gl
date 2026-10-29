@@ -72,6 +72,7 @@ export function STACCatalogLiveExample(): React.JSX.Element {
             />
           ) : undefined
         }
+        previewAssetHref={selectedAsset?.href}
         onClosePreview={() => setSelectedAsset(undefined)}
       />
     </div>

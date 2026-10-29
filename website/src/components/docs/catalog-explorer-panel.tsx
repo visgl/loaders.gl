@@ -41,6 +41,8 @@ export type CatalogExplorerPanelProps = Readonly<{
   onSelectAsset?: (asset: {key: string; href: string}) => void;
   /** Selected asset content displayed beside the entries. */
   preview?: React.ReactNode;
+  /** Identifies a host-requested preview such as the catalog JSON toolbar action. */
+  previewAssetHref?: string;
   /** Returns from the asset preview to entry details. */
   onClosePreview?: () => void;
   /** Optional heading. */
@@ -66,6 +68,7 @@ export function CatalogExplorerPanel({
   onSelectRecord,
   onSelectAsset,
   preview,
+  previewAssetHref,
   onClosePreview,
   title = 'Catalog explorer'
 }: CatalogExplorerPanelProps): React.JSX.Element {
@@ -76,6 +79,7 @@ export function CatalogExplorerPanel({
   const [submittedQuery, setSubmittedQuery] = useState<CatalogExplorerQuery>({limit: 25});
   const [metadata, setMetadata] = useState<unknown>();
   const [selectedRecord, setSelectedRecord] = useState<unknown>();
+  const [activeAssetHref, setActiveAssetHref] = useState<string>();
   const [records, setRecords] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
@@ -90,6 +94,7 @@ export function CatalogExplorerPanel({
     setError(undefined);
     setRecords([]);
     setSelectedRecord(undefined);
+    setActiveAssetHref(undefined);
     setMetadata(undefined);
     void (async () => {
       try {
@@ -135,6 +140,17 @@ export function CatalogExplorerPanel({
     if (inspector.current) inspector.current.scrollTop = 0;
   }, [selectedRecord, preview]);
 
+  const previewAssets = onSelectAsset
+    ? getRecordAssets(selectedRecord, selectedSourceSource).filter(asset =>
+        /\.(parquet|json|txt|md|csv|xml|ya?ml|dat)$/i.test(new URL(asset.href).pathname)
+      )
+    : [];
+  const tableAssetCount = previewAssets.filter(asset =>
+    /\.parquet$/i.test(new URL(asset.href).pathname)
+  ).length;
+  const activeTabId = activeAssetHref
+    ? `${panelId}-asset-${previewAssets.findIndex(asset => asset.href === activeAssetHref)}`
+    : `${panelId}-details`;
   const supportsSearch = capabilities?.search ?? false;
   return (
     <ReactExamplePanel title={title}>
@@ -250,29 +266,22 @@ export function CatalogExplorerPanel({
                 </ResultsHeader>
                 <ResultList role="region" aria-label="Catalog entries" tabIndex={0}>
                   {records.map((record, index) => (
-                    <ResultRow key={`${recordKey(record)}-${index}`}>
-                      <ResultTitle
-                        type="button"
-                        onClick={() => {
-                          setSelectedRecord(record);
-                          onSelectRecord?.(record);
-                        }}
-                      >
-                        {recordTitle(record)}
-                      </ResultTitle>
-                      <ResultSummary>{recordSummary(record)}</ResultSummary>
-                      <Details>
-                        {recordAssets(
-                          record,
-                          selectedSourceSource,
-                          onSelectAsset
-                            ? asset => {
-                                setSelectedRecord(record);
-                                onSelectAsset(asset);
-                              }
-                            : undefined
-                        )}
-                      </Details>
+                    <ResultRow
+                      key={`${recordKey(record)}-${index}`}
+                      type="button"
+                      aria-pressed={selectedRecord === record}
+                      onClick={() => {
+                        setSelectedRecord(record);
+                        setActiveAssetHref(undefined);
+                        onClosePreview?.();
+                        onSelectRecord?.(record);
+                      }}
+                    >
+                      <ResultTitle>{recordTitle(record)}</ResultTitle>
+                      <ResultSummary>{recordListSummary(record)}</ResultSummary>
+                      {recordKey(record) !== recordTitle(record) ? (
+                        <ResultIdentifier>{recordKey(record)}</ResultIdentifier>
+                      ) : null}
                     </ResultRow>
                   ))}
                 </ResultList>
@@ -290,66 +299,132 @@ export function CatalogExplorerPanel({
                 aria-label="Catalog inspector"
                 tabIndex={0}
               >
-                {preview ? (
+                {preview && previewAssetHref && previewAssetHref !== activeAssetHref ? (
                   <>
-                    <button type="button" onClick={onClosePreview}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveAssetHref(undefined);
+                        onClosePreview?.();
+                      }}
+                    >
                       Back to entry details
                     </button>
                     {preview}
                   </>
                 ) : selectedRecord !== undefined ? (
                   <section aria-label="Catalog entry details">
-                    <ResultsHeader>
-                      <strong>{recordTitle(selectedRecord)}</strong>
-                      <button
-                        type="button"
-                        aria-label="Close catalog entry details"
-                        onClick={() => setSelectedRecord(undefined)}
+                    <InspectorHeader>
+                      <ResultsHeader>
+                        <strong>{recordTitle(selectedRecord)}</strong>
+                        <button
+                          type="button"
+                          aria-label="Close catalog entry details"
+                          onClick={() => {
+                            setSelectedRecord(undefined);
+                            setActiveAssetHref(undefined);
+                            onClosePreview?.();
+                          }}
+                        >
+                          Close
+                        </button>
+                      </ResultsHeader>
+                      <InspectorTabs
+                        role="tablist"
+                        aria-label="Entry views"
+                        onKeyDown={handleTabKeyDown}
                       >
-                        Close
-                      </button>
-                    </ResultsHeader>
-                    <p>{recordSummary(selectedRecord)}</p>
-                    <RecordMetadata>
-                      {Object.entries({
-                        ...asRecord(selectedRecord),
-                        ...asRecord(asRecord(selectedRecord)?.properties)
-                      })
-                        .filter(
-                          ([name, value]) =>
-                            ![
-                              'properties',
-                              'geometry',
-                              'assets',
-                              'links',
-                              'description',
-                              'title'
-                            ].includes(name) &&
-                            value !== null &&
-                            typeof value !== 'object'
-                        )
-                        .map(([name, value]) => (
-                          <React.Fragment key={name}>
-                            <dt>{name}</dt>
-                            <dd>{String(value)}</dd>
-                          </React.Fragment>
+                        <button
+                          type="button"
+                          role="tab"
+                          id={`${panelId}-details`}
+                          aria-controls={`${panelId}-entry-content`}
+                          aria-selected={!activeAssetHref}
+                          tabIndex={activeAssetHref ? -1 : 0}
+                          onClick={() => {
+                            setActiveAssetHref(undefined);
+                            onClosePreview?.();
+                          }}
+                        >
+                          Details
+                        </button>
+                        {previewAssets.map((asset, index) => (
+                          <button
+                            type="button"
+                            role="tab"
+                            key={asset.key}
+                            id={`${panelId}-asset-${index}`}
+                            aria-controls={`${panelId}-entry-content`}
+                            aria-selected={activeAssetHref === asset.href}
+                            tabIndex={activeAssetHref === asset.href ? 0 : -1}
+                            onClick={() => {
+                              setActiveAssetHref(asset.href);
+                              onSelectAsset?.(asset);
+                            }}
+                          >
+                            {assetTabTitle(asset, tableAssetCount)}
+                          </button>
                         ))}
-                    </RecordMetadata>
-                    {onSelectAsset ? (
-                      <div aria-label="Entry asset previews">
-                        {recordAssets(selectedRecord, selectedSourceSource, onSelectAsset)}
-                      </div>
-                    ) : null}
-                    <CatalogJsonTree
-                      key={recordKey(selectedRecord)}
-                      label="Full entry JSON"
-                      value={selectedRecord}
-                    />
+                      </InspectorTabs>
+                    </InspectorHeader>
+                    <div
+                      role="tabpanel"
+                      id={`${panelId}-entry-content`}
+                      aria-labelledby={activeTabId}
+                    >
+                      {activeAssetHref && preview ? (
+                        preview
+                      ) : (
+                        <>
+                          <p>{recordSummary(selectedRecord)}</p>
+                          <RecordMetadata>
+                            {Object.entries({
+                              ...asRecord(selectedRecord),
+                              ...asRecord(asRecord(selectedRecord)?.properties)
+                            })
+                              .filter(
+                                ([name, value]) =>
+                                  ![
+                                    'properties',
+                                    'geometry',
+                                    'assets',
+                                    'links',
+                                    'description',
+                                    'title'
+                                  ].includes(name) &&
+                                  value !== null &&
+                                  typeof value !== 'object'
+                              )
+                              .map(([name, value]) => (
+                                <React.Fragment key={name}>
+                                  <dt>{name}</dt>
+                                  <dd>{String(value)}</dd>
+                                </React.Fragment>
+                              ))}
+                          </RecordMetadata>
+                          <details>
+                            <summary>Asset files</summary>
+                            {recordAssets(selectedRecord, selectedSourceSource)}
+                          </details>
+                          <CatalogJsonTree
+                            key={recordKey(selectedRecord)}
+                            label="Full entry JSON"
+                            value={selectedRecord}
+                          />
+                        </>
+                      )}
+                    </div>
                   </section>
+                ) : preview ? (
+                  <>
+                    <button type="button" onClick={onClosePreview}>
+                      Close preview
+                    </button>
+                    {preview}
+                  </>
                 ) : (
                   <EmptyState>
-                    Select an entry to inspect its metadata, or choose Preview table to browse a
-                    Parquet asset.
+                    Select an entry to inspect details, tables, manifests, and attribution.
                   </EmptyState>
                 )}
               </PreviewPane>
@@ -383,7 +458,12 @@ function recordKey(value: unknown): string {
 function recordTitle(value: unknown): string {
   const record = asRecord(value);
   const properties = asRecord(record?.properties);
-  return String(record?.title || properties?.title || record?.id || 'Untitled record');
+  const title = record?.title || properties?.title;
+  const description = record?.description || properties?.description;
+  if (title && title !== record?.id) return String(title);
+  if (typeof description === 'string' && description.trim())
+    return description.trim().split(/\.\s+/)[0];
+  return String(title || record?.id || 'Untitled record');
 }
 /** Returns a compact secondary description for a catalog record. */
 function recordSummary(value: unknown): string {
@@ -398,48 +478,69 @@ function recordSummary(value: unknown): string {
       ''
   );
 }
-/** Renders browser-downloadable assets, resolving them through protocol-specific helpers. */
-function recordAssets(
+/** Avoids repeating a description sentence already used as the entry heading. */
+function recordListSummary(value: unknown): string {
+  const summary = recordSummary(value);
+  const title = recordTitle(value);
+  return summary.startsWith(title) ? summary.slice(title.length).replace(/^[.\s]+/, '') : summary;
+}
+
+/** Returns resolved HTTP(S) assets for entry tabs and original-file links. */
+function getRecordAssets(
   value: unknown,
-  source?: CatalogAssetSource,
-  onSelectAsset?: CatalogExplorerPanelProps['onSelectAsset']
-): React.JSX.Element | null {
-  const resolvedAssets = source?.getAssets
-    ? source.getAssets(value).map(asset => [asset.key, asset] as const)
-    : undefined;
+  source?: CatalogAssetSource
+): Array<{key: string; href: string}> {
+  if (!value) return [];
   const assets = asRecord(asRecord(value)?.assets);
-  const links =
-    resolvedAssets ||
-    (assets
-      ? Object.entries(assets)
-          .filter(([, asset]) => asRecord(asset)?.href)
-          .map(([name, asset]) => [name, asset] as const)
-      : []);
-  return links.length ? (
+  const resolved = source?.getAssets
+    ? source.getAssets(value)
+    : assets
+      ? Object.entries(assets).map(([key, asset]) => ({
+          key,
+          href: String(asRecord(asset)?.href || '')
+        }))
+      : [];
+  return resolved.flatMap(asset => {
+    const url = getCatalogAssetUrl(asset.href);
+    return url ? [{key: asset.key, href: url.href}] : [];
+  });
+}
+
+/** Labels familiar entry assets while distinguishing multiple table assets. */
+function assetTabTitle(asset: {key: string; href: string}, tableAssetCount: number): string {
+  if (/\.parquet$/i.test(new URL(asset.href).pathname))
+    return tableAssetCount > 1 ? `Table: ${asset.key}` : 'Table';
+  if (/manifest/i.test(asset.key)) return asset.key === 'manifest' ? 'Manifest' : asset.key;
+  if (/attribution/i.test(asset.key)) return 'Attribution';
+  return asset.key;
+}
+
+/** Supports arrow-key and Home/End navigation between entry view tabs. */
+function handleTabKeyDown(event: React.KeyboardEvent<HTMLElement>): void {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+  const index = tabs.indexOf(event.target as HTMLButtonElement);
+  const nextIndex =
+    event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? tabs.length - 1
+        : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+  event.preventDefault();
+  tabs[nextIndex]?.focus();
+  tabs[nextIndex]?.click();
+}
+
+/** Renders browser-downloadable assets, resolving them through protocol-specific helpers. */
+function recordAssets(value: unknown, source?: CatalogAssetSource): React.JSX.Element | null {
+  const assets = getRecordAssets(value, source);
+  return assets.length ? (
     <AssetList>
-      {links.map(([name, asset]) => {
-        const assetUrl = getCatalogAssetUrl(String(asRecord(asset)?.href));
-        if (!assetUrl) return <span key={name}>{name} (unsupported URL)</span>;
-        return (
-          <a
-            key={name}
-            href={assetUrl.href}
-            target="_blank"
-            rel="noreferrer"
-            onClick={event => {
-              event.stopPropagation();
-              if (onSelectAsset) {
-                event.preventDefault();
-                onSelectAsset({key: name, href: assetUrl.href});
-              }
-            }}
-          >
-            {onSelectAsset && /\.parquet$/i.test(assetUrl.pathname)
-              ? `Preview table: ${name}`
-              : name}
-          </a>
-        );
-      })}
+      {assets.map(asset => (
+        <a key={asset.key} href={asset.href} target="_blank" rel="noreferrer">
+          {asset.key}
+        </a>
+      ))}
     </AssetList>
   ) : null;
 }
@@ -484,10 +585,15 @@ const ApplyButton = styled.button`&&{border:0;border-radius:5px;padding:8px 12px
 const ErrorMessage = styled.div`color:#b42318;font-size:.82rem;margin-top:10px;`;
 const ResultsHeader = styled.div`display:flex;justify-content:space-between;margin-top:0;padding-bottom:6px;border-bottom:1px solid #eaecf0;font-size:.82rem;color:var(--ifm-color-emphasis-700);`;
 const ResultList = styled.div`display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;`;
-const ResultRow = styled.div`border-bottom:1px solid #eaecf0;padding:10px 2px;`;
-const ResultTitle = styled.button`&&{text-align:left;border:0;background:transparent;padding:0;font:inherit;font-weight:600;color:var(--ifm-color-primary);cursor:pointer;}&&:hover{text-decoration:underline;}`;
-const ResultSummary = styled.div`color:var(--ifm-color-emphasis-700);font-size:.78rem;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
-const Details = styled.div`margin-top:5px;font-size:.74rem;`;
+const ResultRow = styled.button`&&{display:block;text-align:left;width:100%;min-width:0;flex-shrink:0;border:0;border-bottom:1px solid var(--ifm-color-emphasis-300);border-left:3px solid transparent;background:transparent;color:inherit;padding:12px 8px;cursor:pointer;}&&[aria-pressed="true"]{border-left-color:var(--ifm-color-primary);background:var(--ifm-color-emphasis-100);}&&:hover{background:var(--ifm-color-emphasis-100);}`;
+const ResultTitle = styled.span`display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.86rem;font-weight:600;color:var(--ifm-color-primary);`;
+const ResultSummary = styled.span`display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:var(--ifm-color-emphasis-700);font-size:.78rem;margin-top:4px;`;
+/** Keeps technical identifiers secondary to descriptive entry labels. */
+const ResultIdentifier = styled.span`display:block;font-size:.7rem;opacity:.65;margin-top:5px;overflow-wrap:anywhere;`;
+/** Keeps entry navigation visible while its content scrolls. */
+const InspectorHeader = styled.div`position:sticky;top:0;z-index:1;background:var(--menu-background,var(--ifm-background-color));padding-bottom:8px;`;
+/** Presents a keyboard-accessible view selector inside the entry infobox. */
+const InspectorTabs = styled.div`display:flex;gap:5px;overflow-x:auto;padding-top:8px;button{flex-shrink:0;border:1px solid var(--ifm-color-emphasis-300);border-radius:5px;padding:5px 8px;font-size:.75rem;background:transparent;color:inherit;cursor:pointer;}button[aria-selected="true"]{border-color:var(--ifm-color-primary);color:var(--ifm-color-primary);background:var(--ifm-color-emphasis-100);}`;
 const AssetList = styled.div`display:flex;gap:10px;flex-wrap:wrap;a{color:#175cd3;}`;
 const EmptyState = styled.div`color:var(--ifm-color-emphasis-700);font-size:.84rem;padding:14px 0;`;
 
