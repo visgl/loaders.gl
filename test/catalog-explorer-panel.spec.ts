@@ -57,6 +57,12 @@ test('keeps entries and long previews bounded and clears details when the source
     await expect.poll(() => inspector.textContent).toContain('EGM96');
     expect(inspector.textContent).toContain('Geoid entry-0');
     expect(inspector.textContent).toContain('A geoid snapshot');
+    await act(async () => entries.querySelectorAll('a')[1].click());
+    expect(inspector.textContent).toContain('Geoid entry-1');
+    expect(props.onSelectAsset).toHaveBeenCalledWith({
+      key: 'data',
+      href: 'https://example.org/data.parquet'
+    });
     await act(async () =>
       root.render(
         React.createElement(CatalogExplorerPanel, {

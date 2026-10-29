@@ -181,6 +181,7 @@ export function CatalogExplorerPanel({
               <Controls
                 onSubmit={event => {
                   event.preventDefault();
+                  onClosePreview?.();
                   setSubmittedQuery(query);
                 }}
               >
@@ -260,7 +261,18 @@ export function CatalogExplorerPanel({
                         {recordTitle(record)}
                       </ResultTitle>
                       <ResultSummary>{recordSummary(record)}</ResultSummary>
-                      <Details>{recordAssets(record, selectedSourceSource, onSelectAsset)}</Details>
+                      <Details>
+                        {recordAssets(
+                          record,
+                          selectedSourceSource,
+                          onSelectAsset
+                            ? asset => {
+                                setSelectedRecord(record);
+                                onSelectAsset(asset);
+                              }
+                            : undefined
+                        )}
+                      </Details>
                     </ResultRow>
                   ))}
                 </ResultList>
