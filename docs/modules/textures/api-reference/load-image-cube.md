@@ -18,7 +18,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Images module', to: '/docs/modules/images'},
     {label: 'TextureCubeLoader', to: '/docs/modules/textures/api-reference/texture-cube-loader'},
-    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'}
+    {label: 'ImageLoader', to: '/docs/modules/images/api-reference/image-loader'}
   ]}
 />
 
@@ -31,7 +31,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Callback', value: 'Receives face, direction, axis, sign, and index'},
     {label: 'Output', value: 'Six images keyed by WebGL cube-face constants'},
     {label: 'Mip levels', value: 'Single images or arrays of images per face'},
-    {label: 'Options', value: 'ImageBitmapLoader options plus image.mipLevels'}
+    {label: 'Options', value: 'ImageLoader options plus image.mipLevels'}
   ]}
 />
 
@@ -49,7 +49,7 @@ Load images for a cubemap with one image per face
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only needed for Node.js support
-import {loadImageTextureCube} from '@loaders.gl/textures';
+import {loadImageTextureCube} from '@loaders.gl/images/load-image-cube';
 
 const imageCube = await loadImageTextureCube(({direction}) => `diffuse-${direction}.png`);
 
@@ -62,7 +62,7 @@ Load images for a cubemap with an array of mip images per face
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only needed for Node.js support
-import {loadImageTextureCube} from '@loaders.gl/textures';
+import {loadImageTextureCube} from '@loaders.gl/images/load-image-cube';
 
 const imageCube = await loadImageTextureCube(({direction, lod}) => `diffuse-${direction}-${lod}.png`, {image: {mipLevels: 'auto'}});
 
@@ -96,7 +96,7 @@ Loads and image cube, i.e. 6 images keyed by WebGL face constants (see table).
 Parameters:
 
 - `getUrl`: A function that generates the url for each image, it is called for each image with the `index` of that image.
-- `options`: Supports the same image parsing options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
+- `options`: Supports the same image parsing options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader).
 
 Returns
 
@@ -104,7 +104,7 @@ Returns
 
 ## Options
 
-Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), and
+Accepts the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader), and
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -114,4 +114,4 @@ Number of mip level images to load: Use `0` to indicate a single image with no m
 
 ## Remarks
 
-- Returned images can be passed directly to WebGL texture methods. See [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) for details about the returned `ImageBitmap` contract.
+- Returned images can be passed directly to WebGL texture methods. See [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for details about the returned `ImageBitmap` contract.

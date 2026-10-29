@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
-import {ImageLoader} from '@loaders.gl/images';
+import type {ImageType, LegacyImageLoaderOptions} from '@loaders.gl/images';
+import {LegacyImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -40,7 +40,7 @@ import {
 
 /** Options for a WMTS tile source. */
 export type WMTSSourceLoaderOptions = DataSourceOptions &
-  ImageLoaderOptions & {
+  LegacyImageLoaderOptions & {
     wmts?: {
       /** WMTS layer identifier. */
       layer?: string;
@@ -158,7 +158,7 @@ export class WMTSImageTileSource
     }
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
-      ImageLoader,
+      LegacyImageLoader,
       this.loadOptions
     )) as ImageType;
   }

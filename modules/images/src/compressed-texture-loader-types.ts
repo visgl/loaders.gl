@@ -1,0 +1,69 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
+import {CompressedTextureFormat} from './texture-format';
+import {VERSION} from './lib/utils/version';
+import type {BasisLoaderOptions} from './basis-types';
+
+/** Options for the CompressedTextureLoader */
+export type CompressedTextureLoaderOptions = StrictLoaderOptions &
+  Pick<BasisLoaderOptions, 'basis'> & {
+    'compressed-texture'?: {
+      /** Whether to use Basis decoding */
+      useBasis?: boolean;
+      /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+      workerUrl?: string;
+    };
+  };
+
+/** Preloads the parser-bearing compressed texture loader implementation. */
+async function preload() {
+  const {CompressedTextureLoaderWithParser} = await import(
+    '@loaders.gl/images/compressed-texture-loader'
+  );
+  return CompressedTextureLoaderWithParser;
+}
+
+/** Metadata-only worker loader for KTX, DDS, and PVR texture container formats. */
+export const CompressedTextureLoader = {
+  ...CompressedTextureFormat,
+  dataType: null as unknown as any,
+  batchType: null as never,
+
+  name: 'Texture Containers',
+  id: 'compressed-texture',
+  module: 'images',
+  version: VERSION,
+  worker: true,
+  encoding: 'image',
+  format: 'compressed-texture',
+  extensions: [
+    'ktx',
+    'ktx2',
+    'dds', // WEBGL_compressed_texture_s3tc, WEBGL_compressed_texture_atc
+    'pvr' // WEBGL_compressed_texture_pvrtc
+  ],
+  mimeTypes: [
+    'image/ktx2',
+    'image/ktx',
+    'image/vnd-ms.dds',
+    'image/x-dds',
+    'application/octet-stream'
+  ],
+  binary: true,
+  options: {
+    'compressed-texture': {
+      useBasis: false
+    },
+    basis: {
+      format: 'auto',
+      containerFormat: 'auto'
+    }
+  },
+  preload
+} as const satisfies Loader<any, never, CompressedTextureLoaderOptions>;
+
+/** @deprecated Use CompressedTextureLoader. */
+export const CompressedTextureWorkerLoader = CompressedTextureLoader;

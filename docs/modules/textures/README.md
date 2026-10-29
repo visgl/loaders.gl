@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/textures'
+title: Texture APIs
 description: Load compressed texture containers and transcode portable payloads into GPU-oriented formats.
 hide_title: true
 page_style: designed
@@ -12,8 +12,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   format="compressed-textures"
-  eyebrow="Texture module"
-  title="@loaders.gl/textures"
+  eyebrow="Images package · texture APIs"
+  title="Texture APIs in @loaders.gl/images"
   description="Ship one texture asset and choose the GPU format at runtime. Handle containers, mip chains, arrays, cube maps, and Basis Universal transcoding on the client."
   tone="cyan"
   meta={['KTX / KTX2', 'Basis Universal', 'GPU-oriented payloads']}
@@ -44,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-The `@loaders.gl/textures` module contains loaders for compressed textures. More specifically it contains loaders and writers for compressed texture **container** formats, including KTX, DDS and PVR. It also supports supercompressed Basis textures and decoded Radiance HDR images.
+The `@loaders.gl/images` module contains loaders for compressed textures. More specifically it contains loaders and writers for compressed texture **container** formats, including KTX, DDS and PVR. It also supports supercompressed Basis textures and decoded Radiance HDR images.
 
 See [Texture Loaders](/docs/specifications/category-texture) for the shared category conventions.
 
@@ -63,12 +63,31 @@ Basis encoded textures are super compressed. A more recent addition, they can be
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/textures
+npm install @loaders.gl/core @loaders.gl/images
 ```
+
+## Imports and parser access
+
+Import metadata loaders such as `BasisLoader`, `CompressedTextureLoader`, and
+`TextureLoader` from `@loaders.gl/images`. Async core APIs preload their parsers.
+For direct parsing, import `BasisLoaderWithParser` from
+`@loaders.gl/images/basis-loader` or `CompressedTextureLoaderWithParser` from
+`@loaders.gl/images/compressed-texture-loader`.
+
+Writers use direct subpaths: `KTX2BasisWriter` comes from
+`@loaders.gl/images/ktx2-basis-writer`, and `CompressedTextureWriter` comes from
+`@loaders.gl/images/compressed-texture-writer`. Manifest validators use
+`@loaders.gl/images/texture-manifest-schema`; the exported JSON Schema is
+`@loaders.gl/images/texture-manifest.schema.json`.
+
+Texture worker bundles and Basis/Crunch libraries now ship in the images package.
+Default loading uses the new package identity. Custom worker/library URLs must use
+`@loaders.gl/images` instead of the removed textures package. Compressed texture
+parsing/transcoding does not require Sharp; only Node image decoding/encoding does.
 
 ## Formats
 
-The `@loaders.gl/textures` module handles the following formats:
+The `@loaders.gl/images` module handles the following formats:
 
 | Format                                                                      | Description                                                                                                                                             |
 | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -133,13 +152,13 @@ The textures module also includes manifest-driven loaders for composite image te
 - [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays
 
 These loaders resolve relative member URLs against the manifest URL, or against `options.core.baseUrl` when parsing an in-memory manifest.
-Member assets are parsed with `ImageBitmapLoader` by default.
+Member assets are parsed with `ImageLoader` by default.
 They return schema `Texture` objects rather than raw image trees.
 
 ## Attributions
 
 - The `CompressedTextureLoader` was forked from [PicoGL](https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js), Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
-- The `CompressedTextureWriter` is a wrapper around @TimvanScherpenzeel's [`texture-compressor`](https://github.com/TimvanScherpenzeel/texture-compressor) utility (MIT licensed). That utility is not a dependency of `@loaders.gl/textures`; applications that use the writer must install it separately.
+- The `CompressedTextureWriter` is a wrapper around @TimvanScherpenzeel's [`texture-compressor`](https://github.com/TimvanScherpenzeel/texture-compressor) utility (MIT licensed). That utility is not a dependency of `@loaders.gl/images`; applications that use the writer must install it separately.
 
 ## Sources and credits
 

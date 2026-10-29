@@ -10,7 +10,7 @@ import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-util
 import {parseFromContext} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageData} from '@loaders.gl/images';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
 import {
   TerrainLoader as TerrainLoaderMetadata,
@@ -28,7 +28,7 @@ export const TerrainLoaderWithParser = {
   serializeWorkerResult: serializeArrowWorkerResult,
   deserializeWorkerResult: deserializeArrowWorkerResult,
   /** Image decoder requested by terrain workers through the nested parse bridge. */
-  subloaders: {ImageBitmapLoader},
+  subloaders: {ImageLoader},
   parse: parseTerrain
 } as const satisfies LoaderWithParser<Mesh | MeshArrowTable, never, TerrainLoaderOptions>;
 
@@ -48,7 +48,7 @@ export async function parseTerrain(
     ...options,
     core: {...options?.core, mimeType: 'application/x.image'}
   };
-  const image = await parseFromContext(arrayBuffer, ImageBitmapLoader, loadImageOptions, context!);
+  const image = await parseFromContext(arrayBuffer, ImageLoader, loadImageOptions, context!);
   const imageData = getImageData(image);
   const terrainImage = {
     width: imageData.width,

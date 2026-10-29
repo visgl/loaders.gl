@@ -4,22 +4,22 @@
 
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {isBrowser} from '@loaders.gl/core/loader-utils';
-import type {ImageBitmapLoaderOptions} from '../../image-bitmap-loader';
+import type {ImageLoaderOptions} from '../../image-loader-types';
 import {parseBlobToImageBitmap, parseToImageBitmap} from './parse-to-image-bitmap';
 import {isSVG} from './svg-utils';
 import {parseToNodeImage} from './parse-to-node-image';
 
 const INVALID_IMAGE_TYPE_ERROR =
-  "@loaders.gl/images: ImageBitmapLoader only accepts options.image.type='imagebitmap'. Remove legacy image/data/auto values and call getImageData(image) if you need raw pixels.";
+  "@loaders.gl/images: ImageLoader only accepts options.image.type='imagebitmap'. Remove legacy image/data/auto values and call getImageData(image) if you need raw pixels.";
 const UNSUPPORTED_IMAGE_BITMAP_ERROR =
-  '@loaders.gl/images: ImageBitmapLoader requires browser ImageBitmap support. Use a browser with createImageBitmap support or load images under Node.js with @loaders.gl/core/polyfills.';
+  '@loaders.gl/images: ImageLoader requires browser ImageBitmap support. Use a browser with createImageBitmap support or load images under Node.js with @loaders.gl/core/polyfills.';
 
 /**
  * Parses images into `ImageBitmap` in browsers and Node.js.
  */
 export async function parseImageBitmap(
   arrayBuffer: ArrayBuffer,
-  options?: ImageBitmapLoaderOptions,
+  options?: ImageLoaderOptions,
   context?: LoaderContext
 ): Promise<ImageBitmap> {
   options = options || {};
@@ -46,7 +46,7 @@ export async function parseImageBitmap(
  */
 export async function parseImageBitmapBlob(
   blob: Blob,
-  options?: ImageBitmapLoaderOptions,
+  options?: ImageLoaderOptions,
   context?: LoaderContext
 ): Promise<ImageBitmap> {
   options = options || {};
@@ -70,9 +70,9 @@ export async function parseImageBitmapBlob(
 }
 
 /**
- * Rejects legacy browser output modes for `ImageBitmapLoader`.
+ * Rejects legacy browser output modes for `ImageLoader`.
  */
-function validateImageTypeOption(options: ImageBitmapLoaderOptions): void {
+function validateImageTypeOption(options: ImageLoaderOptions): void {
   const imageType = options.image?.type;
   if (imageType && imageType !== 'imagebitmap') {
     throw new Error(INVALID_IMAGE_TYPE_ERROR);

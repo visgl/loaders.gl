@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import {ImageBitmapLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {I3SContentLoaderWithParser} from '../../src/i3s/i3s-content-loader-with-parser';
-import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
+import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/images';
 import {parseI3STileContent} from '../../src/i3s/lib/parsers/parse-i3s-tile-content';
 
 const GEOMETRY_SCHEMA = {
@@ -39,7 +39,7 @@ function createGeometry(): ArrayBuffer {
 describe('I3S nested decoders and color storage', () => {
   test('declares every worker-requested decoder for caller-side resolution', () => {
     expect(I3SContentLoaderWithParser.subloaders).toEqual({
-      ImageBitmapLoader,
+      ImageLoader,
       DracoLoader,
       BasisLoader,
       CompressedTextureLoader
@@ -115,7 +115,7 @@ describe('I3S nested decoders and color storage', () => {
     expect(parse).toHaveBeenNthCalledWith(
       2,
       expect.any(ArrayBuffer),
-      ImageBitmapLoader,
+      ImageLoader,
       imageOptions,
       context
     );

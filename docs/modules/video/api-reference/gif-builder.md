@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['From v2.2', 'Browser only', 'Experimental']}
   links={[
     {label: 'Video module', to: '/docs/modules/video'},
-    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'},
+    {label: 'ImageLoader', to: '/docs/modules/images/api-reference/image-loader'},
     {label: 'VideoLoader', to: '/docs/modules/video/api-reference/video-loader'}
   ]}
 />
@@ -61,20 +61,20 @@ Build a GIF from images
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ImageBitmapLoader} from '@loaders.gl/images';
-import {GIFBuilder} from '@loaders.gl/video';
+import {ImageLoader} from '@loaders.gl/images';
+import GIFBuilder from '@loaders.gl/images/gif-builder';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
-gifBuilder.add(await load('http://i.imgur.com/2OO33vX.jpg', ImageBitmapLoader));
-gifBuilder.add(await load('http://i.imgur.com/qOwVaSN.png', ImageBitmapLoader));
-gifBuilder.add(await load('http://i.imgur.com/Vo5mFZJ.gif', ImageBitmapLoader));
+gifBuilder.add(await load('http://i.imgur.com/2OO33vX.jpg', ImageLoader));
+gifBuilder.add(await load('http://i.imgur.com/qOwVaSN.png', ImageLoader));
+gifBuilder.add(await load('http://i.imgur.com/Vo5mFZJ.gif', ImageLoader));
 gifBuilder.build();
 ```
 
 Build a GIF from image URLs (Experimental)
 
 ```typescript
-import {GIFBuilder} from '@loaders.gl/video';
+import GIFBuilder from '@loaders.gl/images/gif-builder';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
 gifBuilder.add('http://i.imgur.com/2OO33vX.jpg');
@@ -86,7 +86,7 @@ gifBuilder.build();
 Build a GIF from image URLs, with frame-specific Text (Experimental)
 
 ```typescript
-import {GIFBuilder} from '@loaders.gl/video';
+import GIFBuilder from '@loaders.gl/images/gif-builder';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
 gifBuilder.add({src: 'http://i.imgur.com/2OO33vX.jpg', text: 'First image text'});
@@ -98,7 +98,7 @@ gifBuilder.build();
 Build a GIF from the webcam (Experimental)
 
 ```typescript
-import {GIFBuilder} from '@loaders.gl/video';
+import GIFBuilder from '@loaders.gl/images/gif-builder';
 const gifBuilder = new GIFBuilder({source: webcam, width: 400, height: 400});
 gifBuilder.build();
 ```

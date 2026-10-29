@@ -47,7 +47,7 @@ The image loader category documents common data formats, options, conventions, a
 
 | Loader                                                                        | Notes                                       |
 | ----------------------------------------------------------------------------- | ------------------------------------------- |
-| [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) | Loads raster images as `ImageBitmap`        |
+| [`ImageLoader`](/docs/modules/images/api-reference/image-loader) | Loads raster images as `ImageBitmap`        |
 | [`ImageLoader`](/docs/modules/images/api-reference/image-loader)              | Deprecated compatibility image loader       |
 | [`ImageWriter`](/docs/modules/images/api-reference/image-writer)              | Encodes raster image data to binary formats |
 
@@ -55,13 +55,13 @@ Core image category support is provided by the `@loaders.gl/images` module:
 
 ## Usage
 
-The preferred loader for new code is `ImageBitmapLoader`:
+The preferred loader for new code is `ImageLoader`:
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // Only required if loading images under Node.js
-import {ImageBitmapLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import {registerLoaders, load} from '@loaders.gl/core';
-registerLoaders(ImageBitmapLoader);
+registerLoaders(ImageLoader);
 const image = await load('image.jpeg');
 ```
 
@@ -70,9 +70,9 @@ If application code needs raw pixels, convert the loaded image explicitly:
 ```typescript
 import '@loaders.gl/core/polyfills'; // Only required if loading images under Node.js
 import {load} from '@loaders.gl/core';
-import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageData} from '@loaders.gl/images';
 
-const image = await load('image.jpeg', ImageBitmapLoader);
+const image = await load('image.jpeg', ImageLoader);
 const imageData = getImageData(image);
 ```
 
@@ -82,14 +82,14 @@ Images can be represented either as opaque image objects (`ImageBitmap` or `Imag
 
 A loaded image can always be converted to an _image data_ object (an object containing a `Uint8Array` with the pixel data, and metadata like `width` and `height`).
 
-`ImageBitmapLoader` returns `ImageBitmap` in browsers. Under Node.js with `@loaders.gl/core/polyfills`, `ImageBitmapLoader` returns a minimal `ImageBitmap` polyfill backed by decoded image data. Deprecated `ImageLoader` preserves older compatibility return types and options.
+`ImageLoader` returns `ImageBitmap` in browsers. Under Node.js with `@loaders.gl/core/polyfills`, `ImageLoader` returns a minimal `ImageBitmap` polyfill backed by decoded image data. Deprecated `ImageLoader` preserves older compatibility return types and options.
 
 Note that _type_ is independent of the _format_ of the image (see below).
 
 | Image Type    | Class                                                                | Availability         | Workers      | Description                                                                                                                 |
 | ------------- | -------------------------------------------------------------------- | -------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | ❌ No           | Compatible with headless GL and still supported by helper APIs.                                                             |
-| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | ⚠️ Browser only | The preferred type returned by `ImageBitmapLoader`. Browsers use the native API, while Node.js uses the installed polyfill. |
+| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | ⚠️ Browser only | The preferred type returned by `ImageLoader`. Browsers use the native API, while Node.js uses the installed polyfill. |
 | `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | ❌ No           | The traditional DOM image class. It remains supported by helper APIs and by deprecated `ImageLoader`.                       |
 
 ## Image Data
@@ -110,13 +110,13 @@ The image category supports some generic options (specified using `options.image
 
 | Option               | Default | Type   | Availability                                   | Description                                                                                     |
 | -------------------- | ------- | ------ | ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `options.image.type` | unset   | string | `ImageBitmapLoader`, deprecated `ImageLoader` | `ImageBitmapLoader` only accepts `imagebitmap`. Deprecated `ImageLoader` preserves legacy modes. |
+| `options.image.type` | unset   | string | `ImageLoader`, deprecated `ImageLoader` | `ImageLoader` only accepts `imagebitmap`. Deprecated `ImageLoader` preserves legacy modes. |
 
 ## Notes
 
 ### About worker loading
 
-Worker loading is primarily tied to `ImageBitmap` support in the current runtime. Deprecated `ImageLoader` may still use compatibility fallbacks, while `ImageBitmapLoader` always targets bitmap output. Use `options.core.worker: false` to disable worker loading of images.
+Worker loading is primarily tied to `ImageBitmap` support in the current runtime. Deprecated `ImageLoader` may still use compatibility fallbacks, while `ImageLoader` always targets bitmap output. Use `options.core.worker: false` to disable worker loading of images.
 
 ### About texture loaders
 
@@ -136,7 +136,7 @@ The image category also provides a few utilities:
 Image data objects returned by image category loaders have the same fields (`width`, `height`, `data`) as the browser's built-in `ImageData` class, but are not actual instances of `ImageData`. However, should you need it, it is easy to create an `ImageData` instance from an image data object:
 
 ```typescript
-const image = await load(url, ImageBitmapLoader);
+const image = await load(url, ImageLoader);
 const data = getImageData(image);
 const imageData = new ImageData(data.data, data.width, data.height);
 ```

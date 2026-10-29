@@ -56,7 +56,7 @@ import {
   KTX2BasisTextureFormat,
   NPYFormat,
   RadianceHDRFormat
-} from '@loaders.gl/textures';
+} from '@loaders.gl/images';
 import {
   HexWKBFormat,
   TWKBFormat,
@@ -84,7 +84,7 @@ import {FlatGeobufFormat} from '@loaders.gl/geospatial/flatgeobuf/index';
 import {MVTLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import {PLYFormat} from '@loaders.gl/pointclouds/ply';
-import {VideoFormat} from '../../../../video/src/video-format';
+import {VideoFormat} from '../../../../images/src/video-format';
 
 const FORMAT_EXPORTS = [
   ['Tiles3DFormat', Tiles3DFormat, 'binary'],

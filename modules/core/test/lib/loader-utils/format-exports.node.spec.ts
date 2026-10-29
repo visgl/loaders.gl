@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {readFileSync} from 'node:fs';
+import {existsSync, readFileSync} from 'node:fs';
 import {join} from 'node:path';
 
 const MODULES_DIRECTORY = join(process.cwd(), 'modules');
@@ -68,7 +68,7 @@ const FORMAT_EXPORTS = {
   'tiles/pmtiles': ['PMTilesFormat'],
   'tiles-3d/potree': ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
   'geospatial/shapefile': ['ShapefileFormat', 'SHPFormat', 'DBFFormat'],
-  textures: [
+  'images/texture-format': [
     'BasisTextureFormat',
     'CompressedTextureFormat',
     'CrunchTextureFormat',
@@ -77,7 +77,7 @@ const FORMAT_EXPORTS = {
     'DDSTextureFormat',
     'KTX2BasisTextureFormat'
   ],
-  video: ['VideoFormat'],
+  'images/video-format': ['VideoFormat'],
   'geospatial/wkt': ['WKTFormat', 'WKBFormat', 'HexWKBFormat', 'TWKBFormat', 'WKTCRSFormat'],
   'ogc/wms': [
     'GMLFormat',
@@ -100,12 +100,13 @@ const FORMAT_EXPORTS = {
 
 describe('Format exports', () => {
   for (const [moduleName, formatNames] of Object.entries(FORMAT_EXPORTS)) {
-    test(`${moduleName} exports all Format objects from the root`, () => {
+    test(`${moduleName} exports its Format objects`, () => {
       const [packageName, subpathName] = moduleName.split('/');
-      const indexSource = readFileSync(
-        join(MODULES_DIRECTORY, packageName, 'src', subpathName || '', 'index.ts'),
-        'utf8'
-      );
+      const indexPath = join(MODULES_DIRECTORY, packageName, 'src', subpathName || '', 'index.ts');
+      const sourcePath = existsSync(indexPath)
+        ? indexPath
+        : join(MODULES_DIRECTORY, packageName, 'src', `${subpathName}.ts`);
+      const indexSource = readFileSync(sourcePath, 'utf8');
 
       for (const formatName of formatNames) {
         expect(indexSource, formatName).toMatch(new RegExp(`\\b${formatName}\\b`));

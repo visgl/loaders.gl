@@ -10,7 +10,7 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 // / import type { GLTFLoaderOptions } from '@loaders.gl/scene/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
-import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
+import type {ImageLoaderOptions} from '@loaders.gl/images';
 import {GLBLoader, GLTFLoader} from '@loaders.gl/scene/gltf';
 import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 
@@ -105,7 +105,7 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
   GLTFOptions &
   // GLTFLoaderOptions & - TODO not yet exported
   DracoLoaderOptions &
-  ImageBitmapLoaderOptions & {
+  ImageLoaderOptions & {
     '3d-tiles'?: {
       /** Named dependencies supplied by core preload(). */
       subloaders?: Record<string, Loader>;

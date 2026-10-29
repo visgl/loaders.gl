@@ -87,8 +87,8 @@ export type {
 export {
   ImageFormat,
   ImageBitmapFormat,
+  LegacyImageLoader,
   ImageLoader,
-  ImageBitmapLoader,
   ImageWriter,
   getBinaryImageMetadata,
   isImageTypeSupported,
@@ -104,6 +104,6 @@ export type {
   ImageDataType,
   ImageType,
   ImageTypeEnum,
-  ImageLoaderOptions,
-  ImageBitmapLoaderOptions
+  LegacyImageLoaderOptions,
+  ImageLoaderOptions
 } from '@loaders.gl/images';

@@ -108,14 +108,12 @@ const vitestConfiguration = getVitestConfig({
         'flatbuffers',
         'fuzzer',
         'geotiff',
-        'get-pixels',
         // The validator's compiled Dart CommonJS runtime requires browser prebundling.
         'gltf-validator',
 
         'lerc',
         'long',
         'lz4js',
-        'ndarray',
 
         'pako',
         'parquet-wasm/esm/parquet_wasm.js',
@@ -126,7 +124,6 @@ const vitestConfiguration = getVitestConfig({
         'react/jsx-dev-runtime',
         'pmtiles',
         'styled-components',
-        'save-pixels',
 
         'snappyjs',
         'sql.js',

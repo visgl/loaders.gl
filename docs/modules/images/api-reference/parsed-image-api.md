@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['ImageBitmap', 'Image', 'Image data']}
   links={[
     {label: 'Images module', to: '/docs/modules/images'},
-    {label: 'Image loader', to: '/docs/modules/images/api-reference/image-bitmap-loader'},
+    {label: 'Image loader', to: '/docs/modules/images/api-reference/image-loader'},
     {label: 'Image category', to: '/docs/specifications/category-image'}
   ]}
 />
@@ -42,17 +42,17 @@ A small set of image utility functions intended to help write image handling cod
   tone="orange"
 />
 
-Background: The image returned by [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) is always `ImageBitmap`, while deprecated [`ImageLoader`](/docs/modules/images/api-reference/image-loader) preserves older compatibility return types.
+Background: The image returned by [`ImageLoader`](/docs/modules/images/api-reference/image-loader) is always `ImageBitmap`, while deprecated [`LegacyImageLoader`](/docs/modules/images/api-reference/legacy-image-loader) preserves older compatibility return types.
 
 ## Usage
 
 E.g., the `getImageData` method enables the application to get width, height and pixel data from an image returned by an image category loader in a platform independent way:
 
 ```typescript
-import {ImageBitmapLoader, getImageSize, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageSize, getImageData} from '@loaders.gl/images';
 import {load} from '@loaders.gl/core';
 
-const image = await load(URL, ImageBitmapLoader);
+const image = await load(URL, ImageLoader);
 
 // Get an image data object regardless of whether the image is already an `Image`, `ImageBitmap` or already an image data object
 const imageData = getImageData(image);
@@ -101,7 +101,7 @@ Returns `true` if `mimeType` is one of the MIME types that `@loaders.gl/images` 
 isImage(image : any): boolean
 ```
 
-- `image`: An image returned by an image category loader, such as `ImageBitmapLoader` or deprecated `ImageLoader`
+- `image`: An image returned by an image category loader, such as `ImageLoader` or deprecated `LegacyImageLoader`
 
 Returns `true` if `image` is one of the types that `@loaders.gl/images` can return.
 
@@ -113,7 +113,7 @@ getImageType(image : any): 'imagebitmap' | 'image' | 'data'
 
 Returns the type of an image.
 
-- `image`: An image returned by an image category loader, such as `ImageBitmapLoader` or deprecated `ImageLoader`
+- `image`: An image returned by an image category loader, such as `ImageLoader` or deprecated `LegacyImageLoader`
 
 Returns
 
@@ -128,8 +128,8 @@ The following image types are distinguished
 | Image Type      | JavaScript Type                                                         | Description                                                                                                                              |
 | --------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `'data'`        | A simple JavaScript object with `data`, `width`, `height` etc. fields.. | Useful when additional manipulation of the image data is desired. Helper APIs continue to accept this shape directly.                    |
-| `'imagebitmap'` | [`ImageBitmap`][image_bitmap]                                           | The preferred image type returned by `ImageBitmapLoader` and by the Node.js `ImageBitmap` polyfill installed by `@loaders.gl/core/polyfills`. |
-| `'image'`       | [`Image`][image] (aka `HTMLImageElement`)                               | Supported by helper APIs for compatibility and still available through deprecated `ImageLoader`.                                         |
+| `'imagebitmap'` | [`ImageBitmap`][image_bitmap]                                           | The preferred image type returned by `ImageLoader` and by the Node.js `ImageBitmap` polyfill installed by `@loaders.gl/core/polyfills`. |
+| `'image'`       | [`Image`][image] (aka `HTMLImageElement`)                               | Supported by helper APIs for compatibility and still available through deprecated `LegacyImageLoader`.                                         |
 
 [image_bitmap]: https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap
 [image]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image
@@ -140,7 +140,7 @@ The following image types are distinguished
 getImageData(image : any): Object
 ```
 
-- `image`: An image returned by an image category loader, such as `ImageBitmapLoader` or deprecated `ImageLoader`
+- `image`: An image returned by an image category loader, such as `ImageLoader` or deprecated `LegacyImageLoader`
 
 Returns and image data object with the following fields
 

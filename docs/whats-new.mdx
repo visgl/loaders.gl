@@ -40,6 +40,22 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+
+## Image, texture, and video consolidation
+
+`@loaders.gl/images` now owns image, compressed texture, HDR, manifest-driven texture,
+and browser video loaders. The root exports metadata loaders; implementations,
+texture writers, schemas, and helper APIs use direct subpaths. The standalone
+textures and video packages have been removed. `ImageLoader` returns `ImageBitmap`,
+and `LegacyImageLoader` retains the older output modes.
+
+Node image decoding and encoding use the optional, lazy-loaded Sharp backend in
+`@loaders.gl/core/polyfills`, adding WebP and AVIF support without making image
+codecs a requirement for other polyfills. See the
+[upgrade guide](/docs/upgrade-guide#image-texture-and-video-consolidation) for imports,
+worker URLs, and dependency changes.
+
+
 ## math.gl 5 beta
 
 All direct math.gl dependencies now use `5.0.0-beta.1` across published modules, applications,

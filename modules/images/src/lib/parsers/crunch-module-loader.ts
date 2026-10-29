@@ -1,0 +1,54 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+// @ts-nocheck
+import {getJSModuleOrNull, registerJSModules} from '@loaders.gl/core/loader-utils';
+import {loadLibrary, type LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
+
+export const CRUNCH_EXTERNAL_LIBRARIES = {
+  /** Crunch decoder library. It is used as dynamically imported script */
+  DECODER: 'crunch.js'
+};
+
+/**
+ * Load crunch decoder module
+ * @param options - loader options
+ * @returns Promise of module object
+ */
+export async function loadCrunchModule(options: LoadLibraryOptions): Promise<any> {
+  registerJSModules(options.modules);
+  const crunch = getJSModuleOrNull('crunch');
+  if (crunch) {
+    return crunch;
+  }
+
+  return loadCrunch(options);
+}
+
+let crunchModule;
+
+/**
+ * Load crunch decoder module
+ * @param {any} options - Loader options
+ * @returns {Promise<any>} Promise of Module object
+ */
+async function loadCrunch(options: LoadLibraryOptions): Promise<any> {
+  if (crunchModule) {
+    return crunchModule;
+  }
+
+  let loadCrunchDecoder = await loadLibrary(
+    CRUNCH_EXTERNAL_LIBRARIES.DECODER,
+    'images',
+    options,
+    null,
+    'crunch.mjs'
+  );
+
+  // Depends on how import happened...
+  // @ts-ignore TS2339: Property does not exist on type
+  loadCrunchDecoder ||= globalThis.LoadCrunchDecoder;
+  crunchModule = loadCrunchDecoder();
+  return crunchModule;
+}

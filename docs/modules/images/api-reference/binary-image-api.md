@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['PNG, JPEG, BMP, GIF', 'Header-only inspection', 'MIME and dimensions']}
   links={[
     {label: 'Images module', to: '/docs/modules/images'},
-    {label: 'Image loader', to: '/docs/modules/images/api-reference/image-bitmap-loader'},
+    {label: 'Image loader', to: '/docs/modules/images/api-reference/image-loader'},
     {label: 'Image category', to: '/docs/specifications/category-image'}
   ]}
 />

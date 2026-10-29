@@ -8,9 +8,9 @@ import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';
-import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
-import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
+import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/images';
 import {I3SSpatialTransformer, getSpatialCoordinateFrame} from '@loaders.gl/tiles-3d';
 
 import {
@@ -58,7 +58,7 @@ function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 
     case 'jpg':
     case 'png':
     default:
-      return ImageBitmapLoader;
+      return ImageLoader;
   }
 }
 
@@ -188,12 +188,12 @@ async function loadI3STexture(
   }
 
   const nestedContext = getRequiredContext(context, 'decode texture payloads');
-  if (loader === ImageBitmapLoader) {
+  if (loader === ImageLoader) {
     const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
     try {
       const parsedTexture: any = await parseFromContext(
         textureArrayBuffer,
-        ImageBitmapLoader,
+        ImageLoader,
         imageLoaderOptions,
         nestedContext
       );

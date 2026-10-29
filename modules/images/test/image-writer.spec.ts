@@ -4,12 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
-import {
-  ImageWriter,
-  ImageBitmapLoader,
-  getBinaryImageMetadata,
-  getImageData
-} from '@loaders.gl/images';
+import {ImageWriter, ImageLoader, getBinaryImageMetadata, getImageData} from '@loaders.gl/images';
 const IMAGE = {
   width: 2,
   height: 3,
@@ -30,7 +25,7 @@ test('ImageWriter#write-and-read-image', async () => {
     expect(metadata.height, 'encoded image height is correct').toBe(IMAGE.height);
     expect(metadata.mimeType, 'encoded image mimeType is correct').toBe('image/jpeg');
   }
-  let image = getImageData(await parse(arrayBuffer, ImageBitmapLoader));
+  let image = getImageData(await parse(arrayBuffer, ImageLoader));
   expect(image.width, 'encoded and parsed image widths are same').toEqual(IMAGE.width);
   expect(image.height, 'encoded and parsed image heights are same').toEqual(IMAGE.height);
   // NOTE - encoded and decoded data are expected to be equal due to lossy jpeg compression
@@ -44,7 +39,7 @@ test('ImageWriter#write-and-read-image', async () => {
     expect(metadata.height, 'encoded image height is correct').toBe(IMAGE.height);
     expect(metadata.mimeType, 'encoded image mimeType is correct').toBe('image/png');
   }
-  image = getImageData(await parse(arrayBuffer, ImageBitmapLoader));
+  image = getImageData(await parse(arrayBuffer, ImageLoader));
   expect(image.width, 'encoded and parsed image widths are same').toEqual(IMAGE.width);
   expect(image.height, 'encoded and parsed image heightsare same').toEqual(IMAGE.height);
   expect(Array.from(image.data), 'encoded and parsed image data are same').toEqual(
@@ -81,7 +76,7 @@ test('ImageWriter supports OffscreenCanvas and the DOM canvas fallback', async (
       height: IMAGE.height,
       mimeType: 'image/png'
     });
-    const image = getImageData(await parse(encoded, ImageBitmapLoader));
+    const image = getImageData(await parse(encoded, ImageLoader));
     expect(Array.from(image.data)).toEqual(Array.from(IMAGE.data));
   }
 });

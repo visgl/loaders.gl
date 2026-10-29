@@ -46,7 +46,7 @@ import {createLayers} from './json-templates/layers';
 import {createGeometryDefinition} from './json-templates/geometry-definitions';
 import {createSharedResources} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
-import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
+import {KTX2BasisWriterWorker} from '@loaders.gl/images/ktx2-basis-writer-worker-loader';
 import {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/tiles-3d/i3s';
 import {getImageData, ImageWriter} from '@loaders.gl/images';
@@ -142,7 +142,7 @@ export default class I3SConverter {
     basis: {
       format: 'rgba32',
       // We need to load local fs workers because nodejs can't load workers from the Internet
-      workerUrl: './modules/textures/dist/basis-worker-node.cjs'
+      workerUrl: './modules/images/dist/basis-worker-node.cjs'
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
@@ -1274,7 +1274,7 @@ export default class I3SConverter {
                 ...KTX2BasisWriterWorker.options,
                 ['ktx2-basis-writer']: {
                   // We need to load local fs workers because nodejs can't load workers from the Internet
-                  workerUrl: './modules/textures/dist/ktx2-basis-writer-worker-node.cjs'
+                  workerUrl: './modules/images/dist/ktx2-basis-writer-worker-node.cjs'
                 },
                 reuseWorkers: true,
                 _nodeWorkers: true,

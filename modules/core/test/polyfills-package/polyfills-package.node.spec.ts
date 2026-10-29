@@ -106,20 +106,20 @@ test.each([
     import assert from 'node:assert/strict';
     import Module, {createRequire, register} from 'node:module';
     import {pathToFileURL} from 'node:url';
-    const optionalModules = ['get-pixels', 'save-pixels', 'ndarray'];
+    const optionalModules = ['sharp'];
     const loadOriginal = Module._load;
     Module._load = function(request, ...parameters) {
       if (optionalModules.includes(request)) throw new Error('Optional image codec omitted');
       return loadOriginal.call(this, request, ...parameters);
     };
-    const loaderSource = 'export async function resolve(specifier, context, nextResolve) { if (["get-pixels", "save-pixels", "ndarray"].includes(specifier)) throw new Error("Optional image codec omitted"); return nextResolve(specifier, context); }';
+    const loaderSource = 'export async function resolve(specifier, context, nextResolve) { if (["sharp"].includes(specifier)) throw new Error("Optional image codec omitted"); return nextResolve(specifier, context); }';
     register('data:text/javascript,' + encodeURIComponent(loaderSource), pathToFileURL(process.cwd() + '/'));
     const require = createRequire(import.meta.url);
     ${format === 'esm' ? "await import('@loaders.gl/core/polyfills')" : "require('@loaders.gl/core/polyfills')"};
     assert.equal(typeof globalThis.loaders.NodeFileSystem, 'function');
     assert.equal(typeof globalThis.loaders.readFileAsArrayBuffer, 'function');
-    await assert.rejects(globalThis.loaders.parseImageNode(new ArrayBuffer(0), 'image/png'), /Install get-pixels/);
-    await assert.rejects(globalThis.loaders.encodeImageNode({data: new Uint8Array(4), width: 1, height: 1}, {type: 'png'}), /Install save-pixels and ndarray/);
+    await assert.rejects(globalThis.loaders.parseImageNode(new ArrayBuffer(0), 'image/png'), /npm install sharp/);
+    await assert.rejects(globalThis.loaders.encodeImageNode({data: new Uint8Array(4), width: 1, height: 1}, {type: 'png'}), /npm install sharp/);
     console.log('Node transports work without image codecs');
   `
     ],

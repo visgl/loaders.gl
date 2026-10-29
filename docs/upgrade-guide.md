@@ -40,6 +40,31 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="orange"
 />
 
+
+## Image, texture, and video consolidation
+
+- Replace dependencies on the removed `@loaders.gl/textures` and `@loaders.gl/video`
+  packages with `@loaders.gl/images`; no compatibility packages are published.
+- `ImageBitmapLoader` is now `ImageLoader` and always returns an `ImageBitmap`.
+  The older environment-dependent loader is `LegacyImageLoader`, with
+  `LegacyImageLoaderOptions`. `ImageLoaderOptions` describes the bitmap loader.
+- Import metadata loaders from `@loaders.gl/images`. For direct implementations,
+  import `*WithParser` exports from direct subpaths such as
+  `@loaders.gl/images/basis-loader` or `@loaders.gl/images/image-loader`.
+  Async core APIs continue to preload metadata loaders automatically. Sync parsing
+  additionally requires an implementation with `parseSync`, such as
+  `NPYLoaderWithParser` from `@loaders.gl/images/npy-loader`; image and Basis
+  decoding remain asynchronous.
+- Import texture writers and helper APIs from their direct subpaths, for example
+  `@loaders.gl/images/ktx2-basis-writer` and `@loaders.gl/images/load-image`.
+  Default texture worker and codec URLs now use the images package; update custom
+  URLs and schema references that point at the removed textures package.
+- Node image decoding and encoding through `@loaders.gl/core/polyfills` now require
+  the optional `sharp` peer dependency. Install it explicitly (`npm install sharp`).
+  Other polyfills and browser image decoding do not load or require Sharp.
+  The optional `get-pixels`, `save-pixels`, and `ndarray` codec stack is removed.
+
+
 ## Upgrading to v5.0
 
 Install the current owner packages and update format imports and worker asset URLs together. See the [Packages overview](./packages.md) for the supported package structure. The sections below describe removed or deprecated paths and their replacements.

@@ -8,7 +8,7 @@
 import {expect, test} from 'vitest';
 import {parse, encodeSync, fetchFile} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
-import {ImageBitmapLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import {loadRootTileFromTileset, loadRootTile} from '../utils/load-utils';
 const EPSILON = 1e-12;
 const WITH_BATCH_TABLE_URL =
@@ -144,7 +144,7 @@ test('batched model tile#with a mix of opaque and translucent features', async (
 // TODO this should be a render test
 test('batched model tile#with textures', async () => {
   const tileData = await loadRootTileFromTileset(TEXTURED_URL);
-  const tile = await parse(tileData, [Tiles3DLoader, ImageBitmapLoader]);
+  const tile = await parse(tileData, [Tiles3DLoader, ImageLoader]);
   expect(tile, 'loaded tile with a mix of opaque and translucent features').toBeTruthy();
 });
 // TODO this should be a render test

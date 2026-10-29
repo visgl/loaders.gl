@@ -7,7 +7,7 @@ import {ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
 import type {ArcGISImageTileSourceLoaderOptions} from '../arcgis-source-types';
 
 import type {ImageType} from '@loaders.gl/images';
-import {ImageLoader} from '@loaders.gl/images';
+import {LegacyImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
   GetTileDataParameters,
@@ -83,7 +83,7 @@ export class ArcGISImageTileSource
         `ArcGIS ImageServer tile request failed: ${response.status} ${response.statusText}`
       );
     }
-    const loader = this._getResponseFormat() === 'lerc' ? LERCLoader : ImageLoader;
+    const loader = this._getResponseFormat() === 'lerc' ? LERCLoader : LegacyImageLoader;
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
       loader,

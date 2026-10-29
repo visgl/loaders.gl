@@ -66,11 +66,9 @@ function makeAliases() {
     '@loaders.gl/geospatial/shapefile/test': resolveTestPath('./modules/geospatial/test/shapefile'),
     '@loaders.gl/core/schema/test': resolveTestPath('./modules/core/test/schema-package'),
     '@loaders.gl/raster/test/terrain': resolveTestPath('./modules/raster/test/terrain'),
-    '@loaders.gl/textures/test': resolveTestPath('./modules/textures/test'),
     '@loaders.gl/tile-converter/test': resolveTestPath('./apps/tile-converter/test'),
     '@loaders.gl/tiles/test': resolveTestPath('./modules/tiles/test'),
     '@loaders.gl/traces/test': resolveTestPath('./modules/traces/test'),
-    '@loaders.gl/video/test': resolveTestPath('./modules/video/test'),
     '@loaders.gl/geospatial/wkt/test': resolveTestPath('./modules/geospatial/test/wkt'),
     '@loaders.gl/ogc/wms/test': resolveTestPath('./modules/ogc/test/wms'),
     '@loaders.gl/core/worker-utils/test': resolveTestPath(

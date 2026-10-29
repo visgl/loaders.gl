@@ -295,7 +295,6 @@ const config = {
             '@loaders.gl/ogc': resolve('../modules/ogc/src'),
             '@loaders.gl/sql': resolve('../modules/sql/src'),
             '@loaders.gl/raster/terrain/index': resolve('../modules/raster/src/terrain/index.ts'),
-            '@loaders.gl/textures': resolve('../modules/textures/src'),
             '@loaders.gl/tile-converter/v5/core': resolve('../apps/tile-converter/src/v5/core.ts'),
             '@loaders.gl/tile-converter/v5/adapters': resolve('../apps/tile-converter/src/v5/adapters.ts'),
             '@loaders.gl/tiles-3d': resolve('../modules/tiles-3d/src'),
@@ -303,7 +302,6 @@ const config = {
             '@loaders.gl/tiles-2d': resolve('../modules/tiles-2d/src'),
             '@loaders.gl/traces': resolve('../modules/traces/src'),
             '@loaders.gl/type-analyzer': resolve('../modules/type-analyzer/src'),
-            '@loaders.gl/video': resolve('../modules/video/src'),
             '@loaders.gl/geospatial/wkt': resolve('../modules/geospatial/src/wkt'),
             '@loaders.gl/ogc/wms': resolve('../modules/ogc/src/wms'),
             '@loaders.gl/arcgis/arcgis-feature-server-source-loader': resolve('../modules/arcgis/src/arcgis/arcgis-feature-server-source-loader'),
@@ -386,6 +384,7 @@ const config = {
             scene: ['obj', 'gltf']
           };
           const pageRedirects = {
+            '/docs/modules/images/api-reference/image-bitmap-loader': '/docs/modules/images/api-reference/image-loader',
             '/docs/developer-guide/using-unbundled-loaders': '/docs/developer-guide/using-metadata-loaders',
             '/docs/modules/scene/api-reference/usd-loader': '/docs/modules/scene/usd/api-reference/usd-loader',
             '/docs/modules/scene/formats/usd': '/docs/modules/scene/usd/formats/usd',

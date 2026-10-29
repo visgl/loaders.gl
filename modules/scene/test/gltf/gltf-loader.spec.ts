@@ -13,7 +13,7 @@ import {
 } from '@loaders.gl/scene/gltf';
 import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
 import {DracoLoader} from '@loaders.gl/draco';
-import {ImageBitmapLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import {getGLTFImageOptions} from '../../src/gltf/lib/parsers/parse-gltf';
 import {createGLBV3} from './test-utils/create-glb-v3';
 import {createGLBV1} from './test-utils/create-glb-v1';
@@ -319,10 +319,10 @@ test('GLTFLoader#Basis image options', () => {
 test('GLTFLoader#load(3d tile GLB)', async () => {
   const result = await load(GLB_TILE_URL, [GLTFLoader, DracoLoader]);
   expect(result, 'Test that GLB from 3D tile parses').toBeTruthy();
-  const result2 = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageBitmapLoader]);
+  const result2 = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageLoader]);
   expect(result2, 'Parses Draco GLB with supplied DracoLoader').toBeTruthy();
   // TODO - prone to flakiness since we have async unregisterLoaders calls
-  registerLoaders([DracoLoader, ImageBitmapLoader]);
+  registerLoaders([DracoLoader, ImageLoader]);
   const gltf2 = await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader);
   expect(gltf2, 'Parses Draco GLB with default registered DracoLoader').toBeTruthy();
 });

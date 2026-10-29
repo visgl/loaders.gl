@@ -4,10 +4,10 @@
 
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {CompressedTextureLoader} from '@loaders.gl/textures';
+import {CompressedTextureLoader} from '@loaders.gl/images';
 
 const TEXTURE_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/shannon-astc-12x12.pvr';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/images/test/textures/data/shannon-astc-12x12.pvr';
 
 const GLTF_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/scene/test/gltf/data/glb/DamagedHelmet.glb';

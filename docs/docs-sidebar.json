@@ -163,8 +163,8 @@
           "modules/tiles-3d/i3s/api-reference/i3s-loader",
           "modules/tiles-3d/i3s/api-reference/slpk-writer",
           "modules/tiles-3d/i3s/api-reference/i3s-mesh-writer",
-          "modules/images/api-reference/image-bitmap-loader",
           "modules/images/api-reference/image-loader",
+          "modules/images/api-reference/legacy-image-loader",
           "modules/tables/json/api-reference/json-loader",
           "modules/tables/json/api-reference/json-table-loader",
           "modules/config/api-reference/toml-loader",
@@ -782,7 +782,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/textures",
+        "label": "Texture APIs",
         "items": [
           "modules/textures/README",
           "modules/textures/api-reference/radiance-hdr-loader",
@@ -794,7 +794,7 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/video",
+        "label": "Video APIs",
         "items": [
           "modules/video/README",
           "modules/video/api-reference/gif-builder"
