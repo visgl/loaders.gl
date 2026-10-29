@@ -13,16 +13,29 @@ The explorer uses the shared `CatalogSource` interface. It supports both static 
 STAC APIs, and displays assets declared by returned Items.
 
 Choose the **deck.gl-data Earth** preset to browse the
-[Earth dataset catalog](https://github.com/visgl/deck.gl-data/tree/2de3d08585770105e1b84a6c0308c934fcce4878/earth/stac), or switch to
+[Earth dataset catalog](https://github.com/visgl/deck.gl-data/tree/master/earth/stac), or switch to
 **Overture Maps**. You can also enter any STAC catalog or API URL directly.
 
-Select an asset link to preview its contents below the catalog. Manifests and other text assets
-appear in the panels module's read-only text editor with JSON highlighting; Parquet assets display
-its Arrow table and schema panels with the first 50 rows and 12 columns.
+The list fills the available workspace when the inspector is closed. Select an entry to open its
+infobox in an attached right SidebarPanelContainer. The list uses metadata titles and descriptions;
+when a title repeats the technical ID, it uses the description's first sentence and shows the ID as a
+secondary label. For static catalogs, parent Collection titles and descriptions are used when an
+Item lacks useful labels; collection discovery is bounded to one hierarchy level and 50 requests. Leading public-domain and Creative Commons labels are omitted from browsing text;
+the full license-bearing description stays in Details and Attribution. The infobox offers **Details**, **Table**, **Manifest**, and **Attribution** tabs
+when those assets are available. Multiple Parquet assets receive separate table tabs.
+Expand **Full entry JSON** in Details to explore the complete record one level at a time.
+The **Asset files** disclosure provides links to the original files.
+
+Text assets appear in a read-only editor with JSON highlighting. Parquet assets display Arrow table
+and schema views with the first 50 rows and 12 columns.
+The schema view keeps the decoded field list compact. Expand **Schema metadata** or **Field metadata**
+to recursively inspect nested JSON objects. Long values stay collapsed until opened; the redundant
+encoded `ARROW:schema` payload is hidden.
 Use **Open original asset** to view or download the full file.
 Text previews are limited to 256 KiB. Parquet previews use range reads when available; otherwise,
 they download files up to 16 MiB, including the smaller GitHub-hosted Earth assets.
-The entries list scrolls independently of the asset preview.
+The entries and right sidebar scroll independently inside a viewport-sized workspace. Search filters
+are available in the expandable **Search filters** section.
 
 Recognized JSON assets use schema validation in the text panel. STAC Catalog,
 Collection, and Item documents use locally bundled official STAC 1.0.0 or 1.1.0

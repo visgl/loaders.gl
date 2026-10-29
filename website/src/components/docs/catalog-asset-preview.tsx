@@ -1,16 +1,13 @@
 import {readCatalogTextStream} from './catalog-text-stream';
 import {isCatalogRangeUnsupportedError} from './catalog-range-error';
 import React, {useEffect, useId, useMemo, useRef, useState} from 'react';
-import {
-  ArrowSchemaPanel,
-  ArrowTablePanel,
-  TabbedPanel,
-  TextEditorPanel
-} from '@deck.gl-community/panels';
+import {ArrowSchemaPanel, ArrowTablePanel, TextEditorPanel} from '@deck.gl-community/panels';
 import type {Table} from 'apache-arrow';
 import {ExamplePanelHost} from './example-panel-host';
 import {configurePanelEditorWorkers} from './panel-editor-workers';
 import {getCatalogAssetUrl} from './catalog-asset-url';
+import {getCatalogPreviewSchema, getCatalogPreviewMetadata} from './catalog-preview-schema';
+import {CatalogJsonTree} from './catalog-json-tree';
 
 /** An asset selected from a catalog record. */
 export type CatalogPreviewAsset = {
@@ -42,12 +39,16 @@ type AssetPreview = {
 
 /** Displays text assets and a bounded Arrow table decoded from Parquet. */
 export function CatalogAssetPreview({
-  asset
+  asset,
+  autoScroll = true
 }: {
   /** Current asset; changing it cancels the previous read. */
   asset: CatalogPreviewAsset;
+  /** Scrolls the page to standalone previews; disable inside a bounded inspector. */
+  autoScroll?: boolean;
 }): React.JSX.Element {
   const assetUrl = getCatalogAssetUrl(asset.href);
+  const [selectedTab, setSelectedTab] = useState<'table' | 'schema'>('table');
   const [preview, setPreview] = useState<AssetPreview>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
@@ -65,31 +66,27 @@ export function CatalogAssetPreview({
         jsonSchema: preview.jsonSchema
       });
     }
-    if (preview?.table)
-      return new TabbedPanel({
-        id: `${panelId}-arrow`,
-        title: 'Arrow',
-        panels: [
-          new ArrowTablePanel({
+    if (preview?.table) {
+      return selectedTab === 'table'
+        ? new ArrowTablePanel({
             id: `${panelId}-table`,
             title: 'Table',
             table: preview.table,
             maxRows: 50,
             maxColumns: 12
-          }),
-          new ArrowSchemaPanel({
-            id: `${panelId}-schema`,
-            title: 'Schema',
-            schema: preview.table.schema
           })
-        ]
-      });
+        : new ArrowSchemaPanel({
+            id: `${panelId}-schema`,
+            title: 'Fields',
+            schema: getCatalogPreviewSchema(preview.table.schema)
+          });
+    }
     return undefined;
-  }, [panelId, preview]);
+  }, [panelId, preview, selectedTab]);
 
   useEffect(() => {
     const abortController = new AbortController();
-    panel.current?.scrollIntoView({block: 'start', behavior: 'smooth'});
+    if (autoScroll) panel.current?.scrollIntoView({block: 'start', behavior: 'smooth'});
     setPreview(undefined);
     setError(undefined);
     setLoading(true);
@@ -130,7 +127,43 @@ export function CatalogAssetPreview({
       {preview?.downloaded ? (
         <p>Range reads were unavailable; preview downloaded this file (maximum 16 MiB).</p>
       ) : null}
+      {preview?.table ? (
+        <div role="group" aria-label="Arrow preview view" style={{display: 'flex', gap: 8}}>
+          <button
+            type="button"
+            aria-pressed={selectedTab === 'table'}
+            onClick={() => setSelectedTab('table')}
+          >
+            Table
+          </button>
+          <button
+            type="button"
+            aria-pressed={selectedTab === 'schema'}
+            onClick={() => setSelectedTab('schema')}
+          >
+            Schema
+          </button>
+        </div>
+      ) : null}
       {contentPanel ? <ExamplePanelHost panel={contentPanel} /> : null}
+      {preview?.table && selectedTab === 'schema' ? (
+        <div key={asset.href}>
+          <CatalogJsonTree
+            label="Schema metadata"
+            value={getCatalogPreviewMetadata(preview.table.schema.metadata)}
+          />
+          <CatalogJsonTree
+            label="Field metadata"
+            value={Object.fromEntries(
+              preview.table.schema.fields.map(field => [
+                field.name,
+                getCatalogPreviewMetadata(field.metadata)
+              ])
+            )}
+          />
+          <p>Encoded ARROW:schema metadata is omitted; decoded fields are shown above.</p>
+        </div>
+      ) : null}
     </section>
   );
 }
