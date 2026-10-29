@@ -44,19 +44,27 @@ test('keeps entries and long previews bounded and clears details when the source
             title:
               index === 4
                 ? undefined
-                : index === 1 || index === 2
-                  ? `entry-${index}`
-                  : index === 3
-                    ? 'CC0 Geoid entry-3'
-                    : `Geoid entry-${index}`,
+                : index === 5
+                  ? 'CC-BY-4.0 entry-5'
+                  : index === 6
+                    ? 'CC0'
+                    : index === 1 || index === 2
+                      ? `entry-${index}`
+                      : index === 3
+                        ? 'CC0 Geoid entry-3'
+                        : `Geoid entry-${index}`,
             description:
               index === 4
                 ? undefined
-                : index === 1
-                  ? 'CC-BY-4.0 Human-readable geoid preview. Heights are meters.'
-                  : index === 2
-                    ? 'Public-domain NGA geoid grid. Heights are meters.'
-                    : 'A geoid snapshot'
+                : index === 5
+                  ? 'License-prefixed title fallback. Full description.'
+                  : index === 6
+                    ? 'License-only title fallback. Full description.'
+                    : index === 1
+                      ? 'CC-BY-4.0 Human-readable geoid preview. Heights are meters.'
+                      : index === 2
+                        ? 'Public-domain NGA geoid grid. Heights are meters.'
+                        : 'A geoid snapshot'
           },
           assets: {
             data: {href: 'https://example.org/data.parquet'},
@@ -100,6 +108,12 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(entries.querySelectorAll('a')).toHaveLength(0);
     expect(entries.textContent).toContain('Human-readable geoid preview');
     expect(entries.textContent).toContain('NGA geoid grid');
+    expect(entries.querySelectorAll('button')[5].firstElementChild?.textContent).toBe(
+      'License-prefixed title fallback'
+    );
+    expect(entries.querySelectorAll('button')[6].firstElementChild?.textContent).toBe(
+      'License-only title fallback'
+    );
     expect(entries.textContent).not.toContain('CC-BY-4.0');
     expect(entries.textContent).not.toContain('Public-domain');
     expect(entries.textContent).not.toContain('CC0');

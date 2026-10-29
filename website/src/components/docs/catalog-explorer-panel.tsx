@@ -509,10 +509,11 @@ function getRecordCollection(
 function recordTitle(value: unknown, collections?: ReadonlyMap<string, unknown>): string {
   const record = asRecord(value);
   const properties = asRecord(record?.properties);
-  const title = record?.title || properties?.title;
+  const rawTitle = record?.title || properties?.title;
+  const title = rawTitle ? omitLicensePrefix(String(rawTitle)).trim() : undefined;
   const collection = getRecordCollection(value, collections);
   const description = record?.description || properties?.description || collection?.description;
-  if (title && title !== record?.id) return omitLicensePrefix(String(title));
+  if (title && title !== record?.id) return title;
   if (collection?.title) return omitLicensePrefix(String(collection.title));
   if (typeof description === 'string' && description.trim())
     return omitLicensePrefix(description.trim()).split(/\.\s+/)[0];
@@ -535,7 +536,7 @@ function recordSummary(value: unknown, collections?: ReadonlyMap<string, unknown
 /** Omits leading public-domain and Creative Commons labels from browsing text. */
 function omitLicensePrefix(value: string): string {
   return value.replace(
-    /^(?:public[- ]domain|CC(?:0|[- ]BY)(?:-(?:NC|ND|SA))*(?:[- ]\d+(?:\.\d+)*)?)\s+/i,
+    /^(?:public[- ]domain|CC(?:0|[- ]BY)(?:-(?:NC|ND|SA))*(?:[- ]\d+(?:\.\d+)*)?)(?:\s+|$)/i,
     ''
   );
 }
