@@ -6,6 +6,10 @@ Copy the content of this folder to your project.
 
 ```bash
 # install dependencies
+
+Load and render point clouds and meshes with deck.gl.
+
+Supported formats: LAS, LAZ, PCD, PLY, OBJ, Draco.
 npm install
 # or
 yarn

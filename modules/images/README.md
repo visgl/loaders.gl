@@ -1,8 +1,8 @@
 # @loaders.gl/images
 
-[loaders.gl](https://loaders.gl/docs) is a collection of framework-independent 3D and geospatial parsers and encoders.
+Image loaders and writers using browser and Node.js image codecs.
 
-This module contains loader and writers for images that follow loaders.gl conventions and work under both node and browser.
+Supported formats: PNG, JPEG, JPG, GIF, WebP, BMP, ICO, SVG, AVIF. Availability depends on the runtime and installed codecs.
 
 For documentation please visit the [website](https://loaders.gl).
 

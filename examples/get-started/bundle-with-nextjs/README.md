@@ -1,3 +1,7 @@
+# bundle-with-nextjs
+
+Incomplete Next.js integration reproduction for loaders.gl.
+
 This is an incomplete example based on reports:
 
 - https://github.com/visgl/deck.gl/issues/7617

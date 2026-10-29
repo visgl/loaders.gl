@@ -2,7 +2,7 @@
   "name": "loaders.gl-compiler-issue",
   "private": true,
   "version": "^3.3.0",
-  "description": "loaders.gl-compiler-issue demonstration",
+  "description": "TypeScript compilation fixture for loaders.gl package imports",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,9 @@
     "lint": "eslint . --ext .ts",
     "lint:tsc": "tsc -p tsconfig.json --noEmit"
   },
-  "keywords": [],
+  "keywords": [
+    "loaders.gl"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {

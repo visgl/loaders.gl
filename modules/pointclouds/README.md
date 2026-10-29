@@ -1,5 +1,9 @@
 # @loaders.gl/pointclouds
 
+LAS, LAZ, PCD, and PLY point cloud and mesh loaders and writers.
+
+Supported formats: LAS, LAZ, PCD, PLY.
+
 LAS, LAZ, PCD, and PLY loaders and writers. PLY supports both point clouds and meshes.
 
 ## Sources and credits

@@ -1,6 +1,6 @@
 {
   "name": "loaders.gl-experimental-basis-example",
-  "description": "Minimal example of using loaders.gl with basis.",
+  "description": "Load Basis Universal textures with loaders.gl",
   "version": "1.0.0",
   "license": "MIT",
   "type": "module",
@@ -18,5 +18,10 @@
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.3.0",
     "webpack-dev-server": "^3.11.3"
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "Basis",
+    "KTX2"
+  ]
 }

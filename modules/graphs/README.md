@@ -1,6 +1,8 @@
 # @loaders.gl/graphs
 
-Framework-independent loaders for GraphML, Graphviz DOT, and GEXF documents.
+Graph loaders for Graphviz DOT, GraphML, and GEXF.
+
+Supported formats: DOT, GraphML, GEXF.
 
 ## Graph output shapes
 

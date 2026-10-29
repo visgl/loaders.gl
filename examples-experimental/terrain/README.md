@@ -15,6 +15,10 @@ Or set `MAPBOX_TOKEN` directly in `app.js`.
 
 ```bash
 # install dependencies
+
+Render image-encoded terrain with loaders.gl and deck.gl.
+
+Supported formats: Mapbox Terrain-RGB, PNG.
 npm install
 # or
 yarn

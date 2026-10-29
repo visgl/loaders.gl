@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/textures",
   "version": "5.0.0-beta.1",
-  "description": "Framework-independent loaders for compressed and super compressed (basis) textures ",
+  "description": "Compressed texture, Basis Universal, Radiance HDR, and NPY loaders and texture writers",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -20,7 +20,17 @@
     "gpu texture",
     "PVR",
     "ETC",
-    "basis"
+    "basis",
+    "loaders.gl",
+    "KTX",
+    "KTX2",
+    "DDS",
+    "Basis Universal",
+    "Crunch",
+    "CRN",
+    "Radiance HDR",
+    "HDR",
+    "NPY"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

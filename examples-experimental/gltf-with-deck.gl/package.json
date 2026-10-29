@@ -31,5 +31,11 @@
     "webpack": "^4.39.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.11.3"
-  }
+  },
+  "description": "Render glTF scenes with loaders.gl and deck.gl",
+  "keywords": [
+    "loaders.gl",
+    "glTF",
+    "GLB"
+  ]
 }

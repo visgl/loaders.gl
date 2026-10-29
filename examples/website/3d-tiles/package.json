@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "3d-tiles-loaders-example",
-  "description": "Minimal example of using loaders.gl with vite.",
+  "description": "Explore and render 3D Tiles tilesets with deck.gl",
   "version": "0.0.0",
   "license": "MIT",
   "type": "module",
@@ -40,5 +40,15 @@
   "devDependencies": {
     "typescript": "^5.6.0",
     "vite": "^7.2.7"
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "3D Tiles",
+    "B3DM",
+    "I3DM",
+    "PNTS",
+    "CMPT",
+    "glTF",
+    "GLB"
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/tables",
   "version": "5.0.0-beta.1",
-  "description": "Table format loaders with metadata and explicit parser subpaths",
+  "description": "Tabular data loaders, writers, and sources for columnar and row-oriented formats",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -705,5 +705,35 @@
     "stream": false,
     "tls": false,
     "util": false
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "Arrow",
+    "Feather",
+    "GeoArrow",
+    "Avro",
+    "AVSC",
+    "BSON",
+    "CSV",
+    "TSV",
+    "DSV",
+    "Excel",
+    "XLS",
+    "XLSB",
+    "XLSM",
+    "XLSX",
+    "JSON",
+    "GeoJSON",
+    "NDJSON",
+    "JSONL",
+    "NDGeoJSON",
+    "GeoJSONL",
+    "LDGeoJSON",
+    "Lance",
+    "ORC",
+    "Parquet",
+    "GeoParquet",
+    "Delta Lake",
+    "checkpoint.parquet"
+  ]
 }

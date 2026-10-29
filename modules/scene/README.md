@@ -1,6 +1,8 @@
 # @loaders.gl/scene
 
-Framework-independent loaders for scene description formats.
+glTF, GLB, OBJ, MTL, and OpenUSD scene loaders and writers.
+
+Supported formats: glTF, GLB, OBJ, MTL, OpenUSD, USD, USDA, USDZ. OpenUSD support covers ASCII USDA and uncompressed USDZ archives with an ASCII root layer.
 
 ## Installation
 

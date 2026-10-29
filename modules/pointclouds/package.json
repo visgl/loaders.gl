@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/pointclouds",
   "version": "5.0.0-beta.1",
-  "description": "LAS, LAZ, PCD and PLY point-cloud and mesh loaders",
+  "description": "LAS, LAZ, PCD, and PLY point cloud and mesh loaders and writers",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -18,7 +18,10 @@
     "mesh",
     "point cloud",
     "LAS",
-    "LAZ"
+    "LAZ",
+    "loaders.gl",
+    "PCD",
+    "PLY"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

@@ -6,6 +6,10 @@ Copy the content of this folder to your project.
 
 ```bash
 # install dependencies
+
+Pick features in I3S scene layers with deck.gl.
+
+Supported formats: I3S.
 yarn
 # bundle and serve the app with webpack
 yarn start

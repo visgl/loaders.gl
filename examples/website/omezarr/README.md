@@ -1,5 +1,9 @@
 # OME-Zarr Source Example
 
+Explore OME-Zarr microscopy image sources.
+
+Supported formats: OME-Zarr, Zarr.
+
 Interactive demo for `OMEZarrSourceLoader` with:
 
 - a local SpatialData-style Zarr v3 fixture;

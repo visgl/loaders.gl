@@ -1,6 +1,8 @@
 # @loaders.gl/config
 
-[loaders.gl](https://loaders.gl/docs) is a collection of framework-independent parsers and encoders.
+YAML and TOML configuration loaders.
+
+Supported formats: YAML, TOML.
 
 This module contains dependency-free loaders for the YAML (YAML Ain't Markup Language) and TOML configuration formats. The package exposes metadata-only loaders from its root entry point, parser-bearing loaders from `bundled`, and lazy parser loading from `unbundled`.
 

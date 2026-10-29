@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/geospatial",
   "version": "5.0.0-beta.1",
-  "description": "Grouped geospatial loaders (package consolidation proof of concept)",
+  "description": "Geospatial loaders and writers for vector files and geometry encodings",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -396,5 +396,26 @@
   "devDependencies": {
     "fuzzer": "^0.2.1",
     "sql.js": "1.14.1"
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "KML",
+    "KMZ",
+    "GPX",
+    "TCX",
+    "Shapefile",
+    "SHP",
+    "SHX",
+    "DBF",
+    "CPG",
+    "PRJ",
+    "FlatGeobuf",
+    "GeoPackage",
+    "WKT",
+    "WKT CRS",
+    "WKB",
+    "TWKB",
+    "fgb",
+    "gpkg"
+  ]
 }

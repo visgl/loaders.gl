@@ -1,5 +1,9 @@
 # Interactive clustering
 
+Explore marker clustering and original-geometry selection with deck.gl.
+
+Supported formats: GeoJSON.
+
 A runnable example of the experimental `ClusterSource` and internal `ClusterLayer`, with 1,600
 deterministic synthetic Bay Area sites. It demonstrates pixel-radius controls, count labels,
 click-to-expand, paginated original members, selection, a numeric capacity sum, and polygon-centroid

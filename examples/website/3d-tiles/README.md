@@ -12,6 +12,10 @@ Copy the content of this folder to your project.
 
 ```bash
 # install dependencies
+
+Explore and render 3D Tiles tilesets with deck.gl.
+
+Supported formats: 3D Tiles, B3DM, I3DM, PNTS, CMPT, glTF, GLB.
 yarn
 # bundle and serve the app with Vite
 yarn start

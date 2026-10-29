@@ -2,7 +2,7 @@
   "name": "bundle-with-webpack-5",
   "version": "1.0.0",
   "type": "module",
-  "description": "Minimal example of using loaders.gl with webpack 5.",
+  "description": "Bundle OBJ loading with loaders.gl and webpack 5",
   "private": true,
   "scripts": {
     "start": "webpack serve --hot --open",
@@ -19,5 +19,9 @@
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^5.2.7"
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "OBJ"
+  ]
 }

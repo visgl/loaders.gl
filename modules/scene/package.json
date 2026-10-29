@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/scene",
   "version": "5.0.0-beta.1",
-  "description": "Framework-independent loaders for scene description formats",
+  "description": "glTF, GLB, OBJ, MTL, and OpenUSD scene loaders and writers",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -18,7 +18,12 @@
     "OpenUSD",
     "USD",
     "USDA",
-    "USDZ"
+    "USDZ",
+    "loaders.gl",
+    "glTF",
+    "GLB",
+    "OBJ",
+    "MTL"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

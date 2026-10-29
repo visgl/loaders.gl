@@ -6,6 +6,10 @@ Copy the content of this folder to your project.
 
 ```bash
 # install dependencies
+
+Explore OGC web map services with loaders.gl.
+
+Supported formats: WMS, XML.
 yarn
 # bundle and serve the app with webpack
 yarn start-local  # or yarn start

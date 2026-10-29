@@ -1,5 +1,9 @@
 # @loaders.gl/sql
 
+DuckDB and Snowflake SQL data sources and portable SQL predicate parsing.
+
+Supported formats: SQL, Arrow.
+
 This module contains SQL-oriented `DataSource` implementations for external and embedded databases.
 It also provides a database-runtime-free parser for turning a small SQL `WHERE` expression into a
 portable predicate AST.

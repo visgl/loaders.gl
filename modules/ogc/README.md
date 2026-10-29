@@ -1,6 +1,8 @@
 # @loaders.gl/ogc
 
-OGC service protocols and STAC catalog sources.
+OGC web service clients and STAC catalog sources.
+
+Supported formats: WMS, WFS, WMTS, WCS, CSW, GML, OGC API, STAC, STAC API, XML, JSON, GeoJSON.
 
 ```ts
 import {WMSCapabilitiesLoader, STACSourceLoader} from '@loaders.gl/ogc';

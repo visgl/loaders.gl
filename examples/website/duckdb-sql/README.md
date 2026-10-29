@@ -1,3 +1,9 @@
+# duckdb-sql-loaders-example
+
+Query geospatial data with DuckDBSQLSource and deck.gl.
+
+Supported formats: SQL, Arrow, GeoJSON.
+
 This standalone web app executes one portable table query through two physical backends:
 
 - a canonical Arrow table queried directly with `queryArrowTable()`;

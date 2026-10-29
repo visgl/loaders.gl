@@ -1,8 +1,8 @@
 # @loaders.gl/video
 
-[loaders.gl](https://loaders.gl/docs) is a collection of framework-independent 3D and geospatial parsers and encoders.
+Browser video loading and animated GIF generation.
 
-This module contains loader and writers for video that follow loaders.gl conventions and work under both node and browser.
+Supported formats: MP4, GIF. Availability depends on the runtime and installed codecs.
 
 For documentation please visit the [website](https://loaders.gl).
 

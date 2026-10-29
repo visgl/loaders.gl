@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/video",
   "version": "5.0.0-beta.1",
-  "description": "Framework-independent loaders and writers for video (MP4, WEBM, ...)",
+  "description": "Browser video loading and animated GIF generation",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -12,12 +12,9 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "3d",
-    "mesh",
-    "point cloud",
-    "PLY"
+    "loaders.gl",
+    "MP4",
+    "GIF"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

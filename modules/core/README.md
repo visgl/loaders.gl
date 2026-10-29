@@ -1,6 +1,8 @@
 # @loaders.gl/core
 
-This module contains shared utilities for loaders.gl, a collection of framework-independent 3D and geospatial loaders (parsers).
+Core loading and writing APIs, workers, schemas, and geometry utilities for loaders.gl.
+
+Formats and encodings: Arrow, GeoArrow, GeoJSON, WKT, WKB.
 
 For documentation please visit the [website](https://loaders.gl).
 

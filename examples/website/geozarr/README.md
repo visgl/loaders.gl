@@ -1,5 +1,9 @@
 # GeoZarr deck.gl Example
 
+Explore GeoZarr raster sources with deck.gl.
+
+Supported formats: GeoZarr, Zarr.
+
 Interactive `SourceLayer` + `GeoZarrSourceLoader` demo that:
 
 - reads NASA POWER's public one-degree monthly climatology Zarr store directly from S3;

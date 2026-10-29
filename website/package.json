@@ -2,7 +2,7 @@
   "name": "project-website",
   "version": "0.0.0",
   "private": true,
-  "description": "Website for vis.gl project",
+  "description": "Documentation, format guides, and interactive examples for loaders.gl",
   "packageManager": "yarn@4.17.1",
   "scripts": {
     "docusaurus": "docusaurus",
@@ -132,5 +132,8 @@
   ],
   "engines": {
     "node": ">=22.13.0"
-  }
+  },
+  "keywords": [
+    "loaders.gl"
+  ]
 }

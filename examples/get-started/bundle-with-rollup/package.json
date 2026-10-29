@@ -1,7 +1,7 @@
 {
   "name": "bundle-with-rollup",
   "version": "0.0.0",
-  "description": "Minimal working example of using loaders.gl with rollup.",
+  "description": "Bundle glTF loading with loaders.gl and Rollup",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -26,5 +26,10 @@
     "rollup": "^3.17.0",
     "serve": "^14.2.0",
     "typescript": "^5.6.0"
-  }
+  },
+  "keywords": [
+    "loaders.gl",
+    "glTF",
+    "GLB"
+  ]
 }

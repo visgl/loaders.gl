@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/ogc",
   "version": "5.0.0-beta.1",
-  "description": "OGC service protocols and STAC catalog sources",
+  "description": "OGC web service clients and STAC catalog sources",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -19,7 +19,14 @@
     "wcs",
     "csw",
     "stac",
-    "geospatial"
+    "geospatial",
+    "loaders.gl",
+    "GML",
+    "OGC API",
+    "STAC API",
+    "XML",
+    "JSON",
+    "GeoJSON"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

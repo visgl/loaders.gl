@@ -1,5 +1,9 @@
 # Atmospheric Explorer — ECMWF IFS analysis
 
+Explore ECMWF atmospheric fields from Zarr arrays in the browser.
+
+Supported formats: Zarr.
+
 Browser-side scientific field explorer using loaders.gl Zarr arrays and deck.gl GlobeView.
 
 ## Run

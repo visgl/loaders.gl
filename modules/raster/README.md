@@ -1,5 +1,9 @@
 # @loaders.gl/raster
 
+GeoTIFF, OME-TIFF, LERC, and terrain raster loaders.
+
+Supported formats: GeoTIFF, TIFF, COG, OME-TIFF, LERC, LERC1, LERC2, quantized mesh, Mapbox Terrain-RGB, Terrarium, PNG, JPEG, GIF, WebP, BMP.
+
 GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh.
 
 ```sh
