@@ -987,12 +987,12 @@ The encoding contract that lets a writer produce compatible files, streams, or b
 
 ### upgrade-guide
 
-Plan loaders.gl upgrades with focused notes on removals, deprecations, and behavior changes.
+Find the package, API, and output changes needed to upgrade loaders.gl.
 
-- [Upgrade with the data path in view.](https://loaders.gl/next/docs/upgrade-guide.md): Plan loaders.gl upgrades with focused notes on removals, deprecations, and behavior changes.
+- [Upgrade the parts your application uses.](https://loaders.gl/next/docs/upgrade-guide.md): Find the package, API, and output changes needed to upgrade loaders.gl.
 
 ### whats-new
 
-Follow the latest loaders.gl capabilities, compatibility changes, and format support.
+Explore what you can build with loaders.gl 5, from cloud queries to tile archives.
 
-- [See what changed, then choose your next path.](https://loaders.gl/next/docs/whats-new.md): Follow the latest loaders.gl capabilities, compatibility changes, and format support.
+- [From cloud data to visualization.](https://loaders.gl/next/docs/whats-new.md): Explore what you can build with loaders.gl 5, from cloud queries to tile archives.
