@@ -492,4 +492,4 @@ const AssetList = styled.div`display:flex;gap:10px;flex-wrap:wrap;a{color:#175cd
 const EmptyState = styled.div`color:var(--ifm-color-emphasis-700);font-size:.84rem;padding:14px 0;`;
 
 /** Aligns entry metadata labels and wraps long values on narrow screens. */
-const RecordMetadata = styled.dl`display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,3fr);gap:6px 12px;font-size:.82rem;dt{font-weight:600;}dd{margin:0;overflow-wrap:anywhere;}`;
+const RecordMetadata = styled.dl`display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,3fr);gap:6px 12px;font-size:.82rem;dt{font-weight:600;overflow-wrap:anywhere;}dd{margin:0;overflow-wrap:anywhere;}`;
