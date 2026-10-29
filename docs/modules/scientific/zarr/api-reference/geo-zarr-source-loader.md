@@ -48,10 +48,11 @@ The source recognizes two interoperable metadata patterns:
   `spatial:registration` attributes.
 - Regular one-dimensional CF/xarray longitude/latitude or x/y coordinate variables. The source
   derives an affine transform when those coordinates are evenly spaced and reads CRS WKT from a CF
-  `grid_mapping` variable when present. A GDAL `GeoTransform` attribute on that grid-mapping
-  variable, as GDAL and rioxarray write it, is used before the coordinate variables and needs no
-  coordinate chunk reads. Coordinate and grid-mapping variables are looked up in the data array's
-  own group first and then in each ancestor group, as in CF search by proximity.
+  `grid_mapping` variable when present. GDAL and rioxarray write a GDAL `GeoTransform` attribute
+  on the grid-mapping variable. The source uses this attribute before the coordinate variables, and
+  it reads no coordinate chunks for it. The source looks for coordinate and grid-mapping variables
+  in the group of the data array first. Then it looks in each parent group. This is the CF search
+  by proximity.
 
 <ReferenceBoundary
   title="GeoZarr source usage"
@@ -154,13 +155,21 @@ attributes in `metadata` and treats unknown optional fields as ignorable.
 path. `levels` preserves each asset ID, array path, dimensions, non-spatial selections, and
 resolved native metadata. Array dimensions determine logical X/Y independently of physical order.
 
-OME-NGFF `multiscales[].datasets[]` (v0.4 at the group root, v0.5 under `ome`) also describe
-levels, but only when the selected array declares a CRS through `proj:*` metadata or a CF
-`grid_mapping`. Each level is then georeferenced by its own GeoZarr or CF metadata, as above. The
-OME `scale` transforms, composed dataset first and then multiscale, may use a frame other than
-the CRS, so only their ratios between levels are checked: a level whose cell-size ratio to the
-selected level differs from its scale ratio keeps no metadata, so no complete grid is published.
-`translation` transforms are ignored; any other transform type rejects discovery.
+OME-NGFF `multiscales[].datasets[]` can also give the levels. Version 0.4 puts them at the group
+root, and version 0.5 puts them under `ome`. The source reads these levels only when the selected
+array declares a CRS. The CRS must come from `proj:*` metadata or from a CF `grid_mapping`.
+
+The source georeferences each OME-NGFF level with the GeoZarr or CF metadata of that level, as
+above. The OME transforms do not georeference a level, because the OME frame can be different from
+the CRS frame. The source uses the OME `scale` transforms only for a check:
+
+- The source multiplies the scales in the specified order: the dataset scale first, then the
+  multiscale scale.
+- For each level, the cell-size ratio to the selected level must equal the OME scale ratio.
+- If a level fails the check, the source removes the metadata of that level. Then the source does
+  not publish a complete grid.
+
+The source ignores `translation` transforms. It rejects all other transform types.
 
 A complete `tileMatrixSet` requires a common string CRS and explicit, finite, rightward,
 axis-aligned affine geometry for every level. CRS coordinates determine resolution units.
@@ -178,9 +187,9 @@ discovery reuses the validated parent group/store and consolidated preflight, an
 metadata only without decoding coordinate or sample chunks. Non-CRS `proj:*` fields retain
 the inherited CRS; an explicit nearer CRS declaration replaces inherited alternatives.
 
-OME-Zarr microscopy coordinates remain native OME metadata. Without a declared CRS, an OME
-`multiscales` array is not read as spatial levels, and OME transforms never establish a
-geographic CRS or georeferencing. Use the OME source for
+OME-Zarr microscopy coordinates stay native OME metadata. If the selected array declares no CRS,
+the source does not read an OME `multiscales` array as spatial levels. OME transforms never give a
+geographic CRS or a georeference. Use the OME source for
 its existing image/selection APIs. See [Tile matrices](/docs/developer-guide/tile-matrices).
 
 Explicit `proj:epsg` integer identifiers normalize to `EPSG:<code>`. `proj:projjson` definitions
