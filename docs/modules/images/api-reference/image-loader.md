@@ -107,7 +107,7 @@ Portability note: The exact set of `imagebitmap` options supported may depend on
 - In browsers without `ImageBitmap` support, `ImageLoader` throws instead of falling back to `HTMLImageElement`.
 - Under Node.js, the installed `ImageBitmap` polyfill is intentionally minimal and only supports the functionality needed by `ImageLoader` and `getImageData(image)`.
 - The SVG path may still use `HTMLImageElement` internally as a bridge before producing the final `ImageBitmap`.
-- Node.js support requires import `@loaders.gl/core/polyfills` before installing this module.
+- Node.js support requires import `@loaders.gl/core/polyfills` before loading images.
 
 ## Node.js codec setup
 

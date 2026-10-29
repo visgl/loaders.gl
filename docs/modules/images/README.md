@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Browser and Node.js', 'ImageBitmap', 'Binary image metadata']}
   links={[
     {label: 'Image category', to: '/docs/specifications/category-image'},
-    {label: 'Image loader', to: '/docs/modules/images/api-reference/legacy-image-loader'}
+    {label: 'Image loader', to: '/docs/modules/images/api-reference/image-loader'}
   ]}
 />
 
@@ -33,7 +33,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/images` module contains loader and writers for images that follow loaders.gl conventions and work under both node and browser.
+The `@loaders.gl/images` module provides image, compressed texture, HDR, texture manifest,
+and video loaders. Image decoding works in browsers and Node.js with an optional codec;
+video loading requires browser media APIs.
 
 See [Image Loaders](/docs/specifications/category-image) for the shared category conventions.
 

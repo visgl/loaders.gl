@@ -16,7 +16,6 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   links={[{label: 'What’s new', to: '/docs/whats-new'}]}
 />
 
-
 ## Upgrading to v5.0
 
 Version 5 is in prerelease development. Removed packages have no forwarding packages: install the
