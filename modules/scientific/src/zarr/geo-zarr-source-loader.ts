@@ -221,7 +221,10 @@ export class GeoZarrRasterSource
   private async loadGridMetadata(): Promise<GeoZarrSourceMetadata> {
     const {metadata, group} = await this.getInitializationPromise();
     const groupAttributes = metadata.metadata?.groupAttributes as GeoZarrAttributes;
-    const layout = getSpatialMultiscaleLevels(groupAttributes, metadata.array);
+    const arrayAttributes = metadata.metadata?.arrayAttributes as GeoZarrAttributes;
+    const layout = getSpatialMultiscaleLevels(groupAttributes, metadata.array, {
+      spatialOME: declaresCoordinateReferenceSystem({...groupAttributes, ...arrayAttributes})
+    });
     const levels: GeoZarrLevelMetadata[] = [];
     for (const level of layout) {
       if (level.array === metadata.array) {
@@ -243,6 +246,15 @@ export class GeoZarrRasterSource
       } catch {
         // Unsupported siblings remain advertised; never publish a complete set with missing levels.
         levels.push({id: level.id, array: level.array});
+      }
+    }
+    const selectedScale = layout.find(level => level.array === metadata.array)?.scale;
+    if (selectedScale) {
+      for (const [index, level] of levels.entries()) {
+        const scale = layout[index].scale!;
+        if (level.metadata && !isConsistentOMELevel(scale, selectedScale, level.metadata, metadata)) {
+          delete level.metadata;
+        }
       }
     }
     const normalizedLevels = levels.length
@@ -406,7 +418,9 @@ export class GeoZarrRasterSource
     const array = await zarrita.open(group.resolve(arrayPath), {kind: 'array', signal});
     const groupAttributes = normalizeAttributes(group.attrs);
     const arrayAttributes = normalizeAttributes(array.attrs);
-    const layout = getSpatialMultiscaleLevels(groupAttributes, arrayPath);
+    const layout = getSpatialMultiscaleLevels(groupAttributes, arrayPath, {
+      spatialOME: declaresCoordinateReferenceSystem({...groupAttributes, ...arrayAttributes})
+    });
     const level = layout.find(candidate => candidate.array === arrayPath);
     const levelGroupAttributes = level?.group
       ? normalizeAttributes(
@@ -449,13 +463,19 @@ export class GeoZarrRasterSource
     const xDimensionIndex = dimensions.indexOf(spatialDimensions[1]);
     const width = array.shape[xDimensionIndex];
     const height = array.shape[yDimensionIndex];
+    let gridMappingPromise: Promise<GeoZarrAttributes | null> | undefined;
+    const getGridMappingAttributes = () =>
+      (gridMappingPromise ||= loadCFGridMappingAttributes(group, arrayPath, attributes, signal));
     const coordinateTransform =
       options?.transform ||
       normalizeAffineTransform(attributes['spatial:transform']) ||
-      (!metadataOnly ? await loadCFCoordinateTransform(group, spatialDimensions, signal) : null);
+      normalizeGDALGeoTransform((await getGridMappingAttributes())?.GeoTransform) ||
+      (!metadataOnly
+        ? await loadCFCoordinateTransform(group, arrayPath, spatialDimensions, signal)
+        : null);
     if (!coordinateTransform) {
       throw new Error(
-        'GeoZarrRasterSource requires spatial:transform metadata, explicit geozarr.transform, or regular 1D CF coordinate arrays.'
+        'GeoZarrRasterSource requires spatial:transform metadata, explicit geozarr.transform, a CF grid-mapping GeoTransform, or regular 1D CF coordinate arrays.'
       );
     }
 
@@ -472,7 +492,7 @@ export class GeoZarrRasterSource
     const coordinateReferenceSystem =
       options?.coordinateReferenceSystem ||
       normalizeDeclaredCoordinateReferenceSystem(attributes) ||
-      await loadCFCoordinateReferenceSystem(group, attributes, spatialDimensions, signal);
+      getCFCoordinateReferenceSystem(await getGridMappingAttributes(), spatialDimensions);
     const defaultSelection = options?.defaultSelection || {};
     const selectionDimensions = dimensions
       .map((dimensionName, dimensionIndex) => ({
@@ -633,13 +653,14 @@ function convertNodeTransformToPixelTransform(
 /** Loads regular one-dimensional CF coordinate variables and derives a pixel-corner transform. */
 async function loadCFCoordinateTransform(
   group: zarrita.Group<Readable>,
+  arrayPath: string,
   spatialDimensions: [y: string, x: string],
   signal?: AbortSignal
 ): Promise<GeoZarrAffineTransform | null> {
   try {
     const [yCoordinates, xCoordinates] = await Promise.all([
-      loadCoordinateValues(group, spatialDimensions[0], signal),
-      loadCoordinateValues(group, spatialDimensions[1], signal)
+      loadCoordinateValues(group, arrayPath, spatialDimensions[0], signal),
+      loadCoordinateValues(group, arrayPath, spatialDimensions[1], signal)
     ]);
     const scaleX = getRegularCoordinateSpacing(xCoordinates, spatialDimensions[1]);
     const scaleY = getRegularCoordinateSpacing(yCoordinates, spatialDimensions[0]);
@@ -652,13 +673,11 @@ async function loadCFCoordinateTransform(
 /** Loads all values from one one-dimensional coordinate variable. */
 async function loadCoordinateValues(
   group: zarrita.Group<Readable>,
+  arrayPath: string,
   coordinateName: string,
   signal?: AbortSignal
 ): Promise<number[]> {
-  const coordinateArray = await zarrita.open(group.resolve(coordinateName), {
-    kind: 'array',
-    signal
-  });
+  const coordinateArray = await openNearestArray(group, arrayPath, coordinateName, signal);
   if (coordinateArray.shape.length !== 1 || coordinateArray.shape[0] < 2) {
     throw new Error(
       `Coordinate ${coordinateName} must be a one-dimensional array with at least two values.`
@@ -669,6 +688,29 @@ async function loadCoordinateValues(
     throw new Error(`Could not read coordinate ${coordinateName}.`);
   }
   return Array.from(coordinateChunk.data as ArrayLike<number>);
+}
+
+/**
+ * Opens a CF variable referenced by name from a data array, searching the array's own group and
+ * then each ancestor up to the selected group, as CF 1.8 search by proximity specifies.
+ */
+async function openNearestArray(
+  group: zarrita.Group<Readable>,
+  arrayPath: string,
+  name: string,
+  signal?: AbortSignal
+): Promise<zarrita.Array<zarrita.DataType, Readable>> {
+  const segments = arrayPath.split('/').slice(0, -1);
+  let lastError: unknown;
+  for (let depth = segments.length; depth >= 0; depth--) {
+    const path = [...segments.slice(0, depth), name].join('/');
+    try {
+      return await zarrita.open(group.resolve(path), {kind: 'array', signal});
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
 }
 
 /** Validates that coordinate values are finite and regularly spaced. */
@@ -691,33 +733,37 @@ function getRegularCoordinateSpacing(coordinates: number[], coordinateName: stri
   return spacing;
 }
 
-/** Resolves CRS metadata from a CF grid-mapping variable or longitude/latitude dimensions. */
-async function loadCFCoordinateReferenceSystem(
+/** Loads the attributes of the CF grid-mapping variable named by a data array, if any. */
+async function loadCFGridMappingAttributes(
   group: zarrita.Group<Readable>,
+  arrayPath: string,
   attributes: GeoZarrAttributes,
-  spatialDimensions: [y: string, x: string],
   signal?: AbortSignal
-): Promise<string | undefined> {
+): Promise<GeoZarrAttributes | null> {
   const gridMapping = normalizeString(attributes.grid_mapping);
-  if (gridMapping) {
-    const gridMappingName = gridMapping.trim().split(/[\s:]/, 1)[0];
-    try {
-      const gridMappingArray = await zarrita.open(group.resolve(gridMappingName), {
-        kind: 'array',
-        signal
-      });
-      const gridMappingAttributes = normalizeAttributes(gridMappingArray.attrs);
-      const coordinateReferenceSystem =
-        normalizeString(gridMappingAttributes.crs_wkt) ||
-        normalizeString(gridMappingAttributes.spatial_ref) ||
-        normalizeString(gridMappingAttributes['proj:wkt2']) ||
-        normalizeString(gridMappingAttributes['proj:code']);
-      if (coordinateReferenceSystem) {
-        return coordinateReferenceSystem;
-      }
-    } catch {
-      // Fall through to the common longitude/latitude CRS below.
-    }
+  if (!gridMapping) return null;
+  const gridMappingName = gridMapping.trim().split(/[\s:]/, 1)[0];
+  try {
+    const gridMappingArray = await openNearestArray(group, arrayPath, gridMappingName, signal);
+    return normalizeAttributes(gridMappingArray.attrs);
+  } catch {
+    return null;
+  }
+}
+
+/** Resolves CRS metadata from CF grid-mapping attributes or longitude/latitude dimensions. */
+function getCFCoordinateReferenceSystem(
+  gridMappingAttributes: GeoZarrAttributes | null,
+  spatialDimensions: [y: string, x: string]
+): string | undefined {
+  const coordinateReferenceSystem =
+    gridMappingAttributes &&
+    (normalizeString(gridMappingAttributes.crs_wkt) ||
+      normalizeString(gridMappingAttributes.spatial_ref) ||
+      normalizeString(gridMappingAttributes['proj:wkt2']) ||
+      normalizeString(gridMappingAttributes['proj:code']));
+  if (coordinateReferenceSystem) {
+    return coordinateReferenceSystem;
   }
 
   const normalizedDimensions = spatialDimensions.map(dimension => dimension.toLowerCase());
@@ -728,6 +774,48 @@ async function loadCFCoordinateReferenceSystem(
     return 'EPSG:4326';
   }
   return undefined;
+}
+
+/**
+ * Reads a GDAL `GeoTransform` (`originX pixelWidth rotationX originY rotationY pixelHeight`, a
+ * pixel-corner affine) from a CF grid-mapping variable, as written by GDAL and rioxarray.
+ */
+function normalizeGDALGeoTransform(value: unknown): GeoZarrAffineTransform | null {
+  const coefficients = typeof value === 'string' ? value.trim().split(/\s+/).map(Number) : value;
+  if (
+    !Array.isArray(coefficients) || coefficients.length !== 6 ||
+    coefficients.some(coefficient => typeof coefficient !== 'number' || !Number.isFinite(coefficient))
+  ) {
+    return null;
+  }
+  const [originX, pixelWidth, rotationX, originY, rotationY, pixelHeight] = coefficients as number[];
+  if (pixelWidth === 0 || pixelHeight === 0) return null;
+  return [pixelWidth, rotationX, originX, rotationY, pixelHeight, originY];
+}
+
+/** Whether attributes declare a CRS through GeoZarr `proj:*` metadata or a CF grid mapping. */
+function declaresCoordinateReferenceSystem(attributes: GeoZarrAttributes): boolean {
+  return Boolean(
+    normalizeDeclaredCoordinateReferenceSystem(attributes) || normalizeString(attributes.grid_mapping)
+  );
+}
+
+/**
+ * Whether a level's cell size relative to the selected level matches its OME-NGFF scale relative
+ * to the selected level. The OME frame may differ from the CRS frame, so only ratios are compared.
+ */
+function isConsistentOMELevel(
+  scale: Readonly<Record<string, number>>,
+  selectedScale: Readonly<Record<string, number>>,
+  level: Pick<GeoZarrSourceMetadata, 'transform'>,
+  selected: Pick<GeoZarrSourceMetadata, 'transform' | 'spatialDimensions'>
+): boolean {
+  return selected.spatialDimensions.every((dimension, index) => {
+    const coefficient = index === 0 ? 4 : 0;
+    const expected = Math.abs(scale[dimension] / selectedScale[dimension]);
+    const actual = Math.abs(level.transform[coefficient] / selected.transform[coefficient]);
+    return Number.isFinite(expected) && Math.abs(actual - expected) <= expected * 1e-6;
+  });
 }
 
 /** Computes a bounding box from all four transformed raster corners. */

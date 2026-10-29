@@ -48,7 +48,10 @@ The source recognizes two interoperable metadata patterns:
   `spatial:registration` attributes.
 - Regular one-dimensional CF/xarray longitude/latitude or x/y coordinate variables. The source
   derives an affine transform when those coordinates are evenly spaced and reads CRS WKT from a CF
-  `grid_mapping` variable when present.
+  `grid_mapping` variable when present. A GDAL `GeoTransform` attribute on that grid-mapping
+  variable, as GDAL and rioxarray write it, is used before the coordinate variables and needs no
+  coordinate chunk reads. Coordinate and grid-mapping variables are looked up in the data array's
+  own group first and then in each ancestor group, as in CF search by proximity.
 
 <ReferenceBoundary
   title="GeoZarr source usage"
@@ -151,6 +154,14 @@ attributes in `metadata` and treats unknown optional fields as ignorable.
 path. `levels` preserves each asset ID, array path, dimensions, non-spatial selections, and
 resolved native metadata. Array dimensions determine logical X/Y independently of physical order.
 
+OME-NGFF `multiscales[].datasets[]` (v0.4 at the group root, v0.5 under `ome`) also describe
+levels, but only when the selected array declares a CRS through `proj:*` metadata or a CF
+`grid_mapping`. Each level is then georeferenced by its own GeoZarr or CF metadata, as above. The
+OME `scale` transforms, composed dataset first and then multiscale, may use a frame other than
+the CRS, so only their ratios between levels are checked: a level whose cell-size ratio to the
+selected level differs from its scale ratio keeps no metadata, so no complete grid is published.
+`translation` transforms are ignored; any other transform type rejects discovery.
+
 A complete `tileMatrixSet` requires a common string CRS and explicit, finite, rightward,
 axis-aligned affine geometry for every level. CRS coordinates determine resolution units.
 Each level must declare its own absolute `spatial:transform`, on its array, level group, or
@@ -167,8 +178,9 @@ discovery reuses the validated parent group/store and consolidated preflight, an
 metadata only without decoding coordinate or sample chunks. Non-CRS `proj:*` fields retain
 the inherited CRS; an explicit nearer CRS declaration replaces inherited alternatives.
 
-OME-Zarr microscopy coordinates remain native OME metadata. An OME `multiscales` array is not
-the generic multiscales object and does not establish a geographic CRS. Use the OME source for
+OME-Zarr microscopy coordinates remain native OME metadata. Without a declared CRS, an OME
+`multiscales` array is not read as spatial levels, and OME transforms never establish a
+geographic CRS or georeferencing. Use the OME source for
 its existing image/selection APIs. See [Tile matrices](/docs/developer-guide/tile-matrices).
 
 Explicit `proj:epsg` integer identifiers normalize to `EPSG:<code>`. `proj:projjson` definitions
