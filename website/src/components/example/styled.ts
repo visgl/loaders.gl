@@ -30,6 +30,9 @@ export const ExampleCard = styled.a`
   padding: 4px;
   position: relative;
   > img {
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    object-position: top;
     transition-property: filter;
     transition-duration: var(--ifm-transition-slow);
     transition-timing-function: var(--ifm-transition-timing-default);

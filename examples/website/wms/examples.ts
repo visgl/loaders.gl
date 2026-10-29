@@ -11,18 +11,18 @@ export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap WMS (Terrestris)';
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   WMTS: {
-    'NASA GIBS satellite imagery': {
+    'USGS National Map imagery': {
       type: 'wmts',
-      url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi',
-      description: 'NASA Global Imagery Browse Services WMTS, configured from its GetCapabilities document.',
+      url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS',
+      description: 'USGS National Map aerial imagery, configured from its public WMTS capabilities.',
       viewState: {longitude: -98, latitude: 39, zoom: 3},
       sourceOptions: {
         wmts: {
-          layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
-          tileMatrixSet: 'GoogleMapsCompatible_Level9',
-          format: 'image/jpeg',
+          layer: 'USGSImageryOnly',
+          tileMatrixSet: 'GoogleMapsCompatible',
+          format: 'image/jpgpng',
           capabilitiesUrl:
-            'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0'
+            'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/1.0.0/WMTSCapabilities.xml'
         }
       }
     }
