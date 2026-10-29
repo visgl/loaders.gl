@@ -1,3 +1,9 @@
+# loaders.gl-example-pointcloud-loaders
+
+Load and render point clouds and meshes with deck.gl.
+
+Supported formats: LAS, LAZ, PCD, PLY, OBJ, Draco.
+
 This is a standalone web app using `@loaders.gl/pointclouds/las`.
 
 ### Usage
@@ -6,10 +12,6 @@ Copy the content of this folder to your project.
 
 ```bash
 # install dependencies
-
-Load and render point clouds and meshes with deck.gl.
-
-Supported formats: LAS, LAZ, PCD, PLY, OBJ, Draco.
 npm install
 # or
 yarn

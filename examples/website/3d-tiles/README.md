@@ -1,3 +1,9 @@
+# 3d-tiles-loaders-example
+
+Explore and render 3D Tiles tilesets with deck.gl.
+
+Supported formats: 3D Tiles, B3DM, I3DM, PNTS, CMPT, glTF, GLB.
+
 This is a standalone deck.gl app for exploring 3D Tiles and I3S with loaders.gl. It includes a
 GPU "Tile Fold" deformation and an authored camera sequence.
 
@@ -12,10 +18,6 @@ Copy the content of this folder to your project.
 
 ```bash
 # install dependencies
-
-Explore and render 3D Tiles tilesets with deck.gl.
-
-Supported formats: 3D Tiles, B3DM, I3DM, PNTS, CMPT, glTF, GLB.
 yarn
 # bundle and serve the app with Vite
 yarn start
