@@ -463,9 +463,9 @@ function recordTitle(value: unknown): string {
   const properties = asRecord(record?.properties);
   const title = record?.title || properties?.title;
   const description = record?.description || properties?.description;
-  if (title && title !== record?.id) return String(title);
+  if (title && title !== record?.id) return omitLicensePrefix(String(title));
   if (typeof description === 'string' && description.trim())
-    return description.trim().split(/\.\s+/)[0];
+    return omitLicensePrefix(description.trim()).split(/\.\s+/)[0];
   return String(title || record?.id || 'Untitled record');
 }
 /** Returns a compact secondary description for a catalog record. */
@@ -481,9 +481,13 @@ function recordSummary(value: unknown): string {
       ''
   );
 }
+/** Omits leading public-domain and Creative Commons labels from browsing text. */
+function omitLicensePrefix(value: string): string {
+  return value.replace(/^(?:public[- ]domain|CC(?:0|[- ]BY)(?:-(?:NC|ND|SA))*(?:[- ]\d+(?:\.\d+)*)?)\s+/i, '');
+}
 /** Avoids repeating a description sentence already used as the entry heading. */
 function recordListSummary(value: unknown): string {
-  const summary = recordSummary(value);
+  const summary = omitLicensePrefix(recordSummary(value));
   const title = recordTitle(value);
   return summary.startsWith(title) ? summary.slice(title.length).replace(/^[.\s]+/, '') : summary;
 }

@@ -25,9 +25,18 @@ test('keeps entries and long previews bounded and clears details when the source
           id: `entry-${index}`,
           properties: {
             model: 'EGM96',
-            title: index === 1 ? `entry-${index}` : `Geoid entry-${index}`,
+            title:
+              index === 1 || index === 2
+                ? `entry-${index}`
+                : index === 3
+                  ? 'CC0 Geoid entry-3'
+                  : `Geoid entry-${index}`,
             description:
-              index === 1 ? 'Human-readable geoid preview. Heights are meters.' : 'A geoid snapshot'
+              index === 1
+                ? 'CC-BY-4.0 Human-readable geoid preview. Heights are meters.'
+                : index === 2
+                  ? 'Public-domain NGA geoid grid. Heights are meters.'
+                  : 'A geoid snapshot'
           },
           assets: {
             data: {href: 'https://example.org/data.parquet'},
@@ -65,8 +74,14 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(inspector.textContent).toContain('A geoid snapshot');
     expect(entries.querySelectorAll('a')).toHaveLength(0);
     expect(entries.textContent).toContain('Human-readable geoid preview');
+    expect(entries.textContent).toContain('NGA geoid grid');
+    expect(entries.textContent).not.toContain('CC-BY-4.0');
+    expect(entries.textContent).not.toContain('Public-domain');
+    expect(entries.textContent).not.toContain('CC0');
     await act(async () => entries.querySelectorAll('button')[1].click());
     expect(inspector.textContent).toContain('Human-readable geoid preview');
+    expect(inspector.textContent).toContain('CC-BY-4.0 Human-readable geoid preview');
+    expect(inspector.querySelector('strong')?.textContent).toBe('Human-readable geoid preview');
     const tabs = Array.from(inspector.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
     expect(tabs.map(tab => tab.textContent)).toEqual([
       'Details',
