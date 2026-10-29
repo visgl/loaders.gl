@@ -69,7 +69,7 @@ export function STACCatalogLiveExample({
         </CatalogControls>
         <CatalogExplorerPanel
           sources={[{id: 'stac-source', title: 'STAC catalog', source}]}
-          title={catalogTitle}
+          title="STAC catalog explorer"
           onCatalogTitle={setCatalogTitle}
           onSelectAsset={setSelectedAsset}
           onSelectRecord={() => setSelectedAsset(undefined)}
