@@ -13,8 +13,12 @@ The explorer uses the shared `CatalogSource` interface. It supports both static 
 STAC APIs, and displays assets declared by returned Items.
 
 Choose the **deck.gl-data Earth** preset to browse the
-[Earth dataset catalog](https://github.com/visgl/deck.gl-data/tree/2de3d08585770105e1b84a6c0308c934fcce4878/earth/stac), or switch to
+[Earth dataset catalog](https://github.com/visgl/deck.gl-data/tree/master/earth/stac), or switch to
 **Overture Maps**. You can also enter any STAC catalog or API URL directly.
+
+Select an entry title to inspect its metadata in a dismissible details panel without leaving the example.
+Expand **View full JSON** for the complete record. Choose **Preview table** on a Parquet asset
+to inspect its contents in the Arrow table and schema panels below.
 
 Select an asset link to preview its contents below the catalog. Manifests and other text assets
 appear in the panels module's read-only text editor with JSON highlighting; Parquet assets display

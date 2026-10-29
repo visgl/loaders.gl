@@ -67,6 +67,7 @@ export function CatalogExplorerPanel({
   const [query, setQuery] = useState<CatalogExplorerQuery>({limit: 25});
   const [submittedQuery, setSubmittedQuery] = useState<CatalogExplorerQuery>({limit: 25});
   const [metadata, setMetadata] = useState<unknown>();
+  const [selectedRecord, setSelectedRecord] = useState<unknown>();
   const [records, setRecords] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
@@ -80,6 +81,8 @@ export function CatalogExplorerPanel({
     setLoading(true);
     setError(undefined);
     setRecords([]);
+    setSelectedRecord(undefined);
+    setMetadata(undefined);
     void (async () => {
       try {
         const nextMetadata = await selectedSourceSource.getMetadata();
@@ -226,7 +229,13 @@ export function CatalogExplorerPanel({
             <ResultList role="region" aria-label="Catalog entries" tabIndex={0}>
               {records.map((record, index) => (
                 <ResultRow key={`${recordKey(record)}-${index}`}>
-                  <ResultTitle type="button" onClick={() => onSelectRecord?.(record)}>
+                  <ResultTitle
+                    type="button"
+                    onClick={() => {
+                      setSelectedRecord(record);
+                      onSelectRecord?.(record);
+                    }}
+                  >
                     {recordTitle(record)}
                   </ResultTitle>
                   <ResultSummary>{recordSummary(record)}</ResultSummary>
@@ -234,6 +243,57 @@ export function CatalogExplorerPanel({
                 </ResultRow>
               ))}
             </ResultList>
+            {selectedRecord !== undefined ? (
+              <section aria-label="Catalog entry details">
+                <ResultsHeader>
+                  <strong>{recordTitle(selectedRecord)}</strong>
+                  <button
+                    type="button"
+                    aria-label="Close catalog entry details"
+                    onClick={() => setSelectedRecord(undefined)}
+                  >
+                    Close
+                  </button>
+                </ResultsHeader>
+                <p>{recordSummary(selectedRecord)}</p>
+                <RecordMetadata>
+                  {Object.entries({
+                    ...asRecord(selectedRecord),
+                    ...asRecord(asRecord(selectedRecord)?.properties)
+                  })
+                    .filter(
+                      ([name, value]) =>
+                        ![
+                          'properties',
+                          'geometry',
+                          'assets',
+                          'links',
+                          'description',
+                          'title'
+                        ].includes(name) &&
+                        value !== null &&
+                        typeof value !== 'object'
+                    )
+                    .map(([name, value]) => (
+                      <React.Fragment key={name}>
+                        <dt>{name}</dt>
+                        <dd>{String(value)}</dd>
+                      </React.Fragment>
+                    ))}
+                </RecordMetadata>
+                {onSelectAsset ? (
+                  <div aria-label="Entry asset previews">
+                    {recordAssets(selectedRecord, selectedSourceSource, onSelectAsset)}
+                  </div>
+                ) : null}
+                <details key={recordKey(selectedRecord)}>
+                  <summary>View full JSON</summary>
+                  <RecordDetails tabIndex={0}>
+                    {JSON.stringify(selectedRecord, null, 2)}
+                  </RecordDetails>
+                </details>
+              </section>
+            ) : null}
             {!loading && !error && records.length === 0 ? (
               <EmptyState>
                 {supportsSearch
@@ -312,7 +372,9 @@ function recordAssets(
               }
             }}
           >
-            {name}
+            {onSelectAsset && /\.parquet$/i.test(assetUrl.pathname)
+              ? `Preview table: ${name}`
+              : name}
           </a>
         );
       })}
@@ -360,3 +422,9 @@ const ResultSummary = styled.div`color:#667085;font-size:.78rem;margin-top:3px;w
 const Details = styled.div`margin-top:5px;font-size:.74rem;`;
 const AssetList = styled.div`display:flex;gap:10px;flex-wrap:wrap;a{color:#175cd3;}`;
 const EmptyState = styled.div`color:#667085;font-size:.84rem;padding:14px 0;`;
+
+/** Aligns entry metadata labels and wraps long values on narrow screens. */
+const RecordMetadata = styled.dl`display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,3fr);gap:6px 12px;font-size:.82rem;dt{font-weight:600;}dd{margin:0;overflow-wrap:anywhere;}`;
+
+/** Keeps record metadata readable without expanding the results list. */
+const RecordDetails = styled.pre`max-height:420px;overflow:auto;overscroll-behavior:contain;font-size:.78rem;padding:14px;`;

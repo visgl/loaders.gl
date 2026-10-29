@@ -9,7 +9,7 @@ import {ReactExamplePanel} from './example-panel-host';
 const STAC_CATALOG_PRESETS = [
   {
     title: 'deck.gl-data Earth',
-    url: 'https://raw.githubusercontent.com/visgl/deck.gl-data/2de3d08585770105e1b84a6c0308c934fcce4878/earth/stac/catalog.json'
+    url: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/earth/stac/catalog.json'
   },
   {title: 'Overture Maps', url: 'https://stac.overturemaps.org/catalog.json'}
 ];
