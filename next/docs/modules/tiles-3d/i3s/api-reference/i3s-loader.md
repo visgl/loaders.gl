@@ -1,0 +1,323 @@
+I3S loader
+
+![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+
+# I3SLoader
+
+Read ArcGIS scene layers, geometry, textures, and the metadata needed by the shared tiles runtime. Use it for mesh, point, and scene-layer content delivered as JSON, binary nodes, or an SLPK archive.
+
+[I3S module](https://loaders.gl/next/docs/modules/tiles-3d/i3s.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s.md)[I3S format](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)[I3S source](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/i3s-source.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/i3s-source.md)
+
+⛶⛶ Explore fullscreen
+
+View-dependent delivery
+
+## A hierarchy turns one scene into useful requests.
+
+Tiled formats keep spatial structure and level-of-detail metadata alongside their payloads. A runtime can select visible leaves instead of downloading the complete world.
+
+Dataset hierarchy
+
+root · world boundscoarse content and children
+
+region westgeometric error
+
+region eastgeometric error
+
+leaf · L06leaf · L07leaf · L06leaf · L08
+
+selec&#x74;**→**
+
+Current view
+
+viewport + error budget
+
+boundsSSEpriority
+
+selected contentFetch only the leaves that can contribute to this view.
+
+glTFpointstextures
+
+[Tileset3D traversal ↗](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tileset-3d.md)
+
+3D Tiles and I3S differ in their resource layouts, but the application-facing idea is the same: preserve the hierarchy, select by view, and request content progressively.
+
+The I3S loading path
+
+## Read layer metadata, traverse nodes, decode payloads.
+
+I3S is a layered delivery format rather than one self-contained file. The loader keeps the format-specific details behind the normal loaders.gl and tiles APIs.
+
+01
+
+Input
+
+Layer JSON, node resources, or an SLPK archive
+
+02
+
+Hierarchy
+
+Scene layer nodes with level-of-detail metadata
+
+03
+
+Payloads
+
+Mesh, point, texture, material, and attribute resources
+
+04
+
+Output
+
+I3S data for loaders, sources, and tiles traversal
+
+![From-v2.1](https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square)
+
+A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i3s-spec), and its geometries and textures data.
+
+Scene-layer metadata may omit `disablePopup`; validation applies the I3S default of `false`. Explicit boolean values are preserved. A node-page `mesh` value of `null` is treated as absent content, while non-null mesh objects are validated.
+
+Choose the entry point
+
+* Use `I3SLoader` with `load` or `parse` when the application needs a parsed layer, node, or tile payload.
+* Use `I3SSource` with `Tileset3D` when the application needs hierarchy traversal, caching, and view-dependent loading.
+* Use `SourceLayer` when a deck.gl application should connect an ArcGIS SceneServer URL directly to the shared 3D source layer.
+
+The layer document is JSON, while node indexes, geometry, textures, and attributes are resolved as separate resources. An I3S loader therefore describes a resource family rather than one file extension.
+
+## Format support[​](#format-support "Direct link to Format support")
+
+Detailed guide
+
+## Format and runtime details
+
+The detailed sections cover supported I3S profiles, terminology, loading, rendering integration, and the full loader object.
+
+See the [I3S format support matrix](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md) for detailed coverage of scene layer profiles, specification generations, delivery modes, hierarchy and LOD, mesh geometry, textures, materials, feature attributes, coordinate systems, conversion, and known gaps.
+
+Point scene layers use the same `I3SLoader` and `I3SSource` path as mesh layers. Their content has `topology: 'point-list'`; `pointRenderer` and `pointSymbol` retain the typed ArcGIS renderer metadata, while `featureIds` align vertices with the standard node-local attribute resources. Point Cloud layers remain available through the separate `I3SPointCloudSource` API.
+
+## Source-coordinate geometry[​](#source-coordinate-geometry "Direct link to Source-coordinate geometry")
+
+`i3s.geometryMode` defaults to `'render'`. Select `'source'` for conversion or processing that needs original coordinates: decoded node offsets are reconstructed as absolute Float64 XYZ values, and normals remain in their original store reference frame. The content reports `geometryMode`, `sourceAttributes` and `normalReferenceFrame`; its spatial reference retains source CRS, units and elevation metadata with native status. No per-vertex renderer projection or local Float32 placement is applied. Source mode uses an identity model matrix and zero placement origin; geographic XYZ remains longitude/latitude/height, while other frames use Cartesian coordinates. Use a dedicated runtime for this mode, and provide your own subsequent spatial transformation. Tileset header/bounds preparation remains separate.
+
+See the [v5 I3S conversion source](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md) for the initial untextured mesh profile and its explicit feature-mapping requirements.
+
+## Terms[​](#terms "Direct link to Terms")
+
+The terms and concepts used in `i3s` module have the corresponding parts [I3S Spec](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md).
+
+* `tileset`: I3S Indexed 3D Layer File.
+* `tile`: I3S node file.
+* `tileContent`: I3S node content: geometries, textures, etc.
+
+## Usage[​](#usage "Direct link to Usage")
+
+As an I3S tileset contains multiple file formats, `I3SLoader` is needed to be explicitly specified when using [`load`](https://loaders.gl/next/docs/modules/core/api-reference/load.md).
+
+### Render an I3S layer with deck.gl[​](#render-an-i3s-layer-with-deckgl "Direct link to Render an I3S layer with deck.gl")
+
+`SourceLayer` selects the I3S source runtime and keeps hierarchy traversal separate from the renderer. The same pattern works for SceneServer mesh and point layers:
+
+```
+import {SourceLayer} from '@loaders.gl/deck-layers';
+
+import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+
+
+
+const layer = new SourceLayer({
+
+  id: 'city-buildings',
+
+  data: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
+
+  loaders: [I3SLoader],
+
+  loadOptions: {
+
+    i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}
+
+  }
+
+});
+```
+
+See the [I3S example](https://loaders.gl/next/examples/i3s-arcgis) for a complete application and the [`I3SSource`](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/i3s-source.md) reference for direct traversal.
+
+**Basic API Usage**
+
+Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
+
+```
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+
+import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
+
+import {WebMercatorViewport} from '@deck.gl/core';
+
+
+
+const tilesetUrl =
+
+  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
+
+
+
+const source = new I3SSource({url: tilesetUrl, loader: I3SLoader});
+
+
+
+const tileset = new Tileset3D(source, {
+
+  onTileLoad: tile => console.log(tile)
+
+});
+
+
+
+const viewport = new WebMercatorViewport({
+
+  width: 600,
+
+  height: 400,
+
+  latitude: 37.7749,
+
+  longitude: -122.4194,
+
+  zoom: 15
+
+});
+
+await tileset.selectTiles(viewport);
+
+
+
+// Call again whenever the viewport changes (pan, zoom, and so on).
+
+await tileset.selectTiles(viewport);
+
+
+
+// Visible tiles
+
+const visibleTiles = tileset.tiles.filter(tile => tile.selected);
+
+
+
+// Note that visibleTiles will likely not immediately include all tiles.
+
+// Content continues loading and onTileLoad fires as resources become ready.
+```
+
+## Options[​](#options "Direct link to Options")
+
+| Option                              | Type                  | Default         | Description                                                                                                                                                                     |
+| ----------------------------------- | --------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.i3s.isTileset`             | `boolean \| 'auto'`   | `'auto'`        | Treat the resource as a layer document instead of a node or content resource. Auto-detection follows I3S URL conventions.                                                       |
+| `options.i3s.isTileHeader`          | `boolean \| 'auto'`   | `'auto'`        | Treat the resource as a node header. Auto-detection follows `/nodes/...` URL conventions.                                                                                       |
+| `options.i3s.attributeValues`       | `'legacy' \| 'exact'` | `'legacy'`      | Attribute strings: exact mode preserves null versus empty strings, removes the terminator, and rejects malformed UTF-8 or byte counts. Legacy mode retains raw decoded strings. |
+| `options.i3s.token`                 | `string`              | —               | ArcGIS access token appended to source-managed requests.                                                                                                                        |
+| `options.i3s.useDracoGeometry`      | `boolean`             | `true`          | Decode Draco-compressed geometry when available.                                                                                                                                |
+| `options.i3s.useCompressedTextures` | `boolean`             | `true`          | Use DDS or KTX2 resources when the runtime supports them.                                                                                                                       |
+| `options.i3s.decodeTextures`        | `boolean`             | `true`          | Decode image resources into the returned texture representation.                                                                                                                |
+| `options.i3s.coordinateSystem`      | `CoordinateSystem`    | `METER_OFFSETS` | Select the deck.gl-compatible output coordinate system for decoded content.                                                                                                     |
+
+## Data formats[​](#data-formats "Direct link to Data formats")
+
+Loaded data conforms to the 3D Tiles loader category specification with the following exceptions.
+
+### Tileset Object[​](#tileset-object "Direct link to Tileset Object")
+
+The following fields are guaranteed. Additionally, the loaded tileset object will contain all the data fetched from the provided url.
+
+| Field            | Type     | Contents                                                                                                                                                                                                                                                                         |
+| ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`           | `String` | Value is `i3s`. Indicates the returned object is an `i3s` tileset.                                                                                                                                                                                                               |
+| `lodMetricType`  | `String` | Root's level of detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn.md) for more details. |
+| `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                       |
+
+### Tile Object[​](#tile-object "Direct link to Tile Object")
+
+The following fields are guaranteed. Additionally, the loaded tile object will contain all the data fetched from the provided url.
+
+| Field            | Type       | Contents                                                                                                                                                                                                                                                                                 |
+| ---------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`             | `String`   | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                              |
+| `refine`         | `String`   | Refinement type of the tile, currently only support `REPLACE`                                                                                                                                                                                                                            |
+| `type`           | `String`   | Type of the tile, value is `mesh` (currently only support [I3S MeshPyramids](https://github.com/Esri/i3s-spec)                                                                                                                                                                           |
+| `url`            | `String`   | The url of this tile.                                                                                                                                                                                                                                                                    |
+| `contentUrl`     | `String`   | The url of this tile.                                                                                                                                                                                                                                                                    |
+| `featureUrl`     | `String`   | The url of this tile.                                                                                                                                                                                                                                                                    |
+| `textureUrl`     | `String`   | The url of this tile.                                                                                                                                                                                                                                                                    |
+| `textureUrls`    | `Object[]` | Selected URLs for every texture-set resource referenced by the tile material.                                                                                                                                                                                                            |
+| `boundingVolume` | `Object`   | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md) that encloses a tile or its content. Exactly one box, region, or sphere property is required. |
+| `lodMetricType`  | `String`   | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn.md) for more details.                |
+| `lodMetricValue` | `String`   | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                      |
+| `content`        | `String`   | The actual payload of the tile or the url point to the actual payload. If `option.loadContent` is enabled, content will be populated with the loaded value following the Tile Content section                                                                                            |
+
+### Tile Content[​](#tile-content "Direct link to Tile Content")
+
+After content is loaded, the following fields are guaranteed. But different tiles may have different extra content fields.
+
+| Field                | Type         | Contents                                                                                                                              |
+| -------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                            |
+| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                |
+| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                         |
+| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                         |
+| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/README.md) properties |
+| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)                |
+| `textures`           | `Object`     | Loaded texture-set resources keyed by texture-set definition id.                                                                      |
+| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                             |
+
+`attributes` contains following fields
+
+| Field                  | Type     | Contents                          |
+| ---------------------- | -------- | --------------------------------- |
+| `attributes.positions` | `Object` | `{value, type, size, normalized}` |
+| `attributes.normals`   | `Object` | `{value, type, size, normalized}` |
+| `attributes.colors`    | `Object` | `{value, type, size, normalized}` |
+| `attributes.texCoords` | `Object` | `{value, type, size, normalized}` |
+
+### Layer statistics[​](#layer-statistics "Direct link to Layer statistics")
+
+Use `loadStatistics` to fetch the resources listed in a scene layer's `statisticsInfo` array. The returned object is keyed by each descriptor's `key`; an unavailable resource is represented by `null` so other fields can still be consumed.
+
+```
+import {loadStatistics} from '@loaders.gl/tiles-3d/i3s';
+
+
+
+const statistics = await loadStatistics(sceneLayer.statisticsInfo, {
+
+  core: {baseUrl: sceneLayer.url},
+
+  i3s: {token}
+
+});
+```
+
+Set `core.baseUrl` to the loaded layer URL when descriptors use relative `href` values.
+
+### Material color space[​](#material-color-space "Direct link to Material color space")
+
+Decoded glTF-style material RGB factors use linear values. The loader converts normalized I3S sRGB factors (including emissive RGB) using the standard transfer curve; legacy byte factors are normalized first. Alpha remains linear and unchanged by the color-space conversion.
+
+### Exact attribute values[​](#exact-attribute-values "Direct link to Exact attribute values")
+
+`I3SAttributeLoader` accepts `i3s.attributeValues: 'exact'` for conversion workflows. Exact mode returns `BigInt64Array`/`BigUint64Array` for signed/unsigned 64-bit integer columns, validates numeric resource counts and lengths, and preserves string nulls/empty values while removing only the UTF-8 terminator. The default `legacy` mode retains numeric Float64 64-bit decoding and legacy string behavior. Exact mode rejects unsupported scalar layouts. Geometry feature-ID decoding is a separate API and does not gain bigint IDs from this option.

@@ -1,0 +1,130 @@
+Core module · options API
+
+# LoaderOptions
+
+Configure the shared runtime behavior of loaders.gl APIs, then add format-specific options under the loader namespace that owns them.
+
+[Core module](https://loaders.gl/next/docs/modules/core.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/core.md)[Using loaders](https://loaders.gl/next/docs/developer-guide/using-loaders.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/developer-guide/using-loaders.md)[Worker processing](https://loaders.gl/next/docs/modules/core/worker-utils/api-reference/worker-processing.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/core/worker-utils/api-reference/worker-processing.md)
+
+The options boundary
+
+## Keep runtime policy separate from format policy.
+
+Shared options control fetching, workers, concurrency, logging, shapes, and transforms. Loader-specific namespaces describe how an individual format should be decoded or encoded.
+
+01
+
+Runtime
+
+Fetch, logging, errors, and worker execution
+
+02
+
+Concurrency
+
+Pool size, reuse, and mobile limits
+
+03
+
+Shape
+
+Shared default output representation
+
+04
+
+Format
+
+Options nested under each loader ID
+
+Detailed guide
+
+## LoaderOptions reference
+
+The sections below document core options, loader-specific namespaces, batched parsing, and compatibility aliases.
+
+Parser APIs in `@loaders.gl/core` accept an `options?: LoaderOptions` parameter. Shared controls live in `core`, beside format-specific namespaces. Sources use the same flat placement of shared controls and parser namespaces; see [Source options](https://loaders.gl/next/docs/developer-guide/using-sources.md#options) for source-specific settings, precedence, and type inference. Sources do not accept `core.loadOptions` or a top-level `loadOptions` wrapper.
+
+## Core options[​](#core-options "Direct link to Core options")
+
+Options interpreted by the core API and shared across loaders live under `options.core`.
+
+| Option                               | Type                   | Default    | Description                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------ | ---------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.core.fetch`                 | `object` or `function` | -          | Specifies either a `RequestInit` object containing options to pass to `fetchFile`, or a function that is called in place of `fetchFile` to fetch data in any subloaders.                                                                                                                                         |
+| `options.core.nothrow`               | `boolean`              | `false`    | Prevents throwing on loader errors and lets callers inspect failures manually.                                                                                                                                                                                                                                   |
+| `options.core.mimeType`              | `string`               | -          | Loader selection will first look for a loader matching `mimeType`. A specific loader can be specified using `'application/x-<loader.id>'`.                                                                                                                                                                       |
+| `options.core.fallbackMimeType`      | `string`               | -          | Loader selection fallback `mimeType` in case one is not provided by the server. A specific loader can be specified with `'application/x-<loader.id>'`.                                                                                                                                                           |
+| `options.core.log`                   | `object`               | `console`  | By default set to a `console` wrapper. Setting log to `null` will turn off logging.                                                                                                                                                                                                                              |
+| `options.core.worker`                | `boolean \| 'auto'`    | `true`     | Runs the loader on a worker thread, if the selected loader and the runtime environment support it. `'auto'` uses a loader's synchronous work estimate for atomic `parse()` calls.                                                                                                                                |
+| `options.core.workerThreshold`       | `number`               | `0.1`      | Threshold for `worker: 'auto'`; scores below it stay on the calling thread and scores at or above it use a worker. Must be finite and between `0` and `1`.                                                                                                                                                       |
+| `options.core.maxConcurrency`        | `number`               | `3`        | How many worker instances should be created for each loader. Note that setting this higher than roughly the number CPU cores on your current machine will not provide much benefit and may create extra overhead.                                                                                                |
+| `options.core.maxMobileConcurrency`  | `number`               | `1`        | How many worker instances should be created for each loader on mobile devices. Mobile devices have fewer cores and less memory available.                                                                                                                                                                        |
+| `options.core.reuseWorkers`          | `boolean`              | `true`     | By default, worker threads are kept in memory and reused. But if `reuseWorkers` is `false` workers will be automatically terminated after job completion and reloaded for each job.                                                                                                                              |
+| `options.<loader-id>.workerUrl`      | `string`               | per-loader | If the corresponding loader can parse on a worker, the URL to its worker script can be controlled with this option.                                                                                                                                                                                              |
+| `options.modules`                    | `object`               | -          | Supply bundled JS/WASM runtime modules or URL overrides. See the [dependency guide](https://loaders.gl/next/docs/developer-guide/dependencies.md) and individual loader or writer docs for supported keys.                                                                                                  |
+| `options.core.CDN` (🚧 experimental) | `string`               | -          | Overrides the CDN base URL used for worker and runtime script loading. Supply a URL string; local-library behavior is configured separately with `core.useLocalLibraries`.                                                                                                                                       |
+| `options.core.shape`                 | `string`               | per-loader | Shared default return shape for loaders that support shape selection. For example, `options.core.shape = 'object-row-table'` applies to row-table loaders unless a loader-specific option like `options.csv.shape` overrides it. ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square) |
+
+Deprecated top-level parser aliases such as `options.fetch`, `options.worker`, and `options.shape` are still accepted by the current implementation, but new code should use `options.core`. This does not restore the removed source `loadOptions` wrappers. Final v5 disposition of these parser aliases remains an open decision in [the release tracker](https://github.com/visgl/loaders.gl/issues/3316).
+
+### Authentication options[​](#authentication-options "Direct link to Authentication options")
+
+`options.core.credentials` accepts an ordered array of runtime credentials or typed JSON configurations. `options.core.authentications` accepts authentication class constructors used to instantiate those configurations by matching their static `type`. The selected loader can also contribute constructors through `getAuthentications(url, options)`; application classes take precedence. There is no implicit global class registry.
+
+Credentials include origin-scoped header/query tokens and application request-signing callbacks. Callbacks run after request defaults and token credentials have been applied. See the [authentication guide](https://loaders.gl/next/docs/developer-guide/authentication.md) for declarative configuration, provider classes, callback contracts and worker restrictions.
+
+## Loader specific options[​](#loader-specific-options "Direct link to Loader specific options")
+
+The options object can contain loader specific options. The options for each loader are supplied in a sub object, see the documentation for each loader for details:
+
+```
+{
+
+  core: {
+
+    shape: 'object-row-table'
+
+  },
+
+  csv: {
+
+    shape: 'array-row-table'
+
+  },
+
+  json: {
+
+    shape: 'object-row-table'
+
+  }
+
+}
+```
+
+## Experimental scan requests[​](#experimental-scan-requests "Direct link to Experimental scan requests")
+
+Loaders that implement the scan protocol accept a root `_scan` request typed as `ExperimentalScanOptions`. Supported fields depend on the format; this is not a promise that every loader implements every scan operation. See the [common scan architecture](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md) and each loader's reference for supported behavior. The final stability and naming policy, including its relationship to source `scan()` and `query()` methods, remains a pre-v5 decision in [tracker #3316](https://github.com/visgl/loaders.gl/issues/3316).
+
+## Batched parsing options[​](#batched-parsing-options "Direct link to Batched parsing options")
+
+| Option                    | Type      | Default | Description                                                                                                                                            |
+| ------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `options.core.metadata`   | `boolean` | `false` | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded.                                              |
+| `options.core.chunkSize`  | `number`  | N/A     | When set, "atomic" inputs (like `ArrayBuffer` or `string`) are chunked, enabling batched parsing. No effect if input is already an iterator or stream. |
+| `options.core.transforms` | `*[]`     | `[]`    | An array with transform functions that can be applied to the input data before parsing.                                                                |
+
+Notes:
+
+* `transforms` is an array functions that accept and return an `AsyncIterable<ArrayBuffer>`

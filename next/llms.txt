@@ -1,0 +1,998 @@
+# loaders.gl
+
+> Framework-independent loaders for visualization, 3D graphics and geospatial formats.
+
+
+## docs
+
+Load, scan, transform, and write the data formats used by modern web applications.
+
+- [Big data loading for the web.](https://loaders.gl/next/docs.md): Load, scan, transform, and write the data formats used by modern web applications.
+
+### developer-guide
+
+
+#### get-started
+
+Install the core package, choose a loader, and load your first file.
+
+- [Get started with loaders.gl](https://loaders.gl/next/docs/developer-guide/get-started.md): Install the core package, choose a loader, and load your first file.
+
+#### 3d-data-formats
+
+Load scene files, tiled worlds, point clouds, and compressed 3D payloads with standards-aware TypeScript readers.
+
+- [From scene files to streamed worlds.](https://loaders.gl/next/docs/developer-guide/3d-data-formats.md): Load scene files, tiled worlds, point clouds, and compressed 3D payloads with standards-aware TypeScript readers.
+
+#### apache-arrow
+
+Use a typed, columnar table shape between loaders, applications, workers, and writers.
+
+- [Many data formats. One table shape.](https://loaders.gl/next/docs/developer-guide/apache-arrow.md): Use a typed, columnar table shape between loaders, applications, workers, and writers.
+
+#### arcgis
+
+Build geospatial visualization applications with data already hosted in ArcGIS.
+
+- [Build visualizations with your ArcGIS data](https://loaders.gl/next/docs/developer-guide/arcgis.md): Build geospatial visualization applications with data already hosted in ArcGIS.
+- [Authenticate with ArcGIS](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md): Choose an ArcGIS credential and carry it through metadata, data and tile requests.
+- [Visualize ArcGIS data with deck.gl](https://loaders.gl/next/docs/developer-guide/arcgis/deck-gl.md): Choose between explicitly loaded data and source-driven visualization.
+- [Query feature layers and tables](https://loaders.gl/next/docs/developer-guide/arcgis/feature-layers.md): Retrieve complete bounded queries, stream pages, inspect completeness, and retain nonspatial records.
+- [Bring your ArcGIS content](https://loaders.gl/next/docs/developer-guide/arcgis/items.md): Resolve service-backed portal items, preserve metadata, and choose a layer for visualization.
+- [Troubleshoot an ArcGIS integration](https://loaders.gl/next/docs/developer-guide/arcgis/troubleshooting.md): Diagnose incomplete data, authentication errors, coordinate problems and unsupported operations.
+
+#### authentication
+
+Carry credentials through file, tile, and service requests without coupling loaders.gl to a sign-in system.
+
+- [Keep authentication with the request.](https://loaders.gl/next/docs/developer-guide/authentication.md): Carry credentials through file, tile, and service requests without coupling loaders.gl to a sign-in system.
+
+#### clustering
+
+Experimental: ClusterSource and its construction options may change in future releases.
+
+- [Clustering features](https://loaders.gl/next/docs/developer-guide/clustering.md): Experimental: ClusterSource and its construction options may change in future releases.
+
+#### common-scan-architecture
+
+Query large local and cloud datasets with one portable scan contract.
+
+- [Read less. Query sooner.](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md): Query large local and cloud datasets with one portable scan contract.
+
+#### composite-loaders
+
+Let complex formats delegate embedded files and payloads through one loader context.
+
+- [One load can coordinate a whole format.](https://loaders.gl/next/docs/developer-guide/composite-loaders.md): Let complex formats delegate embedded files and payloads through one loader context.
+
+#### concepts
+
+- [Process batches with ordinary JavaScript.](https://loaders.gl/next/docs/developer-guide/concepts/async-iterators.md): Use JavaScript async iterators as the portable interface for streaming loaders and writers.
+- [Make the bytes do the work.](https://loaders.gl/next/docs/developer-guide/concepts/binary-data.md): Move typed bytes efficiently between files, workers, loaders, and renderers.
+- [Measure bytes, copies, and boundaries.](https://loaders.gl/next/docs/developer-guide/concepts/javascript-and-wasm-performance.md): Compare complete data-loading pipelines instead of judging performance by decoder language alone.
+- [Use the platform boundary loaders.gl already understands.](https://loaders.gl/next/docs/developer-guide/concepts/javascript-apis.md): Use portable browser and Node.js APIs for loading, writing, binary data, and images.
+- [Start processing before the file is complete.](https://loaders.gl/next/docs/developer-guide/concepts/streaming.md): Understand incremental loading, batched updates, and async data flows in loaders.gl.
+- [Describe the result once. Let the source optimize it.](https://loaders.gl/next/docs/developer-guide/concepts/table-scan-architecture.md): Use one small query contract across in-memory tables, files, cloud datasets, and backend services.
+- [Keep the interface responsive while data is decoded.](https://loaders.gl/next/docs/developer-guide/concepts/worker-threads.md): Move expensive parsing off the browser main thread while keeping data transfer explicit.
+
+#### converters
+
+- [Change representation without hard-coding every route.](https://loaders.gl/next/docs/developer-guide/converters/dispatcher.md): Route compatible table and geometry values through the shortest registered conversion path.
+- [Change the geometry representation at the boundary.](https://loaders.gl/next/docs/developer-guide/converters/feature-collection-converters.md): Convert feature collections and single geometries between object, flat, binary, and wire-format shapes.
+- [Name the shape before you choose the converter.](https://loaders.gl/next/docs/developer-guide/converters/format-categories.md): Understand the table, geometry, and feature shapes that connect loaders, converters, and renderers.
+- [Change the geometry encoding without changing the table contract.](https://loaders.gl/next/docs/developer-guide/converters/geoarrow-converters.md): Move between GeoArrow table shapes and geometry encodings without losing spatial metadata.
+- [Move geometry from columns to pixels.](https://loaders.gl/next/docs/developer-guide/converters/render-converters.md): Turn geometry columns and values into render-ready binary feature collections without a GeoJSON detour.
+- [Keep the table shape explicit as data moves.](https://loaders.gl/next/docs/developer-guide/converters/table-and-arrow-converters.md): Move between loaders.gl table wrappers, raw Arrow tables, and GeoArrow-compatible data.
+
+#### converting-data
+
+Move between loaders.gl data shapes with explicit, composable converters.
+
+- [Move between data shapes](https://loaders.gl/next/docs/developer-guide/converting-data.md): Move between loaders.gl data shapes with explicit, composable converters.
+
+#### coordinate-reference-systems
+
+Preserve coordinate meaning and make reprojection explicit.
+
+- [Coordinates with context.](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md): Preserve coordinate meaning and make reprojection explicit.
+
+#### creating-loaders-and-writers
+
+Add a parser or writer that fits the loaders.gl runtime, worker, and composition model.
+
+- [Add one format without learning the whole runtime.](https://loaders.gl/next/docs/developer-guide/creating-loaders-and-writers.md): Add a parser or writer that fits the loaders.gl runtime, worker, and composition model.
+
+#### dependencies
+
+Supply optional JavaScript and WebAssembly runtimes without coupling every loader to one bundle.
+
+- [Load the heavy part only when the format needs it.](https://loaders.gl/next/docs/developer-guide/dependencies.md): Supply optional JavaScript and WebAssembly runtimes without coupling every loader to one bundle.
+
+#### dev-env
+
+Build, test, and debug loaders.gl locally across supported operating systems.
+
+- [A predictable path from checkout to test.](https://loaders.gl/next/docs/developer-guide/dev-env.md): Build, test, and debug loaders.gl locally across supported operating systems.
+
+#### error-handling
+
+Distinguish request failures, service responses, and parser failures with one async error model.
+
+- [Tell the user what failed, not just that it failed.](https://loaders.gl/next/docs/developer-guide/error-handling.md): Distinguish request failures, service responses, and parser failures with one async error model.
+
+#### grouped-packages
+
+loaders.gl groups related formats into independently installable packages. Start with the
+
+- [Packages and format entrypoints](https://loaders.gl/next/docs/developer-guide/grouped-packages.md): loaders.gl groups related formats into independently installable packages. Start with the
+
+#### loader-categories
+
+Keep one application path while accepting multiple related data formats.
+
+- [Design apps around your data, not data formats.](https://loaders.gl/next/docs/developer-guide/loader-categories.md): Keep one application path while accepting multiple related data formats.
+
+#### node
+
+Use loaders.gl from Node.js while keeping the shared browser-compatible API available.
+
+- [Use the same loaders in Node.js and the browser.](https://loaders.gl/next/docs/developer-guide/node.md): Use loaders.gl from Node.js while keeping the shared browser-compatible API available.
+
+#### spatial-queries
+
+Picking identifies rendered objects under screen coordinates. Data queries operate on a source or
+
+- [Spatial queries beyond picking](https://loaders.gl/next/docs/developer-guide/spatial-queries.md): Picking identifies rendered objects under screen coordinates. Data queries operate on a source or
+
+#### standards
+
+Explore the open standards, service protocols, and organizations represented by loaders.gl implementations.
+
+- [loaders.gl ♥ standards](https://loaders.gl/next/docs/developer-guide/standards.md): Explore the open standards, service protocols, and organizations represented by loaders.gl implementations.
+
+#### tile-matrices
+
+A tile matrix describes a rectangular grid at one resolution. A tile matrix set groups these grids in one coordinate reference system (CRS). A tile source combines that geometry with a way to retrieve tile content.
+
+- [Tile matrices and tile matrix sets](https://loaders.gl/next/docs/developer-guide/tile-matrices.md): A tile matrix describes a rectangular grid at one resolution. A tile matrix set groups these grids in one coordinate reference system (CRS). A tile source combines that geometry with a way to retrieve tile content.
+
+#### using-loaders
+
+Choose, configure, and run format loaders through the shared loaders.gl core API.
+
+- [Using loaders](https://loaders.gl/next/docs/developer-guide/using-loaders.md): Choose, configure, and run format loaders through the shared loaders.gl core API.
+
+#### using-metadata-loaders
+
+Keep broad format support available without putting every parser in the initial application bundle.
+
+- [Recognize many formats. Download fewer parsers up front.](https://loaders.gl/next/docs/developer-guide/using-metadata-loaders.md): Keep broad format support available without putting every parser in the initial application bundle.
+
+#### using-range-requests
+
+Read only the byte ranges needed from large cloud-hosted assets.
+
+- [Use range requests](https://loaders.gl/next/docs/developer-guide/using-range-requests.md): Read only the byte ranges needed from large cloud-hosted assets.
+
+#### using-sources
+
+Work with multi-step, multi-resource, and cloud-backed data sources.
+
+- [Fetch the part that matters.](https://loaders.gl/next/docs/developer-guide/using-sources.md): Work with multi-step, multi-resource, and cloud-backed data sources.
+
+#### using-streaming-loaders
+
+Process large files incrementally with async iterators, batched loaders, and transforms.
+
+- [No waiting. Process data as it arrives.](https://loaders.gl/next/docs/developer-guide/using-streaming-loaders.md): Process large files incrementally with async iterators, batched loaders, and transforms.
+
+#### using-worker-loaders
+
+Move expensive parsing and decompression away from the browser interaction path.
+
+- [Keep the UI responsive.](https://loaders.gl/next/docs/developer-guide/using-worker-loaders.md): Move expensive parsing and decompression away from the browser interaction path.
+
+#### using-writers
+
+Encode application data into the formats supported by loaders.gl writers.
+
+- [Encode the data you already have.](https://loaders.gl/next/docs/developer-guide/using-writers.md): Encode application data into the formats supported by loaders.gl writers.
+
+#### vertical-coordinate-systems
+
+Keep units, height datums, surfaces, and 3D placement as separate parts of a spatial pipeline.
+
+- [Know what a Z value means before moving it.](https://loaders.gl/next/docs/developer-guide/vertical-coordinate-systems.md): Keep units, height datums, surfaces, and 3D placement as separate parts of a spatial pipeline.
+
+#### working-with-ai
+
+Find current loaders.gl documentation and verify parser, worker, and streaming behavior with AI coding agents.
+
+- [Working with AI Coding Agents](https://loaders.gl/next/docs/developer-guide/working-with-ai.md): Find current loaders.gl documentation and verify parser, worker, and streaming behavior with AI coding agents.
+
+### modules
+
+
+#### arcgis
+
+Connect your existing ArcGIS Online and Enterprise layers to JavaScript applications.
+
+- [@loaders.gl/arcgis](https://loaders.gl/next/docs/modules/arcgis.md): Connect your existing ArcGIS Online and Enterprise layers to JavaScript applications.
+- [ArcGIS service sources](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md): The loaders.gl source contracts for ArcGIS feature, image, vector-tile, and scene services.
+- [ArcGIS FeatureServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md): Query ArcGIS feature layers through the loaders.gl vector source contract.
+- [ArcGIS ImageServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md): Access rendered imagery and analytical raster data through ArcGIS ImageServer.
+- [ArcGIS MapServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md): Load cached or dynamically rendered ArcGIS map tiles through one tile source.
+- [ArcGIS SceneServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md): Connect ArcGIS SceneServer layers to I3S and 3D tileset sources.
+- [ArcGIS VectorTileServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md): Load ArcGIS vector tiles, style metadata, and tile grids through a vector-tile source.
+- [ArcGIS FeatureServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md): Read your published feature layers and tables as bounded queries with explicit completeness.
+- [ArcGIS ImageServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md): Choose rendered imagery or numerical pixels from your existing imagery service.
+- [ArcGIS MapServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md): Display your published map through cached image tiles or dynamic map exports.
+- [ArcGIS SceneServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md): Connect an existing scene layer to the appropriate I3S content and rendering path.
+- [ArcGIS VectorTileServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md): Read your published vector tiles and style their decoded features in your application.
+- [ArcGIS service support](https://loaders.gl/next/docs/modules/arcgis/services.md): Operation-level support and gaps across ArcGIS data, location, analysis and enterprise services.
+
+#### archives
+
+@loaders.gl/archives provides ZIP and TAR archive loaders and writers. Install @loaders.gl/core and @loaders.gl/archives. The root exports metadata loaders and writers; import format-specific helpers from @loaders.gl/archives/zip or @loaders.gl/archives/tar.
+
+- [Archives](https://loaders.gl/next/docs/modules/archives.md): @loaders.gl/archives provides ZIP and TAR archive loaders and writers. Install @loaders.gl/core and @loaders.gl/archives. The root exports metadata loaders and writers; import format-specific helpers from @loaders.gl/archives/zip or @loaders.gl/archives/tar.
+- [TAR](https://loaders.gl/next/docs/modules/archives/tar.md): @loaders.gl/archives/tar exports TarLoader, TarWriter, TarBuilder, and readTarArchive. Import TarLoaderWithParser from @loaders.gl/archives/tar/tar-loader for synchronous parser access; the metadata loader loads it through preload().
+- [Open archives at the edge of your data pipeline.](https://loaders.gl/next/docs/modules/archives/zip.md): Read and write ZIP archives with loaders.gl.
+- [encodeZip](https://loaders.gl/next/docs/modules/archives/zip/api-reference/encode-zip.md): encodeZip(files, options) writes a native ZIP32/ZIP64 archive and returns an ArrayBuffer.
+- [ZipArchive](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-archive.md): openZipArchive() opens an owned random-access ZIP32/ZIP64 archive. Inputs can be an ArrayBuffer,
+- [ZipFileSystem](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-filesystem.md): ZipFileSystem adapts the shared ZIP32/ZIP64 reader to the loaders.gl FileSystem interface.
+- [Open an archive into named resources.](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-loader.md): Decode a ZIP archive into a file map of paths and contents.
+- [Package named resources into one archive.](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-writer.md): Encode a loaders.gl file map as a ZIP archive with optional progress reporting.
+- [ZIP](https://loaders.gl/next/docs/modules/archives/zip/formats/zip.md): Read ZIP containers and their random-access entries as a virtual file system.
+
+#### compression
+
+Compress and decompress common payloads with runtime-aware codecs.
+
+- [Choose the smallest codec that fits the runtime.](https://loaders.gl/next/docs/modules/compression.md): Compress and decompress common payloads with runtime-aware codecs.
+- [Use Brotli without bundling every implementation.](https://loaders.gl/next/docs/modules/compression/api-reference/brotli.md): Compress and decompress Brotli payloads with native-stream probing and lazy fallbacks.
+- [Use the runtime’s codec before shipping another one.](https://loaders.gl/next/docs/modules/compression/api-reference/built-in-codecs.md): Use browser-native compression streams when the runtime provides them, with documented fallbacks.
+- [Support bzip2 without making it everyone’s dependency.](https://loaders.gl/next/docs/modules/compression/api-reference/bzip2.md): Add asynchronous bzip2 encoding and decoding to loaders.gl format pipelines.
+- [Move bytes through the codec that fits.](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md): Use one typed interface for lossless compression and decompression across runtimes.
+- [Keep wrapped and raw DEFLATE distinct.](https://loaders.gl/next/docs/modules/compression/api-reference/deflate.md): Handle wrapped and raw DEFLATE payloads with the shared compression interfaces.
+- [Use one GZIP pair for reads and writes.](https://loaders.gl/next/docs/modules/compression/api-reference/gzip.md): Compress and decompress GZIP payloads through runtime-aware, library-neutral classes.
+- [Handle LZ4 frames, blocks, and legacy payloads.](https://loaders.gl/next/docs/modules/compression/api-reference/lz4.md): Read and write LZ4 frames and raw blocks through the loaders.gl compression APIs.
+- [LzoDecompressor API Reference](https://loaders.gl/next/docs/modules/compression/api-reference/lzo.md): LzoDecompressor decodes raw LZO1X blocks through the decoder-only compress-utils 0.10 WASM asset.
+- [Keep uncompressed formats on the same pipeline path.](https://loaders.gl/next/docs/modules/compression/api-reference/no-compressor-decompressor.md): Represent an uncompressed payload through the same compressor and decompressor contract.
+- [Add compact block compression without changing the pipeline.](https://loaders.gl/next/docs/modules/compression/api-reference/snappy.md): Use Snappy blocks and frames through the shared loaders.gl compression interface.
+- [Use XZ and LZMA where the format requires it.](https://loaders.gl/next/docs/modules/compression/api-reference/xz.md): Add asynchronous XZ and LZMA compression to loaders.gl pipelines.
+- [Keep the large codec out of the common path.](https://loaders.gl/next/docs/modules/compression/api-reference/zstandard.md): Use Zstandard compression with lazy compress-utils WASM fallbacks.
+- [Compare codec paths on the machine that will run them.](https://loaders.gl/next/docs/modules/compression/benchmarks.md): Compare browser compression and decompression paths across native and loaders.gl codec implementations.
+
+#### config
+
+The @loaders.gl/config module provides dependency-free parsers for YAML and TOML configuration
+
+- [Overview](https://loaders.gl/next/docs/modules/config.md): The @loaders.gl/config module provides dependency-free parsers for YAML and TOML configuration
+- [TOMLLoader](https://loaders.gl/next/docs/modules/config/api-reference/toml-loader.md): TOMLLoader parses TOML configuration documents into JavaScript objects, arrays, dates, and scalar
+- [YAMLLoader](https://loaders.gl/next/docs/modules/config/api-reference/yaml-loader.md): YAMLLoader parses YAML documents into JavaScript objects, arrays, and scalar values. It supports
+- [TOML](https://loaders.gl/next/docs/modules/config/formats/toml.md): TOML (Tom's Obvious, Minimal Language) is a configuration file format designed to be easy to read
+- [YAML](https://loaders.gl/next/docs/modules/config/formats/yaml.md): YAML is a human-friendly data serialization language commonly used for configuration documents.
+
+#### core
+
+The public loaders.gl API, with common utilities available through dedicated subpaths.
+
+- [@loaders.gl/core](https://loaders.gl/next/docs/modules/core.md): The public loaders.gl API, with common utilities available through dedicated subpaths.
+- [Make binary inputs predictable before decoding.](https://loaders.gl/next/docs/modules/core/api-reference/binary-utilities.md): Normalize browser and Node.js binary inputs into predictable ArrayBuffer views before parsing.
+- [Constants](https://loaders.gl/next/docs/modules/core/api-reference/constants.md): Branch-specific loaders.gl repository URLs and worker distribution tag.
+- [Keep the dataset open when one request is not enough.](https://loaders.gl/next/docs/modules/core/api-reference/create-data-source.md): Create a queryable source for datasets that need metadata, tiles, or repeated requests.
+- [Turn application data back into a format.](https://loaders.gl/next/docs/modules/core/api-reference/encode.md): Turn category data into bytes with a writer.
+- [Give the same parsing pipeline a URL or a local file.](https://loaders.gl/next/docs/modules/core/api-reference/fetch-file.md): Fetch remote resources or local Node.js files through a loaders.gl Response-compatible wrapper.
+- [Show progress while a response is still arriving.](https://loaders.gl/next/docs/modules/core/api-reference/fetch-progress.md): Observe bytes arriving from a fetch response and report incremental progress to an application callback.
+- [Iterator utilities](https://loaders.gl/next/docs/modules/core/api-reference/iterator-utilities.md): Bridge streams and async iterators across browser and Node.js runtimes.
+- [Give loaders a resource. Get usable data back.](https://loaders.gl/next/docs/modules/core/api-reference/load.md): Fetch a resource and decode it with one or more loaders.
+- [Start processing while the resource is still arriving.](https://loaders.gl/next/docs/modules/core/api-reference/load-in-batches.md): Fetch and decode a resource as an async iterator of loader-defined batches.
+- [LoaderOptions](https://loaders.gl/next/docs/modules/core/api-reference/loader-options.md): Configure shared loading, parsing, workers, batches, and format-specific behavior.
+- [Decode data you already have.](https://loaders.gl/next/docs/modules/core/api-reference/parse.md): Decode already-available data with a loader.
+- [Decode a stream one batch at a time.](https://loaders.gl/next/docs/modules/core/api-reference/parse-in-batches.md): Decode a stream incrementally into loader-defined batches.
+- [Use a synchronous parser when the loader supports it.](https://loaders.gl/next/docs/modules/core/api-reference/parse-sync.md): Parse already-loaded data synchronously with a parser-capable loader.
+- [Make a known loader set available to legacy call sites.](https://loaders.gl/next/docs/modules/core/api-reference/register-loaders.md): Register loaders globally for legacy format auto-selection.
+- [Encode data, then save it with your platform.](https://loaders.gl/next/docs/modules/core/api-reference/save.md): Save encoded writer output with a platform filesystem or download API.
+- [selectLoader](https://loaders.gl/next/docs/modules/core/api-reference/select-loader.md): Choose a compatible loader from extensions, MIME types, and content signatures.
+- [Choose a source without hard-coding every URL.](https://loaders.gl/next/docs/modules/core/api-reference/select-source.md): Choose the best source loader from a supplied list using URLs, MIME types, and format signatures.
+- [Set shared options once, keep individual calls focused.](https://loaders.gl/next/docs/modules/core/api-reference/set-loader-options.md): Configure shared loaders.gl behavior and module-specific options through the global loader options object.
+- [Resolve relative assets from one known base.](https://loaders.gl/next/docs/modules/core/api-reference/set-path-prefix.md): Configure a shared prefix for resolving relative resource paths used by loaders.gl operations.
+- [Encode data, then save it with your platform.](https://loaders.gl/next/docs/modules/core/api-reference/write-file.md): Save encoded writer output with a platform filesystem or download API.
+- [Arrow geometry builders](https://loaders.gl/next/docs/modules/core/arrow-geometry.md): @loaders.gl/core/arrow-geometry builds Arrow-compatible geometry arrays and
+- [GeoArrow processing](https://loaders.gl/next/docs/modules/core/geoarrow.md): @loaders.gl/core/geoarrow provides conversion, inspection, validation, and spatial
+- [Cross the binary-to-GeoJSON boundary deliberately.](https://loaders.gl/next/docs/modules/core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson.md): Convert loaders.gl binary feature data back into GeoJSON only when a row-oriented boundary is needed.
+- [Turn feature objects into typed geometry arrays.](https://loaders.gl/next/docs/modules/core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection.md): Convert GeoJSON features into typed render-oriented arrays for efficient geospatial visualization.
+- [Migrating GIS APIs to GeoArrow](https://loaders.gl/next/docs/modules/core/geoarrow/gis-migration.md): GeoArrow is the application-facing owner of geospatial conversion and processing.
+- [Give format implementations the same transport primitives.](https://loaders.gl/next/docs/modules/core/loader-utils.md): Build loaders around shared files, requests, caches, and source helpers.
+- [Resolve related resources from one stable base.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/cached-uri-resolver.md): Resolve repeated relative resource references against one dataset base without fetching or retaining resource bodies.
+- [Share a source without sharing every implementation detail.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/data-source-manager.md): Share source instances by stable ids while keeping lifecycle, discovery, and release behavior explicit.
+- [encodeArrayBufferToBase64](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/encode-array-buffer-to-base64.md): Encodes an ArrayBuffer as a padded base64 string in browsers and Node.js.
+- [Read a cloud object like a local binary file.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/http-file.md): Read remote objects through validated random-access HTTP range requests.
+- [initializeWasmModule](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/initialize-wasm-module.md): Bridges WASM factories that report readiness through a callback, a thenable, or both.
+- [Let a composite loader delegate without losing context.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/parse-with-context.md): Invoke a sub-loader with the parent loader context when parsing embedded or associated resources.
+- [Reuse the bytes a cloud-native reader already fetched.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/range-request-cache.md): Cache immutable byte ranges and reuse contained reads in remote binary pipelines.
+- [Turn many tiny reads into a bounded cloud request plan.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/range-request-scheduler.md): Coalesce nearby byte-range requests while preserving exact slices for callers.
+- [Numeric raster data and CPU sampling](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/raster-data.md): {/ SPDX-License-Identifier: MIT /}
+- [Give every binary loader the same file-shaped input.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/readable-file.md): Use one random-access file interface across URLs, buffers, blobs, and Node.js files.
+- [Deduplicate work, then keep useful results nearby.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/request-cache.md): Share concurrent requests and retain settled results within source-scoped entry and byte budgets.
+- [Attach credentials only where the request needs them.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/request-credentials.md): Attach scoped query or header credentials to matching service requests without leaking tokens across origins.
+- [Control when outstanding work gets a network slot.](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/request-scheduler.md): Queue and reprioritize outstanding resource requests without flooding browser connections or service endpoints.
+- [Tile grid validation and addressing](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/tile-grid.md): These helpers are available from @loaders.gl/core/loader-utils and the focused
+- [Node platform adapters](https://loaders.gl/next/docs/modules/core/polyfills.md): Import @loaders.gl/core/polyfills to install loaders.gl's Node filesystem, image, and library-loading
+- [Give Node.js the platform APIs loaders expect.](https://loaders.gl/next/docs/modules/core/polyfills/api-reference.md): Add the small set of Node.js and browser-compatibility APIs needed by loaders.gl.
+- [@loaders.gl/core/scan](https://loaders.gl/next/docs/modules/core/scan.md): A portable query runtime for bounded, selective reads across local and cloud data.
+- [Give loaders a common shape to return.](https://loaders.gl/next/docs/modules/core/schema.md): Shared table, schema, and batch shapes for loaders and writers.
+- [Schema and table utilities](https://loaders.gl/next/docs/modules/core/schema-utils.md): @loaders.gl/core/schema-utils provides table access, schema conversion, batch
+- [Apache Arrow](https://loaders.gl/next/docs/modules/core/schema/api-reference/apache-arrow.md): ---
+- [Geometries](https://loaders.gl/next/docs/modules/core/schema/api-reference/geometries.md): Common geometry table representations for geospatial loaders.
+- [Schema](https://loaders.gl/next/docs/modules/core/schema/api-reference/schema.md): Serializable field and table metadata modeled after Apache Arrow.
+- [Table](https://loaders.gl/next/docs/modules/core/schema/api-reference/table.md): The common table shapes returned by loaders.gl loaders.
+- [TableBatch](https://loaders.gl/next/docs/modules/core/schema/api-reference/table-batch.md): Bounded record batches for streaming table data.
+- [Working with Tables](https://loaders.gl/next/docs/modules/core/schema/table-guide.md): ---
+- [Geometry codecs](https://loaders.gl/next/docs/modules/core/wkt.md): @loaders.gl/core/wkt provides direct WKT, WKB, and TWKB geometry conversion utilities.
+- [Move expensive parsing without changing the loader API.](https://loaders.gl/next/docs/modules/core/worker-utils.md): Run loader and writer work off the main thread with reusable workers.
+- [Worker processing](https://loaders.gl/next/docs/modules/core/worker-utils/api-reference/worker-processing.md): Run atomic and streaming work in reusable browser or Node.js workers.
+
+#### crypto
+
+Hash data incrementally as loaders and streams process it.
+
+- [Hash data while it is moving through the pipeline.](https://loaders.gl/next/docs/modules/crypto.md): Hash data incrementally as loaders and streams process it.
+- [Add a fast checksum to a binary pipeline.](https://loaders.gl/next/docs/modules/crypto/api-reference/crc32-hash.md): Calculate CRC32 checksums for complete buffers or streaming binary batches.
+- [Use CRC32C where the storage format names it.](https://loaders.gl/next/docs/modules/crypto/api-reference/crc32c-hash.md): Calculate CRC32C checksums for binary data with the loaders.gl Hash interface.
+- [Hash data without coupling the pipeline to one runtime.](https://loaders.gl/next/docs/modules/crypto/api-reference/hash.md): Hash complete buffers or async binary batches with the crypto module’s portable interface.
+- [Use MD5 when compatibility is the requirement.](https://loaders.gl/next/docs/modules/crypto/api-reference/md5-hash.md): Calculate MD5 digests for compatibility with formats and systems that require them.
+- [Add a modern digest at the bytes boundary.](https://loaders.gl/next/docs/modules/crypto/api-reference/sha256-hash.md): Calculate SHA-256 digests through the loaders.gl asynchronous and streaming hash interface.
+
+#### draco
+
+Compress and decompress meshes and point clouds with Draco, including Arrow-compatible geometry paths.
+
+- [Move geometry efficiently without changing its meaning.](https://loaders.gl/next/docs/modules/draco.md): Compress and decompress meshes and point clouds with Draco, including Arrow-compatible geometry paths.
+- [DracoLoader](https://loaders.gl/next/docs/modules/draco/api-reference/draco-loader.md): Decode compressed meshes and point clouds into mesh or Arrow data.
+- [DracoWriter](https://loaders.gl/next/docs/modules/draco/api-reference/draco-writer.md): Encode meshes and point clouds with Draco compression.
+- [Smaller geometry, the same application shape.](https://loaders.gl/next/docs/modules/draco/format.md): Compress and decompress triangle meshes and point clouds while retaining a shared geometry data shape.
+- [Ship geometry without throwing away its attributes.](https://loaders.gl/next/docs/modules/draco/formats/draco.md): Compress meshes and point clouds while preserving typed geometry attributes.
+- [Compress geometry at the writer boundary.](https://loaders.gl/next/docs/modules/draco/images/draco-writer.md): Encode Mesh or Mesh Arrow data with Draco geometry compression.
+
+#### geospatial
+
+Geospatial vector formats and geometry loader/writer descriptors share one package. Codec and geometry-construction utilities live in independent core subpaths.
+
+- [@loaders.gl/geospatial](https://loaders.gl/next/docs/modules/geospatial.md): Geospatial vector formats and geometry loader/writer descriptors share one package. Codec and geometry-construction utilities live in independent core subpaths.
+- [Ask a vector file for the features in a box.](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf.md): Read FlatGeobuf vector data with spatial indexing, range requests, and Arrow feature tables.
+- [Decode indexed features into the shape your app needs.](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md): Decode FlatGeobuf features into geometry tables, Arrow tables, or binary geometry.
+- [Query an indexed vector file from the browser.](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader.md): Query indexed FlatGeobuf datasets with HTTP ranges.
+- [A binary feature stream with a spatial index.](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/format.md): Read indexed binary geospatial features with optional streaming, Arrow output, and spatially selective access.
+- [Find the features before decoding the file.](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md): A binary, spatially indexed feature format designed for streaming and selective reads.
+- [@loaders.gl/geospatial/geopackage](https://loaders.gl/next/docs/modules/geospatial/geopackage.md): Read GeoPackage layers and tables through loader and source APIs.
+- [GeoPackageLoader](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader.md): Read GeoPackage feature tables from a portable SQLite-based container.
+- [GeoPackageSource](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source.md): Discover GeoPackage tables and read selected data as Arrow.
+- [A portable SQLite file for geospatial tables.](https://loaders.gl/next/docs/modules/geospatial/geopackage/format.md): Read OGC GeoPackage vector tables from a portable SQLite container and expose them as geometry or Arrow data.
+- [GeoPackage](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md): A SQLite-based package for portable geospatial feature tables, tiles, and metadata.
+- [Bring map and track files into one data path.](https://loaders.gl/next/docs/modules/geospatial/kml.md): Load geographic and fitness-tracking XML into application data.
+- [GPXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/gpx-loader.md): Parse GPX tracks, routes, and waypoints into loaders.gl geometry tables.
+- [KMLLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md): Parse KML geographic documents into loaders.gl geometry tables.
+- [TCXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader.md): Parse activity-oriented TCX files into loaders.gl geometry tables.
+- [Bring annotated tracks into one geometry path.](https://loaders.gl/next/docs/modules/geospatial/kml/format.md): Load geographic annotations, packaged maps, GPS tracks, and training activities into shared geometry data shapes.
+- [Carry tracks and waypoints between GPS tools.](https://loaders.gl/next/docs/modules/geospatial/kml/formats/gpx.md): A portable XML format for GPS waypoints, routes, and tracks.
+- [Put places, paths, and views in an Earth-ready document.](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md): An XML standard for geographic annotation, visualization, and Earth-browser content.
+- [Keep activity data with its useful measurements.](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md): Garmin's XML exchange format for activities, laps, and fitness metrics.
+- [Read the geometry and attributes that travel together.](https://loaders.gl/next/docs/modules/geospatial/shapefile.md): Load Shapefile geometry and attributes as geospatial table data.
+- [DBFLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md): Decode the attribute table component of a Shapefile dataset.
+- [ShapefileLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md): Load Shapefile geometry, attributes, indexes, and CRS metadata into geospatial tables.
+- [SHPLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader.md): Decode the geometry component of a Shapefile dataset.
+- [A geospatial dataset, not just a .shp file.](https://loaders.gl/next/docs/modules/geospatial/shapefile/format.md): Read the geometry, attributes, indexes, projection, and encoding that make up a Shapefile dataset.
+- [Treat the sidecars as part of the dataset.](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md): Read the multi-file ESRI vector format and its sidecar metadata as one geospatial dataset.
+- [Keep geometry and coordinate systems interoperable.](https://loaders.gl/next/docs/modules/geospatial/wkt.md): Parse and write geometry and coordinate reference systems in OGC text and binary forms.
+- [HexWKBLoader](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/hex-wkb-loader.md): Parse hexadecimal WKB strings into structured geometry data.
+- [TWKBLoader](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/twkb-loader.md): Parse compact Tiny Well-Known Binary geometry into loaders.gl data.
+- [TWKBWriter](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/twkb-writer.md): Encode loaders.gl geometry as compact Tiny Well-Known Binary.
+- [WKBLoader](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkb-loader.md): Parse compact OGC Well-Known Binary geometry into loaders.gl data.
+- [WKBWriter](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkb-writer.md): Encode loaders.gl geometry as compact OGC Well-Known Binary.
+- [WKTCRSLoader](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-crs-loader.md): Parse WKT coordinate reference system syntax into a value-preserving AST.
+- [WKTCRSWriter](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-crs-writer.md): Encode value-preserving CRS syntax trees as WKT coordinate reference systems.
+- [WKTLoader](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-loader.md): Parse readable OGC Well-Known Text geometry into loaders.gl data.
+- [WKTWriter](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-writer.md): Encode loaders.gl geometry as readable OGC Well-Known Text.
+- [Smaller geometry records for constrained links.](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/twkb.md): Encode vector geometry compactly with delta coordinates and variable-length integers.
+- [Carry geometry without paying for readable text.](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkb.md): Represent vector geometry as compact, typed binary records.
+- [Make a geometry readable at a glance.](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt.md): A human-readable text representation for vector geometries and their coordinate values.
+- [Describe where the coordinates live.](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt-crs.md): Represent coordinate reference systems and transformations in the OGC WKT syntax.
+
+#### graphs
+
+Load GraphML, DOT, and GEXF documents into Arrow node and edge tables.
+
+- [Load GraphML, DOT, and GEXF into reusable graph tables.](https://loaders.gl/next/docs/modules/graphs.md): Load GraphML, DOT, and GEXF documents into Arrow node and edge tables.
+
+#### images
+
+Load image files into browser and Node.js-friendly image representations.
+
+- [Use the image representation the next stage understands.](https://loaders.gl/next/docs/modules/images.md): Load image files into browser and Node.js-friendly image representations.
+- [Inspect an image header before paying to decode it.](https://loaders.gl/next/docs/modules/images/api-reference/binary-image-api.md): Read image dimensions and MIME types from encoded headers without decoding pixels.
+- [Decode pixels into the browser’s portable image type.](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md): Decode common image files into portable ImageBitmap values.
+- [Keep older image pipelines working while you migrate.](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md): Load legacy browser and raw image representations for compatibility with older applications.
+- [Take decoded pixels back to a file or upload body.](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md): Encode image values as browser- and Node.js-compatible image bytes.
+- [Keep image handling independent of the runtime’s image class.](https://loaders.gl/next/docs/modules/images/api-reference/parsed-image-api.md): Work with decoded images through one platform-independent helper layer.
+
+#### ogc
+
+@loaders.gl/ogc groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use WMS and OGC API sources or STAC sources for format-specific APIs and explicit parser entry points.
+
+- [@loaders.gl/ogc](https://loaders.gl/next/docs/modules/ogc.md): @loaders.gl/ogc groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use WMS and OGC API sources or STAC sources for format-specific APIs and explicit parser entry points.
+- [@loaders.gl/ogc/stac](https://loaders.gl/next/docs/modules/ogc/stac.md): Discover cloud datasets and assets through static catalogs or the STAC API.
+- [STACSourceLoader](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md): Discover and search static catalogs or STAC APIs before handing selected assets to native loaders.
+- [STAC](https://loaders.gl/next/docs/modules/ogc/stac/formats/stac.md): A catalog standard for discovering geospatial assets by space, time, collection, and links.
+- [@loaders.gl/ogc/wms](https://loaders.gl/next/docs/modules/ogc/wms.md): Read OGC maps, tiles, features, coverages, observations, and catalog services through source APIs.
+- [CRS and tile-grid intelligence](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/crs-and-tile-grids.md): Normalize service CRS identifiers and select compatible tile grids.
+- [Give catalog search a typed application boundary.](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-source-loader.md): Query a CSW catalog through typed capabilities, service-directory, and search methods.
+- [GMLLoader](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/gml-loader.md): Parse the common geospatial feature subset of Geography Markup Language.
+- [Inspect different services through one small capability shape.](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/service-capabilities.md): Normalize native service metadata into one protocol-neutral capabilities shape.
+- [WMSCapabilitiesLoader](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-capabilities-loader.md): Parse OGC WMS GetCapabilities responses into typed service metadata.
+- [Ask a map service what is under the cursor.](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-feature-info-loader.md): Parse a WMS GetFeatureInfo response into a typed result for map inspection workflows.
+- [Treat a map service as a queryable image source.](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-source-loader.md): Discover WMS capabilities and request georeferenced map images through a typed source.
+- [WMTSCapabilitiesLoader](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wmts-capability-loader.md): Parse OGC WMTS capabilities into typed tile-service metadata.
+- [Find the dataset before requesting its pixels or features.](https://loaders.gl/next/docs/modules/ogc/wms/formats/csw.md): Search geospatial catalogs and discover the services that publish their datasets.
+- [Read structured features from XML without guessing their geometry.](https://loaders.gl/next/docs/modules/ogc/wms/formats/gml.md): Parse the interoperable feature and geometry subset commonly returned by WFS services.
+- [Treat OWS Context as a resource map, not a data service.](https://loaders.gl/next/docs/modules/ogc/wms/formats/ows-context.md): Understand the OGC context format and the service APIs that handle its referenced resources.
+- [Request the coverage data behind the map.](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md): Discover and request analytical raster coverages through a typed geospatial source.
+- [Query features without taking ownership of the whole service response.](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md): Query vector features and stream them into geospatial or Arrow pipelines.
+- [Know where WMC ends and service loading begins.](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmc.md): Understand the legacy OGC map-context document and the loaders.gl service boundary around it.
+- [WMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md): Request georeferenced map images and service metadata through the OGC Web Map Service protocol.
+- [WMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md): Request map imagery through advertised tile matrix sets and resource templates.
+- [Find the right endpoint before creating a source.](https://loaders.gl/next/docs/modules/ogc/wms/services/capability-discovery.md): Discover related geospatial service endpoints, preserve their capabilities, and rank candidates without forcing a universal runtime.
+- [Use the service path that matches the data.](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md): Use focused HTTP source adapters for OGC API Features, Tiles, Coverages, and EDR resources.
+- [Share operational policy without hiding the protocol.](https://loaders.gl/next/docs/modules/ogc/wms/services/universal-service-runtime.md): Apply shared request policy and source caching across protocol-specific OGC service loaders.
+
+#### pointclouds
+
+Point-cloud decoders and writers for LAS/LAZ, PCD and PLY. PLY keeps both point-cloud and mesh/face output; there is one implementation for both uses.
+
+- [@loaders.gl/pointclouds](https://loaders.gl/next/docs/modules/pointclouds.md): Point-cloud decoders and writers for LAS/LAZ, PCD and PLY. PLY keeps both point-cloud and mesh/face output; there is one implementation for both uses.
+- [@loaders.gl/pointclouds/las](https://loaders.gl/next/docs/modules/pointclouds/las.md): Read and write LAS and LAZ point clouds with typed records, streaming, and Arrow output.
+- [LASLoader](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md): Parse LAS and LAZ point records into Arrow tables by default, with an explicit mesh compatibility shape.
+- [LASWriter](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md): Write mesh and Arrow point clouds as interoperable LAS or LAZ data.
+- [Measure LAZ decoding with the columns your app needs.](https://loaders.gl/next/docs/modules/pointclouds/las/benchmarks.md): Compare LAZ decoding and Arrow point-cloud output across browser implementations.
+- [Point records that scale from files to the cloud.](https://loaders.gl/next/docs/modules/pointclouds/las/format.md): Work with point-cloud records, lossless LAZ compression, and cloud-optimized COPC data through shared mesh and table shapes.
+- [Keep the point record useful at every layer.](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md): Open point-cloud exchange formats with typed records, lossless compression, and extensible metadata.
+- [Keep point attributes alongside positions.](https://loaders.gl/next/docs/modules/pointclouds/pcd.md): Load and write Point Cloud Data with named point attributes and multiple encodings.
+- [PCDLoader](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md): Decode Point Cloud Data into point-cloud or Mesh Arrow tables.
+- [PCDWriter](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md): Encode point-cloud data as ASCII Point Cloud Data text.
+- [A simple point-cloud interchange.](https://loaders.gl/next/docs/modules/pointclouds/pcd/format.md): Read and write Point Cloud Data files as render-ready points or typed mesh columns.
+- [Name the point fields before storing the points.](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md): A point-cloud format with a schema header and ASCII, binary, or compressed binary records.
+- [Describe a mesh as elements and properties.](https://loaders.gl/next/docs/modules/pointclouds/ply.md): Load and write Polygon File Format meshes and point-cloud-style vertex data.
+- [Read a classic mesh file into the shape your renderer needs.](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md): Parse Polygon File Format meshes into Mesh Arrow tables or legacy Mesh objects.
+- [Write common mesh data into a portable text format.](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md): Encode Mesh or Mesh Arrow table data as PLY text.
+- [See how PLY parsing behaves in this browser.](https://loaders.gl/next/docs/modules/pointclouds/ply/benchmarks.md): Compare browser PLY parsing behavior with the actual geometry workloads used by applications.
+- [A flexible interchange for polygon geometry.](https://loaders.gl/next/docs/modules/pointclouds/ply/format.md): Read and write polygon meshes with flexible ASCII or binary element properties through common mesh data shapes.
+- [Let the header describe the mesh you have.](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md): A flexible element-and-property format for polygon meshes and vertex data.
+
+#### raster
+
+GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh.
+
+- [@loaders.gl/raster](https://loaders.gl/next/docs/modules/raster.md): GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh.
+- [GeoTIFF and OME-TIFF](https://loaders.gl/next/docs/modules/raster/geotiff.md): Read GeoTIFF, Cloud Optimized GeoTIFF, and OME-TIFF rasters with windows, bands, and metadata.
+- [GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md): Read georeferenced TIFF imagery and its spatial metadata.
+- [GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md): GeoTIFFRasterLoader decodes original numeric TIFF samples for elevation models,
+- [GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md): Query GeoTIFF and Cloud Optimized GeoTIFF rasters by viewport, window, overview, and band.
+- [Read an OME-TIFF pyramid as selected raster data.](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md): Discover OME-TIFF image metadata and read selected channels, dimensions, and pyramid levels as raster data.
+- [GeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md): A TIFF image with metadata that locates raster pixels in a coordinate system.
+- [TIFF decoder core](https://loaders.gl/next/docs/modules/raster/geotiff/tiff-decoder-core.md): The numeric TIFF loader now uses an original loaders.gl decoder behind an internal
+- [Decode compact raster values with bounded error.](https://loaders.gl/next/docs/modules/raster/lerc.md): Decode limited error raster compression through the LERC loader.
+- [Decode compact raster blocks without guessing the pixels.](https://loaders.gl/next/docs/modules/raster/lerc/api-reference/lerc-loader.md): Decode Limited Error Raster Compression payloads into typed raster data for imagery and analytical coverage workflows.
+- [Set the error budget instead of pretending every pixel is RGB.](https://loaders.gl/next/docs/modules/raster/lerc/formats/lerc.md): Store raster values with explicit per-pixel error bounds and fast decoding.
+- [Turn elevation samples into a renderable surface.](https://loaders.gl/next/docs/modules/raster/terrain.md): Reconstruct terrain meshes from height maps and quantized mesh tiles.
+- [Heightmap utilities](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/heightmap.md): Decode Terrarium or custom RGB elevation into an unpadded height grid.
+- [QuantizedMeshLoader](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-loader.md): Decode Cesium quantized mesh terrain tiles into mesh data.
+- [QuantizedMeshWriter](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-writer.md): Encode mesh and Arrow terrain data as quantized mesh tiles.
+- [TerrainLoader](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/terrain-loader.md): Reconstruct mesh surfaces from encoded height-map images.
+
+#### scene
+
+Load scene graphs and meshes from glTF/GLB, OBJ/MTL and OpenUSD. Install one package and use the format entrypoint appropriate for the asset.
+
+- [@loaders.gl/scene](https://loaders.gl/next/docs/modules/scene.md): Load scene graphs and meshes from glTF/GLB, OBJ/MTL and OpenUSD. Install one package and use the format entrypoint appropriate for the asset.
+- [@loaders.gl/scene/gltf](https://loaders.gl/next/docs/modules/scene/gltf.md): Load, inspect, transform, and write glTF and GLB scene assets.
+- [Open the binary envelope around a glTF asset.](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/glb-loader.md): Split a GLB binary envelope into JSON and binary chunks.
+- [Pack application data into one binary envelope.](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/glb-writer.md): Pack JSON and binary chunks into a GLB envelope.
+- [Look inside a GLB before you render it.](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/glbdump.md): Inspect GLB and glTF containers from the command line before wiring them into an application.
+- [glTF accessor helpers](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-accessors.md): Read and replace accessor storage directly on GLTFWithBuffers, without changing numeric scene,
+- [Traverse glTF without rewriting the source.](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md): Traverse standards-shaped glTF JSON lazily while preserving raw object identity and numeric references.
+- [GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md): Parse glTF and GLB scenes, resolve linked assets, and optionally process compressed content.
+- [Work with a glTF asset as a scenegraph.](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md): Inspect and build glTF scene data through a mutable API over JSON, buffers, images, scenes, and extensions.
+- [Write a glTF scenegraph as a binary GLB.](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-writer.md): Encode scenegraph data as glTF or GLB.
+- [Put a complete glTF scene in one file.](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md): Package a glTF scene, buffers, and textures into one binary file.
+- [glTF](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md): A compact, interoperable scene format for delivering geometry, materials, and animation.
+- [Move simple geometry into a shared mesh path.](https://loaders.gl/next/docs/modules/scene/obj.md): Load and write Wavefront OBJ geometry as reusable mesh data.
+- [Bring Wavefront geometry into a shared mesh pipeline.](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md): Parse Wavefront OBJ and MTL geometry into Mesh objects or Mesh Arrow tables.
+- [Write common mesh data into a format every 3D tool knows.](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md): Encode Mesh or Mesh Arrow table data as Wavefront OBJ text.
+- [Readable mesh geometry with a long tail of tooling.](https://loaders.gl/next/docs/modules/scene/obj/format.md): Exchange readable Wavefront mesh geometry through common mesh and Mesh Arrow data shapes.
+- [A simple text description of 3D geometry.](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md): A line-oriented text format for vertices, normals, texture coordinates, and faces.
+- [OpenUSD](https://loaders.gl/next/docs/modules/scene/usd.md): The @loaders.gl/scene/usd entrypoint loads OpenUSD stages while preserving prim hierarchy,
+- [Load a composed stage, not just a bag of meshes.](https://loaders.gl/next/docs/modules/scene/usd/api-reference/usd-loader.md): Parse OpenUSD scene descriptions into a typed stage while preserving prim hierarchy, composition, and authored metadata.
+- [Compose a scene without flattening it first.](https://loaders.gl/next/docs/modules/scene/usd/formats/usd.md): A scene description format for hierarchical composition, references, payloads, and variants.
+
+#### scientific
+
+Scientific array sources and parsers for NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
+
+- [@loaders.gl/scientific](https://loaders.gl/next/docs/modules/scientific.md): Scientific array sources and parsers for NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
+- [GRIB2](https://loaders.gl/next/docs/modules/scientific/grib2.md): The @loaders.gl/scientific/grib2 subpath exports a parser and scientific-array source for a
+- [HDF5](https://loaders.gl/next/docs/modules/scientific/hdf5.md): @loaders.gl/scientific/hdf5 exposes scientific-array source APIs and experimental TypeScript
+- [NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf.md): Install @loaders.gl/scientific and import NetCDFLoader from its root for asynchronous parsing
+- [Read selected variables without guessing the whole dataset.](https://loaders.gl/next/docs/modules/scientific/netcdf/api-reference.md): Discover NetCDF variables and read selected slices as raster data.
+- [Keep the dimensions that give data meaning.](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md): A scientific array format for named dimensions, variables, attributes, and typed data.
+- [VTK](https://loaders.gl/next/docs/modules/scientific/vtk.md): The @loaders.gl/scientific/vtk subpath exports direct parsers for supported legacy and XML VTK
+- [Read the chunks that cover the question.](https://loaders.gl/next/docs/modules/scientific/zarr.md): Read chunked multidimensional arrays and spatial windows from Zarr, GeoZarr, and OME-Zarr datasets.
+- [Ask a multidimensional array for a spatial slice.](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md): Query GeoZarr arrays as geospatial rasters while preserving dimensions, chunks, and CRS metadata.
+- [Read an image pyramid at the level and channels you need.](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader.md): Open OME-Zarr v2 and v3 image pyramids and read selected multiscale raster regions.
+- [SpatialDataSourceLoader](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/spatial-data-source-loader.md): &nbsp;
+- [Read the array chunks that answer the question.](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md): Store typed multidimensional arrays as independently addressable chunks.
+
+#### services
+
+This package provides authentication presets for Mapbox, Google Maps, and Cesium ion.
+
+- [@loaders.gl/services](https://loaders.gl/next/docs/modules/services.md): This package provides authentication presets for Mapbox, Google Maps, and Cesium ion.
+
+#### splats
+
+Load binary Gaussian splat formats for rendering, processing, and paged level-of-detail streaming.
+
+- [Load splats in the format the scene already uses.](https://loaders.gl/next/docs/modules/splats.md): Load binary Gaussian splat formats for rendering, processing, and paged level-of-detail streaming.
+- [Bring KSPLAT data into the common splat pipeline.](https://loaders.gl/next/docs/modules/splats/api-reference/ksplat-loader.md): Parse GaussianSplats3D KSPLAT files into the common Mesh Arrow table shape.
+- [Page large splat datasets instead of loading them all.](https://loaders.gl/next/docs/modules/splats/api-reference/rad-source-loader.md): Read Spark RAD metadata and range-fetch Gaussian splat chunks as typed tables.
+- [Turn splat points into a common table.](https://loaders.gl/next/docs/modules/splats/api-reference/splat-loader.md): Parse raw Gaussian splat files into the common Mesh Arrow table shape.
+- [Decode compressed splats without changing the application shape.](https://loaders.gl/next/docs/modules/splats/api-reference/spz-loader.md): Parse compressed Niantic Spatial SPZ Gaussian splat files into Mesh Arrow tables.
+- [Several containers. One renderer-facing table.](https://loaders.gl/next/docs/modules/splats/formats/splats.md): Compare the binary Gaussian splat containers supported by loaders.gl.
+
+#### sql
+
+Query database-backed data sources as rows or Arrow tables.
+
+- [Query databases through the source contract.](https://loaders.gl/next/docs/modules/sql.md): Query database-backed data sources as rows or Arrow tables.
+- [SQLDataSource](https://loaders.gl/next/docs/modules/sql/api-reference/sql-source.md): A shared source contract for metadata, portable table queries, and Arrow results.
+
+#### tables
+
+Table and record formats share one package, with format-specific metadata and parser entrypoints.
+
+- [@loaders.gl/tables](https://loaders.gl/next/docs/modules/tables.md): Table and record formats share one package, with format-specific metadata and parser entrypoints.
+- [@loaders.gl/tables/arrow](https://loaders.gl/next/docs/modules/tables/arrow.md): Arrow and GeoArrow loaders, writers, and utilities for typed columnar data.
+- [ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md): Parse Arrow IPC files and streams into typed loaders.gl table shapes.
+- [Arrow schema utilities](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-schema-utils.md): Validate Arrow schemas and rename columns without leaving the vector representation.
+- [Arrow table transport](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-table-transport.md): Move Arrow tables across worker boundaries with explicit buffer and schema handling.
+- [Arrow variable-width conversion](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-variable-width.md): Convert Arrow string and binary view vectors for runtime compatibility.
+- [ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md): Encode typed table data as Apache Arrow IPC files or streams.
+- [GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md): Read Arrow tables and preserve GeoArrow geometry columns and metadata.
+- [IndexedArrowTable](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/indexed-arrow-table.md): Create readonly filtered and reordered Arrow table views without copying columns immediately.
+- [MappedArrowTable](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/mapped-arrow-table.md): Add stable string-keyed lookup to an indexed Arrow table without copying the backing rows.
+- [splitArrowBuffers](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/split-arrow-buffers.md): Make sliced Arrow buffers safe to transfer across workers without copying unrelated bytes.
+- [triangulateWKBGeometryColumn](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/triangulate-wkb-geometry-column.md): Tessellate GeoArrow WKB polygons into triangle indexes and XY vertex columns.
+- [UTF-8 utilities](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/utf8-utils.md): Compare and parse Arrow UTF-8 byte ranges without materializing JavaScript strings.
+- [Apache Arrow](https://loaders.gl/next/docs/modules/tables/arrow/format.md): Use Arrow IPC as a typed, columnar interchange between loaders, scans, workers, applications, and writers.
+- [Apache Arrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md): A binary columnar format for moving typed table data between files, workers, and applications.
+- [GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md): Store geospatial columns in Apache Arrow while preserving geometry layout and CRS metadata.
+- [Apache Avro](https://loaders.gl/next/docs/modules/tables/avro.md): @loaders.gl/tables/avro reads Apache Avro records into Arrow tables and writes Arrow
+- [Keep JSON-like documents in a binary form.](https://loaders.gl/next/docs/modules/tables/bson.md): Read and write BSON documents through the loaders.gl API.
+- [Decode typed documents at the application boundary.](https://loaders.gl/next/docs/modules/tables/bson/api-reference/bson-loader.md): Decode BSON binary documents into JSON-like JavaScript objects.
+- [Put typed document values back on the wire.](https://loaders.gl/next/docs/modules/tables/bson/api-reference/bson-writer.md): Encode JSON-like JavaScript objects as BSON binary documents.
+- [Keep document semantics in a binary envelope.](https://loaders.gl/next/docs/modules/tables/bson/format.md): Load and write JSON-like documents in a compact binary representation with explicit BSON type support.
+- [Keep JSON-like documents typed on the wire.](https://loaders.gl/next/docs/modules/tables/bson/formats/bson.md): Store JSON-like documents with explicit binary scalar types and compact traversal-friendly records.
+- [@loaders.gl/tables/csv](https://loaders.gl/next/docs/modules/tables/csv.md): Stream CSV and TSV data into reusable table shapes and write it back as text.
+- [CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md): Load CSV and TSV data into row, columnar, or Arrow table shapes.
+- [CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md): Encode loaders.gl tables as CSV or delimiter-separated text.
+- [CSV benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md): Compare CSV parsing and batch delivery in the browser with the same fixture and options.
+- [CSV, TSV, and DSV](https://loaders.gl/next/docs/modules/tables/csv/format.md): Stream delimited records into row, columnar, or Arrow tables and write them back with explicit schema and delimiter options.
+- [CSV, TSV, and DSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md): Simple text encodings for tabular data that are easy to inspect, stream, and exchange.
+- [Bring workbook sheets into a table pipeline.](https://loaders.gl/next/docs/modules/tables/excel.md): Load Excel workbooks into loaders.gl table data.
+- [Bring worksheets into the same table path.](https://loaders.gl/next/docs/modules/tables/excel/api-reference/excel-loader.md): Load worksheets into row tables or Apache Arrow tables from XLS, XLSB, and XLSX files.
+- [@loaders.gl/tables/json](https://loaders.gl/next/docs/modules/tables/json.md): Parse JSON, newline-delimited JSON, and GeoJSON into document, table, or feature data.
+- [GeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-loader.md): Stream or decode GeoJSON features into GeoArrow tables and other compatible shapes.
+- [GeoJSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-writer.md): Encode loaders.gl geospatial data as GeoJSON or newline-delimited features.
+- [JSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md): Parse JSON documents or stream arrays into loaders.gl data.
+- [JSONTableLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-table-loader.md): Load JSON row arrays into loaders.gl row or Arrow tables.
+- [JSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-writer.md): Encode loaders.gl row, columnar, and Arrow tables as JSON text.
+- [NDGeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndgeojson-loader.md): Stream newline-delimited GeoJSON features into application or table data.
+- [NDJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md): Stream newline-delimited JSON into rows or Arrow batches.
+- [JSON](https://loaders.gl/next/docs/modules/tables/json/format.md): Load, stream, transform, and write JSON documents and table-shaped JSON data through one set of APIs.
+- [GeoJSON](https://loaders.gl/next/docs/modules/tables/json/formats/geojson.md): A readable JSON representation of geographic features and their properties.
+- [GeoJSON Geometry](https://loaders.gl/next/docs/modules/tables/json/formats/geojson-geometry.md): Understand the geometry object shared by GeoJSON features and vector data pipelines.
+- [JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md): A text format for structured values, documents, APIs, and line-oriented records.
+- [JSONPath](https://loaders.gl/next/docs/modules/tables/json/jsonpath.md): Select the array that a streaming JSON loader should visit with a focused RFC 9535-compatible subset.
+- [Read columnar dataset fragments without loading everything.](https://loaders.gl/next/docs/modules/tables/lance.md): Read selected Lance dataset columns into Arrow tables.
+- [Read the columns that answer the question.](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-arrow.md): Read selected Lance columns and coordinates into Arrow tables using bounded local or remote reads.
+- [Treat a Lance dataset as a readable source.](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source-loader.md): Open a Lance dataset, inspect its manifest and fragments, and read supported columns as Arrow batches.
+- [@loaders.gl/tables/orc](https://loaders.gl/next/docs/modules/tables/orc.md): Read and write ORC files with a portable table scan surface.
+- [Apache ORC](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md): A typed columnar file format organized into stripes, streams, and footer metadata.
+- [@loaders.gl/tables/parquet](https://loaders.gl/next/docs/modules/tables/parquet.md): Read and write Parquet with selective scans, Arrow output, and cloud-friendly ranges.
+- [DeltaTableSource](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/delta-table-source.md): Read a versioned Delta Lake snapshot through Parquet planning and Arrow batches.
+- [GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md): Read GeoParquet into geospatial tables or Arrow with preserved metadata.
+- [IcebergTableSource](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/iceberg-table-source.md): Plan reads over Iceberg metadata and manifests, then stream selected Parquet data as Arrow.
+- [ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md): Read Parquet files with object rows, Arrow tables, and streaming batches.
+- [ParquetSourceLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md): Read remote Parquet selectively through metadata, byte ranges, predicates, and Arrow batches.
+- [ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md): Encode loaders.gl and Arrow tables as Parquet with typed columns and geospatial metadata.
+- [Apache Parquet](https://loaders.gl/next/docs/modules/tables/parquet/format.md): Read and write compressed columnar files, with selective access and GeoParquet metadata for cloud datasets.
+- [GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md): Store geospatial columns in Parquet with explicit geometry metadata, encodings, and CRS information.
+- [Apache Parquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md): A column-oriented storage format designed for compact files and selective reads.
+
+#### textures
+
+Load compressed texture containers and transcode portable payloads into GPU-oriented formats.
+
+- [@loaders.gl/textures](https://loaders.gl/next/docs/modules/textures.md): Load compressed texture containers and transcode portable payloads into GPU-oriented formats.
+- [Let the device choose the final texture format.](https://loaders.gl/next/docs/modules/textures/api-reference/basis-loader.md): Transcode Basis Universal payloads into texture levels suited to the current device.
+- [Preserve the mip chain and the GPU format.](https://loaders.gl/next/docs/modules/textures/api-reference/compressed-texture-loader.md): Parse KTX, DDS, and PVR containers into normalized compressed texture levels.
+- [Keep the compression step at the build or Node.js boundary.](https://loaders.gl/next/docs/modules/textures/api-reference/compressed-texture-writer.md): Encode image data through an optional native compressed-texture toolchain.
+- [Keep an existing compressed texture pipeline moving.](https://loaders.gl/next/docs/modules/textures/api-reference/crunch-loader.md): Decode legacy Crunch texture files in a worker-friendly path and expose their compressed mip levels.
+- [Write one compressed texture for many GPU families.](https://loaders.gl/next/docs/modules/textures/api-reference/ktx2-basis-texture-writer.md): Encode RGBA pixel data as Basis Universal compressed KTX2 textures for portable GPU delivery.
+- [Load one image, or let the mip chain follow it.](https://loaders.gl/next/docs/modules/textures/api-reference/load-image.md): Load one image or a mip chain through the standard image decoding path.
+- [Load an image array without repeating the request loop.](https://loaders.gl/next/docs/modules/textures/api-reference/load-image-array.md): Load a counted image array or mip-level image set through one URL callback.
+- [Load six images with one callback.](https://loaders.gl/next/docs/modules/textures/api-reference/load-image-cube.md): Load the six images that make up a cubemap, with optional mip levels per face.
+- [Bring a NumPy array into a typed JavaScript pipeline.](https://loaders.gl/next/docs/modules/textures/api-reference/npy-loader.md): Read NumPy NPY arrays into typed JavaScript data while preserving dtype, order, and shape metadata.
+- [Load lighting data without flattening its range.](https://loaders.gl/next/docs/modules/textures/api-reference/radiance-hdr-loader.md): Decode Radiance RGBE HDR images into texture data for environment lighting and high-dynamic-range workflows.
+- [Describe an array of images, then load it as one texture.](https://loaders.gl/next/docs/modules/textures/api-reference/texture-array-loader.md): Load a JSON texture-array manifest and assemble its member images into a shared array texture representation.
+- [Load many cubemaps from one manifest.](https://loaders.gl/next/docs/modules/textures/api-reference/texture-cube-array-loader.md): Load layered cubemaps and mip levels from a JSON texture manifest.
+- [Describe six texture faces once.](https://loaders.gl/next/docs/modules/textures/api-reference/texture-cube-loader.md): Load a cubemap and its optional mip levels from a JSON manifest.
+- [Describe a texture once. Resolve its image levels as a unit.](https://loaders.gl/next/docs/modules/textures/api-reference/texture-loader.md): Load a manifest-driven image texture or mip chain into a normalized texture object.
+- [Ship one compressed asset. Transcode at the edge.](https://loaders.gl/next/docs/modules/textures/formats/basis.md): A portable supercompressed texture payload that can be transcoded for the current GPU.
+- [Keep compressed texture data compressed until the GPU needs it.](https://loaders.gl/next/docs/modules/textures/formats/compressed-textures.md): Understand GPU-native texture containers, mip chains, and portable supercompression.
+- [Keep an older compressed texture path understandable.](https://loaders.gl/next/docs/modules/textures/formats/crunch.md): Read legacy Crunch compressed texture payloads and expose their mip levels for GPU-oriented workflows.
+- [Keep compressed desktop texture assets upload-ready.](https://loaders.gl/next/docs/modules/textures/formats/dds.md): Read DirectDraw Surface containers with compressed GPU texture payloads and mipmaps.
+- [Keep lighting values above display range.](https://loaders.gl/next/docs/modules/textures/formats/hdr.md): Decode RGBE high-dynamic-range images for environment lighting, skyboxes, reflections, and tone mapping.
+- [Keep the texture layout with the payload.](https://loaders.gl/next/docs/modules/textures/formats/ktx.md): Khronos texture containers for mipmapped, array, cube, and GPU-compressed texture data.
+- [Keep mobile texture payloads and mip levels together.](https://loaders.gl/next/docs/modules/textures/formats/pvr.md): Read PowerVR texture containers with mipmaps and GPU-oriented compressed payload metadata.
+
+#### tile-converter
+
+Convert between I3S and 3D Tiles datasets with CLI and JavaScript APIs.
+
+- [Move tiled datasets between compatible standards.](https://loaders.gl/next/docs/modules/tile-converter.md): Convert between I3S and 3D Tiles datasets with CLI and JavaScript APIs.
+- [Prepare I3S data for a 3D Tiles pipeline.](https://loaders.gl/next/docs/modules/tile-converter/api-reference/3d-tiles-converter.md): Convert I3S datasets into 3D Tiles output through the tile-converter JavaScript API.
+- [Run the converter from the source tree.](https://loaders.gl/next/docs/modules/tile-converter/api-reference/build-instructions.md): Build and run the tile converter directly from a repository branch when a published package is not sufficient.
+- [Prepare 3D Tiles data for I3S consumers.](https://loaders.gl/next/docs/modules/tile-converter/api-reference/i3s-converter.md): Convert 3D Tiles datasets into I3S output through the tile-converter JavaScript API.
+- [Point-cloud attribute mapping and COPC output](https://loaders.gl/next/docs/modules/tile-converter/api-reference/point-cloud-copc.md): The v5 adapters support explicit point attribute mapping and bounded COPC batch authoring.
+- [Ship the converter as one runnable script.](https://loaders.gl/next/docs/modules/tile-converter/api-reference/tile-converter-bundle.md): Build a self-contained Node.js converter bundle for environments that do not install the full npm package.
+- [Tile-converter v5 conversion core](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md): Experimental platform-neutral contracts for inspecting, converting, and validating tilesets.
+- [Make converted I3S data available to a client.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/i3s-server.md): Serve converted I3S output or SLPK data through the tile-converter HTTP service.
+- [Check the conversion boundary before starting a large job.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/supported-features.md): Check which I3S and 3D Tiles layer types, versions, sources, extensions, and output options the converter supports.
+- [Put tiled-data conversion in the build pipeline.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter.md): Convert I3S and 3D Tiles datasets from URLs or local sources with a repeatable command-line workflow.
+- [Tile-converter v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md): Bounded metadata inspection, selected mesh conversion and target-profile validation.
+
+#### tiles
+
+Select and cache 2D tiles, and load MLT, MVT, and PMTiles formats.
+
+- [2D tiles](https://loaders.gl/next/docs/modules/tiles.md): Select and cache 2D tiles, and load MLT, MVT, and PMTiles formats.
+- [RasterSet](https://loaders.gl/next/docs/modules/tiles/api-reference/raster-set.md): Manage viewport-driven raster requests through a raster source.
+- [TileMatrix frame selection](https://loaders.gl/next/docs/modules/tiles/api-reference/tile-matrix.md): selectTileMatrixTiles selects tiles from complete TileGrid.tileMatrixSet geometry using an
+- [Tileset2D](https://loaders.gl/next/docs/modules/tiles/api-reference/tileset-2d.md): Share cache and request state across viewport-driven 2D tile consumers.
+- [Decode compact vector tiles without changing the tile path.](https://loaders.gl/next/docs/modules/tiles/mlt.md): Load compact MapLibre Tile vector data through loaders and sources.
+- [Decode a compact tile into application data.](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md): Parse MapLibre Tile payloads into reusable vector-tile data shapes.
+- [Fetch compact vector tiles through a source.](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md): Read MapLibre Tile data from URL-addressed tile services.
+- [MLTWriter](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-writer.md): Encode tile-local GeoArrow WKB and scalar attributes as MLT v1.
+- [Put a tile’s geometry and attributes on one path.](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md): A binary vector-tile format for named feature tables, geometry, and attributes.
+- [Keep tiled map delivery separate from map rendering.](https://loaders.gl/next/docs/modules/tiles/mvt.md): Load, write, and serve Mapbox Vector Tiles and the metadata that describes tiled maps.
+- [ArrowTableTileSourceLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md): ArrowTableTileSourceLoader generates clipped, simplified vector tiles from an in-memory Arrow
+- [MapStyleLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/map-style-loader.md): Resolve MapLibre and Mapbox style metadata for tile workflows.
+- [Turn one vector tile into usable features.](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-loader.md): Decode a Mapbox Vector Tile into geometry or a table-shaped result.
+- [MVTSourceLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md): Load vector tiles dynamically from tiled services and cloud hierarchies.
+- [MVTWriter](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-writer.md): Encode geometry as Mapbox Vector Tile protobuf data.
+- [TableTileSourceLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-source-loader.md): Build vector tiles on demand from a large in-browser table.
+- [TileJSONLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/tilejson-loader.md): Read tile service metadata and merge it with tilestats information.
+- [Keep the style document separate from the tile data.](https://loaders.gl/next/docs/modules/tiles/mvt/formats/map-style.md): Resolve tiled map sources and preserve style metadata for a renderer to apply.
+- [Request the tile that covers the view.](https://loaders.gl/next/docs/modules/tiles/mvt/formats/mvt.md): A compact protobuf tile format for delivering vector features by map tile.
+- [Know what the tiles contain before loading them.](https://loaders.gl/next/docs/modules/tiles/mvt/formats/tilejson.md): Describe a vector tileset before the client starts requesting individual tiles.
+- [One archive. The tiles the view actually needs.](https://loaders.gl/next/docs/modules/tiles/pmtiles.md): Read or package tiled datasets in a single cloud-friendly PMTiles archive.
+- [GeoArrow to vector tiles to PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/geoarrow-pmtiles.md): Tile an in-memory GeoArrow table and export selected MVT or MLT tiles in PMTiles v3.
+- [Read archive tiles without downloading the archive.](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md): Read tiles from a PMTiles archive with batched range requests.
+- [PMTilesWriter](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md): Package existing vector or raster tiles into a PMTiles v3 archive.
+- [Raster to PNG to PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/raster-pmtiles.md): Export selected regions from a numeric raster source as PNG tiles in PMTiles v3.
+- [Keep a tileset in one range-readable file.](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md): A single HTTP range-readable archive for tiled vector, raster, and terrain data.
+
+#### tiles-3d
+
+Traverse 3D Tiles, I3S, COPC and Potree datasets with shared 3D tileset runtime APIs.
+
+- [3D tiles](https://loaders.gl/next/docs/modules/tiles-3d.md): Traverse 3D Tiles, I3S, COPC and Potree datasets with shared 3D tileset runtime APIs.
+- [@loaders.gl/tiles-3d/3d-tiles](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md): Load and traverse large 3D Tiles datasets with standards-aware tile and content handling.
+- [Resolve an ion asset without leaking its credentials.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader.md): Bootstrap Cesium ion assets and load their authenticated 3D Tiles content.
+- [Writing is a separate format boundary.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tile-3d-writer.md): Current status and intended boundary for writing 3D Tiles content from loaders.gl data.
+- [Tiles3DArchiveWriter](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-archive-writer.md): Packages already-authored 3D Tiles resources into a deterministic indexed .3tz archive.
+- [Read tiled 3D worlds one payload at a time.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md): Parse 3D Tiles tilesets and tile payloads with linked assets.
+- [From tileset metadata to visible content.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md): Understand the runtime stages that turn a 3D Tiles hierarchy into visible, cacheable content.
+- [Draft 3D Tiles 2.0, decoded and traversed.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/3d-tiles-2-0-experimental.md): Understand the draft glTF-based 3D Tiles 2.0 profile supported by loaders.gl.
+- [Reuse detail without letting memory run away.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/caching-and-memory.md): Size byte-native cache budgets and understand how current-frame protection interacts with tile reuse and level of detail.
+- [Know which frame the tiles actually use.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/coordinate-reference-systems.md): Keep the world frame, geographic regions, transforms, and coordinate metadata distinct while traversing a 3D Tiles dataset.
+- [Make correctness observable.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/correctness-and-conformance.md): Use observable runtime invariants to reason about parsing, transforms, traversal, LOD, and I3S isolation.
+- [Gaussian, vector, and voxel extensions](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/gaussian-vector-voxel-extensions.md): Understand reader, decoder, and renderer boundaries for Gaussian splats, vector topology, and voxel primitives.
+- [Expand a hierarchy only where the view needs it.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/implicit-tiling-and-subtrees.md): Understand availability-driven quadtree and octree hierarchies without downloading every tile header up front.
+- [Measure traversal before tuning it.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/observability-and-benchmarks.md): Make 3D Tiles traversal behavior measurable, reproducible, and performance-budgeted.
+- [Renderer contracts and metadata](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/renderer-contracts-and-metadata.md): Consume ordered tile content, feature IDs, visibility, and decoded metadata through public renderer-neutral APIs.
+- [Bring the most useful detail first.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/request-scheduling-and-priorities.md): Understand how required tile requests are ordered while a camera moves, without changing the final level-of-detail target.
+- [Resolve the resource before interpreting it.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/resource-resolution-and-content-detection.md): Resolve tile references and identify nested tilesets, binary tile content, and extensionless resources safely.
+- [Tune the runtime in layers.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/runtime-tuning-and-diagnostics.md): Tune final detail, request timing, concurrency, and memory in a sequence that makes visible behavior explainable.
+- [Turn world-space error into view-space detail.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/screen-space-error-and-lod.md): See how geometric error becomes a view-dependent pixel threshold that drives 3D Tiles refinement.
+- [Prepare style inputs without coupling the loader to a renderer.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/styling-and-feature-access.md): Build renderer-neutral 3D Tiles style inputs from metadata, feature IDs, and batch tables.
+- [Traverse the tree without losing coverage.](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/tile-hierarchy-and-refinement.md): Follow visible branches through explicit and implicit hierarchies while preserving safe coverage during loading.
+- [3D Tiles](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md): A hierarchical, streamable format for rendering large geospatial datasets.
+- [Put I3S hierarchy behind the common tiles API.](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/i3s-source.md): Adapt I3S layers to the shared tileset traversal runtime.
+- [PointCloudTileSource](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/point-cloud-tile-source.md): Creates a dynamic additive octree from a decoded point Mesh or MeshArrowTable.
+- [Traverse large point clouds without loading every point.](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/point-cloud-tileset.md): Traverse source-backed point-cloud octrees with a small common runtime.
+- [One tile, all the state traversal needs.](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tile-3d.md): Inspect the runtime state of one tile during 3D Tiles traversal, loading, selection, and cache management.
+- [Tiles3DSource](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md): Connect a 3D Tiles loader to the shared tileset runtime.
+- [Tileset3D](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tileset-3d.md): Traverse, cull, request, and cache source-backed 3D tilesets.
+- [Tileset3DSource](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tileset-3d-source.md): The source contract between a 3D format and the shared tileset runtime.
+- [@loaders.gl/tiles-3d/copc](https://loaders.gl/next/docs/modules/tiles-3d/copc.md): Read and write Cloud Optimized Point Clouds with range requests, hierarchy selection, and Arrow point tables.
+- [COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md): Build a range-readable point-cloud source from a COPC dataset.
+- [COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md): Write cloud-optimized point clouds as range-readable COPC data.
+- [A point cloud that can answer bounded requests.](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md): A range-readable LAZ point-cloud format organized for spatial selection.
+- [@loaders.gl/tiles-3d/i3s](https://loaders.gl/next/docs/modules/tiles-3d/i3s.md): Load and traverse Indexed 3D Scene Layers with profile-aware scene and point-cloud support.
+- [I3SLoader](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-loader.md): Load Indexed 3D Scene layers and their node resources.
+- [encodeI3SMeshLayer](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-mesh-writer.md): Authors a small I3S 1.7 3D Object layer from one triangle mesh using portable
+- [Use I3S point clouds with one traversal API.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-point-cloud-source.md): Traverse I3S point-cloud layers through the shared tiles runtime.
+- [SLPKWriter](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/slpk-writer.md): Packages already-authored I3S layer resources as a deterministic .slpk archive in browsers or Node.
+- [Keep horizontal, vertical, and placement semantics separate.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/concepts/coordinate-reference-systems.md): Discover horizontal and vertical coordinate systems, height models, and placement rules in an I3S layer.
+- [I3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md): A hierarchical scene-layer format for streaming large 3D geospatial datasets.
+- [Let the scene data drive the color.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/recipes/attribute-driven-colorization.md): Color I3S scene features from the attributes carried by each object.
+- [Turn a building layer tree into visible scene layers.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/recipes/building-scene-layer.md): Load a hierarchical building scene layer and render its visible sublayers.
+- [Pick an object, then inspect its data.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/recipes/picking.md): Pick 3D Object features and load the attributes for the selected object.
+- [Inspect the profile before you render it.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/recipes/profile-gallery.md): Inspect I3S scene and point-cloud profiles through a metadata-first example.
+- [Traverse Potree clouds without loading the whole octree.](https://loaders.gl/next/docs/modules/tiles-3d/potree.md): Traverse Potree point clouds from cloud-hosted hierarchy and node resources.
+- [Connect a Potree hierarchy to a point-cloud pipeline.](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md): Load Potree point-cloud metadata and hierarchy information for tiled visualization.
+- [Traverse an octree as the view moves.](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md): Build a progressive point-cloud source from supported Potree hierarchy and node layouts.
+- [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md): encodePotreeDataset() encodes a complete Potree file collection using ArrayBuffer and typed
+- [Potree](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md): An octree point-cloud dataset format with progressive reads and explicit legacy and modern writer profiles.
+- [Let the viewport decide which data arrives.](https://loaders.gl/next/docs/modules/tiles-3d/runtime.md): Traverse source-backed 3D tilesets with selection, caching, and refreshable data sources.
+
+#### traces
+
+Load, normalize, and write performance traces as structured Arrow tables.
+
+- [Put trace formats on a common table path.](https://loaders.gl/next/docs/modules/traces.md): Load, normalize, and write performance traces as structured Arrow tables.
+- [ChromeTraceLoader](https://loaders.gl/next/docs/modules/traces/api-reference/chrome-trace-loader.md): Read Chrome Trace Event JSON as a validated document or Arrow event table.
+- [Publish trace snapshots while the capture is still arriving.](https://loaders.gl/next/docs/modules/traces/api-reference/chrome-trace-streaming.md): Adapt incremental Chrome trace events, JSON chunks, or Arrow batches into live snapshots.
+- [ChromeTraceWriter](https://loaders.gl/next/docs/modules/traces/api-reference/chrome-trace-writer.md): Serialize Arrow trace events as Chrome Trace Event JSON.
+- [JaegerTraceLoader](https://loaders.gl/next/docs/modules/traces/api-reference/jaeger-trace-loader.md): Read Jaeger JSON and JSON Lines into the shared trace Arrow projection.
+- [JaegerTraceWriter](https://loaders.gl/next/docs/modules/traces/api-reference/jaeger-trace-writer.md): Encode the shared trace Arrow projection as Jaeger JSON.
+- [OTLP trace loaders](https://loaders.gl/next/docs/modules/traces/api-reference/otlp-trace-loader.md): Read OTLP protobuf or protobuf-JSON into a shared Arrow trace projection.
+- [OTLP trace writers](https://loaders.gl/next/docs/modules/traces/api-reference/otlp-trace-writer.md): Encode shared trace Arrow tables as OTLP protobuf or protobuf-JSON.
+- [PerfettoTraceLoader](https://loaders.gl/next/docs/modules/traces/api-reference/perfetto-trace-loader.md): Read Perfetto TrackEvent traces into typed Apache Arrow tables.
+- [PerfettoTraceWriter](https://loaders.gl/next/docs/modules/traces/api-reference/perfetto-trace-writer.md): Serialize typed Perfetto Arrow tables as canonical TrackEvent protobuf.
+- [ZipkinTraceLoader](https://loaders.gl/next/docs/modules/traces/api-reference/zipkin-trace-loader.md): Read Zipkin JSON and JSON Lines into the shared trace Arrow projection.
+- [ZipkinTraceWriter](https://loaders.gl/next/docs/modules/traces/api-reference/zipkin-trace-writer.md): Encode the shared trace Arrow projection as Zipkin v2 JSON.
+- [Keep the event stream, then make it queryable.](https://loaders.gl/next/docs/modules/traces/formats/chrome-trace.md): A JSON event format for browser, Node.js, and application performance traces.
+- [Bring Jaeger traces into a typed table path.](https://loaders.gl/next/docs/modules/traces/formats/jaeger-trace.md): Normalize Jaeger spans, processes, logs, and references into interoperable Arrow tables.
+- [Keep OpenTelemetry’s hierarchy when traces enter the browser.](https://loaders.gl/next/docs/modules/traces/formats/otlp-trace.md): Normalize OpenTelemetry distributed traces from protobuf, JSON, or JSON Lines into Arrow tables.
+- [Turn a trace stream into tables you can inspect.](https://loaders.gl/next/docs/modules/traces/formats/perfetto-trace.md): A protobuf trace envelope projected into typed Arrow tables for browser analysis.
+- [Use Zipkin JSON at the edge, then analyze it like OTLP.](https://loaders.gl/next/docs/modules/traces/formats/zipkin-trace.md): Normalize Zipkin spans, endpoints, annotations, and tags into the shared trace tables.
+
+#### video
+
+Load browser video data through the experimental loaders.gl API.
+
+- [Keep browser video loading inside the data pipeline.](https://loaders.gl/next/docs/modules/video.md): Load browser video data through the experimental loaders.gl API.
+- [Turn a sequence of frames into a shareable GIF.](https://loaders.gl/next/docs/modules/video/api-reference/gif-builder.md): Build animated GIFs from browser images, image URLs, video, or webcam frames.
+- [Bring browser video into the loading pipeline.](https://loaders.gl/next/docs/modules/video/api-reference/video-loader.md): Load browser-supported video resources through the experimental loaders.gl media API.
+
+#### xml
+
+Parse XML documents through a streaming-friendly loaders.gl module.
+
+- [Keep document parsing separate from document meaning.](https://loaders.gl/next/docs/modules/xml.md): Parse XML documents through a streaming-friendly loaders.gl module.
+- [HTMLLoader](https://loaders.gl/next/docs/modules/xml/api-reference/html-loader.md): Extract useful structure from simple HTML responses.
+- [XMLLoader](https://loaders.gl/next/docs/modules/xml/api-reference/xml-loader.md): Parse XML into JavaScript data while preserving its document structure.
+- [Keep verbose service documents navigable.](https://loaders.gl/next/docs/modules/xml/format.md): Parse XML and simple HTML markup into JavaScript object trees for protocol and document loaders.
+- [Read just enough markup to handle a response.](https://loaders.gl/next/docs/modules/xml/formats/html.md): A practical, limited XML-style view of HTML responses.
+- [Parse the structure without hiding the details.](https://loaders.gl/next/docs/modules/xml/formats/xml.md): A flexible markup foundation used by many established data formats.
+
+### arrowjs
+
+Work with typed, binary columnar data in JavaScript and loaders.gl.
+
+- [A typed table shape for JavaScript.](https://loaders.gl/next/docs/arrowjs.md): Work with typed, binary columnar data in JavaScript and loaders.gl.
+
+#### api-reference
+
+Find the modern Apache Arrow JS classes and functions used by loaders.gl data pipelines.
+
+- [The classes behind the columnar data path.](https://loaders.gl/next/docs/arrowjs/api-reference.md): Find the modern Apache Arrow JS classes and functions used by loaders.gl data pipelines.
+- [Build typed vectors as values arrive.](https://loaders.gl/next/docs/arrowjs/api-reference/builder.md): Construct typed Apache Arrow vectors incrementally from JavaScript values.
+- [Data is the chunk underneath a Vector.](https://loaders.gl/next/docs/arrowjs/api-reference/data.md): Understand the typed, chunk-level storage that backs an Apache Arrow Vector.
+- [Store repeated values through a shared dictionary.](https://loaders.gl/next/docs/arrowjs/api-reference/dictionary.md): Use dictionary-encoded Arrow values when repeated logical values can share storage.
+- [A Field gives one column a name and a contract.](https://loaders.gl/next/docs/arrowjs/api-reference/field.md): Describe one named Arrow column with its type, nullability, and metadata.
+- [A RecordBatch is one useful chunk of a table.](https://loaders.gl/next/docs/arrowjs/api-reference/record-batch.md): Work with one row-aligned chunk of typed Apache Arrow columns.
+- [Read batches as the bytes arrive.](https://loaders.gl/next/docs/arrowjs/api-reference/record-batch-reader.md): Read Arrow IPC streams, files, JSON, and byte iterators as record-batch sequences.
+- [Write typed batches without collecting everything first.](https://loaders.gl/next/docs/arrowjs/api-reference/record-batch-writer.md): Write Arrow tables and record batches to IPC streams, files, or JSON output.
+- [Inspect one row without rebuilding the table.](https://loaders.gl/next/docs/arrowjs/api-reference/row.md): Access one record from a table, record batch, or structured Arrow vector.
+- [Make the table’s contract explicit.](https://loaders.gl/next/docs/arrowjs/api-reference/schema.md): Describe the fields, types, nullability, and metadata shared by Arrow columns.
+- [Keep nested records columnar too.](https://loaders.gl/next/docs/arrowjs/api-reference/struct-vector.md): Work with structured Arrow rows through Vector<Struct> and row proxies.
+- [The table is the application-facing container.](https://loaders.gl/next/docs/arrowjs/api-reference/table.md): Work with chunked, typed columns as one logical Apache Arrow table.
+- [Choose a logical type before choosing storage.](https://loaders.gl/next/docs/arrowjs/api-reference/types.md): Choose the logical types used by Apache Arrow JS fields, vectors, builders, and tables.
+- [A Vector is a column you can work with.](https://loaders.gl/next/docs/arrowjs/api-reference/vector.md): Access one logical Apache Arrow column across one or more typed data chunks.
+- [Let one vector span several record-batch buffers.](https://loaders.gl/next/docs/arrowjs/api-reference/vector-chunked.md): Work with Arrow vectors composed from multiple data chunks without treating chunking as a separate public type.
+- [Replace legacy Column access with Vector.](https://loaders.gl/next/docs/arrowjs/api-reference/vector-column.md): Migrate older Arrow JS Column APIs to modern Vector and Table.getChild access.
+- [Create a typed column from the data you already have.](https://loaders.gl/next/docs/arrowjs/api-reference/vectors.md): Construct Apache Arrow vectors from typed arrays, JavaScript values, and explicit nested types.
+
+#### contributing
+
+Keep the readable Arrow JS guides and generated API references aligned as the library evolves.
+
+- [Keep the human explanation and the API surface in sync.](https://loaders.gl/next/docs/arrowjs/contributing.md): Keep the readable Arrow JS guides and generated API references aligned as the library evolves.
+
+#### developer-guide
+
+- [Keep wide numbers wide until you choose to convert them.](https://loaders.gl/next/docs/arrowjs/developer-guide/big-ints.md): Preserve 64-bit and 128-bit numeric values across Arrow buffers and JavaScript conversions.
+- [Build typed columns as values arrive.](https://loaders.gl/next/docs/arrowjs/developer-guide/builders.md): Construct typed Arrow vectors and tables incrementally from JavaScript values.
+- [Leave data columnar until the application needs rows.](https://loaders.gl/next/docs/arrowjs/developer-guide/converting-data.md): Move values from Arrow vectors and tables into JavaScript only at the boundary where you need them.
+- [Feed Arrow from the source you already have.](https://loaders.gl/next/docs/arrowjs/developer-guide/data-sources.md): Connect Arrow JS to files, fetch responses, streams, buffers, and async iterators.
+- [Make the column type part of the contract.](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md): Choose the Arrow logical types and physical layouts that keep JavaScript tables precise and compact.
+- [A binary columnar model you can inspect from JavaScript.](https://loaders.gl/next/docs/arrowjs/developer-guide/introduction.md): Understand the tables, vectors, buffers, schemas, and builders that make up Arrow JS.
+- [Keep columns as views over the buffers you already have.](https://loaders.gl/next/docs/arrowjs/developer-guide/memory-management.md): Understand how Arrow JS keeps columns over shared buffers and when an operation creates a copy.
+- [Read and write tables without changing their shape.](https://loaders.gl/next/docs/arrowjs/developer-guide/reading-and-writing.md): Move Arrow tables through files, streams, and JavaScript pipelines without changing their columnar shape.
+- [Let the schema tell you what the buffers mean.](https://loaders.gl/next/docs/arrowjs/developer-guide/schemas.md): Describe table columns with names, types, nullability, and metadata before consuming their values.
+- [Read the columns you need, when you need them.](https://loaders.gl/next/docs/arrowjs/developer-guide/tables.md): Load, inspect, slice, iterate, and filter Apache Arrow tables in JavaScript.
+
+#### get-started
+
+Install Apache Arrow JS and make your first typed table in a browser or Node.js project.
+
+- [Install the table model, then start with one column.](https://loaders.gl/next/docs/arrowjs/get-started.md): Install Apache Arrow JS and make your first typed table in a browser or Node.js project.
+- [Try the smallest useful Arrow programs.](https://loaders.gl/next/docs/arrowjs/get-started/examples.md): Start with small Arrow table examples for files, buffers, arrays, and browser requests.
+
+#### roadmap
+
+A practical list of packaging, documentation, and data-model improvements that matter to loaders.gl applications.
+
+- [Make the columnar model easier to adopt.](https://loaders.gl/next/docs/arrowjs/roadmap.md): A practical list of packaging, documentation, and data-model improvements that matter to loaders.gl applications.
+
+#### upgrade-guide
+
+Track the JavaScript-facing changes that matter when upgrading Apache Arrow JS in loaders.gl applications.
+
+- [Upgrade the table library without losing the data path.](https://loaders.gl/next/docs/arrowjs/upgrade-guide.md): Track the JavaScript-facing changes that matter when upgrading Apache Arrow JS in loaders.gl applications.
+
+#### usage-guide
+
+- [Keep mesh attributes columnar all the way to the GPU boundary.](https://loaders.gl/next/docs/arrowjs/usage-guide/mesharrow.md): Represent renderable mesh and point-cloud primitives as typed Apache Arrow tables.
+
+#### whats-new
+
+Track Apache Arrow JavaScript releases and the compatibility details relevant to loaders.gl.
+
+- [Track the table library behind the data plane.](https://loaders.gl/next/docs/arrowjs/whats-new.md): Track Apache Arrow JavaScript releases and the compatibility details relevant to loaders.gl.
+
+### formats
+
+Read approachable format notes alongside the loaders.gl module and API documentation.
+
+- [Understand the file before choosing the loader.](https://loaders.gl/next/docs/formats.md): Read approachable format notes alongside the loaders.gl module and API documentation.
+
+#### binary-columnar
+
+Understand how Arrow, Parquet, ORC, Avro, and table layers fit together for analytical data.
+
+- [Keep wide tables compact.](https://loaders.gl/next/docs/formats/binary-columnar.md): Understand how Arrow, Parquet, ORC, Avro, and table layers fit together for analytical data.
+
+### geoarrow-conformance-ledger
+
+The loaders.gl GeoArrow contract has a lazily generated case ledger exported from
+
+- [GeoArrow Conformance Ledger](https://loaders.gl/next/docs/geoarrow-conformance-ledger.md): The loaders.gl GeoArrow contract has a lazily generated case ledger exported from
+
+### geoarrow-roadmap
+
+Purpose
+
+- [GeoArrow Roadmap](https://loaders.gl/next/docs/geoarrow-roadmap.md): Purpose
+
+### images
+
+
+#### logos
+
+This directory holds source logo assets for the documentation format gallery. The website delivery
+
+- [Format Logos](https://loaders.gl/next/docs/images/logos.md): This directory holds source logo assets for the documentation format gallery. The website delivery
+
+### packages
+
+loaders.gl has 25 public packages. Install core and the packages that own your formats, then import the documented format or utility subpaths. Each tile links to its package introduction and focused format references.
+
+- [Packages](https://loaders.gl/next/docs/packages.md): loaders.gl has 25 public packages. Install core and the packages that own your formats, then import the documented format or utility subpaths. Each tile links to its package introduction and focused format references.
+
+### references-and-credits
+
+loaders.gl brings together work by many people: original loaders and integration code,
+
+- [References and credits](https://loaders.gl/next/docs/references-and-credits.md): loaders.gl brings together work by many people: original loaders and integration code,
+
+### roadmap
+
+Follow the project’s direction across binary data, cloud-native sources, services, and format support.
+
+- [A roadmap organized around data movement.](https://loaders.gl/next/docs/roadmap.md): Follow the project’s direction across binary data, cloud-native sources, services, and format support.
+
+### specifications
+
+
+#### category-3d-tiles
+
+Load hierarchical worlds and point-cloud datasets through one tileset data model.
+
+- [Tiled worlds, loaded a piece at a time.](https://loaders.gl/next/docs/specifications/category-3d-tiles.md): Load hierarchical worlds and point-cloud datasets through one tileset data model.
+
+#### category-gis
+
+Read geospatial formats into shared feature, geometry, and table shapes.
+
+- [Geospatial loaders](https://loaders.gl/next/docs/specifications/category-gis.md): Read geospatial formats into shared feature, geometry, and table shapes.
+
+#### category-image
+
+Decode raster images into consistent browser and Node.js data structures.
+
+- [Images in a shape your application can use.](https://loaders.gl/next/docs/specifications/category-image.md): Decode raster images into consistent browser and Node.js data structures.
+
+#### category-json
+
+Load structured text and binary records without forcing a specialized application model.
+
+- [Structured data without a special application model.](https://loaders.gl/next/docs/specifications/category-json.md): Load structured text and binary records without forcing a specialized application model.
+
+#### category-mesh
+
+Load simple geometry and point-cloud formats into shared mesh, point, or Arrow data shapes.
+
+- [One geometry shape. Many input formats.](https://loaders.gl/next/docs/specifications/category-mesh.md): Load simple geometry and point-cloud formats into shared mesh, point, or Arrow data shapes.
+
+#### category-scenegraph
+
+Keep hierarchical scene descriptions intact while they move from files into applications.
+
+- [Keep the scene hierarchy until the renderer needs it.](https://loaders.gl/next/docs/specifications/category-scenegraph.md): Keep hierarchical scene descriptions intact while they move from files into applications.
+
+#### category-table
+
+Load row-based and columnar data through a shared table-oriented API.
+
+- [Keep wide tables compact.](https://loaders.gl/next/docs/specifications/category-table.md): Load row-based and columnar data through a shared table-oriented API.
+
+#### category-texture
+
+Decode and transcode GPU-oriented texture containers, mip chains, and compressed payloads.
+
+- [Get texture payloads ready for the GPU.](https://loaders.gl/next/docs/specifications/category-texture.md): Decode and transcode GPU-oriented texture containers, mip chains, and compressed payloads.
+
+#### cloud-native-geospatial
+
+Design data access around cloud object storage, spatial selection, and portable metadata.
+
+- [Ask the cloud for the part of the dataset you need.](https://loaders.gl/next/docs/specifications/cloud-native-geospatial.md): Design data access around cloud object storage, spatial selection, and portable metadata.
+
+#### loader-object-format
+
+The metadata and parser contract that lets a format participate in loaders.gl core APIs.
+
+- [Describe a format once. Plug it into the runtime.](https://loaders.gl/next/docs/specifications/loader-object-format.md): The metadata and parser contract that lets a format participate in loaders.gl core APIs.
+
+#### writer-object-format
+
+The encoding contract that lets a writer produce compatible files, streams, or batches.
+
+- [Make the output boundary as clear as the input.](https://loaders.gl/next/docs/specifications/writer-object-format.md): The encoding contract that lets a writer produce compatible files, streams, or batches.
+
+### upgrade-guide
+
+Plan loaders.gl upgrades with focused notes on removals, deprecations, and behavior changes.
+
+- [Upgrade with the data path in view.](https://loaders.gl/next/docs/upgrade-guide.md): Plan loaders.gl upgrades with focused notes on removals, deprecations, and behavior changes.
+
+### whats-new
+
+Follow the latest loaders.gl capabilities, compatibility changes, and format support.
+
+- [See what changed, then choose your next path.](https://loaders.gl/next/docs/whats-new.md): Follow the latest loaders.gl capabilities, compatibility changes, and format support.

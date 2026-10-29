@@ -1,0 +1,94 @@
+ArcGIS service protocol
+
+![](/next/images/format-logos/arcgis-logo.jpg)Scene
+
+# ArcGIS SceneServer protocol and formats
+
+Connect an existing scene layer to the appropriate I3S content and rendering path.
+
+[Service guide and API](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md)[Authentication](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md)
+
+![](/next/images/format-logos/arcgis-logo.jpg)Scene[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md)[Full example](https://loaders.gl/next/examples/arcgis-scene-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+
+Use this path for layers already published as ArcGIS scene services. Choose a layer explicitly and inspect its profile and coordinate reference before selecting a 3D renderer.
+
+Service feature card
+
+## SceneServer: connection and data contract
+
+The protocol describes what ArcGIS can publish; the support matrix below describes the loaders.gl client. Check the capabilities of your own service.
+
+01
+
+Endpoint
+
+/SceneServer / layer ID
+
+02
+
+Wire payload
+
+I3S JSON and binary resources
+
+03
+
+Client
+
+Scene layer source
+
+04
+
+Access
+
+Read-only; public or explicitly authenticated
+
+## Protocol and response formats[​](#protocol-and-response-formats "Direct link to Protocol and response formats")
+
+ArcGIS REST resources use HTTP URLs with named operations and request parameters. Metadata is JSON; data responses depend on the operation and the service configuration.
+
+| Step      | Protocol / request                               | Response meaning                                                            |
+| --------- | ------------------------------------------------ | --------------------------------------------------------------------------- |
+| Discovery | Scene service and layer JSON resources           | Layer type, version, capabilities and spatial reference                     |
+| Hierarchy | I3S node or node-page resources                  | Visibility/traversal metadata handled by the I3S runtime                    |
+| Content   | Referenced I3S geometry, attributes and textures | Binary payloads and image/texture encodings depend on the published profile |
+| Queries   | Layer `/query` when supported                    | ArcGIS query response metadata; separate from mesh traversal                |
+
+SceneServer is a resource protocol; I3S describes its scene structure and content. A scene layer is not interchangeable with a complete web scene. Validate your layer profile, texture/geometry encodings and renderer together.
+
+## Detailed feature support[​](#detailed-feature-support "Direct link to Detailed feature support")
+
+**Supported** describes the named client path, **Bounded / Partial / Delegated** identifies its limits or owning implementation, and **Not implemented** identifies an unavailable operation. A server advertising a capability does not imply that this client implements it.
+
+| Feature                                | loaders.gl support   | Behavior and limits                                               |
+| -------------------------------------- | -------------------- | ----------------------------------------------------------------- |
+| Layer selection                        | Supported            | Explicit layer URL or root service with configured `layerId`      |
+| Layer metadata                         | Supported            | Profile, storage/version, extent, capabilities and CRS            |
+| 3D object mesh and Point               | Delegated            | I3S source handles hierarchy and content decoding                 |
+| Point Cloud                            | Delegated            | I3S point-cloud source selected from metadata                     |
+| Traversal and resource loading         | Delegated            | `getTilesetSource()` returns the appropriate source               |
+| Read-only feature query                | Supported subset     | `query()` / `getFeatures()` preserve raw response metadata        |
+| Local aggregation                      | Supported subset     | Explicit scene-aggregation helper groups already queried features |
+| Authentication                         | Supported            | Authorize service and referenced asset origins explicitly         |
+| Rendering                              | Application-specific | Metadata inspection is not a full 3D rendering test               |
+| CRS and content encodings              | Profile-dependent    | Consult I3S support and renderer requirements before deployment   |
+| Building roots and web scenes          | Separate I3S paths   | Not equivalent to this layer facade                               |
+| Editing and full expression evaluation | Not implemented      | Renderer/popup expressions remain metadata                        |
+
+## Connect your service[​](#connect-your-service "Direct link to Connect your service")
+
+Copy the REST URL from your ArcGIS item details or Services Directory. For secured content, reuse your application's ArcGIS session through [scoped authentication](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md). Check browser access from your deployed origin, permissions and referenced resource hosts. See the [practical setup checklist](https://loaders.gl/next/docs/modules/arcgis.md#before-connecting-your-application).
+
+The [service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md) provides source construction and request examples. The [service inventory](https://loaders.gl/next/docs/modules/arcgis/services.md) covers additional ArcGIS families and unsupported operations.
+
+## References[​](#references "Direct link to References")
+
+* [Esri SceneServer REST reference](https://developers.arcgis.com/rest/services-reference/enterprise/scene-service/)
+* [I3S structure and encoding support](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)

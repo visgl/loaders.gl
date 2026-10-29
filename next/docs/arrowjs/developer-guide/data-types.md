@@ -1,0 +1,116 @@
+Arrow JavaScript · types
+
+# Make the column type part of the contract.
+
+Arrow separates logical meaning from physical storage: numbers, timestamps, strings, lists, structs, dictionaries, and unions each carry a precise schema that readers can inspect before consuming values.
+
+[Arrow JS guide](https://loaders.gl/next/docs/arrowjs.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/arrowjs.md)[Schema API](https://loaders.gl/next/docs/arrowjs/api-reference/schema.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/arrowjs/api-reference/schema.md)[Field API](https://loaders.gl/next/docs/arrowjs/api-reference/field.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/arrowjs/api-reference/field.md)
+
+The type families
+
+## Pick the narrowest type that preserves the meaning.
+
+Fixed-width values are easy to index and transfer. Variable-width and nested values preserve richer structures, while dictionaries keep repeated categorical values compact.
+
+01
+
+Fixed width
+
+Integers, floats, dates, times, decimals, and fixed binary
+
+02
+
+Variable width
+
+UTF-8 strings, binary values, lists, and maps
+
+03
+
+Nested
+
+Structs, unions, and child vectors with their own types
+
+04
+
+Dictionary
+
+Encoded repeated values with a separate key vector
+
+Detailed guide
+
+## Data type details
+
+The reference below explains descriptors, buffers, validity, logical types, nested layouts, and the JavaScript precision boundary.
+
+# Data Types
+
+Arrow supports a rich set of data types:
+
+* Fixed-length primitive types: numbers, booleans, date and times, fixed size binary, decimals, and other values that fit into a given number
+* Variable-length primitive types: binary, string
+* Nested types: list, struct, and union
+* Dictionary type: An encoded categorical type
+
+## Data Type Descriptor Objects[​](#data-type-descriptor-objects "Direct link to Data Type Descriptor Objects")
+
+### Converting Dates[​](#converting-dates "Direct link to Converting Dates")
+
+Apache Arrow Timestamp is a 64-bit int of milliseconds since the epoch, represented as two 32-bit ints in JS to preserve precision. The first number is the "low" int and the second number is the "high" int.
+
+```
+function toDate(timestamp) {
+
+  return new Date((timestamp[1] * Math.pow(2, 32) + timestamp[0]) / 1000);
+
+}
+```
+
+## Data Types Reference[​](#data-types-reference "Direct link to Data Types Reference")
+
+At the heart of Arrow is set of well-known logical [data types](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md), ensuring each Column in an Arrow Table is strongly-typed. These data types define how a Column's underlying buffers should be constructed and read, and includes configurable (and custom) metadata fields for further annotating a Column. A Schema describing each Column's name and data type is encoded alongside each Column's data buffers, allowing you to consume an Arrow data source without knowing the data types or column layout beforehand.
+
+Each data type falls into one of three rough categories: Fixed-width types, variable-width types, or composite types that contain other Arrow data types. All data types can represent null values, which are stored in a separate validity [bitmask](https://en.wikipedia.org/wiki/Mask_\(computing\)). Follow the links below for a more detailed description of each data type.
+
+### Fixed-width Data Types[​](#fixed-width-data-types "Direct link to Fixed-width Data Types")
+
+Fixed-width data types describe physical primitive values (bytes or bits of some fixed size), or logical values that can be represented as primitive values. In addition to an optional [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) validity bitmask, these data types have a physical data buffer (a [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#TypedArray_objects) corresponding to the data type's physical element width).
+
+* [Null](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - A column of NULL values having no physical storage
+* [Bool](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Booleans as either 0 or 1 (bit-packed, LSB-ordered)
+* [Int](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Signed or unsigned 8, 16, 32, or 64-bit little-endian integers
+* [Float](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - 2, 4, or 8-byte floating point values
+* [Decimal](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Precision-and-scale-based 128-bit decimal values
+* [FixedSizeBinary](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - A list of fixed-size binary sequences, where each value occupies the same number of bytes
+* [Date](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Date as signed 32-bit integer days or 64-bit integer milliseconds since the UNIX epoch
+* [Time](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Time as signed 32 or 64-bit integers, representing either seconds, millisecond, microseconds, or nanoseconds since midnight (00:00:00)
+* [Timestamp](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Exact timestamp as signed 64-bit integers, representing either seconds, milliseconds, microseconds, or nanoseconds since the UNIX epoch
+* [Interval](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Time intervals as pairs of either (year, month) or (day, time) in SQL style
+* [FixedSizeList](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Fixed-size sequences of another logical Arrow data type
+
+### Variable-width Data Types[​](#variable-width-data-types "Direct link to Variable-width Data Types")
+
+Variable-width types describe lists of values with different widths, including binary blobs, Utf8 code-points, or slices of another underlying Arrow data type. These types store the values contiguously in memory, and have a physical [`Int32Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array) of offsets that describe the start and end indicies of each list element.
+
+* [List](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Variable-length sequences of another logical Arrow data type
+* [Utf8](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Variable-length byte sequences of UTF8 code-points (strings)
+* [Binary](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Variable-length byte sequences (no guarantee of UTF8-ness)
+
+### Composite Data Types[​](#composite-data-types "Direct link to Composite Data Types")
+
+Composite types don't have physical data buffers of their own. They contain other Arrow data types and delegate work to them.
+
+* [Union](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Union of logical child data types
+* [Map](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Map of named logical child data types
+* [Struct](https://loaders.gl/next/docs/arrowjs/developer-guide/data-types.md) - Struct of ordered logical child data types

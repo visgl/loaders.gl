@@ -1,0 +1,195 @@
+I3S recipe · building scenes
+
+![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+
+# Turn a building layer tree into visible scene layers.
+
+An I3S Building Scene Layer is a hierarchy of groups and content layers. Loaders.gl flattens the metadata into renderable sublayers that a deck.gl application can show, hide, and organize.
+
+[I3S module](https://loaders.gl/next/docs/modules/tiles-3d/i3s.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s.md)[I3S format](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)[I3S examples](https://loaders.gl/next/examples/i3s-arcgis)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/examples/i3s-arcgis)
+
+![From-v3.2](https://img.shields.io/badge/From-v3.2-blue.svg?style=flat-square)
+
+⛶⛶ Explore fullscreen
+
+What this recipe demonstrates
+
+## Treat nested scene content as an application tree.
+
+The loader handles the I3S hierarchy and leaves the application with renderable sublayers. Your UI can then use the same tree to control visibility, identify disciplines, or build a scene explorer.
+
+01
+
+Layer model
+
+Groups contain 3D Object or Point content layers.
+
+02
+
+Loader result
+
+A flattened list of renderable sublayers plus the original header tree.
+
+03
+
+Rendering
+
+Create one Tile3DLayer for each visible sublayer.
+
+04
+
+Application UI
+
+Use ids, names, and visibility to drive an explorer panel.
+
+Detailed guide
+
+## Building Scene Layer implementation
+
+The detailed guide covers the BSL hierarchy, loader result, Tile3DLayer setup, visibility control, and sublayer metadata.
+
+Please find source code of the example [here](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s-building-scene-layer)
+
+A building scene layer can represent 3D model content based on BIM structuring disciplines such as architectural or structural, and categories such as windows or walls. In I3S [specification](https://github.com/Esri/i3s-spec) BSL is a layer type.
+
+BSL doesn't have content resources. It is a composite layer that consists of multiple sublayers. Every sublayer can be: `group`, `3DObject` or `Point`.
+
+`group` sublayer is also just a composite layer. It contains further levels of sublayers and provides a nested structure for BSL. As a result, BSL has a tree-like sublayers structure with `3DObject` and `Point` layers;
+
+`3DObject` and `Point` sublayers are content layers. Those layer types are separated types of layers in I3S spec and can be used independently. Loaders.gl supports both profiles through the standard I3S source.
+
+## BSL visualization with deck.gl[​](#bsl-visualization-with-deckgl "Direct link to BSL visualization with deck.gl")
+
+I3S `3DObject` layer is shown in deck.gl with [Tile3DLayer](https://deck.gl/docs/api-reference/geo-layers/tile-3d-layer). The complete case of BSL visualization is done in [I3S Explorer](https://i3s.loaders.gl/viewer?tileset=turanga-library). It is an open source ReactJS application. See source code on [GitHub](https://github.com/visgl/loaders.gl-showcases).
+
+![I3S Explorer BSL visualization](/next/assets/images/i3s-explorer-building-4bc05ac1233f15cde9fc656fa1f4959c.png)
+
+### Load BSL[​](#load-bsl "Direct link to Load BSL")
+
+For BSL it is necessary to do preparation steps to obtain data for `Tile3DLayer`.
+
+Loaders.gl has `I3SBuildingSceneLayerLoader` that is used to load BSL JSON metadata and pick `3DObject` sublayers.
+
+```
+import {load} from '@loaders.gl/core';
+
+import {I3SBuildingSceneLayerLoader} from '@loaders.gl/tiles-3d/i3s';
+
+
+
+const {header, sublayers} = await load(tilesetData.url, I3SBuildingSceneLayerLoader);
+```
+
+The loader returns a flattened array called `sublayers` that contains renderable `3DObject` and `Point` layers from the BSL sublayers tree.
+
+### Show sublayers in deck.gl[​](#show-sublayers-in-deckgl "Direct link to Show sublayers in deck.gl")
+
+```
+import {StaticMap} from 'react-map-gl';
+
+import DeckGL from '@deck.gl/react';
+
+import {Tile3DLayer} from '@deck.gl/geo-layers';
+
+import {COORDINATE_SYSTEM} from '@deck.gl/core';
+
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+
+
+
+function renderLayer() {
+
+  const tile3dLayers = sublayers.map((layer) => {
+
+    if (!layer.visibility) {
+
+      return null;
+
+    }
+
+    const loadOptions = {
+
+      i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}
+
+    };
+
+    if (token) {
+
+      loadOptions.i3s.token = token;
+
+    }
+
+    return new Tile3DLayer({
+
+      id: `tile3d-layer-${layer.id}`,
+
+      data: layer.url,
+
+      loader: I3SLoader,
+
+      loadOptions
+
+    });
+
+  });
+
+}
+
+
+
+<DeckGL
+
+  id={id}
+
+  layers={renderLayers()}
+
+  viewState={viewState}
+
+  onViewStateChange={onViewStateChangeHandler}
+
+>
+
+  <StaticMap reuseMaps mapStyle={mapStyle} />
+
+</DeckGL>;
+```
+
+Take a look at sublayer properties:
+
+* `id` - unique identifier required to set deck.gl layer id;
+* `url` - `3DObject` layer url;
+* `visibility` - BSL has an initial visibility state for all sublayers. Use this property to control sublayers' visibility.
+
+### Control sublayers' visibility[​](#control-sublayers-visibility "Direct link to Control sublayers' visibility")
+
+`I3SBuildingSceneLayerLoader` returns also a `header` object. `header.sublayers` is a JSON nested tree that can be used to visualize BSL explorer panel.
+
+![BSL Explorer visualization](/next/assets/images/bsl-explorer-164adc35b4d0a4635ac00443770609a5.png)
+
+With such a panel it is possible to change a sublayer visibility property:
+
+```
+  function onChangeHandler(treeItem) {
+
+    const sublayer = sublayers.find((sublayer) => sublayer.id === treeItem.id);
+
+    if (sublayer) {
+
+      sublayer.visibility = !sublayer.visibility;
+
+    }
+
+  }
+```

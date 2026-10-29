@@ -1,0 +1,197 @@
+Tiles module · 2D runtime
+
+# Tileset2D
+
+A shared runtime for source-backed 2D tile loading, separating reusable fetched content from per-view selection and visibility state.
+
+[Tiles module](https://loaders.gl/next/docs/modules/tiles.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tiles.md)[MVT source](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/developer-guide/using-sources.md)
+
+The 2D runtime
+
+## Reuse tile content without sharing view state.
+
+Tileset2D lets multiple consumers share fetched tiles while keeping their own viewport selection, visibility, and traversal state.
+
+01
+
+Content
+
+Shared cache entries and request results
+
+02
+
+View
+
+Per-consumer selection and visibility
+
+03
+
+Requests
+
+Bounded concurrent tile loading
+
+04
+
+Source
+
+Direct callbacks or a TileSource adapter
+
+Detailed guide
+
+## Tileset2D reference
+
+The sections below document construction, source integration, cache limits, zoom range, and lifecycle callbacks.
+
+`Tileset2D` is the shared runtime for source-backed 2D tile loading in loaders.gl.
+
+It separates:
+
+* shared tile cache entries and request scheduling
+* per-view tile selection and visibility state
+
+That lets multiple consumers reuse the same fetched tile content without duplicating requests or overwriting each other's traversal state.
+
+## Usage[​](#usage "Direct link to Usage")
+
+```
+import {Tileset2D} from '@loaders.gl/tiles';
+
+
+
+const tileset = new Tileset2D({
+
+  getTileData: async ({index, signal}) => fetchTile(index, signal),
+
+  minZoom: 0,
+
+  maxZoom: 14
+
+});
+```
+
+You can also construct it directly from a loaders.gl `TileSource`.
+
+```
+import {Tileset2D} from '@loaders.gl/tiles';
+
+
+
+const tileset = Tileset2D.fromTileSource(tileSource, {
+
+  maxCacheByteSize: 32 * 1024 * 1024
+
+});
+```
+
+When constructed from a `TileSource`, `Tileset2D` loads source metadata once and adopts:
+
+* `minZoom`
+* `maxZoom`
+* `boundingBox` as `extent`
+
+Explicit constructor options still take precedence. For complete regular or coalesced TileMatrix sets, pass the explicit [native-frame TileMatrix adapter](https://loaders.gl/next/docs/modules/tiles/api-reference/tile-matrix.md#tilematrix-traversal-in-tileset2d). The adapter carries native matrix identity and rectangular tile dimensions through the cache and source request. Replacing a source or adapter clears source-dependent cache and selections.
+
+## Constructor[​](#constructor "Direct link to Constructor")
+
+```
+new Tileset2D(options)
+```
+
+Key options:
+
+* `getTileData`: async tile loader
+* `minZoom` / `maxZoom`: requested zoom range
+* `extent`: optional bounding box limit
+* `tileSize`: tile size in pixels
+* `maxCacheSize`: tile-count high-water mark, default `100`
+* `maxCacheByteSize`: retained-byte high-water mark, unlimited by default
+* `maxRequests`: concurrent request limit
+* `debounceTime`: request scheduling debounce in milliseconds
+* `zoomOffset`: integer zoom adjustment
+* `onTileLoad`: callback after a tile loads successfully
+* `onTileUnload`: callback after a tile is evicted
+* `onTileDiscard`: callback with the tile and discarded content when an aborted or superseded request nevertheless succeeds. Use the content argument to release resources; `tile.content` may already contain a newer result. The callback configured when the request started owns that result. No automatic disposal occurs if no callback is provided.
+* `onTileError`: callback after a tile load fails
+
+## Properties[​](#properties "Direct link to Properties")
+
+* `tiles`: current shared tile cache contents
+* `selectedTiles`: selected tiles across attached views
+* `visibleTiles`: visible tiles across attached views
+* `loadingTiles`: cache entries with in-flight requests
+* `unloadedTiles`: cache entries whose `isLoaded` flag is false (pending, canceled, or stale)
+* `stats`: live counters for cache and consumer state
+
+## Methods[​](#methods "Direct link to Methods")
+
+* `attachConsumer(id)`: register a consumer identified by a symbol
+* `updateConsumer(id, selectedTiles, visibleTiles)`: update a consumer's retained tiles
+* `detachConsumer(id)`: remove a consumer and prune unused requests and cache entries
+* `getTileIndices(context)`: select indices through the configured traversal adapter
+* `getTile(index, create?)`: access a tile, optionally creating and loading it
+* `prepareTiles()`: rebuild cached parent/child links and the sorted `tiles` list
+* `setOptions(options)`: update runtime options
+* `reloadAll()`: mark selected and visible fallback tiles stale and evict unused entries
+* `subscribe(listener)`: observe tile and metadata events
+* `finalize()`: abort requests and clear the cache
+
+## Retention and ownership[​](#retention-and-ownership "Direct link to Retention and ownership")
+
+Each consumer reports its selected tiles and visible fallback tiles. Tiles retained by any consumer are protected from eviction, so the cache can exceed either high-water mark while all entries are needed. Unretained tiles are evicted in least-recently-used order. Accessing a tile through `getTile` updates its recency; rebuilding parent/child relationships does not.
+
+`reloadAll()` preserves selected tiles and visible ancestors or descendants used as fallbacks, including their existing content, and marks them for loading on the next `getTile(index, true)` call. Eviction aborts pending requests. Results from canceled requests are ignored even when the source does not honor its abort signal.
+
+Consumers should call `detachConsumer()` when removed. Only the owner of the shared tileset should call `finalize()`. Finalization clears all consumers and suppresses late tile and metadata results; it does not finalize the externally supplied `TileSource`.
+
+## Statistics and notifications[​](#statistics-and-notifications "Direct link to Statistics and notifications")
+
+The `stats` property is a probe.gl `Stats` object with these counters:
+
+| Counter          | Meaning                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| `Tiles In Cache` | Number of cached entries, including pending and failed tiles                          |
+| `Cache Size`     | Estimated bytes of retained content                                                   |
+| `Selected Tiles` | Unique selected tiles across consumers, including unloaded tiles                      |
+| `Visible Tiles`  | Unique selected and visible fallback tiles across consumers, including unloaded tiles |
+| `Loading Tiles`  | Entries with queued or active requests                                                |
+| `Unloaded Tiles` | Cumulative evictions since construction or finalization                               |
+| `Consumers`      | Number of registered consumers                                                        |
+
+`Unloaded Tiles` counts evictions; it is different from the `unloadedTiles` property. Failed requests are settled entries and are excluded from `unloadedTiles` until marked stale by a reload.
+
+Subscribe with `subscribe({onStatsChange})` and call the returned function to unsubscribe. Direct tile requests update cache and loading counts immediately; synchronous request notifications are coalesced into one microtask. Consumer updates, reload, detach, load/error completion, and finalization publish refreshed counters. Eviction emits `onTileUnload` for each removed tile, then publishes one consistent statistics snapshot for the batch. Read batch totals in `onStatsChange` rather than in individual unload callbacks.
+
+## Failed tile caching[​](#failed-tile-caching "Direct link to Failed tile caching")
+
+Failed tile requests are cached as settled tile entries with:
+
+* `content = null`
+* `error` set on the corresponding `SharedTile2DHeader`
+
+This prevents repeated requests for the same failing tile until the tileset is explicitly reloaded, for example with `reloadAll()`.
+
+## Traversal adapter and native identity[​](#traversal-adapter-and-native-identity "Direct link to Traversal adapter and native identity")
+
+`Tileset2DAdapter` keeps selection independent from the shared cache and from any one viewport implementation. Its required `getTileIndices(context)` and `getTileBoundingBox(context, index)` retain the deck.gl-community-style traversal contract. The optional hooks extend that contract:
+
+* `useSourceExtent: false` prevents a source's geographic metadata bounds from being mistaken for a native projected extent. `validateExtent(extent)` can reject unsupported explicit extents.
+* `resolveTileIndex(index)` canonicalizes an index before cache lookup and source loading.
+* `getTileId(index)` returns a stable source/grid-scoped cache key.
+* `getTileMetadata(context, index)` supplies `tileMatrix`, `crs` and logical `[width, height]`. These fields are retained on the tile header and passed to `getTileData`.
+* `getParentIndex(index)` returns an established parent or `null`. A returned parent must have a lower compatibility level index; a non-decreasing parent throws rather than looping forever.
+
+When these hooks are omitted, identity and parents retain their existing XYZ behavior. Custom non-quadtree adapters should explicitly return `null` for an unknown parent. Changing the source or adapter clears cache entries and consumer selections, aborts pending requests, and prevents late metadata from the previous source from replacing the new metadata. Consumers must reselect.
+
+These hooks are loaders.gl extensions under discussion for the shared runtime; current deck.gl and deck.gl-community adapters do not yet consume them. See the [TileMatrix adapter](https://loaders.gl/next/docs/modules/tiles/api-reference/tile-matrix.md#tilematrix-traversal-in-tileset2d) for a working native-frame integration.

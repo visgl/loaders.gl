@@ -1,0 +1,119 @@
+Tile converter API / output
+
+# Prepare 3D Tiles data for I3S consumers.
+
+I3SConverter translates a 3D Tiles tileset into an I3S layer, with explicit controls for depth, materials, textures, compression, bounds, and height reference conversion.
+
+[Tile converter module](https://loaders.gl/next/docs/modules/tile-converter.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tile-converter.md)[3D Tiles converter](https://loaders.gl/next/docs/modules/tile-converter/api-reference/3d-tiles-converter.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/3d-tiles-converter.md)[I3S format](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
+
+Conversion path
+
+## Translate the hierarchy and make the output policy explicit.
+
+I3S and 3D Tiles share many concepts but not the same packaging or metadata layout. The converter exposes the choices that affect generated nodes, geometry, textures, materials, and bounds.
+
+01
+
+Input
+
+A 3D Tiles tileset URL or supported local source.
+
+02
+
+Translate
+
+Convert hierarchy, geometry, materials, and resources into I3S.
+
+03
+
+Optimize
+
+Choose Draco, texture generation, node depth, and bounds.
+
+04
+
+Output
+
+An I3S layer or SLPK-compatible output directory.
+
+Detailed guide
+
+## I3SConverter reference
+
+The detailed reference covers construction, conversion options, generated resources, texture/material policies, and coordinate-height handling.
+
+![From-v3.0](https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square)
+
+The `I3SConverter` class converts a 3D Tiles tileset to I3S layer.
+
+## Usage[​](#usage "Direct link to Usage")
+
+```
+import {I3SConverter} from '@loaders.gl/tile-converter';
+
+
+
+const converter = new I3SConverter();
+
+const tilesetJson = await converter.convert({
+
+  inputUrl: TILESET_URL,
+
+  outputPath: 'data',
+
+  tilesetName: 'BatchedColors'
+
+});
+
+
+
+// The converted tiles are written to the specified output path
+
+const rootTileJson = await fs.readFile('data/BatchedColors/layers/0/nodes/root/index.json', 'utf8');
+```
+
+## Methods[​](#methods "Direct link to Methods")
+
+### constructor()[​](#constructor "Direct link to constructor()")
+
+Constructs a new `I3SConverter` instance.
+
+### convert(options: object): object[​](#convertoptions-object-object "Direct link to convert(options: object): object")
+
+Converts a tileset to I3S SLPK format
+
+* `options.inputUrl: string` the url to read the tileset from
+* `options.outputPath: string` the output filename
+* `options.tilesetName: string` the output name of the tileset
+* `options.maxDepth: number` The max tree depth of conversion
+* `options.egmFilePath: string` location of \*.pgm file to convert heights from ellipsoidal to gravity-related format or "None" to not use it. A model file can be loaded from GeographicLib <https://geographiclib.sourceforge.io/html/geoid.html>
+* `options.token: string` ION token of input tileset
+* `options.draco: boolean` Default: `true`. Whether the converter creates Draco compressed geometry using `MESH_EDGEBREAKER_ENCODING` in path "layers/0/nodes/xxx/geometries/1" along with non-compressed geometry in path "layers/0/nodes/xxx/geometries/0"
+* `options.mergeMaterials: boolean` Default: `true`. Whether the converter should try to merge PBR materials. If `true`, the converter will try to merge PBR materials, joining textures in an atlas. This operation allows to create one I3S node for one 3DTiles tile. If one material has a texture but another doesn't have, materials are not merged and the 3DTiles tile will be splitted into 2 I3S nodes.
+* `options.generateTextures: boolean` Whether the converter should generate additional texture of another format. For non-compressed source texture format (JPG, PNG) the converter creates additional KTX2 texture. For compressed source texture (KTX2) the converter creates additional JPG texture. To encode and decode KTX2 [Basis Universal Supercompressed GPU Texture Codec](https://github.com/BinomialLLC/basis_universal) is used.
+* `options.generateBoundingVolumes: boolean` Whether the converter generate new bounding volumes from the mesh vertices. The default behavior is convertion bounding volumes (box, sphere or region) from 3DTiles tileset data. If this option is set `true` the converter will ignore source bounding volume and generate new bounding volume (oriented bounding box and minimal bounding sphere) from the geometry POSITION attribute.
+* `options.instantNodeWriting: boolean` Whether the converter should keep JSON resources ([3DNodeIndexDocuments](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DNodeIndexDocument.cmn) and [nodePages](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn)) on disk during conversion. The default behavior is the converter keeps JSON resources in memory till the end of conversion. Those resources need to be updated during conversion (adding child nodes and neighbor nodes). If this option is set `true` the converter will keep JSON resources on disk all the time. Use this option for large datasets when the nodes tree is large and "memory overflow" error occurs. Instant node writing saves memory usage in cost of conversion speed (>2 times slower).
+* `options.metadataClass: string` One of the list of feature metadata classes, detected by converter on "analyze" stage
+* `options.analyze: boolean` Analyze the input tileset content without conversion.
+* `options.validate: boolean` Enable Validation.
+
+Draco compression preserves I3S feature-index metadata and optional UV-region attributes. Edge Breaker can reorder vertices and triangles; consumers must use the decoded indices. This option applies to the Node.js I3S converter. The v5 mesh codec currently emits uncompressed GLB geometry.
+
+### Validation[​](#validation "Direct link to Validation")
+
+By specifying the `--validate` parameter, the tile-converter will perform checks on the tileset data. The following checks are performed:
+
+* Bounding volume validation
+* Refinement type validation

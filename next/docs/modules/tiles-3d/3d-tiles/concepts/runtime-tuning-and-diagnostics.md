@@ -1,0 +1,105 @@
+3D Tiles runtime / diagnostics
+
+![](/next/images/format-logos/3d-tiles-logo.png)
+
+# Tune the runtime in layers.
+
+When a tileset looks slow, blurry, or memory-hungry, inspect the measurements before changing options. This guide gives a sequence that keeps cause and effect visible.
+
+![](/next/images/format-logos/3d-tiles-logo.png)[Module](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Loader API](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Runtime guides](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md)[Source API](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)
+
+A practical tuning loop
+
+## Change one layer, then inspect the frame.
+
+Start with the final visual quality target. Only after that should you tune initial coverage, request timing, concurrency, and byte budgets.
+
+01
+
+Quality
+
+Choose maximumScreenSpaceError for a still camera.
+
+02
+
+Responsiveness
+
+Tune progressive and foveated request behavior.
+
+03
+
+Capacity
+
+Match maxRequests and decode work to the device.
+
+04
+
+Evidence
+
+Read tile fields, source stats, and cache pressure together.
+
+Detailed guide
+
+## Measurements and tuning details
+
+The detailed guide maps runtime controls to observable tile fields, statistics, and common symptoms.
+
+Tune 3D Tiles in layers: establish the desired final LOD, then improve how quickly useful coverage arrives, then size request and memory resources. Changing several layers together makes symptoms harder to explain.
+
+## Recommended Sequence[​](#recommended-sequence "Direct link to Recommended Sequence")
+
+1. Hold the camera still and choose `maximumScreenSpaceError` for acceptable final quality.
+2. Use `viewDistanceScale` only if a global multiplier is more convenient than changing the threshold.
+3. Tune `progressiveResolutionHeightFraction` for initial broad coverage.
+4. Tune `foveatedConeSize`, relaxation, and `foveatedTimeDelay` for interaction.
+5. Tune `maxRequests` for network and decode capacity.
+6. Tune byte-native `cacheBytes` and `maximumCacheOverflowBytes`; memory-adjusted SSE is enabled by default.
+
+## What to Inspect[​](#what-to-inspect "Direct link to What to Inspect")
+
+Useful `Tile3D` fields include:
+
+| Field                            | Diagnostic meaning                                                                     |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `lodMetricValue`                 | World-space geometric error after transform scaling for 3D Tiles.                      |
+| `distanceToCamera`               | Bounding-volume distance used by perspective SSE.                                      |
+| `screenSpaceError`               | Most recently calculated final-LOD SSE.                                                |
+| `selected`                       | Whether content contributes to the current frame.                                      |
+| `refine`                         | `ADD` or `REPLACE` continuity semantics.                                               |
+| `_priorityProgressiveResolution` | Whether the tile belongs to the coarse-coverage band.                                  |
+| `priorityDeferred`               | Whether motion deferral currently holds the request, including its active time window. |
+| `_foveatedFactor`                | Unitless distance from the perspective forward view ray.                               |
+| `_priority`                      | Combined scheduler priority; smaller starts first.                                     |
+| `childrenState`                  | Lazy hierarchy lifecycle: `unloaded`, `loading`, `ready`, or `failed`.                 |
+| `hasUnloadedChildren`            | Whether traversal may request a lazy subtree at this tile.                             |
+
+The underscored fields are runtime diagnostics, not stable public API. Prefer callbacks and stats for application behavior. `Tileset3D.stats` exposes tiles loading, loaded, in memory, in view, renderable, failed, estimated GPU memory, and the current maximum SSE.
+
+For an implicit source, `Tiles3DSource.getImplicitTilingStats()` separates subtree resource requests, parsed-cache hits, pending subtrees, and materialized header counts from tile-content and GPU-memory stats. A high `pendingSubtrees` count with no render-content traffic points to hierarchy intake; high `materializedTiles` with low `cachedSubtrees` means the parsed LRU is bounded but the camera has explored a broad runtime hierarchy. See [Implicit tiling and lazy subtrees](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/implicit-tiling-and-subtrees.md#runtime-diagnostics).
+
+## Troubleshooting[​](#troubleshooting "Direct link to Troubleshooting")
+
+| Symptom                                          | Likely cause                                                                            | Inspect or change                                                                                                  |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Final view stays coarse                          | High SSE threshold, low `viewDistanceScale`, missing children, or memory-adjusted SSE.  | Compare tile SSE with the active maximum; inspect load failures and descendants.                                   |
+| Too many tiles load                              | Low threshold or high distance scale.                                                   | Raise `maximumScreenSpaceError`; monitor memory and requests.                                                      |
+| Empty regions during replacement                 | Required children failed or application code removed safe ancestors.                    | Inspect `REPLACE` child loads and `onTileError`; traditional children are not motion-deferred.                     |
+| Fine detail starts before broad coverage         | Progressive priority is disabled or the root already satisfies reduced-height SSE.      | Use a fraction in `(0, 0.5]`; inspect the error hierarchy.                                                         |
+| Center is not faster than edges                  | Foveation disabled, cone too large, orthographic projection, or few competing requests. | Check foveated options, projection, `maxRequests`, and priority fields.                                            |
+| Periphery recovers slowly                        | Delay or relaxation is too aggressive.                                                  | Reduce `foveatedTimeDelay`, enlarge the cone, or reduce relaxation.                                                |
+| Requests never recover after motion              | Traversal is frozen or tileset was destroyed.                                           | Keep `loadTiles` enabled; the runtime otherwise schedules one expiry traversal.                                    |
+| Orthographic LOD or progressive pass looks wrong | Invalid `metersPerPixel` or physical/logical pixel mixing.                              | Supply a positive finite logical-pixel scale.                                                                      |
+| High-DPI displays choose different LOD           | Custom viewport applied DPR a second time.                                              | Use CSS/logical dimensions with no additional DPR factor.                                                          |
+| Scaled tiles under-refine                        | World transform was not applied to geometric error.                                     | Inspect `lodMetricValue` and the composed model/tile transforms.                                                   |
+| Memory exceeds `cacheBytes`                      | Current-frame working set is larger than the soft eviction target.                      | Compare usage with the base-plus-overflow ceiling; raise a budget, raise SSE, or keep memory-adjusted SSE enabled. |
+| Many queued requests but low throughput          | Request throttling or upstream fetch limits.                                            | Inspect `maxRequests`, browser connection limits, and loader worker concurrency.                                   |
+
+## Multi-Viewport Behavior[​](#multi-viewport-behavior "Direct link to Multi-Viewport Behavior")
+
+Traversal and camera-motion state are retained per viewport. Selected and requested tiles from traversed viewports are combined before loading and cache eviction. A moving viewport can therefore reprioritize its peripheral work without falsely marking a stationary viewport as moving. Shared content still benefits from the common cache.
+
+## Projection Changes[​](#projection-changes "Direct link to Projection Changes")
+
+Perspective foveation requires a perspective field of view. Orthographic traversal uses `metersPerPixel` for SSE and progressive priority, but disables angular foveation. When an orthographic viewport lacks a valid scale, SSE falls back to the perspective-compatible formula; inspect viewport fields when changing projection at runtime.
+
+Return to the [3D Tiles runtime concepts overview](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md).

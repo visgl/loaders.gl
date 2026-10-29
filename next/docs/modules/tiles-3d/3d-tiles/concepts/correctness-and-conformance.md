@@ -1,0 +1,115 @@
+3D Tiles runtime / conformance
+
+![](/next/images/format-logos/3d-tiles-logo.png)
+
+# Make correctness observable.
+
+Conformance is more useful when each guarantee has a fixture, a runtime measurement, and a clear boundary between loader behavior and renderer policy.
+
+![](/next/images/format-logos/3d-tiles-logo.png)[Module](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Loader API](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Runtime guides](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md)[Source API](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)
+
+Conformance contract
+
+## Check the values that drive the frame.
+
+A correct runtime preserves source semantics while making its decisions inspectable: transformed error, selected coverage, content state, request eligibility, and extension handling.
+
+01
+
+Preserve
+
+Keep source metadata and unknown extensions available.
+
+02
+
+Separate
+
+Keep traversal, rendering, and application styling boundaries clear.
+
+03
+
+Exercise
+
+Use focused fixtures for hierarchy, volumes, LOD, and lifecycle.
+
+04
+
+Inspect
+
+Compare public runtime fields against expected invariants.
+
+Detailed guide
+
+## Correctness and conformance details
+
+The sections below record guarantees, test tranches, debugging values, and the parts of the renderer intentionally outside this package.
+
+The 3D Tiles runtime is view-dependent: parsing, transform composition, culling, LOD selection, and request scheduling must agree before a tile can be considered correct. This page is the working conformance contract for loaders.gl.
+
+## Correctness guarantees[​](#correctness-guarantees "Direct link to Correctness guarantees")
+
+| Area               | Guarantee                                                                                                                                                                                             | Observable check                                                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Geometric error    | 1.x raw error is retained and scaled once by the maximum component of the composed transform; draft 2.0 errors stay unscaled.                                                                         | Change a tileset model matrix repeatedly and verify 1.x tile error follows the new matrix without compounding.     |
+| SSE/LOD            | Perspective SSE preserves the established denominator; orthographic SSE uses `metersPerPixel`; both report logical/CSS pixels.                                                                        | The same camera selects the same LOD at DPR 1 and DPR 2. Invalid orthographic scales use the perspective fallback. |
+| Hierarchy          | `REPLACE` retains a renderable ancestor until required descendants are ready; `ADD` can select both levels.                                                                                           | Delay child content and inspect selected tiles during the loading frame.                                           |
+| Content visibility | Multiple content volumes are a union. Clipping planes affect render content only and never prune traversal descendants.                                                                               | Put one content volume outside the frustum and another inside; clip both and verify the return classification.     |
+| Implicit tiling    | Subtree availability uses zero-based global levels and materializes only the requested subtree boundary.                                                                                              | Verify exact `availableLevels`, QUADTREE/OCTREE indexes, sparse tiles, and child-subtree references.               |
+| Extensions         | Unsupported `extensionsRequired` names fail before header normalization; unknown `extensionsUsed` names are preserved. Draft subtree classification may resolve structural buffers before validation. | Supply an unsupported required extension and assert that no normalized headers are installed.                      |
+| I3S isolation      | I3S screen-threshold metrics do not receive 3D Tiles geometric-error transform scaling.                                                                                                               | Apply a non-uniform transform and compare the unchanged I3S metric.                                                |
+
+## Landed conformance coverage[​](#landed-conformance-coverage "Direct link to Landed conformance coverage")
+
+The tracker issue [#1245](https://github.com/visgl/loaders.gl/issues/1245) records the broader Cesium parity audit. The current development line includes focused hermetic coverage across these areas:
+
+1. **Volume and visibility correctness** — union semantics for multiple contents, clipping-only render culling, antimeridian/polar/degenerate region fixtures, and transformed-volume regressions.
+2. **Implicit hierarchy correctness** — one-subtree materialization, deepest-level arithmetic, sparse availability, retry/deduplication, and bounded metadata lifetime.
+3. **Traversal and LOD correctness** — ADD/REPLACE coverage, skip-LOD guarantees, camera jumps, foveated/progressive ordering, perspective/orthographic SSE, and dynamic-SSE isolation.
+4. **Metadata and extension correctness** — schema-aware semantics, property-table references, feature IDs, required/used extension invariants, and metadata-derived bounds.
+5. **Lifecycle and conformance** — empty/external/expired content, viewer request volumes, cancellation, eviction/reload/destroy, statistics, and maintained Cesium comparison fixtures.
+
+Native Vitest fixtures exercise these loader/runtime invariants; passing them is not a claim of complete Cesium parity or a certified implementation of every draft. Larger and exhaustive cases belong in the slow suite; external services are separate from required hermetic tests.
+
+New payload coverage includes SPZ version/rotation/coordinate cases, Gaussian primitive validation, optional compressed-payload decoding, and voxel descriptor boundaries. This tests readers and codecs, not rendered images. Style-expression evaluation, splat sorting, vector drawing, voxel ray marching, and GPU upload policy remain outside this conformance boundary.
+
+## Metadata value access[​](#metadata-value-access "Direct link to Metadata value access")
+
+3D Tiles metadata has two layers: the loader preserves the authored schema and property-table references, while glTF parsing (with `gltf.loadBuffers: true`) decodes property-table columns. Use `getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)` from `@loaders.gl/tiles-3d/3d-tiles` to read one normalized row. The helper applies class-level `default` values and `noData` sentinels and keeps vector/array values in their typed-array or nested-array form. Use `getStructuralMetadataProperty(...)` for one named value, or compose a renderer-neutral snapshot with `createTile3DStyleInput(...)`; the latter merges metadata scopes and optional hierarchy-aware batch-table values without evaluating styles.
+
+Decoding a row does not imply styling, picking, or GPU upload. Applications choose how decoded values map to feature IDs and visual attributes; raw extension objects remain available for forward-compatible fields and unsupported encodings.
+
+## Experimental 3D Tiles 2.0 profile[​](#experimental-3d-tiles-20-profile "Direct link to Experimental 3D Tiles 2.0 profile")
+
+The draft-facing matrix is pinned to CesiumGS/glTF commit [`1737151386460f190ffd90239b38eb0e3f1949f5`](https://github.com/CesiumGS/glTF/tree/1737151386460f190ffd90239b38eb0e3f1949f5/extensions/2.1/Vendor). It records parsing and traversal support, not renderer conformance.
+
+| Draft area                           | Status | Supported profile                                                                                                                                                                              |
+| ------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `3DTILES_tileset`                    | ⚠️     | Automatic glTF/GLB detection, explicit node hierarchies, nested packages, required-extension validation.                                                                                       |
+| `3DTILES_subtree`                    | ⚠️     | QUADTREE/OCTREE availability, attributes, property rows, URI properties, lazy loading and caching.                                                                                             |
+| Vector encodings                     | ⚠️     | Cesium 1.1 preview and draft 2.0 normalize to point/polyline/polygon descriptors. No rendering claim.                                                                                          |
+| Bounding volumes                     | ⚠️     | Box, sphere, ellipsoid-region, S2, and cylinder-region inputs; conservative oriented boxes where exact runtime volumes do not exist.                                                           |
+| CRS/georeference                     | ⚠️     | WKID/WKT2 preservation, recognized frames, affine/nonlinear content and bounds reprojection, and nested CRS placement. Cross-epoch execution remains excluded.                                 |
+| LOD                                  | ⚠️     | Draft geometric errors are unscaled; 1.x retains transform scaling for compatibility.                                                                                                          |
+| Optional extensions                  | ✅     | Unknown optional declarations are preserved.                                                                                                                                                   |
+| Required extensions                  | ✅     | Unsupported required declarations fail deterministically.                                                                                                                                      |
+| Renderer and advanced draft features | ✕      | Full voxel/layer/visibility runtime semantics, horizon optimization, styling, visual clipping, terrain draping, and clamping are unsupported. The separate glTF voxel reader is metadata-only. |
+
+`⚠️` denotes the tested experimental subset rather than complete draft conformance. The public `formatVersion: '2.0-draft'` discriminator and `Tiles3DVectorContent` shape may evolve as the draft and Khronos vector extensions change.
+
+## Debugging a mismatch[​](#debugging-a-mismatch "Direct link to Debugging a mismatch")
+
+Inspect these values for the same tile and frame:
+
+* `tile.distanceToCamera` — world-space distance from the tile volume.
+* `tile.lodMetricValue` — transformed 3D Tiles geometric error, or the unchanged I3S metric.
+* `tile.screenSpaceError` — calculated logical-pixel error used by refinement.
+* `tileset.options.maximumScreenSpaceError` — the refinement target.
+* `tile.contentVisibility(frameState)` — render-content classification after frustum and clipping checks.
+* `tile.childrenState` — whether an implicit boundary is unloaded, loading, ready, or failed.
+* `tile.contentEntries` — ordered payload descriptors and renderability, independent of visibility.
+
+For repeatable frame comparisons, use `getTileset3DTraversalSnapshot` from `@loaders.gl/tiles`. The [observability guide](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/observability-and-benchmarks.md) documents sorted IDs, counters, cache bytes, and benchmark-budget guidance. Budgets are tuning targets, not measured performance guarantees.
+
+A mismatch is usually caused by mixing source-space and world-space units, applying device-pixel ratio twice, using a content volume for hierarchy traversal, or evaluating a stale frame's request priority.
+
+See [screen-space error and LOD](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/screen-space-error-and-lod.md), [implicit tiling and subtrees](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/implicit-tiling-and-subtrees.md), [request scheduling and priorities](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/request-scheduling-and-priorities.md), and [caching and memory](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/caching-and-memory.md) for detailed behavior.
