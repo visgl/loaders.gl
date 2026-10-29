@@ -83,6 +83,7 @@ test('keeps entries and long previews bounded and clears details when the source
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const props = {
     sources: [{id: 'fixture', title: 'Fixture catalog', source}],
+    onCatalogTitle: vi.fn(),
     onSelectAsset: vi.fn()
   };
   try {
@@ -92,6 +93,8 @@ test('keeps entries and long previews bounded and clears details when the source
       .toContain('entry-0');
     const explorer = container.querySelector<HTMLElement>('[aria-label="Catalog explorer"]')!;
     const entries = container.querySelector<HTMLElement>('[aria-label="Catalog entries"]')!;
+    expect(props.onCatalogTitle).toHaveBeenCalledWith('Fixture catalog');
+    expect(explorer.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
     const height = explorer.getBoundingClientRect().height;
     const fullListWidth = entries.getBoundingClientRect().width;
     expect(container.querySelector('[aria-label="Catalog inspector"]')).toBeNull();

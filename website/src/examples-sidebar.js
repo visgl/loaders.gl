@@ -17,7 +17,72 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Tiled 3D Formats',
+      label: 'Cloud Native Queries',
+      items: [
+        'geospatial/stac',
+        'geospatial/fsq-places',
+        'geospatial/overture-parquet',
+        'cloud-native/iceberg'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'General Data Formats',
+      items: ['table/bson', 'table/json', 'table/xml']
+    },
+    {
+      type: 'category',
+      label: 'Image Formats',
+      collapsed: false,
+      items: [
+        'textures'
+        // 'gltf',
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Table Formats',
+      items: [
+        'table/arrow',
+        'table/arrow-scan',
+        'table/parquet',
+        'table/avro',
+        'table/orc',
+        'table/csv',
+        'table/csv-scan'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Table Formats',
+      items: [
+        'geospatial/csv',
+        'geospatial/shapefile',
+        'geospatial/geojson',
+        'geospatial/geoarrow',
+        'geospatial/flatgeobuf',
+        'geospatial/geoparquet',
+        'geospatial/geopackage',
+        'geospatial/kml',
+        'geospatial/gpx',
+        'geospatial/tcx'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Tile Formats',
+      items: [
+        'tiles/mvt',
+        'tiles/pmtiles',
+        'tiles/pmtiles-authoring',
+        'tiles/3d-tiles-conversion',
+        'tiles/table-tiler',
+        'tiles/mlt'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial 3D Tile Formats',
       items: [
         'i3s-building-scene-layer',
         'i3s-picking',
@@ -43,6 +108,26 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Geospatial Raster Formats',
+      items: ['geospatial/geotiff', 'geospatial/geo-zarr']
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Processing',
+      items: ['geospatial/clustering']
+    },
+    {
+      type: 'category',
+      label: 'Bioimaging Raster Formats',
+      items: ['bioimaging/ome-tiff', 'bioimaging/ome-zarr']
+    },
+    {
+      type: 'category',
+      label: 'Trace Formats',
+      items: ['traces/chrome-trace']
+    },
+    {
+      type: 'category',
       label: 'OGC Services',
       items: ['tiles/wms', 'tiles/wfs', 'tiles/wmts']
     },
@@ -60,91 +145,6 @@ const sidebars = {
         'tiles/arcgis-feature-server',
         'tiles/arcgis-vector-tile-server'
       ]
-    },
-    {
-      type: 'category',
-      label: 'Geospatial Raster Formats',
-      items: ['geospatial/geotiff', 'geospatial/geo-zarr']
-    },
-    {
-      type: 'category',
-      label: 'Image Formats',
-      collapsed: false,
-      items: [
-        'textures'
-        // 'gltf',
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Bioimaging Raster Formats',
-      items: ['bioimaging/ome-tiff', 'bioimaging/ome-zarr']
-    },
-    {
-      type: 'category',
-      label: 'Cloud-Native Queries',
-      items: [
-        'geospatial/fsq-places',
-        'geospatial/overture-parquet',
-        'geospatial/stac',
-        'cloud-native/iceberg'
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Tiled Geospatial Formats',
-      items: [
-        'tiles/mvt',
-        'tiles/pmtiles',
-        'tiles/pmtiles-authoring',
-        'tiles/3d-tiles-conversion',
-        'tiles/table-tiler',
-        'tiles/mlt'
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Geospatial Processing',
-      items: ['geospatial/clustering']
-    },
-    {
-      type: 'category',
-      label: 'Geospatial Table Formats',
-      items: [
-        'geospatial/csv',
-        'geospatial/shapefile',
-        'geospatial/geojson',
-        'geospatial/geoarrow',
-        'geospatial/flatgeobuf',
-        'geospatial/geoparquet',
-        'geospatial/geopackage',
-        'geospatial/kml',
-        'geospatial/gpx',
-        'geospatial/tcx'
-      ]
-    },
-    {
-      type: 'category',
-      label: 'General Data Formats',
-      items: ['table/bson', 'table/json', 'table/xml']
-    },
-    {
-      type: 'category',
-      label: 'Table Formats',
-      items: [
-        'table/arrow',
-        'table/arrow-scan',
-        'table/parquet',
-        'table/avro',
-        'table/orc',
-        'table/csv',
-        'table/csv-scan'
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Trace Formats',
-      items: ['traces/chrome-trace']
     },
     {
       type: 'category',
