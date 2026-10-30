@@ -8,7 +8,7 @@ import {PackageGrid, PackageTile} from '@site/src/components/docs/package-grid';
 
 # Packages
 
-loaders.gl has 25 public packages. Install core and the packages that own your formats, then import the documented format or utility subpaths. Each tile links to its package introduction and focused format references.
+loaders.gl has 22 public packages. Install core and the packages that own your formats, then import the documented format or utility subpaths. Each tile links to its package introduction and focused format references.
 
 ## API
 
