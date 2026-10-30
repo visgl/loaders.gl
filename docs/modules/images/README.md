@@ -105,6 +105,8 @@ and the project-wide [References and credits](/docs/references-and-credits).
 The images package also owns texture and video loaders. Its root exports metadata;
 async core APIs preload implementations when needed:
 
+Browse [texture formats and APIs](/docs/modules/images/textures) or [video loading and GIF writing](/docs/modules/images/video).
+
 ```typescript
 import {load} from '@loaders.gl/core';
 import {ImageLoader, BasisLoader, TextureLoader, VideoLoader} from '@loaders.gl/images';

@@ -31,7 +31,7 @@ const FORMAT_LANES = [
     formats: [
       {label: 'Draco', to: '/docs/modules/draco/formats/draco'},
       {label: 'Meshopt compression', to: '/docs/modules/scene/gltf/formats/gltf#meshopt-compression'},
-      {label: 'Basis Universal / KTX2', to: '/docs/modules/textures/formats/ktx'}
+      {label: 'Basis Universal / KTX2', to: '/docs/modules/images/textures/formats/ktx'}
     ]
   }
 ] as const;

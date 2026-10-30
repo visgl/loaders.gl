@@ -43,7 +43,7 @@ Pass these options inside `avro`:
 | `blockIndices` | Optional zero-based OCF block selection. |
 
 For standalone `.avsc` schema parsing, import `AvroSchemaLoaderWithParser` from
-`@loaders.gl/tables/avro/avro-schema-loader` and pass it to `load` or `parse`.
+`@loaders.gl/tables/avro-schema-loader` and pass it to `load` or `parse`.
 The package-root `AvroSchemaLoader` contains metadata only.
 
 See [table representations](/docs/specifications/category-table) and

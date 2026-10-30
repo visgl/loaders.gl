@@ -90,6 +90,19 @@ function listSources(directory: string): string[] {
 
 test('every consolidated scene implementation remains covered by an owning coverage gate', () => {
   const thresholds = JSON.parse(fs.readFileSync('test/coverage-thresholds.json', 'utf8'));
+  const sceneExports = JSON.parse(fs.readFileSync('modules/scene/package.json', 'utf8')).exports;
+  const flatFacadePaths = new Set(
+    Object.entries(sceneExports)
+      .filter(([exportPath, conditions]: [string, any]) => {
+        const importTarget = typeof conditions === 'string' ? conditions : conditions.import;
+        return (
+          /^\.\/[^/]+$/.test(exportPath) &&
+          /(?:loader|writer|source)(?:-types)?$/.test(exportPath.slice(2)) &&
+          importTarget?.startsWith('./dist/')
+        );
+      })
+      .map(([exportPath]: [string, any]) => `modules/scene/src/${exportPath.slice(2)}.ts`)
+  );
   const scopes = [
     ...thresholds.packages['@loaders.gl/scene'].sourcePaths,
     ...Object.values(thresholds.formats).flatMap((format: any) =>
@@ -98,7 +111,8 @@ test('every consolidated scene implementation remains covered by an owning cover
   ];
   expect(
     listSources('modules/scene/src').filter(
-      filename => !scopes.some(scope => filename.startsWith(scope))
+      filename =>
+        !scopes.some(scope => filename.startsWith(scope)) && !flatFacadePaths.has(filename)
     )
   ).toEqual([]);
 });

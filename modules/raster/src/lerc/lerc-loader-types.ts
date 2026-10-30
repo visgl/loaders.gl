@@ -25,7 +25,7 @@ export type LERCLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing LERC loader implementation. */
 async function preload() {
-  const {LERCLoaderWithParser} = await import('@loaders.gl/raster/lerc/lerc-loader');
+  const {LERCLoaderWithParser} = await import('@loaders.gl/raster/lerc-loader');
   return LERCLoaderWithParser;
 }
 

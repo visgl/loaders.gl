@@ -15,7 +15,7 @@ export const LAZRsLoader = {
   ...LAS_LOADER_METADATA,
   name: 'LAS (laz-rs)',
   preload: async () => {
-    const {LAZRsLoaderWithParser} = await import('@loaders.gl/pointclouds/las/laz-rs-loader');
+    const {LAZRsLoaderWithParser} = await import('@loaders.gl/pointclouds/laz-rs-loader');
     return LAZRsLoaderWithParser;
   }
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;

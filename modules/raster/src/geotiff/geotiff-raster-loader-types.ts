@@ -12,9 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Loads the optional numeric TIFF parser on first use by an asynchronous core API. */
 async function preload() {
-  const {GeoTIFFRasterLoaderWithParser} = await import(
-    '@loaders.gl/raster/geotiff/geotiff-raster-loader'
-  );
+  const {GeoTIFFRasterLoaderWithParser} = await import('@loaders.gl/raster/geotiff-raster-loader');
   return GeoTIFFRasterLoaderWithParser;
 }
 

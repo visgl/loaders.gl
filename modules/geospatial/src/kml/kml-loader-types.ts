@@ -27,7 +27,7 @@ export type KMLLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing KML loader implementation. */
 async function preloadKMLLoader() {
-  const {KMLLoaderWithParser} = await import('@loaders.gl/geospatial/kml/kml-loader');
+  const {KMLLoaderWithParser} = await import('@loaders.gl/geospatial/kml-loader');
   return KMLLoaderWithParser;
 }
 

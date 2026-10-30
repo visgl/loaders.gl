@@ -11,7 +11,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Loads the parser-bearing USD loader implementation. */
 async function preload() {
-  const {USDLoaderWithParser} = await import('@loaders.gl/scene/usd/usd-loader');
+  const {USDLoaderWithParser} = await import('@loaders.gl/scene/usd-loader');
   return USDLoaderWithParser;
 }
 

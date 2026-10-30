@@ -32,8 +32,7 @@ export const TerrainLoader = {
   version: VERSION,
   worker: true,
   /** Loads the parser-bearing terrain loader implementation. */
-  preload: async () =>
-    (await import('@loaders.gl/raster/terrain/terrain-loader')).TerrainLoaderWithParser,
+  preload: async () => (await import('@loaders.gl/raster/terrain-loader')).TerrainLoaderWithParser,
   options: {
     terrain: {
       tesselator: 'auto',

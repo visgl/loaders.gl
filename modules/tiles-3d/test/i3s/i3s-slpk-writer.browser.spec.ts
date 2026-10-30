@@ -6,7 +6,7 @@ import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {validateWriter} from 'test/common/conformance';
 import {SLPKWriter as RootWriter, parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
-import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
+import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
 import {GZipCompressor} from '@loaders.gl/compression';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {readZip} from 'test/common/read-zip';

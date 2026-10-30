@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {encodeIndexedZipInBatches} from '@loaders.gl/archives/zip/indexed-zip-writer';
+import {encodeIndexedZipInBatches} from '@loaders.gl/archives/indexed-zip-writer';
 
 /** Real entry-count sentinel qualification without encoding or retaining a complete archive. */
 test('indexed ZIP selects ZIP64 at the 65535-record sentinel', async () => {

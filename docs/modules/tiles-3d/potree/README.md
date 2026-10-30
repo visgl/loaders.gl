@@ -120,7 +120,7 @@ This modules provides the following exports:
 ## Modern sources and authoring
 
 - `PotreeLoader`: one metadata-only declaration loader for both wire layouts, with the
-  `@loaders.gl/tiles-3d/potree/potree-loader` parser subpath.
+  `@loaders.gl/tiles-3d/potree-loader` parser subpath.
 - `PotreeSourceLoader`: version-specific readers behind one source factory, compatible with
   `PointCloudTileset` and v5 tile-converter traversal. Modern 2.0 datasets use native-coordinate
   range reads; query `scan()` remains available only for compatible legacy datasets.

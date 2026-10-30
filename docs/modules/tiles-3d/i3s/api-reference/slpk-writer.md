@@ -4,7 +4,7 @@ Packages already-authored I3S layer resources as a deterministic `.slpk` archive
 The writer accepts `ArrayBuffer` and native `Blob` values without Node.js Buffer or filesystem APIs.
 
 ```ts
-import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
+import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
 
 const archive = await SLPKWriter.encode(
   {
@@ -62,7 +62,7 @@ storage, use the iterator below.
 resources/options and yields `Uint8Array` views with byte-identical archive content:
 
 ```ts
-import {encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
+import {encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
 
 try {
   for await (const chunk of encodeSLPKArchiveInBatches(resources, {

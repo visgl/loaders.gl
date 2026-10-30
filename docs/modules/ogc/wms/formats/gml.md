@@ -18,7 +18,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'WMS module', to: '/docs/modules/ogc/wms'},
     {label: 'WFS format', to: '/docs/modules/ogc/wms/formats/wfs'},
-    {label: 'XML module', to: '/docs/modules/xml'}
+    {label: 'XML module', to: '/docs/modules/documents/xml'}
   ]}
 />
 
@@ -101,7 +101,7 @@ GML application schemas often carry scalar types that cannot be inferred safely 
 known types from `DescribeFeatureType` or application metadata:
 
 ```ts
-import {GMLLoaderWithParser} from '@loaders.gl/ogc/wms/gml-loader';
+import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml-loader';
 
 const table = GMLLoaderWithParser.parseTextSync(xml, {
   gml: {

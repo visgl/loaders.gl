@@ -31,8 +31,8 @@ const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 | `@loaders.gl/raster/terrain` | Image-encoded elevation to terrain mesh |
 | `@loaders.gl/raster/quantized-mesh` | Quantized mesh parser |
 | `@loaders.gl/raster/terrain/heightmap` | Heightmap decoding, sampling, and surface helpers |
-| `@loaders.gl/raster/geotiff/geotiff-source-loader` | Synchronous GeoTIFF/COG source constructor |
-| `@loaders.gl/raster/geotiff/ometiff-source-loader` | Synchronous OME-TIFF source constructor |
+| `@loaders.gl/raster/geotiff-source-loader` | Synchronous GeoTIFF/COG source constructor |
+| `@loaders.gl/raster/ometiff-source-loader` | Synchronous OME-TIFF source constructor |
 
 GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronous `load()`
 with metadata or import an explicit source implementation for synchronous `createDataSource()`.

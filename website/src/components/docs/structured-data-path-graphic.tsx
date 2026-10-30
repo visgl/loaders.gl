@@ -16,8 +16,8 @@ const INPUT_NODES: readonly StructuredDataPathNode[] = [
   {label: 'JSON', detail: 'nested documents', to: '/docs/modules/tables/json/formats/json'},
   {label: 'NDJSON', detail: 'one record per line', to: '/docs/modules/tables/json/formats/json'},
   {label: 'CSV / TSV', detail: 'delimited rows', to: '/docs/modules/tables/csv/formats/csv'},
-  {label: 'BSON', detail: 'typed binary documents', to: '/docs/modules/tables/bson/formats/bson'},
-  {label: 'XML', detail: 'namespaced trees', to: '/docs/modules/xml/formats/xml'}
+  {label: 'BSON', detail: 'typed binary documents', to: '/docs/modules/documents/bson/formats/bson'},
+  {label: 'XML', detail: 'namespaced trees', to: '/docs/modules/documents/xml/formats/xml'}
 ];
 
 const OUTPUT_NODES: readonly StructuredDataPathNode[] = [

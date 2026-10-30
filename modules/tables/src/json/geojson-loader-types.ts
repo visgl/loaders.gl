@@ -46,7 +46,7 @@ export type GeoJSONLoaderOptions = Omit<JSONLoaderOptions, 'json'> & {
 
 /** Preloads the parser-bearing GeoJSON loader implementation. */
 async function preload() {
-  const {GeoJSONLoaderWithParser} = await import('@loaders.gl/tables/json/geojson-loader');
+  const {GeoJSONLoaderWithParser} = await import('@loaders.gl/tables/geojson-loader');
   return GeoJSONLoaderWithParser;
 }
 

@@ -22,7 +22,7 @@ export type POTreeLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing Potree loader implementation. */
 async function preload() {
-  const {PotreeLoaderWithParser} = await import('@loaders.gl/tiles-3d/potree/potree-loader');
+  const {PotreeLoaderWithParser} = await import('@loaders.gl/tiles-3d/potree-loader');
   return PotreeLoaderWithParser;
 }
 

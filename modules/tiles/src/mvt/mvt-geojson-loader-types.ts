@@ -33,7 +33,7 @@ export type MVTGeoJSONLoaderOptions = LoaderOptions &
 
 /** Preload the parser-bearing GeoJSON-only MVT loader. */
 async function preload() {
-  const {MVTGeoJSONLoaderWithParser} = await import('@loaders.gl/tiles/mvt/mvt-geojson-loader');
+  const {MVTGeoJSONLoaderWithParser} = await import('@loaders.gl/tiles/mvt-geojson-loader');
   return MVTGeoJSONLoaderWithParser;
 }
 

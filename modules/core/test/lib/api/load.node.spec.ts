@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {load, resolvePath} from '@loaders.gl/core';
-import {JSONLoaderWithParser} from '@loaders.gl/tables/json/json-loader';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json-loader';
 import {setupLoaderTestEnvironment} from '../../../../../test/vitest-setup-loaders';
 
 await setupLoaderTestEnvironment();

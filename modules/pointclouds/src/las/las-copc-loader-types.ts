@@ -12,7 +12,7 @@ export const LASCOPCLoader = {
   ...LAS_LOADER_METADATA,
   name: 'LAS (COPC)',
   preload: async () => {
-    const {LASCOPCLoaderWithParser} = await import('@loaders.gl/pointclouds/las/las-copc-loader');
+    const {LASCOPCLoaderWithParser} = await import('@loaders.gl/pointclouds/las-copc-loader');
     return LASCOPCLoaderWithParser;
   }
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;

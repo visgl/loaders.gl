@@ -34,7 +34,7 @@ export const LANCE_LOADER_OPTIONS = {
 
 /** Preloads the parser-bearing Lance loader implementation. */
 async function preloadLanceLoader() {
-  const {LanceLoaderWithParser} = await import('@loaders.gl/tables/lance/lance-loader');
+  const {LanceLoaderWithParser} = await import('@loaders.gl/tables/lance-loader');
   return LanceLoaderWithParser;
 }
 

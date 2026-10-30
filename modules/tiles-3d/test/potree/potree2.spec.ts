@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {PotreeLoader, PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import {Potree2Source} from '../../src/potree/potree2-source';
-import {PotreeLoaderWithParser} from '@loaders.gl/tiles-3d/potree/potree-loader';
+import {PotreeLoaderWithParser} from '@loaders.gl/tiles-3d/potree-loader';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
   parsePotree2Metadata,

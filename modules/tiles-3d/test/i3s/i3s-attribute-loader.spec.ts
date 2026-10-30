@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {I3SAttributeLoader} from '@loaders.gl/tiles-3d/i3s';
 // @ts-expect-error
-import {loadFeatureAttributes} from '@loaders.gl/tiles-3d/i3s/i3s-attribute-loader';
+import {loadFeatureAttributes} from '../../src/i3s/i3s-attribute-loader';
 const objectIdsUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_0/0/index.bin';
 const namesUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_1/0/index.bin';
 const heightRoofUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_2/0/index.bin';

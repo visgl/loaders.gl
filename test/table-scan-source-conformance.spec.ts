@@ -9,7 +9,7 @@ import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
 import {CSVTableSource} from '@loaders.gl/tables/csv/index';
 import {NDJSONTableSource} from '@loaders.gl/tables/json/index';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
-import {ParquetSource} from '@loaders.gl/tables/parquet/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 
 import {describeTableScanSourceConformance} from './common/table-scan-source-conformance';
 

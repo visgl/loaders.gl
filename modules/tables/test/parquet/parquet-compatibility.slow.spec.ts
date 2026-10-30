@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
 import {expect, test} from 'vitest';
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {ParquetWasmLoaderWithParser as ParquetLoader} from '@loaders.gl/tables/parquet/parquet-wasm-loader';
+import {ParquetWasmLoaderWithParser as ParquetLoader} from '@loaders.gl/tables/parquet-wasm-loader';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {parquetReadObjects} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';

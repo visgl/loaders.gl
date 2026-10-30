@@ -63,7 +63,7 @@ and bounded, paginated feature queries with explicit completion status. The
 
 BSON decoding and encoding are now native, removing the optional `bson` dependency.
 Parquet BSON columns retain document read/write support and Arrow byte preservation.
-See the [BSON codec](/docs/modules/tables/bson#native-value-representations).
+See the [BSON codec](/docs/modules/documents/bson#native-value-representations).
 
 [Apache Arrow](./developer-guide/apache-arrow.md) provides a common columnar representation for
 tables, features, point clouds, and meshes. Load CSV, Parquet, and other table formats, then use
@@ -185,7 +185,7 @@ Release Date: March 31, 2026
 
 
 - **@loaders.gl/tiles/mlt** - New [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/tiles/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
-- **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader).
+- **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/images/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/images/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/images/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/images/textures/api-reference/radiance-hdr-loader).
 - **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
 - **@loaders.gl/tiles/mvt** - New experimental [`MVTWriter`](/docs/modules/tiles/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
 
@@ -248,7 +248,7 @@ A minor release that includes:
 
 **@loaders.gl/textures**
 
-- [`Comp[ressedTextureLoader]`](/docs/modules/textures/api-reference/compressed-texture-loader) - Now supports mipmaps in KTX2 textures.
+- [`Comp[ressedTextureLoader]`](/docs/modules/images/textures/api-reference/compressed-texture-loader) - Now supports mipmaps in KTX2 textures.
 
 **@loaders.gl/tiles-3d/3d-tiles**
 
@@ -516,9 +516,9 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 **@loaders.gl/bson** (New module)
 
-- New module supporting the [BSON](/docs/modules/tables/bson/formats/bson) (Binary JSON) format.
-- [`BSONLoader`](/docs/modules/tables/bson/api-reference/bson-loader) - loads BSON encoded binary data into a "JSON like" JavaScript structure
-- [`BSONWriter`](/docs/modules/tables/bson/api-reference/bson-writer) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
+- New module supporting the [BSON](/docs/modules/documents/bson/formats/bson) (Binary JSON) format.
+- [`BSONLoader`](/docs/modules/documents/bson/api-reference/bson-loader) - loads BSON encoded binary data into a "JSON like" JavaScript structure
+- [`BSONWriter`](/docs/modules/documents/bson/api-reference/bson-writer) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
 
 **@loaders.gl/images**
 
@@ -560,7 +560,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 **@loaders.gl/xml**
 
-- [`HTMLLoader`](modules/xml/api-reference/html-loader) - New minimal HTML loader, intended for small ad-hoc use cases such as extracting an error message or a link from a short HTML page.
+- [`HTMLLoader`](modules/documents/xml/api-reference/html-loader) - New minimal HTML loader, intended for small ad-hoc use cases such as extracting an error message or a link from a short HTML page.
 
 **@loaders.gl/tile-converter**
 
@@ -600,7 +600,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 **@loaders.gl/xml** (New module)
 
 - New module for parsing XML (eXtensible Markup Language)
-- [`XMLLoader`](/docs/modules/xml/api-reference/xml-loader)
+- [`XMLLoader`](/docs/modules/documents/xml/api-reference/xml-loader)
 
 **@loaders.gl/tile-converter**
 

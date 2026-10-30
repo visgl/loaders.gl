@@ -40,5 +40,5 @@ export const I3SLEPCCLoader = {
     }
   },
   preload: async () =>
-    (await import('@loaders.gl/tiles-3d/i3s/i3s-lepcc-loader')).I3SLEPCCLoaderWithParser
+    (await import('@loaders.gl/tiles-3d/i3s-lepcc-loader')).I3SLEPCCLoaderWithParser
 } as const satisfies Loader<I3SLEPCCLoaderResult, never, I3SLEPCCLoaderOptions>;

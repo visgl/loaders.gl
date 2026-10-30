@@ -142,7 +142,7 @@ function Description() {
       <h1>Texture Loaders</h1>
       <p>
         This page loads every &nbsp;
-        <a href="https://loaders.gl/modules/textures/docs/using-compressed-textures">
+        <a href="https://loaders.gl/modules/images/textures/docs/using-compressed-textures">
           texture format
         </a>{' '}
         &nbsp; supported by loaders.gl and attempts to display them in WebGL using the{' '}

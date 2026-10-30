@@ -14,7 +14,7 @@ Its standalone source is in `examples/website/clustering`.
 ## Cluster a table
 
 ```typescript
-import {ClusterSource} from '@loaders.gl/core/geoarrow/cluster-source';
+import {ClusterSource} from '@loaders.gl/core/cluster-source';
 
 const source = new ClusterSource(table, {
   radiusPixels: 40,

@@ -17,7 +17,7 @@ test('Arrow tile source root import does not eagerly bundle the tiler implementa
     platform: 'browser',
     packages: 'external',
     // Leave the runtime subpath as a lazy import even when workspace aliases are active.
-    external: ['@loaders.gl/tiles/mvt/arrow-table-tile-source-loader'],
+    external: ['@loaders.gl/tiles/arrow-table-tile-source-loader'],
     metafile: true,
     write: false
   });
@@ -28,7 +28,7 @@ test('Arrow tile source root import does not eagerly bundle the tiler implementa
   expect(bundledInputs).toContain('modules/tiles/src/mvt/arrow-table-tile-source-loader-types.ts');
   expect(bundledInputs).not.toContain('modules/tiles/src/mvt/arrow-table-tile-source-loader.ts');
   expect(bundledInputs.some(filename => filename.includes('/vector-tiler/'))).toBe(false);
-  expect(output).toContain('import("@loaders.gl/tiles/mvt/arrow-table-tile-source-loader")');
+  expect(output).toContain('import("@loaders.gl/tiles/arrow-table-tile-source-loader")');
   expect(output).not.toContain('from "apache-arrow"');
   expect(output).not.toContain('from "@loaders.gl/gis"');
 });

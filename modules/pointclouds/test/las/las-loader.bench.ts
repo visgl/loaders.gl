@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/las/lazperf-loader';
-import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/las/laz-rs-loader';
+import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/lazperf-loader';
+import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/laz-rs-loader';
 import {encodeSync, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {LASLoader, LASWriter} from '@loaders.gl/pointclouds/las';
 import type {LASLoaderOptions} from '@loaders.gl/pointclouds/las';

@@ -15,7 +15,7 @@ npm install @loaders.gl/core @loaders.gl/pointclouds
 ```typescript
 import {parse, parseSync} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
-import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply/ply-loader';
+import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply-loader';
 
 const table = await parse(bytes, PLYLoader);
 const mesh = parseSync(bytes, PLYLoaderWithParser, {ply: {shape: 'mesh'}});

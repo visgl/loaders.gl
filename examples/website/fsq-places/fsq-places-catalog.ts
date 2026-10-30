@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetSource} from '@loaders.gl/tables/parquet/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import type {
   ParquetDatasetFile,
   ParquetDatasetFileQuery,

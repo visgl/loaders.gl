@@ -42,7 +42,7 @@ export const NDGeoJSONLoader = {
       ArrowTableBatch | TableBatch,
       NDGeoJSONLoaderOptions
     >
-  > => (await import('@loaders.gl/tables/json/ndgeojson-loader')).NDGeoJSONLoaderWithParser
+  > => (await import('@loaders.gl/tables/ndgeojson-loader')).NDGeoJSONLoaderWithParser
 } as const satisfies Loader<
   ArrowTable | ObjectRowTable,
   ArrowTableBatch | TableBatch,
