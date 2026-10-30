@@ -40,7 +40,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   ]}
 />
 
-- _[`@loaders.gl/xml`](/docs/modules/xml)_
+- _[`@loaders.gl/documents`](/docs/modules/xml)_
 - _[Wikipedia article](https://en.wikipedia.org/wiki/XML)_
 
 <ReferenceBoundary

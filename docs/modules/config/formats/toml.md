@@ -3,7 +3,7 @@
 TOML (Tom's Obvious, Minimal Language) is a configuration file format designed to be easy to read
 and map unambiguously to a hash table.
 
-- _[`@loaders.gl/config`](/docs/modules/config)_
+- _[`@loaders.gl/documents`](/docs/modules/config)_
 - _[`TOMLLoader`](/docs/modules/config/api-reference/toml-loader)_
 - _[TOML specification](https://toml.io/en/)_
 

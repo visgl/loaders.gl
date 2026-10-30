@@ -116,3 +116,5 @@
 - Pointclouds, scene and Draco use Arrow transport directly from core/schema-utils/arrow-transport, without tables forwarding imports or dependencies.
 
 - Texture and video implementations belong in `@loaders.gl/images`. Keep its root loaders metadata-only and expose parsers, texture writers, schemas, and helpers through direct subpaths. Do not restore standalone texture/video compatibility packages.
+
+- Basic XML, HTML, YAML, TOML, BSON, and Markdown loaders belong in `@loaders.gl/documents`. Keep its root metadata-only and parser imports flat (`/xml-loader`, `/bson-loader`, `/markdown-loader`); BSON codecs and writers use `/bson-codec` and `/bson-writer`. Do not restore XML/config packages or tables BSON forwarding exports. Parquet uses the documents BSON codec.

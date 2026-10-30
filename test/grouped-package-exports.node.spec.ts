@@ -35,7 +35,6 @@ test('grouped CommonJS format exports expose metadata loaders for every former p
     ['tables', 'lance', 'LanceLoader'],
     ['tables', 'orc', 'ORCLoader'],
     ['tables', 'parquet', 'ParquetLoader'],
-    ['tables', 'bson', 'BSONLoader'],
     ['tables', 'excel', 'ExcelLoader'],
     ['tables', 'csv', 'CSVLoader'],
     ['tables', 'avro', 'AvroLoader'],
@@ -127,25 +126,27 @@ test.each([['xlsx', '^0.18.5']])('tables declares %s as optional', (dependency, 
   expect(manifest.optionalDependencies[dependency]).toBe(version);
 });
 
-test('tables BSON codec does not require an external BSON package', async () => {
+test('documents BSON codec does not require an external BSON package', async () => {
   const manifest = JSON.parse(
-    fileSystem.readFileSync(path.join(REPOSITORY_ROOT, 'modules/tables/package.json'), 'utf8')
+    fileSystem.readFileSync(path.join(REPOSITORY_ROOT, 'modules/documents/package.json'), 'utf8')
   );
   for (const dependencies of [
     manifest.dependencies,
     manifest.optionalDependencies,
     manifest.peerDependencies
   ]) {
-    expect(dependencies).not.toHaveProperty('bson');
+    expect(dependencies || {}).not.toHaveProperty('bson');
   }
-  const {encodeBSONSync, parseBSONSync} = await import('@loaders.gl/tables/bson');
+  const {encodeBSONSync, parseBSONSync} = await import('@loaders.gl/documents/bson-codec');
   expect(parseBSONSync(encodeBSONSync({value: 'native'}))).toEqual({value: 'native'});
 });
 
 test('native BSON values interoperate between ESM parsers and CommonJS writers', async () => {
-  const esm = await import('@loaders.gl/tables/bson');
+  const esm = await import('@loaders.gl/documents/bson-codec');
   const requireModule = createRequire(import.meta.url);
-  const commonjs = requireModule(path.join(REPOSITORY_ROOT, 'modules/tables/dist/bson/index.cjs'));
+  const commonjs = requireModule(
+    path.join(REPOSITORY_ROOT, 'modules/documents/dist/bson-codec.cjs')
+  );
   const document = {
     id: new esm.BSONObjectId('0123456789abcdef01234567'),
     timestamp: esm.createBSONValue({$bsonType: 'timestamp', value: 42n})

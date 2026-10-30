@@ -13,7 +13,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   format="bson"
   eyebrow="BSON module"
   title="Keep JSON-like documents in a binary form."
-  description="`@loaders.gl/tables/bson` loads and writes BSON documents as JavaScript objects. It is useful when a binary document format is required but the application wants the familiar JSON data model."
+  description="`@loaders.gl/documents` loads and writes BSON documents as JavaScript objects. It is useful when a binary document format is required but the application wants the familiar JSON data model."
   tone="yellow"
   meta={['BSON documents', 'Loader and writer', 'JSON-like objects']}
   links={[
@@ -49,13 +49,13 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
 </p>
 
-The `@loaders.gl/tables/bson` module provides support for the [BSON](/docs/modules/tables/bson/formats/bson) format.
+The `@loaders.gl/documents` module provides support for the [BSON](/docs/modules/tables/bson/formats/bson) format.
 The BSON format stores arbitrary (loosely structured) data largely equivalent to the textual JSON format.
 
 ## Installation
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/tables
+npm install @loaders.gl/core @loaders.gl/documents
 ```
 
 The native codec runs in browsers and Node.js without an external BSON dependency.
@@ -99,7 +99,7 @@ mistaken for a scalar. JSON serialization and structured cloning lose this brand
 recreate the scalar explicitly afterward. MongoDB class instances are not accepted.
 
 ```typescript
-import {BSONObjectId, createBSONValue, encodeBSONSync, parseBSONSync} from '@loaders.gl/tables/bson';
+import {BSONObjectId, createBSONValue, encodeBSONSync, parseBSONSync} from '@loaders.gl/documents/bson-codec';
 
 const bytes = encodeBSONSync({
   id: new BSONObjectId('0123456789abcdef01234567'),

@@ -36,9 +36,6 @@
       "@loaders.gl/tables/avro-schema": [
         "modules/tables/src/avro-schema"
       ],
-      "@loaders.gl/tables/bson": [
-        "modules/tables/src/bson"
-      ],
       "@loaders.gl/tables/excel": [
         "modules/tables/src/excel"
       ],
@@ -234,8 +231,12 @@
       "@loaders.gl/scene/gltf/test": [
         "modules/scene/test/gltf"
       ],
-      "@loaders.gl/images/test": ["modules/images/test"],
-      "@loaders.gl/images/*": ["modules/images/src/*"],
+      "@loaders.gl/images/test": [
+        "modules/images/test"
+      ],
+      "@loaders.gl/images/*": [
+        "modules/images/src/*"
+      ],
       "@loaders.gl/images": [
         "modules/images/src"
       ],
@@ -248,14 +249,8 @@
       "@loaders.gl/tiles-3d/i3s/test": [
         "modules/tiles-3d/test/i3s"
       ],
-      "@loaders.gl/config": [
-        "modules/config/src"
-      ],
-      "@loaders.gl/config/*": [
-        "modules/config/src/*"
-      ],
-      "@loaders.gl/config/test": [
-        "modules/config/test"
+      "@loaders.gl/documents/test/config": [
+        "modules/documents/test/config"
       ],
       "@loaders.gl/pointclouds/las": [
         "modules/pointclouds/src/las"
@@ -425,11 +420,8 @@
       "@loaders.gl/services/test": [
         "modules/services/test"
       ],
-      "@loaders.gl/xml": [
-        "modules/xml/src"
-      ],
-      "@loaders.gl/xml/test": [
-        "modules/xml/test"
+      "@loaders.gl/documents/test/xml": [
+        "modules/documents/test/xml"
       ],
       "@loaders.gl/archives/zip/indexed-zip-writer": [
         "modules/archives/src/zip/indexed-zip-writer"
@@ -503,8 +495,8 @@
       "@loaders.gl/tables/avro/test": [
         "modules/tables/test/avro"
       ],
-      "@loaders.gl/tables/bson/test": [
-        "modules/tables/test/bson"
+      "@loaders.gl/documents/test/bson": [
+        "modules/documents/test/bson"
       ],
       "@loaders.gl/tables/csv/test": [
         "modules/tables/test/csv"
@@ -997,6 +989,18 @@
       ],
       "@loaders.gl/scene/usd/*": [
         "modules/scene/src/usd/*"
+      ],
+      "@loaders.gl/documents": [
+        "modules/documents/src"
+      ],
+      "@loaders.gl/documents/*": [
+        "modules/documents/src/*"
+      ],
+      "@loaders.gl/documents/test": [
+        "modules/documents/test"
+      ],
+      "@loaders.gl/documents/test/*": [
+        "modules/documents/test/*"
       ]
     },
     "plugins": [

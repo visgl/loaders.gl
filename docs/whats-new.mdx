@@ -26,6 +26,15 @@ below, or use the [upgrade guide](./upgrade-guide.md#upgrading-to-v50) to migrat
 The [release tracker](https://github.com/visgl/loaders.gl/issues/3316) records remaining work.
 
 <span id="whats-new" />
+
+### Document loaders
+
+`@loaders.gl/documents` brings together XML, HTML, YAML, TOML and native BSON, and adds a small
+Markdown loader returning a rendering-independent syntax tree. Its root stays metadata-only;
+parser implementations use flat subpaths such as `/markdown-loader` and `/bson-loader`.
+See [Documents](/docs/modules/documents) and the [migration guide](/docs/upgrade-guide).
+
+
 <span id="v5-api-finalization" />
 
 ### Query cloud data where it lives

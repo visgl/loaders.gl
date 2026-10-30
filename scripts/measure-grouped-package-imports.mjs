@@ -37,9 +37,8 @@ const importCases = [
   ['Grouped Parquet metadata', '@loaders.gl/tables', 'ParquetLoader'],
   ['Parquet parser subpath', '@loaders.gl/tables/parquet/parquet-loader', 'ParquetLoaderWithParser'],
 
-  ['Format BSON metadata', '@loaders.gl/tables/bson', 'BSONLoader'],
-  ['Grouped BSON metadata', '@loaders.gl/tables', 'BSONLoader'],
-  ['BSON parser subpath', '@loaders.gl/tables/bson/bson-loader', 'BSONLoaderWithParser'],
+  ['Format BSON metadata', '@loaders.gl/documents', 'BSONLoader'],
+  ['BSON parser subpath', '@loaders.gl/documents/bson-loader', 'BSONLoaderWithParser'],
   ['Format Excel metadata', '@loaders.gl/tables/excel', 'ExcelLoader'],
   ['Grouped Excel metadata', '@loaders.gl/tables', 'ExcelLoader'],
   ['Excel parser subpath', '@loaders.gl/tables/excel/excel-loader', 'ExcelLoaderWithParser'],

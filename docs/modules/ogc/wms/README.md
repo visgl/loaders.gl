@@ -176,7 +176,7 @@ capabilities parser.
 
 ## Attributions
 
-`@loaders.gl/ogc/wms` uses `@loaders.gl/xml` for XML parsing. Some test fixtures originated from
+`@loaders.gl/ogc/wms` uses `@loaders.gl/documents` for XML parsing. Some test fixtures originated from
 OpenLayers and retain their licenses in the test data; no OpenLayers runtime code is included in the
 published module.
 

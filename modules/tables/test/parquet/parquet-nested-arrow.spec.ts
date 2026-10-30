@@ -6,7 +6,7 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/p
 import {expect, test} from 'vitest';
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {parseBSONSync} from '@loaders.gl/tables/bson/index';
+import {parseBSONSync} from '@loaders.gl/documents/bson-codec';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {ParquetReader} from '@loaders.gl/tables/parquet/index';
 

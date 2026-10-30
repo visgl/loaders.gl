@@ -86,9 +86,9 @@
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "dependencies": {
+    "@loaders.gl/documents": "5.0.0-beta.1",
     "@loaders.gl/images": "5.0.0-beta.1",
     "@loaders.gl/raster": "5.0.0-beta.1",
-    "@loaders.gl/xml": "5.0.0-beta.1",
     "@math.gl/geospatial": "5.0.0-beta.1",
     "lerc": "^4.2.0"
   },

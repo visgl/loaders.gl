@@ -69,8 +69,8 @@ import '@loaders.gl/traces/test';
 
 // unstructured (JSON) formats
 // JSON listed in tabular loaders since it optionally supports that category
-import '@loaders.gl/tables/bson/test';
-import '@loaders.gl/xml/test';
+import '@loaders.gl/documents/test/bson';
+import '@loaders.gl/documents/test/xml';
 
 // Archive Formats
 import '@loaders.gl/compression/test';

@@ -18,13 +18,14 @@ function resolveTestPath(testPath: string): string {
 // NOTE - Replace with a transform of ocular-dev-tools aliases?
 function makeAliases() {
   return {
+    '@loaders.gl/documents/test': resolveTestPath('./modules/documents/test'),
     test: resolveTestPath('./test'),
     '@loaders.gl/tiles-3d/3d-tiles/test': resolveTestPath('./modules/tiles-3d/test/3d-tiles'),
     '@loaders.gl/tables/arrow/transport': resolveTestPath('./modules/tables/src/arrow/transport'),
     '@loaders.gl/core/arrow-geometry/test': resolveTestPath('./modules/core/test/arrow-geometry'),
     '@loaders.gl/core/geoarrow/test': resolveTestPath('./modules/core/test/geoarrow'),
     '@loaders.gl/tables/arrow/test': resolveTestPath('./modules/tables/test/arrow'),
-    '@loaders.gl/tables/bson/test': resolveTestPath('./modules/tables/test/bson'),
+    '@loaders.gl/documents/test/bson': resolveTestPath('./modules/documents/test/bson'),
     '@loaders.gl/compression/test': resolveTestPath('./modules/compression/test'),
     '@loaders.gl/crypto/test': resolveTestPath('./modules/crypto/test'),
     '@loaders.gl/core/test': resolveTestPath('./modules/core/test'),
@@ -74,7 +75,7 @@ function makeAliases() {
     '@loaders.gl/core/worker-utils/test': resolveTestPath(
       './modules/core/test/worker-utils-package'
     ),
-    '@loaders.gl/xml/test': resolveTestPath('./modules/xml/test'),
+    '@loaders.gl/documents/test/xml': resolveTestPath('./modules/documents/test/xml'),
     '@loaders.gl/archives/zip/test': resolveTestPath('./modules/archives/test'),
     // eslint-disable-next-line camelcase
     node_modules: resolveTestPath('./node_modules')

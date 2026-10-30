@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from '@loaders.gl/tiles-3d/3d-tiles';
 import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
 import {ArrowFormat} from '@loaders.gl/tables/arrow/index';
-import {BSONFormat} from '@loaders.gl/tables/bson/index';
+import {BSONFormat} from '@loaders.gl/documents';
 import {COPCFormat} from '@loaders.gl/tiles-3d/copc';
 import {CSVFormat} from '@loaders.gl/tables/csv/index';
 import {DracoFormat} from '@loaders.gl/draco';
@@ -77,7 +77,7 @@ import {
   WMSLayerDescriptionFormat,
   WMTSCapabilitiesFormat
 } from '@loaders.gl/ogc/wms';
-import {HTMLFormat, XMLFormat} from '@loaders.gl/xml';
+import {HTMLFormat, XMLFormat} from '@loaders.gl/documents';
 import {ZipFormat} from '@loaders.gl/archives/zip';
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
 import {FlatGeobufFormat} from '@loaders.gl/geospatial/flatgeobuf/index';

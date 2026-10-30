@@ -150,7 +150,7 @@ const categoryTabs = [
       plain: {
         data: 'JSON-style data',
         detail: 'Objects / arrays',
-        loaders: ['JSONLoader', 'BSONLoader', 'XMLLoader', 'HTMLLoader', 'YAMLLoader', 'TOMLLoader'],
+        loaders: ['JSONLoader', 'BSONLoader', 'XMLLoader', 'HTMLLoader', 'YAMLLoader', 'TOMLLoader', 'MarkdownLoader'],
         writers: ['JSONWriter', 'BSONWriter']
       }
     }
@@ -214,6 +214,7 @@ const loaderDocumentationLinks = {
   ArrowLoader: '/docs/modules/tables/arrow/api-reference/arrow-loader',
   BasisLoader: '/docs/modules/textures/api-reference/basis-loader',
   BSONLoader: '/docs/modules/tables/bson/api-reference/bson-loader',
+  MarkdownLoader: '/docs/modules/documents/api-reference/markdown-loader',
   CesiumIonLoader: '/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader',
   CompressedTextureLoader: '/docs/modules/textures/api-reference/compressed-texture-loader',
   CrunchLoader: '/docs/modules/textures/api-reference/crunch-loader',

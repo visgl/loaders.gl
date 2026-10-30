@@ -79,6 +79,7 @@ export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'las', label: 'LAS', mark: 'LAS', tags: ['geospatial', 'pointclouds']},
   {slug: 'lerc', label: 'LERC', mark: 'LERC', tags: ['geospatial']},
   {slug: 'map-style', label: 'Map Style', mark: 'STYLE', tags: ['geospatial', 'services']},
+  {slug: 'markdown', label: 'Markdown', mark: 'MD', tags: []},
   {slug: 'mlt', label: 'MapLibre Tile', mark: 'MLT', tags: ['geospatial']},
   {slug: 'mvt', label: 'MVT', mark: 'MVT', tags: ['geospatial']},
   {slug: 'netcdf', label: 'NetCDF', logo: 'netcdf-logo.png', logoText: 'NetCDF', logoScale: 1.15, tags: ['geospatial', 'tables']},

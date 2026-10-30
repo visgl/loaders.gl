@@ -49,7 +49,7 @@ resources and services.
 
 | Capability | Support | Recommendation |
 | --- | --- | --- |
-| OWS Context Atom encoding | ❌ Not implemented | Parse the XML with `@loaders.gl/xml` and adapt links in application code |
+| OWS Context Atom encoding | ❌ Not implemented | Parse the XML with `@loaders.gl/documents` and adapt links in application code |
 | OWS Context JSON encoding | ❌ Not implemented | Load JSON normally and pass referenced endpoints to service loaders |
 | Referenced WMS services | ✅ Supported separately | Use `WMSSourceLoader` |
 | Referenced WMTS services | ✅ Supported separately | Use `WMTSSourceLoader` |

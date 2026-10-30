@@ -49,7 +49,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 
 The BSON ("Binary JSON") specification defines a binary format for storing JSON-like data with additional scalar types and explicit type information.
 
-- _[`@loaders.gl/tables/bson`](/docs/modules/tables/bson)_
+- _[`@loaders.gl/documents`](/docs/modules/tables/bson)_
 - _[BSON specification](https://bsonspec.org/)_
 - _[Wikipedia article](https://en.wikipedia.org/wiki/BSON)_
 
@@ -68,7 +68,8 @@ for explicit scalar construction and numeric promotion options.
 
 ## loaders.gl support
 
-Use `BSONLoader` and `BSONWriter` from `@loaders.gl/tables/bson`, or call
+Use `BSONLoader` from `@loaders.gl/documents` and `BSONWriter` from
+`@loaders.gl/documents/bson-writer`, or call
 `parseBSONSync()` and `encodeBSONSync()` directly. BSON-specific scalars use
 `BSONObjectId` or values constructed with `createBSONValue()`. Code and regular
 expressions are preserved as data and are never evaluated while decoding.

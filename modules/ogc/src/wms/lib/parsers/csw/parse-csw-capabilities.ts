@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {XMLLoaderOptions} from '@loaders.gl/xml';
+import type {XMLLoaderOptions} from '@loaders.gl/documents';
 import {parseExceptionReport} from './parse-exception-report';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
 

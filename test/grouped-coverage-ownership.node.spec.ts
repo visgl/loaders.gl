@@ -140,7 +140,7 @@ test.each([
   'modules/tables/src/parquet/parquet-loader.ts',
   'modules/tables/src/csv/csv-loader.ts',
   'modules/tables/src/avro/avro-loader.ts',
-  'modules/tables/src/bson/bson-loader.ts',
+  'modules/documents/src/bson-loader.ts',
   'modules/tables/src/excel/excel-loader.ts',
   'modules/geospatial/src/kml/kml-loader.ts',
   'modules/geospatial/src/shapefile/shapefile-loader.ts',
@@ -163,6 +163,22 @@ test('every consolidated image implementation retains a production coverage owne
     filename =>
       filename.startsWith('modules/images/src/') &&
       !imageSourcePaths.some(sourcePath => filename.startsWith(sourcePath))
+  );
+  expect(unownedSources).toEqual([]);
+});
+
+test('every consolidated document implementation retains a production coverage owner', () => {
+  const manifest = JSON.parse(fileSystem.readFileSync('test/coverage-thresholds.json', 'utf8'));
+  const documentSourcePaths: string[] = [
+    ...manifest.packages['@loaders.gl/documents'].sourcePaths,
+    ...Object.values(manifest.formats).flatMap((format: any) =>
+      format.owner === '@loaders.gl/documents' ? format.sourcePaths : []
+    )
+  ];
+  const unownedSources = [...productionSources].filter(
+    filename =>
+      filename.startsWith('modules/documents/src/') &&
+      !documentSourcePaths.some(sourcePath => filename.startsWith(sourcePath))
   );
   expect(unownedSources).toEqual([]);
 });

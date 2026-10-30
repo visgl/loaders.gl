@@ -1,0 +1,17 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Format} from '@loaders.gl/core/loader-utils';
+
+export const BSONFormat = {
+  name: 'BSON',
+  id: 'bson',
+  module: 'documents',
+  extensions: ['bson'],
+  mimeTypes: ['application/bson'],
+  category: 'json',
+  encoding: 'binary',
+  format: 'bson',
+  binary: true
+} as const satisfies Format;

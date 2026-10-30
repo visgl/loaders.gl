@@ -271,6 +271,26 @@ import {Stats} from 'probe.gl/stats';
 import {StatsWidget} from 'probe.gl/stats-widget';
 ```
 
+#### Document package consolidation
+
+`@loaders.gl/xml` and `@loaders.gl/config` have been removed. Import their metadata loaders
+from `@loaders.gl/documents`. BSON has moved out of `@loaders.gl/tables` into the same package;
+Parquet BSON reading and writing continue to work automatically.
+
+```typescript
+import {XMLLoader, HTMLLoader, YAMLLoader, TOMLLoader, BSONLoader} from '@loaders.gl/documents';
+import {XMLLoaderWithParser} from '@loaders.gl/documents/xml-loader';
+import {BSONWriter} from '@loaders.gl/documents/bson-writer';
+import {encodeBSONSync, parseBSONSync, BSONObjectId, createBSONValue} from '@loaders.gl/documents/bson-codec';
+import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
+import {SAXParser} from '@loaders.gl/documents/sax-parser';
+```
+
+Async core APIs preload metadata loaders. Sync parsing requires the `*WithParser` export
+from the matching flat `*-loader` subpath. Replace XML root helper imports with `/xml-utils`,
+`/xml-parser`, or `/sax-parser`. There are no forwarding packages, grouped format subpaths,
+or `/bundled` and `/unbundled` entry points in documents.
+
 #### Alternate loader imports
 
 Package roots expose the primary loader for each format. Alternate backend loaders
@@ -301,7 +321,7 @@ guards directly from your installed `apache-arrow` package.
 The optional `bson` backend and its MongoDB-specific options/classes are removed.
 BSON and Parquet BSON columns use the native codec. Replace MongoDB ObjectId instances
 with `BSONObjectId` and other special values with `createBSONValue()` from
-`@loaders.gl/tables/bson`. Unsafe int64 values now remain bigint instead of driver
+`@loaders.gl/documents/bson-codec`. Unsafe int64 values now remain bigint instead of driver
 `Long` objects; regexes, Decimal128, timestamps, and deprecated scalar types use
 explicit native representations. Replace deserializer options with the documented
 native options. See the [BSON value contract](/docs/modules/tables/bson#native-value-representations).
