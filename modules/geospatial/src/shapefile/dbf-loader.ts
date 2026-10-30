@@ -13,7 +13,7 @@ import {
   parseDBFInBatches as parseDBFToArrowInBatches
 } from './lib/parsers/parse-dbf-to-arrow';
 import type {DBFHeader, DBFRowsOutput, DBFTableOutput} from './lib/parsers/types';
-import {DBFWorkerLoader as DBFWorkerLoaderMetadata} from './dbf-loader-types';
+import {DBFLoader as DBFWorkerLoaderMetadata} from './dbf-loader-types';
 import {DBFLoader as DBFLoaderMetadata} from './dbf-loader-types';
 import {
   deserializeShapefileWorkerResult,

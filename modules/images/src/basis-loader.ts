@@ -6,7 +6,7 @@ import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/core/loa
 import type {TextureLevel} from '@loaders.gl/core/schema';
 import {parseBasis} from './lib/parsers/parse-basis';
 import type {BasisLoaderOptions} from './basis-types';
-import {BasisWorkerLoader as BasisWorkerLoaderMetadata} from './basis-loader-types';
+import {BasisLoader as BasisWorkerLoaderMetadata} from './basis-loader-types';
 import {BasisLoader as BasisLoaderMetadata} from './basis-loader-types';
 
 const {preload: _BasisWorkerLoaderPreload, ...BasisWorkerLoaderMetadataWithoutPreload} =

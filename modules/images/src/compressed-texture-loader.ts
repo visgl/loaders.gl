@@ -6,7 +6,7 @@ import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/co
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 import {parseBasis} from './lib/parsers/parse-basis';
 import {isKTX, readKTX2Container} from './lib/parsers/parse-ktx';
-import {CompressedTextureWorkerLoader as CompressedTextureWorkerLoaderMetadata} from './compressed-texture-loader-types';
+import {CompressedTextureLoader as CompressedTextureWorkerLoaderMetadata} from './compressed-texture-loader-types';
 import {CompressedTextureLoader as CompressedTextureLoaderMetadata} from './compressed-texture-loader-types';
 import type {BasisLoaderOptions} from './basis-types';
 

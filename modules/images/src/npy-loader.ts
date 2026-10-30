@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {parseNPY, NPYTile} from './lib/parsers/parse-npy';
-import {NPYWorkerLoader as NPYWorkerLoaderMetadata} from './npy-loader-types';
+import {NPYLoader as NPYWorkerLoaderMetadata} from './npy-loader-types';
 import {NPYLoader as NPYLoaderMetadata} from './npy-loader-types';
 
 const {preload: _NPYWorkerLoaderPreload, ...NPYWorkerLoaderMetadataWithoutPreload} =

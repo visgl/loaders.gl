@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {MTLMaterial, ParseMTLOptions} from './lib/parse-mtl';
 import {parseMTL} from './lib/parse-mtl';
-import {MTLWorkerLoader as MTLWorkerLoaderMetadata} from './mtl-loader-types';
+import {MTLLoader as MTLWorkerLoaderMetadata} from './mtl-loader-types';
 import {MTLLoader as MTLLoaderMetadata} from './mtl-loader-types';
 
 const {preload: _MTLWorkerLoaderPreload, ...MTLWorkerLoaderMetadataWithoutPreload} =

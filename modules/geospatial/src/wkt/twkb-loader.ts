@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {BinaryGeometry, Geometry} from '@loaders.gl/core/schema';
 import {convertTWKBToGeometry} from '@loaders.gl/core/wkt/twkb';
-import {TWKBWorkerLoader as TWKBWorkerLoaderMetadata} from './twkb-loader-types';
+import {TWKBLoader as TWKBWorkerLoaderMetadata} from './twkb-loader-types';
 import {TWKBLoader as TWKBLoaderMetadata} from './twkb-loader-types';
 
 const {preload: _TWKBWorkerLoaderPreload, ...TWKBWorkerLoaderMetadataWithoutPreload} =
