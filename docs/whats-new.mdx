@@ -46,6 +46,10 @@ and bounded, paginated feature queries with explicit completion status. The
 
 ### Work with tables across formats
 
+BSON decoding and encoding are now native, removing the optional `bson` dependency.
+Parquet BSON columns retain document read/write support and Arrow byte preservation.
+See the [BSON codec](/docs/modules/tables/bson#native-value-representations).
+
 [Apache Arrow](./developer-guide/apache-arrow.md) provides a common columnar representation for
 tables, features, point clouds, and meshes. Load CSV, Parquet, and other table formats, then use
 [GeoArrow tools](./modules/core/geoarrow/README.md) to convert and process geometry. GraphML, DOT,

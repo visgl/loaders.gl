@@ -693,7 +693,6 @@
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "optionalDependencies": {
-    "bson": "4.2.0",
     "parquet-wasm": "0.7.2",
     "xlsx": "^0.18.5"
   },

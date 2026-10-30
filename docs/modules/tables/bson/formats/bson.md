@@ -16,7 +16,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   title="Keep JSON-like documents typed on the wire."
   description="BSON is a binary document format with explicit scalar types such as dates, 64-bit integers, decimals, byte arrays, and regular expressions. loaders.gl exposes it through the same loader and writer boundaries used by other formats."
   tone="yellow"
-  meta={['Binary JSON', 'Typed scalar values', 'MongoDB js-bson']}
+  meta={['Binary JSON', 'Typed scalar values', 'Native codec']}
   links={[
     {label: 'BSON module', to: '/docs/modules/tables/bson'},
     {label: 'BSONLoader', to: '/docs/modules/tables/bson/api-reference/bson-loader'},
@@ -29,15 +29,17 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 <StructuredDataPathGraphic />
 
 <DocOrientation
-  eyebrow="The BSON document path"
-  title="Use JSON structure without giving up typed values."
-  description="BSON keeps the familiar object-and-array model while adding explicit binary representations for values that JSON cannot describe precisely. Its length prefixes also make document traversal straightforward."
+  eyebrow="BSON feature card"
+  title="Read and write BSON with a native codec."
+  description="The loaders.gl codec runs in browsers and Node.js without the bson package. It supports every BSON element type, with explicit representations for values that JavaScript cannot express directly."
   tone="yellow"
   items={[
-    {label: 'Structure', value: 'Objects, arrays, field names, types, and values'},
-    {label: 'Extra scalars', value: 'Dates, int64, decimal128, bytes, regex, and code'},
-    {label: 'Read', value: 'Decode binary documents into JavaScript objects'},
-    {label: 'Write', value: 'Serialize JSON-like data as BSON bytes'}
+    {label: 'Read and write', value: 'Synchronous codec plus async loader/writer APIs'},
+    {label: 'Typed scalars', value: 'Lossless int64, ObjectId, Decimal128 bytes, and binary subtypes'},
+    {label: 'Parquet', value: 'Document read/write and Arrow Binary byte preservation'},
+    {label: 'Validation', value: 'UTF-8, lengths, container boundaries, depth, and cycles'},
+    {label: 'Runtime', value: 'Browser and Node.js; no BSON backend dependency'},
+    {label: 'Boundaries', value: 'No EJSON parser, MongoDB driver classes, or Decimal128 arithmetic'}
   ]}
 />
 
@@ -55,13 +57,29 @@ The BSON ("Binary JSON") specification defines a binary format for storing JSON-
 
 ## Data Types and Syntax
 
-The topmost element in a BSON structure must be a BSON object. Each object contains one or more elements, where each element has a field name, a type, and a value. Field names are strings.
+The topmost element in a BSON structure must be a BSON object. Each object contains zero or more elements, where each element has a field name, a type, and a value. Field names are strings.
 
 BSON types include Unicode strings, 32-bit integers, 64-bit integers, doubles, decimal128 values, datetimes, byte arrays, booleans, nulls, nested BSON objects, BSON arrays, JavaScript code, MD5 binary data, and regular expressions.
 
 ## EJSON (Extended JSON)
 
 BSON contains types not present in JSON, such as datetimes, byte arrays, and type-specific numeric values. MongoDB's Extended JSON format can represent those BSON values in textual JSON-compatible form.
+The native loaders.gl codec reads and writes binary BSON; it does not parse or generate EJSON.
+See the [native value representations](/docs/modules/tables/bson#native-value-representations)
+for explicit scalar construction and numeric promotion options.
+
+## loaders.gl support
+
+Use `BSONLoader` and `BSONWriter` from `@loaders.gl/tables/bson`, or call
+`parseBSONSync()` and `encodeBSONSync()` directly. BSON-specific scalars use
+`BSONObjectId` or values constructed with `createBSONValue()`. Code and regular
+expressions are preserved as data and are never evaluated while decoding.
+
+All binary subtypes are preserved, including opaque compressed, encrypted, and vector
+payloads; preserving their bytes does not decode the subtype-specific content.
+Parquet's BSON columns use the same codec for document materialization. Arrow output
+retains the BSON bytes for explicit decoding. See the [BSON module](/docs/modules/tables/bson)
+and [migration guide](/docs/upgrade-guide#native-bson-value-contract).
 
 ## Efficiency
 

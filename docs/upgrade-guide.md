@@ -273,6 +273,18 @@ guards directly from your installed `apache-arrow` package.
 
 ### Runtime, workers, and codecs
 
+#### Native BSON value contract
+
+The optional `bson` backend and its MongoDB-specific options/classes are removed.
+BSON and Parquet BSON columns use the native codec. Replace MongoDB ObjectId instances
+with `BSONObjectId` and other special values with `createBSONValue()` from
+`@loaders.gl/tables/bson`. Unsafe int64 values now remain bigint instead of driver
+`Long` objects; regexes, Decimal128, timestamps, and deprecated scalar types use
+explicit native representations. Replace deserializer options with the documented
+native options. See the [BSON value contract](/docs/modules/tables/bson#native-value-representations).
+
+
+
 Use a supported Node.js LTS release and keep it patched, especially when decoding untrusted data. Node.js 20 is no longer supported. See [Node.js support](./developer-guide/node.md#supported-nodejs-versions) for runtime requirements and security updates.
 
 #### Module-worker decoder wrappers

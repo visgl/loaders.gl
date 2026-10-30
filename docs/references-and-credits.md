@@ -40,7 +40,7 @@ lineage, rather than every transitive npm dependency.
 | [services](https://github.com/visgl/loaders.gl/blob/master/modules/services/THIRD-PARTY-NOTICES.md) | Original service abstractions and adapters; provider specifications. |
 | [splats](https://github.com/visgl/loaders.gl/blob/master/modules/splats/THIRD-PARTY-NOTICES.md) | Original splat loaders; community format and research foundations. |
 | [sql](https://github.com/visgl/loaders.gl/blob/master/modules/sql/THIRD-PARTY-NOTICES.md) | DuckDB runtimes; Apache Arrow; original source adapters. |
-| [tables](https://github.com/visgl/loaders.gl/blob/master/modules/tables/THIRD-PARTY-NOTICES.md) | Matthew Holt’s PapaParse; Nuno Job and Isaac Schlueter’s Clarinet; ironSource’s parquetjs/parquets; Hyperparam’s hyparquet; parquet-wasm, MongoDB BSON and SheetJS; advice from Paul Taylor. |
+| [tables](https://github.com/visgl/loaders.gl/blob/master/modules/tables/THIRD-PARTY-NOTICES.md) | Matthew Holt’s PapaParse; Nuno Job and Isaac Schlueter’s Clarinet; ironSource’s parquetjs/parquets; Hyperparam’s hyparquet; parquet-wasm and SheetJS; historical BSON fixtures; advice from Paul Taylor. |
 | [textures](https://github.com/visgl/loaders.gl/blob/master/modules/textures/THIRD-PARTY-NOTICES.md) | Tarek Sherif’s PicoGL; Binomial’s Basis Universal; Crunch; Tim van Scherpenzeel’s texture-compressor. |
 | [tiles](https://github.com/visgl/loaders.gl/blob/master/modules/tiles/THIRD-PARTY-NOTICES.md) | Mapbox vector-tile-js; Vladimir Agafonkin’s geojson-vt; Anand Thakker’s vt-pbf; Protomaps PMTiles and MapLibre MLT. |
 | [tiles-3d](https://github.com/visgl/loaders.gl/blob/master/modules/tiles-3d/THIRD-PARTY-NOTICES.md) | CesiumJS ports and collaboration; Markus Schütz’s Potree; Connor Manning’s copc.js lineage; Esri I3S and converter contributions. |
@@ -83,10 +83,8 @@ builds on the separately installed deck.gl and luma.gl projects.
 - **Kyle Barron’s [GeoArrow work](https://github.com/geoarrow/geoarrow-js)** inspired
   loaders.gl’s GeoArrow integration and its geospatial Arrow conversion and
   processing APIs. We thank Kyle for helping establish these foundations.
-- **MongoDB's js-bson contributors** and **SheetJS contributors** supply the optional
-  [BSON](https://github.com/mongodb/js-bson) and
-  [spreadsheet](https://github.com/SheetJS/sheetjs) implementations. Wrapping these
-  libraries is a distinct contribution from implementing their codecs.
+- **MongoDB's [js-bson contributors](https://github.com/mongodb/js-bson)** supplied historical BSON fixtures and the serializer used for wire-reference tests. BSON decoding and encoding are now implemented natively.
+- **SheetJS contributors** supply the optional [spreadsheet](https://github.com/SheetJS/sheetjs) implementation.
 - **cheminfo/netcdfjs contributors** supplied the adapted
   [NetCDF parser](https://github.com/cheminfo/netcdfjs).
   **Michaël Zasso and IOBuffer contributors** supplied the

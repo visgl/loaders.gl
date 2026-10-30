@@ -17,6 +17,8 @@ export {BSONFormat} from './bson/bson-format';
 export {BSONLoader} from './bson/bson-loader-types';
 export type {BSONLoaderOptions} from './bson/bson-loader-types';
 export {BSONWriter} from './bson/bson-writer';
+export type {BSONWriterOptions} from './bson/bson-writer';
+export type {BSONTaggedValue, EncodeBSONOptions} from './bson/bson-types';
 export type {ParseBSONOptions} from './bson/lib/parsers/parse-bson';
 export {ExcelFormat} from './excel/excel-format';
 export {ExcelLoader} from './excel/excel-loader-types';
