@@ -295,7 +295,7 @@
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
   "dependencies": {
-    "@math.gl/core": "5.0.0-beta.1",
+    "@math.gl/core": "5.0.0-beta.2",
     "zod": "^4.1.12"
   },
   "peerDependenciesMeta": {
