@@ -35,9 +35,9 @@
       "require": "./dist/index.cjs"
     },
     "./usd-loader": {
-      "types": "./dist/usd/usd-loader.d.ts",
-      "import": "./dist/usd/usd-loader.js",
-      "require": "./dist/usd/usd-loader.cjs"
+      "types": "./dist/usd-loader.d.ts",
+      "import": "./dist/usd-loader.js",
+      "require": "./dist/usd-loader.cjs"
     },
     "./obj": {
       "types": "./dist/obj/index.d.ts",
@@ -59,35 +59,35 @@
       "import": "./dist/obj/mtl-format.js",
       "require": "./dist/obj/mtl-format.cjs"
     },
-    "./obj/mtl-loader-types": {
-      "types": "./dist/obj/mtl-loader-types.d.ts",
-      "import": "./dist/obj/mtl-loader-types.js",
-      "require": "./dist/obj/mtl-loader-types.cjs"
+    "./mtl-loader-types": {
+      "types": "./dist/mtl-loader-types.d.ts",
+      "import": "./dist/mtl-loader-types.js",
+      "require": "./dist/mtl-loader-types.cjs"
     },
-    "./obj/mtl-loader": {
-      "types": "./dist/obj/mtl-loader.d.ts",
-      "import": "./dist/obj/mtl-loader.js",
-      "require": "./dist/obj/mtl-loader.cjs"
+    "./mtl-loader": {
+      "types": "./dist/mtl-loader.d.ts",
+      "import": "./dist/mtl-loader.js",
+      "require": "./dist/mtl-loader.cjs"
     },
     "./obj/obj-format": {
       "types": "./dist/obj/obj-format.d.ts",
       "import": "./dist/obj/obj-format.js",
       "require": "./dist/obj/obj-format.cjs"
     },
-    "./obj/obj-loader-types": {
-      "types": "./dist/obj/obj-loader-types.d.ts",
-      "import": "./dist/obj/obj-loader-types.js",
-      "require": "./dist/obj/obj-loader-types.cjs"
+    "./obj-loader-types": {
+      "types": "./dist/obj-loader-types.d.ts",
+      "import": "./dist/obj-loader-types.js",
+      "require": "./dist/obj-loader-types.cjs"
     },
-    "./obj/obj-loader": {
-      "types": "./dist/obj/obj-loader.d.ts",
-      "import": "./dist/obj/obj-loader.js",
-      "require": "./dist/obj/obj-loader.cjs"
+    "./obj-loader": {
+      "types": "./dist/obj-loader.d.ts",
+      "import": "./dist/obj-loader.js",
+      "require": "./dist/obj-loader.cjs"
     },
-    "./obj/obj-writer": {
-      "types": "./dist/obj/obj-writer.d.ts",
-      "import": "./dist/obj/obj-writer.js",
-      "require": "./dist/obj/obj-writer.cjs"
+    "./obj-writer": {
+      "types": "./dist/obj-writer.d.ts",
+      "import": "./dist/obj-writer.js",
+      "require": "./dist/obj-writer.cjs"
     },
     "./obj/unbundled": {
       "types": "./dist/obj/unbundled.d.ts",
@@ -104,45 +104,45 @@
       "import": "./dist/gltf/bundled.js",
       "require": "./dist/gltf/bundled.cjs"
     },
-    "./gltf/glb-loader-types": {
-      "types": "./dist/gltf/glb-loader-types.d.ts",
-      "import": "./dist/gltf/glb-loader-types.js",
-      "require": "./dist/gltf/glb-loader-types.cjs"
+    "./glb-loader-types": {
+      "types": "./dist/glb-loader-types.d.ts",
+      "import": "./dist/glb-loader-types.js",
+      "require": "./dist/glb-loader-types.cjs"
     },
-    "./gltf/glb-loader": {
-      "types": "./dist/gltf/glb-loader.d.ts",
-      "import": "./dist/gltf/glb-loader.js",
-      "require": "./dist/gltf/glb-loader.cjs"
+    "./glb-loader": {
+      "types": "./dist/glb-loader.d.ts",
+      "import": "./dist/glb-loader.js",
+      "require": "./dist/glb-loader.cjs"
     },
-    "./gltf/glb-writer": {
-      "types": "./dist/gltf/glb-writer.d.ts",
-      "import": "./dist/gltf/glb-writer.js",
-      "require": "./dist/gltf/glb-writer.cjs"
+    "./glb-writer": {
+      "types": "./dist/glb-writer.d.ts",
+      "import": "./dist/glb-writer.js",
+      "require": "./dist/glb-writer.cjs"
     },
     "./gltf/gltf-format": {
       "types": "./dist/gltf/gltf-format.d.ts",
       "import": "./dist/gltf/gltf-format.js",
       "require": "./dist/gltf/gltf-format.cjs"
     },
-    "./gltf/gltf-loader-types": {
-      "types": "./dist/gltf/gltf-loader-types.d.ts",
-      "import": "./dist/gltf/gltf-loader-types.js",
-      "require": "./dist/gltf/gltf-loader-types.cjs"
+    "./gltf-loader-types": {
+      "types": "./dist/gltf-loader-types.d.ts",
+      "import": "./dist/gltf-loader-types.js",
+      "require": "./dist/gltf-loader-types.cjs"
     },
-    "./gltf/gltf-loader": {
-      "types": "./dist/gltf/gltf-loader.d.ts",
-      "import": "./dist/gltf/gltf-loader.js",
-      "require": "./dist/gltf/gltf-loader.cjs"
+    "./gltf-loader": {
+      "types": "./dist/gltf-loader.d.ts",
+      "import": "./dist/gltf-loader.js",
+      "require": "./dist/gltf-loader.cjs"
     },
-    "./gltf/gltf-source": {
-      "types": "./dist/gltf/gltf-source.d.ts",
-      "import": "./dist/gltf/gltf-source.js",
-      "require": "./dist/gltf/gltf-source.cjs"
+    "./gltf-source": {
+      "types": "./dist/gltf-source.d.ts",
+      "import": "./dist/gltf-source.js",
+      "require": "./dist/gltf-source.cjs"
     },
-    "./gltf/gltf-writer": {
-      "types": "./dist/gltf/gltf-writer.d.ts",
-      "import": "./dist/gltf/gltf-writer.js",
-      "require": "./dist/gltf/gltf-writer.cjs"
+    "./gltf-writer": {
+      "types": "./dist/gltf-writer.d.ts",
+      "import": "./dist/gltf-writer.js",
+      "require": "./dist/gltf-writer.cjs"
     },
     "./gltf/index": {
       "types": "./dist/gltf/index.d.ts",
@@ -181,15 +181,10 @@
       "import": "./dist/usd/index.js",
       "require": "./dist/usd/index.cjs"
     },
-    "./usd/usd-loader-types": {
-      "types": "./dist/usd/usd-loader-types.d.ts",
-      "import": "./dist/usd/usd-loader-types.js",
-      "require": "./dist/usd/usd-loader-types.cjs"
-    },
-    "./usd/usd-loader": {
-      "types": "./dist/usd/usd-loader.d.ts",
-      "import": "./dist/usd/usd-loader.js",
-      "require": "./dist/usd/usd-loader.cjs"
+    "./usd-loader-types": {
+      "types": "./dist/usd-loader-types.d.ts",
+      "import": "./dist/usd-loader-types.js",
+      "require": "./dist/usd-loader-types.cjs"
     }
   },
   "sideEffects": false,

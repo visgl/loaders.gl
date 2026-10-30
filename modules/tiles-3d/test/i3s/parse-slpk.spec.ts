@@ -1,7 +1,7 @@
 import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
 import {encodeZip} from '@loaders.gl/archives/zip';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {encodeIndexedZip} from '@loaders.gl/archives/zip/indexed-zip-writer';
+import {encodeIndexedZip} from '@loaders.gl/archives/indexed-zip-writer';
 import {expect, test, vi} from 'vitest';
 import {coreApi, load, parseFile} from '@loaders.gl/core';
 import {I3SLoader, SLPKLoader, SLPKSource} from '../../src/i3s';

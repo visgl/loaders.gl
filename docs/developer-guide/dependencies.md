@@ -182,6 +182,6 @@ Examples:
 
 - [DracoLoader](/docs/modules/draco/api-reference/draco-loader)
 - [DracoWriter](/docs/modules/draco/api-reference/draco-writer)
-- [BasisLoader](/docs/modules/textures/api-reference/basis-loader)
-- [CompressedTextureLoader](/docs/modules/textures/api-reference/compressed-texture-loader)
-- [KTX2BasisWriter](/docs/modules/textures/api-reference/ktx2-basis-texture-writer)
+- [BasisLoader](/docs/modules/images/textures/api-reference/basis-loader)
+- [CompressedTextureLoader](/docs/modules/images/textures/api-reference/compressed-texture-loader)
+- [KTX2BasisWriter](/docs/modules/images/textures/api-reference/ktx2-basis-texture-writer)

@@ -41,7 +41,7 @@ export type OBJParsedBatch = OBJMeshBatch | ArrowTableBatch;
  * Preloads the parser-bearing OBJ loader implementation.
  */
 async function preload() {
-  const {OBJLoaderWithParser} = await import('@loaders.gl/scene/obj/obj-loader');
+  const {OBJLoaderWithParser} = await import('@loaders.gl/scene/obj-loader');
   return OBJLoaderWithParser;
 }
 

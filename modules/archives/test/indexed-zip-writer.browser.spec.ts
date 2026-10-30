@@ -6,11 +6,8 @@ import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {readZip} from 'test/common/read-zip';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {openZipArchive} from '@loaders.gl/archives/zip';
-import {
-  encodeIndexedZip,
-  encodeIndexedZipInBatches
-} from '@loaders.gl/archives/zip/indexed-zip-writer';
-import {ZipWriter} from '@loaders.gl/archives/zip/zip-writer';
+import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/archives/indexed-zip-writer';
+import {ZipWriter} from '@loaders.gl/archives/zip-writer';
 import * as ZipHeaders from '../src/zip/lib/zip-serialization';
 
 vi.mock('../src/zip/lib/zip-serialization', async importOriginal => {

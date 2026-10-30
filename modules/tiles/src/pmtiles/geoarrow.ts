@@ -10,7 +10,7 @@ import type {
   ArrowTableTileSourceLoaderOptions,
   MVTWriterOptions
 } from '@loaders.gl/tiles/mvt';
-import {ArrowTableVectorTileSource} from '@loaders.gl/tiles/mvt/arrow-table-tile-source-loader';
+import {ArrowTableVectorTileSource} from '@loaders.gl/tiles/arrow-table-tile-source-loader';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import type {DataType} from '@loaders.gl/core/schema';
 import {encodePMTiles} from './lib/encode-pmtiles';

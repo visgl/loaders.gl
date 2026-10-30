@@ -10,7 +10,7 @@ import {ArrowWorkerLoader} from './exports/arrow-loader';
 
 /** Preloads the parser-bearing Arrow loader implementation. */
 async function preload() {
-  const {ArrowLoaderWithParser} = await import('@loaders.gl/tables/arrow/arrow-loader');
+  const {ArrowLoaderWithParser} = await import('@loaders.gl/tables/arrow-loader');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
   await preloadArrowCompressionDecoders();
   return ArrowLoaderWithParser;

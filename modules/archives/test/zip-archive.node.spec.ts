@@ -37,7 +37,7 @@ test('installed ESM/CJS ZIP entrypoints expose portable reading and writing', as
     }
   }
   expect(typeof require('@loaders.gl/archives/zip/zip-encode').encodeZipInBatches).toBe('function');
-  const parser = require('@loaders.gl/archives/zip/zip-loader').ZipLoaderWithParser;
+  const parser = require('@loaders.gl/archives/zip-loader').ZipLoaderWithParser;
   expect(modules[0].ZipLoader.parse).toBeUndefined();
   expect(modules[1].ZipLoader.parse).toBeUndefined();
   expect(typeof (await modules[0].ZipLoader.preload()).parse).toBe('function');

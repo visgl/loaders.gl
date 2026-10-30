@@ -88,7 +88,7 @@ The root export is metadata-only. Core's asynchronous `load()` and `parse()`
 automatically preload the parser on first use. To bundle the numeric parser explicitly:
 
 ```typescript
-import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff/geotiff-raster-loader';
+import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff-raster-loader';
 ```
 
 TIFF decompression is asynchronous; there is no `parseSync()` implementation.

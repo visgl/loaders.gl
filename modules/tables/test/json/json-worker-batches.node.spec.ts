@@ -7,7 +7,7 @@ import {Table} from 'apache-arrow';
 import {parseInBatches} from '@loaders.gl/core';
 import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {NDJSONLoader} from '@loaders.gl/tables/json';
-import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json/ndjson-loader';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/ndjson-loader';
 
 afterEach(() => WorkerFarm.getWorkerFarm().destroy());
 

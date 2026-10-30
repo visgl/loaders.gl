@@ -16,7 +16,7 @@ export type ORCSourceLoaderOptions = ORCSourceOptions;
 
 /** Loads the parser-bearing ORC source implementation on demand. */
 async function preloadORCSourceLoader() {
-  const {ORCSourceLoaderWithParser} = await import('@loaders.gl/tables/orc/orc-source-loader');
+  const {ORCSourceLoaderWithParser} = await import('@loaders.gl/tables/orc-source-loader');
   return ORCSourceLoaderWithParser;
 }
 
@@ -43,7 +43,7 @@ export const ORCSourceLoader = {
     _coreApi?: CoreAPI
   ): ORCSource {
     throw new Error(
-      'ORCSourceLoader requires async load() or an explicit @loaders.gl/tables/orc/orc-source-loader import'
+      'ORCSourceLoader requires async load() or an explicit @loaders.gl/tables/orc-source-loader import'
     );
   }
 } as const satisfies SourceLoader<ORCSource, ORCSourceLoaderOptions>;

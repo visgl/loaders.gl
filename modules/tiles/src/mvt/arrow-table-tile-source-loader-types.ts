@@ -19,7 +19,7 @@ async function preloadArrowTableTileSourceLoader(): Promise<
   SourceLoader<ArrowTableVectorTileSource>
 > {
   const {ArrowTableTileSourceLoaderWithParser} = await import(
-    '@loaders.gl/tiles/mvt/arrow-table-tile-source-loader'
+    '@loaders.gl/tiles/arrow-table-tile-source-loader'
   );
   return ArrowTableTileSourceLoaderWithParser;
 }
@@ -49,7 +49,7 @@ export const ArrowTableTileSourceLoader = {
     _coreApi?: CoreAPI
   ): ArrowTableVectorTileSource {
     throw new Error(
-      'ArrowTableTileSourceLoader requires async load() or an explicit @loaders.gl/tiles/mvt/arrow-table-tile-source-loader import'
+      'ArrowTableTileSourceLoader requires async load() or an explicit @loaders.gl/tiles/arrow-table-tile-source-loader import'
     );
   }
 } as const satisfies SourceLoader<ArrowTableVectorTileSource>;

@@ -42,7 +42,7 @@ export type NDJSONLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing NDJSON loader implementation. */
 async function preload() {
-  const {NDJSONLoaderWithParser} = await import('@loaders.gl/tables/json/ndjson-loader');
+  const {NDJSONLoaderWithParser} = await import('@loaders.gl/tables/ndjson-loader');
   return NDJSONLoaderWithParser;
 }
 

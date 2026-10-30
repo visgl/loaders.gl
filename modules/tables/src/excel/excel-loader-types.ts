@@ -25,7 +25,7 @@ export type ExcelLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing Excel loader implementation. */
 async function preload() {
-  const {ExcelLoaderWithParser} = await import('@loaders.gl/tables/excel/excel-loader');
+  const {ExcelLoaderWithParser} = await import('@loaders.gl/tables/excel-loader');
   return ExcelLoaderWithParser;
 }
 

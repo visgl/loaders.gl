@@ -21,7 +21,7 @@ import {
 import {
   encodeI3SMeshLayer,
   encodeI3SMeshLayerWithDraco
-} from '@loaders.gl/tiles-3d/i3s/i3s-mesh-writer';
+} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 import {I3SSceneLayerSchema, I3SNodePageSchema} from '@loaders.gl/tiles-3d/i3s/i3s-zod-schema';
 import {parseI3STileContent} from '../../src/i3s/lib/parsers/parse-i3s-tile-content';
 import {parseI3STileAttribute} from '../../src/i3s/lib/parsers/parse-i3s-attribute';

@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['From v3.3', 'GML', 'Streaming features']}
   links={[
     {label: 'WMS module', to: '/docs/modules/ogc/wms'},
-    {label: 'XMLLoader', to: '/docs/modules/xml/api-reference/xml-loader'},
+    {label: 'XMLLoader', to: '/docs/modules/documents/xml/api-reference/xml-loader'},
     {label: 'GIS category', to: '/docs/specifications/category-gis'}
   ]}
 />
@@ -87,7 +87,7 @@ Set `gml.shape: 'geojson'` to retain the previous FeatureCollection, bare geomet
 Arrow conversion rejects properties that collide with the output `geometry` column or a feature
 ID's `id` column; explicit GeoJSON retains both values.
 The root `GMLLoader` is metadata-only (`_GMLLoader` remains an alias). Synchronous parsing uses
-`GMLLoaderWithParser` from `@loaders.gl/ogc/wms/gml-loader`.
+`GMLLoaderWithParser` from `@loaders.gl/ogc/gml-loader`.
 
 For large WFS responses, the parser-bearing loader also supports incremental feature batches:
 

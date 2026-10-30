@@ -9,22 +9,22 @@ import {expect, test} from 'vitest';
 const REPOSITORY_ROOT = process.cwd();
 
 test.each([
-  ['tables', 'ParquetLoader', 'parquet', 'ParquetLoaderWithParser'],
-  ['tables', 'ORCLoader', 'orc', 'ORCLoaderWithParser'],
-  ['tables', 'LanceLoader', 'lance', 'LanceLoaderWithParser'],
-  ['tables', 'JSONLoader', 'json', 'JSONLoaderWithParser'],
-  ['tables', 'ArrowLoader', 'arrow', 'ArrowLoaderWithParser'],
-  ['tables', 'ExcelLoader', 'excel', 'ExcelLoaderWithParser'],
-  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoaderWithParser'],
-  ['geospatial', 'GeoPackageLoader', 'geopackage', 'GeoPackageLoaderWithParser'],
-  ['tables', 'CSVLoader', 'csv', 'CSVLoaderWithParser'],
-  ['geospatial', 'KMLLoader', 'kml', 'KMLLoaderWithParser']
+  ['tables', 'ParquetLoader', 'parquet-loader', 'ParquetLoaderWithParser'],
+  ['tables', 'ORCLoader', 'orc-loader', 'ORCLoaderWithParser'],
+  ['tables', 'LanceLoader', 'lance-loader', 'LanceLoaderWithParser'],
+  ['tables', 'JSONLoader', 'json-loader', 'JSONLoaderWithParser'],
+  ['tables', 'ArrowLoader', 'arrow-loader', 'ArrowLoaderWithParser'],
+  ['tables', 'ExcelLoader', 'excel-loader', 'ExcelLoaderWithParser'],
+  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf-loader', 'FlatGeobufLoaderWithParser'],
+  ['geospatial', 'GeoPackageLoader', 'geopackage-loader', 'GeoPackageLoaderWithParser'],
+  ['tables', 'CSVLoader', 'csv-loader', 'CSVLoaderWithParser'],
+  ['geospatial', 'KMLLoader', 'kml-loader', 'KMLLoaderWithParser']
 ])(
-  'published %s %s ESM metadata preloads through real package exports',
-  (group, metadata, subpath, parser) => {
+  'published %s %s metadata preloads through its flat parser export',
+  (group, metadata, parserEntry, parser) => {
     // A separate Node process bypasses Vitest source aliases and checks the published layout.
-    const source = `import {${metadata}} from '@loaders.gl/${group}/${subpath}';
-    import {${parser}} from '@loaders.gl/${group}/${subpath}/${subpath}-loader';
+    const source = `import {${metadata}} from '@loaders.gl/${group}';
+    import {${parser}} from '@loaders.gl/${group}/${parserEntry}';
     if (await ${metadata}.preload() !== ${parser}) process.exit(1);`;
     expect(() =>
       execFileSync(process.execPath, ['--input-type=module', '-e', source], {
@@ -112,20 +112,20 @@ test.each([
 );
 
 test.each([
-  ['arrow', 'arrow-source', 'ArrowTableSource'],
-  ['arrow', 'geometry', 'WKBBuilder'],
-  ['json', 'ndjson-source', 'NDJSONTableSource'],
-  ['lance', 'lance-source-loader', 'LanceSource'],
-  ['orc', 'orc-source-loader', 'ORCSourceLoaderWithParser'],
-  ['parquet', 'parquet-source-loader', 'ParquetSourceLoaderWithParser'],
-  ['parquet', 'parquet-dataset-source', 'ParquetDatasetSource'],
-  ['parquet', 'iceberg-table-source', 'IcebergTableSource'],
-  ['parquet', 'iceberg-rest-catalog', 'IcebergRestCatalog'],
-  ['parquet', 'delta-source', 'DeltaSourceLoaderWithParser']
+  ['tables', 'arrow-source', 'ArrowTableSource'],
+  ['tables', 'arrow/geometry', 'WKBBuilder'],
+  ['tables', 'ndjson-source', 'NDJSONTableSource'],
+  ['tables', 'lance-source-loader', 'LanceSource'],
+  ['tables', 'orc-source-loader', 'ORCSourceLoaderWithParser'],
+  ['tables', 'parquet-source-loader', 'ParquetSourceLoaderWithParser'],
+  ['tables', 'parquet-dataset-source', 'ParquetDatasetSource'],
+  ['tables', 'iceberg-table-source', 'IcebergTableSource'],
+  ['tables', 'parquet/iceberg-rest-catalog', 'IcebergRestCatalog'],
+  ['tables', 'delta-source', 'DeltaSourceLoaderWithParser']
 ])(
-  'published tables/%s/%s exposes %s after forwarding removal',
-  (format, subpath, exportName) => {
-    const source = `import {${exportName}} from '@loaders.gl/tables/${format}/${subpath}';
+  'published %s/%s exposes %s after forwarding removal',
+  (group, subpath, exportName) => {
+    const source = `import {${exportName}} from '@loaders.gl/${group}/${subpath}';
   if (!${exportName}) process.exit(1);`;
     expect(() =>
       execFileSync(process.execPath, ['--input-type=module', '-e', source], {

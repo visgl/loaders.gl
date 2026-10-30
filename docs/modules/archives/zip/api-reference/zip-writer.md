@@ -98,7 +98,7 @@ Explicit slash-suffixed keys are written as directory entries whether or not `zi
 
 ## Indexed ZIP packaging
 
-`encodeIndexedZip` is exported from `@loaders.gl/archives/zip/indexed-zip-writer` and `@loaders.gl/archives/zip`.
+`encodeIndexedZip` is exported from `@loaders.gl/archives/indexed-zip-writer` and `@loaders.gl/archives/zip`.
 It is the portable shared encoder used by the 3TZ and SLPK format writers. Supply immutable
 `ArrayBuffer`/`Blob` resources and `{indexPath, maxArchiveBytes, lowercasePaths?, zip64?, signal?}`. Paths must
 be canonical relative ASCII; the generated index name must be nonnumeric and absent from

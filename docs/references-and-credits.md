@@ -40,11 +40,11 @@ lineage, rather than every transitive npm dependency.
 | [splats](https://github.com/visgl/loaders.gl/blob/master/modules/splats/THIRD-PARTY-NOTICES.md) | Original splat loaders; community format and research foundations. |
 | [sql](https://github.com/visgl/loaders.gl/blob/master/modules/sql/THIRD-PARTY-NOTICES.md) | DuckDB runtimes; Apache Arrow; original source adapters. |
 | [tables](https://github.com/visgl/loaders.gl/blob/master/modules/tables/THIRD-PARTY-NOTICES.md) | Matthew Holt’s PapaParse; Nuno Job and Isaac Schlueter’s Clarinet; ironSource’s parquetjs/parquets; Hyperparam’s hyparquet; parquet-wasm and SheetJS; historical BSON fixtures; advice from Paul Taylor. |
-| [textures](https://github.com/visgl/loaders.gl/blob/master/modules/textures/THIRD-PARTY-NOTICES.md) | Tarek Sherif’s PicoGL; Binomial’s Basis Universal; Crunch; Tim van Scherpenzeel’s texture-compressor. |
+| [textures](https://github.com/visgl/loaders.gl/blob/master/modules/images/textures/THIRD-PARTY-NOTICES.md) | Tarek Sherif’s PicoGL; Binomial’s Basis Universal; Crunch; Tim van Scherpenzeel’s texture-compressor. |
 | [tiles](https://github.com/visgl/loaders.gl/blob/master/modules/tiles/THIRD-PARTY-NOTICES.md) | Mapbox vector-tile-js; Vladimir Agafonkin’s geojson-vt; Anand Thakker’s vt-pbf; Protomaps PMTiles and MapLibre MLT. |
 | [tiles-3d](https://github.com/visgl/loaders.gl/blob/master/modules/tiles-3d/THIRD-PARTY-NOTICES.md) | CesiumJS ports and collaboration; Markus Schütz’s Potree; Connor Manning’s copc.js lineage; Esri I3S and converter contributions. |
 | [traces](https://github.com/visgl/loaders.gl/blob/master/modules/traces/THIRD-PARTY-NOTICES.md) | Trace format communities; Buf protobuf runtime; original parsers. |
-| [video](https://github.com/visgl/loaders.gl/blob/master/modules/video/THIRD-PARTY-NOTICES.md) | Yahoo gifshot; Anthony Dekker’s NeuQuant; Kevin Weiner and Thibault Imbert. |
+| [video](https://github.com/visgl/loaders.gl/blob/master/modules/images/THIRD-PARTY-NOTICES.md) | Yahoo gifshot; Anthony Dekker’s NeuQuant; Kevin Weiner and Thibault Imbert. |
 | [documents](https://github.com/visgl/loaders.gl/blob/master/modules/documents/THIRD-PARTY-NOTICES.md) | Isaac Schlueter’s sax-js through Maxim Mazurok’s sax-ts; native document codecs. |
 
 The separately published [tile-converter application](https://github.com/visgl/loaders.gl/blob/master/apps/tile-converter/THIRD-PARTY-NOTICES.md)

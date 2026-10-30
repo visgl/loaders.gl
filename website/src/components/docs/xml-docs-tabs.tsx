@@ -16,11 +16,11 @@ export type XmlDocsTabId = 'overview' | 'try-it' | 'format' | 'xmlloader' | 'htm
 
 const XML_DOCS_TABS: XmlDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/table/xml'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/xml/formats/xml'},
-  {id: 'format', label: 'Format', href: '/docs/modules/xml/format'},
-  {id: 'xmlloader', label: 'XMLLoader', href: '/docs/modules/xml/api-reference/xml-loader'},
-  {id: 'html', label: 'HTML', href: '/docs/modules/xml/formats/html'},
-  {id: 'htmlloader', label: 'HTMLLoader', href: '/docs/modules/xml/api-reference/html-loader'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/documents/xml/formats/xml'},
+  {id: 'format', label: 'Format', href: '/docs/modules/documents/xml/format'},
+  {id: 'xmlloader', label: 'XMLLoader', href: '/docs/modules/documents/xml/api-reference/xml-loader'},
+  {id: 'html', label: 'HTML', href: '/docs/modules/documents/xml/formats/html'},
+  {id: 'htmlloader', label: 'HTMLLoader', href: '/docs/modules/documents/xml/api-reference/html-loader'}
 ];
 
 /**

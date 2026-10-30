@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {parse, parseInBatches, parseSync} from '@loaders.gl/core';
 import {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from '@loaders.gl/tables/json/index';
-import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/json/ndgeojson-loader';
+import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/ndgeojson-loader';
 import type {
   ArrowTable,
   ArrowTableBatch,

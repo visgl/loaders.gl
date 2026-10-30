@@ -4,8 +4,8 @@
 
 import {expect, test} from 'vitest';
 import * as parquetModule from '@loaders.gl/tables/parquet/index';
-import {ParquetWasmLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-wasm-loader';
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-js-loader';
+import {ParquetWasmLoaderWithParser} from '@loaders.gl/tables/parquet-wasm-loader';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet-js-loader';
 
 test('Parquet root exposes the primary metadata loader', () => {
   expect(parquetModule.ParquetLoader.id).toBe('parquet');

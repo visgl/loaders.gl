@@ -21,7 +21,7 @@ export type STACSourceLoaderOptions = DataSourceOptions & {
 
 /** Loads the runtime STAC source implementation from its explicit package subpath. */
 async function preloadSTACSourceLoader(): Promise<SourceLoader<STACSource>> {
-  const {STACSourceLoaderWithParser} = await import('@loaders.gl/ogc/stac/stac-source');
+  const {STACSourceLoaderWithParser} = await import('@loaders.gl/ogc/stac-source');
   return STACSourceLoaderWithParser;
 }
 
@@ -59,7 +59,7 @@ export const STACSourceLoader = {
     _coreApi?: CoreAPI
   ): STACSource {
     throw new Error(
-      'STACSourceLoader requires async load() or an explicit @loaders.gl/ogc/stac/stac-source import'
+      'STACSourceLoader requires async load() or an explicit @loaders.gl/ogc/stac-source import'
     );
   }
 } as const satisfies SourceLoader<STACSource>;

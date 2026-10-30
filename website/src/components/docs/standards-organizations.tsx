@@ -31,8 +31,8 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
       {label: '3D Tiles', to: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'},
       {label: 'I3S / SLPK', to: '/docs/modules/tiles-3d/i3s/formats/i3s'},
       {label: 'Draco', to: '/docs/modules/draco/formats/draco'},
-      {label: 'KTX / KTX2', to: '/docs/modules/textures/formats/ktx'},
-      {label: 'Basis', to: '/docs/modules/textures/formats/basis'},
+      {label: 'KTX / KTX2', to: '/docs/modules/images/textures/formats/ktx'},
+      {label: 'Basis', to: '/docs/modules/images/textures/formats/basis'},
       {label: 'LAS / LAZ', to: '/docs/modules/pointclouds/las/formats/las'},
       {label: 'COPC', to: '/docs/modules/tiles-3d/copc/formats/copc'},
       {label: 'OpenUSD', to: '/docs/modules/scene/usd/formats/usd'}
@@ -104,7 +104,7 @@ const ORGANIZATIONS: readonly StandardsGroup[] = [
     links: [
       {label: 'glTF', to: '/docs/modules/scene/gltf/formats/gltf'},
       {label: 'GLB', to: '/docs/modules/scene/gltf/formats/glb'},
-      {label: 'KTX / KTX2', to: '/docs/modules/textures/formats/ktx'},
+      {label: 'KTX / KTX2', to: '/docs/modules/images/textures/formats/ktx'},
       {label: 'Basis in glTF', to: '/docs/modules/scene/gltf/formats/gltf#khr_texture_basisu'}
     ]
   },

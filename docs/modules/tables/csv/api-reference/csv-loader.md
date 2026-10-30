@@ -63,7 +63,7 @@ const table = await load(url, CSVLoader);
 The CSV format export is metadata-only and works with async core APIs such as `load`, `parse`, and `parseInBatches`, which preload the parser implementation when needed. Applications that need a parser-bearing loader object directly can import it from the explicit loader subpath:
 
 ```typescript
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
 ```
 
 The bare `@loaders.gl/tables/csv` entry point is the metadata-only import. Core async APIs call `preload()` and dynamically import the parser-bearing implementation when parsing starts.

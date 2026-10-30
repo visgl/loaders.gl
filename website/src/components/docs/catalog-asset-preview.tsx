@@ -201,7 +201,7 @@ async function readParquetPreview(url: string, signal: AbortSignal): Promise<Ass
 
 /** Decodes a bounded Arrow preview from a URL or an already downloaded Blob. */
 async function readParquetTable(data: string | Blob, signal: AbortSignal): Promise<AssetPreview> {
-  const {ParquetSource} = await import('@loaders.gl/tables/parquet/parquet-source-loader');
+  const {ParquetSource} = await import('@loaders.gl/tables/parquet-source-loader');
   signal.throwIfAborted();
   const source = new ParquetSource(data, {core: {worker: false}});
   try {

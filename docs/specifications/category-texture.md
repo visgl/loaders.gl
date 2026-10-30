@@ -15,7 +15,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="Texture loaders preserve the details that ordinary image loaders do not: mip levels, array and cube layouts, compression formats, and the metadata a runtime needs to choose a supported GPU representation."
   tone="cyan"
   links={[
-    {label: 'Texture module', to: '/docs/modules/textures'},
+    {label: 'Texture module', to: '/docs/modules/images/textures'},
     {label: '3D data formats', to: '/docs/developer-guide/3d-data-formats'}
   ]}
 />
@@ -51,14 +51,14 @@ The texture loader category documents the common return shapes, conventions, and
 
 | Loader                                                                                      | Notes                                                            |
 | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | Parses KTX, DDS, and PVR texture containers                      |
-| [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Transcodes Basis assets into runtime texture formats             |
-| [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Decodes Radiance `.hdr` textures into floating-point texture data |
-| [`CrunchLoader`](/docs/modules/textures/api-reference/crunch-loader)                        | Decodes Crunch compressed mip chains                             |
-| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Loads manifest-driven single image textures and mip chains       |
-| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Loads manifest-driven texture arrays                             |
-| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Loads manifest-driven cubemaps                                   |
-| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Loads manifest-driven texture cube arrays                        |
+| [`CompressedTextureLoader`](/docs/modules/images/textures/api-reference/compressed-texture-loader) | Parses KTX, DDS, and PVR texture containers                      |
+| [`BasisLoader`](/docs/modules/images/textures/api-reference/basis-loader)                          | Transcodes Basis assets into runtime texture formats             |
+| [`RadianceHDRLoader`](/docs/modules/images/textures/api-reference/radiance-hdr-loader)             | Decodes Radiance `.hdr` textures into floating-point texture data |
+| [`CrunchLoader`](/docs/modules/images/textures/api-reference/crunch-loader)                        | Decodes Crunch compressed mip chains                             |
+| [`TextureLoader`](/docs/modules/images/textures/api-reference/texture-loader)                      | Loads manifest-driven single image textures and mip chains       |
+| [`TextureArrayLoader`](/docs/modules/images/textures/api-reference/texture-array-loader)           | Loads manifest-driven texture arrays                             |
+| [`TextureCubeLoader`](/docs/modules/images/textures/api-reference/texture-cube-loader)             | Loads manifest-driven cubemaps                                   |
+| [`TextureCubeArrayLoader`](/docs/modules/images/textures/api-reference/texture-cube-array-loader)  | Loads manifest-driven texture cube arrays                        |
 
 Core texture category support is provided by the `@loaders.gl/images` module.
 

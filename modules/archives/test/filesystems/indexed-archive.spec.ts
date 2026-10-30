@@ -11,7 +11,7 @@ import {
   parseHashTable,
   composeHashFile
 } from '@loaders.gl/archives/zip';
-import {encodeIndexedZip} from '@loaders.gl/archives/zip/indexed-zip-writer';
+import {encodeIndexedZip} from '@loaders.gl/archives/indexed-zip-writer';
 
 /** Exposes only the common transport for owning-module conformance. */
 class TestArchive extends IndexedArchive {

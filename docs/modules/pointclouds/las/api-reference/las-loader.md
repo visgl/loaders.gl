@@ -68,9 +68,9 @@ const mesh = await load(url, LASLoader, {las: {shape: 'mesh'}});
 Select another implementation by importing its loader variant instead of setting an option:
 
 ```typescript
-import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/pointclouds/las/las-copc-loader';
-import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/las/lazperf-loader';
-import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/las/laz-rs-loader';
+import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/pointclouds/las-copc-loader';
+import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/lazperf-loader';
+import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/laz-rs-loader';
 
 const copcDecodedData = await load(url, LASCOPCLoader, options);
 ```

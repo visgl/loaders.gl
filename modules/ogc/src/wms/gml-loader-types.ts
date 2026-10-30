@@ -24,7 +24,7 @@ export type GMLLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing GML loader implementation. */
 async function preload() {
-  const {GMLLoaderWithParser} = await import('@loaders.gl/ogc/wms/gml-loader');
+  const {GMLLoaderWithParser} = await import('@loaders.gl/ogc/gml-loader');
   return GMLLoaderWithParser;
 }
 

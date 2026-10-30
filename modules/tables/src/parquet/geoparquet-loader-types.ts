@@ -25,7 +25,7 @@ export type GeoParquetLoaderOptions = SharedParquetLoaderOptions;
 
 /** Preloads the parser-bearing GeoParquet loader implementation. */
 async function preloadGeoParquetLoader() {
-  const {GeoParquetLoaderWithParser} = await import('@loaders.gl/tables/parquet/geoparquet-loader');
+  const {GeoParquetLoaderWithParser} = await import('@loaders.gl/tables/geoparquet-loader');
   return GeoParquetLoaderWithParser;
 }
 

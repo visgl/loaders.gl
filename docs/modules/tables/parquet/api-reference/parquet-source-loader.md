@@ -97,7 +97,7 @@ Applications that need synchronous `createDataSource()` can import the runtime l
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ParquetSourceLoader} from '@loaders.gl/tables/parquet/parquet-source-loader';
+import {ParquetSourceLoader} from '@loaders.gl/tables/parquet-source-loader';
 
 const source = createDataSource(url, [ParquetSourceLoader], {});
 ```
@@ -113,8 +113,8 @@ file. The provider may be backed by STAC, a database, an application manifest, o
 the Parquet module does not depend on any catalog protocol.
 
 ```ts
-import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/parquet-dataset-source';
-import {STACSource} from '@loaders.gl/ogc/stac/stac-source';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet-dataset-source';
+import {STACSource} from '@loaders.gl/ogc/stac-source';
 
 const catalog = new STACSource('https://stac.overturemaps.org/catalog.json', {});
 const dataset = new ParquetDatasetSource(

@@ -10,7 +10,7 @@ import {openZipArchive} from './zip-archive';
 
 const {preload: _preload, ...metadata} = ZipLoader;
 
-/** Parser-bearing ZIP loader, available through @loaders.gl/archives/zip/zip-loader. */
+/** Parser-bearing ZIP loader, available through @loaders.gl/archives/zip-loader. */
 export const ZipLoaderWithParser = {
   ...metadata,
   parse: parseZip

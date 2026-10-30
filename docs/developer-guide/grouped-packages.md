@@ -42,7 +42,7 @@ For synchronous parsing, import the parser-bearing loader explicitly:
 
 ```ts
 import {parseSync} from '@loaders.gl/core';
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
 
 const table = parseSync(csvData, CSVLoaderWithParser);
 ```
@@ -55,8 +55,8 @@ the default for these grouped entrypoints; an `/unbundled` suffix is unnecessary
 
 A loader parses an input into a result. A source opens a dataset or service and supports requests
 such as scans, raster windows, or tile reads. Source constructors and advanced APIs have explicit
-subpaths, for example `@loaders.gl/raster/geotiff/geotiff-source-loader` and
-`@loaders.gl/tables/parquet/parquet-source-loader`.
+subpaths, for example `@loaders.gl/raster/geotiff-source-loader` and
+`@loaders.gl/tables/parquet-source-loader`.
 
 Writers are documented by their format. Some writers import encoding dependencies eagerly, so
 an entrypoint that exports both metadata and a writer is not necessarily dependency-free.

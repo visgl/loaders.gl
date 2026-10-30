@@ -30,7 +30,7 @@ export const TarLoader = {
   options: {tar: {maxEntries: 100000, maxTotalDecodedBytes: 64 * 1024 * 1024}},
   /** Loads the parser through the installed package subpath. */
   async preload() {
-    const {TarLoaderWithParser} = await import('@loaders.gl/archives/tar/tar-loader');
+    const {TarLoaderWithParser} = await import('@loaders.gl/archives/tar-loader');
     return TarLoaderWithParser;
   }
 } as const satisfies Loader<TarFileMap, never, TarLoaderOptions>;

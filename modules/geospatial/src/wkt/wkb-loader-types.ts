@@ -20,7 +20,7 @@ export type WKBLoaderOptions = LoaderOptions & {
  * Preloads the parser-bearing WKB loader implementation.
  */
 async function preload() {
-  const {WKBLoaderWithParser} = await import('@loaders.gl/geospatial/wkt/wkb-loader');
+  const {WKBLoaderWithParser} = await import('@loaders.gl/geospatial/wkb-loader');
   return WKBLoaderWithParser;
 }
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles/3d-tiles-archive-writer';
+import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles-archive-writer';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core';
 

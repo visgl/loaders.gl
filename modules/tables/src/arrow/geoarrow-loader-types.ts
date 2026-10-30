@@ -18,7 +18,7 @@ import {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
  * to convert it to a GeoJSON table or a BinaryGeometry
  */
 async function preload() {
-  const {GeoArrowLoaderWithParser} = await import('@loaders.gl/tables/arrow/geoarrow-loader');
+  const {GeoArrowLoaderWithParser} = await import('@loaders.gl/tables/geoarrow-loader');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
   await preloadArrowCompressionDecoders();
   return GeoArrowLoaderWithParser;

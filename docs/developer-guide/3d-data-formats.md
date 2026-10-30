@@ -41,7 +41,7 @@ application owns, then follow the links to the payload and runtime formats it co
 | Tiled worlds | [3D Tiles 1.0/1.1](/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles), [I3S 1.7/1.8 and Point Cloud 2.x](/docs/modules/tiles-3d/i3s/formats/i3s) | [`Tiles3DLoader`](/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader), [`I3SLoader`](/docs/modules/tiles-3d/i3s/api-reference/i3s-loader), [`I3SSource`](/docs/modules/tiles-3d/api-reference/i3s-source) |
 | Point-cloud delivery | [COPC 1.0](/docs/modules/tiles-3d/copc/formats/copc), [Potree 1.4–1.8](/docs/modules/tiles-3d/potree), [LAS/LAZ](/docs/modules/pointclouds/las/formats/las) | [`COPCSourceLoader`](/docs/modules/tiles-3d/copc/api-reference/copc-source-loader), [`PotreeSourceLoader`](/docs/modules/tiles-3d/potree/api-reference/potree-source-loader), [`LASLoader`](/docs/modules/pointclouds/las/api-reference/las-loader) |
 | Geometry compression | [Draco](/docs/modules/draco/formats/draco), [meshopt compression](/docs/modules/scene/gltf/formats/gltf#meshopt-compression) | [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader), [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer), glTF extension processing |
-| Texture delivery | [Basis Universal](/docs/modules/textures/formats/basis), [KTX/KTX2](/docs/modules/textures/formats/ktx) | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader), [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader), [`KTX2BasisWriter`](/docs/modules/textures/api-reference/ktx2-basis-texture-writer) |
+| Texture delivery | [Basis Universal](/docs/modules/images/textures/formats/basis), [KTX/KTX2](/docs/modules/images/textures/formats/ktx) | [`BasisLoader`](/docs/modules/images/textures/api-reference/basis-loader), [`CompressedTextureLoader`](/docs/modules/images/textures/api-reference/compressed-texture-loader), [`KTX2BasisWriter`](/docs/modules/images/textures/api-reference/ktx2-basis-texture-writer) |
 
 ## What the loaders preserve
 
@@ -116,5 +116,5 @@ documentation.
 
 - [Draco format and writer boundaries](/docs/modules/draco/formats/draco)
 - [Meshopt support in glTF](/docs/modules/scene/gltf/formats/gltf#meshopt-compression)
-- [Basis Universal](/docs/modules/textures/formats/basis)
-- [KTX/KTX2](/docs/modules/textures/formats/ktx)
+- [Basis Universal](/docs/modules/images/textures/formats/basis)
+- [KTX/KTX2](/docs/modules/images/textures/formats/ktx)

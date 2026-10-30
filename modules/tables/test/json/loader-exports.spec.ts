@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import * as jsonModule from '@loaders.gl/tables/json/index';
-import {FastJSONLoader} from '@loaders.gl/tables/json/fast-json-loader';
+import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
 
 test('JSON root retains primary loaders without the fast backend', () => {
   expect(jsonModule.JSONLoader.id).toBe('json');

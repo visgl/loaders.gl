@@ -8,7 +8,7 @@ import {encode, parse, parseInBatches} from '@loaders.gl/core';
 import type {ArrowTableBatch, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import {WorkerFarm} from '@loaders.gl/core/worker-utils';
 import {ParquetLoader, ParquetJSWriter} from '@loaders.gl/tables/parquet';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 
 const rows = [
   {id: 1n, label: 'repeat', bytes: new Uint8Array([1]), unused: 10, tags: ['first']},

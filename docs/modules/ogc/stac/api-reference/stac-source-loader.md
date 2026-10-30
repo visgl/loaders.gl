@@ -49,7 +49,7 @@ For synchronous `createDataSource()`, import the runtime-bearing subpath:
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {STACSourceLoader} from '@loaders.gl/ogc/stac/stac-source';
+import {STACSourceLoader} from '@loaders.gl/ogc/stac-source';
 
 const source = createDataSource('https://example.com/stac', STACSourceLoader);
 ```

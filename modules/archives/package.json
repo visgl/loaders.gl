@@ -33,40 +33,40 @@
       "import": "./dist/zip/index.js",
       "require": "./dist/zip/index.cjs"
     },
-    "./zip/zip-writer": {
-      "types": "./dist/zip/zip-writer.d.ts",
-      "import": "./dist/zip/zip-writer.js",
-      "require": "./dist/zip/zip-writer.cjs"
+    "./zip-writer": {
+      "types": "./dist/zip-writer.d.ts",
+      "import": "./dist/zip-writer.js",
+      "require": "./dist/zip-writer.cjs"
     },
-    "./zip/indexed-zip-writer": {
-      "types": "./dist/zip/indexed-zip-writer.d.ts",
-      "import": "./dist/zip/indexed-zip-writer.js",
-      "require": "./dist/zip/indexed-zip-writer.cjs"
+    "./indexed-zip-writer": {
+      "types": "./dist/indexed-zip-writer.d.ts",
+      "import": "./dist/indexed-zip-writer.js",
+      "require": "./dist/indexed-zip-writer.cjs"
     },
     "./zip/zip-encode": {
       "types": "./dist/zip/zip-encode.d.ts",
       "import": "./dist/zip/zip-encode.js",
       "require": "./dist/zip/zip-encode.cjs"
     },
-    "./zip/zip-loader": {
-      "types": "./dist/zip/zip-loader.d.ts",
-      "import": "./dist/zip/zip-loader.js",
-      "require": "./dist/zip/zip-loader.cjs"
+    "./zip-loader": {
+      "types": "./dist/zip-loader.d.ts",
+      "import": "./dist/zip-loader.js",
+      "require": "./dist/zip-loader.cjs"
     },
     "./tar": {
       "types": "./dist/tar/index.d.ts",
       "import": "./dist/tar/index.js",
       "require": "./dist/tar/index.cjs"
     },
-    "./tar/tar-loader": {
-      "types": "./dist/tar/tar-loader.d.ts",
-      "import": "./dist/tar/tar-loader.js",
-      "require": "./dist/tar/tar-loader.cjs"
+    "./tar-loader": {
+      "types": "./dist/tar-loader.d.ts",
+      "import": "./dist/tar-loader.js",
+      "require": "./dist/tar-loader.cjs"
     },
-    "./tar/tar-writer": {
-      "types": "./dist/tar/tar-writer.d.ts",
-      "import": "./dist/tar/tar-writer.js",
-      "require": "./dist/tar/tar-writer.cjs"
+    "./tar-writer": {
+      "types": "./dist/tar-writer.d.ts",
+      "import": "./dist/tar-writer.js",
+      "require": "./dist/tar-writer.cjs"
     }
   },
   "sideEffects": false,

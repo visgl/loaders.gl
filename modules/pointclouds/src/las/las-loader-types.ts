@@ -11,7 +11,7 @@ export type {LASColumnName, LASLoaderOptions} from './las-loader-shared';
 
 /** Preloads the parser-bearing primary TypeScript LAS loader implementation. */
 async function preload() {
-  const {LASLoaderWithParser} = await import('@loaders.gl/pointclouds/las/las-loader');
+  const {LASLoaderWithParser} = await import('@loaders.gl/pointclouds/las-loader');
   return LASLoaderWithParser;
 }
 

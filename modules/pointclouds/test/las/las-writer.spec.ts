@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/pointclouds/las/las-copc-loader';
+import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/pointclouds/las-copc-loader';
 import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {LASLoader, LASWriter, type LASExtraBytesWriter} from '@loaders.gl/pointclouds/las';

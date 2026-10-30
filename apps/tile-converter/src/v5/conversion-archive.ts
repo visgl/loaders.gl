@@ -5,8 +5,8 @@
 import {
   Tiles3DArchiveWriter,
   encodeTiles3DArchiveInBatches
-} from '@loaders.gl/tiles-3d/3d-tiles/3d-tiles-archive-writer';
-import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
+} from '@loaders.gl/tiles-3d/3d-tiles-archive-writer';
+import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core';
 
