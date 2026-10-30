@@ -190,3 +190,26 @@ test('matches nested and escaped delimiters without truncating links', () => {
     }
   ]);
 });
+
+test('keeps bracket and parenthesis characters inside code spans literal in link labels', () => {
+  expect(
+    parseMarkdownSync('[use `[literal](ignored` safely](target) after `[not](link)`').children
+  ).toEqual([
+    {
+      type: 'paragraph',
+      children: [
+        {
+          type: 'link',
+          url: 'target',
+          children: [
+            {type: 'text', value: 'use '},
+            {type: 'code', value: '[literal](ignored'},
+            {type: 'text', value: ' safely'}
+          ]
+        },
+        {type: 'text', value: ' after '},
+        {type: 'code', value: '[not](link)'}
+      ]
+    }
+  ]);
+});

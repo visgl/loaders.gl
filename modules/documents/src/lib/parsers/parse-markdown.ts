@@ -123,17 +123,30 @@ function parseBlocks(lines: string[], depth: number, maxDepth: number): Markdown
   return blocks;
 }
 
-/** Matches unescaped brackets and parentheses once, including nested delimiters. */
+/** Matches unescaped brackets, parentheses, and code spans while keeping code contents literal. */
 function matchInlineDelimiters(text: string): Map<number, number> {
   const pairs = new Map<number, number>();
   const brackets: number[] = [];
   const parentheses: number[] = [];
+  const missingCodeMarkers = new Set<string>();
   for (let index = 0; index < text.length; index++) {
     if (text[index] === '\\') {
       index++;
       continue;
     }
     const character = text[index];
+    if (character === '`') {
+      const marker = /^`+/.exec(text.slice(index))![0];
+      const end = missingCodeMarkers.has(marker) ? -1 : text.indexOf(marker, index + marker.length);
+      if (end >= 0) {
+        pairs.set(index, end);
+        index = end + marker.length - 1;
+      } else {
+        missingCodeMarkers.add(marker);
+        index += marker.length - 1;
+      }
+      continue;
+    }
     if (character === '[') brackets.push(index);
     else if (character === '(') parentheses.push(index);
     else if (character === ']' || character === ')') {
@@ -175,7 +188,7 @@ function parseInline(text: string, depth: number, maxDepth: number): MarkdownInl
     }
     if (text[index] === '`') {
       const marker = /^`+/.exec(text.slice(index))![0];
-      const end = findClosing(marker, index + marker.length);
+      const end = delimiterPairs.get(index) ?? -1;
       if (end >= 0) {
         nodes.push({type: 'code', value: text.slice(index + marker.length, end)});
         index = end + marker.length;
