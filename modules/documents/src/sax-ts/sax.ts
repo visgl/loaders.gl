@@ -1161,6 +1161,7 @@ abstract class SAX {
   protected end(): SAXParser {
     if (this.sawRoot && !this.closedRoot) this.strictFail('Unclosed root tag');
     if (
+      this.strict &&
       this.state !== this.S.BEGIN &&
       this.state !== this.S.BEGIN_WHITESPACE &&
       this.state !== this.S.TEXT
@@ -1486,8 +1487,13 @@ abstract class SAX {
       return;
     }
 
+    const caseInsensitiveTags =
+      !this.strict && (this.opt.caseInsensitiveTags || !this.opt.preserveCase);
     if (this.script) {
-      if (this.tagName !== 'script') {
+      const normalizedScriptCloseTag = caseInsensitiveTags
+        ? this.tagName.toLowerCase()
+        : this.tagName;
+      if (normalizedScriptCloseTag !== 'script') {
         this.script += `</${this.tagName}>`;
         this.tagName = '';
         this.state = this.S.SCRIPT;
@@ -1501,8 +1507,6 @@ abstract class SAX {
     // <a><b></c></b></a> will close everything, otherwise.
     let t = this.tags.length;
     let tagName = this.tagName;
-    const caseInsensitiveTags =
-      !this.strict && (this.opt.caseInsensitiveTags || !this.opt.preserveCase);
     const normalizedTagName = caseInsensitiveTags ? tagName.toLowerCase() : tagName;
     while (t--) {
       const close = this.tags[t];
