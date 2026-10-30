@@ -108,6 +108,32 @@ test('HTML retains legacy tolerance, authored case and HTML entities', () => {
   });
 });
 
+test('HTML closes open roots at end-of-input and matches end tags without case sensitivity', () => {
+  expect(HTMLLoaderWithParser.parseTextSync('<HTML><Body><p>truncated')).toEqual({
+    HTML: {Body: {p: 'truncated'}}
+  });
+  expect(HTMLLoaderWithParser.parseTextSync('<HTML><Body><p>mixed case</bODY>')).toEqual({
+    HTML: {Body: {p: 'mixed case'}}
+  });
+});
+
+test('HTML tolerates mixed-case script tags and truncation inside tokens', () => {
+  expect(
+    HTMLLoaderWithParser.parseTextSync('<HTML><script>const value = 1</SCRIPT><Body>ready</BODY>')
+  ).toEqual({
+    HTML: {script: 'const value = 1', Body: 'ready'}
+  });
+  expect(HTMLLoaderWithParser.parseTextSync('<HTML><Body>partial<div')).toEqual({
+    HTML: {Body: 'partial'}
+  });
+  expect(HTMLLoaderWithParser.parseTextSync('<HTML><Body>partial &amp')).toEqual({
+    HTML: {Body: 'partial'}
+  });
+  expect(HTMLLoaderWithParser.parseTextSync('<HTML><Body>partial<!-- unfinished')).toEqual({
+    HTML: {Body: 'partial'}
+  });
+});
+
 test('HTML callers can opt into strict XML and override whitespace defaults', () => {
   expect(() => HTMLLoaderWithParser.parseTextSync('<a><b></a>', {xml: {strict: true}})).toThrow();
   expect(HTMLLoaderWithParser.parseTextSync('<a>  text  </a>', {xml: {trimValues: false}})).toEqual(

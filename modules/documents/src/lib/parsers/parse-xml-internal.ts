@@ -46,6 +46,7 @@ export function parseXMLInternal(text: string, options: ParseXMLOptions = {}): a
     strict: options.strict !== false,
     strictEntities: !options.htmlEntities,
     preserveCase: true,
+    caseInsensitiveTags: options.strict === false,
     processEntities: options.processEntities !== false,
     onopentag: (tag: any) => state.openElement(tag.name, tag.attributes || {}),
     ontext: (value: string) => state.addText(value),
@@ -57,6 +58,9 @@ export function parseXMLInternal(text: string, options: ParseXMLOptions = {}): a
     }
   });
   parser.write(text).close();
+  if (options.strict === false) {
+    while (state.stack.length) state.closeElement();
+  }
   if (state.result === undefined) throw new Error('XML: document requires a root element');
   return state.result;
 }
