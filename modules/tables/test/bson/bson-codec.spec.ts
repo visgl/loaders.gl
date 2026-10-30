@@ -241,3 +241,13 @@ test('BSON scalar markers never reserve ordinary document property names', () =>
   expect(decoded).toEqual(document);
   expect(parseBSONSync(encodeBSONSync(decoded))).toEqual(document);
 });
+
+test.each(['l', 'ilmsux'])('BSON preserves locale regex option in %s', options => {
+  const bytes = wrapPayload(11, [97, 0, ...new TextEncoder().encode(options), 0]);
+  const decoded = parseBSONSync(bytes);
+  expect(decoded).toEqual({v: {$bsonType: 'regexp', pattern: 'a', options}});
+  expect(encodeBSONSync(decoded)).toEqual(bytes);
+  expect(
+    encodeBSONSync({v: createBSONValue({$bsonType: 'regexp', pattern: 'a', options})})
+  ).toEqual(bytes);
+});

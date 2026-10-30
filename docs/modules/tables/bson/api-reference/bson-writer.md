@@ -79,7 +79,7 @@ const arrayBuffer = await encode(data, BSONWriter);
 Both async `encode()` and `encodeSync()` honor these options. Cycles, invalid dates,
 int64 values outside their representable range, unsupported objects, and field names
 containing null characters are rejected. Regular expressions must use BSON-supported
-flags (`i`, `m`, `s`, `u`, `x`); use a native scalar marker for BSON-only regex flags.
+flags (`i`, `l`, `m`, `s`, `u`, `x`); use a native scalar marker for BSON-only regex flags.
 Use an explicit `undefined` BSON marker to write the deprecated BSON undefined type.
 
 ## Value representations

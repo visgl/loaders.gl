@@ -131,7 +131,7 @@ class BSONWriter {
           value instanceof RegExp
             ? {pattern: value.source, options: value.flags}
             : (value as {pattern: string; options: string});
-        if (!/^i?m?s?u?x?$/.test(regularExpression.options))
+        if (!/^i?l?m?s?u?x?$/.test(regularExpression.options))
           throw new Error('BSON: unsupported regular expression flags');
         this.writeCString(regularExpression.pattern);
         this.writeCString(regularExpression.options);

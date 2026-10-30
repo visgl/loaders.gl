@@ -115,7 +115,7 @@ class BSONReader {
       case 11: {
         const pattern = this.readCString(limit);
         const options = this.readCString(limit).split('').sort().join('');
-        if (!/^(i?m?s?u?x?)$/.test(options))
+        if (!/^(i?l?m?s?u?x?)$/.test(options))
           throw new Error('BSON: invalid regular expression options');
         return createBSONValue({$bsonType: 'regexp', pattern, options});
       }
