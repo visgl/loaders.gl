@@ -21,7 +21,11 @@ export async function loadOmeTiff(tiff: GeoTIFF, firstImage: GeoTIFFImage) {
     PhotometricInterpretation: photometricInterpretation
   } = firstImage.fileDirectory;
   // TIFF ASCII counts include a terminal NUL; it is not part of the XML document.
-  const omexml = fromString(ImageDescription.replace(/\0+$/, ''));
+  let descriptionLength = ImageDescription.length;
+  while (descriptionLength > 0 && ImageDescription.charCodeAt(descriptionLength - 1) === 0) {
+    descriptionLength--;
+  }
+  const omexml = fromString(ImageDescription.slice(0, descriptionLength));
 
   /*
    * Image pyramids are stored differently between versions of Bioformats.

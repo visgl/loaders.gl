@@ -59,3 +59,11 @@ describe('parseNPY', () => {
     );
   });
 });
+
+test('NPY decodes multidimensional arrays and validates the complete shape product', () => {
+  const values = new Uint8Array([1, 2, 3, 4]);
+  const result = parseNPY(createNPYBuffer('|u1', [2, 2], values.buffer));
+  expect(result.header.shape).toEqual([2, 2]);
+  expect(result.data).toEqual(values);
+  expect(() => parseNPY(createNPYBuffer('|u1', [2, 3], values.buffer))).toThrow('Buffer overflow');
+});

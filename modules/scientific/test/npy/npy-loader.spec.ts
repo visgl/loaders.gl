@@ -5,7 +5,8 @@
 import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {NPYLoader, NPYWorkerLoader} from '@loaders.gl/scientific';
-import {setLoaderOptions, load} from '@loaders.gl/core';
+import {setLoaderOptions, load, fetchFile} from '@loaders.gl/core';
+import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy-loader';
 const NPY_UINT8_URL = '@loaders.gl/scientific/test/npy/data/uint8.npy';
 setLoaderOptions({
   _workerType: 'test'
@@ -62,4 +63,11 @@ test('NPY loading forwards cancellation to transport', async () => {
   } finally {
     transport.mockRestore();
   }
+});
+
+test('NPY public async and sync parsers agree without worker dispatch', async () => {
+  const response = await fetchFile(NPY_UINT8_URL);
+  const buffer = await response.arrayBuffer();
+  const expected = NPYLoaderWithParser.parseSync(buffer);
+  expect(await NPYLoaderWithParser.parse(buffer)).toEqual(expected);
 });

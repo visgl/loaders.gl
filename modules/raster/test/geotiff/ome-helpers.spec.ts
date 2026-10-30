@@ -122,3 +122,11 @@ test('OME adapter still rejects NUL characters inside XML content', async () => 
   } as any;
   await expect(loadOmeTiff({} as any, image)).rejects.toThrow('invalid XML character');
 });
+
+test('OME adapter rejects a long interior padding run without treating it as a terminator', async () => {
+  const image = {
+    fileDirectory: {ImageDescription: OME_XML + '\0'.repeat(16384) + 'x'},
+    getTileWidth: () => 1
+  } as any;
+  await expect(loadOmeTiff({} as any, image)).rejects.toThrow('invalid XML character');
+});
