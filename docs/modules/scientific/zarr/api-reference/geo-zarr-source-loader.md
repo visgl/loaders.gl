@@ -52,7 +52,9 @@ The source recognizes two interoperable metadata patterns:
   on the grid-mapping variable. The source uses this attribute before the coordinate variables, and
   it reads no coordinate chunks for it. The source looks for coordinate and grid-mapping variables
   in the group of the data array first. Then it looks in each parent group. This is the CF search
-  by proximity.
+  by proximity. The source uses a `GeoTransform` only when the grid-mapping variable is in the
+  group of the data array. A grid-mapping variable in a parent group can apply to more than one
+  multiscale level, so the source uses it only for the CRS.
 
 <ReferenceBoundary
   title="GeoZarr source usage"

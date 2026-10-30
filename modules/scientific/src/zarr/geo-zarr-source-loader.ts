@@ -463,13 +463,16 @@ export class GeoZarrRasterSource
     const xDimensionIndex = dimensions.indexOf(spatialDimensions[1]);
     const width = array.shape[xDimensionIndex];
     const height = array.shape[yDimensionIndex];
-    let gridMappingPromise: Promise<GeoZarrAttributes | null> | undefined;
-    const getGridMappingAttributes = () =>
-      (gridMappingPromise ||= loadCFGridMappingAttributes(group, arrayPath, attributes, signal));
+    let gridMappingPromise: Promise<CFGridMapping | null> | undefined;
+    const getGridMapping = () =>
+      (gridMappingPromise ||= loadCFGridMapping(group, arrayPath, attributes, signal));
     const coordinateTransform =
       options?.transform ||
       normalizeAffineTransform(attributes['spatial:transform']) ||
-      normalizeGDALGeoTransform((await getGridMappingAttributes())?.GeoTransform) ||
+      // An ancestor grid mapping can be shared by several multiscale levels: it gives the CRS only.
+      normalizeGDALGeoTransform(
+        await getGridMapping().then(mapping => (mapping?.local ? mapping.attributes.GeoTransform : null))
+      ) ||
       (!metadataOnly
         ? await loadCFCoordinateTransform(group, arrayPath, spatialDimensions, signal)
         : null);
@@ -492,7 +495,10 @@ export class GeoZarrRasterSource
     const coordinateReferenceSystem =
       options?.coordinateReferenceSystem ||
       normalizeDeclaredCoordinateReferenceSystem(attributes) ||
-      getCFCoordinateReferenceSystem(await getGridMappingAttributes(), spatialDimensions);
+      getCFCoordinateReferenceSystem(
+        (await getGridMapping())?.attributes || null,
+        spatialDimensions
+      );
     const defaultSelection = options?.defaultSelection || {};
     const selectionDimensions = dimensions
       .map((dimensionName, dimensionIndex) => ({
@@ -677,7 +683,7 @@ async function loadCoordinateValues(
   coordinateName: string,
   signal?: AbortSignal
 ): Promise<number[]> {
-  const coordinateArray = await openNearestArray(group, arrayPath, coordinateName, signal);
+  const {array: coordinateArray} = await openNearestArray(group, arrayPath, coordinateName, signal);
   if (coordinateArray.shape.length !== 1 || coordinateArray.shape[0] < 2) {
     throw new Error(
       `Coordinate ${coordinateName} must be a one-dimensional array with at least two values.`
@@ -692,20 +698,22 @@ async function loadCoordinateValues(
 
 /**
  * Opens a CF variable referenced by name from a data array, searching the array's own group and
- * then each ancestor up to the selected group, as CF 1.8 search by proximity specifies.
+ * then each ancestor up to the selected group, as CF 1.8 search by proximity specifies. `local`
+ * is true when the variable is in the array's own group.
  */
 async function openNearestArray(
   group: zarrita.Group<Readable>,
   arrayPath: string,
   name: string,
   signal?: AbortSignal
-): Promise<zarrita.Array<zarrita.DataType, Readable>> {
+): Promise<{array: zarrita.Array<zarrita.DataType, Readable>; local: boolean}> {
   const segments = arrayPath.split('/').slice(0, -1);
   let lastError: unknown;
   for (let depth = segments.length; depth >= 0; depth--) {
     const path = [...segments.slice(0, depth), name].join('/');
     try {
-      return await zarrita.open(group.resolve(path), {kind: 'array', signal});
+      const array = await zarrita.open(group.resolve(path), {kind: 'array', signal});
+      return {array, local: depth === segments.length};
     } catch (error) {
       lastError = error;
     }
@@ -733,19 +741,22 @@ function getRegularCoordinateSpacing(coordinates: number[], coordinateName: stri
   return spacing;
 }
 
-/** Loads the attributes of the CF grid-mapping variable named by a data array, if any. */
-async function loadCFGridMappingAttributes(
+/** Attributes of a CF grid-mapping variable, and whether it is in the data array's own group. */
+type CFGridMapping = {attributes: GeoZarrAttributes; local: boolean};
+
+/** Loads the CF grid-mapping variable named by a data array, if any. */
+async function loadCFGridMapping(
   group: zarrita.Group<Readable>,
   arrayPath: string,
   attributes: GeoZarrAttributes,
   signal?: AbortSignal
-): Promise<GeoZarrAttributes | null> {
+): Promise<CFGridMapping | null> {
   const gridMapping = normalizeString(attributes.grid_mapping);
   if (!gridMapping) return null;
   const gridMappingName = gridMapping.trim().split(/[\s:]/, 1)[0];
   try {
-    const gridMappingArray = await openNearestArray(group, arrayPath, gridMappingName, signal);
-    return normalizeAttributes(gridMappingArray.attrs);
+    const {array, local} = await openNearestArray(group, arrayPath, gridMappingName, signal);
+    return {attributes: normalizeAttributes(array.attrs), local};
   } catch {
     return null;
   }
