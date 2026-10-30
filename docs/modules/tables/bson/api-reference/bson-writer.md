@@ -55,16 +55,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 BSON decoding and encoding are implemented natively; no `bson` package is needed.
 
 ```bash
-npm install @loaders.gl/core @loaders.gl/tables
+npm install @loaders.gl/core @loaders.gl/documents
 ```
 
-Install the `@loaders.gl/tables` package; `/bson` is an import subpath, not a separate package.
+Install `@loaders.gl/documents`. Its root contains metadata; use flat subpaths for implementations.
 
 ## Usage
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {BSONWriter} from '@loaders.gl/tables/bson';
+import {BSONWriter} from '@loaders.gl/documents/bson-writer';
 
 const arrayBuffer = await encode(data, BSONWriter);
 ```

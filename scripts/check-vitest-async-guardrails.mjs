@@ -7,6 +7,7 @@ import {execFileSync} from 'node:child_process';
 const MIGRATED_VITEST_DIRECTORIES = [
   'modules/core/test',
   'modules/images/test',
+  'modules/documents/test',
   'modules/core/test/loader-utils-package',
   'modules/core/test/polyfills-package'
 ];

@@ -8,7 +8,7 @@ import {PackageGrid, PackageTile} from '@site/src/components/docs/package-grid';
 
 # Packages
 
-loaders.gl has 25 public packages. Install core and the packages that own your formats, then import the documented format or utility subpaths. Each tile links to its package introduction and focused format references.
+loaders.gl has 22 public packages. Install core and the packages that own your formats, then import the documented format or utility subpaths. Each tile links to its package introduction and focused format references.
 
 ## API
 
@@ -30,7 +30,7 @@ The public loaders.gl API for loading, parsing, streaming, and encoding data acr
 
 <PackageGrid>
 
-<PackageTile formats={[{"slug": "arrow", "to": "/docs/modules/tables/arrow"}, {"slug": "csv", "to": "/docs/modules/tables/csv"}, {"slug": "json", "to": "/docs/modules/tables/json"}, {"slug": "geojson", "to": "/docs/modules/tables/json"}, {"slug": "avro", "to": "/docs/modules/tables/avro"}, {"slug": "bson", "to": "/docs/modules/tables/bson"}, {"slug": "excel", "to": "/docs/modules/tables/excel"}, {"slug": "lance", "to": "/docs/modules/tables/lance"}, {"slug": "orc", "to": "/docs/modules/tables/orc"}, {"slug": "parquet", "to": "/docs/modules/tables/parquet"}]}>
+<PackageTile formats={[{"slug": "arrow", "to": "/docs/modules/tables/arrow"}, {"slug": "csv", "to": "/docs/modules/tables/csv"}, {"slug": "json", "to": "/docs/modules/tables/json"}, {"slug": "geojson", "to": "/docs/modules/tables/json"}, {"slug": "avro", "to": "/docs/modules/tables/avro"}, {"slug": "excel", "to": "/docs/modules/tables/excel"}, {"slug": "lance", "to": "/docs/modules/tables/lance"}, {"slug": "orc", "to": "/docs/modules/tables/orc"}, {"slug": "parquet", "to": "/docs/modules/tables/parquet"}]}>
 
 ### [@loaders.gl/tables](./modules/tables/README.md)
 
@@ -111,12 +111,12 @@ Access files inside archive containers, extract their contents, and write archiv
 
 </PackageTile>
 
-<PackageTile formats={[{"slug": "yaml", "to": "/docs/modules/config"}, {"slug": "toml", "to": "/docs/modules/config"}]}>
+<PackageTile formats={[{"slug": "xml", "to": "/docs/modules/xml/formats/xml"}, {"slug": "yaml", "to": "/docs/modules/config/formats/yaml"}, {"slug": "toml", "to": "/docs/modules/config/formats/toml"}, {"slug": "bson", "to": "/docs/modules/tables/bson/formats/bson"}, {"slug": "markdown", "to": "/docs/modules/documents/formats/markdown"}]}>
 
-### [@loaders.gl/config](./modules/config/README.md)
+### [@loaders.gl/documents](./modules/documents/README.md)
 
-Parse human-readable configuration documents into JavaScript data for application settings and metadata.
-
+XML, HTML, YAML, TOML, BSON, and simple Markdown document loaders. The root contains metadata;
+flat parser subpaths load implementations. Native BSON codecs also support Parquet BSON columns.
 
 </PackageTile>
 
@@ -165,14 +165,7 @@ Access hosted map, feature, imagery, and scene data through ArcGIS REST services
 
 </PackageTile>
 
-<PackageTile formats={[{"slug": "xml", "to": "/docs/modules/xml/formats/xml"}, {"slug": "html", "to": "/docs/modules/xml/formats/html"}]}>
 
-### [@loaders.gl/xml](./modules/xml/README.md)
-
-Parse markup documents into structured data or process them incrementally with SAX events, with shared utilities for XML-based formats.
-
-
-</PackageTile>
 
 <PackageTile formats={[{"slug": "image", "to": "/docs/modules/images/api-reference/image-loader"}]}>
 

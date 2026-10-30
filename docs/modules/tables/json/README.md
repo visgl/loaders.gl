@@ -103,7 +103,7 @@ worker. Use `JSONTableLoader` with `json.backend: 'fast'` for fast-backend Arrow
 
 For configuration formats with the same general object/array data model, see the dependency-free
 [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) and
-[`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) in `@loaders.gl/config`.
+[`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) in `@loaders.gl/documents`.
 
 <ReferenceBoundary
   title="JSON module details"

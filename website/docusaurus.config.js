@@ -250,9 +250,7 @@ const config = {
             '@loaders.gl/tables/arrow/index': resolve('../modules/tables/src/arrow'),
             '@loaders.gl/core/arrow-geometry': resolve('../modules/core/src/arrow-geometry'),
             '@loaders.gl/tables/avro/index': resolve('../modules/tables/src/avro'),
-            '@loaders.gl/tables/bson/index': resolve('../modules/tables/src/bson'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
-            '@loaders.gl/config': resolve('../modules/config/src'),
             '@loaders.gl/tiles-3d/copc': resolve('../modules/tiles-3d/src/copc'),
             '@loaders.gl/core/loader-utils': resolve('../modules/core/src/loader-utils'),
             '@loaders.gl/core/worker-utils': resolve('../modules/core/src/worker-utils'),
@@ -317,7 +315,7 @@ const config = {
             '@loaders.gl/arcgis/scene-aggregation': resolve('../modules/arcgis/src/arcgis/arcgis-scene-aggregation'),
             '@loaders.gl/arcgis': resolve('../modules/arcgis/src'),
             '@loaders.gl/services': resolve('../modules/services/src'),
-            '@loaders.gl/xml': resolve('../modules/xml/src'),
+            '@loaders.gl/documents': resolve('../modules/documents/src'),
             '@loaders.gl/archives/zip': resolve('../modules/archives/src/zip'),
             'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 

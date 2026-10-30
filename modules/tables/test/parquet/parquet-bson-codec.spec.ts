@@ -9,7 +9,7 @@ import {ParquetEncoder, ParquetEnvelopeWriter} from '../../src/parquet/parquetjs
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 import {ParquetSchema} from '../../src/parquet/parquetjs/schema/schema';
 import {ParquetJSLoaderWithParser} from '../../src/parquet/parquet-js-loader';
-import {BSONObjectId, createBSONValue, parseBSONSync} from '../../src/bson';
+import {BSONObjectId, createBSONValue, parseBSONSync} from '@loaders.gl/documents/bson-codec';
 
 test.each([false, true])('Parquet BSON read/write and Arrow byte preservation, Data Page V2=%s', async useDataPageV2 => {
   const documents = [

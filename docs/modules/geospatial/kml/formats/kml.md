@@ -44,7 +44,7 @@ KMZ is the ZIP-based packaging of a KML document and its related resources,
 such as images, models, and screen overlays.
 
 The `@loaders.gl/geospatial/kml` module parses both formats with the native
-`@loaders.gl/xml` parser. It does not require a browser DOM or Node DOM
+`@loaders.gl/documents` parser. It does not require a browser DOM or Node DOM
 polyfill.
 
 - [KML Tutorial - Google](https://developers.google.com/kml/documentation/kml_tut)

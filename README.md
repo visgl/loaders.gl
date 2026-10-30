@@ -9,7 +9,7 @@ Formats, encodings, and protocols by module (see each README for runtime and imp
 | [`@loaders.gl/arcgis`](modules/arcgis/README.md) | ArcGIS, FeatureServer, MapServer, ImageServer, VectorTileServer, SceneServer, PBF, JSON, GeoJSON. |
 | [`@loaders.gl/archives`](modules/archives/README.md) | ZIP, TAR. |
 | [`@loaders.gl/compression`](modules/compression/README.md) | DEFLATE, zlib, GZIP, Brotli, Snappy, LZ4, LZO, BZip2, XZ, LZMA, Zstandard, Zstd. |
-| [`@loaders.gl/config`](modules/config/README.md) | YAML, TOML. |
+| [`@loaders.gl/documents`](modules/documents/README.md) | XML, HTML, YAML, TOML, BSON, Markdown. |
 | [`@loaders.gl/core`](modules/core/README.md) | Arrow, GeoArrow, GeoJSON, WKT, WKB. |
 | [`@loaders.gl/crypto`](modules/crypto/README.md) | CRC32, CRC32C, MD5, SHA-256. |
 | [`@loaders.gl/draco`](modules/draco/README.md) | Draco. |
@@ -23,11 +23,10 @@ Formats, encodings, and protocols by module (see each README for runtime and imp
 | [`@loaders.gl/scientific`](modules/scientific/README.md) | NetCDF, NetCDF-4, Zarr, GeoZarr, OME-Zarr, SpatialData, GRIB2, HDF5, VTK, VTI, VTR, VTS, VTU, VTP. GRIB2, HDF5, NetCDF-4, and VTK readers have the implementation limits documented below. |
 | [`@loaders.gl/splats`](modules/splats/README.md) | SPLAT, KSPLAT, SPZ, RAD. |
 | [`@loaders.gl/sql`](modules/sql/README.md) | SQL, Arrow. |
-| [`@loaders.gl/tables`](modules/tables/README.md) | Arrow, Feather, GeoArrow, Avro, AVSC, BSON, CSV, TSV, DSV, Excel, XLS, XLSB, XLSM, XLSX, JSON, GeoJSON, NDJSON, JSONL, NDGeoJSON, GeoJSONL, LDGeoJSON, Lance, ORC, Parquet, GeoParquet, Delta Lake. |
+| [`@loaders.gl/tables`](modules/tables/README.md) | Arrow, Feather, GeoArrow, Avro, AVSC, CSV, TSV, DSV, Excel, XLS, XLSB, XLSM, XLSX, JSON, GeoJSON, NDJSON, JSONL, NDGeoJSON, GeoJSONL, LDGeoJSON, Lance, ORC, Parquet, GeoParquet, Delta Lake. |
 | [`@loaders.gl/tiles`](modules/tiles/README.md) | MLT, MapLibre Tile, MVT, Mapbox Vector Tile, TileJSON, Mapbox Style, PMTiles. |
 | [`@loaders.gl/tiles-3d`](modules/tiles-3d/README.md) | 3D Tiles, B3DM, I3DM, PNTS, CMPT, subtree, 3TZ, I3S, SLPK, LEPCC, ArcGIS Web Scene, COPC, LAS, LAZ, Potree. |
 | [`@loaders.gl/traces`](modules/traces/README.md) | Chrome Trace, Perfetto Trace, OpenTelemetry, OTLP, OTLP JSON, OTLP Protobuf, Jaeger, Zipkin, JSON, JSON Lines, NDJSON. |
-| [`@loaders.gl/xml`](modules/xml/README.md) | XML, HTML. |
 
 <p align="center">
   <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />

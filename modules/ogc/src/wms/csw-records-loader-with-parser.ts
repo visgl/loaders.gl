@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {XMLLoaderOptions} from '@loaders.gl/xml';
+import type {XMLLoaderOptions} from '@loaders.gl/documents';
 import type {CSWRecords} from './lib/parsers/csw/parse-csw-records';
 import {parseCSWRecords} from './lib/parsers/csw/parse-csw-records';
 import {CSWRecordsLoader as CSWRecordsLoaderMetadata} from './csw-records-loader';

@@ -25,7 +25,6 @@ lineage, rather than every transitive npm dependency.
 | [arcgis](https://github.com/visgl/loaders.gl/blob/master/modules/arcgis/THIRD-PARTY-NOTICES.md) | ArcGIS REST specifications; separately installed LERC. |
 | [archives](https://github.com/visgl/loaders.gl/blob/master/modules/archives/THIRD-PARTY-NOTICES.md) | T. Jameson Little’s tar-js; original ZIP and indexed archive APIs. |
 | [compression](https://github.com/visgl/loaders.gl/blob/master/modules/compression/THIRD-PARTY-NOTICES.md) | Arjun Barrett’s fflate; Pierre Curto’s LZ4; optional codec providers. |
-| [config](https://github.com/visgl/loaders.gl/blob/master/modules/config/THIRD-PARTY-NOTICES.md) | Original YAML/TOML parsing against community specifications. |
 | [core](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md) | Apache Arrow; Mapbox earcut; Kyle Barron’s GeoArrow work; Karl Cheng’s binary-gltf-utils; Axel Rauschmayer’s async queue; Vsevolod Strukchinsky’s require-from-string; LASzip; Christian Schwarz’s wkx/TWKB; original scans. |
 | [crypto](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md) | Brian Todd Button’s md5-wasm; jsdom abab; CRC32 inspiration from wqli78; hash integration. |
 | [draco](https://github.com/visgl/loaders.gl/blob/master/modules/draco/THIRD-PARTY-NOTICES.md) | Google Draco 1.5.7 runtimes and adapted Web IDL types. |
@@ -46,7 +45,7 @@ lineage, rather than every transitive npm dependency.
 | [tiles-3d](https://github.com/visgl/loaders.gl/blob/master/modules/tiles-3d/THIRD-PARTY-NOTICES.md) | CesiumJS ports and collaboration; Markus Schütz’s Potree; Connor Manning’s copc.js lineage; Esri I3S and converter contributions. |
 | [traces](https://github.com/visgl/loaders.gl/blob/master/modules/traces/THIRD-PARTY-NOTICES.md) | Trace format communities; Buf protobuf runtime; original parsers. |
 | [video](https://github.com/visgl/loaders.gl/blob/master/modules/video/THIRD-PARTY-NOTICES.md) | Yahoo gifshot; Anthony Dekker’s NeuQuant; Kevin Weiner and Thibault Imbert. |
-| [xml](https://github.com/visgl/loaders.gl/blob/master/modules/xml/THIRD-PARTY-NOTICES.md) | Isaac Schlueter’s sax-js through Maxim Mazurok’s sax-ts; fast-xml-parser. |
+| [documents](https://github.com/visgl/loaders.gl/blob/master/modules/documents/THIRD-PARTY-NOTICES.md) | Isaac Schlueter’s sax-js through Maxim Mazurok’s sax-ts; fast-xml-parser. |
 
 The separately published [tile-converter application](https://github.com/visgl/loaders.gl/blob/master/apps/tile-converter/THIRD-PARTY-NOTICES.md)
 also includes a notice inventory crediting Esri’s development contribution, loaders.gl

@@ -56,7 +56,7 @@ The `HTMLLoader` parses HTML-encoded data.
 ## Usage
 
 ```typescript
-import {HTMLLoader} from '@loaders.gl/xml';
+import {HTMLLoader} from '@loaders.gl/documents';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, HTMLLoader, options);

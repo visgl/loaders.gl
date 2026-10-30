@@ -11,13 +11,11 @@ const MODULES_DIRECTORY = join(process.cwd(), 'modules');
 const FORMAT_EXPORTS = {
   'tiles-3d/3d-tiles': ['Tiles3DFormat', 'Tile3DSubtreeFormat', 'ThreeTZFormat'],
   'tables/arrow': ['ArrowFormat'],
-  'tables/bson': ['BSONFormat'],
   'tiles-3d/copc': ['COPCFormat'],
   'tables/csv': ['CSVFormat'],
   tables: [
     'CSVFormat',
     'AvroFormat',
-    'BSONFormat',
     'ExcelFormat',
     'ArrowFormat',
     'JSONFormat',
@@ -92,7 +90,14 @@ const FORMAT_EXPORTS = {
     'WMSFeatureInfoFormat',
     'WMSLayerDescriptionFormat'
   ],
-  xml: ['XMLFormat', 'HTMLFormat'],
+  documents: [
+    'XMLFormat',
+    'HTMLFormat',
+    'YAMLFormat',
+    'TOMLFormat',
+    'BSONFormat',
+    'MarkdownFormat'
+  ],
   archives: ['ZipFormat', 'TarFormat'],
   'archives/zip': ['ZipFormat'],
   'archives/tar': ['TarFormat']

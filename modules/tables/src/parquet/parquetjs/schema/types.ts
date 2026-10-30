@@ -5,8 +5,7 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
 /* eslint-disable camelcase */
-import {encodeBSONSync} from '../../../bson/lib/encoders/encode-bson';
-import {parseBSONSync} from '../../../bson/lib/parsers/parse-bson';
+import {encodeBSONSync, parseBSONSync} from '@loaders.gl/documents/bson-codec';
 import {OriginalType, ParquetField, ParquetType, PrimitiveType} from './declare';
 import {
   decodeUtf8,

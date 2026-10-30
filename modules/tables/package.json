@@ -141,40 +141,6 @@
       "types": "./dist/avro-schema.d.ts",
       "import": "./dist/avro-schema.js"
     },
-    "./bson/bson-loader-types": {
-      "types": "./dist/bson/bson-loader-types.d.ts",
-      "import": "./dist/bson/bson-loader-types.js"
-    },
-    "./bson/bson-format": {
-      "types": "./dist/bson/bson-format.d.ts",
-      "import": "./dist/bson/bson-format.js"
-    },
-    "./bson/bson-writer": {
-      "types": "./dist/bson/bson-writer.d.ts",
-      "import": "./dist/bson/bson-writer.js"
-    },
-    "./bson/bson-loader": {
-      "types": "./dist/bson/bson-loader.d.ts",
-      "import": "./dist/bson/bson-loader.js"
-    },
-    "./bson/bundled": {
-      "types": "./dist/bson/bundled.d.ts",
-      "import": "./dist/bson/bundled.js"
-    },
-    "./bson/unbundled": {
-      "types": "./dist/bson/unbundled.d.ts",
-      "import": "./dist/bson/unbundled.js"
-    },
-    "./bson/index": {
-      "types": "./dist/bson/index.d.ts",
-      "import": "./dist/bson/index.js",
-      "require": "./dist/bson/index.cjs"
-    },
-    "./bson": {
-      "types": "./dist/bson/index.d.ts",
-      "import": "./dist/bson/index.js",
-      "require": "./dist/bson/index.cjs"
-    },
     "./excel/excel-format": {
       "types": "./dist/excel/excel-format.d.ts",
       "import": "./dist/excel/excel-format.js"
@@ -685,6 +651,7 @@
   },
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-beta.1",
+    "@loaders.gl/documents": "5.0.0-beta.1",
     "@math.gl/geospatial": "5.0.0-beta.1",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0"

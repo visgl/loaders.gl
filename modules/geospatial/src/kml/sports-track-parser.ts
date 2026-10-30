@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Feature, FeatureCollection, Position} from '@loaders.gl/core/schema';
-import {parseXMLSync} from '@loaders.gl/xml';
+import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
 
 interface XMLValueArray extends Array<XMLValue> {}
 interface XMLObject {

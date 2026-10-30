@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// import type {XMLLoaderOptions} from '@loaders.gl/xml';
-// import {XMLLoader} from '@loaders.gl/xml';
+// import type {XMLLoaderOptions} from '@loaders.gl/documents';
+// import {XMLLoader} from '@loaders.gl/documents';
 
 /**
  * Parses a typed data structure from raw XML for `GetDomain` response

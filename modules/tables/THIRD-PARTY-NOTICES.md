@@ -22,4 +22,4 @@ version is inferred from a current dependency. Keep copyright headers, full
 terms, source/version information and material modification notes when updating.
 Retain this file and the applicable licenses when redistributing bundles or workers.
 
-The BSON codec is an original loaders.gl implementation. MongoDB js-bson supplied historical test fixtures and the serializer used to generate independent wire-reference fixtures; no js-bson runtime code is included.
+Parquet BSON support uses the native codec in @loaders.gl/documents. Its source and fixture notices are retained in that package.

@@ -1,0 +1,146 @@
+{
+  "name": "@loaders.gl/documents",
+  "version": "5.0.0-beta.1",
+  "description": "XML, HTML, YAML, TOML, BSON, and Markdown document loaders",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "loaders.gl",
+    "XML",
+    "HTML",
+    "YAML",
+    "TOML",
+    "BSON",
+    "Markdown"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./xml-loader": {
+      "types": "./dist/xml-loader.d.ts",
+      "import": "./dist/xml-loader.js",
+      "require": "./dist/xml-loader.cjs"
+    },
+    "./html-loader": {
+      "types": "./dist/html-loader.d.ts",
+      "import": "./dist/html-loader.js",
+      "require": "./dist/html-loader.cjs"
+    },
+    "./yaml-loader": {
+      "types": "./dist/yaml-loader.d.ts",
+      "import": "./dist/yaml-loader.js",
+      "require": "./dist/yaml-loader.cjs"
+    },
+    "./toml-loader": {
+      "types": "./dist/toml-loader.d.ts",
+      "import": "./dist/toml-loader.js",
+      "require": "./dist/toml-loader.cjs"
+    },
+    "./bson-loader": {
+      "types": "./dist/bson-loader.d.ts",
+      "import": "./dist/bson-loader.js",
+      "require": "./dist/bson-loader.cjs"
+    },
+    "./markdown-loader": {
+      "types": "./dist/markdown-loader.d.ts",
+      "import": "./dist/markdown-loader.js",
+      "require": "./dist/markdown-loader.cjs"
+    },
+    "./xml-parser": {
+      "types": "./dist/xml-parser.d.ts",
+      "import": "./dist/xml-parser.js",
+      "require": "./dist/xml-parser.cjs"
+    },
+    "./xml-utils": {
+      "types": "./dist/xml-utils.d.ts",
+      "import": "./dist/xml-utils.js",
+      "require": "./dist/xml-utils.cjs"
+    },
+    "./sax-parser": {
+      "types": "./dist/sax-parser.d.ts",
+      "import": "./dist/sax-parser.js",
+      "require": "./dist/sax-parser.cjs"
+    },
+    "./bson-codec": {
+      "types": "./dist/bson-codec.d.ts",
+      "import": "./dist/bson-codec.js",
+      "require": "./dist/bson-codec.cjs"
+    },
+    "./bson-types": {
+      "types": "./dist/bson-types.d.ts",
+      "import": "./dist/bson-types.js",
+      "require": "./dist/bson-types.cjs"
+    },
+    "./bson-writer": {
+      "types": "./dist/bson-writer.d.ts",
+      "import": "./dist/bson-writer.js",
+      "require": "./dist/bson-writer.cjs"
+    },
+    "./markdown-types": {
+      "types": "./dist/markdown-types.d.ts",
+      "import": "./dist/markdown-types.js",
+      "require": "./dist/markdown-types.cjs"
+    },
+    "./xml-loader-types": {
+      "types": "./dist/xml-loader-types.d.ts",
+      "import": "./dist/xml-loader-types.js",
+      "require": "./dist/xml-loader-types.cjs"
+    },
+    "./html-loader-types": {
+      "types": "./dist/html-loader-types.d.ts",
+      "import": "./dist/html-loader-types.js",
+      "require": "./dist/html-loader-types.cjs"
+    },
+    "./yaml-loader-types": {
+      "types": "./dist/yaml-loader-types.d.ts",
+      "import": "./dist/yaml-loader-types.js",
+      "require": "./dist/yaml-loader-types.cjs"
+    },
+    "./toml-loader-types": {
+      "types": "./dist/toml-loader-types.d.ts",
+      "import": "./dist/toml-loader-types.js",
+      "require": "./dist/toml-loader-types.cjs"
+    },
+    "./bson-loader-types": {
+      "types": "./dist/bson-loader-types.d.ts",
+      "import": "./dist/bson-loader-types.js",
+      "require": "./dist/bson-loader-types.cjs"
+    },
+    "./markdown-loader-types": {
+      "types": "./dist/markdown-loader-types.d.ts",
+      "import": "./dist/markdown-loader-types.js",
+      "require": "./dist/markdown-loader-types.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-metadata",
+    "build-metadata": "node ../../scripts/build-documents-metadata.mjs"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.3.6"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~5.0.0-alpha.0"
+  }
+}

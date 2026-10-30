@@ -64,6 +64,7 @@
       "modules/pointclouds/las/formats/las",
       "modules/raster/lerc/formats/lerc",
       "modules/tiles/mvt/formats/map-style",
+      "modules/documents/formats/markdown",
       "modules/tiles/mlt/formats/mlt",
       "modules/tiles/mvt/formats/mvt",
       "modules/scientific/netcdf/formats/netcdf",
@@ -408,13 +409,6 @@
           },
           {
             "type": "category",
-            "label": "@loaders.gl/tables/bson",
-            "items": [
-              "modules/tables/bson/README"
-            ]
-          },
-          {
-            "type": "category",
             "label": "@loaders.gl/tables/csv",
             "items": [
               "modules/tables/csv/README"
@@ -736,11 +730,19 @@
       },
       {
         "type": "category",
-        "label": "@loaders.gl/config",
+        "label": "@loaders.gl/documents",
         "items": [
+          "modules/documents/README",
+          "modules/documents/api-reference/markdown-loader",
           "modules/config/README",
           "modules/config/api-reference/toml-loader",
-          "modules/config/api-reference/yaml-loader"
+          "modules/config/api-reference/yaml-loader",
+          "modules/xml/README",
+          "modules/xml/api-reference/xml-loader",
+          "modules/xml/api-reference/html-loader",
+          "modules/tables/bson/README",
+          "modules/tables/bson/api-reference/bson-loader",
+          "modules/tables/bson/api-reference/bson-writer"
         ]
       },
       {
@@ -841,15 +843,6 @@
           "modules/crypto/api-reference/crc32c-hash",
           "modules/crypto/api-reference/md5-hash",
           "modules/crypto/api-reference/sha256-hash"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/xml",
-        "items": [
-          "modules/xml/README",
-          "modules/xml/api-reference/xml-loader",
-          "modules/xml/api-reference/html-loader"
         ]
       },
       {

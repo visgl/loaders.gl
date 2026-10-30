@@ -14,7 +14,7 @@ both `.yaml` and `.yml` extensions.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {YAMLLoader} from '@loaders.gl/config/bundled';
+import {YAMLLoader} from '@loaders.gl/documents';
 
 const data = await load('config.yaml', YAMLLoader);
 ```
@@ -34,3 +34,6 @@ merges one mapping or a sequence of mappings; earlier mappings in a sequence tak
 precedence. Explicit keys override merged values regardless of their position.
 `uniqueKeys: true` rejects repeated explicit keys, not explicit overrides of merged
 values. A quoted `"<<"` is a literal key, not a merge directive.
+
+For synchronous parsing, import `YAMLLoaderWithParser` from
+`@loaders.gl/documents/yaml-loader` and pass it to `parseSync`.

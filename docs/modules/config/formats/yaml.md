@@ -2,7 +2,7 @@
 
 YAML is a human-friendly data serialization language commonly used for configuration documents.
 
-- _[`@loaders.gl/config`](/docs/modules/config)_
+- _[`@loaders.gl/documents`](/docs/modules/config)_
 - _[`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader)_
 - _[YAML specification](https://yaml.org/spec/)_
 

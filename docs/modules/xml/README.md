@@ -13,7 +13,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   format="xml"
   eyebrow="XML module"
   title="Keep document parsing separate from document meaning."
-  description="`@loaders.gl/xml` provides the XML parsing boundary used by format-specific loaders. It exposes XML document processing without forcing applications to depend on one particular geographic, media, or metadata vocabulary."
+  description="`@loaders.gl/documents` provides the XML parsing boundary used by format-specific loaders. It exposes XML document processing without forcing applications to depend on one particular geographic, media, or metadata vocabulary."
   tone="cyan"
   meta={['XML', 'Streaming parser', 'HTML loader']}
   links={[
@@ -49,7 +49,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-The `@loaders.gl/xml` module handles the [eXtensible Markup Language](https://www.w3.org/TR/xml/) format.
+The `@loaders.gl/documents` module handles the [eXtensible Markup Language](https://www.w3.org/TR/xml/) format.
 
 ## APIs
 
@@ -64,7 +64,7 @@ loaders such as KML and WMS. See the [XML format page](/docs/modules/xml/formats
 ## Installation
 
 ```bash
-npm install @loaders.gl/xml
+npm install @loaders.gl/documents
 npm install @loaders.gl/core
 ```
 
@@ -82,5 +82,5 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 
 ## Sources and credits
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/xml/THIRD-PARTY-NOTICES.md)
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/documents/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).

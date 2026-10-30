@@ -56,8 +56,8 @@ table-specific result shape. Its loaders can return:
 | [`BSONLoader`](/docs/modules/tables/bson/api-reference/bson-loader) | Binary JSON documents                       |
 | [`XMLLoader`](/docs/modules/xml/api-reference/xml-loader)    | XML documents represented as JavaScript data |
 | [`HTMLLoader`](/docs/modules/xml/api-reference/html-loader)  | HTML documents and fragments               |
-| [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) | Human-readable YAML documents; provided by `@loaders.gl/config`. |
-| [`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) | Configuration-oriented TOML documents; provided by `@loaders.gl/config`. |
+| [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) | Human-readable YAML documents; provided by `@loaders.gl/documents`. |
+| [`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) | Configuration-oriented TOML documents; provided by `@loaders.gl/documents`. |
 
 ## Data Structure
 

@@ -37,7 +37,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-- _[`@loaders.gl/xml`](/docs/modules/xml)_
+- _[`@loaders.gl/documents`](/docs/modules/xml)_
 
 <ReferenceBoundary
   title="HTMLLoader details"

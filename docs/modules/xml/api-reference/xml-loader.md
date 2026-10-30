@@ -54,7 +54,7 @@ on making the returned data easier to use in JavaScript applications.
 Load XML data into a javascript data structure and preserve the original structure
 
 ```typescript
-import {XMLLoader} from '@loaders.gl/xml';
+import {XMLLoader} from '@loaders.gl/documents';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, XMLLoader);
@@ -63,7 +63,7 @@ const data = await load(url, XMLLoader);
 Load XML data into a javascript data structure and set options that make the returned data more "JavaScript friendly":
 
 ```typescript
-import {XMLLoader} from '@loaders.gl/xml';
+import {XMLLoader} from '@loaders.gl/documents';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, XMLLoader, {xml: {uncapitalizeKeys: true, removeNSPrefix: true}});

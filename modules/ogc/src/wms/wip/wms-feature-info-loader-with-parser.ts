@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {XMLLoaderOptions} from '@loaders.gl/xml';
+import type {XMLLoaderOptions} from '@loaders.gl/documents';
 
 import type {WMSFeatureInfo} from '../lib/parsers/wms/parse-wms-features';
 import {parseWMSFeatureInfo} from '../lib/parsers/wms/parse-wms-features';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {XMLLoaderOptions} from '@loaders.gl/xml';
+import type {XMLLoaderOptions} from '@loaders.gl/documents';
 import type {CSWCapabilities} from './lib/parsers/csw/parse-csw-capabilities';
 
 import {CSWCapabilitiesFormat} from './wms-format';

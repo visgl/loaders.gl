@@ -32,21 +32,6 @@
         "branches": 56
       }
     },
-    "@loaders.gl/config": {
-      "path": "modules/config",
-      "browser": {
-        "statements": 76,
-        "lines": 76,
-        "functions": 95,
-        "branches": 70
-      },
-      "merged": {
-        "statements": 76,
-        "lines": 76,
-        "functions": 95,
-        "branches": 70
-      }
-    },
     "@loaders.gl/core": {
       "path": "modules/core",
       "browserExcludedSourcePaths": [
@@ -390,21 +375,6 @@
         "branches": 90
       }
     },
-    "@loaders.gl/xml": {
-      "path": "modules/xml",
-      "browser": {
-        "statements": 80,
-        "lines": 80,
-        "functions": 71,
-        "branches": 80
-      },
-      "merged": {
-        "statements": 80,
-        "lines": 80,
-        "functions": 70,
-        "branches": 80
-      }
-    },
     "@loaders.gl/ogc": {
       "path": "modules/ogc",
       "browser": {
@@ -450,6 +420,39 @@
         "branches": 46
       },
       "baselineReason": "The aggregate baseline inherits the strictest floor shared by all three existing implementations. Their original per-format thresholds remain unchanged in pointclouds/las, pointclouds/pcd, and pointclouds/ply."
+    },
+    "@loaders.gl/documents": {
+      "path": "modules/documents",
+      "browser": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 71,
+        "branches": 80
+      },
+      "merged": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 70,
+        "branches": 80
+      },
+      "sourcePaths": [
+        "modules/documents/src/html-loader.ts",
+        "modules/documents/src/html-loader-types.ts",
+        "modules/documents/src/lib/parsers/parse-xml-internal.ts",
+        "modules/documents/src/lib/parsers/parse-xml.ts",
+        "modules/documents/src/lib/parsers/streaming-xml-parser.ts",
+        "modules/documents/src/lib/xml-utils/uncapitalize.ts",
+        "modules/documents/src/lib/xml-utils/xml-utils.ts",
+        "modules/documents/src/sax-ts/sax.ts",
+        "modules/documents/src/xml-format.ts",
+        "modules/documents/src/xml-loader.ts",
+        "modules/documents/src/xml-loader-types.ts",
+        "modules/documents/src/index.ts",
+        "modules/documents/src/xml-parser.ts",
+        "modules/documents/src/xml-utils.ts",
+        "modules/documents/src/sax-parser.ts"
+      ],
+      "sourcePathReason": "Retain the original XML package ratchet. Config, BSON, and new Markdown implementations have independent format gates; the documents source inventory requires an owner for every production file."
     }
   },
   "formats": {
@@ -776,25 +779,6 @@
         "lines": 80,
         "functions": 80,
         "branches": 70
-      }
-    },
-    "tables/bson": {
-      "owner": "@loaders.gl/tables",
-      "path": "modules/tables/src/bson",
-      "sourcePaths": [
-        "modules/tables/src/bson/"
-      ],
-      "browser": {
-        "statements": 78,
-        "lines": 78,
-        "functions": 60,
-        "branches": 65
-      },
-      "merged": {
-        "statements": 78,
-        "lines": 78,
-        "functions": 60,
-        "branches": 65
       }
     },
     "tables/csv": {
@@ -1375,6 +1359,84 @@
         "lines": 83,
         "functions": 77,
         "branches": 60
+      }
+    },
+    "documents/config": {
+      "path": "modules/documents/src",
+      "browser": {
+        "statements": 76,
+        "lines": 76,
+        "functions": 95,
+        "branches": 70
+      },
+      "merged": {
+        "statements": 76,
+        "lines": 76,
+        "functions": 95,
+        "branches": 70
+      },
+      "owner": "@loaders.gl/documents",
+      "sourcePaths": [
+        "modules/documents/src/lib/parsers/parse-toml.ts",
+        "modules/documents/src/toml-format.ts",
+        "modules/documents/src/toml-loader-options.ts",
+        "modules/documents/src/toml-loader-types.ts",
+        "modules/documents/src/toml-loader.ts",
+        "modules/documents/src/lib/parsers/parse-yaml.ts",
+        "modules/documents/src/yaml-format.ts",
+        "modules/documents/src/yaml-loader-options.ts",
+        "modules/documents/src/yaml-loader-types.ts",
+        "modules/documents/src/yaml-loader.ts"
+      ]
+    },
+    "documents/bson": {
+      "owner": "@loaders.gl/documents",
+      "path": "modules/documents/src",
+      "sourcePaths": [
+        "modules/documents/src/bson-format.ts",
+        "modules/documents/src/bson-loader-types.ts",
+        "modules/documents/src/bson-loader.ts",
+        "modules/documents/src/bson-types.ts",
+        "modules/documents/src/bson-writer.ts",
+        "modules/documents/src/lib/encoders/encode-bson.ts",
+        "modules/documents/src/lib/parsers/decode-bson.ts",
+        "modules/documents/src/lib/parsers/parse-bson.ts",
+        "modules/documents/src/bson-codec.ts"
+      ],
+      "browser": {
+        "statements": 78,
+        "lines": 78,
+        "functions": 60,
+        "branches": 65
+      },
+      "merged": {
+        "statements": 78,
+        "lines": 78,
+        "functions": 60,
+        "branches": 65
+      }
+    },
+    "documents/markdown": {
+      "owner": "@loaders.gl/documents",
+      "path": "modules/documents/src",
+      "sourcePaths": [
+        "modules/documents/src/markdown-format.ts",
+        "modules/documents/src/markdown-types.ts",
+        "modules/documents/src/markdown-loader-types.ts",
+        "modules/documents/src/markdown-loader.ts",
+        "modules/documents/src/lib/parsers/parse-markdown.ts"
+      ],
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 85
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 85
       }
     }
   }

@@ -4,14 +4,12 @@
 
 import {expect, test} from 'vitest';
 import {load, parse, parseSync} from '@loaders.gl/core';
-import {CSVLoader, AvroLoader, AvroSchemaLoader, BSONLoader, ExcelLoader} from '@loaders.gl/tables';
+import {CSVLoader, AvroLoader, AvroSchemaLoader, ExcelLoader} from '@loaders.gl/tables';
 import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
 import {AvroLoaderWithParser} from '@loaders.gl/tables/avro/avro-loader';
 import {AvroSchemaLoaderWithParser} from '@loaders.gl/tables/avro-schema';
 import {CSVLoader as FormatCSVLoader} from '@loaders.gl/tables/csv';
 import {AvroLoader as FormatAvroLoader} from '@loaders.gl/tables/avro';
-import {BSONLoaderWithParser} from '@loaders.gl/tables/bson/bson-loader';
-import {BSONLoader as FormatBSONLoader} from '@loaders.gl/tables/bson';
 import {ExcelLoaderWithParser} from '@loaders.gl/tables/excel/excel-loader';
 import {ExcelLoader as FormatExcelLoader} from '@loaders.gl/tables/excel';
 
@@ -71,7 +69,6 @@ test.each(
     [JSONLoader, JSONLoaderWithParser],
     [ArrowLoader, ArrowLoaderWithParser],
     [ExcelLoader, ExcelLoaderWithParser],
-    [BSONLoader, BSONLoaderWithParser],
     [CSVLoader, CSVLoaderWithParser],
     [AvroLoader, AvroLoaderWithParser],
     [AvroSchemaLoader, AvroSchemaLoaderWithParser]
@@ -98,10 +95,6 @@ test('core parses CSV from group metadata and a synchronous parser subpath', asy
   expect(synchronous).toEqual(asynchronous);
 });
 
-test('format bson metadata shares its grouped owner', () => {
-  expect(FormatBSONLoader).toBe(BSONLoader);
-});
-
 test('format Excel retains transport hooks while grouped metadata stays lightweight', () => {
   expect(FormatExcelLoader).toMatchObject(ExcelLoader);
   expect(FormatExcelLoader.serializeWorkerResult).toBe(ExcelLoaderWithParser.serializeWorkerResult);
@@ -110,14 +103,6 @@ test('format Excel retains transport hooks while grouped metadata stays lightwei
   );
   expect(ExcelLoader).not.toHaveProperty('serializeWorkerResult');
   expect(ExcelLoader).not.toHaveProperty('deserializeWorkerResult');
-});
-
-test('grouped BSON supports asynchronous metadata and synchronous parser access', async () => {
-  const {BSONWriter} = await import('@loaders.gl/tables');
-  const input = {name: 'grouped', value: 1};
-  const data = BSONWriter.encodeSync(input);
-  expect(await parse(data, BSONLoader)).toEqual(input);
-  expect(parseSync(data, BSONLoaderWithParser)).toEqual(input);
 });
 
 test('format arrow metadata shares its grouped owner', () => {
