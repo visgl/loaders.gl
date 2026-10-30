@@ -63,6 +63,8 @@ export type SAXParserOptions = SAXEvents & {
   strictEntities?: boolean;
   /** Preserve authored tag and attribute case in non-strict mode. */
   preserveCase?: boolean;
+  /** Match tag names without case sensitivity in non-strict mode. */
+  caseInsensitiveTags?: boolean;
   /** Decode entity values; false preserves their original spelling. */
   processEntities?: boolean;
   xmlns?: any;
@@ -101,6 +103,7 @@ const DEFAULT_SAX_PARSER_OPTIONS: Required<SAXParserOptions> = {
   noscript: false,
   strictEntities: false,
   preserveCase: false,
+  caseInsensitiveTags: false,
   processEntities: true,
   xmlns: undefined,
   position: undefined,
@@ -1158,6 +1161,7 @@ abstract class SAX {
   protected end(): SAXParser {
     if (this.sawRoot && !this.closedRoot) this.strictFail('Unclosed root tag');
     if (
+      this.strict &&
       this.state !== this.S.BEGIN &&
       this.state !== this.S.BEGIN_WHITESPACE &&
       this.state !== this.S.TEXT
@@ -1483,8 +1487,13 @@ abstract class SAX {
       return;
     }
 
+    const caseInsensitiveTags =
+      !this.strict && (this.opt.caseInsensitiveTags || !this.opt.preserveCase);
     if (this.script) {
-      if (this.tagName !== 'script') {
+      const normalizedScriptCloseTag = caseInsensitiveTags
+        ? this.tagName.toLowerCase()
+        : this.tagName;
+      if (normalizedScriptCloseTag !== 'script') {
         this.script += `</${this.tagName}>`;
         this.tagName = '';
         this.state = this.S.SCRIPT;
@@ -1498,12 +1507,11 @@ abstract class SAX {
     // <a><b></c></b></a> will close everything, otherwise.
     let t = this.tags.length;
     let tagName = this.tagName;
-    if (!this.strict && !this.opt.preserveCase) {
-      tagName = tagName[this.looseCase]();
-    }
+    const normalizedTagName = caseInsensitiveTags ? tagName.toLowerCase() : tagName;
     while (t--) {
       const close = this.tags[t];
-      if (close.name !== tagName) {
+      const normalizedOpenTagName = caseInsensitiveTags ? close.name.toLowerCase() : close.name;
+      if (normalizedOpenTagName !== normalizedTagName) {
         // fail the first time in strict mode
         this.strictFail('Unexpected close tag');
       } else {

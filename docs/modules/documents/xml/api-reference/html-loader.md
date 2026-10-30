@@ -53,6 +53,10 @@ The `HTMLLoader` parses HTML-encoded data.
 > - the extraction of an error string from an HTML formatted error response from a server
 > - or possibly to extract some valuable information (perhaps the URL to a geospatial service) from a server that doesn't provide more structured return formats (such as JSON or XML).
 
+In tolerant mode, tag matching is case-insensitive and still preserves the authored case in the
+result keys. Open elements are closed at end-of-input, so truncated HTML can still produce a
+partial object tree.
+
 ## Usage
 
 ```typescript
@@ -76,5 +80,6 @@ For options, see the [`XMLLoader`](./xml-loader).
 ## Attributions
 
 HTMLLoader uses the native documents SAX parser with `strict: false` and `htmlEntities: true`.
-It preserves authored tag/attribute case and tolerates legacy HTML-like markup; it does not implement
-the HTML5 tree-construction algorithm. Use a DOM parser for browser-equivalent HTML semantics.
+It preserves authored tag/attribute case, matches tag names without case sensitivity, and closes
+open elements at end-of-input. It does not implement the HTML5 tree-construction algorithm. Use a
+DOM parser for browser-equivalent HTML semantics.
