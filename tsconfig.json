@@ -234,11 +234,10 @@
       "@loaders.gl/scene/gltf/test": [
         "modules/scene/test/gltf"
       ],
+      "@loaders.gl/images/test": ["modules/images/test"],
+      "@loaders.gl/images/*": ["modules/images/src/*"],
       "@loaders.gl/images": [
         "modules/images/src"
-      ],
-      "@loaders.gl/images/test": [
-        "modules/images/test"
       ],
       "@loaders.gl/tiles-3d/i3s": [
         "modules/tiles-3d/src/i3s"
@@ -396,12 +395,6 @@
       "@loaders.gl/raster/test/terrain": [
         "modules/raster/test/terrain"
       ],
-      "@loaders.gl/textures": [
-        "modules/textures/src"
-      ],
-      "@loaders.gl/textures/test": [
-        "modules/textures/test"
-      ],
       "@loaders.gl/traces": [
         "modules/traces/src"
       ],
@@ -410,12 +403,6 @@
       ],
       "@loaders.gl/traces/test": [
         "modules/traces/test"
-      ],
-      "@loaders.gl/video": [
-        "modules/video/src"
-      ],
-      "@loaders.gl/video/test": [
-        "modules/video/test"
       ],
       "@loaders.gl/geospatial/wkt": [
         "modules/geospatial/src/wkt"

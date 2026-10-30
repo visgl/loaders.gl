@@ -5,7 +5,7 @@
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {assert, isBrowser} from '@loaders.gl/core/loader-utils';
 import type {ImageType} from '../../types';
-import type {ImageLoaderOptions} from '../../image-loader';
+import type {LegacyImageLoaderOptions} from '../../legacy-image-loader-types';
 import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
 import {getImageData} from '../category-api/parsed-image-api';
 import {parseToImage} from './parse-to-image';
@@ -18,7 +18,7 @@ import {parseToNodeImage} from './parse-to-node-image';
 // eslint-disable-next-line complexity
 export async function parseImage(
   arrayBuffer: ArrayBuffer,
-  options?: ImageLoaderOptions,
+  options?: LegacyImageLoaderOptions,
   context?: LoaderContext
 ): Promise<ImageType> {
   options = options || {};

@@ -2,46 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ImageType} from './types';
-import {VERSION} from './lib/utils/version';
-import {ImageFormat} from './image-format';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {parseImageBitmap, parseImageBitmapBlob} from './lib/parsers/parse-image-bitmap';
+import {ImageLoader as ImageLoaderMetadata, type ImageLoaderOptions} from './image-loader-types';
+
+const {preload: _ImageLoaderPreload, ...ImageLoaderMetadataWithoutPreload} = ImageLoaderMetadata;
+
+export type {ImageLoaderOptions} from './image-loader-types';
 
 /**
- * @deprecated in v4.4. Use `ImageBitmapLoaderOptions` for new code.
+ * Loads images as `ImageBitmap` in browsers and in Node.js when `@loaders.gl/core/polyfills` is installed.
  */
-export type ImageLoaderOptions = StrictLoaderOptions & {
-  image?: {
-    type?: 'auto' | 'data' | 'imagebitmap' | 'image';
-    decode?: boolean;
-  };
-  imagebitmap?: ImageBitmapOptions & Record<string, unknown>;
-};
-
-const DEFAULT_IMAGE_LOADER_OPTIONS: ImageLoaderOptions = {
-  image: {
-    type: 'auto',
-    decode: true
-  }
-  // imagebitmap: {} - passes (platform dependent) parameters to ImageBitmap constructor
-};
-
-/**
- * @deprecated in v4.4. Use `ImageBitmapLoader` for a pure `ImageBitmap` return type.
- *
- * Metadata-only loader for platform-specific image types.
- */
-async function preload() {
-  const {ImageLoaderWithParser} = await import('./image-loader-with-parser');
-  return ImageLoaderWithParser;
-}
-
-export const ImageLoader = {
-  dataType: null as unknown as ImageType,
-  batchType: null as never,
-  ...ImageFormat,
-  version: VERSION,
-  // TODO: byteOffset, byteLength;
-  options: DEFAULT_IMAGE_LOADER_OPTIONS,
-  preload
-} as const satisfies Loader<ImageType, never, ImageLoaderOptions>;
+export const ImageLoaderWithParser = {
+  ...ImageLoaderMetadataWithoutPreload,
+  parse: parseImageBitmap,
+  parseBlob: parseImageBitmapBlob
+} as const satisfies LoaderWithParser<ImageBitmap, never, ImageLoaderOptions>;

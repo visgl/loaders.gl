@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {NetCDFHeader} from './netcdfjs/netcdf-types';
 import {NetCDFReader} from './netcdfjs/netcdf-reader';
-import {NetCDFWorkerLoader as NetCDFWorkerLoaderMetadata} from './netcdf-loader';
+import {NetCDFLoader as NetCDFWorkerLoaderMetadata} from './netcdf-loader';
 import {NetCDFLoader as NetCDFLoaderMetadata} from './netcdf-loader';
 
 const {preload: _NetCDFWorkerLoaderPreload, ...NetCDFWorkerLoaderMetadataWithoutPreload} =

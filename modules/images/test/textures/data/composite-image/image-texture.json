@@ -1,0 +1,4 @@
+{
+  "shape": "image-texture",
+  "image": "../../../data/ibl/brdfLUT.png"
+}

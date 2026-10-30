@@ -8,7 +8,7 @@ import {writeFile} from '../lib/utils/file-utils';
 import {join, dirname} from 'path';
 import {ChildProcessProxy} from '@loaders.gl/core/worker-utils';
 import {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from '@loaders.gl/draco';
-import {BASIS_EXTERNAL_LIBRARIES} from '@loaders.gl/textures';
+import {BASIS_EXTERNAL_LIBRARIES} from '@loaders.gl/images/basis-module-loader';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -51,10 +51,10 @@ export class DepsInstaller {
     await this.installFromNpm('draco', 'draco-writer-worker-node.cjs');
 
     console.log('Installing "Basis Loader" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', 'basis-worker-node.cjs');
+    await this.installFromNpm('images', 'basis-worker-node.cjs');
 
     console.log('Installing "KTX2 Basis Writer" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', 'ktx2-basis-writer-worker-node.cjs');
+    await this.installFromNpm('images', 'ktx2-basis-writer-worker-node.cjs');
 
     console.log('Installing "Draco decoder" library'); // eslint-disable-line no-console
     await this.installFromUrl(
@@ -76,12 +76,12 @@ export class DepsInstaller {
     );
 
     console.log('Installing "Basis transcoder" library'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', BASIS_EXTERNAL_LIBRARIES.TRANSCODER, 'libs');
-    await this.installFromNpm('textures', BASIS_EXTERNAL_LIBRARIES.TRANSCODER_WASM, 'libs');
+    await this.installFromNpm('images', BASIS_EXTERNAL_LIBRARIES.TRANSCODER, 'libs');
+    await this.installFromNpm('images', BASIS_EXTERNAL_LIBRARIES.TRANSCODER_WASM, 'libs');
 
     console.log('Installing "Basis encoder" library'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', BASIS_EXTERNAL_LIBRARIES.ENCODER, 'libs');
-    await this.installFromNpm('textures', BASIS_EXTERNAL_LIBRARIES.ENCODER_WASM, 'libs');
+    await this.installFromNpm('images', BASIS_EXTERNAL_LIBRARIES.ENCODER, 'libs');
+    await this.installFromNpm('images', BASIS_EXTERNAL_LIBRARIES.ENCODER_WASM, 'libs');
 
     // eslint-disable-next-line no-console
     console.log('Installing "join-images" npm package');
@@ -92,7 +92,7 @@ export class DepsInstaller {
       // `npm install sharp join-images` works unstable. It fails because installed `sharp` version
       // may be different from the version required by `join-images`. Pointing to specific versions
       // resolve this issue
-      arguments: ['install', 'sharp@0.30.4', 'join-images@1.1.3'],
+      arguments: ['install', 'sharp@0.35.5', 'join-images@1.5.0'],
       wait: 0,
       ignoreStderr: true,
       spawn: {shell: true}

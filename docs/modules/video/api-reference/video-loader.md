@@ -60,7 +60,7 @@ A basic Video element loader. Only works in the browser.
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only needed if using under Node
-import {VideoLoader} from '@loaders.gl/video';
+import {VideoLoader} from '@loaders.gl/images';
 import {load} from '@loaders.gl/core';
 
 const image = await load(url, VideoLoader, options);

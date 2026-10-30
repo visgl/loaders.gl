@@ -53,7 +53,7 @@ const TEXTURES_TABS = {
   },
   crunchLoader: {
     id: 'crunchloader',
-    label: 'CrunchWorkerLoader',
+    label: 'CrunchLoader',
     href: '/docs/modules/textures/api-reference/crunch-loader'
   },
   radianceHdrLoader: {

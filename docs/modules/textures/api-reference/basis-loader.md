@@ -63,7 +63,7 @@ A loader for Basis Universal "supercompressed" GPU textures. Extracts supercompr
 ## Usage
 
 ```typescript
-import {BasisLoader} from '@loaders.gl/textures';
+import {BasisLoader} from '@loaders.gl/images';
 import {load} from '@loaders.gl/core';
 
 const miplevels = await load(url, BasisLoader, options);
@@ -103,12 +103,12 @@ Binomial LLC supplies two WASM modules:
 - `basis_transcoder.wasm`, used for all `.basis` and KTX2 decoding;
 - `basis_encoder.wasm`, loaded only by `KTX2BasisWriter`.
 
-The pinned upstream commit, hashes, license, and notice are recorded in `modules/textures/src/libs`.
+The pinned upstream commit, hashes, license, and notice are recorded in `modules/images/src/libs`.
 
 The libraries are loaded during runtime from URLs:
 
-- https://unpkg.com/@loaders.gl/textures@{VERSION}/dist/libs/basis_transcoder.wasm
-- https://unpkg.com/@loaders.gl/textures@{VERSION}/dist/libs/basis_transcoder.js
+- https://unpkg.com/@loaders.gl/images@{VERSION}/dist/libs/basis_transcoder.wasm
+- https://unpkg.com/@loaders.gl/images@{VERSION}/dist/libs/basis_transcoder.js
 
 ## Compressed Texture Formats
 

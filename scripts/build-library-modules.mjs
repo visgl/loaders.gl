@@ -12,7 +12,7 @@ const libraryExports = {
     'draco_wasm_wrapper_gltf': 'DracoDecoderModule',
     'draco_encoder': 'DracoEncoderModule'
   },
-  textures: {
+  images: {
     'basis_transcoder': 'BASIS',
     'basis_encoder': 'BASIS',
     'crunch': 'LoadCrunchDecoder'
@@ -33,7 +33,7 @@ async function buildLibraryModules(moduleName, exportsByLibrary) {
   for (const [libraryName, exportName] of Object.entries(exportsByLibrary)) {
     let factoryExport = exportName;
     let source = await readFile(resolve(`src/libs/${libraryName}.js`), 'utf8');
-    if (moduleName === 'textures' && libraryName === 'crunch') {
+    if (moduleName === 'images' && libraryName === 'crunch') {
       // The old worker shim assigns to an undeclared window and relies on classic-script `this`.
       // Give it a module-local binding instead of changing the worker global or vendor source.
       if (!source.includes('window = this;')) {

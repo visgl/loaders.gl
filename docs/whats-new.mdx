@@ -68,6 +68,13 @@ and decoded-memory budgets through [raster sources](./modules/raster/README.md).
 read encoded tile payloads by table and matrix ID. [Scientific formats](./modules/scientific/README.md)
 bring NetCDF and Zarr together, including OME-Zarr bioimaging sources.
 
+[Images](./modules/images/README.md) now includes compressed textures, HDR, texture manifests,
+and browser video loading. `ImageLoader` returns `ImageBitmap`; `LegacyImageLoader` retains
+older output modes. Node image decoding and encoding use an optional, lazy-loaded Sharp backend,
+including WebP and AVIF support. See the
+[image migration guide](./upgrade-guide.md#image-texture-and-video-consolidation) for renamed
+loaders, flat implementation imports, and explicit codec installation.
+
 <span id="tilematrix-traversal-and-xyz-assessment" />
 <span id="tilematrix-validation-and-coalesced-rows" />
 <span id="regular-grid-tilematrix-frame-selection" />
@@ -122,6 +129,7 @@ maps removed packages to their replacements; the [packages overview](./packages.
 | [core](./modules/core/README.md) | Loading APIs, schemas, scan queries, and geometry utilities |
 | [tables](./modules/tables/README.md) | Tabular formats and lakehouse sources |
 | [geospatial](./modules/geospatial/README.md) | Geographic files and geometry formats |
+| [images](./modules/images/README.md) | Images, compressed textures, HDR, and video |
 | [raster](./modules/raster/README.md) | GeoTIFF, LERC, and terrain data |
 | [scientific](./modules/scientific/README.md) | NetCDF, Zarr, and bioimaging sources |
 | [tiles](./modules/tiles/README.md) | 2D tile traversal, MVT, MLT, and PMTiles |

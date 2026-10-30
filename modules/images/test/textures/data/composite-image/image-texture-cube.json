@@ -1,0 +1,11 @@
+{
+  "shape": "image-texture-cube",
+  "faces": {
+    "+X": "../../../data/ibl/papermill/environment/environment_right_0.jpg",
+    "-X": "../../../data/ibl/papermill/environment/environment_left_0.jpg",
+    "+Y": "../../../data/ibl/papermill/environment/environment_top_0.jpg",
+    "-Y": "../../../data/ibl/papermill/environment/environment_bottom_0.jpg",
+    "+Z": "../../../data/ibl/papermill/environment/environment_front_0.jpg",
+    "-Z": "../../../data/ibl/papermill/environment/environment_back_0.jpg"
+  }
+}

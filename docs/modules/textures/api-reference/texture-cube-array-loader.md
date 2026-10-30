@@ -31,7 +31,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Input', value: 'JSON manifest with one or more cubemap layers'},
     {label: 'Face layout', value: '+X, -X, +Y, -Y, +Z, and -Z'},
     {label: 'Mip levels', value: 'Single paths, arrays, or inferred templates'},
-    {label: 'Decode', value: 'ImageBitmapLoader by default, with Node polyfill support'}
+    {label: 'Decode', value: 'ImageLoader by default, with Node polyfill support'}
   ]}
 />
 
@@ -59,7 +59,7 @@ A loader for texture cube arrays described by a JSON manifest.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureCubeArrayLoader} from '@loaders.gl/textures';
+import {TextureCubeArrayLoader} from '@loaders.gl/images';
 
 const imageCubeArray = await load(
   'environment.image-texture-cube-array.json',
@@ -67,7 +67,7 @@ const imageCubeArray = await load(
 );
 ```
 
-Member faces are parsed with `ImageBitmapLoader` by default, returning native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
+Member faces are parsed with `ImageLoader` by default, returning native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
 
 ## Manifest
 

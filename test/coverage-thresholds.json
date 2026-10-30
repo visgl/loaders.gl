@@ -139,7 +139,33 @@
         "lines": 82,
         "functions": 89,
         "branches": 74
-      }
+      },
+      "sourcePaths": [
+        "modules/images/src/bundled.ts",
+        "modules/images/src/image-format.ts",
+        "modules/images/src/image-loader-types.ts",
+        "modules/images/src/image-loader.ts",
+        "modules/images/src/image-writer.ts",
+        "modules/images/src/index.ts",
+        "modules/images/src/legacy-image-loader-types.ts",
+        "modules/images/src/legacy-image-loader.ts",
+        "modules/images/src/lib/category-api/binary-image-api.ts",
+        "modules/images/src/lib/category-api/image-format.ts",
+        "modules/images/src/lib/category-api/image-type.ts",
+        "modules/images/src/lib/category-api/parse-isobmff-binary.ts",
+        "modules/images/src/lib/category-api/parsed-image-api.ts",
+        "modules/images/src/lib/encoders/encode-image.ts",
+        "modules/images/src/lib/parsers/parse-image-bitmap.ts",
+        "modules/images/src/lib/parsers/parse-image.ts",
+        "modules/images/src/lib/parsers/parse-to-image-bitmap.ts",
+        "modules/images/src/lib/parsers/parse-to-image.ts",
+        "modules/images/src/lib/parsers/parse-to-node-image.ts",
+        "modules/images/src/lib/parsers/svg-utils.ts",
+        "modules/images/src/lib/utils/version.ts",
+        "modules/images/src/types.ts",
+        "modules/images/src/unbundled.ts"
+      ],
+      "sourcePathReason": "Preserve the original image implementation gate, including its 89% function requirement. Texture and video implementations retain their unchanged independent images/textures and images/video gates; all image-package production files are checked for a coverage owner."
     },
     "@loaders.gl/raster": {
       "path": "modules/raster",
@@ -311,21 +337,6 @@
         "branches": 64
       }
     },
-    "@loaders.gl/textures": {
-      "path": "modules/textures",
-      "browser": {
-        "statements": 75,
-        "lines": 75,
-        "functions": 72,
-        "branches": 67
-      },
-      "merged": {
-        "statements": 74,
-        "lines": 75,
-        "functions": 69,
-        "branches": 67
-      }
-    },
     "@loaders.gl/tiles": {
       "path": "modules/tiles",
       "browser": {
@@ -377,21 +388,6 @@
         "lines": 96,
         "functions": 98,
         "branches": 90
-      }
-    },
-    "@loaders.gl/video": {
-      "path": "modules/video",
-      "browser": {
-        "statements": 83,
-        "lines": 83,
-        "functions": 77,
-        "branches": 60
-      },
-      "merged": {
-        "statements": 82,
-        "lines": 83,
-        "functions": 77,
-        "branches": 60
       }
     },
     "@loaders.gl/xml": {
@@ -1222,6 +1218,164 @@
       "sourcePaths": [
         "modules/geospatial/src/wkt/"
       ]
+    },
+    "images/raster-images": {
+      "owner": "@loaders.gl/images",
+      "path": "modules/images/src",
+      "sourcePaths": [
+        "modules/images/src/bundled.ts",
+        "modules/images/src/image-format.ts",
+        "modules/images/src/image-loader-types.ts",
+        "modules/images/src/image-loader.ts",
+        "modules/images/src/image-writer.ts",
+        "modules/images/src/index.ts",
+        "modules/images/src/legacy-image-loader-types.ts",
+        "modules/images/src/legacy-image-loader.ts",
+        "modules/images/src/lib/category-api/binary-image-api.ts",
+        "modules/images/src/lib/category-api/image-format.ts",
+        "modules/images/src/lib/category-api/image-type.ts",
+        "modules/images/src/lib/category-api/parse-isobmff-binary.ts",
+        "modules/images/src/lib/category-api/parsed-image-api.ts",
+        "modules/images/src/lib/encoders/encode-image.ts",
+        "modules/images/src/lib/parsers/parse-image-bitmap.ts",
+        "modules/images/src/lib/parsers/parse-image.ts",
+        "modules/images/src/lib/parsers/parse-to-image-bitmap.ts",
+        "modules/images/src/lib/parsers/parse-to-image.ts",
+        "modules/images/src/lib/parsers/parse-to-node-image.ts",
+        "modules/images/src/lib/parsers/svg-utils.ts",
+        "modules/images/src/lib/utils/version.ts",
+        "modules/images/src/types.ts",
+        "modules/images/src/unbundled.ts"
+      ],
+      "browser": {
+        "statements": 82,
+        "lines": 82,
+        "functions": 89,
+        "branches": 75
+      },
+      "merged": {
+        "statements": 81,
+        "lines": 82,
+        "functions": 89,
+        "branches": 74
+      }
+    },
+    "images/textures": {
+      "owner": "@loaders.gl/images",
+      "path": "modules/images/src",
+      "sourcePaths": [
+        "modules/images/src/basis-format-utils.ts",
+        "modules/images/src/basis-loader-types.ts",
+        "modules/images/src/basis-loader.ts",
+        "modules/images/src/basis-module-loader.ts",
+        "modules/images/src/basis-types.ts",
+        "modules/images/src/basis-worker.ts",
+        "modules/images/src/compressed-texture-loader-types.ts",
+        "modules/images/src/compressed-texture-loader.ts",
+        "modules/images/src/compressed-texture-worker.ts",
+        "modules/images/src/compressed-texture-writer.ts",
+        "modules/images/src/crunch-loader.ts",
+        "modules/images/src/crunch-module-loader.ts",
+        "modules/images/src/crunch-worker.ts",
+        "modules/images/src/gl-extensions.ts",
+        "modules/images/src/ktx2-basis-writer-worker-loader.ts",
+        "modules/images/src/ktx2-basis-writer-worker.ts",
+        "modules/images/src/ktx2-basis-writer.ts",
+        "modules/images/src/lib/composite-image/composite-image-manifest-schema.ts",
+        "modules/images/src/lib/composite-image/image-texture-cube.ts",
+        "modules/images/src/lib/composite-image/parse-composite-image.ts",
+        "modules/images/src/lib/composite-image/test-composite-image-manifest.ts",
+        "modules/images/src/lib/encoders/encode-ktx2-basis-texture.ts",
+        "modules/images/src/lib/encoders/encode-texture.ts",
+        "modules/images/src/lib/gl-extensions.ts",
+        "modules/images/src/lib/gl-types.ts",
+        "modules/images/src/lib/parsers/basis-module-loader.ts",
+        "modules/images/src/lib/parsers/crunch-module-loader.ts",
+        "modules/images/src/lib/parsers/parse-basis.ts",
+        "modules/images/src/lib/parsers/parse-compressed-texture.ts",
+        "modules/images/src/lib/parsers/parse-crunch.ts",
+        "modules/images/src/lib/parsers/parse-dds.ts",
+        "modules/images/src/lib/parsers/parse-hdr.ts",
+        "modules/images/src/lib/parsers/parse-ktx.ts",
+        "modules/images/src/lib/parsers/parse-npy.ts",
+        "modules/images/src/lib/parsers/parse-pvr.ts",
+        "modules/images/src/lib/texture-api/async-deep-map.ts",
+        "modules/images/src/lib/texture-api/deep-load.ts",
+        "modules/images/src/lib/texture-api/generate-url.ts",
+        "modules/images/src/lib/texture-api/load-image-array.ts",
+        "modules/images/src/lib/texture-api/load-image-cube.ts",
+        "modules/images/src/lib/texture-api/load-image.ts",
+        "modules/images/src/lib/texture-api/texture-api-types.ts",
+        "modules/images/src/lib/utils/basis-format-utils.ts",
+        "modules/images/src/lib/utils/detect-supported-texture-formats.ts",
+        "modules/images/src/lib/utils/extract-mipmap-images.ts",
+        "modules/images/src/lib/utils/ktx-format-helper.ts",
+        "modules/images/src/lib/utils/texture-format-map.ts",
+        "modules/images/src/lib/utils/version.ts",
+        "modules/images/src/load-image-array.ts",
+        "modules/images/src/load-image-cube.ts",
+        "modules/images/src/load-image.ts",
+        "modules/images/src/npy-loader-types.ts",
+        "modules/images/src/npy-loader.ts",
+        "modules/images/src/npy-worker.ts",
+        "modules/images/src/radiance-hdr-loader-types.ts",
+        "modules/images/src/radiance-hdr-loader.ts",
+        "modules/images/src/texture-array-loader-types.ts",
+        "modules/images/src/texture-array-loader.ts",
+        "modules/images/src/texture-cube-array-loader-types.ts",
+        "modules/images/src/texture-cube-array-loader.ts",
+        "modules/images/src/texture-cube-loader-types.ts",
+        "modules/images/src/texture-cube-loader.ts",
+        "modules/images/src/texture-format.ts",
+        "modules/images/src/texture-loader-types.ts",
+        "modules/images/src/texture-loader.ts",
+        "modules/images/src/texture-manifest-schema.ts",
+        "modules/images/src/workers/basis-worker-node.ts",
+        "modules/images/src/workers/basis-worker.ts",
+        "modules/images/src/workers/compressed-texture-worker.ts",
+        "modules/images/src/workers/crunch-worker.ts",
+        "modules/images/src/workers/ktx2-basis-writer-worker-node.ts",
+        "modules/images/src/workers/ktx2-basis-writer-worker.ts",
+        "modules/images/src/workers/npy-worker.ts"
+      ],
+      "browser": {
+        "statements": 75,
+        "lines": 75,
+        "functions": 72,
+        "branches": 67
+      },
+      "merged": {
+        "statements": 74,
+        "lines": 75,
+        "functions": 69,
+        "branches": 67
+      }
+    },
+    "images/video": {
+      "owner": "@loaders.gl/images",
+      "path": "modules/images/src",
+      "sourcePaths": [
+        "modules/images/src/gif-builder.ts",
+        "modules/images/src/lib/gifshot/gifshot-loader.ts",
+        "modules/images/src/lib/gifshot/gifshot.ts",
+        "modules/images/src/lib/parsers/parse-video.ts",
+        "modules/images/src/lib/utils/assert.ts",
+        "modules/images/src/video-format.ts",
+        "modules/images/src/video-loader-types.ts",
+        "modules/images/src/video-loader.ts"
+      ],
+      "browser": {
+        "statements": 83,
+        "lines": 83,
+        "functions": 77,
+        "branches": 60
+      },
+      "merged": {
+        "statements": 82,
+        "lines": 83,
+        "functions": 77,
+        "branches": 60
+      }
     }
   }
 }

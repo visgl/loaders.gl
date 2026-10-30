@@ -31,7 +31,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Input', value: 'JSON manifest with six directional faces'},
     {label: 'Directions', value: '+X, -X, +Y, -Y, +Z, and -Z'},
     {label: 'Mip levels', value: 'Single paths, arrays, or URL templates'},
-    {label: 'Decode', value: 'ImageBitmapLoader by default'}
+    {label: 'Decode', value: 'ImageLoader by default'}
   ]}
 />
 
@@ -59,12 +59,12 @@ A loader for cubemaps described by a JSON manifest.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureCubeLoader} from '@loaders.gl/textures';
+import {TextureCubeLoader} from '@loaders.gl/images';
 
 const imageCube = await load('environment.image-texture-cube.json', TextureCubeLoader);
 ```
 
-Member faces are parsed with `ImageBitmapLoader` by default, returning native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
+Member faces are parsed with `ImageLoader` by default, returning native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
 
 ## Manifest
 

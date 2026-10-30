@@ -11,7 +11,7 @@ import type {
 } from '../arcgis-source-types';
 
 import type {ImageType} from '@loaders.gl/images';
-import {ImageLoader} from '@loaders.gl/images';
+import {LegacyImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
   GetTileDataParameters,
@@ -98,7 +98,7 @@ export class ArcGISMapTileSource
     }
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
-      ImageLoader,
+      LegacyImageLoader,
       this.loadOptions
     )) as ImageType;
   }

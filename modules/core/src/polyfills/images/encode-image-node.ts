@@ -1,45 +1,52 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
 
-// Use stackgl modules for DOM-less reading and writing of images
+import {PassThrough} from 'node:stream';
+import {loadSharp} from './load-sharp';
+import {toArrayBuffer} from '../utils/buffer-utils';
 
-import savePixels from 'save-pixels';
-import ndarray from 'ndarray';
-import {bufferToArrayBuffer} from '../buffer/to-array-buffer.node.js';
+/** Raw RGBA image accepted by the Node encoder. */
+type NodeImageData = {
+  /** Interleaved RGBA pixels. */
+  data: Uint8Array;
+  /** Width in pixels. */
+  width: number;
+  /** Height in pixels. */
+  height: number;
+};
 
-/**
- * Returns data bytes representing a compressed image in PNG or JPG format,
- * This data can be saved using file system (f) methods or
- * used in a request.
- * @param image to save
- * @param options
- * @param options.type='png' - png, jpg or image/png, image/jpg are valid
- * @param options.dataURI - Whether to include a data URI header
- * @return {*} bytes
- */
-export function encodeImageToStreamNode(
-  image: {data: any; width: number; height: number},
-  options: {type?: string; dataURI?: string}
-) {
-  // Support MIME type strings
-  const type = options.type ? options.type.replace('image/', '') : 'jpeg';
-  const pixels = ndarray(image.data, [image.width, image.height, 4], [4, image.width * 4, 1], 0);
+/** Options for the Node image encoder. */
+type NodeImageEncoderOptions = {
+  /** Output format name or MIME type; defaults to JPEG. */
+  type?: string;
+  /** Legacy option retained for callers. */
+  dataURI?: string;
+};
 
-  // Note: savePixels returns a stream
-  return savePixels(pixels, type, options);
+/** Encodes raw RGBA pixels with the optional Sharp backend. */
+export async function encodeImageNode(
+  image: NodeImageData,
+  options: NodeImageEncoderOptions = {}
+): Promise<ArrayBuffer> {
+  const sharp = await loadSharp();
+  const requestedFormat = (options.type || 'jpeg').toLowerCase().replace(/^image\//, '');
+  const format = requestedFormat === 'jpg' ? 'jpeg' : requestedFormat;
+  const encodedImage = await sharp(Buffer.from(image.data), {
+    raw: {width: image.width, height: image.height, channels: 4}
+  })
+    .toFormat(format as keyof import('sharp').FormatEnum)
+    .toBuffer();
+  return toArrayBuffer(encodedImage);
 }
 
-export function encodeImageNode(image, options) {
-  const imageStream = encodeImageToStreamNode(image, options);
-
-  return new Promise(resolve => {
-    const buffers: any[] = [];
-    imageStream.on('data', buffer => buffers.push(buffer));
-    // TODO - convert to arraybuffer?
-    imageStream.on('end', () => {
-      const buffer = Buffer.concat(buffers);
-      resolve(bufferToArrayBuffer(buffer));
-    });
-  });
+/** Streams an encoded image and forwards codec loading and encoding failures. */
+export function encodeImageToStreamNode(
+  image: NodeImageData,
+  options: NodeImageEncoderOptions = {}
+): PassThrough {
+  const stream = new PassThrough();
+  void encodeImageNode(image, options).then(
+    arrayBuffer => stream.end(Buffer.from(arrayBuffer)),
+    error => stream.destroy(error)
+  );
+  return stream;
 }

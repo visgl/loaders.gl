@@ -78,6 +78,29 @@ Install optional peers `geotiff` or `lerc` explicitly when using their decoding 
 GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit
 source subpath when using synchronous `createDataSource()`.
 
+#### Image, texture, and video consolidation
+
+- Replace dependencies on the removed `@loaders.gl/textures` and `@loaders.gl/video`
+  packages with `@loaders.gl/images`; no compatibility packages are published.
+- `ImageBitmapLoader` is now `ImageLoader` and always returns an `ImageBitmap`.
+  The older environment-dependent loader is `LegacyImageLoader`, with
+  `LegacyImageLoaderOptions`. `ImageLoaderOptions` describes the bitmap loader.
+- Import metadata loaders from `@loaders.gl/images`. For direct implementations,
+  import `*WithParser` exports from direct subpaths such as
+  `@loaders.gl/images/basis-loader` or `@loaders.gl/images/image-loader`.
+  Async core APIs continue to preload metadata loaders automatically. Sync parsing
+  additionally requires an implementation with `parseSync`, such as
+  `NPYLoaderWithParser` from `@loaders.gl/images/npy-loader`; image and Basis
+  decoding remain asynchronous.
+- Import texture writers and helper APIs from their direct subpaths, for example
+  `@loaders.gl/images/ktx2-basis-writer` and `@loaders.gl/images/load-image`.
+  Default texture worker and codec URLs now use the images package; update custom
+  URLs and schema references that point at the removed textures package.
+- Node image decoding and encoding through `@loaders.gl/core/polyfills` now require
+  the optional `sharp` peer dependency. Install it explicitly (`npm install sharp`).
+  Other polyfills and browser image decoding do not load or require Sharp.
+  The optional `get-pixels`, `save-pixels`, and `ndarray` codec stack is removed.
+
 #### Scientific format package consolidation (v5)
 
 NetCDF and Zarr now share the public `@loaders.gl/scientific` package. Replace dependencies on `@loaders.gl/netcdf` or the previously private `@loaders.gl/zarr` package with `@loaders.gl/scientific`. Metadata loaders are exported from the package root; import implementation APIs from a format subpath:

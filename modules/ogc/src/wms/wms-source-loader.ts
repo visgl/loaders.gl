@@ -13,8 +13,8 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {DataSource, mergeOptions, validateRasterRegion} from '@loaders.gl/core/loader-utils';
 
-import type {ImageType, ImageBitmapLoaderOptions} from '@loaders.gl/images';
-import {ImageBitmapLoader} from '@loaders.gl/images';
+import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 
 import type {WMSCapabilities} from './wms-capabilities-loader';
 import type {WMSFeatureInfo} from './wip/wms-feature-info-loader';
@@ -31,7 +31,7 @@ import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 /** Properties for creating a enw WMS service */
 export type WMSSourceLoaderOptions = DataSourceOptions &
   WMSLoaderOptions &
-  ImageBitmapLoaderOptions & {
+  ImageLoaderOptions & {
     /** @deprecated Use wms.vendorParameters. */
     vendorParameters?: Record<string, unknown>;
     wms?: {
@@ -326,11 +326,7 @@ export class WMSImageSource
     this._checkResponse(response, arrayBuffer);
     let image: ImageType;
     try {
-      image = (await this.coreApi.parse(
-        arrayBuffer,
-        ImageBitmapLoader,
-        this.loadOptions
-      )) as ImageType;
+      image = (await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageType;
     } catch (error) {
       signal?.throwIfAborted();
       let serviceError: Error;
@@ -417,11 +413,7 @@ export class WMSImageSource
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {
-      return (await this.coreApi.parse(
-        arrayBuffer,
-        ImageBitmapLoader,
-        this.loadOptions
-      )) as ImageType;
+      return (await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageType;
     } catch {
       throw this._parseError(arrayBuffer);
     }

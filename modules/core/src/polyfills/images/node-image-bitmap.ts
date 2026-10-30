@@ -10,7 +10,7 @@ type NodeImageData = {
 
 /**
  * Minimal Node.js `ImageBitmap` polyfill backed by decoded pixel data.
- * This is intentionally limited to the functionality needed by `ImageBitmapLoader`
+ * This is intentionally limited to the functionality needed by `ImageLoader`
  * and `getImageBitmapData()`.
  */
 export class NodeImageBitmap {

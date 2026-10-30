@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['CRN payloads', 'BC / DXT workflows', 'Legacy compatibility']}
   links={[
     {label: 'Textures module', to: '/docs/modules/textures'},
-    {label: 'CrunchWorkerLoader', to: '/docs/modules/textures/api-reference/crunch-loader'},
+    {label: 'CrunchLoader', to: '/docs/modules/textures/api-reference/crunch-loader'},
     {label: 'Basis and KTX2', to: '/docs/modules/textures/formats/basis'}
   ]}
 />
@@ -47,8 +47,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="pink"
 />
 
-- _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
-- _[`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)_ - reads Crunch `.crn` textures
+- _[`@loaders.gl/images`](/docs/modules/textures)_ - loaders.gl implementation
+- _[`CrunchLoader`](/docs/modules/textures/api-reference/crunch-loader)_ - reads Crunch `.crn` textures
 
 Crunch is a lossy texture compression format designed to reduce distribution size for GPU texture assets, especially BC / DXT-style texture data.
 
@@ -68,7 +68,7 @@ Crunch is commonly used when a pipeline wants:
 
 | Format Feature               | loaders.gl Support | Notes                                                                                    |
 | ---------------------------- | ------------------ | ---------------------------------------------------------------------------------------- |
-| `.crn` parsing               | ✅                 | Supported by [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader). |
+| `.crn` parsing               | ✅                 | Supported by [`CrunchLoader`](/docs/modules/textures/api-reference/crunch-loader). |
 | Mip level extraction         | ✅                 | Returned as `TextureLevel[]`.                                                            |
 | GPU texture metadata tagging | ✅                 | loaders.gl reports recognized texture format metadata on decoded levels.                 |
 | Worker-based loading         | ✅                 | Exposed through the Crunch worker loader path.                                           |
@@ -78,4 +78,4 @@ Crunch is commonly used when a pipeline wants:
 - [`Basis Universal`](/docs/modules/textures/formats/basis)
 - [`KTX / KTX2`](/docs/modules/textures/formats/ktx)
 - [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures)
-- [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)
+- [`CrunchLoader`](/docs/modules/textures/api-reference/crunch-loader)

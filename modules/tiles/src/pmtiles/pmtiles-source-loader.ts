@@ -21,7 +21,7 @@ import {
   resolveXYZTileParameters,
   waitForPromiseWithSignal
 } from '@loaders.gl/core/loader-utils';
-import {ImageBitmapLoader, ImageBitmapLoaderOptions} from '@loaders.gl/images';
+import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
 import {MLTLoader, MLTLoaderOptions} from '@loaders.gl/tiles/mlt';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/tiles/mvt';
 import {PMTilesFormat} from './pmtiles-format';
@@ -46,7 +46,7 @@ export type PMTilesSourceLoaderOptions = DataSourceOptions &
   TileJSONLoaderOptions &
   MLTLoaderOptions &
   MVTLoaderOptions &
-  ImageBitmapLoaderOptions & {
+  ImageLoaderOptions & {
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     pmtiles?: {
@@ -219,7 +219,7 @@ export class PMTilesTileSource
   async getImageTile(tileParams: GetTileParameters): Promise<ImageType | null> {
     const arrayBuffer = await this.getTile(tileParams);
     return arrayBuffer
-      ? ((await this.coreApi.parse(arrayBuffer, ImageBitmapLoader, this.loadOptions)) as ImageType)
+      ? ((await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageType)
       : null;
   }
 

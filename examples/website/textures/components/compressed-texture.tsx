@@ -6,35 +6,31 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 import {load, registerLoaders, selectLoader, fetchFile, LoaderOptions} from '@loaders.gl/core';
-import {
-  BasisLoader,
-  CompressedTextureLoader,
-  CrunchWorkerLoader,
-  GL_EXTENSIONS_CONSTANTS
-} from '@loaders.gl/textures';
-import {ImageBitmapLoader, ImageType} from '@loaders.gl/images';
+import {BasisLoader, CompressedTextureLoader, CrunchLoader} from '@loaders.gl/images';
+import {GL_EXTENSIONS_CONSTANTS} from '@loaders.gl/images/gl-extensions';
+import {ImageLoader, ImageType} from '@loaders.gl/images';
 
 import {Device, Texture} from '@luma.gl/core';
 import {Model} from '@luma.gl/engine';
 
 const TEXTURE_LIBRARY_MODULES = {
   'basis_transcoder.js': new URL(
-    '../../../../modules/textures/src/libs/basis_transcoder.js',
+    '../../../../modules/images/src/libs/basis_transcoder.js',
     import.meta.url
   ).toString(),
   'basis_transcoder.wasm': new URL(
-    '../../../../modules/textures/src/libs/basis_transcoder.wasm',
+    '../../../../modules/images/src/libs/basis_transcoder.wasm',
     import.meta.url
   ).toString(),
   'basis_encoder.js': new URL(
-    '../../../../modules/textures/src/libs/basis_encoder.js',
+    '../../../../modules/images/src/libs/basis_encoder.js',
     import.meta.url
   ).toString(),
   'basis_encoder.wasm': new URL(
-    '../../../../modules/textures/src/libs/basis_encoder.wasm',
+    '../../../../modules/images/src/libs/basis_encoder.wasm',
     import.meta.url
   ).toString(),
-  'crunch.js': new URL('../../../../modules/textures/src/libs/crunch.js', import.meta.url).toString()
+  'crunch.js': new URL('../../../../modules/images/src/libs/crunch.js', import.meta.url).toString()
 }
 
 const {
@@ -307,7 +303,7 @@ function hasSupportedTextureFormat(
 }
 
 const TEXTURES_BASE_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/images/test/textures/data/';
 
 const TextureButton = styled.button`
   height: 256px;
@@ -348,7 +344,7 @@ const TextureInfo = styled.ul`
   font-size: 14px;
 `;
 
-registerLoaders([BasisLoader, CompressedTextureLoader, ImageBitmapLoader]);
+registerLoaders([BasisLoader, CompressedTextureLoader, ImageLoader]);
 
 // TEXTURE SHADERS
 
@@ -480,9 +476,9 @@ export class CompressedTexture extends React.PureComponent<
 
       const loader = await selectLoader(src, [
         CompressedTextureLoader,
-        CrunchWorkerLoader,
+        CrunchLoader,
         BasisLoader,
-        ImageBitmapLoader
+        ImageLoader
       ]);
 
       const result = loader && (await load(arrayBuffer, loader, options));

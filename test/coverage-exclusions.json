@@ -10,7 +10,7 @@
   "**/text-encoding.js": "Vendored text-encoding implementation is exercised through the polyfill adapter.",
   "**/encoding.js": "Vendored encoding implementation is exercised through the polyfill adapter.",
   "**/laz-perf.js": "Generated laz-perf WASM glue is covered through LAS backend conformance tests.",
-  "modules/video/src/lib/gifshot/gifshot.ts": "Vendored Yahoo gifshot implementation is covered through GIFBuilder adapter tests.",
+  "modules/images/src/lib/gifshot/gifshot.ts": "Vendored Yahoo gifshot implementation is covered through GIFBuilder adapter tests.",
   "modules/core/src/polyfills/text-encoder/text-encoder.ts": "Vendored text-encoding reference implementation is covered through public TextEncoder and TextDecoder polyfill tests.",
   "modules/compression/src/brotli/decode.ts": "Vendored Google Brotli decoder is covered through fallback codec conformance tests.",
   "modules/raster/src/terrain/lib/delatin/index.ts": "Vendored Delatin tessellator is covered through TerrainLoader delatin integration tests.",

@@ -10,7 +10,7 @@ import {
 } from '@loaders.gl/core/schema-utils/arrow-transport';
 import {parseExcel} from './lib/parse-excel';
 import {convertExcelRowsToArrowTable} from './lib/convert-excel-rows-to-arrow';
-import {ExcelWorkerLoader as ExcelWorkerLoaderMetadata} from './excel-loader-types';
+import {ExcelLoader as ExcelWorkerLoaderMetadata} from './excel-loader-types';
 import {ExcelLoader as ExcelLoaderMetadata} from './excel-loader-types';
 
 import type {ExcelLoaderOptions} from './excel-loader-types';

@@ -52,7 +52,7 @@ import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
 />
 
 :::caution
-This writer works by loading the [`texture-compressor`](https://github.com/TimvanScherpenzeel/texture-compressor) package, which runs its bundled native compressor. That package is **not** installed by `@loaders.gl/textures`. Applications that use this writer must install it themselves:
+This writer works by loading the [`texture-compressor`](https://github.com/TimvanScherpenzeel/texture-compressor) package, which runs its bundled native compressor. That package is **not** installed by `@loaders.gl/images`. Applications that use this writer must install it themselves:
 
 ```bash
 npm install --save-dev texture-compressor
@@ -76,7 +76,7 @@ The package is resolved as an optional peer dependency and called directly. The 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only if using under Node
 import {encodeURLtoURL} from '@loaders.gl/core';
-import {CompressedTextureWriter} from '@loaders.gl/textures';
+import {CompressedTextureWriter} from '@loaders.gl/images/compressed-texture-writer';
 
 export const IMAGE_URL = 'image.png';
 

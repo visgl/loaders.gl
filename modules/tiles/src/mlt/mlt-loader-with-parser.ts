@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {parseMLT} from './lib/parse-mlt';
-import {MLTWorkerLoader as MLTWorkerLoaderMetadata} from './mlt-loader';
+import {MLTLoader as MLTWorkerLoaderMetadata} from './mlt-loader';
 import {MLTLoader as MLTLoaderMetadata} from './mlt-loader';
 
 const {preload: _MLTWorkerLoaderPreload, ...MLTWorkerLoaderMetadataWithoutPreload} =

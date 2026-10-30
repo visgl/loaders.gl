@@ -207,7 +207,6 @@
     "@loaders.gl/images": "5.0.0-beta.1",
     "@loaders.gl/pointclouds": "5.0.0-beta.1",
     "@loaders.gl/scene": "5.0.0-beta.1",
-    "@loaders.gl/textures": "5.0.0-beta.1",
     "@math.gl/core": "5.0.0-beta.1",
     "@math.gl/dggs": "5.0.0-beta.1",
     "@math.gl/earth": "5.0.0-beta.1",

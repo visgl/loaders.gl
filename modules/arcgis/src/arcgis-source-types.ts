@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {DataSourceOptions, SourceLoader} from '@loaders.gl/core/loader-utils';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {LegacyImageLoaderOptions} from '@loaders.gl/images';
 import type {MVTLoaderOptions} from '@loaders.gl/tiles/mvt';
 
 /** Static source metadata shared by lazy descriptors and runtime loaders. */
@@ -67,7 +67,7 @@ export type ArcGISFeatureServerSourceLoaderOptions = DataSourceOptions & {
 
 /** Options for the ArcGIS ImageServer source. */
 export type ArcGISImageSourceLoaderProps = DataSourceOptions &
-  ImageLoaderOptions & {
+  LegacyImageLoaderOptions & {
     'arcgis-image-server'?: {
       /** Default ArcGIS exportImage request parameters. */
       exportImageParameters?: Partial<ArcGISExportImageParameters>;
@@ -112,7 +112,7 @@ export type ArcGISExportImageParameters = {
 
 /** Options for the ArcGIS ImageServer tile source. */
 export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions &
-  ImageLoaderOptions & {
+  LegacyImageLoaderOptions & {
     'arcgis-image-server-tiles'?: {
       /** Tile size used for exportImage requests. */
       tileSize?: number;
@@ -127,7 +127,7 @@ export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions &
 
 /** Options for an ArcGIS cached MapServer tile source. */
 export type ArcGISMapTileSourceLoaderOptions = DataSourceOptions &
-  ImageLoaderOptions & {
+  LegacyImageLoaderOptions & {
     'arcgis-map-server'?: {
       /** Select cached tiles, dynamic export tiles, or automatic metadata-based selection. */
       mode?: 'cached' | 'dynamic' | 'auto';

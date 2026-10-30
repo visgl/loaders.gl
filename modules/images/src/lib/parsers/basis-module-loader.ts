@@ -1,0 +1,167 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {
+  initializeWasmModule,
+  registerJSModules,
+  getJSModuleOrNull
+} from '@loaders.gl/core/loader-utils';
+import {loadLibrary, LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
+
+export const BASIS_EXTERNAL_LIBRARIES = {
+  /** Basis transcoder, javascript wrapper part */
+  TRANSCODER: 'basis_transcoder.js',
+  /** Basis transcoder, compiled web assembly part */
+  TRANSCODER_WASM: 'basis_transcoder.wasm',
+  /** Basis encoder, javascript wrapper part */
+  ENCODER: 'basis_encoder.js',
+  /** Basis encoder, compiled web assembly part */
+  ENCODER_WASM: 'basis_encoder.wasm'
+};
+
+let loadBasisTranscoderPromise;
+
+/**
+ * Loads wasm transcoder module
+ * @param options
+ * @returns initialized Basis transcoder module
+ */
+export async function loadBasisTranscoderModule(options: LoadLibraryOptions) {
+  registerJSModules(options.modules);
+  const basis = getJSModuleOrNull('basis');
+  if (basis) {
+    return basis;
+  }
+
+  loadBasisTranscoderPromise ||= loadBasisTranscoder(options);
+  return await loadBasisTranscoderPromise;
+}
+
+/**
+ * Loads wasm transcoder module
+ * @param options
+ * @returns initialized Basis transcoder module
+ */
+async function loadBasisTranscoder(options: LoadLibraryOptions) {
+  let BASIS = null;
+  let wasmBinary = null;
+
+  [BASIS, wasmBinary] = await Promise.all([
+    await loadLibrary(
+      BASIS_EXTERNAL_LIBRARIES.TRANSCODER,
+      'images',
+      options,
+      null,
+      'basis_transcoder.mjs'
+    ),
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.TRANSCODER_WASM, 'images', options)
+  ]);
+
+  // Depends on how import happened...
+  // @ts-ignore TS2339: Property does not exist on type
+  BASIS = BASIS || globalThis.BASIS;
+  return await initializeBasisTranscoderModule(BASIS, wasmBinary);
+}
+
+/**
+ * Initialize wasm transcoder module
+ * @param BasisModule - js part of the module
+ * @param wasmBinary - wasm part of the module
+ * @returns initialized Basis transcoder module
+ */
+function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
+  const options: {wasmBinary?} = {};
+
+  if (wasmBinary) {
+    options.wasmBinary = wasmBinary;
+  }
+
+  return initializeWasmModule<any, any>(
+    () => BasisModule(options),
+    module => {
+      const {
+        BasisFile,
+        KTX2File,
+        getBasisTexFormatBlockHeight,
+        getBasisTexFormatBlockWidth,
+        initializeBasis,
+        isFormatSupported
+      } = module;
+      initializeBasis();
+      return {
+        BasisFile,
+        KTX2File,
+        getBasisTexFormatBlockHeight,
+        getBasisTexFormatBlockWidth,
+        isFormatSupported
+      };
+    }
+  );
+}
+
+let loadBasisEncoderPromise;
+
+/**
+ * Loads wasm encoder module
+ * @param options
+ * @returns initialized Basis encoder module
+ */
+export async function loadBasisEncoderModule(options: LoadLibraryOptions) {
+  const modules = options.modules || {};
+  if (modules.basisEncoder) {
+    return modules.basisEncoder;
+  }
+
+  loadBasisEncoderPromise = loadBasisEncoderPromise || loadBasisEncoder(options);
+  return await loadBasisEncoderPromise;
+}
+
+/**
+ * Loads wasm encoder module
+ * @param options
+ * @returns initialized Basis encoder module
+ */
+async function loadBasisEncoder(options: LoadLibraryOptions) {
+  let BASIS_ENCODER = null;
+  let wasmBinary = null;
+
+  [BASIS_ENCODER, wasmBinary] = await Promise.all([
+    await loadLibrary(
+      BASIS_EXTERNAL_LIBRARIES.ENCODER,
+      'images',
+      options,
+      null,
+      'basis_encoder.mjs'
+    ),
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.ENCODER_WASM, 'images', options)
+  ]);
+
+  // Depends on how import happened...
+  // @ts-ignore TS2339: Property does not exist on type
+  BASIS_ENCODER = BASIS_ENCODER || globalThis.BASIS;
+  return await initializeBasisEncoderModule(BASIS_ENCODER, wasmBinary);
+}
+
+/**
+ * Initialize wasm transcoder module
+ * @param BasisEncoderModule - js part of the module
+ * @param wasmBinary - wasm part of the module
+ * @returns initialized Basis encoder module
+ */
+function initializeBasisEncoderModule(BasisEncoderModule, wasmBinary) {
+  const options: {wasmBinary?} = {};
+
+  if (wasmBinary) {
+    options.wasmBinary = wasmBinary;
+  }
+
+  return initializeWasmModule<any, any>(
+    () => BasisEncoderModule(options),
+    module => {
+      const {BasisFile, KTX2File, initializeBasis, BasisEncoder} = module;
+      initializeBasis();
+      return {BasisFile, KTX2File, BasisEncoder};
+    }
+  );
+}

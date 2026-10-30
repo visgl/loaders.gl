@@ -150,3 +150,19 @@ test.each([
 ])('%s remains in the production coverage denominator', source => {
   expect(productionSources.has(source)).toBe(true);
 });
+
+test('every consolidated image implementation retains a production coverage owner', () => {
+  const manifest = JSON.parse(fileSystem.readFileSync('test/coverage-thresholds.json', 'utf8'));
+  const imageSourcePaths: string[] = [
+    ...manifest.packages['@loaders.gl/images'].sourcePaths,
+    ...Object.values(manifest.formats).flatMap((format: any) =>
+      format.owner === '@loaders.gl/images' ? format.sourcePaths : []
+    )
+  ];
+  const unownedSources = [...productionSources].filter(
+    filename =>
+      filename.startsWith('modules/images/src/') &&
+      !imageSourcePaths.some(sourcePath => filename.startsWith(sourcePath))
+  );
+  expect(unownedSources).toEqual([]);
+});

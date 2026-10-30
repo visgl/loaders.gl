@@ -9,7 +9,7 @@ import type {SHPResult} from './lib/parsers/parse-shp';
 import {parseSHPToArrow, parseSHPToArrowInBatches} from './lib/parsers/parse-shp-to-arrow';
 import type {SHPHeader} from './lib/parsers/parse-shp-header';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
-import {SHPWorkerLoader as SHPWorkerLoaderMetadata} from './shp-loader-types';
+import {SHPLoader as SHPWorkerLoaderMetadata} from './shp-loader-types';
 import {SHPLoader as SHPLoaderMetadata} from './shp-loader-types';
 import {
   deserializeShapefileWorkerBatch,

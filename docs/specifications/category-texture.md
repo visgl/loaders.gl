@@ -60,7 +60,7 @@ The texture loader category documents the common return shapes, conventions, and
 | [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Loads manifest-driven cubemaps                                   |
 | [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Loads manifest-driven texture cube arrays                        |
 
-Core texture category support is provided by the `@loaders.gl/textures` module.
+Core texture category support is provided by the `@loaders.gl/images` module.
 
 ## Texture Types
 
@@ -94,13 +94,13 @@ Applications that need ordinary raster pixel access should use the [Image Loader
 
 ## Composite Texture Members
 
-Manifest-driven texture loaders resolve member images through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader). Member assets return native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
+Manifest-driven texture loaders resolve member images through [`ImageLoader`](/docs/modules/images/api-reference/image-loader). Member assets return native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
 
 ## Usage
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {BasisLoader} from '@loaders.gl/textures';
+import {BasisLoader} from '@loaders.gl/images';
 
 const images = await load('texture.ktx2', BasisLoader, {
   basis: {
@@ -114,4 +114,4 @@ const images = await load('texture.ktx2', BasisLoader, {
 
 ### About image loaders
 
-Standard raster image loading, `getImageData(image)`, and the Node.js `ImageBitmap` polyfill used by `ImageBitmapLoader` are documented separately in [Image Loaders](/docs/specifications/category-image).
+Standard raster image loading, `getImageData(image)`, and the Node.js `ImageBitmap` polyfill used by `ImageLoader` are documented separately in [Image Loaders](/docs/specifications/category-image).

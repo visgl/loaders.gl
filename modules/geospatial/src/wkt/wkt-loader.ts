@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Geometry} from '@loaders.gl/core/schema';
 import {convertWKTToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import {WKTWorkerLoader as WKTWorkerLoaderMetadata} from './wkt-loader-types';
+import {WKTLoader as WKTWorkerLoaderMetadata} from './wkt-loader-types';
 import {WKTLoader as WKTLoaderMetadata} from './wkt-loader-types';
 
 const {preload: _WKTWorkerLoaderPreload, ...WKTWorkerLoaderMetadataWithoutPreload} =

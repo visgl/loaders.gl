@@ -52,7 +52,7 @@ Loading an array of images
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only needed for Node.js support
-import {loadImageTextureArray} from '@loaders.gl/textures';
+import {loadImageTextureArray} from '@loaders.gl/images/load-image-array';
 
 const images = await loadImageTextureArray(count, ({index}) => `filename-${index}`);
 
@@ -63,7 +63,7 @@ for (const image of images) {
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only needed for Node.js support
-import {loadImageTextureArray} from '@loaders.gl/textures';
+import {loadImageTextureArray} from '@loaders.gl/images/load-image-array';
 
 const images = await loadImageTextureArray(count,  ({index}) => `filename-${index}`, {
   image: {mipLevels: 'auto'}
@@ -93,7 +93,7 @@ Parameters:
 
 - `count`: Number of images to load.
 - `getUrl`: A function that generates the url for each image, it is called for each image with the `index` of that image.
-- `options`: Supports the same image parsing options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
+- `options`: Supports the same image parsing options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader).
 
 Returns
 
@@ -101,7 +101,7 @@ Returns
 
 ## Options
 
-Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), and
+Accepts the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader), and
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -111,4 +111,4 @@ Number of mip level images to load: Use `0` to indicate a single image with no m
 
 ## Remarks
 
-- Returned images can be passed directly to WebGL texture methods. See [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) for details about the returned `ImageBitmap` contract.
+- Returned images can be passed directly to WebGL texture methods. See [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for details about the returned `ImageBitmap` contract.

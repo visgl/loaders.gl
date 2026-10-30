@@ -14,7 +14,7 @@ const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = '@loaders.gl/core/polyfills/test/data/data.txt';
 const TEXT_URL_GZIPPED = '@loaders.gl/core/polyfills/test/data/data.txt.gz';
 const TEXT_URL_WITH_REDIRECT =
-  'https://unpkg.com/@loaders.gl/textures@beta/dist/libs/basis_encoder.js';
+  'https://unpkg.com/@loaders.gl/images@beta/dist/libs/basis_encoder.js';
 const REDIRECT_URL = `${LOADERS_GL_REDIRECTING_FIXTURE_URL}modules/core/test/polyfills-package/data/data.txt`;
 
 test('fetchFile() (NODE)', async () => {

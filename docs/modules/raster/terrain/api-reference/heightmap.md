@@ -16,7 +16,7 @@ import {
   TERRARIUM_ELEVATION_DECODER
 } from '@loaders.gl/raster/terrain/heightmap';
 
-// image is an already decoded image, for example from ImageBitmapLoader.
+// image is an already decoded image, for example from ImageLoader.
 const heightmap = decodeTerrainHeightmap(getImageData(image), TERRARIUM_ELEVATION_DECODER);
 const heightInMeters = heightmap.heights[row * heightmap.width + column];
 ```
