@@ -303,7 +303,7 @@ The `fast-xml-parser` backend and `_fastXML` passthrough are removed. XML-based 
 scientific, and geospatial readers now use documents. Move supported XML options such as
 `parseTagValue`, `parseAttributeValue`, and `trimValues` directly under `options.xml`.
 The old `_sax` passthrough is also removed. XML now requires well-formed input by default;
-legacy HTML tolerance is confined to HTMLLoader. See the [native XML options](/docs/modules/xml/api-reference/xml-loader).
+legacy HTML tolerance is confined to HTMLLoader. See the [native XML options](/docs/modules/documents/xml/api-reference/xml-loader).
 
 #### Document package consolidation
 

@@ -66,6 +66,6 @@ See the [upgrade guide](/docs/upgrade-guide) for import replacements and the
 XML is strict by default, with one root element, bounded nesting (default 256), safe own-property
 construction, predefined/numeric entity decoding, and no DTD or external-entity resolution.
 Options control attribute prefixes/grouping, namespace removal, text keys, scalar coercion,
-whitespace, and singleton arrays. See [XMLLoader](/docs/modules/xml/api-reference/xml-loader).
+whitespace, and singleton arrays. See [XMLLoader](/docs/modules/documents/xml/api-reference/xml-loader).
 HTMLLoader uses the same implementation in a tolerant mode with built-in HTML entities; it
 remains an XML-style object reader, not an HTML5 DOM parser.

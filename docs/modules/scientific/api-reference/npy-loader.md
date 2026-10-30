@@ -16,15 +16,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
   meta={['.npy', 'Typed arrays', 'Synchronous decoder']}
   links={[
-<<<<<<<< HEAD:docs/modules/scientific/api-reference/npy-loader.md
     {label: 'Scientific arrays', to: '/docs/modules/scientific'},
 
     {label: 'NPY format', to: '/docs/modules/scientific/formats/npy'}
-========
-    {label: 'Textures module', to: '/docs/modules/images/textures'},
-    {label: 'Texture data', to: '/docs/specifications/category-texture'},
-    {label: 'Image loaders', to: '/docs/modules/images'}
->>>>>>>> 47b8915deb (docs: align references with consolidated modules):docs/modules/images/textures/api-reference/npy-loader.md
   ]}
 />
 
