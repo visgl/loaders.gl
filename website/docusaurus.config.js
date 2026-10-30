@@ -2,11 +2,43 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const {resolve} = require('path');
+const {readdirSync, readFileSync, existsSync} = require('node:fs');
 const {createRequire} = require('node:module');
 const {version} = require('../modules/core/package.json');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
+
+/** Maps flat package entrypoints to source facades for the website bundler. */
+function getFlatEntrypointAliases() {
+  const modulesDirectory = resolve(__dirname, '../modules');
+  const aliases = {};
+
+  for (const moduleName of readdirSync(modulesDirectory)) {
+    const moduleDirectory = resolve(modulesDirectory, moduleName);
+    const packageJsonPath = resolve(moduleDirectory, 'package.json');
+    if (!existsSync(packageJsonPath)) continue;
+
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+    for (const [exportPath, conditions] of Object.entries(packageJson.exports || {})) {
+      const entrypointName = exportPath.slice(2);
+      const importTarget = typeof conditions === 'string' ? conditions : conditions.import;
+      if (
+        !/^\.\/[^/]+$/.test(exportPath) ||
+        !/(?:loader|writer|source)(?:-types)?$/.test(entrypointName) ||
+        importTarget !== `./dist/${entrypointName}.js`
+      ) {
+        continue;
+      }
+
+      const sourcePath = resolve(moduleDirectory, 'src', `${entrypointName}.ts`);
+      if (existsSync(sourcePath)) aliases[`${packageJson.name}/${entrypointName}`] = sourcePath;
+    }
+  }
+
+  return aliases;
+}
+
 const legacyMathCoreEntry = require.resolve('@math.gl/core', {
   paths: [resolve('../node_modules/@deck.gl/core')]
 });
@@ -317,6 +349,7 @@ const config = {
             '@loaders.gl/services': resolve('../modules/services/src'),
             '@loaders.gl/documents': resolve('../modules/documents/src'),
             '@loaders.gl/archives/zip': resolve('../modules/archives/src/zip'),
+            ...getFlatEntrypointAliases(),
             'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 
             // '@deck.gl/react': resolve()
