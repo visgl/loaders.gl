@@ -48,7 +48,16 @@ The source recognizes two interoperable metadata patterns:
   `spatial:registration` attributes.
 - Regular one-dimensional CF/xarray longitude/latitude or x/y coordinate variables. The source
   derives an affine transform when those coordinates are evenly spaced and reads CRS WKT from a CF
-  `grid_mapping` variable when present.
+  `grid_mapping` variable when present. GDAL and rioxarray write a GDAL `GeoTransform` attribute
+  on the grid-mapping variable. The source uses this attribute before the coordinate variables, and
+  it reads no coordinate chunks for it. The source looks for coordinate and grid-mapping variables
+  in the group of the data array first. Then it looks in each parent group. This is the CF search
+  by proximity. The source uses a `GeoTransform` only when the grid-mapping variable is in the
+  group of the data array. A grid-mapping variable in a parent group can apply to more than one
+  multiscale level, so the source uses it only for the CRS. If a coordinate or grid-mapping
+  variable does not exist, the source continues the search or uses no georeference. If the
+  variable exists but the source cannot read it, the source gives an error. It does not use a
+  variable from a parent group in its place.
 
 <ReferenceBoundary
   title="GeoZarr source usage"
@@ -151,6 +160,23 @@ attributes in `metadata` and treats unknown optional fields as ignorable.
 path. `levels` preserves each asset ID, array path, dimensions, non-spatial selections, and
 resolved native metadata. Array dimensions determine logical X/Y independently of physical order.
 
+OME-NGFF `multiscales[].datasets[]` can also give the levels. Version 0.4 puts them at the group
+root, and version 0.5 puts them under `ome`. The source reads these levels only when the root
+group, the selected array or the group of the selected level declares a CRS. The CRS must come
+from `proj:*` metadata or from a CF `grid_mapping`.
+
+The source georeferences each OME-NGFF level with the GeoZarr or CF metadata of that level, as
+above. The OME transforms do not georeference a level, because the OME frame can be different from
+the CRS frame. The source uses the OME `scale` transforms only for a check:
+
+- The source multiplies the scales in the specified order: the dataset scale first, then the
+  multiscale scale.
+- For each level, the cell-size ratio to the selected level must equal the OME scale ratio.
+- If a level fails the check, the source removes the metadata of that level. Then the source does
+  not publish a complete grid.
+
+The source ignores `translation` transforms. It rejects all other transform types.
+
 A complete `tileMatrixSet` requires a common string CRS and explicit, finite, rightward,
 axis-aligned affine geometry for every level. CRS coordinates determine resolution units.
 Each level must declare its own absolute `spatial:transform`, on its array, level group, or
@@ -167,8 +193,9 @@ discovery reuses the validated parent group/store and consolidated preflight, an
 metadata only without decoding coordinate or sample chunks. Non-CRS `proj:*` fields retain
 the inherited CRS; an explicit nearer CRS declaration replaces inherited alternatives.
 
-OME-Zarr microscopy coordinates remain native OME metadata. An OME `multiscales` array is not
-the generic multiscales object and does not establish a geographic CRS. Use the OME source for
+OME-Zarr microscopy coordinates stay native OME metadata. If the selected array declares no CRS,
+the source does not read an OME `multiscales` array as spatial levels. OME transforms never give a
+geographic CRS or a georeference. Use the OME source for
 its existing image/selection APIs. See [Tile matrices](/docs/developer-guide/tile-matrices).
 
 Explicit `proj:epsg` integer identifiers normalize to `EPSG:<code>`. `proj:projjson` definitions

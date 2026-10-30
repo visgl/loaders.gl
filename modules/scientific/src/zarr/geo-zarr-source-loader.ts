@@ -26,6 +26,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 
 import {getSpatialMultiscaleLevels} from './lib/spatial-multiscales';
+import type {SpatialMultiscaleLevel} from './lib/spatial-multiscales';
 import type {SupportedTypedArray} from './types';
 import {ZarrSource, type ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
 import {
@@ -119,6 +120,8 @@ type GeoZarrInit = {
   xDimensionIndex: number;
   /** Physical position of the logical y dimension. */
   yDimensionIndex: number;
+  /** Multiscale levels of the selected array, resolved once by `initialize`. */
+  layout: SpatialMultiscaleLevel[];
 };
 
 type PixelWindow = {
@@ -219,9 +222,7 @@ export class GeoZarrRasterSource
 
   /** Opens sibling array metadata without selecting or decoding their samples. */
   private async loadGridMetadata(): Promise<GeoZarrSourceMetadata> {
-    const {metadata, group} = await this.getInitializationPromise();
-    const groupAttributes = metadata.metadata?.groupAttributes as GeoZarrAttributes;
-    const layout = getSpatialMultiscaleLevels(groupAttributes, metadata.array);
+    const {metadata, group, layout} = await this.getInitializationPromise();
     const levels: GeoZarrLevelMetadata[] = [];
     for (const level of layout) {
       if (level.array === metadata.array) {
@@ -243,6 +244,17 @@ export class GeoZarrRasterSource
       } catch {
         // Unsupported siblings remain advertised; never publish a complete set with missing levels.
         levels.push({id: level.id, array: level.array});
+      }
+    }
+    const selectedScale = layout.find(level => level.array === metadata.array)?.scale;
+    if (selectedScale) {
+      for (const [index, level] of levels.entries()) {
+        const scale = layout[index].scale!;
+        if (level.metadata && !isConsistentOMELevel(scale, selectedScale, level.metadata, metadata)) {
+          // A level without metadata has no grid geometry, so the source does not publish a
+          // complete tile matrix set: one inconsistent level must not mislabel the others.
+          delete level.metadata;
+        }
       }
     }
     const normalizedLevels = levels.length
@@ -406,13 +418,31 @@ export class GeoZarrRasterSource
     const array = await zarrita.open(group.resolve(arrayPath), {kind: 'array', signal});
     const groupAttributes = normalizeAttributes(group.attrs);
     const arrayAttributes = normalizeAttributes(array.attrs);
-    const layout = getSpatialMultiscaleLevels(groupAttributes, arrayPath);
-    const level = layout.find(candidate => candidate.array === arrayPath);
-    const levelGroupAttributes = level?.group
-      ? normalizeAttributes(
-          (await zarrita.open(group.resolve(level.group), {kind: 'group', signal})).attrs
-        )
-      : {};
+    const openGroupAttributes = async (path: string) =>
+      normalizeAttributes((await zarrita.open(group.resolve(path), {kind: 'group', signal})).attrs);
+    let layout = getSpatialMultiscaleLevels(groupAttributes, arrayPath, {
+      spatialOME: declaresCoordinateReferenceSystem({...groupAttributes, ...arrayAttributes})
+    });
+    let level = layout.find(candidate => candidate.array === arrayPath);
+    let levelGroupAttributes = level?.group ? await openGroupAttributes(level.group) : {};
+    if (!layout.length) {
+      // A CRS can be declared only on each OME-NGFF level group. That group is known only from the
+      // OME levels, so read the selected level group and accept the levels if it declares a CRS.
+      const omeLayout = getOMELevelsOrEmpty(groupAttributes, arrayPath);
+      const omeLevel = omeLayout.find(candidate => candidate.array === arrayPath);
+      const omeLevelGroupAttributes = omeLevel?.group
+        ? await openGroupAttributes(omeLevel.group).catch(error => {
+            // An implicit v2 group has no metadata, so it declares no CRS.
+            rethrowUnlessAbsent(error);
+            return {};
+          })
+        : {};
+      if (declaresCoordinateReferenceSystem(omeLevelGroupAttributes)) {
+        layout = omeLayout;
+        level = omeLevel;
+        levelGroupAttributes = omeLevelGroupAttributes;
+      }
+    }
     const attributes = {
       ...groupAttributes,
       ...levelGroupAttributes,
@@ -449,13 +479,22 @@ export class GeoZarrRasterSource
     const xDimensionIndex = dimensions.indexOf(spatialDimensions[1]);
     const width = array.shape[xDimensionIndex];
     const height = array.shape[yDimensionIndex];
+    let gridMappingPromise: Promise<CFGridMapping | null> | undefined;
+    const getGridMapping = () =>
+      (gridMappingPromise ||= loadCFGridMapping(group, arrayPath, attributes, signal));
     const coordinateTransform =
       options?.transform ||
       normalizeAffineTransform(attributes['spatial:transform']) ||
-      (!metadataOnly ? await loadCFCoordinateTransform(group, spatialDimensions, signal) : null);
+      // An ancestor grid mapping can be shared by several multiscale levels: it gives the CRS only.
+      normalizeGDALGeoTransform(
+        await getGridMapping().then(mapping => (mapping?.local ? mapping.attributes.GeoTransform : null))
+      ) ||
+      (!metadataOnly
+        ? await loadCFCoordinateTransform(group, arrayPath, spatialDimensions, signal)
+        : null);
     if (!coordinateTransform) {
       throw new Error(
-        'GeoZarrRasterSource requires spatial:transform metadata, explicit geozarr.transform, or regular 1D CF coordinate arrays.'
+        'GeoZarrRasterSource requires spatial:transform metadata, explicit geozarr.transform, a CF grid-mapping GeoTransform, or regular 1D CF coordinate arrays.'
       );
     }
 
@@ -472,7 +511,10 @@ export class GeoZarrRasterSource
     const coordinateReferenceSystem =
       options?.coordinateReferenceSystem ||
       normalizeDeclaredCoordinateReferenceSystem(attributes) ||
-      await loadCFCoordinateReferenceSystem(group, attributes, spatialDimensions, signal);
+      getCFCoordinateReferenceSystem(
+        (await getGridMapping())?.attributes || null,
+        spatialDimensions
+      );
     const defaultSelection = options?.defaultSelection || {};
     const selectionDimensions = dimensions
       .map((dimensionName, dimensionIndex) => ({
@@ -517,7 +559,7 @@ export class GeoZarrRasterSource
       registration: declaredRegistration
     };
 
-    return {group, array, metadata, xDimensionIndex, yDimensionIndex};
+    return {group, array, metadata, xDimensionIndex, yDimensionIndex, layout};
   }
 }
 
@@ -633,18 +675,27 @@ function convertNodeTransformToPixelTransform(
 /** Loads regular one-dimensional CF coordinate variables and derives a pixel-corner transform. */
 async function loadCFCoordinateTransform(
   group: zarrita.Group<Readable>,
+  arrayPath: string,
   spatialDimensions: [y: string, x: string],
   signal?: AbortSignal
 ): Promise<GeoZarrAffineTransform | null> {
+  let coordinates: [number[], number[]];
   try {
-    const [yCoordinates, xCoordinates] = await Promise.all([
-      loadCoordinateValues(group, spatialDimensions[0], signal),
-      loadCoordinateValues(group, spatialDimensions[1], signal)
+    coordinates = await Promise.all([
+      loadCoordinateValues(group, arrayPath, spatialDimensions[0], signal),
+      loadCoordinateValues(group, arrayPath, spatialDimensions[1], signal)
     ]);
+  } catch (error) {
+    rethrowUnlessAbsent(error);
+    return null;
+  }
+  const [yCoordinates, xCoordinates] = coordinates;
+  try {
     const scaleX = getRegularCoordinateSpacing(xCoordinates, spatialDimensions[1]);
     const scaleY = getRegularCoordinateSpacing(yCoordinates, spatialDimensions[0]);
     return [scaleX, 0, xCoordinates[0] - scaleX / 2, 0, scaleY, yCoordinates[0] - scaleY / 2];
   } catch {
+    // Irregular coordinates give no affine transform.
     return null;
   }
 }
@@ -652,13 +703,11 @@ async function loadCFCoordinateTransform(
 /** Loads all values from one one-dimensional coordinate variable. */
 async function loadCoordinateValues(
   group: zarrita.Group<Readable>,
+  arrayPath: string,
   coordinateName: string,
   signal?: AbortSignal
 ): Promise<number[]> {
-  const coordinateArray = await zarrita.open(group.resolve(coordinateName), {
-    kind: 'array',
-    signal
-  });
+  const {array: coordinateArray} = await openNearestArray(group, arrayPath, coordinateName, signal);
   if (coordinateArray.shape.length !== 1 || coordinateArray.shape[0] < 2) {
     throw new Error(
       `Coordinate ${coordinateName} must be a one-dimensional array with at least two values.`
@@ -669,6 +718,36 @@ async function loadCoordinateValues(
     throw new Error(`Could not read coordinate ${coordinateName}.`);
   }
   return Array.from(coordinateChunk.data as ArrayLike<number>);
+}
+
+/**
+ * Opens a CF variable referenced by name from a data array, searching the array's own group and
+ * then each ancestor up to the selected group, as CF 1.8 search by proximity specifies. `local`
+ * is true when the variable is in the array's own group.
+ */
+async function openNearestArray(
+  group: zarrita.Group<Readable>,
+  arrayPath: string,
+  name: string,
+  signal?: AbortSignal
+): Promise<{array: zarrita.Array<zarrita.DataType, Readable>; local: boolean}> {
+  const segments = arrayPath.split('/').slice(0, -1);
+  let lastError: unknown;
+  for (let depth = segments.length; depth >= 0; depth--) {
+    const path = [...segments.slice(0, depth), name].join('/');
+    try {
+      const array = await zarrita.open(group.resolve(path), {kind: 'array', signal});
+      return {array, local: depth === segments.length};
+    } catch (error) {
+      // Only an absent variable continues the search. A local variable that exists but cannot be
+      // read must fail, not be replaced by an ancestor of the same name.
+      if (!zarrita.isZarritaError(error, 'NotFoundError')) {
+        throw error;
+      }
+      lastError = error;
+    }
+  }
+  throw lastError;
 }
 
 /** Validates that coordinate values are finite and regularly spaced. */
@@ -691,33 +770,51 @@ function getRegularCoordinateSpacing(coordinates: number[], coordinateName: stri
   return spacing;
 }
 
-/** Resolves CRS metadata from a CF grid-mapping variable or longitude/latitude dimensions. */
-async function loadCFCoordinateReferenceSystem(
+/** Attributes of a CF grid-mapping variable, and whether it is in the data array's own group. */
+type CFGridMapping = {attributes: GeoZarrAttributes; local: boolean};
+
+/** Loads the CF grid-mapping variable named by a data array, if any. */
+async function loadCFGridMapping(
   group: zarrita.Group<Readable>,
+  arrayPath: string,
   attributes: GeoZarrAttributes,
-  spatialDimensions: [y: string, x: string],
   signal?: AbortSignal
-): Promise<string | undefined> {
+): Promise<CFGridMapping | null> {
   const gridMapping = normalizeString(attributes.grid_mapping);
-  if (gridMapping) {
-    const gridMappingName = gridMapping.trim().split(/[\s:]/, 1)[0];
-    try {
-      const gridMappingArray = await zarrita.open(group.resolve(gridMappingName), {
-        kind: 'array',
-        signal
-      });
-      const gridMappingAttributes = normalizeAttributes(gridMappingArray.attrs);
-      const coordinateReferenceSystem =
-        normalizeString(gridMappingAttributes.crs_wkt) ||
-        normalizeString(gridMappingAttributes.spatial_ref) ||
-        normalizeString(gridMappingAttributes['proj:wkt2']) ||
-        normalizeString(gridMappingAttributes['proj:code']);
-      if (coordinateReferenceSystem) {
-        return coordinateReferenceSystem;
-      }
-    } catch {
-      // Fall through to the common longitude/latitude CRS below.
-    }
+  if (!gridMapping) return null;
+  const gridMappingName = gridMapping.trim().split(/[\s:]/, 1)[0];
+  try {
+    const {array, local} = await openNearestArray(group, arrayPath, gridMappingName, signal);
+    return {attributes: normalizeAttributes(array.attrs), local};
+  } catch (error) {
+    rethrowUnlessAbsent(error);
+    return null;
+  }
+}
+
+/**
+ * Rethrows every error except an absent node. An absent CF variable means "no georeference"; a
+ * variable that exists but cannot be read must fail, not give a plausible but wrong result.
+ */
+function rethrowUnlessAbsent(error: unknown): void {
+  if (!zarrita.isZarritaError(error, 'NotFoundError')) {
+    throw error;
+  }
+}
+
+/** Resolves CRS metadata from CF grid-mapping attributes or longitude/latitude dimensions. */
+function getCFCoordinateReferenceSystem(
+  gridMappingAttributes: GeoZarrAttributes | null,
+  spatialDimensions: [y: string, x: string]
+): string | undefined {
+  const coordinateReferenceSystem =
+    gridMappingAttributes &&
+    (normalizeString(gridMappingAttributes.crs_wkt) ||
+      normalizeString(gridMappingAttributes.spatial_ref) ||
+      normalizeString(gridMappingAttributes['proj:wkt2']) ||
+      normalizeString(gridMappingAttributes['proj:code']));
+  if (coordinateReferenceSystem) {
+    return coordinateReferenceSystem;
   }
 
   const normalizedDimensions = spatialDimensions.map(dimension => dimension.toLowerCase());
@@ -728,6 +825,60 @@ async function loadCFCoordinateReferenceSystem(
     return 'EPSG:4326';
   }
   return undefined;
+}
+
+/**
+ * Reads a GDAL `GeoTransform` (`originX pixelWidth rotationX originY rotationY pixelHeight`, a
+ * pixel-corner affine) from a CF grid-mapping variable, as written by GDAL and rioxarray.
+ */
+function normalizeGDALGeoTransform(value: unknown): GeoZarrAffineTransform | null {
+  const coefficients = typeof value === 'string' ? value.trim().split(/\s+/).map(Number) : value;
+  if (
+    !Array.isArray(coefficients) || coefficients.length !== 6 ||
+    coefficients.some(coefficient => typeof coefficient !== 'number' || !Number.isFinite(coefficient))
+  ) {
+    return null;
+  }
+  const [originX, pixelWidth, rotationX, originY, rotationY, pixelHeight] = coefficients as number[];
+  if (pixelWidth === 0 || pixelHeight === 0) return null;
+  return [pixelWidth, rotationX, originX, rotationY, pixelHeight, originY];
+}
+
+/** Whether attributes declare a CRS through GeoZarr `proj:*` metadata or a CF grid mapping. */
+/**
+ * OME-NGFF levels read as spatial levels, or none. Native OME metadata that is not valid as
+ * spatial levels stays native: this probe must not make an existing microscopy store fail.
+ */
+function getOMELevelsOrEmpty(attributes: GeoZarrAttributes, arrayPath: string) {
+  try {
+    return getSpatialMultiscaleLevels(attributes, arrayPath, {spatialOME: true});
+  } catch {
+    return [];
+  }
+}
+
+function declaresCoordinateReferenceSystem(attributes: GeoZarrAttributes): boolean {
+  return Boolean(
+    normalizeDeclaredCoordinateReferenceSystem(attributes) || normalizeString(attributes.grid_mapping)
+  );
+}
+
+/**
+ * Whether a level's cell size relative to the selected level matches its OME-NGFF scale relative
+ * to the selected level. The OME frame may differ from the CRS frame, so only ratios are compared.
+ */
+function isConsistentOMELevel(
+  scale: Readonly<Record<string, number>>,
+  selectedScale: Readonly<Record<string, number>>,
+  level: Pick<GeoZarrSourceMetadata, 'transform'>,
+  selected: Pick<GeoZarrSourceMetadata, 'transform' | 'spatialDimensions'>
+): boolean {
+  return selected.spatialDimensions.every((dimension, index) => {
+    const coefficient = index === 0 ? 4 : 0;
+    const expected = Math.abs(scale[dimension] / selectedScale[dimension]);
+    const actual = Math.abs(level.transform[coefficient] / selected.transform[coefficient]);
+    return Number.isFinite(expected) && Math.abs(actual - expected) <= expected * 1e-6;
+  });
 }
 
 /** Computes a bounding box from all four transformed raster corners. */
