@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {NPYFormat} from '@loaders.gl/scientific';
 
 import {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from '@loaders.gl/tiles-3d/3d-tiles';
 import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
@@ -54,7 +55,6 @@ import {
   CrunchTextureFormat,
   DDSTextureFormat,
   KTX2BasisTextureFormat,
-  NPYFormat,
   RadianceHDRFormat
 } from '@loaders.gl/images';
 import {

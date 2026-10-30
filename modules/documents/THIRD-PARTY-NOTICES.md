@@ -2,7 +2,7 @@
 
 Isaac Z. Schlueter and sax-js contributors supplied the SAX parser, via Maxim Mazurok's sax-ts TypeScript fork. [sax.ts](./src/sax-ts/sax.ts) retains the full ISC license and upstream copyright.
 
-Natural Intelligence and fast-xml-parser contributors supply the separately installed alternate XML parser. vis.gl supplies the loader API, output normalization and streaming integration.
+vis.gl supplies the native XML object conversion, validation, loader API, output normalization and streaming integration. Local SAX adaptations preserve case in tolerant mode, support validated raw entity spelling, and harden attribute/entity handling. There is no third-party XML parser runtime dependency.
 
 ## Scope and maintenance
 

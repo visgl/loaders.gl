@@ -382,6 +382,7 @@ const config = {
             scene: ['obj', 'gltf']
           };
           const pageRedirects = {
+            '/docs/modules/textures/api-reference/npy-loader': '/docs/modules/scientific/api-reference/npy-loader',
             '/docs/modules/images/api-reference/image-bitmap-loader': '/docs/modules/images/api-reference/image-loader',
             '/docs/developer-guide/using-unbundled-loaders': '/docs/developer-guide/using-metadata-loaders',
             '/docs/modules/scene/api-reference/usd-loader': '/docs/modules/scene/usd/api-reference/usd-loader',

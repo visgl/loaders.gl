@@ -91,7 +91,8 @@ export function parseKMLDocument(text: string): KMLDocument {
   const parsed = parseXMLSync(text, {
     removeNSPrefix: true,
     textNodeName: '#text',
-    _fastXML: {parseTagValue: false, parseAttributeValue: false}
+    parseTagValue: false,
+    parseAttributeValue: false
   }) as XMLObject;
   const root = asObject(parsed.kml);
   if (!root) throw new Error('Invalid KML document: root element must be <kml>');

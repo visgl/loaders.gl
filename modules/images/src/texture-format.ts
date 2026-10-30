@@ -33,17 +33,6 @@ export const CompressedTextureFormat = {
   binary: true
 } as const satisfies Format;
 
-export const NPYFormat = {
-  name: 'NPY',
-  id: 'npy',
-  module: 'images',
-  encoding: 'binary',
-  format: 'npy',
-  extensions: ['npy'],
-  mimeTypes: [],
-  binary: true
-} as const satisfies Format;
-
 export const RadianceHDRFormat = {
   name: 'Radiance HDR',
   id: 'hdr',

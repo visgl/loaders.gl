@@ -4,9 +4,10 @@
 
 import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-import {NPYLoader, NPYWorkerLoader} from '@loaders.gl/images';
-import {setLoaderOptions, load} from '@loaders.gl/core';
-const NPY_UINT8_URL = '@loaders.gl/images/test/textures/data/uint8.npy';
+import {NPYLoader, NPYWorkerLoader} from '@loaders.gl/scientific';
+import {setLoaderOptions, load, fetchFile} from '@loaders.gl/core';
+import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy-loader';
+const NPY_UINT8_URL = '@loaders.gl/scientific/test/npy/data/uint8.npy';
 setLoaderOptions({
   _workerType: 'test'
 });
@@ -15,7 +16,7 @@ test('NPYLoader#loader objects', async () => {
   validateLoader(NPYWorkerLoader, 'NPYWorkerLoader');
 });
 test('NPYLoader#parse', async () => {
-  const {data, header} = await load(NPY_UINT8_URL, NPYLoader);
+  const {data, header} = await load(NPY_UINT8_URL, NPYLoader, {core: {worker: false}});
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase
   const expectedHeader = {descr: '|u1', fortran_order: false, shape: [4]};
@@ -23,10 +24,6 @@ test('NPYLoader#parse', async () => {
   expect(header, 'header matches').toEqual(expectedHeader);
 });
 test('NPYWorkerLoader#parse', async () => {
-  if (typeof Worker === 'undefined') {
-    console.log('Worker is not usable in non-browser environments');
-    return;
-  }
   const {data, header} = await load(NPY_UINT8_URL, NPYWorkerLoader);
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase
@@ -66,4 +63,11 @@ test('NPY loading forwards cancellation to transport', async () => {
   } finally {
     transport.mockRestore();
   }
+});
+
+test('NPY public async and sync parsers agree without worker dispatch', async () => {
+  const response = await fetchFile(NPY_UINT8_URL);
+  const buffer = await response.arrayBuffer();
+  const expected = NPYLoaderWithParser.parseSync(buffer);
+  expect(await NPYLoaderWithParser.parse(buffer)).toEqual(expected);
 });

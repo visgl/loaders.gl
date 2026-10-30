@@ -169,3 +169,6 @@ allowing correct distinctions to be made in usage.
 [format_geojsonl]: https://www.placemark.io/documentation/geojsonl
 [format_geojson_text_seq]: https://datatracker.ietf.org/doc/html/rfc8142
 [rfc4288]: https://www.ietf.org/rfc/rfc4288.txt
+
+For ordinary JSON documents without table extraction or streaming, use the native
+[`JSONLoader` in documents](/docs/modules/documents/api-reference/json-loader).

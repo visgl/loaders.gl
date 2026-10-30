@@ -1,8 +1,8 @@
 # @loaders.gl/scientific
 
-Scientific array sources and readers for NetCDF, Zarr, GRIB2, HDF5, and VTK.
+Scientific array sources and readers for NPY, NetCDF, Zarr, GRIB2, HDF5, and VTK.
 
-Supported formats: NetCDF, NetCDF-4, Zarr, GeoZarr, OME-Zarr, SpatialData, GRIB2, HDF5, VTK, VTI, VTR, VTS, VTU, VTP. GRIB2, HDF5, NetCDF-4, and VTK readers have the implementation limits documented below.
+Supported formats: NPY, NetCDF, NetCDF-4, Zarr, GeoZarr, OME-Zarr, SpatialData, GRIB2, HDF5, VTK, VTI, VTR, VTS, VTU, VTP. GRIB2, HDF5, NetCDF-4, and VTK readers have the implementation limits documented below.
 
 ```bash
 npm install @loaders.gl/core @loaders.gl/scientific
@@ -11,7 +11,8 @@ npm install @loaders.gl/core @loaders.gl/scientific
 The package root exports lightweight loader metadata. Async loaders can preload their parser when needed. Import format implementations explicitly when you need a parser or source class directly:
 
 ```ts
-import {NetCDFLoader, NetCDFSourceLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
+import {NPYLoader, NetCDFLoader, NetCDFSourceLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
+import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy-loader';
 import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
 import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
 ```

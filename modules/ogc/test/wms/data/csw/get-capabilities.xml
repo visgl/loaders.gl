@@ -1,4 +1,4 @@
-csw30:Capabilities xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:csw30="http://www.opengis.net/cat/csw/3.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:fes20="http://www.opengis.net/fes/2.0" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" xmlns:ows="http://www.opengis.net/ows" xmlns:ows11="http://www.opengis.net/ows/1.1" xmlns:ows20="http://www.opengis.net/ows/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:inspire_ds="http://inspire.ec.europa.eu/schemas/inspire_ds/1.0" xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0" version="3.0.0" updateSequence="1676768728" xsi:schemaLocation="http://www.opengis.net/cat/csw/3.0 http://schemas.opengis.net/cat/csw/3.0/cswGetCapabilities.xsd">
+<csw30:Capabilities xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:csw30="http://www.opengis.net/cat/csw/3.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:fes20="http://www.opengis.net/fes/2.0" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" xmlns:ows="http://www.opengis.net/ows" xmlns:ows11="http://www.opengis.net/ows/1.1" xmlns:ows20="http://www.opengis.net/ows/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:inspire_ds="http://inspire.ec.europa.eu/schemas/inspire_ds/1.0" xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0" version="3.0.0" updateSequence="1676768728" xsi:schemaLocation="http://www.opengis.net/cat/csw/3.0 http://schemas.opengis.net/cat/csw/3.0/cswGetCapabilities.xsd">
 <script/>
 <ows20:ServiceIdentification>
   <ows20:Title>pycsw Geospatial Catalogue</ows20:Title>
@@ -204,7 +204,7 @@ csw30:Capabilities xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:csw30=
     </ows20:Constraint>
     <ows20:Constraint name="OpenSearchDescriptionDocument">
       <ows20:AllowedValues>
-        <ows20:Value>https://deims.org/pycsw/catalogue/csw?mode=opensearch&service=CSW&version=3.0.0&request=GetCapabilities</ows20:Value>
+        <ows20:Value>https://deims.org/pycsw/catalogue/csw?mode=opensearch&amp;service=CSW&amp;version=3.0.0&amp;request=GetCapabilities</ows20:Value>
       </ows20:AllowedValues>
     </ows20:Constraint>
   </ows20:Operation>
@@ -471,7 +471,7 @@ csw30:Capabilities xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:csw30=
   </ows20:Constraint>
   <inspire_ds:ExtendedCapabilities xsi:schemaLocation="http://inspire.ec.europa.eu/schemas/inspire_ds/1.0 http://inspire.ec.europa.eu/schemas/inspire_ds/1.0/inspire_ds.xsd">
     <inspire_common:ResourceLocator>
-      <inspire_common:URL>https://deims.org/pycsw/catalogue/csw?service=CSW&version=2.0.2&request=GetCapabilities</inspire_common:URL>
+      <inspire_common:URL>https://deims.org/pycsw/catalogue/csw?service=CSW&amp;version=2.0.2&amp;request=GetCapabilities</inspire_common:URL>
       <inspire_common:MediaType>application/xml</inspire_common:MediaType>
     </inspire_common:ResourceLocator>
     <inspire_common:ResourceType>service</inspire_common:ResourceType>

@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {mergeOptions} from '@loaders.gl/core/loader-utils';
 import {XMLLoaderWithParser} from './xml-loader';
 import type {XMLLoaderOptions} from './xml-loader-types';
 import {HTMLLoader as HTMLLoaderMetadata} from './html-loader-types';
@@ -25,18 +24,10 @@ export const HTMLLoaderWithParser = {
   parseTextSync: (text: string, options?: XMLLoaderOptions) => parseTextSync(text, options)
 } as const satisfies LoaderWithParser<any, never, HTMLLoaderOptions>;
 
+/** Applies tolerant HTML defaults while honoring explicit native XML options. */
 function parseTextSync(text: string, options?: XMLLoaderOptions): any {
-  // fast-xml-parser can recognize HTML entities
-  // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#htmlentities
-  // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/5.Entities.md
-  options = mergeOptions(options, {
-    xml: {
-      _parser: 'fast-xml-parser',
-      _fastXML: {
-        htmlEntities: true
-      }
-    }
+  return XMLLoaderWithParser.parseTextSync(text, {
+    ...options,
+    xml: {strict: false, htmlEntities: true, ...options?.xml}
   });
-
-  return XMLLoaderWithParser.parseTextSync?.(text, options);
 }

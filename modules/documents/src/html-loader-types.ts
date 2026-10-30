@@ -21,6 +21,7 @@ export const HTMLLoader = {
   ...XMLLoader,
   ...HTMLFormat,
   testText: testHTMLFile,
+  options: {xml: {...XMLLoader.options.xml, strict: false, htmlEntities: true}},
   preload
 } as const satisfies Loader<any, never, HTMLLoaderOptions>;
 

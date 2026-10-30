@@ -90,7 +90,7 @@ source subpath when using synchronous `createDataSource()`.
   `@loaders.gl/images/basis-loader` or `@loaders.gl/images/image-loader`.
   Async core APIs continue to preload metadata loaders automatically. Sync parsing
   additionally requires an implementation with `parseSync`, such as
-  `NPYLoaderWithParser` from `@loaders.gl/images/npy-loader`; image and Basis
+  `NPYLoaderWithParser` from `@loaders.gl/scientific/npy-loader`; image and Basis
   decoding remain asynchronous.
 - Import texture writers and helper APIs from their direct subpaths, for example
   `@loaders.gl/images/ktx2-basis-writer` and `@loaders.gl/images/load-image`.
@@ -270,6 +270,17 @@ import {Log} from 'probe.gl/log';
 import {Stats} from 'probe.gl/stats';
 import {StatsWidget} from 'probe.gl/stats-widget';
 ```
+
+#### Scientific NumPy arrays and native XML
+
+`NPYLoader`, `NPYWorkerLoader`, and `NPYFormat` have moved from images to scientific.
+Replace parser imports with `@loaders.gl/scientific/npy-loader`; no images forwarding exports remain.
+
+The `fast-xml-parser` backend and `_fastXML` passthrough are removed. XML-based graph, raster,
+scientific, and geospatial readers now use documents. Move supported XML options such as
+`parseTagValue`, `parseAttributeValue`, and `trimValues` directly under `options.xml`.
+The old `_sax` passthrough is also removed. XML now requires well-formed input by default;
+legacy HTML tolerance is confined to HTMLLoader. See the [native XML options](/docs/modules/xml/api-reference/xml-loader).
 
 #### Document package consolidation
 

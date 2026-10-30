@@ -10,6 +10,7 @@ import {BSONWriter} from '@loaders.gl/documents/bson-writer';
 import {BSONObjectId, createBSONValue} from '@loaders.gl/documents/bson-codec';
 
 test.each([
+  'JSON',
   'XML',
   'HTML',
   'YAML',

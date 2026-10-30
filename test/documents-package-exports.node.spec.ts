@@ -51,6 +51,7 @@ test('published documents root stays lightweight in CommonJS', () => {
 });
 
 test.each([
+  'JSON',
   'XML',
   'HTML',
   'YAML',

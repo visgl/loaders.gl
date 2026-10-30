@@ -129,7 +129,7 @@ test('WMSSourceLoader#fetch override', async () => {
     // eslint-disable-next-line camelcase
     query_layers: ['oms']
   });
-  mockResults[generatedUrl] = 'mock data';
+  mockResults[generatedUrl] = '<FeatureCollection/>';
   await withFetchMock(async () => {
     await wmsImageSource.getFeatureInfo({
       x: 1,

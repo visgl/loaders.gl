@@ -1,6 +1,6 @@
 # @loaders.gl/scientific
 
-Scientific array sources and parsers for NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
+Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
 format and encoding; the focused references below describe the implementation on master.
 
 ```sh
@@ -9,6 +9,7 @@ npm install @loaders.gl/core @loaders.gl/scientific
 
 | Subpath | Public entry APIs | Reference |
 | --- | --- | --- |
+| `/npy-loader` | `NPYLoaderWithParser` | [NPYLoader](./api-reference/npy-loader.md) |
 | `/netcdf` | `NetCDFLoaderWithParser`, `NetCDFReader`, `NetCDFSource`, `openNetCDF4Source` | [NetCDF](./netcdf/README.md) |
 | `/zarr` | OME-Zarr, GeoZarr, generic array, and SpatialData sources | [Zarr](./zarr/README.md) |
 | `/hdf5` | `openHDF5Source`, `HDF5Source`, experimental `HDF5TypeScriptFile` | [HDF5](./hdf5/README.md) |
@@ -36,3 +37,6 @@ Subpath imports control which code is loaded, but do not create separate install
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scientific/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).
+
+`NPYLoader` and `NPYFormat` are metadata exports from the lightweight package root.
+For parser access use the flat `@loaders.gl/scientific/npy-loader` subpath.

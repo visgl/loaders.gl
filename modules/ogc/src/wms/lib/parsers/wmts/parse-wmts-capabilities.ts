@@ -100,7 +100,7 @@ export function parseWMTSCapabilities(text: string, options?: unknown): WMTSCapa
       ...((options as any)?.xml || {}),
       _parser: 'internal',
       textNodeName: '#text',
-      _fastXML: {...((options as any)?.xml?._fastXML || {}), parseTagValue: false},
+      parseTagValue: false,
       removeNSPrefix: true,
       uncapitalizeKeys: true
     }

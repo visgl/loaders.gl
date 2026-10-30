@@ -2,97 +2,29 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {SAXParserOptions} from '../../sax-ts/sax';
+import type {ParseXMLOptions} from '../../xml-options';
 import {uncapitalizeKeys} from '../xml-utils/uncapitalize';
 import {parseXMLInternal} from './parse-xml-internal';
-import {XMLParser as FastXMLParser} from 'fast-xml-parser';
-import type {MatcherView, X2jOptions} from 'fast-xml-parser';
+export type {ParseXMLOptions} from '../../xml-options';
 
-export type ParseXMLOptions = {
-  /** XML is typically PascalCase, JavaScript prefects camelCase */
-  uncapitalizeKeys?: boolean;
-  removeNSPrefix?: boolean;
-  textNodeName?: string;
-  arrayPaths?: string[];
-
-  /** Selects the XML parser implementation. */
-  _parser?: 'fast-xml-parser' | 'sax' | 'internal';
-  /** @deprecated Experimental, passes options to fast-xml-parser, IF it is being used */
-  _fastXML?: _FastParseXMLOptions;
-  /** @deprecated Experimental, passes options to the SAX XML parser, IF it is being used. */
-  _sax?: SAXParserOptions;
-};
-
-/** Type for passing through fast-xml-parser options */
-export type _FastParseXMLOptions = Partial<X2jOptions>;
-
-/**
- * Parses XML text synchronously.
- * @param text - XML document text.
- * @param options - XML parsing options.
- * @returns Parsed XML object tree.
- */
-export function parseXMLSync(text: string, options?: ParseXMLOptions): any {
-  const xml =
-    options?._parser === 'internal' || options?._parser === 'sax'
-      ? parseXMLInternal(text, options)
-      : parseXMLSyncFast(text, options);
-
-  // Note - could be done with FastXML tag processing
-  return options?.uncapitalizeKeys ? uncapitalizeKeys(xml) : xml;
+/** Parses XML into native JavaScript objects without a third-party XML dependency. */
+export function parseXMLSync(text: string, options: ParseXMLOptions = {}): any {
+  if (Object.hasOwn(options, '_fastXML') || Object.hasOwn(options, '_sax')) {
+    throw new Error('XML: backend-specific options were removed; use native XML options');
+  }
+  if (options._parser && !['internal', 'sax'].includes(options._parser)) {
+    throw new Error('XML: unsupported parser backend; use the native documents parser');
+  }
+  const parsed = parseXMLInternal(text, options);
+  return options.uncapitalizeKeys ? uncapitalizeKeys(parsed) : parsed;
 }
 
-/** Parse XML with fast-xml-parser. */
-function parseXMLSyncFast(text: string, options?: ParseXMLOptions): any {
-  const fastXMLOptions: _FastParseXMLOptions = {
-    // Default FastXML options
-    // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#allowbooleanattributes
-    allowBooleanAttributes: true,
-    // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#ignoredeclaration
-    ignoreDeclaration: true,
-
-    // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#removensprefix
-    removeNSPrefix: options?.removeNSPrefix,
-
-    // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#textnodename
-    textNodeName: options?.textNodeName,
-
-    // Let's application specify keys that are always arrays
-    isArray: (
-      name: string,
-      jpath: string | MatcherView,
-      isLeafNode: boolean,
-      isAttribute: boolean
-    ) => {
-      const array = Boolean(options?.arrayPaths?.some(path => jpath.toString() === path));
-      return array;
-    },
-
-    // Application overrides
-    ...options?._fastXML
-  };
-
-  return fastParseXML(text, fastXMLOptions);
-}
-
-export function fastParseXML(text: string, options: _FastParseXMLOptions): any {
-  const parser = new FastXMLParser({
-    ignoreAttributes: false,
-    attributeNamePrefix: '',
-    ...options
-  });
-
-  const parsedXML = parser.parse(text);
-
-  return parsedXML;
-}
-
-/**
- * @todo Build a streaming XML parser based on sax-js
- * @param text
- * @param options
- * @returns
- */
-export function parseXMLInBatches(text: string, options = {}): any {
-  return parseXMLInternal(text, options);
+/** Validates well-formed XML using the same native parser and returns an error when invalid. */
+export function validateXML(text: string): true | Error {
+  try {
+    parseXMLInternal(text, {});
+    return true;
+  } catch (error) {
+    return error instanceof Error ? error : new Error(String(error));
+  }
 }

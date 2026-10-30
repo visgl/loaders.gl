@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {XMLParser} from 'fast-xml-parser';
+import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
 import {ensureArray, intToRgba} from '../utils/tiff-utils';
 
 // WARNING: Changes to the parser options _will_ effect the types in types/omexml.d.ts.
-const xmlParser = new XMLParser({
+const OME_XML_OPTIONS = {
   // Nests attributes withtout prefix under 'attr' key for each node
   attributeNamePrefix: '',
   attributesGroupName: 'attr',
+  textNodeName: '#text',
 
   // Parses numbers for both attributes and nodes
   parseTagValue: true,
@@ -17,9 +18,9 @@ const xmlParser = new XMLParser({
 
   // Forces attributes to be parsed
   ignoreAttributes: false
-});
+};
 
-const parse = (str: string): Root => xmlParser.parse(str);
+const parse = (str: string): Root => parseXMLSync(str, OME_XML_OPTIONS);
 
 export function fromString(str: string) {
   const res = parse(str);

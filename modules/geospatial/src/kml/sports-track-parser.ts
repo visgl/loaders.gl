@@ -66,7 +66,8 @@ function parseSportsXML(text: string, rootName: string): XMLObject {
   const parsed = parseXMLSync(text, {
     removeNSPrefix: true,
     textNodeName: '#text',
-    _fastXML: {parseTagValue: false, parseAttributeValue: false}
+    parseTagValue: false,
+    parseAttributeValue: false
   }) as XMLObject;
   const root = asObject(parsed[rootName]);
   if (!root) throw new Error(`Invalid ${rootName} document`);

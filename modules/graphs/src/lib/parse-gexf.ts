@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {XMLParser, XMLValidator} from 'fast-xml-parser';
+import {parseXMLSync, validateXML} from '@loaders.gl/documents/xml-parser';
 import type {GraphNode, GraphEdge, GraphShape, GraphAttributeType} from '../graph-types';
 import type {GEXFOutput} from '../gexf-types';
 import {buildGraphTables} from './build-graph-tables';
@@ -20,12 +20,14 @@ type AttributeDefinition = {
   defaultValue?: unknown;
 };
 
-const parser = new XMLParser({
+const XML_OPTIONS = {
   ignoreAttributes: false,
   parseAttributeValue: false,
   parseTagValue: false,
-  trimValues: false
-});
+  trimValues: false,
+  attributeNamePrefix: '@_',
+  textNodeName: '#text'
+};
 const GEXF_NAMESPACE = /^https?:\/\/(?:www\.)?gexf.net\/1\.(?:2(?:draft)?|3)(\/viz)?$/;
 const TEMPORAL_ATTRIBUTES = [
   'start',
@@ -43,11 +45,11 @@ export function parseGEXF(
   shape: GraphShape = 'arrow-table'
 ): GEXFOutput {
   const text = typeof input === 'string' ? input : new TextDecoder().decode(input);
-  const validation = XMLValidator.validate(text);
-  if (validation !== true) throw new Error(`Invalid GEXF XML: ${validation.err.msg}`);
+  const validation = validateXML(text);
+  if (validation !== true) throw new Error(`Invalid GEXF XML: ${validation.message}`);
   // External and custom entity declarations are outside the supported format subset.
   if (/<!DOCTYPE\s/i.test(text)) throw new Error('GEXF document types are unsupported.');
-  const document = normalizeNamespaces(parser.parse(text) as XMLElement, {});
+  const document = normalizeNamespaces(parseXMLSync(text, XML_OPTIONS) as XMLElement, {});
   const root = getElement(document.gexf, 'gexf');
   const version = root['@_version'] as string | undefined;
   if (version && !['1.2', '1.2draft', '1.3'].includes(version)) {

@@ -120,15 +120,8 @@ manifest schemas use `@loaders.gl/images/texture-manifest-schema`.
 ### Direct parser and sync access
 
 Direct access does not make an asynchronous loader synchronous. `ImageLoaderWithParser`
-and `BasisLoaderWithParser` still decode asynchronously. For a loader that supports
-sync parsing, use its parser entry point explicitly:
-
-```typescript
-import {parseSync} from '@loaders.gl/core';
-import {NPYLoaderWithParser} from '@loaders.gl/images/npy-loader';
-
-const tile = parseSync(arrayBuffer, NPYLoaderWithParser);
-```
+and `BasisLoaderWithParser` still decode asynchronously. NPY arrays now belong to [scientific](/docs/modules/scientific/api-reference/npy-loader).
+Import `NPYLoaderWithParser` from `@loaders.gl/scientific/npy-loader` for synchronous array parsing.
 
 ## Node image codecs
 

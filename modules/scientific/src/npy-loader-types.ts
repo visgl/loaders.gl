@@ -3,8 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import {NPYFormat} from './texture-format';
-import {VERSION} from './lib/utils/version';
+import {NPYFormat} from './npy-format';
+// @ts-ignore __VERSION__ is injected by the package build.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 import type {NPYTile} from './lib/parsers/parse-npy';
 
 // \x93NUMPY
@@ -21,7 +22,7 @@ export type NPYLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing NPY loader implementation. */
 async function preload() {
-  const {NPYLoaderWithParser} = await import('@loaders.gl/images/npy-loader');
+  const {NPYLoaderWithParser} = await import('@loaders.gl/scientific/npy-loader');
   return NPYLoaderWithParser;
 }
 
@@ -33,7 +34,7 @@ export const NPYLoader = {
 
   name: 'NPY',
   id: 'npy',
-  module: 'images',
+  module: 'scientific',
   version: VERSION,
   worker: true,
   extensions: ['npy'],

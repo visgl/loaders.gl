@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {XMLParser} from 'fast-xml-parser';
+import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
 
 /** Numeric arrays supported by the VTK XML reader without precision loss. */
 export type VTKXMLNumericArray =
@@ -175,7 +175,7 @@ function extentDimensions(value: unknown): [number, number, number] | undefined 
  */
 export function parseVTKXML(xml: string): VTKXMLDataset {
   check(xml.length <= 512 * 1024 * 1024, 'XML document too large');
-  const parser = new XMLParser({
+  const XML_OPTIONS = {
     ignoreAttributes: false,
     attributeNamePrefix: '',
     textNodeName: '#text',
@@ -183,8 +183,8 @@ export function parseVTKXML(xml: string): VTKXMLDataset {
     parseAttributeValue: false,
     processEntities: false,
     trimValues: true
-  });
-  const root = parser.parse(xml)?.VTKFile as Element | undefined;
+  };
+  const root = parseXMLSync(xml, XML_OPTIONS)?.VTKFile as Element | undefined;
   check(root, 'missing VTKFile root');
   const type = String(root.type ?? '');
   check(

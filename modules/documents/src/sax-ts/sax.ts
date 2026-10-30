@@ -61,6 +61,10 @@ export type SAXParserOptions = SAXEvents & {
   lowercasetags?: boolean;
   noscript?: boolean;
   strictEntities?: boolean;
+  /** Preserve authored tag and attribute case in non-strict mode. */
+  preserveCase?: boolean;
+  /** Decode entity values; false preserves their original spelling. */
+  processEntities?: boolean;
   xmlns?: any;
   position?: any;
   trim?: any;
@@ -96,6 +100,8 @@ const DEFAULT_SAX_PARSER_OPTIONS: Required<SAXParserOptions> = {
   lowercasetags: false,
   noscript: false,
   strictEntities: false,
+  preserveCase: false,
+  processEntities: true,
   xmlns: undefined,
   position: undefined,
   trim: undefined,
@@ -947,7 +953,12 @@ abstract class SAX {
             continue;
           } else {
             this.strictFail('Attribute without value');
-            this.tag.attributes[this.attribName] = '';
+            Object.defineProperty(this.tag.attributes, this.attribName, {
+              value: '',
+              enumerable: true,
+              configurable: true,
+              writable: true
+            });
             this.attribValue = '';
             this.emitNode('onattribute', {
               name: this.attribName,
@@ -1172,14 +1183,15 @@ abstract class SAX {
   }
 
   private attrib(): void {
-    if (!this.strict) {
+    if (!this.strict && !this.opt.preserveCase) {
       this.attribName = this.attribName[this.looseCase]();
     }
 
     if (
       this.attribList.indexOf(this.attribName) !== -1 ||
-      this.tag.attributes.hasOwnProperty(this.attribName)
+      Object.hasOwn(this.tag.attributes, this.attribName)
     ) {
+      this.strictFail('Duplicate attribute');
       this.attribName = this.attribValue = '';
       return;
     }
@@ -1216,7 +1228,12 @@ abstract class SAX {
       this.attribList.push([this.attribName, this.attribValue]);
     } else {
       // in non-xmlns mode, we can emit the event right away
-      this.tag.attributes[this.attribName] = this.attribValue;
+      Object.defineProperty(this.tag.attributes, this.attribName, {
+        value: this.attribValue,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
       this.emitNode('onattribute', {
         name: this.attribName,
         value: this.attribValue
@@ -1227,7 +1244,7 @@ abstract class SAX {
   }
 
   private newTag(): void {
-    if (!this.strict) this.tagName = this.tagName[this.looseCase]();
+    if (!this.strict && !this.opt.preserveCase) this.tagName = this.tagName[this.looseCase]();
     const parent = this.tags[this.tags.length - 1] || this;
     const tag: any = {name: this.tagName, attributes: {}};
     this.tag = tag;
@@ -1240,16 +1257,26 @@ abstract class SAX {
     this.emitNode('onopentagstart', tag);
   }
 
+  /** Validates an entity before optionally preserving its authored spelling. */
   private parseEntity(): string | number {
+    const decoded = this.decodeEntity();
+    return this.opt.processEntities === false ? `&${this.entity};` : decoded;
+  }
+
+  /** Decodes predefined, configured, or numeric entities without resolving document types. */
+  private decodeEntity(): string | number {
     let entity = this.entity;
     const entityLC = entity.toLowerCase();
     let num = NaN;
     let numStr = '';
 
-    if (this.ENTITIES[entity]) {
+    if (typeof this.ENTITIES[entity] === 'string' || typeof this.ENTITIES[entity] === 'number') {
       return this.ENTITIES[entity];
     }
-    if (this.ENTITIES[entityLC]) {
+    if (
+      typeof this.ENTITIES[entityLC] === 'string' ||
+      typeof this.ENTITIES[entityLC] === 'number'
+    ) {
       return this.ENTITIES[entityLC];
     }
     entity = entityLC;
@@ -1275,6 +1302,17 @@ abstract class SAX {
       return `&${this.entity};`;
     }
 
+    if (
+      num < 0 ||
+      num > 0x10ffff ||
+      (num >= 0xd800 && num <= 0xdfff) ||
+      (num < 0x20 && ![9, 10, 13].includes(num)) ||
+      num === 0xfffe ||
+      num === 0xffff
+    ) {
+      this.strictFail('Invalid character entity');
+      return `&${this.entity};`;
+    }
     return String.fromCodePoint(num);
   }
 
@@ -1406,7 +1444,12 @@ abstract class SAX {
           this.strictFail(`Unbound namespace prefix: ${JSON.stringify(prefix)}`);
           a.uri = prefix;
         }
-        this.tag.attributes[name] = a;
+        Object.defineProperty(this.tag.attributes, name, {
+          value: a,
+          enumerable: true,
+          configurable: true,
+          writable: true
+        });
         this.emitNode('onattribute', a);
       }
       this.attribList.length = 0;
@@ -1455,7 +1498,7 @@ abstract class SAX {
     // <a><b></c></b></a> will close everything, otherwise.
     let t = this.tags.length;
     let tagName = this.tagName;
-    if (!this.strict) {
+    if (!this.strict && !this.opt.preserveCase) {
       tagName = tagName[this.looseCase]();
     }
     while (t--) {

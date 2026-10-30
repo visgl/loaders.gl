@@ -450,7 +450,8 @@
         "modules/documents/src/index.ts",
         "modules/documents/src/xml-parser.ts",
         "modules/documents/src/xml-utils.ts",
-        "modules/documents/src/sax-parser.ts"
+        "modules/documents/src/sax-parser.ts",
+        "modules/documents/src/xml-options.ts"
       ],
       "sourcePathReason": "Retain the original XML package ratchet. Config, BSON, and new Markdown implementations have independent format gates; the documents source inventory requires an owner for every production file."
     }
@@ -1281,7 +1282,6 @@
         "modules/images/src/lib/parsers/parse-dds.ts",
         "modules/images/src/lib/parsers/parse-hdr.ts",
         "modules/images/src/lib/parsers/parse-ktx.ts",
-        "modules/images/src/lib/parsers/parse-npy.ts",
         "modules/images/src/lib/parsers/parse-pvr.ts",
         "modules/images/src/lib/texture-api/async-deep-map.ts",
         "modules/images/src/lib/texture-api/deep-load.ts",
@@ -1299,9 +1299,6 @@
         "modules/images/src/load-image-array.ts",
         "modules/images/src/load-image-cube.ts",
         "modules/images/src/load-image.ts",
-        "modules/images/src/npy-loader-types.ts",
-        "modules/images/src/npy-loader.ts",
-        "modules/images/src/npy-worker.ts",
         "modules/images/src/radiance-hdr-loader-types.ts",
         "modules/images/src/radiance-hdr-loader.ts",
         "modules/images/src/texture-array-loader-types.ts",
@@ -1319,8 +1316,7 @@
         "modules/images/src/workers/compressed-texture-worker.ts",
         "modules/images/src/workers/crunch-worker.ts",
         "modules/images/src/workers/ktx2-basis-writer-worker-node.ts",
-        "modules/images/src/workers/ktx2-basis-writer-worker.ts",
-        "modules/images/src/workers/npy-worker.ts"
+        "modules/images/src/workers/ktx2-basis-writer-worker.ts"
       ],
       "browser": {
         "statements": 75,
@@ -1425,6 +1421,51 @@
         "modules/documents/src/markdown-loader-types.ts",
         "modules/documents/src/markdown-loader.ts",
         "modules/documents/src/lib/parsers/parse-markdown.ts"
+      ],
+      "browser": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 85
+      },
+      "merged": {
+        "statements": 90,
+        "lines": 90,
+        "functions": 90,
+        "branches": 85
+      }
+    },
+    "scientific/npy": {
+      "browser": {
+        "statements": 75,
+        "lines": 75,
+        "functions": 72,
+        "branches": 67
+      },
+      "merged": {
+        "statements": 74,
+        "lines": 75,
+        "functions": 69,
+        "branches": 67
+      },
+      "owner": "@loaders.gl/scientific",
+      "path": "modules/scientific/src",
+      "sourcePaths": [
+        "modules/scientific/src/lib/parsers/parse-npy.ts",
+        "modules/scientific/src/npy-loader-types.ts",
+        "modules/scientific/src/npy-loader.ts",
+        "modules/scientific/src/npy-worker.ts",
+        "modules/scientific/src/workers/npy-worker.ts",
+        "modules/scientific/src/npy-format.ts"
+      ]
+    },
+    "documents/json": {
+      "owner": "@loaders.gl/documents",
+      "path": "modules/documents/src",
+      "sourcePaths": [
+        "modules/documents/src/json-format.ts",
+        "modules/documents/src/json-loader-types.ts",
+        "modules/documents/src/json-loader.ts"
       ],
       "browser": {
         "statements": 90,

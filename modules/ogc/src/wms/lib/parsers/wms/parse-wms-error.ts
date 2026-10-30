@@ -11,7 +11,9 @@ import {parseXMLTextSync} from '../xml/parse-xml-text';
  * @returns a string with a human readable message
  */
 export function parseWMSError(text: string, options): string {
-  const parsedXML = parseXMLTextSync(text, options);
+  const trimmed = text.trim();
+  const xml = trimmed.startsWith('"<') && trimmed.endsWith('>"') ? trimmed.slice(1, -1) : text;
+  const parsedXML = parseXMLTextSync(xml, options);
   const serviceExceptionXML =
     parsedXML?.ServiceExceptionReport?.ServiceException ||
     parsedXML?.['ogc:ServiceExceptionReport']?.['ogc:ServiceException'];

@@ -27,6 +27,12 @@ The [release tracker](https://github.com/visgl/loaders.gl/issues/3316) records r
 
 <span id="whats-new" />
 
+### Native document and scientific codecs
+
+Documents now includes a generic, non-tabular JSON microloader. XML-based loaders share its native
+XML parser, without a direct fast-xml-parser dependency. NumPy NPY arrays now live in scientific
+and retain synchronous and worker parsing through a flat `/npy-loader` import.
+
 ### Document loaders
 
 `@loaders.gl/documents` brings together XML, HTML, YAML, TOML and native BSON, and adds a small

@@ -568,7 +568,7 @@ function checkFeatureInfoException(text: string): void {
       removeNSPrefix: true,
       uncapitalizeKeys: true,
       textNodeName: '#text',
-      _fastXML: {parseTagValue: false}
+      parseTagValue: false
     }
   });
   const report = parsed.exceptionReport;

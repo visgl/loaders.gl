@@ -39,7 +39,6 @@ export {
   CrunchTextureFormat,
   DDSTextureFormat,
   KTX2BasisTextureFormat,
-  NPYFormat,
   RadianceHDRFormat
 } from './texture-format';
 export type {BasisLoaderOptions} from './basis-loader-types';
@@ -62,8 +61,6 @@ export {CrunchLoader} from './crunch-loader';
 export type {RadianceHDRLoaderOptions} from './radiance-hdr-loader-types';
 export type {RadianceHDRMetadata} from './lib/parsers/parse-hdr';
 export {RadianceHDRLoader} from './radiance-hdr-loader-types';
-export type {NPYLoaderOptions} from './npy-loader-types';
-export {NPYLoader} from './npy-loader-types';
 export type {TextureManifestLoaderOptions, TextureManifest} from './texture-loader-types';
 export {TextureLoader} from './texture-loader-types';
 export type {TextureArrayLoaderOptions, TextureArrayManifest} from './texture-array-loader-types';
@@ -90,7 +87,6 @@ export type {KTX2BasisWriterOptions} from './ktx2-basis-writer';
 export type {CompressedTextureLoaderOptions as TextureLoaderOptions} from './compressed-texture-loader-types';
 export {BasisWorkerLoader} from './basis-loader-types';
 export {CompressedTextureWorkerLoader} from './compressed-texture-loader-types';
-export {NPYWorkerLoader} from './npy-loader-types';
 export {CrunchLoader as CrunchWorkerLoader} from './crunch-loader';
 export {VideoLoader} from './video-loader-types';
 export type {VideoLoaderOptions} from './video-loader-types';
