@@ -123,11 +123,33 @@ function parseBlocks(lines: string[], depth: number, maxDepth: number): Markdown
   return blocks;
 }
 
+/** Matches unescaped brackets and parentheses once, including nested delimiters. */
+function matchInlineDelimiters(text: string): Map<number, number> {
+  const pairs = new Map<number, number>();
+  const brackets: number[] = [];
+  const parentheses: number[] = [];
+  for (let index = 0; index < text.length; index++) {
+    if (text[index] === '\\') {
+      index++;
+      continue;
+    }
+    const character = text[index];
+    if (character === '[') brackets.push(index);
+    else if (character === '(') parentheses.push(index);
+    else if (character === ']' || character === ')') {
+      const opening = (character === ']' ? brackets : parentheses).pop();
+      if (opening !== undefined) pairs.set(opening, index);
+    }
+  }
+  return pairs;
+}
+
 /** Parses inline markup, leaving raw HTML and authored destinations as inert data. */
 function parseInline(text: string, depth: number, maxDepth: number): MarkdownInline[] {
   checkDepth(depth, maxDepth);
   const nodes: MarkdownInline[] = [];
   const missing = new Set<string>();
+  const delimiterPairs = matchInlineDelimiters(text);
   let index = 0;
   /** Coalesces literal text rather than returning one node per character. */
   function appendText(value: string): void {
@@ -166,8 +188,9 @@ function parseInline(text: string, depth: number, maxDepth: number): MarkdownInl
     const image = text.startsWith('![', index);
     if (image || text[index] === '[') {
       const labelStart = index + (image ? 2 : 1);
-      const labelEnd = findClosing('](', labelStart);
-      const end = labelEnd >= 0 ? findClosing(')', labelEnd + 2) : -1;
+      const labelEnd = delimiterPairs.get(labelStart - 1) ?? -1;
+      const end =
+        labelEnd >= 0 && text[labelEnd + 1] === '(' ? (delimiterPairs.get(labelEnd + 1) ?? -1) : -1;
       if (end >= 0) {
         const label = text.slice(labelStart, labelEnd);
         const url = text.slice(labelEnd + 2, end);

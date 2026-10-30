@@ -107,6 +107,8 @@ describe('MarkdownLoader', () => {
     '`unclosed',
     '[unclosed',
     '[x](unclosed',
+    '(prefix) [',
+    '] stray ) [',
     '![](',
     '\\'
   ])('preserves unmatched syntax %s', text => {
@@ -139,4 +141,52 @@ describe('MarkdownLoader', () => {
     expect(parseMarkdownSync('*'.repeat(10000)).children).toEqual([{type: 'thematicBreak'}]);
     expect(parseMarkdownSync('['.repeat(10000)).children).toHaveLength(1);
   });
+});
+
+test.each([
+  [
+    '[plain] then [link](target)',
+    '[plain] then ',
+    {type: 'link', url: 'target', children: [{type: 'text', value: 'link'}]}
+  ],
+  [
+    '[unclosed then [link](target)',
+    '[unclosed then ',
+    {type: 'link', url: 'target', children: [{type: 'text', value: 'link'}]}
+  ],
+  [
+    '![plain] then ![image](target)',
+    '![plain] then ',
+    {type: 'image', url: 'target', alt: 'image'}
+  ],
+  ['[plain] then ![image](target)', '[plain] then ', {type: 'image', url: 'target', alt: 'image'}],
+  [
+    '[bad](unclosed then [link](target)',
+    '[bad](unclosed then ',
+    {type: 'link', url: 'target', children: [{type: 'text', value: 'link'}]}
+  ]
+] as const)('keeps earlier bracket text separate in %s', (text, prefix, node) => {
+  expect(parseMarkdownSync(text).children).toEqual([
+    {type: 'paragraph', children: [{type: 'text', value: prefix}, node]}
+  ]);
+});
+
+test('matches nested and escaped delimiters without truncating links', () => {
+  expect(
+    parseMarkdownSync('[a [bracket] and \\] label](https://example.com/a(b)) ![a \\] b](image.png)')
+      .children
+  ).toEqual([
+    {
+      type: 'paragraph',
+      children: [
+        {
+          type: 'link',
+          url: 'https://example.com/a(b)',
+          children: [{type: 'text', value: 'a [bracket] and ] label'}]
+        },
+        {type: 'text', value: ' '},
+        {type: 'image', url: 'image.png', alt: 'a \\] b'}
+      ]
+    }
+  ]);
 });
