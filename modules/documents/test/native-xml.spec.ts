@@ -108,6 +108,15 @@ test('HTML retains legacy tolerance, authored case and HTML entities', () => {
   });
 });
 
+test('HTML closes open roots at end-of-input and matches end tags without case sensitivity', () => {
+  expect(HTMLLoaderWithParser.parseTextSync('<HTML><Body><p>truncated')).toEqual({
+    HTML: {Body: {p: 'truncated'}}
+  });
+  expect(HTMLLoaderWithParser.parseTextSync('<HTML><Body><p>mixed case</bODY>')).toEqual({
+    HTML: {Body: {p: 'mixed case'}}
+  });
+});
+
 test('HTML callers can opt into strict XML and override whitespace defaults', () => {
   expect(() => HTMLLoaderWithParser.parseTextSync('<a><b></a>', {xml: {strict: true}})).toThrow();
   expect(HTMLLoaderWithParser.parseTextSync('<a>  text  </a>', {xml: {trimValues: false}})).toEqual(

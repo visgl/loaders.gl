@@ -63,6 +63,8 @@ export type SAXParserOptions = SAXEvents & {
   strictEntities?: boolean;
   /** Preserve authored tag and attribute case in non-strict mode. */
   preserveCase?: boolean;
+  /** Match tag names without case sensitivity in non-strict mode. */
+  caseInsensitiveTags?: boolean;
   /** Decode entity values; false preserves their original spelling. */
   processEntities?: boolean;
   xmlns?: any;
@@ -101,6 +103,7 @@ const DEFAULT_SAX_PARSER_OPTIONS: Required<SAXParserOptions> = {
   noscript: false,
   strictEntities: false,
   preserveCase: false,
+  caseInsensitiveTags: false,
   processEntities: true,
   xmlns: undefined,
   position: undefined,
@@ -1498,12 +1501,13 @@ abstract class SAX {
     // <a><b></c></b></a> will close everything, otherwise.
     let t = this.tags.length;
     let tagName = this.tagName;
-    if (!this.strict && !this.opt.preserveCase) {
-      tagName = tagName[this.looseCase]();
-    }
+    const caseInsensitiveTags =
+      !this.strict && (this.opt.caseInsensitiveTags || !this.opt.preserveCase);
+    const normalizedTagName = caseInsensitiveTags ? tagName.toLowerCase() : tagName;
     while (t--) {
       const close = this.tags[t];
-      if (close.name !== tagName) {
+      const normalizedOpenTagName = caseInsensitiveTags ? close.name.toLowerCase() : close.name;
+      if (normalizedOpenTagName !== normalizedTagName) {
         // fail the first time in strict mode
         this.strictFail('Unexpected close tag');
       } else {
