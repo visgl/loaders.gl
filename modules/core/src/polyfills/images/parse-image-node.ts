@@ -1,54 +1,45 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
 
-import getPixels from 'get-pixels';
+import {loadSharp} from './load-sharp';
 
 export {NODE_FORMAT_SUPPORT} from './node-image-formats';
 
-// Note: These types are also defined in @loaders.gl/images and need to be kept in sync
-type NDArray = {
+/** Decoded Node image pixels and dimensions. */
+type NodeImageData = {
+  /** Pixel layout, including a frame dimension for animations. */
   shape: number[];
+  /** Interleaved RGBA pixels. */
   data: Uint8Array;
+  /** Frame width in pixels. */
   width: number;
+  /** Frame height in pixels. */
   height: number;
+  /** Number of components per pixel. */
   components: number;
+  /** Number of animation frames. */
   layers: number[];
 };
 
-export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string): Promise<NDArray> {
-  if (!mimeType) {
-    throw new Error('MIMEType is required to parse image under Node.js');
-  }
-
-  const buffer = arrayBuffer instanceof Buffer ? arrayBuffer : Buffer.from(arrayBuffer);
-  const ndarray = await getPixelsAsync(buffer, mimeType);
-  return ndarray;
-}
-
-// TODO - check if getPixels callback is asynchronous if provided with buffer input
-// if not, parseImage can be a sync function
-function getPixelsAsync(buffer: Buffer, mimeType: string): Promise<NDArray> {
-  return new Promise<NDArray>(resolve =>
-    getPixels(buffer as any, mimeType, (err, ndarray) => {
-      if (err) {
-        throw err;
-      }
-
-      const shape = [...ndarray.shape];
-      const layers = ndarray.shape.length === 4 ? ndarray.shape.shift() : 1;
-      const data = ndarray.data instanceof Buffer ? new Uint8Array(ndarray.data) : ndarray.data;
-
-      // extract width/height etc
-      resolve({
-        shape,
-        data,
-        width: ndarray.shape[0],
-        height: ndarray.shape[1],
-        components: ndarray.shape[2],
-        // TODO - error
-        layers: layers ? [layers] : []
-      });
-    })
-  );
+/** Decodes encoded image bytes into RGBA pixels, detecting the format from the bytes. */
+export async function parseImageNode(
+  arrayBuffer: ArrayBuffer,
+  _mimeType?: string
+): Promise<NodeImageData> {
+  const sharp = await loadSharp();
+  const {data, info: imageInformation} = await sharp(Buffer.from(arrayBuffer), {animated: true})
+    .toColourspace('srgb')
+    .ensureAlpha()
+    .raw()
+    .toBuffer({resolveWithObject: true});
+  const width = imageInformation.width;
+  const height = imageInformation.pageHeight || imageInformation.height;
+  const frameCount = imageInformation.pages || 1;
+  return {
+    shape: frameCount > 1 ? [frameCount, width, height, 4] : [width, height, 4],
+    data: new Uint8Array(data),
+    width,
+    height,
+    components: 4,
+    layers: [frameCount]
+  };
 }

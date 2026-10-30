@@ -394,18 +394,10 @@
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
   "peerDependencies": {
-    "get-pixels": "^3.3.3",
-    "ndarray": "^1.0.19",
-    "save-pixels": "^2.3.6"
+    "sharp": "^0.35.5"
   },
   "peerDependenciesMeta": {
-    "get-pixels": {
-      "optional": true
-    },
-    "ndarray": {
-      "optional": true
-    },
-    "save-pixels": {
+    "sharp": {
       "optional": true
     }
   }

@@ -114,3 +114,5 @@
 - LAS/LAZ, PCD and PLY implementations belong in `@loaders.gl/pointclouds` format subpaths; PLY retains both point-cloud and mesh/face support. COPC and Potree remain in tiles-3d.
 - Scene owns OBJ/MTL, glTF/GLB and USD through `/obj`, `/gltf` and `/usd`; geospatial owns WKT/WKB/TWKB loaders and writers. Do not restore their removed standalone packages.
 - Pointclouds, scene and Draco use Arrow transport directly from core/schema-utils/arrow-transport, without tables forwarding imports or dependencies.
+
+- Texture and video implementations belong in `@loaders.gl/images`. Keep its root loaders metadata-only and expose parsers, texture writers, schemas, and helpers through direct subpaths. Do not restore standalone texture/video compatibility packages.

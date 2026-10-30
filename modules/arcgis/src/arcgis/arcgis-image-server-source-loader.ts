@@ -10,7 +10,7 @@ import type {
 } from '../arcgis-source-types';
 
 import type {ImageType} from '@loaders.gl/images';
-import {ImageLoader} from '@loaders.gl/images';
+import {LegacyImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
   SourceLoader,
@@ -86,7 +86,11 @@ export class ArcGISImageSource
     const response = await this.fetch(this.exportImageURL(options), signal ? {signal} : undefined);
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
-    return (await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageType;
+    return (await this.coreApi.parse(
+      arrayBuffer,
+      LegacyImageLoader,
+      this.loadOptions
+    )) as ImageType;
   }
 
   /** Requests an analytical LERC raster from the ArcGIS ImageServer endpoint. */

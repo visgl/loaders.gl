@@ -66,12 +66,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ```typescript
 import '@loaders.gl/core/polyfills'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
-import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
-import {KTX2BasisWriter} from '@loaders.gl/textures';
+import {ImageLoader, getImageData} from '@loaders.gl/images';
+import {KTX2BasisWriter} from '@loaders.gl/images/ktx2-basis-writer';
 
 const shannonPNG = 'shannon.png';
 
-const image = getImageData(await load(shannonPNG, ImageBitmapLoader));
+const image = getImageData(await load(shannonPNG, ImageLoader));
 const encodedData = await encode(image, KTX2BasisWriter, {
   'ktx2-basis-writer': {
     format: 'uastc-ldr-4x4',
@@ -110,8 +110,8 @@ absolute-light values before encoding.
 
 The writer loads the Binomial LLC Basis Universal encoder independently from the decoder:
 
-- https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm
-- https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js
+- https://unpkg.com/@loaders.gl/images@${VERSION}/dist/libs/basis_encoder.wasm
+- https://unpkg.com/@loaders.gl/images@${VERSION}/dist/libs/basis_encoder.js
 
 ## Module Overrides
 

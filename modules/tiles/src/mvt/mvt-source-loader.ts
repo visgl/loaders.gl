@@ -22,11 +22,7 @@ import {
   resolveXYZTileParameters,
   waitForPromiseWithSignal
 } from '@loaders.gl/core/loader-utils';
-import {
-  ImageBitmapLoader,
-  type ImageBitmapLoaderOptions,
-  getBinaryImageMetadata
-} from '@loaders.gl/images';
+import {ImageLoader, type ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
 import {MVTFormat} from './mvt-format';
 import {MVTLoader, type MVTLoaderOptions} from './mvt-loader';
 import {TileJSONLoader, type TileJSONLoaderOptions} from './tilejson-loader';
@@ -36,7 +32,7 @@ import type {TileJSON} from './lib/parse-tilejson';
 export type MVTSourceLoaderOptions = DataSourceOptions &
   MVTLoaderOptions &
   TileJSONLoaderOptions &
-  ImageBitmapLoaderOptions & {
+  ImageLoaderOptions & {
     mvt?: {
       /** Explicit Web Mercator contract for sources without TileJSON metadata. */
       coordinateReferenceSystem?: 'EPSG:3857';
@@ -291,11 +287,7 @@ export class MVTTileSource
   }
 
   protected async _parseImageTile(arrayBuffer: ArrayBuffer): Promise<ImageType> {
-    return (await this.coreApi.parse(
-      arrayBuffer,
-      ImageBitmapLoader,
-      this.loadOptions
-    )) as ImageType;
+    return (await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageType;
   }
 
   // VectorTileSource interface implementation

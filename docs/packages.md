@@ -185,7 +185,7 @@ Decode and encode images, inspect image metadata, and work with browser image ob
 
 <PackageTile formats={[{"slug": "ktx", "to": "/docs/modules/textures/formats/ktx"}, {"slug": "basis", "to": "/docs/modules/textures/formats/basis"}, {"slug": "dds", "to": "/docs/modules/textures/formats/dds"}, {"slug": "pvr", "to": "/docs/modules/textures/formats/pvr"}, {"slug": "crunch", "to": "/docs/modules/textures/formats/crunch"}]}>
 
-### [@loaders.gl/textures](./modules/textures/README.md)
+### [@loaders.gl/images](./modules/textures/README.md)
 
 GPU texture formats, transcoding, and compressed texture writing.
 
@@ -194,7 +194,7 @@ GPU texture formats, transcoding, and compressed texture writing.
 
 <PackageTile formats={[{"slug": "video", "to": "/docs/modules/video/api-reference/video-loader"}, {"slug": "gif", "to": "/docs/modules/video"}]}>
 
-### [@loaders.gl/video](./modules/video/README.md)
+### [@loaders.gl/images](./modules/video/README.md)
 
 Load video for browser playback and assemble image frames into animated GIFs.
 

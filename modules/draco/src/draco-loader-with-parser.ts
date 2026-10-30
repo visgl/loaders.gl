@@ -8,7 +8,7 @@ import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {DracoMesh} from './lib/draco-types';
 import {parseDraco} from './lib/parse-draco';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
-import {DracoWorkerLoader as DracoWorkerLoaderMetadata} from './draco-loader';
+import {DracoLoader as DracoWorkerLoaderMetadata} from './draco-loader';
 import {DracoLoader as DracoLoaderMetadata} from './draco-loader';
 import type {DracoLoaderOptions} from './draco-loader-options';
 

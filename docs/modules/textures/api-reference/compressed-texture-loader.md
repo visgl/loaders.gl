@@ -60,7 +60,7 @@ Loader for compressed texture containers in the KTX, DDS and PVR formats.
 ## Usage
 
 ```typescript
-import {CompressedTextureLoader} from '@loaders.gl/textures';
+import {CompressedTextureLoader} from '@loaders.gl/images';
 import {load} from '@loaders.gl/core';
 
 const mipLevels = await load(url, CompressedTextureLoader);

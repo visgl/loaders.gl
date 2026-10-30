@@ -14,11 +14,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Load one image, or let the mip chain follow it."
   description="loadImageTexture is the small helper for a single image resource. With mipLevels enabled, the same callback can describe the lower-resolution images needed by a texture upload."
   tone="blue"
-  meta={['Single image', 'Optional mip chain', 'ImageBitmapLoader options']}
+  meta={['Single image', 'Optional mip chain', 'ImageLoader options']}
   links={[
     {label: 'Images module', to: '/docs/modules/images'},
     {label: 'loadImageArray', to: '/docs/modules/textures/api-reference/load-image-array'},
-    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'}
+    {label: 'ImageLoader', to: '/docs/modules/images/api-reference/image-loader'}
   ]}
 />
 
@@ -45,14 +45,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only needed if using under Node
-import {loadImageTexture} from '@loaders.gl/textures';
+import {loadImageTexture} from '@loaders.gl/images/load-image';
 
 const image = await loadImageTexture(url);
 ```
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only needed if using under Node
-import {loadImageTexture} from '@loaders.gl/textures';
+import {loadImageTexture} from '@loaders.gl/images/load-image';
 
 const URL = ...;
 
@@ -74,7 +74,7 @@ for (const lodImage of imageArray) {
 A basic image loading function for loading a single image (or an array of mipmap images representing a single image).
 
 - `getUrl`: A function that generates the url for each image, it is called for each image with the `lod` of that image.
-- `options`: Supports the same image parsing options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
+- `options`: Supports the same image parsing options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader).
 
 Returns
 
@@ -82,7 +82,7 @@ Returns
 
 ## Options
 
-Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), and
+Accepts the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader), and
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -90,4 +90,4 @@ Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-refer
 
 Number of mip level images to load: Use `0` to indicate a single image with no mips. Supplying the string `'auto'` will infer the mipLevel from the size of the `lod`=`0` image.
 
-Returned images use the same runtime-dependent `ImageBitmap` contract as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader): native `ImageBitmap` in supported browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is installed.
+Returned images use the same runtime-dependent `ImageBitmap` contract as [`ImageLoader`](/docs/modules/images/api-reference/image-loader): native `ImageBitmap` in supported browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is installed.

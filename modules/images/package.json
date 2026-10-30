@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/images",
   "version": "5.0.0-beta.1",
-  "description": "Image loaders and writers using browser and Node.js image codecs",
+  "description": "Image, compressed texture, and video loaders with optional Node.js image codecs",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -39,6 +39,243 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
+    },
+    "./basis-worker.js": {
+      "import": "./dist/basis-worker.js"
+    },
+    "./basis-worker-node.js": {
+      "import": "./dist/basis-worker-node.cjs",
+      "require": "./dist/basis-worker-node.cjs"
+    },
+    "./npy-worker.js": {
+      "import": "./dist/npy-worker.js"
+    },
+    "./compressed-texture-worker.js": {
+      "import": "./dist/compressed-texture-worker.js"
+    },
+    "./crunch-worker.js": {
+      "import": "./dist/crunch-worker.js"
+    },
+    "./ktx2-basis-writer-worker.js": {
+      "import": "./dist/ktx2-basis-writer-worker.js"
+    },
+    "./ktx2-basis-writer-worker-node.js": {
+      "import": "./dist/ktx2-basis-writer-worker-node.cjs",
+      "require": "./dist/ktx2-basis-writer-worker-node.cjs"
+    },
+    "./texture-manifest.schema.json": "./dist/texture-manifest.schema.json",
+    "./basis-worker-node.cjs": {
+      "require": "./dist/basis-worker-node.cjs",
+      "default": "./dist/basis-worker-node.cjs"
+    },
+    "./ktx2-basis-writer-worker-node.cjs": {
+      "require": "./dist/ktx2-basis-writer-worker-node.cjs",
+      "default": "./dist/ktx2-basis-writer-worker-node.cjs"
+    },
+    "./load-image": {
+      "types": "./dist/load-image.d.ts",
+      "import": "./dist/load-image.js",
+      "require": "./dist/load-image.cjs"
+    },
+    "./load-image-cube": {
+      "types": "./dist/load-image-cube.d.ts",
+      "import": "./dist/load-image-cube.js",
+      "require": "./dist/load-image-cube.cjs"
+    },
+    "./texture-cube-loader": {
+      "types": "./dist/texture-cube-loader.d.ts",
+      "import": "./dist/texture-cube-loader.js",
+      "require": "./dist/texture-cube-loader.cjs"
+    },
+    "./basis-types": {
+      "types": "./dist/basis-types.d.ts",
+      "import": "./dist/basis-types.js",
+      "require": "./dist/basis-types.cjs"
+    },
+    "./video-format": {
+      "types": "./dist/video-format.d.ts",
+      "import": "./dist/video-format.js",
+      "require": "./dist/video-format.cjs"
+    },
+    "./compressed-texture-writer": {
+      "types": "./dist/compressed-texture-writer.d.ts",
+      "import": "./dist/compressed-texture-writer.js",
+      "require": "./dist/compressed-texture-writer.cjs"
+    },
+    "./basis-loader": {
+      "types": "./dist/basis-loader.d.ts",
+      "import": "./dist/basis-loader.js",
+      "require": "./dist/basis-loader.cjs"
+    },
+    "./texture-manifest-schema": {
+      "types": "./dist/texture-manifest-schema.d.ts",
+      "import": "./dist/texture-manifest-schema.js",
+      "require": "./dist/texture-manifest-schema.cjs"
+    },
+    "./legacy-image-loader": {
+      "types": "./dist/legacy-image-loader.d.ts",
+      "import": "./dist/legacy-image-loader.js",
+      "require": "./dist/legacy-image-loader.cjs"
+    },
+    "./compressed-texture-loader": {
+      "types": "./dist/compressed-texture-loader.d.ts",
+      "import": "./dist/compressed-texture-loader.js",
+      "require": "./dist/compressed-texture-loader.cjs"
+    },
+    "./crunch-module-loader": {
+      "types": "./dist/crunch-module-loader.d.ts",
+      "import": "./dist/crunch-module-loader.js",
+      "require": "./dist/crunch-module-loader.cjs"
+    },
+    "./texture-loader": {
+      "types": "./dist/texture-loader.d.ts",
+      "import": "./dist/texture-loader.js",
+      "require": "./dist/texture-loader.cjs"
+    },
+    "./gl-extensions": {
+      "types": "./dist/gl-extensions.d.ts",
+      "import": "./dist/gl-extensions.js",
+      "require": "./dist/gl-extensions.cjs"
+    },
+    "./image-loader": {
+      "types": "./dist/image-loader.d.ts",
+      "import": "./dist/image-loader.js",
+      "require": "./dist/image-loader.cjs"
+    },
+    "./npy-loader": {
+      "types": "./dist/npy-loader.d.ts",
+      "import": "./dist/npy-loader.js",
+      "require": "./dist/npy-loader.cjs"
+    },
+    "./gif-builder": {
+      "types": "./dist/gif-builder.d.ts",
+      "import": "./dist/gif-builder.js",
+      "require": "./dist/gif-builder.cjs"
+    },
+    "./texture-cube-array-loader": {
+      "types": "./dist/texture-cube-array-loader.d.ts",
+      "import": "./dist/texture-cube-array-loader.js",
+      "require": "./dist/texture-cube-array-loader.cjs"
+    },
+    "./video-loader-types": {
+      "types": "./dist/video-loader-types.d.ts",
+      "import": "./dist/video-loader-types.js",
+      "require": "./dist/video-loader-types.cjs"
+    },
+    "./load-image-array": {
+      "types": "./dist/load-image-array.d.ts",
+      "import": "./dist/load-image-array.js",
+      "require": "./dist/load-image-array.cjs"
+    },
+    "./image-writer": {
+      "types": "./dist/image-writer.d.ts",
+      "import": "./dist/image-writer.js",
+      "require": "./dist/image-writer.cjs"
+    },
+    "./texture-cube-loader-types": {
+      "types": "./dist/texture-cube-loader-types.d.ts",
+      "import": "./dist/texture-cube-loader-types.js",
+      "require": "./dist/texture-cube-loader-types.cjs"
+    },
+    "./basis-loader-types": {
+      "types": "./dist/basis-loader-types.d.ts",
+      "import": "./dist/basis-loader-types.js",
+      "require": "./dist/basis-loader-types.cjs"
+    },
+    "./image-format": {
+      "types": "./dist/image-format.d.ts",
+      "import": "./dist/image-format.js",
+      "require": "./dist/image-format.cjs"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js",
+      "require": "./dist/types.cjs"
+    },
+    "./texture-format": {
+      "types": "./dist/texture-format.d.ts",
+      "import": "./dist/texture-format.js",
+      "require": "./dist/texture-format.cjs"
+    },
+    "./basis-format-utils": {
+      "types": "./dist/basis-format-utils.d.ts",
+      "import": "./dist/basis-format-utils.js",
+      "require": "./dist/basis-format-utils.cjs"
+    },
+    "./radiance-hdr-loader": {
+      "types": "./dist/radiance-hdr-loader.d.ts",
+      "import": "./dist/radiance-hdr-loader.js",
+      "require": "./dist/radiance-hdr-loader.cjs"
+    },
+    "./texture-array-loader-types": {
+      "types": "./dist/texture-array-loader-types.d.ts",
+      "import": "./dist/texture-array-loader-types.js",
+      "require": "./dist/texture-array-loader-types.cjs"
+    },
+    "./basis-module-loader": {
+      "types": "./dist/basis-module-loader.d.ts",
+      "import": "./dist/basis-module-loader.js",
+      "require": "./dist/basis-module-loader.cjs"
+    },
+    "./texture-cube-array-loader-types": {
+      "types": "./dist/texture-cube-array-loader-types.d.ts",
+      "import": "./dist/texture-cube-array-loader-types.js",
+      "require": "./dist/texture-cube-array-loader-types.cjs"
+    },
+    "./radiance-hdr-loader-types": {
+      "types": "./dist/radiance-hdr-loader-types.d.ts",
+      "import": "./dist/radiance-hdr-loader-types.js",
+      "require": "./dist/radiance-hdr-loader-types.cjs"
+    },
+    "./compressed-texture-loader-types": {
+      "types": "./dist/compressed-texture-loader-types.d.ts",
+      "import": "./dist/compressed-texture-loader-types.js",
+      "require": "./dist/compressed-texture-loader-types.cjs"
+    },
+    "./npy-loader-types": {
+      "types": "./dist/npy-loader-types.d.ts",
+      "import": "./dist/npy-loader-types.js",
+      "require": "./dist/npy-loader-types.cjs"
+    },
+    "./texture-array-loader": {
+      "types": "./dist/texture-array-loader.d.ts",
+      "import": "./dist/texture-array-loader.js",
+      "require": "./dist/texture-array-loader.cjs"
+    },
+    "./ktx2-basis-writer": {
+      "types": "./dist/ktx2-basis-writer.d.ts",
+      "import": "./dist/ktx2-basis-writer.js",
+      "require": "./dist/ktx2-basis-writer.cjs"
+    },
+    "./legacy-image-loader-types": {
+      "types": "./dist/legacy-image-loader-types.d.ts",
+      "import": "./dist/legacy-image-loader-types.js",
+      "require": "./dist/legacy-image-loader-types.cjs"
+    },
+    "./texture-loader-types": {
+      "types": "./dist/texture-loader-types.d.ts",
+      "import": "./dist/texture-loader-types.js",
+      "require": "./dist/texture-loader-types.cjs"
+    },
+    "./video-loader": {
+      "types": "./dist/video-loader.d.ts",
+      "import": "./dist/video-loader.js",
+      "require": "./dist/video-loader.cjs"
+    },
+    "./ktx2-basis-writer-worker-loader": {
+      "types": "./dist/ktx2-basis-writer-worker-loader.d.ts",
+      "import": "./dist/ktx2-basis-writer-worker-loader.js",
+      "require": "./dist/ktx2-basis-writer-worker-loader.cjs"
+    },
+    "./crunch-loader": {
+      "types": "./dist/crunch-loader.d.ts",
+      "import": "./dist/crunch-loader.js",
+      "require": "./dist/crunch-loader.cjs"
+    },
+    "./image-loader-types": {
+      "types": "./dist/image-loader-types.d.ts",
+      "import": "./dist/image-loader-types.js",
+      "require": "./dist/image-loader-types.cjs"
     }
   },
   "sideEffects": false,
@@ -51,12 +288,33 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers && npm run build-metadata",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/texture-manifest-schema.js --export CompositeImageManifestSchema --output ./dist/texture-manifest.schema.json --id https://unpkg.com/@loaders.gl/images/texture-manifest.schema.json --title 'loaders.gl composite image texture manifest'",
+    "copy-libs": "mkdir -p ./dist/libs && cp -rf ./src/libs/. ./dist/libs && node ../../scripts/build-library-modules.mjs images",
+    "build-workers": "npm run build-basis-worker && npm run build-basis-worker-node && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-worker-node",
+    "build-basis-worker": "esbuild src/workers/basis-worker.ts --outfile=dist/basis-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-basis-worker-node": "esbuild src/workers/basis-worker-node.ts --outfile=dist/basis-worker-node.cjs --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\" --external:sharp",
+    "build-ktx2-basis-writer-worker": "esbuild src/workers/ktx2-basis-writer-worker.ts --outfile=dist/ktx2-basis-writer-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-ktx2-basis-writer-worker-node": "esbuild src/workers/ktx2-basis-writer-worker-node.ts --outfile=dist/ktx2-basis-writer-worker-node.cjs --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\" --external:sharp",
+    "build-npy-worker": "esbuild src/workers/npy-worker.ts --outfile=dist/npy-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-compressed-texture-worker": "esbuild src/workers/compressed-texture-worker.ts --target=esnext --bundle --outfile=dist/compressed-texture-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-crunch-worker": "esbuild src/workers/crunch-worker.ts --outfile=dist/crunch-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-metadata": "node ../../scripts/build-images-metadata.mjs"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "texture-compressor": "^1.0.2"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "dependencies": {
+    "@math.gl/core": "5.0.0-beta.1",
+    "zod": "^4.1.12"
+  },
+  "peerDependenciesMeta": {
+    "texture-compressor": {
+      "optional": true
+    }
+  }
 }

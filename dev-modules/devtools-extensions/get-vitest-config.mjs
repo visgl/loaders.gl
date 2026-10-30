@@ -97,18 +97,15 @@ export async function getVitestConfig(options = {}) {
         'flatbuffers',
         'fuzzer',
         'geotiff',
-        'get-pixels',
 
         'lerc',
         'long',
         'lz4js',
-        'ndarray',
 
         'pako',
         'parquet-wasm/esm/parquet_wasm.js',
         'pbf',
         'pmtiles',
-        'save-pixels',
 
         'snappyjs',
         'sql.js',

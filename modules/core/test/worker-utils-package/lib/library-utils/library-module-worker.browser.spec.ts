@@ -10,9 +10,9 @@ test('module workers import shipped decoder factories without leaking wrapper gl
     ['draco', 'draco_wasm_wrapper', 'DracoDecoderModule'],
     ['draco', 'draco_wasm_wrapper_gltf', 'DracoDecoderModule'],
     ['draco', 'draco_encoder', 'DracoEncoderModule'],
-    ['textures', 'basis_transcoder', 'BASIS'],
-    ['textures', 'basis_encoder', 'BASIS'],
-    ['textures', 'crunch', 'LoadCrunchDecoder']
+    ['images', 'basis_transcoder', 'BASIS'],
+    ['images', 'basis_encoder', 'BASIS'],
+    ['images', 'crunch', 'LoadCrunchDecoder']
   ];
   const libraryUrls = libraries.map(([moduleName, libraryName, globalName]) => [
     new URL(`/modules/${moduleName}/dist/libs/${libraryName}.mjs`, location.href).href,

@@ -48,7 +48,7 @@
       "!modules/images/src/lib/category-api/image-type.ts",
       "!modules/images/test/image-loader.spec.ts",
       "!modules/scene/src/obj/lib/get-obj-schema.ts",
-      "!modules/textures/test/basis-loader.spec.ts",
+      "!modules/images/test/textures/basis-loader.spec.ts",
       "!modules/xml/test/sax-ts/testcases/attribute-name.spec.ts",
       "!modules/xml/test/sax-ts/testcases/opentagstart.spec.ts",
       "!modules/xml/test/sax-ts/testcases/script-close-better.spec.ts",

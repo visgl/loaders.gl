@@ -59,7 +59,7 @@ it does not add renderer-level vector styling, clipping, or drawing.
 | Decoder Type          | Asynchronous                                                                                                             |
 | Worker Thread Support | ❌ No                                                                                                                       |
 | Streaming Support     | ❌ No \*                                                                                                                    |
-| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageBitmapLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
+| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
 
 \* Streaming individual tile contents is not supported; however, tilesets are streamed so that only the tiles needed for the specified viewports are loaded.
 
@@ -163,7 +163,7 @@ General request options such as headers are supplied through the shared loaders.
 `3d-tiles.loadGLTF` is enabled, use [`GLTFLoader` options](/docs/modules/scene/gltf/api-reference/gltf-loader)
 under `options.gltf` to control linked scene resources.
 
-Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
+Standard linked raster images are decoded through [`ImageLoader`](/docs/modules/images/api-reference/image-loader).
 
 See [Resource resolution and content detection](/docs/modules/tiles-3d/3d-tiles/concepts/resource-resolution-and-content-detection) for extensionless and signed URLs, nested tilesets, inherited query parameters, archive sources, validation behavior, and troubleshooting.
 

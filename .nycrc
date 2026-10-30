@@ -15,7 +15,7 @@
     "**/text-encoding.js",
     "**/encoding.js",
     "**/laz-perf.js",
-    "modules/video/src/lib/gifshot/gifshot.ts",
+    "modules/images/src/lib/gifshot/gifshot.ts",
     "modules/core/src/polyfills/text-encoder/text-encoder.ts",
     "modules/compression/src/brotli/decode.ts",
     "modules/raster/src/terrain/lib/delatin/index.ts",

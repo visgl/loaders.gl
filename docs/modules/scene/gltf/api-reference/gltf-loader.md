@@ -273,7 +273,7 @@ not provide `parseSync`. Async parsing supports the following resource processin
 - linked binary resource URI:s will be loaded and resolved (assuming a valid base url is available).
 - base64 encoded binary URI:s inside the JSON payload will be decoded.
 - linked image URI:s can be loaded and decoded.
-- linked raster image URI:s are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), producing `ImageBitmap` in browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is installed.
+- linked raster image URI:s are decoded through [`ImageLoader`](/docs/modules/images/api-reference/image-loader), producing `ImageBitmap` in browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is installed.
 - Draco meshes can be decoded asynchronously on worker threads (in parallel!).
 
 ## Options
@@ -392,7 +392,7 @@ References inside these arrays remain numeric. Resource decoding may replace com
   externalAssets: Array<GLTFWithBuffers | null>,
 
   // Images can optionally be loaded and decoded, they will be stored here.
-  // Standard raster images are decoded through ImageBitmapLoader.
+  // Standard raster images are decoded through ImageLoader.
   // Length and indices of this array will match `json.buffers`
   images: Array<ImageBitmap | object>,
 

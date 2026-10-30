@@ -18,7 +18,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Textures module', to: '/docs/modules/textures'},
     {label: 'Texture category', to: '/docs/specifications/category-texture'},
-    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'}
+    {label: 'ImageLoader', to: '/docs/modules/images/api-reference/image-loader'}
   ]}
 />
 
@@ -30,7 +30,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Input', value: 'JSON image-texture manifest'},
     {label: 'Resolve', value: 'Relative member URLs and optional base URL'},
-    {label: 'Decode', value: 'Member images through ImageBitmapLoader'},
+    {label: 'Decode', value: 'Member images through ImageLoader'},
     {label: 'Output', value: 'Texture with ordered TextureLevel entries'}
   ]}
 />
@@ -59,21 +59,21 @@ A loader for image-based composite textures described by a JSON manifest.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureLoader} from '@loaders.gl/textures';
+import {TextureLoader} from '@loaders.gl/images';
 
 const image = await load('texture.image-texture.json', TextureLoader);
 ```
 
-Member images are parsed with `ImageBitmapLoader` by default:
+Member images are parsed with `ImageLoader` by default:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureLoader} from '@loaders.gl/textures';
+import {TextureLoader} from '@loaders.gl/images';
 
 const texture = await load('texture.image-texture.json', TextureLoader);
 ```
 
-Member images use the same runtime-dependent bitmap contract as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader): native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
+Member images use the same runtime-dependent bitmap contract as [`ImageLoader`](/docs/modules/images/api-reference/image-loader): native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
 
 ## Manifest
 

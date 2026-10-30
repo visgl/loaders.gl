@@ -48,7 +48,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 </p>
 
-- _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
+- _[`@loaders.gl/images`](/docs/modules/textures)_ - loaders.gl implementation
 - _[`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)_ - loads Radiance RGBE `.hdr` files as `Texture`
 
 Radiance HDR is a classic high-dynamic-range raster image format commonly used for lighting environments, skyboxes, reflections, and tone-mapping test images in graphics pipelines.

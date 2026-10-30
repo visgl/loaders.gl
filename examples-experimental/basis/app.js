@@ -1,5 +1,5 @@
 import {load} from '@loaders.gl/core';
-import {BasisLoader} from '@loaders.gl/textures';
+import {BasisLoader} from '@loaders.gl/images';
 
 const canvas = document.createElement('canvas');
 document.body.appendChild(canvas);
@@ -22,7 +22,7 @@ if (dxtSupported) {
 
 // TODO - load images from github once the test images have been pushed to repo
 // const BASIS_URL =
-//   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/alpha.3.basis';
+//   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/images/test/textures/data/alpha.3.basis';
 
 const textureRenderPogram = createProgram();
 

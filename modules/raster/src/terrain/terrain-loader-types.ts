@@ -4,14 +4,14 @@
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
-import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
+import type {ImageLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
 import type {TerrainOptions} from './lib/parse-terrain';
 import {TerrainFormat} from './terrain-format';
 
 /** TerrainLoader options */
-export type TerrainLoaderOptions = ImageBitmapLoaderOptions & {
+export type TerrainLoaderOptions = ImageLoaderOptions & {
   /** TerrainLoader options */
   terrain?: TerrainOptions & {
     /** Selects mesh output or Apache Arrow output. */

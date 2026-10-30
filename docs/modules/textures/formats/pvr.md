@@ -47,7 +47,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
-- _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
+- _[`@loaders.gl/images`](/docs/modules/textures)_ - loaders.gl implementation
 - _[`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader)_ - reads PVR containers
 
 PVR is the PowerVR texture container format. It is associated with Imagination Technologies' PowerVR ecosystem and is commonly seen in mobile texture workflows.

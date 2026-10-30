@@ -15,7 +15,7 @@ Formats, encodings, and protocols by module (see each README for runtime and imp
 | [`@loaders.gl/draco`](modules/draco/README.md) | Draco. |
 | [`@loaders.gl/geospatial`](modules/geospatial/README.md) | KML, KMZ, GPX, TCX, Shapefile, SHP, SHX, DBF, CPG, PRJ, FlatGeobuf, GeoPackage, WKT, WKT CRS, WKB, TWKB. |
 | [`@loaders.gl/graphs`](modules/graphs/README.md) | DOT, GraphML, GEXF. |
-| [`@loaders.gl/images`](modules/images/README.md) | PNG, JPEG, JPG, GIF, WebP, BMP, ICO, SVG, AVIF. Availability depends on the runtime and installed codecs. |
+| [`@loaders.gl/images`](modules/images/README.md) | PNG, JPEG, GIF, WebP, AVIF, BMP, ICO, SVG; KTX, KTX2, DDS, PVR, Basis, Crunch, Radiance HDR, NPY; browser MP4 loading and GIF generation. Availability depends on runtime and optional codecs. |
 | [`@loaders.gl/ogc`](modules/ogc/README.md) | WMS, WFS, WMTS, WCS, CSW, GML, OGC API, STAC, STAC API, XML, JSON, GeoJSON. |
 | [`@loaders.gl/pointclouds`](modules/pointclouds/README.md) | LAS, LAZ, PCD, PLY. |
 | [`@loaders.gl/raster`](modules/raster/README.md) | GeoTIFF, TIFF, COG, OME-TIFF, LERC, LERC1, LERC2, quantized mesh, Mapbox Terrain-RGB, Terrarium, PNG, JPEG, GIF, WebP, BMP. |
@@ -24,11 +24,9 @@ Formats, encodings, and protocols by module (see each README for runtime and imp
 | [`@loaders.gl/splats`](modules/splats/README.md) | SPLAT, KSPLAT, SPZ, RAD. |
 | [`@loaders.gl/sql`](modules/sql/README.md) | SQL, Arrow. |
 | [`@loaders.gl/tables`](modules/tables/README.md) | Arrow, Feather, GeoArrow, Avro, AVSC, BSON, CSV, TSV, DSV, Excel, XLS, XLSB, XLSM, XLSX, JSON, GeoJSON, NDJSON, JSONL, NDGeoJSON, GeoJSONL, LDGeoJSON, Lance, ORC, Parquet, GeoParquet, Delta Lake. |
-| [`@loaders.gl/textures`](modules/textures/README.md) | KTX, KTX2, DDS, PVR, Basis Universal, Basis, Crunch, CRN, Radiance HDR, HDR, NPY. |
 | [`@loaders.gl/tiles`](modules/tiles/README.md) | MLT, MapLibre Tile, MVT, Mapbox Vector Tile, TileJSON, Mapbox Style, PMTiles. |
 | [`@loaders.gl/tiles-3d`](modules/tiles-3d/README.md) | 3D Tiles, B3DM, I3DM, PNTS, CMPT, subtree, 3TZ, I3S, SLPK, LEPCC, ArcGIS Web Scene, COPC, LAS, LAZ, Potree. |
 | [`@loaders.gl/traces`](modules/traces/README.md) | Chrome Trace, Perfetto Trace, OpenTelemetry, OTLP, OTLP JSON, OTLP Protobuf, Jaeger, Zipkin, JSON, JSON Lines, NDJSON. |
-| [`@loaders.gl/video`](modules/video/README.md) | MP4, GIF. Availability depends on the runtime and installed codecs. |
 | [`@loaders.gl/xml`](modules/xml/README.md) | XML, HTML. |
 
 <p align="center">

@@ -70,7 +70,7 @@ Binary reads return exactly the file's bytes. Relative imports in a local Common
 resolve from that library's directory. Browser bundlers resolve both package entrypoints to
 the browser shim.
 
-Image decoding and encoding require the optional `get-pixels`, `ndarray`, and `save-pixels` packages. Install them when using the Node image adapters. File aliases and prefixes for the polyfills can be configured with `addAliases` and `setPathPrefix` from this subpath.
+Node image decoding and encoding require the optional `sharp` peer dependency. Install it explicitly with `npm install sharp`; filesystem, stream, crypto, and library adapters do not require an image codec. File aliases and prefixes for the polyfills can be configured with `addAliases` and `setPathPrefix` from this subpath.
 
 ## Features
 
@@ -94,11 +94,11 @@ When `@loaders.gl/core/polyfills` is imported under Node.js, it installs:
 
 This polyfill is intentionally limited:
 
-- it is designed to support [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) and parsed-image helpers
+- it is designed to support [`ImageLoader`](/docs/modules/images/api-reference/image-loader) and parsed-image helpers
 - it does not install `createImageBitmap()`
 - it does not attempt to emulate full browser canvas/image interoperability
 
-The Node image decoder support remains limited to the formats supported by the existing loaders.gl image polyfills.
+The optional Sharp backend decodes PNG, JPEG, GIF, WebP, AVIF, TIFF, and SVG into RGBA pixels. It detects formats from the bytes, so a MIME hint is not required. The bitmap wrapper exposes pixel access and `close()`; it does not emulate browser canvas APIs, transferability, or every `createImageBitmap()` option.
 
 ## ReadableFile utilities
 
@@ -110,10 +110,14 @@ The Node image decoder support remains limited to the formats supported by the e
 
 ## Optional Node image codecs
 
-Node file, library, and stream support works without the image codec dependencies.
-Streams use Node's native Web Streams implementation. Node image codecs are installed
-as optional dependencies and loaded on the first encode or decode request.
+Sharp is an optional peer dependency, not an automatically installed codec.
+Install it only in applications that decode or encode images under Node.js:
 
-If optional dependencies were omitted during installation, install `get-pixels`
-for PNG/JPEG/GIF decoding, and `save-pixels` plus `ndarray` for image encoding.
-A missing codec reports installation instructions when its image operation is requested.
+```sh
+npm install @loaders.gl/core sharp
+```
+
+Importing `@loaders.gl/core/polyfills` does not load Sharp. The first image decode
+or encode loads it lazily; if it is missing or cannot initialize, that operation
+reports installation instructions. Browser image operations use browser codecs.
+Node file, library, crypto, and native stream support work without Sharp.

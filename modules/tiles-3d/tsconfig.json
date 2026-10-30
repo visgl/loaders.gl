@@ -35,9 +35,6 @@
       "path": "../pointclouds"
     },
     {
-      "path": "../textures"
-    },
-    {
       "path": "../archives"
     }
   ]

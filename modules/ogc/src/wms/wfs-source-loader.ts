@@ -499,7 +499,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {
-      return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+      return await LegacyImageLoader.parse(arrayBuffer, this.loadOptions);
     } catch {
       throw this._parseError(arrayBuffer);
     }
@@ -551,7 +551,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {
-      return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+      return await LegacyImageLoader.parse(arrayBuffer, this.loadOptions);
     } catch {
       throw this._parseError(arrayBuffer);
     }

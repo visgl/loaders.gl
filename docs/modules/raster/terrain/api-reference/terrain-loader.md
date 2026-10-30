@@ -71,7 +71,7 @@ const table = await load(url, TerrainLoader, {
 });
 ```
 
-`TerrainLoader` internally decodes heightmap images with [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) and then converts them with `getImageData(image)`.
+`TerrainLoader` internally decodes heightmap images with [`ImageLoader`](/docs/modules/images/api-reference/image-loader) and then converts them with `getImageData(image)`.
 
 For [Terrarium](https://github.com/tilezen/joerd/blob/master/docs/formats.md) imagery,
 including Mapterhorn terrain WebP tiles, use the named preset:

@@ -9,8 +9,8 @@ Under Node.js, importing `@loaders.gl/core/polyfills` also installs the minimal 
 - a global `ImageBitmap` polyfill backed by decoded pixel data
 - a global `getImageBitmapData(image)` helper that unwraps that bitmap back to `{data, width, height}`
 
-This image support is intentionally minimal. It is designed for `ImageBitmapLoader` and parsed-image helpers, not as a full `createImageBitmap()` implementation.
+This image support is intentionally minimal. It is designed for `ImageLoader` and parsed-image helpers, not as a full `createImageBitmap()` implementation.
 
-Image decoding and encoding also require the optional `get-pixels`, `ndarray`, and `save-pixels` packages. Install them only when those image operations are needed.
+Node image decoding and encoding require the optional `sharp` peer dependency (`npm install sharp`). Other polyfills work without it, and it is loaded only when an image operation is requested.
 
 For documentation please visit the [website](https://loaders.gl).

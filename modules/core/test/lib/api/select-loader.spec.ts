@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile, selectLoader, selectLoaderSync, isBrowser} from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
+import {LegacyImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
@@ -27,55 +27,60 @@ test('selectLoaderSync#urls', async () => {
     'selectedLoader({nothrow: true}) returns null instead of throwing'
   ).toBe(null);
   expect(
-    selectLoaderSync('data.laz', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    selectLoaderSync('data.laz', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader by url extension'
   ).toBe(LASLoader);
   expect(
     selectLoaderSync(
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=',
-      [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
+      [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
     ),
     'find loader by data url mime type'
-  ).toBe(ImageLoader);
+  ).toBe(LegacyImageLoader);
   expect(
-    selectLoaderSync(URL_WITH_QUERYSTRING, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    selectLoaderSync(URL_WITH_QUERYSTRING, [
+      LegacyImageLoader,
+      Tiles3DLoader,
+      DracoLoader,
+      LASLoader
+    ]),
     'find loader from URL with query params'
-  ).toBe(ImageLoader);
+  ).toBe(LegacyImageLoader);
 
   const response = await fetchFile(DRACO_URL_QUERYSTRING);
   expect(response.url.endsWith(DRACO_URL_QUERYSTRING.slice(-20)), 'URL ends with ').toBeTruthy();
   expect(
-    selectLoaderSync(response, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    selectLoaderSync(response, [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader from response with query params'
   ).toBe(DracoLoader);
   expect(
-    () => selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    () => selectLoaderSync('data.obj', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find no loaders by url extension'
   ).toThrow();
   expect(
-    selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+    selectLoaderSync('data.obj', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
       fallbackMimeType: 'image/png'
     }),
     'options.fallbackMimeType can resolve loader using provided mimeType'
-  ).toBe(ImageLoader);
+  ).toBe(LegacyImageLoader);
   expect(
-    selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+    selectLoaderSync('data.obj', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
       fallbackMimeType: 'application/x.image'
     }),
     'options.fallbackMimeType can resolve loader using provided `application/x.<loaderId>` mimeType'
-  ).toBe(ImageLoader);
+  ).toBe(LegacyImageLoader);
   expect(
-    selectLoaderSync('data.las', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+    selectLoaderSync('data.las', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
       mimeType: 'image/png'
     }),
     'options.mimeType can override loader using provided mimeType'
-  ).toBe(ImageLoader);
+  ).toBe(LegacyImageLoader);
   expect(
-    selectLoaderSync('data.las', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+    selectLoaderSync('data.las', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
       mimeType: 'application/x.image'
     }),
     'options.mimeType can override loader using provided `application/x.<loaderId>` mimeType'
-  ).toBe(ImageLoader);
+  ).toBe(LegacyImageLoader);
 });
 
 test('selectLoader#urls', async () => {
@@ -90,29 +95,34 @@ test('selectLoader#urls', async () => {
     'selectedLoader({nothrow: true}) returns null instead of throwing'
   ).toBe(null);
   expect(
-    await selectLoader('data.laz', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    await selectLoader('data.laz', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader by url extension'
   ).toBe(LASLoader);
   expect(
     await selectLoader(
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=',
-      [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
+      [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
     ),
     'find loader by data url mime type'
-  ).toBe(ImageLoader);
+  ).toBe(LegacyImageLoader);
   expect(
-    await selectLoader(URL_WITH_QUERYSTRING, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    await selectLoader(URL_WITH_QUERYSTRING, [
+      LegacyImageLoader,
+      Tiles3DLoader,
+      DracoLoader,
+      LASLoader
+    ]),
     'find loader from URL with query params'
-  ).toBe(ImageLoader);
+  ).toBe(LegacyImageLoader);
 
   const response = await fetchFile(DRACO_URL_QUERYSTRING);
   expect(response.url.endsWith(DRACO_URL_QUERYSTRING.slice(-20)), 'URL ends with ').toBeTruthy();
   expect(
-    await selectLoader(response, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    await selectLoader(response, [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader from response with query params'
   ).toBe(DracoLoader);
   await expect(
-    selectLoader('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    selectLoader('data.obj', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find no loaders by url extension'
   ).rejects.toBeDefined();
 });

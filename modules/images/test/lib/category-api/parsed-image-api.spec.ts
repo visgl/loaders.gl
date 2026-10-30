@@ -5,8 +5,8 @@
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {
+  LegacyImageLoader,
   ImageLoader,
-  ImageBitmapLoader,
   ImageType,
   // PARSED IMAGE API
   getDefaultImageType,
@@ -24,9 +24,9 @@ async function loadImages(): Promise<ImageType[]> {
   imagesPromise =
     imagesPromise ||
     Promise.all([
-      load(IMAGE_URL, ImageBitmapLoader),
+      load(IMAGE_URL, ImageLoader),
       ...IMAGE_TYPES.filter(type => type !== 'imagebitmap' && isImageTypeSupported(type)).map(
-        type => load(IMAGE_URL, ImageLoader, {image: {type}})
+        type => load(IMAGE_URL, LegacyImageLoader, {image: {type}})
       )
     ]);
   return await imagesPromise;

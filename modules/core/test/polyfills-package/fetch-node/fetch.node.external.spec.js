@@ -12,9 +12,9 @@ const PLY_CUBE_ATT_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/pointclouds/test/
 const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = `@loaders.gl/core/polyfills/test/data/data.txt`;
 const TEXT_URL_GZIPPED = `@loaders.gl/core/polyfills/test/data/data.txt.gz`;
-// Request of this url returns location like "/@loaders.gl/textures@[VERSION]/dist/libs/basis_encoder.js"
+// Request of this url returns location like "/@loaders.gl/images@[VERSION]/dist/libs/basis_encoder.js"
 // So we get an error when trying to fetch such redirect url without protocol and origin.
-const TEXT_URL_WITH_REDIRECT = `https://unpkg.com/@loaders.gl/textures@beta/dist/libs/basis_encoder.js`;
+const TEXT_URL_WITH_REDIRECT = `https://unpkg.com/@loaders.gl/images@beta/dist/libs/basis_encoder.js`;
 // This type of links on github works via 302 redirect
 // ("https://github.com/repository/raw/commit-or-branch/path/to/file/file-name.extension")
 const REDIRECT_URL = `${LOADERS_GL_REDIRECTING_FIXTURE_URL}modules/core/test/polyfills-package/data/data.txt`;

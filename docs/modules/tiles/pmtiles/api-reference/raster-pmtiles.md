@@ -58,7 +58,7 @@ try {
 
 The implementation subpath keeps raster export orchestration outside packaging-only root imports.
 Browser encoding requires canvas APIs. Node applications must install `@loaders.gl/core/polyfills` and its
-optional image encoder dependencies (`save-pixels` and `ndarray`), and import the polyfills **before**
+optional `sharp` image codec peer dependency, and import the polyfills **before**
 importing the authoring API. No Node APIs or new codec dependencies are introduced by this helper.
 
 ## Options

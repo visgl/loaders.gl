@@ -12,13 +12,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="compressed-textures"
   eyebrow="Texture API / manifest loader"
   title="Describe an array of images, then load it as one texture."
-  description="TextureArrayLoader reads a JSON manifest that names the member images and their layout. It delegates image decoding to ImageBitmapLoader and returns a texture-array shape with the array structure still visible."
+  description="TextureArrayLoader reads a JSON manifest that names the member images and their layout. It delegates image decoding to ImageLoader and returns a texture-array shape with the array structure still visible."
   tone="mint"
   meta={['JSON manifest', 'Image arrays', 'Delegated image loading']}
   links={[
     {label: 'Textures module', to: '/docs/modules/textures'},
     {label: 'Texture category', to: '/docs/specifications/category-texture'},
-    {label: 'ImageBitmapLoader', to: '/docs/modules/images/api-reference/image-bitmap-loader'}
+    {label: 'ImageLoader', to: '/docs/modules/images/api-reference/image-loader'}
   ]}
 />
 
@@ -59,12 +59,12 @@ A loader for texture arrays described by a JSON manifest.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureArrayLoader} from '@loaders.gl/textures';
+import {TextureArrayLoader} from '@loaders.gl/images';
 
 const images = await load('texture-array.image-texture-array.json', TextureArrayLoader);
 ```
 
-Member images are parsed with `ImageBitmapLoader` by default, returning native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
+Member images are parsed with `ImageLoader` by default, returning native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is present.
 
 ## Manifest
 

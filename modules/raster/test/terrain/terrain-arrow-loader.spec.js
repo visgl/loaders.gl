@@ -5,10 +5,10 @@ import * as terrain from '@loaders.gl/raster/terrain/index';
 import * as bundledTerrain from '@loaders.gl/raster/terrain/bundled';
 import * as unbundledTerrain from '@loaders.gl/raster/terrain/unbundled';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
+import {LegacyImageLoader} from '@loaders.gl/images';
 import {validateArrowTableSchema} from '@loaders.gl/tables/arrow/index';
 import {indexedMeshArrowSchema} from '@loaders.gl/core/schema';
-registerLoaders([ImageLoader]);
+registerLoaders([LegacyImageLoader]);
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/terrarium.png';
 const TILE_WITH_EXTENSIONS_URL =
   '@loaders.gl/raster/test/terrain/data/tile-with-extensions.terrain';

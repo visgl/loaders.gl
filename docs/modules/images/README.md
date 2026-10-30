@@ -33,7 +33,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-The `@loaders.gl/images` module contains loader and writers for images that follow loaders.gl conventions and work under both node and browser.
+The `@loaders.gl/images` module provides image, compressed texture, HDR, texture manifest,
+and video loaders. Image decoding works in browsers and Node.js with an optional codec;
+video loading requires browser media APIs.
 
 See [Image Loaders](/docs/specifications/category-image) for the shared category conventions.
 
@@ -54,8 +56,8 @@ npm install @loaders.gl/core
 
 | Loader                                                                        | Description                         |
 | ----------------------------------------------------------------------------- | ----------------------------------- |
-| [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) | Preferred pure `ImageBitmap` loader |
-| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)              | Deprecated compatibility loader     |
+| [`ImageLoader`](/docs/modules/images/api-reference/image-loader) | Preferred pure `ImageBitmap` loader |
+| [`LegacyImageLoader`](/docs/modules/images/api-reference/legacy-image-loader)              | Deprecated compatibility loader     |
 | [`ImageWriter`](/docs/modules/images/api-reference/image-writer)              | Encodes decoded images into supported image formats. |
 
 ### Binary Image API
@@ -73,7 +75,7 @@ Use this metadata helper instead of the removed `isBinaryImage`,
 
 ### Parsed Image API
 
-A set of functions to work with parsed images returned by `ImageBitmapLoader`, deprecated `ImageLoader`, and other image-category APIs.
+A set of functions to work with parsed images returned by `ImageLoader`, deprecated `LegacyImageLoader`, and other image-category APIs.
 
 | Function                                        | Description                                                                                  |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -87,13 +89,62 @@ A set of functions to work with parsed images returned by `ImageBitmapLoader`, d
 
 The parsed image APIs support multiple image representations.
 
-- `ImageBitmap` - The preferred return type of `ImageBitmapLoader`.
-- `Image` (aka `HTMLImageElement`) - Still supported by helper APIs such as `getImageData`, and remains available through deprecated `ImageLoader`.
+- `ImageBitmap` - The preferred return type of `ImageLoader`.
+- `Image` (aka `HTMLImageElement`) - Still supported by helper APIs such as `getImageData`, and remains available through deprecated `LegacyImageLoader`.
 - `data` - Raw binary memory representing the image pixels. This remains supported by helper APIs and can be produced from images with `getImageData(image)`.
 
-Prefer [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) for new code. See deprecated [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for compatibility behavior and legacy options.
+Prefer [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for new code. See deprecated [`LegacyImageLoader`](/docs/modules/images/api-reference/legacy-image-loader) for compatibility behavior and legacy options.
 
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/images/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).
+
+## Texture and video loaders
+
+The images package also owns texture and video loaders. Its root exports metadata;
+async core APIs preload implementations when needed:
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {ImageLoader, BasisLoader, TextureLoader, VideoLoader} from '@loaders.gl/images';
+
+const imageBitmap = await load('image.png', ImageLoader);
+```
+
+Direct parser access uses flat subpaths and `*WithParser` exports. For example,
+`BasisLoaderWithParser` is available from `@loaders.gl/images/basis-loader`.
+Texture writers use direct subpaths such as `@loaders.gl/images/ktx2-basis-writer`;
+manifest schemas use `@loaders.gl/images/texture-manifest-schema`.
+
+### Direct parser and sync access
+
+Direct access does not make an asynchronous loader synchronous. `ImageLoaderWithParser`
+and `BasisLoaderWithParser` still decode asynchronously. For a loader that supports
+sync parsing, use its parser entry point explicitly:
+
+```typescript
+import {parseSync} from '@loaders.gl/core';
+import {NPYLoaderWithParser} from '@loaders.gl/images/npy-loader';
+
+const tile = parseSync(arrayBuffer, NPYLoaderWithParser);
+```
+
+## Node image codecs
+
+Install the optional Sharp peer to decode or encode images under Node.js:
+
+```sh
+npm install @loaders.gl/images @loaders.gl/core sharp
+```
+
+```typescript
+import '@loaders.gl/core/polyfills';
+import {ImageLoader} from '@loaders.gl/images';
+```
+
+The Node backend detects formats from encoded bytes and returns RGBA pixels through
+an `ImageBitmap` wrapper. It supports PNG, JPEG, GIF, WebP, AVIF, TIFF, and SVG.
+Browser support remains platform-dependent. The Node wrapper supports pixel access
+and `close()`; it is not a full browser canvas or transferable bitmap implementation.
+Sharp is loaded only when Node image decoding or encoding is requested.
