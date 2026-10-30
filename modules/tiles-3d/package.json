@@ -63,9 +63,9 @@
       "import": "./dist/potree/bundled.js"
     },
     "./potree-loader": {
-      "types": "./dist/potree-loader.js",
+      "types": "./dist/potree-loader.d.ts",
       "import": "./dist/potree-loader.js",
-      "require": "./dist/potree-loader.js"
+      "require": "./dist/potree-loader.cjs"
     },
     "./potree/potree-metadata-schema": {
       "types": "./dist/potree/potree-metadata-schema.d.ts",
@@ -114,9 +114,9 @@
     "./3d-tiles/tileset.schema.json": "./dist/3d-tiles/tileset.schema.json",
     "./3d-tiles/subtree.schema.json": "./dist/3d-tiles/subtree.schema.json",
     "./3d-tiles-archive-writer": {
-      "types": "./dist/3d-tiles-archive-writer.js",
+      "types": "./dist/3d-tiles-archive-writer.d.ts",
       "import": "./dist/3d-tiles-archive-writer.js",
-      "require": "./dist/3d-tiles-archive-writer.js"
+      "require": "./dist/3d-tiles-archive-writer.cjs"
     },
     "./i3s": {
       "types": "./dist/i3s/index.d.ts",
@@ -137,7 +137,7 @@
       "import": "./dist/i3s/unbundled.js"
     },
     "./i3s-lepcc-loader": {
-      "types": "./dist/i3s-lepcc-loader.js",
+      "types": "./dist/i3s-lepcc-loader.d.ts",
       "import": "./dist/i3s-lepcc-loader.js"
     },
     "./i3s/i3s-content-worker.js": {
@@ -156,14 +156,14 @@
     "./i3s/i3s-node-page.schema.json": "./dist/i3s/i3s-node-page.schema.json",
     "./i3s/i3s-point-cloud-scene-layer.schema.json": "./dist/i3s/i3s-point-cloud-scene-layer.schema.json",
     "./i3s-slpk-writer": {
-      "types": "./dist/i3s-slpk-writer.js",
+      "types": "./dist/i3s-slpk-writer.d.ts",
       "import": "./dist/i3s-slpk-writer.js",
-      "require": "./dist/i3s-slpk-writer.js"
+      "require": "./dist/i3s-slpk-writer.cjs"
     },
     "./i3s-mesh-writer": {
-      "types": "./dist/i3s-mesh-writer.js",
+      "types": "./dist/i3s-mesh-writer.d.ts",
       "import": "./dist/i3s-mesh-writer.js",
-      "require": "./dist/i3s-mesh-writer.js"
+      "require": "./dist/i3s-mesh-writer.cjs"
     }
   },
   "sideEffects": false,

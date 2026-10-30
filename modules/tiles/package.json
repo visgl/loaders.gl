@@ -51,9 +51,9 @@
       "require": "./dist/mvt/index.cjs"
     },
     "./arrow-table-tile-source-loader": {
-      "types": "./dist/arrow-table-tile-source-loader.js",
+      "types": "./dist/arrow-table-tile-source-loader.d.ts",
       "import": "./dist/arrow-table-tile-source-loader.js",
-      "require": "./dist/arrow-table-tile-source-loader.js"
+      "require": "./dist/arrow-table-tile-source-loader.cjs"
     },
     "./mvt/tilejson-zod-schema": {
       "types": "./dist/mvt/tilejson-zod-schema.d.ts",
@@ -65,9 +65,9 @@
       "import": "./dist/mvt/unbundled.js"
     },
     "./mvt-geojson-loader": {
-      "types": "./dist/mvt-geojson-loader.js",
+      "types": "./dist/mvt-geojson-loader.d.ts",
       "import": "./dist/mvt-geojson-loader.js",
-      "require": "./dist/mvt-geojson-loader.js"
+      "require": "./dist/mvt-geojson-loader.cjs"
     },
     "./mvt/bundled": {
       "types": "./dist/mvt/bundled.d.ts",

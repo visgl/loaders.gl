@@ -35,9 +35,9 @@
       "require": "./dist/index.cjs"
     },
     "./usd-loader": {
-      "types": "./dist/usd-loader.js",
+      "types": "./dist/usd-loader.d.ts",
       "import": "./dist/usd-loader.js",
-      "require": "./dist/usd-loader.js"
+      "require": "./dist/usd-loader.cjs"
     },
     "./obj": {
       "types": "./dist/obj/index.d.ts",
@@ -60,14 +60,14 @@
       "require": "./dist/obj/mtl-format.cjs"
     },
     "./mtl-loader-types": {
-      "types": "./dist/mtl-loader-types.js",
+      "types": "./dist/mtl-loader-types.d.ts",
       "import": "./dist/mtl-loader-types.js",
-      "require": "./dist/mtl-loader-types.js"
+      "require": "./dist/mtl-loader-types.cjs"
     },
     "./mtl-loader": {
-      "types": "./dist/mtl-loader.js",
+      "types": "./dist/mtl-loader.d.ts",
       "import": "./dist/mtl-loader.js",
-      "require": "./dist/mtl-loader.js"
+      "require": "./dist/mtl-loader.cjs"
     },
     "./obj/obj-format": {
       "types": "./dist/obj/obj-format.d.ts",
@@ -75,19 +75,19 @@
       "require": "./dist/obj/obj-format.cjs"
     },
     "./obj-loader-types": {
-      "types": "./dist/obj-loader-types.js",
+      "types": "./dist/obj-loader-types.d.ts",
       "import": "./dist/obj-loader-types.js",
-      "require": "./dist/obj-loader-types.js"
+      "require": "./dist/obj-loader-types.cjs"
     },
     "./obj-loader": {
-      "types": "./dist/obj-loader.js",
+      "types": "./dist/obj-loader.d.ts",
       "import": "./dist/obj-loader.js",
-      "require": "./dist/obj-loader.js"
+      "require": "./dist/obj-loader.cjs"
     },
     "./obj-writer": {
-      "types": "./dist/obj-writer.js",
+      "types": "./dist/obj-writer.d.ts",
       "import": "./dist/obj-writer.js",
-      "require": "./dist/obj-writer.js"
+      "require": "./dist/obj-writer.cjs"
     },
     "./obj/unbundled": {
       "types": "./dist/obj/unbundled.d.ts",
@@ -105,19 +105,19 @@
       "require": "./dist/gltf/bundled.cjs"
     },
     "./glb-loader-types": {
-      "types": "./dist/glb-loader-types.js",
+      "types": "./dist/glb-loader-types.d.ts",
       "import": "./dist/glb-loader-types.js",
-      "require": "./dist/glb-loader-types.js"
+      "require": "./dist/glb-loader-types.cjs"
     },
     "./glb-loader": {
-      "types": "./dist/glb-loader.js",
+      "types": "./dist/glb-loader.d.ts",
       "import": "./dist/glb-loader.js",
-      "require": "./dist/glb-loader.js"
+      "require": "./dist/glb-loader.cjs"
     },
     "./glb-writer": {
-      "types": "./dist/glb-writer.js",
+      "types": "./dist/glb-writer.d.ts",
       "import": "./dist/glb-writer.js",
-      "require": "./dist/glb-writer.js"
+      "require": "./dist/glb-writer.cjs"
     },
     "./gltf/gltf-format": {
       "types": "./dist/gltf/gltf-format.d.ts",
@@ -125,24 +125,24 @@
       "require": "./dist/gltf/gltf-format.cjs"
     },
     "./gltf-loader-types": {
-      "types": "./dist/gltf-loader-types.js",
+      "types": "./dist/gltf-loader-types.d.ts",
       "import": "./dist/gltf-loader-types.js",
-      "require": "./dist/gltf-loader-types.js"
+      "require": "./dist/gltf-loader-types.cjs"
     },
     "./gltf-loader": {
-      "types": "./dist/gltf-loader.js",
+      "types": "./dist/gltf-loader.d.ts",
       "import": "./dist/gltf-loader.js",
-      "require": "./dist/gltf-loader.js"
+      "require": "./dist/gltf-loader.cjs"
     },
     "./gltf-source": {
-      "types": "./dist/gltf-source.js",
+      "types": "./dist/gltf-source.d.ts",
       "import": "./dist/gltf-source.js",
-      "require": "./dist/gltf-source.js"
+      "require": "./dist/gltf-source.cjs"
     },
     "./gltf-writer": {
-      "types": "./dist/gltf-writer.js",
+      "types": "./dist/gltf-writer.d.ts",
       "import": "./dist/gltf-writer.js",
-      "require": "./dist/gltf-writer.js"
+      "require": "./dist/gltf-writer.cjs"
     },
     "./gltf/index": {
       "types": "./dist/gltf/index.d.ts",
@@ -182,9 +182,9 @@
       "require": "./dist/usd/index.cjs"
     },
     "./usd-loader-types": {
-      "types": "./dist/usd-loader-types.js",
+      "types": "./dist/usd-loader-types.d.ts",
       "import": "./dist/usd-loader-types.js",
-      "require": "./dist/usd-loader-types.js"
+      "require": "./dist/usd-loader-types.cjs"
     }
   },
   "sideEffects": false,

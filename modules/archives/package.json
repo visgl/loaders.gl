@@ -34,14 +34,14 @@
       "require": "./dist/zip/index.cjs"
     },
     "./zip-writer": {
-      "types": "./dist/zip-writer.js",
+      "types": "./dist/zip-writer.d.ts",
       "import": "./dist/zip-writer.js",
-      "require": "./dist/zip-writer.js"
+      "require": "./dist/zip-writer.cjs"
     },
     "./indexed-zip-writer": {
-      "types": "./dist/indexed-zip-writer.js",
+      "types": "./dist/indexed-zip-writer.d.ts",
       "import": "./dist/indexed-zip-writer.js",
-      "require": "./dist/indexed-zip-writer.js"
+      "require": "./dist/indexed-zip-writer.cjs"
     },
     "./zip/zip-encode": {
       "types": "./dist/zip/zip-encode.d.ts",
@@ -49,9 +49,9 @@
       "require": "./dist/zip/zip-encode.cjs"
     },
     "./zip-loader": {
-      "types": "./dist/zip-loader.js",
+      "types": "./dist/zip-loader.d.ts",
       "import": "./dist/zip-loader.js",
-      "require": "./dist/zip-loader.js"
+      "require": "./dist/zip-loader.cjs"
     },
     "./tar": {
       "types": "./dist/tar/index.d.ts",
@@ -59,14 +59,14 @@
       "require": "./dist/tar/index.cjs"
     },
     "./tar-loader": {
-      "types": "./dist/tar-loader.js",
+      "types": "./dist/tar-loader.d.ts",
       "import": "./dist/tar-loader.js",
-      "require": "./dist/tar-loader.js"
+      "require": "./dist/tar-loader.cjs"
     },
     "./tar-writer": {
-      "types": "./dist/tar-writer.js",
+      "types": "./dist/tar-writer.d.ts",
       "import": "./dist/tar-writer.js",
-      "require": "./dist/tar-writer.js"
+      "require": "./dist/tar-writer.cjs"
     }
   },
   "sideEffects": false,

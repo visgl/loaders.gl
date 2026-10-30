@@ -45,12 +45,21 @@ test.each(
   expect(flatEntrypoints.length, moduleName).toBeGreaterThan(0);
 
   for (const [exportPath, conditions] of flatEntrypoints) {
+    const entrypointName = exportPath.slice(2);
     const targets = typeof conditions === 'string' ? [conditions] : Object.values(conditions);
     for (const target of targets) {
       expect(
         fileSystem.existsSync(path.join(moduleDirectory, target)),
         moduleName + exportPath + ': ' + target
       ).toBe(true);
+    }
+
+    if (typeof conditions !== 'string') {
+      expect(conditions.types, moduleName + exportPath).toBe(`./dist/${entrypointName}.d.ts`);
+      expect(conditions.import, moduleName + exportPath).toBe(`./dist/${entrypointName}.js`);
+      if (conditions.require) {
+        expect(conditions.require, moduleName + exportPath).toBe(`./dist/${entrypointName}.cjs`);
+      }
     }
   }
 });

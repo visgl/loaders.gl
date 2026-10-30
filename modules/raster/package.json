@@ -33,19 +33,19 @@
       "import": "./dist/geotiff/geotiff-format.js"
     },
     "./geotiff-loader-types": {
-      "types": "./dist/geotiff-loader-types.js",
+      "types": "./dist/geotiff-loader-types.d.ts",
       "import": "./dist/geotiff-loader-types.js"
     },
     "./geotiff-loader": {
-      "types": "./dist/geotiff-loader.js",
+      "types": "./dist/geotiff-loader.d.ts",
       "import": "./dist/geotiff-loader.js"
     },
     "./geotiff-raster-loader-types": {
-      "types": "./dist/geotiff-raster-loader-types.js",
+      "types": "./dist/geotiff-raster-loader-types.d.ts",
       "import": "./dist/geotiff-raster-loader-types.js"
     },
     "./geotiff-raster-loader": {
-      "types": "./dist/geotiff-raster-loader.js",
+      "types": "./dist/geotiff-raster-loader.d.ts",
       "import": "./dist/geotiff-raster-loader.js"
     },
     "./geotiff/geotiff-raster-types": {
@@ -53,7 +53,7 @@
       "import": "./dist/geotiff/geotiff-raster-types.js"
     },
     "./geotiff-source-loader": {
-      "types": "./dist/geotiff-source-loader.js",
+      "types": "./dist/geotiff-source-loader.d.ts",
       "import": "./dist/geotiff-source-loader.js"
     },
     "./geotiff/index": {
@@ -138,7 +138,7 @@
       "import": "./dist/geotiff/loaders.js"
     },
     "./ometiff-source-loader": {
-      "types": "./dist/ometiff-source-loader.js",
+      "types": "./dist/ometiff-source-loader.d.ts",
       "import": "./dist/ometiff-source-loader.js"
     },
     "./geotiff/types": {
@@ -170,11 +170,11 @@
       "import": "./dist/lerc/lerc-format.js"
     },
     "./lerc-loader-types": {
-      "types": "./dist/lerc-loader-types.js",
+      "types": "./dist/lerc-loader-types.d.ts",
       "import": "./dist/lerc-loader-types.js"
     },
     "./lerc-loader": {
-      "types": "./dist/lerc-loader.js",
+      "types": "./dist/lerc-loader.d.ts",
       "import": "./dist/lerc-loader.js"
     },
     "./lerc/lerc-wasm-url": {
@@ -260,15 +260,15 @@
       "import": "./dist/terrain/lib/utils/version.js"
     },
     "./quantized-mesh-loader-types": {
-      "types": "./dist/quantized-mesh-loader-types.js",
+      "types": "./dist/quantized-mesh-loader-types.d.ts",
       "import": "./dist/quantized-mesh-loader-types.js"
     },
     "./quantized-mesh-loader": {
-      "types": "./dist/quantized-mesh-loader.js",
+      "types": "./dist/quantized-mesh-loader.d.ts",
       "import": "./dist/quantized-mesh-loader.js"
     },
     "./quantized-mesh-writer": {
-      "types": "./dist/quantized-mesh-writer.js",
+      "types": "./dist/quantized-mesh-writer.d.ts",
       "import": "./dist/quantized-mesh-writer.js"
     },
     "./terrain/terrain-format": {
@@ -276,11 +276,11 @@
       "import": "./dist/terrain/terrain-format.js"
     },
     "./terrain-loader-types": {
-      "types": "./dist/terrain-loader-types.js",
+      "types": "./dist/terrain-loader-types.d.ts",
       "import": "./dist/terrain-loader-types.js"
     },
     "./terrain-loader": {
-      "types": "./dist/terrain-loader.js",
+      "types": "./dist/terrain-loader.d.ts",
       "import": "./dist/terrain-loader.js"
     },
     "./terrain/unbundled": {
@@ -300,11 +300,11 @@
     },
     "./lerc/lerc-wasm.wasm": "./dist/lerc/libs/lerc/lerc-wasm.wasm",
     "./geotiff-source-loader-types": {
-      "types": "./dist/geotiff-source-loader-types.js",
+      "types": "./dist/geotiff-source-loader-types.d.ts",
       "import": "./dist/geotiff-source-loader-types.js"
     },
     "./ometiff-source-loader-types": {
-      "types": "./dist/ometiff-source-loader-types.js",
+      "types": "./dist/ometiff-source-loader-types.d.ts",
       "import": "./dist/ometiff-source-loader-types.js"
     }
   },

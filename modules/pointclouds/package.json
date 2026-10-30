@@ -48,14 +48,14 @@
       "require": "./dist/las/index.cjs"
     },
     "./las-copc-loader-types": {
-      "types": "./dist/las-copc-loader-types.js",
+      "types": "./dist/las-copc-loader-types.d.ts",
       "import": "./dist/las-copc-loader-types.js",
-      "require": "./dist/las-copc-loader-types.js"
+      "require": "./dist/las-copc-loader-types.cjs"
     },
     "./las-copc-loader": {
-      "types": "./dist/las-copc-loader.js",
+      "types": "./dist/las-copc-loader.d.ts",
       "import": "./dist/las-copc-loader.js",
-      "require": "./dist/las-copc-loader.js"
+      "require": "./dist/las-copc-loader.cjs"
     },
     "./las/las-format": {
       "types": "./dist/las/las-format.d.ts",
@@ -68,39 +68,39 @@
       "require": "./dist/las/las-loader-shared.cjs"
     },
     "./las-loader-types": {
-      "types": "./dist/las-loader-types.js",
+      "types": "./dist/las-loader-types.d.ts",
       "import": "./dist/las-loader-types.js",
-      "require": "./dist/las-loader-types.js"
+      "require": "./dist/las-loader-types.cjs"
     },
     "./las-loader": {
-      "types": "./dist/las-loader.js",
+      "types": "./dist/las-loader.d.ts",
       "import": "./dist/las-loader.js",
-      "require": "./dist/las-loader.js"
+      "require": "./dist/las-loader.cjs"
     },
     "./las-writer": {
-      "types": "./dist/las-writer.js",
+      "types": "./dist/las-writer.d.ts",
       "import": "./dist/las-writer.js",
-      "require": "./dist/las-writer.js"
+      "require": "./dist/las-writer.cjs"
     },
     "./laz-rs-loader-types": {
-      "types": "./dist/laz-rs-loader-types.js",
+      "types": "./dist/laz-rs-loader-types.d.ts",
       "import": "./dist/laz-rs-loader-types.js",
-      "require": "./dist/laz-rs-loader-types.js"
+      "require": "./dist/laz-rs-loader-types.cjs"
     },
     "./laz-rs-loader": {
-      "types": "./dist/laz-rs-loader.js",
+      "types": "./dist/laz-rs-loader.d.ts",
       "import": "./dist/laz-rs-loader.js",
-      "require": "./dist/laz-rs-loader.js"
+      "require": "./dist/laz-rs-loader.cjs"
     },
     "./lazperf-loader-types": {
-      "types": "./dist/lazperf-loader-types.js",
+      "types": "./dist/lazperf-loader-types.d.ts",
       "import": "./dist/lazperf-loader-types.js",
-      "require": "./dist/lazperf-loader-types.js"
+      "require": "./dist/lazperf-loader-types.cjs"
     },
     "./lazperf-loader": {
-      "types": "./dist/lazperf-loader.js",
+      "types": "./dist/lazperf-loader.d.ts",
       "import": "./dist/lazperf-loader.js",
-      "require": "./dist/lazperf-loader.js"
+      "require": "./dist/lazperf-loader.cjs"
     },
     "./las/unbundled": {
       "types": "./dist/las/unbundled.d.ts",
@@ -128,19 +128,19 @@
       "require": "./dist/pcd/pcd-format.cjs"
     },
     "./pcd-loader-types": {
-      "types": "./dist/pcd-loader-types.js",
+      "types": "./dist/pcd-loader-types.d.ts",
       "import": "./dist/pcd-loader-types.js",
-      "require": "./dist/pcd-loader-types.js"
+      "require": "./dist/pcd-loader-types.cjs"
     },
     "./pcd-loader": {
-      "types": "./dist/pcd-loader.js",
+      "types": "./dist/pcd-loader.d.ts",
       "import": "./dist/pcd-loader.js",
-      "require": "./dist/pcd-loader.js"
+      "require": "./dist/pcd-loader.cjs"
     },
     "./pcd-writer": {
-      "types": "./dist/pcd-writer.js",
+      "types": "./dist/pcd-writer.d.ts",
       "import": "./dist/pcd-writer.js",
-      "require": "./dist/pcd-writer.js"
+      "require": "./dist/pcd-writer.cjs"
     },
     "./pcd/unbundled": {
       "types": "./dist/pcd/unbundled.d.ts",
@@ -168,19 +168,19 @@
       "require": "./dist/ply/ply-format.cjs"
     },
     "./ply-loader-types": {
-      "types": "./dist/ply-loader-types.js",
+      "types": "./dist/ply-loader-types.d.ts",
       "import": "./dist/ply-loader-types.js",
-      "require": "./dist/ply-loader-types.js"
+      "require": "./dist/ply-loader-types.cjs"
     },
     "./ply-loader": {
-      "types": "./dist/ply-loader.js",
+      "types": "./dist/ply-loader.d.ts",
       "import": "./dist/ply-loader.js",
-      "require": "./dist/ply-loader.js"
+      "require": "./dist/ply-loader.cjs"
     },
     "./ply-writer": {
-      "types": "./dist/ply-writer.js",
+      "types": "./dist/ply-writer.d.ts",
       "import": "./dist/ply-writer.js",
-      "require": "./dist/ply-writer.js"
+      "require": "./dist/ply-writer.cjs"
     },
     "./ply/unbundled": {
       "types": "./dist/ply/unbundled.d.ts",
