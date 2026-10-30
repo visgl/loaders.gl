@@ -26,6 +26,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 
 import {getSpatialMultiscaleLevels} from './lib/spatial-multiscales';
+import type {SpatialMultiscaleLevel} from './lib/spatial-multiscales';
 import type {SupportedTypedArray} from './types';
 import {ZarrSource, type ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
 import {
@@ -119,6 +120,8 @@ type GeoZarrInit = {
   xDimensionIndex: number;
   /** Physical position of the logical y dimension. */
   yDimensionIndex: number;
+  /** Multiscale levels of the selected array, resolved once by `initialize`. */
+  layout: SpatialMultiscaleLevel[];
 };
 
 type PixelWindow = {
@@ -219,12 +222,7 @@ export class GeoZarrRasterSource
 
   /** Opens sibling array metadata without selecting or decoding their samples. */
   private async loadGridMetadata(): Promise<GeoZarrSourceMetadata> {
-    const {metadata, group} = await this.getInitializationPromise();
-    const groupAttributes = metadata.metadata?.groupAttributes as GeoZarrAttributes;
-    const arrayAttributes = metadata.metadata?.arrayAttributes as GeoZarrAttributes;
-    const layout = getSpatialMultiscaleLevels(groupAttributes, metadata.array, {
-      spatialOME: declaresCoordinateReferenceSystem({...groupAttributes, ...arrayAttributes})
-    });
+    const {metadata, group, layout} = await this.getInitializationPromise();
     const levels: GeoZarrLevelMetadata[] = [];
     for (const level of layout) {
       if (level.array === metadata.array) {
@@ -253,6 +251,8 @@ export class GeoZarrRasterSource
       for (const [index, level] of levels.entries()) {
         const scale = layout[index].scale!;
         if (level.metadata && !isConsistentOMELevel(scale, selectedScale, level.metadata, metadata)) {
+          // A level without metadata has no grid geometry, so the source does not publish a
+          // complete tile matrix set: one inconsistent level must not mislabel the others.
           delete level.metadata;
         }
       }
@@ -418,15 +418,31 @@ export class GeoZarrRasterSource
     const array = await zarrita.open(group.resolve(arrayPath), {kind: 'array', signal});
     const groupAttributes = normalizeAttributes(group.attrs);
     const arrayAttributes = normalizeAttributes(array.attrs);
-    const layout = getSpatialMultiscaleLevels(groupAttributes, arrayPath, {
+    const openGroupAttributes = async (path: string) =>
+      normalizeAttributes((await zarrita.open(group.resolve(path), {kind: 'group', signal})).attrs);
+    let layout = getSpatialMultiscaleLevels(groupAttributes, arrayPath, {
       spatialOME: declaresCoordinateReferenceSystem({...groupAttributes, ...arrayAttributes})
     });
-    const level = layout.find(candidate => candidate.array === arrayPath);
-    const levelGroupAttributes = level?.group
-      ? normalizeAttributes(
-          (await zarrita.open(group.resolve(level.group), {kind: 'group', signal})).attrs
-        )
-      : {};
+    let level = layout.find(candidate => candidate.array === arrayPath);
+    let levelGroupAttributes = level?.group ? await openGroupAttributes(level.group) : {};
+    if (!layout.length) {
+      // A CRS can be declared only on each OME-NGFF level group. That group is known only from the
+      // OME levels, so read the selected level group and accept the levels if it declares a CRS.
+      const omeLayout = getOMELevelsOrEmpty(groupAttributes, arrayPath);
+      const omeLevel = omeLayout.find(candidate => candidate.array === arrayPath);
+      const omeLevelGroupAttributes = omeLevel?.group
+        ? await openGroupAttributes(omeLevel.group).catch(error => {
+            // An implicit v2 group has no metadata, so it declares no CRS.
+            rethrowUnlessAbsent(error);
+            return {};
+          })
+        : {};
+      if (declaresCoordinateReferenceSystem(omeLevelGroupAttributes)) {
+        layout = omeLayout;
+        level = omeLevel;
+        levelGroupAttributes = omeLevelGroupAttributes;
+      }
+    }
     const attributes = {
       ...groupAttributes,
       ...levelGroupAttributes,
@@ -543,7 +559,7 @@ export class GeoZarrRasterSource
       registration: declaredRegistration
     };
 
-    return {group, array, metadata, xDimensionIndex, yDimensionIndex};
+    return {group, array, metadata, xDimensionIndex, yDimensionIndex, layout};
   }
 }
 
@@ -663,15 +679,23 @@ async function loadCFCoordinateTransform(
   spatialDimensions: [y: string, x: string],
   signal?: AbortSignal
 ): Promise<GeoZarrAffineTransform | null> {
+  let coordinates: [number[], number[]];
   try {
-    const [yCoordinates, xCoordinates] = await Promise.all([
+    coordinates = await Promise.all([
       loadCoordinateValues(group, arrayPath, spatialDimensions[0], signal),
       loadCoordinateValues(group, arrayPath, spatialDimensions[1], signal)
     ]);
+  } catch (error) {
+    rethrowUnlessAbsent(error);
+    return null;
+  }
+  const [yCoordinates, xCoordinates] = coordinates;
+  try {
     const scaleX = getRegularCoordinateSpacing(xCoordinates, spatialDimensions[1]);
     const scaleY = getRegularCoordinateSpacing(yCoordinates, spatialDimensions[0]);
     return [scaleX, 0, xCoordinates[0] - scaleX / 2, 0, scaleY, yCoordinates[0] - scaleY / 2];
   } catch {
+    // Irregular coordinates give no affine transform.
     return null;
   }
 }
@@ -715,6 +739,11 @@ async function openNearestArray(
       const array = await zarrita.open(group.resolve(path), {kind: 'array', signal});
       return {array, local: depth === segments.length};
     } catch (error) {
+      // Only an absent variable continues the search. A local variable that exists but cannot be
+      // read must fail, not be replaced by an ancestor of the same name.
+      if (!zarrita.isZarritaError(error, 'NotFoundError')) {
+        throw error;
+      }
       lastError = error;
     }
   }
@@ -757,8 +786,19 @@ async function loadCFGridMapping(
   try {
     const {array, local} = await openNearestArray(group, arrayPath, gridMappingName, signal);
     return {attributes: normalizeAttributes(array.attrs), local};
-  } catch {
+  } catch (error) {
+    rethrowUnlessAbsent(error);
     return null;
+  }
+}
+
+/**
+ * Rethrows every error except an absent node. An absent CF variable means "no georeference"; a
+ * variable that exists but cannot be read must fail, not give a plausible but wrong result.
+ */
+function rethrowUnlessAbsent(error: unknown): void {
+  if (!zarrita.isZarritaError(error, 'NotFoundError')) {
+    throw error;
   }
 }
 
@@ -805,6 +845,18 @@ function normalizeGDALGeoTransform(value: unknown): GeoZarrAffineTransform | nul
 }
 
 /** Whether attributes declare a CRS through GeoZarr `proj:*` metadata or a CF grid mapping. */
+/**
+ * OME-NGFF levels read as spatial levels, or none. Native OME metadata that is not valid as
+ * spatial levels stays native: this probe must not make an existing microscopy store fail.
+ */
+function getOMELevelsOrEmpty(attributes: GeoZarrAttributes, arrayPath: string) {
+  try {
+    return getSpatialMultiscaleLevels(attributes, arrayPath, {spatialOME: true});
+  } catch {
+    return [];
+  }
+}
+
 function declaresCoordinateReferenceSystem(attributes: GeoZarrAttributes): boolean {
   return Boolean(
     normalizeDeclaredCoordinateReferenceSystem(attributes) || normalizeString(attributes.grid_mapping)

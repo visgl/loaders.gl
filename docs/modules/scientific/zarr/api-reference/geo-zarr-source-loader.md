@@ -54,7 +54,10 @@ The source recognizes two interoperable metadata patterns:
   in the group of the data array first. Then it looks in each parent group. This is the CF search
   by proximity. The source uses a `GeoTransform` only when the grid-mapping variable is in the
   group of the data array. A grid-mapping variable in a parent group can apply to more than one
-  multiscale level, so the source uses it only for the CRS.
+  multiscale level, so the source uses it only for the CRS. If a coordinate or grid-mapping
+  variable does not exist, the source continues the search or uses no georeference. If the
+  variable exists but the source cannot read it, the source gives an error. It does not use a
+  variable from a parent group in its place.
 
 <ReferenceBoundary
   title="GeoZarr source usage"
@@ -158,8 +161,9 @@ path. `levels` preserves each asset ID, array path, dimensions, non-spatial sele
 resolved native metadata. Array dimensions determine logical X/Y independently of physical order.
 
 OME-NGFF `multiscales[].datasets[]` can also give the levels. Version 0.4 puts them at the group
-root, and version 0.5 puts them under `ome`. The source reads these levels only when the selected
-array declares a CRS. The CRS must come from `proj:*` metadata or from a CF `grid_mapping`.
+root, and version 0.5 puts them under `ome`. The source reads these levels only when the root
+group, the selected array or the group of the selected level declares a CRS. The CRS must come
+from `proj:*` metadata or from a CF `grid_mapping`.
 
 The source georeferences each OME-NGFF level with the GeoZarr or CF metadata of that level, as
 above. The OME transforms do not georeference a level, because the OME frame can be different from

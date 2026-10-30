@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import {cp, mkdtemp, rename, rm} from 'node:fs/promises';
+import {chmod, cp, mkdtemp, readFile, rename, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
@@ -21,6 +21,34 @@ function createSource(array: string, url = FIXTURE_URL): GeoZarrRasterSource {
   return createDataSource(url, [GeoZarrSourceLoader], {
     geozarr: {array}
   }) as GeoZarrRasterSource;
+}
+
+/** Copies the fixture to a temporary store and runs `body` on it. */
+async function withStoreCopy(body: (store: string) => Promise<void>): Promise<void> {
+  const directory = await mkdtemp(join(tmpdir(), 'cf-ome-'));
+  const store = join(directory, 'store.zarr');
+  try {
+    await cp(fileURLToPath(FIXTURE_URL), store, {recursive: true});
+    await body(store);
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+}
+
+/** Edits the metadata of one node, in its own zarr.json and in the root consolidated metadata. */
+async function editNode(
+  store: string,
+  path: string,
+  edit: (metadata: Record<string, any>) => void
+): Promise<void> {
+  const nodeFile = join(store, path, 'zarr.json');
+  const node = JSON.parse(await readFile(nodeFile, 'utf8'));
+  edit(node);
+  await writeFile(nodeFile, JSON.stringify(node));
+  const rootFile = join(store, 'zarr.json');
+  const root = JSON.parse(await readFile(rootFile, 'utf8'));
+  edit(root.consolidated_metadata.metadata[path]);
+  await writeFile(rootFile, JSON.stringify(root));
 }
 
 function createViewport(bounds: RasterBoundingBox): RasterViewport {
@@ -113,3 +141,55 @@ test('GeoZarrRasterSource takes a level transform from its own coordinates, not 
     await rm(directory, {recursive: true, force: true});
   }
 });
+
+test('GeoZarrRasterSource discovers OME-NGFF levels whose CRS is declared only on each level group', async () => {
+  await withStoreCopy(async store => {
+    for (const [level, cellSize] of [
+      ['0', 2],
+      ['1', 4]
+    ] as const) {
+      await editNode(store, `${level}/values`, node => {
+        node.attributes = {};
+      });
+      await editNode(store, level, node => {
+        node.attributes = {
+          'proj:code': 'EPSG:32619',
+          'spatial:dimensions': ['y', 'x'],
+          'spatial:transform': [cellSize, 0, 500000, 0, -cellSize, 4650000]
+        };
+      });
+    }
+
+    const metadata = await createSource('0/values', pathToFileURL(store).href).getMetadata();
+    expect(metadata.crs).toBe('EPSG:32619');
+    expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual([
+      'EPSG:32619',
+      'EPSG:32619'
+    ]);
+    expect(metadata.tileGrid?.tileMatrixSet?.crs).toBe('EPSG:32619');
+    expect(metadata.tileGrid?.tileMatrixSet?.matrices.map(matrix => matrix.resolution)).toEqual([
+      2, 4
+    ]);
+  });
+});
+
+// A root user can read a file with mode 000, so this test needs an ordinary user.
+test.skipIf(process.getuid?.() === 0)(
+  'GeoZarrRasterSource does not replace an unreadable local grid mapping with an ancestor',
+  async () => {
+    await withStoreCopy(async store => {
+      // A valid ancestor grid mapping exists, but the level's own grid mapping cannot be read.
+      await cp(join(store, '0', 'spatial_ref'), join(store, 'spatial_ref'), {recursive: true});
+      const root = JSON.parse(await readFile(join(store, 'zarr.json'), 'utf8'));
+      delete root.consolidated_metadata;
+      await writeFile(join(store, 'zarr.json'), JSON.stringify(root));
+      await chmod(join(store, '1', 'spatial_ref', 'zarr.json'), 0o000);
+
+      const source = createDataSource(pathToFileURL(store).href, [GeoZarrSourceLoader], {
+        zarr: {requireConsolidatedMetadata: false},
+        geozarr: {array: '1/values'}
+      }) as GeoZarrRasterSource;
+      await expect(source.getMetadata()).rejects.toThrow();
+    });
+  }
+);
