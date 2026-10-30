@@ -6,7 +6,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 import {load, registerLoaders, selectLoader, fetchFile, LoaderOptions} from '@loaders.gl/core';
-import {BasisLoader, CompressedTextureLoader, CrunchWorkerLoader} from '@loaders.gl/images';
+import {BasisLoader, CompressedTextureLoader, CrunchLoader} from '@loaders.gl/images';
 import {GL_EXTENSIONS_CONSTANTS} from '@loaders.gl/images/gl-extensions';
 import {ImageLoader, ImageType} from '@loaders.gl/images';
 
@@ -476,7 +476,7 @@ export class CompressedTexture extends React.PureComponent<
 
       const loader = await selectLoader(src, [
         CompressedTextureLoader,
-        CrunchWorkerLoader,
+        CrunchLoader,
         BasisLoader,
         ImageLoader
       ]);

@@ -1,5 +1,5 @@
 ---
-title: CrunchWorkerLoader
+title: CrunchLoader
 description: Decode legacy Crunch texture files in a worker-friendly path and expose their compressed mip levels.
 hide_title: true
 page_style: designed
@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="crunch"
   eyebrow="Texture API / Crunch loader"
   title="Keep an existing compressed texture pipeline moving."
-  description="CrunchWorkerLoader reads CRN assets and returns mip levels with compressed texture metadata. It is a compatibility path for older BC/DXT-oriented content; new cross-device pipelines generally prefer Basis Universal in KTX2."
+  description="CrunchLoader reads CRN assets and returns mip levels with compressed texture metadata. It is a compatibility path for older BC/DXT-oriented content; new cross-device pipelines generally prefer Basis Universal in KTX2."
   tone="pink"
   meta={['CRN input', 'Compressed mip levels', 'Worker loader']}
   links={[
@@ -39,7 +39,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="CrunchWorkerLoader reference"
+  title="CrunchLoader reference"
   description="The detailed reference covers CRN input, worker loading, mip-level output, format metadata, and compatibility considerations."
   tone="pink"
 />
@@ -61,10 +61,10 @@ Loader for compressed textures in the Crunch file format
 ## Usage
 
 ```typescript
-import {CrunchWorkerLoader} from '@loaders.gl/images';
+import {CrunchLoader} from '@loaders.gl/images';
 import {load} from '@loaders.gl/core';
 
-const mipLevels = await load(url, CrunchWorkerLoader);
+const mipLevels = await load(url, CrunchLoader);
 for (const level of mipLevels) {
   console.log(level.shape, level.format, level.textureFormat);
 }
@@ -93,7 +93,7 @@ Each level includes:
 
 ## Module Overrides
 
-Use `options.modules` to override the Crunch runtime used by `CrunchWorkerLoader`.
+Use `options.modules` to override the Crunch runtime used by `CrunchLoader`.
 
 - `modules.crunch`: supply a preloaded Crunch decoder factory.
 - `'crunch.js'`: override the URL used for the Crunch decoder script.

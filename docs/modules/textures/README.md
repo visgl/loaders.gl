@@ -106,7 +106,7 @@ The `@loaders.gl/images` module handles the following formats:
 | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Basis Universal textures as `TextureLevel[][]`                                                                                            |
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]`                                                                                           |
 | [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture`                                                                                                        |
-| [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`                                                                                                        |
+| [`CrunchLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`                                                                                                        |
 | [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain                                                                                                   |
 | [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays                                                                                                              |
 | [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps                                                                                                                    |
@@ -138,7 +138,7 @@ A `TextureLevel` describes one mip level of one texture image.
 
 `RadianceHDRLoader` returns a `Texture` with `shape: 'texture'`, `type: '2d'`, one decoded `rgba32float` level in `data`, and optional application-facing metadata.
 
-`CrunchWorkerLoader` returns `TextureLevel[]`.
+`CrunchLoader` returns `TextureLevel[]`.
 
 See [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) and [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) for loader-specific options and return shapes.
 
