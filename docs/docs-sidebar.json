@@ -32,22 +32,22 @@
     "items": [
       "formats/README",
       "modules/tables/arrow/formats/arrow",
-      "modules/textures/formats/basis",
-      "modules/tables/bson/formats/bson",
+      "modules/images/textures/formats/basis",
+      "modules/documents/bson/formats/bson",
       "modules/traces/formats/chrome-trace",
-      "modules/textures/formats/compressed-textures",
+      "modules/images/textures/formats/compressed-textures",
       "modules/tiles-3d/copc/formats/copc",
       "modules/tiles-3d/3d-tiles/formats/3d-tiles",
-      "modules/textures/formats/crunch",
+      "modules/images/textures/formats/crunch",
       "modules/tables/csv/formats/csv",
       "modules/ogc/wms/formats/csw",
-      "modules/textures/formats/dds",
+      "modules/images/textures/formats/dds",
       "modules/draco/formats/draco",
       "modules/geospatial/flatgeobuf/formats/flatgeobuf",
       "modules/tables/arrow/formats/geoarrow",
       "modules/tables/json/formats/geojson",
-      "modules/config/formats/toml",
-      "modules/config/formats/yaml",
+      "modules/documents/config/formats/toml",
+      "modules/documents/config/formats/yaml",
       "modules/geospatial/geopackage/formats/geopackage",
       "modules/tables/parquet/formats/geoparquet",
       "modules/raster/geotiff/formats/geotiff",
@@ -55,12 +55,12 @@
       "modules/scene/gltf/formats/gltf",
       "modules/ogc/wms/formats/gml",
       "modules/geospatial/kml/formats/gpx",
-      "modules/textures/formats/hdr",
-      "modules/xml/formats/html",
+      "modules/images/textures/formats/hdr",
+      "modules/documents/xml/formats/html",
       "modules/tiles-3d/i3s/formats/i3s",
       "modules/tables/json/formats/json",
       "modules/geospatial/kml/formats/kml",
-      "modules/textures/formats/ktx",
+      "modules/images/textures/formats/ktx",
       "modules/pointclouds/las/formats/las",
       "modules/raster/lerc/formats/lerc",
       "modules/tiles/mvt/formats/map-style",
@@ -77,7 +77,7 @@
       "modules/pointclouds/ply/formats/ply",
       "modules/tiles/pmtiles/formats/pmtiles",
       "modules/tiles-3d/potree/formats/potree",
-      "modules/textures/formats/pvr",
+      "modules/images/textures/formats/pvr",
       "modules/geospatial/shapefile/formats/shapefile",
       "modules/ogc/stac/formats/stac",
       "modules/geospatial/kml/formats/tcx",
@@ -86,7 +86,7 @@
       "modules/geospatial/wkt/formats/wkb",
       "modules/geospatial/wkt/formats/wkt",
       "modules/geospatial/wkt/formats/wkt-crs",
-      "modules/xml/formats/xml",
+      "modules/documents/xml/formats/xml",
       "modules/scientific/zarr/formats/zarr",
       "modules/archives/zip/formats/zip",
       "modules/scientific/formats/npy"
@@ -143,12 +143,12 @@
         "label": "Loaders",
         "items": [
           "modules/tables/arrow/api-reference/arrow-loader",
-          "modules/textures/api-reference/basis-loader",
-          "modules/tables/bson/api-reference/bson-loader",
+          "modules/images/textures/api-reference/basis-loader",
+          "modules/documents/bson/api-reference/bson-loader",
           "modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader",
           "modules/traces/api-reference/chrome-trace-loader",
-          "modules/textures/api-reference/compressed-texture-loader",
-          "modules/textures/api-reference/crunch-loader",
+          "modules/images/textures/api-reference/compressed-texture-loader",
+          "modules/images/textures/api-reference/crunch-loader",
           "modules/tables/csv/api-reference/csv-loader",
           "modules/draco/api-reference/draco-loader",
           "modules/tables/excel/api-reference/excel-loader",
@@ -169,8 +169,8 @@
           "modules/images/api-reference/legacy-image-loader",
           "modules/tables/json/api-reference/json-loader",
           "modules/tables/json/api-reference/json-table-loader",
-          "modules/config/api-reference/toml-loader",
-          "modules/config/api-reference/yaml-loader",
+          "modules/documents/config/api-reference/toml-loader",
+          "modules/documents/config/api-reference/yaml-loader",
           "modules/geospatial/kml/api-reference/kml-loader",
           "modules/tiles/mvt/api-reference/map-style-loader",
           "modules/pointclouds/las/api-reference/las-loader",
@@ -187,7 +187,7 @@
           "modules/pointclouds/ply/api-reference/ply-loader",
           "modules/tiles-3d/potree/api-reference/potree-loader",
           "modules/raster/terrain/api-reference/quantized-mesh-loader",
-          "modules/textures/api-reference/radiance-hdr-loader",
+          "modules/images/textures/api-reference/radiance-hdr-loader",
           "modules/geospatial/shapefile/api-reference/shapefile-loader",
           "modules/geospatial/kml/api-reference/tcx-loader",
           "modules/raster/terrain/api-reference/terrain-loader",
@@ -196,13 +196,13 @@
           "modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader",
           "modules/geospatial/wkt/api-reference/twkb-loader",
           "modules/scene/usd/api-reference/usd-loader",
-          "modules/video/api-reference/video-loader",
+          "modules/images/video/api-reference/video-loader",
           "modules/geospatial/wkt/api-reference/hex-wkb-loader",
           "modules/geospatial/wkt/api-reference/wkb-loader",
           "modules/geospatial/wkt/api-reference/wkt-crs-loader",
           "modules/geospatial/wkt/api-reference/wkt-loader",
           "modules/ogc/wms/api-reference/wms-capabilities-loader",
-          "modules/xml/api-reference/xml-loader",
+          "modules/documents/xml/api-reference/xml-loader",
           "modules/archives/zip/api-reference/zip-loader"
         ]
       },
@@ -212,7 +212,7 @@
         "items": [
           "modules/tiles-3d/3d-tiles/api-reference/tile-3d-writer",
           "modules/tables/arrow/api-reference/arrow-writer",
-          "modules/tables/bson/api-reference/bson-writer",
+          "modules/documents/bson/api-reference/bson-writer",
           "modules/traces/api-reference/chrome-trace-writer",
           "modules/tables/csv/api-reference/csv-writer",
           "modules/draco/api-reference/draco-writer",
@@ -229,8 +229,8 @@
           "modules/pointclouds/pcd/api-reference/pcd-writer",
           "modules/pointclouds/ply/api-reference/ply-writer",
           "modules/raster/terrain/api-reference/quantized-mesh-writer",
-          "modules/textures/api-reference/compressed-texture-writer",
-          "modules/textures/api-reference/ktx2-basis-texture-writer",
+          "modules/images/textures/api-reference/compressed-texture-writer",
+          "modules/images/textures/api-reference/ktx2-basis-texture-writer",
           "modules/geospatial/wkt/api-reference/wkt-writer",
           "modules/geospatial/wkt/api-reference/wkb-writer",
           "modules/geospatial/wkt/api-reference/twkb-writer",
@@ -738,15 +738,15 @@
           "modules/documents/README",
           "modules/documents/api-reference/json-loader",
           "modules/documents/api-reference/markdown-loader",
-          "modules/config/README",
-          "modules/config/api-reference/toml-loader",
-          "modules/config/api-reference/yaml-loader",
-          "modules/xml/README",
-          "modules/xml/api-reference/xml-loader",
-          "modules/xml/api-reference/html-loader",
-          "modules/tables/bson/README",
-          "modules/tables/bson/api-reference/bson-loader",
-          "modules/tables/bson/api-reference/bson-writer"
+          "modules/documents/config/README",
+          "modules/documents/config/api-reference/toml-loader",
+          "modules/documents/config/api-reference/yaml-loader",
+          "modules/documents/xml/README",
+          "modules/documents/xml/api-reference/xml-loader",
+          "modules/documents/xml/api-reference/html-loader",
+          "modules/documents/bson/README",
+          "modules/documents/bson/api-reference/bson-loader",
+          "modules/documents/bson/api-reference/bson-writer"
         ]
       },
       {
@@ -783,27 +783,27 @@
         "items": [
           "modules/images/README",
           "modules/images/api-reference/parsed-image-api",
-          "modules/images/api-reference/binary-image-api"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "Texture APIs",
-        "items": [
-          "modules/textures/README",
-          "modules/textures/api-reference/radiance-hdr-loader",
-          "modules/textures/api-reference/texture-loader",
-          "modules/textures/api-reference/texture-array-loader",
-          "modules/textures/api-reference/texture-cube-loader",
-          "modules/textures/api-reference/texture-cube-array-loader"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "Video APIs",
-        "items": [
-          "modules/video/README",
-          "modules/video/api-reference/gif-builder"
+          "modules/images/api-reference/binary-image-api",
+          {
+            "type": "category",
+            "label": "Texture APIs",
+            "items": [
+              "modules/images/textures/README",
+              "modules/images/textures/api-reference/radiance-hdr-loader",
+              "modules/images/textures/api-reference/texture-loader",
+              "modules/images/textures/api-reference/texture-array-loader",
+              "modules/images/textures/api-reference/texture-cube-loader",
+              "modules/images/textures/api-reference/texture-cube-array-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "Video APIs",
+            "items": [
+              "modules/images/video/README",
+              "modules/images/video/api-reference/gif-builder"
+            ]
+          }
         ]
       },
       {

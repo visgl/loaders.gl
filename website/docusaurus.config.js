@@ -450,7 +450,7 @@ const config = {
             '/examples/pointclouds/pcd': '/docs/modules/pointclouds/pcd/try-it',
             '/examples/pointclouds/ply': '/docs/modules/pointclouds/ply/try-it',
             '/examples/geospatial/shapefile': '/docs/modules/shapefile/try-it',
-            '/examples/table/xml': '/docs/modules/xml/try-it'
+            '/examples/table/xml': '/docs/modules/documents/xml/try-it'
           };
           const redirectSources = [];
           for (const [group, formats] of Object.entries(consolidatedModuleDocs)) {

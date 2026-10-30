@@ -18,7 +18,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'WMS module', to: '/docs/modules/ogc/wms'},
     {label: 'WFS format', to: '/docs/modules/ogc/wms/formats/wfs'},
-    {label: 'XML module', to: '/docs/modules/xml'}
+    {label: 'XML module', to: '/docs/modules/documents/xml'}
   ]}
 />
 

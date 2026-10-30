@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['From v3.3', 'GML', 'Streaming features']}
   links={[
     {label: 'WMS module', to: '/docs/modules/ogc/wms'},
-    {label: 'XMLLoader', to: '/docs/modules/xml/api-reference/xml-loader'},
+    {label: 'XMLLoader', to: '/docs/modules/documents/xml/api-reference/xml-loader'},
     {label: 'GIS category', to: '/docs/specifications/category-gis'}
   ]}
 />

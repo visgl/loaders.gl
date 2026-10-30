@@ -358,7 +358,7 @@ with `BSONObjectId` and other special values with `createBSONValue()` from
 `@loaders.gl/documents/bson-codec`. Unsafe int64 values now remain bigint instead of driver
 `Long` objects; regexes, Decimal128, timestamps, and deprecated scalar types use
 explicit native representations. Replace deserializer options with the documented
-native options. See the [BSON value contract](/docs/modules/tables/bson#native-value-representations).
+native options. See the [BSON value contract](/docs/modules/documents/bson#native-value-representations).
 
 
 

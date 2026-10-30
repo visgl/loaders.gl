@@ -13,9 +13,9 @@ type TextureTranscodeNode = {
 };
 
 const SOURCE_NODES: readonly TextureTranscodeNode[] = [
-  {label: 'KTX2', detail: 'container and mip chain', to: '/docs/modules/textures/formats/ktx'},
-  {label: 'Basis', detail: 'portable supercompression', to: '/docs/modules/textures/formats/basis'},
-  {label: 'DDS / PVR', detail: 'native GPU payloads', to: '/docs/modules/textures/formats/compressed-textures'}
+  {label: 'KTX2', detail: 'container and mip chain', to: '/docs/modules/images/textures/formats/ktx'},
+  {label: 'Basis', detail: 'portable supercompression', to: '/docs/modules/images/textures/formats/basis'},
+  {label: 'DDS / PVR', detail: 'native GPU payloads', to: '/docs/modules/images/textures/formats/compressed-textures'}
 ];
 
 const OUTPUT_NODES: readonly TextureTranscodeNode[] = [

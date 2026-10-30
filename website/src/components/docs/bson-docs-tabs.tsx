@@ -16,10 +16,10 @@ export type BsonDocsTabId = 'try-it' | 'overview' | 'format' | 'bsonloader' | 'b
 
 const BSON_DOCS_TABS: BsonDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/table/bson'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/tables/bson/formats/bson'},
-  {id: 'format', label: 'Format', href: '/docs/modules/tables/bson/format'},
-  {id: 'bsonloader', label: 'BSONLoader', href: '/docs/modules/tables/bson/api-reference/bson-loader'},
-  {id: 'bsonwriter', label: 'BSONWriter', href: '/docs/modules/tables/bson/api-reference/bson-writer'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/documents/bson/formats/bson'},
+  {id: 'format', label: 'Format', href: '/docs/modules/documents/bson/format'},
+  {id: 'bsonloader', label: 'BSONLoader', href: '/docs/modules/documents/bson/api-reference/bson-loader'},
+  {id: 'bsonwriter', label: 'BSONWriter', href: '/docs/modules/documents/bson/api-reference/bson-writer'}
 ];
 
 /**

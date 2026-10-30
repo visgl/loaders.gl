@@ -53,11 +53,11 @@ table-specific result shape. Its loaders can return:
 | Loader                                                       | Notes                                      |
 | ------------------------------------------------------------ | ------------------------------------------ |
 | [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader) | JSON documents and nested values           |
-| [`BSONLoader`](/docs/modules/tables/bson/api-reference/bson-loader) | Binary JSON documents                       |
-| [`XMLLoader`](/docs/modules/xml/api-reference/xml-loader)    | XML documents represented as JavaScript data |
-| [`HTMLLoader`](/docs/modules/xml/api-reference/html-loader)  | HTML documents and fragments               |
-| [`YAMLLoader`](/docs/modules/config/api-reference/yaml-loader) | Human-readable YAML documents; provided by `@loaders.gl/documents`. |
-| [`TOMLLoader`](/docs/modules/config/api-reference/toml-loader) | Configuration-oriented TOML documents; provided by `@loaders.gl/documents`. |
+| [`BSONLoader`](/docs/modules/documents/bson/api-reference/bson-loader) | Binary JSON documents                       |
+| [`XMLLoader`](/docs/modules/documents/xml/api-reference/xml-loader)    | XML documents represented as JavaScript data |
+| [`HTMLLoader`](/docs/modules/documents/xml/api-reference/html-loader)  | HTML documents and fragments               |
+| [`YAMLLoader`](/docs/modules/documents/config/api-reference/yaml-loader) | Human-readable YAML documents; provided by `@loaders.gl/documents`. |
+| [`TOMLLoader`](/docs/modules/documents/config/api-reference/toml-loader) | Configuration-oriented TOML documents; provided by `@loaders.gl/documents`. |
 
 ## Data Structure
 

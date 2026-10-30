@@ -111,7 +111,7 @@ Access files inside archive containers, extract their contents, and write archiv
 
 </PackageTile>
 
-<PackageTile formats={[{"slug": "xml", "to": "/docs/modules/xml/formats/xml"}, {"slug": "yaml", "to": "/docs/modules/config/formats/yaml"}, {"slug": "toml", "to": "/docs/modules/config/formats/toml"}, {"slug": "bson", "to": "/docs/modules/tables/bson/formats/bson"}, {"slug": "markdown", "to": "/docs/modules/documents/formats/markdown"}]}>
+<PackageTile formats={[{"slug": "xml", "to": "/docs/modules/documents/xml/formats/xml"}, {"slug": "yaml", "to": "/docs/modules/documents/config/formats/yaml"}, {"slug": "toml", "to": "/docs/modules/documents/config/formats/toml"}, {"slug": "bson", "to": "/docs/modules/documents/bson/formats/bson"}, {"slug": "markdown", "to": "/docs/modules/documents/formats/markdown"}]}>
 
 ### [@loaders.gl/documents](./modules/documents/README.md)
 
@@ -167,29 +167,12 @@ Access hosted map, feature, imagery, and scene data through ArcGIS REST services
 
 
 
-<PackageTile formats={[{"slug": "image", "to": "/docs/modules/images/api-reference/image-loader"}]}>
+<PackageTile formats={[{"slug": "image", "to": "/docs/modules/images/api-reference/image-loader"}, {"slug": "ktx", "to": "/docs/modules/images/textures/formats/ktx"}, {"slug": "basis", "to": "/docs/modules/images/textures/formats/basis"}, {"slug": "dds", "to": "/docs/modules/images/textures/formats/dds"}, {"slug": "pvr", "to": "/docs/modules/images/textures/formats/pvr"}, {"slug": "crunch", "to": "/docs/modules/images/textures/formats/crunch"}, {"slug": "video", "to": "/docs/modules/images/video/api-reference/video-loader"}, {"slug": "gif", "to": "/docs/modules/images/video"}]}>
 
 ### [@loaders.gl/images](./modules/images/README.md)
 
-Decode and encode images, inspect image metadata, and work with browser image objects or pixel data.
-
-
-</PackageTile>
-
-<PackageTile formats={[{"slug": "ktx", "to": "/docs/modules/textures/formats/ktx"}, {"slug": "basis", "to": "/docs/modules/textures/formats/basis"}, {"slug": "dds", "to": "/docs/modules/textures/formats/dds"}, {"slug": "pvr", "to": "/docs/modules/textures/formats/pvr"}, {"slug": "crunch", "to": "/docs/modules/textures/formats/crunch"}]}>
-
-### [@loaders.gl/images](./modules/textures/README.md)
-
-GPU texture formats, transcoding, and compressed texture writing.
-
-
-</PackageTile>
-
-<PackageTile formats={[{"slug": "video", "to": "/docs/modules/video/api-reference/video-loader"}, {"slug": "gif", "to": "/docs/modules/video"}]}>
-
-### [@loaders.gl/images](./modules/video/README.md)
-
-Load video for browser playback and assemble image frames into animated GIFs.
+Decode and encode images, inspect image metadata, and work with textures and browser video APIs.
+See [texture formats and APIs](./modules/images/textures/README.md) and [video loaders](./modules/images/video/README.md).
 
 
 </PackageTile>

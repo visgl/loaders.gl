@@ -25,12 +25,12 @@ const document = await load('README.md', MarkdownLoader);
 
 | Format | Metadata loader | Parser import | Output |
 | --- | --- | --- | --- |
-| [XML](/docs/modules/xml/formats/xml) | `XMLLoader` | `@loaders.gl/documents/xml-loader` | JavaScript object |
-| [HTML](/docs/modules/xml/formats/html) | `HTMLLoader` | `@loaders.gl/documents/html-loader` | XML-style object |
+| [XML](/docs/modules/documents/xml/formats/xml) | `XMLLoader` | `@loaders.gl/documents/xml-loader` | JavaScript object |
+| [HTML](/docs/modules/documents/xml/formats/html) | `HTMLLoader` | `@loaders.gl/documents/html-loader` | XML-style object |
 | [JSON](/docs/modules/documents/api-reference/json-loader) | `JSONLoader` | `@loaders.gl/documents/json-loader` | Any JSON value, without table extraction |
-| [YAML](/docs/modules/config/formats/yaml) | `YAMLLoader` | `@loaders.gl/documents/yaml-loader` | Objects, arrays, scalars |
-| [TOML](/docs/modules/config/formats/toml) | `TOMLLoader` | `@loaders.gl/documents/toml-loader` | JavaScript object |
-| [BSON](/docs/modules/tables/bson/formats/bson) | `BSONLoader` | `@loaders.gl/documents/bson-loader` | JavaScript object |
+| [YAML](/docs/modules/documents/config/formats/yaml) | `YAMLLoader` | `@loaders.gl/documents/yaml-loader` | Objects, arrays, scalars |
+| [TOML](/docs/modules/documents/config/formats/toml) | `TOMLLoader` | `@loaders.gl/documents/toml-loader` | JavaScript object |
+| [BSON](/docs/modules/documents/bson/formats/bson) | `BSONLoader` | `@loaders.gl/documents/bson-loader` | JavaScript object |
 | [Markdown](/docs/modules/documents/formats/markdown) | `MarkdownLoader` | `@loaders.gl/documents/markdown-loader` | `MarkdownDocument` syntax tree |
 
 Each parser subpath exports the corresponding `*LoaderWithParser`. Use it for sync parsing:
@@ -47,7 +47,7 @@ const document = parseSync('# Hello', MarkdownLoaderWithParser);
 `@loaders.gl/documents/bson-codec` exports `encodeBSONSync`, `parseBSONSync`, `BSONObjectId`,
 and `createBSONValue`. Import `BSONWriter` from `@loaders.gl/documents/bson-writer`.
 The codec preserves the existing BSON wire behavior and Parquet BSON logical-type read/write
-support. It does not install the MongoDB `bson` package. See the [BSON reference](/docs/modules/tables/bson).
+support. It does not install the MongoDB `bson` package. See the [BSON reference](/docs/modules/documents/bson).
 
 ## XML utilities
 
