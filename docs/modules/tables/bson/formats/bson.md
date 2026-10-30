@@ -34,12 +34,10 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   description="The loaders.gl codec runs in browsers and Node.js without the bson package. It supports every BSON element type, with explicit representations for values that JavaScript cannot express directly."
   tone="yellow"
   items={[
-    {label: 'Read and write', value: 'Synchronous codec plus async loader/writer APIs'},
-    {label: 'Typed scalars', value: 'Lossless int64, ObjectId, Decimal128 bytes, and binary subtypes'},
-    {label: 'Parquet', value: 'Document read/write and Arrow Binary byte preservation'},
-    {label: 'Validation', value: 'UTF-8, lengths, container boundaries, depth, and cycles'},
-    {label: 'Runtime', value: 'Browser and Node.js; no BSON backend dependency'},
-    {label: 'Boundaries', value: 'No EJSON parser, MongoDB driver classes, or Decimal128 arithmetic'}
+    {label: 'Runtime', value: 'Native browser and Node.js codec; no BSON package'},
+    {label: 'Types', value: 'All element types, including lossless special scalars'},
+    {label: 'Parquet', value: 'Document read/write; Arrow Binary byte output'},
+    {label: 'Validation', value: 'Checked lengths, UTF-8, depth, cycles; code stays data'}
   ]}
 />
 

@@ -321,7 +321,7 @@
     "Ensure we use recent typescript",
     "Keep published deck.gl/luma.gl 9.x on their declared glTF 4.x dependency; repository imports target v5",
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
-    "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm\u2019s separate ^17 dependency",
+    "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5"
   ],
