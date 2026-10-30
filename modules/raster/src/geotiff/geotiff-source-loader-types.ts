@@ -42,7 +42,7 @@ export const GeoTIFFSourceLoader = {
   },
   /** Loads the implementation for asynchronous source construction. */
   preload: async () =>
-    (await import('@loaders.gl/raster/geotiff/geotiff-source-loader')).GeoTIFFSourceLoader,
+    (await import('@loaders.gl/raster/geotiff-source-loader')).GeoTIFFSourceLoader,
   /** Synchronous construction requires the source implementation subpath. */
   createDataSource(
     _data: string | Blob,

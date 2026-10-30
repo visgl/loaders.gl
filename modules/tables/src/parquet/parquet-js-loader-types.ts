@@ -27,7 +27,7 @@ const DEFAULT_PARQUET_JS_OPTIONS = {
 
 /** Preloads the parser-bearing TypeScript Parquet loader implementation. */
 async function preloadParquetJSLoader() {
-  const {ParquetJSLoaderWithParser} = await import('@loaders.gl/tables/parquet/parquet-js-loader');
+  const {ParquetJSLoaderWithParser} = await import('@loaders.gl/tables/parquet-js-loader');
   return ParquetJSLoaderWithParser;
 }
 

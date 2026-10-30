@@ -243,7 +243,7 @@ export async function createPMTilesExampleArchive(
   if (options.format === 'geotiff') {
     const sourceInput = typeof input === 'string' ? getPMTilesExampleURL(input).href : input;
     const [{GeoTIFFRasterSource}, {encodeRasterPMTiles}] = await waitForPromiseWithSignal(
-      Promise.all([import('@loaders.gl/raster/geotiff/geotiff-source-loader'), import('@loaders.gl/tiles/pmtiles/raster')]),
+      Promise.all([import('@loaders.gl/raster/geotiff-source-loader'), import('@loaders.gl/tiles/pmtiles/raster')]),
       signal
     );
     signal.throwIfAborted();

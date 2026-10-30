@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {isLoaderObject, normalizeLoader} from '@loaders.gl/core/lib/loader-utils/normalize-loader';
+import {isLoaderObject, normalizeLoader} from '../../../src/lib/loader-utils/normalize-loader';
 import * as threeDTiles from '@loaders.gl/tiles-3d/3d-tiles';
 import * as arrow from '@loaders.gl/tables/arrow/index';
 import * as csv from '@loaders.gl/tables/csv/index';

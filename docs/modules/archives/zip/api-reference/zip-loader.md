@@ -95,7 +95,7 @@ Use the shared archive API for incremental or range reads instead of retaining a
 The package root exports metadata. For direct parser access:
 
 ```ts
-import {ZipLoaderWithParser} from '@loaders.gl/archives/zip/zip-loader';
+import {ZipLoaderWithParser} from '@loaders.gl/archives/zip-loader';
 const files = await ZipLoaderWithParser.parse(arrayBuffer, {
   zip: {
     maxTotalDecodedBytes: 256n * 1024n * 1024n,

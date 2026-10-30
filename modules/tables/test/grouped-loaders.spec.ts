@@ -5,54 +5,54 @@
 import {expect, test} from 'vitest';
 import {load, parse, parseSync} from '@loaders.gl/core';
 import {CSVLoader, AvroLoader, AvroSchemaLoader, ExcelLoader} from '@loaders.gl/tables';
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
-import {AvroLoaderWithParser} from '@loaders.gl/tables/avro/avro-loader';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
+import {AvroLoaderWithParser} from '@loaders.gl/tables/avro-loader';
 import {AvroSchemaLoaderWithParser} from '@loaders.gl/tables/avro-schema';
 import {CSVLoader as FormatCSVLoader} from '@loaders.gl/tables/csv';
 import {AvroLoader as FormatAvroLoader} from '@loaders.gl/tables/avro';
-import {ExcelLoaderWithParser} from '@loaders.gl/tables/excel/excel-loader';
+import {ExcelLoaderWithParser} from '@loaders.gl/tables/excel-loader';
 import {ExcelLoader as FormatExcelLoader} from '@loaders.gl/tables/excel';
 
 import {ArrowLoader} from '@loaders.gl/tables';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow/arrow-loader';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
 import {ArrowLoader as FormatArrowLoader} from '@loaders.gl/tables/arrow';
 
 import {JSONLoader} from '@loaders.gl/tables';
-import {JSONLoaderWithParser} from '@loaders.gl/tables/json/json-loader';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json-loader';
 import {JSONLoader as FormatJSONLoader} from '@loaders.gl/tables/json';
 
 import {LanceLoader} from '@loaders.gl/tables';
-import {LanceLoaderWithParser} from '@loaders.gl/tables/lance/lance-loader';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance-loader';
 import {LanceLoader as FormatLanceLoader} from '@loaders.gl/tables/lance';
 
 import {ORCLoader} from '@loaders.gl/tables';
-import {ORCLoaderWithParser} from '@loaders.gl/tables/orc/orc-loader';
+import {ORCLoaderWithParser} from '@loaders.gl/tables/orc-loader';
 import {ORCLoader as FormatORCLoader} from '@loaders.gl/tables/orc';
 
 import {ParquetLoader} from '@loaders.gl/tables';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 import {ParquetLoader as FormatParquetLoader} from '@loaders.gl/tables/parquet';
 
 import {GeoArrowLoader} from '@loaders.gl/tables';
-import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/arrow/geoarrow-loader';
+import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/geoarrow-loader';
 
 import {JSONTableLoader} from '@loaders.gl/tables';
-import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json/json-table-loader';
+import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json-table-loader';
 
 import {NDJSONLoader} from '@loaders.gl/tables';
-import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json/ndjson-loader';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/ndjson-loader';
 
 import {GeoJSONLoader} from '@loaders.gl/tables';
-import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/json/geojson-loader';
+import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson-loader';
 
 import {NDGeoJSONLoader} from '@loaders.gl/tables';
-import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/json/ndgeojson-loader';
+import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/ndgeojson-loader';
 
 import {ParquetJSLoader} from '@loaders.gl/tables';
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet-js-loader';
 
 import {GeoParquetLoader} from '@loaders.gl/tables';
-import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/parquet/geoparquet-loader';
+import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/geoparquet-loader';
 
 test.each(
   [
@@ -134,7 +134,7 @@ test('grouped JSON metadata supports synchronous and asynchronous entrypoints', 
 test('grouped Lance source metadata defers synchronous source construction', async () => {
   const {LanceSourceLoader} = await import('@loaders.gl/tables');
   const {LanceSourceLoader: implementation} = await import(
-    '@loaders.gl/tables/lance/lance-source-loader'
+    '@loaders.gl/tables/lance-source-loader'
   );
   expect(() => LanceSourceLoader.createDataSource(new Blob(), {})).toThrow('requires async load()');
   expect(await LanceSourceLoader.preload()).toBe(implementation);
@@ -153,8 +153,8 @@ test('format GeoJSON metadata keeps transport hooks outside grouped metadata', a
 
 test('core asynchronously constructs grouped Lance and ORC sources from metadata', async () => {
   const {LanceSourceLoader, ORCSourceLoader} = await import('@loaders.gl/tables');
-  const {LanceSource} = await import('@loaders.gl/tables/lance/lance-source-loader');
-  const {ORCSource} = await import('@loaders.gl/tables/orc/orc-source-loader');
+  const {LanceSource} = await import('@loaders.gl/tables/lance-source-loader');
+  const {ORCSource} = await import('@loaders.gl/tables/orc-source-loader');
   expect(await load(new Blob(), LanceSourceLoader)).toBeInstanceOf(LanceSource);
   expect(await load(new Blob(), ORCSourceLoader)).toBeInstanceOf(ORCSource);
   expect(() => ORCSourceLoader.createDataSource(new Blob(), {})).toThrow('requires async load()');

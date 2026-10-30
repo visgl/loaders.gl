@@ -21,7 +21,7 @@ import {
 import {
   ParquetSource,
   ParquetSourceLoader as ParquetSourceLoaderWithParser
-} from '@loaders.gl/tables/parquet/parquet-source-loader';
+} from '@loaders.gl/tables/parquet-source-loader';
 
 import {getSchemaFromParquetReader} from '../../src/parquet/lib/parsers/get-parquet-schema';
 import {decodeParquetSourceWorkerInput} from '../../src/parquet/lib/parquet-source-worker-decoder';

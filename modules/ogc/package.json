@@ -52,10 +52,10 @@
       "import": "./dist/wms/bundled.js",
       "require": "./dist/wms/bundled.cjs"
     },
-    "./wms/gml-loader": {
-      "types": "./dist/wms/gml-loader.d.ts",
-      "import": "./dist/wms/gml-loader.js",
-      "require": "./dist/wms/gml-loader.cjs"
+    "./gml-loader": {
+      "types": "./dist/gml-loader.js",
+      "import": "./dist/gml-loader.js",
+      "require": "./dist/gml-loader.js"
     },
     "./wms/wmts-capabilities-loader-with-parser": {
       "types": "./dist/wms/wmts-capabilities-loader-with-parser.d.ts",
@@ -67,10 +67,10 @@
       "import": "./dist/stac/index.js",
       "require": "./dist/stac/index.cjs"
     },
-    "./stac/stac-source": {
-      "types": "./dist/stac/stac-source.d.ts",
-      "import": "./dist/stac/stac-source.js",
-      "require": "./dist/stac/stac-source.cjs"
+    "./stac-source": {
+      "types": "./dist/stac-source.js",
+      "import": "./dist/stac-source.js",
+      "require": "./dist/stac-source.js"
     }
   },
   "sideEffects": false,

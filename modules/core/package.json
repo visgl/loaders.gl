@@ -169,10 +169,10 @@
       "import": "./dist/geoarrow/clustering/cluster-index.js",
       "require": "./dist/geoarrow/clustering/cluster-index.cjs"
     },
-    "./geoarrow/cluster-source": {
-      "types": "./dist/geoarrow/clustering/cluster-source.d.ts",
-      "import": "./dist/geoarrow/clustering/cluster-source.js",
-      "require": "./dist/geoarrow/clustering/cluster-source.cjs"
+    "./cluster-source": {
+      "types": "./dist/cluster-source.js",
+      "import": "./dist/cluster-source.js",
+      "require": "./dist/cluster-source.js"
     },
     "./geoarrow/get-representative-point": {
       "types": "./dist/geoarrow/clustering/get-representative-point.d.ts",
@@ -304,15 +304,15 @@
       "import": "./dist/scan/scan-query.js",
       "require": "./dist/scan/scan-query.cjs"
     },
-    "./scan/federated-table-scan-source": {
-      "types": "./dist/scan/federated-table-scan-source.d.ts",
-      "import": "./dist/scan/federated-table-scan-source.js",
-      "require": "./dist/scan/federated-table-scan-source.cjs"
+    "./federated-table-scan-source": {
+      "types": "./dist/federated-table-scan-source.js",
+      "import": "./dist/federated-table-scan-source.js",
+      "require": "./dist/federated-table-scan-source.js"
     },
-    "./scan/vector-table-scan-source": {
-      "types": "./dist/scan/vector-table-scan-source.d.ts",
-      "import": "./dist/scan/vector-table-scan-source.js",
-      "require": "./dist/scan/vector-table-scan-source.cjs"
+    "./vector-table-scan-source": {
+      "types": "./dist/vector-table-scan-source.js",
+      "import": "./dist/vector-table-scan-source.js",
+      "require": "./dist/vector-table-scan-source.js"
     },
     "./wkt": {
       "types": "./dist/wkt/index.d.ts",

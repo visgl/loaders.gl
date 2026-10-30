@@ -74,7 +74,7 @@ for await (const batch of await parseInBatches(chunks, NDGeoJSONLoader, {
 ```
 
 The package root exports a metadata-only loader. For `parseSync`, import
-`NDGeoJSONLoaderWithParser` from `@loaders.gl/tables/json/ndgeojson-loader`.
+`NDGeoJSONLoaderWithParser` from `@loaders.gl/tables/ndgeojson-loader`.
 
 ## Output and options
 

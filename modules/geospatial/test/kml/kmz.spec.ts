@@ -19,7 +19,7 @@ import {
 } from '@loaders.gl/geospatial/kml/index';
 import {ZipWriter, ZipFileSystem} from '@loaders.gl/archives/zip';
 import {validateLoader, validateWriter} from 'test/common/conformance';
-import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kml/kmz-loader';
+import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz-loader';
 
 const SAMPLE_KML = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">

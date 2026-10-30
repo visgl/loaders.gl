@@ -13,7 +13,7 @@ import {
   type ParquetSourceBatch,
   type ParquetRowGroupMetadata
 } from '@loaders.gl/tables/parquet/index';
-import {ParquetSource} from '@loaders.gl/tables/parquet/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 
 import {
   canParquetRowGroupMatch,

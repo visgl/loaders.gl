@@ -31,7 +31,7 @@ export type PLYLoaderOptions = LoaderOptions & {
  * Preloads the parser-bearing PLY loader implementation.
  */
 async function preload() {
-  const {PLYLoaderWithParser} = await import('@loaders.gl/pointclouds/ply/ply-loader');
+  const {PLYLoaderWithParser} = await import('@loaders.gl/pointclouds/ply-loader');
   return PLYLoaderWithParser;
 }
 

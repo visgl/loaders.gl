@@ -67,7 +67,7 @@ CPU-side raster payloads that can be uploaded to textures or colorized client-si
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff/geotiff-source-loader';
+import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff-source-loader';
 
 const source = createDataSource('example.tif', [GeoTIFFSourceLoader], {
   core: {type: 'geotiff'},

@@ -62,7 +62,7 @@ npm install @loaders.gl/core @loaders.gl/pointclouds
 The default TypeScript LAS/LAZ loader does not require the optional `copc` or `laz-perf` npm
 packages. They are declared as `optionalDependencies`, so consumers can omit them with
 `npm install --omit=optional`. Install `copc` explicitly when using the alternative
-`@loaders.gl/pointclouds/las/las-copc-loader` implementation. The LAZPerf and LAZRs loader paths include their
+`@loaders.gl/pointclouds/las-copc-loader` implementation. The LAZPerf and LAZRs loader paths include their
 vendored runtimes.
 
 ## Loaders and Writers

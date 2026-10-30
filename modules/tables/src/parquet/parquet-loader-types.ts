@@ -19,7 +19,7 @@ export type ParquetLoaderOptions = SharedParquetLoaderOptions;
 
 /** Preloads the parser-bearing TypeScript Parquet loader implementation. */
 async function preloadParquetLoader() {
-  const {ParquetLoaderWithParser} = await import('@loaders.gl/tables/parquet/parquet-loader');
+  const {ParquetLoaderWithParser} = await import('@loaders.gl/tables/parquet-loader');
   return ParquetLoaderWithParser;
 }
 

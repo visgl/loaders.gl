@@ -33,9 +33,9 @@ not separately installable packages.
 
 #### Table and geospatial package consolidation
 
-The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `excel`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv` to retain the former root exports. The `@loaders.gl/tables` root and format subpaths export metadata loaders and writers; import `CSVLoaderWithParser` from `@loaders.gl/tables/csv/csv-loader` for synchronous parsing.
+The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `excel`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv` to retain the former root exports. The `@loaders.gl/tables` root and format subpaths export metadata loaders and writers; import `CSVLoaderWithParser` from `@loaders.gl/tables/csv-loader` for synchronous parsing.
 
-The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` packages have also been removed. Install `@loaders.gl/geospatial` and use matching format subpaths, such as `@loaders.gl/geospatial/kml`, for former package-root APIs. The group root and format subpaths export metadata loaders; import `KMLLoaderWithParser` from `@loaders.gl/geospatial/kml/kml-loader` for synchronous parsing. Other parser, source, writer, and worker entry points have corresponding explicit subpaths in the group packages. Update any hard-coded worker asset URLs to the group package paths.
+The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` packages have also been removed. Install `@loaders.gl/geospatial` and use matching format subpaths, such as `@loaders.gl/geospatial/kml`, for former package-root APIs. The group root and format subpaths export metadata loaders; import `KMLLoaderWithParser` from `@loaders.gl/geospatial/kml-loader` for synchronous parsing. Other parser, source, writer, and worker entry points have corresponding explicit subpaths in the group packages. Update any hard-coded worker asset URLs to the group package paths.
 
 **Schema packages move into core subpaths**
 
@@ -56,7 +56,7 @@ The standalone `@loaders.gl/las`, `@loaders.gl/pcd`, `@loaders.gl/ply`, `@loader
 | `@loaders.gl/gltf` | `@loaders.gl/scene/gltf` |
 | `@loaders.gl/wkt` | `@loaders.gl/geospatial/wkt`, `/wkb`, `/twkb` |
 
-Use parser-bearing loaders from named implementation subpaths such as `@loaders.gl/scene/gltf/gltf-loader` for synchronous parsing. PLY continues to support mesh faces. COPC and Potree stay in tiles-3d; geometry codec utilities stay in core/wkt. Rebuild custom workers and update worker/WASM asset paths to the new owners.
+Use parser-bearing loaders from named implementation subpaths such as `@loaders.gl/scene/gltf-loader` for synchronous parsing. PLY continues to support mesh faces. COPC and Potree stay in tiles-3d; geometry codec utilities stay in core/wkt. Rebuild custom workers and update worker/WASM asset paths to the new owners.
 
 #### Raster package consolidation
 
@@ -143,7 +143,7 @@ The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in 
 `@loaders.gl/ogc` for OGC service protocols and STAC catalogs. Replace imports from
 `@loaders.gl/wms` with `@loaders.gl/ogc/wms`, and imports from `@loaders.gl/stac` with
 `@loaders.gl/ogc/stac`. Parser-bearing implementations remain on named subpaths, such as
-`@loaders.gl/ogc/wms/gml-loader` and `@loaders.gl/ogc/stac/stac-source`.
+`@loaders.gl/ogc/gml-loader` and `@loaders.gl/ogc/stac-source`.
 
 `@loaders.gl/services` now contains provider authentication presets for Mapbox, Google Maps,
 and Cesium ion. ArcGIS remains in `@loaders.gl/arcgis`. OGC loader IDs and option namespaces
@@ -164,7 +164,30 @@ Explicit per-service subpaths export `*WithParser` loaders for synchronous const
 
 #### Archive package imports
 
-Install `@loaders.gl/archives` and replace `@loaders.gl/zip` imports with `@loaders.gl/archives/zip`. Direct parser access moves from `@loaders.gl/zip/zip-loader` to `@loaders.gl/archives/zip/zip-loader`. Import `TarBuilder` from `@loaders.gl/archives/tar`.
+Install `@loaders.gl/archives` and replace `@loaders.gl/zip` imports with `@loaders.gl/archives/zip`. Direct parser access moves from `@loaders.gl/zip/zip-loader` to `@loaders.gl/archives/zip-loader`. Import `TarBuilder` from `@loaders.gl/archives/tar`.
+
+#### Flat loader, writer, and source entrypoints
+
+Format-level entrypoints remain grouped, for example `@loaders.gl/tables/parquet`,
+`@loaders.gl/scene/gltf`, and `@loaders.gl/core/geoarrow`. Named parser, writer, and source
+entrypoints now sit directly under their package name; remove the repeated format directory
+segment from implementation imports:
+
+| Previous import | Replacement |
+| --- | --- |
+| `@loaders.gl/tables/parquet/parquet-loader` | `@loaders.gl/tables/parquet-loader` |
+| `@loaders.gl/geospatial/shapefile/shapefile-loader` | `@loaders.gl/geospatial/shapefile-loader` |
+| `@loaders.gl/pointclouds/las/las-loader` | `@loaders.gl/pointclouds/las-loader` |
+| `@loaders.gl/scene/gltf/gltf-loader` | `@loaders.gl/scene/gltf-loader` |
+| `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
+| `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-source` |
+| `@loaders.gl/archives/zip/zip-loader` | `@loaders.gl/archives/zip-loader` |
+| `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` | `@loaders.gl/tiles/arrow-table-tile-source-loader` |
+| `@loaders.gl/tiles-3d/i3s/i3s-mesh-writer` | `@loaders.gl/tiles-3d/i3s-mesh-writer` |
+| `@loaders.gl/core/scan/vector-table-scan-source` | `@loaders.gl/core/vector-table-scan-source` |
+
+Metadata roots and format-level facades keep their existing paths. Deep implementation helpers
+and worker or schema assets are not part of this entrypoint migration.
 
 #### Geometry and scan utility packages move into core
 
@@ -308,11 +331,11 @@ Package roots expose the primary loader for each format. Alternate backend loade
 are available through implementation subpaths instead of root exports:
 
 ```typescript
-import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las/las-copc-loader';
-import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/las/lazperf-loader';
-import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/las/laz-rs-loader';
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-js-loader';
-import {FastJSONLoader} from '@loaders.gl/tables/json/fast-json-loader';
+import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/lazperf-loader';
+import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/laz-rs-loader';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet-js-loader';
+import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
 ```
 
 These replace the root exports `LASCOPCLoader`, `LAZPerfLoader`, `LAZRsLoader`,
@@ -407,7 +430,7 @@ prefer the default `ZstdDecompressor` if no reference backend is required.
   deterministic sorted paths, a fixed UTC timestamp and automatic ZIP64; exact legacy bytes are
   not preserved. `zip.onUpdate` reports start/completion only.
 - Removed `/bundled` and `/unbundled`. Import metadata `ZipLoader` from the package root;
-  direct parser access is `ZipLoaderWithParser` from `@loaders.gl/archives/zip/zip-loader`.
+  direct parser access is `ZipLoaderWithParser` from `@loaders.gl/archives/zip-loader`.
 - `ZipLoader` returns ArrayBuffer values only and rejects invalid entries instead of placing
   errors in the map. Complete reads verify CRCs. The total decoded file-map default is 64 MiB;
   set `zip.maxTotalDecodedBytes` explicitly for larger maps. The independent per-entry limits
@@ -695,7 +718,7 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 #### Parquet backends and exact integers
 
 - `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoaderWithParser`, or `ParquetJSWriter` instead depending on the backend you want.
-- `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. For the experimental parquetjs backend, import `ParquetJSLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-js-loader` and `ParquetJSWriter` from `@loaders.gl/tables/parquet/parquet-js-writer`.
+- `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. For the experimental parquetjs backend, import `ParquetJSLoaderWithParser` from `@loaders.gl/tables/parquet-js-loader` and `ParquetJSWriter` from `@loaders.gl/tables/parquet-js-writer`.
 - `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or the parser-bearing `ParquetJSLoaderWithParser` for the TypeScript parquetjs implementation.
 - Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetJSWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
 

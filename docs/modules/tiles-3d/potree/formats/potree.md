@@ -105,7 +105,7 @@ CRS conversion is an explicit application step before writing. See
 
 - [PotreeLoader](/docs/modules/tiles-3d/potree/api-reference/potree-loader) parses metadata for both layouts.
   The package root is metadata-only; direct parser access uses
-  `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree/potree-loader`.
+  `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree-loader`.
 - [PotreeSourceLoader](/docs/modules/tiles-3d/potree/api-reference/potree-source-loader) traverses hierarchy
   and decodes requested point tiles. Pass `cloud.js` for 1.x or `metadata.json` for 2.0;
   directory inputs retain the legacy `cloud.js` default.

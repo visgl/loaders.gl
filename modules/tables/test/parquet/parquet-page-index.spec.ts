@@ -10,7 +10,7 @@ import type {ParquetSourceLoaderOptions} from '@loaders.gl/tables/parquet/index'
 import {
   ParquetSource,
   ParquetSourceLoader
-} from '@loaders.gl/tables/parquet/parquet-source-loader';
+} from '@loaders.gl/tables/parquet-source-loader';
 import * as arrow from 'apache-arrow';
 
 import {

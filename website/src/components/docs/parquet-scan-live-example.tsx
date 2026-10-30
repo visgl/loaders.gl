@@ -26,7 +26,7 @@ export function ParquetScanLiveExample(): JSX.Element {
     let mounted = true;
     void (async () => {
       try {
-        const {ParquetSource} = await import('@loaders.gl/tables/parquet/parquet-source-loader');
+        const {ParquetSource} = await import('@loaders.gl/tables/parquet-source-loader');
         const source = new ParquetSource(url, {
           core: {fetch: fetchWithExposedContentRange, worker: false}
         }) as ParquetSource;

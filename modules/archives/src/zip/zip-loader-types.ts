@@ -30,7 +30,7 @@ export const ZipLoader = {
   options: {zip: {maxTotalDecodedBytes: 64n * 1024n * 1024n}},
   /** Loads the parser implementation through its installed package subpath. */
   async preload() {
-    const {ZipLoaderWithParser} = await import('@loaders.gl/archives/zip/zip-loader');
+    const {ZipLoaderWithParser} = await import('@loaders.gl/archives/zip-loader');
     return ZipLoaderWithParser;
   }
 } as const satisfies Loader<ZipFileMap, never, ZipLoaderOptions>;

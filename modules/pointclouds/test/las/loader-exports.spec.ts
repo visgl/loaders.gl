@@ -4,9 +4,9 @@
 
 import {expect, test} from 'vitest';
 import * as lasModule from '@loaders.gl/pointclouds/las';
-import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las/las-copc-loader';
-import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/las/lazperf-loader';
-import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/las/laz-rs-loader';
+import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/lazperf-loader';
+import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/laz-rs-loader';
 
 test('LAS root exposes the primary metadata loader and compatibility alias', () => {
   expect(lasModule.LASLoader.id).toBe('las');

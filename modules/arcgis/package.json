@@ -40,28 +40,28 @@
       "import": "./dist/bundled.js"
     },
     "./arcgis-feature-server-source-loader": {
-      "types": "./dist/arcgis/arcgis-feature-server-source-loader.d.ts",
-      "import": "./dist/arcgis/arcgis-feature-server-source-loader.js"
+      "types": "./dist/arcgis-feature-server-source-loader.js",
+      "import": "./dist/arcgis-feature-server-source-loader.js"
     },
     "./arcgis-image-server-source-loader": {
-      "types": "./dist/arcgis/arcgis-image-server-source-loader.d.ts",
-      "import": "./dist/arcgis/arcgis-image-server-source-loader.js"
+      "types": "./dist/arcgis-image-server-source-loader.js",
+      "import": "./dist/arcgis-image-server-source-loader.js"
     },
     "./arcgis-image-tile-source-loader": {
-      "types": "./dist/arcgis/arcgis-image-tile-source-loader.d.ts",
-      "import": "./dist/arcgis/arcgis-image-tile-source-loader.js"
+      "types": "./dist/arcgis-image-tile-source-loader.js",
+      "import": "./dist/arcgis-image-tile-source-loader.js"
     },
     "./arcgis-map-tile-source-loader": {
-      "types": "./dist/arcgis/arcgis-map-tile-source-loader.d.ts",
-      "import": "./dist/arcgis/arcgis-map-tile-source-loader.js"
+      "types": "./dist/arcgis-map-tile-source-loader.js",
+      "import": "./dist/arcgis-map-tile-source-loader.js"
     },
     "./arcgis-scene-server-source-loader": {
-      "types": "./dist/arcgis/arcgis-scene-server-source-loader.d.ts",
-      "import": "./dist/arcgis/arcgis-scene-server-source-loader.js"
+      "types": "./dist/arcgis-scene-server-source-loader.js",
+      "import": "./dist/arcgis-scene-server-source-loader.js"
     },
     "./arcgis-vector-tile-server-source-loader": {
-      "types": "./dist/arcgis/arcgis-vector-tile-server-source-loader.d.ts",
-      "import": "./dist/arcgis/arcgis-vector-tile-server-source-loader.js"
+      "types": "./dist/arcgis-vector-tile-server-source-loader.js",
+      "import": "./dist/arcgis-vector-tile-server-source-loader.js"
     },
     "./authentication": {
       "types": "./dist/authentication.d.ts",

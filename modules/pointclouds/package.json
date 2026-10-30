@@ -47,15 +47,15 @@
       "import": "./dist/las/index.js",
       "require": "./dist/las/index.cjs"
     },
-    "./las/las-copc-loader-types": {
-      "types": "./dist/las/las-copc-loader-types.d.ts",
-      "import": "./dist/las/las-copc-loader-types.js",
-      "require": "./dist/las/las-copc-loader-types.cjs"
+    "./las-copc-loader-types": {
+      "types": "./dist/las-copc-loader-types.js",
+      "import": "./dist/las-copc-loader-types.js",
+      "require": "./dist/las-copc-loader-types.js"
     },
-    "./las/las-copc-loader": {
-      "types": "./dist/las/las-copc-loader.d.ts",
-      "import": "./dist/las/las-copc-loader.js",
-      "require": "./dist/las/las-copc-loader.cjs"
+    "./las-copc-loader": {
+      "types": "./dist/las-copc-loader.js",
+      "import": "./dist/las-copc-loader.js",
+      "require": "./dist/las-copc-loader.js"
     },
     "./las/las-format": {
       "types": "./dist/las/las-format.d.ts",
@@ -67,40 +67,40 @@
       "import": "./dist/las/las-loader-shared.js",
       "require": "./dist/las/las-loader-shared.cjs"
     },
-    "./las/las-loader-types": {
-      "types": "./dist/las/las-loader-types.d.ts",
-      "import": "./dist/las/las-loader-types.js",
-      "require": "./dist/las/las-loader-types.cjs"
+    "./las-loader-types": {
+      "types": "./dist/las-loader-types.js",
+      "import": "./dist/las-loader-types.js",
+      "require": "./dist/las-loader-types.js"
     },
-    "./las/las-loader": {
-      "types": "./dist/las/las-loader.d.ts",
-      "import": "./dist/las/las-loader.js",
-      "require": "./dist/las/las-loader.cjs"
+    "./las-loader": {
+      "types": "./dist/las-loader.js",
+      "import": "./dist/las-loader.js",
+      "require": "./dist/las-loader.js"
     },
-    "./las/las-writer": {
-      "types": "./dist/las/las-writer.d.ts",
-      "import": "./dist/las/las-writer.js",
-      "require": "./dist/las/las-writer.cjs"
+    "./las-writer": {
+      "types": "./dist/las-writer.js",
+      "import": "./dist/las-writer.js",
+      "require": "./dist/las-writer.js"
     },
-    "./las/laz-rs-loader-types": {
-      "types": "./dist/las/laz-rs-loader-types.d.ts",
-      "import": "./dist/las/laz-rs-loader-types.js",
-      "require": "./dist/las/laz-rs-loader-types.cjs"
+    "./laz-rs-loader-types": {
+      "types": "./dist/laz-rs-loader-types.js",
+      "import": "./dist/laz-rs-loader-types.js",
+      "require": "./dist/laz-rs-loader-types.js"
     },
-    "./las/laz-rs-loader": {
-      "types": "./dist/las/laz-rs-loader.d.ts",
-      "import": "./dist/las/laz-rs-loader.js",
-      "require": "./dist/las/laz-rs-loader.cjs"
+    "./laz-rs-loader": {
+      "types": "./dist/laz-rs-loader.js",
+      "import": "./dist/laz-rs-loader.js",
+      "require": "./dist/laz-rs-loader.js"
     },
-    "./las/lazperf-loader-types": {
-      "types": "./dist/las/lazperf-loader-types.d.ts",
-      "import": "./dist/las/lazperf-loader-types.js",
-      "require": "./dist/las/lazperf-loader-types.cjs"
+    "./lazperf-loader-types": {
+      "types": "./dist/lazperf-loader-types.js",
+      "import": "./dist/lazperf-loader-types.js",
+      "require": "./dist/lazperf-loader-types.js"
     },
-    "./las/lazperf-loader": {
-      "types": "./dist/las/lazperf-loader.d.ts",
-      "import": "./dist/las/lazperf-loader.js",
-      "require": "./dist/las/lazperf-loader.cjs"
+    "./lazperf-loader": {
+      "types": "./dist/lazperf-loader.js",
+      "import": "./dist/lazperf-loader.js",
+      "require": "./dist/lazperf-loader.js"
     },
     "./las/unbundled": {
       "types": "./dist/las/unbundled.d.ts",
@@ -127,20 +127,20 @@
       "import": "./dist/pcd/pcd-format.js",
       "require": "./dist/pcd/pcd-format.cjs"
     },
-    "./pcd/pcd-loader-types": {
-      "types": "./dist/pcd/pcd-loader-types.d.ts",
-      "import": "./dist/pcd/pcd-loader-types.js",
-      "require": "./dist/pcd/pcd-loader-types.cjs"
+    "./pcd-loader-types": {
+      "types": "./dist/pcd-loader-types.js",
+      "import": "./dist/pcd-loader-types.js",
+      "require": "./dist/pcd-loader-types.js"
     },
-    "./pcd/pcd-loader": {
-      "types": "./dist/pcd/pcd-loader.d.ts",
-      "import": "./dist/pcd/pcd-loader.js",
-      "require": "./dist/pcd/pcd-loader.cjs"
+    "./pcd-loader": {
+      "types": "./dist/pcd-loader.js",
+      "import": "./dist/pcd-loader.js",
+      "require": "./dist/pcd-loader.js"
     },
-    "./pcd/pcd-writer": {
-      "types": "./dist/pcd/pcd-writer.d.ts",
-      "import": "./dist/pcd/pcd-writer.js",
-      "require": "./dist/pcd/pcd-writer.cjs"
+    "./pcd-writer": {
+      "types": "./dist/pcd-writer.js",
+      "import": "./dist/pcd-writer.js",
+      "require": "./dist/pcd-writer.js"
     },
     "./pcd/unbundled": {
       "types": "./dist/pcd/unbundled.d.ts",
@@ -167,20 +167,20 @@
       "import": "./dist/ply/ply-format.js",
       "require": "./dist/ply/ply-format.cjs"
     },
-    "./ply/ply-loader-types": {
-      "types": "./dist/ply/ply-loader-types.d.ts",
-      "import": "./dist/ply/ply-loader-types.js",
-      "require": "./dist/ply/ply-loader-types.cjs"
+    "./ply-loader-types": {
+      "types": "./dist/ply-loader-types.js",
+      "import": "./dist/ply-loader-types.js",
+      "require": "./dist/ply-loader-types.js"
     },
-    "./ply/ply-loader": {
-      "types": "./dist/ply/ply-loader.d.ts",
-      "import": "./dist/ply/ply-loader.js",
-      "require": "./dist/ply/ply-loader.cjs"
+    "./ply-loader": {
+      "types": "./dist/ply-loader.js",
+      "import": "./dist/ply-loader.js",
+      "require": "./dist/ply-loader.js"
     },
-    "./ply/ply-writer": {
-      "types": "./dist/ply/ply-writer.d.ts",
-      "import": "./dist/ply/ply-writer.js",
-      "require": "./dist/ply/ply-writer.cjs"
+    "./ply-writer": {
+      "types": "./dist/ply-writer.js",
+      "import": "./dist/ply-writer.js",
+      "require": "./dist/ply-writer.js"
     },
     "./ply/unbundled": {
       "types": "./dist/ply/unbundled.d.ts",

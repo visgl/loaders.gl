@@ -67,4 +67,4 @@ populated local headers. `ZipWriter` delegates to the same native encoder and ad
 
 ## Attributions
 
-`ZipLoader` delegates to the shared native reader, verifies complete-entry CRCs and returns ArrayBuffer values. Its root export is metadata only; direct parser access uses `@loaders.gl/archives/zip/zip-loader`. The ZIP package runtime dependencies are loaders.gl modules only.
+`ZipLoader` delegates to the shared native reader, verifies complete-entry CRCs and returns ArrayBuffer values. Its root export is metadata only; direct parser access uses `@loaders.gl/archives/zip-loader`. The ZIP package runtime dependencies are loaders.gl modules only.

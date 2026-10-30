@@ -6,7 +6,7 @@ import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
-import {ParquetWasmLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-wasm-loader';
+import {ParquetWasmLoaderWithParser} from '@loaders.gl/tables/parquet-wasm-loader';
 
 /** Tiny generated fixture shared by the optional WASM reader conformance cases. */
 let fixture: ArrayBuffer;

@@ -57,6 +57,6 @@ Work in progress
 declarations (2.0), selecting the validator from the declared dataset version. It returns
 `PotreeDatasetMetadata`; inspect `version` before accessing layout-specific fields. The package
 root is metadata-only. Async core parsing preloads the implementation; synchronous parsing uses
-`PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree/potree-loader`.
+`PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree-loader`.
 
 Use [PotreeSourceLoader](./potree-source-loader) for hierarchy traversal and decoded point tiles.

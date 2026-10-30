@@ -116,4 +116,4 @@ Use `ply.pointCloud: true` for incremental vertex batches in ASCII and binary PL
 Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker;
 transferred input buffers remain detached. Self-hosted workers must implement the batch protocol
 and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact.
-The parser-bearing loader is available from `@loaders.gl/pointclouds/ply/ply-loader`.
+The parser-bearing loader is available from `@loaders.gl/pointclouds/ply-loader`.

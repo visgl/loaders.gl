@@ -40,7 +40,7 @@ export type JSONLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing JSON loader implementation. */
 async function preload() {
-  const {JSONLoaderWithParser} = await import('@loaders.gl/tables/json/json-loader');
+  const {JSONLoaderWithParser} = await import('@loaders.gl/tables/json-loader');
   return JSONLoaderWithParser;
 }
 

@@ -87,7 +87,7 @@ export function IcebergScanLiveExample(): JSX.Element {
 
     const runDemo = async (): Promise<void> => {
       try {
-        const {IcebergTableSource} = await import('@loaders.gl/tables/parquet/iceberg-table-source');
+        const {IcebergTableSource} = await import('@loaders.gl/tables/iceberg-table-source');
         const {metadataUrl, metadataVersion} = await resolveIcebergMetadata(selectedTableUrl);
         const source = new IcebergTableSource(metadataUrl, {
           core: {fetch: fetchWithExposedContentRange, worker: false}

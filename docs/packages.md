@@ -261,7 +261,7 @@ npm install @loaders.gl/core @loaders.gl/pointclouds @loaders.gl/scene
 import {parse, parseSync} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply/ply-loader';
+import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply-loader';
 
 const points = await parse(plyBytes, PLYLoader);
 const scene = await parse(gltfBytes, GLTFLoader);
