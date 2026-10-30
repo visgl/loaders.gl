@@ -289,7 +289,8 @@
     },
     "./terrain": {
       "types": "./dist/terrain/index.d.ts",
-      "import": "./dist/terrain/index.js"
+      "import": "./dist/terrain/index.js",
+      "require": "./dist/terrain/index.cjs"
     },
     "./terrain-worker.js": {
       "import": "./dist/terrain-worker.js"
