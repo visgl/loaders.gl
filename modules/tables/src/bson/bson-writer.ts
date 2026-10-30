@@ -11,10 +11,13 @@ import {BSONFormat} from './bson-format';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Options for BSON document writing. */
 export type BSONWriterOptions = WriterOptions & {
+  /** Native BSON encoder options. */
   bson?: EncodeBSONOptions;
 };
 
+/** Native, dependency-free BSON document writer. */
 export const BSONWriter = {
   ...BSONFormat,
   name: 'BSON',
@@ -25,10 +28,12 @@ export const BSONWriter = {
   options: {
     bson: {}
   },
-  async encode(data: Record<string, unknown>, options?: WriterOptions): Promise<ArrayBuffer> {
-    return encodeBSONSync(data, {}); // options
+  /** Encodes one BSON document. */
+  async encode(data: Record<string, unknown>, options?: BSONWriterOptions): Promise<ArrayBuffer> {
+    return encodeBSONSync(data, options?.bson);
   },
-  encodeSync(data: Record<string, unknown>, options?: WriterOptions): ArrayBuffer {
-    return encodeBSONSync(data, {}); // options
+  /** Encodes one BSON document synchronously. */
+  encodeSync(data: Record<string, unknown>, options?: BSONWriterOptions): ArrayBuffer {
+    return encodeBSONSync(data, options?.bson);
   }
 } as const satisfies WriterWithEncoder<Record<string, unknown>, never, BSONWriterOptions>;

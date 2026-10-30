@@ -2,16 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DeserializeOptions} from 'bson';
-import * as BSON from 'bson';
-
-export type ParseBSONOptions = DeserializeOptions & {
-  /**
-   * How to handle files that concatenate multiple BSON documents, such as Mongo dump files.
-   * The default is `error` to avoid silently dropping documents.
-   */
-  concatenatedDocuments?: 'error' | 'first';
-};
+import type {ParseBSONOptions} from '../../bson-types';
+import {decodeBSON} from './decode-bson';
+export type {ParseBSONOptions} from '../../bson-types';
 
 /**
  * Parses a BSON binary payload synchronously.
@@ -21,12 +14,10 @@ export type ParseBSONOptions = DeserializeOptions & {
  */
 export function parseBSONSync(
   value: ArrayBuffer,
-  options?: ParseBSONOptions
+  options: ParseBSONOptions = {}
 ): Record<string, unknown> {
   const documentArrayBuffer = getBSONDocumentArrayBuffer(value, options);
-  const {concatenatedDocuments: _concatenatedDocuments, ...deserializeOptions} = options || {};
-  const parsedData = BSON.deserialize(new Uint8Array(documentArrayBuffer), deserializeOptions);
-  return parsedData;
+  return decodeBSON(new Uint8Array(documentArrayBuffer), options);
 }
 
 /**
@@ -84,7 +75,7 @@ function countConcatenatedBSONDocuments(value: ArrayBuffer): number {
     }
 
     const documentSize = dataView.getInt32(byteOffset, true);
-    if (documentSize <= 0 || byteOffset + documentSize > value.byteLength) {
+    if (documentSize < 5 || byteOffset + documentSize > value.byteLength) {
       return 0;
     }
 

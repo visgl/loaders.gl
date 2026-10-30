@@ -6,7 +6,7 @@ Nuno Job and Isaac Z. Schlueter's Clarinet supplies streaming JSON parsing: [BSD
 
 ironSource's parquetjs and the parquets fork supply the retained [Parquet implementation](./src/parquet/parquetjs): [MIT license](./src/parquet/parquetjs/LICENSE). Hyperparam contributors' hyparquet supplies adapted delta decoders: [source](./src/parquet/parquetjs/codecs/delta.ts), [MIT license](./third-party-licenses/hyparquet-LICENSE). parquet-go inspired documentation, not the retained JavaScript parser license.
 
-Kyle Barron and parquet-wasm contributors supply the optional WebAssembly reader/writer; MongoDB supplies optional js-bson; SheetJS supplies optional xlsx. Those separately installed libraries retain their own licenses. Apache Arrow supplies columnar interchange. Paul Taylor at Graphistry provided extensive technical advice for the Arrow integration.
+Kyle Barron and parquet-wasm contributors supply the optional WebAssembly reader/writer; SheetJS supplies optional xlsx. Those separately installed libraries retain their own licenses. Apache Arrow supplies columnar interchange. Paul Taylor at Graphistry provided extensive technical advice for the Arrow integration.
 
 ## Scope and maintenance
 
@@ -21,3 +21,5 @@ historical ports are identified by retained source and Git history; no upstream
 version is inferred from a current dependency. Keep copyright headers, full
 terms, source/version information and material modification notes when updating.
 Retain this file and the applicable licenses when redistributing bundles or workers.
+
+The BSON codec is an original loaders.gl implementation. MongoDB js-bson supplied historical test fixtures and the serializer used to generate independent wire-reference fixtures; no js-bson runtime code is included.

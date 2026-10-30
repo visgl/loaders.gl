@@ -8,3 +8,6 @@ export {BSONLoader} from './bson-loader-types';
 export {BSONWriter} from './bson-writer';
 export {parseBSONSync} from './lib/parsers/parse-bson';
 export type {ParseBSONOptions} from './lib/parsers/parse-bson';
+export {encodeBSONSync} from './lib/encoders/encode-bson';
+export {BSONObjectId, createBSONValue} from './bson-types';
+export type {BSONTaggedValue, EncodeBSONOptions} from './bson-types';

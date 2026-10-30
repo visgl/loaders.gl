@@ -119,13 +119,39 @@ test.each(['geospatial'])('%s declares SQL.js as an optional peer', packageName 
   expect(manifest.peerDependenciesMeta['sql.js']).toEqual({optional: true});
 });
 
-test.each([
-  ['bson', '4.2.0'],
-  ['xlsx', '^0.18.5']
-])('tables declares %s as optional', (dependency, version) => {
+test.each([['xlsx', '^0.18.5']])('tables declares %s as optional', (dependency, version) => {
   const manifest = JSON.parse(
     fileSystem.readFileSync(path.join(REPOSITORY_ROOT, 'modules/tables/package.json'), 'utf8')
   );
   expect(manifest.dependencies).not.toHaveProperty(dependency);
   expect(manifest.optionalDependencies[dependency]).toBe(version);
+});
+
+test('tables BSON codec does not require an external BSON package', async () => {
+  const manifest = JSON.parse(
+    fileSystem.readFileSync(path.join(REPOSITORY_ROOT, 'modules/tables/package.json'), 'utf8')
+  );
+  for (const dependencies of [
+    manifest.dependencies,
+    manifest.optionalDependencies,
+    manifest.peerDependencies
+  ]) {
+    expect(dependencies).not.toHaveProperty('bson');
+  }
+  const {encodeBSONSync, parseBSONSync} = await import('@loaders.gl/tables/bson');
+  expect(parseBSONSync(encodeBSONSync({value: 'native'}))).toEqual({value: 'native'});
+});
+
+test('native BSON values interoperate between ESM parsers and CommonJS writers', async () => {
+  const esm = await import('@loaders.gl/tables/bson');
+  const requireModule = createRequire(import.meta.url);
+  const commonjs = requireModule(path.join(REPOSITORY_ROOT, 'modules/tables/dist/bson/index.cjs'));
+  const document = {
+    id: new esm.BSONObjectId('0123456789abcdef01234567'),
+    timestamp: esm.createBSONValue({$bsonType: 'timestamp', value: 42n})
+  };
+  const encoded = esm.encodeBSONSync(document);
+  expect(commonjs.encodeBSONSync(document)).toEqual(encoded);
+  expect(esm.encodeBSONSync(commonjs.parseBSONSync(encoded))).toEqual(encoded);
+  expect(commonjs.encodeBSONSync(esm.parseBSONSync(encoded))).toEqual(encoded);
 });

@@ -99,7 +99,6 @@ const vitestConfiguration = getVitestConfig({
         'apache-arrow',
         'apache-arrow/type',
         'brotli/decompress',
-        'bson',
         'copc',
         'crypto-js',
         'd3-dsv',
