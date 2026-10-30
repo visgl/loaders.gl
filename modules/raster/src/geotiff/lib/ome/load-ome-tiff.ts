@@ -12,6 +12,7 @@ import type {OmeTiffSelection} from './ome-indexers';
 
 export const isOmeTiff = (img: GeoTIFFImage) => img.fileDirectory.ImageDescription.includes('<OME');
 
+/** Builds OME pixel sources after removing the TIFF ASCII tag terminator. */
 export async function loadOmeTiff(tiff: GeoTIFF, firstImage: GeoTIFFImage) {
   // Get first image from tiff and inspect OME-XML metadata
   const {
@@ -19,7 +20,8 @@ export async function loadOmeTiff(tiff: GeoTIFF, firstImage: GeoTIFFImage) {
     SubIFDs,
     PhotometricInterpretation: photometricInterpretation
   } = firstImage.fileDirectory;
-  const omexml = fromString(ImageDescription);
+  // TIFF ASCII counts include a terminal NUL; it is not part of the XML document.
+  const omexml = fromString(ImageDescription.replace(/\0+$/, ''));
 
   /*
    * Image pyramids are stored differently between versions of Bioformats.
