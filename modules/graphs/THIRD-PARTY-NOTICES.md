@@ -1,6 +1,6 @@
 # @loaders.gl/graphs: sources and credits
 
-Graph loaders are developed by vis.gl contributors against DOT, GEXF and GraphML format definitions. Separately installed fast-xml-parser supplies XML parsing; Apache Arrow supplies columnar tables.
+Graph loaders are developed by vis.gl contributors against DOT, GEXF and GraphML format definitions. The native @loaders.gl/documents parser supplies XML parsing; Apache Arrow supplies columnar tables.
 
 ## Scope and maintenance
 

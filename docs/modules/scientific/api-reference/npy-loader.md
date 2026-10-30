@@ -9,16 +9,16 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  format="compressed-textures"
-  eyebrow="Textures module · API reference"
+  format="npy"
+  eyebrow="Scientific module · API reference"
   title="Bring a NumPy array into a typed JavaScript pipeline."
   description="NPYLoader handles the compact NumPy array format and returns the typed data together with the header metadata needed to interpret its dimensions and storage order."
   tone="blue"
   meta={['.npy', 'Typed arrays', 'Synchronous decoder']}
   links={[
-    {label: 'Textures module', to: '/docs/modules/textures'},
-    {label: 'Texture data', to: '/docs/specifications/category-texture'},
-    {label: 'Image loaders', to: '/docs/modules/images'}
+    {label: 'Scientific arrays', to: '/docs/modules/scientific'},
+
+    {label: 'NPY format', to: '/docs/modules/scientific/formats/npy'}
   ]}
 />
 
@@ -65,7 +65,7 @@ The `NPYLoader` parses an array from the [NPY format][npy-spec], a lightweight e
 ## Usage
 
 ```typescript
-import {NPYLoader} from '@loaders.gl/images';
+import {NPYLoader} from '@loaders.gl/scientific';
 import {load} from '@loaders.gl/core';
 
 const {data, header} = await load(url, NPYLoader);
@@ -87,3 +87,6 @@ Currently no options are supported for this loader.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+
+For synchronous access, use `NPYLoaderWithParser` from `@loaders.gl/scientific/npy-loader`
+with `parseSync`. The package root exports metadata and preloads the parser for async APIs.

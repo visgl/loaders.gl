@@ -58,7 +58,7 @@ const FORMAT_EXPORTS = {
   'pointclouds/las': ['LASFormat'],
   'tiles/mlt': ['MLTFormat'],
   'tiles/mvt': ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
-  scientific: ['NetCDFFormat'],
+  scientific: ['NetCDFFormat', 'NPYFormat'],
   'scene/obj': ['OBJFormat', 'MTLFormat'],
   'tables/parquet': ['ParquetFormat'],
   'pointclouds/pcd': ['PCDFormat'],
@@ -71,7 +71,6 @@ const FORMAT_EXPORTS = {
     'CompressedTextureFormat',
     'CrunchTextureFormat',
     'RadianceHDRFormat',
-    'NPYFormat',
     'DDSTextureFormat',
     'KTX2BasisTextureFormat'
   ],
@@ -91,6 +90,7 @@ const FORMAT_EXPORTS = {
     'WMSLayerDescriptionFormat'
   ],
   documents: [
+    'JSONFormat',
     'XMLFormat',
     'HTMLFormat',
     'YAMLFormat',

@@ -83,6 +83,7 @@ export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'mlt', label: 'MapLibre Tile', mark: 'MLT', tags: ['geospatial']},
   {slug: 'mvt', label: 'MVT', mark: 'MVT', tags: ['geospatial']},
   {slug: 'netcdf', label: 'NetCDF', logo: 'netcdf-logo.png', logoText: 'NetCDF', logoScale: 1.15, tags: ['geospatial', 'tables']},
+  {slug: 'npy', label: 'NumPy NPY', mark: 'NPY', tags: []},
   {slug: 'obj', label: 'OBJ', mark: 'OBJ', tags: ['meshes']},
   {slug: 'ogc-api', label: 'OGC API Services', ogc: true, tags: ['geospatial', 'services']},
   {slug: 'ows-context', label: 'OWS Context', ogc: true, tags: ['geospatial', 'services']},

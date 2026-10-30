@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Structure', value: 'Nested tags and values'},
     {label: 'Keys', value: 'Optionally uncapitalize tag names'},
     {label: 'Namespaces', value: 'Optionally remove prefixes'},
-    {label: 'Parser', value: 'fast-xml-parser by default'}
+    {label: 'Parser', value: 'Native SAX parser'}
   ]}
 />
 
@@ -75,17 +75,39 @@ Unstructured, untyped data in the form a tree of JavaScrip objects representing 
 
 ## Options
 
-| Option             | Type      | Default | Description                                                                                                                                                                           |
-| ------------------ | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `uncapitalizeKeys` | `boolean` | `false` | XML tags are typically "PascalCase", JavaScript and JSON prefers "camelCase" fields. This setting uncapitalizes all keys in the parsed data (e.g. `ValueList` => `valueList`).        |
-| `removeNSPrefix`   | `boolean` | `false` | XML tags sometimes have namespace prefixes. These namespaces are inconvenient in JavaScript field names and can be stripped by setting this option (e.g. `ogc:Feature` -> `Feature`). |
-| `_parser`          | `string`  | `'fast-xml-parser'` | Experimental. Selects the XML parser implementation. Use `'internal'` to test the loaders.gl internal parser. |
+Pass these as `options.xml`; direct `parseXMLSync(text, options)` accepts the same fields.
 
-Remarks:
+| Option | Default | Behavior |
+| --- | --- | --- |
+| `removeNSPrefix` | `false` | Remove element/attribute prefixes and namespace declarations. |
+| `uncapitalizeKeys` | `false` | Recursively uncapitalize output keys. |
+| `textNodeName` | `'value'` | Field for text accompanying children or attributes. |
+| `arrayPaths` | `[]` | Normalized element paths that always produce arrays, including roots. |
+| `attributeNamePrefix` | `''` | Prefix each attribute field, e.g. `'@_'`. |
+| `attributesGroupName` | unset | Put each element's attributes in this named object. |
+| `ignoreAttributes` | `false` | Omit attributes. |
+| `parseTagValue` | `true` | Convert finite numeric values and lowercase booleans in element text. |
+| `parseAttributeValue` | `false` | Apply scalar conversion to attributes independently. |
+| `trimValues` | `true` | Trim completed text and attribute values; false preserves whitespace. |
+| `processEntities` | `true` | Decode entities; false validates references and preserves spelling. |
+| `htmlEntities` | `false` | Recognize the built-in HTML named-entity set. |
+| `strict` | `true` | Require well-formed XML. HTMLLoader defaults to false. |
+| `maxDepth` | `256` | Maximum element nesting, integer 1–4096. |
 
-- It is possible to pass options to the underlying parser, currently `fast-xml-parser`, however there are no guarantees that loaders.gl will continue to use this underlying parser or continue to support those options.
-- The internal parser is experimental and opt-in. It is intended to eventually replace the default parser, but the default parser remains `fast-xml-parser` until compatibility has been validated.
+XML preserves text across text/CDATA chunks. Repeated children become arrays. Prototype-shaped
+names are ordinary own data fields. Strict parsing rejects malformed documents, multiple roots,
+duplicate attributes, invalid XML characters, and unknown entities. Processing instructions and
+DOCTYPE declarations are ignored; external documents are never fetched, and custom DTD entities
+are not expanded. This is syntax parsing, not schema/DTD validation or namespace-URI validation.
 
-## Attributions
+`validateXML(text)` from `@loaders.gl/documents/xml-parser` returns `true` or an `Error`, using
+the same strict native parser and default nesting budget.
 
-The `XMLLoader` is a wrapper around [`fast-xml-parser`](https://github.com/NaturalIntelligence/fast-xml-parser).
+The old `_fastXML`, `_sax`, and `_parser: 'fast-xml-parser'` options are removed. Migrate the
+supported conversion settings to the native options above. The deprecated `_parser: 'internal'`
+and `'sax'` names both select this same implementation.
+
+## Attribution
+
+The native object conversion layer is maintained by loaders.gl. Its SAX tokenizer derives from
+sax-js through sax-ts and retains the ISC license in the documents package.

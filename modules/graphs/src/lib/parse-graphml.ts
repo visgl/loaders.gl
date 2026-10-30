@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {XMLParser} from 'fast-xml-parser';
+import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
 
 import type {
   GraphData,
@@ -37,13 +37,13 @@ type GraphMLKeyDefinition = {
   lossless: boolean;
 };
 
-/** XML element representation emitted by fast-xml-parser. */
+/** XML element representation emitted by the documents XML parser. */
 type GraphMLObject = Record<string, unknown> & {
   /** Element text content. */
   [XML_TEXT_KEY]?: string;
 };
 
-const graphmlParser = new XMLParser({
+const GRAPHML_XML_OPTIONS = {
   ignoreAttributes: false,
   attributeNamePrefix: XML_ATTRIBUTE_PREFIX,
   textNodeName: XML_TEXT_KEY,
@@ -51,7 +51,7 @@ const graphmlParser = new XMLParser({
   parseAttributeValue: false,
   parseTagValue: false,
   removeNSPrefix: true
-});
+};
 
 /** Accepted GraphML document inputs. */
 export type GraphMLInput = string | ArrayBuffer | Uint8Array;
@@ -64,7 +64,7 @@ export function parseGraphML(
   shape: GraphShape = 'plain-graph-data'
 ): GraphOutput {
   const xmlText = decodeGraphML(graphml);
-  const document = graphmlParser.parse(xmlText) as GraphMLObject;
+  const document = parseXMLSync(xmlText, GRAPHML_XML_OPTIONS) as GraphMLObject;
   const graphmlRoot = getGraphMLRoot(document);
   if (!graphmlRoot) {
     throw new Error('GraphML document does not contain a <graphml> element.');

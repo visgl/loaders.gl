@@ -46,10 +46,7 @@ export function parseCSWRecords(text: string, options?: XMLLoaderOptions): CSWRe
       removeNSPrefix: true,
       uncapitalizeKeys: true,
       arrayPaths: [],
-      _fastXML: {
-        ...options?.xml?._fastXML,
-        parseAttributeValue: true
-      }
+      parseAttributeValue: true
     }
   });
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import {XMLParser, XMLValidator} from 'fast-xml-parser';
+import {parseXMLSync, validateXML} from '@loaders.gl/documents/xml-parser';
 import {UnsupportedTiffEncodingError} from './decode-tiff-samples';
 
 /** Parses small, already-budgeted GDAL XML into explicit image and original-band records. */
@@ -18,17 +18,18 @@ export function parseTiffGDALMetadata(
   const metadata: Record<string, unknown> = {};
   const bandMetadata = Array.from({length: bandCount}, () => ({}) as Record<string, unknown>);
   if (xml !== undefined) {
-    if (XMLValidator.validate(xml) !== true) throw new Error('Invalid TIFF GDAL XML');
+    if (validateXML(xml) !== true) throw new Error('Invalid TIFF GDAL XML');
     if (/<!DOCTYPE/i.test(xml))
       throw new UnsupportedTiffEncodingError('TIFF GDAL XML document type');
-    const parsed = new XMLParser({
+    const parsed = parseXMLSync(xml, {
       ignoreAttributes: false,
       attributeNamePrefix: '',
       parseTagValue: false,
       parseAttributeValue: false,
       trimValues: false,
-      processEntities: false
-    }).parse(xml);
+      processEntities: false,
+      textNodeName: '#text'
+    });
     if (
       !Object.hasOwn(parsed, 'GDALMetadata') ||
       (parsed.GDALMetadata !== '' && typeof parsed.GDALMetadata !== 'object')

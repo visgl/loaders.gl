@@ -103,7 +103,6 @@ const vitestConfiguration = getVitestConfig({
         'crypto-js',
         'd3-dsv',
         'draco3d',
-        'fast-xml-parser',
         'flatbuffers',
         'fuzzer',
         'geotiff',

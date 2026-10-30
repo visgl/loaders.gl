@@ -29,7 +29,7 @@ lineage, rather than every transitive npm dependency.
 | [crypto](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md) | Brian Todd Button’s md5-wasm; jsdom abab; CRC32 inspiration from wqli78; hash integration. |
 | [draco](https://github.com/visgl/loaders.gl/blob/master/modules/draco/THIRD-PARTY-NOTICES.md) | Google Draco 1.5.7 runtimes and adapted Web IDL types. |
 | [geospatial](https://github.com/visgl/loaders.gl/blob/master/modules/geospatial/THIRD-PARTY-NOTICES.md) | Björn Harrtell’s FlatGeobuf; SQL.js/SQLite; original shapefile parsing. Christian Schwarz’s wkx/TWKB; historical Mapbox wellknown; current math.gl codecs. |
-| [graphs](https://github.com/visgl/loaders.gl/blob/master/modules/graphs/THIRD-PARTY-NOTICES.md) | Original graph loaders; fast-xml-parser and Apache Arrow. |
+| [graphs](https://github.com/visgl/loaders.gl/blob/master/modules/graphs/THIRD-PARTY-NOTICES.md) | Original graph loaders; native documents XML parsing and Apache Arrow. |
 | [images](https://github.com/visgl/loaders.gl/blob/master/modules/images/THIRD-PARTY-NOTICES.md) | Karl Cheng’s binary image utilities; Sindre Sorhus and file-type contributors. |
 | [ogc](https://github.com/visgl/loaders.gl/blob/master/modules/ogc/THIRD-PARTY-NOTICES.md) | OGC specifications; Thomas Robinson’s comparison utility; separate OpenLayers fixtures. |
 | [pointclouds](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md) | Uday Verma and Howard Butler’s Plasio; laz-perf, laz-rs and rapidlasso’s LASzip. Filipe Caixeta, Mugen87 and three.js PCDLoader contributors. Wei Meng and three.js PLYLoader contributors. |
@@ -45,7 +45,7 @@ lineage, rather than every transitive npm dependency.
 | [tiles-3d](https://github.com/visgl/loaders.gl/blob/master/modules/tiles-3d/THIRD-PARTY-NOTICES.md) | CesiumJS ports and collaboration; Markus Schütz’s Potree; Connor Manning’s copc.js lineage; Esri I3S and converter contributions. |
 | [traces](https://github.com/visgl/loaders.gl/blob/master/modules/traces/THIRD-PARTY-NOTICES.md) | Trace format communities; Buf protobuf runtime; original parsers. |
 | [video](https://github.com/visgl/loaders.gl/blob/master/modules/video/THIRD-PARTY-NOTICES.md) | Yahoo gifshot; Anthony Dekker’s NeuQuant; Kevin Weiner and Thibault Imbert. |
-| [documents](https://github.com/visgl/loaders.gl/blob/master/modules/documents/THIRD-PARTY-NOTICES.md) | Isaac Schlueter’s sax-js through Maxim Mazurok’s sax-ts; fast-xml-parser. |
+| [documents](https://github.com/visgl/loaders.gl/blob/master/modules/documents/THIRD-PARTY-NOTICES.md) | Isaac Schlueter’s sax-js through Maxim Mazurok’s sax-ts; native document codecs. |
 
 The separately published [tile-converter application](https://github.com/visgl/loaders.gl/blob/master/apps/tile-converter/THIRD-PARTY-NOTICES.md)
 also includes a notice inventory crediting Esri’s development contribution, loaders.gl
@@ -94,8 +94,8 @@ builds on the separately installed deck.gl and luma.gl projects.
   [zarr.js](https://github.com/gzuidhof/zarr.js), and the array and multiscale
   conventions used by the scientific sources.
 - **Isaac Z. Schlueter and sax-js contributors**, through **Maxim Mazurok's sax-ts
-  TypeScript fork**, supplied the retained SAX parser. **Natural Intelligence and
-  fast-xml-parser contributors** supply the alternate XML implementation.
+  TypeScript fork**, supplied the retained SAX tokenizer. Native documents code
+  supplies object conversion and validation.
 
 ## Geospatial formats, vector tiles and terrain
 

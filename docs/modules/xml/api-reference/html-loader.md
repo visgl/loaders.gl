@@ -32,7 +32,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Good fit', value: 'Error messages and simple extraction'},
     {label: 'Output', value: 'An untyped tree of tags and values'},
-    {label: 'Implementation', value: 'XML-style parsing via fast-xml-parser'},
+    {label: 'Implementation', value: 'Native tolerant SAX parsing'},
     {label: 'Boundary', value: 'Not a browser or full HTML parser'}
   ]}
 />
@@ -75,4 +75,6 @@ For options, see the [`XMLLoader`](./xml-loader).
 
 ## Attributions
 
-The `HTMLLoader` is a wrapper around [`fast-xml-parser`](https://github.com/NaturalIntelligence/fast-xml-parser).
+HTMLLoader uses the native documents SAX parser with `strict: false` and `htmlEntities: true`.
+It preserves authored tag/attribute case and tolerates legacy HTML-like markup; it does not implement
+the HTML5 tree-construction algorithm. Use a DOM parser for browser-equivalent HTML semantics.

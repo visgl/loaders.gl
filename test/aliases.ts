@@ -18,6 +18,7 @@ function resolveTestPath(testPath: string): string {
 // NOTE - Replace with a transform of ocular-dev-tools aliases?
 function makeAliases() {
   return {
+    '@loaders.gl/scientific/test': resolveTestPath('./modules/scientific/test'),
     '@loaders.gl/documents/test': resolveTestPath('./modules/documents/test'),
     test: resolveTestPath('./test'),
     '@loaders.gl/tiles-3d/3d-tiles/test': resolveTestPath('./modules/tiles-3d/test/3d-tiles'),

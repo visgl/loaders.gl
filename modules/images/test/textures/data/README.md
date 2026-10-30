@@ -31,10 +31,6 @@ From binomial repository
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#### NPY files
-
-`*.npy` are created from the `create_npy_test_data.py` script. You can run it
-with `python create_npy_test_data.py`.
 
 #### HDR files
 

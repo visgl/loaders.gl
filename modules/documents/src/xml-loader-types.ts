@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ParseXMLOptions} from './lib/parsers/parse-xml';
+import type {ParseXMLOptions} from './xml-options';
 import {XMLFormat} from './xml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -32,7 +32,7 @@ export const XMLLoader = {
   testText: testXMLFile,
   options: {
     xml: {
-      _parser: 'fast-xml-parser',
+      strict: true,
       uncapitalizeKeys: false,
       removeNSPrefix: false,
       textNodeName: 'value',

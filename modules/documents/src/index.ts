@@ -7,7 +7,7 @@ export {XMLLoader} from './xml-loader-types';
 export type {XMLLoaderOptions} from './xml-loader-types';
 export {HTMLLoader} from './html-loader-types';
 export type {HTMLLoaderOptions} from './html-loader-types';
-export type {ParseXMLOptions} from './lib/parsers/parse-xml';
+export type {ParseXMLOptions} from './xml-options';
 export type {SAXParserOptions} from './sax-ts/sax';
 export {YAMLFormat} from './yaml-format';
 export {YAMLLoader} from './yaml-loader-types';
@@ -28,3 +28,7 @@ export type {
   MarkdownBlock,
   MarkdownInline
 } from './markdown-types';
+
+export {JSONLoader} from './json-loader-types';
+export type {JSONLoaderOptions} from './json-loader-types';
+export {JSONFormat} from './json-format';

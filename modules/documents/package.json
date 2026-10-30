@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/documents",
   "version": "5.0.0-beta.1",
-  "description": "XML, HTML, YAML, TOML, BSON, and Markdown document loaders",
+  "description": "Native XML, HTML, JSON, YAML, TOML, BSON, and Markdown document loaders",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -123,6 +123,21 @@
       "types": "./dist/markdown-loader-types.d.ts",
       "import": "./dist/markdown-loader-types.js",
       "require": "./dist/markdown-loader-types.cjs"
+    },
+    "./json-loader": {
+      "types": "./dist/json-loader.d.ts",
+      "import": "./dist/json-loader.js",
+      "require": "./dist/json-loader.cjs"
+    },
+    "./json-loader-types": {
+      "types": "./dist/json-loader-types.d.ts",
+      "import": "./dist/json-loader-types.js",
+      "require": "./dist/json-loader-types.cjs"
+    },
+    "./xml-options": {
+      "types": "./dist/xml-options.d.ts",
+      "import": "./dist/xml-options.js",
+      "require": "./dist/xml-options.cjs"
     }
   },
   "sideEffects": false,
@@ -136,9 +151,6 @@
   "scripts": {
     "pre-build": "npm run build-metadata",
     "build-metadata": "node ../../scripts/build-documents-metadata.mjs"
-  },
-  "dependencies": {
-    "fast-xml-parser": "^5.3.6"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

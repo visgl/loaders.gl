@@ -24,7 +24,12 @@ export function uncapitalizeKeys(object: any): any {
   if (object && typeof object === 'object') {
     const newObject = {};
     for (const [key, value] of Object.entries(object)) {
-      newObject[uncapitalize(key)] = uncapitalizeKeys(value);
+      Object.defineProperty(newObject, uncapitalize(key), {
+        value: uncapitalizeKeys(value),
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
     }
     return newObject;
   }

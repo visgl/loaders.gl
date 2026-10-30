@@ -88,7 +88,8 @@
       "modules/geospatial/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
       "modules/scientific/zarr/formats/zarr",
-      "modules/archives/zip/formats/zip"
+      "modules/archives/zip/formats/zip",
+      "modules/scientific/formats/npy"
     ]
   },
   {
@@ -178,7 +179,7 @@
           "modules/tiles/mvt/api-reference/mvt-loader",
           "modules/tables/json/api-reference/ndgeojson-loader",
           "modules/tables/json/api-reference/ndjson-loader",
-          "modules/textures/api-reference/npy-loader",
+          "modules/scientific/api-reference/npy-loader",
           "modules/scene/obj/api-reference/obj-loader",
           "modules/tables/parquet/api-reference/parquet-loader",
           "modules/traces/api-reference/perfetto-trace-loader",
@@ -706,6 +707,8 @@
         "type": "category",
         "label": "@loaders.gl/scientific",
         "items": [
+          "modules/scientific/README",
+          "modules/scientific/api-reference/npy-loader",
           {
             "type": "category",
             "label": "NetCDF",
@@ -733,6 +736,7 @@
         "label": "@loaders.gl/documents",
         "items": [
           "modules/documents/README",
+          "modules/documents/api-reference/json-loader",
           "modules/documents/api-reference/markdown-loader",
           "modules/config/README",
           "modules/config/api-reference/toml-loader",
