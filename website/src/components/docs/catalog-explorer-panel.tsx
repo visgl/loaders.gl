@@ -38,7 +38,9 @@ export type CatalogExplorerPanelProps = Readonly<{
   /** Called when a record is selected in the results list. */
   onSelectRecord?: (record: unknown) => void;
   /** Opens a resolved asset in a host-provided preview. */
-  onSelectAsset?: (asset: {key: string; href: string}) => void;
+  onSelectAsset?: (asset: {key: string; href: string; view?: 'map'}) => void;
+  /** Checks whether a Parquet asset contains renderable spatial data. */
+  hasMapData?: (asset: {key: string; href: string}, signal: AbortSignal) => Promise<boolean>;
   /** Selected asset content displayed beside the entries. */
   preview?: React.ReactNode;
   /** Identifies a host-requested preview such as the catalog JSON toolbar action. */
@@ -74,6 +76,7 @@ export function CatalogExplorerPanel({
   sourceId,
   onSelectRecord,
   onSelectAsset,
+  hasMapData,
   preview,
   previewAssetHref,
   onClosePreview,
@@ -90,15 +93,17 @@ export function CatalogExplorerPanel({
     /** Fits the workspace beneath the toolbar without adding page scroll. */
     const resizeWorkspace = () => {
       if (!element.getClientRects().length) return;
-      setWorkspaceHeight(Math.max(240, window.innerHeight - (element.getBoundingClientRect().top + window.scrollY) - 24));
+      setWorkspaceHeight(Math.max(240, window.innerHeight - element.getBoundingClientRect().top - 24));
     };
     resizeWorkspace();
     const observer = new ResizeObserver(resizeWorkspace);
     observer.observe(element);
     window.addEventListener('resize', resizeWorkspace);
+    window.addEventListener('scroll', resizeWorkspace, {passive: true});
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', resizeWorkspace);
+      window.removeEventListener('scroll', resizeWorkspace);
     };
   }, [workspace]);
   const [selectedSourceId, setSelectedSourceId] = useState(sourceId || sources[0]?.id || '');
@@ -108,12 +113,45 @@ export function CatalogExplorerPanel({
   const [collections, setCollections] = useState<ReadonlyMap<string, unknown>>(() => new Map());
   const [selectedRecord, setSelectedRecord] = useState<unknown>();
   const [activeAssetHref, setActiveAssetHref] = useState<string>();
+  const [mapSelected, setMapSelected] = useState(false);
+  const [mapAsset, setMapAsset] = useState<{key: string; href: string}>();
+  const userSelectedTab = useRef(false);
+  const hostPreviewHref = useRef(previewAssetHref);
+  hostPreviewHref.current = previewAssetHref;
   const [records, setRecords] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
   const selectedSource = sources.find(source => source.id === selectedSourceId) || sources[0];
   const selectedSourceSource = selectedSource?.source;
   const capabilities = selectedSourceSource?.capabilities;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    userSelectedTab.current = false;
+    setMapAsset(undefined);
+    if (!selectedRecord || !hasMapData) return () => controller.abort();
+    const assets = getRecordAssets(selectedRecord, selectedSourceSource).filter(asset => /\.parquet$/i.test(new URL(asset.href).pathname));
+    void (async () => {
+      for (const asset of assets) {
+        try {
+          if (await hasMapData(asset, controller.signal)) {
+            if (!controller.signal.aborted) {
+              setMapAsset(asset);
+              if (!userSelectedTab.current && !hostPreviewHref.current) {
+                setMapSelected(true);
+                setActiveAssetHref(asset.href);
+                onSelectAsset?.({...asset, view: 'map'});
+              }
+            }
+            return;
+          }
+        } catch {
+          if (controller.signal.aborted) return;
+        }
+      }
+    })();
+    return () => controller.abort();
+  }, [selectedRecord, selectedSourceSource, hasMapData, onSelectAsset]);
 
   useEffect(() => {
     const root = asRecord(asRecord(metadata)?.root);
@@ -128,6 +166,7 @@ export function CatalogExplorerPanel({
     setRecords([]);
     setSelectedRecord(undefined);
     setActiveAssetHref(undefined);
+    setMapSelected(false);
     setMetadata(undefined);
     setCollections(new Map());
     void (async () => {
@@ -199,7 +238,7 @@ export function CatalogExplorerPanel({
   const tableAssetCount = previewAssets.filter(asset =>
     /\.parquet$/i.test(new URL(asset.href).pathname)
   ).length;
-  const activeTabId = activeAssetHref
+  const activeTabId = mapSelected ? `${panelId}-map` : activeAssetHref
     ? `${panelId}-asset-${previewAssets.findIndex(asset => asset.href === activeAssetHref)}`
     : `${panelId}-details`;
   const inspectorOpen = selectedRecord !== undefined || Boolean(preview);
@@ -235,6 +274,7 @@ export function CatalogExplorerPanel({
         ) : null}
         {selectedSource ? (
           <>
+            <CatalogInfo>
             <Metadata>{formatMetadata(metadata)}</Metadata>
             <details>
               <summary>Search filters</summary>
@@ -306,6 +346,7 @@ export function CatalogExplorerPanel({
                 </ApplyButton>
               </Controls>
             </details>
+            </CatalogInfo>
             {error ? <ErrorMessage role="alert">{error}</ErrorMessage> : null}
             <Workspace>
               <EntriesPane $expanded={inspectorOpen}>
@@ -325,6 +366,7 @@ export function CatalogExplorerPanel({
                       onClick={() => {
                         setSelectedRecord(record);
                         setActiveAssetHref(undefined);
+                        setMapSelected(false);
                         onClosePreview?.();
                         onSelectRecord?.(record);
                       }}
@@ -386,6 +428,7 @@ export function CatalogExplorerPanel({
                             onClick={() => {
                               setSelectedRecord(undefined);
                               setActiveAssetHref(undefined);
+                              setMapSelected(false);
                               onClosePreview?.();
                             }}
                           >
@@ -397,6 +440,24 @@ export function CatalogExplorerPanel({
                           aria-label="Entry views"
                           onKeyDown={handleTabKeyDown}
                         >
+                          {mapAsset ? (
+                            <button
+                              type="button"
+                              role="tab"
+                              id={`${panelId}-map`}
+                              aria-controls={`${panelId}-entry-content`}
+                              aria-selected={mapSelected}
+                              tabIndex={mapSelected ? 0 : -1}
+                              onClick={() => {
+                                userSelectedTab.current = true;
+                                setMapSelected(true);
+                                setActiveAssetHref(mapAsset.href);
+                                onSelectAsset?.({...mapAsset, view: 'map'});
+                              }}
+                            >
+                              Map
+                            </button>
+                          ) : null}
                           <button
                             type="button"
                             role="tab"
@@ -405,7 +466,9 @@ export function CatalogExplorerPanel({
                             aria-selected={!activeAssetHref}
                             tabIndex={activeAssetHref ? -1 : 0}
                             onClick={() => {
+                              userSelectedTab.current = true;
                               setActiveAssetHref(undefined);
+                              setMapSelected(false);
                               onClosePreview?.();
                             }}
                           >
@@ -418,9 +481,11 @@ export function CatalogExplorerPanel({
                               key={asset.key}
                               id={`${panelId}-asset-${index}`}
                               aria-controls={`${panelId}-entry-content`}
-                              aria-selected={activeAssetHref === asset.href}
-                              tabIndex={activeAssetHref === asset.href ? 0 : -1}
+                              aria-selected={!mapSelected && activeAssetHref === asset.href}
+                              tabIndex={!mapSelected && activeAssetHref === asset.href ? 0 : -1}
                               onClick={() => {
+                                userSelectedTab.current = true;
+                                setMapSelected(false);
                                 setActiveAssetHref(asset.href);
                                 onSelectAsset?.(asset);
                               }}
@@ -607,7 +672,7 @@ function assetTabTitle(asset: {key: string; href: string}, tableAssetCount: numb
 /** Supports arrow-key and Home/End navigation between entry view tabs. */
 function handleTabKeyDown(event: React.KeyboardEvent<HTMLElement>): void {
   if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)'));
   const index = tabs.indexOf(event.target as HTMLButtonElement);
   const nextIndex =
     event.key === 'Home'
@@ -668,6 +733,8 @@ const Badge = styled.span<{
   $active: boolean;
 }>`border-radius:999px;padding:2px 8px;color:${({$active}) => ($active ? '#067647' : '#7a2e0e')};background:${({$active}) => ($active ? '#ecfdf3' : '#fff4ed')};font-weight:600;`;
 const Metadata = styled.div`color:var(--ifm-color-emphasis-700);font-size:.82rem;margin-bottom:0;`;
+/** Keeps catalog metadata and the collapsed search control on one compact row. */
+const CatalogInfo = styled.div`display:flex;align-items:baseline;gap:8px 20px;flex-wrap:wrap;details{font-size:.82rem;}details[open]{flex-basis:100%;}`;
 const Controls = styled.form`display:flex;gap:10px;align-items:end;flex-wrap:wrap;`;
 const Field = styled.div`display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;`;
 const Label = styled.label`font-size:.78rem;font-weight:600;`;
