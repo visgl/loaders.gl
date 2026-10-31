@@ -90,3 +90,9 @@ selects the shipped ESM asset for module workers. Classic workers, the browser m
 Node.js continue using the classic asset. Without an ESM asset name, a module worker imports the
 supplied URL directly. Libraries that previously relied on `eval` installing globals must provide
 an ESM default or named export instead.
+
+Worker execution, pools, and queues delegate to `@math.gl/core/tasks` from math.gl beta.2.
+The facade retains loaders.gl worker URLs, version checks, library loading, null-worker assets,
+child-process utilities, and transfer-list compatibility (including MessageChannel ports).
+Streaming parsers continue to use `processOnWorkerInBatches` for a stateful session;
+`runTaskInBatches` executes independent tasks. No downstream math.gl patch is required.
