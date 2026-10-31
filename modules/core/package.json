@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "description": "Core loading and writing APIs, workers, schemas, and geometry utilities for loaders.gl",
   "license": "MIT",
   "type": "module",

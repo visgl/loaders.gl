@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/sql",
   "description": "DuckDB and Snowflake SQL data sources and portable SQL predicate parsing",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "license": "MIT",
   "type": "module",
   "publishConfig": {

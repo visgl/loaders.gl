@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "description": "Image, compressed texture, and video loaders with optional Node.js image codecs",
   "license": "MIT",
   "type": "module",

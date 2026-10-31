@@ -73,6 +73,9 @@ jobs:
       - name: Build workers
         run: yarn build-workers
 
+      - name: Build apps
+        run: yarn build-apps
+
       - name: Run Node tests
         run: yarn test-node
 
@@ -233,6 +236,9 @@ jobs:
 
       - name: Build workers
         run: yarn build-workers
+
+      - name: Build apps
+        run: yarn build-apps
 
       - name: Verify embedded package versions
         run: node scripts/check-built-versions.mjs
