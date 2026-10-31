@@ -5446,7 +5446,7 @@ __metadata:
   dependencies:
     "@types/brotli": "npm:^1.3.0"
     brotli: "npm:^1.3.2"
-    compress-utils: "npm:^0.10.1"
+    compress-utils: "npm:^0.12.0"
     fflate: "npm:0.7.5"
     fzstd: "npm:0.1.1"
     hysnappy: "npm:^1.1.1"
@@ -15017,10 +15017,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"compress-utils@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "compress-utils@npm:0.10.1"
-  checksum: 10c0/79647d7d1e607704ddf649f0a9c92559e9dd434cbdeabf1b9c20c31bd69f1453573bff3dc6bcf310ec5e24fab705c0019062656b31f993b541086bad4ea65bc4
+"compress-utils@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "compress-utils@npm:0.12.0"
+  checksum: 10c0/a1e7cc86903d2ebe8a4e0feb0d3a79893148f4b375849f8b81392ba28dda30bad3e859e8b95fec272cdc888aac22b13d765111471a7b463071e77c489a677341
   languageName: node
   linkType: hard
 
