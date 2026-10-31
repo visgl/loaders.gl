@@ -4,8 +4,9 @@ import {QuantizedMeshLoader, QuantizedMeshWorkerLoader} from '@loaders.gl/raster
 import {setLoaderOptions, load} from '@loaders.gl/core';
 const TILE_WITH_EXTENSIONS_URL =
   '@loaders.gl/raster/test/terrain/data/tile-with-extensions.terrain';
-const EXPECTED_TILE_VERTEX_COUNT = typeof window === 'undefined' ? 627 : 781;
-const EXPECTED_TILE_TRIANGLE_COUNT = typeof window === 'undefined' ? 1175 : 1329;
+// Counts encoded in the fixture, before optional skirt geometry is added.
+const EXPECTED_TILE_VERTEX_COUNT = 627;
+const EXPECTED_TILE_TRIANGLE_COUNT = 1175;
 setLoaderOptions({
   _workerType: 'test'
 });
@@ -15,7 +16,7 @@ test('QuantizedMeshLoader#loader objects', async () => {
 });
 test('QuantizedMeshLoader#parse tile-with-extensions', async () => {
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
-    'quantized-mesh': {shape: 'mesh'}
+    'quantized-mesh': {shape: 'mesh', skirtHeight: 0}
   });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
@@ -43,7 +44,7 @@ test('QuantizedMeshWorkerLoader#tile-with-extensions', async () => {
     return;
   }
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshWorkerLoader, {
-    'quantized-mesh': {shape: 'mesh'}
+    'quantized-mesh': {shape: 'mesh', skirtHeight: 0}
   });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
