@@ -4,8 +4,8 @@
 
 import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Map as BaseMap} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import {Map as BaseMap} from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import styled from 'styled-components';
 
 import {luma} from '@luma.gl/core';

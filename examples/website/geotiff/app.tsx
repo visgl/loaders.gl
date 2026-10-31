@@ -20,8 +20,8 @@ import {
   sampleRaster,
   rasterCoordinateToPixel
 } from '@loaders.gl/core/loader-utils';
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import {Map} from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import {
   createDeckFullscreenWidget,
   createDeckStatsWidget

@@ -20,8 +20,8 @@ import {
 } from '@loaders.gl/tables/parquet-dataset-source';
 import type {ParquetPredicate} from '@loaders.gl/tables/parquet/index';
 import type {Table as ArrowTable} from 'apache-arrow';
-import maplibregl from 'maplibre-gl';
-import {Map} from 'react-map-gl';
+import * as maplibregl from 'maplibre-gl';
+import {Map} from 'react-map-gl/maplibre';
 
 import {
   FsqPlacesCatalogProvider,

@@ -16,13 +16,13 @@
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/tiles-3d": "workspace:*",
     "@luma.gl/core": "^9.4.0",
-    "mapbox-gl": "npm:maplibre-gl@^3.6.2",
-    "maplibre-gl": "^6.4.1",
+    "mapbox-gl": "npm:maplibre-gl@^6.16.0",
+    "maplibre-gl": "^6.16.0",
     "prop-types": "^15.7.2",
     "react": "^19.2.5",
     "react-color": "^2.19.3",
     "react-dom": "^19.2.5",
-    "react-map-gl": "^7.1.7",
+    "react-map-gl": "^8.1.3",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
