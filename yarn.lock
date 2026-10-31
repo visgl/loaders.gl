@@ -2796,9 +2796,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@deck.gl-community/panels@npm:^9.4.8":
-  version: 9.4.8
-  resolution: "@deck.gl-community/panels@npm:9.4.8"
+"@deck.gl-community/panels@npm:^9.4.9":
+  version: 9.4.9
+  resolution: "@deck.gl-community/panels@npm:9.4.9"
   dependencies:
     "@probe.gl/stats": "npm:^4.1.1"
     monaco-editor: "npm:^0.53.0"
@@ -2808,13 +2808,13 @@ __metadata:
   peerDependenciesMeta:
     apache-arrow:
       optional: true
-  checksum: 10c0/c7d82e290e16cda8fae153165399448ce65f04ed71b8f5403e9ebdc6b0150f11044499b476d5244b475a2cfe2ca54c369338ba18de66a0a6fd23151e8c04c1f0
+  checksum: 10c0/22dd6db7eef9dd2759d796f43bd31ec8d0a3e07c874a3860532881c407a41aceaf909b19278a4e3ea219f9fa093b17a53821bfd8c7385112e242549b2afecf7d
   languageName: node
   linkType: hard
 
-"@deck.gl-community/react@npm:^9.4.8":
-  version: 9.4.8
-  resolution: "@deck.gl-community/react@npm:9.4.8"
+"@deck.gl-community/react@npm:^9.4.9":
+  version: 9.4.9
+  resolution: "@deck.gl-community/react@npm:9.4.9"
   dependencies:
     boxicons: "npm:^2.1.4"
     preact: "npm:^10.17.0"
@@ -2823,13 +2823,13 @@ __metadata:
     react-dom: "npm:^18.3.1 || ^19.0.0"
   peerDependencies:
     "@deck.gl-community/panels": ~9.4.0-alpha.0
-  checksum: 10c0/6e5b83219fa5e76f6bb4a64d08dad38b2e92e892c445b5c20feb17499cf5c656055ab48d26fe1fe8b9e6c4b8fc8748f8f9e005f7cd7ca19d2a4519dc63591d98
+  checksum: 10c0/cc1dde5e0a5c86ac042d3378e64e104c7cb3d40e512731ef17a647bd9546647450ce0b0aaf5d07d8c864621ea56bbc5b25cbba923a7f0d4e3ea49e9e7f3c74d8
   languageName: node
   linkType: hard
 
-"@deck.gl-community/widgets@npm:^9.4.8":
-  version: 9.4.8
-  resolution: "@deck.gl-community/widgets@npm:9.4.8"
+"@deck.gl-community/widgets@npm:^9.4.9":
+  version: 9.4.9
+  resolution: "@deck.gl-community/widgets@npm:9.4.9"
   dependencies:
     "@probe.gl/stats": "npm:^4.1.1"
     "@turf/helpers": "npm:^6.5.0"
@@ -2837,11 +2837,11 @@ __metadata:
     supercluster: "npm:^8.0.1"
   peerDependencies:
     "@deck.gl-community/panels": ~9.4.0-alpha.0
-    "@deck.gl/core": ~9.4.0
-    "@luma.gl/core": ~9.4.0
-    "@luma.gl/webgl": ~9.4.0
-    "@luma.gl/webgpu": ~9.4.0
-  checksum: 10c0/2c129d4654b0fcace22df88f5c05f79aa564f5c5705e58397b1f8b17951c5177d1a257bef04fc5ed852511f5e83905052d6aead4a065691d09cc2c3339ca4554
+    "@deck.gl/core": ~9.4.1
+    "@luma.gl/core": ~9.4.2
+    "@luma.gl/webgl": ~9.4.2
+    "@luma.gl/webgpu": ~9.4.2
+  checksum: 10c0/4942b3ba447000222ad5eb2edfca0797a6ab81b383c9e49ef947e11a563172d20be97c1ea3f30cac2d7e1921d961bc35b9ffc5ba6ab7ad1a7e41e99a5806259c
   languageName: node
   linkType: hard
 
@@ -13351,7 +13351,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "atmospheric-explorer@workspace:examples/atmospheric-explorer"
   dependencies:
-    "@deck.gl-community/panels": "npm:^9.4.8"
+    "@deck.gl-community/panels": "npm:^9.4.9"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
     "@loaders.gl/core": "workspace:*"
@@ -14756,8 +14756,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "clustering-loaders-example@workspace:examples/website/clustering"
   dependencies:
-    "@deck.gl-community/panels": "npm:^9.4.8"
-    "@deck.gl-community/widgets": "npm:^9.4.8"
+    "@deck.gl-community/panels": "npm:^9.4.9"
+    "@deck.gl-community/widgets": "npm:^9.4.9"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
     "@deck.gl/mapbox": "npm:^9.4.0"
@@ -19219,8 +19219,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "geospatial-loaders-example@workspace:examples/website/geospatial"
   dependencies:
-    "@deck.gl-community/panels": "npm:^9.4.8"
-    "@deck.gl-community/widgets": "npm:^9.4.8"
+    "@deck.gl-community/panels": "npm:^9.4.9"
+    "@deck.gl-community/widgets": "npm:^9.4.9"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
@@ -22733,8 +22733,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "loaders.gl-example-pointcloud-loaders@workspace:examples/website/pointcloud"
   dependencies:
-    "@deck.gl-community/panels": "npm:^9.4.8"
-    "@deck.gl-community/widgets": "npm:^9.4.8"
+    "@deck.gl-community/panels": "npm:^9.4.9"
+    "@deck.gl-community/widgets": "npm:^9.4.9"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/layers": "npm:^9.4.0"
     "@deck.gl/react": "npm:^9.4.0"
@@ -27585,8 +27585,8 @@ __metadata:
     "@algolia/autocomplete-js": "npm:^1.17.0"
     "@algolia/client-search": "npm:^4.26.0"
     "@arcgis/core": "npm:^4.34.8"
-    "@deck.gl-community/panels": "npm:^9.4.8"
-    "@deck.gl-community/react": "npm:^9.4.8"
+    "@deck.gl-community/panels": "npm:^9.4.9"
+    "@deck.gl-community/react": "npm:^9.4.9"
     "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
@@ -31228,8 +31228,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tiles-loaders-example@workspace:examples/website/tiles"
   dependencies:
-    "@deck.gl-community/panels": "npm:^9.4.8"
-    "@deck.gl-community/widgets": "npm:^9.4.8"
+    "@deck.gl-community/panels": "npm:^9.4.9"
+    "@deck.gl-community/widgets": "npm:^9.4.9"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"
     "@deck.gl/geo-layers": "npm:^9.4.0"
