@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LERCData} from '@loaders.gl/raster';
-import {LERCLoader} from '@loaders.gl/raster';
+import {LERCLoader} from '@loaders.gl/raster/lerc-loader-types';
 import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {WCSCapabilities} from './wip/lib/wcs/parse-wcs-capabilities';
