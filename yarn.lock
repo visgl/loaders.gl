@@ -27587,6 +27587,7 @@ __metadata:
     "@arcgis/core": "npm:^4.34.8"
     "@deck.gl-community/panels": "npm:^9.4.9"
     "@deck.gl-community/react": "npm:^9.4.9"
+    "@deck.gl-community/widgets": "npm:^9.4.9"
     "@deck.gl/arcgis": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch"
     "@deck.gl/core": "npm:^9.4.0"
     "@deck.gl/extensions": "npm:^9.4.0"

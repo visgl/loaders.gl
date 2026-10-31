@@ -8,6 +8,7 @@ import {configurePanelEditorWorkers} from './panel-editor-workers';
 import {getCatalogAssetUrl} from './catalog-asset-url';
 import {getCatalogPreviewSchema, getCatalogPreviewMetadata} from './catalog-preview-schema';
 import {CatalogJsonTree} from './catalog-json-tree';
+import {CatalogDeckPreview} from './catalog-deck-preview';
 
 /** An asset selected from a catalog record. */
 export type CatalogPreviewAsset = {
@@ -31,6 +32,8 @@ type AssetPreview = {
   language?: 'json' | 'plaintext';
   /** Total row count declared in the Parquet footer. */
   rowCount?: number;
+  /** Dataset extent from GeoParquet metadata, when present. */
+  bounds?: number[];
   /** Whether the text preview reached its byte limit. */
   truncated?: boolean;
   /** Indicates a size-limited download was needed because range reads were unavailable. */
@@ -48,7 +51,7 @@ export function CatalogAssetPreview({
   autoScroll?: boolean;
 }): React.JSX.Element {
   const assetUrl = getCatalogAssetUrl(asset.href);
-  const [selectedTab, setSelectedTab] = useState<'table' | 'schema'>('table');
+  const [selectedTab, setSelectedTab] = useState<'table' | 'schema' | 'map'>('table');
   const [preview, setPreview] = useState<AssetPreview>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
@@ -75,11 +78,11 @@ export function CatalogAssetPreview({
             maxRows: 50,
             maxColumns: 12
           })
-        : new ArrowSchemaPanel({
+        : selectedTab === 'schema' ? new ArrowSchemaPanel({
             id: `${panelId}-schema`,
             title: 'Fields',
             schema: getCatalogPreviewSchema(preview.table.schema)
-          });
+          }) : undefined;
     }
     return undefined;
   }, [panelId, preview, selectedTab]);
@@ -136,6 +139,9 @@ export function CatalogAssetPreview({
           >
             Table
           </button>
+          <button type="button" aria-pressed={selectedTab === 'map'} onClick={() => setSelectedTab('map')}>
+            Map
+          </button>
           <button
             type="button"
             aria-pressed={selectedTab === 'schema'}
@@ -146,6 +152,7 @@ export function CatalogAssetPreview({
         </div>
       ) : null}
       {contentPanel ? <ExamplePanelHost panel={contentPanel} /> : null}
+      {preview?.table && selectedTab === 'map' ? <CatalogDeckPreview table={preview.table} bounds={preview.bounds} /> : null}
       {preview?.table && selectedTab === 'schema' ? (
         <div key={asset.href}>
           <CatalogJsonTree
@@ -207,7 +214,17 @@ async function readParquetTable(data: string | Blob, signal: AbortSignal): Promi
   try {
     const metadata = await source.getMetadata({signal});
     const columnNames = metadata.schema.fields.slice(0, 12).map(field => field.name);
+    const {getGeometryColumnsFromSchema} = await import('@loaders.gl/core/geoarrow');
+    const geometryColumn = Object.keys(getGeometryColumnsFromSchema(metadata.schema))[0];
+    if (geometryColumn && !columnNames.includes(geometryColumn)) columnNames.push(geometryColumn);
     const preview: AssetPreview = {rowCount: metadata.rowCount};
+    try {
+      const geo = JSON.parse(metadata.keyValueMetadata.geo || '{}');
+      const bounds = geo.columns?.[geo.primary_column]?.bbox;
+      if (Array.isArray(bounds) && bounds.length === 4 && bounds.every(Number.isFinite)) preview.bounds = bounds;
+    } catch {
+      // Extent metadata is optional.
+    }
     for await (const batch of source.read({
       columns: columnNames,
       limit: 50,
