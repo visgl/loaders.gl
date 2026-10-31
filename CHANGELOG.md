@@ -4,6 +4,8 @@
 
 ### Unreleased
 
+- Keep WMS/WCS imports independent of the optional GeoTIFF decoder by loading LERC through its focused raster entry point.
+
 ### v5.0.0-beta.1
 
 - Enable incremental JSON, JSONTable, and NDJSON worker batches with backpressure, decoded-row
