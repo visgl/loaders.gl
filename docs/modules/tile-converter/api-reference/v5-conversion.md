@@ -149,7 +149,7 @@ allowed by the application's content security policy.
 the geographic Float32 rounding/precision budget and verifies oriented triangles, normals,
 and feature-to-geometry ownership after decompression. Set `draco: false` to retain raw
 I3S geometry. Pass `dracoLibraryOptions` to supply the full decoder and encoder runtimes;
-`getDracoLibraryOptions()` from `@loaders.gl/draco/bundled` provides application asset URLs.
+`getDracoLibraryOptions()` from `@loaders.gl/scene/draco-library-options` provides application asset URLs.
 The browser example reuses its bundled full runtime for both archive formats.
 
 Lossy presets, quantization controls, texture compression and broader external-viewer

@@ -20,7 +20,7 @@ afterEach(() => {
 
 test.each([
   ['tiles-3d', 'i3s-content-worker-node.js', ''],
-  ['draco', 'draco-writer-worker-node.cjs', ''],
+  ['scene', 'draco-writer-worker-node.cjs', ''],
   ['images', 'basis-worker-node.cjs', ''],
   ['images', 'basis_encoder.wasm', 'libs']
 ])('dependency installer downloads %s/%s without empty URL segments', async (moduleName, fileName, extraPath) => {
@@ -59,13 +59,13 @@ test('full dependency installation requests published workers and installs the D
   const requestedUrls = vi.mocked(fetchFile).mock.calls.map(([url]) => String(url));
   expect(requestedUrls.filter(url => url.includes('worker-node'))).toEqual([
     `https://unpkg.com/@loaders.gl/tiles-3d@${tileConverterPackage.version}/dist/i3s-content-worker-node.js`,
-    `https://unpkg.com/@loaders.gl/draco@${tileConverterPackage.version}/dist/draco-worker-node.js`,
-    `https://unpkg.com/@loaders.gl/draco@${tileConverterPackage.version}/dist/draco-writer-worker-node.cjs`,
+    `https://unpkg.com/@loaders.gl/scene@${tileConverterPackage.version}/dist/draco-worker-node.js`,
+    `https://unpkg.com/@loaders.gl/scene@${tileConverterPackage.version}/dist/draco-writer-worker-node.cjs`,
     `https://unpkg.com/@loaders.gl/images@${tileConverterPackage.version}/dist/basis-worker-node.cjs`,
     `https://unpkg.com/@loaders.gl/images@${tileConverterPackage.version}/dist/ktx2-basis-writer-worker-node.cjs`
   ]);
   expect(writeFile).toHaveBeenCalledWith(
-    join(process.cwd(), 'modules', 'draco', 'dist'),
+    join(process.cwd(), 'modules', 'scene', 'dist'),
     expect.any(ArrayBuffer),
     'draco-writer-worker-node.cjs'
   );

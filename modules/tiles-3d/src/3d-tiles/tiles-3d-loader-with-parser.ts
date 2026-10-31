@@ -9,7 +9,7 @@ import type {
   LoaderContext
 } from '@loaders.gl/core/loader-utils';
 // / import type { GLTFLoaderOptions } from '@loaders.gl/scene/gltf';
-import type {DracoLoaderOptions} from '@loaders.gl/draco';
+import type {DracoLoaderOptions} from '@loaders.gl/scene';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
 import {GLBLoader, GLTFLoader} from '@loaders.gl/scene/gltf';
 import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';

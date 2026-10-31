@@ -12,7 +12,7 @@ import type {
   TilesetSourceMetadata,
   TilesetSpatialReference
 } from '@loaders.gl/tiles-3d';
-import type {DracoLibraryOptions} from '@loaders.gl/draco/bundled';
+import type {DracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
 import {
   createBrowserTilesetConversionSource,
   selectBrowserTilesetContent,

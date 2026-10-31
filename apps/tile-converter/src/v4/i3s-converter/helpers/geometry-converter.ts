@@ -25,7 +25,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {createRequire} from 'node:module';
 /* @ts-expect-error TS2732: Cannot find module 'node:module' or its corresponding type declarations. */
 
-import {DracoWriterWorker} from '@loaders.gl/draco';
+import {DracoWriterWorker} from '@loaders.gl/scene/draco-writer';
 import {encode, assert} from '@loaders.gl/core';
 import {
   concatenateArrayBuffers,
@@ -1611,10 +1611,10 @@ export async function generateCompressedGeometry(
 function getLocalDracoWriterWorkerUrl(): string {
   try {
     const require = createRequire(import.meta.url);
-    return require.resolve('@loaders.gl/draco/draco-writer-worker-node.cjs');
+    return require.resolve('@loaders.gl/scene/draco-writer-worker-node.cjs');
   } catch {
     // Fall back to monorepo-local path
-    return './modules/draco/dist/draco-writer-worker-node.cjs';
+    return './modules/scene/dist/draco-writer-worker-node.cjs';
   }
 }
 

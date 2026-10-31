@@ -18,7 +18,6 @@
     "@deck.gl/widgets": "^9.4.0",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
-    "@loaders.gl/draco": "workspace:*",
     "@loaders.gl/pointclouds": "workspace:*",
     "@loaders.gl/scene": "workspace:*",
     "@luma.gl/core": "^9.4.0",

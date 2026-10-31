@@ -4,7 +4,7 @@ Scene loaders are developed by vis.gl contributors against OpenUSD/USDZ format d
 
 Benjamin Wasty's [gltf-loader-ts](https://github.com/bwasty/gltf-loader-ts) supplied adapted schema types in [gltf-json-schema.ts](./src/gltf/lib/types/gltf-json-schema.ts): [full MIT license](./third-party-licenses/gltf-loader-ts-LICENSE).
 
-Arseny Kapoulkine and meshoptimizer contributors supply the vendored meshopt decoder 1.3.0: [source/version/checksum](./src/gltf/libs/README.md) and [MIT license](./src/gltf/libs/meshoptimizer-LICENSE.md). Google Draco and Binomial Basis Universal are credited in their owning packages. Khronos and its contributors develop the glTF specification and extensions.
+Arseny Kapoulkine and meshoptimizer contributors supply the vendored meshopt decoder 1.3.0: [source/version/checksum](./src/gltf/libs/README.md) and [MIT license](./src/gltf/libs/meshoptimizer-LICENSE.md). Binomial Basis Universal is credited in the images package. Khronos and its contributors develop the glTF specification and extensions.
 
 Ricardo Cabello (mrdoob) and the three.js contributors supplied the OBJLoader implementation adapted in [parse-obj-meshes.ts](./src/obj/lib/parse-obj-meshes.ts). The port changes integration and output representation for loaders.gl. [Full three.js MIT license](./third-party-licenses/three-LICENSE).
 
@@ -21,3 +21,6 @@ historical ports are identified by retained source and Git history; no upstream
 version is inferred from a current dependency. Keep copyright headers, full
 terms, source/version information and material modification notes when updating.
 Retain this file and the applicable licenses when redistributing bundles or workers.
+## Draco
+
+Google’s [Draco](https://github.com/google/draco) supplies encoding and decoding, including adapted Web IDL types. Vendored runtimes are pinned to 1.5.7; see [versions, sources and checksums](./src/draco/libs/README.md). Retain the [Apache-2.0 license](./src/draco/libs/DRACO-LICENSE) with runtime and worker distributions.

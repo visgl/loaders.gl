@@ -54,7 +54,7 @@ For a detailed specification of the writer object format see the [API reference]
 As an example, to Draco-compress a mesh using the `DracoWriter`:
 
 ```typescript
-import {DracoWriter} from '@loaders.gl/draco';
+import {DracoWriter} from '@loaders.gl/scene/draco-writer';
 import {encode} from '@loaders.gl/core';
 
 const mesh = {

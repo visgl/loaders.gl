@@ -29,7 +29,7 @@ const FORMAT_LANES = [
     detail: 'Compression and GPU-ready delivery underneath the formats',
     tone: 'cyan',
     formats: [
-      {label: 'Draco', to: '/docs/modules/draco/formats/draco'},
+      {label: 'Draco', to: '/docs/modules/scene/draco/formats/draco'},
       {label: 'Meshopt compression', to: '/docs/modules/scene/gltf/formats/gltf#meshopt-compression'},
       {label: 'Basis Universal / KTX2', to: '/docs/modules/images/textures/formats/ktx'}
     ]

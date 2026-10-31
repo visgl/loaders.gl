@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/scene",
   "version": "5.0.0-beta.1",
-  "description": "glTF, GLB, OBJ, MTL, and OpenUSD scene loaders and writers",
+  "description": "glTF, GLB, OBJ, MTL, OpenUSD, and Draco geometry loaders and writers",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -185,6 +185,57 @@
       "types": "./dist/usd-loader-types.d.ts",
       "import": "./dist/usd-loader-types.js",
       "require": "./dist/usd-loader-types.cjs"
+    },
+    "./draco-worker.js": {
+      "import": "./dist/draco-worker.js"
+    },
+    "./draco-worker-node.js": {
+      "import": "./dist/draco-worker-node.js"
+    },
+    "./draco-writer-worker.js": {
+      "import": "./dist/draco-writer-worker.js"
+    },
+    "./draco-writer-worker-node.js": {
+      "import": "./dist/draco-writer-worker-node.cjs",
+      "require": "./dist/draco-writer-worker-node.cjs"
+    },
+    "./draco-writer-worker-node.cjs": {
+      "require": "./dist/draco-writer-worker-node.cjs",
+      "default": "./dist/draco-writer-worker-node.cjs"
+    },
+    "./draco-loader": {
+      "types": "./dist/draco-loader.d.ts",
+      "import": "./dist/draco-loader.js",
+      "require": "./dist/draco-loader.cjs"
+    },
+    "./draco-loader-types": {
+      "types": "./dist/draco-loader-types.d.ts",
+      "import": "./dist/draco-loader-types.js",
+      "require": "./dist/draco-loader-types.cjs"
+    },
+    "./draco-wasm-loader": {
+      "types": "./dist/draco-wasm-loader.d.ts",
+      "import": "./dist/draco-wasm-loader.js",
+      "require": "./dist/draco-wasm-loader.cjs"
+    },
+    "./draco-javascript-loader": {
+      "types": "./dist/draco-javascript-loader.d.ts",
+      "import": "./dist/draco-javascript-loader.js",
+      "require": "./dist/draco-javascript-loader.cjs"
+    },
+    "./draco3d-loader": {
+      "types": "./dist/draco3d-loader.d.ts",
+      "import": "./dist/draco3d-loader.js",
+      "require": "./dist/draco3d-loader.cjs"
+    },
+    "./draco-writer": {
+      "types": "./dist/draco-writer.d.ts",
+      "import": "./dist/draco-writer.js",
+      "require": "./dist/draco-writer.cjs"
+    },
+    "./draco-library-options": {
+      "types": "./dist/draco-library-options.d.ts",
+      "import": "./dist/draco-library-options.js"
     }
   },
   "sideEffects": false,
@@ -197,22 +248,28 @@
     "bin",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
-    "third-party-licenses"
+    "third-party-licenses",
+    "DRACO-README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev && npm run copy-libs-draco && npm run build-draco-workers",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker-obj": "node ../../scripts/build-codec-worker.mjs src/obj/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
     "generate-gltf-schemas": "node scripts/gltf/generate-json-schema.mjs",
-    "copy-libs-gltf": "mkdir -p dist/gltf/libs && cp -rf src/gltf/libs/. dist/gltf/libs/"
+    "copy-libs-gltf": "mkdir -p dist/gltf/libs && cp -rf src/gltf/libs/. dist/gltf/libs/",
+    "copy-libs-draco": "mkdir -p ./dist/libs && cp -rf ./src/draco/libs/. ./dist/libs && node ../../scripts/build-library-modules.mjs scene",
+    "build-draco-workers": "yarn build-draco-loader-worker && yarn build-draco-loader-worker-node && yarn build-draco-writer-worker && yarn build-draco-writer-worker-node",
+    "build-draco-loader-worker": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-worker.ts --outfile=dist/draco-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-draco-loader-worker-node": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-draco-writer-worker": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-draco-writer-worker-node": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "dependencies": {
-    "@loaders.gl/draco": "5.0.0-beta.1",
     "@loaders.gl/images": "5.0.0-beta.1",
     "@math.gl/core": "5.0.0-beta.2",
     "@math.gl/geometry": "5.0.0-beta.2",
@@ -220,5 +277,8 @@
   },
   "devDependencies": {
     "meshoptimizer": "1.3.0"
+  },
+  "optionalDependencies": {
+    "draco3d": "1.5.7"
   }
 }

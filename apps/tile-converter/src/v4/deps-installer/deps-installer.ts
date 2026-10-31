@@ -7,7 +7,7 @@ import {ZipLoader} from '@loaders.gl/archives/zip';
 import {writeFile} from '../lib/utils/file-utils';
 import {join, dirname} from 'path';
 import {ChildProcessProxy} from '@loaders.gl/core/worker-utils';
-import {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from '@loaders.gl/draco';
+import {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from '@loaders.gl/scene';
 import {BASIS_EXTERNAL_LIBRARIES} from '@loaders.gl/images/basis-module-loader';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -45,10 +45,10 @@ export class DepsInstaller {
     await this.installFromNpm('tiles-3d', 'i3s-content-worker-node.js');
 
     console.log('Installing "Draco Loader" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('draco', 'draco-worker-node.js');
+    await this.installFromNpm('scene', 'draco-worker-node.js');
 
     console.log('Installing "Draco Writer" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('draco', 'draco-writer-worker-node.cjs');
+    await this.installFromNpm('scene', 'draco-writer-worker-node.cjs');
 
     console.log('Installing "Basis Loader" worker'); // eslint-disable-line no-console
     await this.installFromNpm('images', 'basis-worker-node.cjs');
@@ -59,19 +59,19 @@ export class DepsInstaller {
     console.log('Installing "Draco decoder" library'); // eslint-disable-line no-console
     await this.installFromUrl(
       DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER],
-      'draco',
+      'scene',
       DRACO_EXTERNAL_LIBRARIES.DECODER
     );
     await this.installFromUrl(
       DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.DECODER_WASM],
-      'draco',
+      'scene',
       DRACO_EXTERNAL_LIBRARIES.DECODER_WASM
     );
 
     console.log('Installing "Draco encoder" library'); // eslint-disable-line no-console
     await this.installFromUrl(
       DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER],
-      'draco',
+      'scene',
       DRACO_EXTERNAL_LIBRARIES.ENCODER
     );
 

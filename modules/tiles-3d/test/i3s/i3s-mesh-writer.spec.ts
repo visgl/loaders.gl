@@ -6,7 +6,7 @@ import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import type {MeshGeometry, Schema} from '@loaders.gl/core/schema';

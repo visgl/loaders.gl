@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DracoBuildOptions, DracoBuilderMesh, DracoEncodingResult} from '@loaders.gl/draco';
-import {encodeDraco} from '@loaders.gl/draco';
+import type {DracoBuildOptions, DracoBuilderMesh, DracoEncodingResult} from '@loaders.gl/scene';
 import type {TypedArray} from '@loaders.gl/core/schema';
 import type {GLTFWriterOptions} from '../../gltf-writer';
 import type {GLTFMeshPrimitive} from '../types/gltf-json-schema';
@@ -63,6 +62,7 @@ export async function compressGLTFWithDraco(
         throw new Error('GLTF Draco writer refuses to replace an existing Draco extension');
       }
       const meshData = getPrimitiveMesh(gltf, primitive);
+      const {encodeDraco} = await import('@loaders.gl/scene/draco-writer');
       const result = await encodeDraco(meshData, {
         core: options.core,
         modules: options.modules,

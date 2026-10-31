@@ -27,6 +27,10 @@ The [release tracker](https://github.com/visgl/loaders.gl/issues/3316) records r
 
 <span id="whats-new" />
 
+### Draco joins scene
+
+Draco geometry support now ships in `@loaders.gl/scene`, with metadata at the root and flat parser, writer, and runtime-helper imports.
+
 ### Native document and scientific codecs
 
 Documents now includes a generic, non-tabular JSON microloader. XML-based loaders share its native
@@ -331,7 +335,7 @@ A minor release that includes:
 
 - `Tile3DLoader` - Ignores unknown Draco3D attributes such as FLOAT64, INT64 and UINT64, when loading from e.g. `.PNTS` files. See [LAS to 3D Tiles conversion](https://cesium.com/blog/2024/03/20/preserving-more-metadata-for-point-clouds-using-3dtiles/).
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 - `DracoLoader` now ignores unsupported attributes such as FLOAT64, INT64, UINT64.
 - `DracoLoader`, `DracoWriter` - Now uses [draco3d `v1.5.7`](https://github.com/google/draco#version-157-release) _decoders_.
@@ -441,7 +445,7 @@ A major release that brings:
 
 - Now uses latest [`apache-arrow` v21](/docs/arrowjs/whats-new#v210).
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 - Decoders upgraded to [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release).
 
@@ -587,7 +591,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 - `GLTFLoader` glTF extension support:
   - [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) - textures can now optionally be processed and removed during load by transforming UV coordinates. Useful if renderer or post processing stage does not have support for this extension.
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 - Now uses the [draco3d `v1.5.5`](https://github.com/google/draco#version-155-release) _decoders_
 - Note: Still uses the draco3d `v1.4.1` _encoder_ to avoid performance regression.
@@ -739,7 +743,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 - Added `getSingleFeature()` function for extracting a single GeoJSON feature from a `BinaryGeometry`
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 - Updated to `draco3d@1.4.1`
 - Supports binary array fields in draco metadata.
@@ -826,7 +830,7 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 - A new module for calculating cryptographic hashes (MD5, SHA256 etc). Provided transforms enables hashes to be calculated incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 - Draco3D libraries are upgraded to version 1.3.6.
 - Draco metadata can now be encoded and decoded.

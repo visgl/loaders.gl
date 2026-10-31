@@ -16,10 +16,10 @@ export type DracoDocsTabId = 'overview' | 'try-it' | 'format' | 'dracoloader' | 
 
 const DRACO_DOCS_TABS: DracoDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/pointclouds/draco'},
-  {id: 'overview', label: 'Overview', href: '/docs/modules/draco/formats/draco'},
-  {id: 'format', label: 'Format', href: '/docs/modules/draco/format'},
-  {id: 'dracoloader', label: 'DracoLoader', href: '/docs/modules/draco/api-reference/draco-loader'},
-  {id: 'dracowriter', label: 'DracoWriter', href: '/docs/modules/draco/api-reference/draco-writer'}
+  {id: 'overview', label: 'Overview', href: '/docs/modules/scene/draco/formats/draco'},
+  {id: 'format', label: 'Format', href: '/docs/modules/scene/draco/format'},
+  {id: 'dracoloader', label: 'DracoLoader', href: '/docs/modules/scene/draco/api-reference/draco-loader'},
+  {id: 'dracowriter', label: 'DracoWriter', href: '/docs/modules/scene/draco/api-reference/draco-writer'}
 ];
 
 /**

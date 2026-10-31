@@ -37,7 +37,7 @@ const FORMAT_EXPORTS = {
     'FlatGeobufFormat',
     'GeoPackageFormat'
   ],
-  draco: ['DracoFormat'],
+  scene: ['DracoFormat'],
   'tables/excel': ['ExcelFormat'],
   'geospatial/flatgeobuf': ['FlatGeobufFormat'],
   'geospatial/geopackage': ['GeoPackageFormat'],

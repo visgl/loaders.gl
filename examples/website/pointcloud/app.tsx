@@ -22,7 +22,7 @@ import {load, loadInBatches} from '@loaders.gl/core';
 import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
 import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {OBJLoader} from '@loaders.gl/scene/obj';
 import {PCDLoader} from '@loaders.gl/pointclouds/pcd';

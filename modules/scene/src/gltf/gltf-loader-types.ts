@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {DracoLoaderOptions} from '@loaders.gl/draco';
+import type {DracoLoaderOptions} from '@loaders.gl/scene/draco-loader-types';
 import {VERSION} from './lib/utils/version';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
 import type {BasisLoaderOptions, TextureLoaderOptions} from '@loaders.gl/images';

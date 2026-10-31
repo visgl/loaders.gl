@@ -7,7 +7,7 @@ import {mkdtemp, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {parse} from '@loaders.gl/core';
-import {DracoLoader, type DracoMesh} from '@loaders.gl/draco';
+import {DracoLoader, type DracoMesh} from '@loaders.gl/scene';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {NodeFile} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';

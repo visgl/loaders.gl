@@ -66,21 +66,6 @@
         "branches": 70
       }
     },
-    "@loaders.gl/draco": {
-      "path": "modules/draco",
-      "browser": {
-        "statements": 37,
-        "lines": 37,
-        "functions": 40,
-        "branches": 25
-      },
-      "merged": {
-        "statements": 36,
-        "lines": 37,
-        "functions": 40,
-        "branches": 25
-      }
-    },
     "@loaders.gl/geospatial": {
       "path": "modules/geospatial",
       "browser": {
@@ -195,7 +180,7 @@
         "modules/scene/src/usd/",
         "modules/scene/src/index.ts"
       ],
-      "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf gates; every scene implementation belongs to one of these gates."
+      "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf and scene/draco gates; every scene implementation belongs to one of these gates."
     },
     "@loaders.gl/scientific": {
       "path": "modules/scientific",
@@ -1479,6 +1464,32 @@
         "functions": 90,
         "branches": 85
       }
+    },
+    "scene/draco": {
+      "path": "modules/scene/src/draco",
+      "browser": {
+        "statements": 37,
+        "lines": 37,
+        "functions": 40,
+        "branches": 25
+      },
+      "merged": {
+        "statements": 36,
+        "lines": 37,
+        "functions": 40,
+        "branches": 25
+      },
+      "owner": "@loaders.gl/scene",
+      "sourcePaths": [
+        "modules/scene/src/draco/",
+        "modules/scene/src/draco-loader.ts",
+        "modules/scene/src/draco-loader-types.ts",
+        "modules/scene/src/draco-wasm-loader.ts",
+        "modules/scene/src/draco-javascript-loader.ts",
+        "modules/scene/src/draco3d-loader.ts",
+        "modules/scene/src/draco-writer.ts",
+        "modules/scene/src/draco-library-options.ts"
+      ]
     }
   }
 }

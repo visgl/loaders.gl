@@ -57,7 +57,7 @@ Load point positions and attributes from survey and 3D scan files. Polygon mesh 
 
 </PackageTile>
 
-<PackageTile formats={[{"slug": "gltf", "to": "/docs/modules/scene/gltf"}, {"slug": "usd", "to": "/docs/modules/scene/usd"}, {"slug": "obj", "to": "/docs/modules/scene/obj"}]}>
+<PackageTile formats={[{"slug": "draco", "to": "/docs/modules/scene/draco"}, {"slug": "gltf", "to": "/docs/modules/scene/gltf"}, {"slug": "usd", "to": "/docs/modules/scene/usd"}, {"slug": "obj", "to": "/docs/modules/scene/obj"}]}>
 
 ### [@loaders.gl/scene](./modules/scene/README.md)
 
@@ -177,14 +177,6 @@ See [texture formats and APIs](./modules/images/textures/README.md) and [video l
 
 </PackageTile>
 
-<PackageTile formats={[{"slug": "draco", "to": "/docs/modules/draco"}]}>
-
-### [@loaders.gl/draco](./modules/draco/README.md)
-
-Decode and encode compressed meshes and point clouds, preserving geometry and associated vertex attributes.
-
-
-</PackageTile>
 
 </PackageGrid>
 

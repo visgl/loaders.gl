@@ -290,7 +290,6 @@ const config = {
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/tables/csv/index': resolve('../modules/tables/src/csv'),
             '@loaders.gl/deck-layers': resolve('../modules/deck-layers/src'),
-            '@loaders.gl/draco': resolve('../modules/draco/src'),
             '@loaders.gl/tables/excel/index': resolve('../modules/tables/src/excel'),
             '@loaders.gl/geospatial/flatgeobuf/index': resolve('../modules/geospatial/src/flatgeobuf'),
             '@loaders.gl/geospatial/geopackage/index': resolve('../modules/geospatial/src/geopackage'),
@@ -412,7 +411,7 @@ const config = {
             tiles: ['mvt', 'mlt', 'pmtiles'],
             'tiles-3d': ['3d-tiles', 'i3s'],
             pointclouds: ['las', 'pcd', 'ply'],
-            scene: ['obj', 'gltf']
+            scene: ['obj', 'gltf', 'draco']
           };
           const pageRedirects = {
             '/docs/modules/textures/api-reference/npy-loader': '/docs/modules/scientific/api-reference/npy-loader',
@@ -439,7 +438,7 @@ const config = {
             '/examples/table/arrow': '/docs/modules/arrow/try-it',
             '/examples/table/bson': '/docs/modules/bson/try-it',
             '/examples/geospatial/csv': '/docs/modules/csv/try-it',
-            '/examples/pointclouds/draco': '/docs/modules/draco/try-it',
+            '/examples/pointclouds/draco': '/docs/modules/scene/draco/try-it',
             '/examples/geospatial/flatgeobuf': '/docs/modules/flatgeobuf/try-it',
             '/examples/geospatial/geopackage': '/docs/modules/geopackage/try-it',
             '/examples/table/json': '/docs/modules/json/try-it',

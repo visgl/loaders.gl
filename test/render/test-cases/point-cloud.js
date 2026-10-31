@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {load, fetchFile, parse, encode} from '@loaders.gl/core';
-import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
+import {DracoWriter} from '@loaders.gl/scene/draco-writer';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
@@ -13,8 +14,8 @@ import {LOADERS_GL_RAW_FIXTURE_URL} from '@loaders.gl/core/constants';
 const LAS_BINARY_URL = '@loaders.gl/pointclouds/las/test/data/indoor.laz';
 
 // Raw point cloud data URLS
-const KITTI_POSITIONS_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin`;
-const KITTI_COLORS_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/draco/test/data/raw-attribute-buffers/lidar-colors.bin`;
+const KITTI_POSITIONS_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/scene/test/draco/data/raw-attribute-buffers/lidar-positions.bin`;
+const KITTI_COLORS_URL = `${LOADERS_GL_RAW_FIXTURE_URL}modules/scene/test/draco/data/raw-attribute-buffers/lidar-colors.bin`;
 
 // Load big cloud only once...
 let kittiPointCloud;

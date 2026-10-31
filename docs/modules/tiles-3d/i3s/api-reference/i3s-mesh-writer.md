@@ -107,7 +107,7 @@ their encoding; geometry, attributes and JSON remain individually GZIP compresse
 
 ```ts
 import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
-import {getDracoLibraryOptions} from '@loaders.gl/draco/bundled';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
 
 const layer = await encodeI3SMeshLayerWithDraco(
   mesh,

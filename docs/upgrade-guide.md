@@ -58,6 +58,10 @@ The standalone `@loaders.gl/las`, `@loaders.gl/pcd`, `@loaders.gl/ply`, `@loader
 
 Use parser-bearing loaders from named implementation subpaths such as `@loaders.gl/scene/gltf-loader` for synchronous parsing. PLY continues to support mesh faces. COPC and Potree stay in tiles-3d; geometry codec utilities stay in core/wkt. Rebuild custom workers and update worker/WASM asset paths to the new owners.
 
+#### Draco moves to scene
+
+`@loaders.gl/draco` has been removed. Import `DracoLoader`, `DracoWorkerLoader`, `DracoFormat` and public Draco types from `@loaders.gl/scene`. Use `@loaders.gl/scene/draco-loader` for `DracoLoaderWithParser`, `/draco-writer` for writers and encoding helpers, and `/draco-library-options` for runtime URLs and bundled library options. Decoder-specific parsers are available at `/draco-wasm-loader`, `/draco-javascript-loader`, and `/draco3d-loader`. Worker files move to the scene package root. Draco options and supported geometry representations are unchanged.
+
 #### Raster package consolidation
 
 `@loaders.gl/geotiff`, `@loaders.gl/lerc`, and `@loaders.gl/terrain` have been removed.
@@ -71,7 +75,7 @@ Install `@loaders.gl/raster` and use its metadata-only root or explicit parser e
 | `@loaders.gl/terrain/heightmap` | `@loaders.gl/raster/terrain/heightmap` |
 
 Direct parser filenames now use `*-loader` and metadata filenames use `*-loader-types`.
-Replace `*-loader-with-parser` imports with their corresponding `@loaders.gl/raster/<format>/*-loader`.
+Replace `*-loader-with-parser` imports with their corresponding `@loaders.gl/raster/*-loader`.
 Use `@loaders.gl/raster/quantized-mesh` for `QuantizedMeshLoaderWithParser`.
 Worker URLs move to the raster package root; the LERC WASM export moves to `raster/lerc/lerc-wasm.wasm`.
 Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends.
@@ -180,6 +184,8 @@ segment from implementation imports:
 | `@loaders.gl/pointclouds/las/las-loader` | `@loaders.gl/pointclouds/las-loader` |
 | `@loaders.gl/scene/gltf/gltf-loader` | `@loaders.gl/scene/gltf-loader` |
 | `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
+| `@loaders.gl/ogc/wms/wmts-capabilities-loader-with-parser` | `@loaders.gl/ogc/wmts-capabilities-loader-with-parser` |
+| `@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser` | `@loaders.gl/tiles-3d/cesium-ion-loader-with-parser` |
 | `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-source` |
 | `@loaders.gl/archives/zip/zip-loader` | `@loaders.gl/archives/zip-loader` |
 | `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` | `@loaders.gl/tiles/arrow-table-tile-source-loader` |
@@ -858,7 +864,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 | `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
 | `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 - `DracoLoader` no longer supports `draco.libraryPath`. Supply `modules: {draco3d}` instead of configuring decoder library paths manually.
 
@@ -1228,7 +1234,7 @@ The foillowing top-level options are deprecated and will be removed in v2.0
 | `uri`                  | `baseUri`                               | Auto-populated when loading from a url-equipped source                    |
 | `fetch`                | N/A                                     | fetch is automatically available to sub-loaders.                          |
 
-### `@loaders.gl/draco`
+### `@loaders.gl/scene`
 
 | Removal        | Replacement   |
 | -------------- | ------------- |

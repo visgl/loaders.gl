@@ -57,10 +57,10 @@
       "import": "./dist/gml-loader.js",
       "require": "./dist/gml-loader.cjs"
     },
-    "./wms/wmts-capabilities-loader-with-parser": {
-      "types": "./dist/wms/wmts-capabilities-loader-with-parser.d.ts",
-      "import": "./dist/wms/wmts-capabilities-loader-with-parser.js",
-      "require": "./dist/wms/wmts-capabilities-loader-with-parser.cjs"
+    "./wmts-capabilities-loader-with-parser": {
+      "types": "./dist/wmts-capabilities-loader-with-parser.d.ts",
+      "import": "./dist/wmts-capabilities-loader-with-parser.js",
+      "require": "./dist/wmts-capabilities-loader-with-parser.cjs"
     },
     "./stac": {
       "types": "./dist/stac/index.d.ts",

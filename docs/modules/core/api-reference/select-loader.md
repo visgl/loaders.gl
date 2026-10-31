@@ -90,7 +90,7 @@ The async `selectLoader` function can identify loaders without extension and mim
 by content sniffing `Blob` and `File` objects (useful when user drags and drops files into your application).
 
 ```typescript
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 
 const blob = new Blob(['DRACO...']); // Illustrative magic-byte prefix
 await selectLoader(blob, [DracoLoader]); // => DracoLoader

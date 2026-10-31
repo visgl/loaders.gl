@@ -9,7 +9,7 @@ import {expect, test} from 'vitest';
 import {coreApi, parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Tiles3DLoader as BundledTiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 const TILE_B3DM_WITH_DRACO_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/143.b3dm';
 const TILESET_URL =

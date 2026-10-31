@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 
 import {beforeEach, expect, test, vi} from 'vitest';
-import {encodeDraco, type DracoEncodingResult} from '@loaders.gl/draco';
+import {type DracoEncodingResult} from '@loaders.gl/scene';
+import {encodeDraco} from '@loaders.gl/scene/draco-writer';
 import type {GLTFWithBuffers} from '../../src/gltf/lib/types/gltf-types';
 import {compressGLTFWithDraco} from '../../src/gltf/lib/encoders/encode-gltf-draco';
 
-vi.mock('@loaders.gl/draco', () => ({encodeDraco: vi.fn()}));
+vi.mock('@loaders.gl/scene/draco-writer', () => ({encodeDraco: vi.fn()}));
 
 const encodeDracoMock = vi.mocked(encodeDraco);
 const ENABLED_OPTIONS = {gltf: {draco: {enabled: true}}};

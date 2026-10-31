@@ -6,7 +6,7 @@ import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {

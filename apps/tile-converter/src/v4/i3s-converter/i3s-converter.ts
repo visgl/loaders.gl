@@ -145,7 +145,7 @@ export default class I3SConverter {
       workerUrl: './modules/images/dist/basis-worker-node.cjs'
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
-    draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
+    draco: {workerUrl: './modules/scene/dist/draco-worker-node.js'},
     modules: {}
   };
   geoidHeightModel: Geoid | null = null;
