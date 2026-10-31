@@ -652,7 +652,7 @@
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-beta.1",
     "@loaders.gl/documents": "5.0.0-beta.1",
-    "@math.gl/geospatial": "5.0.0-beta.1",
+    "@math.gl/geospatial": "5.0.0-beta.2",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0"
   },

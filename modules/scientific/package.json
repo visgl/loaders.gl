@@ -102,8 +102,8 @@
   },
   "dependencies": {
     "@loaders.gl/documents": "5.0.0-beta.1",
-    "@math.gl/core": "5.0.0-beta.1",
-    "@math.gl/geospatial": "5.0.0-beta.1",
+    "@math.gl/core": "5.0.0-beta.2",
+    "@math.gl/geospatial": "5.0.0-beta.2",
     "h5wasm": "^0.10.3",
     "zarr": "^0.5.0",
     "zarrita": "~0.7.1"
