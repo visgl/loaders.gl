@@ -113,8 +113,8 @@ export function CatalogAssetPreview({
 
   return (
     <section ref={panel} aria-label="Asset preview">
-      <h3>Asset preview: {asset.key}</h3>
-      {assetUrl ? (
+      {!asset.view ? <h3>Asset preview: {asset.key}</h3> : null}
+      {assetUrl && !asset.view ? (
         <a href={assetUrl.href} target="_blank" rel="noreferrer">
           Open original asset
         </a>
@@ -123,13 +123,13 @@ export function CatalogAssetPreview({
       {error ? <p role="alert">{error}</p> : null}
       {preview?.schemaTitle ? <p>Validation: {preview.schemaTitle}</p> : null}
       {preview?.truncated ? <p>Showing the first 256 KiB.</p> : null}
-      {preview?.table ? (
+      {preview?.table && !asset.view ? (
         <p>
           Showing {preview.table.numRows} of {preview.rowCount?.toLocaleString()} rows, first{' '}
           {preview.table.numCols} columns.
         </p>
       ) : null}
-      {preview?.downloaded ? (
+      {preview?.downloaded && !asset.view ? (
         <p>Range reads were unavailable; preview downloaded this file (maximum 16 MiB).</p>
       ) : null}
       {preview?.table && !asset.view ? (
@@ -151,7 +151,7 @@ export function CatalogAssetPreview({
         </div>
       ) : null}
       {contentPanel ? <ExamplePanelHost panel={contentPanel} /> : null}
-      {preview?.table && selectedTab === 'map' ? <CatalogDeckPreview table={preview.table} bounds={preview.bounds} /> : null}
+      {preview?.table && selectedTab === 'map' ? <CatalogDeckPreview table={preview.table} bounds={preview.bounds} overlay={<>{preview.table.numRows} / {preview.rowCount?.toLocaleString()} rows · {assetUrl ? <a href={assetUrl.href} target="_blank" rel="noreferrer">Asset</a> : null}</>} /> : null}
       {preview?.table && selectedTab === 'schema' ? (
         <div key={asset.href}>
           <CatalogJsonTree
@@ -202,6 +202,21 @@ async function readParquetPreview(url: string, signal: AbortSignal): Promise<Ass
       await reader.cancel();
     }
     return {...(await readParquetTable(new Blob(chunks), signal)), downloaded: true};
+  }
+}
+
+/** Determines whether a bounded Parquet preview has a geometry or coordinate pair. */
+export async function hasCatalogMapData(asset: CatalogPreviewAsset, signal: AbortSignal): Promise<boolean> {
+  const preview = await readParquetPreview(asset.href, signal);
+  const table = preview.table;
+  if (!table) return false;
+  const {getGeoArrowGeometryColumn} = await import('@loaders.gl/deck-layers');
+  try {
+    getGeoArrowGeometryColumn(table);
+    return true;
+  } catch {
+    const names = table.schema.fields.map(field => field.name);
+    return names.some(name => /^(lon|longitude)$/i.test(name)) && names.some(name => /^(lat|latitude)$/i.test(name));
   }
 }
 

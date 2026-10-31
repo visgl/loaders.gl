@@ -39,6 +39,8 @@ export type CatalogExplorerPanelProps = Readonly<{
   onSelectRecord?: (record: unknown) => void;
   /** Opens a resolved asset in a host-provided preview. */
   onSelectAsset?: (asset: {key: string; href: string; view?: 'map'}) => void;
+  /** Checks whether a Parquet asset contains renderable spatial data. */
+  hasMapData?: (asset: {key: string; href: string}, signal: AbortSignal) => Promise<boolean>;
   /** Selected asset content displayed beside the entries. */
   preview?: React.ReactNode;
   /** Identifies a host-requested preview such as the catalog JSON toolbar action. */
@@ -74,6 +76,7 @@ export function CatalogExplorerPanel({
   sourceId,
   onSelectRecord,
   onSelectAsset,
+  hasMapData,
   preview,
   previewAssetHref,
   onClosePreview,
@@ -111,12 +114,33 @@ export function CatalogExplorerPanel({
   const [selectedRecord, setSelectedRecord] = useState<unknown>();
   const [activeAssetHref, setActiveAssetHref] = useState<string>();
   const [mapSelected, setMapSelected] = useState(false);
+  const [mapAsset, setMapAsset] = useState<{key: string; href: string}>();
   const [records, setRecords] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
   const selectedSource = sources.find(source => source.id === selectedSourceId) || sources[0];
   const selectedSourceSource = selectedSource?.source;
   const capabilities = selectedSourceSource?.capabilities;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setMapAsset(undefined);
+    if (!selectedRecord || !hasMapData) return () => controller.abort();
+    const assets = getRecordAssets(selectedRecord, selectedSourceSource).filter(asset => /\.parquet$/i.test(new URL(asset.href).pathname));
+    void (async () => {
+      for (const asset of assets) {
+        try {
+          if (await hasMapData(asset, controller.signal)) {
+            if (!controller.signal.aborted) setMapAsset(asset);
+            return;
+          }
+        } catch {
+          if (controller.signal.aborted) return;
+        }
+      }
+    })();
+    return () => controller.abort();
+  }, [selectedRecord, selectedSourceSource, hasMapData]);
 
   useEffect(() => {
     const root = asRecord(asRecord(metadata)?.root);
@@ -203,7 +227,6 @@ export function CatalogExplorerPanel({
   const tableAssetCount = previewAssets.filter(asset =>
     /\.parquet$/i.test(new URL(asset.href).pathname)
   ).length;
-  const mapAsset = previewAssets.find(asset => /\.parquet$/i.test(new URL(asset.href).pathname));
   const activeTabId = mapSelected ? `${panelId}-map` : activeAssetHref
     ? `${panelId}-asset-${previewAssets.findIndex(asset => asset.href === activeAssetHref)}`
     : `${panelId}-details`;
@@ -240,6 +263,7 @@ export function CatalogExplorerPanel({
         ) : null}
         {selectedSource ? (
           <>
+            <CatalogInfo>
             <Metadata>{formatMetadata(metadata)}</Metadata>
             <details>
               <summary>Search filters</summary>
@@ -311,6 +335,7 @@ export function CatalogExplorerPanel({
                 </ApplyButton>
               </Controls>
             </details>
+            </CatalogInfo>
             {error ? <ErrorMessage role="alert">{error}</ErrorMessage> : null}
             <Workspace>
               <EntriesPane $expanded={inspectorOpen}>
@@ -404,6 +429,23 @@ export function CatalogExplorerPanel({
                           aria-label="Entry views"
                           onKeyDown={handleTabKeyDown}
                         >
+                          {mapAsset ? (
+                            <button
+                              type="button"
+                              role="tab"
+                              id={`${panelId}-map`}
+                              aria-controls={`${panelId}-entry-content`}
+                              aria-selected={mapSelected}
+                              tabIndex={mapSelected ? 0 : -1}
+                              onClick={() => {
+                                setMapSelected(true);
+                                setActiveAssetHref(mapAsset.href);
+                                onSelectAsset?.({...mapAsset, view: 'map'});
+                              }}
+                            >
+                              Map
+                            </button>
+                          ) : null}
                           <button
                             type="button"
                             role="tab"
@@ -419,26 +461,6 @@ export function CatalogExplorerPanel({
                           >
                             Details
                           </button>
-                          {onSelectAsset ? (
-                            <button
-                              type="button"
-                              role="tab"
-                              id={`${panelId}-map`}
-                              aria-controls={`${panelId}-entry-content`}
-                              aria-selected={mapSelected}
-                              tabIndex={mapSelected ? 0 : -1}
-                              disabled={!mapAsset}
-                              title={mapAsset ? 'Preview the first Parquet asset' : 'No Parquet asset is available for map preview'}
-                              onClick={() => {
-                                if (!mapAsset) return;
-                                setMapSelected(true);
-                                setActiveAssetHref(mapAsset.href);
-                                onSelectAsset?.({...mapAsset, view: 'map'});
-                              }}
-                            >
-                              Map
-                            </button>
-                          ) : null}
                           {previewAssets.map((asset, index) => (
                             <button
                               type="button"
@@ -697,6 +719,8 @@ const Badge = styled.span<{
   $active: boolean;
 }>`border-radius:999px;padding:2px 8px;color:${({$active}) => ($active ? '#067647' : '#7a2e0e')};background:${({$active}) => ($active ? '#ecfdf3' : '#fff4ed')};font-weight:600;`;
 const Metadata = styled.div`color:var(--ifm-color-emphasis-700);font-size:.82rem;margin-bottom:0;`;
+/** Keeps catalog metadata and the collapsed search control on one compact row. */
+const CatalogInfo = styled.div`display:flex;align-items:baseline;gap:8px 20px;flex-wrap:wrap;details{font-size:.82rem;}details[open]{flex-basis:100%;}`;
 const Controls = styled.form`display:flex;gap:10px;align-items:end;flex-wrap:wrap;`;
 const Field = styled.div`display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;`;
 const Label = styled.label`font-size:.78rem;font-weight:600;`;

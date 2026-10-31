@@ -84,7 +84,8 @@ test('keeps entries and long previews bounded and clears details when the source
   const props = {
     sources: [{id: 'fixture', title: 'Fixture catalog', source}],
     onCatalogTitle: vi.fn(),
-    onSelectAsset: vi.fn()
+    onSelectAsset: vi.fn(),
+    hasMapData: vi.fn(async () => true)
   };
   try {
     await act(async () => root.render(React.createElement(CatalogExplorerPanel, props)));
@@ -124,25 +125,26 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(inspector.textContent).toContain('Human-readable geoid preview');
     expect(inspector.textContent).toContain('CC-BY-4.0 Human-readable geoid preview');
     expect(inspector.querySelector('strong')?.textContent).toBe('Human-readable geoid preview');
+    await expect.poll(() => inspector.querySelector('[role="tab"]')?.textContent).toBe('Map');
     const tabs = Array.from(inspector.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
     expect(tabs.map(tab => tab.textContent)).toEqual([
-      'Details',
       'Map',
+      'Details',
       'Table',
       'Manifest',
       'Attribution'
     ]);
     await act(async () =>
-      tabs[0].dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true}))
+      tabs[1].dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft', bubbles: true}))
     );
-    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
     expect(props.onSelectAsset).toHaveBeenCalledWith({
       key: 'data',
       href: 'https://example.org/data.parquet',
       view: 'map'
     });
     await act(async () => tabs[2].click());
-    expect(tabs[1].getAttribute('aria-selected')).toBe('false');
+    expect(tabs[0].getAttribute('aria-selected')).toBe('false');
     expect(tabs[2].getAttribute('aria-selected')).toBe('true');
     expect(props.onSelectAsset).toHaveBeenLastCalledWith({
       key: 'data',
@@ -198,6 +200,46 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(standaloneInspector.textContent).not.toContain('Back to entry details');
     await act(async () => standaloneInspector.querySelector('button')!.click());
     expect(onClosePreview).toHaveBeenCalledOnce();
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
+test('does not show a map tab for a table without spatial data', async () => {
+  const source = {
+    capabilities: {search: true},
+    getMetadata: async () => ({mode: 'static', root: {title: 'Fixture'}}),
+    search: async function* () {
+      yield {id: 'table', assets: {data: {href: 'https://example.org/table.parquet'}}};
+    }
+  } as unknown as CatalogExplorerSource['source'];
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const hasMapData = vi.fn(async () => false);
+  try {
+    await act(async () =>
+      root.render(
+        React.createElement(CatalogExplorerPanel, {
+          sources: [{id: 'fixture', title: 'Fixture', source}],
+          onSelectAsset: vi.fn(),
+          hasMapData
+        })
+      )
+    );
+    await expect
+      .poll(() => container.querySelector('[aria-label="Catalog entries"] button'))
+      .not.toBeNull();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Catalog entries"] button')!.click()
+    );
+    await expect.poll(() => hasMapData.mock.calls.length).toBe(1);
+    expect(
+      Array.from(container.querySelectorAll('[role="tab"]')).map(tab => tab.textContent)
+    ).toEqual(['Details', 'Table']);
   } finally {
     await act(async () => root.unmount());
     container.remove();

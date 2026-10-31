@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {STACSource} from '@loaders.gl/ogc/stac-source';
 
 import {CatalogExplorerPanel} from './catalog-explorer-panel';
-import {CatalogAssetPreview, type CatalogPreviewAsset} from './catalog-asset-preview';
+import {CatalogAssetPreview, hasCatalogMapData, type CatalogPreviewAsset} from './catalog-asset-preview';
 import styled from 'styled-components';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -72,6 +72,7 @@ export function STACCatalogLiveExample({
           title="STAC catalog explorer"
           onCatalogTitle={setCatalogTitle}
           onSelectAsset={setSelectedAsset}
+          hasMapData={hasCatalogMapData}
           onSelectRecord={() => setSelectedAsset(undefined)}
           preview={
             selectedAsset ? (
@@ -95,9 +96,9 @@ export function STACCatalogLiveExample({
 
 /** Keeps catalog selection compact above the bounded explorer workspace. */
 const CatalogControls = styled.div`
-  display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2fr) auto;gap:10px;
-  align-items:end;padding:12px;border:1px solid var(--ifm-color-emphasis-300);border-radius:8px;
-  label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;min-width:0;margin:0;}
+  display:grid;grid-template-columns:minmax(230px,1fr) minmax(0,2fr) auto;gap:8px;
+  align-items:center;padding:6px 8px;border:1px solid var(--ifm-color-emphasis-300);border-radius:8px;
+  label{display:flex;align-items:center;gap:6px;font-size:.78rem;min-width:0;margin:0;white-space:nowrap;}
   input,select{width:100%;min-width:0;padding:6px;border:1px solid var(--ifm-color-emphasis-300);border-radius:4px;background:var(--ifm-background-color);color:inherit;}
   button{font-size:.78rem;padding:6px;}
   @media(max-width:700px){grid-template-columns:1fr auto;label:nth-child(2){grid-row:2;grid-column:1/-1;}}

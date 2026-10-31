@@ -5,7 +5,7 @@ import type {DeckPanel} from '@deck.gl-community/widgets';
 import {ExamplePanelHost} from './example-panel-host';
 
 /** Renders a bounded GeoParquet sample in a DeckPanel using a shared Deck device. */
-export function CatalogDeckPreview({table, bounds}: {table: Table; bounds?: number[]}): React.JSX.Element {
+export function CatalogDeckPreview({table, bounds, overlay}: {table: Table; bounds?: number[]; overlay?: React.ReactNode}): React.JSX.Element {
   const root = useRef<HTMLCanvasElement>(null);
   const panelId = useId().replace(/:/g, '');
   const [panel, setPanel] = useState<DeckPanel>();
@@ -73,7 +73,7 @@ export function CatalogDeckPreview({table, bounds}: {table: Table; bounds?: numb
           viewState: {[rootView]: camera}, layers: [],
           onLoad: () => {
             if (cancelled || !deck) return;
-            mapPanel = new DeckPanel({id: `${panelId}-panel`, title: 'Map', deck, sceneProps: scene(), height: 300});
+            mapPanel = new DeckPanel({id: `${panelId}-panel`, title: '', deck, sceneProps: scene(), height: 300});
             setPanel(mapPanel);
           },
           onError: (deckError: Error) => { if (!cancelled) setError(deckError.message); }
@@ -85,9 +85,9 @@ export function CatalogDeckPreview({table, bounds}: {table: Table; bounds?: numb
     return () => { cancelled = true; deck?.finalize(); };
   }, [table, bounds, panelId]);
 
-  return <>
+  return <div style={{position: 'relative'}}>
     <canvas ref={root} id={`${panelId}-canvas`} width={1} height={1} style={{position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none'}} />
     {error ? <p role="alert">{error}</p> : panel ? <ExamplePanelHost panel={panel} /> : <p role="status">Preparing map…</p>}
-    <p>The map shows only the loaded sample, without a basemap.</p>
-  </>;
+    {panel && overlay ? <div style={{position: 'absolute', top: 16, right: 12, zIndex: 2, padding: '4px 7px', borderRadius: 4, background: 'var(--ifm-background-color)', fontSize: 12}}>{overlay}</div> : null}
+  </div>;
 }
