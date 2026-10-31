@@ -307,3 +307,52 @@ test('does not override an explicitly selected tab when map detection finishes',
     vi.unstubAllGlobals();
   }
 });
+
+test('does not replace a host preview when map detection finishes', async () => {
+  let resolveMap!: (value: boolean) => void;
+  const pending = new Promise<boolean>(resolve => {
+    resolveMap = resolve;
+  });
+  const source = {
+    capabilities: {search: true},
+    getMetadata: async () => ({mode: 'static', root: {title: 'Fixture'}}),
+    search: async function* () {
+      yield {id: 'table', assets: {data: {href: 'https://example.org/table.parquet'}}};
+    }
+  } as unknown as CatalogExplorerSource['source'];
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const onSelectAsset = vi.fn();
+  const hasMapData = () => pending;
+  const props = {sources: [{id: 'fixture', title: 'Fixture', source}], onSelectAsset, hasMapData};
+  try {
+    await act(async () => root.render(React.createElement(CatalogExplorerPanel, props)));
+    await expect
+      .poll(() => container.querySelector('[aria-label="Catalog entries"] button'))
+      .not.toBeNull();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Catalog entries"] button')!.click()
+    );
+    await act(async () =>
+      root.render(
+        React.createElement(CatalogExplorerPanel, {
+          ...props,
+          previewAssetHref: 'https://example.org/catalog.json',
+          preview: React.createElement('div', null, 'Catalog JSON')
+        })
+      )
+    );
+    await act(async () => {
+      resolveMap(true);
+      await pending;
+    });
+    expect(container.textContent).toContain('Catalog JSON');
+    expect(onSelectAsset).not.toHaveBeenCalled();
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});

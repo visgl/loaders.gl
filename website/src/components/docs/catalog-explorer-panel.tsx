@@ -116,6 +116,8 @@ export function CatalogExplorerPanel({
   const [mapSelected, setMapSelected] = useState(false);
   const [mapAsset, setMapAsset] = useState<{key: string; href: string}>();
   const userSelectedTab = useRef(false);
+  const hostPreviewHref = useRef(previewAssetHref);
+  hostPreviewHref.current = previewAssetHref;
   const [records, setRecords] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
@@ -135,7 +137,7 @@ export function CatalogExplorerPanel({
           if (await hasMapData(asset, controller.signal)) {
             if (!controller.signal.aborted) {
               setMapAsset(asset);
-              if (!userSelectedTab.current) {
+              if (!userSelectedTab.current && !hostPreviewHref.current) {
                 setMapSelected(true);
                 setActiveAssetHref(asset.href);
                 onSelectAsset?.({...asset, view: 'map'});

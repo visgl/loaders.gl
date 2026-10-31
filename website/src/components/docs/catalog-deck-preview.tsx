@@ -3,6 +3,7 @@ import type {Table} from 'apache-arrow';
 import type {Deck} from '@deck.gl/core';
 import type {DeckPanel} from '@deck.gl-community/widgets';
 import {ExamplePanelHost} from './example-panel-host';
+import {getCatalogPointBounds} from './catalog-map-bounds';
 
 /** Renders a bounded GeoParquet sample in a DeckPanel using a shared Deck device. */
 export function CatalogDeckPreview({table, bounds, overlay}: {table: Table; bounds?: number[]; overlay?: React.ReactNode}): React.JSX.Element {
@@ -48,8 +49,9 @@ export function CatalogDeckPreview({table, bounds, overlay}: {table: Table; boun
         const rootView = `${panelId}-root`;
         const view = `${panelId}-map`;
         let camera = {longitude: 0, latitude: 0, zoom: 1, bearing: 0, pitch: 0};
-        if (bounds && bounds[0] < bounds[2] && bounds[1] < bounds[3] && bounds[1] > -85 && bounds[3] < 85) {
-          const viewport = new WebMercatorViewport({width: 400, height: 300}).fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], {padding: 24});
+        const mapBounds = bounds || getCatalogPointBounds(points);
+        if (mapBounds && mapBounds[0] < mapBounds[2] && mapBounds[1] < mapBounds[3] && mapBounds[1] >= -85.01 && mapBounds[3] <= 85.01) {
+          const viewport = new WebMercatorViewport({width: 400, height: 300}).fitBounds([[mapBounds[0], mapBounds[1]], [mapBounds[2], mapBounds[3]]], {padding: 24});
           camera = {...camera, longitude: viewport.longitude, latitude: viewport.latitude, zoom: Math.min(viewport.zoom, 15)};
         }
         const scene = () => ({
