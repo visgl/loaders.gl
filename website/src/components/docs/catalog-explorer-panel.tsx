@@ -38,7 +38,7 @@ export type CatalogExplorerPanelProps = Readonly<{
   /** Called when a record is selected in the results list. */
   onSelectRecord?: (record: unknown) => void;
   /** Opens a resolved asset in a host-provided preview. */
-  onSelectAsset?: (asset: {key: string; href: string}) => void;
+  onSelectAsset?: (asset: {key: string; href: string; view?: 'map'}) => void;
   /** Selected asset content displayed beside the entries. */
   preview?: React.ReactNode;
   /** Identifies a host-requested preview such as the catalog JSON toolbar action. */
@@ -90,15 +90,17 @@ export function CatalogExplorerPanel({
     /** Fits the workspace beneath the toolbar without adding page scroll. */
     const resizeWorkspace = () => {
       if (!element.getClientRects().length) return;
-      setWorkspaceHeight(Math.max(240, window.innerHeight - (element.getBoundingClientRect().top + window.scrollY) - 24));
+      setWorkspaceHeight(Math.max(240, window.innerHeight - element.getBoundingClientRect().top - 24));
     };
     resizeWorkspace();
     const observer = new ResizeObserver(resizeWorkspace);
     observer.observe(element);
     window.addEventListener('resize', resizeWorkspace);
+    window.addEventListener('scroll', resizeWorkspace, {passive: true});
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', resizeWorkspace);
+      window.removeEventListener('scroll', resizeWorkspace);
     };
   }, [workspace]);
   const [selectedSourceId, setSelectedSourceId] = useState(sourceId || sources[0]?.id || '');
@@ -108,6 +110,7 @@ export function CatalogExplorerPanel({
   const [collections, setCollections] = useState<ReadonlyMap<string, unknown>>(() => new Map());
   const [selectedRecord, setSelectedRecord] = useState<unknown>();
   const [activeAssetHref, setActiveAssetHref] = useState<string>();
+  const [mapSelected, setMapSelected] = useState(false);
   const [records, setRecords] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
@@ -128,6 +131,7 @@ export function CatalogExplorerPanel({
     setRecords([]);
     setSelectedRecord(undefined);
     setActiveAssetHref(undefined);
+    setMapSelected(false);
     setMetadata(undefined);
     setCollections(new Map());
     void (async () => {
@@ -199,7 +203,8 @@ export function CatalogExplorerPanel({
   const tableAssetCount = previewAssets.filter(asset =>
     /\.parquet$/i.test(new URL(asset.href).pathname)
   ).length;
-  const activeTabId = activeAssetHref
+  const mapAsset = previewAssets.find(asset => /\.parquet$/i.test(new URL(asset.href).pathname));
+  const activeTabId = mapSelected ? `${panelId}-map` : activeAssetHref
     ? `${panelId}-asset-${previewAssets.findIndex(asset => asset.href === activeAssetHref)}`
     : `${panelId}-details`;
   const inspectorOpen = selectedRecord !== undefined || Boolean(preview);
@@ -325,6 +330,7 @@ export function CatalogExplorerPanel({
                       onClick={() => {
                         setSelectedRecord(record);
                         setActiveAssetHref(undefined);
+                        setMapSelected(false);
                         onClosePreview?.();
                         onSelectRecord?.(record);
                       }}
@@ -386,6 +392,7 @@ export function CatalogExplorerPanel({
                             onClick={() => {
                               setSelectedRecord(undefined);
                               setActiveAssetHref(undefined);
+                              setMapSelected(false);
                               onClosePreview?.();
                             }}
                           >
@@ -406,11 +413,32 @@ export function CatalogExplorerPanel({
                             tabIndex={activeAssetHref ? -1 : 0}
                             onClick={() => {
                               setActiveAssetHref(undefined);
+                              setMapSelected(false);
                               onClosePreview?.();
                             }}
                           >
                             Details
                           </button>
+                          {onSelectAsset ? (
+                            <button
+                              type="button"
+                              role="tab"
+                              id={`${panelId}-map`}
+                              aria-controls={`${panelId}-entry-content`}
+                              aria-selected={mapSelected}
+                              tabIndex={mapSelected ? 0 : -1}
+                              disabled={!mapAsset}
+                              title={mapAsset ? 'Preview the first Parquet asset' : 'No Parquet asset is available for map preview'}
+                              onClick={() => {
+                                if (!mapAsset) return;
+                                setMapSelected(true);
+                                setActiveAssetHref(mapAsset.href);
+                                onSelectAsset?.({...mapAsset, view: 'map'});
+                              }}
+                            >
+                              Map
+                            </button>
+                          ) : null}
                           {previewAssets.map((asset, index) => (
                             <button
                               type="button"
@@ -418,9 +446,10 @@ export function CatalogExplorerPanel({
                               key={asset.key}
                               id={`${panelId}-asset-${index}`}
                               aria-controls={`${panelId}-entry-content`}
-                              aria-selected={activeAssetHref === asset.href}
-                              tabIndex={activeAssetHref === asset.href ? 0 : -1}
+                              aria-selected={!mapSelected && activeAssetHref === asset.href}
+                              tabIndex={!mapSelected && activeAssetHref === asset.href ? 0 : -1}
                               onClick={() => {
+                                setMapSelected(false);
                                 setActiveAssetHref(asset.href);
                                 onSelectAsset?.(asset);
                               }}
@@ -607,7 +636,7 @@ function assetTabTitle(asset: {key: string; href: string}, tableAssetCount: numb
 /** Supports arrow-key and Home/End navigation between entry view tabs. */
 function handleTabKeyDown(event: React.KeyboardEvent<HTMLElement>): void {
   if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)'));
   const index = tabs.indexOf(event.target as HTMLButtonElement);
   const nextIndex =
     event.key === 'Home'

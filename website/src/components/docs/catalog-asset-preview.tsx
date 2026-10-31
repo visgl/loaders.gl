@@ -16,6 +16,8 @@ export type CatalogPreviewAsset = {
   key: string;
   /** Resolved download URL. */
   href: string;
+  /** Initial view requested by the inspector. */
+  view?: 'map';
 };
 
 /** Materialized, bounded content for the asset preview. */
@@ -51,7 +53,7 @@ export function CatalogAssetPreview({
   autoScroll?: boolean;
 }): React.JSX.Element {
   const assetUrl = getCatalogAssetUrl(asset.href);
-  const [selectedTab, setSelectedTab] = useState<'table' | 'schema' | 'map'>('table');
+  const [selectedTab, setSelectedTab] = useState<'table' | 'schema' | 'map'>(asset.view || 'table');
   const [preview, setPreview] = useState<AssetPreview>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
@@ -130,7 +132,7 @@ export function CatalogAssetPreview({
       {preview?.downloaded ? (
         <p>Range reads were unavailable; preview downloaded this file (maximum 16 MiB).</p>
       ) : null}
-      {preview?.table ? (
+      {preview?.table && !asset.view ? (
         <div role="group" aria-label="Arrow preview view" style={{display: 'flex', gap: 8}}>
           <button
             type="button"
@@ -138,9 +140,6 @@ export function CatalogAssetPreview({
             onClick={() => setSelectedTab('table')}
           >
             Table
-          </button>
-          <button type="button" aria-pressed={selectedTab === 'map'} onClick={() => setSelectedTab('map')}>
-            Map
           </button>
           <button
             type="button"

@@ -127,6 +127,7 @@ test('keeps entries and long previews bounded and clears details when the source
     const tabs = Array.from(inspector.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
     expect(tabs.map(tab => tab.textContent)).toEqual([
       'Details',
+      'Map',
       'Table',
       'Manifest',
       'Attribution'
@@ -136,6 +137,14 @@ test('keeps entries and long previews bounded and clears details when the source
     );
     expect(tabs[1].getAttribute('aria-selected')).toBe('true');
     expect(props.onSelectAsset).toHaveBeenCalledWith({
+      key: 'data',
+      href: 'https://example.org/data.parquet',
+      view: 'map'
+    });
+    await act(async () => tabs[2].click());
+    expect(tabs[1].getAttribute('aria-selected')).toBe('false');
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(props.onSelectAsset).toHaveBeenLastCalledWith({
       key: 'data',
       href: 'https://example.org/data.parquet'
     });

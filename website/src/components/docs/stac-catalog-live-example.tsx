@@ -76,7 +76,7 @@ export function STACCatalogLiveExample({
           preview={
             selectedAsset ? (
               <CatalogAssetPreview
-                key={selectedAsset.href}
+                key={`${selectedAsset.href}-${selectedAsset.view || 'default'}`}
                 asset={selectedAsset}
                 autoScroll={false}
               />
