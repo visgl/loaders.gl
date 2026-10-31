@@ -24,6 +24,8 @@ import {ExamplePanel, Example, MetadataViewer} from './components/example-panel'
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 export const MAP_STYLE = 'https://loaders.gl/mapstyle/deck-light.json';
 
 const VIEW_STATE = {

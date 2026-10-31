@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --progress --hot --open"
+    "start-local": "webpack-dev-server --env local --progress --hot --open"
   },
   "dependencies": {
     "react": "19.2.3",

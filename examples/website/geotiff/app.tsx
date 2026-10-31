@@ -27,6 +27,8 @@ import {
   createDeckStatsWidget
 } from '../shared/create-deck-stats-widget';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 const DATA_URL = '/gfw-azores.tif';
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron';
 const INITIAL_VIEW_STATE: MapViewState = {

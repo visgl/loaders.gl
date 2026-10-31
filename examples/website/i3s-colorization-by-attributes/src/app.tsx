@@ -26,6 +26,8 @@ import {
 import {getNumericAttributeInfo} from './utils/fetch-attributes-data';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 export default function App() {
   const tileSets: string[] = Object.keys(EXAMPLES);
   const [tilesetSelected, setTilesetSelected] = useState<string>(tileSets[0]);

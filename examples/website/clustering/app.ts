@@ -25,6 +25,8 @@ import {createSampleData, type SampleGeometry} from './sample-data';
 import './style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 /** Public basemap style; sample data itself is generated locally. */
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron';
 /** Starting camera fits all four synthetic site groups. */

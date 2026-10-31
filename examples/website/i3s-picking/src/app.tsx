@@ -15,6 +15,8 @@ import {ControlPanel} from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 export const EXAMPLES = {
   'San Francisco': {
     name: 'San Francisco',

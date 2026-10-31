@@ -27,6 +27,8 @@ import {INITIAL_MAP_STYLE} from './constants';
 import {createTilesetViewState} from './create-tileset-view-state';
 import {TileFoldExtension, type TileFoldExtensionProps} from './tile-fold-extension';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 const TILESET_SERVER_URL = 'https://assets.ion.cesium.com';
 
 const DREAM_SEQUENCE_DURATION = 18000;

@@ -51,6 +51,8 @@ import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/co
 import {ZstdCodec} from 'zstd-codec';
 import '@deck.gl/widgets/stylesheet.css';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 export const INITIAL_MAP_STYLE =
   'https://loaders.gl/mapstyle/deck-light.json';
 

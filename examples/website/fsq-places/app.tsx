@@ -30,6 +30,8 @@ import {
 import './style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 const PARQUET_SOURCE_WORKER_URL = new URL(
   '../../../modules/tables/dist/parquet-source-worker.js',

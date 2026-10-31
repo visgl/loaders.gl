@@ -21,6 +21,8 @@ import {compileSQLTableQuery, DuckDBSQLDataSource} from '@loaders.gl/sql'
 import type {SQLTableQuery} from '@loaders.gl/sql'
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget'
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 type QueryBackend = 'arrow' | 'duckdb'
 
 type Point = {

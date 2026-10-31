@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"
+    "start-local": "webpack-dev-server --env local --env esnext --progress --hot --open"
   },
   "dependencies": {
     "@deck.gl/core": "^9.4.0",
@@ -27,10 +27,10 @@
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.5",
     "babel-plugin-inline-import": "^3.0.0",
-    "html-webpack-plugin": "^3.2.0",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.15.2"
+    "html-webpack-plugin": "^5.5.0",
+    "webpack": "^5.106.2",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^5.2.7"
   },
   "description": "Render glTF scenes with loaders.gl and deck.gl",
   "keywords": [

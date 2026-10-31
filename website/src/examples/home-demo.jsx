@@ -10,6 +10,8 @@ import '@deck.gl/widgets/stylesheet.css';
 
 import {createHomeDemoLayer} from './home-demo-layer';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 const INITIAL_VIEW_STATE = {
   transitionDuration: 0,
   longitude: -122.401,

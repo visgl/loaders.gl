@@ -4,7 +4,7 @@
   "description": "Bundle OBJ loading with loaders.gl and webpack 4",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server --progress --hot --open -d"
+    "start": "webpack-dev-server --progress --hot --open --mode development"
   },
   "dependencies": {
     "@loaders.gl/core": "workspace:*",

@@ -7,10 +7,19 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["react", "react-dom"],
+    "types": [
+      "react",
+      "react-dom",
+      "vite/client"
+    ],
     "paths": {
-      "@loaders.gl/tiles-3d/potree": ["modules/tiles-3d/src/potree"]
+      "@loaders.gl/tiles-3d/potree": [
+        "modules/tiles-3d/src/potree"
+      ]
     }
   },
-  "include": ["./src/**/*", "./vite.config.ts"]
+  "include": [
+    "./src/**/*",
+    "./vite.config.ts"
+  ]
 }

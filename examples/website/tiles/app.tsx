@@ -32,6 +32,8 @@ import type {Example} from './examples';
 import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE} from './examples';
 import '@deck.gl/widgets/stylesheet.css';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 /** Stable loader identities prevent metadata updates from restarting source resolution. */
 const TILE_LOADERS = [
   PMTilesSourceLoader,

@@ -22,6 +22,8 @@ import {BuildingExplorer} from './components/building-explorer';
 import {filterTile} from './filter-tile';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Turanga_Library/SceneServer/layers/0';
 

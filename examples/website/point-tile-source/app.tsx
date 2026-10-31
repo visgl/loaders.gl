@@ -6,6 +6,7 @@ import React, {useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Map} from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
@@ -24,6 +25,7 @@ import {
   type PointTileSourceExample,
   type PointTileViewState
 } from './examples';
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 const INITIAL_MAP_VIEW_STATE: PointTileMapViewState = {
   longitude: -96,
@@ -399,7 +401,7 @@ export default function App({
             reuseMaps={true}
             mapLib={maplibregl}
             mapStyle={'https://tiles.openfreemap.org/styles/liberty'}
-            preserveDrawingBuffer={true}
+            canvasContextAttributes={{preserveDrawingBuffer: true}}
           />
         ) : null}
       </DeckGL>

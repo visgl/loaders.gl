@@ -6,8 +6,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server --progress --hot --open -d",
-    "start-local": "webpack-dev-server --env.local --progress --hot --open"
+    "start": "webpack-dev-server --progress --hot --open --mode development",
+    "start-local": "webpack-dev-server --env local --progress --hot --open"
   },
   "dependencies": {
     "@loaders.gl/core": "4.4.0-alpha.1",

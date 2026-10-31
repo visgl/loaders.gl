@@ -14,6 +14,9 @@ import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {registerLoaders} from '@loaders.gl/core';
 
 import loadIBLEnvironment from './environment';
+import * as maplibregl from 'maplibre-gl';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 // To manage dependencies/bundle size, the app decides which loaders to bring in
 registerLoaders([GLTFLoader]);

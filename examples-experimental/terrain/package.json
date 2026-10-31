@@ -4,8 +4,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open",
-    "start-local-deck": "webpack-dev-server --env.local --env.esnext --env.deck --progress --hot --open",
+    "start-local": "webpack-dev-server --env local --env esnext --progress --hot --open",
+    "start-local-deck": "webpack-dev-server --env local --env esnext --env deck --progress --hot --open",
     "start": "webpack-dev-server --progress --hot --open"
   },
   "dependencies": {
@@ -27,9 +27,9 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.15.2"
+    "webpack": "^5.106.2",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^5.2.7"
   },
   "description": "Render image-encoded terrain with loaders.gl and deck.gl",
   "keywords": [
