@@ -267,6 +267,13 @@ when native support is unavailable; use an ESM bundler with code splitting to ke
 out of the initial bundle. Explicit implementation subpaths intentionally include their codec.
 Legacy combined classes are available only through explicit subpaths during migration.
 
+On Node.js 24 and later, compress-utils can use Node's source-phase WebAssembly
+imports by starting Node with `--conditions=compress-utils-wasm-source`. Without
+that condition it reads the WASM assets from the installed package. In browsers,
+the bundler must emit the WASM assets alongside the codec modules. The codec
+package currently resolves its own assets; task-managed WASM bytes or compiled
+modules cannot be supplied to its public API.
+
 See the [v5 upgrade guide](/docs/upgrade-guide) for import migrations and behavior changes.
 
 ## Formats at a glance
