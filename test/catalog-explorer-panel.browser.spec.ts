@@ -84,7 +84,8 @@ test('keeps entries and long previews bounded and clears details when the source
   const props = {
     sources: [{id: 'fixture', title: 'Fixture catalog', source}],
     onCatalogTitle: vi.fn(),
-    onSelectAsset: vi.fn()
+    onSelectAsset: vi.fn(),
+    hasMapData: vi.fn(async () => true)
   };
   try {
     await act(async () => root.render(React.createElement(CatalogExplorerPanel, props)));
@@ -104,6 +105,13 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(entries.clientHeight).toBeGreaterThan(0);
     await act(async () => entries.querySelector('button')!.click());
     const inspector = container.querySelector<HTMLElement>('[aria-label="Catalog inspector"]')!;
+    await expect.poll(() => inspector.querySelector('[role="tab"]')?.textContent).toBe('Map');
+    expect(inspector.querySelector('[role="tab"]')?.getAttribute('aria-selected')).toBe('true');
+    await act(async () =>
+      Array.from(inspector.querySelectorAll<HTMLButtonElement>('[role="tab"]'))
+        .find(tab => tab.textContent === 'Details')!
+        .click()
+    );
     expect(entries.getBoundingClientRect().width).toBeLessThan(fullListWidth);
     await expect.poll(() => inspector.textContent).toContain('EGM96');
     expect(inspector.textContent).toContain('Geoid entry-0');
@@ -124,18 +132,28 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(inspector.textContent).toContain('Human-readable geoid preview');
     expect(inspector.textContent).toContain('CC-BY-4.0 Human-readable geoid preview');
     expect(inspector.querySelector('strong')?.textContent).toBe('Human-readable geoid preview');
+    await expect.poll(() => inspector.querySelector('[role="tab"]')?.textContent).toBe('Map');
     const tabs = Array.from(inspector.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
     expect(tabs.map(tab => tab.textContent)).toEqual([
+      'Map',
       'Details',
       'Table',
       'Manifest',
       'Attribution'
     ]);
     await act(async () =>
-      tabs[0].dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true}))
+      tabs[1].dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft', bubbles: true}))
     );
-    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
     expect(props.onSelectAsset).toHaveBeenCalledWith({
+      key: 'data',
+      href: 'https://example.org/data.parquet',
+      view: 'map'
+    });
+    await act(async () => tabs[2].click());
+    expect(tabs[0].getAttribute('aria-selected')).toBe('false');
+    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(props.onSelectAsset).toHaveBeenLastCalledWith({
       key: 'data',
       href: 'https://example.org/data.parquet'
     });
@@ -189,6 +207,149 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(standaloneInspector.textContent).not.toContain('Back to entry details');
     await act(async () => standaloneInspector.querySelector('button')!.click());
     expect(onClosePreview).toHaveBeenCalledOnce();
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
+test('does not show a map tab for a table without spatial data', async () => {
+  const source = {
+    capabilities: {search: true},
+    getMetadata: async () => ({mode: 'static', root: {title: 'Fixture'}}),
+    search: async function* () {
+      yield {id: 'table', assets: {data: {href: 'https://example.org/table.parquet'}}};
+    }
+  } as unknown as CatalogExplorerSource['source'];
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const hasMapData = vi.fn(async () => false);
+  try {
+    await act(async () =>
+      root.render(
+        React.createElement(CatalogExplorerPanel, {
+          sources: [{id: 'fixture', title: 'Fixture', source}],
+          onSelectAsset: vi.fn(),
+          hasMapData
+        })
+      )
+    );
+    await expect
+      .poll(() => container.querySelector('[aria-label="Catalog entries"] button'))
+      .not.toBeNull();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Catalog entries"] button')!.click()
+    );
+    await expect.poll(() => hasMapData.mock.calls.length).toBe(1);
+    expect(
+      Array.from(container.querySelectorAll('[role="tab"]')).map(tab => tab.textContent)
+    ).toEqual(['Details', 'Table']);
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
+test('does not override an explicitly selected tab when map detection finishes', async () => {
+  let resolveMap!: (value: boolean) => void;
+  const pending = new Promise<boolean>(resolve => {
+    resolveMap = resolve;
+  });
+  const source = {
+    capabilities: {search: true},
+    getMetadata: async () => ({mode: 'static', root: {title: 'Fixture'}}),
+    search: async function* () {
+      yield {id: 'table', assets: {data: {href: 'https://example.org/table.parquet'}}};
+    }
+  } as unknown as CatalogExplorerSource['source'];
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const onSelectAsset = vi.fn();
+  try {
+    await act(async () =>
+      root.render(
+        React.createElement(CatalogExplorerPanel, {
+          sources: [{id: 'fixture', title: 'Fixture', source}],
+          onSelectAsset,
+          hasMapData: () => pending
+        })
+      )
+    );
+    await expect
+      .poll(() => container.querySelector('[aria-label="Catalog entries"] button'))
+      .not.toBeNull();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Catalog entries"] button')!.click()
+    );
+    const tableTab = Array.from(container.querySelectorAll<HTMLButtonElement>('[role="tab"]')).find(
+      tab => tab.textContent === 'Table'
+    )!;
+    await act(async () => tableTab.click());
+    await act(async () => {
+      resolveMap(true);
+      await pending;
+    });
+    expect(tableTab.getAttribute('aria-selected')).toBe('true');
+    expect(onSelectAsset).toHaveBeenCalledTimes(1);
+    expect(onSelectAsset).toHaveBeenCalledWith({
+      key: 'data',
+      href: 'https://example.org/table.parquet'
+    });
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
+test('does not replace a host preview when map detection finishes', async () => {
+  let resolveMap!: (value: boolean) => void;
+  const pending = new Promise<boolean>(resolve => {
+    resolveMap = resolve;
+  });
+  const source = {
+    capabilities: {search: true},
+    getMetadata: async () => ({mode: 'static', root: {title: 'Fixture'}}),
+    search: async function* () {
+      yield {id: 'table', assets: {data: {href: 'https://example.org/table.parquet'}}};
+    }
+  } as unknown as CatalogExplorerSource['source'];
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const onSelectAsset = vi.fn();
+  const hasMapData = () => pending;
+  const props = {sources: [{id: 'fixture', title: 'Fixture', source}], onSelectAsset, hasMapData};
+  try {
+    await act(async () => root.render(React.createElement(CatalogExplorerPanel, props)));
+    await expect
+      .poll(() => container.querySelector('[aria-label="Catalog entries"] button'))
+      .not.toBeNull();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Catalog entries"] button')!.click()
+    );
+    await act(async () =>
+      root.render(
+        React.createElement(CatalogExplorerPanel, {
+          ...props,
+          previewAssetHref: 'https://example.org/catalog.json',
+          preview: React.createElement('div', null, 'Catalog JSON')
+        })
+      )
+    );
+    await act(async () => {
+      resolveMap(true);
+      await pending;
+    });
+    expect(container.textContent).toContain('Catalog JSON');
+    expect(onSelectAsset).not.toHaveBeenCalled();
   } finally {
     await act(async () => root.unmount());
     container.remove();

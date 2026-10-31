@@ -88,6 +88,22 @@ export function ReactExampleSidebar({
       onRenderHTML: element => {
         element.style.height = '100%';
         element.style.minHeight = '0';
+        // The sidebar provides an outer scroll container. Give each panel wrapper a
+        // definite height so the inspector itself owns scrolling and sticky tabs.
+        queueMicrotask(() => {
+          if (!mounted) return;
+          let wrapper = element.parentElement;
+          while (wrapper && wrapper !== parentElement) {
+            wrapper.style.minHeight = '0';
+            wrapper.style.height = '100%';
+            if (wrapper.hasAttribute('data-sidebar-content')) {
+              wrapper.style.overflow = 'hidden';
+              wrapper.style.boxSizing = 'border-box';
+              break;
+            }
+            wrapper = wrapper.parentElement;
+          }
+        });
         if (mounted) setContentElement(element);
         return () => {
           if (mounted) setContentElement(undefined);

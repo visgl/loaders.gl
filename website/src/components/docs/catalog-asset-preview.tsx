@@ -8,6 +8,7 @@ import {configurePanelEditorWorkers} from './panel-editor-workers';
 import {getCatalogAssetUrl} from './catalog-asset-url';
 import {getCatalogPreviewSchema, getCatalogPreviewMetadata} from './catalog-preview-schema';
 import {CatalogJsonTree} from './catalog-json-tree';
+import {CatalogDeckPreview} from './catalog-deck-preview';
 
 /** An asset selected from a catalog record. */
 export type CatalogPreviewAsset = {
@@ -15,6 +16,8 @@ export type CatalogPreviewAsset = {
   key: string;
   /** Resolved download URL. */
   href: string;
+  /** Initial view requested by the inspector. */
+  view?: 'map';
 };
 
 /** Materialized, bounded content for the asset preview. */
@@ -31,6 +34,8 @@ type AssetPreview = {
   language?: 'json' | 'plaintext';
   /** Total row count declared in the Parquet footer. */
   rowCount?: number;
+  /** Dataset extent from GeoParquet metadata, when present. */
+  bounds?: number[];
   /** Whether the text preview reached its byte limit. */
   truncated?: boolean;
   /** Indicates a size-limited download was needed because range reads were unavailable. */
@@ -48,7 +53,7 @@ export function CatalogAssetPreview({
   autoScroll?: boolean;
 }): React.JSX.Element {
   const assetUrl = getCatalogAssetUrl(asset.href);
-  const [selectedTab, setSelectedTab] = useState<'table' | 'schema'>('table');
+  const [selectedTab, setSelectedTab] = useState<'table' | 'schema' | 'map'>(asset.view || 'table');
   const [preview, setPreview] = useState<AssetPreview>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
@@ -75,11 +80,11 @@ export function CatalogAssetPreview({
             maxRows: 50,
             maxColumns: 12
           })
-        : new ArrowSchemaPanel({
+        : selectedTab === 'schema' ? new ArrowSchemaPanel({
             id: `${panelId}-schema`,
             title: 'Fields',
             schema: getCatalogPreviewSchema(preview.table.schema)
-          });
+          }) : undefined;
     }
     return undefined;
   }, [panelId, preview, selectedTab]);
@@ -94,7 +99,7 @@ export function CatalogAssetPreview({
       try {
         if (!assetUrl) throw new Error('Only HTTP(S) asset URLs can be previewed.');
         const content = /\.parquet$/i.test(assetUrl.pathname)
-          ? await readParquetPreview(assetUrl.href, abortController.signal)
+          ? await readParquetPreview(assetUrl.href, abortController.signal, asset.view === 'map' ? 5000 : 50)
           : await readTextPreview(assetUrl.href, abortController.signal);
         if (!abortController.signal.aborted) setPreview(content);
       } catch (readError) {
@@ -108,8 +113,8 @@ export function CatalogAssetPreview({
 
   return (
     <section ref={panel} aria-label="Asset preview">
-      <h3>Asset preview: {asset.key}</h3>
-      {assetUrl ? (
+      {!asset.view ? <h3>Asset preview: {asset.key}</h3> : null}
+      {assetUrl && !asset.view ? (
         <a href={assetUrl.href} target="_blank" rel="noreferrer">
           Open original asset
         </a>
@@ -118,16 +123,16 @@ export function CatalogAssetPreview({
       {error ? <p role="alert">{error}</p> : null}
       {preview?.schemaTitle ? <p>Validation: {preview.schemaTitle}</p> : null}
       {preview?.truncated ? <p>Showing the first 256 KiB.</p> : null}
-      {preview?.table ? (
+      {preview?.table && !asset.view ? (
         <p>
           Showing {preview.table.numRows} of {preview.rowCount?.toLocaleString()} rows, first{' '}
           {preview.table.numCols} columns.
         </p>
       ) : null}
-      {preview?.downloaded ? (
+      {preview?.downloaded && !asset.view ? (
         <p>Range reads were unavailable; preview downloaded this file (maximum 16 MiB).</p>
       ) : null}
-      {preview?.table ? (
+      {preview?.table && !asset.view ? (
         <div role="group" aria-label="Arrow preview view" style={{display: 'flex', gap: 8}}>
           <button
             type="button"
@@ -146,6 +151,7 @@ export function CatalogAssetPreview({
         </div>
       ) : null}
       {contentPanel ? <ExamplePanelHost panel={contentPanel} /> : null}
+      {preview?.table && selectedTab === 'map' ? <CatalogDeckPreview table={preview.table} bounds={preview.bounds} overlay={<>{preview.table.numRows} / {preview.rowCount?.toLocaleString()} rows · {assetUrl ? <a href={assetUrl.href} target="_blank" rel="noreferrer">Asset</a> : null}</>} /> : null}
       {preview?.table && selectedTab === 'schema' ? (
         <div key={asset.href}>
           <CatalogJsonTree
@@ -168,10 +174,10 @@ export function CatalogAssetPreview({
   );
 }
 
-/** Reads selected columns and the first fifty rows without downloading the whole file. */
-async function readParquetPreview(url: string, signal: AbortSignal): Promise<AssetPreview> {
+/** Reads selected columns and a bounded number of rows without downloading the whole file. */
+async function readParquetPreview(url: string, signal: AbortSignal, limit = 50): Promise<AssetPreview> {
   try {
-    return await readParquetTable(url, signal);
+    return await readParquetTable(url, signal, limit);
   } catch (error) {
     signal.throwIfAborted();
     if (!isCatalogRangeUnsupportedError(error)) throw error;
@@ -195,23 +201,53 @@ async function readParquetPreview(url: string, signal: AbortSignal): Promise<Ass
     } finally {
       await reader.cancel();
     }
-    return {...(await readParquetTable(new Blob(chunks), signal)), downloaded: true};
+    return {...(await readParquetTable(new Blob(chunks), signal, limit)), downloaded: true};
+  }
+}
+
+/** Determines whether a bounded Parquet preview has a geometry or coordinate pair. */
+export async function hasCatalogMapData(asset: CatalogPreviewAsset, signal: AbortSignal): Promise<boolean> {
+  const preview = await readParquetPreview(asset.href, signal);
+  const table = preview.table;
+  if (!table) return false;
+  const {getGeoArrowGeometryColumn} = await import('@loaders.gl/deck-layers');
+  try {
+    getGeoArrowGeometryColumn(table);
+    return true;
+  } catch {
+    const names = table.schema.fields.map(field => field.name);
+    return names.some(name => /^(lon|longitude)$/i.test(name)) && names.some(name => /^(lat|latitude)$/i.test(name));
   }
 }
 
 /** Decodes a bounded Arrow preview from a URL or an already downloaded Blob. */
-async function readParquetTable(data: string | Blob, signal: AbortSignal): Promise<AssetPreview> {
+async function readParquetTable(data: string | Blob, signal: AbortSignal, limit: number): Promise<AssetPreview> {
   const {ParquetSource} = await import('@loaders.gl/tables/parquet-source-loader');
   signal.throwIfAborted();
   const source = new ParquetSource(data, {core: {worker: false}});
   try {
     const metadata = await source.getMetadata({signal});
     const columnNames = metadata.schema.fields.slice(0, 12).map(field => field.name);
+    const {getGeometryColumnsFromSchema} = await import('@loaders.gl/core/geoarrow');
+    const geometryColumn = Object.keys(getGeometryColumnsFromSchema(metadata.schema))[0];
+    if (geometryColumn && !columnNames.includes(geometryColumn)) columnNames.push(geometryColumn);
+    for (const field of metadata.schema.fields) {
+      if (/^(lon|longitude|lat|latitude)$/i.test(field.name) && !columnNames.includes(field.name)) {
+        columnNames.push(field.name);
+      }
+    }
     const preview: AssetPreview = {rowCount: metadata.rowCount};
+    try {
+      const geo = JSON.parse(metadata.keyValueMetadata.geo || '{}');
+      const bounds = geo.columns?.[geo.primary_column]?.bbox;
+      if (Array.isArray(bounds) && bounds.length === 4 && bounds.every(Number.isFinite)) preview.bounds = bounds;
+    } catch {
+      // Extent metadata is optional.
+    }
     for await (const batch of source.read({
       columns: columnNames,
-      limit: 50,
-      batchSize: 50,
+      limit,
+      batchSize: Math.min(limit, 1000),
       concurrency: 1,
       signal
     })) {

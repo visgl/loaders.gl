@@ -8,7 +8,7 @@
     "test": "vitest run grid.spec.ts"
   },
   "dependencies": {
-    "@deck.gl-community/panels": "^9.4.8",
+    "@deck.gl-community/panels": "^9.4.9",
     "@deck.gl/core": "^9.4.0",
     "@deck.gl/layers": "^9.4.0",
     "@loaders.gl/core": "workspace:*",
