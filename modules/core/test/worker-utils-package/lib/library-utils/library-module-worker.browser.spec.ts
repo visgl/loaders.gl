@@ -6,10 +6,10 @@ import {expect, test} from 'vitest';
 
 test('module workers import shipped decoder factories without leaking wrapper globals', async () => {
   const libraries = [
-    ['draco', 'draco_decoder', 'DracoDecoderModule'],
-    ['draco', 'draco_wasm_wrapper', 'DracoDecoderModule'],
-    ['draco', 'draco_wasm_wrapper_gltf', 'DracoDecoderModule'],
-    ['draco', 'draco_encoder', 'DracoEncoderModule'],
+    ['scene', 'draco_decoder', 'DracoDecoderModule'],
+    ['scene', 'draco_wasm_wrapper', 'DracoDecoderModule'],
+    ['scene', 'draco_wasm_wrapper_gltf', 'DracoDecoderModule'],
+    ['scene', 'draco_encoder', 'DracoEncoderModule'],
     ['images', 'basis_transcoder', 'BASIS'],
     ['images', 'basis_encoder', 'BASIS'],
     ['images', 'crunch', 'LoadCrunchDecoder']
