@@ -317,7 +317,7 @@ function createBenchmarkResultRow(entry: LogEntry, benchmarkByteLengths: Map<str
         groupId,
         uncompressedByteLength: benchmarkByteLengths.get(groupId),
         ...dependencyInfo,
-        throughput: parseSIValue(entry.itersPerSecond),
+        throughput: entry.iterationsPerSecond,
         formattedValue: formatByteRate(entry.itersPerSecond),
         formattedError: `${(entry.error * 100).toFixed(2)}%`
       };
@@ -379,7 +379,7 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
       dependencyNpmUrl: 'https://www.npmjs.com/package/lz4js'
     },
     'compress-utils': {
-      dependency: 'compress-utils 0.10.1',
+      dependency: 'compress-utils 0.12.0',
       dependencySize: getCompressUtilsSize(groupId),
       dependencyUrl: 'https://github.com/dupontcyborg/compress-utils',
       dependencyNpmUrl: 'https://www.npmjs.com/package/compress-utils'
@@ -412,45 +412,24 @@ function getCompressUtilsSize(groupId: string): string {
   const format = groupId.replace('Compression: ', '').split(' · ')[0].toLowerCase();
   if (groupId.startsWith('Compression: ')) {
     const encoderSizes: Record<string, string> = {
-      gzip: '~62 KB encoder WASM', deflate: '~62 KB encoder WASM',
-      brotli: '~456 KB encoder WASM', zstandard: '~347 KB encoder WASM',
-      snappy: '~25 KB encoder WASM', lz4: '~98 KB encoder WASM',
-      bzip2: '~66 KB encoder WASM', xz: '~107 KB encoder WASM'
+      gzip: '~82 KB encoder WASM', deflate: '~82 KB encoder WASM',
+      brotli: '~462 KB encoder WASM', zstandard: '~344 KB encoder WASM',
+      snappy: '~28 KB encoder WASM', lz4: '~102 KB encoder WASM',
+      bzip2: '~67 KB encoder WASM', xz: '~109 KB encoder WASM'
     };
     return encoderSizes[format] || 'encoder WASM chunk';
   }
   const sizes: Record<string, string> = {
-    gzip: '~51 KB focused WASM',
-    deflate: '~51 KB focused WASM',
-    brotli: '~189 KB focused WASM',
-    zstandard: '~93 KB focused WASM',
-    snappy: '~27 KB focused WASM',
-    lz4: '~39 KB focused WASM',
-    bzip2: '~53 KB focused WASM',
-    xz: '~86 KB focused WASM'
+    gzip: '~75 KB focused WASM',
+    deflate: '~76 KB focused WASM',
+    brotli: '~193 KB focused WASM',
+    zstandard: '~100 KB focused WASM',
+    snappy: '~37 KB focused WASM',
+    lz4: '~50 KB focused WASM',
+    bzip2: '~58 KB focused WASM',
+    xz: '~94 KB focused WASM'
   };
   return sizes[format] || 'focused WASM chunk';
-}
-
-/** Parses a probe.gl SI-formatted throughput value. */
-function parseSIValue(value: string): number {
-  const match = value.trim().match(/^([+-]?\d+(?:\.\d+)?)([KMGTPEemn]|\u00b5|e[+-]?\d+)?$/);
-  if (!match) return Number.parseFloat(value);
-  const coefficient = Number.parseFloat(match[1]);
-  const suffix = match[2] || '';
-  const multipliers: Record<string, number> = {
-    K: 1e3,
-    M: 1e6,
-    G: 1e9,
-    T: 1e12,
-    P: 1e15,
-    E: 1e18,
-    m: 1e-3,
-    n: 1e-9,
-    e: 1,
-    µ: 1e-6
-  };
-  return coefficient * (suffix.startsWith('e') ? 10 ** Number.parseInt(suffix.slice(1), 10) : multipliers[suffix] || 1);
 }
 
 /** Formats a fixture byte count for the benchmark group heading. */
@@ -679,7 +658,7 @@ async function addCompressionBenchmarks(
     validateOutput(benchmarkCase, nativeOutput, 'native');
     bench.addAsync(
       `${benchmarkCase.name} · native`,
-      {minIterations: 3, unit: 'B', multiplier: benchmarkCase.uncompressedByteLength},
+      {iterations: 3, maxTimeMs: 120000, unit: 'B', multiplier: benchmarkCase.uncompressedByteLength},
       async () => {
         const output = await decompressWithNativeDecompressionStream(
           benchmarkCase.compressedData,
@@ -699,7 +678,7 @@ async function addCompressionBenchmarks(
     validateOutput(benchmarkCase, externalOutput, externalCompression.name);
     bench.addAsync(
       `${benchmarkCase.name} · ${externalCompression.name}`,
-      {minIterations: 3, unit: 'B', multiplier: benchmarkCase.uncompressedByteLength},
+      {iterations: 3, maxTimeMs: 120000, unit: 'B', multiplier: benchmarkCase.uncompressedByteLength},
       async () => {
         const output = await externalCompression.decompress(
           benchmarkCase.compressedData
@@ -774,7 +753,7 @@ async function addEncodingBenchmarks(
     if (!decoded) throw new Error('Native round-trip decoder unavailable');
     validateOutput(benchmarkCase, decoded, 'native encoder');
     bench.addAsync(`${benchmarkCase.name} · native`,
-      {minIterations: 3, unit: 'B', multiplier: input.byteLength, _throughput: input.byteLength >= 16 * 1024 * 1024 ? 1 : undefined}, async () => {
+      {iterations: 3, maxTimeMs: 120000, unit: 'B', multiplier: input.byteLength, _throughput: input.byteLength >= 16 * 1024 * 1024 ? 1 : undefined}, async () => {
         const output = await compressWithNativeCompressionStream(input, benchmarkCase.nativeFormat!);
         if (!output?.byteLength) throw new Error('Native encoder produced no output');
       });
@@ -787,7 +766,7 @@ async function addEncodingBenchmarks(
     const encoded = await encode(input);
     validateOutput(benchmarkCase, await decoder.decompress(encoded), `${name} encoder`);
     bench.addAsync(`${benchmarkCase.name} · ${name}`,
-      {minIterations: 3, unit: 'B', multiplier: input.byteLength, _throughput: input.byteLength >= 16 * 1024 * 1024 ? 1 : undefined}, async () => {
+      {iterations: 3, maxTimeMs: 120000, unit: 'B', multiplier: input.byteLength, _throughput: input.byteLength >= 16 * 1024 * 1024 ? 1 : undefined}, async () => {
         const output = await encode(input);
         if (!output.byteLength) throw new Error(`${name} encoder produced no output`);
       });

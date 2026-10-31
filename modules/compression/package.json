@@ -319,12 +319,12 @@
     "build-worker-node": "node scripts/build-worker.mjs node"
   },
   "dependencies": {
-    "compress-utils": "^0.10.1"
+    "compress-utils": "^0.12.0"
   },
   "devDependencies": {
     "@types/brotli": "^1.3.0",
     "brotli": "^1.3.2",
-    "compress-utils": "^0.10.1",
+    "compress-utils": "^0.12.0",
     "fflate": "0.7.5",
     "fzstd": "0.1.1",
     "hysnappy": "^1.1.1",
