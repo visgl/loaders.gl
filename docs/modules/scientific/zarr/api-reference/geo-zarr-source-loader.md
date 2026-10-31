@@ -175,7 +175,7 @@ the CRS frame. The source uses the OME `scale` transforms only for a check:
 - If a level fails the check, the source removes the metadata of that level. Then the source does
   not publish a complete grid.
 
-The source ignores `translation` transforms. It rejects all other transform types.
+The source ignores `identity` and `translation` transforms. It rejects all other transform types.
 
 A complete `tileMatrixSet` requires a common string CRS and explicit, finite, rightward,
 axis-aligned affine geometry for every level. CRS coordinates determine resolution units.
