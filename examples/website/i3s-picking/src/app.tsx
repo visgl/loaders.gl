@@ -139,7 +139,7 @@ export default function App() {
           mapLib={maplibregl}
           mapStyle={'https://loaders.gl/mapstyle/deck-dark.json'}
           preventStyleDiffing
-          preserveDrawingBuffer
+          canvasContextAttributes={{preserveDrawingBuffer: true}}
         />
       </DeckGL>
       <ControlPanel tileSets={tileSets} onSelectTileset={onSelectTilesetHandler} />
