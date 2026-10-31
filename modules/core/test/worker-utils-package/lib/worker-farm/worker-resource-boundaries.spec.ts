@@ -37,7 +37,8 @@ test('worker callbacks handle missing messages and factory load errors', () => {
   const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   const messageError = {type: 'messageerror'} as MessageEvent;
   worker.onmessageerror?.(messageError);
-  expect(consoleError).toHaveBeenCalledWith(messageError);
+  expect(onError).toHaveBeenCalled();
+  expect(consoleError).not.toHaveBeenCalled();
   thread.destroy();
   worker.onmessage?.({data: {result: 'late'}} as MessageEvent);
   expect(onMessage).toHaveBeenCalledTimes(1);
@@ -73,7 +74,10 @@ test('a failed factory lazily uses the URL fallback and forwards transfer lists'
       }
     });
     expect(getUrl).toHaveBeenCalledTimes(1);
-    expect(constructWorker).toHaveBeenCalledWith('blob:in-memory-worker', {name: 'fallback'});
+    expect(constructWorker).toHaveBeenCalledWith('blob:in-memory-worker', {
+      name: 'fallback',
+      type: 'classic'
+    });
     const buffer = new ArrayBuffer(4);
     thread.postMessage({buffer}, [buffer]);
     expect(worker.postMessage).toHaveBeenCalledWith({buffer}, [buffer]);

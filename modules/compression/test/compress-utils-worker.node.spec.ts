@@ -10,9 +10,9 @@ test('Node compression worker initializes the bundled LZO WASM decoder', async (
   try {
     const output = await new Promise<ArrayBuffer>((resolve, reject) => {
       worker.once('error', reject);
-      worker.once('message', message => {
+      worker.on('message', message => {
         if (message.type === 'error') reject(new Error(message.payload.error));
-        else resolve(message.payload.result);
+        else if (message.type === 'done') resolve(message.payload.result);
       });
       worker.postMessage({
         source: 'loaders.gl',

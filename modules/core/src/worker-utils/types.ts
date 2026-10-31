@@ -2,147 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/** Progress measured independently within a named phase. */
-export type WorkerProgress = {
-  /** Operation being measured. */
-  phase: string;
-  /** Work completed in this phase. */
-  completed: number;
-  /** Expected work, when known. */
-  total?: number;
-  /** Measurement unit, such as bytes, rows, or tasks. */
-  unit: string;
-};
-
-/** Shared worker execution options. */
-export type WorkerOptions = {
-  /** Cancels queued or running work. */
-  signal?: AbortSignal;
-  /** Receives phase progress. Throwing aborts the job with that error. */
-  onProgress?: (progress: WorkerProgress) => void;
-  // Worker farm options
-  CDN?: string | null;
-  worker?: boolean;
-  /** Declares batch-protocol support for a custom worker, or disables batch offloading. */
-  workerInBatches?: boolean;
-  maxConcurrency?: number;
-  maxMobileConcurrency?: number;
-  reuseWorkers?: boolean;
-  _workerType?: string;
-  workerUrl?: string;
-  [key: string]: any; // TODO
-};
-
-/**
- * Creates a fresh browser Worker instance for a worker descriptor.
- *
- * Returning `null` delegates to the existing URL-based worker resolution. This lets packages
- * expose bundler-resolved module workers without removing classic worker or CDN support.
- */
-export type LoadWorker = () => Worker | null;
-
-export type WorkerContext = {
-  /** Reports progress from the active worker job. */
-  reportProgress?: (progress: WorkerProgress) => void;
-  process?: Process;
-  processInBatches?: ProcessInBatches;
-};
-
-/** Serializable context sent with a single worker job. */
-export type WorkerJobContext = {
-  [key: string]: any;
-};
-
-export type Process = (
-  data: any,
-  options?: {[key: string]: any},
-  context?: WorkerContext,
-  jobContext?: WorkerJobContext
-) => any;
-
-export type ProcessInBatches = (
-  iterator: AsyncIterable<any> | Iterable<any>,
-  options?: {[key: string]: any},
-  context?: WorkerContext,
-  jobContext?: WorkerJobContext
-) => AsyncIterable<any>;
-
-/**
- * A worker description object
- */
-export type WorkerObject = {
-  id: string;
-  name: string;
-  module: string;
-  version: string;
-  worker?: string | boolean;
-  /** Whether the built-in worker accepts stateful batch requests. */
-  workerInBatches?: boolean;
-  /** Browser worker filename when it differs from the worker id. */
-  workerFile?: string;
-  /** Creates a built-in browser worker, typically using `type: 'module'`. */
-  loadWorker?: LoadWorker;
-  /** Optional Node.js-specific worker filename (for example a `.cjs` asset). */
-  workerNode?: string;
-  /** Repository-relative source path for a Node test worker after package grouping. */
-  workerSourceNode?: string;
-  options: {[key: string]: any};
-  deprecatedOptions?: object;
-
-  process?: Process;
-  processInBatches?: ProcessInBatches;
-};
-
-/*
-  PROTOCOL
-
-  Main thread                                     worker
-               => process-in-batches
-
-               <= input-request
-               => input-batch
-               <= output-batch
-               => output-ack
-                  ... // repeat
-
-              => input-done
-              <= done
-
-                 // or
-
-              <= error
- */
-export type WorkerMessageType =
-  | 'progress'
-  | 'preload'
-  | 'process'
-  | 'done'
-  | 'error'
-  | 'process-in-batches'
-  | 'input-request'
-  | 'input-batch'
-  | 'input-done'
-  | 'output-batch'
-  | 'output-ack';
-
-export type WorkerMessagePayload = {
-  /** Phase progress from the worker. */
-  progress?: WorkerProgress;
-  id?: number;
-  options?: {[key: string]: any};
-  context?: WorkerJobContext;
-  input?: any; // Transferable;
-  result?: any; // Transferable
-  error?: string;
-};
-
-export type WorkerMessageData = {
-  source: 'loaders.gl';
-  type: WorkerMessageType;
-  payload: WorkerMessagePayload;
-};
-
-export type WorkerMessage = {
-  type: string;
-  data: WorkerMessageData;
-};
+export type {
+  LoadWorker,
+  WorkerObject,
+  WorkerOptions,
+  WorkerProgress,
+  WorkerContext,
+  WorkerJobContext,
+  Process,
+  ProcessInBatches,
+  WorkerMessage,
+  WorkerMessageType,
+  WorkerMessageData,
+  WorkerMessagePayload
+} from '@math.gl/core/tasks';

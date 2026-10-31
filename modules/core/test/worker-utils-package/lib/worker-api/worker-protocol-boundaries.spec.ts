@@ -105,19 +105,22 @@ describe('single worker protocol', () => {
     const result = processOnWorker(worker, 'input', {source: 'in-memory'}, context);
     await vi.waitFor(() => expect(harness.postMessage).toHaveBeenCalledTimes(1));
     await harness.emit('process', {id: 7, input: 'nested'});
-    expect(harness.postMessage).toHaveBeenLastCalledWith({
-      source: 'loaders.gl',
-      type: 'error',
-      payload: {
-        id: 7,
-        error:
-          failure === undefined
-            ? 'Worker not set up to process on main thread'
-            : failure instanceof Error
-              ? failure.message
-              : 'unknown error'
-      }
-    });
+    expect(harness.postMessage).toHaveBeenLastCalledWith(
+      {
+        source: 'loaders.gl',
+        type: 'error',
+        payload: {
+          id: 7,
+          error:
+            failure === undefined
+              ? 'Worker not set up to process on main thread'
+              : failure instanceof Error
+                ? failure.message
+                : 'unknown error'
+        }
+      },
+      undefined
+    );
     harness.emit('done', {result: 'finished'});
     await expect(result).resolves.toBe('finished');
   });
@@ -146,18 +149,22 @@ describe('single worker protocol', () => {
       undefined,
       {}
     );
-    expect(harness.postMessage).toHaveBeenLastCalledWith({
-      source: 'loaders.gl',
-      type: 'done',
-      payload: {id: 2, result: 'delegated'}
-    });
+    expect(harness.postMessage).toHaveBeenLastCalledWith(
+      {
+        source: 'loaders.gl',
+        type: 'done',
+        payload: {id: 2, result: 'delegated'}
+      },
+      undefined
+    );
     harness.emit('done', {result: 'finished'});
     await expect(result).resolves.toBe('finished');
     expect(harness.startJob).toHaveBeenCalledWith(
       'named',
       expect.any(Function),
       undefined,
-      controller.signal
+      controller.signal,
+      expect.any(Object)
     );
   });
 

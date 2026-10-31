@@ -22,8 +22,9 @@ describe('createWorker', () => {
     await handler('preload', {});
     await handler('process', {input: 3, options: {increment: 2}, context: {source: 'test'}});
 
-    expect(postMessage).toHaveBeenNthCalledWith(1, 'done', {});
-    expect(postMessage).toHaveBeenNthCalledWith(2, 'done', {result: 5});
+    expect(postMessage).toHaveBeenCalledWith('ready', {});
+    expect(postMessage).toHaveBeenCalledWith('done', {});
+    expect(postMessage).toHaveBeenCalledWith('done', expect.objectContaining({result: 5}));
   });
 
   test('streams batches with demand and output acknowledgements', async () => {
@@ -47,7 +48,10 @@ describe('createWorker', () => {
     await handler('input-done', {});
     await processing;
 
-    expect(postMessage).toHaveBeenLastCalledWith('done', {});
+    expect(postMessage).toHaveBeenLastCalledWith(
+      'done',
+      expect.objectContaining({executionMs: expect.any(Number)})
+    );
   });
 
   test('reports unsupported work, inactive batch messages, and thrown values', async () => {
@@ -60,21 +64,26 @@ describe('createWorker', () => {
     await handler('output-ack', {});
     await handler('unknown', {});
 
-    expect(postMessage.mock.calls.filter(call => call[0] === 'error').map(call => call[1])).toEqual(
-      [
-        {error: 'Worker does not support atomic processing'},
-        {error: 'Worker does not support batched processing'},
-        {error: 'Worker has no active batched processing session'},
-        {error: 'Worker has no active batched processing session'},
-        {error: 'Worker has no active batched processing session'}
-      ]
-    );
+    expect(
+      postMessage.mock.calls
+        .filter(call => call[0] === 'error')
+        .map(call => ({error: call[1].error}))
+    ).toEqual([
+      {error: 'Worker does not support atomic processing'},
+      {error: 'Worker does not support batched processing'},
+      {error: 'Worker has no active batched processing session'},
+      {error: 'Worker has no active batched processing session'},
+      {error: 'Worker has no active batched processing session'}
+    ]);
 
     const throwingWorker = await installWorker(async () => {
       throw 'non-error';
     });
     await throwingWorker.handler('process', {input: 1});
-    expect(throwingWorker.postMessage).toHaveBeenCalledWith('error', {error: ''});
+    expect(throwingWorker.postMessage).toHaveBeenCalledWith(
+      'error',
+      expect.objectContaining({error: ''})
+    );
   });
 
   test('coalesces progress, preserves phase order, flushes completion, and ignores stale reports', async () => {
@@ -90,9 +99,10 @@ describe('createWorker', () => {
     await handler('process', {});
     report({phase: 'late', completed: 3, unit: 'bytes'});
     expect(postMessage.mock.calls).toEqual([
+      ['ready', {}],
       ['progress', {progress: {phase: 'read', completed: 2, unit: 'bytes'}}],
       ['progress', {progress: {phase: 'decode', completed: 1, total: 1, unit: 'tasks'}}],
-      ['done', {result: 'result'}]
+      ['done', {result: 'result', executionMs: expect.any(Number)}]
     ]);
   });
 
@@ -114,7 +124,10 @@ describe('createWorker', () => {
     await processing;
 
     expect(removeEventListener).toHaveBeenCalledOnce();
-    expect(postMessage).toHaveBeenCalledWith('done', {result: 'nested result'});
+    expect(postMessage).toHaveBeenCalledWith(
+      'done',
+      expect.objectContaining({result: 'nested result'})
+    );
   });
 });
 
