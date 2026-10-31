@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/traces",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "description": "Trace loaders and writers for Chrome Trace, Perfetto, OTLP, Jaeger, and Zipkin",
   "license": "MIT",
   "type": "module",

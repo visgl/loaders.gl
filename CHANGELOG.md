@@ -4,7 +4,15 @@
 
 ### Unreleased
 
+### v5.0.0-beta.2
+
 - Keep WMS/WCS imports independent of the optional GeoTIFF decoder by loading LERC through its focused raster entry point.
+- Add `@loaders.gl/documents` for XML, HTML, YAML, TOML, BSON, Markdown, and JSON documents, with shared native document codecs.
+- Consolidate texture and video loaders into `@loaders.gl/images`, and Draco into `@loaders.gl/scene`.
+- Flatten parser, writer, and source entry points across format packages.
+- Move NPY to `@loaders.gl/scientific` and add OME-NGFF multiscale reads to GeoZarrRasterSource.
+- Upgrade math.gl to beta.2 and delegate the worker runtime to its task APIs.
+- Add STAC catalog navigation, workspace tabs, and Arrow previews to website examples.
 
 ### v5.0.0-beta.1
 

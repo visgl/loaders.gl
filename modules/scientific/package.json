@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scientific",
-  "version": "5.0.0-beta.1",
+  "version": "5.0.0-beta.2",
   "description": "Scientific NumPy arrays and sources for NetCDF, Zarr, GRIB2, HDF5, and VTK",
   "license": "MIT",
   "type": "module",
@@ -101,7 +101,7 @@
     "build-metadata": "node ../../scripts/build-scientific-metadata.mjs"
   },
   "dependencies": {
-    "@loaders.gl/documents": "5.0.0-beta.1",
+    "@loaders.gl/documents": "5.0.0-beta.2",
     "@math.gl/core": "5.0.0-beta.2",
     "@math.gl/geospatial": "5.0.0-beta.2",
     "h5wasm": "^0.10.3",
