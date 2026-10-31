@@ -99,7 +99,7 @@ export function CatalogAssetPreview({
       try {
         if (!assetUrl) throw new Error('Only HTTP(S) asset URLs can be previewed.');
         const content = /\.parquet$/i.test(assetUrl.pathname)
-          ? await readParquetPreview(assetUrl.href, abortController.signal)
+          ? await readParquetPreview(assetUrl.href, abortController.signal, asset.view === 'map' ? 5000 : 50)
           : await readTextPreview(assetUrl.href, abortController.signal);
         if (!abortController.signal.aborted) setPreview(content);
       } catch (readError) {
@@ -174,10 +174,10 @@ export function CatalogAssetPreview({
   );
 }
 
-/** Reads selected columns and the first fifty rows without downloading the whole file. */
-async function readParquetPreview(url: string, signal: AbortSignal): Promise<AssetPreview> {
+/** Reads selected columns and a bounded number of rows without downloading the whole file. */
+async function readParquetPreview(url: string, signal: AbortSignal, limit = 50): Promise<AssetPreview> {
   try {
-    return await readParquetTable(url, signal);
+    return await readParquetTable(url, signal, limit);
   } catch (error) {
     signal.throwIfAborted();
     if (!isCatalogRangeUnsupportedError(error)) throw error;
@@ -201,7 +201,7 @@ async function readParquetPreview(url: string, signal: AbortSignal): Promise<Ass
     } finally {
       await reader.cancel();
     }
-    return {...(await readParquetTable(new Blob(chunks), signal)), downloaded: true};
+    return {...(await readParquetTable(new Blob(chunks), signal, limit)), downloaded: true};
   }
 }
 
@@ -221,7 +221,7 @@ export async function hasCatalogMapData(asset: CatalogPreviewAsset, signal: Abor
 }
 
 /** Decodes a bounded Arrow preview from a URL or an already downloaded Blob. */
-async function readParquetTable(data: string | Blob, signal: AbortSignal): Promise<AssetPreview> {
+async function readParquetTable(data: string | Blob, signal: AbortSignal, limit: number): Promise<AssetPreview> {
   const {ParquetSource} = await import('@loaders.gl/tables/parquet-source-loader');
   signal.throwIfAborted();
   const source = new ParquetSource(data, {core: {worker: false}});
@@ -246,8 +246,8 @@ async function readParquetTable(data: string | Blob, signal: AbortSignal): Promi
     }
     for await (const batch of source.read({
       columns: columnNames,
-      limit: 50,
-      batchSize: 50,
+      limit,
+      batchSize: Math.min(limit, 1000),
       concurrency: 1,
       signal
     })) {

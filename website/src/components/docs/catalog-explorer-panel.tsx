@@ -115,6 +115,7 @@ export function CatalogExplorerPanel({
   const [activeAssetHref, setActiveAssetHref] = useState<string>();
   const [mapSelected, setMapSelected] = useState(false);
   const [mapAsset, setMapAsset] = useState<{key: string; href: string}>();
+  const userSelectedTab = useRef(false);
   const [records, setRecords] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
@@ -124,6 +125,7 @@ export function CatalogExplorerPanel({
 
   useEffect(() => {
     const controller = new AbortController();
+    userSelectedTab.current = false;
     setMapAsset(undefined);
     if (!selectedRecord || !hasMapData) return () => controller.abort();
     const assets = getRecordAssets(selectedRecord, selectedSourceSource).filter(asset => /\.parquet$/i.test(new URL(asset.href).pathname));
@@ -131,7 +133,14 @@ export function CatalogExplorerPanel({
       for (const asset of assets) {
         try {
           if (await hasMapData(asset, controller.signal)) {
-            if (!controller.signal.aborted) setMapAsset(asset);
+            if (!controller.signal.aborted) {
+              setMapAsset(asset);
+              if (!userSelectedTab.current) {
+                setMapSelected(true);
+                setActiveAssetHref(asset.href);
+                onSelectAsset?.({...asset, view: 'map'});
+              }
+            }
             return;
           }
         } catch {
@@ -140,7 +149,7 @@ export function CatalogExplorerPanel({
       }
     })();
     return () => controller.abort();
-  }, [selectedRecord, selectedSourceSource, hasMapData]);
+  }, [selectedRecord, selectedSourceSource, hasMapData, onSelectAsset]);
 
   useEffect(() => {
     const root = asRecord(asRecord(metadata)?.root);
@@ -438,6 +447,7 @@ export function CatalogExplorerPanel({
                               aria-selected={mapSelected}
                               tabIndex={mapSelected ? 0 : -1}
                               onClick={() => {
+                                userSelectedTab.current = true;
                                 setMapSelected(true);
                                 setActiveAssetHref(mapAsset.href);
                                 onSelectAsset?.({...mapAsset, view: 'map'});
@@ -454,6 +464,7 @@ export function CatalogExplorerPanel({
                             aria-selected={!activeAssetHref}
                             tabIndex={activeAssetHref ? -1 : 0}
                             onClick={() => {
+                              userSelectedTab.current = true;
                               setActiveAssetHref(undefined);
                               setMapSelected(false);
                               onClosePreview?.();
@@ -471,6 +482,7 @@ export function CatalogExplorerPanel({
                               aria-selected={!mapSelected && activeAssetHref === asset.href}
                               tabIndex={!mapSelected && activeAssetHref === asset.href ? 0 : -1}
                               onClick={() => {
+                                userSelectedTab.current = true;
                                 setMapSelected(false);
                                 setActiveAssetHref(asset.href);
                                 onSelectAsset?.(asset);

@@ -105,6 +105,13 @@ test('keeps entries and long previews bounded and clears details when the source
     expect(entries.clientHeight).toBeGreaterThan(0);
     await act(async () => entries.querySelector('button')!.click());
     const inspector = container.querySelector<HTMLElement>('[aria-label="Catalog inspector"]')!;
+    await expect.poll(() => inspector.querySelector('[role="tab"]')?.textContent).toBe('Map');
+    expect(inspector.querySelector('[role="tab"]')?.getAttribute('aria-selected')).toBe('true');
+    await act(async () =>
+      Array.from(inspector.querySelectorAll<HTMLButtonElement>('[role="tab"]'))
+        .find(tab => tab.textContent === 'Details')!
+        .click()
+    );
     expect(entries.getBoundingClientRect().width).toBeLessThan(fullListWidth);
     await expect.poll(() => inspector.textContent).toContain('EGM96');
     expect(inspector.textContent).toContain('Geoid entry-0');
@@ -240,6 +247,60 @@ test('does not show a map tab for a table without spatial data', async () => {
     expect(
       Array.from(container.querySelectorAll('[role="tab"]')).map(tab => tab.textContent)
     ).toEqual(['Details', 'Table']);
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
+test('does not override an explicitly selected tab when map detection finishes', async () => {
+  let resolveMap!: (value: boolean) => void;
+  const pending = new Promise<boolean>(resolve => {
+    resolveMap = resolve;
+  });
+  const source = {
+    capabilities: {search: true},
+    getMetadata: async () => ({mode: 'static', root: {title: 'Fixture'}}),
+    search: async function* () {
+      yield {id: 'table', assets: {data: {href: 'https://example.org/table.parquet'}}};
+    }
+  } as unknown as CatalogExplorerSource['source'];
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const onSelectAsset = vi.fn();
+  try {
+    await act(async () =>
+      root.render(
+        React.createElement(CatalogExplorerPanel, {
+          sources: [{id: 'fixture', title: 'Fixture', source}],
+          onSelectAsset,
+          hasMapData: () => pending
+        })
+      )
+    );
+    await expect
+      .poll(() => container.querySelector('[aria-label="Catalog entries"] button'))
+      .not.toBeNull();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Catalog entries"] button')!.click()
+    );
+    const tableTab = Array.from(container.querySelectorAll<HTMLButtonElement>('[role="tab"]')).find(
+      tab => tab.textContent === 'Table'
+    )!;
+    await act(async () => tableTab.click());
+    await act(async () => {
+      resolveMap(true);
+      await pending;
+    });
+    expect(tableTab.getAttribute('aria-selected')).toBe('true');
+    expect(onSelectAsset).toHaveBeenCalledTimes(1);
+    expect(onSelectAsset).toHaveBeenCalledWith({
+      key: 'data',
+      href: 'https://example.org/table.parquet'
+    });
   } finally {
     await act(async () => root.unmount());
     container.remove();
