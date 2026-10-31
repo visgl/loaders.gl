@@ -4,7 +4,8 @@
     "src/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/draco/libs"
   ],
   "compilerOptions": {
     "composite": true,
@@ -14,9 +15,6 @@
   "references": [
     {
       "path": "../core"
-    },
-    {
-      "path": "../draco"
     },
     {
       "path": "../images"

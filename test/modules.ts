@@ -23,7 +23,7 @@ import '@loaders.gl/scientific/test/netcdf';
 import '@loaders.gl/scientific/test/zarr';
 
 // Pointcloud/Mesh Formats
-import '@loaders.gl/draco/test';
+import '@loaders.gl/scene/draco/test';
 // import '@loaders.gl/pointclouds/las/test';
 import '@loaders.gl/scene/obj/test';
 import '@loaders.gl/pointclouds/pcd/test';

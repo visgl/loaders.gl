@@ -67,7 +67,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   Draco: {
     Bunny: {
       type: 'draco',
-      url: `${LOADERS_URI}/modules/draco/test/data/bunny.drc`
+      url: `${LOADERS_URI}/modules/scene/test/draco/data/bunny.drc`
     }
   },
   // TODO need fix

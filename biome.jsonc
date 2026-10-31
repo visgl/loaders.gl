@@ -32,6 +32,7 @@
       "!**/src/libs/**",
       "!modules/pointclouds/src/las/libs/**",
       "!modules/scene/src/gltf/libs/**",
+      "!modules/scene/src/draco/libs/**",
       "!modules/raster/src/terrain/libs/**",
       "!modules/raster/src/lerc/libs/**",
       "!test/apps/**",

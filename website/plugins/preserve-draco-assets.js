@@ -15,7 +15,7 @@ module.exports = {
         () => {
           for (const asset of compilation.getAssets()) {
             if (
-              /modules[\\/]draco[\\/]src[\\/]libs[\\/][^\\/]+\.js$/.test(
+              /modules[\\/]scene[\\/](?:src[\\/]draco[\\/]libs|dist[\\/]libs)[\\/][^\\/]+\.js$/.test(
                 asset.info.sourceFilename || ''
               )
             ) {

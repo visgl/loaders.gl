@@ -5,18 +5,18 @@
 import {expect, test} from 'vitest';
 import {fetchFile, selectLoader, selectLoaderSync, isBrowser} from '@loaders.gl/core';
 import {LegacyImageLoader} from '@loaders.gl/images';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
 
 const KML_URL = '@loaders.gl/geospatial/kml/test/data/kml/KML_Samples.kml';
-const DRACO_URL = '@loaders.gl/draco/test/data/bunny.drc';
+const DRACO_URL = '@loaders.gl/scene/draco/test/data/bunny.drc';
 const TILE_3D_URL =
   '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGB/pointCloudRGB.pnts';
 const URL_WITH_QUERYSTRING =
   'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw.xy';
-const DRACO_URL_QUERYSTRING = '@loaders.gl/draco/test/data/bunny.drc?query.string';
+const DRACO_URL_QUERYSTRING = '@loaders.gl/scene/draco/test/data/bunny.drc?query.string';
 
 test('selectLoaderSync#urls', async () => {
   // @ts-ignore

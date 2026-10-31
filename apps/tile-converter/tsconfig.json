@@ -19,9 +19,6 @@
       "path": "../../modules/crypto"
     },
     {
-      "path": "../../modules/draco"
-    },
-    {
       "path": "../../modules/scene"
     },
     {

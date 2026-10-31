@@ -110,7 +110,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   }
 
   if (shouldRunBenchmark('draco')) {
-    const {default: dracoBench} = await import('@loaders.gl/draco/test/draco.bench');
+    const {default: dracoBench} = await import('@loaders.gl/scene/draco/test/draco.bench');
     await dracoBench(suite);
   }
   if (shouldRunBenchmark('excel')) {

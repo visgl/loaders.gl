@@ -42,7 +42,7 @@
       "modules/tables/csv/formats/csv",
       "modules/ogc/wms/formats/csw",
       "modules/images/textures/formats/dds",
-      "modules/draco/formats/draco",
+      "modules/scene/draco/formats/draco",
       "modules/geospatial/flatgeobuf/formats/flatgeobuf",
       "modules/tables/arrow/formats/geoarrow",
       "modules/tables/json/formats/geojson",
@@ -150,7 +150,7 @@
           "modules/images/textures/api-reference/compressed-texture-loader",
           "modules/images/textures/api-reference/crunch-loader",
           "modules/tables/csv/api-reference/csv-loader",
-          "modules/draco/api-reference/draco-loader",
+          "modules/scene/draco/api-reference/draco-loader",
           "modules/tables/excel/api-reference/excel-loader",
           "modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader",
           "modules/tables/arrow/api-reference/geoarrow-loader",
@@ -215,7 +215,7 @@
           "modules/documents/bson/api-reference/bson-writer",
           "modules/traces/api-reference/chrome-trace-writer",
           "modules/tables/csv/api-reference/csv-writer",
-          "modules/draco/api-reference/draco-writer",
+          "modules/scene/draco/api-reference/draco-writer",
           "modules/scene/gltf/api-reference/gltf-writer",
           "modules/scene/gltf/api-reference/glb-writer",
           "modules/images/api-reference/image-writer",
@@ -556,7 +556,8 @@
               "modules/scene/usd/README",
               "modules/scene/usd/api-reference/usd-loader"
             ]
-          }
+          },
+          "modules/scene/draco/README"
         ]
       },
       {
@@ -804,13 +805,6 @@
               "modules/images/video/api-reference/gif-builder"
             ]
           }
-        ]
-      },
-      {
-        "type": "category",
-        "label": "@loaders.gl/draco",
-        "items": [
-          "modules/draco/README"
         ]
       },
       {

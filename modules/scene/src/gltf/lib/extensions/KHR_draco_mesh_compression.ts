@@ -9,7 +9,8 @@
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {sliceArrayBuffer, parseFromContext} from '@loaders.gl/core/loader-utils';
 
-import {DracoLoader, DracoLoaderOptions, type DracoMesh} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene/draco-loader-types';
+import type {DracoLoaderOptions, DracoMesh} from '@loaders.gl/scene';
 
 import type {
   GLTFWithBuffers,

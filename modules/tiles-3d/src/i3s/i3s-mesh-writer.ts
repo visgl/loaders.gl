@@ -7,7 +7,7 @@ export type {I3SMeshTexture} from './i3s-mesh-texture';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
 import type {MeshGeometry} from '@loaders.gl/core/schema';
-import type {DracoLoaderOptions, DracoMesh} from '@loaders.gl/draco';
+import type {DracoLoaderOptions, DracoMesh} from '@loaders.gl/scene';
 import {encodeI3SMeshAttributes} from './i3s-mesh-attributes';
 import type {I3SMeshFeatures} from './i3s-mesh-attributes';
 export type {I3SMeshFeatures} from './i3s-mesh-attributes';
@@ -139,7 +139,8 @@ export async function encodeI3SMeshLayerWithDraco(
   };
   const {modules, useLocalLibraries, CDN: contentDeliveryNetwork} = libraryOptions;
   const runtimeOptions = {modules, core: {useLocalLibraries, CDN: contentDeliveryNetwork}};
-  const {DracoLoader, encodeDraco} = await import('@loaders.gl/draco');
+  const {DracoLoader} = await import('@loaders.gl/scene');
+  const {encodeDraco} = await import('@loaders.gl/scene/draco-writer');
   const encoded = await encodeDraco(
     {attributes, indices},
     {

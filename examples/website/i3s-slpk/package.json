@@ -15,7 +15,7 @@
     "@deck.gl/react": "^9.4.0",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
-    "@loaders.gl/draco": "workspace:*",
+    "@loaders.gl/scene": "workspace:*",
     "@loaders.gl/tile-converter": "workspace:*",
     "@loaders.gl/tiles": "workspace:*",
     "@loaders.gl/tiles-3d": "workspace:*",

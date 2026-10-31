@@ -27,7 +27,7 @@ lineage, rather than every transitive npm dependency.
 | [compression](https://github.com/visgl/loaders.gl/blob/master/modules/compression/THIRD-PARTY-NOTICES.md) | Arjun Barrett’s fflate; Pierre Curto’s LZ4; optional codec providers. |
 | [core](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md) | Apache Arrow; Mapbox earcut; Kyle Barron’s GeoArrow work; Karl Cheng’s binary-gltf-utils; Axel Rauschmayer’s async queue; Vsevolod Strukchinsky’s require-from-string; LASzip; Christian Schwarz’s wkx/TWKB; original scans. |
 | [crypto](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md) | Brian Todd Button’s md5-wasm; jsdom abab; CRC32 inspiration from wqli78; hash integration. |
-| [draco](https://github.com/visgl/loaders.gl/blob/master/modules/draco/THIRD-PARTY-NOTICES.md) | Google Draco 1.5.7 runtimes and adapted Web IDL types. |
+| [draco](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md) | Google Draco 1.5.7 runtimes and adapted Web IDL types. |
 | [geospatial](https://github.com/visgl/loaders.gl/blob/master/modules/geospatial/THIRD-PARTY-NOTICES.md) | Björn Harrtell’s FlatGeobuf; SQL.js/SQLite; original shapefile parsing. Christian Schwarz’s wkx/TWKB; historical Mapbox wellknown; current math.gl codecs. |
 | [graphs](https://github.com/visgl/loaders.gl/blob/master/modules/graphs/THIRD-PARTY-NOTICES.md) | Original graph loaders; native documents XML parsing and Apache Arrow. |
 | [images](https://github.com/visgl/loaders.gl/blob/master/modules/images/THIRD-PARTY-NOTICES.md) | Karl Cheng’s binary image utilities; Sindre Sorhus and file-type contributors. |

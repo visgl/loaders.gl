@@ -42,7 +42,7 @@ test('makeIterator#arrayBuffer', async () => {
     expect(chunk.byteLength).toBe(2);
   }
 });
-const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
+const DATA_URL = '@loaders.gl/scene/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 test('makeIterator(fetch)#async iterate', async () => {
   const response = await fetchFile(DATA_URL);
   const stream = response.body;

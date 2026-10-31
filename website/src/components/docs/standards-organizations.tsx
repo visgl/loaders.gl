@@ -30,7 +30,7 @@ const STANDARD_FAMILIES: readonly StandardsGroup[] = [
       {label: 'glTF / GLB', to: '/docs/modules/scene/gltf/formats/gltf'},
       {label: '3D Tiles', to: '/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles'},
       {label: 'I3S / SLPK', to: '/docs/modules/tiles-3d/i3s/formats/i3s'},
-      {label: 'Draco', to: '/docs/modules/draco/formats/draco'},
+      {label: 'Draco', to: '/docs/modules/scene/draco/formats/draco'},
       {label: 'KTX / KTX2', to: '/docs/modules/images/textures/formats/ktx'},
       {label: 'Basis', to: '/docs/modules/images/textures/formats/basis'},
       {label: 'LAS / LAZ', to: '/docs/modules/pointclouds/las/formats/las'},

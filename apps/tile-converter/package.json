@@ -89,7 +89,6 @@
     "@loaders.gl/compression": "5.0.0-beta.1",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/crypto": "5.0.0-beta.1",
-    "@loaders.gl/draco": "5.0.0-beta.1",
     "@loaders.gl/images": "5.0.0-beta.1",
     "@loaders.gl/scene": "5.0.0-beta.1",
     "@loaders.gl/tiles": "5.0.0-beta.1",

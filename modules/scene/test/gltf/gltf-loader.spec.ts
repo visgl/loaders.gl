@@ -12,7 +12,7 @@ import {
   type GLTFLoaderOptions
 } from '@loaders.gl/scene/gltf';
 import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {ImageLoader} from '@loaders.gl/images';
 import {getGLTFImageOptions} from '../../src/gltf/lib/parsers/parse-gltf';
 import {createGLBV3} from './test-utils/create-glb-v3';

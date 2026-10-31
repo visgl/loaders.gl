@@ -4,7 +4,7 @@
 
 import {describe, expect, test, vi} from 'vitest';
 import {ImageLoader} from '@loaders.gl/images';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {I3SContentLoaderWithParser} from '../../src/i3s/i3s-content-loader-with-parser';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/images';
 import {parseI3STileContent} from '../../src/i3s/lib/parsers/parse-i3s-tile-content';

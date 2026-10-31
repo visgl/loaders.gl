@@ -107,7 +107,7 @@ Bundled module injection:
 ```typescript
 import draco3d from 'draco3d';
 import {load} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 
 const mesh = await load(url, DracoLoader, {
   modules: {
@@ -180,8 +180,8 @@ The supported `options.modules` keys are loader-specific and writer-specific.
 
 Examples:
 
-- [DracoLoader](/docs/modules/draco/api-reference/draco-loader)
-- [DracoWriter](/docs/modules/draco/api-reference/draco-writer)
+- [DracoLoader](/docs/modules/scene/draco/api-reference/draco-loader)
+- [DracoWriter](/docs/modules/scene/draco/api-reference/draco-writer)
 - [BasisLoader](/docs/modules/images/textures/api-reference/basis-loader)
 - [CompressedTextureLoader](/docs/modules/images/textures/api-reference/compressed-texture-loader)
 - [KTX2BasisWriter](/docs/modules/images/textures/api-reference/ktx2-basis-texture-writer)

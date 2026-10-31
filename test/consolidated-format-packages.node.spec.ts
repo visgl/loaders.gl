@@ -10,11 +10,11 @@ import {preProcessFile} from 'typescript';
 import {build} from 'esbuild';
 import {expect, test} from 'vitest';
 
-const retiredPackages = ['las', 'pcd', 'ply', 'obj', 'gltf', 'wkt'];
+const retiredPackages = ['las', 'pcd', 'ply', 'obj', 'gltf', 'wkt', 'draco', 'textures', 'video'];
 
 test('format implementations have real grouped owners without forwarding packages', () => {
   for (const name of retiredPackages) expect(fs.existsSync(`modules/${name}`)).toBe(false);
-  for (const owner of ['pointclouds', 'scene', 'draco']) {
+  for (const owner of ['pointclouds', 'scene']) {
     const manifest = JSON.parse(fs.readFileSync(`modules/${owner}/package.json`, 'utf8'));
     expect(manifest.dependencies || {}).not.toHaveProperty('@loaders.gl/tables');
   }

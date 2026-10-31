@@ -5,7 +5,7 @@
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import {ImageLoader} from '@loaders.gl/images';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/images';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
 import {I3STileContent, I3STileOptions, I3STilesetOptions} from './types';

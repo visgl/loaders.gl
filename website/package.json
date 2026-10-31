@@ -116,7 +116,7 @@
   },
   "resolutions_disabled": {
     "@loaders.gl/core": "workspace:*",
-    "@loaders.gl/draco": "workspace:*",
+    "@loaders.gl/scene": "workspace:*",
     "@loaders.gl/tiles-3d": "workspace:*",
     "@loaders.gl/pointclouds/las": "workspace:*",
     "@loaders.gl/scene/obj": "workspace:*",

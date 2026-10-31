@@ -1,13 +1,13 @@
 # Generated baseline. Remove entries as tests migrate; additions require explicit review.
 modules/tiles-3d/test/3d-tiles/lib/parsers/batched-model-3d-tile.spec.ts::modules/tiles-3d/test/3d-tiles/data/cesium-rtc-extension.b3dm # Canonical CesiumRTC integration fixture; the extension behavior depends on the complete tile container.
 modules/core/test/lib/api/create-raster-source.spec.ts::modules/raster/test/geotiff/data/gfw-azores.tif # Cross-package raster-source conformance uses the same representative GeoTIFF as the owning package.
-modules/draco/test/draco-arrow-loader.spec.ts::modules/draco/test/data/cesium-tile.drc # Canonical Draco payload exercises Arrow conversion from a realistic compressed point cloud.
-modules/draco/test/draco-compression-ratio.spec.ts::modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin # Compression-ratio behavior requires a representative position buffer rather than a tiny synthetic sample.
-modules/draco/test/draco-loader.spec.ts::modules/draco/test/data/cesium-tile.drc # Canonical Draco interoperability payload covers decoder metadata and attributes together.
+modules/scene/test/draco/draco-arrow-loader.spec.ts::modules/scene/test/draco/data/cesium-tile.drc # Canonical Draco payload exercises Arrow conversion from a realistic compressed point cloud.
+modules/scene/test/draco/draco-compression-ratio.spec.ts::modules/scene/test/draco/data/raw-attribute-buffers/lidar-positions.bin # Compression-ratio behavior requires a representative position buffer rather than a tiny synthetic sample.
+modules/scene/test/draco/draco-loader.spec.ts::modules/scene/test/draco/data/cesium-tile.drc # Canonical Draco interoperability payload covers decoder metadata and attributes together.
 modules/raster/test/geotiff/geotiff-loader.spec.ts::modules/raster/test/geotiff/data/gfw-azores.tif # Representative tiled GeoTIFF retains geospatial metadata and raster decoding coverage.
 modules/scene/test/gltf/glb-loader.spec.ts::modules/scene/test/gltf/data/gltf-2.0/2CylinderEngine.glb # Canonical multi-mesh GLB preserves realistic accessor and buffer integration coverage.
 modules/scene/test/gltf/gltf-loader.spec.ts::modules/scene/test/gltf/data/gltf-2.0/2CylinderEngine.glb # Canonical multi-mesh glTF preserves realistic scene and resource integration coverage.
-modules/core/test/loader-utils-package/lib/iterators/make-iterator.spec.ts::modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin # Iterator chunk-boundary coverage needs a buffer large enough to span many chunks.
+modules/core/test/loader-utils-package/lib/iterators/make-iterator.spec.ts::modules/scene/test/draco/data/raw-attribute-buffers/lidar-positions.bin # Iterator chunk-boundary coverage needs a buffer large enough to span many chunks.
 modules/tables/test/parquet/parquet-loader.spec.ts::modules/tables/test/parquet/data/fruits.parquet # Canonical Parquet interoperability fixture covers encoded pages and schema metadata.
 modules/tables/test/parquet/parquet-nested-arrow.spec.ts::modules/tables/test/parquet/data/fruits.parquet # Canonical nested/repeated fixture validates projected Arrow offsets, struct children, and row slicing.
 modules/tables/test/parquet/parquetjs/integration.spec.ts::modules/tables/test/parquet/data/fruits.parquet # JavaScript backend parity is checked against the canonical encoded-page fixture.

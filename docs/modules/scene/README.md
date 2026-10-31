@@ -1,9 +1,10 @@
 # @loaders.gl/scene
 
-Load scene graphs and meshes from glTF/GLB, OBJ/MTL and OpenUSD. Install one package and use the format entrypoint appropriate for the asset.
+Load scene graphs and meshes from glTF/GLB, OBJ/MTL, OpenUSD and Draco. Install one package and use the format entrypoint appropriate for the asset.
 
 | Subpath | Formats | Metadata loaders |
 | --- | --- | --- |
+| [Draco](./draco/README.md) (package root) | Compressed meshes and point clouds | `DracoLoader` |
 | [gltf](./gltf/README.md) | glTF and GLB | `GLTFLoader`, `GLBLoader` |
 | [obj](./obj/README.md) | OBJ and MTL | `OBJLoader`, `MTLLoader` |
 | [OpenUSD](./usd/api-reference/usd-loader.md) (`/usd`) | USD ASCII layers and uncompressed USDZ archives | `USDLoader` |

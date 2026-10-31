@@ -98,10 +98,10 @@
       "import": "./dist/3d-tiles/subtree-zod-schema.js",
       "require": "./dist/3d-tiles/subtree-zod-schema.cjs"
     },
-    "./3d-tiles/cesium-ion-loader-with-parser": {
-      "types": "./dist/3d-tiles/cesium-ion-loader-with-parser.d.ts",
-      "import": "./dist/3d-tiles/cesium-ion-loader-with-parser.js",
-      "require": "./dist/3d-tiles/cesium-ion-loader-with-parser.cjs"
+    "./cesium-ion-loader-with-parser": {
+      "types": "./dist/cesium-ion-loader-with-parser.d.ts",
+      "import": "./dist/cesium-ion-loader-with-parser.js",
+      "require": "./dist/cesium-ion-loader-with-parser.cjs"
     },
     "./3d-tiles/bundled": {
       "types": "./dist/3d-tiles/bundled.d.ts",
@@ -203,7 +203,6 @@
   "dependencies": {
     "@loaders.gl/archives": "5.0.0-beta.1",
     "@loaders.gl/compression": "5.0.0-beta.1",
-    "@loaders.gl/draco": "5.0.0-beta.1",
     "@loaders.gl/images": "5.0.0-beta.1",
     "@loaders.gl/pointclouds": "5.0.0-beta.1",
     "@loaders.gl/scene": "5.0.0-beta.1",

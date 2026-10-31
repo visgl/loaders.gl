@@ -28,3 +28,7 @@ crate layers are not yet supported.
 
 See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
 and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).
+
+## Draco geometry
+
+`DracoLoader` metadata is available from the scene root. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco-loader` for direct parsing, `DracoWriter` and encoding helpers from `@loaders.gl/scene/draco-writer`, and `getDracoLibraryOptions` from `@loaders.gl/scene/draco-library-options` for bundled runtime URLs. Draco supports both meshes and point clouds.

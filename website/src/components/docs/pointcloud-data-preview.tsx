@@ -1,6 +1,6 @@
 import React, {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {load} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {OBJLoader} from '@loaders.gl/scene/obj';
 import {PCDLoader} from '@loaders.gl/pointclouds/pcd';

@@ -18,8 +18,8 @@ test('website production assets preserve the classic Draco initializer globals',
   const preserveDracoAssets = require('../website/plugins/preserve-draco-assets');
   const directory = await mkdtemp(join(tmpdir(), 'loaders-website-draco-'));
   const entry = join(directory, 'entry.js');
-  const runtime = resolve('modules/draco/src/libs/draco_encoder.js');
-  const decoder = resolve('modules/draco/src/libs/draco_wasm_wrapper_gltf.js');
+  const runtime = resolve('modules/scene/dist/libs/draco_encoder.js');
+  const decoder = resolve('modules/scene/src/draco/libs/draco_wasm_wrapper_gltf.js');
   const ordinaryScript = join(directory, 'ordinary.js');
   const output = join(directory, 'output');
   let compiler: ReturnType<typeof rspack> | undefined;

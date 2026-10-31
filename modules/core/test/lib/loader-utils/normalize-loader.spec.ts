@@ -7,7 +7,7 @@ import {isLoaderObject, normalizeLoader} from '../../../src/lib/loader-utils/nor
 import * as threeDTiles from '@loaders.gl/tiles-3d/3d-tiles';
 import * as arrow from '@loaders.gl/tables/arrow/index';
 import * as csv from '@loaders.gl/tables/csv/index';
-import * as draco from '@loaders.gl/draco';
+import * as draco from '@loaders.gl/scene';
 import * as tables from '@loaders.gl/core/schema-utils';
 import * as gltf from '@loaders.gl/scene/gltf';
 import * as images from '@loaders.gl/images';

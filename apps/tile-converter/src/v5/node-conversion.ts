@@ -129,7 +129,7 @@ export async function convertNodeTileset(
   try {
     const inspection = await rawSource.inspect(signal);
     await import('@loaders.gl/core/polyfills');
-    const {getDracoLibraryOptions} = await import('@loaders.gl/draco/bundled');
+    const {getDracoLibraryOptions} = await import('@loaders.gl/scene/draco-library-options');
     const dracoLibraryOptions = getDracoLibraryOptions({
       decoderProfile: 'full',
       useLocalLibraries: true

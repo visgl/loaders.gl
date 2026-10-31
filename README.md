@@ -12,14 +12,13 @@ Formats, encodings, and protocols by module (see each README for runtime and imp
 | [`@loaders.gl/documents`](modules/documents/README.md) | XML, HTML, YAML, TOML, BSON, Markdown. |
 | [`@loaders.gl/core`](modules/core/README.md) | Arrow, GeoArrow, GeoJSON, WKT, WKB. |
 | [`@loaders.gl/crypto`](modules/crypto/README.md) | CRC32, CRC32C, MD5, SHA-256. |
-| [`@loaders.gl/draco`](modules/draco/README.md) | Draco. |
 | [`@loaders.gl/geospatial`](modules/geospatial/README.md) | KML, KMZ, GPX, TCX, Shapefile, SHP, SHX, DBF, CPG, PRJ, FlatGeobuf, GeoPackage, WKT, WKT CRS, WKB, TWKB. |
 | [`@loaders.gl/graphs`](modules/graphs/README.md) | DOT, GraphML, GEXF. |
 | [`@loaders.gl/images`](modules/images/README.md) | PNG, JPEG, GIF, WebP, AVIF, BMP, ICO, SVG; KTX, KTX2, DDS, PVR, Basis, Crunch, Radiance HDR; browser MP4 loading and GIF generation. Availability depends on runtime and optional codecs. |
 | [`@loaders.gl/ogc`](modules/ogc/README.md) | WMS, WFS, WMTS, WCS, CSW, GML, OGC API, STAC, STAC API, XML, JSON, GeoJSON. |
 | [`@loaders.gl/pointclouds`](modules/pointclouds/README.md) | LAS, LAZ, PCD, PLY. |
 | [`@loaders.gl/raster`](modules/raster/README.md) | GeoTIFF, TIFF, COG, OME-TIFF, LERC, LERC1, LERC2, quantized mesh, Mapbox Terrain-RGB, Terrarium, PNG, JPEG, GIF, WebP, BMP. |
-| [`@loaders.gl/scene`](modules/scene/README.md) | glTF, GLB, OBJ, MTL, OpenUSD, USD, USDA, USDZ. OpenUSD support covers ASCII USDA and uncompressed USDZ archives with an ASCII root layer. |
+| [`@loaders.gl/scene`](modules/scene/README.md) | Draco, glTF, GLB, OBJ, MTL, OpenUSD, USD, USDA, USDZ. OpenUSD support covers ASCII USDA and uncompressed USDZ archives with an ASCII root layer. |
 | [`@loaders.gl/scientific`](modules/scientific/README.md) | NPY, NetCDF, NetCDF-4, Zarr, GeoZarr, OME-Zarr, SpatialData, GRIB2, HDF5, VTK, VTI, VTR, VTS, VTU, VTP. GRIB2, HDF5, NetCDF-4, and VTK readers have the implementation limits documented below. |
 | [`@loaders.gl/splats`](modules/splats/README.md) | SPLAT, KSPLAT, SPZ, RAD. |
 | [`@loaders.gl/sql`](modules/sql/README.md) | SQL, Arrow. |

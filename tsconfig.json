@@ -204,17 +204,11 @@
       "@loaders.gl/3d-tiles": [
         "modules/tiles-3d/src/3d-tiles"
       ],
-      "@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser": [
-        "modules/tiles-3d/src/3d-tiles/cesium-ion-loader-with-parser"
-      ],
       "@loaders.gl/tiles-3d/3d-tiles/test": [
         "modules/tiles-3d/test/3d-tiles"
       ],
-      "@loaders.gl/draco": [
-        "modules/draco/src"
-      ],
-      "@loaders.gl/draco/test": [
-        "modules/draco/test"
+      "@loaders.gl/scene/draco/test": [
+        "modules/scene/test/draco"
       ],
       "@loaders.gl/raster/geotiff-raster-loader": [
         "modules/raster/src/geotiff/geotiff-raster-loader"
@@ -335,9 +329,6 @@
       ],
       "@loaders.gl/splats/test": [
         "modules/splats/test"
-      ],
-      "@loaders.gl/scene": [
-        "modules/scene/src/index.ts"
       ],
       "@loaders.gl/scene/*": [
         "modules/scene/src/*"
@@ -998,6 +989,36 @@
       ],
       "@loaders.gl/documents/test/*": [
         "modules/documents/test/*"
+      ],
+      "@loaders.gl/ogc/wmts-capabilities-loader-with-parser": [
+        "modules/ogc/src/wmts-capabilities-loader-with-parser.ts"
+      ],
+      "@loaders.gl/tiles-3d/cesium-ion-loader-with-parser": [
+        "modules/tiles-3d/src/cesium-ion-loader-with-parser.ts"
+      ],
+      "@loaders.gl/scene": [
+        "modules/scene/src"
+      ],
+      "@loaders.gl/scene/draco-loader": [
+        "modules/scene/src/draco-loader.ts"
+      ],
+      "@loaders.gl/scene/draco-loader-types": [
+        "modules/scene/src/draco-loader-types.ts"
+      ],
+      "@loaders.gl/scene/draco-wasm-loader": [
+        "modules/scene/src/draco-wasm-loader.ts"
+      ],
+      "@loaders.gl/scene/draco-javascript-loader": [
+        "modules/scene/src/draco-javascript-loader.ts"
+      ],
+      "@loaders.gl/scene/draco3d-loader": [
+        "modules/scene/src/draco3d-loader.ts"
+      ],
+      "@loaders.gl/scene/draco-writer": [
+        "modules/scene/src/draco-writer.ts"
+      ],
+      "@loaders.gl/scene/draco-library-options": [
+        "modules/scene/src/draco-library-options.ts"
       ]
     },
     "plugins": [

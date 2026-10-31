@@ -5,8 +5,8 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {DracoLoader} from '@loaders.gl/draco';
-import type {DracoMesh} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
+import type {DracoMesh} from '@loaders.gl/scene';
 import {LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';
 import {GL} from '@math.gl/geometry';
 import {Vector3} from '@math.gl/core';

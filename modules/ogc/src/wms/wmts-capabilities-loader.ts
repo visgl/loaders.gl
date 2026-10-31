@@ -25,6 +25,6 @@ export const WMTSCapabilitiesLoader = {
   mimeTypes: ['application/vnd.ogc.wmts_xml', 'application/xml', 'text/xml'],
   options: {wmts: {}},
   preload: async () =>
-    (await import('@loaders.gl/ogc/wms/wmts-capabilities-loader-with-parser'))
+    (await import('@loaders.gl/ogc/wmts-capabilities-loader-with-parser'))
       .WMTSCapabilitiesLoaderWithParser
 } as const satisfies Loader<WMTSCapabilities, never, WMTSLoaderOptions>;
