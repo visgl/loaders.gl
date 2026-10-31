@@ -13,7 +13,7 @@ export function CatalogDeckPreview({table, bounds}: {table: Table; bounds?: numb
 
   useEffect(() => {
     let cancelled = false;
-    let deck: Deck | undefined;
+    let deck: Deck<any> | undefined;
     setPanel(undefined);
     setError(undefined);
     void (async () => {
