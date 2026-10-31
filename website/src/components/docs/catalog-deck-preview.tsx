@@ -18,13 +18,32 @@ export function CatalogDeckPreview({table, bounds}: {table: Table; bounds?: numb
     setError(undefined);
     void (async () => {
       try {
-        const [{Deck, MapView, WebMercatorViewport}, {DeckPanel}, {GeoArrowLayer, getGeoArrowGeometryColumn}] = await Promise.all([
+        const [{Deck, MapView, WebMercatorViewport}, {DeckPanel}, {GeoArrowLayer, getGeoArrowGeometryColumn}, {ScatterplotLayer}] = await Promise.all([
           import('@deck.gl/core'),
           import('@deck.gl-community/widgets'),
-          import('@loaders.gl/deck-layers')
+          import('@loaders.gl/deck-layers'),
+          import('@deck.gl/layers')
         ]);
         if (cancelled || !root.current) return;
-        const {geometryColumn} = getGeoArrowGeometryColumn(table);
+        let geometryColumn: string | undefined;
+        try {
+          geometryColumn = getGeoArrowGeometryColumn(table).geometryColumn;
+        } catch {
+          // Grid tables may instead store positions as longitude and latitude columns.
+        }
+        const longitudeField = table.schema.fields.find(field => /^(lon|longitude)$/i.test(field.name));
+        const latitudeField = table.schema.fields.find(field => /^(lat|latitude)$/i.test(field.name));
+        const longitudes = longitudeField && table.getChild(longitudeField.name);
+        const latitudes = latitudeField && table.getChild(latitudeField.name);
+        const points: Array<{position: [number, number]}> = [];
+        if (!geometryColumn && longitudes && latitudes) {
+          for (let index = 0; index < table.numRows; index++) {
+            const longitude = longitudes.get(index);
+            const latitude = latitudes.get(index);
+            if (typeof longitude === 'number' && typeof latitude === 'number' && Number.isFinite(longitude) && Number.isFinite(latitude) && longitude >= -180 && longitude <= 180 && latitude >= -90 && latitude <= 90) points.push({position: [longitude, latitude]});
+          }
+        }
+        if (!geometryColumn && !points.length) throw new Error('No supported geometry or longitude/latitude columns in this sample.');
         const canvas = root.current;
         const rootView = `${panelId}-root`;
         const view = `${panelId}-map`;
@@ -36,12 +55,12 @@ export function CatalogDeckPreview({table, bounds}: {table: Table; bounds?: numb
         const scene = () => ({
           view: new MapView({id: view, controller: true}),
           viewState: camera,
-          layers: [new GeoArrowLayer({
+          layers: [geometryColumn ? new GeoArrowLayer({
             id: `${panelId}-features`, data: table, geometryColumn,
             pointLayerProps: {getFillColor: [35, 145, 210, 180], radiusMinPixels: 3},
             pathLayerProps: {getColor: [255, 180, 40, 255], widthMinPixels: 1},
             solidPolygonLayerProps: {getFillColor: [35, 145, 210, 180]}, pickable: true
-          })],
+          }) : new ScatterplotLayer({id: `${panelId}-points`, data: points, getPosition: point => point.position, getFillColor: [35, 145, 210, 180], getRadius: 3, radiusUnits: 'pixels', pickable: true})],
           onViewStateChange: ({viewState}: any) => {
             camera = viewState;
             mapPanel.setProps({sceneProps: scene()});

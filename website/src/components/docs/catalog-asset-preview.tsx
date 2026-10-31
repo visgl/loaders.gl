@@ -216,6 +216,11 @@ async function readParquetTable(data: string | Blob, signal: AbortSignal): Promi
     const {getGeometryColumnsFromSchema} = await import('@loaders.gl/core/geoarrow');
     const geometryColumn = Object.keys(getGeometryColumnsFromSchema(metadata.schema))[0];
     if (geometryColumn && !columnNames.includes(geometryColumn)) columnNames.push(geometryColumn);
+    for (const field of metadata.schema.fields) {
+      if (/^(lon|longitude|lat|latitude)$/i.test(field.name) && !columnNames.includes(field.name)) {
+        columnNames.push(field.name);
+      }
+    }
     const preview: AssetPreview = {rowCount: metadata.rowCount};
     try {
       const geo = JSON.parse(metadata.keyValueMetadata.geo || '{}');
