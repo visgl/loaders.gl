@@ -516,6 +516,21 @@ test('OME-NGFF metadata stays native without a declared CRS', async () => {
   ).toEqual([]);
 });
 
+test('OME-NGFF identity transforms change no scale', () => {
+  const multiscale = {
+    axes: OME_AXES,
+    datasets: [
+      {path: 'a', coordinateTransformations: [{type: 'identity'}, {type: 'scale', scale: [2, 3]}]},
+      {path: 'b', coordinateTransformations: [{type: 'scale', scale: [4, 6]}]}
+    ],
+    coordinateTransformations: [{type: 'identity'}]
+  };
+  expect(getSpatialMultiscaleLevels({multiscales: [multiscale]}, 'a', {spatialOME: true})).toEqual([
+    {id: 'a', array: 'a', attributes: {}, scale: {y: 2, x: 3}},
+    {id: 'b', array: 'b', attributes: {}, scale: {y: 4, x: 6}}
+  ]);
+});
+
 test('OME-NGFF datasets resolve as levels with composed scales', () => {
   const multiscale = {
     axes: OME_AXES,

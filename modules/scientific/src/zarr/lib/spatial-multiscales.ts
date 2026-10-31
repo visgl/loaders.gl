@@ -118,7 +118,7 @@ function getOMEScale(axes: string[], transformLists: unknown[]): Record<string, 
       throw new Error('OME-NGFF coordinateTransformations must be a list.');
     }
     for (const transform of transforms as Array<Record<string, unknown>>) {
-      if (transform?.type === 'translation') continue;
+      if (transform?.type === 'identity' || transform?.type === 'translation') continue;
       if (transform?.type !== 'scale') {
         throw new Error(`Unsupported OME-NGFF coordinate transformation ${String(transform?.type)}.`);
       }
