@@ -1,8 +1,8 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import Map from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import Map from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
@@ -21,6 +21,8 @@ import {Tileset3D} from '@loaders.gl/tiles-3d';
 import {BuildingExplorer} from './components/building-explorer';
 import {filterTile} from './filter-tile';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Turanga_Library/SceneServer/layers/0';
@@ -186,7 +188,7 @@ export default function App() {
           mapLib={maplibregl}
           mapStyle={'https://loaders.gl/mapstyle/deck-dark.json'}
           preventStyleDiffing
-          preserveDrawingBuffer
+          canvasContextAttributes={{preserveDrawingBuffer: true}}
         />
       </DeckGL>
       {sublayers?.length ? (

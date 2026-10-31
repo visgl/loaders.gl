@@ -1,8 +1,8 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import Map from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import Map from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
@@ -25,6 +25,8 @@ import {
 } from './constants';
 import {getNumericAttributeInfo} from './utils/fetch-attributes-data';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 export default function App() {
   const tileSets: string[] = Object.keys(EXAMPLES);
@@ -134,7 +136,7 @@ export default function App() {
           mapLib={maplibregl}
           mapStyle={'https://loaders.gl/mapstyle/deck-dark.json'}
           preventStyleDiffing
-          preserveDrawingBuffer
+          canvasContextAttributes={{preserveDrawingBuffer: true}}
         />
       </DeckGL>
       <ControlPanel tileSets={tileSets} onSelectTileset={onSelectTilesetHandler} />

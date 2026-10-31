@@ -1,8 +1,8 @@
 import React, {useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import Map from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import Map from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
@@ -14,6 +14,8 @@ import {Tileset3D} from '@loaders.gl/tiles-3d';
 import {ControlPanel} from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 export const EXAMPLES = {
   'San Francisco': {
@@ -137,7 +139,7 @@ export default function App() {
           mapLib={maplibregl}
           mapStyle={'https://loaders.gl/mapstyle/deck-dark.json'}
           preventStyleDiffing
-          preserveDrawingBuffer
+          canvasContextAttributes={{preserveDrawingBuffer: true}}
         />
       </DeckGL>
       <ControlPanel tileSets={tileSets} onSelectTileset={onSelectTilesetHandler} />

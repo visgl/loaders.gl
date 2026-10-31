@@ -5,8 +5,8 @@
 import {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import {Map} from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 
 import {DeckGL} from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
@@ -50,6 +50,8 @@ import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/co
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
 import '@deck.gl/widgets/stylesheet.css';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 export const INITIAL_MAP_STYLE =
   'https://loaders.gl/mapstyle/deck-light.json';

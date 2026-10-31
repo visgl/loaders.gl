@@ -25,12 +25,14 @@ import {
 } from '../shared/example-source-picker';
 import {getExampleDevicePixelRatio} from '../shared/example-performance';
 
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import {Map} from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 
 import type {Example} from './examples';
 import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE} from './examples';
 import '@deck.gl/widgets/stylesheet.css';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 /** Stable loader identities prevent metadata updates from restarting source resolution. */
 const TILE_LOADERS = [

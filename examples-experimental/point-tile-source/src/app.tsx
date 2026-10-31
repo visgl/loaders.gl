@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {Map} from 'react-map-gl/maplibre';
-import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import {DeckGL} from '@deck.gl/react';
@@ -10,6 +9,10 @@ import {MapViewState} from '@deck.gl/core';
 import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
 
 import {PointTileSourceLayer} from './point-tile-source-layer';
+import * as maplibregl from 'maplibre-gl';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 export const TRANSITION_DURAITON = 4000;
 
@@ -43,7 +46,7 @@ export default function App() {
           reuseMaps
           mapLib={maplibregl}
           mapStyle={'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'}
-          preserveDrawingBuffer
+          canvasContextAttributes={{preserveDrawingBuffer: true}}
         />
       </DeckGL>
     </div>

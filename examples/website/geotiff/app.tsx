@@ -20,12 +20,14 @@ import {
   sampleRaster,
   rasterCoordinateToPixel
 } from '@loaders.gl/core/loader-utils';
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import {Map} from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import {
   createDeckFullscreenWidget,
   createDeckStatsWidget
 } from '../shared/create-deck-stats-widget';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 const DATA_URL = '/gfw-azores.tif';
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/positron';

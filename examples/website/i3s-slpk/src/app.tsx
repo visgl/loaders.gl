@@ -14,6 +14,9 @@ import Map from 'react-map-gl/maplibre';
 
 import {ControlPanel} from './components/control-panel';
 import {I3SMeshExtension} from './i3s-mesh-extension';
+import * as maplibregl from 'maplibre-gl';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 const I3S_MESH_EXTENSION = new I3SMeshExtension();
 
@@ -150,7 +153,7 @@ export default function App() {
         <Map
           reuseMaps
           mapStyle="https://loaders.gl/mapstyle/deck-dark.json"
-          preserveDrawingBuffer
+          canvasContextAttributes={{preserveDrawingBuffer: true}}
         />
       </DeckGL>
       <ControlPanel

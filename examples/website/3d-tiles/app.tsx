@@ -4,8 +4,8 @@
 
 import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Map as BaseMap} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import {Map as BaseMap} from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import styled from 'styled-components';
 
 import {luma} from '@luma.gl/core';
@@ -26,6 +26,8 @@ import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from '
 import {INITIAL_MAP_STYLE} from './constants';
 import {createTilesetViewState} from './create-tileset-view-state';
 import {TileFoldExtension, type TileFoldExtensionProps} from './tile-fold-extension';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 const TILESET_SERVER_URL = 'https://assets.ion.cesium.com';
 

@@ -20,8 +20,8 @@ import {
 } from '@loaders.gl/tables/parquet-dataset-source';
 import type {ParquetPredicate} from '@loaders.gl/tables/parquet/index';
 import type {Table as ArrowTable} from 'apache-arrow';
-import maplibregl from 'maplibre-gl';
-import {Map} from 'react-map-gl';
+import * as maplibregl from 'maplibre-gl';
+import {Map} from 'react-map-gl/maplibre';
 
 import {
   FsqPlacesCatalogProvider,
@@ -29,6 +29,8 @@ import {
 } from './fsq-places-catalog';
 import './style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 const PARQUET_SOURCE_WORKER_URL = new URL(

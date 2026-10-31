@@ -13,8 +13,10 @@ import {SourceLayer} from '@loaders.gl/deck-layers';
 import type {RasterBoundingBox, RasterData} from '@loaders.gl/core/loader-utils';
 import {GeoZarrSourceLoader, type GeoZarrSourceMetadata} from '@loaders.gl/scientific/zarr';
 
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import {Map} from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 const DATA_URL =
   'https://nasa-power.s3.us-west-2.amazonaws.com/syn1deg/spatial/power_syn1deg_climatology_spatial_utc.zarr';

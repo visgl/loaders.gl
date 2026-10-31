@@ -10,8 +10,8 @@ import {DeckGL} from '@deck.gl/react'
 import {GeoJsonLayer} from '@deck.gl/layers'
 import {MapController} from '@deck.gl/core'
 import type {MapViewState} from '@deck.gl/core'
-import {Map} from 'react-map-gl'
-import maplibregl from 'maplibre-gl'
+import {Map} from 'react-map-gl/maplibre'
+import * as maplibregl from 'maplibre-gl'
 import {tableFromJSON} from 'apache-arrow'
 
 import type {ArrowTable} from '@loaders.gl/core/schema'
@@ -20,6 +20,8 @@ import {bindSQLPredicate, parseSQLPredicate, queryArrowTable} from '@loaders.gl/
 import {compileSQLTableQuery, DuckDBSQLDataSource} from '@loaders.gl/sql'
 import type {SQLTableQuery} from '@loaders.gl/sql'
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget'
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 type QueryBackend = 'arrow' | 'duckdb'
 

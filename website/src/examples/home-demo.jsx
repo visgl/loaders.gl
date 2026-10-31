@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 
-import Map from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import Map from 'react-map-gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
@@ -9,6 +9,8 @@ import {FullscreenWidget} from '@deck.gl/widgets';
 import '@deck.gl/widgets/stylesheet.css';
 
 import {createHomeDemoLayer} from './home-demo-layer';
+
+maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
 const INITIAL_VIEW_STATE = {
   transitionDuration: 0,
@@ -59,7 +61,7 @@ export default function App() {
           mapLib={maplibregl}
           mapStyle={'https://loaders.gl/mapstyle/deck-light.json'}
           preventStyleDiffing
-          preserveDrawingBuffer
+          canvasContextAttributes={{preserveDrawingBuffer: true}}
         />
       </DeckGL>
     </div>
