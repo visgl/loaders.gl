@@ -16,3 +16,5 @@ yarn
 # bundle and serve the app with webpack
 yarn start-local  # or yarn start
 ```
+
+Use Node.js 20.19+ or 22.12+. Run `npm install` and `npm start` in this directory. Use `npm run build` for a production build.
