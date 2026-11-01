@@ -32,7 +32,6 @@ function makeAliases() {
     '@loaders.gl/core/test': resolveTestPath('./modules/core/test'),
     '@loaders.gl/tables/csv/test': resolveTestPath('./modules/tables/test/csv'),
     '@loaders.gl/scene/draco/test': resolveTestPath('./modules/scene/test/draco'),
-    '@loaders.gl/tables/excel/test': resolveTestPath('./modules/tables/test/excel'),
     '@loaders.gl/geospatial/flatgeobuf/test': resolveTestPath(
       './modules/geospatial/test/flatgeobuf'
     ),

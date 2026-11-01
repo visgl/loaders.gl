@@ -16,7 +16,6 @@ const FORMAT_EXPORTS = {
   tables: [
     'CSVFormat',
     'AvroFormat',
-    'ExcelFormat',
     'ArrowFormat',
     'JSONFormat',
     'GeoJSONFormat',
@@ -38,7 +37,6 @@ const FORMAT_EXPORTS = {
     'GeoPackageFormat'
   ],
   scene: ['DracoFormat'],
-  'tables/excel': ['ExcelFormat'],
   'geospatial/flatgeobuf': ['FlatGeobufFormat'],
   'geospatial/geopackage': ['GeoPackageFormat'],
   raster: ['GeoTIFFFormat', 'OMETiffFormat', 'LERCFormat', 'TerrainFormat', 'QuantizedMeshFormat'],

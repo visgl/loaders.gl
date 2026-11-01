@@ -290,7 +290,6 @@ const config = {
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/tables/csv/index': resolve('../modules/tables/src/csv'),
             '@loaders.gl/deck-layers': resolve('../modules/deck-layers/src'),
-            '@loaders.gl/tables/excel/index': resolve('../modules/tables/src/excel'),
             '@loaders.gl/geospatial/flatgeobuf/index': resolve('../modules/geospatial/src/flatgeobuf'),
             '@loaders.gl/geospatial/geopackage/index': resolve('../modules/geospatial/src/geopackage'),
             '@loaders.gl/raster': resolve('../modules/raster/src'),
@@ -404,7 +403,7 @@ const config = {
       {
         createRedirects(existingPath) {
           const consolidatedModuleDocs = {
-            tables: ['arrow', 'avro', 'bson', 'csv', 'excel', 'json', 'lance', 'orc', 'parquet'],
+            tables: ['arrow', 'avro', 'bson', 'csv', 'json', 'lance', 'orc', 'parquet'],
             geospatial: ['flatgeobuf', 'geopackage', 'kml', 'shapefile', 'wkt'],
             core: ['scan', 'arrow-geometry', 'geoarrow', 'schema', 'schema-utils', 'polyfills'],
             raster: ['geotiff', 'lerc', 'terrain'],

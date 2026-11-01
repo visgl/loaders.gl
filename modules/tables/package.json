@@ -141,39 +141,6 @@
       "types": "./dist/avro-schema.d.ts",
       "import": "./dist/avro-schema.js"
     },
-    "./excel/excel-format": {
-      "types": "./dist/excel/excel-format.d.ts",
-      "import": "./dist/excel/excel-format.js"
-    },
-    "./excel/bundled": {
-      "types": "./dist/excel/bundled.d.ts",
-      "import": "./dist/excel/bundled.js"
-    },
-    "./excel-loader": {
-      "types": "./dist/excel-loader.d.ts",
-      "import": "./dist/excel-loader.js"
-    },
-    "./excel/unbundled": {
-      "types": "./dist/excel/unbundled.d.ts",
-      "import": "./dist/excel/unbundled.js"
-    },
-    "./excel/index": {
-      "types": "./dist/excel/index.d.ts",
-      "import": "./dist/excel/index.js",
-      "require": "./dist/excel/index.cjs"
-    },
-    "./excel-loader-types": {
-      "types": "./dist/excel-loader-types.d.ts",
-      "import": "./dist/excel-loader-types.js"
-    },
-    "./excel": {
-      "types": "./dist/excel/index.d.ts",
-      "import": "./dist/excel/index.js",
-      "require": "./dist/excel/index.cjs"
-    },
-    "./excel-worker.js": {
-      "import": "./dist/excel-worker.js"
-    },
     "./geoarrow-loader": {
       "types": "./dist/geoarrow-loader.d.ts",
       "import": "./dist/geoarrow-loader.js"
@@ -631,10 +598,9 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run copy-wasm && npm run build-worker-csv && npm run build-worker-node-csv && npm run build-worker-excel && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet && npm run build-worker-json-tables && npm run build-worker-node-json-tables && npm run build-worker-geoarrow && npm run build-worker-node-arrow && npm run build-worker-node-geoarrow",
+    "pre-build": "npm run copy-wasm && npm run build-worker-csv && npm run build-worker-node-csv && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet && npm run build-worker-json-tables && npm run build-worker-node-json-tables && npm run build-worker-geoarrow && npm run build-worker-node-arrow && npm run build-worker-node-geoarrow",
     "build-worker-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-excel": "node ../../scripts/build-codec-worker.mjs src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-triangulation-worker-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-triangulation-worker-node-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/triangulation-worker-node.ts --bundle --outfile=dist/triangulation-worker-node.js --platform=node --target=node16 --format=esm --tree-shaking=false --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -660,8 +626,7 @@
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "optionalDependencies": {
-    "parquet-wasm": "0.7.2",
-    "xlsx": "^0.18.5"
+    "parquet-wasm": "0.7.2"
   },
   "browser": {
     "child_process": false,
@@ -683,11 +648,6 @@
     "CSV",
     "TSV",
     "DSV",
-    "Excel",
-    "XLS",
-    "XLSB",
-    "XLSM",
-    "XLSX",
     "JSON",
     "GeoJSON",
     "NDJSON",

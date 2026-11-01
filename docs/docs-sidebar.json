@@ -151,7 +151,6 @@
           "modules/images/textures/api-reference/crunch-loader",
           "modules/tables/csv/api-reference/csv-loader",
           "modules/scene/draco/api-reference/draco-loader",
-          "modules/tables/excel/api-reference/excel-loader",
           "modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader",
           "modules/tables/arrow/api-reference/geoarrow-loader",
           "modules/tables/json/api-reference/geojson-loader",
@@ -413,13 +412,6 @@
             "label": "@loaders.gl/tables/csv",
             "items": [
               "modules/tables/csv/README"
-            ]
-          },
-          {
-            "type": "category",
-            "label": "@loaders.gl/tables/excel",
-            "items": [
-              "modules/tables/excel/README"
             ]
           },
           {

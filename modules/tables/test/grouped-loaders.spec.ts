@@ -4,14 +4,12 @@
 
 import {expect, test} from 'vitest';
 import {load, parse, parseSync} from '@loaders.gl/core';
-import {CSVLoader, AvroLoader, AvroSchemaLoader, ExcelLoader} from '@loaders.gl/tables';
+import {CSVLoader, AvroLoader, AvroSchemaLoader} from '@loaders.gl/tables';
 import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
 import {AvroLoaderWithParser} from '@loaders.gl/tables/avro-loader';
 import {AvroSchemaLoaderWithParser} from '@loaders.gl/tables/avro-schema';
 import {CSVLoader as FormatCSVLoader} from '@loaders.gl/tables/csv';
 import {AvroLoader as FormatAvroLoader} from '@loaders.gl/tables/avro';
-import {ExcelLoaderWithParser} from '@loaders.gl/tables/excel-loader';
-import {ExcelLoader as FormatExcelLoader} from '@loaders.gl/tables/excel';
 
 import {ArrowLoader} from '@loaders.gl/tables';
 import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
@@ -68,7 +66,6 @@ test.each(
     [LanceLoader, LanceLoaderWithParser],
     [JSONLoader, JSONLoaderWithParser],
     [ArrowLoader, ArrowLoaderWithParser],
-    [ExcelLoader, ExcelLoaderWithParser],
     [CSVLoader, CSVLoaderWithParser],
     [AvroLoader, AvroLoaderWithParser],
     [AvroSchemaLoader, AvroSchemaLoaderWithParser]
@@ -93,16 +90,6 @@ test('core parses CSV from group metadata and a synchronous parser subpath', asy
   const synchronous = parseSync(data, CSVLoaderWithParser, options);
   expect(asynchronous).toMatchObject({shape: 'object-row-table', data: [{name: 'a', value: 1}]});
   expect(synchronous).toEqual(asynchronous);
-});
-
-test('format Excel retains transport hooks while grouped metadata stays lightweight', () => {
-  expect(FormatExcelLoader).toMatchObject(ExcelLoader);
-  expect(FormatExcelLoader.serializeWorkerResult).toBe(ExcelLoaderWithParser.serializeWorkerResult);
-  expect(FormatExcelLoader.deserializeWorkerResult).toBe(
-    ExcelLoaderWithParser.deserializeWorkerResult
-  );
-  expect(ExcelLoader).not.toHaveProperty('serializeWorkerResult');
-  expect(ExcelLoader).not.toHaveProperty('deserializeWorkerResult');
 });
 
 test('format arrow metadata shares its grouped owner', () => {

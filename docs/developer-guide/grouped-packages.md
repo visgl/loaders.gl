@@ -69,7 +69,6 @@ and deferred parser chunks separately.
 
 | Format or capability | Additional package | Installation contract |
 | --- | --- | --- |
-| Excel | `xlsx` | Optional dependency of tables; install explicitly if optional dependencies were omitted. |
 | BSON | `bson` | Optional dependency of tables; needed by BSON parsing and synchronous writing. |
 | Parquet WASM backend | `parquet-wasm` | Optional backend; the JavaScript backend has separate capabilities. |
 | GeoPackage | `sql.js` | Optional peer dependency; applications install it explicitly. |
