@@ -95,6 +95,23 @@ function encodeTracePacket(...fields: Uint8Array[]): Uint8Array {
 }
 
 describe('traces public API edge coverage', () => {
+  it('preserves prototype-named process and thread IDs and falls back for unknown units', () => {
+    const trace = parseChromeTrace({
+      displayTimeUnit: 'constructor',
+      traceEvents: [
+        {name: 'first', ph: 'X', ts: 1000, dur: 1000, pid: '__proto__', tid: 'constructor'},
+        {name: 'second', ph: 'X', ts: 2000, dur: 1000, pid: 'constructor', tid: '__proto__'}
+      ]
+    });
+
+    expect(trace.processes.map(process => process.id)).toEqual(['__proto__', 'constructor']);
+    expect(trace.processes[0].threads[0].tid).toBe('constructor');
+    expect(trace.processes[0].threads[0].spans[0].startTimeMs).toBe(1);
+    expect(trace.processes[1].threads[0].tid).toBe('__proto__');
+    expect(trace.processes[1].threads[0].spans[0].startTimeMs).toBe(2);
+    expect(Object.hasOwn(Object.prototype, '__proto__:constructor')).toBe(false);
+  });
+
   it('assembles every supported semantic Chrome event family', () => {
     const trace = parseChromeTrace({
       displayTimeUnit: 'ms',
