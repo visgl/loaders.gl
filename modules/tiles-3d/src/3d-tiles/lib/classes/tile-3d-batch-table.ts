@@ -44,9 +44,9 @@ export default class Tile3DBatchTableParser {
     this._extensions = this.json?.extensions || {};
 
     // Copy all top-level property fields from the json object, ignoring special fields
-    this._properties = {};
-    for (const propertyName in this.json) {
-      if (!IGNORED_PROPERTY_FIELDS[propertyName]) {
+    this._properties = Object.create(null);
+    for (const propertyName of Object.keys(this.json)) {
+      if (!Object.hasOwn(IGNORED_PROPERTY_FIELDS, propertyName)) {
         this._properties[propertyName] = this.json[propertyName];
       }
     }
@@ -214,7 +214,7 @@ export default class Tile3DBatchTableParser {
       // Store any information needed to access the binary data, including the typed array,
       // componentCount (e.g. a VEC4 would be 4), and the type used to pack and unpack (e.g. Cartesian4).
       if (binaryProperty) {
-        binaryProperties = binaryProperties || {};
+        binaryProperties ??= Object.create(null) as Record<string, any>;
         binaryProperties[name] = binaryProperty;
       }
     }
@@ -259,7 +259,7 @@ export default class Tile3DBatchTableParser {
     const result = traverseHierarchy(this._hierarchy, batchId, (hierarchy, instanceIndex) => {
       const classId = hierarchy.classIds[instanceIndex];
       const instances = hierarchy.classes[classId].instances;
-      return defined(instances[name]) ? true : undefined;
+      return Object.hasOwn(instances, name) && defined(instances[name]) ? true : undefined;
     });
 
     return defined(result);
@@ -270,7 +270,7 @@ export default class Tile3DBatchTableParser {
       const classId = hierarchy.classIds[instanceIndex];
       const instances = hierarchy.classes[classId].instances;
       for (const name in instances) {
-        if (instances.hasOwnProperty(name)) {
+        if (Object.hasOwn(instances, name)) {
           if (results.indexOf(name) === -1) {
             results.push(name);
           }
@@ -284,7 +284,9 @@ export default class Tile3DBatchTableParser {
       const classId = hierarchy.classIds[instanceIndex];
       const instanceClass = hierarchy.classes[classId];
       const indexInClass = hierarchy.classIndexes[instanceIndex];
-      const propertyValues = instanceClass.instances[name];
+      const propertyValues = Object.hasOwn(instanceClass.instances, name)
+        ? instanceClass.instances[name]
+        : undefined;
       if (defined(propertyValues)) {
         if (defined(propertyValues.typedArray)) {
           return this._getBinaryProperty(propertyValues, indexInClass);
@@ -300,7 +302,9 @@ export default class Tile3DBatchTableParser {
       const classId = hierarchy.classIds[instanceIndex];
       const instanceClass = hierarchy.classes[classId];
       const indexInClass = hierarchy.classIndexes[instanceIndex];
-      const propertyValues = instanceClass.instances[name];
+      const propertyValues = Object.hasOwn(instanceClass.instances, name)
+        ? instanceClass.instances[name]
+        : undefined;
       if (defined(propertyValues)) {
         assert(instanceIndex === batchId, `Inherited property "${name}" is read-only.`);
         if (defined(propertyValues.typedArray)) {

@@ -154,6 +154,32 @@ test('Tile3DBatchTableParser#warns about deprecated batch hierarchy (pre-version
     });
 });
 */
+test('hierarchy ignores inherited names and preserves own prototype-named properties', () => {
+  const instances = JSON.parse('{"__proto__":["original"],"hasOwnProperty":["own"]}');
+  const json = {
+    extensions: {
+      '3DTILES_batch_table_hierarchy': {
+        instancesLength: 1,
+        classIds: [0],
+        classes: [{name: 'feature', length: 1, instances}]
+      }
+    }
+  };
+  const table = new Tile3DBatchTableParser(json, null, 1, {
+    '3DTILES_batch_table_hierarchy': true
+  });
+
+  expect(table.hasProperty(0, 'constructor')).toBe(false);
+  expect(table.getProperty(0, 'constructor')).toBeUndefined();
+  expect(table.getProperty(0, '__proto__')).toBe('original');
+  expect(table.getPropertyNames(0, [])).toEqual(['__proto__', 'hasOwnProperty']);
+  table.setProperty(0, '__proto__', 'updated');
+  expect(table.getProperty(0, '__proto__')).toBe('updated');
+  table.setProperty(0, 'constructor', 'new');
+  expect(table.getProperty(0, 'constructor')).toBe('new');
+  expect(Object.hasOwn(Object.prototype, '0')).toBe(false);
+});
+
 test('Tile3DBatchTableParser#validates hierarchy with multiple parents', () => {
   //     building0
   //     /      \
