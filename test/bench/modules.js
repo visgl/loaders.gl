@@ -115,10 +115,6 @@ export async function addModuleBenchmarksToSuite(suite, filters = [], fixtureAli
     const {default: dracoBench} = await import('../../modules/scene/test/draco/draco.bench');
     await dracoBench(suite);
   }
-  if (shouldRunBenchmark('excel')) {
-    const {default: excelBench} = await import('../../modules/tables/test/excel/excel.bench');
-    await excelBench(suite);
-  }
 }
 
 /**

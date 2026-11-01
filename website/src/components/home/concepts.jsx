@@ -59,13 +59,13 @@ const categoryTabs = [
       arrow: {
         data: 'Arrow table data',
         detail: "shape: 'arrow-table'",
-        loaders: ['ArrowLoader', 'CSVLoader', 'ExcelLoader', 'JSONLoader', 'NDJSONLoader', 'ParquetLoader'],
+        loaders: ['ArrowLoader', 'CSVLoader', 'JSONLoader', 'NDJSONLoader', 'ParquetLoader'],
         writers: ['ArrowWriter', 'ParquetWriter']
       },
       plain: {
         data: 'Table category data',
         detail: 'Rows / columns',
-        loaders: ['CSVLoader', 'ExcelLoader', 'JSONLoader', 'NDJSONLoader', 'ParquetLoader'],
+        loaders: ['CSVLoader', 'JSONLoader', 'NDJSONLoader', 'ParquetLoader'],
         writers: ['CSVWriter', 'JSONWriter']
       }
     }
@@ -220,7 +220,6 @@ const loaderDocumentationLinks = {
   CrunchLoader: '/docs/modules/images/textures/api-reference/crunch-loader',
   CSVLoader: '/docs/modules/tables/csv/api-reference/csv-loader',
   DracoLoader: '/docs/modules/scene/draco/api-reference/draco-loader',
-  ExcelLoader: '/docs/modules/tables/excel/api-reference/excel-loader',
   FlatGeobufLoader: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader',
   GeoArrowLoader: '/docs/modules/tables/arrow/api-reference/geoarrow-loader',
   GeoJSONLoader: '/docs/modules/tables/json/api-reference/geojson-loader',

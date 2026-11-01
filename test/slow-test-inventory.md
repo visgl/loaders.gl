@@ -5,7 +5,6 @@ lane must preserve its assertions; the fast replacement must retain representati
 
 | Slow suite | Assertions retained | Exercised entry points | Coverage retained in fast tests |
 | --- | --- | --- | --- |
-| `modules/tables/test/excel/excel-loader.slow.spec.ts` | 42,049-row CSV/XLSB/XLSX equivalence, object and Arrow batches, export compatibility | `load`, `loadInBatches`, `ExcelLoader`, `CSVLoader` | Small deterministic CSV/XLSB/XLSX equivalence, Arrow conversion, options, and exports |
 | `modules/scene/test/gltf/lib/api/gltf-scenegraph-accessors.slow.spec.ts` | Full DamagedHelmet accessor counts and values | `load`, `GLTFLoader`, `GLTFScenegraph` accessor APIs | Compact Draco, meshopt, and KTX2 scenegraph cases |
 | `modules/pointclouds/test/las/las-loader.node.slow.spec.ts` | Full backend, batching, error, point-format, and 808,042-point fixture corpus | `parse`, `parseInBatches`, `LASLoader`, backend decoder APIs | 1,024-point LAS/LAZ parity, streaming batches, Arrow output, and loader conformance |
 | `modules/tables/test/parquet/parquet-compatibility.slow.spec.ts` | Apache fixture matrix and hyparquet differential results | `load`, `ParquetLoader`, TypeScript/WASM backends | Focused loader, schema, codec, and backend tests in the owning package |

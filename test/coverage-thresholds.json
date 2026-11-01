@@ -786,25 +786,6 @@
         "branches": 64
       }
     },
-    "tables/excel": {
-      "owner": "@loaders.gl/tables",
-      "path": "modules/tables/src/excel",
-      "sourcePaths": [
-        "modules/tables/src/excel/"
-      ],
-      "browser": {
-        "statements": 94,
-        "lines": 94,
-        "functions": 100,
-        "branches": 83
-      },
-      "merged": {
-        "statements": 91,
-        "lines": 94,
-        "functions": 100,
-        "branches": 78
-      }
-    },
     "tables/json": {
       "owner": "@loaders.gl/tables",
       "path": "modules/tables/src/json",

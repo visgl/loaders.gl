@@ -141,7 +141,6 @@ test.each([
   'modules/tables/src/csv/csv-loader.ts',
   'modules/tables/src/avro/avro-loader.ts',
   'modules/documents/src/bson-loader.ts',
-  'modules/tables/src/excel/excel-loader.ts',
   'modules/geospatial/src/kml/kml-loader.ts',
   'modules/geospatial/src/shapefile/shapefile-loader.ts',
   'modules/geospatial/src/flatgeobuf/flatgeobuf-loader.ts',

@@ -30,7 +30,7 @@ The public loaders.gl API for loading, parsing, streaming, and encoding data acr
 
 <PackageGrid>
 
-<PackageTile formats={[{"slug": "arrow", "to": "/docs/modules/tables/arrow"}, {"slug": "csv", "to": "/docs/modules/tables/csv"}, {"slug": "json", "to": "/docs/modules/tables/json"}, {"slug": "geojson", "to": "/docs/modules/tables/json"}, {"slug": "avro", "to": "/docs/modules/tables/avro"}, {"slug": "excel", "to": "/docs/modules/tables/excel"}, {"slug": "lance", "to": "/docs/modules/tables/lance"}, {"slug": "orc", "to": "/docs/modules/tables/orc"}, {"slug": "parquet", "to": "/docs/modules/tables/parquet"}]}>
+<PackageTile formats={[{"slug": "arrow", "to": "/docs/modules/tables/arrow"}, {"slug": "csv", "to": "/docs/modules/tables/csv"}, {"slug": "json", "to": "/docs/modules/tables/json"}, {"slug": "geojson", "to": "/docs/modules/tables/json"}, {"slug": "avro", "to": "/docs/modules/tables/avro"}, {"slug": "lance", "to": "/docs/modules/tables/lance"}, {"slug": "orc", "to": "/docs/modules/tables/orc"}, {"slug": "parquet", "to": "/docs/modules/tables/parquet"}]}>
 
 ### [@loaders.gl/tables](./modules/tables/README.md)
 

@@ -12,7 +12,6 @@ import {BSONFormat} from '@loaders.gl/documents';
 import {COPCFormat} from '@loaders.gl/tiles-3d/copc';
 import {CSVFormat} from '@loaders.gl/tables/csv/index';
 import {DracoFormat} from '@loaders.gl/scene';
-import {ExcelFormat} from '@loaders.gl/tables/excel/index';
 import {GeoPackageFormat} from '@loaders.gl/geospatial/geopackage/index';
 import {GeoTIFFFormat, OMETiffFormat} from '@loaders.gl/raster';
 import {GLBFormat, GLTFFormat} from '@loaders.gl/scene/gltf';
@@ -95,7 +94,6 @@ const FORMAT_EXPORTS = [
   ['COPCFormat', COPCFormat, 'binary'],
   ['CSVFormat', CSVFormat, 'csv'],
   ['DracoFormat', DracoFormat, 'binary'],
-  ['ExcelFormat', ExcelFormat, 'zip'],
   ['FlatGeobufFormat', FlatGeobufFormat, 'flatbuffers'],
   ['GeoPackageFormat', GeoPackageFormat, 'sqlite'],
   ['GeoTIFFFormat', GeoTIFFFormat, 'image'],

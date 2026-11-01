@@ -14,7 +14,6 @@ test.each([
   ['tables', 'LanceLoader', 'lance-loader', 'LanceLoaderWithParser'],
   ['tables', 'JSONLoader', 'json-loader', 'JSONLoaderWithParser'],
   ['tables', 'ArrowLoader', 'arrow-loader', 'ArrowLoaderWithParser'],
-  ['tables', 'ExcelLoader', 'excel-loader', 'ExcelLoaderWithParser'],
   ['geospatial', 'FlatGeobufLoader', 'flatgeobuf-loader', 'FlatGeobufLoaderWithParser'],
   ['geospatial', 'GeoPackageLoader', 'geopackage-loader', 'GeoPackageLoaderWithParser'],
   ['tables', 'CSVLoader', 'csv-loader', 'CSVLoaderWithParser'],
@@ -44,7 +43,6 @@ test.each([
   ['tables', 'ORCLoader'],
   ['tables', 'ParquetLoader'],
   ['tables', 'GeoJSONLoader'],
-  ['tables', 'ExcelLoader'],
   ['geospatial', 'GeoPackageLoader'],
   ['tables', 'CSVLoader'],
   ['geospatial', 'KMLLoader']

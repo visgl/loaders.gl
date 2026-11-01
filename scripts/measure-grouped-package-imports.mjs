@@ -39,9 +39,6 @@ const importCases = [
 
   ['Format BSON metadata', '@loaders.gl/documents', 'BSONLoader'],
   ['BSON parser subpath', '@loaders.gl/documents/bson-loader', 'BSONLoaderWithParser'],
-  ['Format Excel metadata', '@loaders.gl/tables/excel', 'ExcelLoader'],
-  ['Grouped Excel metadata', '@loaders.gl/tables', 'ExcelLoader'],
-  ['Excel parser subpath', '@loaders.gl/tables/excel-loader', 'ExcelLoaderWithParser'],
   ['Format FlatGeobuf metadata', '@loaders.gl/geospatial/flatgeobuf', 'FlatGeobufLoader'],
   ['Grouped FlatGeobuf metadata', '@loaders.gl/geospatial', 'FlatGeobufLoader'],
   ['FlatGeobuf parser subpath', '@loaders.gl/geospatial/flatgeobuf-loader', 'FlatGeobufLoaderWithParser'],

@@ -33,7 +33,7 @@ not separately installable packages.
 
 #### Table and geospatial package consolidation
 
-The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `excel`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv` to retain the former root exports. The `@loaders.gl/tables` root and format subpaths export metadata loaders and writers; import `CSVLoaderWithParser` from `@loaders.gl/tables/csv-loader` for synchronous parsing.
+The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv` to retain the former root exports. The `@loaders.gl/tables` root and format subpaths export metadata loaders and writers; import `CSVLoaderWithParser` from `@loaders.gl/tables/csv-loader` for synchronous parsing.
 
 The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` packages have also been removed. Install `@loaders.gl/geospatial` and use matching format subpaths, such as `@loaders.gl/geospatial/kml`, for former package-root APIs. The group root and format subpaths export metadata loaders; import `KMLLoaderWithParser` from `@loaders.gl/geospatial/kml-loader` for synchronous parsing. Other parser, source, writer, and worker entry points have corresponding explicit subpaths in the group packages. Update any hard-coded worker asset URLs to the group package paths.
 
@@ -649,6 +649,10 @@ default. See [skip-LOD options](./modules/tiles-3d/api-reference/tileset-3d.md#s
 
 - `Tileset3D` now requires a `Tile3DSource` and can no longer be instantiated with a JSON payload.
 
+### Removed Excel loader
+
+`ExcelLoader`, `ExcelWorkerLoader`, their parser subpaths, and the Excel worker have been removed from `@loaders.gl/tables` along with the vulnerable `xlsx` dependency. Applications that need Excel support must use a maintained spreadsheet parser separately; convert data to CSV or Arrow to use loaders.gl table loaders.
+
 ### Loader outputs and removed APIs
 
 #### Arrow loader and writer variant removal
@@ -657,7 +661,6 @@ Redundant Arrow-specific loader and writer variants have been removed where the 
 
 | Removed API | Replacement |
 | --- | --- |
-| `ExcelArrowLoader` | `ExcelLoader` with `excel.shape: 'arrow-table'` |
 | `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow-table'` |
 | `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow-table'` |
 | `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow-table'` |
@@ -676,12 +679,7 @@ For example:
 
 ```ts
 import {load, encode} from '@loaders.gl/core';
-import {ExcelLoader} from '@loaders.gl/tables/excel';
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
-
-const excelArrowTable = await load(excelUrl, ExcelLoader, {
-  excel: {shape: 'arrow-table'}
-});
 
 const parquetArrowTable = await load(parquetUrl, ParquetLoader, {
   parquet: {shape: 'arrow-table'}

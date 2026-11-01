@@ -26,7 +26,6 @@ export type FormatMetadata = {
 /** Metadata used to label, classify, and select an asset for every format and service in the gallery. */
 export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'avro', label: 'Avro', logo: 'avro-logo.svg', logoText: 'Avro', tags: ['tables']},
-  {slug: 'excel', label: 'Excel', mark: 'Excel', tags: ['tables']},
   {slug: 'lance', label: 'Lance', mark: 'Lance', tags: ['tables']},
   {slug: 'twkb', label: 'TWKB', mark: 'TWKB', tags: ['geospatial']},
   {slug: 'terrain', label: 'Terrain', mark: 'Terrain', tags: ['geospatial']},

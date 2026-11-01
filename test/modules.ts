@@ -61,7 +61,6 @@ import '@loaders.gl/tiles/pmtiles/test';
 import '@loaders.gl/tables/arrow/test';
 import '@loaders.gl/tables/csv/test';
 import '@loaders.gl/tables/json/test';
-import '@loaders.gl/tables/excel/test';
 import '@loaders.gl/tables/parquet/test';
 import '@loaders.gl/tables/lance/test';
 import '@loaders.gl/tables/orc/test';

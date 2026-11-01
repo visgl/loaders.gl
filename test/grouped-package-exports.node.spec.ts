@@ -35,7 +35,6 @@ test('grouped CommonJS format exports expose metadata loaders for every former p
     ['tables', 'lance', 'LanceLoader'],
     ['tables', 'orc', 'ORCLoader'],
     ['tables', 'parquet', 'ParquetLoader'],
-    ['tables', 'excel', 'ExcelLoader'],
     ['tables', 'csv', 'CSVLoader'],
     ['tables', 'avro', 'AvroLoader'],
     ['geospatial', 'flatgeobuf', 'FlatGeobufLoader'],
@@ -118,14 +117,6 @@ test.each(['geospatial'])('%s declares SQL.js as an optional peer', packageName 
   expect(manifest.peerDependenciesMeta['sql.js']).toEqual({optional: true});
 });
 
-test.each([['xlsx', '^0.18.5']])('tables declares %s as optional', (dependency, version) => {
-  const manifest = JSON.parse(
-    fileSystem.readFileSync(path.join(REPOSITORY_ROOT, 'modules/tables/package.json'), 'utf8')
-  );
-  expect(manifest.dependencies).not.toHaveProperty(dependency);
-  expect(manifest.optionalDependencies[dependency]).toBe(version);
-});
-
 test('documents BSON codec does not require an external BSON package', async () => {
   const manifest = JSON.parse(
     fileSystem.readFileSync(path.join(REPOSITORY_ROOT, 'modules/documents/package.json'), 'utf8')
@@ -155,4 +146,15 @@ test('native BSON values interoperate between ESM parsers and CommonJS writers',
   expect(commonjs.encodeBSONSync(document)).toEqual(encoded);
   expect(esm.encodeBSONSync(commonjs.parseBSONSync(encoded))).toEqual(encoded);
   expect(commonjs.encodeBSONSync(esm.parseBSONSync(encoded))).toEqual(encoded);
+});
+
+test('tables does not include the removed Excel loader or xlsx dependency', async () => {
+  const manifest = JSON.parse(
+    fileSystem.readFileSync(path.join(REPOSITORY_ROOT, 'modules/tables/package.json'), 'utf8')
+  );
+  expect(manifest.dependencies?.xlsx).toBeUndefined();
+  expect(manifest.optionalDependencies?.xlsx).toBeUndefined();
+  expect(manifest.exports['./excel']).toBeUndefined();
+  const tables = await import('@loaders.gl/tables');
+  expect(tables).not.toHaveProperty('ExcelLoader');
 });
