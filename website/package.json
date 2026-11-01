@@ -84,7 +84,6 @@
     "hyparquet-compressors": "1.1.1",
     "mapbox-gl": "npm:maplibre-gl@^6.16.0",
     "maplibre-gl": "^6.16.0",
-    "marked": "^0.7.0",
     "monaco-editor": "^0.53.0",
     "pako": "^2.1.0",
     "papaparse": "^5.5.3",

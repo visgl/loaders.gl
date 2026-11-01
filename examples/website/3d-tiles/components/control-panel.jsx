@@ -5,7 +5,7 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import marked from 'marked';
+import {marked} from 'marked';
 
 import {MAP_STYLES} from '../constants';
 
@@ -171,7 +171,7 @@ export default class ControlPanel extends PureComponent {
             // eslint-disable-next-line react/no-danger
             <div key={attribution.html} dangerouslySetInnerHTML={{__html: attribution.html}} />
           ))}
-        {description && <Description dangerouslySetInnerHTML={{__html: marked(description)}} />}
+        {description && <Description dangerouslySetInnerHTML={{__html: marked.parse(description)}} />}
       </InfoContainer>
     );
   }
