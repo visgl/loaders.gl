@@ -107,7 +107,7 @@ function findCandidateFile(basePath, originalSpecifier) {
   const extension = path.extname(originalSpecifier);
   const hasConcreteExtension = ['.js', '.ts', '.mjs', '.cjs', '.json'].includes(extension);
   const candidates = hasConcreteExtension
-    ? [basePath]
+    ? [basePath, ...(extension === '.js' ? [`${basePath.slice(0, -3)}.ts`] : [])]
     : [
         `${basePath}.js`,
         `${basePath}.ts`,

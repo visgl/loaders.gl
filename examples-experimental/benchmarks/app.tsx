@@ -7,10 +7,18 @@ import {createRoot} from 'react-dom/client';
 
 import {BenchResults} from '../../website/src/components/bench-results';
 import {Bench} from 'probe.gl/bench';
+import {LOADERS_GL_RAW_FIXTURE_URL} from '@loaders.gl/core/constants';
 
 import {addModuleBenchmarksToSuite} from '../../test/bench/modules';
+import {installSortedGroupBenchOverride} from '../../test/bench/group-sorted';
+import aliases from '../../test/aliases';
 
-const addReferenceBenchmarks = false;
+installSortedGroupBenchOverride(Bench);
+
+const fixtureAliases = Object.fromEntries(Object.entries(aliases).map(([name, path]) => [
+  name,
+  path.replace('/__loaders_gl_test_fixtures__/', LOADERS_GL_RAW_FIXTURE_URL)
+]));
 
 const LOG_ENTRY = {
   GROUP: 'group',
@@ -43,7 +51,8 @@ export default class App extends PureComponent {
     const suite = new Bench({
       log: this._logResult.bind(this)
     });
-    await addModuleBenchmarksToSuite(suite, addReferenceBenchmarks);
+    const benchmarkFilters = new URLSearchParams(window.location.search).getAll('module');
+    await addModuleBenchmarksToSuite(suite, benchmarkFilters, fixtureAliases);
     suite
       // Calibrate performance
       .calibrate()

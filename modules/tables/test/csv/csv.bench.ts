@@ -163,6 +163,10 @@ async function addCSVArrowTableWorkerBenchmarks(
     const workerCounts = [1, 2, 3];
     const workerLoaders = workerCounts.map(createCSVWorkerBenchmarkLoader);
     const nodeWorkerOptions = typeof window === 'undefined' ? {_nodeWorkers: true} : {};
+    const browserWorkerUrl =
+      typeof window === 'undefined'
+        ? undefined
+        : new URL('../../dist/csv-worker.js', import.meta.url).href;
 
     await Promise.all(
       workerLoaders.map(({loader, workerCount}) =>
@@ -172,6 +176,7 @@ async function addCSVArrowTableWorkerBenchmarks(
             worker: true,
             _workerType: 'test',
             ...nodeWorkerOptions,
+            ...(browserWorkerUrl ? {csv: {workerUrl: browserWorkerUrl}} : {}),
             maxConcurrency: workerCount,
             reuseWorkers: true
           },
@@ -202,7 +207,12 @@ async function addCSVArrowTableWorkerBenchmarks(
           await Promise.all(
             Array.from({length: workerCount}, () =>
               parse(scenario.arrayBuffer.slice(0), loader, {
-                csv: {header: true, shape: 'arrow-table', dynamicTyping: false},
+                csv: {
+                  header: true,
+                  shape: 'arrow-table',
+                  dynamicTyping: false,
+                  workerUrl: browserWorkerUrl
+                },
                 core: {
                   worker: true,
                   _workerType: 'test',
@@ -307,7 +317,9 @@ function addCSVParserParseBenchmark(bench, scenario: BenchmarkScenario) {
 /** Parses a CSV or TSV string with the csv-parser stream API. */
 function parseWithCSVParser(text: string, isTSV: boolean): Promise<any[]> {
   return new Promise((resolve, reject) => {
-    Promise.all([import('node:stream'), import('csv-parser')])
+    // This comparison is registered only in Node; keep its optional parser out of browser bundles.
+    const csvParserModule = 'csv-parser';
+    Promise.all([import('node:stream'), import(/* @vite-ignore */ csvParserModule)])
       .then(([{Readable}, {default: csvParser}]) => {
         const rows: any[] = [];
         Readable.from([text])

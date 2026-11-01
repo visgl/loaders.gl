@@ -4,8 +4,7 @@ import {_ClarinetParser} from '@loaders.gl/tables/json/index';
 import StreamingJSONParser from '../../../../src/json/lib/json-parser/streaming-json-parser';
 import FastStreamingJSONParser from '../../../../src/json/lib/json-parser/fast-streaming-json-parser';
 
-const loadJSON = async relativePath => {
-  const url = new URL(relativePath, import.meta.url);
+const loadJSON = async url => {
   if (url.protocol === 'file:' && typeof window === 'undefined') {
     const {readFile} = await import('fs/promises');
     return JSON.parse(await readFile(url, 'utf8'));
@@ -14,8 +13,8 @@ const loadJSON = async relativePath => {
   return response.json();
 };
 
-const BASIC = await loadJSON('../../data/clarinet/basic.json');
-const GEOJSON = await loadJSON('../../data/geojson-big.json');
+const BASIC = await loadJSON(new URL('../../data/clarinet/basic.json', import.meta.url));
+const GEOJSON = await loadJSON(new URL('../../data/geojson-big.json', import.meta.url));
 
 const STREAMING_CHUNK_SIZE = 1024;
 const STREAMING_JSON_PATHS = ['$.features'];

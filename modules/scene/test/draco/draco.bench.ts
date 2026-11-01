@@ -30,12 +30,14 @@ export default async function dracoBench(bench) {
   response = await fetchFile(COLORS_URL);
   const COLORS = await response.arrayBuffer();
 
-  const attributes = {
-    POSITIONS: new Float32Array(POSITIONS),
-    COLORS: new Uint8ClampedArray(COLORS)
+  const mesh = {
+    attributes: {
+      POSITION: new Float32Array(POSITIONS),
+      COLOR_0: new Uint8ClampedArray(COLORS)
+    }
   };
 
-  const arrayBuffer = await encode(attributes, DracoWriter, {draco: {pointcloud: true}});
+  const arrayBuffer = await encode(mesh, DracoWriter, {draco: {pointcloud: true}});
 
   // Warm up worker (keep worker loading out of throughput measurement)
   await parse(arrayBuffer.slice(0), DracoLoader, {draco: {pointcloud: true}, worker: true});
@@ -67,7 +69,7 @@ export default async function dracoBench(bench) {
       `DracoWriter#pointcloud#${options.name} - sequential`,
       benchOptions,
       async () =>
-        await encode(attributes, DracoWriter, {
+        await encode(mesh, DracoWriter, {
           draco: {pointcloud: true, ...options.draco},
           worker: true
         })
@@ -77,7 +79,7 @@ export default async function dracoBench(bench) {
       `DracoWriter#pointcloud#${options.name} - parallel`,
       {multiplier: pointCount, unit: 'points', _throughput: 5, minIterations: 1},
       async () =>
-        await encode(attributes, DracoWriter, {
+        await encode(mesh, DracoWriter, {
           draco: {pointcloud: true, ...options.draco},
           worker: true
         })
@@ -87,17 +89,16 @@ export default async function dracoBench(bench) {
       `DracoWriter#pointcloud#${options.name} - batch-runtime-reuse`,
       {multiplier: pointCount * 2, unit: 'points', minIterations: 1},
       async () =>
-        await encodeDracoBatch([attributes, attributes], {
+        await encodeDracoBatch([mesh, mesh], {
           draco: {pointcloud: true, ...options.draco},
           worker: false
         })
     );
 
     bench.addAsync(
-      `DracoWriter#pointcloud#${options.name} - batch-runtime-reuse`,
+      `DracoWriter#pointcloud#default - batch-runtime-reuse`,
       {multiplier: pointCount, unit: 'points', minIterations: 1},
-      async () =>
-        await encodeDracoBatch([attributes, attributes], {draco: {pointcloud: true}, worker: false})
+      async () => await encodeDracoBatch([mesh, mesh], {draco: {pointcloud: true}, worker: false})
     );
   }
 
