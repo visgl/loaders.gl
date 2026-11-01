@@ -12,7 +12,7 @@ const TEXTURE_URL =
 const GLTF_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/scene/test/gltf/data/glb/DamagedHelmet.glb';
 
-const getTextureBytes = (texture) => texture.map(level => level.data.byteLength).join(',')
+const getTextureBytes = (texture: {data: ArrayBufferView}[]) => texture.map(level => level.data.byteLength).join(',')
 
 async function main() {
   const texture = await parse(fetch(TEXTURE_URL), CompressedTextureLoader);
