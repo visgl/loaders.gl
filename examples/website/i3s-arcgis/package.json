@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "typescript": "^5.6.0",
-    "vite": "^7.2.7"
+    "vite": "^8.3.5"
   },
   "description": "Render I3S scene services with ArcGIS and loaders.gl",
   "keywords": [
