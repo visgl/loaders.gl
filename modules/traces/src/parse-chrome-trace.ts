@@ -58,9 +58,9 @@ export function parseChromeTrace(
   const timeUnitToMs = getTimeUnitToMs(validatedTraceFile.displayTimeUnit);
   const toMs = (value: number) => value * timeUnitToMs;
 
-  const processes: Record<string, ChromeTraceProcess> = {};
-  const threadsByTid: Record<string, Record<string, ChromeTraceThread>> = {};
-  const stacks: Record<string, StackEntry[]> = {};
+  const processes: Record<string, ChromeTraceProcess> = Object.create(null);
+  const threadsByTid: Record<string, Record<string, ChromeTraceThread>> = Object.create(null);
+  const stacks: Record<string, StackEntry[]> = Object.create(null);
 
   for (const event of validatedTraceFile.traceEvents) {
     const processId = String(event.pid);
@@ -73,7 +73,7 @@ export function parseChromeTrace(
         label: processId,
         threads: []
       };
-      threadsByTid[processId] = {};
+      threadsByTid[processId] = Object.create(null);
     }
 
     let thread = threadsByTid[processId]?.[threadId];
@@ -234,7 +234,10 @@ function getTimeUnitToMs(displayTimeUnit?: string): number {
     return DEFAULT_TIME_UNIT_TO_MS;
   }
 
-  return TIME_UNIT_TO_MS[displayTimeUnit.trim().toLowerCase()] ?? DEFAULT_TIME_UNIT_TO_MS;
+  const timeUnit = displayTimeUnit.trim().toLowerCase();
+  return Object.hasOwn(TIME_UNIT_TO_MS, timeUnit)
+    ? TIME_UNIT_TO_MS[timeUnit]
+    : DEFAULT_TIME_UNIT_TO_MS;
 }
 
 /**
