@@ -10,7 +10,7 @@ import clarinetBench from './lib/clarinet/clarinet.bench';
 
 const GEOJSON_URL = '@loaders.gl/tables/json/test/data/geojson-big.json';
 const GEOJSON_FEATURE_COUNT = 308;
-const GEOJSON_TEXT = await loadText('./data/geojson-big.json');
+const GEOJSON_TEXT = await loadText(new URL('./data/geojson-big.json', import.meta.url));
 
 export default async function jsonLoaderBench(suite) {
   suite.group('JSONLoader');
@@ -65,9 +65,7 @@ export default async function jsonLoaderBench(suite) {
 /**
  * Loads benchmark fixture text in both Node and browser environments.
  */
-async function loadText(relativePath: string): Promise<string> {
-  const url = new URL(relativePath, import.meta.url);
-
+async function loadText(url: URL): Promise<string> {
   if (url.protocol === 'file:' && typeof window === 'undefined') {
     const {readFile} = await import('fs/promises');
     return await readFile(url, 'utf8');
