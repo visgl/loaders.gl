@@ -1,0 +1,22 @@
+{
+  "name": "bundle-obj-with-vite",
+  "version": "1.0.0",
+  "description": "Bundle OBJ loading with loaders.gl and Vite",
+  "private": true,
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/scene": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5"
+  },
+  "keywords": [
+    "loaders.gl",
+    "OBJ"
+  ]
+}
