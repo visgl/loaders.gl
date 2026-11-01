@@ -79,7 +79,6 @@
     "docusaurus-mdx-checker": "^3.0.0",
     "docusaurus-node-polyfills": "^1.0.0",
     "esri-loader": "^2.15.0",
-    "expr-eval": "^2.0.2",
     "fflate": "0.7.5",
     "hyparquet": "1.29.0",
     "hyparquet-compressors": "1.1.1",
