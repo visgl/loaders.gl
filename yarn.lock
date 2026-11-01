@@ -35,7 +35,7 @@ __metadata:
     react-map-gl: "npm:^8.1.3"
     styled-components: "npm:^4.2.0"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -6800,13 +6800,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/lzma-linux-x64-gnu@npm:1.5.1":
-  version: 1.5.1
-  resolution: "@napi-rs/lzma-linux-x64-gnu@npm:1.5.1"
-  conditions: os=linux & cpu=x64 & libc=glibc
-  languageName: node
-  linkType: hard
-
 "@napi-rs/wasm-runtime@npm:0.2.4":
   version: 0.2.4
   resolution: "@napi-rs/wasm-runtime@npm:0.2.4"
@@ -8061,181 +8054,6 @@ __metadata:
     rollup:
       optional: true
   checksum: 10c0/001834bf62d7cf5bac424d2617c113f7f7d3b2bf3c1778cbcccb72cdc957b68989f8e7747c782c2b911f1dde8257f56f8ac1e779e29e74e638e3f1e2cac2bcd0
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-android-arm-eabi@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-android-arm-eabi@npm:4.63.5"
-  conditions: os=android & cpu=arm
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-android-arm64@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-android-arm64@npm:4.63.5"
-  conditions: os=android & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-darwin-arm64@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-darwin-arm64@npm:4.63.5"
-  conditions: os=darwin & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-darwin-x64@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-darwin-x64@npm:4.63.5"
-  conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-freebsd-arm64@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-freebsd-arm64@npm:4.63.5"
-  conditions: os=freebsd & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-freebsd-x64@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-freebsd-x64@npm:4.63.5"
-  conditions: os=freebsd & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-arm-gnueabihf@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-arm-gnueabihf@npm:4.63.5"
-  conditions: os=linux & cpu=arm & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-arm-musleabihf@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-arm-musleabihf@npm:4.63.5"
-  conditions: os=linux & cpu=arm & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-arm64-gnu@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-arm64-gnu@npm:4.63.5"
-  conditions: os=linux & cpu=arm64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-arm64-musl@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-arm64-musl@npm:4.63.5"
-  conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-loong64-gnu@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-loong64-gnu@npm:4.63.5"
-  conditions: os=linux & cpu=loong64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-loong64-musl@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-loong64-musl@npm:4.63.5"
-  conditions: os=linux & cpu=loong64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-ppc64-gnu@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-ppc64-gnu@npm:4.63.5"
-  conditions: os=linux & cpu=ppc64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-ppc64-musl@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-ppc64-musl@npm:4.63.5"
-  conditions: os=linux & cpu=ppc64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-riscv64-gnu@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-riscv64-gnu@npm:4.63.5"
-  conditions: os=linux & cpu=riscv64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-riscv64-musl@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-riscv64-musl@npm:4.63.5"
-  conditions: os=linux & cpu=riscv64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-s390x-gnu@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-s390x-gnu@npm:4.63.5"
-  conditions: os=linux & cpu=s390x & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-x64-gnu@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-x64-gnu@npm:4.63.5"
-  conditions: os=linux & cpu=x64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-linux-x64-musl@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-linux-x64-musl@npm:4.63.5"
-  conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-openbsd-x64@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-openbsd-x64@npm:4.63.5"
-  conditions: os=openbsd & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-openharmony-arm64@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-openharmony-arm64@npm:4.63.5"
-  conditions: os=openharmony & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-win32-arm64-msvc@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-win32-arm64-msvc@npm:4.63.5"
-  conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-win32-ia32-msvc@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-win32-ia32-msvc@npm:4.63.5"
-  conditions: os=win32 & cpu=ia32
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-win32-x64-gnu@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-win32-x64-gnu@npm:4.63.5"
-  conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rollup/rollup-win32-x64-msvc@npm:4.63.5":
-  version: 4.63.5
-  resolution: "@rollup/rollup-win32-x64-msvc@npm:4.63.5"
-  conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
@@ -10972,13 +10790,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/estree@npm:1.0.9":
-  version: 1.0.9
-  resolution: "@types/estree@npm:1.0.9"
-  checksum: 10c0/3ad3286ca2988cd550dafb8f2ad599c8474868e954fa601a36655bdfefd8039f7c714b8c1c7f2ae219ffbd58bd4660e66fa7479a0120fc02d4777057d4865387
-  languageName: node
-  linkType: hard
-
 "@types/express-serve-static-core@npm:*, @types/express-serve-static-core@npm:^5.0.0":
   version: 5.1.1
   resolution: "@types/express-serve-static-core@npm:5.1.1"
@@ -13358,7 +13169,7 @@ __metadata:
     "@loaders.gl/scientific": "workspace:*"
     icechunk-js: "npm:^0.6.0"
     typescript: "npm:^6.0.3"
-    vite: "npm:^8.0.0"
+    vite: "npm:^8.3.5"
     vitest: "npm:5.0.2"
     zarrita: "npm:~0.7.1"
   languageName: unknown
@@ -14118,7 +13929,7 @@ __metadata:
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/scene": "workspace:*"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -14767,7 +14578,7 @@ __metadata:
     "@luma.gl/shadertools": "npm:^9.4.0"
     maplibre-gl: "npm:^6.16.0"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -17177,7 +16988,7 @@ __metadata:
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^8.1.3"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -17657,7 +17468,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.27.0 || ^0.28.0, esbuild@npm:^0.28.1":
+"esbuild@npm:^0.28.1":
   version: 0.28.2
   resolution: "esbuild@npm:0.28.2"
   dependencies:
@@ -19117,7 +18928,7 @@ __metadata:
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^8.1.3"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -19232,7 +19043,7 @@ __metadata:
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^8.1.3"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -19257,7 +19068,7 @@ __metadata:
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^8.1.3"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -19294,7 +19105,7 @@ __metadata:
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^8.1.3"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -19617,7 +19428,7 @@ __metadata:
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -20579,7 +20390,7 @@ __metadata:
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -20605,7 +20416,7 @@ __metadata:
     react-map-gl: "npm:^8.1.3"
     styled-components: "npm:^4.2.0"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -20627,7 +20438,7 @@ __metadata:
     react-map-gl: "npm:^8.1.3"
     styled-components: "npm:^4.2.0"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -20659,7 +20470,7 @@ __metadata:
     react-map-gl: "npm:^8.1.3"
     styled-components: "npm:^4.2.0"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -20669,7 +20480,7 @@ __metadata:
   dependencies:
     "@loaders.gl/arcgis": "workspace:*"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -20695,7 +20506,7 @@ __metadata:
     react-map-gl: "npm:^8.1.3"
     styled-components: "npm:^5.3.3"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -22319,7 +22130,7 @@ __metadata:
     "@deck.gl/layers": "npm:^9.4.0"
     "@loaders.gl/tables": "workspace:*"
     typescript: "npm:^5.6.0"
-    vite: "npm:^8.0.0"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -22718,7 +22529,7 @@ __metadata:
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -22743,7 +22554,7 @@ __metadata:
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -22761,7 +22572,7 @@ __metadata:
     react-dom: "npm:^19.2.5"
     styled-components: "npm:^4.2.0"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -25579,7 +25390,7 @@ __metadata:
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -25592,7 +25403,7 @@ __metadata:
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -25746,7 +25557,7 @@ __metadata:
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^8.1.3"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -26531,7 +26342,7 @@ __metadata:
     react-dom: "npm:19.2.3"
     react-map-gl: "npm:^8.1.3"
     typescript: "npm:^5.3.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -27407,7 +27218,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.21, postcss@npm:^8.4.24, postcss@npm:^8.4.33, postcss@npm:^8.5.4, postcss@npm:^8.5.6":
+"postcss@npm:^8.4.21, postcss@npm:^8.4.24, postcss@npm:^8.4.33, postcss@npm:^8.5.4":
   version: 8.5.28
   resolution: "postcss@npm:8.5.28"
   dependencies:
@@ -29175,99 +28986,6 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 10c0/38d773a81a2cde36a657fdc6f202698fe047fd65e7a08b72f0e7fa86f21e06c9a789a183dee850ed77a9e1c3cff517b960dc4a8a02c3e3f7977230480f09cc60
-  languageName: node
-  linkType: hard
-
-"rollup@npm:^4.43.0":
-  version: 4.63.5
-  resolution: "rollup@npm:4.63.5"
-  dependencies:
-    "@napi-rs/lzma-linux-x64-gnu": "npm:1.5.1"
-    "@rollup/rollup-android-arm-eabi": "npm:4.63.5"
-    "@rollup/rollup-android-arm64": "npm:4.63.5"
-    "@rollup/rollup-darwin-arm64": "npm:4.63.5"
-    "@rollup/rollup-darwin-x64": "npm:4.63.5"
-    "@rollup/rollup-freebsd-arm64": "npm:4.63.5"
-    "@rollup/rollup-freebsd-x64": "npm:4.63.5"
-    "@rollup/rollup-linux-arm-gnueabihf": "npm:4.63.5"
-    "@rollup/rollup-linux-arm-musleabihf": "npm:4.63.5"
-    "@rollup/rollup-linux-arm64-gnu": "npm:4.63.5"
-    "@rollup/rollup-linux-arm64-musl": "npm:4.63.5"
-    "@rollup/rollup-linux-loong64-gnu": "npm:4.63.5"
-    "@rollup/rollup-linux-loong64-musl": "npm:4.63.5"
-    "@rollup/rollup-linux-ppc64-gnu": "npm:4.63.5"
-    "@rollup/rollup-linux-ppc64-musl": "npm:4.63.5"
-    "@rollup/rollup-linux-riscv64-gnu": "npm:4.63.5"
-    "@rollup/rollup-linux-riscv64-musl": "npm:4.63.5"
-    "@rollup/rollup-linux-s390x-gnu": "npm:4.63.5"
-    "@rollup/rollup-linux-x64-gnu": "npm:4.63.5"
-    "@rollup/rollup-linux-x64-musl": "npm:4.63.5"
-    "@rollup/rollup-openbsd-x64": "npm:4.63.5"
-    "@rollup/rollup-openharmony-arm64": "npm:4.63.5"
-    "@rollup/rollup-win32-arm64-msvc": "npm:4.63.5"
-    "@rollup/rollup-win32-ia32-msvc": "npm:4.63.5"
-    "@rollup/rollup-win32-x64-gnu": "npm:4.63.5"
-    "@rollup/rollup-win32-x64-msvc": "npm:4.63.5"
-    "@types/estree": "npm:1.0.9"
-    fsevents: "npm:~2.3.2"
-  dependenciesMeta:
-    "@napi-rs/lzma-linux-x64-gnu":
-      optional: true
-    "@rollup/rollup-android-arm-eabi":
-      optional: true
-    "@rollup/rollup-android-arm64":
-      optional: true
-    "@rollup/rollup-darwin-arm64":
-      optional: true
-    "@rollup/rollup-darwin-x64":
-      optional: true
-    "@rollup/rollup-freebsd-arm64":
-      optional: true
-    "@rollup/rollup-freebsd-x64":
-      optional: true
-    "@rollup/rollup-linux-arm-gnueabihf":
-      optional: true
-    "@rollup/rollup-linux-arm-musleabihf":
-      optional: true
-    "@rollup/rollup-linux-arm64-gnu":
-      optional: true
-    "@rollup/rollup-linux-arm64-musl":
-      optional: true
-    "@rollup/rollup-linux-loong64-gnu":
-      optional: true
-    "@rollup/rollup-linux-loong64-musl":
-      optional: true
-    "@rollup/rollup-linux-ppc64-gnu":
-      optional: true
-    "@rollup/rollup-linux-ppc64-musl":
-      optional: true
-    "@rollup/rollup-linux-riscv64-gnu":
-      optional: true
-    "@rollup/rollup-linux-riscv64-musl":
-      optional: true
-    "@rollup/rollup-linux-s390x-gnu":
-      optional: true
-    "@rollup/rollup-linux-x64-gnu":
-      optional: true
-    "@rollup/rollup-linux-x64-musl":
-      optional: true
-    "@rollup/rollup-openbsd-x64":
-      optional: true
-    "@rollup/rollup-openharmony-arm64":
-      optional: true
-    "@rollup/rollup-win32-arm64-msvc":
-      optional: true
-    "@rollup/rollup-win32-ia32-msvc":
-      optional: true
-    "@rollup/rollup-win32-x64-gnu":
-      optional: true
-    "@rollup/rollup-win32-x64-msvc":
-      optional: true
-    fsevents:
-      optional: true
-  bin:
-    rollup: dist/bin/rollup
-  checksum: 10c0/e8b423417161ca0cc61c7ec8c63663835c046960ae8417ec39efed40fe934c034a8e28111954b22da457a7bcc28daeaaa5b1f5005a0665fe81ab4f7679cbfa50
   languageName: node
   linkType: hard
 
@@ -31235,7 +30953,7 @@ __metadata:
     react-dom: "npm:^19.2.5"
     react-map-gl: "npm:^8.1.3"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
@@ -31307,7 +31025,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.13, tinyglobby@npm:^0.2.15, tinyglobby@npm:^0.2.17":
+"tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.13, tinyglobby@npm:^0.2.17":
   version: 0.2.17
   resolution: "tinyglobby@npm:0.2.17"
   dependencies:
@@ -32465,62 +32183,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^7.2.7":
-  version: 7.3.7
-  resolution: "vite@npm:7.3.7"
-  dependencies:
-    esbuild: "npm:^0.27.0 || ^0.28.0"
-    fdir: "npm:^6.5.0"
-    fsevents: "npm:~2.3.3"
-    picomatch: "npm:^4.0.3"
-    postcss: "npm:^8.5.6"
-    rollup: "npm:^4.43.0"
-    tinyglobby: "npm:^0.2.15"
-  peerDependencies:
-    "@types/node": ^20.19.0 || >=22.12.0
-    jiti: ">=1.21.0"
-    less: ^4.0.0
-    lightningcss: ^1.21.0
-    sass: ^1.70.0
-    sass-embedded: ^1.70.0
-    stylus: ">=0.54.8"
-    sugarss: ^5.0.0
-    terser: ^5.16.0
-    tsx: ^4.8.1
-    yaml: ^2.4.2
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  peerDependenciesMeta:
-    "@types/node":
-      optional: true
-    jiti:
-      optional: true
-    less:
-      optional: true
-    lightningcss:
-      optional: true
-    sass:
-      optional: true
-    sass-embedded:
-      optional: true
-    stylus:
-      optional: true
-    sugarss:
-      optional: true
-    terser:
-      optional: true
-    tsx:
-      optional: true
-    yaml:
-      optional: true
-  bin:
-    vite: bin/vite.js
-  checksum: 10c0/6a3f868a33b849383e29c4e39550155563cf0522b5b6504ab60ff5e44dd07ad472ff87a4d5d2c08f1f70cc6602357f95c38d27371b7612d84801cb790f325a7e
-  languageName: node
-  linkType: hard
-
-"vite@npm:^8.0.0":
+"vite@npm:^8.0.0, vite@npm:^8.3.5":
   version: 8.3.5
   resolution: "vite@npm:8.3.5"
   dependencies:
@@ -33371,7 +33034,7 @@ __metadata:
     react-map-gl: "npm:^8.1.3"
     styled-components: "npm:^4.2.0"
     typescript: "npm:^5.6.0"
-    vite: "npm:^7.2.7"
+    vite: "npm:^8.3.5"
   languageName: unknown
   linkType: soft
 
