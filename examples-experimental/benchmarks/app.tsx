@@ -9,7 +9,10 @@ import {BenchResults} from '../../website/src/components/bench-results';
 import {Bench} from 'probe.gl/bench';
 
 import {addModuleBenchmarksToSuite} from '../../test/bench/modules';
+import {installSortedGroupBenchOverride} from '../../test/bench/group-sorted';
 import aliases from '../../test/aliases';
+
+installSortedGroupBenchOverride(Bench);
 
 const FIXTURE_BASE_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/';
 const fixtureAliases = Object.fromEntries(Object.entries(aliases).map(([name, path]) => [
@@ -48,7 +51,8 @@ export default class App extends PureComponent {
     const suite = new Bench({
       log: this._logResult.bind(this)
     });
-    await addModuleBenchmarksToSuite(suite, [], fixtureAliases);
+    const benchmarkFilters = new URLSearchParams(window.location.search).getAll('module');
+    await addModuleBenchmarksToSuite(suite, benchmarkFilters, fixtureAliases);
     suite
       // Calibrate performance
       .calibrate()
