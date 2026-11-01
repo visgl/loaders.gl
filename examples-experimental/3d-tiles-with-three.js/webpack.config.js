@@ -9,6 +9,10 @@ const CONFIG = {
     library: 'App'
   },
 
+  resolve: {
+    tsconfig: false
+  },
+
   module: {
     rules: [
       // {

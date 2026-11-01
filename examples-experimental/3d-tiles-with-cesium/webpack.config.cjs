@@ -5,6 +5,9 @@ const CONFIG = {
 
   entry: {
     bundle: resolve('./app.js')
+  },
+  resolve: {
+    tsconfig: false
   }
 };
 

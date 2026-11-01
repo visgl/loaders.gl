@@ -19,12 +19,15 @@
   },
   "devDependencies": {
     "esm": ">=3.1.0",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^4.10.0",
+    "webpack": "^5.112.2",
+    "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^6.1.0"
   },
   "keywords": [
     "loaders.gl",
     "3D Tiles"
-  ]
+  ],
+  "engines": {
+    "node": "^22.15.0 || ^24.0.0 || ^26.0.0"
+  }
 }
