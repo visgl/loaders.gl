@@ -12,9 +12,11 @@ _addAliases(ALIASES);
  * Adds module benchmarks that are compatible with the current runtime.
  * @param {import('probe.gl/bench').Bench} suite Benchmark suite.
  * @param {string[]} filters Optional benchmark module filters.
+ * @param {Record<string, string>} fixtureAliases Optional fixture path aliases.
  * @returns {Promise<void>} Resolves after all compatible benchmarks have been added.
  */
-export async function addModuleBenchmarksToSuite(suite, filters = []) {
+export async function addModuleBenchmarksToSuite(suite, filters = [], fixtureAliases = ALIASES) {
+  _addAliases(fixtureAliases);
   const shouldRunBenchmark = createBenchmarkFilter(filters);
 
   if (shouldRunBenchmark('compression')) {
@@ -25,69 +27,69 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   }
 
   if (shouldRunBenchmark('las')) {
-    const {default: lasBench} = await import('@loaders.gl/pointclouds/las/test/las-loader.bench');
+    const {default: lasBench} = await import('../../modules/pointclouds/test/las/las-loader.bench');
     await lasBench(suite);
   }
 
   if (shouldRunBenchmark('geoarrow')) {
     const {default: geoarrowBench} = await import(
-      '@loaders.gl/core/geoarrow/test/binary-features/geoarrow.bench'
+      '../../modules/core/test/geoarrow/binary-features/geoarrow.bench'
     );
     await geoarrowBench(suite);
   }
 
   if (shouldRunBenchmark('shapefile')) {
     const {default: shapefileBench} = await import(
-      '@loaders.gl/geospatial/shapefile/test/shapefile.bench'
+      '../../modules/geospatial/test/shapefile/shapefile.bench'
     );
-    const {default: shpBench} = await import('@loaders.gl/geospatial/shapefile/test/shp.bench');
+    const {default: shpBench} = await import('../../modules/geospatial/test/shapefile/shp.bench');
     await shapefileBench(suite);
     await shpBench(suite);
   }
   if (shouldRunBenchmark('geopackage')) {
     const {default: geopackageBench} = await import(
-      '@loaders.gl/geospatial/geopackage/test/geopackage.bench'
+      '../../modules/geospatial/test/geopackage/geopackage.bench'
     );
     await geopackageBench(suite);
   }
   if (shouldRunBenchmark('flatgeobuf')) {
     const {default: flatgeobufBench} = await import(
-      '@loaders.gl/geospatial/flatgeobuf/test/flatgeobuf.bench'
+      '../../modules/geospatial/test/flatgeobuf/flatgeobuf.bench'
     );
     await flatgeobufBench(suite);
   }
   if (shouldRunBenchmark('kml')) {
-    const {default: kmlBench} = await import('@loaders.gl/geospatial/kml/test/kml.bench');
+    const {default: kmlBench} = await import('../../modules/geospatial/test/kml/kml.bench');
     await kmlBench(suite);
   }
 
   if (shouldRunBenchmark('csv')) {
-    const {default: csvBench} = await import('@loaders.gl/tables/csv/test/csv.bench');
+    const {default: csvBench} = await import('../../modules/tables/test/csv/csv.bench');
     await csvBench(suite);
   }
 
   if (shouldRunBenchmark('core')) {
-    const {default: coreBench} = await import('@loaders.gl/core/test/core.bench');
+    const {default: coreBench} = await import('../../modules/core/test/core.bench');
     await coreBench(suite);
   }
 
   if (shouldRunBenchmark('parquet')) {
-    const {parquetBench} = await import('@loaders.gl/tables/parquet/test/parquet.bench');
+    const {parquetBench} = await import('../../modules/tables/test/parquet/parquet.bench');
     await parquetBench(suite);
   }
   if (shouldRunBenchmark('ply')) {
-    const {default: plyBench} = await import('@loaders.gl/pointclouds/ply/test/ply-loader.bench');
+    const {default: plyBench} = await import('../../modules/pointclouds/test/ply/ply-loader.bench');
     await plyBench(suite);
   }
 
   if (shouldRunBenchmark('json')) {
-    const {default: jsonBench} = await import('@loaders.gl/tables/json/test/json-loader.bench');
+    const {default: jsonBench} = await import('../../modules/tables/test/json/json-loader.bench');
     await jsonBench(suite);
   }
 
   if (shouldRunBenchmark('3d-tiles')) {
     const {default: tiles3dBench} = await import(
-      '@loaders.gl/tiles-3d/3d-tiles/test/tiles-3d-loader.bench'
+      '../../modules/tiles-3d/test/3d-tiles/tiles-3d-loader.bench'
     );
     await tiles3dBench(suite);
   }
@@ -95,26 +97,26 @@ export async function addModuleBenchmarksToSuite(suite, filters = []) {
   // await mvtBench(suite);
   if (shouldRunBenchmark('loader-utils')) {
     const {default: loaderUtilsBench} = await import(
-      '@loaders.gl/core/loader-utils/test/loader-utils.bench'
+      '../../modules/core/test/loader-utils-package/loader-utils.bench'
     );
     await loaderUtilsBench(suite);
   }
 
   if (shouldRunBenchmark('images')) {
-    const {default: imageBench} = await import('@loaders.gl/images/test/images.bench');
+    const {default: imageBench} = await import('../../modules/images/test/images.bench');
     await imageBench(suite);
   }
   if (shouldRunBenchmark('crypto')) {
-    const {default: cryptoBench} = await import('@loaders.gl/crypto/test/crypto.bench');
+    const {default: cryptoBench} = await import('../../modules/crypto/test/crypto.bench');
     await cryptoBench(suite);
   }
 
   if (shouldRunBenchmark('draco')) {
-    const {default: dracoBench} = await import('@loaders.gl/scene/draco/test/draco.bench');
+    const {default: dracoBench} = await import('../../modules/scene/test/draco/draco.bench');
     await dracoBench(suite);
   }
   if (shouldRunBenchmark('excel')) {
-    const {default: excelBench} = await import('@loaders.gl/tables/excel/test/excel.bench');
+    const {default: excelBench} = await import('../../modules/tables/test/excel/excel.bench');
     await excelBench(suite);
   }
 }

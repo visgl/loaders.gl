@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {generateRandomArrayBuffer} from '@loaders.gl/compression/test/utils/test-utils';
+import {generateRandomArrayBuffer} from '../../../compression/test/utils/test-utils';
 
 export {
   generateRandomArrayBuffer,
   compareArrayBuffers
-} from '@loaders.gl/compression/test/utils/test-utils';
+} from '../../../compression/test/utils/test-utils';
 
 const SIZE = 100 * 1000;
 

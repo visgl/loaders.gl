@@ -307,7 +307,8 @@ function addCSVParserParseBenchmark(bench, scenario: BenchmarkScenario) {
 /** Parses a CSV or TSV string with the csv-parser stream API. */
 function parseWithCSVParser(text: string, isTSV: boolean): Promise<any[]> {
   return new Promise((resolve, reject) => {
-    Promise.all([import('node:stream'), import('csv-parser')])
+    // This comparison is registered only in Node; keep its optional parser out of browser bundles.
+    Promise.all([import('node:stream'), import(/* @vite-ignore */ 'csv-parser')])
       .then(([{Readable}, {default: csvParser}]) => {
         const rows: any[] = [];
         Readable.from([text])

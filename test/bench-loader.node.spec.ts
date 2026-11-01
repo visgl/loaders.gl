@@ -32,3 +32,15 @@ test('bench-loader delegates third-party resolution to Node', async () => {
   expect(nextResolveCalled, 'third-party resolution is delegated').toBeTruthy();
   expect(resolution, 'delegate result is returned').toBe(delegatedResolution);
 });
+
+test('bench-loader resolves JavaScript specifiers to TypeScript source', async () => {
+  const resolution = await resolveBenchmarkSpecifier(
+    './buffer/btoa.node.js',
+    {parentURL: new URL('../modules/core/src/polyfills/index.ts', import.meta.url).href},
+    () => {
+      throw new Error('nextResolve should not be called for an existing TypeScript source');
+    }
+  );
+  expect(resolution.url).toContain('/modules/core/src/polyfills/buffer/btoa.node.ts');
+  expect(resolution.shortCircuit).toBe(true);
+});

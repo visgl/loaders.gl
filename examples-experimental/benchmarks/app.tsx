@@ -9,8 +9,13 @@ import {BenchResults} from '../../website/src/components/bench-results';
 import {Bench} from 'probe.gl/bench';
 
 import {addModuleBenchmarksToSuite} from '../../test/bench/modules';
+import aliases from '../../test/aliases';
 
-const addReferenceBenchmarks = false;
+const FIXTURE_BASE_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/';
+const fixtureAliases = Object.fromEntries(Object.entries(aliases).map(([name, path]) => [
+  name,
+  path.replace('/__loaders_gl_test_fixtures__/', FIXTURE_BASE_URL)
+]));
 
 const LOG_ENTRY = {
   GROUP: 'group',
@@ -43,7 +48,7 @@ export default class App extends PureComponent {
     const suite = new Bench({
       log: this._logResult.bind(this)
     });
-    await addModuleBenchmarksToSuite(suite, addReferenceBenchmarks);
+    await addModuleBenchmarksToSuite(suite, [], fixtureAliases);
     suite
       // Calibrate performance
       .calibrate()
