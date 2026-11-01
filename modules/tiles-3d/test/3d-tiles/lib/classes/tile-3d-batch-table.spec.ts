@@ -54,6 +54,42 @@ test('Tile3DBatchTable#hasProperty', () => {
   expect(batchTable.hasProperty(0, 'height')).toEqual(true);
   expect(batchTable.hasProperty(0, 'id')).toEqual(false);
 });
+
+test('Tile3DBatchTable treats prototype names as ordinary property keys', () => {
+  const batchTable = new Tile3DBatchTable({}, null, 1);
+  for (const name of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+    expect(batchTable.hasProperty(0, name)).toBe(false);
+    expect(batchTable.getProperty(0, name)).toBeUndefined();
+    batchTable.setProperty(0, name, `value-${name}`);
+    expect(batchTable.hasProperty(0, name)).toBe(true);
+    expect(batchTable.getProperty(0, name)).toBe(`value-${name}`);
+  }
+  expect(Object.hasOwn(Object.prototype, '0')).toBe(false);
+  expect(batchTable.getPropertyNames(0, [])).toEqual([
+    '__proto__',
+    'constructor',
+    'toString',
+    'hasOwnProperty'
+  ]);
+
+  const parsed = new Tile3DBatchTable(
+    JSON.parse('{"__proto__":["safe"],"constructor":[42]}'),
+    null,
+    1
+  );
+  expect(parsed.getProperty(0, '__proto__')).toBe('safe');
+  expect(parsed.getProperty(0, 'constructor')).toBe(42);
+});
+
+test('Tile3DBatchTable supports a binary property named __proto__', () => {
+  const json = JSON.parse(
+    '{"__proto__":{"byteOffset":0,"componentType":"DOUBLE","type":"SCALAR"}}'
+  );
+  const table = new Tile3DBatchTable(json, new Float64Array([12]), 1);
+  expect(table.getProperty(0, '__proto__')).toBe(12);
+  table.setProperty(0, '__proto__', 24);
+  expect(table.getProperty(0, '__proto__')).toBe(24);
+});
 test('Tile3DBatchTable#getPropertyNames throws with invalid batchId', () => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
   // @ts-expect-error
