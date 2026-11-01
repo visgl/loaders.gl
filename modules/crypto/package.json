@@ -51,7 +51,7 @@
     "build-worker-node": "esbuild src/workers/crypto-worker-node.ts --outfile=dist/crypto-worker-node.js --platform=node --target=esnext,node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "devDependencies": {
-    "crypto-js": "^3.0.0 || ^4.0.0"
+    "crypto-js": "^4.2.0"
   },
   "browser": {
     "crypto": false,
