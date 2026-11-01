@@ -166,10 +166,12 @@ export function populateLASTypedExtraBytes(
 }
 
 function readLASString(bytes: Uint8Array, offset: number, length: number): string {
-  return new TextDecoder()
-    .decode(bytes.subarray(offset, offset + length))
-    .replace(/\0+$/, '')
-    .trim();
+  const decoded = new TextDecoder().decode(bytes.subarray(offset, offset + length));
+  let end = decoded.length;
+  while (end > 0 && decoded[end - 1] === '\0') {
+    end--;
+  }
+  return decoded.slice(0, end).trim();
 }
 
 function sanitizeExtraBytesName(name: string): string {

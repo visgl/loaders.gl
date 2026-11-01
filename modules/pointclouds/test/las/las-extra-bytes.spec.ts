@@ -11,6 +11,16 @@ import {
 } from '@loaders.gl/pointclouds/las';
 
 describe('LAS Extra Bytes utilities', () => {
+  test('trims trailing NUL padding while preserving embedded NULs', () => {
+    const payload = new Uint8Array(192);
+    new TextEncoder().encodeInto('  a\0b  ', payload.subarray(4, 36));
+    payload.fill(65, 160, 192);
+
+    const [descriptor] = parseLASExtraBytes(payload);
+    expect(descriptor.name).toBe('a\0b');
+    expect(descriptor.description).toBe('A'.repeat(32));
+  });
+
   test('parses offset views and decodes scaled vector attributes', () => {
     const storage = new Uint8Array(197);
     const payload = storage.subarray(5);
