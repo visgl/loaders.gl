@@ -11,7 +11,7 @@ import {TerrainLayer} from '@deck.gl/geo-layers';
 import {TerrainLoaderWithParser as TerrainLoader} from '@loaders.gl/raster/terrain';
 
 // Set your mapbox token here
-const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const INITIAL_VIEW_STATE = {
   latitude: 46.24,

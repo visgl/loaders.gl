@@ -34,3 +34,7 @@ Mapbox's [terrain API](https://docs.mapbox.com/help/troubleshooting/access-eleva
 
 To use other data sources, check out
 the [documentation of TerrainLayer](https://deck.gl/docs/api-reference/geo-layers/terrain-layer).
+
+Use Node.js 20.19+ or 22.12+. Run `npm install --legacy-peer-deps` and `npm start` in this directory. The current published loader beta has peer ranges that conflict with its matching dependencies. Use `npm run build` for a production build.
+
+Set `VITE_MAPBOX_ACCESS_TOKEN` to a Mapbox access token for terrain imagery.
