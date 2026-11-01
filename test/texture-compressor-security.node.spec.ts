@@ -36,7 +36,7 @@ test('legacy compressor rejects an ICNS entry with zero length without hanging',
       process.execPath,
       [
         '-e',
-        `try { require('texture-compressor/dist/cli/lib/utilities.js').getImageSize(process.argv[1]); process.exit(1); } catch { process.exit(0); }`,
+        `require('node:fs').accessSync(process.argv[1]); try { require('texture-compressor/dist/cli/lib/utilities.js').getImageSize(process.argv[1]); process.exit(1); } catch { process.exit(0); }`,
         file
       ],
       {timeout: 5000}
