@@ -1,0 +1,23 @@
+diff --git a/dist/cli/lib/utilities.js b/dist/cli/lib/utilities.js
+index 944f0a5227eb80cf6ff89a5453007bad34045e10..bdd1020568d336675fa548e1f92f2e44dfc136ed 100644
+--- a/dist/cli/lib/utilities.js
++++ b/dist/cli/lib/utilities.js
+@@ -8,7 +8,8 @@ const os_1 = require("os");
+ const path_1 = require("path");
+ // Vendor
+ // @ts-ignore
+-const image_size_1 = __importDefault(require("image-size"));
++const image_size_1 = require("image-size");
++const fs_1 = require("fs");
+ /**
+  * Get the /bin/ directory from the root of the project
+  */
+@@ -30,7 +31,7 @@ exports.getFileName = (filepath) => path_1.basename(filepath, exports.getFileExt
+  *
+  * @param filepath Path to image
+  */
+-exports.getImageSize = (filepath) => image_size_1.default(filepath);
++exports.getImageSize = (filepath) => image_size_1.imageSize(fs_1.readFileSync(filepath));
+ /**
+  * Get mip map levels based on initial value
+  *

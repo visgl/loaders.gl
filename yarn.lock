@@ -19484,16 +19484,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"image-size@npm:^0.7.4":
-  version: 0.7.5
-  resolution: "image-size@npm:0.7.5"
-  bin:
-    image-size: bin/image-size.js
-  checksum: 10c0/74e978c525e7d777df145bc66cfc4a4a7aa56de8e5daead3a69b0872082dbe385deb4a3b80799810df9e34b2031467412ae28810f2f65ec2e5fe08b895aa3491
-  languageName: node
-  linkType: hard
-
-"image-size@npm:^2.0.2":
+"image-size@npm:2.0.4, image-size@npm:^2.0.2":
   version: 2.0.4
   resolution: "image-size@npm:2.0.4"
   bin:
@@ -28793,7 +28784,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"texture-compressor@npm:^1.0.2":
+"texture-compressor@npm:1.0.2":
   version: 1.0.2
   resolution: "texture-compressor@npm:1.0.2"
   dependencies:
@@ -28802,6 +28793,18 @@ __metadata:
   bin:
     texture-compressor: ./bin/texture-compressor.js
   checksum: 10c0/ea0bce1cbda3a64f826867e97ee2a1f17a7219d21d97d7625a6370792afddc697e6832a9b3b39bf2eef0978af7bc0d1dcefaf7fd91d719213658b0a010a83c44
+  languageName: node
+  linkType: hard
+
+"texture-compressor@patch:texture-compressor@npm%3A1.0.2#~/.yarn/patches/texture-compressor-npm-1.0.2-c655a54095.patch":
+  version: 1.0.2
+  resolution: "texture-compressor@patch:texture-compressor@npm%3A1.0.2#~/.yarn/patches/texture-compressor-npm-1.0.2-c655a54095.patch::version=1.0.2&hash=4490d0"
+  dependencies:
+    argparse: "npm:^1.0.10"
+    image-size: "npm:^0.7.4"
+  bin:
+    texture-compressor: ./bin/texture-compressor.js
+  checksum: 10c0/18ac08af65df531830a2292929f31230f9049d30e1d768a5ab04621a7c2e59c5dbe1a92162728f3f9cf6496c7a587d1e1ee0abb30f8dd357894cbc89f35e2881
   languageName: node
   linkType: hard
 
