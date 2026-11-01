@@ -24,7 +24,7 @@
     "style-loader": "^0.23.1",
     "webpack": "^4.20.2",
     "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.15.2"
+    "webpack-dev-server": "^6.1.0"
   },
   "description": "Interactive loaders.gl parsing benchmarks",
   "keywords": [
