@@ -52,8 +52,9 @@ export default class App extends PureComponent {
     // fileDrop(this._deckRef.deckCanvas, (promise, file) => {});
   }
 
-  _onWebGLInitialized(gl) {
-    this.setState({iblEnvironment: loadIBLEnvironment(gl)});
+  /** Load the lighting environment when deck.gl creates its device. */
+  _onDeviceInitialized(device) {
+    this.setState({iblEnvironment: loadIBLEnvironment(device)});
   }
 
   render() {
@@ -62,7 +63,7 @@ export default class App extends PureComponent {
         height="100%"
         initialViewState={INITIAL_VIEW_STATE}
         controller={{type: MapController}}
-        onWebGLInitialized={this._onWebGLInitialized.bind(this)}
+        onDeviceInitialized={this._onDeviceInitialized.bind(this)}
         layers={[
           new ScenegraphLayer({
             id: 'tile-3d-layer',
