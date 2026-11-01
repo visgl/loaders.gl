@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* global Cesium */
-import {loadTileset} from './tileset-loader';
+import {loadTileset} from './tileset-loader.js';
 
 // This is taken from this blog: https://cesium.com/blog/2019/08/06/webodm-ships-with-cesium-ion/
 // Data captured by American Red Cross.

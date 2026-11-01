@@ -5,9 +5,10 @@
 /* global Cesium */
 import {Vector3} from '@math.gl/core';
 import {setLoaderOptions} from '@loaders.gl/core';
-import {Tileset3D, _getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
+import {_getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles';
 import {Plane} from '@math.gl/geometry/culling';
-import {loadBatchedModelTile, loadPointTile} from './tile-parsers';
+import {loadBatchedModelTile, loadPointTile} from './tile-parsers.js';
 
 const tileMap = {}; // Map the contentUri -> tile so we can unload/set visibility based on loaders.gl's tile events.
 let viewer;
