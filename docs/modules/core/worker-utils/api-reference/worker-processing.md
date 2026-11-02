@@ -30,7 +30,8 @@ Loader helpers retain their transfer-by-default input semantics. Set
 `inputOwnership: 'copy'` to preserve caller buffers. The public math.gl `TaskRunner`
 itself defaults to copying input. Output transfers by default; `outputOwnership:
 'copy'` requests copied output. Signals and progress callbacks stay on the calling
-thread, separate from portable parser options.
+thread, separate from portable parser options. Explicit `null` option values remain
+`null`, including nested defaults such as `core.fetch` and `core.CDN`.
 
 The optional fourth argument supplies a `process` callback for work requested by
 the worker on its calling thread. The fifth argument supplies serializable loader

@@ -296,3 +296,16 @@ test('relative worker entrypoints honor the document base URL', async () => {
     base.mockRestore();
   }
 });
+
+test('worker transport preserves explicit null parser options', async () => {
+  const options = {callback: true, core: {fetch: null, CDN: null}, nullable: {value: null}};
+  await expect(
+    processOnWorker(worker, 'input', options, {
+      process: async (_input, parserOptions) => ({
+        core: parserOptions?.core,
+        nullable: parserOptions?.nullable
+      })
+    })
+  ).resolves.toEqual({core: {fetch: null, CDN: null}, nullable: {value: null}});
+  expect(options.core).toEqual({fetch: null, CDN: null});
+});

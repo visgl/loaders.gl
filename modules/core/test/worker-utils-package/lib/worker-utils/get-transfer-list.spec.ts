@@ -118,3 +118,9 @@ test('getTransferListForWriter - Should handle hested options.', async () => {
   };
   expect(transferableData).toEqual(expectedResult);
 });
+
+test('getTransferListForWriter preserves nullable parser options without mutating input', () => {
+  const options = {fetch: null, core: {fetch: null, CDN: null}, entries: [null]};
+  expect(getTransferListForWriter(options)).toEqual(options);
+  expect(options).toEqual({fetch: null, core: {fetch: null, CDN: null}, entries: [null]});
+});

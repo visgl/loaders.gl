@@ -66,6 +66,7 @@ function isTransferable(object: unknown) {
 
 /**
  * Recursively drop non serializable values like functions and regexps.
+ * Preserve nested null values; a null top-level options argument normalizes to an empty object.
  * @param object
  */
 export function getTransferListForWriter(object: object | null): object {
@@ -77,6 +78,7 @@ export function getTransferListForWriter(object: object | null): object {
   Object.keys(clone).forEach(key => {
     // Typed Arrays and Arrays are passed with no change
     if (
+      object[key] !== null &&
       typeof object[key] === 'object' &&
       !ArrayBuffer.isView(object[key]) &&
       !(object[key] instanceof Array)
