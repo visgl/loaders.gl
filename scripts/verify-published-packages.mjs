@@ -52,13 +52,21 @@ export async function checkPublishedPackages(
   return results.filter(Boolean);
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const version = JSON.parse(fs.readFileSync('lerna.json', 'utf8')).version;
-  const distributionTag = process.argv[2] || (version.includes('-') ? 'beta' : 'latest');
-  const packages = getPublishablePackages(process.cwd());
-  if (!packages.length) throw new Error('No public workspace packages found');
-  for (let attempt = 0; attempt < 8; attempt++) {
-    const errors = await checkPublishedPackages(packages, version, distributionTag);
+/** Waits for public registry propagation; returns the final errors without weakening verification. */
+export async function waitForPublishedPackages(
+  packages,
+  version,
+  distributionTag,
+  {
+    attempts = 60,
+    intervalMilliseconds = 15_000,
+    checkPackages = checkPublishedPackages,
+    sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),
+    reportErrors = errors => console.error(errors.join('\n'))
+  } = {}
+) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const errors = await checkPackages(packages, version, distributionTag);
     if (!errors.length) {
       console.log(
         'Verified ' +
@@ -68,13 +76,20 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
           ' with tag ' +
           distributionTag
       );
-      break;
+      return [];
     }
-    console.error(errors.join('\n'));
-    if (attempt === 7) {
-      process.exitCode = 1;
-      break;
-    }
-    await new Promise(resolve => setTimeout(resolve, 15_000));
+    reportErrors(errors);
+    if (attempt === attempts - 1) return errors;
+    await sleep(intervalMilliseconds);
   }
+  throw new Error('Publication verification requires at least one attempt');
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const version = JSON.parse(fs.readFileSync('lerna.json', 'utf8')).version;
+  const distributionTag = process.argv[2] || (version.includes('-') ? 'beta' : 'latest');
+  const packages = getPublishablePackages(process.cwd());
+  if (!packages.length) throw new Error('No public workspace packages found');
+  const errors = await waitForPublishedPackages(packages, version, distributionTag);
+  if (errors.length) process.exitCode = 1;
 }

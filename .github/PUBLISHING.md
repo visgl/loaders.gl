@@ -66,7 +66,19 @@ The equivalent package settings on npmjs.com are:
 - Environment: leave empty (the release job does not declare an environment)
 - Allow direct publishing: enabled
 
-If a matching relationship already exists, keep it. Review any different existing
+New trusted publishers must complete their **first successful OIDC publication
+within two days**. A manual bootstrap publication does not validate the subsequent
+trusted-publisher configuration. Schedule the first tagged workflow release within
+that window. npm's `trust list` can still show an expired relationship with the
+expected repository, workflow, and permissions; matching fields alone do not prove
+that it is usable.
+
+If that first-publication window was missed, revoke the unvalidated relationship
+using its ID from `npm trust list`, recreate the same repository/workflow relationship,
+and publish a new version through the workflow within two days. Do not recreate
+already validated relationships merely because a later release fails.
+
+If a matching, validated relationship already exists, keep it. Review any different existing
 relationship before replacing it. Verify the saved configuration with `npm trust
 list` for each new package. Existing packages should retain their configured
 relationships.
@@ -84,11 +96,24 @@ for npm trusted publishing. The npm relationship must name exactly
    version-preparation PR: it increments the version again and pushes a tag.
 3. The workflow builds and tests packages, verifies embedded versions and the exact
    release tag, then publishes missing npm versions with the `beta` dist-tag.
-4. The workflow verifies every public workspace version and distribution tag in the
-   registry before creating the GitHub prerelease announcement.
+4. A separate finalization job verifies every public workspace version and distribution
+   tag in the registry before creating the GitHub prerelease announcement. It checks
+   up to 60 times at 15-second intervals, allowing about 15 minutes for propagation.
+   Missing versions, incorrect tags, and registry request failures still fail the job.
 
 If publication is interrupted, rerun the failed publishing job on the same tagged
-revision. If the workflow itself needs repair, merge that repair into master, then
+revision. A duplicate transparency-log entry (HTTP 409) can interrupt provenance
+creation; inspect the package/version and retry missing publications without disabling
+provenance or changing the tag. An upload log or an "already published" response
+does not replace public registry verification.
+
+If only finalization fails, rerun that job. It reads the registry before installing
+announcement dependencies and does not rebuild or republish any packages. If metadata
+has not propagated after the bounded wait, keep the release incomplete and inspect
+the reported versions and tags before retrying. The successful publishing job supplies
+the distribution tag to finalization; a failed publishing job cannot announce a release.
+
+If the workflow itself needs repair, merge that repair into master, then
 dispatch release.yml from master with release_tag set to the original tag. Every
 job checks out that immutable tag; the branch guard checks the selected source
 commit against master/release ancestry, and tag/version validation still applies. Already published versions are skipped by `lerna publish from-package`.
