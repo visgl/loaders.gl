@@ -60,7 +60,7 @@ npm install @loaders.gl/core
 | --- | --- |
 | [`processOnWorker`](/docs/modules/core/worker-utils/api-reference/worker-processing#processonworker) | Run one atomic operation on a task handle. |
 | [`processOnWorkerInBatches`](/docs/modules/core/worker-utils/api-reference/worker-processing#processonworkerinbatches) | Stream batches through one leased, stateful worker. |
-| [`preloadWorker`](/docs/modules/core/worker-utils/api-reference/worker-processing#preloadworker) | Warm task handles before latency-sensitive work. |
+| [`preloadWorker`](/docs/modules/core/worker-utils/api-reference/worker-processing#preloadworker) | Preload code without retaining a worker or parser state. |
 | [`createWorker`](/docs/modules/core/worker-utils/api-reference/worker-processing#createworker) | Implement the atomic and batched operations exposed by a worker bundle. |
 | [`TaskRunner` and `destroyWorkerTasks`](/docs/modules/core/worker-utils/api-reference/worker-processing#task-lifecycle) | Own task lifetimes and terminate loader task runners. |
 

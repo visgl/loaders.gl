@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import {createWorker} from '../../../src/worker-utils';
+import {createWorker, type WorkerContext} from '../../../src/worker-utils';
 
 createWorker(
   async (input, options = {}, context, jobContext) => {
@@ -31,7 +31,8 @@ createWorker(
 );
 
 /** Requests a selected nested loader without carrying callbacks over the task boundary. */
-async function requestNested(options, context) {
+async function requestNested(options: Record<string, any>, context?: WorkerContext) {
+  if (!context?.process) throw new Error('No calling-thread processor');
   return await context.process(
     new ArrayBuffer(1),
     {core: {worker: false}},
