@@ -149,3 +149,18 @@ describe('terrain heightmap decoding', () => {
     expect(error.maxSampleError).toBe(0);
   });
 });
+
+test('terrain callers can explicitly bound validation work', () => {
+  expect(() =>
+    makeTerrainMeshFromImage(
+      {data: new Uint8Array(16), width: 2, height: 2},
+      {
+        bounds: [0, 0, 2, 2],
+        elevationDecoder: TERRARIUM_ELEVATION_DECODER,
+        meshMaxError: 0,
+        meshMaxSampleTests: 0,
+        tesselator: 'martini'
+      }
+    )
+  ).toThrow(/sample-test budget exceeded/);
+});

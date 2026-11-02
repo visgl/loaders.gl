@@ -16,6 +16,8 @@ import type {ElevationDecoder} from './terrain-heightmap-types';
 export type TerrainOptions = {
   /** Maximum terrain mesh error in meters. */
   meshMaxError: number;
+  /** Maximum source-node validation tests per refinement pass; defaults scale with the padded grid. */
+  meshMaxSampleTests?: number;
   /** Bounds used to map terrain image coordinates to x/y positions. */
   bounds: number[];
   /** Decoder used to convert terrain image channels to elevation values. */
@@ -46,7 +48,7 @@ export function makeTerrainMeshFromImage(
   terrainImage: TerrainImage,
   terrainOptions: TerrainOptions
 ): Mesh {
-  const {meshMaxError, bounds, elevationDecoder} = terrainOptions;
+  const {bounds, elevationDecoder} = terrainOptions;
 
   const {data, width, height} = terrainImage;
 
@@ -55,20 +57,20 @@ export function makeTerrainMeshFromImage(
   switch (terrainOptions.tesselator) {
     case 'martini':
       terrain = getTerrain(data, width, height, elevationDecoder, terrainOptions.tesselator);
-      mesh = getTerrainTileMesh(meshMaxError, width, height, terrain, 'martini');
+      mesh = getTerrainTileMesh(terrainOptions, width, height, terrain, 'martini');
       break;
     case 'delatin':
       terrain = getTerrain(data, width, height, elevationDecoder, terrainOptions.tesselator);
-      mesh = getTerrainTileMesh(meshMaxError, width, height, terrain, 'delatin');
+      mesh = getTerrainTileMesh(terrainOptions, width, height, terrain, 'delatin');
       break;
     // auto
     default:
       if (width === height && !(height & (width - 1))) {
         terrain = getTerrain(data, width, height, elevationDecoder, 'martini');
-        mesh = getTerrainTileMesh(meshMaxError, width, height, terrain, 'martini');
+        mesh = getTerrainTileMesh(terrainOptions, width, height, terrain, 'martini');
       } else {
         terrain = getTerrain(data, width, height, elevationDecoder, 'delatin');
-        mesh = getTerrainTileMesh(meshMaxError, width, height, terrain, 'delatin');
+        mesh = getTerrainTileMesh(terrainOptions, width, height, terrain, 'delatin');
       }
       break;
   }
@@ -117,7 +119,7 @@ export function makeTerrainMeshFromImage(
 
 /** Adapts the padded, north-first image grid to upstream adaptive terrain meshing. */
 function getTerrainTileMesh(
-  meshMaxError: number,
+  terrainOptions: TerrainOptions,
   width: number,
   height: number,
   terrain: Float32Array,
@@ -129,10 +131,15 @@ function getTerrainTileMesh(
     heights: terrain,
     rowStep: [0, -1]
   });
+  // Fully refined RTIN triangles can inspect 32 neighboring grid nodes per source cell.
+  const options = {
+    maxError: terrainOptions.meshMaxError,
+    maxSampleTests: terrainOptions.meshMaxSampleTests ?? Math.max(10_000_000, 32 * terrain.length)
+  };
   const mesh =
     tesselator === 'martini'
-      ? createMartiniTerrainMesh(field, {maxError: meshMaxError})
-      : createDelatinTerrainMesh(field, {maxError: meshMaxError});
+      ? createMartiniTerrainMesh(field, options)
+      : createDelatinTerrainMesh(field, options);
   return {vertices: mesh.gridCoordinates, triangles: mesh.indices};
 }
 

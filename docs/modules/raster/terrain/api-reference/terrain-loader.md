@@ -92,6 +92,7 @@ If you only need elevation samples, use the lightweight
 | Option                     | Type            | Default   | Description                                                                                                                                   |
 | -------------------------- | --------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `terrain.meshMaxError`     | `number`        | `10`      | Mesh error in meters. The output mesh is in higher resolution (more vertices) if the error is smaller.                                        |
+| `terrain.meshMaxSampleTests` | `number` | `max(10,000,000, 32 × padded samples)` | Maximum source-node validation tests per refinement pass. Raise for demanding meshes, or lower to bound work explicitly. |
 | `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
 | `terrain.tesselator`       | `string`        | `auto`    | See below                                                                                                                                     |
