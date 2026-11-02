@@ -5,7 +5,7 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import {Table} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
 
 const source = [
@@ -24,7 +24,7 @@ const source = [
   ''
 ].join('\n');
 
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 test.each([
   'arrow-table',

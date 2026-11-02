@@ -6,7 +6,7 @@ import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {Table} from 'apache-arrow';
 import {encode, parse, parseInBatches} from '@loaders.gl/core';
 import type {ArrowTableBatch, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ParquetLoader, ParquetJSWriter} from '@loaders.gl/tables/parquet';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 
@@ -42,7 +42,7 @@ beforeAll(async () => {
     parquet: {compression: 'UNCOMPRESSED', dictionary: true, rowGroupSize: 3}
   });
 });
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 /** Makes main-thread fallback observable while retaining metadata-loader preloading. */
 function createObservedLoader() {

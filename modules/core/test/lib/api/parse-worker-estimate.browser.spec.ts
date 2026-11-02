@@ -6,19 +6,6 @@ import {parse} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 
-const WORKER_SOURCE = `
-  self.onmessage = event => {
-    const {type, payload} = event.data;
-    if (type === 'process') {
-      self.postMessage({
-        source: 'loaders.gl',
-        type: 'done',
-        payload: {result: {execution: 'worker', byteLength: payload.input.byteLength}}
-      });
-    }
-  };
-`;
-
 function createTestLoader(
   getWorkerEstimate?: LoaderWithParser['getWorkerEstimate']
 ): LoaderWithParser {
@@ -29,7 +16,10 @@ function createTestLoader(
     version: 'latest',
     extensions: ['estimate'],
     mimeTypes: ['application/x-worker-estimate'],
-    worker: true,
+    worker: new URL(
+      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
+      location.href
+    ).href,
     options: {},
     parse: async (arrayBuffer: ArrayBuffer) => ({
       execution: 'main',
@@ -42,8 +32,8 @@ function createTestLoader(
 
 function createOptions(worker: boolean | 'auto', workerThreshold = 0.1) {
   return {
-    core: {worker, workerThreshold, reuseWorkers: false},
-    source: WORKER_SOURCE
+    core: {worker, workerThreshold, _workerType: 'module'},
+    estimate: true
   };
 }
 

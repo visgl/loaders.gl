@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {encodeDracoBatch, encodeDracoInBatches} from '@loaders.gl/scene/draco-writer';
 import draco3d from 'draco3d';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 
 const GEOMETRY = {
   attributes: {POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])},
@@ -52,7 +52,7 @@ test('encodeDracoInBatches retains one worker session across input batches', asy
       results.push(result);
     }
   } finally {
-    WorkerFarm.getWorkerFarm({}).destroy();
+    await destroyWorkerTasks();
   }
   expect(results).toHaveLength(2);
   expect(results.every(result => result.data.byteLength > 0)).toBe(true);

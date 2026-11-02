@@ -4,12 +4,12 @@
 
 import {afterEach, expect, test, vi} from 'vitest';
 import {parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {BATCH_WORKER_SOURCE, createBatchTestLoader} from './batch-worker-fixture';
 
 const workerUrls: string[] = [];
 afterEach(() => {
-  WorkerFarm.getWorkerFarm().destroy();
+  destroyWorkerTasks();
   workerUrls.splice(0).forEach(url => URL.revokeObjectURL(url));
 });
 
@@ -83,8 +83,8 @@ test.each([false, true])('custom workers require explicit batch support: %s', as
 
 test('loader option serialization runs before dispatch without mutating caller options', async () => {
   const source = BATCH_WORKER_SOURCE.replace(
-    'loaderId = payload.options._workerLoaderId;',
-    'loaderId = payload.options.contract.value;'
+    'loaderId: options._workerLoaderId',
+    'loaderId: options.contract.value'
   );
   const workerUrl = URL.createObjectURL(new Blob([source], {type: 'application/javascript'}));
   workerUrls.push(workerUrl);

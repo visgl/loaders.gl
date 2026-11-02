@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {processOnWorker, isBrowser, destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {CryptoWorker, CryptoJSWorker} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
 test('CryptoWorker', async () => {
@@ -22,8 +22,7 @@ test('CryptoWorker', async () => {
   expect(hash, 'MD5 Hash correct').toBe('YnxTb+lyen1CsNkpmLv+qA==');
   // Destroy all workers in NodeJS
   if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 // CryptoJSWorker is disabled

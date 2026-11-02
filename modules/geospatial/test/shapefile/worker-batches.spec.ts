@@ -5,7 +5,7 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import {Table, tableFromArrays} from 'apache-arrow';
 import {fetchFile, load, loadInBatches, parse, parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {DBFLoader, SHPLoader, ShapefileLoader} from '../../src/shapefile/index';
 import {
   serializeShapefileWorkerResult,
@@ -16,7 +16,7 @@ import {parseDBFArrowBatches} from '../../src/shapefile/lib/parsers/parse-dbf-to
 const fixtureRoot = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const workerOptions = {core: {worker: true, _workerType: 'test'}} as const;
 
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 /** Splits binary fixtures inside headers and records. */
 function splitBuffer(buffer: ArrayBuffer): ArrayBuffer[] {

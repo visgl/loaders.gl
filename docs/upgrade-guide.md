@@ -354,6 +354,34 @@ in the supported minimum release, Arrow 17. Import version-specific names such
 as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type
 guards directly from your installed `apache-arrow` package.
 
+### Worker task runtime
+
+math.gl beta.3 removes the transport internals previously re-exported by
+`@loaders.gl/core/worker-utils`. `WorkerFarm`, `WorkerPool`, `WorkerThread`,
+`WorkerJob`, `WorkerBody`, protocol message types, and the worker-utils
+`AsyncQueue` export are removed. Use public `TaskRunner` handles for custom
+task execution. The separate `core/schema-utils` queue remains available.
+
+Replace `WorkerFarm.getWorkerFarm().destroy()` with
+`await destroyWorkerTasks()` when shutting down loader worker requests.
+For a runner owned by your application, use `runner.close()` or
+`runner.terminate()`. `preloadWorker` now preloads code only; remove its
+`count` option and assumptions about retained warm workers.
+
+Rebuild custom workers with the current `createWorker` or
+`createLoaderWorker` adapter. Legacy hand-written `source` strings and
+raw message handlers are unsupported; provide a worker URL or a factory
+returning a fresh worker. The adapters handle task records, streaming state,
+and optional calling-thread parser requests. `parse`, `parseInBatches`,
+`processOnWorker`, and `processOnWorkerInBatches` retain their loader-facing
+payload shapes. Direct `TaskRunner` calls require named object payloads and
+copy inputs by default; loader helpers retain transfer-by-default behavior.
+
+Remove direct pool controls and `reuseWorkers` assumptions. Set
+`maxConcurrency` on the first request for each descriptor to bound its
+active task handles. An atomic call or stream closes its worker handle
+on completion. See [worker processing](/docs/modules/core/worker-utils/api-reference/worker-processing).
+
 ### Runtime, workers, and codecs
 
 #### Native BSON value contract

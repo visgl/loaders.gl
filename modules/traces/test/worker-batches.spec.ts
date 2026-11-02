@@ -5,7 +5,7 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import {Table, RecordBatch, tableFromArrays} from 'apache-arrow';
 import {encode, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {
   ChromeTraceLoader,
   PerfettoTraceLoader,
@@ -42,7 +42,7 @@ const chromeTrace = {
   ]
 };
 
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 /** Splits fixtures across token and protobuf field boundaries. */
 function splitBytes(bytes: Uint8Array): Uint8Array[] {

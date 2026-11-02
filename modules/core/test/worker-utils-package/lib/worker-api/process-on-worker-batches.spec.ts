@@ -1,5 +1,9 @@
 import {expect, test, vi} from 'vitest';
-import {NullWorker, processOnWorkerInBatches, WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {
+  NullWorker,
+  processOnWorkerInBatches,
+  destroyWorkerTasks
+} from '@loaders.gl/core/worker-utils';
 
 test('processOnWorkerInBatches keeps state on one worker', async () => {
   const outputBatches = processOnWorkerInBatches(NullWorker, ['first', 'second', 'third'], {
@@ -19,7 +23,7 @@ test('processOnWorkerInBatches keeps state on one worker', async () => {
     {input: 'second', batchIndex: 1},
     {input: 'third', batchIndex: 2}
   ]);
-  WorkerFarm.getWorkerFarm().destroy();
+  destroyWorkerTasks();
 });
 
 test('processOnWorkerInBatches accepts async input and applies output backpressure', async () => {
@@ -123,42 +127,4 @@ test('aborting a paused output iterator closes its input exactly once', async ()
   await vi.waitFor(() => expect(cleanup).toHaveBeenCalledOnce());
   await output.return?.();
   expect(cleanup).toHaveBeenCalledOnce();
-});
-
-test('batched worker progress is delivered before each output batch', async () => {
-  const onProgress = vi.fn();
-  const source = `
-    let completed = 0;
-    const send = (type, payload = {}) => self.postMessage({source: 'loaders.gl', type, payload});
-    self.onmessage = ({data: {type, payload}}) => {
-      switch (type) {
-        case 'process-in-batches':
-        case 'output-ack':
-          send('input-request');
-          break;
-        case 'input-batch':
-          send('progress', {progress: {phase: 'parse', completed: ++completed, unit: 'batches'}});
-          send('output-batch', {result: payload.input});
-          break;
-        case 'input-done':
-          send('done');
-          break;
-      }
-    };
-  `;
-  const outputs = [];
-  for await (const output of processOnWorkerInBatches(NullWorker, [1, 2], {
-    source,
-    onProgress,
-    reuseWorkers: false
-  })) {
-    expect(onProgress).toHaveBeenLastCalledWith({
-      phase: 'parse',
-      completed: output,
-      unit: 'batches'
-    });
-    outputs.push(output);
-  }
-  expect(outputs).toEqual([1, 2]);
-  expect(onProgress).toHaveBeenCalledTimes(2);
 });

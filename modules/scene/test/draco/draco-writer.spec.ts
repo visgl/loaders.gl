@@ -5,7 +5,7 @@ import {DracoWriter, DracoWriterWorker, encodeDracoBatch} from '@loaders.gl/scen
 import {encode, fetchFile, parse} from '@loaders.gl/core';
 // import {getMeshSize} from '@loaders.gl/core/schema-utils';
 import draco3d from 'draco3d';
-import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {isBrowser, processOnWorker, destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {cloneTypeArray} from './test-utils/copyTypedArray';
 export type TestCase = {
   title: string;
@@ -207,8 +207,7 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async () => {
   }
   // Destroy all workers in NodeJS
   if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 test('DracoWriter#encode via draco3d npm package (bunny.drc)', async () => {

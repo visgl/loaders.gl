@@ -4,22 +4,16 @@
 
 import {expect, test} from 'vitest';
 import * as tasks from '@math.gl/core/tasks';
-import {
-  WorkerFarm,
-  createWorker,
-  processOnWorker,
-  processOnWorkerInBatches,
-  NullWorker,
-  getWorkerURL
-} from '../../src/worker-utils';
+import * as workers from '../../src/worker-utils';
 
-test('worker facade shares the math.gl runtime and retains loaders.gl assets', () => {
-  expect(WorkerFarm).toBe(tasks.WorkerFarm);
-  expect(createWorker).toBe(tasks.createWorker);
-  expect(processOnWorker).toBe(tasks.processOnWorker);
-  expect(processOnWorkerInBatches).toBe(tasks.processOnWorkerInBatches);
-  expect(NullWorker.module).toBe('core');
-  expect(getWorkerURL({...NullWorker, version: '5.0.0-alpha.9'})).toBe(
+test('loader tasks expose the public math.gl lifecycle without transport internals', () => {
+  expect(workers.TaskRunner).toBe(tasks.TaskRunner);
+  expect(workers.initializeTaskWorker).toBeTypeOf('function');
+  expect(workers.preloadTasks).toBe(tasks.preloadTasks);
+  expect(workers).not.toHaveProperty('WorkerFarm');
+  expect(workers).not.toHaveProperty('WorkerBody');
+  expect(workers.NullWorker.module).toBe('core');
+  expect(workers.getWorkerURL({...workers.NullWorker, version: '5.0.0-alpha.9'})).toBe(
     'https://unpkg.com/@loaders.gl/core@5.0.0-alpha.9/dist/worker-utils/null-worker.js'
   );
 });

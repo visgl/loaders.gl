@@ -21,37 +21,28 @@ const CHILD_LOADER = {
   tests: [() => true],
   options: {}
 };
-const PARENT_LOADER = {...CHILD_LOADER, id: 'nested-parent', worker: true};
+const PARENT_LOADER = {
+  ...CHILD_LOADER,
+  id: 'nested-parent',
+  worker: new URL('/modules/core/test/worker-utils-package/fixtures/task-worker.ts', location.href)
+    .href
+};
 
-// The bytes have no identifying signature. Only the explicit loader hint can select the parser.
-const NESTED_WORKER_SOURCE = `
-  self.onmessage = ({data: {type, payload}}) => {
-    if (type === 'process' || type === 'process-in-batches') {
-      self.postMessage({source: 'loaders.gl', type: 'process', payload: {
-        id: 17, input: new ArrayBuffer(1), options: {core: {worker: false}},
-        context: payload.options.emptyContext ? {} : {_loaderIds: payload.options.loaderIds, _loaderIsArray: payload.options.loaderIsArray, url: 'nested'}
-      }});
-    } else if (type === 'done' && payload.id === 17) {
-      if (payload.result.batch) {
-        self.postMessage({source: 'loaders.gl', type: 'output-batch', payload: {result: payload.result}});
-      } else {
-        self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: payload.result}});
-      }
-    } else if (type === 'output-ack') {
-      self.postMessage({source: 'loaders.gl', type: 'done', payload: {}});
-    } else if (type === 'error') {
-      self.postMessage({source: 'loaders.gl', type: 'error', payload: {error: payload.error}});
-    }
-  };
-`;
+// The bytes have no identifying signature; only the explicit loader hint selects a parser.
 
 test.each([
   false,
   true
 ])('nested worker preserves explicit loader selection (array: %s)', async loaderIsArray => {
+  const fetchNested = vi.fn(async () => new Response('nested fixture'));
   const parser = vi.fn(async (_data, _options, context) => {
     expect(context.url).toBe('nested');
-    expect(context.fetch).toBe(fetch);
+    expect(context.signal).toBeInstanceOf(AbortSignal);
+    expect(await (await context.fetch('/nested-data')).text()).toBe('nested fixture');
+    expect(fetchNested).toHaveBeenCalledWith(
+      '/nested-data',
+      expect.objectContaining({signal: context.signal})
+    );
     expect(context).not.toHaveProperty('_loaderIds');
     return 'decoded';
   });
@@ -61,13 +52,13 @@ test.each([
     {...PARENT_LOADER, subloaders: {ChildLoader: child}},
     new ArrayBuffer(1),
     {
-      source: NESTED_WORKER_SOURCE,
+      nested: true,
       worker: true,
       reuseWorkers: false,
       loaderIds: [child.id],
       loaderIsArray
     },
-    {fetch} as any,
+    {fetch: fetchNested} as any,
     parse
   );
   expect(result).toBe('decoded');
@@ -91,7 +82,7 @@ test('nested worker resolves caller loaders and named overrides without cloning 
       cyclic,
       new ArrayBuffer(1),
       {
-        source: NESTED_WORKER_SOURCE,
+        nested: true,
         worker: true,
         reuseWorkers: false,
         loaderIds: [CHILD_LOADER.id, contextual.id],
@@ -110,7 +101,7 @@ test('nested worker fails explicitly for an unavailable loader', async () => {
     parseWithWorker(
       PARENT_LOADER,
       new ArrayBuffer(1),
-      {source: NESTED_WORKER_SOURCE, worker: true, reuseWorkers: false, loaderIds: ['missing']},
+      {nested: true, worker: true, reuseWorkers: false, loaderIds: ['missing']},
       undefined,
       parse
     )
@@ -128,7 +119,7 @@ test('batched workers retain nested loader selection and worker-only context', a
   for await (const batch of parseWithWorkerInBatches(
     {...PARENT_LOADER, subloaders: {ChildLoader: CHILD_LOADER}},
     [new ArrayBuffer(1)],
-    {source: NESTED_WORKER_SOURCE, worker: true, reuseWorkers: false, loaderIds: [CHILD_LOADER.id]},
+    {nested: true, worker: true, reuseWorkers: false, loaderIds: [CHILD_LOADER.id]},
     undefined,
     callback
   ))
@@ -155,7 +146,7 @@ test.each([
     }
   };
   const options = {
-    source: NESTED_WORKER_SOURCE,
+    nested: true,
     worker: true,
     reuseWorkers: false,
     loaderIds: [child.id],
@@ -195,7 +186,7 @@ test('empty worker contexts retain legacy callback options without an outer cont
     PARENT_LOADER,
     new ArrayBuffer(1),
     {
-      source: NESTED_WORKER_SOURCE,
+      nested: true,
       worker: true,
       reuseWorkers: false,
       emptyContext: true
@@ -228,9 +219,7 @@ test('shared bigint ZIP options survive unrelated worker selection and transport
     worker: true,
     reuseWorkers: false,
     zip,
-    source: `self.onmessage = ({data: {payload}}) => {
-      self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: payload.options.zip}});
-    };`
+    echoZip: true
   });
   expect(result).toEqual({maxTotalDecodedBytes: 2n ** 63n + 1n, nested: [1n, null, '1n']});
   expect(zip.callback).toBeTypeOf('function');

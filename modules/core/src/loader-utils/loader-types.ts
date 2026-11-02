@@ -85,7 +85,7 @@ export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> &
     maxConcurrency?: number;
     /** Number of concurrent workers (per loader) on mobile browsers */
     maxMobileConcurrency?: number;
-    /** Set to `false` to prevent reuse workers */
+    /** @deprecated Task handles close after each atomic call or stream. */
     reuseWorkers?: boolean;
     /** Controls whether worker result transfer prepares standalone ArrayBuffers. */
     workerTransferBufferCopy?: 'none' | 'sliced' | 'all';
@@ -142,7 +142,7 @@ export type LoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
   maxConcurrency?: number;
   /** @deprecated Use options.core.maxMobileConcurrency */
   maxMobileConcurrency?: number;
-  /** @deprecated Use options.core.reuseWorkers */
+  /** @deprecated Task handles close after each atomic call or stream. */
   reuseWorkers?: boolean;
   /** @deprecated Use options.core.workerTransferBufferCopy */
   workerTransferBufferCopy?: 'none' | 'sliced' | 'all';

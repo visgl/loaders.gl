@@ -57,7 +57,7 @@ import {
   ResourceType,
   SharedResourcesArrays
 } from './types';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
@@ -294,8 +294,7 @@ export default class I3SConverter {
     } finally {
       await this.writeQueue.finalize();
       // Clean up worker pools
-      const workerFarm = WorkerFarm.getWorkerFarm({});
-      workerFarm.destroy();
+      await destroyWorkerTasks();
     }
     return 'success';
   }

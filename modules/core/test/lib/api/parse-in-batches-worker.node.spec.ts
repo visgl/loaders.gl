@@ -8,7 +8,7 @@ import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {expect, test} from 'vitest';
 import {parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {BATCH_WORKER_SOURCE, createBatchTestLoader} from './batch-worker-fixture';
 
 test('generic loader batches use an explicitly enabled Node worker', async () => {
@@ -26,7 +26,7 @@ test('generic loader batches use an explicitly enabled Node worker', async () =>
     expect(results).toEqual([{input: 'node', batchIndex: 0, worker: true, loaderId: loader.id}]);
     expect(mainParser).not.toHaveBeenCalled();
   } finally {
-    WorkerFarm.getWorkerFarm().destroy();
+    destroyWorkerTasks();
     rmSync(directory, {recursive: true, force: true});
   }
 });

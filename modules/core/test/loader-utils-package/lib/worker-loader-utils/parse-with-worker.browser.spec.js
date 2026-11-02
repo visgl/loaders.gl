@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {WorkerPool} from '@loaders.gl/core/worker-utils';
 import {toArrayBuffer, parseWithWorker} from '@loaders.gl/core/loader-utils';
 import {
   registerLoaders,
@@ -12,10 +11,8 @@ import {
   coreApi,
   parse
 } from '@loaders.gl/core';
-const CHUNKS_TOTAL = 6;
-const MAX_CONCURRENCY = 3;
 test('parseWithWorker', async () => {
-  if (!WorkerPool.isSupported()) {
+  if (typeof Worker === 'undefined') {
     console.log('Workers not supported, skipping tests');
     return;
   }
@@ -35,38 +32,8 @@ test('parseWithWorker', async () => {
   const result = await parseWithWorker(NullWorkerLoader, testData, testOptions, testContext);
   expect(result).toBe(null);
 });
-test.skip('createLoaderWorker', async () => {
-  if (!WorkerPool.isSupported()) {
-    console.log('Workers not supported, skipping tests');
-    return;
-  }
-  const callback = info =>
-    console.log(`Processing with worker ${info.name}, queued jobs ${info.backlog}`);
-  const workerPool = new WorkerPool({
-    url: 'modules/core/test/loader-utils-package/lib/worker-loader-utils/json-worker.js',
-    name: 'test-json-loader',
-    maxConcurrency: MAX_CONCURRENCY,
-    onDebug: callback
-  });
-  const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
-  const result = await Promise.all(
-    TEST_CASES.map(async testData => {
-      const job = await workerPool.startJob('test');
-      job.postMessage('process', {
-        input: toArrayBuffer(JSON.stringify(testData))
-      });
-    })
-  );
-  for (let i = 0; i < CHUNKS_TOTAL; i++) {
-    expect(result[i], 'worker returns expected result').toEqual({
-      type: 'done',
-      result: TEST_CASES[i]
-    });
-  }
-  workerPool.destroy();
-});
 test('parseWithWorker#nested', async () => {
-  if (!WorkerPool.isSupported()) {
+  if (typeof Worker === 'undefined') {
     console.log('Workers not supported, skipping tests');
     return;
   }
@@ -93,46 +60,15 @@ test('parseWithWorker#nested', async () => {
     name: 'Nested JSON worker',
     module: 'loader-utils',
     version: 'latest',
-    worker: true,
+    worker: new URL(
+      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
+      location.href
+    ).href,
     extensions: [],
     mimeTypes: [],
     tests: [arrayBuffer => arrayBuffer instanceof ArrayBuffer],
     options: {}
   };
-
-  const nestedWorkerSource = `
-    let requestId = 0;
-
-    self.onmessage = event => {
-      const {type, payload} = event.data;
-      if (type !== 'process') {
-        return;
-      }
-
-      const id = requestId++;
-
-      const onMessage = nestedEvent => {
-        const {type: nestedType, payload: nestedPayload} = nestedEvent.data;
-        if (nestedPayload.id !== id) {
-          return;
-        }
-
-        self.removeEventListener('message', onMessage);
-        if (nestedType === 'done') {
-          self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: nestedPayload.result}});
-        } else if (nestedType === 'error') {
-          self.postMessage({source: 'loaders.gl', type: 'error', payload: {error: nestedPayload.error}});
-        }
-      };
-
-      self.addEventListener('message', onMessage);
-      self.postMessage({
-        source: 'loaders.gl',
-        type: 'process',
-        payload: {id, input: payload.input, options: {...payload.options, worker: false}}
-      });
-    };
-  `;
 
   registerLoaders([NestedJSONLoader]);
   const TEST_CASES = [
@@ -145,7 +81,7 @@ test('parseWithWorker#nested', async () => {
         parseWithWorker(
           NestedJSONWorkerLoader,
           toArrayBuffer(testData.map(data => JSON.stringify(data)).join('\n')),
-          {source: nestedWorkerSource, worker: true, reuseWorkers: false},
+          {callback: true, worker: true},
           {fetch, coreApi, _parse: async arrayBuffer => arrayBuffer},
           parse
         )
@@ -159,7 +95,7 @@ test('parseWithWorker#nested', async () => {
 });
 
 test('parseWithWorker#nested preserves legacy parseOnMainThread options argument', async () => {
-  if (!WorkerPool.isSupported()) {
+  if (typeof Worker === 'undefined') {
     console.log('Workers not supported, skipping tests');
     return;
   }
@@ -169,51 +105,20 @@ test('parseWithWorker#nested preserves legacy parseOnMainThread options argument
     name: 'Nested Legacy Options Worker',
     module: 'loader-utils',
     version: 'latest',
-    worker: true,
+    worker: new URL(
+      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
+      location.href
+    ).href,
     extensions: [],
     mimeTypes: [],
     tests: [arrayBuffer => arrayBuffer instanceof ArrayBuffer],
     options: {}
   };
 
-  const nestedWorkerSource = `
-    let requestId = 0;
-
-    self.onmessage = event => {
-      const {type, payload} = event.data;
-      if (type !== 'process') {
-        return;
-      }
-
-      const id = requestId++;
-
-      const onMessage = nestedEvent => {
-        const {type: nestedType, payload: nestedPayload} = nestedEvent.data;
-        if (nestedPayload.id !== id) {
-          return;
-        }
-
-        self.removeEventListener('message', onMessage);
-        if (nestedType === 'done') {
-          self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: nestedPayload.result}});
-        } else if (nestedType === 'error') {
-          self.postMessage({source: 'loaders.gl', type: 'error', payload: {error: nestedPayload.error}});
-        }
-      };
-
-      self.addEventListener('message', onMessage);
-      self.postMessage({
-        source: 'loaders.gl',
-        type: 'process',
-        payload: {id, input: payload.input, options: {...payload.options, worker: false}}
-      });
-    };
-  `;
-
   const result = await parseWithWorker(
     NestedWorkerLoader,
     toArrayBuffer('abc'),
-    {source: nestedWorkerSource, worker: true, reuseWorkers: false, custom: 'custom-option'},
+    {callback: true, worker: true, custom: 'custom-option'},
     {fetch, coreApi, _parse: async arrayBuffer => arrayBuffer},
     async (_arrayBuffer, options) => options
   );
@@ -223,12 +128,6 @@ test('parseWithWorker#nested preserves legacy parseOnMainThread options argument
 });
 
 test('worker options retain Headers instances in namespaced and legacy fetch options', async () => {
-  const source = `self.onmessage = event => {
-    if (event.data.type !== 'process') return;
-    const options = event.data.payload.options;
-    const result = new TextEncoder().encode(JSON.stringify({core: options.core.fetch, legacy: options.fetch}));
-    self.postMessage({source: 'loaders.gl', type: 'done', payload: {result}}, [result.buffer]);
-  };`;
   const loader = {
     id: 'request-headers',
     name: 'Request headers',
@@ -236,13 +135,16 @@ test('worker options retain Headers instances in namespaced and legacy fetch opt
     version: '1',
     extensions: [],
     mimeTypes: [],
-    worker: true
+    worker: new URL(
+      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
+      location.href
+    ).href
   };
   const result = await parseWithWorker(loader, new ArrayBuffer(0), {
+    echoFetch: true,
     core: {
       worker: true,
-      source,
-      reuseWorkers: false,
+      echoFetch: true,
       fetch: {headers: new Headers({Authorization: 'Bearer test', 'X-Sidecar': 'dbf'})}
     },
     fetch: {headers: new Headers({'X-Legacy': 'retained'})}

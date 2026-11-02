@@ -4,6 +4,8 @@
 
 ### Unreleased
 
+- Upgrade math.gl to beta.3 and migrate worker execution to public TaskRunner handles; remove legacy pool/protocol exports and rebuild custom workers.
+
 ### v5.0.0-beta.2
 
 - Keep WMS/WCS imports independent of the optional GeoTIFF decoder by loading LERC through its focused raster entry point.

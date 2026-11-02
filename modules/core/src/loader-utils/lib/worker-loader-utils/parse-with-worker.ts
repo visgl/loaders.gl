@@ -147,14 +147,18 @@ export async function parseWithWorker(
       onProgress: options?.onProgress || context?.reportProgress
     },
     {
-      process: async (input, processOptions, _workerContext, parseContext) => {
+      process: async (input, processOptions, workerContext, parseContext) => {
         if (!parseOnMainThread) {
           throw new Error('Worker not set up to parse on main thread');
         }
         const {_loaderIds, _loaderIsArray, ...workerParseContext} = parseContext || {};
         const mainThreadContext =
-          context || parseContext
-            ? ({...context, ...workerParseContext} as LoaderContext)
+          context || parseContext || workerContext?.signal
+            ? ({
+                ...context,
+                ...workerParseContext,
+                signal: workerContext?.signal ?? context?.signal
+              } as LoaderContext)
             : undefined;
         return await callParseOnMainThread(
           parseOnMainThread,
@@ -201,14 +205,18 @@ export async function* parseWithWorkerInBatches(
       onProgress: options?.onProgress || context?.reportProgress
     },
     {
-      process: async (input, processOptions, _workerContext, parseContext) => {
+      process: async (input, processOptions, workerContext, parseContext) => {
         if (!parseOnMainThread) {
           throw new Error('Worker not set up to parse on main thread');
         }
         const {_loaderIds, _loaderIsArray, ...workerParseContext} = parseContext || {};
         const mainThreadContext =
-          context || parseContext
-            ? ({...context, ...workerParseContext} as LoaderContext)
+          context || parseContext || workerContext?.signal
+            ? ({
+                ...context,
+                ...workerParseContext,
+                signal: workerContext?.signal ?? context?.signal
+              } as LoaderContext)
             : undefined;
         return await callParseOnMainThread(
           parseOnMainThread,

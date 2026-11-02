@@ -74,10 +74,10 @@ export const FEATURE_CARDS = [
     eyebrow: 'Runtime performance',
     title: 'Keep the UI responsive.',
     description:
-      'Move parsing and decompression off the main thread with reusable workers and transferable binary data.',
+      'Run parsing and decompression as cancellable tasks with streaming batches, progress reporting, and explicit binary-data ownership.',
     href: '/docs/developer-guide/using-worker-loaders',
     linkLabel: 'Use worker loaders',
-    tags: ['workers', 'parallel', 'transferable'],
+    tags: ['tasks', 'streaming', 'cancellation'],
     visual: 'workers',
     tone: 'blue'
   },
