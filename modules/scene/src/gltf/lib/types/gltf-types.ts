@@ -5,6 +5,7 @@
 /* eslint-disable camelcase */
 
 import {ImageType} from '@loaders.gl/images';
+import type {TextureLevel} from '@loaders.gl/core/schema';
 import type {GLTF} from './gltf-json-schema';
 import type {GLTFGaussianSplatPrimitive} from './gltf-ext-gaussian-splatting-schema';
 import type {GLTFSpatialAudio} from './gltf-mpeg-audio-spatial-schema';
@@ -50,6 +51,13 @@ export type GLTFExternalFile = GLTFExternalBuffer & {
 
 type GLTFExternalImage =
   | ImageType
+  | {
+      compressed: true;
+      mipmaps: true;
+      width: number;
+      height: number;
+      data: TextureLevel[];
+    }
   | {
       compressed: true;
       mipmaps: false;

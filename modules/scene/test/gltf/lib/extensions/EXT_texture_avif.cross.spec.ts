@@ -7,10 +7,15 @@ import {afterEach, describe, expect, test, vi} from 'vitest';
 
 vi.mock('@loaders.gl/images', async importOriginal => ({
   ...(await importOriginal()),
-  getSupportedImageFormats: vi.fn()
+  getSupportedImageFormats: vi.fn(),
+  isImageFormatSupported: vi.fn()
 }));
 
-import {getSupportedImageFormats} from '@loaders.gl/images';
+import {
+  CompressedTextureLoader,
+  getSupportedImageFormats,
+  isImageFormatSupported
+} from '@loaders.gl/images';
 import {preprocessExtensions} from '../../../../src/gltf/lib/api/gltf-extensions';
 import {preprocess} from '../../../../src/gltf/lib/extensions/EXT_texture_avif';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
@@ -19,6 +24,7 @@ const getSupportedImageFormatsMock = vi.mocked(getSupportedImageFormats);
 
 afterEach(() => {
   getSupportedImageFormatsMock.mockReset();
+  vi.mocked(isImageFormatSupported).mockReset();
 });
 
 describe('EXT_texture_avif', () => {
@@ -64,6 +70,70 @@ describe('EXT_texture_avif', () => {
     await expect(preprocess(makeGLTFData({required: true}), {})).rejects.toThrow(
       'Required extension EXT_texture_avif not supported by browser'
     );
+  });
+
+  test('prefers BasisU over supported WebP and AVIF sources in the extension pipeline', async () => {
+    getSupportedImageFormatsMock.mockResolvedValue(new Set(['image/avif']));
+    vi.mocked(isImageFormatSupported).mockReturnValue(true);
+    const gltfData = makeGLTFData({required: false});
+    gltfData.json.extensionsUsed = ['EXT_texture_avif', 'EXT_texture_webp', 'KHR_texture_basisu'];
+    gltfData.json.textures![0].extensions = {
+      EXT_texture_avif: {source: 1},
+      EXT_texture_webp: {source: 2},
+      KHR_texture_basisu: {source: 3}
+    };
+
+    await preprocessExtensions(gltfData, {});
+
+    expect(gltfData.json.textures![0].source).toBe(3);
+  });
+
+  test('uses AVIF when WebP is unavailable and both are optional', async () => {
+    getSupportedImageFormatsMock.mockResolvedValue(new Set(['image/avif']));
+    vi.mocked(isImageFormatSupported).mockReturnValue(false);
+    const gltfData = makeGLTFData({required: false});
+    gltfData.json.extensionsUsed = ['EXT_texture_avif', 'EXT_texture_webp'];
+    gltfData.json.textures![0].extensions!.EXT_texture_webp = {source: 2};
+
+    await preprocessExtensions(gltfData, {});
+
+    expect(gltfData.json.textures![0].source).toBe(1);
+    expect(gltfData.json.textures![0].extensions?.EXT_texture_webp).toEqual({source: 2});
+  });
+
+  test('prefers an injected DDS source over supported WebP and AVIF', async () => {
+    getSupportedImageFormatsMock.mockResolvedValue(new Set(['image/avif']));
+    vi.mocked(isImageFormatSupported).mockReturnValue(true);
+    const gltfData = makeGLTFData({required: false});
+    gltfData.json.extensionsUsed = ['EXT_texture_avif', 'EXT_texture_webp', 'MSFT_texture_dds'];
+    gltfData.json.textures![0].extensions = {
+      EXT_texture_avif: {source: 1},
+      EXT_texture_webp: {source: 2},
+      MSFT_texture_dds: {source: 3}
+    };
+    await preprocessExtensions(gltfData, {}, {loaders: [CompressedTextureLoader]});
+    expect(gltfData.json.textures![0].source).toBe(3);
+  });
+
+  test('prefers supported AVIF over supported WebP', async () => {
+    getSupportedImageFormatsMock.mockResolvedValue(new Set(['image/avif']));
+    vi.mocked(isImageFormatSupported).mockReturnValue(true);
+    const gltfData = makeGLTFData({required: false});
+    gltfData.json.extensionsUsed = ['EXT_texture_avif', 'EXT_texture_webp'];
+    gltfData.json.textures![0].extensions!.EXT_texture_webp = {source: 2};
+    await preprocessExtensions(gltfData, {});
+    expect(gltfData.json.textures![0].source).toBe(1);
+  });
+
+  test('prefers BasisU over an injected DDS source', async () => {
+    const gltfData = makeGLTFData({required: false});
+    gltfData.json.extensionsUsed = ['MSFT_texture_dds', 'KHR_texture_basisu'];
+    gltfData.json.textures![0].extensions = {
+      MSFT_texture_dds: {source: 3},
+      KHR_texture_basisu: {source: 4}
+    };
+    await preprocessExtensions(gltfData, {}, {loaders: [CompressedTextureLoader]});
+    expect(gltfData.json.textures![0].source).toBe(4);
   });
 });
 

@@ -1,6 +1,6 @@
 # MaterialXLoader
 
-Loads MaterialX XML into a structural document tree. This initial implementation requires a browser `DOMParser`.
+Loads MaterialX XML into a structural document tree. The native XML parser supports browsers and Node.js.
 
 ## Asynchronous loading
 
@@ -36,6 +36,6 @@ There are no format-specific loader options. Attributes retain string values; co
 
 ## Errors and limitations
 
-Malformed XML, missing or invalid root/version, document types, entity declarations, and excessive nesting are rejected. Node.js without DOMParser throws an explicit runtime error. Structural parsing does not provide MaterialX semantic validation, graph evaluation, library composition, or shader compilation.
+Malformed XML, missing or invalid root/version, document types, entity declarations, and excessive nesting are rejected. Structural parsing does not provide MaterialX semantic validation, graph evaluation, library composition, or shader compilation.
 
 See [MaterialX format](../formats/materialx.md).

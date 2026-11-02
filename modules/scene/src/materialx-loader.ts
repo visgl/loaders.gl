@@ -5,7 +5,7 @@ import {parseMaterialX} from './materialx/parse-materialx';
 
 const {preload: _preload, ...metadata} = MaterialXLoader;
 
-/** Parser-bearing loader for MaterialX XML, currently requiring DOMParser. */
+/** Parser-bearing loader for MaterialX XML, using the native XML parser. */
 export const MaterialXLoaderWithParser = {
   ...metadata,
   parse: async (data: ArrayBuffer) => parseMaterialX(new TextDecoder().decode(data)),

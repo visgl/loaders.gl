@@ -25,6 +25,7 @@ import * as EXT_meshopt_compression from '../extensions/EXT_meshopt_compression'
 import * as KHR_meshopt_compression from '../extensions/KHR_meshopt_compression';
 import * as EXT_texture_webp from '../extensions/EXT_texture_webp';
 import * as EXT_texture_avif from '../extensions/EXT_texture_avif';
+import * as MSFT_texture_dds from '../extensions/MSFT_texture_dds';
 import * as KHR_texture_basisu from '../extensions/KHR_texture_basisu';
 import * as KHR_draco_mesh_compression from '../extensions/KHR_draco_mesh_compression';
 import * as KHR_texture_transform from '../extensions/KHR_texture_transform';
@@ -79,9 +80,11 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   EXT_mesh_polygon,
   MPEG_audio_spatial,
   KHR_audio_emitter,
-  EXT_texture_avif,
   EXT_texture_webp,
-  // Basisu should come after webp, we want basisu to be preferred if both are provided
+  EXT_texture_avif,
+  // Compressed textures take precedence over browser image formats when available.
+  MSFT_texture_dds,
+  // BasisU remains preferred when both compressed alternatives are provided.
   KHR_texture_basisu,
   KHR_lights_punctual,
   KHR_materials_unlit,

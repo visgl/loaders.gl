@@ -178,7 +178,10 @@
       },
       "sourcePaths": [
         "modules/scene/src/usd/",
-        "modules/scene/src/index.ts"
+        "modules/scene/src/index.ts",
+        "modules/scene/src/materialx/",
+        "modules/scene/src/materialx-loader-types.ts",
+        "modules/scene/src/materialx-loader.ts"
       ],
       "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf and scene/draco gates; every scene implementation belongs to one of these gates."
     },
