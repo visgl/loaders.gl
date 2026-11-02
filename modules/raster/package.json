@@ -318,7 +318,7 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "copy-libs": "mkdir -p dist/terrain/libs dist/lerc/libs && cp -R src/terrain/libs/. dist/terrain/libs/ && cp -R src/lerc/libs/. dist/lerc/libs/",
+    "copy-libs": "mkdir -p dist/lerc/libs && cp -R src/lerc/libs/. dist/lerc/libs/",
     "build-cjs": "node ../../node_modules/@vis.gl/dev-tools/dist/build-cjs.js",
     "build-worker-terrain": "node ../../scripts/build-codec-worker.mjs src/terrain/workers/terrain-worker.ts --bundle --outfile=dist/terrain-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-quantized-mesh": "node ../../scripts/build-codec-worker.mjs src/terrain/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -327,7 +327,7 @@
   "dependencies": {
     "@loaders.gl/documents": "5.0.0-beta.2",
     "@loaders.gl/images": "5.0.0-beta.2",
-    "@math.gl/geospatial": "5.0.0-beta.3"
+    "@math.gl/geospatial": "5.0.0-beta.4"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",
@@ -343,7 +343,6 @@
     }
   },
   "devDependencies": {
-    "@mapbox/martini": "0.2.0",
     "geotiff": "^2.1.0",
     "lerc": "^4.2.0"
   },

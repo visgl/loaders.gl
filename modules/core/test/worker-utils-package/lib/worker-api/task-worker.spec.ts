@@ -184,6 +184,12 @@ test.each([
 ])('cross-origin worker entrypoints use a same-origin module shim (null factory: %s)', async withFactory => {
   const requestedUrl = 'https://worker.example.invalid/parser.js';
   let constructedUrl = '';
+  let moduleSource: Blob | undefined;
+  const createUrl = URL.createObjectURL.bind(URL);
+  const objectUrl = vi.spyOn(URL, 'createObjectURL').mockImplementation(blob => {
+    if (blob instanceof Blob) moduleSource = blob;
+    return createUrl(blob);
+  });
   const constructor = vi.spyOn(globalThis, 'Worker').mockImplementation(function (target) {
     constructedUrl = String(target);
     throw new Error('captured module worker');
@@ -198,14 +204,18 @@ test.each([
     expect(constructedUrl).toMatch(/^blob:/);
     const firstUrl = constructedUrl;
     await expect(processOnWorker(descriptor, 'second')).rejects.toThrow('captured module worker');
-    expect(constructedUrl).toBe(firstUrl);
-    expect(await (await fetch(constructedUrl)).text()).toBe(
-      `import ${JSON.stringify(requestedUrl)};`
-    );
+    if (withFactory) expect(constructedUrl).toBe(firstUrl);
+    else expect(constructedUrl).not.toBe(firstUrl);
+    expect(await moduleSource!.text()).toBe(`import ${JSON.stringify(requestedUrl)};`);
+    if (!withFactory) {
+      await expect(fetch(firstUrl)).rejects.toThrow();
+      await expect(fetch(constructedUrl)).rejects.toThrow();
+    }
     await destroyWorkerTasks();
     await expect(fetch(constructedUrl)).rejects.toThrow();
   } finally {
     constructor.mockRestore();
+    objectUrl.mockRestore();
   }
 });
 
@@ -280,6 +290,12 @@ test('relative worker entrypoints honor the document base URL', async () => {
     .spyOn(document, 'baseURI', 'get')
     .mockReturnValue('https://worker.example.invalid/nested/');
   let constructedUrl = '';
+  let moduleSource: Blob | undefined;
+  const createUrl = URL.createObjectURL.bind(URL);
+  const objectUrl = vi.spyOn(URL, 'createObjectURL').mockImplementation(blob => {
+    if (blob instanceof Blob) moduleSource = blob;
+    return createUrl(blob);
+  });
   const constructor = vi.spyOn(globalThis, 'Worker').mockImplementation(function (target) {
     constructedUrl = String(target);
     throw new Error('captured relative worker');
@@ -288,11 +304,12 @@ test('relative worker entrypoints honor the document base URL', async () => {
     await expect(processOnWorker({...worker, worker: './parser.js'}, 'input')).rejects.toThrow(
       'captured relative worker'
     );
-    expect(await (await fetch(constructedUrl)).text()).toBe(
+    expect(await moduleSource!.text()).toBe(
       'import "https://worker.example.invalid/nested/parser.js";'
     );
   } finally {
     constructor.mockRestore();
+    objectUrl.mockRestore();
     base.mockRestore();
   }
 });

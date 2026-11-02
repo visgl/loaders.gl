@@ -2,7 +2,7 @@
 
 Fabian Schindler and [geotiff.js contributors](https://github.com/geotiffjs/geotiff.js) supply the separately installed compatibility decoder. The current numeric TIFF core is developed in loaders.gl; comments identify compatibility references.
 
-Vladimir Agafonkin's MARTINI 0.2.0 is vendored unchanged: [source/version/hash](./src/terrain/libs/README.md), [ISC license](./src/terrain/libs/martini-LICENSE). Michael Fogleman and Vladimir Agafonkin's Delatin is adapted in [src/terrain/lib/delatin](./src/terrain/lib/delatin); [full ISC terms](./third-party-licenses/delatin-LICENSE).
+Terrain mesh reconstruction delegates to @math.gl/geospatial/terrain, which owns its MARTINI and Delatin dependencies. Michael Fogleman and Vladimir Agafonkin's Delatin is adapted in [src/terrain/lib/delatin](./src/terrain/lib/delatin); [full ISC terms](./third-party-licenses/delatin-LICENSE).
 
 HERE Europe B.V.'s quantized-mesh-decoder supplies [decode-quantized-mesh.ts](./src/terrain/lib/decode-quantized-mesh.ts), including full MIT terms. Esri's LERC supplies retained decoder code with its [Apache-2.0 license](./src/lerc/libs/lerc/LICENSE); the separately installed lerc package is another runtime integration.
 

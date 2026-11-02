@@ -33,7 +33,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Operation', value: 'Atomic task or stateful batch session'},
     {label: 'Scheduling', value: 'Task runner with bounded concurrency'},
     {label: 'Transport', value: 'Transferable binary data where possible'},
-    {label: 'Lifecycle', value: 'Preload, cancellation, errors, and shutdown'}
+    {label: 'Lifecycle', value: 'Upstream URL cleanup, Node workers, and cancellation'}
   ]}
 />
 
@@ -56,8 +56,9 @@ sessions in browsers and Node.js.
 | Cancellation and progress | Signals reach worker tasks and caller-thread callbacks; late callback results are discarded after shutdown. |
 | Binary ownership | Loader inputs transfer by default; opt into copy or shared storage. Callback ports transfer independently, and serializable caller context is copied. |
 | Worker URLs | Factories, local module URLs, and cross-origin HTTP(S) module shims. Remote modules require CORS and compatible CSP. |
-| Concurrency and cleanup | Bounded active handles per descriptor; `destroyWorkerTasks()` terminates active and queued work and releases generated URLs. Queue memory must be bounded by the application. |
-| Custom typed tasks | Public math.gl `TaskRunner` APIs with named object payloads. Legacy worker pools and transport internals are removed. |
+| Concurrency and cleanup | Bounded active handles per descriptor; `destroyWorkerTasks()` terminates active and queued work and lets math.gl release worker-owned module shims. Queue memory must be bounded by the application. |
+| Custom typed tasks | Public math.gl `TaskRunner` and `createTypedTaskDispatcher` APIs with named object payloads and typed operations. |
+| Initialization ownership | Direct task runs accept `initializationOwnership` separately from input/output ownership. Loader callback ports transfer independently of payloads. |
 
 ## Installation
 
@@ -103,7 +104,9 @@ supplied URL directly. Libraries that previously relied on `eval` installing glo
 an ESM default or named export instead.
 
 Worker execution delegates to the public `TaskRunner` and `initializeTaskWorker` APIs
-from math.gl beta.3. Loader helpers retain loaders.gl worker URLs, parser options,
+from math.gl beta.4. URL-backed tasks delegate module loading and shim cleanup to math.gl.
+Nullable legacy loader factories retain a small URL-fallback adapter because the public
+task API currently accepts either a URL or a factory. Loader helpers retain parser options,
 progress, cancellation, and calling-thread callbacks. Streaming parsers use one
 initialized handle for the complete stream. Rebuild custom worker bundles when upgrading;
 legacy pool and message-protocol APIs are removed. See the
