@@ -697,3 +697,25 @@ and strict rejection of reported layout and skin gaps. The [scene and payload te
 [animation tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-animation-payloads.spec.ts),
 and [projection and hierarchy tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-projections-scenes.spec.ts)
 cover the additional checks above. They do not establish complete glTF 1 conversion coverage.
+
+### Draft `KHR_accessor_float64`
+
+The loader recognizes the draft `KHR_accessor_float64` declaration and preserves
+accessor component type `5130` as IEEE-754 binary64 data. Accessor materialization
+uses `Float64Array`; the loader does not intentionally reduce these values to float32.
+
+When this extension is declared, it must appear in both `extensionsUsed` and
+`extensionsRequired`. Its double-precision accessors must not set `normalized: true`.
+The loader checks these conditions before loading dependent resources and retains
+extension declarations for downstream capability checks.
+
+This validation follows the [review draft at revision
+8611bc8933493865380e68fadf555dbbc2cf1180](https://github.com/lexaknyazev/glTF/blob/8611bc8933493865380e68fadf555dbbc2cf1180/extensions/2.0/Khronos/KHR_accessor_float64/README.md).
+It is not a claim of complete semantic validation: the loader does not check every
+accessor usage site against the extension's permitted semantics. Existing handling
+of undeclared component type `5130` is unchanged.
+
+GPU upload, float32 conversion, high/low splitting and animation interpolation are
+consumer responsibilities. Successfully decoding an asset does not establish that
+a renderer supports its double-precision attributes. The draft requires
+double-precision interpolation for double-precision animation data.
