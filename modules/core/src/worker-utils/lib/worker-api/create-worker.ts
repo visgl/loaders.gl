@@ -19,7 +19,15 @@ export async function createWorker(
   processInBatches?: ProcessInBatches
 ): Promise<void> {
   if (!(await isWorkerThread())) return;
-  const task: WorkerTask = {
+  await initializeTaskWorker(createWorkerTask(process, processInBatches));
+}
+
+/** @internal Builds the loader adapter independently of worker installation. */
+export function createWorkerTask(
+  process: Process,
+  processInBatches?: ProcessInBatches
+): WorkerTask {
+  return {
     id: 'loaders.gl',
     initialize: state => state,
     destroy: state => state.port?.close(),
@@ -46,7 +54,6 @@ export async function createWorker(
         } satisfies Partial<WorkerTask>)
       : {})
   };
-  await initializeTaskWorker(task);
 }
 
 /** Adds loader labels and optional calling-thread requests to the task context. */
