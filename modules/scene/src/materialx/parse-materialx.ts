@@ -1,3 +1,4 @@
+import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
@@ -21,7 +22,7 @@ export interface MaterialXDocument {
 }
 
 /**
- * Parses a MaterialX XML document using the browser XML parser.
+ * Parses a MaterialX XML document using the native documents XML parser.
  * Preserves unknown categories, connection references and value strings.
  * Does not load includes, resolve node definitions, or evaluate shader graphs.
  */
@@ -29,36 +30,37 @@ export function parseMaterialX(text: string): MaterialXDocument {
   if (/<!DOCTYPE|<!ENTITY/i.test(text)) {
     throw new Error('MaterialX: document types and entity declarations are unsupported.');
   }
-  if (typeof DOMParser === 'undefined') {
-    throw new Error('MaterialX: parsing requires a browser DOMParser.');
+  let element: OrderedXMLElement;
+  try {
+    element = parseXMLSync(text, {preserveOrder: true, parseAttributeValue: false, trimValues: false});
+  } catch (error) {
+    throw new Error('MaterialX: malformed XML.', {cause: error});
   }
-  const document = new DOMParser().parseFromString(text, 'application/xml');
-  if (document.getElementsByTagName('parsererror').length) {
-    throw new Error('MaterialX: malformed XML.');
-  }
-  const element = document.documentElement;
-  if (element.tagName !== 'materialx') {
+  if (element.name !== 'materialx') {
     throw new Error('MaterialX: expected a materialx root element.');
   }
-  const version = element.getAttribute('version');
+  const version = element.attributes.version;
   if (!version || !/^1\.\d+$/.test(version)) {
     throw new Error('MaterialX: expected a MaterialX 1.x version.');
   }
   return {version, root: parseElement(element, 0)};
 }
 
-/** Converts XML elements with a bounded depth and preserves authored attribute strings. */
-function parseElement(element: Element, depth: number): MaterialXElement {
-  if (depth > 256) {
-    throw new Error('MaterialX: maximum element depth exceeded.');
-  }
-  const attributes: Record<string, string> = Object.create(null);
-  for (const attribute of Array.from(element.attributes)) {
-    attributes[attribute.name] = attribute.value;
-  }
+/** Ordered element representation returned by the XML parser. */
+interface OrderedXMLElement {
+  /** XML element name. */
+  name: string;
+  /** Authored string attributes. */
+  attributes: Record<string, string>;
+  /** Ordered child elements. */
+  children: OrderedXMLElement[];
+}
+
+/** Converts the native XML tree to MaterialX categories. */
+function parseElement(element: OrderedXMLElement, depth: number): MaterialXElement {
   return {
-    category: element.tagName,
-    attributes,
-    children: Array.from(element.children, child => parseElement(child, depth + 1))
+    category: element.name,
+    attributes: element.attributes,
+    children: element.children.map(child => parseElement(child, depth + 1))
   };
 }
