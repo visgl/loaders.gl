@@ -539,6 +539,11 @@ export const GLTFEXTTextureWebpSchema = z
   .object({source: GLTFIdSchema, extras: z.unknown().optional()})
   .catchall(z.unknown());
 
+/** Zod schema for the EXT_texture_avif texture source extension. */
+export const GLTFEXTTextureAvifSchema = z
+  .object({source: GLTFIdSchema, extras: z.unknown().optional()})
+  .catchall(z.unknown());
+
 /** Zod schema for the MSFT_texture_dds extension. */
 export const GLTFMSFTTextureDdsSchema = z
   .object({source: GLTFIdSchema, extras: z.unknown().optional()})
