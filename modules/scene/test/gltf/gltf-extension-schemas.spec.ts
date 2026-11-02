@@ -5,6 +5,7 @@
 import {describe, expect, test} from 'vitest';
 import {
   GLTFSchema,
+  GLTFEXTTextureAvifSchema,
   GLTFKHRMaterialsVariantsSchema,
   GLTFKHRMaterialsVariantsPrimitiveSchema,
   GLTFEXTMeshGPUInstancingSchema,
@@ -23,7 +24,22 @@ import {
   type GLTF_EXT_mesh_gpu_instancing,
   type GLTF_KHR_animation_pointer
 } from '@loaders.gl/scene/gltf';
-import {GLTFNodeExtensionsSchema} from '@loaders.gl/scene/gltf/schema';
+import {
+  GLTFNodeExtensionsSchema,
+  GLTFEXTTextureAvifSchema as GLTFEXTTextureAvifSubpathSchema
+} from '@loaders.gl/scene/gltf/schema';
+import type {GLTF_EXT_texture_avif, GLTF_MSFT_texture_dds} from '@loaders.gl/scene/gltf';
+
+test('exports AVIF and DDS texture declarations and validates AVIF source indices', () => {
+  const avif: GLTF_EXT_texture_avif = {source: 2};
+  const dds: GLTF_MSFT_texture_dds = {source: 3};
+  const declaration = {...avif, vendorProperty: true};
+  expect(GLTFEXTTextureAvifSchema.parse(declaration)).toEqual(declaration);
+  expect(GLTFEXTTextureAvifSubpathSchema.parse(avif)).toEqual(avif);
+  expect(GLTFEXTTextureAvifSchema.safeParse({source: -1}).success).toBe(false);
+  expect(GLTFEXTTextureAvifSchema.safeParse({}).success).toBe(false);
+  expect(dds.source).toBe(3);
+});
 
 /** Creates a small glTF document combining supported extension attachment locations. */
 function createDocument(): GLTF {

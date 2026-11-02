@@ -167,6 +167,12 @@ For optional WebP or AVIF extensions, `GLTFLoader` retains the ordinary texture 
 active runtime cannot decode the extension image. A required extension fails before image loading
 when its image MIME type is unsupported.
 
+When a texture declares multiple supported alternatives, preprocessing selects AVIF, then WebP,
+then BasisU if present. The `@loaders.gl/scene/gltf` entry point also exports the
+`GLTF_EXT_texture_avif` and `GLTF_MSFT_texture_dds` source types and `GLTFEXTTextureAvifSchema`;
+the schema is also available from `@loaders.gl/scene/gltf/schema`. A DDS type declaration does not
+mean that `GLTFLoader` selects or decodes DDS sources.
+
 | Extension                                                 | Processing | Description                                                                                 |
 | --------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
 | [KHR_interactivity](#khr_interactivity) | Metadata | Typed behavior graphs and a raw graph accessor; execution belongs to the application runtime. |

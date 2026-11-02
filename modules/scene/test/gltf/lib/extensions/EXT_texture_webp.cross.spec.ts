@@ -21,6 +21,11 @@ afterEach(() => {
 });
 
 describe('EXT_texture_webp', () => {
+  test('skips image capability probes for documents without the extension', () => {
+    preprocess({json: {asset: {version: '2.0'}}, buffers: []}, {});
+    expect(isImageFormatSupportedMock).not.toHaveBeenCalled();
+  });
+
   test('selects the WebP image and removes the consumed extension', () => {
     isImageFormatSupportedMock.mockReturnValue(true);
     const gltf = makeGLTF({required: true});

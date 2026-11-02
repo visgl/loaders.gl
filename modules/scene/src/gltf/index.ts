@@ -29,7 +29,9 @@ export type {
   GLTF_KHR_texture_basisu,
   GLTF_KHR_meshopt_compression,
   GLTF_EXT_meshopt_compression,
-  GLTF_EXT_texture_webp
+  GLTF_EXT_texture_webp,
+  GLTF_EXT_texture_avif,
+  GLTF_MSFT_texture_dds
 } from './lib/types/gltf-json-schema';
 
 export type {GLTFShape, GLTFBoundingVolume} from './lib/types/gltf-shape-schema';
@@ -170,6 +172,7 @@ export {
   GLTFKHRMeshoptCompressionSchema,
   GLTFEXTMeshoptCompressionSchema,
   GLTFEXTTextureWebpSchema,
+  GLTFEXTTextureAvifSchema,
   GLTFMSFTTextureDdsSchema,
   GLTFShapeSchema,
   GLTFBoundingVolumeSchema
