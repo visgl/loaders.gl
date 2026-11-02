@@ -46,7 +46,8 @@ export interface ProceduralGraph {
 export function orderProceduralGraph(graph: ProceduralGraph): ProceduralNode[] {
   const nodes = new Map<string, ProceduralNode>();
   for (const node of graph.nodes) {
-    if (!node.id || nodes.has(node.id)) throw new Error('Procedural graph: duplicate or empty node ID.');
+    if (!node.id || nodes.has(node.id))
+      throw new Error('Procedural graph: duplicate or empty node ID.');
     nodes.set(node.id, node);
   }
   const dependencies = new Map<string, Set<string>>();
@@ -55,7 +56,8 @@ export function orderProceduralGraph(graph: ProceduralGraph): ProceduralNode[] {
     const upstream = new Set<string>();
     for (const input of Object.values(node.inputs)) {
       if (!input.connection) continue;
-      if (Object.hasOwn(input, 'value')) throw new Error('Procedural graph: connected input also has a value.');
+      if (Object.hasOwn(input, 'value'))
+        throw new Error('Procedural graph: connected input also has a value.');
       const source = resolveOutput(input.connection);
       if (source.outputs[input.connection.output] !== input.type) {
         throw new Error('Procedural graph: incompatible connection types.');
