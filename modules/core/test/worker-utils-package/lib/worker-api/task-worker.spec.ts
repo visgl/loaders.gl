@@ -217,6 +217,7 @@ test('cancelling a task signals caller callbacks and ignores late failures', asy
   });
   let rejectCallback!: (reason: unknown) => void;
   let callbackSignal: AbortSignal | undefined;
+  const callbackSettled = vi.fn();
   const request = processOnWorker(
     worker,
     'input',
@@ -227,9 +228,13 @@ test('cancelling a task signals caller callbacks and ignores late failures', asy
         context?.throwIfAborted?.();
         expect(options?.signal).toBeUndefined();
         beginCallback();
-        return await new Promise((_resolve, reject) => {
-          rejectCallback = reject;
-        });
+        try {
+          return await new Promise((_resolve, reject) => {
+            rejectCallback = reject;
+          });
+        } finally {
+          callbackSettled();
+        }
       }
     }
   );
@@ -240,7 +245,7 @@ test('cancelling a task signals caller callbacks and ignores late failures', asy
   expect(callbackSignal?.aborted).toBe(true);
   expect(callbackSignal?.reason).toBe(reason);
   rejectCallback(new Error('late callback failure'));
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await vi.waitFor(() => expect(callbackSettled).toHaveBeenCalledOnce());
 });
 
 test('shutdown cancels active requests and allows a fresh runner', async () => {
