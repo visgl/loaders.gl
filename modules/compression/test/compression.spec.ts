@@ -11,7 +11,7 @@ import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream
 } from '@loaders.gl/compression/native-decompression';
-import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {processOnWorker, isBrowser, destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {getData, compareArrayBuffers} from './utils/test-utils';
 import {
@@ -280,8 +280,7 @@ test('gzip#worker', async () => {
     'compress/decompress level 6'
   ).toBeTruthy();
   if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 test('lz4#worker', async () => {
@@ -305,8 +304,7 @@ test('lz4#worker', async () => {
     'compress/decompress level 6'
   ).toBeTruthy();
   if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 test.skip('zstd#worker', async () => {

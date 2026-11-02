@@ -14,26 +14,23 @@ export type {
   WorkerContext,
   WorkerJobContext,
   Process,
-  ProcessInBatches,
-  // Protocol
-  WorkerMessage,
-  WorkerMessageType,
-  WorkerMessageData,
-  WorkerMessagePayload
+  ProcessInBatches
 } from './types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
 export {isBrowser, isWorker} from './lib/env-utils/globals';
 
-// WORKER UTILS - TYPES
-export {default as WorkerJob} from './lib/worker-farm/worker-job';
-export {default as WorkerThread} from './lib/worker-farm/worker-thread';
-
-// WORKER FARMS
-export {default as WorkerFarm} from './lib/worker-farm/worker-farm';
-export {default as WorkerPool} from './lib/worker-farm/worker-pool';
-export {default as WorkerBody} from './lib/worker-farm/worker-body';
+// Public task lifecycle and typed task definitions.
+export {TaskRunner, preloadTasks} from '@math.gl/core/tasks';
+export {initializeTaskWorker} from './lib/worker-api/task-runtime';
+export type {
+  Task,
+  TaskTypes,
+  TaskContext,
+  TaskRunControls,
+  TaskRunnerOptions
+} from '@math.gl/core/tasks';
 
 // PROCESS ON WORKER
 export type {ProcessOnWorkerOptions} from './lib/worker-api/process-on-worker';
@@ -42,6 +39,7 @@ export {
   processOnWorker,
   processOnWorkerInBatches,
   preloadWorker,
+  destroyWorkerTasks,
   canProcessOnWorker,
   canProcessOnWorkerInBatches
 } from './lib/worker-api/process-on-worker';
@@ -59,9 +57,6 @@ export {
   loadLibrary,
   type LoadLibraryOptions
 } from './lib/library-utils/library-utils';
-
-// PARSER UTILS
-export {default as AsyncQueue} from './lib/async-queue/async-queue';
 
 // PROCESS UTILS
 export {default as ChildProcessProxy} from './lib/process-utils/child-process-proxy';

@@ -6,14 +6,14 @@ import {afterEach, expect, test, vi} from 'vitest';
 import {Field, Int32, Schema, Table, Utf8} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {WorkerFarm, getWorkerURL} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks, getWorkerURL} from '@loaders.gl/core/worker-utils';
 import {JSONLoader, JSONTableLoader, NDJSONLoader} from '@loaders.gl/tables/json';
 import {JSONLoaderWithParser} from '@loaders.gl/tables/json-loader';
 import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json-table-loader';
 import {NDJSONLoaderWithParser} from '@loaders.gl/tables/ndjson-loader';
 
 const encoder = new TextEncoder();
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 /** Makes accidental caller-side parsing fail visibly while retaining public preloading. */
 function observeLoader(metadata: Loader, implementation: LoaderWithParser) {

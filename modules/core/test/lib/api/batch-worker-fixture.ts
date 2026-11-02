@@ -4,7 +4,7 @@
 
 import {vi} from 'vitest';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {NullWorker, type LoadWorker} from '@loaders.gl/core/worker-utils';
+import {NullWorker, isBrowser, type LoadWorker} from '@loaders.gl/core/worker-utils';
 
 /** Observable output from a real worker or its main-thread fallback. */
 export type BatchWorkerResult = {
@@ -21,30 +21,25 @@ export type BatchWorkerResult = {
 /** Small portable worker used to verify routing without a format codec or external assets. */
 export const BATCH_WORKER_SOURCE = `
 const isNode = typeof process !== 'undefined' && Boolean(process.versions?.node);
-const port = isNode ? require('node:worker_threads').parentPort : self;
-let batchIndex = 0;
-let loaderId;
-/** Sends one protocol message. */
-function post(type, payload = {}) { port.postMessage({source: 'loaders.gl', type, payload}); }
-/** Retains parser state while respecting demand for input and output. */
-function handleMessage({type, payload}) {
-  switch (type) {
-    case 'process-in-batches':
-      batchIndex = 0;
-      loaderId = payload.options._workerLoaderId;
-      post('input-request');
-      break;
-    case 'input-batch':
-      post('output-batch', {result: {
-        input: new TextDecoder().decode(payload.input), batchIndex: batchIndex++, worker: true, loaderId
-      }});
-      break;
-    case 'output-ack': post('input-request'); break;
-    case 'input-done': post('done'); break;
+const waiting = [];
+/** Retains startup messages while the public task runtime loads. */
+const capture = event => waiting.push(event);
+if (!isNode) self.addEventListener('message', capture);
+(async () => {
+  const {createWorker} = isNode
+    ? require(${JSON.stringify(isBrowser ? '' : process.cwd() + '/modules/core/dist/worker-utils/index.cjs')})
+    : await import(${JSON.stringify(isBrowser ? new URL('/modules/core/src/worker-utils/index.ts', location.href).href : '')});
+  await createWorker(async value => value, async function* (inputs, options) {
+    let batchIndex = 0;
+    for await (const input of inputs) yield {
+      input: new TextDecoder().decode(input), batchIndex: batchIndex++, worker: true, loaderId: options._workerLoaderId
+    };
+  });
+  if (!isNode) {
+    self.removeEventListener('message', capture);
+    for (const event of waiting) self.dispatchEvent(new MessageEvent('message', {data: event.data}));
   }
-}
-if (isNode) port.on('message', handleMessage);
-else port.onmessage = event => handleMessage(event.data);
+})();
 `;
 
 /** Creates a loader whose fallback is distinguishable from its worker implementation. */

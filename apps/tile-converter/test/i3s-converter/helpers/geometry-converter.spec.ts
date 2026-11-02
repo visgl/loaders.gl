@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {getImageData} from '@loaders.gl/images';
 import convertB3dmToI3sGeometry, {
   getPropertyTable
@@ -96,8 +96,7 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
       });
     } finally {
       // Clean up worker pools
-      const workerFarm = WorkerFarm.getWorkerFarm({});
-      workerFarm.destroy();
+      await destroyWorkerTasks();
     }
   }
   await testTileContent(true, false);
@@ -165,8 +164,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
     });
   } finally {
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 // eslint-disable-next-line max-statements
@@ -220,8 +218,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
     });
   } finally {
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 // eslint-disable-next-line max-statements
@@ -283,8 +280,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
     });
   } finally {
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 // eslint-disable-next-line max-statements
@@ -336,8 +332,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
     }
   } finally {
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point geometry', async () => {
@@ -385,8 +380,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
     expect(e.message).toBe('Primitive - unsupported mode 0');
   } finally {
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 test('tile-converter(i3s)#getPropertyTable - should get the property table from EXT_feature_metadata extension', async () => {
@@ -400,8 +394,7 @@ test('tile-converter(i3s)#getPropertyTable - should get the property table from 
   const propertyTable = getPropertyTable(tileContent, 'r3dm::uncertainty_ce90sum');
   expect(propertyTable, 'Returns property table').toEqual(propertyTableExpected);
   // Clean up worker pools
-  const workerFarm = WorkerFarm.getWorkerFarm({});
-  workerFarm.destroy();
+  await destroyWorkerTasks();
 });
 // eslint-disable-next-line max-statements
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async () => {
@@ -457,8 +450,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
     });
   } finally {
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 // eslint-disable-next-line max-statements
@@ -522,8 +514,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
     expect(new Uint8Array(attributes || []), 'Array represents ').toEqual(expectedArray);
   } finally {
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 // eslint-disable-next-line max-statements
@@ -595,8 +586,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
     expect(attributes, '64-bit int values converted to strings').toEqual(attributesExpected);
   } finally {
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 function getAttributeStorageInfo(propertyTable) {

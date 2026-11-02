@@ -271,8 +271,8 @@
   },
   "dependencies": {
     "@loaders.gl/images": "5.0.0-beta.2",
-    "@math.gl/core": "5.0.0-beta.2",
-    "@math.gl/geometry": "5.0.0-beta.2",
+    "@math.gl/core": "5.0.0-beta.3",
+    "@math.gl/geometry": "5.0.0-beta.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {

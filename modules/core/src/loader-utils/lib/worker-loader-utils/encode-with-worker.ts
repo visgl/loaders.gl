@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {canProcessOnWorker} from '@loaders.gl/core/worker-utils';
 import {Writer, WriterOptions} from '../../writer-types';
 import {isBrowser} from '../env-utils/globals';
 
@@ -12,10 +12,6 @@ import {isBrowser} from '../env-utils/globals';
  * @param options
  */
 export function canEncodeWithWorker(writer: Writer, options?: WriterOptions) {
-  if (!WorkerFarm.isSupported()) {
-    return false;
-  }
-
   const nodeWorkers = options?._nodeWorkers ?? options?.core?._nodeWorkers;
   const useWorkers = options?.worker ?? options?.core?.worker;
 
@@ -24,5 +20,8 @@ export function canEncodeWithWorker(writer: Writer, options?: WriterOptions) {
     return false;
   }
 
-  return Boolean(writer.worker && useWorkers);
+  return canProcessOnWorker(
+    {...writer, options: writer.options || {}},
+    {worker: Boolean(useWorkers), _nodeWorkers: Boolean(nodeWorkers)}
+  );
 }

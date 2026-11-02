@@ -6,12 +6,12 @@ import {afterEach, expect, test, vi} from 'vitest';
 import {Table} from 'apache-arrow';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {encode, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {LASLoader, LASWriter} from '../../src/las/index';
 import {LAZRsLoaderWithParser} from '../../src/las/laz-rs-loader';
 import {LAZPerfLoaderWithParser} from '../../src/las/lazperf-loader';
 
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 test.each([
   'las',

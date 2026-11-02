@@ -19,7 +19,7 @@ import {
 } from '@loaders.gl/tables/arrow/index';
 import {fetchFile} from '@loaders.gl/core';
 import type {WorkerOptions} from '@loaders.gl/core/worker-utils';
-import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {processOnWorker, isBrowser, destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {
   GEOARROW_POINT_FILE,
   GEOARROW_POLYGON_WKB_FILE
@@ -41,8 +41,7 @@ test('TriangulationWorker#plumbing', async () => {
     'Triangulation worker throws on incorrect operation'
   ).rejects.toBeDefined();
   if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 test('TriangulationWorker uses its module worker by default in browsers', async () => {
@@ -121,8 +120,7 @@ test('triangulateWKBColumnOnWorker', async () => {
     expect(vertexColumn.get(0)?.length > 0, 'first geometry has vertices').toBeTruthy();
   }
   if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
   }
 });
 test('triangulateWKBGeometryColumn', async () => {

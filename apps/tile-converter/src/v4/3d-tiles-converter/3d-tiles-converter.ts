@@ -21,7 +21,7 @@ import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {calculateDatasetSize, timeConverter} from '../lib/utils/statistic-utils';
 import {createTileset} from './json-templates/tileset';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
   Tiles3DContentConverter,
@@ -216,8 +216,7 @@ export default class Tiles3DConverter {
     }
 
     // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
+    await destroyWorkerTasks();
     return undefined;
   }
 

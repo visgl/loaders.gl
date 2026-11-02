@@ -5,11 +5,11 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import {Table} from 'apache-arrow';
 import {parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {NDJSONLoader} from '@loaders.gl/tables/json';
 import {NDJSONLoaderWithParser} from '@loaders.gl/tables/ndjson-loader';
 
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 test('NDJSON batches use the packaged CommonJS worker with explicit Node opt-in', async () => {
   const mainParser = vi.fn(NDJSONLoaderWithParser.parseInBatches);

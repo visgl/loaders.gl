@@ -5,13 +5,13 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import {Table} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {OBJLoader} from '@loaders.gl/scene/obj';
 import * as bundled from '../../src/obj/bundled';
 
 const source = ['v 1 2 3', 'v 4 5 6', 'v 7 8 9', ''].join('\n');
 
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 test.each([
   'arrow-table',

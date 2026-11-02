@@ -5,11 +5,11 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import {Table, tableFromArrays, tableToIPC} from 'apache-arrow';
 import {parseInBatches} from '@loaders.gl/core';
-import {WorkerFarm} from '@loaders.gl/core/worker-utils';
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ArrowLoader} from '../../src/arrow/arrow-loader-types';
 import {GeoArrowLoader} from '../../src/arrow/geoarrow-loader-types';
 
-afterEach(() => WorkerFarm.getWorkerFarm().destroy());
+afterEach(() => destroyWorkerTasks());
 
 test.each([
   ArrowLoader,
