@@ -243,8 +243,29 @@ jobs:
       - name: Verify embedded package versions
         run: node scripts/check-built-versions.mjs
 
-      # ocular-publish creates the GitHub Release before publishing the tagged packages to npm.
-      - name: Post GitHub release and publish to NPM
+      - name: Verify release tag
+        run: |
+          release_tag=$(git describe --tags --exact-match HEAD)
+          release_version=$(node -p "require('./lerna.json').version")
+          test "$release_tag" = "v$release_version"
+
+      - name: Publish tagged packages to npm
+        id: publish
         env:
           NPM_CONFIG_LOGLEVEL: verbose
-        run: npx ocular-publish from-git
+        run: |
+          distribution_tag=$(node node_modules/@vis.gl/dev-tools/dist/helpers/get-npm-dist-tag.js)
+          echo "distribution_tag=$distribution_tag" >> "$GITHUB_OUTPUT"
+          npx lerna publish from-package --force-publish --yes --dist-tag "$distribution_tag" --no-commit-hooks
+
+      - name: Verify all published packages and tags
+        run: node scripts/verify-published-packages.mjs "${{ steps.publish.outputs.distribution_tag }}"
+
+      - name: Post GitHub release
+        run: |
+          release_tag=$(git describe --tags --exact-match HEAD)
+          if gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release announcement already exists for $release_tag"
+          else
+            node node_modules/@vis.gl/dev-tools/dist/github-release.js
+          fi

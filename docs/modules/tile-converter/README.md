@@ -175,3 +175,7 @@ The tile-converter module represents a major development effort and was funded a
 ![logo](./images/esri.jpeg)
 
 MIT License.
+
+The legacy package-root v4 classes are JavaScript-only. TypeScript declarations are
+published for the experimental v5 entry points, including `@loaders.gl/tile-converter/v5`
+and its `/core`, `/adapters`, `/browser`, and `/node` subpaths.

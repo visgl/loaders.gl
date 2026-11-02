@@ -1,3 +1,4 @@
+import {existsSync, readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {execFileSync} from 'node:child_process';
 import {build} from 'esbuild';
@@ -221,4 +222,14 @@ test('built Node adapter shares the core error class without changing portable i
     {encoding: 'utf8'}
   );
   expect(output).toContain('Node entrypoint passed');
+});
+
+test('converter declaration exports point to built files', () => {
+  const packageRoot = new URL('../apps/tile-converter/', import.meta.url);
+  const manifest = JSON.parse(readFileSync(new URL('package.json', packageRoot), 'utf8'));
+  expect(manifest.types).toBeUndefined();
+  expect(manifest.exports['.'].types).toBeUndefined();
+  for (const entry of Object.values(manifest.exports) as {types?: string}[]) {
+    if (entry.types) expect(existsSync(new URL(entry.types, packageRoot))).toBe(true);
+  }
 });

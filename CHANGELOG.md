@@ -2,11 +2,17 @@
 
 ## v5.0
 
-### Unreleased
+### v5.0.0-beta.3
 
 - Delegate adaptive terrain meshing to math.gl; remove the duplicate Martini implementation.
 - Use upstream task worker URL ownership and CommonJS initialization.
 - Upgrade math.gl to beta.4 and migrate worker execution to public TaskRunner handles; remove legacy pool/protocol exports and rebuild custom workers.
+
+- Add native MaterialX XML loading and validated procedural scene graph contracts.
+- Support DDS texture sources and embedded SPZ decoding with injected glTF loaders.
+- Accept OME-NGFF identity transforms in GeoZarr multiscales.
+- Remove the Excel loader and vulnerable xlsx dependency; harden trace dictionaries, batch-table properties, and LAS string parsing.
+- Update converter and compression dependencies, and migrate examples to patched Vite tooling.
 
 ### v5.0.0-beta.2
 

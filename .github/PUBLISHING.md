@@ -3,11 +3,11 @@
 Public packages under `modules/*` and `apps/*` share the version in `lerna.json`.
 Publish 5.0 prereleases with the `beta` dist-tag. Private workspaces are not published.
 
-## Beta.2 package setup
+## Current package setup
 
-`@loaders.gl/documents` is new in 5.0.0-beta.2 and needs its first npm publication
-and a trusted-publisher relationship before the tagged release can publish it
-through GitHub Actions. The other public packages already have beta.1 releases.
+All 22 public workspace packages already exist on npm at 5.0.0-beta.2, including
+documents, pointclouds, and tile-converter. The next coordinated release is
+5.0.0-beta.3. Private workspaces stay version-aligned but are not published.
 
 The standalone config, XML, textures, video, and Draco packages have been
 consolidated into documents, images, and scene. Publish the current workspace
@@ -20,7 +20,8 @@ write access to the `@loaders.gl` scope must authenticate with `npm login` and
 complete npm's browser/2FA prompts. Use a clean checkout of the reviewed release
 revision and verify its package versions and dependencies before publishing.
 
-For documents, after the beta.2 preparation PR has been reviewed and merged:
+For a newly introduced package, use its directory and the reviewed release version.
+The documents beta.2 bootstrap below is a historical example:
 
 ```sh
 yarn
@@ -72,16 +73,25 @@ relationships.
 
 ## Tagged release
 
-The existing `.github/workflows/release.yml` uses GitHub-hosted runners, a recent
-npm CLI, and `id-token: write`. Tagged releases on `master` or a `*-release` branch
-run tests and publish through `ocular-publish from-git`.
+The release workflow uses GitHub-hosted runners, npm 11, and `id-token: write`
+for npm trusted publishing. The npm relationship must name exactly
+`visgl/loaders.gl` and `release.yml`; no long-lived npm token is needed.
 
-Before tagging, verify the documents bootstrap and trust setup above, matching
-versions and internal dependency pins, green release checks, and release notes.
-The maintainer's bootstrap publication already supplies documents beta.2; confirm
-it is present when checking the tagged release's package results. The next new
-version published by Actions verifies documents OIDC publishing end to end.
-Never use a previously published version to test this workflow.
+1. Merge the reviewed version, dependency pins, lockfile, and changelog preparation
+   into latest master. Keep `NPM_TAG` set to `beta` and fixture URLs on master.
+2. Verify all checks on the merged revision, then tag that exact master commit
+   `v5.0.0-beta.3` and push the tag. Do not run `yarn publish-beta` after a
+   version-preparation PR: it increments the version again and pushes a tag.
+3. The workflow builds and tests packages, verifies embedded versions and the exact
+   release tag, then publishes missing npm versions with the `beta` dist-tag.
+4. The workflow verifies every public workspace version and distribution tag in the
+   registry before creating the GitHub prerelease announcement.
+
+If publication is interrupted, rerun the failed publishing job on the same tagged
+revision. Already published versions are skipped by `lerna publish from-package`.
+An existing GitHub announcement is retained, so it cannot block the npm retry.
+Do not delete or move the release tag, and do not test trusted publishing by
+republishing an existing version.
 
 See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) and
 [`npm trust`](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
