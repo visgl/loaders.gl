@@ -83,9 +83,18 @@ export async function* processOnWorkerInBatches<InputBatch = any, OutputBatch = 
   context: CallerThreadContext = {},
   jobContext: WorkerJobContext = {}
 ): AsyncIterable<OutputBatch> {
-  const session = await openSession(worker, options, context, jobContext);
+  const taskInput = wrapInput(input);
+  let session: Awaited<ReturnType<typeof openSession>>;
   try {
-    for await (const result of session.handle.runTaskInBatches(wrapInput(input), {
+    session = await openSession(worker, options, context, jobContext);
+  } catch (error) {
+    // Own the input before acquiring a worker, but never let slow cleanup hide the original failure.
+    const closingInput = taskInput.return?.();
+    void closingInput?.catch(() => {});
+    throw error;
+  }
+  try {
+    for await (const result of session.handle.runTaskInBatches(taskInput, {
       ...getControls(options),
       options: getParserOptions(options)
     }))
@@ -264,23 +273,22 @@ async function openSession(
 /** Maps iterator values without hiding return() behind an async generator's blocked next(). */
 function wrapInput<Input>(
   input: Iterable<Input> | AsyncIterable<Input>
-): AsyncIterable<WorkerTaskPayload> {
+): AsyncIterableIterator<WorkerTaskPayload> {
   const iterator =
     Symbol.asyncIterator in input ? input[Symbol.asyncIterator]() : input[Symbol.iterator]();
   return {
     [Symbol.asyncIterator]() {
-      return {
-        async next() {
-          const next = await iterator.next();
-          return next.done
-            ? {done: true as const, value: undefined}
-            : {done: false as const, value: {value: next.value}};
-        },
-        async return() {
-          await iterator.return?.();
-          return {done: true as const, value: undefined};
-        }
-      };
+      return this;
+    },
+    async next() {
+      const next = await iterator.next();
+      return next.done
+        ? {done: true as const, value: undefined}
+        : {done: false as const, value: {value: next.value}};
+    },
+    async return() {
+      await iterator.return?.();
+      return {done: true as const, value: undefined};
     }
   };
 }

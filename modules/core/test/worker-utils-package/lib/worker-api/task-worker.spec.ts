@@ -309,3 +309,59 @@ test('worker transport preserves explicit null parser options', async () => {
   ).resolves.toEqual({core: {fetch: null, CDN: null}, nullable: {value: null}});
   expect(options.core).toEqual({fetch: null, CDN: null});
 });
+
+test('queued streaming cancellation requests input cleanup without awaiting a blocked return', async () => {
+  const descriptor = {...worker};
+  const active = new AbortController();
+  const queued = new AbortController();
+  const reason = new Error('cancel queued stream');
+  const first = processOnWorker(descriptor, 'active', {
+    delay: 5000,
+    maxConcurrency: 1,
+    signal: active.signal
+  });
+  const firstRejection = expect(first).rejects.toBe(reason);
+  const input: AsyncIterableIterator<string> = {
+    [Symbol.asyncIterator]() {
+      return this;
+    },
+    next: vi.fn(async () => ({done: false as const, value: 'unused'})),
+    return: vi.fn(async () => await new Promise<IteratorResult<string>>(() => {}))
+  };
+  try {
+    const iterator = processOnWorkerInBatches(descriptor, input, {signal: queued.signal})[
+      Symbol.asyncIterator
+    ]();
+    const rejection = expect(iterator.next()).rejects.toBe(reason);
+    queued.abort(reason);
+    await rejection;
+    expect(input.next).not.toHaveBeenCalled();
+    expect(input.return).toHaveBeenCalledOnce();
+  } finally {
+    active.abort(reason);
+    await firstRejection;
+  }
+});
+
+test('stream initialization errors preserve their cause and close input despite cleanup rejection', async () => {
+  const reason = new Error('worker startup failed');
+  const input: AsyncIterableIterator<string> = {
+    [Symbol.asyncIterator]() {
+      return this;
+    },
+    next: vi.fn(async () => ({done: false as const, value: 'unused'})),
+    return: vi.fn(async () => {
+      throw new Error('input cleanup failed');
+    })
+  };
+  const descriptor = {
+    ...worker,
+    loadWorker: () => {
+      throw reason;
+    }
+  };
+  const iterator = processOnWorkerInBatches(descriptor, input)[Symbol.asyncIterator]();
+  await expect(iterator.next()).rejects.toBe(reason);
+  expect(input.next).not.toHaveBeenCalled();
+  expect(input.return).toHaveBeenCalledOnce();
+});

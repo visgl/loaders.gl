@@ -59,7 +59,9 @@ for await (const batch of processOnWorkerInBatches(workerDescriptor, inputChunks
 This calls the task's streaming processor once with the entire iterator. Parser
 state and loader context persist between chunks. Input demand and output
 backpressure come from the initialized task handle. Completing, aborting, throwing,
-or returning early closes the handle and its callback channel.
+or returning early closes the handle and its callback channel. If worker initialization
+fails or a queued request is cancelled, input cleanup is requested without waiting
+for a potentially blocked iterator `return()`; the original failure is preserved.
 
 `canProcessOnWorker` checks runtime support, descriptor capability, and explicit
 worker opt-in. Node loader APIs also require `core._nodeWorkers: true`.
