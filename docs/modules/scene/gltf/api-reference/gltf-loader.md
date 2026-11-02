@@ -420,3 +420,16 @@ legacy fallback rules.
 The loader preserves `KHR_interactivity` graph declarations. See the
 [glTF format guide](../formats/gltf#khr_interactivity) for the graph types,
 `getGLTFInteractivity` accessor, validation, and runtime responsibilities.
+
+### Double-precision accessor declarations
+
+For assets declaring the draft `KHR_accessor_float64`, `GLTFLoader` verifies that
+both extension declaration arrays contain the extension and that accessors with
+`componentType: 5130` are not normalized. Invalid declarations throw before resource
+loading. The extension is retained, and accessor reads preserve binary64 precision
+using the existing `Float64Array` path. No new loader option is required.
+
+This check uses the standard extension pipeline and is skipped if the extension is
+listed in `gltf.excludeExtensions`. It does not certify renderer support or validate
+every accessor usage site. See the [format documentation](../formats/gltf.md#draft-khr_accessor_float64)
+for the pinned draft and limitations.
