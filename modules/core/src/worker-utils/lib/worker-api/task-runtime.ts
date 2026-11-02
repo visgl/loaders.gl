@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Task, TaskContext} from '@math.gl/core/tasks';
+import {
+  initializeTaskWorker as initializeMathTaskWorker,
+  type Task,
+  type TaskContext
+} from '@math.gl/core/tasks';
+import {isBrowser} from '../env-utils/globals';
 import type {WorkerJobContext, WorkerProgress} from '../../types';
 
 /** Named wire payload; TaskRunner requires plain object boundaries. */
@@ -60,6 +65,7 @@ export async function isWorkerThread(): Promise<boolean> {
 
 /** Uses the native ESM task runtime so CommonJS workers resolve Node parent ports correctly. */
 export async function initializeTaskWorker(task: Task<any>): Promise<void> {
+  if (isBrowser) return initializeMathTaskWorker(task);
   const runtime = await import('@math.gl/core/tasks');
   await runtime.initializeTaskWorker(task);
 }

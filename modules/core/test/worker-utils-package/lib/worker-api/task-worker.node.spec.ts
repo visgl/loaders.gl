@@ -19,7 +19,7 @@ test('Node module targets run atomic callbacks and streaming through the public 
     `
     const {createWorker} = require(${JSON.stringify(resolve('modules/core/dist/worker-utils/index.cjs'))});
     createWorker(
-      (input, options, context, jobContext) => context.process(input, options, undefined, jobContext),
+      (input, options, context, jobContext) => context.process(input, options, jobContext),
       async function* (inputs) {for await (const input of inputs) yield input;}
     );
   `

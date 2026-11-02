@@ -58,7 +58,7 @@ function createContext(context: TaskContext<WorkerTaskState>): WorkerContext {
     throwIfAborted: () => context.throwIfAborted(),
     reportProgress: progress => context.reportProgress(normalizeTaskProgress(progress)),
     process: port
-      ? (input, options = {}, _workerContext, jobContext = {}) => {
+      ? (input, options = {}, jobContext = {}) => {
           context.throwIfAborted();
           const identifier = ++requestIdentifier;
           return new Promise((resolve, reject) => {

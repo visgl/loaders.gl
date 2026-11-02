@@ -8,7 +8,7 @@ import {
   type InitializedTask,
   type TaskRunControls
 } from '@math.gl/core/tasks';
-import type {WorkerObject, WorkerOptions, WorkerContext, WorkerJobContext} from '../../types';
+import type {WorkerObject, WorkerOptions, CallerThreadContext, WorkerJobContext} from '../../types';
 import {getConfiguredWorkerURL, getCustomWorkerURL, getWorkerURL} from './get-worker-url';
 import {normalizeTaskProgress, type WorkerTask, type WorkerTaskPayload} from './task-runtime';
 import {getTransferList, getTransferListForWriter} from '../worker-utils/get-transfer-list';
@@ -47,7 +47,7 @@ export async function processOnWorker(
   worker: WorkerObject,
   data: any,
   options: ProcessOnWorkerOptions = {},
-  context: WorkerContext = {},
+  context: CallerThreadContext = {},
   jobContext: WorkerJobContext = {}
 ): Promise<any> {
   const session = await openSession(worker, options, context, jobContext);
@@ -70,7 +70,7 @@ export async function* processOnWorkerInBatches<InputBatch = any, OutputBatch = 
   worker: WorkerObject,
   input: AsyncIterable<InputBatch> | Iterable<InputBatch>,
   options: ProcessOnWorkerOptions = {},
-  context: WorkerContext = {},
+  context: CallerThreadContext = {},
   jobContext: WorkerJobContext = {}
 ): AsyncIterable<OutputBatch> {
   const session = await openSession(worker, options, context, jobContext);
@@ -107,7 +107,7 @@ export async function destroyWorkerTasks(reason?: unknown): Promise<void> {
 
 /** Creates a task descriptor using public factories or the loaders.gl artifact URL. */
 function getTask(worker: WorkerObject, options: WorkerOptions): WorkerTask {
-  if (options.source)
+  if (options.source || options.core?.source)
     throw new Error(
       'Inline legacy worker source is unsupported; use a TaskRunner worker URL or factory'
     );
@@ -151,14 +151,14 @@ function getParserOptions(options: WorkerOptions): Record<string, any> {
 async function openSession(
   worker: WorkerObject,
   options: WorkerOptions,
-  context: WorkerContext,
+  context: CallerThreadContext,
   jobContext: WorkerJobContext
 ) {
   options.signal?.throwIfAborted();
   let runner = runners.get(worker);
   if (!runner) {
     runner = new TaskRunner({
-      maxConcurrency: (isMobile ? options.maxMobileConcurrency : options.maxConcurrency) ?? 3
+      maxConcurrency: isMobile ? (options.maxMobileConcurrency ?? 1) : (options.maxConcurrency ?? 3)
     });
     runners.set(worker, runner);
     activeRunners.add(runner);

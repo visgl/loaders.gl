@@ -47,7 +47,7 @@ export type WorkerContext = {
   /** Reports normalized phase progress. */
   reportProgress?: (progress: WorkerProgress) => void;
   /** Requests work on the calling thread through a task-owned MessagePort. */
-  process?: Process;
+  process?: (input: any, options?: Record<string, any>, jobContext?: WorkerJobContext) => any;
 };
 
 /** Processes one loader payload. */
@@ -104,4 +104,10 @@ export type WorkerObject<
   process?: Process<Input, Output, Options>;
   /** Optional caller-thread streaming implementation. */
   processInBatches?: ProcessInBatches<Input, Output, Options>;
+};
+
+/** Services implemented by the calling thread for requests from a worker. */
+export type CallerThreadContext = {
+  /** Processes a worker request, including its separate serialized loader context. */
+  process?: Process;
 };
