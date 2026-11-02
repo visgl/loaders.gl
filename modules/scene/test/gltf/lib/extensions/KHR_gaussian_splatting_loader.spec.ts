@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {parse} from '@loaders.gl/core';
+import {load, parse} from '@loaders.gl/core';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {SPZLoader} from '@loaders.gl/splats';
@@ -93,4 +93,13 @@ test('GLTFLoader requires loaded buffers to decode with an injected SPZ loader',
       gltf: {loadBuffers: false}
     })
   ).rejects.toThrow('not loaded for SPZ2 decoding');
+});
+
+test('load propagates the extra SPZ loader through the glTF loader context', async () => {
+  const url = `data:model/gltf+json;base64,${btoa(makeGLTF())}`;
+  const gltf = await load(url, [GLTFLoader, SPZLoader], {
+    core: {mimeType: 'model/gltf+json'}
+  });
+  const table = gltf.gaussianSplatPrimitives?.[0].decoded as typeof SPZLoader.dataType;
+  expect(table.data.numRows).toBe(1);
 });
