@@ -88,10 +88,17 @@ for npm trusted publishing. The npm relationship must name exactly
    registry before creating the GitHub prerelease announcement.
 
 If publication is interrupted, rerun the failed publishing job on the same tagged
-revision. Already published versions are skipped by `lerna publish from-package`.
+revision. If the workflow itself needs repair, merge that repair into master, then
+dispatch release.yml from master with release_tag set to the original tag. Every
+job checks out that immutable tag; the branch guard checks the selected source
+commit against master/release ancestry, and tag/version validation still applies. Already published versions are skipped by `lerna publish from-package`.
 An existing GitHub announcement is retained, so it cannot block the npm retry.
 Do not delete or move the release tag, and do not test trusted publishing by
 republishing an existing version.
 
 See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) and
 [`npm trust`](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
+
+The publishing job restores a known MLT dependency-hoisting comment variation only
+when the entire generated decoder matches the reviewed file after comment normalization.
+Any real decoder change or other tracked source modification aborts publication.
