@@ -32,7 +32,11 @@ export function parseMaterialX(text: string): MaterialXDocument {
   }
   let element: OrderedXMLElement;
   try {
-    element = parseXMLSync(text, {preserveOrder: true, parseAttributeValue: false, trimValues: false});
+    element = parseXMLSync(text, {
+      preserveOrder: true,
+      parseAttributeValue: false,
+      trimValues: false
+    });
   } catch (error) {
     throw new Error('MaterialX: malformed XML.', {cause: error});
   }
