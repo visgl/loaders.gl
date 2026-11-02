@@ -1,3 +1,4 @@
+import * as KHR_accessor_float64 from '../extensions/KHR_accessor_float64';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -61,6 +62,7 @@ type GLTFExtensionPlugin = {
  * These are just extensions that can be handled fully or partially during loading.
  */
 export const EXTENSIONS: GLTFExtensionPlugin[] = [
+  KHR_accessor_float64,
   // 1.0
   // KHR_binary_gltf is handled separately - must be processed before other parsing starts
   // KHR_binary_gltf,
