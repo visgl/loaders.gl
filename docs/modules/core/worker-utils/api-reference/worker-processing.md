@@ -96,7 +96,7 @@ install worker handlers. A worker bundle installs exactly one task implementatio
 
 ## Task lifecycle
 
-`TaskRunner`, `initializeTaskWorker`, `preloadTasks`, and their public task types are
+`TaskRunner`, `initializeTaskWorker`, `preloadTasks`, `createTypedTaskDispatcher`, and their public task types are
 also exported from this subpath. Use them directly for application-defined typed
 tasks; task input and output are plain objects with named fields.
 
@@ -116,3 +116,13 @@ call its `close()` or `terminate()` method.
 and check their metadata. `getTransferList` includes MessageChannel ports and binary
 buffers. `loadLibrary` continues to resolve decoder assets; see
 [decoder library loading](/docs/modules/core/worker-utils#loading-decoder-libraries).
+
+### Typed operations and initialization ownership
+
+Use `createTypedTaskDispatcher` for a persistent task with multiple named operations.
+It preserves each operation's request and result types while using the same task handle.
+Direct `TaskRunner.runTask` and `runTaskInBatches` calls accept
+`initializationOwnership` independently of `inputOwnership` and `outputOwnership`.
+For example, copy a reusable initialization template while transferring each input.
+Explicit `initializeTask` handles still use `inputOwnership` for their setup argument.
+Loader helpers already transfer their private callback port separately from payload ownership.

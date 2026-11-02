@@ -22,13 +22,18 @@ export {assert} from './lib/env-utils/assert';
 export {isBrowser, isWorker} from './lib/env-utils/globals';
 
 // Public task lifecycle and typed task definitions.
-export {TaskRunner, preloadTasks} from '@math.gl/core/tasks';
+export {TaskRunner, preloadTasks, createTypedTaskDispatcher} from '@math.gl/core/tasks';
 export {initializeTaskWorker} from './lib/worker-api/task-runtime';
 export type {
   Task,
   TaskTypes,
   TaskContext,
   TaskRunControls,
+  TaskInitializationControls,
+  TaskOperation,
+  TaskOperationRequest,
+  TaskOperationResult,
+  TypedTaskDispatcher,
   TaskRunnerOptions
 } from '@math.gl/core/tasks';
 

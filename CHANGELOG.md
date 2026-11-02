@@ -4,7 +4,9 @@
 
 ### Unreleased
 
-- Upgrade math.gl to beta.3 and migrate worker execution to public TaskRunner handles; remove legacy pool/protocol exports and rebuild custom workers.
+- Delegate adaptive terrain meshing to math.gl; remove the duplicate Martini implementation.
+- Use upstream task worker URL ownership and CommonJS initialization.
+- Upgrade math.gl to beta.4 and migrate worker execution to public TaskRunner handles; remove legacy pool/protocol exports and rebuild custom workers.
 
 ### v5.0.0-beta.2
 

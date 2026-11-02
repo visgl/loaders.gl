@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
+import {HeightField, measureTerrainMeshError} from '@math.gl/geospatial/terrain';
 import {decodeTerrainHeightmap, TERRARIUM_ELEVATION_DECODER} from '../../src/terrain/heightmap';
 import {makeTerrainMeshFromImage} from '../../src/terrain/lib/parse-terrain';
 
@@ -103,7 +104,10 @@ describe('terrain heightmap decoding', () => {
     ).toThrow(/finite numbers/);
   });
 
-  test('mesh reconstruction preserves its padded border and decoded heights', () => {
+  test.each([
+    'martini',
+    'delatin'
+  ] as const)('%s reconstruction preserves padding, bounds and UVs', tesselator => {
     const mesh = makeTerrainMeshFromImage(
       {
         data: new Uint8Array([128, 0, 0, 255, 128, 1, 0, 255, 128, 2, 0, 255, 128, 3, 0, 255]),
@@ -114,14 +118,49 @@ describe('terrain heightmap decoding', () => {
         meshMaxError: 0,
         bounds: [0, 0, 2, 2],
         elevationDecoder: TERRARIUM_ELEVATION_DECODER,
-        tesselator: 'martini'
+        tesselator
       }
     );
     const positions = mesh.attributes.POSITION.value;
     for (let index = 0; index < positions.length; index += 3) {
       const column = Math.min(positions[index], 1);
       const row = Math.min(2 - positions[index + 1], 1);
-      expect(positions[index + 2]).toBe(row * 2 + column);
+      const padded = positions[index] === 2 || positions[index + 1] === 0;
+      expect(positions[index + 2]).toBe(tesselator === 'delatin' && padded ? 0 : row * 2 + column);
+      const textureCoordinates = mesh.attributes.TEXCOORD_0.value;
+      expect(textureCoordinates[(index / 3) * 2]).toBe(positions[index] / 2);
+      expect(textureCoordinates[(index / 3) * 2 + 1]).toBe((2 - positions[index + 1]) / 2);
     }
+    const heights =
+      tesselator === 'martini'
+        ? new Float32Array([0, 1, 1, 2, 3, 3, 2, 3, 3])
+        : new Float32Array([0, 1, 0, 2, 3, 0, 0, 0, 0]);
+    const field = new HeightField({width: 3, height: 3, heights, origin: [0, 2], rowStep: [0, -1]});
+    const error = measureTerrainMeshError(field, {
+      positions: Float64Array.from(positions),
+      indices: Uint32Array.from(mesh.indices!.value),
+      gridCoordinates: Uint32Array.from(mesh.attributes.TEXCOORD_0.value, value => value * 2),
+      width: 3,
+      height: 3,
+      origin: [0, 0, 0],
+      heightReference: 'unknown'
+    });
+    expect(error.uncoveredSampleCount).toBe(0);
+    expect(error.maxSampleError).toBe(0);
   });
+});
+
+test('terrain callers can explicitly bound validation work', () => {
+  expect(() =>
+    makeTerrainMeshFromImage(
+      {data: new Uint8Array(16), width: 2, height: 2},
+      {
+        bounds: [0, 0, 2, 2],
+        elevationDecoder: TERRARIUM_ELEVATION_DECODER,
+        meshMaxError: 0,
+        meshMaxSampleTests: 0,
+        tesselator: 'martini'
+      }
+    )
+  ).toThrow(/sample-test budget exceeded/);
 });

@@ -29,7 +29,7 @@ type RunnerState = {
 
 let runners = new WeakMap<WorkerObject, RunnerState>();
 const activeRunners = new Set<RunnerState>();
-/** Same-origin module shims for cross-origin worker entrypoints. */
+/** Fallback shims only for nullable legacy factories; URL tasks are owned by math.gl. */
 const moduleWorkerUrls = new Map<string, string>();
 
 /** Checks worker availability and explicit loader routing without creating a worker. */
@@ -138,7 +138,7 @@ function getTask(worker: WorkerObject, options: WorkerOptions): WorkerTask {
     id: `${worker.module}:${worker.id}`,
     initialize: state => state,
     worker: {
-      ...(isBrowser ? {create: () => create?.() ?? createModuleWorker(url)} : {url}),
+      ...(create ? {create: () => create() ?? createModuleWorker(url)} : {url}),
       capabilities: {atomic: true, streaming: true}
     }
   };

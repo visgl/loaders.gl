@@ -7,7 +7,6 @@ import {
   type Task,
   type TaskContext
 } from '@math.gl/core/tasks';
-import {isBrowser} from '../env-utils/globals';
 import type {WorkerJobContext, WorkerProgress} from '../../types';
 
 /** Named wire payload; TaskRunner requires plain object boundaries. */
@@ -63,9 +62,5 @@ export async function isWorkerThread(): Promise<boolean> {
   return false;
 }
 
-/** Uses the native ESM task runtime so CommonJS workers resolve Node parent ports correctly. */
-export async function initializeTaskWorker(task: Task<any>): Promise<void> {
-  if (isBrowser) return initializeMathTaskWorker(task);
-  const runtime = await import('@math.gl/core/tasks');
-  await runtime.initializeTaskWorker(task);
-}
+/** Installs the upstream runtime, including its Node CommonJS worker support. */
+export const initializeTaskWorker = initializeMathTaskWorker;
