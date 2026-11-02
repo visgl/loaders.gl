@@ -2,6 +2,11 @@ name: release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to publish again after repairing the workflow
+        required: false
+        type: string
   push:
     tags:
       - 'v*'
@@ -9,23 +14,28 @@ on:
 jobs:
   check_branch:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master' || (startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-release')) }}
     outputs:
       should_build: ${{ steps.permitted.outputs.result }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+          fetch-depth: 0
 
       - name: Fetch remote branches
         run: |
-          git fetch origin --depth=1
+          git fetch origin
 
       - name: Check if on permitted branch
         id: permitted
         run: |
           result=
-          if git branch -a --contains $GITHUB_SHA | grep -q 'remotes/origin/master$'; then
+          release_commit=$(git rev-parse HEAD)
+          if git branch -a --contains "$release_commit" | grep -q 'remotes/origin/master$'; then
             result=true
-          elif git branch -a --contains $GITHUB_SHA | grep -q 'remotes/origin/.*-release$'; then
+          elif git branch -a --contains "$release_commit" | grep -q 'remotes/origin/.*-release$'; then
             result=true
           fi
           echo "result=${result}" >> "$GITHUB_OUTPUT"
@@ -41,6 +51,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -95,6 +107,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -144,6 +158,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -201,6 +217,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
 
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
@@ -239,6 +257,25 @@ jobs:
 
       - name: Build apps
         run: yarn build-apps
+
+      - name: Verify clean release checkout
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          const file = 'modules/tiles/src/mlt/libs/mlt-decoder.cjs';
+          const original = execFileSync('git', ['show', 'HEAD:' + file], {encoding: 'utf8'});
+          const generated = fs.readFileSync(file, 'utf8');
+          const normalize = source => source.split('\n').map(line =>
+            line === '// ../../node_modules/@maplibre/mlt/node_modules/@mapbox/point-geometry/index.js' ||
+            line === '// ../../node_modules/@mapbox/point-geometry/index.js'
+              ? '// @mapbox/point-geometry/index.js' : line
+          ).join('\n');
+          if (normalize(generated) !== normalize(original))
+            throw new Error('Unexpected MLT decoder changes; refusing to discard generated code');
+          if (generated !== original) fs.writeFileSync(file, original);
+          NODE
+          git diff --exit-code HEAD
 
       - name: Verify embedded package versions
         run: node scripts/check-built-versions.mjs
