@@ -23,6 +23,10 @@ collectModules(path.join(root, 'modules'));
 
 const unresolved = new Set();
 const inventory = new Set();
+// Project membership does not imply a particular publishing configuration.
+const visScopes = ['@loaders.gl/', '@math.gl/', '@luma.gl/', '@deck.gl/', '@vis.gl/'];
+const visPackages = new Set(['probe.gl', 'mjolnir.js']);
+const isVisDependency = name => visScopes.some(scope => name.startsWith(scope)) || visPackages.has(name);
 const peerRequirements = new Set();
 const results = [];
 for (const [name, manifest] of modules) {
@@ -32,6 +36,7 @@ for (const [name, manifest] of modules) {
   const direct = Object.keys({...manifest.data.dependencies, ...manifest.data.optionalDependencies});
   const externalDirect = new Set(direct.filter(dependency => !modules.has(dependency)));
   const reached = new Map();
+  const reachedLocal = new Set();
   const visited = new Set([manifest.file]);
   const queue = direct.map(dependency => [dependency, manifest.file]);
   while (queue.length) {
@@ -51,6 +56,7 @@ for (const [name, manifest] of modules) {
       unresolved.add(`${dependency} (from ${path.relative(root, parent)})`);
       continue;
     }
+    if (modules.has(dependency) && dependency !== name) reachedLocal.add(dependency);
     if (visited.has(file)) continue;
     visited.add(file);
     const data = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -67,20 +73,28 @@ for (const [name, manifest] of modules) {
     }
   }
   const names = new Set(reached.values());
-  const transitive = [...names].filter(dependency => !externalDirect.has(dependency)).length;
-  results.push({name, direct: direct.length, transitive, total: names.size});
+  const vis = new Set([...reachedLocal, ...[...names].filter(isVisDependency)]);
+  const nonVis = new Set([...names].filter(dependency => !isVisDependency(dependency)));
+  const transitive = [...nonVis].filter(dependency => !externalDirect.has(dependency)).length;
+  results.push({name, direct: direct.length, vis: vis.size, transitive, total: nonVis.size});
 }
 
+const inventoryName = identity => identity.slice(0, identity.lastIndexOf('@'));
+const ecosystemInventory = [...inventory].filter(identity => isVisDependency(inventoryName(identity))).sort();
+const thirdPartyInventory = [...inventory].filter(identity => !isVisDependency(inventoryName(identity))).sort();
 console.log(`Published modules: ${modules.size}`);
-console.log(`Distinct external package names: ${new Set([...inventory].map(identity => identity.slice(0, identity.lastIndexOf('@')))).size}`);
-console.log(`Distinct external name/version pairs: ${inventory.size}`);
-console.log('\n| Module | Direct | External transitive only | External total |');
-console.log('| --- | ---: | ---: | ---: |');
+console.log(`Installed vis.gl package names: ${new Set(ecosystemInventory.map(inventoryName)).size}`);
+console.log(`Installed non-vis.gl package names: ${new Set(thirdPartyInventory.map(inventoryName)).size}`);
+console.log(`Installed non-vis.gl name/version pairs: ${thirdPartyInventory.length}`);
+console.log('\n| Module | Direct | vis.gl total | Non-vis.gl transitive only | Non-vis.gl total |');
+console.log('| --- | ---: | ---: | ---: | ---: |');
 for (const result of results) {
-  console.log(`| \`${result.name}\` | ${result.direct} | ${result.transitive} | ${result.total} |`);
+  console.log(`| \`${result.name}\` | ${result.direct} | ${result.vis} | ${result.transitive} | ${result.total} |`);
 }
-console.log('\nExternal package versions:\n');
-for (const identity of [...inventory].sort()) console.log(`- \`${identity}\``);
+console.log('\nInstalled vis.gl package versions (outside the local modules):\n');
+for (const identity of ecosystemInventory) console.log(`- \`${identity}\``);
+console.log('\nInstalled non-vis.gl package versions:\n');
+for (const identity of thirdPartyInventory) console.log(`- \`${identity}\``);
 console.log('\nPeer requirements (not resolved or counted above):\n');
 for (const peer of [...peerRequirements].sort()) console.log(`- \`${peer}\``);
 console.log('\nUnresolved dependencies:\n');
