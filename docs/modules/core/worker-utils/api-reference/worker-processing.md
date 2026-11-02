@@ -21,7 +21,9 @@ const result = await processOnWorker(workerDescriptor, input, {
 The descriptor's `loadWorker()` factory takes precedence over its published URL.
 An explicit `options[descriptor.id].workerUrl` override or `_workerType: 'test'`
 selects the configured URL instead. Factories must return a fresh worker or `null`
-to use the URL. Custom workers must install the current task protocol with
+to use the URL. Cross-origin HTTP(S) module entrypoints use a same-origin blob shim
+that imports the remote module; the remote server must allow CORS and your CSP must
+allow the worker and module import. Shutdown revokes the shim URLs. Custom workers must install the current task protocol with
 `createWorker` or `createLoaderWorker`; rebuild older worker bundles.
 
 Loader helpers retain their transfer-by-default input semantics. Set
@@ -34,6 +36,11 @@ The optional fourth argument supplies a `process` callback for work requested by
 the worker on its calling thread. The fifth argument supplies serializable loader
 context. The adapter carries callbacks over a private `MessagePort` owned by the
 handle, rather than exporting or patching math.gl's internal transport protocol.
+The callback receives cancellation through its worker context's `signal`. Loader
+callbacks propagate that signal into the nested parse context. Callbacks should honor that signal; late results after cancellation or
+shutdown are discarded. Callback ports always transfer during initialization,
+independently of payload ownership. Serializable context is copied so caller buffers
+remain usable.
 
 ## processOnWorkerInBatches
 

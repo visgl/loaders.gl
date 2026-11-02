@@ -41,6 +41,18 @@ test('Node module targets run atomic callbacks and streaming through the public 
         {source: 'node'}
       )
     ).resolves.toEqual({input: 'node', marker: 3, jobContext: {source: 'node'}});
+    const shared = new Uint8Array(new SharedArrayBuffer(1));
+    shared[0] = 5;
+    const sharedResult = await processOnWorker(
+      worker,
+      shared,
+      {inputOwnership: 'share'},
+      {process: async value => value}
+    );
+    expect(sharedResult).toBeInstanceOf(Uint8Array);
+    sharedResult[0] = 8;
+    expect(shared[0]).toBe(8);
+
     const results = [];
     for await (const result of processOnWorkerInBatches(worker, [1, 2])) results.push(result);
     expect(results).toEqual([1, 2]);

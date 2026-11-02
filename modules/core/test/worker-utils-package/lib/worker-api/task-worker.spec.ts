@@ -138,3 +138,156 @@ test('routing requires explicit opt-in and custom streaming capability', () => {
     })
   ).toBe(true);
 });
+
+test('callback setup preserves copied input and caller-owned context buffers', async () => {
+  const input = new Uint8Array([7]);
+  const contextBuffer = new Uint8Array([9]);
+  const result = await processOnWorker(
+    worker,
+    input,
+    {callback: true, inputOwnership: 'copy'},
+    {
+      process: async (value, _options, _context, jobContext) => ({
+        value,
+        contextBuffer: jobContext?.contextBuffer
+      })
+    },
+    {contextBuffer}
+  );
+  expect(result).toEqual({value: new Uint8Array([7]), contextBuffer: new Uint8Array([9])});
+  expect(input.byteLength).toBe(1);
+  expect(contextBuffer.byteLength).toBe(1);
+});
+
+test.runIf(typeof SharedArrayBuffer !== 'undefined')(
+  'callback setup does not apply shared payload ownership to the private MessagePort',
+  async () => {
+    const input = new Uint8Array(new SharedArrayBuffer(1));
+    input[0] = 5;
+    const result = await processOnWorker(
+      worker,
+      input,
+      {callback: true, inputOwnership: 'share'},
+      {
+        process: async value => value
+      }
+    );
+    expect(result).toBeInstanceOf(Uint8Array);
+    expect(result[0]).toBe(5);
+    expect(input.byteLength).toBe(1);
+  }
+);
+
+test.each([
+  false,
+  true
+])('cross-origin worker entrypoints use a same-origin module shim (null factory: %s)', async withFactory => {
+  const requestedUrl = 'https://worker.example.invalid/parser.js';
+  let constructedUrl = '';
+  const constructor = vi.spyOn(globalThis, 'Worker').mockImplementation(function (target) {
+    constructedUrl = String(target);
+    throw new Error('captured module worker');
+  } as any);
+  try {
+    const descriptor = {
+      ...worker,
+      worker: requestedUrl,
+      ...(withFactory ? {loadWorker: () => null} : {})
+    };
+    await expect(processOnWorker(descriptor, 'input')).rejects.toThrow('captured module worker');
+    expect(constructedUrl).toMatch(/^blob:/);
+    const firstUrl = constructedUrl;
+    await expect(processOnWorker(descriptor, 'second')).rejects.toThrow('captured module worker');
+    expect(constructedUrl).toBe(firstUrl);
+    expect(await (await fetch(constructedUrl)).text()).toBe(
+      `import ${JSON.stringify(requestedUrl)};`
+    );
+    await destroyWorkerTasks();
+    await expect(fetch(constructedUrl)).rejects.toThrow();
+  } finally {
+    constructor.mockRestore();
+  }
+});
+
+test('cancelling a task signals caller callbacks and ignores late failures', async () => {
+  const controller = new AbortController();
+  let beginCallback!: () => void;
+  const began = new Promise<void>(resolve => {
+    beginCallback = resolve;
+  });
+  let rejectCallback!: (reason: unknown) => void;
+  let callbackSignal: AbortSignal | undefined;
+  const request = processOnWorker(
+    worker,
+    'input',
+    {callback: true, signal: controller.signal},
+    {
+      process: async (_input, options, context) => {
+        callbackSignal = context?.signal;
+        context?.throwIfAborted?.();
+        expect(options?.signal).toBeUndefined();
+        beginCallback();
+        return await new Promise((_resolve, reject) => {
+          rejectCallback = reject;
+        });
+      }
+    }
+  );
+  await began;
+  const reason = new Error('cancel nested work');
+  controller.abort(reason);
+  await expect(request).rejects.toBe(reason);
+  expect(callbackSignal?.aborted).toBe(true);
+  expect(callbackSignal?.reason).toBe(reason);
+  rejectCallback(new Error('late callback failure'));
+  await new Promise(resolve => setTimeout(resolve, 0));
+});
+
+test('shutdown cancels active requests and allows a fresh runner', async () => {
+  let beginCallback!: () => void;
+  const began = new Promise<void>(resolve => {
+    beginCallback = resolve;
+  });
+  const request = processOnWorker(
+    worker,
+    'input',
+    {callback: true},
+    {
+      process: async (_input, _options, context) => {
+        beginCallback();
+        return await new Promise((_resolve, reject) => {
+          context?.signal?.addEventListener('abort', () => reject(context.signal?.reason), {
+            once: true
+          });
+        });
+      }
+    }
+  );
+  const rejection = expect(request).rejects.toThrow('shutdown request');
+  await began;
+  await destroyWorkerTasks(new Error('shutdown request'));
+  await rejection;
+  await expect(processOnWorker(worker, 'fresh')).resolves.toMatchObject({input: 'fresh'});
+});
+
+test('relative worker entrypoints honor the document base URL', async () => {
+  const base = vi
+    .spyOn(document, 'baseURI', 'get')
+    .mockReturnValue('https://worker.example.invalid/nested/');
+  let constructedUrl = '';
+  const constructor = vi.spyOn(globalThis, 'Worker').mockImplementation(function (target) {
+    constructedUrl = String(target);
+    throw new Error('captured relative worker');
+  } as any);
+  try {
+    await expect(processOnWorker({...worker, worker: './parser.js'}, 'input')).rejects.toThrow(
+      'captured relative worker'
+    );
+    expect(await (await fetch(constructedUrl)).text()).toBe(
+      'import "https://worker.example.invalid/nested/parser.js";'
+    );
+  } finally {
+    constructor.mockRestore();
+    base.mockRestore();
+  }
+});

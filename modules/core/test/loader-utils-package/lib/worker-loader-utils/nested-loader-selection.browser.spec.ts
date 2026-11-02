@@ -34,9 +34,15 @@ test.each([
   false,
   true
 ])('nested worker preserves explicit loader selection (array: %s)', async loaderIsArray => {
+  const fetchNested = vi.fn(async () => new Response('nested fixture'));
   const parser = vi.fn(async (_data, _options, context) => {
     expect(context.url).toBe('nested');
-    expect(context.fetch).toBe(fetch);
+    expect(context.signal).toBeInstanceOf(AbortSignal);
+    expect(await (await context.fetch('/nested-data')).text()).toBe('nested fixture');
+    expect(fetchNested).toHaveBeenCalledWith(
+      '/nested-data',
+      expect.objectContaining({signal: context.signal})
+    );
     expect(context).not.toHaveProperty('_loaderIds');
     return 'decoded';
   });
@@ -52,7 +58,7 @@ test.each([
       loaderIds: [child.id],
       loaderIsArray
     },
-    {fetch} as any,
+    {fetch: fetchNested} as any,
     parse
   );
   expect(result).toBe('decoded');

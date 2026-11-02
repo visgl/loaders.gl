@@ -19,8 +19,18 @@ export type ProcessOnWorkerOptions = WorkerOptions;
 /** Code preload cancellation controls; preloading does not reserve workers. */
 export type PreloadWorkerOptions = Pick<TaskRunControls, 'signal'>;
 
-let runners = new WeakMap<WorkerObject, TaskRunner>();
-const activeRunners = new Set<TaskRunner>();
+/** Capacity retained weakly by a descriptor, with active-request accounting for shutdown. */
+type RunnerState = {
+  /** Public runtime owning execution capacity. */
+  runner: TaskRunner;
+  /** Queued and active loader requests. */
+  requests: number;
+};
+
+let runners = new WeakMap<WorkerObject, RunnerState>();
+const activeRunners = new Set<RunnerState>();
+/** Same-origin module shims for cross-origin worker entrypoints. */
+const moduleWorkerUrls = new Map<string, string>();
 
 /** Checks worker availability and explicit loader routing without creating a worker. */
 export function canProcessOnWorker(worker: WorkerObject, options: WorkerOptions = {}): boolean {
@@ -102,7 +112,13 @@ export async function destroyWorkerTasks(reason?: unknown): Promise<void> {
   const previous = [...activeRunners];
   activeRunners.clear();
   runners = new WeakMap();
-  await Promise.all(previous.map(runner => runner.terminate(reason)));
+  const previousUrls = [...moduleWorkerUrls.values()];
+  moduleWorkerUrls.clear();
+  try {
+    await Promise.all(previous.map(state => state.runner.terminate(reason)));
+  } finally {
+    for (const workerUrl of previousUrls) URL.revokeObjectURL(workerUrl);
+  }
 }
 
 /** Creates a task descriptor using public factories or the loaders.gl artifact URL. */
@@ -116,13 +132,8 @@ function getTask(worker: WorkerObject, options: WorkerOptions): WorkerTask {
   return {
     id: `${worker.module}:${worker.id}`,
     initialize: state => state,
-    // Named processor hooks provide payload inference; worker execution never invokes them here.
-    process: async input => input,
-    processInBatches: async function* (input) {
-      yield* input;
-    },
     worker: {
-      ...(create ? {create: () => create() ?? new Worker(url, {type: 'module'})} : {url}),
+      ...(isBrowser ? {create: () => create?.() ?? createModuleWorker(url)} : {url}),
       capabilities: {atomic: true, streaming: true}
     }
   };
@@ -155,21 +166,50 @@ async function openSession(
   jobContext: WorkerJobContext
 ) {
   options.signal?.throwIfAborted();
-  let runner = runners.get(worker);
-  if (!runner) {
-    runner = new TaskRunner({
-      maxConcurrency: isMobile ? (options.maxMobileConcurrency ?? 1) : (options.maxConcurrency ?? 3)
-    });
-    runners.set(worker, runner);
-    activeRunners.add(runner);
+  const task = getTask(worker, options);
+  let state = runners.get(worker);
+  if (!state) {
+    state = {
+      runner: new TaskRunner({
+        maxConcurrency: isMobile
+          ? (options.maxMobileConcurrency ?? 1)
+          : (options.maxConcurrency ?? 3)
+      }),
+      requests: 0
+    };
+    runners.set(worker, state);
   }
+  const runnerState = state;
   const channel = context.process ? new MessageChannel() : undefined;
+  const callbackController = new AbortController();
+  let channelClosed = false;
+  /** Cancels caller-thread work when the owning request is aborted. */
+  const abortCallbacks = () => callbackController.abort(options.signal?.reason);
+  options.signal?.addEventListener('abort', abortCallbacks, {once: true});
+  /** Prevents late callback replies after the task releases its channel. */
+  const closeChannel = () => {
+    channelClosed = true;
+    options.signal?.removeEventListener('abort', abortCallbacks);
+    callbackController.abort();
+    channel?.port1.close();
+    channel?.port2.close();
+  };
   if (channel) {
     channel.port1.onmessage = async ({data}) => {
       try {
-        const value = await context.process!(data.input, data.options, {}, data.context);
-        channel.port1.postMessage({identifier: data.identifier, value}, getTransferList(value));
+        const value = await context.process!(
+          data.input,
+          data.options,
+          {
+            signal: callbackController.signal,
+            throwIfAborted: () => callbackController.signal.throwIfAborted()
+          },
+          data.context
+        );
+        if (!channelClosed && !callbackController.signal.aborted)
+          channel.port1.postMessage({identifier: data.identifier, value}, getTransferList(value));
       } catch (error) {
+        if (channelClosed || callbackController.signal.aborted) return;
         channel.port1.postMessage({
           identifier: data.identifier,
           error: {
@@ -181,19 +221,30 @@ async function openSession(
     };
     channel.port1.start();
   }
+  runnerState.requests++;
+  activeRunners.add(runnerState);
+  let released = false;
+  /** Releases strong shutdown ownership after the last queued or active request. */
+  const releaseRunner = () => {
+    if (released) return;
+    released = true;
+    runnerState.requests--;
+    if (!runnerState.requests) activeRunners.delete(runnerState);
+  };
   let handle: InitializedTask<WorkerTask>;
   try {
-    handle = await runner.initializeTask(
-      getTask(worker, options),
+    handle = await runnerState.runner.initializeTask(
+      task,
       {
-        context: jobContext,
+        context: structuredClone(jobContext),
         ...(channel ? {port: channel.port2} : {})
       },
-      getControls(options)
+      // The callback port is setup state, independent of the caller's payload ownership.
+      {...getControls(options), inputOwnership: 'transfer'}
     );
   } catch (error) {
-    channel?.port1.close();
-    channel?.port2.close();
+    releaseRunner();
+    closeChannel();
     throw error;
   }
   return {
@@ -203,8 +254,8 @@ async function openSession(
       try {
         await handle.close();
       } finally {
-        channel?.port1.close();
-        channel?.port2.close();
+        closeChannel();
+        releaseRunner();
       }
     }
   };
@@ -232,4 +283,21 @@ function wrapInput<Input>(
       };
     }
   };
+}
+
+/** Imports cross-origin entrypoints through a same-origin module shim without evaluating fetched source. */
+function createModuleWorker(url: string): Worker {
+  const resolved = new URL(url, globalThis.document?.baseURI ?? globalThis.location.href);
+  let workerUrl = resolved.href;
+  if (/^https?:$/.test(resolved.protocol) && resolved.origin !== globalThis.location.origin) {
+    let shimUrl = moduleWorkerUrls.get(resolved.href);
+    if (!shimUrl) {
+      shimUrl = URL.createObjectURL(
+        new Blob([`import ${JSON.stringify(resolved.href)};`], {type: 'application/javascript'})
+      );
+      moduleWorkerUrls.set(resolved.href, shimUrl);
+    }
+    workerUrl = shimUrl;
+  }
+  return new Worker(workerUrl, {type: 'module'});
 }

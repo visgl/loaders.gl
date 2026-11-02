@@ -39,7 +39,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <ReferenceBoundary
   title="Worker processing details"
-  description="The reference below covers processing helpers, worker creation, pools, batch sessions, transfer lists, and explicit cleanup."
+  description="The reference below covers processing helpers, worker creation, task lifetimes, batch sessions, transfer lists, and explicit cleanup."
   tone="blue"
 />
 
@@ -47,6 +47,17 @@ The `@loaders.gl/core/worker-utils` module provides the shared worker runtime us
 loaders, writers, compression codecs, and application-defined processors. It manages worker
 creation, bounded concurrency, task lifetimes, transferable data, cancellation, and stateful batch
 sessions in browsers and Node.js.
+
+## Task feature support
+
+| Feature | Support and limits |
+| --- | --- |
+| Atomic and streaming tasks | One handle per atomic request; one retained handle for an entire batch stream. |
+| Cancellation and progress | Signals reach worker tasks and caller-thread callbacks; late callback results are discarded after shutdown. |
+| Binary ownership | Loader inputs transfer by default; opt into copy or shared storage. Callback ports transfer independently, and serializable caller context is copied. |
+| Worker URLs | Factories, local module URLs, and cross-origin HTTP(S) module shims. Remote modules require CORS and compatible CSP. |
+| Concurrency and cleanup | Bounded active handles per descriptor; `destroyWorkerTasks()` terminates active and queued work and releases generated URLs. Queue memory must be bounded by the application. |
+| Custom typed tasks | Public math.gl `TaskRunner` APIs with named object payloads. Legacy worker pools and transport internals are removed. |
 
 ## Installation
 
