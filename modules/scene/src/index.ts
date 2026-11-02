@@ -20,3 +20,6 @@ export {DracoLoader, DracoWorkerLoader} from './draco/draco-loader-types';
 export {DracoFormat} from './draco/draco-format';
 export type * from './draco/index';
 export {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from './draco/draco-libraries';
+
+export {MaterialXLoader} from './materialx-loader-types';
+export type {MaterialXDocument, MaterialXElement} from './materialx/parse-materialx';
