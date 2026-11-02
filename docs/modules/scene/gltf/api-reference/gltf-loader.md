@@ -276,6 +276,17 @@ not provide `parseSync`. Async parsing supports the following resource processin
 - linked raster image URI:s are decoded through [`ImageLoader`](/docs/modules/images/api-reference/image-loader), producing `ImageBitmap` in browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is installed.
 - Draco meshes can be decoded asynchronously on worker threads (in parallel!).
 
+## Legacy Gaussian splats
+
+Some draft SPZ2-compressed Gaussian glTF files, including the Cesium Gaussian splat test
+assets, omit the now-required kernel and color-space metadata. When the asset's color space is
+known, set `gltf.legacyGaussianSplatColorSpace` to `'srgb_rec709_display'` or
+`'lin_rec709_display'`. The loader then supplies the missing color space and an `ellipse`
+kernel in the returned Gaussian primitive descriptor. It retains the original JSON and never
+overrides authored values. Without the option, missing metadata remains an error. This option
+is an application-provided assumption, not a conversion of color values; choose it based on
+the asset's provenance. Inject an SPZ loader in the normal loader list to decode the payload.
+
 ## Options
 
 | Option                    | Type    | Default | Description                                                                  |

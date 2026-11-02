@@ -45,6 +45,56 @@ describe('KHR_gaussian_splatting', () => {
     await expect(decode(gltf, {} as any)).rejects.toThrow(message);
   });
 
+  test('normalizes legacy SPZ2 metadata only when the color space is supplied', async () => {
+    const sourceExtension = {
+      extensions: {KHR_gaussian_splatting_compression_spz_2: {bufferView: 0}}
+    };
+    const gltf = makeGLTF({
+      mode: 0,
+      attributes: {},
+      extensions: {KHR_gaussian_splatting: sourceExtension}
+    });
+    gltf.json.bufferViews = [{buffer: 0, byteLength: 3}];
+    gltf.buffers = [{arrayBuffer: new Uint8Array([1, 2, 3]).buffer, byteOffset: 0, byteLength: 3}];
+    await expect(decode(gltf, {} as any)).rejects.toThrow('missing kernel');
+    const decoder = vi.fn().mockResolvedValue({count: 27});
+    await decode(gltf, {
+      gltf: {legacyGaussianSplatColorSpace: 'srgb_rec709_display', splatDecoder: decoder}
+    } as any);
+    expect(gltf.gaussianSplatPrimitives[0].extension).toMatchObject({
+      kernel: 'ellipse',
+      colorSpace: 'srgb_rec709_display'
+    });
+    expect(gltf.gaussianSplatPrimitives[0].decoded).toEqual({count: 27});
+    expect(sourceExtension).toEqual({
+      extensions: {KHR_gaussian_splatting_compression_spz_2: {bufferView: 0}}
+    });
+    expect(decoder).toHaveBeenCalledOnce();
+  });
+
+  test('preserves authored metadata and rejects missing metadata without SPZ2', async () => {
+    const sourceExtension = {
+      kernel: 'custom',
+      colorSpace: 'custom',
+      extensions: {KHR_gaussian_splatting_compression_spz_2: {bufferView: 0}}
+    };
+    const gltf = makeGLTF({
+      mode: 0,
+      attributes: {},
+      extensions: {KHR_gaussian_splatting: sourceExtension}
+    });
+    gltf.json.bufferViews = [{buffer: 0, byteLength: 0}];
+    await decode(gltf, {gltf: {legacyGaussianSplatColorSpace: 'lin_rec709_display'}} as any);
+    expect(gltf.gaussianSplatPrimitives[0].extension).toMatchObject({
+      kernel: 'custom',
+      colorSpace: 'custom'
+    });
+    gltf.json.meshes[0].primitives[0].extensions.KHR_gaussian_splatting = {};
+    await expect(
+      decode(gltf, {gltf: {legacyGaussianSplatColorSpace: 'lin_rec709_display'}} as any)
+    ).rejects.toThrow('missing kernel');
+  });
+
   test.each([-1, 0.5, 2])('rejects invalid compressed bufferView %s', async bufferView => {
     const gltf = makeGLTF({
       mode: 0,

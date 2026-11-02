@@ -42,19 +42,29 @@ export async function decode(
     for (const [primitiveIndex, primitive] of mesh.primitives.entries()) {
       const extension = primitive.extensions?.[name] as GLTF_KHR_gaussian_splatting | undefined;
       if (!extension) continue;
+      const descriptor = descriptors.find(
+        item => item.meshIndex === meshIndex && item.primitiveIndex === primitiveIndex
+      );
+      const legacyColorSpace = options?.gltf?.legacyGaussianSplatColorSpace;
+      const normalizedExtension =
+        legacyColorSpace && extension.extensions?.[SPZ_COMPRESSION_EXTENSION_NAME]
+          ? {
+              ...extension,
+              kernel: extension.kernel ?? 'ellipse',
+              colorSpace: extension.colorSpace ?? legacyColorSpace
+            }
+          : extension;
+      if (descriptor) descriptor.extension = normalizedExtension;
       validateGaussianSplatPrimitive(
         gltfData.json,
         primitive,
-        extension,
+        normalizedExtension,
         meshIndex,
         primitiveIndex,
         iterator
       );
       const compression = extension.extensions?.[SPZ_COMPRESSION_EXTENSION_NAME];
       if (compression) {
-        const descriptor = descriptors.find(
-          item => item.meshIndex === meshIndex && item.primitiveIndex === primitiveIndex
-        );
         if (descriptor) {
           const decoder = options?.gltf?.splatDecoder;
           const bufferView = gltfData.json.bufferViews?.[compression.bufferView];
