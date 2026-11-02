@@ -84,23 +84,19 @@ export async function* processOnWorkerInBatches<InputBatch = any, OutputBatch = 
   jobContext: WorkerJobContext = {}
 ): AsyncIterable<OutputBatch> {
   const taskInput = wrapInput(input);
-  let session: Awaited<ReturnType<typeof openSession>>;
+  let session: Awaited<ReturnType<typeof openSession>> | undefined;
   try {
     session = await openSession(worker, options, context, jobContext);
-  } catch (error) {
-    // Own the input before acquiring a worker, but never let slow cleanup hide the original failure.
-    const closingInput = taskInput.return?.();
-    void closingInput?.catch(() => {});
-    throw error;
-  }
-  try {
     for await (const result of session.handle.runTaskInBatches(taskInput, {
       ...getControls(options),
       options: getParserOptions(options)
     }))
       yield result.value;
   } finally {
-    await session.close();
+    // Own the input before acquiring a worker, but never let slow cleanup hide the original failure.
+    const closingInput = taskInput.return?.();
+    void closingInput?.catch(() => {});
+    await session?.close();
   }
 }
 
@@ -276,18 +272,25 @@ function wrapInput<Input>(
 ): AsyncIterableIterator<WorkerTaskPayload> {
   const iterator =
     Symbol.asyncIterator in input ? input[Symbol.asyncIterator]() : input[Symbol.iterator]();
+  let inputClosed = false;
   return {
     [Symbol.asyncIterator]() {
       return this;
     },
     async next() {
+      if (inputClosed) return {done: true as const, value: undefined};
       const next = await iterator.next();
-      return next.done
-        ? {done: true as const, value: undefined}
-        : {done: false as const, value: {value: next.value}};
+      if (next.done || inputClosed) {
+        inputClosed = true;
+        return {done: true as const, value: undefined};
+      }
+      return {done: false as const, value: {value: next.value}};
     },
     async return() {
-      await iterator.return?.();
+      if (!inputClosed) {
+        inputClosed = true;
+        await iterator.return?.();
+      }
       return {done: true as const, value: undefined};
     }
   };

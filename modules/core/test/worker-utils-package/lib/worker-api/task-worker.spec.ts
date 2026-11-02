@@ -365,3 +365,19 @@ test('stream initialization errors preserve their cause and close input despite 
   expect(input.next).not.toHaveBeenCalled();
   expect(input.return).toHaveBeenCalledOnce();
 });
+
+test('stream option validation failures close input before it is consumed', async () => {
+  const input: AsyncIterableIterator<string> = {
+    [Symbol.asyncIterator]() {
+      return this;
+    },
+    next: vi.fn(async () => ({done: false as const, value: 'unused'})),
+    return: vi.fn(async () => ({done: true as const, value: undefined}))
+  };
+  const iterator = processOnWorkerInBatches(worker, input, {unsupported: [() => {}]})[
+    Symbol.asyncIterator
+  ]();
+  await expect(iterator.next()).rejects.toMatchObject({name: 'DataCloneError'});
+  expect(input.next).not.toHaveBeenCalled();
+  expect(input.return).toHaveBeenCalledOnce();
+});
