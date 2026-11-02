@@ -10,7 +10,7 @@ The initial scene implementation reads a MaterialX 1.x XML document into an orde
 
 This is structural parsing. It does not validate MaterialX node signatures, resolve connections or library includes, apply inherited defaults, convert to glTF, evaluate graphs, or generate shaders. References and includes remain authored attributes; parsing does not fetch them.
 
-Parsing currently requires a browser `DOMParser`. Node.js without a DOM implementation is unsupported. Document types and entity declarations are rejected. Malformed XML, a missing MaterialX root or version, and excessive element nesting produce errors.
+Parsing uses the native documents XML parser in browsers and Node.js. Document types and entity declarations are rejected. Malformed XML, a missing MaterialX root or version, and excessive element nesting produce errors.
 
 ## Example
 
