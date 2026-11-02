@@ -4,9 +4,21 @@
 
 /** Serialized value types in the experimental procedural graph proposal. */
 export type GLTFProceduralValueType =
-  | 'boolean' | 'float' | 'integer' | 'color3' | 'color4'
-  | 'vector2' | 'vector3' | 'vector4' | 'integer2' | 'integer3' | 'integer4'
-  | 'matrix3x3' | 'matrix4x4' | 'string' | 'filename';
+  | 'boolean'
+  | 'float'
+  | 'integer'
+  | 'color3'
+  | 'color4'
+  | 'vector2'
+  | 'vector3'
+  | 'vector4'
+  | 'integer2'
+  | 'integer3'
+  | 'integer4'
+  | 'matrix3x3'
+  | 'matrix4x4'
+  | 'string'
+  | 'filename';
 
 /** Named graph port, retaining serialized connections without evaluating them. */
 export interface GLTFProceduralPort {

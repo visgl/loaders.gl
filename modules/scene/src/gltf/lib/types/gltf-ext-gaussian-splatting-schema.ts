@@ -41,6 +41,6 @@ export type GLTFGaussianSplatPrimitive = {
   compressedBufferView?: number;
   /** Preserved compressed SPZ2 bytes for native or GPU decoders. */
   compressedBytes?: Uint8Array;
-  /** Result returned by an injected SPZ2 decoder, when one was supplied. */
+  /** Result returned by an injected SPZ loader or legacy decoder, when supplied. */
   decoded?: unknown;
 };
