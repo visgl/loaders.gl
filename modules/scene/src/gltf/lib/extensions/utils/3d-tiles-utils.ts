@@ -197,7 +197,11 @@ export function getPrimitiveTextureData(
     const mimeType = json.images?.[imageIndex]?.mimeType;
     const parsedImage = scenegraph.gltf.images?.[imageIndex];
     // Checking for width is to prevent handling Un-processed images (e.g. [analyze] stage, where loadImages option is set to false)
-    if (parsedImage && typeof parsedImage.width !== 'undefined') {
+    if (
+      parsedImage &&
+      typeof parsedImage.width !== 'undefined' &&
+      !('compressed' in parsedImage && parsedImage.compressed)
+    ) {
       const textureData: number[] = [];
       for (let index = 0; index < textureCoordinates.length; index += 2) {
         const value = getImageValueByCoordinates(

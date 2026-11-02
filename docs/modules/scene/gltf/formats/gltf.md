@@ -167,11 +167,18 @@ For optional WebP or AVIF extensions, `GLTFLoader` retains the ordinary texture 
 active runtime cannot decode the extension image. A required extension fails before image loading
 when its image MIME type is unsupported.
 
-When a texture declares multiple supported alternatives, preprocessing selects AVIF, then WebP,
-then BasisU if present. The `@loaders.gl/scene/gltf` entry point also exports the
+When a texture declares multiple alternatives, preprocessing selects injected DDS, supported AVIF,
+supported WebP, then BasisU if present. The `@loaders.gl/scene/gltf` entry point exports the
 `GLTF_EXT_texture_avif` and `GLTF_MSFT_texture_dds` source types and `GLTFEXTTextureAvifSchema`;
-the schema is also available from `@loaders.gl/scene/gltf/schema`. A DDS type declaration does not
-mean that `GLTFLoader` selects or decodes DDS sources.
+the schema is also available from `@loaders.gl/scene/gltf/schema`.
+
+To load `MSFT_texture_dds`, supply `gltf.ddsParser` as a function accepting DDS bytes and returning
+compressed `TextureLevel[]` (or a promise). For example, applications can explicitly import
+`CompressedTextureLoaderWithParser` from `@loaders.gl/images/compressed-texture-loader` and pass
+its `parse` function. The application must ensure its renderer and device support the returned
+texture formats. Without a parser, optional DDS uses the core texture source and required DDS
+throws before image loading. Parser errors propagate; unsupported formats are not silently replaced.
+The built-in compressed texture parser handles a subset of DDS formats, not every DDS variant.
 
 | Extension                                                 | Processing | Description                                                                                 |
 | --------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
@@ -183,6 +190,7 @@ mean that `GLTFLoader` selects or decodes DDS sources.
 | [KHR_texture_transform](#khr_texture_transform)           | ✅ Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute |
 | [EXT_texture_webp](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_webp) | ✅ Y | Selects the WebP source when the active decoder supports it |
 | [EXT_texture_avif](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif) | ✅ Y | Selects the AVIF source when the active decoder supports it |
+| [MSFT_texture_dds](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds) | Optional parser | Selects and parses DDS when `gltf.ddsParser` is provided; device compatibility is application-owned |
 | [EXT_mesh_features](#ext_mesh_features)                   | ✅ Y            | 3D tiles extension                                                                          |
 | [EXT_structural_metadata](#ext_structural_metadata)       | ✅ Y            | 3D tiles extension                                                                          |
 | [KHR_mesh_primitive_restart](#vector-primitive-topology)   | ✅ Y            | Draft restart-separated strip topology                                                      |

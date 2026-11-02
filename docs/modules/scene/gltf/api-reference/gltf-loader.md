@@ -284,6 +284,7 @@ not provide `parseSync`. Async parsing supports the following resource processin
 | `gltf.loadFiles`          | Boolean | `false` | Resolve draft glTF 2.1 `files` entries from URIs or buffer views.             |
 | `gltf.loadExternalAssets` | Boolean | `false` | Recursively parse draft glTF 2.1 external assets instantiated by scene nodes. |
 | `gltf.loadImages`         | Boolean | `true`  | Load images referenced by textures or the draft glTF 2.1 thumbnail.          |
+| `gltf.ddsParser`          | Function | — | Parse `MSFT_texture_dds` image bytes into compressed texture levels; the application must provide a parser compatible with its device. |
 | `gltf.loadAudio`          | Boolean | `true`  | Load encoded draft `KHR_audio_emitter` clips. Independent of `loadBuffers`; does not decode or play audio. |
 | `gltf.decompressMeshes`   | Boolean | `true`  | Decompress Draco and [KHR/EXT meshopt](/docs/modules/scene/gltf/formats/gltf#meshopt-compression) data. |
 | `gltf.normalize`          | Boolean or string | `true`  | Automatically attempt glTF 1 to 2 conversion. `true` / `'best-effort'` continue through reported gaps; `'strict'` rejects reported unsupported features; `false` rejects glTF 1 input. |
