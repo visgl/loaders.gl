@@ -22,6 +22,12 @@ export type GLTFLoaderOptions = StrictLoaderOptions &
   GLBLoaderOptions &
   DracoLoaderOptions & {
     gltf?: ParseGLTFOptions;
+    /** Options forwarded to an injected SPZ loader. The source frame is always LUF for glTF. */
+    splats?: {
+      shape?: 'arrow-table';
+      sourceCoordinateSystem?: 'RUB' | 'LUF' | 'RUF' | 'UNSPECIFIED';
+      targetCoordinateSystem?: 'RUB' | 'LUF' | 'RUF' | 'UNSPECIFIED';
+    };
   };
 
 /** Preloads the parser-bearing glTF loader implementation. */
