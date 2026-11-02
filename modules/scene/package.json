@@ -236,6 +236,11 @@
     "./draco-library-options": {
       "types": "./dist/draco-library-options.d.ts",
       "import": "./dist/draco-library-options.js"
+    },
+    "./materialx-loader": {
+      "types": "./dist/materialx-loader.d.ts",
+      "import": "./dist/materialx-loader.js",
+      "require": "./dist/materialx-loader.cjs"
     }
   },
   "sideEffects": false,
