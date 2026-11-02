@@ -4,6 +4,8 @@
 
 /** Options for the native XML object parser. No document types or external entities are resolved. */
 export type ParseXMLOptions = {
+  /** Return an ordered element tree with name, attributes, children, and text fields. */
+  preserveOrder?: boolean;
   /** Uncapitalize element and attribute keys recursively. */
   uncapitalizeKeys?: boolean;
   /** Remove namespace prefixes and namespace declaration attributes. */

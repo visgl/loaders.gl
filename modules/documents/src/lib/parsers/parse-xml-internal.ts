@@ -17,6 +17,8 @@ type InternalXMLNode = {
   children: Record<string, unknown>;
   /** Raw concatenated text and CDATA, trimmed only when the element closes. */
   text: string;
+  /** Child elements in source order. */
+  orderedChildren: unknown[];
 };
 
 /** Defines an own data property, including names such as `__proto__` and `constructor`. */
@@ -94,6 +96,7 @@ class InternalXMLParserState {
       path: parent ? `${parent.path}.${elementName}` : elementName,
       attributes: this.normalizeAttributes(attributes),
       children: {},
+      orderedChildren: [],
       text: ''
     });
   }
@@ -110,6 +113,11 @@ class InternalXMLParserState {
     if (!node) return;
     const value = this.finalizeElement(node);
     const parent = this.stack[this.stack.length - 1];
+    if (this.options.preserveOrder) {
+      if (parent) parent.orderedChildren.push(value);
+      else this.result = value;
+      return;
+    }
     if (parent) this.addChild(parent.children, node.name, node.path, value);
     else {
       if (this.result === undefined) this.result = {};
@@ -120,6 +128,9 @@ class InternalXMLParserState {
   /** Converts a completed element, keeping grouping and coercion independent. */
   private finalizeElement(node: InternalXMLNode): unknown {
     const text = this.options.trimValues === false ? node.text : node.text.trim();
+    if (this.options.preserveOrder) {
+      return {name: node.name, attributes: node.attributes, children: node.orderedChildren, text};
+    }
     const hasAttributes = Object.keys(node.attributes).length > 0;
     if (!hasAttributes && !Object.keys(node.children).length) {
       return this.parseValue(text, this.options.parseTagValue !== false);
