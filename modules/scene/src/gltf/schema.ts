@@ -22,3 +22,4 @@ export {
 export * from './lib/types/gltf-additional-extension-schemas';
 export * from './lib/types/gltf-audio-extension-schemas';
 export * from './lib/types/gltf-extension-schemas';
+export {GLTFEXTTextureAvifSchema} from './lib/types/gltf-zod-schema';

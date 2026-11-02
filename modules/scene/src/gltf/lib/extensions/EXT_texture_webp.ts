@@ -25,6 +25,9 @@ export const name = EXT_TEXTURE_WEBP;
 export function preprocess(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions): void {
   const iterator = new GLTFIterator(gltfData);
 
+  // Avoid probing image capabilities for unrelated documents, including worker environments.
+  if (!iterator.hasExtension(EXT_TEXTURE_WEBP)) return;
+
   if (!isImageFormatSupported('image/webp')) {
     if (iterator.isExtensionRequired(EXT_TEXTURE_WEBP)) {
       throw new Error(`gltf: Required extension ${EXT_TEXTURE_WEBP} not supported by browser`);

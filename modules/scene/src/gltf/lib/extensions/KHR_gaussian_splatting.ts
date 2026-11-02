@@ -4,6 +4,8 @@
 
 /* eslint-disable camelcase */
 
+import {parseFromContext} from '@loaders.gl/core/loader-utils';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {GLTF, GLTFMeshPrimitive} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader-types';
@@ -28,7 +30,12 @@ const REQUIRED_ATTRIBUTES = [
 ] as const;
 
 /** Validates Gaussian splat primitives while preserving all source JSON. */
-export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions): Promise<void> {
+export async function decode(
+  gltfData: GLTFWithBuffers,
+  options: GLTFLoaderOptions,
+  context?: LoaderContext
+): Promise<void> {
+  const loader = context?.loaders?.find(candidate => candidate.extensions?.includes('spz'));
   const descriptors = getGaussianSplatPrimitives(gltfData);
   const iterator = new GLTFIterator(gltfData);
   for (const [meshIndex, mesh] of (gltfData.json.meshes || []).entries()) {
@@ -53,12 +60,19 @@ export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptio
           const bufferView = gltfData.json.bufferViews?.[compression.bufferView];
           if (bufferView && gltfData.buffers[bufferView.buffer]) {
             descriptor.compressedBytes = getBufferViewBytes(gltfData, compression.bufferView);
-          } else if (decoder) {
+          } else if (decoder || loader) {
             throw new Error(
               `KHR_gaussian_splatting: bufferView ${compression.bufferView} is not loaded for SPZ2 decoding.`
             );
           }
-          if (decoder && descriptor.compressedBytes) {
+          if (loader && context && descriptor.compressedBytes) {
+            descriptor.decoded = await parseFromContext(
+              descriptor.compressedBytes.buffer as ArrayBuffer,
+              loader,
+              {...options, splats: {...options.splats, sourceCoordinateSystem: 'LUF'}},
+              context
+            );
+          } else if (decoder && descriptor.compressedBytes) {
             descriptor.decoded = await decoder(descriptor.compressedBytes.buffer as ArrayBuffer, {
               sourceCoordinateSystem: 'LUF'
             });

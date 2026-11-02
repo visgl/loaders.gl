@@ -21,6 +21,7 @@ import {canonicalizeUrl, resolveUrl} from '../gltf-utils/resolve-url';
 import {findGLTFFileIndex, resolveGLTFFile} from '../gltf-utils/resolve-gltf-file';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
+import {getDDSLoader} from '../extensions/MSFT_texture_dds';
 import {normalizeGLTFV1WithDeferredBuffers} from '../api/normalize-gltf-v1';
 
 /**  */
@@ -541,6 +542,34 @@ async function loadImage(
   assert(arrayBuffer, 'glTF image has no data');
 
   const gltfOptions = getGLTFImageOptions(options, image.mimeType);
+
+  const ddsLoader = getDDSLoader(context);
+  const ddsSelected = Boolean(
+    ddsLoader &&
+      !options.gltf?.excludeExtensions?.includes('MSFT_texture_dds') &&
+      gltf.json.textures?.some(
+        texture =>
+          texture.source === index && texture.extensions?.MSFT_texture_dds?.source === index
+      )
+  );
+  if (ddsSelected) {
+    const levels = (await parseFromContext(
+      arrayBuffer,
+      ddsLoader!,
+      options,
+      context
+    )) as TextureLevel[];
+    assert(levels.length > 0, 'MSFT_texture_dds parser returned no texture levels');
+    gltf.images = gltf.images || [];
+    gltf.images[index] = {
+      compressed: true,
+      mipmaps: true,
+      width: levels[0].width,
+      height: levels[0].height,
+      data: levels
+    };
+    return;
+  }
 
   // Call `parse`
   let parsedImage = (await parseFromContext(
