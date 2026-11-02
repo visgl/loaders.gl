@@ -201,10 +201,12 @@ jobs:
         run: yarn test-slow
 
   release:
-    name: Post GitHub release and publish to NPM
+    name: Publish tagged packages to npm
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     needs: [check_branch, node_tests, browser_tests, slow_tests]
+    outputs:
+      distribution_tag: ${{ steps.publish.outputs.distribution_tag }}
     permissions:
       contents: write
       id-token: write
@@ -295,10 +297,39 @@ jobs:
           echo "distribution_tag=$distribution_tag" >> "$GITHUB_OUTPUT"
           npx lerna publish from-package --force-publish --yes --dist-tag "$distribution_tag" --no-commit-hooks
 
+  finalize_release:
+    name: Verify npm publication and announce release
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    needs: release
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
       - name: Verify all published packages and tags
-        run: node scripts/verify-published-packages.mjs "${{ steps.publish.outputs.distribution_tag }}"
+        env:
+          NPM_DISTRIBUTION_TAG: ${{ needs.release.outputs.distribution_tag }}
+        run: node scripts/verify-published-packages.mjs "$NPM_DISTRIBUTION_TAG"
+
+      - name: Install announcement dependencies
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          yarn install --immutable
 
       - name: Post GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           release_tag=$(git describe --tags --exact-match HEAD)
           if gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
