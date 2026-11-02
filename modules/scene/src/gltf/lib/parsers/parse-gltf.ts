@@ -21,6 +21,7 @@ import {canonicalizeUrl, resolveUrl} from '../gltf-utils/resolve-url';
 import {findGLTFFileIndex, resolveGLTFFile} from '../gltf-utils/resolve-gltf-file';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
+import {getDDSLoader} from '../extensions/MSFT_texture_dds';
 import {normalizeGLTFV1WithDeferredBuffers} from '../api/normalize-gltf-v1';
 
 /**  */
@@ -47,8 +48,6 @@ export type ParseGLTFOptions = ParseGLBOptions & {
     data: ArrayBuffer,
     options: {sourceCoordinateSystem: 'LUF'; targetCoordinateSystem?: string}
   ) => unknown | Promise<unknown>;
-  /** Parse DDS bytes into GPU texture levels; provide only when the consumer can use its formats. */
-  ddsParser?: (data: ArrayBuffer) => TextureLevel[] | Promise<TextureLevel[]>;
   excludeExtensions?: string[];
 };
 
@@ -544,8 +543,9 @@ async function loadImage(
 
   const gltfOptions = getGLTFImageOptions(options, image.mimeType);
 
+  const ddsLoader = getDDSLoader(context);
   const ddsSelected = Boolean(
-    options.gltf?.ddsParser &&
+    ddsLoader &&
       !options.gltf?.excludeExtensions?.includes('MSFT_texture_dds') &&
       gltf.json.textures?.some(
         texture =>
@@ -553,7 +553,12 @@ async function loadImage(
       )
   );
   if (ddsSelected) {
-    const levels: TextureLevel[] = await options.gltf.ddsParser(arrayBuffer);
+    const levels = (await parseFromContext(
+      arrayBuffer,
+      ddsLoader!,
+      options,
+      context
+    )) as TextureLevel[];
     assert(levels.length > 0, 'MSFT_texture_dds parser returned no texture levels');
     gltf.images = gltf.images || [];
     gltf.images[index] = {

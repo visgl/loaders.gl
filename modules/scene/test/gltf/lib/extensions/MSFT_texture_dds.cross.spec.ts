@@ -3,8 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
+import {load, parse} from '@loaders.gl/core';
+import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
+import {CompressedTextureLoader} from '@loaders.gl/images';
 import {GLBWriter} from '../../../../src/gltf/glb-writer';
-import {parse} from '../../../../src/gltf/gltf-loader';
+import {GLTFLoaderWithParser} from '../../../../src/gltf/gltf-loader';
+import {GLTFLoader} from '../../../../src/gltf/gltf-loader-types';
 import {CompressedTextureLoaderWithParser} from '../../../../../images/src/compressed-texture-loader';
 
 /** One 4x4 DXT1 DDS level with a valid header. */
@@ -46,12 +50,20 @@ function makeGLB(required = false) {
   });
 }
 
+/** A DDS-capable parser passed alongside the glTF loader. */
+function makeDDSLoader() {
+  const parseDDS = vi.fn(CompressedTextureLoaderWithParser.parse);
+  return {...CompressedTextureLoaderWithParser, worker: false, parse: parseDDS};
+}
+
 describe('MSFT_texture_dds', () => {
-  test('selects and parses embedded DDS with the injected compressed texture parser', async () => {
-    const ddsParser = vi.fn(data => CompressedTextureLoaderWithParser.parse(data));
-    const result = await parse(makeGLB(true), {gltf: {ddsParser}}, {fetch: globalThis.fetch});
+  test('parses embedded DDS using the extra loader passed to parse', async () => {
+    const ddsLoader = makeDDSLoader();
+    const result = await parse(makeGLB(true), [GLTFLoaderWithParser, ddsLoader], {
+      core: {worker: false}
+    });
     expect(result.json.textures![0].source).toBe(1);
-    expect(ddsParser).toHaveBeenCalledOnce();
+    expect(ddsLoader.parse).toHaveBeenCalledOnce();
     expect(result.images![1]).toMatchObject({
       compressed: true,
       mipmaps: true,
@@ -62,65 +74,75 @@ describe('MSFT_texture_dds', () => {
     expect(result.json.extensionsRequired).not.toContain('MSFT_texture_dds');
   });
 
+  test('propagates an extra DDS loader through load', async () => {
+    const ddsLoader = makeDDSLoader();
+    const dataUrl = `data:model/gltf-binary;base64,${encodeArrayBufferToBase64(makeGLB(true))}`;
+    const result = await load(dataUrl, [GLTFLoaderWithParser, ddsLoader], {core: {worker: false}});
+    expect(result.images![1]).toMatchObject({compressed: true, width: 4, height: 4});
+    expect(ddsLoader.parse).toHaveBeenCalledOnce();
+  });
+
+  test('supports the metadata-only compressed texture loader through preload', async () => {
+    const result = await parse(makeGLB(true), [GLTFLoader, CompressedTextureLoader], {
+      core: {worker: false}
+    });
+    expect(result.images![1]).toMatchObject({compressed: true, width: 4, height: 4});
+  });
+
   test('keeps optional fallback and declaration when no parser is provided', async () => {
-    const result = await parse(makeGLB(), {gltf: {loadImages: false}}, {fetch: globalThis.fetch});
+    const result = await parse(makeGLB(), [GLTFLoaderWithParser], {gltf: {loadImages: false}});
     expect(result.json.textures![0].source).toBe(0);
     expect(result.json.textures![0].extensions?.MSFT_texture_dds).toEqual({source: 1});
   });
 
-  test('fetches external DDS bytes and passes them to the injected parser', async () => {
+  test('fetches external DDS bytes using the extra loader', async () => {
     const document = makeDocument(true);
     document.images[1] = {
       uri: 'texture.dds',
       mimeType: 'image/vnd-ms.dds'
     } as (typeof document.images)[1];
     const fetch = vi.fn(async () => new Response(makeDDS()));
-    const ddsParser = vi.fn(data => CompressedTextureLoaderWithParser.parse(data));
+    const ddsLoader = makeDDSLoader();
     const result = await parse(
-      JSON.stringify(document),
-      {gltf: {ddsParser, loadBuffers: false}},
-      {fetch, baseUrl: '/assets/'}
+      new Response(JSON.stringify(document), {headers: {'content-type': 'model/gltf+json'}}),
+      [GLTFLoaderWithParser, ddsLoader],
+      {core: {fetch, baseUrl: '/assets/', worker: false}, gltf: {loadBuffers: false}}
     );
     expect(fetch).toHaveBeenCalledOnce();
-    expect(ddsParser).toHaveBeenCalledOnce();
+    expect(ddsLoader.parse).toHaveBeenCalledOnce();
     expect(result.images![1]).toMatchObject({compressed: true, width: 4, height: 4});
   });
 
   test('retains the extension declaration when image loading is disabled', async () => {
-    const ddsParser = vi.fn(data => CompressedTextureLoaderWithParser.parse(data));
-    const result = await parse(
-      makeGLB(),
-      {gltf: {ddsParser, loadImages: false}},
-      {fetch: globalThis.fetch}
-    );
-    expect(ddsParser).not.toHaveBeenCalled();
+    const ddsLoader = makeDDSLoader();
+    const result = await parse(makeGLB(), [GLTFLoaderWithParser, ddsLoader], {
+      gltf: {loadImages: false}
+    });
+    expect(ddsLoader.parse).not.toHaveBeenCalled();
     expect(result.json.textures![0].extensions?.MSFT_texture_dds).toEqual({source: 1});
   });
 
   test('rejects required DDS without a parser before loading image resources', async () => {
     const fetch = vi.fn();
-    await expect(parse(makeGLB(true), {}, {fetch})).rejects.toThrow(
+    await expect(parse(makeGLB(true), [GLTFLoaderWithParser], {core: {fetch}})).rejects.toThrow(
       /MSFT_texture_dds needs a DDS parser/
     );
     expect(fetch).not.toHaveBeenCalled();
   });
 
   test('propagates parser failures and rejects empty mip chains', async () => {
+    const emptyLoader = {...makeDDSLoader(), parse: async () => []};
     await expect(
-      parse(makeGLB(), {gltf: {ddsParser: () => []}}, {fetch: globalThis.fetch})
+      parse(makeGLB(), [GLTFLoaderWithParser, emptyLoader], {core: {worker: false}})
     ).rejects.toThrow(/parser returned no texture levels/);
+    const failingLoader = {
+      ...makeDDSLoader(),
+      parse: async () => {
+        throw new Error('unsupported DDS format');
+      }
+    };
     await expect(
-      parse(
-        makeGLB(),
-        {
-          gltf: {
-            ddsParser: () => {
-              throw new Error('unsupported DDS format');
-            }
-          }
-        },
-        {fetch: globalThis.fetch}
-      )
+      parse(makeGLB(), [GLTFLoaderWithParser, failingLoader], {core: {worker: false}})
     ).rejects.toThrow('unsupported DDS format');
   });
 });

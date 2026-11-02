@@ -5,16 +5,28 @@
 import type {GLTFLoaderOptions} from '../../gltf-loader-types';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTF_MSFT_texture_dds} from '../types/gltf-json-schema';
+import type {Loader, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {GLTFIterator} from '../api/gltf-iterator';
 
 /** Name of the Microsoft DDS texture extension. */
 export const name = 'MSFT_texture_dds';
 
-/** Select DDS sources only when an application supplies a compatible parser. */
-export function preprocess(gltf: GLTFWithBuffers, options: GLTFLoaderOptions): void {
+/** Finds a DDS-capable loader supplied through the parent loader context. */
+export function getDDSLoader(context?: LoaderContext): Loader | undefined {
+  return context?.loaders?.find(
+    loader => loader.extensions?.includes('dds') || loader.mimeTypes?.includes('image/vnd-ms.dds')
+  );
+}
+
+/** Select DDS sources only when an application supplies a compatible loader. */
+export function preprocess(
+  gltf: GLTFWithBuffers,
+  _options: GLTFLoaderOptions,
+  context?: LoaderContext
+): void {
   const iterator = new GLTFIterator(gltf);
   if (!iterator.hasExtension(name)) return;
-  if (!options.gltf?.ddsParser) {
+  if (!getDDSLoader(context)) {
     if (iterator.isExtensionRequired(name)) {
       throw new Error('gltf: Required extension MSFT_texture_dds needs a DDS parser');
     }
@@ -27,8 +39,12 @@ export function preprocess(gltf: GLTFWithBuffers, options: GLTFLoaderOptions): v
 }
 
 /** Remove DDS declarations only after image loading can identify the selected sources. */
-export async function decode(gltf: GLTFWithBuffers, options: GLTFLoaderOptions): Promise<void> {
-  if (!options.gltf?.ddsParser || options.gltf.loadImages === false) return;
+export async function decode(
+  gltf: GLTFWithBuffers,
+  options: GLTFLoaderOptions,
+  context?: LoaderContext
+): Promise<void> {
+  if (!getDDSLoader(context) || options.gltf?.loadImages === false) return;
   const iterator = new GLTFIterator(gltf);
   if (!iterator.hasExtension(name)) return;
   for (const texture of iterator.textures) iterator.removeExtension(texture, name);

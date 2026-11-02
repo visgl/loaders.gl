@@ -80,10 +80,11 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   EXT_mesh_polygon,
   MPEG_audio_spatial,
   KHR_audio_emitter,
-  MSFT_texture_dds,
-  EXT_texture_avif,
   EXT_texture_webp,
-  // Basisu should come after webp, we want basisu to be preferred if both are provided
+  EXT_texture_avif,
+  // Compressed textures take precedence over browser image formats when available.
+  MSFT_texture_dds,
+  // BasisU remains preferred when both compressed alternatives are provided.
   KHR_texture_basisu,
   KHR_lights_punctual,
   KHR_materials_unlit,
