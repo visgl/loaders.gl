@@ -236,6 +236,11 @@
     "./draco-library-options": {
       "types": "./dist/draco-library-options.d.ts",
       "import": "./dist/draco-library-options.js"
+    },
+    "./materialx-loader": {
+      "types": "./dist/materialx-loader.d.ts",
+      "import": "./dist/materialx-loader.js",
+      "require": "./dist/materialx-loader.cjs"
     }
   },
   "sideEffects": false,
@@ -270,6 +275,7 @@
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "dependencies": {
+    "@loaders.gl/documents": "5.0.0-beta.2",
     "@loaders.gl/images": "5.0.0-beta.2",
     "@math.gl/core": "5.0.0-beta.3",
     "@math.gl/geometry": "5.0.0-beta.3",
