@@ -5,6 +5,7 @@
 import {z} from 'zod';
 import {
   GLTFPropertyExtensionsSchema,
+  GLTFMaterialExtensionsSchema,
   GLTFRootExtensionsSchema,
   GLTFNodeExtensionsSchema,
   GLTFSceneExtensionsSchema,
@@ -313,7 +314,7 @@ export const GLTFMaterialSchema = z
     alphaCutoff: z.number().optional(),
     doubleSided: z.boolean().optional(),
     ...GLTF_NAMED_PROPERTY_SHAPE,
-    extensions: GLTFPropertyExtensionsSchema.optional()
+    extensions: GLTFMaterialExtensionsSchema.optional()
   })
   .catchall(z.unknown());
 

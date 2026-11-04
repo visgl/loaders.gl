@@ -11,6 +11,7 @@ import {
   GLTFKHRNodeVisibilitySchema,
   GLTFKHRNodeSelectabilitySchema,
   GLTFKHRNodeHoverabilitySchema,
+  GLTFKHRMaterialsEmissiveStrengthSchema,
   GLTFKHRXMPJSONLDSchema,
   GLTFKHRXMPJSONLDReferenceSchema
 } from './gltf-additional-extension-schemas';
@@ -24,6 +25,12 @@ import {
 export const GLTFPropertyExtensionsSchema = z.looseObject({
   /** Shared XMP packet reference. */
   KHR_xmp_json_ld: GLTFKHRXMPJSONLDReferenceSchema.optional()
+});
+
+/** Permissive material extension map. */
+export const GLTFMaterialExtensionsSchema = GLTFPropertyExtensionsSchema.extend({
+  /** Emissive intensity multiplier. */
+  KHR_materials_emissive_strength: GLTFKHRMaterialsEmissiveStrengthSchema.optional()
 });
 
 /** Permissive document-level extension map. */
@@ -74,6 +81,8 @@ export const GLTFAnimationTargetExtensionsSchema = z.looseObject({
 
 /** Typed document-level extensions with arbitrary additional extension names. */
 export type GLTFRootExtensions = z.infer<typeof GLTFRootExtensionsSchema>;
+/** Typed material extensions with arbitrary additional extension names. */
+export type GLTFMaterialExtensions = z.infer<typeof GLTFMaterialExtensionsSchema>;
 /** Typed node-level extensions with arbitrary additional extension names. */
 export type GLTFNodeExtensions = z.infer<typeof GLTFNodeExtensionsSchema>;
 /** Typed scene-level extensions with arbitrary additional extension names. */

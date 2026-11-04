@@ -5,6 +5,7 @@
 import {describe, expect, test} from 'vitest';
 import {
   GLTFSchema,
+  GLTFKHRMaterialsEmissiveStrengthSchema,
   GLTFEXTTextureAvifSchema,
   GLTFKHRMaterialsVariantsSchema,
   GLTFKHRMaterialsVariantsPrimitiveSchema,
@@ -258,4 +259,18 @@ describe('glTF extension data helpers', () => {
     expect(getMeshInstances(document)).toEqual([]);
     expect(getMaterialVariantMappings(document)).toEqual([]);
   });
+});
+
+test('validates and preserves emissive-strength declarations without inserting defaults', () => {
+  for (const extension of [{}, {emissiveStrength: 0}, {emissiveStrength: 20, vendor: true}]) {
+    expect(GLTFKHRMaterialsEmissiveStrengthSchema.parse(extension)).toEqual(extension);
+    const document = createDocument();
+    document.materials![0].extensions = {KHR_materials_emissive_strength: extension};
+    expect(
+      GLTFSchema.parse(document).materials?.[0].extensions?.KHR_materials_emissive_strength
+    ).toEqual(extension);
+  }
+  expect(GLTFKHRMaterialsEmissiveStrengthSchema.safeParse({emissiveStrength: -1}).success).toBe(
+    false
+  );
 });

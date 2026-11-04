@@ -6,6 +6,7 @@
 import type {GLTFBoundingVolume, GLTFShape} from './gltf-shape-schema';
 import type {
   GLTFPropertyExtensions,
+  GLTFMaterialExtensions,
   GLTFRootExtensions,
   GLTFNodeExtensions,
   GLTFSceneExtensions,
@@ -506,7 +507,7 @@ export type GLTFMaterialOcclusionTextureInfo = {
 export type GLTFMaterial = {
   name?: any;
   /** Known metadata extensions with additional extension names preserved. */
-  extensions?: GLTFPropertyExtensions & Record<string, any>;
+  extensions?: GLTFMaterialExtensions & Record<string, any>;
   extras?: any;
   /**
    * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology. When not specified, all the default values of `pbrMetallicRoughness` apply.
