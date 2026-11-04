@@ -307,7 +307,7 @@ function hasSupportedTextureFormat(
 }
 
 const TEXTURES_BASE_URL =
-  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/4.5-release/modules/textures/test/data/';
 
 const TextureButton = styled.button`
   height: 256px;

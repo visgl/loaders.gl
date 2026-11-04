@@ -4,7 +4,7 @@
 
 import type {Example} from './components/example-panel';
 
-export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
+export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/4.5-release';
 
 // export const INITIAL_CATEGORY_NAME = 'MVT';
 // export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap Tiles';
@@ -24,7 +24,7 @@ const VIEW_STATE = {
   bearing: 0
 };
 
-export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
+export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/4.5-release';
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   MVT: {
