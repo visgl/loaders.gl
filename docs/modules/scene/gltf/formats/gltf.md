@@ -24,6 +24,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GLTFLoader`](../api-reference/gltf-loader.md) |
+| Writer | [`GLTFWriter`](../api-reference/gltf-writer.md) |
+| Utility | [`GLTFScenegraph`](../api-reference/gltf-scenegraph.md) |
+| Utility | [glTF accessor helpers](../api-reference/gltf-accessors.md) |
+| Utility | [`GLTFIterator`](../api-reference/gltf-iterator.md) |
+
 <GltfDocsTabs active="format" />
 
 <ThreeDDataFormatsGraphic />
@@ -514,16 +524,6 @@ The additional extension types use their serialized names, for example
 ```typescript
 import {GLTFSchema, getMaterialVariantMappings} from '@loaders.gl/scene/gltf';
 import {GLTFKHRNodeVisibilitySchema} from '@loaders.gl/scene/gltf/schema';
-
-## loaders.gl support
-
-| Type | API |
-| --- | --- |
-| Loader | [`GLTFLoader`](../api-reference/gltf-loader.md) |
-| Writer | [`GLTFWriter`](../api-reference/gltf-writer.md) |
-| Utility | [`GLTFScenegraph`](../api-reference/gltf-scenegraph.md) |
-| Utility | [glTF accessor helpers](../api-reference/gltf-accessors.md) |
-| Utility | [`GLTFIterator`](../api-reference/gltf-iterator.md) |
 
 const document = GLTFSchema.parse(json);
 const mappings = getMaterialVariantMappings(document);

@@ -22,6 +22,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`CSWSourceLoader`](../api-reference/csw-source-loader.md) |
+
 <DocOrientation
   eyebrow="The catalog path"
   title="Search records, then follow their service references."
@@ -68,12 +74,6 @@ contract.
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {CSWSourceLoader} from '@loaders.gl/ogc/wms';
-
-## loaders.gl support
-
-| Type | API |
-| --- | --- |
-| Source loader | [`CSWSourceLoader`](../api-reference/csw-source-loader.md) |
 
 const catalog = createDataSource(cswUrl, [CSWSourceLoader]);
 const metadata = await catalog.getMetadata();

@@ -25,6 +25,14 @@ import {ClientExample} from '@site/src/components';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`WMSSourceLoader`](../api-reference/wms-source-loader.md) |
+| Loader | [`WMSCapabilitiesLoader`](../api-reference/wms-capabilities-loader.md) |
+| Loader | [`WMSFeatureInfoLoader`](../api-reference/wms-feature-info-loader.md) |
+
 <DocLiveExample label="WMS map service example" height="440px">
   <ClientExample kind="wms" format="WMS" />
 </DocLiveExample>
@@ -82,14 +90,6 @@ WMS (Web Map Service) is a protocol for serving geo-referenced **map images** ov
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
-
-## loaders.gl support
-
-| Type | API |
-| --- | --- |
-| Source loader | [`WMSSourceLoader`](../api-reference/wms-source-loader.md) |
-| Loader | [`WMSCapabilitiesLoader`](../api-reference/wms-capabilities-loader.md) |
-| Loader | [`WMSFeatureInfoLoader`](../api-reference/wms-feature-info-loader.md) |
 
 const source = createDataSource(wmsUrl, [WMSSourceLoader], {
   wms: {

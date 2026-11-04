@@ -22,6 +22,14 @@ import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-f
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GLBLoader`](../api-reference/glb-loader.md) |
+| Writer | [`GLBWriter`](../api-reference/glb-writer.md) |
+| Utility | [`glbdump`](../api-reference/glbdump.md) |
+
 <ThreeDDataFormatsGraphic />
 
 <DocOrientation
@@ -114,14 +122,6 @@ unchanged.
 
 ```typescript
 import {GLBWriter} from '@loaders.gl/scene/gltf';
-
-## loaders.gl support
-
-| Type | API |
-| --- | --- |
-| Loader | [`GLBLoader`](../api-reference/glb-loader.md) |
-| Writer | [`GLBWriter`](../api-reference/glb-writer.md) |
-| Utility | [`glbdump`](../api-reference/glbdump.md) |
 
 const encoded = GLBWriter.encodeSync(glb, {glb: {version: 3}});
 ```

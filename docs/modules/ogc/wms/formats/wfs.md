@@ -25,6 +25,12 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | `WFSSourceLoader` |
+
 <DocOrientation
   eyebrow="The WFS request path"
   title="Discover the layer. Bound the request. Stream the features."
@@ -245,12 +251,6 @@ the desired output CRS from the server.
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
-
-## loaders.gl support
-
-| Type | API |
-| --- | --- |
-| Source loader | `WFSSourceLoader` |
 
 const layer = new SourceLayer({
   id: 'wfs-roads',

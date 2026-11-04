@@ -23,6 +23,12 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | `WCSCoverageSourceLoader` |
+
 <DocOrientation
   eyebrow="The WCS request path"
   title="Read the coverage metadata. Select a subset. Decode the result."
@@ -71,12 +77,6 @@ WCS provides analytical geospatial coverages rather than server-rendered map ima
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {WCSCoverageSourceLoader} from '@loaders.gl/ogc/wms';
-
-## loaders.gl support
-
-| Type | API |
-| --- | --- |
-| Source loader | `WCSCoverageSourceLoader` |
 
 const source = createDataSource('https://example.com/wcs', [WCSCoverageSourceLoader], {
   wcs: {

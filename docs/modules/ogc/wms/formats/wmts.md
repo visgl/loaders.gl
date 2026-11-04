@@ -24,6 +24,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | `WMTSSourceLoader` |
+| Loader | [`WMTSCapabilitiesLoader`](../api-reference/wmts-capability-loader.md) |
+
 <DocLiveExample label="WMTS tile service example" height="440px">
   <ClientExample kind="wms" format="WMTS" />
 </DocLiveExample>
@@ -225,13 +232,6 @@ or limits exceeding the selected matrix's dimensions) fail explicitly.
 
 ```ts
 import {WMTSImageTileSource} from '@loaders.gl/ogc/wms';
-
-## loaders.gl support
-
-| Type | API |
-| --- | --- |
-| Source loader | `WMTSSourceLoader` |
-| Loader | [`WMTSCapabilitiesLoader`](../api-reference/wmts-capability-loader.md) |
 
 const source = new WMTSImageTileSource(wmtsUrl, {
   wmts: {
