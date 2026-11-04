@@ -63,6 +63,27 @@ test('GLTFLoader decodes embedded SPZ using an extra loader and glTF coordinates
   expect(descriptor?.compressedBytes?.length).toBeGreaterThan(0);
 });
 
+test('GLTFLoader decodes a legacy SPZ2 primitive with an explicit color space', async () => {
+  const json = JSON.parse(makeGLTF());
+  const sourceExtension = json.meshes[0].primitives[0].extensions.KHR_gaussian_splatting;
+  delete sourceExtension.kernel;
+  delete sourceExtension.colorSpace;
+  const gltf = await parse(JSON.stringify(json), [GLTFLoader, SPZLoader], {
+    core: {mimeType: 'model/gltf+json'},
+    gltf: {legacyGaussianSplatColorSpace: 'srgb_rec709_display'}
+  });
+  const descriptor = gltf.gaussianSplatPrimitives?.[0];
+  const table = descriptor?.decoded as typeof SPZLoader.dataType;
+  expect(table.data.numRows).toBe(1);
+  expect(descriptor?.extension).toMatchObject({
+    kernel: 'ellipse',
+    colorSpace: 'srgb_rec709_display'
+  });
+  expect(gltf.json.meshes?.[0].primitives[0].extensions?.KHR_gaussian_splatting).toEqual(
+    sourceExtension
+  );
+});
+
 test('GLTFLoader preserves compressed data without an extra loader', async () => {
   const gltf = await parse(makeGLTF(), GLTFLoader);
   expect(gltf.gaussianSplatPrimitives?.[0].compressedBytes?.length).toBeGreaterThan(0);
