@@ -5,7 +5,7 @@
 import {Example} from './components/example-panel';
 
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
-const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
+const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/4.5-release';
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   PLY: {

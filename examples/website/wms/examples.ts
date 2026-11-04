@@ -4,7 +4,7 @@
 
 import {Example} from './components/example-panel';
 
-export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
+export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/4.5-release';
 
 export const INITIAL_CATEGORY_NAME = 'WMS';
 export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap WMS (Terrestris)';

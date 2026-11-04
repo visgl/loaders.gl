@@ -9,7 +9,7 @@ export const INITIAL_EXAMPLE_NAME = 'Airports';
 // export const INITIAL_LOADER_NAME = 'GeoJSON';
 // export const INITIAL_EXAMPLE_NAME = 'Vancouver';
 
-export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
+export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/4.5-release';
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const PARQUET_PATH = '/formats/geoparquet';
 
