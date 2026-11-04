@@ -1,4 +1,4 @@
-import {FormatLogo} from './format-logo';
+import {HeaderLogo} from './header-logo';
 import React, {useEffect, useRef} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -72,26 +72,17 @@ export function CapabilityHero({
           <div className={styles.toplineActions}>
             {logos.length > 0 && (
               <div className={styles.logos} aria-label="Standards and ecosystem logos">
-                {logos.map((logo) => {
-                  const image = logo.format ? <FormatLogo slug={logo.format} /> : <img className={styles.ecosystemLogo} src={logo.src} alt={logo.alt} />;
-                  return logo.href ? (
-                    <a className={styles.logoLink} href={logo.href} key={logo.format ?? logo.src}>
-                      {image}
-                    </a>
-                  ) : (
-                    <span className={styles.logoLink} key={logo.format ?? logo.src}>
-                      {image}
-                    </span>
-                  );
-                })}
+                {logos.map(logo => (
+                  <HeaderLogo key={logo.format ?? logo.src} logo={logo} className={styles.logoLink} imageClassName={styles.ecosystemLogo} />
+                ))}
               </div>
             )}
-            <div className={styles.statusBadges} data-capability-hero-badges aria-label="Page status" />
           </div>
         </div>
-        <h1 className={styles.title} id="capability-hero-title">
+        <h1 className={styles.title} id="capability-hero-title" data-package-title={(title || feature.title || '').startsWith('@loaders.gl/') || undefined}>
           {title || feature.title}
         </h1>
+        <div className={styles.statusBadges} data-capability-hero-badges aria-label="Page status" />
         <p className={styles.description}>{description || feature.description}</p>
         <div className={styles.tags} aria-label="Capability highlights">
           {feature.tags.map((tag) => (

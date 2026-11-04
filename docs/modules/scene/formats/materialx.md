@@ -1,5 +1,11 @@
 # MaterialX
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`MaterialXLoader`](../api-reference/materialx-loader.md) |
+
 MaterialX is an XML-based format for exchanging material and shader graph descriptions. Files commonly use the `.mtlx` extension. See the [MaterialX project](https://materialx.org/).
 
 A document contains a `materialx` root with a version, and may contain node graphs, node definitions, materials, inputs, outputs, and library references.

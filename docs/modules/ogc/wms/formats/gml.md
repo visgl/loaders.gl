@@ -103,6 +103,12 @@ known types from `DescribeFeatureType` or application metadata:
 ```ts
 import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml-loader';
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GMLLoader`](../api-reference/gml-loader.md) |
+
 const table = GMLLoaderWithParser.parseTextSync(xml, {
   gml: {
     propertyTypes: {

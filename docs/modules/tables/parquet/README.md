@@ -5,6 +5,8 @@ hide_title: true
 page_style: designed
 ---
 
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 import {ParquetScanLiveExample} from '@site/src/components/docs/parquet-scan-live-example';
@@ -25,7 +27,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-<ParquetScanLiveExample />
+<DocLiveExample label="Parquet scan example" variant="panel">
+  <ParquetScanLiveExample />
+</DocLiveExample>
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />

@@ -21,6 +21,12 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`ArcGISVectorTileServerSourceLoader`](../api-reference/arcgis.md) |
+
 <ArcGISDocsTabs service="arcgis-vector-tile-server" />
 
 Use this path for tiled vector delivery from an existing vector tile layer. The source exposes tile data and published style-resource locations; your renderer decides how to draw and label features.

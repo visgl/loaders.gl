@@ -21,6 +21,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | `NetCDFLoader` |
+| Source loader | `NetCDFSourceLoader` |
+
 <DocOrientation
   eyebrow="The array model"
   title="Choose the variable and slice the dimensions."

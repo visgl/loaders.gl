@@ -24,6 +24,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`CompressedTextureLoader`](../api-reference/compressed-texture-loader.md) |
+
 <TexturesDocsTabs active="dds" />
 
 <TextureTranscodeGraphic />

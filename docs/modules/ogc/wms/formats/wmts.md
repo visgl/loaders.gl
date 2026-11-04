@@ -226,6 +226,13 @@ or limits exceeding the selected matrix's dimensions) fail explicitly.
 ```ts
 import {WMTSImageTileSource} from '@loaders.gl/ogc/wms';
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | `WMTSSourceLoader` |
+| Loader | [`WMTSCapabilitiesLoader`](../api-reference/wmts-capability-loader.md) |
+
 const source = new WMTSImageTileSource(wmtsUrl, {
   wmts: {
     capabilitiesUrl,

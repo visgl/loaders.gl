@@ -21,6 +21,12 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`ArcGISFeatureServerSourceLoader`](../api-reference/arcgis.md) |
+
 <ArcGISDocsTabs service="arcgis-feature-server" />
 
 Use this path when you need your layer’s geometries and attributes for custom styling, filtering or analysis. Select the layer or table from your existing service; the service root can contain several.

@@ -23,6 +23,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| — | WMC documents have no dedicated loader. Use [WMSSourceLoader](../api-reference/wms-source-loader.md) to load each referenced WMS service. |
+
 <DocOrientation
   eyebrow="Implementation boundary"
   title="Read the context, then load the referenced service."

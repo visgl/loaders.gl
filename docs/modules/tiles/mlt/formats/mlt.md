@@ -21,6 +21,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`MLTLoader`](../api-reference/mlt-loader.md) |
+| Source loader | [`MLTSourceLoader`](../api-reference/mlt-source-loader.md) |
+| Writer | [`MLTWriter`](../api-reference/mlt-writer.md) |
+
 <TileDocsTabs active="mlt" />
 
 <DocOrientation

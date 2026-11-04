@@ -111,6 +111,94 @@ html[data-theme='dark'] .navbar {
   border-bottom: 1px solid rgba(159, 176, 196, 0.12);
 }
 
+/* A filtered navbar becomes the containing block for fixed descendants. On mobile
+   that traps the sidebar inside the navbar's height, leaving its menu invisible. */
+@media (max-width: 996px) {
+  html[data-theme='dark'] .navbar {
+    backdrop-filter: none;
+  }
+
+  .navbar-sidebar {
+    background: var(--ifm-background-color);
+    height: 100dvh;
+  }
+}
+
+.navbar-npm,
+.navbar-github-stars,
+.navbar-openjs {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.navbar-npm-downloads,
+.navbar-github-stars img {
+  display: block;
+  height: 20px;
+  width: auto;
+}
+
+.navbar__inner .navbar-npm > span,
+.navbar__inner .navbar-github-stars > span,
+html[data-theme='light'] .openjs-logo-dark,
+html[data-theme='dark'] .openjs-logo-light {
+  display: none;
+}
+
+.navbar-openjs img {
+  height: auto;
+  width: 86px;
+}
+
+.navbar-sidebar .navbar-npm,
+.navbar-sidebar .navbar-github-stars,
+.navbar-sidebar .navbar-openjs {
+  border-radius: 8px;
+  color: var(--ifm-menu-color);
+  display: flex;
+  font-weight: var(--ifm-font-weight-semibold);
+  line-height: 1.5;
+  padding: var(--ifm-menu-link-padding-vertical) var(--ifm-menu-link-padding-horizontal);
+}
+
+.navbar-sidebar .navbar-npm-downloads,
+.navbar-sidebar .navbar-github-stars img {
+  display: none;
+}
+
+.navbar-sidebar .navbar-npm:hover,
+.navbar-sidebar .navbar-github-stars:hover,
+.navbar-sidebar .navbar-openjs:hover {
+  background: var(--ifm-menu-color-background-hover);
+  color: var(--ifm-menu-color-active);
+  text-decoration: none;
+}
+
+.module-subpaths table td:first-child {
+  min-width: 7rem;
+}
+
+.module-subpaths [data-format-logo] {
+  display: inline-flex;
+  max-width: 9rem;
+  zoom: 0.65;
+}
+
+/* Compact the format marks used in overview tables, rather than the larger gallery cards. */
+.markdown table:has(tbody [data-format-logo]) thead th:first-child,
+.markdown table:has(tbody [data-format-logo]) tbody td:first-child {
+  min-width: 0;
+  white-space: nowrap !important;
+  width: 1% !important;
+}
+
+.markdown table tbody td [data-format-logo] {
+  display: inline-flex;
+  max-width: 9rem;
+  zoom: 0.55;
+}
+
 html[data-theme='dark'] .theme-doc-sidebar-container {
   background: rgba(7, 15, 27, 0.64);
   border-right-color: rgba(159, 176, 196, 0.12);
@@ -978,4 +1066,16 @@ body:has(.benchmark-page) footer.theme-layout-footer {
 }
 .docs-page-tabs [data-format-logo] > span {
   height: 36px;
+}
+
+/* Format marks should take only the space they need in module overview tables. */
+.markdown .docs-markdown-table__table:has(tbody td [data-format-logo]) {
+  table-layout: auto !important;
+}
+
+.markdown .docs-markdown-table__table:has(tbody td [data-format-logo]) thead th:first-child,
+.markdown .docs-markdown-table__table:has(tbody td [data-format-logo]) tbody td:first-child {
+  width: 1% !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
 }

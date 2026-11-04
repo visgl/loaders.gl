@@ -23,6 +23,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`PCDLoader`](../api-reference/pcd-loader.md) |
+| Writer | [`PCDWriter`](../api-reference/pcd-writer.md) |
+
 <PcdDocsTabs active="overview" />
 
 <PointCloudFormatGraphic />

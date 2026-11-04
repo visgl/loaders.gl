@@ -23,6 +23,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`WKTCRSLoader`](../api-reference/wkt-crs-loader.md) |
+| Writer | [`WKTCRSWriter`](../api-reference/wkt-crs-writer.md) |
+
 <CrsFlowGraphic />
 
 <DocOrientation

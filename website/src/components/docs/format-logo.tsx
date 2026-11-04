@@ -1,5 +1,7 @@
 import React from 'react';
+import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
+import {getFormatDocPath} from './format-doc-paths';
 import copcLogo from '../../../../docs/images/logos/copc-logo-80.png';
 import styles from './format-logo-gallery.module.css';
 
@@ -26,7 +28,10 @@ export type FormatMetadata = {
 /** Metadata used to label, classify, and select an asset for every format and service in the gallery. */
 export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'avro', label: 'Avro', logo: 'avro-logo.svg', logoText: 'Avro', tags: ['tables']},
-  {slug: 'lance', label: 'Lance', mark: 'Lance', tags: ['tables']},
+  {slug: 'lance', label: 'Lance', logo: 'lance-logo.png', tags: ['tables']},
+  {slug: 'delta', label: 'Delta Lake', logo: 'delta-lake-mark.svg', logoText: 'Delta Lake', tags: ['tables']},
+  {slug: 'hudi', label: 'Apache Hudi', logo: 'hudi-logo.png', tags: ['tables']},
+  {slug: 'iceberg', label: 'Apache Iceberg', logo: 'iceberg-logo.svg', tags: ['tables']},
   {slug: 'twkb', label: 'TWKB', mark: 'TWKB', tags: ['geospatial']},
   {slug: 'terrain', label: 'Terrain', mark: 'Terrain', tags: ['geospatial']},
   {slug: 'hdf5', label: 'HDF5', mark: 'HDF5', tags: []},
@@ -223,14 +228,22 @@ function FormatVisual({
 }
 
 /** Displays the canonical logo or badge for a format throughout the documentation. */
-export function FormatLogo({slug}: {
+export function FormatLogo({slug, linked = true}: {
   /** Stable format or service identifier from the gallery registry. */
   slug: string;
+  /** Disable the built-in link when the logo is already inside a link. */
+  linked?: boolean;
 }) {
   const logoBaseUrl = useBaseUrl('/images/format-logos');
   const format = FORMAT_METADATA.find(entry => entry.slug === slug);
   if (!format) {
     throw new Error(`Unknown documentation format logo: ${slug}`);
   }
-  return <span className={styles.logoContainer} data-format-logo={slug}><FormatVisual format={format} logoBaseUrl={logoBaseUrl} /></span>;
+  const visual = <FormatVisual format={format} logoBaseUrl={logoBaseUrl} />;
+  const destination = linked ? getFormatDocPath(slug) : undefined;
+  return destination ? (
+    <Link className={styles.logoContainer} data-format-logo={slug} to={destination} aria-label={`${format.label} format guide`}>{visual}</Link>
+  ) : (
+    <span className={styles.logoContainer} data-format-logo={slug}>{visual}</span>
+  );
 }

@@ -72,6 +72,12 @@ WCS provides analytical geospatial coverages rather than server-rendered map ima
 import {createDataSource} from '@loaders.gl/core';
 import {WCSCoverageSourceLoader} from '@loaders.gl/ogc/wms';
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | `WCSCoverageSourceLoader` |
+
 const source = createDataSource('https://example.com/wcs', [WCSCoverageSourceLoader], {
   wcs: {
     version: '2.0.1',

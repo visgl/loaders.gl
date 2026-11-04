@@ -2,6 +2,9 @@
 title: Service authentication
 ---
 
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
+
 # @loaders.gl/services
 
 This package provides authentication presets for Mapbox, Google Maps, and Cesium ion.
@@ -16,3 +19,8 @@ OGC service protocols and STAC sources are documented under [@loaders.gl/ogc](/d
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/services/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).
+
+
+## Package exports
+
+<ModuleSubpaths module="services" />

@@ -5,6 +5,10 @@ hide_title: true
 page_style: designed
 ---
 
+import {FormatLogo} from '@site/src/components/docs/format-logo';
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
+
 {/* SPDX-License-Identifier: MIT */}
 
 import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
@@ -62,13 +66,13 @@ npm install @loaders.gl/core @loaders.gl/traces apache-arrow
 
 ## Formats and APIs
 
-| Format | Loader result | Batched result | Writer input |
-| --- | --- | --- | --- |
-| [Chrome Trace Event JSON](/docs/modules/traces/formats/chrome-trace) | Validated JSON or one Arrow event table | Arrow event record batches | Arrow event table or record batch |
-| [Perfetto protobuf](/docs/modules/traces/formats/perfetto-trace) | `tracks`, `slices`, `processes`, and `threads` Arrow tables | Tagged `{table, data}` record batches | The same four Arrow tables |
-| [OpenTelemetry OTLP traces](/docs/modules/traces/formats/otlp-trace) | `resources`, `scopes`, `spans`, `events`, and `links` Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
-| [Jaeger JSON traces](/docs/modules/traces/formats/jaeger-trace) | The five OTLP-compatible Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
-| [Zipkin v2 JSON traces](/docs/modules/traces/formats/zipkin-trace) | The five OTLP-compatible Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
+| Logo | Format | Loader result | Batched result | Writer input |
+| --- | --- | --- | --- | --- |
+| <FormatLogo slug="chrome-trace" /> | [Chrome Trace Event JSON](/docs/modules/traces/formats/chrome-trace) | Validated JSON or one Arrow event table | Arrow event record batches | Arrow event table or record batch |
+| <FormatLogo slug="perfetto-trace" /> | [Perfetto protobuf](/docs/modules/traces/formats/perfetto-trace) | `tracks`, `slices`, `processes`, and `threads` Arrow tables | Tagged `{table, data}` record batches | The same four Arrow tables |
+| <FormatLogo slug="otlp-trace" /> | [OpenTelemetry OTLP traces](/docs/modules/traces/formats/otlp-trace) | `resources`, `scopes`, `spans`, `events`, and `links` Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
+| <FormatLogo slug="jaeger-trace" /> | [Jaeger JSON traces](/docs/modules/traces/formats/jaeger-trace) | The five OTLP-compatible Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
+| <FormatLogo slug="zipkin-trace" /> | [Zipkin v2 JSON traces](/docs/modules/traces/formats/zipkin-trace) | The five OTLP-compatible Arrow tables | Tagged `{table, data}` record batches | The same five Arrow tables |
 
 ## Choosing a Trace Format
 
@@ -233,3 +237,9 @@ iterator to release the worker. Input buffers already transferred remain detache
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/traces/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).
+
+
+
+## Package exports
+
+<ModuleSubpaths module="traces" />

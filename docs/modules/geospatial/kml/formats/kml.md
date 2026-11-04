@@ -221,6 +221,15 @@ import {parse} from '@loaders.gl/core';
 import {KMLLoader} from '@loaders.gl/geospatial/kml';
 import {ZipLoader} from '@loaders.gl/archives/zip';
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`KMLLoader`](../api-reference/kml-loader.md) |
+| Loader | [`KMZLoader`](../api-reference/kml-loader.md) |
+| Writer | [`KMLWriter`](../api-reference/kml-loader.md) |
+| Writer | [`KMZWriter`](../api-reference/kml-loader.md) |
+
 const files = await parse(kmzBytes, ZipLoader);
 const kmlBytes = files['doc.kml'];
 if (!kmlBytes) {

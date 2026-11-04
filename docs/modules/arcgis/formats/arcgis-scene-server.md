@@ -21,6 +21,12 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`ArcGISSceneServerSourceLoader`](../api-reference/arcgis.md) |
+
 <ArcGISDocsTabs service="arcgis-scene-server" />
 
 Use this path for layers already published as ArcGIS scene services. Choose a layer explicitly and inspect its profile and coordinate reference before selecting a 3D renderer.

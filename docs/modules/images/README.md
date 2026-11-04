@@ -5,6 +5,9 @@ hide_title: true
 page_style: designed
 ---
 
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
+
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -143,3 +146,19 @@ an `ImageBitmap` wrapper. It supports PNG, JPEG, GIF, WebP, AVIF, TIFF, and SVG.
 Browser support remains platform-dependent. The Node wrapper supports pixel access
 and `close()`; it is not a full browser canvas or transferable bitmap implementation.
 Sharp is loaded only when Node image decoding or encoding is requested.
+
+
+## Format guides
+
+- [Basis Universal](./textures/formats/basis.md)
+- [Compressed Textures](./textures/formats/compressed-textures.md)
+- [Crunch texture](./textures/formats/crunch.md)
+- [DDS texture](./textures/formats/dds.md)
+- [Radiance HDR](./textures/formats/hdr.md)
+- [KTX and KTX2 formats](./textures/formats/ktx.md)
+- [PVR texture](./textures/formats/pvr.md)
+
+
+## Package exports
+
+<ModuleSubpaths module="images" />

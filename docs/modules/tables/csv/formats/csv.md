@@ -25,6 +25,14 @@ import {ClientExample} from '@site/src/components';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`CSVLoader`](../api-reference/csv-loader.md) |
+| Writer | [`CSVWriter`](../api-reference/csv-writer.md) |
+| Source loader | [`CSVSourceLoader`](../api-reference/csv-loader.md) |
+
 <DocLiveExample label="CSV format map example" height="420px">
   <ClientExample kind="geospatial" format="CSV" />
 </DocLiveExample>

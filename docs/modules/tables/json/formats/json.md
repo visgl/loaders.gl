@@ -23,6 +23,16 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`JSONLoader`](../api-reference/json-loader.md) |
+| Loader | [`JSONTableLoader`](../api-reference/json-table-loader.md) |
+| Loader | [`NDJSONLoader`](../api-reference/ndjson-loader.md) |
+| Writer | [`JSONWriter`](../api-reference/json-writer.md) |
+| Source loader | [`NDJSONSourceLoader`](../api-reference/ndjson-loader.md) |
+
 <JsonDocsTabs active="overview" />
 
 <StructuredDataPathGraphic />

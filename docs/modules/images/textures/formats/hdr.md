@@ -23,6 +23,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`RadianceHDRLoader`](../api-reference/radiance-hdr-loader.md) |
+
 <TexturesDocsTabs active="hdr" />
 
 <DocOrientation

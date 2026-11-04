@@ -20,6 +20,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`NPYLoader`](../api-reference/npy-loader.md) |
+
 NPY stores one NumPy array with a header describing its dtype, shape, and Fortran-order flag.
 `NPYLoader` returns `{header, data}` without turning the array into an image or reordering values.
 The native parser's supported numeric dtypes and behavior remain unchanged by its move from images.

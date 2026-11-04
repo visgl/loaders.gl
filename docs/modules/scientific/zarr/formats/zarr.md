@@ -22,6 +22,14 @@ import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graph
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`GeoZarrSourceLoader`](../api-reference/geo-zarr-source-loader.md) |
+| Source loader | [`OMEZarrSourceLoader`](../api-reference/ome-zarr-source-loader.md) |
+| Source loader | [`SpatialDataSourceLoader`](../api-reference/spatial-data-source-loader.md) |
+
 <RasterWindowGraphic kind="zarr" />
 
 <DocOrientation

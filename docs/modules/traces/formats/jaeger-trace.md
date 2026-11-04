@@ -24,6 +24,13 @@ import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`JaegerTraceLoader`](../api-reference/jaeger-trace-loader.md) |
+| Writer | [`JaegerTraceWriter`](../api-reference/jaeger-trace-writer.md) |
+
 <TracesDocsTabs active="jaeger-trace" />
 
 Jaeger JSON represents distributed spans with microsecond timestamps, typed tags, process

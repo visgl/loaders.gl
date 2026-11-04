@@ -2,6 +2,10 @@
 title: Raster
 ---
 
+import {FormatLogo} from '@site/src/components/docs/format-logo';
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
+
 # @loaders.gl/raster
 
 GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh.
@@ -24,15 +28,15 @@ const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 
 ## Format entry points
 
-| Entry point | Implementation |
-| --- | --- |
-| `@loaders.gl/raster/geotiff` | GeoTIFF image and numeric raster parsers |
-| `@loaders.gl/raster/lerc` | LERC parser |
-| `@loaders.gl/raster/terrain` | Image-encoded elevation to terrain mesh |
-| `@loaders.gl/raster/quantized-mesh` | Quantized mesh parser |
-| `@loaders.gl/raster/terrain/heightmap` | Heightmap decoding, sampling, and surface helpers |
-| `@loaders.gl/raster/geotiff-source-loader` | Synchronous GeoTIFF/COG source constructor |
-| `@loaders.gl/raster/ometiff-source-loader` | Synchronous OME-TIFF source constructor |
+| Logo | Entry point | Implementation |
+| --- | --- | --- |
+| <FormatLogo slug="geotiff" /> | `@loaders.gl/raster/geotiff` | GeoTIFF image and numeric raster parsers |
+| — | `@loaders.gl/raster/lerc` | LERC parser |
+| — | `@loaders.gl/raster/terrain` | Image-encoded elevation to terrain mesh |
+| — | `@loaders.gl/raster/quantized-mesh` | Quantized mesh parser |
+| — | `@loaders.gl/raster/terrain/heightmap` | Heightmap decoding, sampling, and surface helpers |
+| <FormatLogo slug="geotiff" /> | `@loaders.gl/raster/geotiff-source-loader` | Synchronous GeoTIFF/COG source constructor |
+| <FormatLogo slug="geotiff" /> | `@loaders.gl/raster/ometiff-source-loader` | Synchronous OME-TIFF source constructor |
 
 GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronous `load()`
 with metadata or import an explicit source implementation for synchronous `createDataSource()`.
@@ -68,3 +72,14 @@ names, default output shapes, and writer behavior are preserved; loader `module`
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/raster/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).
+
+
+## Format guides
+
+- [GeoTIFF](./geotiff/formats/geotiff.md)
+- [LERC - Limited Error Raster Compression](./lerc/formats/lerc.md)
+
+
+## Package exports
+
+<ModuleSubpaths module="raster" />

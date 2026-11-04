@@ -20,6 +20,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`TileJSONLoader`](../api-reference/tilejson-loader.md) |
+
 <DocOrientation
   eyebrow="Metadata before payloads"
   title="Describe the tileset once. Let clients plan around it."

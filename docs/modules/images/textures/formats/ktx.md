@@ -23,6 +23,15 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`CompressedTextureLoader`](../api-reference/compressed-texture-loader.md) |
+| Loader | [`BasisLoader`](../api-reference/basis-loader.md) |
+| Writer | [`CompressedTextureWriter`](../api-reference/compressed-texture-writer.md) |
+| Writer | [`KTX2BasisWriter`](../api-reference/ktx2-basis-texture-writer.md) |
+
 <TexturesDocsTabs active="ktx" />
 
 <TextureTranscodeGraphic />

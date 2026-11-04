@@ -23,6 +23,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`LASLoader`](../api-reference/las-loader.md) |
+| Writer | [`LASWriter`](../api-reference/las-writer.md) |
+
 <LasDocsTabs active="overview" />
 
 <PointCloudFormatGraphic />

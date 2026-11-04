@@ -528,14 +528,22 @@ const config = {
             position: 'left'
           },
           {
+            className: 'navbar-badge',
             type: 'html',
             position: 'right',
-            value: `<a aria-label="Open Visualization Collaborator Summit" href="https://openvisualization.org" target="_blank" rel="noopener noreferrer" style="content: ''; height: 80px; width: 100px; margin-top: -30px; background-image: url('${baseUrl}images/openjs-foundation.svg'); background-repeat: no-repeat; background-size: 80px 110px; display: flex"></a>`
+            value: '<a class="navbar-npm" href="https://www.npmjs.com/package/@loaders.gl/core" aria-label="loaders.gl core on npm" target="_blank" rel="noopener noreferrer"><img class="navbar-npm-downloads" src="https://img.shields.io/npm/dm/@loaders.gl/core?label=downloads" alt="Monthly npm downloads for @loaders.gl/core" height="20" /><span>npm</span></a>'
           },
           {
-            href: 'https://github.com/visgl/loaders.gl',
-            label: 'GitHub',
-            position: 'right'
+            className: 'navbar-badge',
+            type: 'html',
+            position: 'right',
+            value: '<a class="navbar__link navbar-github-stars" href="https://github.com/visgl/loaders.gl" aria-label="loaders.gl on GitHub — view repository and star count" target="_blank" rel="noopener noreferrer"><span>GitHub</span><img src="https://img.shields.io/github/stars/visgl/loaders.gl?style=social" alt="GitHub stars" width="90" height="20" /></a>'
+          },
+          {
+            className: 'navbar-badge',
+            type: 'html',
+            position: 'right',
+            value: '<a class="navbar-openjs" href="https://openvisualization.org" aria-label="OpenJS Foundation — Open Visualization" target="_blank" rel="noopener noreferrer"><img class="openjs-logo-light" src="https://raw.githubusercontent.com/openjs-foundation/artwork/main/openjs_foundation/openjs_foundation-logo-horizontal-color.svg" alt="OpenJS Foundation" width="86" /><img class="openjs-logo-dark" src="https://raw.githubusercontent.com/openjs-foundation/artwork/main/openjs_foundation/openjs_foundation-logo-horizontal-color-dark_background.svg" alt="OpenJS Foundation" width="86" /></a>'
           }
         ]
       },

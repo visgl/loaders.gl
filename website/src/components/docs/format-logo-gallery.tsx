@@ -1,17 +1,10 @@
 import React, {useState} from 'react';
 import Link from '@docusaurus/Link';
 import {FORMAT_METADATA, FormatLogo, type FormatMetadata, type FormatTag} from './format-logo';
+import {getFormatDocPaths} from './format-doc-paths';
 import styles from './format-logo-gallery.module.css';
 
 type FormatFilter = 'all' | FormatTag;
-
-type SidebarCategory = {
-  readonly label?: string;
-  readonly type?: string;
-  readonly items?: readonly string[];
-};
-
-const docsSidebar = require('../../../../docs/docs-sidebar.json') as readonly SidebarCategory[];
 
 const FILTERS: ReadonlyArray<{readonly label: string; readonly value: FormatFilter}> = [
   {label: 'All', value: 'all'},
@@ -23,31 +16,13 @@ const FILTERS: ReadonlyArray<{readonly label: string; readonly value: FormatFilt
   {label: 'Meshes', value: 'meshes'}
 ];
 
-/** Returns the gallery entries in the sidebar's Formats and Services order. */
+/** Returns format entries in the module sidebar's format and service order. */
 function getFormatGallery(): Array<FormatMetadata & {path: string}> {
   const metadataBySlug = new Map(FORMAT_METADATA.map(format => [format.slug, format]));
-  const seenSlugs = new Set<string>();
-  const categories = docsSidebar.filter(
-    category => category.type === 'category' && (category.label === 'Formats' || category.label === 'Services')
-  );
-
-  return categories.flatMap(category =>
-    (category.items ?? []).flatMap(path => {
-      const slug = path.split('/').pop() ?? path;
-      const metadata = metadataBySlug.get(slug);
-      if (seenSlugs.has(slug)) {
-        return [];
-      }
-      if (!metadata && !path.endsWith('/README') && !path.includes('developer-guide/') && !path.includes('api-reference/')) {
-        throw new Error(`Missing format gallery metadata for sidebar entry: ${path}`);
-      }
-      if (!metadata) {
-        return [];
-      }
-      seenSlugs.add(slug);
-      return [{...metadata, path}];
-    })
-  );
+  return [...getFormatDocPaths()].flatMap(([slug, path]) => {
+    const metadata = metadataBySlug.get(slug);
+    return metadata ? [{...metadata, path}] : [];
+  });
 }
 
 const FORMAT_GALLERY = getFormatGallery();
@@ -83,7 +58,7 @@ export function FormatLogoGallery() {
       <div className={styles.grid}>
         {visibleFormats.map(format => (
           <Link className={styles.card} key={format.slug} to={`/docs/${format.path}`} title={format.label}>
-            <FormatLogo slug={format.slug} />
+            <FormatLogo slug={format.slug} linked={false} />
             <span className={styles.label}>{format.label}</span>
           </Link>
         ))}

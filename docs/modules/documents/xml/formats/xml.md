@@ -23,6 +23,12 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`XMLLoader`](../api-reference/xml-loader.md) |
+
 <XmlDocsTabs active="overview" />
 
 <StructuredDataPathGraphic />

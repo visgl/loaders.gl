@@ -23,6 +23,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`PLYLoader`](../api-reference/ply-loader.md) |
+| Writer | [`PLYWriter`](../api-reference/ply-writer.md) |
+
 <PlyDocsTabs active="overview" />
 
 <PointCloudFormatGraphic />

@@ -22,6 +22,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`ChromeTraceLoader`](../api-reference/chrome-trace-loader.md) |
+| Writer | [`ChromeTraceWriter`](../api-reference/chrome-trace-writer.md) |
+| Utility | [Chrome Trace Streaming](../api-reference/chrome-trace-streaming.md) |
+
 <TracesDocsTabs active="chrome-trace" />
 
 <DocOrientation

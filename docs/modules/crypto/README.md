@@ -5,6 +5,9 @@ hide_title: true
 page_style: designed
 ---
 
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
+
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
@@ -117,3 +120,8 @@ Cryptographic Hash
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).
+
+
+## Package exports
+
+<ModuleSubpaths module="crypto" />

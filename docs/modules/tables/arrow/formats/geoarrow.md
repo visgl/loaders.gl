@@ -199,6 +199,15 @@ For controlled conversions, exact native targets remain available:
 ```typescript
 import {convertTableToGeoArrow} from '@loaders.gl/core/geoarrow';
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GeoArrowLoader`](../api-reference/geoarrow-loader.md) |
+| Utility | [`convertGeojsonToBinaryFeatureCollection`](../../../core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection.md) |
+| Utility | [`convertBinaryFeatureCollectionToGeojson`](../../../core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson.md) |
+| Utility | [`triangulateWKBGeometryColumn`](../api-reference/triangulate-wkb-geometry-column.md) |
+
 const polygons = convertTableToGeoArrow(table, {
   geoarrow: {encoding: 'geoarrow.polygon', coordinates: 'separated'}
 });

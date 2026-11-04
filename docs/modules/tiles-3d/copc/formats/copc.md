@@ -23,6 +23,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`COPCSourceLoader`](../api-reference/copc-source-loader.md) |
+| Writer | [`COPCWriter`](../api-reference/copc-writer.md) |
+
 <CopcDocsTabs active="format" />
 
 <CopcRangeGraphic />

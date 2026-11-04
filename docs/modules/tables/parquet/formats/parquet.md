@@ -5,6 +5,8 @@ hide_title: true
 page_style: designed
 ---
 
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+
 import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-graphic';
 import {ParquetScanLiveExample} from '@site/src/components/docs/parquet-scan-live-example';
@@ -25,13 +27,24 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`ParquetLoader`](../api-reference/parquet-loader.md) |
+| Writer | [`ParquetWriter`](../api-reference/parquet-writer.md) |
+| Source loader | [`ParquetSourceLoader`](../api-reference/parquet-source-loader.md) |
+| Source | [`ParquetDatasetSource`](../api-reference/parquet-source-loader.md) |
+
 ## Try a range-aware read
 
 Use the panel below to inspect Parquet metadata, select columns, and limit the Arrow rows returned
 from a remote file. The reader can plan the request from the footer before decoding the selected
 data ranges.
 
-<ParquetScanLiveExample />
+<DocLiveExample label="Parquet scan example" variant="panel">
+  <ParquetScanLiveExample />
+</DocLiveExample>
 
 <ParquetDocsTabs active="overview" />
 

@@ -69,6 +69,12 @@ contract.
 import {createDataSource} from '@loaders.gl/core';
 import {CSWSourceLoader} from '@loaders.gl/ogc/wms';
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`CSWSourceLoader`](../api-reference/csw-source-loader.md) |
+
 const catalog = createDataSource(cswUrl, [CSWSourceLoader]);
 const metadata = await catalog.getMetadata();
 

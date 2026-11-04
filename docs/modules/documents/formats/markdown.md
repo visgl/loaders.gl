@@ -20,6 +20,12 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`MarkdownLoader`](../api-reference/markdown-loader.md) |
+
 Markdown is a lightweight markup syntax for readable text documents. `MarkdownLoader` supports
 a small, documented subset and returns a rendering-independent tree. It does not claim full
 CommonMark compliance. See the [loader reference](/docs/modules/documents/api-reference/markdown-loader)

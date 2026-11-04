@@ -21,6 +21,12 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`ArcGISMapTileSourceLoader`](../api-reference/arcgis.md) |
+
 <ArcGISDocsTabs service="arcgis-map-server" />
 
 Use this path when you want the map as rendered by ArcGIS, including its server-side cartography. Cached tiles are useful for stable basemaps; dynamic exports can honor supported layer and time parameters.

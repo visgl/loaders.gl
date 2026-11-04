@@ -5,6 +5,8 @@ hide_title: true
 page_style: designed
 ---
 
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+
 import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
 import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
@@ -25,12 +27,28 @@ import apacheLogo from '../../../../images/logos/apache-logo.png';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`ArrowLoader`](../api-reference/arrow-loader.md) |
+| Writer | [`ArrowWriter`](../api-reference/arrow-writer.md) |
+| Source loader | `ArrowSourceLoader` |
+| Source | `ArrowTableSource` |
+| Utility | [Arrow Schema Utilities](../api-reference/arrow-schema-utils.md) |
+| Utility | [Arrow table transport](../api-reference/arrow-table-transport.md) |
+| Utility | [`IndexedArrowTable`](../api-reference/indexed-arrow-table.md) |
+| Utility | [`MappedArrowTable`](../api-reference/mapped-arrow-table.md) |
+| Utility | [`splitArrowBuffers`](../api-reference/split-arrow-buffers.md) |
+
 ## Try a selective read
 
 Use the panel below to inspect Arrow IPC metadata, choose columns, and limit the rows returned from a
 remote table. The same source contract is used by the broader scan architecture.
 
-<ArrowScanLiveExample />
+<DocLiveExample label="Arrow scan example" variant="panel">
+  <ArrowScanLiveExample />
+</DocLiveExample>
 
 <ArrowDocsTabs active="overview" />
 

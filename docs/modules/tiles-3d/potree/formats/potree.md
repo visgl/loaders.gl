@@ -22,6 +22,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`PotreeLoader`](../api-reference/potree-loader.md) |
+| Source loader | [`PotreeSourceLoader`](../api-reference/potree-source-loader.md) |
+| Writer | [Potree writers](../api-reference/potree-writer.md) |
+
 <PotreeDocsTabs active="format" />
 
 <DocOrientation

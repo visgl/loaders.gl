@@ -24,6 +24,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`CrunchLoader`](../api-reference/crunch-loader.md) |
+
 <TexturesDocsTabs active="crunch" />
 
 <TextureTranscodeGraphic />

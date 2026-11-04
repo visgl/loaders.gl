@@ -23,6 +23,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`DracoLoader`](../api-reference/draco-loader.md) |
+| Writer | [`DracoWriter`](../api-reference/draco-writer.md) |
+
 <DracoDocsTabs active="overview" />
 
 <ThreeDDataFormatsGraphic />

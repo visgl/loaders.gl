@@ -22,6 +22,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| — | OWS Context documents have no dedicated loader. Load referenced services individually using the [OGC module](../README.md). |
+
 <DocOrientation
   eyebrow="Implementation boundary"
   title="Use the context to discover; use sources to load."
