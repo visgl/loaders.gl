@@ -125,3 +125,35 @@ export type GLTF_KHR_xmp_json_ld = z.infer<typeof GLTFKHRXMPJSONLDSchema>;
 export type GLTFXMPPacket = z.infer<typeof GLTFKHRXMPPacketSchema>;
 /** Reference to a shared XMP metadata packet. */
 export type GLTF_KHR_xmp_json_ld_reference = z.infer<typeof GLTFKHRXMPJSONLDReferenceSchema>;
+
+/** Permissive declaration for the KHR emissive-strength material extension. */
+export const GLTFKHRMaterialsEmissiveStrengthSchema = z.looseObject({
+  ...propertyShape,
+  /** Unitless multiplier; defaults to one when omitted. */
+  emissiveStrength: z.number().nonnegative().optional()
+});
+
+/** Authored KHR emissive-strength material declaration. */
+export type GLTF_KHR_materials_emissive_strength = z.infer<
+  typeof GLTFKHRMaterialsEmissiveStrengthSchema
+>;
+
+/** Permissive FB scene geometry summary in static scene coordinates. */
+export const GLTFFBGeometryMetadataSchema = z.looseObject({
+  ...propertyShape,
+  /** Authored count of vertices. */
+  vertexCount: z.number().nonnegative().optional(),
+  /** Authored count of primitives. */
+  primitiveCount: z.number().nonnegative().optional(),
+  /** Static scene-space bounding box. */
+  sceneBounds: z
+    .looseObject({
+      ...propertyShape,
+      min: z.array(z.number()).length(3),
+      max: z.array(z.number()).length(3)
+    })
+    .optional()
+});
+
+/** Authored FB scene geometry summary. */
+export type GLTF_FB_geometry_metadata = z.infer<typeof GLTFFBGeometryMetadataSchema>;
