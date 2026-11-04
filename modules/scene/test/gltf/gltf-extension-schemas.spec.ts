@@ -6,6 +6,7 @@ import {describe, expect, test} from 'vitest';
 import {
   GLTFSchema,
   GLTFKHRMaterialsEmissiveStrengthSchema,
+  GLTFFBGeometryMetadataSchema,
   GLTFEXTTextureAvifSchema,
   GLTFKHRMaterialsVariantsSchema,
   GLTFKHRMaterialsVariantsPrimitiveSchema,
@@ -273,4 +274,20 @@ test('validates and preserves emissive-strength declarations without inserting d
   expect(GLTFKHRMaterialsEmissiveStrengthSchema.safeParse({emissiveStrength: -1}).success).toBe(
     false
   );
+});
+
+test('validates and preserves per-scene FB geometry metadata', () => {
+  const geometry = {
+    vertexCount: 8,
+    primitiveCount: 12,
+    sceneBounds: {min: [-1, -2, -3], max: [1, 2, 3]},
+    vendor: true
+  };
+  expect(GLTFFBGeometryMetadataSchema.parse(geometry)).toEqual(geometry);
+  const document = createDocument();
+  document.scenes = [{nodes: [0], extensions: {FB_geometry_metadata: geometry}}];
+  expect(GLTFSchema.parse(document).scenes?.[0].extensions?.FB_geometry_metadata).toEqual(geometry);
+  expect(
+    GLTFFBGeometryMetadataSchema.safeParse({sceneBounds: {min: [0, 0], max: [1, 1, 1]}}).success
+  ).toBe(false);
 });

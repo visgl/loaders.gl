@@ -137,3 +137,23 @@ export const GLTFKHRMaterialsEmissiveStrengthSchema = z.looseObject({
 export type GLTF_KHR_materials_emissive_strength = z.infer<
   typeof GLTFKHRMaterialsEmissiveStrengthSchema
 >;
+
+/** Permissive FB scene geometry summary in static scene coordinates. */
+export const GLTFFBGeometryMetadataSchema = z.looseObject({
+  ...propertyShape,
+  /** Authored count of vertices. */
+  vertexCount: z.number().nonnegative().optional(),
+  /** Authored count of primitives. */
+  primitiveCount: z.number().nonnegative().optional(),
+  /** Static scene-space bounding box. */
+  sceneBounds: z
+    .looseObject({
+      ...propertyShape,
+      min: z.array(z.number()).length(3),
+      max: z.array(z.number()).length(3)
+    })
+    .optional()
+});
+
+/** Authored FB scene geometry summary. */
+export type GLTF_FB_geometry_metadata = z.infer<typeof GLTFFBGeometryMetadataSchema>;

@@ -503,6 +503,7 @@ expected JSON types; array indices must be nonnegative integers.
 | `KHR_node_hoverability` | `GLTFKHRNodeHoverabilitySchema` | Preserves local subtree hover declarations. |
 | `KHR_xmp_json_ld` | `GLTFKHRXMPJSONLDSchema`, `GLTFKHRXMPJSONLDReferenceSchema` | `getXMPMetadata(gltf, object)` resolves an object's shared packet without fetching namespace URLs. |
 | `KHR_materials_emissive_strength` | `GLTFKHRMaterialsEmissiveStrengthSchema` | Preserves the optional nonnegative emissive multiplier without applying rendering behavior or inserting defaults. |
+| `FB_geometry_metadata` | `GLTFFBGeometryMetadataSchema` | Preserves authored static scene bounds and geometry counts. |
 | Draft `KHR_audio_emitter` | `GLTFKHRAudioEmitterExtensionSchema`, `GLTFKHRAudioAttachmentSchema` | Resolves encoded audio and emitter instances as described above. |
 | `MPEG_audio_spatial` | `GLTFMPEGAudioSpatialSchema` | Exposes lazy root and node spatial audio declarations as described above. |
 

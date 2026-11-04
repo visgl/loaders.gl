@@ -12,6 +12,7 @@ import {
   GLTFKHRNodeSelectabilitySchema,
   GLTFKHRNodeHoverabilitySchema,
   GLTFKHRMaterialsEmissiveStrengthSchema,
+  GLTFFBGeometryMetadataSchema,
   GLTFKHRXMPJSONLDSchema,
   GLTFKHRXMPJSONLDReferenceSchema
 } from './gltf-additional-extension-schemas';
@@ -63,6 +64,8 @@ export const GLTFNodeExtensionsSchema = GLTFPropertyExtensionsSchema.extend({
 
 /** Permissive scene-level extension map. */
 export const GLTFSceneExtensionsSchema = GLTFPropertyExtensionsSchema.extend({
+  /** Authored static geometry summary. */
+  FB_geometry_metadata: GLTFFBGeometryMetadataSchema.optional(),
   /** Attached global KHR audio emitters. */
   KHR_audio_emitter: GLTFKHRAudioAttachmentSchema.optional()
 });
