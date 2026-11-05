@@ -22,6 +22,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`TWKBLoader`](../api-reference/twkb-loader.md) |
+| Writer | [`TWKBWriter`](../api-reference/twkb-writer.md) |
+
 <DocOrientation
   eyebrow="The TWKB record path"
   title="Store the first position. Make nearby points inexpensive."

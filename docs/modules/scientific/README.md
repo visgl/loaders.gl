@@ -1,3 +1,6 @@
+import {FormatLogo} from '@site/src/components/docs/format-logo';
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
 # @loaders.gl/scientific
 
 Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
@@ -7,16 +10,16 @@ format and encoding; the focused references below describe the implementation on
 npm install @loaders.gl/core @loaders.gl/scientific
 ```
 
-| Subpath | Public entry APIs | Reference |
-| --- | --- | --- |
-| `/npy-loader` | `NPYLoaderWithParser` | [NPYLoader](./api-reference/npy-loader.md) |
-| `/netcdf` | `NetCDFLoaderWithParser`, `NetCDFReader`, `NetCDFSource`, `openNetCDF4Source` | [NetCDF](./netcdf/README.md) |
-| `/zarr` | OME-Zarr, GeoZarr, generic array, and SpatialData sources | [Zarr](./zarr/README.md) |
-| `/hdf5` | `openHDF5Source`, `HDF5Source`, experimental `HDF5TypeScriptFile` | [HDF5](./hdf5/README.md) |
-| `/grib2` | `parseGRIB2`, `GRIB2Source` | [GRIB2](./grib2/README.md) |
-| `/vtk` | `parseVTKLegacy`, `parseVTKXML` | [VTK](./vtk/README.md) |
-| `/scientific-array` | Common scientific-array interfaces and helpers | Shared source contracts |
-| `/vector-field` | Vector-field processing helpers | Explicit processing entrypoint |
+| Logo | Subpath | Public entry APIs | Reference |
+| --- | --- | --- | --- |
+| — | `/npy-loader` | `NPYLoaderWithParser` | [NPYLoader](./api-reference/npy-loader.md) |
+| <FormatLogo slug="netcdf" /> | `/netcdf` | `NetCDFLoaderWithParser`, `NetCDFReader`, `NetCDFSource`, `openNetCDF4Source` | [NetCDF](./netcdf/README.md) |
+| <FormatLogo slug="zarr" /> | `/zarr` | OME-Zarr, GeoZarr, generic array, and SpatialData sources | [Zarr](./zarr/README.md) |
+| — | `/hdf5` | `openHDF5Source`, `HDF5Source`, experimental `HDF5TypeScriptFile` | [HDF5](./hdf5/README.md) |
+| — | `/grib2` | `parseGRIB2`, `GRIB2Source` | [GRIB2](./grib2/README.md) |
+| <FormatLogo slug="vtk" /> | `/vtk` | `parseVTKLegacy`, `parseVTKXML` | [VTK](./vtk/README.md) |
+| — | `/scientific-array` | Common scientific-array interfaces and helpers | Shared source contracts |
+| — | `/vector-field` | Vector-field processing helpers | Explicit processing entrypoint |
 
 The root exports NetCDF and Zarr metadata loaders and shared types. It does not re-export every
 parser or experimental source. For direct NetCDF parsing:
@@ -40,3 +43,15 @@ and the project-wide [References and credits](/docs/references-and-credits).
 
 `NPYLoader` and `NPYFormat` are metadata exports from the lightweight package root.
 For parser access use the flat `@loaders.gl/scientific/npy-loader` subpath.
+
+
+## Format guides
+
+- [NumPy NPY](./formats/npy.md)
+- [NetCDF](./netcdf/formats/netcdf.md)
+- [Zarr, GeoZarr, and OME-Zarr formats](./zarr/formats/zarr.md)
+
+
+## Package exports
+
+<ModuleSubpaths module="scientific" />

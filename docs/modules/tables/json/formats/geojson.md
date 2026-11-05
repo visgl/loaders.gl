@@ -24,6 +24,14 @@ import {ClientExample} from '@site/src/components';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GeoJSONLoader`](../api-reference/geojson-loader.md) |
+| Loader | [`NDGeoJSONLoader`](../api-reference/ndgeojson-loader.md) |
+| Writer | [`GeoJSONWriter`](../api-reference/geojson-writer.md) |
+
 <DocLiveExample label="GeoJSON format map example" height="420px">
   <ClientExample kind="geospatial" format="GeoJSON" />
 </DocLiveExample>

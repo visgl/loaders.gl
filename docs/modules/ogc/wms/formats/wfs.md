@@ -5,6 +5,7 @@ hide_title: true
 page_style: designed
 ---
 
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {ClientExample} from '@site/src/components';
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
@@ -23,6 +24,12 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
 />
+
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | `WFSSourceLoader` |
 
 <DocOrientation
   eyebrow="The WFS request path"
@@ -256,9 +263,9 @@ const layer = new SourceLayer({
 
 ## Live example
 
-<div style={{height: '520px'}}>
+<DocLiveExample label="WFS map service example" height="520px">
   <ClientExample kind="wms" format="WFS" />
-</div>
+</DocLiveExample>
 
 ## References
 

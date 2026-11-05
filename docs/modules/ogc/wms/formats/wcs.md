@@ -23,6 +23,12 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | `WCSCoverageSourceLoader` |
+
 <DocOrientation
   eyebrow="The WCS request path"
   title="Read the coverage metadata. Select a subset. Decode the result."

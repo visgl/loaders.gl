@@ -22,6 +22,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GMLLoader`](../api-reference/gml-loader.md) |
+
 <DocOrientation
   eyebrow="The GML parsing path"
   title="Frame feature members. Normalize geometry. Preserve unknown properties."

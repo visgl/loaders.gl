@@ -22,6 +22,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`HTMLLoader`](../api-reference/html-loader.md) |
+
 <XmlDocsTabs active="html" />
 
 <DocOrientation

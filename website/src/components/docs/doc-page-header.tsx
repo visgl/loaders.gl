@@ -1,4 +1,5 @@
 import {FormatLogo} from './format-logo';
+import {HeaderLogo, type HeaderLogoData} from './header-logo';
 import React, {useEffect, useRef, type ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 
@@ -23,16 +24,7 @@ export type DocPageHeaderLink = {
 };
 
 /** A standards or ecosystem logo shown in the page header. */
-export type DocPageHeaderLogo = {
-  /** Accessible description of the logo. */
-  alt: string;
-  /** Optional destination associated with the logo. */
-  href?: string;
-  /** Absolute or site-relative image URL. */
-  src?: string;
-  /** Canonical format badge used instead of an ecosystem image. */
-  format?: string;
-};
+export type DocPageHeaderLogo = HeaderLogoData;
 
 /** Properties for the compact page header used on non-tentpole documentation pages. */
 export type DocPageHeaderProps = {
@@ -120,28 +112,19 @@ export function DocPageHeader({
             {format && <FormatLogo slug={format} />}
             {logos.length > 0 && (
               <div className={styles.logos} aria-label="Standards and ecosystem logos">
-                {logos.map(logo => {
-                  const image = logo.format ? <FormatLogo slug={logo.format} /> : <img className={styles.ecosystemLogo} src={logo.src} alt={logo.alt} />;
-                  return logo.href ? (
-                    <a className={styles.logoLink} href={logo.href} key={logo.format ?? logo.src}>
-                      {image}
-                    </a>
-                  ) : (
-                    <span className={styles.logoLink} key={logo.format ?? logo.src}>
-                      {image}
-                    </span>
-                  );
-                })}
+                {logos.map(logo => (
+                  <HeaderLogo key={logo.format ?? logo.src} logo={logo} className={styles.logoLink} imageClassName={styles.ecosystemLogo} />
+                ))}
               </div>
             )}
-            <div className={styles.badges} data-doc-page-header-badges aria-label="Page status">
-              {badges}
-            </div>
           </div>
         </div>
-        <h1 className={styles.title} id="doc-page-header-title">
+        <h1 className={styles.title} id="doc-page-header-title" data-package-title={title.startsWith('@loaders.gl/') || undefined}>
           {title}
         </h1>
+        <div className={styles.badges} data-doc-page-header-badges aria-label="Page status">
+          {badges}
+        </div>
         <p className={styles.description}>{renderDescription(description)}</p>
         {notice ? <div className={styles.notice}>{notice}</div> : null}
       </div>

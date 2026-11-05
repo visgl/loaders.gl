@@ -5,6 +5,8 @@ hide_title: true
 page_style: designed
 ---
 
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {CrossFormatScanEngineGraphic} from '@site/src/components/docs/cross-format-scan-engine-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
@@ -25,7 +27,16 @@ import apacheLogo from '../../../../images/logos/apache-logo.png';
   ]}
 />
 
-<OrcCloudLiveExample />
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | `ORCLoader` |
+| Source loader | `ORCSourceLoader` |
+
+<DocLiveExample label="ORC loader example" variant="panel">
+  <OrcCloudLiveExample />
+</DocLiveExample>
 
 <CrossFormatScanEngineGraphic />
 

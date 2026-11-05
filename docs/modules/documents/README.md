@@ -3,6 +3,10 @@ title: Documents
 description: Basic document loaders with a lightweight package root and flat parser imports.
 ---
 
+import {FormatLogo} from '@site/src/components/docs/format-logo';
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
+
 # Documents
 
 `@loaders.gl/documents` loads XML, HTML, JSON, YAML, TOML, BSON, and a simple Markdown subset.
@@ -23,15 +27,15 @@ import {MarkdownLoader} from '@loaders.gl/documents';
 const document = await load('README.md', MarkdownLoader);
 ```
 
-| Format | Metadata loader | Parser import | Output |
-| --- | --- | --- | --- |
-| [XML](/docs/modules/documents/xml/formats/xml) | `XMLLoader` | `@loaders.gl/documents/xml-loader` | JavaScript object |
-| [HTML](/docs/modules/documents/xml/formats/html) | `HTMLLoader` | `@loaders.gl/documents/html-loader` | XML-style object |
-| [JSON](/docs/modules/documents/api-reference/json-loader) | `JSONLoader` | `@loaders.gl/documents/json-loader` | Any JSON value, without table extraction |
-| [YAML](/docs/modules/documents/config/formats/yaml) | `YAMLLoader` | `@loaders.gl/documents/yaml-loader` | Objects, arrays, scalars |
-| [TOML](/docs/modules/documents/config/formats/toml) | `TOMLLoader` | `@loaders.gl/documents/toml-loader` | JavaScript object |
-| [BSON](/docs/modules/documents/bson/formats/bson) | `BSONLoader` | `@loaders.gl/documents/bson-loader` | JavaScript object |
-| [Markdown](/docs/modules/documents/formats/markdown) | `MarkdownLoader` | `@loaders.gl/documents/markdown-loader` | `MarkdownDocument` syntax tree |
+| Logo | Format | Metadata loader | Parser import | Output |
+| --- | --- | --- | --- | --- |
+| — | [XML](/docs/modules/documents/xml/formats/xml) | `XMLLoader` | `@loaders.gl/documents/xml-loader` | JavaScript object |
+| — | [HTML](/docs/modules/documents/xml/formats/html) | `HTMLLoader` | `@loaders.gl/documents/html-loader` | XML-style object |
+| <FormatLogo slug="json" /> | [JSON](/docs/modules/documents/api-reference/json-loader) | `JSONLoader` | `@loaders.gl/documents/json-loader` | Any JSON value, without table extraction |
+| <FormatLogo slug="yaml" /> | [YAML](/docs/modules/documents/config/formats/yaml) | `YAMLLoader` | `@loaders.gl/documents/yaml-loader` | Objects, arrays, scalars |
+| <FormatLogo slug="toml" /> | [TOML](/docs/modules/documents/config/formats/toml) | `TOMLLoader` | `@loaders.gl/documents/toml-loader` | JavaScript object |
+| <FormatLogo slug="bson" /> | [BSON](/docs/modules/documents/bson/formats/bson) | `BSONLoader` | `@loaders.gl/documents/bson-loader` | JavaScript object |
+| — | [Markdown](/docs/modules/documents/formats/markdown) | `MarkdownLoader` | `@loaders.gl/documents/markdown-loader` | `MarkdownDocument` syntax tree |
 
 Each parser subpath exports the corresponding `*LoaderWithParser`. Use it for sync parsing:
 
@@ -69,3 +73,9 @@ Options control attribute prefixes/grouping, namespace removal, text keys, scala
 whitespace, and singleton arrays. See [XMLLoader](/docs/modules/documents/xml/api-reference/xml-loader).
 HTMLLoader uses the same implementation in a tolerant mode with built-in HTML entities; it
 remains an XML-style object reader, not an HTML5 DOM parser.
+
+
+
+## Package exports
+
+<ModuleSubpaths module="documents" />

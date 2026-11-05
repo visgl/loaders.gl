@@ -21,6 +21,13 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`ArcGISImageServerSourceLoader`](../api-reference/arcgis.md) |
+| Source loader | [`ArcGISImageTileSourceLoader`](../api-reference/arcgis.md) |
+
 <ArcGISDocsTabs service="arcgis-image-server" />
 
 Use rendered images for display and LERC rasters when your application needs band values, masks or analysis. A colorized PNG and a numerical raster are different outputs from the same imagery service.

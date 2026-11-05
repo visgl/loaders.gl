@@ -22,6 +22,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`TCXLoader`](../api-reference/tcx-loader.md) |
+
 <KmlDocsTabs active="tcx" />
 
 <DocOrientation

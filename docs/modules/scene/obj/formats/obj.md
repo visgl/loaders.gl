@@ -22,6 +22,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`OBJLoader`](../api-reference/obj-loader.md) |
+| Writer | [`OBJWriter`](../api-reference/obj-writer.md) |
+
 <ObjDocsTabs active="overview" />
 
 <DocOrientation

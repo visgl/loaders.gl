@@ -21,6 +21,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`LERCLoader`](../api-reference/lerc-loader.md) |
+
 <DocOrientation
   eyebrow="The LERC path"
   title="Choose the numeric type. Set the tolerance. Decode the raster."

@@ -22,6 +22,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GPXLoader`](../api-reference/gpx-loader.md) |
+
 <KmlDocsTabs active="gpx" />
 
 <DocOrientation

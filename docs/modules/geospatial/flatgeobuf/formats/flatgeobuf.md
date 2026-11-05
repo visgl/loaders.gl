@@ -23,6 +23,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`FlatGeobufLoader`](../api-reference/flatgeobuf-loader.md) |
+| Source loader | [`FlatGeobufSourceLoader`](../api-reference/flatgeobuf-source-loader.md) |
+
 <FlatGeobufDocsTabs active="overview" />
 
 <RangeRequestGraphic />

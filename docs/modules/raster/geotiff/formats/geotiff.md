@@ -25,6 +25,15 @@ import {ClientExample} from '@site/src/components';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GeoTIFFLoader`](../api-reference/geotiff-loader.md) |
+| Loader | [`GeoTIFFRasterLoader`](../api-reference/geotiff-raster-loader.md) |
+| Source loader | [`GeoTIFFSourceLoader`](../api-reference/geotiff-source-loader.md) |
+| Source loader | [`OMETiffSourceLoader`](../api-reference/ometiff-source-loader.md) |
+
 <DocLiveExample label="GeoTIFF raster format example" height="420px">
   <ClientExample kind="geotiff" />
 </DocLiveExample>

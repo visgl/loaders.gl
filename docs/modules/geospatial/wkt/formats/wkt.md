@@ -21,6 +21,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`WKTLoader`](../api-reference/wkt-loader.md) |
+| Writer | [`WKTWriter`](../api-reference/wkt-writer.md) |
+
 <DocOrientation
   eyebrow="The geometry vocabulary"
   title="Name the geometry, then list its coordinates."

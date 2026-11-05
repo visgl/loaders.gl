@@ -22,6 +22,15 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`KMLLoader`](../api-reference/kml-loader.md) |
+| Loader | [`KMZLoader`](../api-reference/kml-loader.md) |
+| Writer | [`KMLWriter`](../api-reference/kml-loader.md) |
+| Writer | [`KMZWriter`](../api-reference/kml-loader.md) |
+
 <KmlDocsTabs active="overview" />
 
 <DocOrientation

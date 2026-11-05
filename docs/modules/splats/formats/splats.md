@@ -21,6 +21,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`SPLATLoader`](../api-reference/splat-loader.md) |
+| Loader | [`KSPLATLoader`](../api-reference/ksplat-loader.md) |
+| Loader | [`SPZLoader`](../api-reference/spz-loader.md) |
+| Loader | `RADLoader` |
+| Source loader | [RADLoader and RADSourceLoader](../api-reference/rad-source-loader.md) |
+
 <DocOrientation
   eyebrow="The format family"
   title="Choose the container for the access pattern."

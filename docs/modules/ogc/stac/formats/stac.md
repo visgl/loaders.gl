@@ -21,6 +21,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | [`STACSourceLoader`](../api-reference/stac-source-loader.md) |
+
 <DatasetDiscoveryGraphic kind="stac" />
 
 <DocOrientation

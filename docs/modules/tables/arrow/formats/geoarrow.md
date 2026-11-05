@@ -25,6 +25,15 @@ import {ClientExample} from '@site/src/components';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GeoArrowLoader`](../api-reference/geoarrow-loader.md) |
+| Utility | [`convertGeojsonToBinaryFeatureCollection`](../../../core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection.md) |
+| Utility | [`convertBinaryFeatureCollectionToGeojson`](../../../core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson.md) |
+| Utility | [`triangulateWKBGeometryColumn`](../api-reference/triangulate-wkb-geometry-column.md) |
+
 <DocLiveExample label="GeoArrow table map example" height="420px">
   <ClientExample kind="geospatial" format="GeoArrow" />
 </DocLiveExample>

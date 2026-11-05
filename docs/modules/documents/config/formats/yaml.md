@@ -1,5 +1,11 @@
 # YAML
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`YAMLLoader`](../api-reference/yaml-loader.md) |
+
 YAML is a human-friendly data serialization language commonly used for configuration documents.
 
 - _[`@loaders.gl/documents`](/docs/modules/documents/config)_

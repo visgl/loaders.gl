@@ -71,6 +71,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  max-width: 35%;
+  position: absolute;
+  right: clamp(1rem, 2.5vw, 1.5rem);
+  top: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.header:has(.toplineActions > :not(:empty)) .copy {
+  padding-right: calc(35% + 1.5rem);
 }
 
 .eyebrow {
@@ -92,6 +100,11 @@
   letter-spacing: -0.05em;
   line-height: 1;
   margin: 0;
+}
+
+.title[data-package-title] {
+  font-size: clamp(1.45rem, 2.6vw, 2.5rem);
+  overflow-wrap: normal;
 }
 
 .description {
@@ -139,8 +152,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  justify-content: flex-end;
-  margin: 0;
+  justify-content: flex-start;
+  margin: 0.75rem 0 0;
 }
 
 .badges:empty {
@@ -244,11 +257,16 @@
 
   .topline {
     align-items: flex-start;
-    flex-direction: column;
   }
 
   .toplineActions {
-    align-items: flex-start;
+    align-items: flex-end;
+    max-width: 40%;
+    position: static;
+  }
+
+  .header:has(.toplineActions > :not(:empty)) .copy {
+    padding-right: 0;
   }
 
   .badges {
@@ -257,6 +275,6 @@
   }
 
   .logos {
-    justify-content: flex-start;
+    justify-content: flex-end;
   }
 }

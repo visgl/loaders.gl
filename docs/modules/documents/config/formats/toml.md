@@ -1,5 +1,11 @@
 # TOML
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`TOMLLoader`](../api-reference/toml-loader.md) |
+
 TOML (Tom's Obvious, Minimal Language) is a configuration file format designed to be easy to read
 and map unambiguously to a hash table.
 

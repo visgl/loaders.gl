@@ -25,6 +25,14 @@ import {ClientExample} from '@site/src/components';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GeoParquetLoader`](../api-reference/geoparquet-loader.md) |
+| Source loader | [`ParquetSourceLoader`](../api-reference/parquet-source-loader.md) |
+| Writer | [`ParquetWriter`](../api-reference/parquet-writer.md) |
+
 <DocLiveExample label="GeoParquet table map example" height="420px">
   <ClientExample kind="geospatial" format="GeoParquet" />
 </DocLiveExample>

@@ -1,8 +1,9 @@
 .frame {
   --doc-live-example-height: 420px;
   background: #081321;
+  border: 1px solid var(--ifm-color-emphasis-300);
   border-radius: 22px;
-  height: var(--doc-live-example-height);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
   margin: 1.25rem 0 2.25rem;
   overflow: hidden;
   position: relative;
@@ -11,14 +12,44 @@
 .frame[data-fullscreen] {
   border-radius: 0;
   height: 100%;
+  overflow: auto;
 }
 
 .content {
-  height: 100%;
+  height: var(--doc-live-example-height);
   position: relative;
 }
 
-.content > :global(*) {
+.frame[data-variant='panel'] {
+  background: var(--ifm-background-surface-color);
+}
+
+.frame[data-variant='panel'] .content {
+  height: auto;
+  padding: 1.25rem;
+}
+
+.frame[data-fullscreen] .content {
+  height: calc(100% - 3.25rem);
+  overflow: auto;
+}
+
+.toolbar {
+  align-items: center;
+  background: var(--ifm-background-surface-color);
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
+  display: flex;
+  height: 3.25rem;
+  justify-content: space-between;
+  padding: 0 0.8rem 0 1.1rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.frame[data-variant='map'] .content > :global(*) {
   height: 100%;
 }
 
@@ -37,9 +68,7 @@
   justify-content: center;
   line-height: 1;
   padding: 0;
-  position: absolute;
-  right: 0.85rem;
-  top: 0.85rem;
+  position: relative;
   width: 2.4rem;
   z-index: 4;
 }
@@ -48,6 +77,29 @@
 .fullscreenButton:focus-visible {
   background: rgba(23, 52, 84, 0.94);
   border-color: rgba(112, 199, 255, 0.72);
+}
+
+.tooltip {
+  background: #172a40;
+  border: 1px solid rgba(190, 226, 249, 0.3);
+  border-radius: 0.4rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  color: #f6f9fc;
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0;
+  padding: 0.4rem 0.55rem;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.45rem);
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.fullscreenButton:hover .tooltip,
+.fullscreenButton:focus-visible .tooltip {
+  opacity: 1;
 }
 
 .fullscreenButton:focus-visible,
@@ -63,7 +115,7 @@
   color: #d9edfc;
   cursor: zoom-in;
   display: flex;
-  inset: 0;
+  inset: 3.25rem 0 0;
   justify-content: center;
   padding: 1rem;
   position: absolute;
@@ -89,6 +141,9 @@
 @media (max-width: 560px) {
   .frame {
     border-radius: 16px;
+  }
+
+  .frame[data-variant='map']:not([data-fullscreen]) .content {
     height: min(var(--doc-live-example-height), 56vh);
   }
 }

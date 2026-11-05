@@ -5,6 +5,8 @@ hide_title: true
 page_style: designed
 ---
 
+import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
+
 import {CapabilityHero} from '@site/src/components/docs/capability-hero';
 import {ArrowDataPlaneGraphic} from '@site/src/components/docs/arrow-data-plane-graphic';
 import {ArrowScanLiveExample} from '@site/src/components/docs/arrow-scan-live-example';
@@ -24,7 +26,9 @@ import apacheLogo from '../../../images/logos/apache-logo.png';
   ]}
 />
 
-<ArrowScanLiveExample />
+<DocLiveExample label="Arrow scan example" variant="panel">
+  <ArrowScanLiveExample />
+</DocLiveExample>
 
 <ArrowDataPlaneGraphic />
 

@@ -21,6 +21,16 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`ZipLoader`](../api-reference/zip-loader.md) |
+| Writer | [`ZipWriter`](../api-reference/zip-writer.md) |
+| Utility | [`ZipArchive`](../api-reference/zip-archive.md) |
+| Utility | [`ZipFileSystem`](../api-reference/zip-filesystem.md) |
+| Utility | [`encodeZip`](../api-reference/encode-zip.md) |
+
 <DocOrientation
   eyebrow="The archive path"
   title="Inspect the directory. Select an entry. Read only what the pipeline needs."

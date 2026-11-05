@@ -24,6 +24,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Source loader | `WMTSSourceLoader` |
+| Loader | [`WMTSCapabilitiesLoader`](../api-reference/wmts-capability-loader.md) |
+
 <DocLiveExample label="WMTS tile service example" height="440px">
   <ClientExample kind="wms" format="WMTS" />
 </DocLiveExample>

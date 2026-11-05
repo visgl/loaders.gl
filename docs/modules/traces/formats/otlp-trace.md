@@ -24,6 +24,13 @@ import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`OtlpTraceLoader`](../api-reference/otlp-trace-loader.md) |
+| Writer | [`OtlpTraceWriter`](../api-reference/otlp-trace-writer.md) |
+
 <DocOrientation
   eyebrow="The OTLP path"
   title="Decode the envelope. Preserve resources. Analyze spans as tables."

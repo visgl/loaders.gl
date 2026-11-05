@@ -22,6 +22,16 @@ import {TiledSceneGraphic} from '@site/src/components/docs/tiled-scene-graphic';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`I3SLoader`](../api-reference/i3s-loader.md) |
+| Source | [`I3SSource`](../../api-reference/i3s-source.md) |
+| Source | [`I3SPointCloudSource`](../api-reference/i3s-point-cloud-source.md) |
+| Writer | [`encodeI3SMeshLayer`](../api-reference/i3s-mesh-writer.md) |
+| Writer | [`SLPKWriter`](../api-reference/slpk-writer.md) |
+
 <TiledSceneGraphic />
 
 <DocOrientation

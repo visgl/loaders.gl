@@ -22,6 +22,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`PerfettoTraceLoader`](../api-reference/perfetto-trace-loader.md) |
+| Writer | [`PerfettoTraceWriter`](../api-reference/perfetto-trace-writer.md) |
+
 <TracesDocsTabs active="perfetto-trace" />
 
 <DocOrientation

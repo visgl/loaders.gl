@@ -24,6 +24,13 @@ import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`ZipkinTraceLoader`](../api-reference/zipkin-trace-loader.md) |
+| Writer | [`ZipkinTraceWriter`](../api-reference/zipkin-trace-writer.md) |
+
 <DocOrientation
   eyebrow="The Zipkin path"
   title="Read spans and annotations. Put them beside the other trace dialects."

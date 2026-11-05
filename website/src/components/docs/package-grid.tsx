@@ -31,7 +31,7 @@ export function PackageTile({children, formats = []}: PackageContainerProps & {
         <div className={styles.logos}>
           {formats.map(format => (
             <Link key={format.slug} to={format.to} className={styles.logoLink}>
-              <FormatLogo slug={format.slug} />
+              <FormatLogo slug={format.slug} linked={false} />
             </Link>
           ))}
         </div>

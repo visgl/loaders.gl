@@ -1,13 +1,16 @@
+import {FormatLogo} from '@site/src/components/docs/format-logo';
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
 # @loaders.gl/scene
 
 Load scene graphs and meshes from glTF/GLB, OBJ/MTL, OpenUSD and Draco. Install one package and use the format entrypoint appropriate for the asset.
 
-| Subpath | Formats | Metadata loaders |
+| Format | Subpath | Description |
 | --- | --- | --- |
-| [Draco](./draco/README.md) (package root) | Compressed meshes and point clouds | `DracoLoader` |
-| [gltf](./gltf/README.md) | glTF and GLB | `GLTFLoader`, `GLBLoader` |
-| [obj](./obj/README.md) | OBJ and MTL | `OBJLoader`, `MTLLoader` |
-| [OpenUSD](./usd/api-reference/usd-loader.md) (`/usd`) | USD ASCII layers and uncompressed USDZ archives | `USDLoader` |
+| <FormatLogo slug="draco" /> | [Package root](./draco/README.md) | Draco compressed meshes and point clouds |
+| <FormatLogo slug="gltf" /> | [`/gltf`](./gltf/README.md) | glTF and GLB |
+| — | [`/obj`](./obj/README.md) | OBJ and MTL |
+| <FormatLogo slug="usd" /> | [`/usd`](./usd/api-reference/usd-loader.md) | USD ASCII and uncompressed USDZ |
 
 ```bash
 npm install @loaders.gl/core @loaders.gl/scene
@@ -28,3 +31,18 @@ OBJ's transport helpers come directly from core and do not require the tables pa
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).
+
+
+## Format guides
+
+- [Draco3D](./draco/formats/draco.md)
+- [MaterialX](./formats/materialx.md)
+- [GLB binary](./gltf/formats/glb.md)
+- [glTF](./gltf/formats/gltf.md)
+- [Wavefront OBJ](./obj/formats/obj.md)
+- [OpenUSD](./usd/formats/usd.md)
+
+
+## Package exports
+
+<ModuleSubpaths module="scene" />

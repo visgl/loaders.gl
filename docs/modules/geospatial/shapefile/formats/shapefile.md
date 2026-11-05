@@ -23,6 +23,14 @@ import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`ShapefileLoader`](../api-reference/shapefile-loader.md) |
+| Loader | [`SHPLoader`](../api-reference/shp-loader.md) |
+| Loader | [`DBFLoader`](../api-reference/dbf-loader.md) |
+
 <DocOrientation
   eyebrow="The Shapefile path"
   title="Collect the files. Decode geometry and attributes. Check the CRS."

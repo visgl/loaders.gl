@@ -1,12 +1,15 @@
+import {FormatLogo} from '@site/src/components/docs/format-logo';
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
 # @loaders.gl/pointclouds
 
 Point-cloud decoders and writers for LAS/LAZ, PCD and PLY. PLY keeps both point-cloud and mesh/face output; there is one implementation for both uses.
 
-| Subpath | Formats | Metadata loader |
+| Format | Subpath | Description |
 | --- | --- | --- |
-| [las](./las/README.md) | LAS and LAZ | `LASLoader` |
-| [pcd](./pcd/README.md) | PCD | `PCDLoader` |
-| [ply](./ply/README.md) | PLY points and meshes | `PLYLoader` |
+| — | [`/las`](./las/README.md) | LAS and LAZ |
+| — | [`/pcd`](./pcd/README.md) | PCD |
+| — | [`/ply`](./ply/README.md) | PLY points and meshes |
 
 ```bash
 npm install @loaders.gl/core @loaders.gl/pointclouds
@@ -29,3 +32,15 @@ COPC and Potree tileset traversal remain in `@loaders.gl/tiles-3d`; point decodi
 
 See the [pointclouds notice inventory](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md)
 and [References and credits](https://loaders.gl/docs/references-and-credits).
+
+
+## Format guides
+
+- [LAS and LAZ formats](./las/formats/las.md)
+- [PCD](./pcd/formats/pcd.md)
+- [PLY](./ply/formats/ply.md)
+
+
+## Package exports
+
+<ModuleSubpaths module="pointclouds" />

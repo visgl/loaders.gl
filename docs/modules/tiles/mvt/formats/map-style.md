@@ -21,6 +21,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`MapStyleLoader`](../api-reference/map-style-loader.md) |
+
 <DocOrientation
   eyebrow="The style path"
   title="Read the document. Resolve its sources. Hand rendering rules to the client."

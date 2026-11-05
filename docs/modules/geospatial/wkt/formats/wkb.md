@@ -22,6 +22,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`WKBLoader`](../api-reference/wkb-loader.md) |
+| Loader | [`HexWKBLoader`](../api-reference/hex-wkb-loader.md) |
+| Writer | [`WKBWriter`](../api-reference/wkb-writer.md) |
+
 <DocOrientation
   eyebrow="The WKB record path"
   title="Read byte order. Identify the geometry. Decode its coordinate records."

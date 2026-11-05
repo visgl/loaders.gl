@@ -5,6 +5,9 @@ hide_title: true
 page_style: designed
 ---
 
+import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
+
+
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocLiveExample} from '@site/src/components/docs/doc-live-example';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
@@ -307,3 +310,17 @@ for supported item types, metadata, authentication and deployment verification.
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/arcgis/THIRD-PARTY-NOTICES.md)
 and the project-wide [References and credits](/docs/references-and-credits).
+
+
+## Format guides
+
+- [ArcGIS FeatureServer protocol and formats](./formats/arcgis-feature-server.md)
+- [ArcGIS ImageServer protocol and formats](./formats/arcgis-image-server.md)
+- [ArcGIS MapServer protocol and formats](./formats/arcgis-map-server.md)
+- [ArcGIS SceneServer protocol and formats](./formats/arcgis-scene-server.md)
+- [ArcGIS VectorTileServer protocol and formats](./formats/arcgis-vector-tile-server.md)
+
+
+## Package exports
+
+<ModuleSubpaths module="arcgis" />

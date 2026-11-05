@@ -24,6 +24,13 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`BSONLoader`](../api-reference/bson-loader.md) |
+| Writer | [`BSONWriter`](../api-reference/bson-writer.md) |
+
 <BsonDocsTabs active="overview" />
 
 <StructuredDataPathGraphic />

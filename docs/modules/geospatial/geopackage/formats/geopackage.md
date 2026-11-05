@@ -25,6 +25,13 @@ import {ClientExample} from '@site/src/components';
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GeoPackageLoader`](../api-reference/geopackage-loader.md) |
+| Source | [`GeoPackageSource`](../api-reference/geopackage-source.md) |
+
 <DocLiveExample label="GeoPackage format example" height="420px">
   <ClientExample kind="geospatial" format="GeoPackage" />
 </DocLiveExample>

@@ -22,6 +22,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
+## loaders.gl support
+
+| Type | API |
+| --- | --- |
+| Loader | [`GeoJSONLoader`](../api-reference/geojson-loader.md) |
+| Writer | [`GeoJSONWriter`](../api-reference/geojson-writer.md) |
+
 <DocOrientation
   eyebrow="The geometry boundary"
   title="Choose the type. Supply coordinates. Let the feature layer add context."
