@@ -1,0 +1,46 @@
+name: website
+
+on:
+  push:
+    branches:
+      - 4.5-release
+
+concurrency: website-gh-pages
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.repository_owner == 'visgl' }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          token: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version-file: '.nvmrc'
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.12.0 --activate
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Build modules
+        run: yarn build
+      - name: Build website
+        run: yarn build
+        working-directory: website
+      - name: Deploy 4.5 website
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # 4.8.0
+        with:
+          token: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
+          branch: gh-pages
+          folder: website/build
+          clean: true
+          clean-exclude: |
+            next
