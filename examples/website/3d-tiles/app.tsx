@@ -32,7 +32,6 @@ maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', impor
 const TILESET_SERVER_URL = 'https://assets.ion.cesium.com';
 
 const DREAM_SEQUENCE_DURATION = 18000;
-const DREAM_AUTOPLAY_DELAY = 4200;
 const TILE_FOLD_EXTENSION = new TileFoldExtension();
 const EXAMPLES_VIEWSTATE = {
   latitude: 40.04248558075302,
@@ -265,7 +264,6 @@ type AppState = {
 export default class App extends PureComponent<AppProps, AppState> {
   private _deckStatsWidget: any = null;
   private _dreamAnimationFrame: number | null = null;
-  private _dreamAutoplayTimeout: ReturnType<typeof setTimeout> | null = null;
   private _dreamSequenceStartedAt = 0;
   /** Cached ion credential providers, keyed by asset, so endpoint tokens survive React renders. */
   private _ionCredentials = new Map<string | number, RequestCredential>();
@@ -342,7 +340,6 @@ export default class App extends PureComponent<AppProps, AppState> {
   }
 
   componentWillUnmount() {
-    this._cancelDreamAutoplay();
     this._stopDreamSequence();
   }
 
@@ -405,7 +402,6 @@ export default class App extends PureComponent<AppProps, AppState> {
     category: string;
     name: string;
   }) {
-    this._cancelDreamAutoplay();
     this._tile3dLayer = null;
     this._tile3dLayerKey = null;
     this._stopDreamSequence();
@@ -439,30 +435,6 @@ export default class App extends PureComponent<AppProps, AppState> {
     this.setState({tileset, error: null});
     this._tilesetStatsWidget?.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
-    this._scheduleDreamAutoplay(tileset);
-  }
-
-  /** Starts the dream sequence after the first tileset has settled on screen. */
-  _scheduleDreamAutoplay(tileset: any) {
-    this._cancelDreamAutoplay();
-    this._dreamAutoplayTimeout = setTimeout(() => {
-      this._dreamAutoplayTimeout = null;
-      if (
-        this.state.tileset === tileset &&
-        !this.state.isDreamSequencePlaying &&
-        this.state.sequenceProgress === 0
-      ) {
-        this._startDreamSequence();
-      }
-    }, DREAM_AUTOPLAY_DELAY);
-  }
-
-  /** Cancels delayed playback when the viewer takes control or changes data. */
-  _cancelDreamAutoplay() {
-    if (this._dreamAutoplayTimeout !== null) {
-      clearTimeout(this._dreamAutoplayTimeout);
-      this._dreamAutoplayTimeout = null;
-    }
   }
 
   /** Recenters the render and traversal camera on the tileset, including its elevation. */
@@ -533,7 +505,6 @@ export default class App extends PureComponent<AppProps, AppState> {
   }
 
   _stopDreamSequence() {
-    this._cancelDreamAutoplay();
     if (this._dreamAnimationFrame !== null) {
       cancelAnimationFrame(this._dreamAnimationFrame);
       this._dreamAnimationFrame = null;
@@ -561,7 +532,6 @@ export default class App extends PureComponent<AppProps, AppState> {
   // Called by DeckGL when user interacts with the map
   _onViewStateChange({viewState, interactionState}: {viewState: any; interactionState: any}) {
     if (interactionState?.isDragging || interactionState?.isZooming) {
-      this._cancelDreamAutoplay();
       this._stopDreamSequence();
     }
     this.setState({viewState});
