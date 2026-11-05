@@ -129,6 +129,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Build modules
+        run: yarn build
+
       - name: Build website
         env:
           DOCUSAURUS_BASE_URL: ${{ needs.check_branch.outputs.website_base_url }}
