@@ -1,6 +1,6 @@
 Table module
 
-CSV
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)
 
 # @loaders.gl/tables/csv
 
@@ -16,7 +16,9 @@ The CSV module handles CSV and TSV input through the same loaders.gl APIs used b
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/using-streaming-loaders.md)
 
-⛶⛶ Explore fullscreen
+CSV table map exampleEnter fullscreen
+
+⛶ Explore fullscreen
 
 Structured data boundaries
 
@@ -26,7 +28,7 @@ JSON, delimited text, BSON, and XML describe data differently. loaders.gl keeps 
 
 Input families
 
-[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/tables/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/xml/formats/xml.md)
+[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/documents/xml/formats/xml.md)
 
 pars&#x65;**→**
 

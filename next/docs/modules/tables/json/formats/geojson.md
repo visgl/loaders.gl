@@ -1,6 +1,6 @@
 Readable feature format
 
-GeoJSON
+[GeoJSON](https://loaders.gl/next/docs/modules/tables/json/formats/geojson.md)
 
 # GeoJSON
 
@@ -16,7 +16,17 @@ GeoJSON represents geographic features as JSON objects with explicit geometry an
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-loader.md)
 
-⛶⛶ Explore fullscreen
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------ |
+| Loader | [`GeoJSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-loader.md)     |
+| Loader | [`NDGeoJSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndgeojson-loader.md) |
+| Writer | [`GeoJSONWriter`](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-writer.md)     |
+
+GeoJSON format map exampleEnter fullscreen
+
+⛶ Explore fullscreen
 
 Structured data boundaries
 
@@ -26,7 +36,7 @@ JSON, delimited text, BSON, and XML describe data differently. loaders.gl keeps 
 
 Input families
 
-[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/tables/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/xml/formats/xml.md)
+[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/documents/xml/formats/xml.md)
 
 pars&#x65;**→**
 

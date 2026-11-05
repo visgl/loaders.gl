@@ -1,6 +1,6 @@
 GIS dataset format
 
-SHP
+[SHP](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)
 
 # A geospatial dataset, not just a .shp file.
 
@@ -20,7 +20,7 @@ A Shapefile is a coordinated set of geometry, attribute, index, projection, and 
 
 [ ↗](https://loaders.gl/next/docs/specifications/category-gis.md)
 
-SHP[Try It](https://loaders.gl/next/examples/geospatial/shapefile)[Overview](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Format](https://loaders.gl/next/docs/modules/geospatial/shapefile/format.md)[ShapefileLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md)[SHPLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader.md)[DBFLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md)
+[SHP](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Try It](https://loaders.gl/next/examples/geospatial/shapefile)[Overview](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Format](https://loaders.gl/next/docs/modules/geospatial/shapefile/format.md)[ShapefileLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md)[SHPLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader.md)[DBFLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md)
 
 The dataset boundary
 

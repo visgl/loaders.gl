@@ -1,6 +1,6 @@
 Hierarchical scene-layer format
 
-![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+[![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
 # I3S
 
@@ -15,6 +15,16 @@ Stream only the scene content the view can use. I3S organizes geometry, textures
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/3d-data-formats.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                                     |
+| ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Loader | [`I3SLoader`](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-loader.md)                       |
+| Source | [`I3SSource`](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/i3s-source.md)                           |
+| Source | [`I3SPointCloudSource`](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-point-cloud-source.md) |
+| Writer | [`encodeI3SMeshLayer`](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-mesh-writer.md)         |
+| Writer | [`SLPKWriter`](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/slpk-writer.md)                     |
 
 View-dependent delivery
 

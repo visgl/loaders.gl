@@ -9,7 +9,7 @@ Try the [interactive clustering example](https://loaders.gl/next/examples/geospa
 ## Cluster a table[​](#cluster-a-table "Direct link to Cluster a table")
 
 ```
-import {ClusterSource} from '@loaders.gl/core/geoarrow/cluster-source';
+import {ClusterSource} from '@loaders.gl/core/cluster-source';
 
 
 

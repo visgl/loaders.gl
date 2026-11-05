@@ -16,7 +16,7 @@ Potree datasets expose a hierarchy and node payloads that can be requested progr
 
 See [Coordinate Reference Systems](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md) for the point-cloud CRS support matrix and reprojection roadmap.
 
-![Status: Work-In-Progress](https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square)![source loader from v5.0](https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square)[![Scan supported for compatible Potree versions](https://img.shields.io/badge/Scan-Supported_versions-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
+![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)![source loader from v5.0](https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square)[![Scan supported for compatible Potree versions](https://img.shields.io/badge/Scan-Supported_versions-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
 
 [Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
 
@@ -125,7 +125,7 @@ This modules provides the following exports:
 
 ## Modern sources and authoring[​](#modern-sources-and-authoring "Direct link to Modern sources and authoring")
 
-* `PotreeLoader`: one metadata-only declaration loader for both wire layouts, with the `@loaders.gl/tiles-3d/potree/potree-loader` parser subpath.
+* `PotreeLoader`: one metadata-only declaration loader for both wire layouts, with the `@loaders.gl/tiles-3d/potree-loader` parser subpath.
 * `PotreeSourceLoader`: version-specific readers behind one source factory, compatible with `PointCloudTileset` and v5 tile-converter traversal. Modern 2.0 datasets use native-coordinate range reads; query `scan()` remains available only for compatible legacy datasets.
 * `PotreeWriter`: standard metadata writer.
 * `encodePotreeDataset`: complete legacy or modern file collections from decoded Mesh/Arrow rows.

@@ -1,6 +1,6 @@
 KML module
 
-![](/next/images/format-logos/ogc-mark.svg)OGCKML
+[![](/next/images/format-logos/ogc-mark.svg)OGCKML](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md)
 
 # Bring map and track files into one data path.
 
@@ -64,7 +64,7 @@ GPX (GPS Exchange Format) is an XML-based file format commonly used by GPS track
 
 TCX (Training Center XML) is an XML-based file format commonly used by fitness watches or similar GPS tracking software.
 
-All four parsers use the shared `@loaders.gl/xml` parser and return Arrow tables by default. KML and KMZ support is described in the [KML and KMZ format page](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md); the [GPX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/gpx.md) and [TCX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md) pages describe the sports-track formats.
+All four parsers use the shared `@loaders.gl/documents` parser and return Arrow tables by default. KML and KMZ support is described in the [KML and KMZ format page](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md); the [GPX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/gpx.md) and [TCX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md) pages describe the sports-track formats.
 
 References:
 

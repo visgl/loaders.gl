@@ -1,6 +1,6 @@
 OGC feature encoding
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGML
+[![](/next/images/format-logos/ogc-mark.svg)OGCGML](https://loaders.gl/next/docs/modules/ogc/wms/formats/gml.md)
 
 # Read structured features from XML without guessing their geometry.
 
@@ -14,11 +14,17 @@ GML is an extensible XML grammar rather than one fixed schema. loaders.gl focuse
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)[XML module](https://loaders.gl/next/docs/modules/xml.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)[XML module](https://loaders.gl/next/docs/modules/documents/xml.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/xml.md)
+[ ↗](https://loaders.gl/next/docs/modules/documents/xml.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                          |
+| ------ | -------------------------------------------------------------------------------------------- |
+| Loader | [`GMLLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/gml-loader.md) |
 
 The GML parsing path
 
@@ -119,7 +125,7 @@ The streaming parser buffers incomplete XML features across network chunks and r
 GML application schemas often carry scalar types that cannot be inferred safely from text. Supply known types from `DescribeFeatureType` or application metadata:
 
 ```
-import {GMLLoaderWithParser} from '@loaders.gl/ogc/wms/gml-loader';
+import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml-loader';
 
 
 

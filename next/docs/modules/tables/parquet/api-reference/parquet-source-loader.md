@@ -171,7 +171,7 @@ Applications that need synchronous `createDataSource()` can import the runtime l
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ParquetSourceLoader} from '@loaders.gl/tables/parquet/parquet-source-loader';
+import {ParquetSourceLoader} from '@loaders.gl/tables/parquet-source-loader';
 
 
 
@@ -185,9 +185,9 @@ The [Overture GeoParquet browser example](https://loaders.gl/next/examples/geosp
 `ParquetDatasetSource` composes a lazy file provider with one selective `ParquetSource` per selected file. The provider may be backed by STAC, a database, an application manifest, or a static array; the Parquet module does not depend on any catalog protocol.
 
 ```
-import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/parquet-dataset-source';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet-dataset-source';
 
-import {STACSource} from '@loaders.gl/ogc/stac/stac-source';
+import {STACSource} from '@loaders.gl/ogc/stac-source';
 
 
 

@@ -1,6 +1,6 @@
 GeoArrow loader
 
-![](/next/images/format-logos/apache-arrow-logo.png)
+[![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)
 
 # GeoArrowLoader
 
@@ -16,9 +16,11 @@ GeoArrowLoader parses Arrow IPC data and recognizes GeoArrow extension metadata 
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)
 
-⛶⛶ Explore fullscreen
+GeoArrowLoader map exampleEnter fullscreen
 
-![](/next/images/format-logos/apache-arrow-logo.png)[Try It](https://loaders.gl/next/examples/table/arrow)[Overview](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Format](https://loaders.gl/next/docs/modules/tables/arrow/format.md)[ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)[GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)[GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Try It](https://loaders.gl/next/examples/table/arrow)[Overview](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Format](https://loaders.gl/next/docs/modules/tables/arrow/format.md)[ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)[GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)[GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)
 
 A geospatial Arrow entry point
 

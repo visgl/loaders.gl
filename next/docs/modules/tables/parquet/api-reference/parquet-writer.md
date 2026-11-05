@@ -1,6 +1,6 @@
 Parquet writer
 
-![](/next/images/format-logos/parquet-logo.png)
+[![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)
 
 # ParquetWriter
 
@@ -16,7 +16,7 @@ ParquetWriter encodes loaders.gl table data, including Arrow-backed tables, into
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)
 
-![](/next/images/format-logos/parquet-logo.png)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
+[![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
 
 Portable output
 
@@ -40,7 +40,7 @@ validate · encode · compress
 
 Portable files
 
-[Parquetcolumnar analytical files↗](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[glTF / GLBportable scene assets↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Draco / LAScompressed geometry and points↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)
+[Parquetcolumnar analytical files↗](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[glTF / GLBportable scene assets↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Draco / LAScompressed geometry and points↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)
 
 The application chooses the data shape; the writer chooses the bytes.
 

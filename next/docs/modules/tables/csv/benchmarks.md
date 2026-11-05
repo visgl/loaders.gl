@@ -1,6 +1,6 @@
 CSV module · live benchmark
 
-CSV
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)
 
 # CSV benchmarks
 
@@ -20,7 +20,7 @@ CSV performance depends on row width, quoting, conversion, and whether the appli
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/using-streaming-loaders.md)
 
-CSV[Try It](https://loaders.gl/next/examples/geospatial/csv)[Overview](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Format](https://loaders.gl/next/docs/modules/tables/csv/format.md)[CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md)
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Try It](https://loaders.gl/next/examples/geospatial/csv)[Overview](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Format](https://loaders.gl/next/docs/modules/tables/csv/format.md)[CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md)
 
 Keep the comparison useful
 

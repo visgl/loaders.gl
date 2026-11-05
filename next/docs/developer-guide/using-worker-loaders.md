@@ -2,9 +2,9 @@ Runtime performance
 
 # Keep the UI responsive.
 
-Move parsing and decompression off the main thread with reusable workers and transferable binary data.
+Run parsing and decompression on math.gl tasks with streaming, cancellation, typed dispatch, and independent initialization and payload ownership.
 
-workersparalleltransferable
+tasksstreamingcancellation
 
 main thread
 
@@ -97,7 +97,7 @@ The same `load` and `parse` call works with or without a worker. Worker executio
 ```
 import {load, parse} from '@loaders.gl/core';
 
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 
 
 
@@ -146,7 +146,7 @@ const result = await parse(data, MyLoader, {
 
 When a loader supports worker batching, `parseInBatches` keeps one worker leased for the life of the returned iterator. Input fragments are requested only as the worker needs them, and output batches are produced only as the application advances the iterator. This keeps both queues bounded while allowing parsers to retain state across record and UTF-8 boundaries.
 
-The worker is returned to the pool after normal completion, so `core.reuseWorkers` still controls whether its runtime can be reused by later jobs. Aborting, propagating a parse error, or closing the iterator early terminates that worker and the pool creates a clean replacement. Applications should therefore close abandoned iterators (for example with `return()`) and should not assume that parser state survives an interrupted session.
+The task handle and its worker close after completion. Aborting, propagating a parse error, or closing the iterator early also releases that handle. Each subsequent operation initializes a fresh task handle. Applications should therefore close abandoned iterators (for example with `return()`) and should not assume that parser state survives an interrupted session.
 
 Binary fragments are transferred to the worker when possible; transfer gives the worker ownership and can detach the source `ArrayBuffer`. Loader-specific batch serializers can restore richer values after the boundary. For example, CSV Arrow batches use the Arrow transport helpers so the application receives real Arrow tables with methods such as `getChild()` rather than structured-cloned plain objects.
 
@@ -154,12 +154,12 @@ CSV Arrow, Parquet, Arrow, GeoArrow, JSON, JSONTable, and NDJSON support worker 
 
 ## Loading files in parallel[​](#loading-files-in-parallel "Direct link to Loading files in parallel")
 
-`DracoLoader` is a worker-enabled loader that parses Draco-compressed meshes away from the main thread. Multiple calls can use the worker pool concurrently:
+`DracoLoader` is a worker-enabled loader that parses Draco-compressed meshes away from the main thread. Multiple calls can use bounded task-runner capacity concurrently:
 
 ```
 import {load} from '@loaders.gl/core';
 
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 
 
 
@@ -184,27 +184,29 @@ async function loadWithoutWorker(url1) {
 
 ### When a worker cannot be used[​](#when-a-worker-cannot-be-used "Direct link to When a worker cannot be used")
 
-Worker options are a request, not a guarantee. loaders.gl uses the calling thread when the selected loader has no worker descriptor, the runtime cannot create workers, Node workers were not enabled, or a configured worker URL/factory is unavailable. This fallback preserves the loader result and API shape; it only changes where the work runs. A worker construction failure can fall back from a module worker to the loader's classic bundle, while an error after a worker has started is reported to the caller rather than replayed automatically.
+Worker options are a request, not a guarantee. loaders.gl uses the calling thread when the selected loader has no worker descriptor, the runtime cannot create workers, Node workers were not enabled, or a configured worker URL/factory is unavailable. This fallback preserves the loader result and API shape; it only changes where the work runs. Worker construction or task execution errors are reported to the caller. Custom worker URLs and factories must install the current task protocol.
 
 If a worker-specific result shape is not supported across the structured-clone boundary, the loader may deliberately disable worker execution for that shape. Check the loader reference when an option such as `shape: 'arrow-table'` changes transport or hydration requirements.
 
-## Disabling worker reuse[​](#disabling-worker-reuse "Direct link to Disabling worker reuse")
+## Releasing worker state[​](#releasing-worker-state "Direct link to Releasing worker state")
 
-Applications reuse already-created workers by default. Some codec runtimes retain sizeable allocations while a worker remains alive, so disabling reuse can help when processing multiple datasets sequentially or investigating memory growth. Set `core.reuseWorkers: false` when an application needs to release worker state between sequential datasets or is diagnosing retained memory:
+Each atomic loader call or complete batch stream owns an initialized task handle. The handle closes its worker on completion, so codec allocations do not remain in a reusable loader worker pool. `core.reuseWorkers` is deprecated and ignored.
+
+To cancel active and queued loader tasks during application shutdown:
 
 ```
-async function loadWithFreshWorker(url1) {
+import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 
-  const data = await load(url1, DracoLoader, {core: {reuseWorkers: false}});
 
-}
+
+await destroyWorkerTasks();
 ```
 
-## Concurrency and worker reuse[​](#concurrency-and-worker-reuse "Direct link to Concurrency and worker reuse")
+For application-defined tasks that need explicit retained state, use `TaskRunner.initializeTask` and close the returned handle when finished.
 
-`core.maxConcurrency` and `core.maxMobileConcurrency` control how many worker instances each loader may create. Increasing these limits can help when several large files are loaded at once, but setting them above roughly the number of CPU cores usually adds overhead without improving throughput.
+## Concurrency[​](#concurrency "Direct link to Concurrency")
 
-Workers remain available for reuse by default. This avoids startup costs for subsequent loads, but retained workers also retain their runtime and codec memory. Set `core.reuseWorkers: false` when that memory should be released after each job.
+`core.maxConcurrency` and `core.maxMobileConcurrency` bound active task handles for each loader descriptor. Configure them on its first request. Increasing concurrency beyond the available CPU cores can increase overhead and memory use.
 
 ## ArrayBuffer transfer[​](#arraybuffer-transfer "Direct link to ArrayBuffer transfer")
 
@@ -224,19 +226,16 @@ new Worker(new URL('./workers/example-worker.js', import.meta.url), {type: 'modu
 
 Compatible bundlers can discover this static expression and include the worker module in the application build. This avoids a runtime CDN dependency and lets the worker use ES module imports. Arrow triangulation is the first loaders.gl API to provide this path.
 
-Loaders without a module-worker factory continue to use their existing pre-built worker. A loader with both formats selects its module worker by default and retains the pre-built worker as a compatibility fallback. In browser terminology this fallback is a **classic worker**: a standalone script loaded without `{type: 'module'}`. It is not a CommonJS worker. CommonJS is relevant to the Node.js package build, while browser classic workers normally use a self-contained bundle and may use `importScripts()`.
+Loader APIs use the task protocol in both bundled and application-defined workers. Default URL targets are created as module workers. A factory may return a fresh worker constructed with the script type appropriate to its bundle. Pre-built self-contained workers still need to be rebuilt with the current `createWorker` or `createLoaderWorker` adapter.
 
 Worker targets are selected in this order:
 
-1. Inline `source`, primarily for tests and advanced integrations.
-2. An explicit loader-scoped `workerUrl`.
-3. A local test worker when `_workerType: 'test'` is set.
-4. The loader's built-in module-worker factory, when available in a browser.
-5. The existing pre-built classic-worker bundle from the package or loaders.gl CDN.
+1. An explicit loader-scoped `workerUrl`.
+2. A local test worker when `_workerType: 'test'` is set.
+3. The loader's built-in worker factory in a browser.
+4. The pre-built worker URL from the package or loaders.gl CDN.
 
-If the factory returns `null` or throws while creating the worker, loaders.gl uses the classic-worker URL. Failures that happen after the browser has successfully constructed the worker are reported as worker errors; loaders.gl cannot safely replay an in-flight job automatically.
-
-Explicit `workerUrl` settings retain classic-worker behavior. Existing classic workers are not deprecated by the module-worker API, and applications do not need to change their worker options.
+A factory returning `null` selects the default module-worker URL. Construction and execution errors are reported to the caller. Inline `source` strings and legacy hand-written message handlers are unsupported.
 
 ## Specifying Worker Script URLs (Advanced)[​](#specifying-worker-script-urls-advanced "Direct link to Specifying Worker Script URLs (Advanced)")
 

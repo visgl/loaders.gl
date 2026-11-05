@@ -1,6 +1,6 @@
 glTF writer
 
-![](/next/images/format-logos/gltf-logo.svg)
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)
 
 # Write a glTF scenegraph as a binary GLB.
 
@@ -30,7 +30,7 @@ The writer takes the loaders.gl scenegraph representation and assembles the JSON
 
 Input
 
-Loaders.gl scenegraph data
+loaders.gl scenegraph data
 
 02
 

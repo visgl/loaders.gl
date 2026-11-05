@@ -1,6 +1,6 @@
 PLY module · live benchmark
 
-PLY
+[PLY](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)
 
 # See how PLY parsing behaves in this browser.
 
@@ -20,7 +20,7 @@ PLY is flexible enough that a benchmark should make its fixture and output shape
 
 [ ↗](https://loaders.gl/next/docs/specifications/category-mesh.md)
 
-PLY[Try It](https://loaders.gl/next/examples/pointclouds/ply)[Overview](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/ply/format.md)[PLYLoader](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)[PLYWriter](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/ply/benchmarks.md)
+[PLY](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)[Try It](https://loaders.gl/next/examples/pointclouds/ply)[Overview](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/ply/format.md)[PLYLoader](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)[PLYWriter](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/ply/benchmarks.md)
 
 What the run tells you
 

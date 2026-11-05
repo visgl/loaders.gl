@@ -1,6 +1,6 @@
 3D Tiles API / writer
 
-![](/next/images/format-logos/3d-tiles-logo.png)
+[![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)
 
 # Writing is a separate format boundary.
 
@@ -58,4 +58,4 @@ This page remains intentionally short until a writer contract exists; the links 
 
 `Tiles3DWriter` is not currently implemented. There is no public `encode()` or `encodeURLtoURL()` path for producing a complete 3D Tiles tileset from loaders.gl data.
 
-For content-writing workflows, write the payload format separately—for example with [`GLTFWriter`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-writer.md) or [`DracoWriter`](https://loaders.gl/next/docs/modules/draco/api-reference/draco-writer.md)—then assemble and publish the tileset with a format-specific toolchain.
+For content-writing workflows, write the payload format separately—for example with [`GLTFWriter`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-writer.md) or [`DracoWriter`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-writer.md)—then assemble and publish the tileset with a format-specific toolchain.

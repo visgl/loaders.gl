@@ -18,6 +18,18 @@ loaders.gl 5 brings catalog discovery, columnar queries, raster access, and tile
 
 Version 5 is in prerelease development; its API is still being finalized. Start with the highlights below, or use the [upgrade guide](https://loaders.gl/next/docs/upgrade-guide.md#upgrading-to-v50) to migrate an application. The [release tracker](https://github.com/visgl/loaders.gl/issues/3316) records remaining work.
 
+### Draco joins scene[​](#draco-joins-scene "Direct link to Draco joins scene")
+
+Draco geometry support now ships in `@loaders.gl/scene`, with metadata at the root and flat parser, writer, and runtime-helper imports.
+
+### Native document and scientific codecs[​](#native-document-and-scientific-codecs "Direct link to Native document and scientific codecs")
+
+Documents now includes a generic, non-tabular JSON microloader. XML-based loaders share its native XML parser, without a direct fast-xml-parser dependency. NumPy NPY arrays now live in scientific and retain synchronous and worker parsing through a flat `/npy-loader` import.
+
+### Document loaders[​](#document-loaders "Direct link to Document loaders")
+
+`@loaders.gl/documents` brings together XML, HTML, YAML, TOML and native BSON, and adds a small Markdown loader returning a rendering-independent syntax tree. Its root stays metadata-only; parser implementations use flat subpaths such as `/markdown-loader` and `/bson-loader`. See [Documents](https://loaders.gl/next/docs/modules/documents.md) and the [migration guide](https://loaders.gl/next/docs/upgrade-guide.md).
+
 ### Query cloud data where it lives[​](#query-cloud-data-where-it-lives "Direct link to Query cloud data where it lives")
 
 Discover datasets through [STAC catalogs](https://loaders.gl/next/docs/modules/ogc/stac.md), then scan supported Parquet, Iceberg, Delta, and Hudi sources with a shared [query API](https://loaders.gl/next/docs/modules/core/scan.md). Select columns and filter rows without assembling a separate application API for each source; individual formats determine which work can be pushed down to storage. Try the [STAC explorer](https://loaders.gl/next/examples/geospatial/stac) or [Iceberg example](https://loaders.gl/next/examples/cloud-native/iceberg).
@@ -26,6 +38,8 @@ Discover datasets through [STAC catalogs](https://loaders.gl/next/docs/modules/o
 
 ### Work with tables across formats[​](#work-with-tables-across-formats "Direct link to Work with tables across formats")
 
+BSON decoding and encoding are now native, removing the optional `bson` dependency. Parquet BSON columns retain document read/write support and Arrow byte preservation. See the [BSON codec](https://loaders.gl/next/docs/modules/documents/bson.md#native-value-representations).
+
 [Apache Arrow](https://loaders.gl/next/docs/developer-guide/apache-arrow.md) provides a common columnar representation for tables, features, point clouds, and meshes. Load CSV, Parquet, and other table formats, then use [GeoArrow tools](https://loaders.gl/next/docs/modules/core/geoarrow.md) to convert and process geometry. GraphML, DOT, and GEXF also expose named node and edge tables through the [graphs module](https://loaders.gl/next/docs/modules/graphs.md). Several loaders now default to Arrow output; the upgrade guide lists options for retaining older shapes.
 
 The [Arrow query example](https://loaders.gl/next/examples/table/arrow-scan) demonstrates filtering and selecting columns. [Clustering](https://loaders.gl/next/docs/developer-guide/clustering.md) adds zoom-dependent groups, counts, aggregates, and member queries, with an experimental source adapter for map applications.
@@ -33,6 +47,8 @@ The [Arrow query example](https://loaders.gl/next/examples/table/arrow-scan) dem
 ### Read imagery and scientific data[​](#read-imagery-and-scientific-data "Direct link to Read imagery and scientific data")
 
 Read selected regions of GeoTIFF and cloud-optimized GeoTIFF with overview selection, validity masks, and decoded-memory budgets through [raster sources](https://loaders.gl/next/docs/modules/raster.md). GeoPackage can read encoded tile payloads by table and matrix ID. [Scientific formats](https://loaders.gl/next/docs/modules/scientific.md) bring NetCDF and Zarr together, including OME-Zarr bioimaging sources.
+
+[Images](https://loaders.gl/next/docs/modules/images.md) now includes compressed textures, HDR, texture manifests, and browser video loading. `ImageLoader` returns `ImageBitmap`; `LegacyImageLoader` retains older output modes. Node image decoding and encoding use an optional, lazy-loaded Sharp backend, including WebP and AVIF support. See the [image migration guide](https://loaders.gl/next/docs/upgrade-guide.md#image-texture-and-video-consolidation) for renamed loaders, flat implementation imports, and explicit codec installation.
 
 [Tile matrix support](https://loaders.gl/next/docs/developer-guide/tile-matrices.md) preserves native identifiers, coordinate systems, and coverage limits across OGC and ArcGIS services. Applications can select tiles in an explicit native frame without treating every grid as Web Mercator; renderer support remains separate.
 
@@ -48,13 +64,14 @@ Package roots expose lightweight loader metadata. Async core APIs preload parser
 
 ### Find the package for your data[​](#find-the-package-for-your-data "Direct link to Find the package for your data")
 
-Related formats now share owner packages. Install the package root and use documented subpaths for format-specific APIs. The [upgrade guide](https://loaders.gl/next/docs/upgrade-guide.md#package-and-import-migrations) maps removed packages to their replacements; the [packages overview](https://loaders.gl/next/docs/packages.md) lists all modules.
+Related formats now share owner packages. Install the package root and use documented subpaths for format-specific APIs. The [upgrade guide](https://loaders.gl/next/docs/upgrade-guide.md#package-and-import-migrations) maps removed packages to their replacements; the [Modules page](https://loaders.gl/next/docs/modules.md) lists all modules.
 
 | Package                                                                                                                                 | What it provides                                            |
 | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | [core](https://loaders.gl/next/docs/modules/core.md)                                                                               | Loading APIs, schemas, scan queries, and geometry utilities |
 | [tables](https://loaders.gl/next/docs/modules/tables.md)                                                                           | Tabular formats and lakehouse sources                       |
 | [geospatial](https://loaders.gl/next/docs/modules/geospatial.md)                                                                   | Geographic files and geometry formats                       |
+| [images](https://loaders.gl/next/docs/modules/images.md)                                                                           | Images, compressed textures, HDR, and video                 |
 | [raster](https://loaders.gl/next/docs/modules/raster.md)                                                                           | GeoTIFF, LERC, and terrain data                             |
 | [scientific](https://loaders.gl/next/docs/modules/scientific.md)                                                                   | NetCDF, Zarr, and bioimaging sources                        |
 | [tiles](https://loaders.gl/next/docs/modules/tiles.md)                                                                             | 2D tile traversal, MVT, MLT, and PMTiles                    |
@@ -88,7 +105,7 @@ Release Date: March 31, 2026
 **Highlights**
 
 * **@loaders.gl/tiles/mlt** - New [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md) and [`MLTSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md) add support for the [`MapLibre Tile`](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md) format, with a new [MLT website example](https://loaders.gl/next/examples/tiles/mlt).
-* **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](https://loaders.gl/next/docs/modules/textures/api-reference/texture-loader.md), [`TextureArrayLoader`](https://loaders.gl/next/docs/modules/textures/api-reference/texture-array-loader.md), and [`TextureCubeLoader`](https://loaders.gl/next/docs/modules/textures/api-reference/texture-cube-loader.md), and support Radiance HDR textures through [`RadianceHDRLoader`](https://loaders.gl/next/docs/modules/textures/api-reference/radiance-hdr-loader.md).
+* **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-loader.md), [`TextureArrayLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-array-loader.md), and [`TextureCubeLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-cube-loader.md), and support Radiance HDR textures through [`RadianceHDRLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/radiance-hdr-loader.md).
 * **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](https://loaders.gl/next/docs/developer-guide/apache-arrow.md).
 * **@loaders.gl/tiles/mvt** - New experimental [`MVTWriter`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-writer.md) allows GeoJSON to be written in binary MVT tile format.
 
@@ -151,7 +168,7 @@ A minor release that includes:
 
 **@loaders.gl/textures**
 
-* [`Comp[ressedTextureLoader]`](https://loaders.gl/next/docs/modules/textures/api-reference/compressed-texture-loader.md) - Now supports mipmaps in KTX2 textures.
+* [`Comp[ressedTextureLoader]`](https://loaders.gl/next/docs/modules/images/textures/api-reference/compressed-texture-loader.md) - Now supports mipmaps in KTX2 textures.
 
 **@loaders.gl/tiles-3d/3d-tiles**
 
@@ -234,7 +251,7 @@ A minor release that includes:
 
 * `Tile3DLoader` - Ignores unknown Draco3D attributes such as FLOAT64, INT64 and UINT64, when loading from e.g. `.PNTS` files. See [LAS to 3D Tiles conversion](https://cesium.com/blog/2024/03/20/preserving-more-metadata-for-point-clouds-using-3dtiles/).
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 * `DracoLoader` now ignores unsupported attributes such as FLOAT64, INT64, UINT64.
 * `DracoLoader`, `DracoWriter` - Now uses [draco3d `v1.5.7`](https://github.com/google/draco#version-157-release) *decoders*.
@@ -344,7 +361,7 @@ A major release that brings:
 
 * Now uses latest [`apache-arrow` v21](https://loaders.gl/next/docs/arrowjs/whats-new.md#v210).
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 * Decoders upgraded to [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release).
 
@@ -426,9 +443,9 @@ Release Date: May 16, 2023.
 
 **@loaders.gl/bson** (New module)
 
-* New module supporting the [BSON](https://loaders.gl/next/docs/modules/tables/bson/formats/bson.md) (Binary JSON) format.
-* [`BSONLoader`](https://loaders.gl/next/docs/modules/tables/bson/api-reference/bson-loader.md) - loads BSON encoded binary data into a "JSON like" JavaScript structure
-* [`BSONWriter`](https://loaders.gl/next/docs/modules/tables/bson/api-reference/bson-writer.md) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
+* New module supporting the [BSON](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md) (Binary JSON) format.
+* [`BSONLoader`](https://loaders.gl/next/docs/modules/documents/bson/api-reference/bson-loader.md) - loads BSON encoded binary data into a "JSON like" JavaScript structure
+* [`BSONWriter`](https://loaders.gl/next/docs/modules/documents/bson/api-reference/bson-writer.md) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
 
 **@loaders.gl/images**
 
@@ -476,7 +493,7 @@ Release Date: May 16, 2023.
 
 **@loaders.gl/xml**
 
-* [`HTMLLoader`](https://loaders.gl/next/docs/modules/xml/api-reference/html-loader.md) - New minimal HTML loader, intended for small ad-hoc use cases such as extracting an error message or a link from a short HTML page.
+* [`HTMLLoader`](https://loaders.gl/next/docs/modules/documents/xml/api-reference/html-loader.md) - New minimal HTML loader, intended for small ad-hoc use cases such as extracting an error message or a link from a short HTML page.
 
 **@loaders.gl/tile-converter**
 
@@ -504,7 +521,7 @@ Release Date: February 17, 2023.
   <!-- -->
   * [KHR\_texture\_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) - textures can now optionally be processed and removed during load by transforming UV coordinates. Useful if renderer or post processing stage does not have support for this extension.
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 * Now uses the [draco3d `v1.5.5`](https://github.com/google/draco#version-155-release) *decoders*
 * Note: Still uses the draco3d `v1.4.1` *encoder* to avoid performance regression.
@@ -517,7 +534,7 @@ Release Date: February 17, 2023.
 **@loaders.gl/xml** (New module)
 
 * New module for parsing XML (eXtensible Markup Language)
-* [`XMLLoader`](https://loaders.gl/next/docs/modules/xml/api-reference/xml-loader.md)
+* [`XMLLoader`](https://loaders.gl/next/docs/modules/documents/xml/api-reference/xml-loader.md)
 
 **@loaders.gl/tile-converter**
 
@@ -668,7 +685,7 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
 
 * Added `getSingleFeature()` function for extracting a single GeoJSON feature from a `BinaryGeometry`
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 * Updated to `draco3d@1.4.1`
 * Supports binary array fields in draco metadata.
@@ -761,7 +778,7 @@ This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstan
 
 * A new module for calculating cryptographic hashes (MD5, SHA256 etc). Provided transforms enables hashes to be calculated incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 * Draco3D libraries are upgraded to version 1.3.6.
 * Draco metadata can now be encoded and decoded.

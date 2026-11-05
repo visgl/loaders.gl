@@ -26,7 +26,7 @@ Arrow TablePlain
 
 Decode
 
-[Image​Loader↗](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[Compressed​Texture​Loader↗](https://loaders.gl/next/docs/modules/textures/api-reference/compressed-texture-loader.md)[Basis​Loader↗](https://loaders.gl/next/docs/modules/textures/api-reference/basis-loader.md)[Crunch​Worker​Loader↗](https://loaders.gl/next/docs/modules/textures/api-reference/crunch-loader.md)[RadianceHDR​Loader↗](https://loaders.gl/next/docs/modules/textures/api-reference/radiance-hdr-loader.md)[Texture​Loader↗](https://loaders.gl/next/docs/modules/textures/api-reference/texture-loader.md)[Texture​Array​Loader↗](https://loaders.gl/next/docs/modules/textures/api-reference/texture-array-loader.md)[Texture​Cube​Loader↗](https://loaders.gl/next/docs/modules/textures/api-reference/texture-cube-loader.md)
+[Image​Loader↗](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[Compressed​Texture​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/compressed-texture-loader.md)[Basis​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/basis-loader.md)[Crunch​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/crunch-loader.md)[RadianceHDR​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/radiance-hdr-loader.md)[Texture​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-loader.md)[Texture​Array​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-array-loader.md)[Texture​Cube​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-cube-loader.md)
 
 Data
 
@@ -34,7 +34,7 @@ Data
 
 Encode
 
-[Image​Writer↗](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md)[Compressed​Texture​Writer↗](https://loaders.gl/next/docs/modules/textures/api-reference/compressed-texture-writer.md)[KTX2​Basis​Universal​Texture​Writer↗](https://loaders.gl/next/docs/modules/textures/api-reference/ktx2-basis-texture-writer.md)
+[Image​Writer↗](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md)[Compressed​Texture​Writer↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/compressed-texture-writer.md)[KTX2​Basis​Universal​Texture​Writer↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/ktx2-basis-texture-writer.md)
 
 What comes back
 
@@ -76,26 +76,26 @@ The sections below cover loader selection, return shapes, browser and Node.js be
 
 ## Image Category Loaders[​](#image-category-loaders "Direct link to Image Category Loaders")
 
-| Loader                                                                                                       | Notes                                       |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
-| [`ImageBitmapLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md) | Loads raster images as `ImageBitmap`        |
-| [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)              | Deprecated compatibility image loader       |
-| [`ImageWriter`](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md)              | Encodes raster image data to binary formats |
+| Loader                                                                                          | Notes                                       |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md) | Loads raster images as `ImageBitmap`        |
+| [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md) | Deprecated compatibility image loader       |
+| [`ImageWriter`](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md) | Encodes raster image data to binary formats |
 
 Core image category support is provided by the `@loaders.gl/images` module:
 
 ## Usage[​](#usage "Direct link to Usage")
 
-The preferred loader for new code is `ImageBitmapLoader`:
+The preferred loader for new code is `ImageLoader`:
 
 ```
 import '@loaders.gl/core/polyfills'; // Only required if loading images under Node.js
 
-import {ImageBitmapLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 
 import {registerLoaders, load} from '@loaders.gl/core';
 
-registerLoaders(ImageBitmapLoader);
+registerLoaders(ImageLoader);
 
 const image = await load('image.jpeg');
 ```
@@ -107,11 +107,11 @@ import '@loaders.gl/core/polyfills'; // Only required if loading images under No
 
 import {load} from '@loaders.gl/core';
 
-import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageData} from '@loaders.gl/images';
 
 
 
-const image = await load('image.jpeg', ImageBitmapLoader);
+const image = await load('image.jpeg', ImageLoader);
 
 const imageData = getImageData(image);
 ```
@@ -122,15 +122,15 @@ Images can be represented either as opaque image objects (`ImageBitmap` or `Imag
 
 A loaded image can always be converted to an *image data* object (an object containing a `Uint8Array` with the pixel data, and metadata like `width` and `height`).
 
-`ImageBitmapLoader` returns `ImageBitmap` in browsers. Under Node.js with `@loaders.gl/core/polyfills`, `ImageBitmapLoader` returns a minimal `ImageBitmap` polyfill backed by decoded image data. Deprecated `ImageLoader` preserves older compatibility return types and options.
+`ImageLoader` returns `ImageBitmap` in browsers. Under Node.js with `@loaders.gl/core/polyfills`, `ImageLoader` returns a minimal `ImageBitmap` polyfill backed by decoded image data. Deprecated `ImageLoader` preserves older compatibility return types and options.
 
 Note that *type* is independent of the *format* of the image (see below).
 
-| Image Type    | Class                                                                | Availability         | Workers         | Description                                                                                                                 |
-| ------------- | -------------------------------------------------------------------- | -------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | ❌ No           | Compatible with headless GL and still supported by helper APIs.                                                             |
-| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | ⚠️ Browser only | The preferred type returned by `ImageBitmapLoader`. Browsers use the native API, while Node.js uses the installed polyfill. |
-| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | ❌ No           | The traditional DOM image class. It remains supported by helper APIs and by deprecated `ImageLoader`.                       |
+| Image Type    | Class                                                                | Availability         | Workers         | Description                                                                                                           |
+| ------------- | -------------------------------------------------------------------- | -------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | ❌ No           | Compatible with headless GL and still supported by helper APIs.                                                       |
+| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | ⚠️ Browser only | The preferred type returned by `ImageLoader`. Browsers use the native API, while Node.js uses the installed polyfill. |
+| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | ❌ No           | The traditional DOM image class. It remains supported by helper APIs and by deprecated `ImageLoader`.                 |
 
 ## Image Data[​](#image-data "Direct link to Image Data")
 
@@ -148,15 +148,15 @@ Some loaders may add additional fields to the image data structure to describe t
 
 The image category supports some generic options (specified using `options.image.<option-name>`), that are applicable to image loaders.
 
-| Option               | Default | Type   | Availability                                  | Description                                                                                      |
-| -------------------- | ------- | ------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `options.image.type` | unset   | string | `ImageBitmapLoader`, deprecated `ImageLoader` | `ImageBitmapLoader` only accepts `imagebitmap`. Deprecated `ImageLoader` preserves legacy modes. |
+| Option               | Default | Type   | Availability                            | Description                                                                                |
+| -------------------- | ------- | ------ | --------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `options.image.type` | unset   | string | `ImageLoader`, deprecated `ImageLoader` | `ImageLoader` only accepts `imagebitmap`. Deprecated `ImageLoader` preserves legacy modes. |
 
 ## Notes[​](#notes "Direct link to Notes")
 
 ### About worker loading[​](#about-worker-loading "Direct link to About worker loading")
 
-Worker loading is primarily tied to `ImageBitmap` support in the current runtime. Deprecated `ImageLoader` may still use compatibility fallbacks, while `ImageBitmapLoader` always targets bitmap output. Use `options.core.worker: false` to disable worker loading of images.
+Worker loading is primarily tied to `ImageBitmap` support in the current runtime. Deprecated `ImageLoader` may still use compatibility fallbacks, while `ImageLoader` always targets bitmap output. Use `options.core.worker: false` to disable worker loading of images.
 
 ### About texture loaders[​](#about-texture-loaders "Direct link to About texture loaders")
 
@@ -176,7 +176,7 @@ The image category also provides a few utilities:
 Image data objects returned by image category loaders have the same fields (`width`, `height`, `data`) as the browser's built-in `ImageData` class, but are not actual instances of `ImageData`. However, should you need it, it is easy to create an `ImageData` instance from an image data object:
 
 ```
-const image = await load(url, ImageBitmapLoader);
+const image = await load(url, ImageLoader);
 
 const data = getImageData(image);
 

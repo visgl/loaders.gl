@@ -1,6 +1,6 @@
 Text mesh format
 
-OBJ
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)
 
 # Move simple geometry into a shared mesh path.
 
@@ -64,10 +64,11 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers[​](#loaders-and-writers "Direct link to Loaders and Writers")
 
-| Loader or Writer                                                                               | Description                                            |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| [`OBJLoader`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md) | Loads OBJ meshes as Mesh objects or Mesh Arrow tables. |
-| [`OBJWriter`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md) | Writes Mesh or Mesh Arrow table data as OBJ text.      |
+| Loader or Writer                                                                               | Description                                                 |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [`OBJLoader`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md) | Loads OBJ meshes as Mesh objects or Mesh Arrow tables.      |
+| [`OBJWriter`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md) | Writes Mesh or Mesh Arrow table data as OBJ text.           |
+| [`MTLLoader`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/mtl-loader.md) | Reads Wavefront material libraries referenced by OBJ files. |
 
 ## Attribution[​](#attribution "Direct link to Attribution")
 
@@ -75,4 +76,4 @@ OBJLoader is a port of [three.js](https://github.com/mrdoob/three.js)'s OBJLoade
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).

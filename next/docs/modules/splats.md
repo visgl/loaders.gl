@@ -78,4 +78,27 @@ npm install @loaders.gl/core @loaders.gl/splats
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/splats/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/splats/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
+
+## Format guides[​](#format-guides "Direct link to Format guides")
+
+* [SPLAT, KSPLAT, SPZ, and RAD](https://loaders.gl/next/docs/modules/splats/formats/splats.md)
+
+## Package exports[​](#package-exports "Direct link to Package exports")
+
+All exported subpaths (<!-- -->10<!-- -->)
+
+These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
+
+| Format | Import subpath                                 |
+| ------ | ---------------------------------------------- |
+|        | `@loaders.gl/splats/bundled`                   |
+|        | `@loaders.gl/splats/ksplat-loader`             |
+|        | `@loaders.gl/splats/rad-loader`                |
+|        | `@loaders.gl/splats/rad-metadata.schema.json`  |
+|        | `@loaders.gl/splats/rad-source-loader`         |
+|        | `@loaders.gl/splats/rad-zod-schema`            |
+|        | `@loaders.gl/splats/radc-metadata.schema.json` |
+|        | `@loaders.gl/splats/splat-loader`              |
+|        | `@loaders.gl/splats/spz-loader`                |
+|        | `@loaders.gl/splats/unbundled`                 |

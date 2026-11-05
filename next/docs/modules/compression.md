@@ -251,6 +251,8 @@ Import a direct default or backend-specific subpath only when bundle composition
 
 The root exports only direction-specific codec classes. WASM fallbacks load dynamically when native support is unavailable; use an ESM bundler with code splitting to keep these modules out of the initial bundle. Explicit implementation subpaths intentionally include their codec. Legacy combined classes are available only through explicit subpaths during migration.
 
+On Node.js 24 and later, compress-utils can use Node's source-phase WebAssembly imports by starting Node with `--conditions=compress-utils-wasm-source`. Without that condition it reads the WASM assets from the installed package. In browsers, the bundler must emit the WASM assets alongside the codec modules. The codec package currently resolves its own assets; task-managed WASM bytes or compiled modules cannot be supplied to its public API.
+
 See the [v5 upgrade guide](https://loaders.gl/next/docs/upgrade-guide.md) for import migrations and behavior changes.
 
 ## Formats at a glance[​](#formats-at-a-glance "Direct link to Formats at a glance")
@@ -304,4 +306,78 @@ Use bounded input chunks. The decoder retains a fixed history plus the current u
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/compression/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/compression/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
+
+## Package exports[​](#package-exports "Direct link to Package exports")
+
+All exported subpaths (<!-- -->65<!-- -->)
+
+These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
+
+| Format | Import subpath                                            |
+| ------ | --------------------------------------------------------- |
+|        | `@loaders.gl/compression/*-compressor-compress-utils`     |
+|        | `@loaders.gl/compression/*-compressor-fflate`             |
+|        | `@loaders.gl/compression/*-compressor-pako`               |
+|        | `@loaders.gl/compression/*-decompressor-compress-utils`   |
+|        | `@loaders.gl/compression/*-decompressor-fflate`           |
+|        | `@loaders.gl/compression/*-decompressor-pako`             |
+|        | `@loaders.gl/compression/brotli-compress-utils`           |
+|        | `@loaders.gl/compression/brotli-compression`              |
+|        | `@loaders.gl/compression/brotli-compressor`               |
+|        | `@loaders.gl/compression/brotli-decode`                   |
+|        | `@loaders.gl/compression/brotli-decompressor`             |
+|        | `@loaders.gl/compression/brotli-decompressor-shim`        |
+|        | `@loaders.gl/compression/brotli-shim`                     |
+|        | `@loaders.gl/compression/bzip2-compress-utils`            |
+|        | `@loaders.gl/compression/bzip2-compression`               |
+|        | `@loaders.gl/compression/bzip2-compressor`                |
+|        | `@loaders.gl/compression/bzip2-decompressor`              |
+|        | `@loaders.gl/compression/compression-worker-node.js`      |
+|        | `@loaders.gl/compression/compression-worker.js`           |
+|        | `@loaders.gl/compression/deflate-compress-utils`          |
+|        | `@loaders.gl/compression/deflate-compression`             |
+|        | `@loaders.gl/compression/deflate-compressor`              |
+|        | `@loaders.gl/compression/deflate-decompressor`            |
+|        | `@loaders.gl/compression/deflate-fflate`                  |
+|        | `@loaders.gl/compression/deflate-pako`                    |
+|        | `@loaders.gl/compression/gzip-compress-utils`             |
+|        | `@loaders.gl/compression/gzip-compression`                |
+|        | `@loaders.gl/compression/gzip-compressor`                 |
+|        | `@loaders.gl/compression/gzip-decompressor`               |
+|        | `@loaders.gl/compression/gzip-fflate`                     |
+|        | `@loaders.gl/compression/gzip-pako`                       |
+|        | `@loaders.gl/compression/lz4-compress-utils`              |
+|        | `@loaders.gl/compression/lz4-compression`                 |
+|        | `@loaders.gl/compression/lz4-compressor`                  |
+|        | `@loaders.gl/compression/lz4-compressor-lz4js`            |
+|        | `@loaders.gl/compression/lz4-decompressor`                |
+|        | `@loaders.gl/compression/lz4-decompressor-lz4js`          |
+|        | `@loaders.gl/compression/lz4-lz4js`                       |
+|        | `@loaders.gl/compression/lzo-decompressor`                |
+|        | `@loaders.gl/compression/lzo-decompressor-compress-utils` |
+|        | `@loaders.gl/compression/native-compression`              |
+|        | `@loaders.gl/compression/native-decompression`            |
+|        | `@loaders.gl/compression/no-compression`                  |
+|        | `@loaders.gl/compression/no-compressor`                   |
+|        | `@loaders.gl/compression/no-decompressor`                 |
+|        | `@loaders.gl/compression/snappy-compress-utils`           |
+|        | `@loaders.gl/compression/snappy-compression`              |
+|        | `@loaders.gl/compression/snappy-compressor`               |
+|        | `@loaders.gl/compression/snappy-compressor-snappyjs`      |
+|        | `@loaders.gl/compression/snappy-decompressor`             |
+|        | `@loaders.gl/compression/snappy-decompressor-hysnappy`    |
+|        | `@loaders.gl/compression/snappy-decompressor-snappyjs`    |
+|        | `@loaders.gl/compression/snappy-snappyjs`                 |
+|        | `@loaders.gl/compression/xz-compress-utils`               |
+|        | `@loaders.gl/compression/xz-compression`                  |
+|        | `@loaders.gl/compression/xz-compressor`                   |
+|        | `@loaders.gl/compression/xz-decompressor`                 |
+|        | `@loaders.gl/compression/zstd-compress-utils`             |
+|        | `@loaders.gl/compression/zstd-compression`                |
+|        | `@loaders.gl/compression/zstd-compressor`                 |
+|        | `@loaders.gl/compression/zstd-decompressor`               |
+|        | `@loaders.gl/compression/zstd-decompressor-fzstd`         |
+|        | `@loaders.gl/compression/zstd-fallback`                   |
+|        | `@loaders.gl/compression/zstd-fzstd`                      |
+|        | `@loaders.gl/compression/zstd-zstd-codec`                 |

@@ -1,6 +1,6 @@
 COPC source
 
-![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)
+[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)
 
 # COPCSourceLoader
 
@@ -18,7 +18,7 @@ Turn one cloud object into a selectable point source. Discover metadata, select 
 
 ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
 
-![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
+[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
 
 The cloud point path
 

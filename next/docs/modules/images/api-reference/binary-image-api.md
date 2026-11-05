@@ -8,11 +8,11 @@ Binary image utilities identify supported encoded images and extract dimensions 
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/images.md)[Image loader](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/images.md)[Image loader](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md)[Image category](https://loaders.gl/next/docs/specifications/category-image.md)
+[ ↗](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[Image category](https://loaders.gl/next/docs/specifications/category-image.md)
 
 <!-- -->
 

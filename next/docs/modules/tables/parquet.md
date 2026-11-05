@@ -1,6 +1,6 @@
 Module overview
 
-![](/next/images/format-logos/parquet-logo.png)
+[![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet)
 
 # @loaders.gl/tables/parquet
 
@@ -22,13 +22,15 @@ ArrowParquetselective reads
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
 
+Parquet scan exampleEnter fullscreen
+
 Parquet URLhttps\://raw\.githubusercontent.com/visgl/loaders.gl/master/modules/tables/test/parquet/data/geoparquet/airports.parquet
 
 **Parquet scan parameters**Discovering schema…
 
 Reading source metadata before opening the data…
 
-![From-v3.1](https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)[![Scan supported](https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
+![From-v3.1](https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square)[![Scan supported](https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
 
 The Parquet layout
 
@@ -97,7 +99,7 @@ Experimental loader and writer for the Apache Parquet format.
 * `ParquetLoader` uses the TypeScript reader and compress-utils codecs. `ParquetWriter` retains its WASM encoder. Use `parquet.shape: 'object-row-table'` when row objects are required.
 * [`ParquetSourceLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md) provides reusable, selective Arrow reads with cached schema and footer metadata. ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
 * [`ParquetDatasetSource`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md#multi-file-datasets) coordinates catalog-backed, multi-file Parquet reads with file pruning and bounded concurrency. ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
-* The optional WASM reader is available as `ParquetWasmLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-wasm-loader`. Install `parquet-wasm` when using this reader or `ParquetWriter`; it is an optional dependency. `ParquetJSLoaderWithParser` shares the TypeScript reader used by the canonical loader. `ParquetJSWriter` provides the TypeScript writer.
+* The optional WASM reader is available as `ParquetWasmLoaderWithParser` from `@loaders.gl/tables/parquet-wasm-loader`. Install `parquet-wasm` when using this reader or `ParquetWriter`; it is an optional dependency. `ParquetJSLoaderWithParser` shares the TypeScript reader used by the canonical loader. `ParquetJSWriter` provides the TypeScript writer.
 * `ParquetLoader` returns an Arrow table by default and `ParquetWriter` accepts loaders.gl Arrow tables.
 * Iceberg, Delta Lake, and Hudi table-format sources are available from `@loaders.gl/tables/iceberg`, `@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`. They use Parquet for physical file reads and the shared scan contracts from core; installing `@loaders.gl/core/scan` is unnecessary to use them.
 

@@ -14,6 +14,12 @@ STAC connects catalog, collection, and item metadata to the files or services th
 
 [ ↗](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| Source loader | [`STACSourceLoader`](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md) |
+
 Catalog discovery
 
 ## Find the asset before opening the bytes.

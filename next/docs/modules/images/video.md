@@ -1,0 +1,91 @@
+Images package · video APIs
+
+# Keep browser video loading inside the data pipeline.
+
+`@loaders.gl/images` provides an experimental browser-only loader for video data. It follows loaders.gl conventions while leaving playback and rendering decisions to the application.
+
+[Video loader](https://loaders.gl/next/docs/modules/images/video/api-reference/video-loader.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/images/video/api-reference/video-loader.md)[Image and media data](https://loaders.gl/next/docs/modules/images.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/images.md)[Using loaders](https://loaders.gl/next/docs/developer-guide/using-loaders.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/developer-guide/using-loaders.md)
+
+The browser media path
+
+## Load media data. Let the application decide how to play it.
+
+The module is intentionally small: it prepares browser video data for an application and does not attempt to provide a Node.js implementation or a full playback framework.
+
+01
+
+Input
+
+Browser-supported video resources
+
+02
+
+Runtime
+
+Browser APIs only
+
+03
+
+Loader
+
+VideoLoader
+
+04
+
+Next step
+
+Application-owned playback or rendering
+
+Detailed guide
+
+## Experimental API details
+
+The reference below covers installation, the current loader surface, browser limitations, and related media APIs.
+
+![From-v2.2](https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square)
+
+The `@loaders.gl/images` module provides browser video loading and GIF encoding through `VideoLoader` and `GIFBuilder`.
+
+> Video support is still experimental, and does not work in Node.js.
+
+## Installation[​](#installation "Direct link to Installation")
+
+```
+npm install @loaders.gl/images
+
+npm install @loaders.gl/core
+```
+
+## API[​](#api "Direct link to API")
+
+| Loader                                                                                                | Description |
+| ----------------------------------------------------------------------------------------------------- | ----------- |
+| [`VideoLoader`](https://loaders.gl/next/docs/modules/images/video/api-reference/video-loader.md) |             |
+
+## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
+
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/images/video/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
+
+## Imports[​](#imports "Direct link to Imports")
+
+```
+import {load} from '@loaders.gl/core';
+
+import {VideoLoader} from '@loaders.gl/images';
+
+import GIFBuilder from '@loaders.gl/images/gif-builder';
+```
+
+`VideoLoader` is metadata-only and preloads its browser implementation through async core APIs. Direct parser access is `VideoLoaderWithParser` from `@loaders.gl/images/video-loader`. GIF building remains a browser-only direct entry point. Neither API is pulled into the image root implementation eagerly.

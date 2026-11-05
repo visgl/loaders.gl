@@ -1,6 +1,6 @@
 WMS module · catalog service
 
-![](/next/images/format-logos/ogc-mark.svg)OGCCSW
+[![](/next/images/format-logos/ogc-mark.svg)OGCCSW](https://loaders.gl/next/docs/modules/ogc/wms/formats/csw.md)
 
 # Give catalog search a typed application boundary.
 

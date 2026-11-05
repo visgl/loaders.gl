@@ -1,6 +1,6 @@
 Service operations
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)
 
 # Share operational policy without hiding the protocol.
 

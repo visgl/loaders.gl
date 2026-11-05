@@ -1,6 +1,6 @@
 I3S recipe · conformance
 
-![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+[![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
 # Inspect the profile before you render it.
 

@@ -1,6 +1,6 @@
 # GeoTIFFRasterLoader
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
 
 `GeoTIFFRasterLoader` decodes original numeric TIFF samples for elevation models, geodetic grids and scientific rasters. It returns plain objects and typed arrays, including metadata for every selected image and band.
 
@@ -72,7 +72,7 @@ const dataset = await load('multiband.tif', GeoTIFFRasterLoader, {
 The root export is metadata-only. Core's asynchronous `load()` and `parse()` automatically preload the parser on first use. To bundle the numeric parser explicitly:
 
 ```
-import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff/geotiff-raster-loader';
+import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff-raster-loader';
 ```
 
 TIFF decompression is asynchronous; there is no `parseSync()` implementation. The original core handles uncompressed integer and floating-point samples. Auto mode uses geotiff.js for unsupported encodings or metadata; malformed directories and exhausted budgets fail without fallback. See [TIFF decoder core](https://loaders.gl/next/docs/modules/raster/geotiff/tiff-decoder-core.md). Neither backend applies scale/offset. Array-valued native file-directory tags are plain arrays; compatibility tags may use typed arrays. Output budgets cover returned sample arrays; geotiff.js decompression scratch allocation is not bounded by these options.

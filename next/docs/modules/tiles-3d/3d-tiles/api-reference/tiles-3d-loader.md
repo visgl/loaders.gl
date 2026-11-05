@@ -1,12 +1,12 @@
 3D Tiles
 
-![](/next/images/format-logos/3d-tiles-logo.png)
+[![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)
 
 # Read tiled 3D worlds one payload at a time.
 
 Read tiled 3D worlds one payload at a time. `Tiles3DLoader` parses 3D Tiles tilesets and their renderable content, then delegates linked glTF, Draco, image, and texture payloads to the appropriate loaders. Use it directly for parsing or with `Tiles3DSource` for view-driven traversal.
 
-![](/next/images/format-logos/3d-tiles-logo.png)[Module](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Loader API](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Runtime guides](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md)[Source API](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)
+[![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Module](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Loader API](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Runtime guides](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md)[Source API](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)
 
 View-dependent delivery
 
@@ -76,16 +76,16 @@ Parses a [3D Tiles](https://github.com/CesiumGS/3d-tiles) tileset.
 
 The loader also provides experimental, automatically detected support for the explicit hierarchy in the draft glTF-based 3D Tiles 2.0 representation. This is a loader and traversal capability; it does not add renderer-level vector styling, clipping, or drawing.
 
-| Tiles3DLoader     |                                                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| File Extensions   | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                        |
-| File Type         | Binary (with linked assets)                                                                                              |
-| File Format       | [3D Tiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification#tile-format-specifications)                      |
-| Data Format       | Data Formats (see below)                                                                                                 |
-| Decoder Type      | Asynchronous                                                                                                             |
-| Worker Thread     | ❌ No                                                                                                                    |
-| Streaming Support | ❌ No \*                                                                                                                 |
-| Subloaders        | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageBitmapLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
+| Tiles3DLoader     |                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| File Extensions   | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                  |
+| File Type         | Binary (with linked assets)                                                                                        |
+| File Format       | [3D Tiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification#tile-format-specifications)                |
+| Data Format       | Data Formats (see below)                                                                                           |
+| Decoder Type      | Asynchronous                                                                                                       |
+| Worker Thread     | ❌ No                                                                                                              |
+| Streaming Support | ❌ No \*                                                                                                           |
+| Subloaders        | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
 
 \* Streaming individual tile contents is not supported; however, tilesets are streamed so that only the tiles needed for the specified viewports are loaded.
 
@@ -217,7 +217,7 @@ The equivalent generated JSON Schema is published as `@loaders.gl/tiles-3d/3d-ti
 
 General request options such as headers are supplied through the shared loaders.gl options. When `3d-tiles.loadGLTF` is enabled, use [`GLTFLoader` options](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md) under `options.gltf` to control linked scene resources.
 
-Standard linked raster images are decoded through [`ImageBitmapLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md).
+Standard linked raster images are decoded through [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md).
 
 See [Resource resolution and content detection](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/resource-resolution-and-content-detection.md) for extensionless and signed URLs, nested tilesets, inherited query parameters, archive sources, validation behavior, and troubleshooting.
 

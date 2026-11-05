@@ -1,6 +1,6 @@
 Binary scene container
 
-![](/next/images/format-logos/gltf-logo.svg)GLB
+[![](/next/images/format-logos/gltf-logo.svg)GLB](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)
 
 # Put a complete glTF scene in one file.
 
@@ -15,6 +15,14 @@ GLB packages the glTF JSON document, binary buffers, and embedded resources into
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/3d-data-formats.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type    | API                                                                                             |
+| ------- | ----------------------------------------------------------------------------------------------- |
+| Loader  | [`GLBLoader`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/glb-loader.md) |
+| Writer  | [`GLBWriter`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/glb-writer.md) |
+| Utility | [`glbdump`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/glbdump.md)      |
 
 A layered 3D format stack
 
@@ -38,7 +46,7 @@ Geometry and texture payloads
 
 Compression and GPU-ready delivery underneath the formats
 
-[Draco↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)
+[Draco↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
 
 Application-facing results
 

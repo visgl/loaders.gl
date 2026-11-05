@@ -67,7 +67,7 @@ Format pages answer a different question from API pages: what does the file or p
 
 Articles usually begin with links to the relevant specification and loaders.gl module, then move through the format's purpose, physical or logical layout, important features, versions, and a small example when one makes the structure easier to see. The goal is a useful orientation, not a complete replacement for the normative specification.
 
-Loaders.gl support notes may appear in a clearly labeled column or section. They describe the implementation boundary and should not be read as part of the format specification. For API behavior, follow the module and loader links instead.
+loaders.gl support notes may appear in a clearly labeled column or section. They describe the implementation boundary and should not be read as part of the format specification. For API behavior, follow the module and loader links instead.
 
 Support tables use ✅ for supported capabilities, ⚠️ for partial or experimental support, and ❌ for unsupported capabilities, including planned work that is not available yet. Each marker applies to the scope named in its row and column; read the accompanying limits. “Not applicable” entries are kept separate from unsupported features.
 

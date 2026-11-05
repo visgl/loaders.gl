@@ -1,6 +1,6 @@
 Module overview
 
-![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)
+[![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)](https://www.apache.org/)
 
 # @loaders.gl/tables/arrow
 
@@ -21,6 +21,8 @@ typed columnszero-copyArrow IPC
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)
+
+Arrow scan exampleEnter fullscreen
 
 Arrow IPC URLhttps\://raw\.githubusercontent.com/visgl/loaders.gl/master/modules/tables/test/arrow/data/arrow/simple.arrow
 

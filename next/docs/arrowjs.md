@@ -30,7 +30,7 @@ Arrow TablePlain
 
 Decode
 
-[Arrow​Loader↗](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[CSV​Loader↗](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[Excel​Loader↗](https://loaders.gl/next/docs/modules/tables/excel/api-reference/excel-loader.md)[JSON​Loader↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)[NDJSON​Loader↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md)[Parquet​Loader↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)
+[Arrow​Loader↗](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[CSV​Loader↗](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[JSON​Loader↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)[NDJSON​Loader↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md)[Parquet​Loader↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)
 
 Data
 

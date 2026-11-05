@@ -26,7 +26,7 @@ Arrow TablePlain
 
 Decode
 
-[Draco​Loader↗](https://loaders.gl/next/docs/modules/draco/api-reference/draco-loader.md)[LAS​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[OBJ​Loader↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[PCD​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PLY​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)[Quantized​Mesh​Loader↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-loader.md)[Terrain​Loader↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/terrain-loader.md)
+[Draco​Loader↗](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md)[LAS​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[OBJ​Loader↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[PCD​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PLY​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)[Quantized​Mesh​Loader↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-loader.md)[Terrain​Loader↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/terrain-loader.md)
 
 Data
 
@@ -34,7 +34,7 @@ Data
 
 Encode
 
-[Draco​Writer↗](https://loaders.gl/next/docs/modules/draco/api-reference/draco-writer.md)[LAS​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)[OBJ​Writer↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)[PCD​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)[PLY​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md)[Quantized​Mesh​Writer↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-writer.md)
+[Draco​Writer↗](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-writer.md)[LAS​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)[OBJ​Writer↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)[PCD​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)[PLY​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md)[Quantized​Mesh​Writer↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-writer.md)
 
 Two useful result paths
 
@@ -78,14 +78,14 @@ The sections below describe loaders, writers, Arrow tables, legacy objects, and 
 
 | Loader                                                                                                                                                       | Notes                    |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
-| [`DracoLoader`](https://loaders.gl/next/docs/modules/draco/api-reference/draco-loader.md) with `draco.shape: 'arrow-table'`                             | Mesh Arrow table         |
+| [`DracoLoader`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md) with `draco.shape: 'arrow-table'`                       | Mesh Arrow table         |
 | [`LASLoader`](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md) with `las.shape: 'arrow-table'`                         | Mesh Arrow table         |
 | [`OBJLoader`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)                                                               | Mesh Arrow table         |
 | [`PCDLoader`](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)                                                         | Mesh Arrow table         |
 | [`PLYLoader`](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)                                                         | Mesh Arrow table         |
 | [`QuantizedMeshLoader`](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-loader.md)                                     | Mesh Arrow table         |
 | [`TerrainLoader`](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/terrain-loader.md)                                                  | Mesh Arrow table         |
-| [`DracoLoader`](https://loaders.gl/next/docs/modules/draco/api-reference/draco-loader.md)                                                               | Legacy Mesh object       |
+| [`DracoLoader`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md)                                                         | Legacy Mesh object       |
 | [`LASLoader`](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)                                                         | Legacy PointCloud object |
 | [`OBJLoader`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md) with `obj.shape: 'mesh'`                                      | Legacy Mesh object       |
 | [`PCDLoader`](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md) with `pcd.shape: 'mesh'`                                | Legacy PointCloud object |
@@ -99,7 +99,7 @@ Mesh category writers accept Mesh Arrow tables and legacy Mesh objects. Legacy M
 
 | Writer                                                                                                                   | Notes                                |
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| [`DracoWriter`](https://loaders.gl/next/docs/modules/draco/api-reference/draco-writer.md)                           | Writes Draco meshes and point clouds |
+| [`DracoWriter`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-writer.md)                     | Writes Draco meshes and point clouds |
 | [`LASWriter`](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)                     | Writes uncompressed LAS point clouds |
 | [`OBJWriter`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)                           | Writes OBJ mesh text                 |
 | [`PCDWriter`](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)                     | Writes ASCII PCD point clouds        |

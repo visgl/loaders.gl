@@ -1,6 +1,6 @@
 Delimited text formats
 
-CSV
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)
 
 # CSV, TSV, and DSV
 
@@ -16,9 +16,19 @@ CSV, TSV, and DSV use plain text to represent rows and fields. Their simplicity 
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/using-streaming-loaders.md)
 
-⛶⛶ Explore fullscreen
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-CSV[Try It](https://loaders.gl/next/examples/geospatial/csv)[Overview](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Format](https://loaders.gl/next/docs/modules/tables/csv/format.md)[CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md)
+| Type          | API                                                                                                   |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| Loader        | [`CSVLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)       |
+| Writer        | [`CSVWriter`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)       |
+| Source loader | [`CSVSourceLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md) |
+
+CSV format map exampleEnter fullscreen
+
+⛶ Explore fullscreen
+
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Try It](https://loaders.gl/next/examples/geospatial/csv)[Overview](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Format](https://loaders.gl/next/docs/modules/tables/csv/format.md)[CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md)
 
 Structured data boundaries
 
@@ -28,7 +38,7 @@ JSON, delimited text, BSON, and XML describe data differently. loaders.gl keeps 
 
 Input families
 
-[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/tables/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/xml/formats/xml.md)
+[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/documents/xml/formats/xml.md)
 
 pars&#x65;**→**
 

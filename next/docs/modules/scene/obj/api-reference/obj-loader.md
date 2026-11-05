@@ -1,6 +1,6 @@
 OBJ loader
 
-OBJ
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)
 
 # Bring Wavefront geometry into a shared mesh pipeline.
 
@@ -50,7 +50,7 @@ Streaming
 
 Batched vertex parsing for point clouds
 
-OBJ[Try It](https://loaders.gl/next/examples/pointclouds/obj)[Overview](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Format](https://loaders.gl/next/docs/modules/scene/obj/format.md)[OBJLoader](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[OBJWriter](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Try It](https://loaders.gl/next/examples/pointclouds/obj)[Overview](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Format](https://loaders.gl/next/docs/modules/scene/obj/format.md)[OBJLoader](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[OBJWriter](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)
 
 Detailed guide
 
@@ -150,4 +150,4 @@ for await (const batch of batches) {
 
 With `obj.pointCloud: true`, vertex batches can arrive before input ends. General OBJ geometry is collected before parsing so faces can reference earlier vertices.
 
-Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/scene/obj/obj-loader`.
+Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/scene/obj-loader`.

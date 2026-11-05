@@ -20,6 +20,13 @@ OTLP carries resources, instrumentation scopes, spans, events, links, status, an
 
 [ ↗](https://loaders.gl/next/docs/modules/traces/api-reference/otlp-trace-loader.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                      |
+| ------ | -------------------------------------------------------------------------------------------------------- |
+| Loader | [`OtlpTraceLoader`](https://loaders.gl/next/docs/modules/traces/api-reference/otlp-trace-loader.md) |
+| Writer | [`OtlpTraceWriter`](https://loaders.gl/next/docs/modules/traces/api-reference/otlp-trace-writer.md) |
+
 The OTLP path
 
 ## Decode the envelope. Preserve resources. Analyze spans as tables.

@@ -8,11 +8,11 @@ Install core and the packages that own your formats, and use one familiar API fo
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/developer-guide/using-loaders.md)[Browse packages](https://loaders.gl/next/docs/packages.md)
+[ ↗](https://loaders.gl/next/docs/developer-guide/using-loaders.md)[Browse modules](https://loaders.gl/next/docs/modules.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/packages.md)
+[ ↗](https://loaders.gl/next/docs/modules.md)
 
 The loader boundary
 
@@ -80,7 +80,7 @@ The guide below covers installation, loading, registration, building, browser su
 
 Install loaders.gl core and the format modules you would like to use.
 
-Related formats share a package. Install the owner package, then import a format subpath. See the [Packages overview](https://loaders.gl/next/docs/packages.md) to choose the packages you need.
+Related formats share a package. Install the owner package, then import a format subpath. See the [Modules](https://loaders.gl/next/docs/modules.md) to choose the packages you need.
 
 ```
 yarn add @loaders.gl/core @loaders.gl/tables
@@ -135,3 +135,33 @@ Use a modern browser and a bundler that supports ES modules and dynamic imports.
 ## Node.js support[​](#nodejs-support "Direct link to Node.js support")
 
 Modern Node.js provides `fetch`, `Response`, `TextEncoder`, and `TextDecoder`. Import `@loaders.gl/core/polyfills` when you need loaders.gl's Node.js adapters for local files or image decoding. This package is intended for Node.js, not browser polyfills. See [Node.js support](https://loaders.gl/next/docs/developer-guide/node.md) for setup.
+
+## Install packages, import subpaths[​](#install-packages-import-subpaths "Direct link to Install packages, import subpaths")
+
+```
+npm install @loaders.gl/core @loaders.gl/pointclouds @loaders.gl/scene
+```
+
+```
+import {parse, parseSync} from '@loaders.gl/core';
+
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
+
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+
+import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply-loader';
+
+
+
+const points = await parse(plyBytes, PLYLoader);
+
+const scene = await parse(gltfBytes, GLTFLoader);
+
+const mesh = parseSync(plyBytes, PLYLoaderWithParser, {ply: {shape: 'mesh'}});
+```
+
+These metadata loaders preload their parser when passed to an async core API. Synchronous APIs require a parser-bearing implementation. Entrypoint contracts vary by package; follow the owning reference. See [Packages and format entrypoints](https://loaders.gl/next/docs/developer-guide/grouped-packages.md) for the complete import and dependency model.
+
+Subpaths are not separately installable packages. They control code loading; ordinary dependencies are installed for the whole package. Optional engines and codecs may need an additional installation. Worker and WASM assets must match the installed package version.
+
+Core utilities are documented under core. Core implementations do not depend on domain packages. Specialized scan, arrow-geometry, geoarrow, and WKT utilities require explicit subpath imports. Geometry loaders and writers belong to geospatial; point-cloud tile traversal belongs to tiles-3d.

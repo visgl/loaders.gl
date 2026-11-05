@@ -1,6 +1,6 @@
 GLB loader
 
-![](/next/images/format-logos/gltf-logo.svg)GLB
+[![](/next/images/format-logos/gltf-logo.svg)GLB](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)
 
 # Open the binary envelope around a glTF asset.
 

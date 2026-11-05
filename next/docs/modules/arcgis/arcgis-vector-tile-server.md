@@ -1,6 +1,6 @@
 ArcGIS module · ArcGIS vector-tile source
 
-![](/next/images/format-logos/arcgis-logo.jpg)Vector Tile
+[![](/next/images/format-logos/arcgis-logo.svg)Vector Tile](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)
 
 # ArcGIS VectorTileServer
 
@@ -24,9 +24,11 @@ Read your ArcGIS vector tile layer as raw MVT or decoded features, then apply th
 
 [ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/formats/mvt.md)
 
-⛶⛶ Explore fullscreen
+ArcGIS VectorTileServer exampleEnter fullscreen
 
-![](/next/images/format-logos/arcgis-logo.jpg)Vector Tile[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-vector-tile-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/arcgis-logo.svg)Vector Tile](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-vector-tile-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
 Remote data, explicit steps
 

@@ -1,6 +1,6 @@
 OGC coverage service
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWCS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWCS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)
 
 # Request the coverage data behind the map.
 
@@ -19,6 +19,12 @@ WCS provides analytical raster coverages rather than server-rendered map images.
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                       |
+| ------------- | ------------------------- |
+| Source loader | `WCSCoverageSourceLoader` |
 
 The WCS request path
 
@@ -50,7 +56,7 @@ Decode
 
 GeoTIFF, LERC, or another binary coverage loader
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWCS[WCS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)
+[![](/next/images/format-logos/ogc-mark.svg)OGCWCS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)[WCS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)
 
 WCS provides analytical geospatial coverages rather than server-rendered map images. `WCSCoverageSourceLoader` supports focused discovery and read-only coverage retrieval.
 

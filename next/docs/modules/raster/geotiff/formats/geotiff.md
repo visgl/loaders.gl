@@ -1,6 +1,6 @@
 Georeferenced raster format
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)
 
 # GeoTIFF
 
@@ -16,9 +16,20 @@ GeoTIFF combines TIFF image storage with tags that describe the raster’s coord
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
 
-⛶⛶ Explore fullscreen
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
+| Type          | API                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Loader        | [`GeoTIFFLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)              |
+| Loader        | [`GeoTIFFRasterLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md) |
+| Source loader | [`GeoTIFFSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md) |
+| Source loader | [`OMETiffSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md) |
+
+GeoTIFF raster format exampleEnter fullscreen
+
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
 
 Windowed raster access
 

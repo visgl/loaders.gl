@@ -1,6 +1,6 @@
 Geometry binary format
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWKB
+[![](/next/images/format-logos/ogc-mark.svg)OGCWKB](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkb.md)
 
 # Carry geometry without paying for readable text.
 
@@ -19,6 +19,14 @@ Well-Known Binary (WKB) is the compact binary counterpart to WKT. Its header ide
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt-crs.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                        |
+| ------ | ---------------------------------------------------------------------------------------------------------- |
+| Loader | [`WKBLoader`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkb-loader.md)        |
+| Loader | [`HexWKBLoader`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/hex-wkb-loader.md) |
+| Writer | [`WKBWriter`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkb-writer.md)        |
 
 The WKB record path
 

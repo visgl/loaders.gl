@@ -1,6 +1,6 @@
 GeoTIFF API / bioimaging
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)
 
 # Read an OME-TIFF pyramid as selected raster data.
 
@@ -20,7 +20,7 @@ OMETiffSourceLoader discovers OME image metadata and reads chosen channels, dime
 
 [ ↗](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader.md)
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
 
 Multichannel raster source
 
@@ -67,7 +67,7 @@ The detailed reference covers source creation, metadata, raster parameters, imag
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {OMETiffSourceLoader} from '@loaders.gl/raster/geotiff/ometiff-source-loader';
+import {OMETiffSourceLoader} from '@loaders.gl/raster/ometiff-source-loader';
 
 
 

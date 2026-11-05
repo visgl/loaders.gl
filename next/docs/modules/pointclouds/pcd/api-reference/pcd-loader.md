@@ -1,6 +1,6 @@
 PCD module · loader API
 
-PCD
+[PCD](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)
 
 # PCDLoader
 
@@ -20,7 +20,7 @@ Decode ASCII, binary, and compressed Point Cloud Data into a point-cloud object 
 
 [ ↗](https://loaders.gl/next/docs/modules/pointclouds/pcd.md)
 
-PCD[Try It](https://loaders.gl/next/examples/pointclouds/pcd)[Overview](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/pcd/format.md)[PCDLoader](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PCDWriter](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)
+[PCD](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Try It](https://loaders.gl/next/examples/pointclouds/pcd)[Overview](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/pcd/format.md)[PCDLoader](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PCDWriter](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)
 
 What it returns
 
@@ -139,4 +139,4 @@ for await (const batch of batches) {
 
 PCD currently collects the complete input before decoding. ASCII and uncompressed binary output is split by `core.batchSize`; compressed input may produce a single batch.
 
-Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/pointclouds/pcd/pcd-loader`.
+Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/pointclouds/pcd-loader`.

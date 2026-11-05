@@ -119,7 +119,7 @@ const tileset = new PointCloudTileset(source);
 source.close();
 ```
 
-`PotreeLoader` parses metadata for either dataset version. Direct parser access is available through `@loaders.gl/tiles-3d/potree/potree-loader`; source decoding uses internal version-specific readers.
+`PotreeLoader` parses metadata for either dataset version. Direct parser access is available through `@loaders.gl/tiles-3d/potree-loader`; source decoding uses internal version-specific readers.
 
 ### Traversal and content[​](#traversal-and-content "Direct link to Traversal and content")
 

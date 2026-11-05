@@ -1,6 +1,6 @@
 LAS module · live benchmark
 
-LAS
+[LAS](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)
 
 # Measure LAZ decoding with the columns your app needs.
 
@@ -20,7 +20,7 @@ These browser benchmarks compare loaders.gl’s TypeScript decoder with alternat
 
 [ ↗](https://loaders.gl/next/docs/specifications/category-mesh.md)
 
-LAS[Try It](https://loaders.gl/next/examples/pointclouds/las)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/las/benchmarks.md)[Overview](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/las/format.md)[LASLoader](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[LASWriter](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)
+[LAS](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Try It](https://loaders.gl/next/examples/pointclouds/las)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/las/benchmarks.md)[Overview](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/las/format.md)[LASLoader](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[LASWriter](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)
 
 Compare like with like
 

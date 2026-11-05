@@ -22,7 +22,7 @@ Composite loaders resolve linked assets and delegate embedded content without pu
 
 [GLTF​Loader↗](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Tiles3D​Loader↗](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)
 
-[Draco​Loader↗](https://loaders.gl/next/docs/modules/draco/api-reference/draco-loader.md)[Image​Loader↗](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[Texture​Loader↗](https://loaders.gl/next/docs/modules/textures/api-reference/texture-loader.md)
+[Draco​Loader↗](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md)[Image​Loader↗](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[Texture​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-loader.md)
 
 glTF data
 

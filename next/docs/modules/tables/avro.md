@@ -37,6 +37,6 @@ Pass these options inside `avro`:
 | `batchSize`    | Maximum rows per batch.                                                               |
 | `blockIndices` | Optional zero-based OCF block selection.                                              |
 
-For standalone `.avsc` schema parsing, import `AvroSchemaLoaderWithParser` from `@loaders.gl/tables/avro/avro-schema-loader` and pass it to `load` or `parse`. The package-root `AvroSchemaLoader` contains metadata only.
+For standalone `.avsc` schema parsing, import `AvroSchemaLoaderWithParser` from `@loaders.gl/tables/avro-schema-loader` and pass it to `load` or `parse`. The package-root `AvroSchemaLoader` contains metadata only.
 
 See [table representations](https://loaders.gl/next/docs/specifications/category-table.md) and [streaming loaders](https://loaders.gl/next/docs/developer-guide/using-streaming-loaders.md).

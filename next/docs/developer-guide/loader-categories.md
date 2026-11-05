@@ -22,7 +22,7 @@ Arrow TablePlain
 
 Decode
 
-[Draco​Loader↗](https://loaders.gl/next/docs/modules/draco/api-reference/draco-loader.md)[LAS​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[OBJ​Loader↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[PCD​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PLY​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)[Quantized​Mesh​Loader↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-loader.md)[Terrain​Loader↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/terrain-loader.md)
+[Draco​Loader↗](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md)[LAS​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[OBJ​Loader↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[PCD​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PLY​Loader↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)[Quantized​Mesh​Loader↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-loader.md)[Terrain​Loader↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/terrain-loader.md)
 
 Data
 
@@ -30,7 +30,7 @@ Data
 
 Encode
 
-[Draco​Writer↗](https://loaders.gl/next/docs/modules/draco/api-reference/draco-writer.md)[LAS​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)[OBJ​Writer↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)[PCD​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)[PLY​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md)[Quantized​Mesh​Writer↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-writer.md)
+[Draco​Writer↗](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-writer.md)[LAS​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)[OBJ​Writer↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)[PCD​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)[PLY​Writer↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md)[Quantized​Mesh​Writer↗](https://loaders.gl/next/docs/modules/raster/terrain/api-reference/quantized-mesh-writer.md)
 
 Category data
 

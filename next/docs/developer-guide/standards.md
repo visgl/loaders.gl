@@ -1,6 +1,6 @@
 Standards and organizations
 
-![](/next/images/format-logos/ogc-mark.svg)OGCAPI![](/next/images/format-logos/gltf-logo.svg)![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)![](/next/images/format-logos/arcgis-logo.jpg)API
+[![](/next/images/format-logos/ogc-mark.svg)OGCAPI](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api)[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf)[![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)](https://www.apache.org/)[![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis)
 
 # loaders.gl ♥ standards
 
@@ -108,19 +108,19 @@ Portable scene, tiled-world, point-cloud, mesh-compression, and GPU texture form
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)[Draco](https://loaders.gl/next/docs/modules/draco/formats/draco.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)[Draco](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)[KTX / KTX2](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)
+[ ↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)[KTX / KTX2](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)[Basis](https://loaders.gl/next/docs/modules/textures/formats/basis.md)
+[ ↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)[Basis](https://loaders.gl/next/docs/modules/images/textures/formats/basis.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/textures/formats/basis.md)[LAS / LAZ](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)
+[ ↗](https://loaders.gl/next/docs/modules/images/textures/formats/basis.md)[LAS / LAZ](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)
 
 <!-- -->
 
@@ -298,11 +298,11 @@ Scene and texture standards designed to move renderable assets between tools and
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)[KTX / KTX2](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)
+[ ↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)[KTX / KTX2](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)[Basis in glTF](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#khr_texture_basisu)
+[ ↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)[Basis in glTF](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#khr_texture_basisu)
 
 <!-- -->
 

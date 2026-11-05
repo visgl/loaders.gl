@@ -26,7 +26,7 @@ Arrow TablePlain
 
 Decode
 
-[JSON​Loader↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)[BSON​Loader↗](https://loaders.gl/next/docs/modules/tables/bson/api-reference/bson-loader.md)[XML​Loader↗](https://loaders.gl/next/docs/modules/xml/api-reference/xml-loader.md)[HTML​Loader↗](https://loaders.gl/next/docs/modules/xml/api-reference/html-loader.md)[YAML​Loader↗](https://loaders.gl/next/docs/modules/config/api-reference/yaml-loader.md)[TOML​Loader↗](https://loaders.gl/next/docs/modules/config/api-reference/toml-loader.md)
+[JSON​Loader↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)[BSON​Loader↗](https://loaders.gl/next/docs/modules/documents/bson/api-reference/bson-loader.md)[XML​Loader↗](https://loaders.gl/next/docs/modules/documents/xml/api-reference/xml-loader.md)[HTML​Loader↗](https://loaders.gl/next/docs/modules/documents/xml/api-reference/html-loader.md)[YAML​Loader↗](https://loaders.gl/next/docs/modules/documents/config/api-reference/yaml-loader.md)[TOML​Loader↗](https://loaders.gl/next/docs/modules/documents/config/api-reference/toml-loader.md)[Markdown​Loader↗](https://loaders.gl/next/docs/modules/documents/api-reference/markdown-loader.md)
 
 Data
 
@@ -34,7 +34,7 @@ Data
 
 Encode
 
-[JSON​Writer↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-writer.md)[BSON​Writer↗](https://loaders.gl/next/docs/modules/tables/bson/api-reference/bson-writer.md)
+[JSON​Writer↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-writer.md)[BSON​Writer↗](https://loaders.gl/next/docs/modules/documents/bson/api-reference/bson-writer.md)
 
 Flexible input, explicit output
 
@@ -80,14 +80,14 @@ The sections below list category loaders and describe the data structures they r
 
 ## JSON Category Loaders[​](#json-category-loaders "Direct link to JSON Category Loaders")
 
-| Loader                                                                                             | Notes                                                                    |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| [`JSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md) | JSON documents and nested values                                         |
-| [`BSONLoader`](https://loaders.gl/next/docs/modules/tables/bson/api-reference/bson-loader.md) | Binary JSON documents                                                    |
-| [`XMLLoader`](https://loaders.gl/next/docs/modules/xml/api-reference/xml-loader.md)           | XML documents represented as JavaScript data                             |
-| [`HTMLLoader`](https://loaders.gl/next/docs/modules/xml/api-reference/html-loader.md)         | HTML documents and fragments                                             |
-| [`YAMLLoader`](https://loaders.gl/next/docs/modules/config/api-reference/yaml-loader.md)      | Human-readable YAML documents; provided by `@loaders.gl/config`.         |
-| [`TOMLLoader`](https://loaders.gl/next/docs/modules/config/api-reference/toml-loader.md)      | Configuration-oriented TOML documents; provided by `@loaders.gl/config`. |
+| Loader                                                                                                  | Notes                                                                       |
+| ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [`JSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)      | JSON documents and nested values                                            |
+| [`BSONLoader`](https://loaders.gl/next/docs/modules/documents/bson/api-reference/bson-loader.md)   | Binary JSON documents                                                       |
+| [`XMLLoader`](https://loaders.gl/next/docs/modules/documents/xml/api-reference/xml-loader.md)      | XML documents represented as JavaScript data                                |
+| [`HTMLLoader`](https://loaders.gl/next/docs/modules/documents/xml/api-reference/html-loader.md)    | HTML documents and fragments                                                |
+| [`YAMLLoader`](https://loaders.gl/next/docs/modules/documents/config/api-reference/yaml-loader.md) | Human-readable YAML documents; provided by `@loaders.gl/documents`.         |
+| [`TOMLLoader`](https://loaders.gl/next/docs/modules/documents/config/api-reference/toml-loader.md) | Configuration-oriented TOML documents; provided by `@loaders.gl/documents`. |
 
 ## Data Structure[​](#data-structure "Direct link to Data Structure")
 

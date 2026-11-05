@@ -1,6 +1,6 @@
 I3S recipe · interaction
 
-![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+[![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
 # Pick an object, then inspect its data.
 
@@ -20,7 +20,9 @@ Connect a click in a rendered I3S 3D Object layer to the feature id and attribut
 
 [ ↗](https://loaders.gl/next/examples/i3s-arcgis)
 
-⛶⛶ Explore fullscreen
+I3S feature pickingEnter fullscreen
+
+⛶ Explore fullscreen
 
 What this recipe demonstrates
 

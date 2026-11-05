@@ -1,6 +1,6 @@
 WKT module · geometry writer
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWKB
+[![](/next/images/format-logos/ogc-mark.svg)OGCWKB](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkb.md)
 
 # WKBWriter
 

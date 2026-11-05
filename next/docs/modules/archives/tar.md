@@ -1,6 +1,6 @@
 # TAR
 
-`@loaders.gl/archives/tar` exports `TarLoader`, `TarWriter`, `TarBuilder`, and `readTarArchive`. Import `TarLoaderWithParser` from `@loaders.gl/archives/tar/tar-loader` for synchronous parser access; the metadata loader loads it through `preload()`.
+`@loaders.gl/archives/tar` exports `TarLoader`, `TarWriter`, `TarBuilder`, and `readTarArchive`. Import `TarLoaderWithParser` from `@loaders.gl/archives/tar-loader` for synchronous parser access; the metadata loader loads it through `preload()`.
 
 ```
 import {TarLoader, TarWriter} from '@loaders.gl/archives/tar';

@@ -1,6 +1,6 @@
 Point-cloud format
 
-PCD
+[PCD](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)
 
 # Name the point fields before storing the points.
 
@@ -16,7 +16,14 @@ PCD starts with a compact ASCII header that defines the fields and their physica
 
 [ ↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)
 
-PCD[Try It](https://loaders.gl/next/examples/pointclouds/pcd)[Overview](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/pcd/format.md)[PCDLoader](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PCDWriter](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------- |
+| Loader | [`PCDLoader`](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md) |
+| Writer | [`PCDWriter`](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md) |
+
+[PCD](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Try It](https://loaders.gl/next/examples/pointclouds/pcd)[Overview](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/pcd/format.md)[PCDLoader](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PCDWriter](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)
 
 One point-cloud family
 

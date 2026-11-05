@@ -1,6 +1,6 @@
 Parquet module · geospatial loader
 
-GeoParquet
+[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)
 
 # GeoParquetLoader
 
@@ -20,9 +20,11 @@ Read GeoParquet files into Arrow tables by default while preserving the metadata
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/parquet.md)
 
-⛶⛶ Explore fullscreen
+GeoParquetLoader map exampleEnter fullscreen
 
-GeoParquet[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
+⛶ Explore fullscreen
+
+[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
 
 What it preserves
 

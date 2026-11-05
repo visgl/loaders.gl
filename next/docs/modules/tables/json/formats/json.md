@@ -1,6 +1,6 @@
 Structured text format
 
-![](/next/images/format-logos/json-logo.gif)JSON
+[![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)
 
 # JSON
 
@@ -16,7 +16,17 @@ JSON represents nested values in a form that works naturally across browsers, se
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)
 
-![](/next/images/format-logos/json-logo.gif)JSON[Try It](https://loaders.gl/next/examples/table/json)[Overview](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[Format](https://loaders.gl/next/docs/modules/tables/json/format.md)[JSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)[JSONTableLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-table-loader.md)[NDJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md)[GeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-loader.md)[NDGeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndgeojson-loader.md)[JSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-writer.md)[GeoJSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-writer.md)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| Loader        | [`JSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)            |
+| Loader        | [`JSONTableLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-table-loader.md) |
+| Loader        | [`NDJSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md)        |
+| Writer        | [`JSONWriter`](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-writer.md)            |
+| Source loader | [`NDJSONSourceLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md)  |
+
+[![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[Try It](https://loaders.gl/next/examples/table/json)[Overview](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[Format](https://loaders.gl/next/docs/modules/tables/json/format.md)[JSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)[JSONTableLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-table-loader.md)[NDJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md)[GeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-loader.md)[NDGeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndgeojson-loader.md)[JSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-writer.md)[GeoJSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-writer.md)
 
 Structured data boundaries
 
@@ -26,7 +36,7 @@ JSON, delimited text, BSON, and XML describe data differently. loaders.gl keeps 
 
 Input families
 
-[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/tables/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/xml/formats/xml.md)
+[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/documents/xml/formats/xml.md)
 
 pars&#x65;**→**
 

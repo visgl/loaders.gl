@@ -1,6 +1,6 @@
 ArcGIS module · ArcGIS
 
-![](/next/images/format-logos/arcgis-logo.jpg)API
+[![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)
 
 # ArcGIS service sources
 

@@ -3,9 +3,9 @@
 Authors a small I3S 1.7 **3D Object** layer from one triangle mesh using portable ArrayBuffer, typed-array, TextEncoder, and GZIP APIs. Package the result with `SLPKWriter`.
 
 ```
-import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s/i3s-mesh-writer';
+import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 
-import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
+import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
 
 
 
@@ -66,9 +66,9 @@ For raw geometry, Cesium 1.146.0 independently decodes and renders the represent
 `encodeI3SMeshLayerWithDraco(mesh, options, libraryOptions?)` is the asynchronous alternative exported by the same root and `i3s-mesh-writer` entrypoints. It reuses the raw writer's geographic preparation and precision limits, then encodes geometry with Draco Edge Breaker without quantization. Normals and triangle feature ownership are preserved, with the required I3S feature-index metadata. Decoded oriented attribute/feature tuples are verified before publishing resources, including duplicate triangles and winding. Node-page vertex counts reflect Draco's decoded vertex count. Other layer, material and feature resources retain their encoding; geometry, attributes and JSON remain individually GZIP compressed.
 
 ```
-import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/tiles-3d/i3s/i3s-mesh-writer';
+import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 
-import {getDracoLibraryOptions} from '@loaders.gl/draco/bundled';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
 
 
 

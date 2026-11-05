@@ -1,6 +1,6 @@
 OBJ writer
 
-OBJ
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)
 
 # Write common mesh data into a format every 3D tool knows.
 
@@ -50,7 +50,7 @@ Output
 
 Wavefront OBJ text or encoded bytes
 
-OBJ[Try It](https://loaders.gl/next/examples/pointclouds/obj)[Overview](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Format](https://loaders.gl/next/docs/modules/scene/obj/format.md)[OBJLoader](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[OBJWriter](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Try It](https://loaders.gl/next/examples/pointclouds/obj)[Overview](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Format](https://loaders.gl/next/docs/modules/scene/obj/format.md)[OBJLoader](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[OBJWriter](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)
 
 Detailed guide
 

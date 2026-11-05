@@ -1,6 +1,6 @@
 FlatGeobuf source loader
 
-![](/next/images/format-logos/flatgeobuf-logo.png)
+[![](/next/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)
 
 # Query an indexed vector file from the browser.
 
@@ -52,7 +52,7 @@ GeoJSON table, binary features, or Arrow table
 
 ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![range requests from v5.0](https://img.shields.io/badge/range_requests-From_v5.0-blue.svg?style=flat-square)
 
-![](/next/images/format-logos/flatgeobuf-logo.png)[Try It](https://loaders.gl/next/examples/geospatial/flatgeobuf)[Overview](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Format](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/format.md)[FlatGeobufLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)[FlatGeobufSourceLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader.md)
+[![](/next/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Try It](https://loaders.gl/next/examples/geospatial/flatgeobuf)[Overview](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Format](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/format.md)[FlatGeobufLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)[FlatGeobufSourceLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader.md)
 
 Cloud-native reads
 

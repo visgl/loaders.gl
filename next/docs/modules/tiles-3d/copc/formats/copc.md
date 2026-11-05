@@ -1,6 +1,6 @@
 Cloud point-cloud format
 
-![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)
+[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)
 
 # A point cloud that can answer bounded requests.
 
@@ -16,7 +16,14 @@ COPC combines LAS 1.4 point records, LAZ compression, and an octree hierarchy in
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
 
-![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Source loader | [`COPCSourceLoader`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md) |
+| Writer        | [`COPCWriter`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)              |
+
+[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
 
 The cloud point path
 

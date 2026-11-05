@@ -1,6 +1,6 @@
 WMS module · capabilities loader
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMTS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md)
 
 # WMTSCapabilitiesLoader
 

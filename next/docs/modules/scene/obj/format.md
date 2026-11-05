@@ -1,6 +1,6 @@
 Mesh interchange format
 
-OBJ
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)
 
 # Readable mesh geometry with a long tail of tooling.
 
@@ -20,7 +20,7 @@ Wavefront OBJ is a simple text format for vertices, normals, texture coordinates
 
 [ ↗](https://loaders.gl/next/docs/specifications/category-mesh.md)
 
-OBJ[Try It](https://loaders.gl/next/examples/pointclouds/obj)[Overview](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Format](https://loaders.gl/next/docs/modules/scene/obj/format.md)[OBJLoader](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[OBJWriter](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Try It](https://loaders.gl/next/examples/pointclouds/obj)[Overview](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Format](https://loaders.gl/next/docs/modules/scene/obj/format.md)[OBJLoader](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[OBJWriter](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)
 
 The OBJ data path
 

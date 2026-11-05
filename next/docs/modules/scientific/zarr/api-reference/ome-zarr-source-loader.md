@@ -1,6 +1,6 @@
 Zarr API / bioimaging
 
-![](/next/images/format-logos/zarr-logo.svg)
+[![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)
 
 # Read an image pyramid at the level and channels you need.
 

@@ -1,6 +1,6 @@
 Geometry binary format
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWKB
+[![](/next/images/format-logos/ogc-mark.svg)OGCWKB](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkb.md)
 
 # Smaller geometry records for constrained links.
 
@@ -19,6 +19,13 @@ Tiny Well-Known Binary (TWKB) is a compact WKB variant that uses quantized coord
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/twkb-writer.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                   |
+| ------ | ----------------------------------------------------------------------------------------------------- |
+| Loader | [`TWKBLoader`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/twkb-loader.md) |
+| Writer | [`TWKBWriter`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/twkb-writer.md) |
 
 The TWKB record path
 

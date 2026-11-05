@@ -1,8 +1,8 @@
 Versioned table source
 
-![](/next/images/format-logos/parquet-logo.png)
+[![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)
 
-![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)
+[![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)](https://www.apache.org/)
 
 # IcebergTableSource
 

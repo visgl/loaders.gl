@@ -1,6 +1,6 @@
 ArcGIS service protocol
 
-![](/next/images/format-logos/arcgis-logo.jpg)Vector Tile
+[![](/next/images/format-logos/arcgis-logo.svg)Vector Tile](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)
 
 # ArcGIS VectorTileServer protocol and formats
 
@@ -16,7 +16,13 @@ Read your published vector tiles and style their decoded features in your applic
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md)
 
-![](/next/images/format-logos/arcgis-logo.jpg)Vector Tile[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-vector-tile-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                              |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Source loader | [`ArcGISVectorTileServerSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
+
+[![](/next/images/format-logos/arcgis-logo.svg)Vector Tile](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-vector-tile-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
 Use this path for tiled vector delivery from an existing vector tile layer. The source exposes tile data and published style-resource locations; your renderer decides how to draw and label features.
 

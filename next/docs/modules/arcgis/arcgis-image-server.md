@@ -1,6 +1,6 @@
 ArcGIS module · ArcGIS raster source
 
-![](/next/images/format-logos/arcgis-logo.jpg)Image
+[![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)
 
 # ArcGIS ImageServer
 
@@ -24,9 +24,11 @@ Use your published imagery as rendered images or analytical LERC pixels. Choose 
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md)
 
-⛶⛶ Explore fullscreen
+ArcGIS ImageServer exampleEnter fullscreen
 
-![](/next/images/format-logos/arcgis-logo.jpg)Image[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-image-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-image-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
 Remote data, explicit steps
 
@@ -281,6 +283,8 @@ For the tile viewer, also set `extent: [-180, -85.051129, 180, 85.051129]` on `S
 
 This live example reads LERC bands and applies an illustrative numeric color ramp. It is not the service’s rendered legend. Missing values remain transparent.
 
-⛶⛶ Explore fullscreen
+ArcGIS analytical raster exampleEnter fullscreen
+
+⛶ Explore fullscreen
 
 [Full numerical raster example](https://loaders.gl/next/examples/tiles/arcgis-image-server-lerc) · [Exported tile example](https://loaders.gl/next/examples/tiles/arcgis-image-server-tiles)

@@ -1,6 +1,6 @@
 Tiled scene module
 
-![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+[![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
 # @loaders.gl/tiles-3d/i3s
 
@@ -20,7 +20,9 @@ Read ArcGIS Indexed 3D Scene Layers through the same source and traversal buildi
 
 [ ↗](https://loaders.gl/next/examples/i3s-arcgis)
 
-⛶⛶ Explore fullscreen
+I3S building sceneEnter fullscreen
+
+⛶ Explore fullscreen
 
 View-dependent delivery
 

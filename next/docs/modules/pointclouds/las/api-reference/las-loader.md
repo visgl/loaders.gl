@@ -1,6 +1,6 @@
 LAS loader
 
-LAS
+[LAS](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)
 
 # LASLoader
 
@@ -16,7 +16,7 @@ Read LAS and LAZ records into Arrow columns for analysis, scans, and writers, or
 
 [ ↗](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)
 
-LAS[Try It](https://loaders.gl/next/examples/pointclouds/las)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/las/benchmarks.md)[Overview](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/las/format.md)[LASLoader](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[LASWriter](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)
+[LAS](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Try It](https://loaders.gl/next/examples/pointclouds/las)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/las/benchmarks.md)[Overview](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/las/format.md)[LASLoader](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[LASWriter](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)
 
 One parser, several uses
 
@@ -87,11 +87,11 @@ const mesh = await load(url, LASLoader, {las: {shape: 'mesh'}});
 Select another implementation by importing its loader variant instead of setting an option:
 
 ```
-import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/pointclouds/las/las-copc-loader';
+import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/pointclouds/las-copc-loader';
 
-import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/las/lazperf-loader';
+import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/lazperf-loader';
 
-import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/las/laz-rs-loader';
+import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/laz-rs-loader';
 
 
 

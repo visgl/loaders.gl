@@ -1,6 +1,6 @@
 Coordinate reference syntax
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWKT-CRS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWKT-CRS](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt-crs.md)
 
 # Describe where the coordinates live.
 
@@ -19,6 +19,13 @@ WKT-CRS is the standards-based text grammar for coordinate reference systems and
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-crs-loader.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                        |
+| ------ | ---------------------------------------------------------------------------------------------------------- |
+| Loader | [`WKTCRSLoader`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-crs-loader.md) |
+| Writer | [`WKTCRSWriter`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-crs-writer.md) |
 
 Coordinate meaning
 

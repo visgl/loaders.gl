@@ -1,6 +1,6 @@
 Shapefile module · geometry loader
 
-SHP
+[SHP](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)
 
 # SHPLoader
 
@@ -20,7 +20,7 @@ Decode the `.shp` geometry component of a Shapefile dataset into WKB or Arrow ge
 
 [ ↗](https://loaders.gl/next/docs/modules/geospatial/shapefile.md)
 
-SHP[Try It](https://loaders.gl/next/examples/geospatial/shapefile)[Overview](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Format](https://loaders.gl/next/docs/modules/geospatial/shapefile/format.md)[ShapefileLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md)[SHPLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader.md)[DBFLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md)
+[SHP](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Try It](https://loaders.gl/next/examples/geospatial/shapefile)[Overview](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Format](https://loaders.gl/next/docs/modules/geospatial/shapefile/format.md)[ShapefileLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md)[SHPLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader.md)[DBFLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md)
 
 What it reads
 

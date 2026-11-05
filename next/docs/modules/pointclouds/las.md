@@ -1,6 +1,6 @@
 Point-cloud module
 
-LAS
+[LAS](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)
 
 # @loaders.gl/pointclouds/las
 
@@ -16,7 +16,7 @@ Keep the point record, or keep the columns. Read and write LAS/LAZ exchange data
 
 [ ↗](https://loaders.gl/next/docs/specifications/category-mesh.md)
 
-LAS[Try It](https://loaders.gl/next/examples/pointclouds/las)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/las/benchmarks.md)[Overview](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/las/format.md)[LASLoader](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[LASWriter](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)
+[LAS](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Try It](https://loaders.gl/next/examples/pointclouds/las)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/las/benchmarks.md)[Overview](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/las/format.md)[LASLoader](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-loader.md)[LASWriter](https://loaders.gl/next/docs/modules/pointclouds/las/api-reference/las-writer.md)
 
 One point-cloud family
 
@@ -94,7 +94,7 @@ The sections below cover installation, loaders and writers, point-record support
 npm install @loaders.gl/core @loaders.gl/pointclouds
 ```
 
-The default TypeScript LAS/LAZ loader does not require the optional `copc` or `laz-perf` npm packages. They are declared as `optionalDependencies`, so consumers can omit them with `npm install --omit=optional`. Install `copc` explicitly when using the alternative `@loaders.gl/pointclouds/las/las-copc-loader` implementation. The LAZPerf and LAZRs loader paths include their vendored runtimes.
+The default TypeScript LAS/LAZ loader does not require the optional `copc` or `laz-perf` npm packages. They are declared as `optionalDependencies`, so consumers can omit them with `npm install --omit=optional`. Install `copc` explicitly when using the alternative `@loaders.gl/pointclouds/las-copc-loader` implementation. The LAZPerf and LAZRs loader paths include their vendored runtimes.
 
 ## Loaders and Writers[​](#loaders-and-writers "Direct link to Loaders and Writers")
 
@@ -111,4 +111,4 @@ LASLoader is a fork of Uday Verma and Howard Butler's [plasio](https://github.co
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).

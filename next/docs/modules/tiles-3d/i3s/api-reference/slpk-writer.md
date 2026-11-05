@@ -3,7 +3,7 @@
 Packages already-authored I3S layer resources as a deterministic `.slpk` archive in browsers or Node. The writer accepts `ArrayBuffer` and native `Blob` values without Node.js Buffer or filesystem APIs.
 
 ```
-import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
+import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
 
 
 
@@ -43,7 +43,7 @@ Payload reads/copies use blocks of at most 64 KiB. A checksum pass precedes each
 `encodeSLPKArchiveInBatches` is exported from the implementation subpath. It accepts the same resources/options and yields `Uint8Array` views with byte-identical archive content:
 
 ```
-import {encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s/i3s-slpk-writer';
+import {encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
 
 
 

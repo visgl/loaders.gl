@@ -1,6 +1,6 @@
 Chunked array module
 
-![](/next/images/format-logos/zarr-logo.svg)
+[![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)
 
 # Read the chunks that cover the question.
 
@@ -84,7 +84,7 @@ Typed raster data with source metadata
 
 See [Coordinate Reference Systems](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md) for GeoZarr CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 
-![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Work-In-Progress](https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square)[![Scan supported](https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
+![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)[![Scan supported](https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
 
 The `@loaders.gl/scientific` module reads chunked, multidimensional [Zarr](https://zarr.dev/) arrays. It supports the existing pixel-pyramid API, an OME-Zarr source API for bioimaging, and a GeoZarr/CF source API for georeferenced Earth-science rasters.
 

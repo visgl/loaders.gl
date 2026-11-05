@@ -1,6 +1,6 @@
 glTF module · command line
 
-![](/next/images/format-logos/gltf-logo.svg)GLB
+[![](/next/images/format-logos/gltf-logo.svg)GLB](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)
 
 # Look inside a GLB before you render it.
 

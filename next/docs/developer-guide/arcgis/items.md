@@ -2,7 +2,9 @@
 
 Start with an item ID or item-details URL, inspect its service, then explicitly choose a layer or table. `resolveArcGISItem` preserves publisher metadata without interpreting a Web Map or Web Scene. The same transport is used for portal, service and selected-layer metadata.
 
-⛶⛶ Explore fullscreen
+ArcGIS item explorerEnter fullscreen
+
+⛶ Explore fullscreen
 
 The public example needs no account. The **Public examples** dropdown includes Kentucky bicycle routes, World Imagery, historical US land cover (NLCD 2001), and World Basemap vector tiles. Each entry links to its ArcGIS source item. Selecting a public example automatically loads its representative layer or service preview and fits the map to its data. Bicycle routes load when the page opens. For a custom item, enter any supported item ID or URL, choose **Discover layers**, then use a layer’s visualization action. For private content, open **Configure sign-in**, supply your registered OAuth client ID and portal, and register the displayed page URL as a redirect URI. Enter the exact portal and service origins you trust to receive tokens. Allow the sign-in popup. Sign in, resolve an item, choose a layer in the collapsible map infobox, then select its visualization action. The example caps queries at 5,000 records and reports partial results. Feature layers render as interactive deck.gl overlays with feature inspection and fit-to-data controls. MapServer and ImageServer roots preview imagery, and VectorTileServer roots preview tile geometry with application styling. Nonspatial tables display their first 50 rows. Scene services expose metadata and link to the [dedicated scene examples](https://loaders.gl/next/examples/arcgis); they are not rendered here. The optional context map is Esri’s light gray basemap, hosted by an ArcGIS `MapView` with `@deck.gl/arcgis` `DeckLayer` overlays and native attribution. Reloading the page clears the in-memory session.
 

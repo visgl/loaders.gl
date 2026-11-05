@@ -1,8 +1,8 @@
 Arrow writer
 
-![](/next/images/format-logos/apache-arrow-logo.png)
+[![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)
 
-![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)
+[![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)](https://www.apache.org/)
 
 # ArrowWriter
 
@@ -18,7 +18,7 @@ ArrowWriter turns typed arrays and table-oriented data into Apache Arrow IPC byt
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/arrow.md)
 
-![](/next/images/format-logos/apache-arrow-logo.png)[Try It](https://loaders.gl/next/examples/table/arrow)[Overview](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Format](https://loaders.gl/next/docs/modules/tables/arrow/format.md)[ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)[GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)[GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)
+[![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Try It](https://loaders.gl/next/examples/table/arrow)[Overview](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Format](https://loaders.gl/next/docs/modules/tables/arrow/format.md)[ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)[GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)[GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)
 
 Portable output
 
@@ -42,7 +42,7 @@ validate · encode · compress
 
 Portable files
 
-[Parquetcolumnar analytical files↗](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[glTF / GLBportable scene assets↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Draco / LAScompressed geometry and points↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)
+[Parquetcolumnar analytical files↗](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[glTF / GLBportable scene assets↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Draco / LAScompressed geometry and points↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)
 
 The application chooses the data shape; the writer chooses the bytes.
 

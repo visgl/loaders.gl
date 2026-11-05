@@ -1,6 +1,6 @@
 OGC catalog format
 
-![](/next/images/format-logos/ogc-mark.svg)OGCCSW
+[![](/next/images/format-logos/ogc-mark.svg)OGCCSW](https://loaders.gl/next/docs/modules/ogc/wms/formats/csw.md)
 
 # Find the dataset before requesting its pixels or features.
 
@@ -19,6 +19,12 @@ Catalogue Service for the Web (CSW) is an OGC protocol for searching geospatial 
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/using-sources.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------- |
+| Source loader | [`CSWSourceLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-source-loader.md) |
 
 The catalog path
 

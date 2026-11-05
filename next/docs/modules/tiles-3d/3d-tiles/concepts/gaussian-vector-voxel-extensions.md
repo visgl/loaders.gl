@@ -1,6 +1,6 @@
 # Gaussian, vector, and voxel extensions
 
-![](/next/images/format-logos/3d-tiles-logo.png)[Module](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Loader API](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Runtime guides](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md)[Source API](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)
+[![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Module](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Loader API](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Runtime guides](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md)[Source API](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)
 
 This page records the reader-side contracts for newer 3D Tiles and glTF extensions. The loader preserves declarations and binary references so a renderer or a specialized decoder can choose when to allocate GPU resources. It does not add styling, picking, splat sorting, triangulation, voxel ray marching, or native IFC/STEP/DWG parsing.
 
@@ -40,41 +40,33 @@ The pure `getGaussianSplatPrimitives(gltf)` helper from `@loaders.gl/scene/gltf`
 
 Descriptors enumerate mesh primitives, **not node instances**. Node transforms remain in the glTF scene graph. Consumers must resolve nodes referencing each mesh, including repeated instances; transforms are not baked into arrays or copied into primitive descriptors.
 
-### Optional SPZ2 decoder bridge[​](#optional-spz2-decoder-bridge "Direct link to Optional SPZ2 decoder bridge")
+### Embedded SPZ2 decoding[​](#embedded-spz2-decoding "Direct link to Embedded SPZ2 decoding")
 
-The draft `KHR_gaussian_splatting_compression_spz_2` path preserves its buffer view and compressed bytes. Applications may inject a decoder; embedded payloads are passed with an explicit LUF source coordinate hint, unlike standalone SPZ compatibility defaults. Without a decoder, the compressed descriptor is still inspectable.
-
-The plugin retains `compressedBufferView` and, when buffers are loaded, a copied `compressedBytes` array. The glTF package does not depend on the splats codec. Applications can supply this adapter:
+Supply `SPZLoader` alongside `GLTFLoader` to decode embedded `KHR_gaussian_splatting_compression_spz_2` payloads. The decoded Mesh Arrow table is available as `gltf.gaussianSplatPrimitives[index].decoded`. The glTF extension defines the source coordinates as LUF; an optional `splats.targetCoordinateSystem` controls conversion.
 
 ```
 import {load} from '@loaders.gl/core';
 
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 
-import {parseSPZToGaussianSplats} from '@loaders.gl/splats';
+import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
+
+import type {MeshArrowTable} from '@loaders.gl/core/schema';
+
+import {SPZLoader} from '@loaders.gl/splats';
 
 
 
-const gltf = await load('scene.glb', GLTFLoader, {
+const gltf = await load('scene.glb', [GLTFLoader, SPZLoader], {
 
-  gltf: {
+  splats: {targetCoordinateSystem: 'LUF'}
 
-    loadBuffers: true,
+}) as GLTFWithBuffers;
 
-    splatDecoder: (data, {sourceCoordinateSystem}) =>
-
-      parseSPZToGaussianSplats(data, {
-
-        splats: {sourceCoordinateSystem, targetCoordinateSystem: 'LUF'}
-
-      })
-
-  }
-
-});
+const splats = gltf.gaussianSplatPrimitives?.[0].decoded as MeshArrowTable | undefined;
 ```
 
-The callback result is retained as `descriptor.decoded`. The bridge does not convert that result into glTF accessors or reconcile decoded point counts with accessor counts. Consumers must check those associations and perform required attribute conversions. Do not let standalone SPZ defaults override the embedded LUF coordinate contract.
+Without an SPZ loader, the descriptor retains `compressedBufferView` and a copy of the loaded `compressedBytes` for applications that decode them themselves. The legacy `gltf.splatDecoder` callback remains supported, but the supplied loader takes precedence. Decoding does not populate glTF accessors or reconcile their counts with the decoded table. Descriptors refer to mesh primitives; consumers must still apply node instance transforms and any required attribute conversions.
 
 ## 3D Tiles integration[​](#3d-tiles-integration "Direct link to 3D Tiles integration")
 

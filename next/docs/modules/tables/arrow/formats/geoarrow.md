@@ -1,6 +1,6 @@
 Geospatial columnar format
 
-![](/next/images/format-logos/geoarrow-logo.png)GeoArrow
+[![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)
 
 # GeoArrow
 
@@ -16,11 +16,22 @@ GeoArrow defines the Arrow extension metadata and layouts that let geospatial fe
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md)
 
-⛶⛶ Explore fullscreen
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type    | API                                                                                                                                                                |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Loader  | [`GeoArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)                                                        |
+| Utility | [`convertGeojsonToBinaryFeatureCollection`](https://loaders.gl/next/docs/modules/core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection.md) |
+| Utility | [`convertBinaryFeatureCollectionToGeojson`](https://loaders.gl/next/docs/modules/core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson.md) |
+| Utility | [`triangulateWKBGeometryColumn`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/triangulate-wkb-geometry-column.md)                          |
+
+GeoArrow table map exampleEnter fullscreen
+
+⛶ Explore fullscreen
 
 See [Coordinate Reference Systems](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md) for GeoArrow CRS representations and column-specific metadata. The [conformance ledger](https://loaders.gl/next/docs/geoarrow-conformance-ledger.md) defines the supported physical matrix.
 
-![](/next/images/format-logos/apache-arrow-logo.png)[Try It](https://loaders.gl/next/examples/table/arrow)[Overview](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Format](https://loaders.gl/next/docs/modules/tables/arrow/format.md)[ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)[GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)[GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)
+[![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Try It](https://loaders.gl/next/examples/table/arrow)[Overview](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Format](https://loaders.gl/next/docs/modules/tables/arrow/format.md)[ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)[GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)[GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)
 
 The GeoArrow boundary
 

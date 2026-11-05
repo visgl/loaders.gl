@@ -54,7 +54,7 @@ validate · encode · compress
 
 Portable files
 
-[Parquetcolumnar analytical files↗](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[glTF / GLBportable scene assets↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Draco / LAScompressed geometry and points↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)
+[Parquetcolumnar analytical files↗](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[glTF / GLBportable scene assets↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Draco / LAScompressed geometry and points↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)
 
 The application chooses the data shape; the writer chooses the bytes.
 
@@ -103,7 +103,7 @@ The guide below covers writer selection, category-compatible input data, asynchr
 As an example, to Draco-compress a mesh using the `DracoWriter`:
 
 ```
-import {DracoWriter} from '@loaders.gl/draco';
+import {DracoWriter} from '@loaders.gl/scene/draco-writer';
 
 import {encode} from '@loaders.gl/core';
 

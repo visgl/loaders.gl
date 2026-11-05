@@ -1,12 +1,12 @@
 glTF API / scenegraph
 
-![](/next/images/format-logos/gltf-logo.svg)
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)
 
 # Work with a glTF asset as a scenegraph.
 
 GLTFScenegraph provides focused accessors and builders for glTF JSON and binary resources. Use it when an application needs to inspect, modify, or assemble a scene while retaining the format's structure.
 
-![](/next/images/format-logos/gltf-logo.svg)[Overview](https://loaders.gl/next/docs/modules/scene/gltf.md)[glTF Format](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Iterator](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)[Scenegraph](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)[Post-processing](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Overview](https://loaders.gl/next/docs/modules/scene/gltf.md)[glTF Format](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Iterator](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)[Scenegraph](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)[Post-processing](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
 
 Scenegraph operations
 

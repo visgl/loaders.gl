@@ -90,7 +90,7 @@ Next step
 
 Load the asset with its native format module
 
-![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)
+![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
 
 The `@loaders.gl/ogc/stac` module discovers datasets and assets described by the [SpatioTemporal Asset Catalog specification](https://stacspec.org/). It supports both linked static catalogs and server-side STAC API Item Search without imposing a rendering framework or a database dependency.
 

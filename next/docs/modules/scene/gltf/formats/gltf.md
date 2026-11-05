@@ -1,6 +1,6 @@
 Scenegraph format
 
-![](/next/images/format-logos/gltf-logo.svg)
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)
 
 # glTF
 
@@ -20,7 +20,17 @@ A delivery-focused scene format for geometry, materials, hierarchy, animation, a
 
 [ ↗](https://loaders.gl/next/examples/gltf)
 
-![](/next/images/format-logos/gltf-logo.svg)[Overview](https://loaders.gl/next/docs/modules/scene/gltf.md)[glTF Format](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Iterator](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)[Scenegraph](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)[Post-processing](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type    | API                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------- |
+| Loader  | [`GLTFLoader`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)             |
+| Writer  | [`GLTFWriter`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-writer.md)             |
+| Utility | [`GLTFScenegraph`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)     |
+| Utility | [glTF accessor helpers](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-accessors.md) |
+| Utility | [`GLTFIterator`](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)         |
+
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Overview](https://loaders.gl/next/docs/modules/scene/gltf.md)[glTF Format](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Iterator](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)[Scenegraph](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)[Post-processing](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
 
 A layered 3D format stack
 
@@ -44,7 +54,7 @@ Geometry and texture payloads
 
 Compression and GPU-ready delivery underneath the formats
 
-[Draco↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)
+[Draco↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
 
 Application-facing results
 
@@ -151,7 +161,7 @@ The table below summarizes the level of glTF support exposed by `@loaders.gl/sce
 | KTX2 / Basis Universal textures                                                                                         | 2.0 extension             | ✅ Complete       | ✅ Complete    | `KHR_texture_basisu`                                                                                                         |
 | WebP and AVIF textures                                                                                                  | 2.0 extensions            | ✅ Complete       | ✅ Complete    | Optional decoder support; required-extension failures preserved                                                              |
 | Texture transforms                                                                                                      | 2.0 extension             | ✅ Complete       | ⚠️ Partial     | `KHR_texture_transform` metadata is exposed for rendering integrations                                                       |
-| Mesh features and structural metadata                                                                                   | 2.0 / 3D Tiles extensions | ✅ Complete       | ⚠️ Partial     | Loaders.gl helpers expose metadata tables and feature IDs                                                                    |
+| Mesh features and structural metadata                                                                                   | 2.0 / 3D Tiles extensions | ✅ Complete       | ⚠️ Partial     | loaders.gl helpers expose metadata tables and feature IDs                                                                    |
 | Vector primitive topology                                                                                               | Draft 2.0 extensions      | ✅ Complete       | ⚠️ Partial     | Primitive-restart ranges and polygon loops are decoded; rendering remains application-owned                                  |
 | Punctual lights and unlit materials                                                                                     | 2.0 extensions            | ✅ Complete       | ⚠️ Partial     | Parsed and retained; renderer-specific behavior remains application-owned                                                    |
 | Legacy techniques, programs, and shaders                                                                                | 1.0 / legacy extension    | 📦 Preserved only | ❌ Unsupported | Retained source data; glTF 1 shader/technique conversion is unsupported                                                      |
@@ -172,30 +182,49 @@ loaders.gl handles resource loading and decoding where possible, exposes metadat
 
 For optional WebP or AVIF extensions, `GLTFLoader` retains the ordinary texture source when the active runtime cannot decode the extension image. A required extension fails before image loading when its image MIME type is unsupported.
 
-| Extension                                                                                                                       | Processing | Description                                                                                                           |
-| ------------------------------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------- |
-| [KHR\_interactivity](#khr_interactivity)                                                                                        | Metadata   | Typed behavior graphs and a raw graph accessor; execution belongs to the application runtime.                         |
-| [KHR\_draco\_mesh\_compression](#khr_draco_mesh_compression)                                                                    | ✅ Y       | Decompresses draco-compressed geometries                                                                              |
-| [KHR\_meshopt\_compression](#khr_meshopt_compression)                                                                           | ✅ Y       | Decompresses version 0 or 1 meshopt streams and supports the `COLOR` filter                                           |
-| [EXT\_meshopt\_compression](#ext_meshopt_compression)                                                                           | ✅ Y       | Decompresses existing version 0 meshopt streams                                                                       |
-| [KHR\_texture\_basisu](#khr_texture_basisu)                                                                                     | ✅ Y       | Adds the ability to specify textures using KTX v2                                                                     |
-| [KHR\_texture\_transform](#khr_texture_transform)                                                                               | ✅ Y       | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute                           |
-| [EXT\_texture\_webp](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_webp)                     | ✅ Y       | Selects the WebP source when the active decoder supports it                                                           |
-| [EXT\_texture\_avif](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif)                     | ✅ Y       | Selects the AVIF source when the active decoder supports it                                                           |
-| [EXT\_mesh\_features](#ext_mesh_features)                                                                                       | ✅ Y       | 3D tiles extension                                                                                                    |
-| [EXT\_structural\_metadata](#ext_structural_metadata)                                                                           | ✅ Y       | 3D tiles extension                                                                                                    |
-| [KHR\_mesh\_primitive\_restart](#vector-primitive-topology)                                                                     | ✅ Y       | Draft restart-separated strip topology                                                                                |
-| [EXT\_mesh\_polygon](#vector-primitive-topology)                                                                                | ✅ Y       | Draft polygon triangles, exterior rings, and interior rings                                                           |
-| [MPEG\_audio\_spatial](#spatial-audio)                                                                                          | Metadata   | Root/node audio declarations and validated source accessor references; application provides timed media and playback. |
-| [KHR\_audio\_emitter](#spatial-audio)                                                                                           | Resources  | Draft encoded clips, resolved sources and node/scene emitter instances; application provides decoding and playback.   |
-| [KHR\_materials\_variants](#typed-extension-metadata-and-permissive-validation)                                                 | Helper     | Types, permissive schemas and resolved material-to-variant mappings.                                                  |
-| [EXT\_mesh\_gpu\_instancing](#typed-extension-metadata-and-permissive-validation)                                               | Helper     | Types, permissive schema and lazy instance/accessor descriptors.                                                      |
-| [KHR\_animation\_pointer](#typed-extension-metadata-and-permissive-validation)                                                  | Metadata   | Types and permissive animation-target schema; application resolves and animates pointer targets.                      |
-| [KHR\_node\_visibility, KHR\_node\_selectability, KHR\_node\_hoverability](#typed-extension-metadata-and-permissive-validation) | Metadata   | Types and permissive schemas; application evaluates inherited subtree flags.                                          |
-| [KHR\_xmp\_json\_ld](#typed-extension-metadata-and-permissive-validation)                                                       | Helper     | Types, permissive schemas and shared XMP packet resolution.                                                           |
-| [KHR\_lights\_punctual](#khr_lights_punctual)                                                                                   | ✅ Y\*     | Deprecated                                                                                                            |
-| [KHR\_materials\_unlit](#khr_materials_unlit)                                                                                   | ✅ Y\*     | Deprecated                                                                                                            |
-| [EXT\_feature\_metadata](#ext_feature_metadata)                                                                                 | ✅ Y\*     | Deprecated. 3D tiles extension                                                                                        |
+When a texture declares multiple alternatives, the loader prefers, in order: BasisU, DDS (when a DDS loader is supplied), supported AVIF, supported WebP, then the core PNG/JPEG source. This is loaders.gl's selection policy; each required extension must still be supported. The application must provide a DDS loader only when its output formats can be used by the target device.
+
+The `@loaders.gl/scene/gltf` entry point exports the `GLTF_EXT_texture_avif` and `GLTF_MSFT_texture_dds` source types and `GLTFEXTTextureAvifSchema`; the schema is also available from `@loaders.gl/scene/gltf/schema`.
+
+To load `MSFT_texture_dds`, pass a DDS-capable loader alongside `GLTFLoader` to `load()` or `parse()`. For example, use `CompressedTextureLoader` from `@loaders.gl/images` in the loader list. The loader must return a `TextureLevel[]` mip chain. The application must ensure its renderer and device support the returned texture formats. Without a DDS loader, optional DDS falls back to the next available alternative or core texture source, and required DDS throws before image loading. Parser errors propagate; unsupported formats are not silently replaced. The built-in compressed texture parser handles a subset of DDS formats, not every DDS variant.
+
+```
+import {load} from '@loaders.gl/core';
+
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+
+import {CompressedTextureLoader} from '@loaders.gl/images';
+
+
+
+const gltf = await load('scene.glb', [GLTFLoader, CompressedTextureLoader]);
+```
+
+| Extension                                                                                                                       | Processing      | Description                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [KHR\_interactivity](#khr_interactivity)                                                                                        | Metadata        | Typed behavior graphs and a raw graph accessor; execution belongs to the application runtime.                         |
+| [KHR\_draco\_mesh\_compression](#khr_draco_mesh_compression)                                                                    | ✅ Y            | Decompresses draco-compressed geometries                                                                              |
+| [KHR\_meshopt\_compression](#khr_meshopt_compression)                                                                           | ✅ Y            | Decompresses version 0 or 1 meshopt streams and supports the `COLOR` filter                                           |
+| [EXT\_meshopt\_compression](#ext_meshopt_compression)                                                                           | ✅ Y            | Decompresses existing version 0 meshopt streams                                                                       |
+| [KHR\_texture\_basisu](#khr_texture_basisu)                                                                                     | ✅ Y            | Adds the ability to specify textures using KTX v2                                                                     |
+| [KHR\_texture\_transform](#khr_texture_transform)                                                                               | ✅ Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute                           |
+| [EXT\_texture\_webp](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_webp)                     | ✅ Y            | Selects the WebP source when the active decoder supports it                                                           |
+| [EXT\_texture\_avif](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_texture_avif)                     | ✅ Y            | Selects the AVIF source when the active decoder supports it                                                           |
+| [MSFT\_texture\_dds](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds)                     | Optional loader | Selects and parses DDS when a DDS-capable loader is supplied; device compatibility is application-owned               |
+| [EXT\_mesh\_features](#ext_mesh_features)                                                                                       | ✅ Y            | 3D tiles extension                                                                                                    |
+| [EXT\_structural\_metadata](#ext_structural_metadata)                                                                           | ✅ Y            | 3D tiles extension                                                                                                    |
+| [KHR\_mesh\_primitive\_restart](#vector-primitive-topology)                                                                     | ✅ Y            | Draft restart-separated strip topology                                                                                |
+| [EXT\_mesh\_polygon](#vector-primitive-topology)                                                                                | ✅ Y            | Draft polygon triangles, exterior rings, and interior rings                                                           |
+| [MPEG\_audio\_spatial](#spatial-audio)                                                                                          | Metadata        | Root/node audio declarations and validated source accessor references; application provides timed media and playback. |
+| [KHR\_audio\_emitter](#spatial-audio)                                                                                           | Resources       | Draft encoded clips, resolved sources and node/scene emitter instances; application provides decoding and playback.   |
+| [KHR\_materials\_variants](#typed-extension-metadata-and-permissive-validation)                                                 | Helper          | Types, permissive schemas and resolved material-to-variant mappings.                                                  |
+| [EXT\_mesh\_gpu\_instancing](#typed-extension-metadata-and-permissive-validation)                                               | Helper          | Types, permissive schema and lazy instance/accessor descriptors.                                                      |
+| [KHR\_animation\_pointer](#typed-extension-metadata-and-permissive-validation)                                                  | Metadata        | Types and permissive animation-target schema; application resolves and animates pointer targets.                      |
+| [KHR\_node\_visibility, KHR\_node\_selectability, KHR\_node\_hoverability](#typed-extension-metadata-and-permissive-validation) | Metadata        | Types and permissive schemas; application evaluates inherited subtree flags.                                          |
+| [KHR\_xmp\_json\_ld](#typed-extension-metadata-and-permissive-validation)                                                       | Helper          | Types, permissive schemas and shared XMP packet resolution.                                                           |
+| [KHR\_lights\_punctual](#khr_lights_punctual)                                                                                   | ✅ Y\*          | Deprecated                                                                                                            |
+| [KHR\_materials\_unlit](#khr_materials_unlit)                                                                                   | ✅ Y\*          | Deprecated                                                                                                            |
+| [EXT\_feature\_metadata](#ext_feature_metadata)                                                                                 | ✅ Y\*          | Deprecated. 3D tiles extension                                                                                        |
 
 ## Official Extensions[​](#official-extensions "Direct link to Official Extensions")
 
@@ -537,3 +566,13 @@ The remaining limitations are:
 New glTF 2 features such as morph targets, sparse accessors, and `CUBICSPLINE` animation do not need to be synthesized for glTF 1 inputs that do not use them.
 
 Implementation evidence: [normalizer](https://github.com/visgl/loaders.gl/blob/master/modules/scene/src/gltf/lib/api/normalize-gltf-v1.ts), [binary-extension preprocessing](https://github.com/visgl/loaders.gl/blob/master/modules/scene/src/gltf/lib/extensions/KHR_binary_gltf.ts), [normalization tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1.cross.spec.ts), the [JSON conversion tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-json.spec.ts), the [material conversion tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-materials.spec.ts), the [common-material converter](https://github.com/visgl/loaders.gl/blob/master/modules/scene/src/gltf/lib/api/convert-gltf-v1-materials.ts) and [independent validation tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-common-materials.spec.ts), the [accessor-layout converter](https://github.com/visgl/loaders.gl/blob/master/modules/scene/src/gltf/lib/api/convert-gltf-v1-accessors.ts) and [tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-layouts.spec.ts), and the [skin converter](https://github.com/visgl/loaders.gl/blob/master/modules/scene/src/gltf/lib/api/convert-gltf-v1-skins.ts) and [tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-skins.spec.ts), and the [bind-shape baker](https://github.com/visgl/loaders.gl/blob/master/modules/scene/src/gltf/lib/api/bake-gltf-v1-bind-shapes.ts) and [tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-bind-shapes.spec.ts), and the [binary repacker](https://github.com/visgl/loaders.gl/blob/master/modules/scene/src/gltf/lib/api/repack-gltf-v1-accessors.ts) with [layout](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-repacking.spec.ts), [attribute](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-attributes.spec.ts), and [field cleanup](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-fields.spec.ts) tests. The tests cover common references, static multi-mesh nodes, animation reference conversion, camera and inverse-bind references, attribute aliases, binary/external buffer ordering, embedded images, empty collections, material approximations, strict rejection of reported legacy resources, and non-mutating APIs; they also verify decoded interleaved/packed values, shared skin instances, joint order, affine bind-shape multiplication, shared buffer preservation, loader completion after buffer loading, GLB 2 round trips, and strict rejection of reported layout and skin gaps. The [scene and payload tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-conformance.spec.ts), [animation tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-animation-payloads.spec.ts), and [projection and hierarchy tests](https://github.com/visgl/loaders.gl/blob/master/modules/scene/test/gltf/lib/api/normalize-gltf-v1-projections-scenes.spec.ts) cover the additional checks above. They do not establish complete glTF 1 conversion coverage.
+
+### Draft `KHR_accessor_float64`[​](#draft-khr_accessor_float64 "Direct link to draft-khr_accessor_float64")
+
+The loader recognizes the draft `KHR_accessor_float64` declaration and preserves accessor component type `5130` as IEEE-754 binary64 data. Accessor materialization uses `Float64Array`; the loader does not intentionally reduce these values to float32.
+
+When this extension is declared, it must appear in both `extensionsUsed` and `extensionsRequired`. Its double-precision accessors must not set `normalized: true`. The loader checks these conditions before loading dependent resources and retains extension declarations for downstream capability checks.
+
+This validation follows the [review draft at revision 8611bc8933493865380e68fadf555dbbc2cf1180](https://github.com/lexaknyazev/glTF/blob/8611bc8933493865380e68fadf555dbbc2cf1180/extensions/2.0/Khronos/KHR_accessor_float64/README.md). It is not a claim of complete semantic validation: the loader does not check every accessor usage site against the extension's permitted semantics. Existing handling of undeclared component type `5130` is unchanged.
+
+GPU upload, float32 conversion, high/low splitting and animation interpolation are consumer responsibilities. Successfully decoding an asset does not establish that a renderer supports its double-precision attributes. The draft requires double-precision interpolation for double-precision animation data.

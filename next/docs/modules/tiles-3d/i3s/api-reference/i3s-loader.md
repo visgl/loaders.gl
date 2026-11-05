@@ -1,6 +1,6 @@
 I3S loader
 
-![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+[![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
 # I3SLoader
 
@@ -20,7 +20,9 @@ Read ArcGIS scene layers, geometry, textures, and the metadata needed by the sha
 
 [ ↗](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/i3s-source.md)
 
-⛶⛶ Explore fullscreen
+I3S building sceneEnter fullscreen
+
+⛶ Explore fullscreen
 
 View-dependent delivery
 

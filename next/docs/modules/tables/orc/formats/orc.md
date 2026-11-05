@@ -1,8 +1,8 @@
 Columnar file format
 
-![](/next/images/format-logos/orc-logo.png)
+[![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)
 
-![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)
+[![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)](https://www.apache.org/)
 
 # Apache ORC
 
@@ -17,6 +17,15 @@ Apache ORC stores a schema, encoded column streams, and statistics in a compact 
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API               |
+| ------------- | ----------------- |
+| Loader        | `ORCLoader`       |
+| Source loader | `ORCSourceLoader` |
+
+ORC loader exampleEnter fullscreen
 
 ## Hosted ORC loader
 

@@ -62,6 +62,6 @@ Work in progress
 
 ## Metadata versions[​](#metadata-versions "Direct link to Metadata versions")
 
-`PotreeLoader` parses both legacy `cloud.js` declarations (1.0–1.8) and modern `metadata.json` declarations (2.0), selecting the validator from the declared dataset version. It returns `PotreeDatasetMetadata`; inspect `version` before accessing layout-specific fields. The package root is metadata-only. Async core parsing preloads the implementation; synchronous parsing uses `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree/potree-loader`.
+`PotreeLoader` parses both legacy `cloud.js` declarations (1.0–1.8) and modern `metadata.json` declarations (2.0), selecting the validator from the declared dataset version. It returns `PotreeDatasetMetadata`; inspect `version` before accessing layout-specific fields. The package root is metadata-only. Async core parsing preloads the implementation; synchronous parsing uses `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree-loader`.
 
 Use [PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) for hierarchy traversal and decoded point tiles.

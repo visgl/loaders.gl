@@ -1,12 +1,22 @@
 Tiled scene format
 
-![](/next/images/format-logos/3d-tiles-logo.png)
+[![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)
 
 # 3D Tiles
 
 Describe a large scene as a hierarchy of bounded, streamable pieces so a renderer can request the detail that matters for the current view.
 
-![](/next/images/format-logos/3d-tiles-logo.png)[Module](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Loader API](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Runtime guides](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md)[Source API](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                                            |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Loader | [`Tiles3DLoader`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)                |
+| Source | [`Tiles3DSource`](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)                         |
+| Loader | [`CesiumIonLoader`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader.md)            |
+| Writer | [`Tiles3DWriter`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tile-3d-writer.md)                 |
+| Writer | [`Tiles3DArchiveWriter`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-archive-writer.md) |
+
+[![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Module](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)[Loader API](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Runtime guides](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts.md)[Source API](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)
 
 View-dependent delivery
 

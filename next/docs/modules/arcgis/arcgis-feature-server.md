@@ -1,6 +1,6 @@
 ArcGIS module · ArcGIS vector source
 
-![](/next/images/format-logos/arcgis-logo.jpg)Feature
+[![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)
 
 # ArcGIS FeatureServer
 
@@ -24,9 +24,11 @@ Query geometries and attributes from your published ArcGIS feature layers and ta
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
 
-⛶⛶ Explore fullscreen
+ArcGIS FeatureServer exampleEnter fullscreen
 
-![](/next/images/format-logos/arcgis-logo.jpg)Feature[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-feature-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-feature-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
 Have a portal item instead of a service URL? Use the [item explorer and sign-in example](https://loaders.gl/next/docs/developer-guide/arcgis/items.md).
 

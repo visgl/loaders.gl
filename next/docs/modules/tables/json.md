@@ -1,6 +1,6 @@
 Structured data module
 
-![](/next/images/format-logos/json-logo.gif)JSON
+[![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)
 
 # @loaders.gl/tables/json
 
@@ -24,7 +24,7 @@ JSON, delimited text, BSON, and XML describe data differently. loaders.gl keeps 
 
 Input families
 
-[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/tables/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/xml/formats/xml.md)
+[**JSON**nested documents↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**NDJSON**one record per line↗](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[**CSV / TSV**delimited rows↗](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[**BSON**typed binary documents↗](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)[**XML**namespaced trees↗](https://loaders.gl/next/docs/modules/documents/xml/formats/xml.md)
 
 pars&#x65;**→**
 
@@ -129,7 +129,7 @@ Breaking out of the loop closes the input and releases the worker. Aborting also
 
 Set `core.workerInBatches: false` to retain caller-side batch parsing. Custom worker URLs require `core.workerInBatches: true` to declare protocol support. Browser workers use the published CDN asset by default, so bundling the application does not require copying a worker beside it. To self-host, set `json.workerUrl`, `json-table.workerUrl`, or `ndjson.workerUrl` for the chosen loader. Node workers remain experimental and require `core._nodeWorkers: true`; browser and CommonJS Node worker bundles are included in the package. `GeoJSONLoader`, `NDGeoJSONLoader`, and the experimental `FastJSONLoader` do not opt into this new worker. Use `JSONTableLoader` with `json.backend: 'fast'` for fast-backend Arrow worker batches.
 
-For configuration formats with the same general object/array data model, see the dependency-free [`YAMLLoader`](https://loaders.gl/next/docs/modules/config/api-reference/yaml-loader.md) and [`TOMLLoader`](https://loaders.gl/next/docs/modules/config/api-reference/toml-loader.md) in `@loaders.gl/config`.
+For configuration formats with the same general object/array data model, see the dependency-free [`YAMLLoader`](https://loaders.gl/next/docs/modules/documents/config/api-reference/yaml-loader.md) and [`TOMLLoader`](https://loaders.gl/next/docs/modules/documents/config/api-reference/toml-loader.md) in `@loaders.gl/documents`.
 
 Detailed guide
 
@@ -180,3 +180,5 @@ At the moment, auto-detection between streaming and classic JSON based on file c
 | [Newline Delimited GeoJSON](https://stevage.github.io/ndgeojson/)       | `.ndgeojson` |                            | ✅ `NDGeoJSONLoader`                                             |
 | [GeoJSON Lines](https://geojson.org/)                                   | `.geojsonl`  |                            | ✅ `NDGeoJSONLoader`                                             |
 | [GeoJSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc8142) |              | `application/geo+json-seq` | ⚠️ `NDGeoJSONLoader`. Each Feature must fit on one line.         |
+
+For ordinary JSON documents without table extraction or streaming, use the native [`JSONLoader` in documents](https://loaders.gl/next/docs/modules/documents/api-reference/json-loader.md).

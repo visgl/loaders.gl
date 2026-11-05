@@ -1,6 +1,6 @@
 Geometry text format
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWKT
+[![](/next/images/format-logos/ogc-mark.svg)OGCWKT](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt.md)
 
 # Make a geometry readable at a glance.
 
@@ -15,6 +15,13 @@ Well-Known Text (WKT) represents points, lines, polygons, collections, and coord
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-loader.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                 |
+| ------ | --------------------------------------------------------------------------------------------------- |
+| Loader | [`WKTLoader`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-loader.md) |
+| Writer | [`WKTWriter`](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/wkt-writer.md) |
 
 The geometry vocabulary
 

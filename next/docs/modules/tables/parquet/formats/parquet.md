@@ -1,6 +1,6 @@
 Columnar file format
 
-![](/next/images/format-logos/parquet-logo.png)
+[![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet)
 
 # Apache Parquet
 
@@ -18,9 +18,20 @@ ArrowParquetselective reads
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Loader        | [`ParquetLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)               |
+| Writer        | [`ParquetWriter`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)               |
+| Source loader | [`ParquetSourceLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md)  |
+| Source        | [`ParquetDatasetSource`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md) |
+
 ## Try a range-aware read[​](#try-a-range-aware-read "Direct link to Try a range-aware read")
 
 Use the panel below to inspect Parquet metadata, select columns, and limit the Arrow rows returned from a remote file. The reader can plan the request from the footer before decoding the selected data ranges.
+
+Parquet scan exampleEnter fullscreen
 
 Parquet URLhttps\://raw\.githubusercontent.com/visgl/loaders.gl/master/modules/tables/test/parquet/data/geoparquet/airports.parquet
 
@@ -28,7 +39,7 @@ Parquet URLhttps\://raw\.githubusercontent.com/visgl/loaders.gl/master/modules/t
 
 Reading source metadata before opening the data…
 
-![](/next/images/format-logos/parquet-logo.png)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
+[![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
 
 The Parquet layout
 

@@ -1,6 +1,6 @@
 NetCDF source
 
-![](/next/images/format-logos/netcdf-logo.png)NetCDF
+[![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md)
 
 # Read selected variables without guessing the whole dataset.
 

@@ -1,6 +1,6 @@
 Scenegraph module
 
-![](/next/images/format-logos/gltf-logo.svg)
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)
 
 # @loaders.gl/scene/gltf
 
@@ -20,7 +20,7 @@ Bring glTF and GLB scenes into an application with linked assets, compressed mes
 
 [ ↗](https://loaders.gl/next/examples/gltf)
 
-![](/next/images/format-logos/gltf-logo.svg)[Overview](https://loaders.gl/next/docs/modules/scene/gltf.md)[glTF Format](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Iterator](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)[Scenegraph](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)[Post-processing](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Overview](https://loaders.gl/next/docs/modules/scene/gltf.md)[glTF Format](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Iterator](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)[Scenegraph](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)[Post-processing](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
 
 A layered 3D format stack
 
@@ -44,7 +44,7 @@ Geometry and texture payloads
 
 Compression and GPU-ready delivery underneath the formats
 
-[Draco↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)
+[Draco↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
 
 Application-facing results
 
@@ -96,11 +96,7 @@ npm install @loaders.gl/scene
 npm install @loaders.gl/core
 ```
 
-Optionally, to support Draco encoded gltf files
-
-```
-npm install @loaders.gl/draco
-```
+Draco-compressed glTF geometry is supported by the scene package. Configure bundled runtime URLs through `@loaders.gl/scene/draco-library-options` when loading without CDN access.
 
 ## GLTFIterator API[​](#gltfiterator-api "Direct link to GLTFIterator API")
 
@@ -206,4 +202,4 @@ Use [glTF accessor helpers](https://loaders.gl/next/docs/modules/scene/gltf/api-
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).

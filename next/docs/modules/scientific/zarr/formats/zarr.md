@@ -1,6 +1,6 @@
 Chunked multidimensional data
 
-![](/next/images/format-logos/zarr-logo.svg)
+[![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)
 
 # Read the array chunks that answer the question.
 
@@ -15,6 +15,14 @@ Zarr stores typed multidimensional arrays in independently addressable chunks. O
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                                                |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Source loader | [`GeoZarrSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)         |
+| Source loader | [`OMEZarrSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader.md)         |
+| Source loader | [`SpatialDataSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/spatial-data-source-loader.md) |
 
 Windowed raster access
 

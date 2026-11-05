@@ -1,6 +1,6 @@
 GeoPackage loader
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)
 
 # GeoPackageLoader
 
@@ -16,9 +16,11 @@ GeoPackageLoader opens the SQLite container, discovers its feature tables, and r
 
 [ ↗](https://loaders.gl/next/docs/modules/geospatial/geopackage.md)
 
-⛶⛶ Explore fullscreen
+GeoPackage loader exampleEnter fullscreen
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage[Try It](https://loaders.gl/next/examples/geospatial/geopackage)[Overview](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)[Format](https://loaders.gl/next/docs/modules/geospatial/geopackage/format.md)[GeoPackageLoader](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader.md)[GeoPackageSource](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source.md)
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)[Try It](https://loaders.gl/next/examples/geospatial/geopackage)[Overview](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)[Format](https://loaders.gl/next/docs/modules/geospatial/geopackage/format.md)[GeoPackageLoader](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader.md)[GeoPackageSource](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source.md)
 
 The read sequence
 

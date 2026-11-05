@@ -67,7 +67,7 @@ import {RasterSet} from '@loaders.gl/tiles';
 
 import {createDataSource} from '@loaders.gl/core';
 
-import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff/geotiff-source-loader';
+import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff-source-loader';
 
 
 

@@ -1,6 +1,6 @@
 WKT module · CRS loader
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWKT
+[![](/next/images/format-logos/ogc-mark.svg)OGCWKT](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt.md)
 
 # WKTCRSLoader
 

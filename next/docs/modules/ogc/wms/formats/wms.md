@@ -1,6 +1,6 @@
 OGC map-image service
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)
 
 # WMS
 
@@ -16,9 +16,19 @@ WMS exposes georeferenced map images through capabilities, layer, style, dimensi
 
 [ ↗](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md)
 
-⛶⛶ Explore fullscreen
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMS[Try WMS](https://loaders.gl/next/examples/tiles/wms)[WMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)
+| Type          | API                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Source loader | [`WMSSourceLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-source-loader.md)             |
+| Loader        | [`WMSCapabilitiesLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-capabilities-loader.md) |
+| Loader        | [`WMSFeatureInfoLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-feature-info-loader.md)  |
+
+WMS map service exampleEnter fullscreen
+
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)[Try WMS](https://loaders.gl/next/examples/tiles/wms)[WMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)
 
 Remote data, explicit steps
 
@@ -320,10 +330,10 @@ The WMS standard specifies protocol defined as a number of "request types" that 
 | **WMS Request**    | **loaders.gl support**                                                                                                   | **Description**                                                                                                                                                                                                        |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GetCapabilities`  | ✅ [`WMSCapabilitiesLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-capabilities-loader.md) | Returns WMS metadata (such as map image format and WMS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
-| `GetMap`           | ✅ [`ImageBitmapLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md)          | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
+| `GetMap`           | ✅ [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)                       | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
 | `GetFeatureInfo`   | ✅ [`_WMSFeatureInfoLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-feature-info-loader.md) | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                     |
 | `DescribeLayer`    |                                                                                                                          | gets feature types of the specified layer or layers, which can be further described using WFS or WCS requests. (Styled Layer Descriptor (SLD) Profile of WMS).                                                         |
-| `GetLegendGraphic` | ✅ [`ImageBitmapLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md)          | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
+| `GetLegendGraphic` | ✅ [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)                       | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
 | Exceptions         | ✅ `WMSErrorLoader`                                                                                                      | Parses an XML encoded WMS error response from any malformed request.                                                                                                                                                   |
 
 Remarks:

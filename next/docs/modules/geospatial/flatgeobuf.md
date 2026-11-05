@@ -1,6 +1,6 @@
 Cloud-native vector module
 
-![](/next/images/format-logos/flatgeobuf-logo.png)
+[![](/next/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)
 
 # Ask a vector file for the features in a box.
 

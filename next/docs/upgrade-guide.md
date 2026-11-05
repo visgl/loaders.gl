@@ -25,9 +25,9 @@ Version 5 is in prerelease development. Removed packages have no forwarding pack
 
 #### Table and geospatial package consolidation[​](#table-and-geospatial-package-consolidation "Direct link to Table and geospatial package consolidation")
 
-The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `excel`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv` to retain the former root exports. The `@loaders.gl/tables` root and format subpaths export metadata loaders and writers; import `CSVLoaderWithParser` from `@loaders.gl/tables/csv/csv-loader` for synchronous parsing.
+The standalone `@loaders.gl/arrow`, `avro`, `bson`, `csv`, `json`, `lance`, `orc`, and `parquet` packages have been removed. Install `@loaders.gl/tables` and replace an import such as `@loaders.gl/csv` with `@loaders.gl/tables/csv` to retain the former root exports. The `@loaders.gl/tables` root and format subpaths export metadata loaders and writers; import `CSVLoaderWithParser` from `@loaders.gl/tables/csv-loader` for synchronous parsing.
 
-The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` packages have also been removed. Install `@loaders.gl/geospatial` and use matching format subpaths, such as `@loaders.gl/geospatial/kml`, for former package-root APIs. The group root and format subpaths export metadata loaders; import `KMLLoaderWithParser` from `@loaders.gl/geospatial/kml/kml-loader` for synchronous parsing. Other parser, source, writer, and worker entry points have corresponding explicit subpaths in the group packages. Update any hard-coded worker asset URLs to the group package paths.
+The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` packages have also been removed. Install `@loaders.gl/geospatial` and use matching format subpaths, such as `@loaders.gl/geospatial/kml`, for former package-root APIs. The group root and format subpaths export metadata loaders; import `KMLLoaderWithParser` from `@loaders.gl/geospatial/kml-loader` for synchronous parsing. Other parser, source, writer, and worker entry points have corresponding explicit subpaths in the group packages. Update any hard-coded worker asset URLs to the group package paths.
 
 **Schema packages move into core subpaths**
 
@@ -48,7 +48,11 @@ The standalone `@loaders.gl/las`, `@loaders.gl/pcd`, `@loaders.gl/ply`, `@loader
 | `@loaders.gl/gltf` | `@loaders.gl/scene/gltf`                      |
 | `@loaders.gl/wkt`  | `@loaders.gl/geospatial/wkt`, `/wkb`, `/twkb` |
 
-Use parser-bearing loaders from named implementation subpaths such as `@loaders.gl/scene/gltf/gltf-loader` for synchronous parsing. PLY continues to support mesh faces. COPC and Potree stay in tiles-3d; geometry codec utilities stay in core/wkt. Rebuild custom workers and update worker/WASM asset paths to the new owners.
+Use parser-bearing loaders from named implementation subpaths such as `@loaders.gl/scene/gltf-loader` for synchronous parsing. PLY continues to support mesh faces. COPC and Potree stay in tiles-3d; geometry codec utilities stay in core/wkt. Rebuild custom workers and update worker/WASM asset paths to the new owners.
+
+#### Draco moves to scene[​](#draco-moves-to-scene "Direct link to Draco moves to scene")
+
+`@loaders.gl/draco` has been removed. Import `DracoLoader`, `DracoWorkerLoader`, `DracoFormat` and public Draco types from `@loaders.gl/scene`. Use `@loaders.gl/scene/draco-loader` for `DracoLoaderWithParser`, `/draco-writer` for writers and encoding helpers, and `/draco-library-options` for runtime URLs and bundled library options. Decoder-specific parsers are available at `/draco-wasm-loader`, `/draco-javascript-loader`, and `/draco3d-loader`. Worker files move to the scene package root. Draco options and supported geometry representations are unchanged.
 
 #### Raster package consolidation[​](#raster-package-consolidation "Direct link to Raster package consolidation")
 
@@ -61,7 +65,15 @@ Use parser-bearing loaders from named implementation subpaths such as `@loaders.
 | `@loaders.gl/terrain`           | `@loaders.gl/raster` for metadata and writer; `@loaders.gl/raster/terrain` for advanced APIs                    |
 | `@loaders.gl/terrain/heightmap` | `@loaders.gl/raster/terrain/heightmap`                                                                          |
 
-Direct parser filenames now use `*-loader` and metadata filenames use `*-loader-types`. Replace `*-loader-with-parser` imports with their corresponding `@loaders.gl/raster/<format>/*-loader`. Use `@loaders.gl/raster/quantized-mesh` for `QuantizedMeshLoaderWithParser`. Worker URLs move to the raster package root; the LERC WASM export moves to `raster/lerc/lerc-wasm.wasm`. Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends. GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit source subpath when using synchronous `createDataSource()`.
+Direct parser filenames now use `*-loader` and metadata filenames use `*-loader-types`. Replace `*-loader-with-parser` imports with their corresponding `@loaders.gl/raster/*-loader`. Use `@loaders.gl/raster/quantized-mesh` for `QuantizedMeshLoaderWithParser`. Worker URLs move to the raster package root; the LERC WASM export moves to `raster/lerc/lerc-wasm.wasm`. Install optional peers `geotiff` or `lerc` explicitly when using their decoding backends. GeoTIFF/OME-TIFF source metadata at the raster root needs asynchronous `load()`; import the explicit source subpath when using synchronous `createDataSource()`.
+
+#### Image, texture, and video consolidation[​](#image-texture-and-video-consolidation "Direct link to Image, texture, and video consolidation")
+
+* Replace dependencies on the removed `@loaders.gl/textures` and `@loaders.gl/video` packages with `@loaders.gl/images`; no compatibility packages are published.
+* `ImageBitmapLoader` is now `ImageLoader` and always returns an `ImageBitmap`. The older environment-dependent loader is `LegacyImageLoader`, with `LegacyImageLoaderOptions`. `ImageLoaderOptions` describes the bitmap loader.
+* Import metadata loaders from `@loaders.gl/images`. For direct implementations, import `*WithParser` exports from direct subpaths such as `@loaders.gl/images/basis-loader` or `@loaders.gl/images/image-loader`. Async core APIs continue to preload metadata loaders automatically. Sync parsing additionally requires an implementation with `parseSync`, such as `NPYLoaderWithParser` from `@loaders.gl/scientific/npy-loader`; image and Basis decoding remain asynchronous.
+* Import texture writers and helper APIs from their direct subpaths, for example `@loaders.gl/images/ktx2-basis-writer` and `@loaders.gl/images/load-image`. Default texture worker and codec URLs now use the images package; update custom URLs and schema references that point at the removed textures package.
+* Node image decoding and encoding through `@loaders.gl/core/polyfills` now require the optional `sharp` peer dependency. Install it explicitly (`npm install sharp`). Other polyfills and browser image decoding do not load or require Sharp. The optional `get-pixels`, `save-pixels`, and `ndarray` codec stack is removed.
 
 #### Scientific format package consolidation (v5)[​](#scientific-format-package-consolidation-v5 "Direct link to Scientific format package consolidation (v5)")
 
@@ -99,7 +111,7 @@ The v5 tile packages are grouped by runtime dimension. Replace imports and depen
 
 #### OGC service and STAC package imports[​](#ogc-service-and-stac-package-imports "Direct link to OGC service and STAC package imports")
 
-The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in v5. Install `@loaders.gl/ogc` for OGC service protocols and STAC catalogs. Replace imports from `@loaders.gl/wms` with `@loaders.gl/ogc/wms`, and imports from `@loaders.gl/stac` with `@loaders.gl/ogc/stac`. Parser-bearing implementations remain on named subpaths, such as `@loaders.gl/ogc/wms/gml-loader` and `@loaders.gl/ogc/stac/stac-source`.
+The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in v5. Install `@loaders.gl/ogc` for OGC service protocols and STAC catalogs. Replace imports from `@loaders.gl/wms` with `@loaders.gl/ogc/wms`, and imports from `@loaders.gl/stac` with `@loaders.gl/ogc/stac`. Parser-bearing implementations remain on named subpaths, such as `@loaders.gl/ogc/gml-loader` and `@loaders.gl/ogc/stac-source`.
 
 `@loaders.gl/services` now contains provider authentication presets for Mapbox, Google Maps, and Cesium ion. ArcGIS remains in `@loaders.gl/arcgis`. OGC loader IDs and option namespaces remain unchanged; their `module` ownership and default package asset paths become `ogc`.
 
@@ -111,7 +123,28 @@ The package root now exports lightweight service loaders for async `load()`. Syn
 
 #### Archive package imports[​](#archive-package-imports "Direct link to Archive package imports")
 
-Install `@loaders.gl/archives` and replace `@loaders.gl/zip` imports with `@loaders.gl/archives/zip`. Direct parser access moves from `@loaders.gl/zip/zip-loader` to `@loaders.gl/archives/zip/zip-loader`. Import `TarBuilder` from `@loaders.gl/archives/tar`.
+Install `@loaders.gl/archives` and replace `@loaders.gl/zip` imports with `@loaders.gl/archives/zip`. Direct parser access moves from `@loaders.gl/zip/zip-loader` to `@loaders.gl/archives/zip-loader`. Import `TarBuilder` from `@loaders.gl/archives/tar`.
+
+#### Flat loader, writer, and source entrypoints[​](#flat-loader-writer-and-source-entrypoints "Direct link to Flat loader, writer, and source entrypoints")
+
+Format-level entrypoints remain grouped, for example `@loaders.gl/tables/parquet`, `@loaders.gl/scene/gltf`, and `@loaders.gl/core/geoarrow`. Named parser, writer, and source entrypoints now sit directly under their package name; remove the repeated format directory segment from implementation imports:
+
+| Previous import                                               | Replacement                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------ |
+| `@loaders.gl/tables/parquet/parquet-loader`                   | `@loaders.gl/tables/parquet-loader`                    |
+| `@loaders.gl/geospatial/shapefile/shapefile-loader`           | `@loaders.gl/geospatial/shapefile-loader`              |
+| `@loaders.gl/pointclouds/las/las-loader`                      | `@loaders.gl/pointclouds/las-loader`                   |
+| `@loaders.gl/scene/gltf/gltf-loader`                          | `@loaders.gl/scene/gltf-loader`                        |
+| `@loaders.gl/raster/geotiff/geotiff-source-loader`            | `@loaders.gl/raster/geotiff-source-loader`             |
+| `@loaders.gl/ogc/wms/wmts-capabilities-loader-with-parser`    | `@loaders.gl/ogc/wmts-capabilities-loader-with-parser` |
+| `@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser` | `@loaders.gl/tiles-3d/cesium-ion-loader-with-parser`   |
+| `@loaders.gl/ogc/stac/stac-source`                            | `@loaders.gl/ogc/stac-source`                          |
+| `@loaders.gl/archives/zip/zip-loader`                         | `@loaders.gl/archives/zip-loader`                      |
+| `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader`        | `@loaders.gl/tiles/arrow-table-tile-source-loader`     |
+| `@loaders.gl/tiles-3d/i3s/i3s-mesh-writer`                    | `@loaders.gl/tiles-3d/i3s-mesh-writer`                 |
+| `@loaders.gl/core/scan/vector-table-scan-source`              | `@loaders.gl/core/vector-table-scan-source`            |
+
+Metadata roots and format-level facades keep their existing paths. Deep implementation helpers and worker or schema assets are not part of this entrypoint migration.
 
 #### Geometry and scan utility packages move into core[​](#geometry-and-scan-utility-packages-move-into-core "Direct link to Geometry and scan utility packages move into core")
 
@@ -189,27 +222,69 @@ import {Stats} from 'probe.gl/stats';
 import {StatsWidget} from 'probe.gl/stats-widget';
 ```
 
+#### Scientific NumPy arrays and native XML[​](#scientific-numpy-arrays-and-native-xml "Direct link to Scientific NumPy arrays and native XML")
+
+`NPYLoader`, `NPYWorkerLoader`, and `NPYFormat` have moved from images to scientific. Replace parser imports with `@loaders.gl/scientific/npy-loader`; no images forwarding exports remain.
+
+The `fast-xml-parser` backend and `_fastXML` passthrough are removed. XML-based graph, raster, scientific, and geospatial readers now use documents. Move supported XML options such as `parseTagValue`, `parseAttributeValue`, and `trimValues` directly under `options.xml`. The old `_sax` passthrough is also removed. XML now requires well-formed input by default; legacy HTML tolerance is confined to HTMLLoader. See the [native XML options](https://loaders.gl/next/docs/modules/documents/xml/api-reference/xml-loader.md).
+
+#### Document package consolidation[​](#document-package-consolidation "Direct link to Document package consolidation")
+
+`@loaders.gl/xml` and `@loaders.gl/config` have been removed. Import their metadata loaders from `@loaders.gl/documents`. BSON has moved out of `@loaders.gl/tables` into the same package; Parquet BSON reading and writing continue to work automatically.
+
+```
+import {XMLLoader, HTMLLoader, YAMLLoader, TOMLLoader, BSONLoader} from '@loaders.gl/documents';
+
+import {XMLLoaderWithParser} from '@loaders.gl/documents/xml-loader';
+
+import {BSONWriter} from '@loaders.gl/documents/bson-writer';
+
+import {encodeBSONSync, parseBSONSync, BSONObjectId, createBSONValue} from '@loaders.gl/documents/bson-codec';
+
+import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
+
+import {SAXParser} from '@loaders.gl/documents/sax-parser';
+```
+
+Async core APIs preload metadata loaders. Sync parsing requires the `*WithParser` export from the matching flat `*-loader` subpath. Replace XML root helper imports with `/xml-utils`, `/xml-parser`, or `/sax-parser`. There are no forwarding packages, grouped format subpaths, or `/bundled` and `/unbundled` entry points in documents.
+
 #### Alternate loader imports[​](#alternate-loader-imports "Direct link to Alternate loader imports")
 
 Package roots expose the primary loader for each format. Alternate backend loaders are available through implementation subpaths instead of root exports:
 
 ```
-import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las/las-copc-loader';
+import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las-copc-loader';
 
-import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/las/lazperf-loader';
+import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/lazperf-loader';
 
-import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/las/laz-rs-loader';
+import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/laz-rs-loader';
 
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet-js-loader';
 
-import {FastJSONLoader} from '@loaders.gl/tables/json/fast-json-loader';
+import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
 ```
 
 These replace the root exports `LASCOPCLoader`, `LAZPerfLoader`, `LAZRsLoader`, `ParquetJSLoader`, and `_FastJSONLoader`. Implementation subpaths load the parser eagerly and support direct parsing. Primary metadata loaders continue to preload their implementations for asynchronous core APIs.
 
 The explicit `@loaders.gl/tables/arrow/types` facade exposes Apache Arrow names available in the supported minimum release, Arrow 17. Import version-specific names such as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type guards directly from your installed `apache-arrow` package.
 
+### Worker task runtime[​](#worker-task-runtime "Direct link to Worker task runtime")
+
+math.gl beta.3 removes the transport internals previously re-exported by `@loaders.gl/core/worker-utils`. `WorkerFarm`, `WorkerPool`, `WorkerThread`, `WorkerJob`, `WorkerBody`, protocol message types, and the worker-utils `AsyncQueue` export are removed. Use public `TaskRunner` handles for custom task execution. The separate `core/schema-utils` queue remains available.
+
+Replace `WorkerFarm.getWorkerFarm().destroy()` with `await destroyWorkerTasks()` when shutting down loader worker requests. For a runner owned by your application, use `runner.close()` or `runner.terminate()`. `preloadWorker` now preloads code only; remove its `count` option and assumptions about retained warm workers.
+
+Rebuild custom workers with the current `createWorker` or `createLoaderWorker` adapter. Legacy hand-written `source` strings and raw message handlers are unsupported; provide a worker URL or a factory returning a fresh worker. The adapters handle task records, streaming state, and optional calling-thread parser requests. `parse`, `parseInBatches`, `processOnWorker`, and `processOnWorkerInBatches` retain their loader-facing payload shapes. Direct `TaskRunner` calls require named object payloads and copy inputs by default; loader helpers retain transfer-by-default behavior.
+
+Remove direct pool controls and `reuseWorkers` assumptions. Set `maxConcurrency` on the first request for each descriptor to bound its active task handles. An atomic call or stream closes its worker handle on completion. See [worker processing](https://loaders.gl/next/docs/modules/core/worker-utils/api-reference/worker-processing.md).
+
 ### Runtime, workers, and codecs[​](#runtime-workers-and-codecs "Direct link to Runtime, workers, and codecs")
+
+`@loaders.gl/crypto` no longer ships `CryptoWorker`, `CryptoJSWorker`, or worker scripts. Use the corresponding hash classes directly, including as transforms with `loadInBatches()`.
+
+#### Native BSON value contract[​](#native-bson-value-contract "Direct link to Native BSON value contract")
+
+The optional `bson` backend and its MongoDB-specific options/classes are removed. BSON and Parquet BSON columns use the native codec. Replace MongoDB ObjectId instances with `BSONObjectId` and other special values with `createBSONValue()` from `@loaders.gl/documents/bson-codec`. Unsafe int64 values now remain bigint instead of driver `Long` objects; regexes, Decimal128, timestamps, and deprecated scalar types use explicit native representations. Replace deserializer options with the documented native options. See the [BSON value contract](https://loaders.gl/next/docs/modules/documents/bson.md#native-value-representations).
 
 Use a supported Node.js LTS release and keep it patched, especially when decoding untrusted data. Node.js 20 is no longer supported. See [Node.js support](https://loaders.gl/next/docs/developer-guide/node.md#supported-nodejs-versions) for runtime requirements and security updates.
 
@@ -254,7 +329,7 @@ Module workers no longer evaluate fetched classic JavaScript to install decoder 
 
 * Removed JSZip passthrough options. Replace `jszip.compression: 'STORE' | 'DEFLATE'` with `zip.compression: 'store' | 'deflate'` and use the typed native ZIP options. Writing now uses deterministic sorted paths, a fixed UTC timestamp and automatic ZIP64; exact legacy bytes are not preserved. `zip.onUpdate` reports start/completion only.
 
-* Removed `/bundled` and `/unbundled`. Import metadata `ZipLoader` from the package root; direct parser access is `ZipLoaderWithParser` from `@loaders.gl/archives/zip/zip-loader`.
+* Removed `/bundled` and `/unbundled`. Import metadata `ZipLoader` from the package root; direct parser access is `ZipLoaderWithParser` from `@loaders.gl/archives/zip-loader`.
 
 * `ZipLoader` returns ArrayBuffer values only and rejects invalid entries instead of placing errors in the map. Complete reads verify CRCs. The total decoded file-map default is 64 MiB; set `zip.maxTotalDecodedBytes` explicitly for larger maps. The independent per-entry limits `zip.maxDecodedBytes` and `zip.maxCompressedBytes` also default to 64 MiB; raise them explicitly when individual entries exceed those bounds, or use incremental archive reads.
 
@@ -470,6 +545,10 @@ Skip-LOD replacement traversal is now enabled by default for 3D Tiles. Set `skip
 
 * `Tileset3D` now requires a `Tile3DSource` and can no longer be instantiated with a JSON payload.
 
+### Removed Excel loader[​](#removed-excel-loader "Direct link to Removed Excel loader")
+
+`ExcelLoader`, `ExcelWorkerLoader`, their parser subpaths, and the Excel worker have been removed from `@loaders.gl/tables` along with the vulnerable `xlsx` dependency. Applications that need Excel support must use a maintained spreadsheet parser separately; convert data to CSV or Arrow to use loaders.gl table loaders.
+
 ### Loader outputs and removed APIs[​](#loader-outputs-and-removed-apis "Direct link to Loader outputs and removed APIs")
 
 #### Arrow loader and writer variant removal[​](#arrow-loader-and-writer-variant-removal "Direct link to Arrow loader and writer variant removal")
@@ -478,7 +557,6 @@ Redundant Arrow-specific loader and writer variants have been removed where the 
 
 | Removed API                         | Replacement                                                                               |
 | ----------------------------------- | ----------------------------------------------------------------------------------------- |
-| `ExcelArrowLoader`                  | `ExcelLoader` with `excel.shape: 'arrow-table'`                                           |
 | `LASArrowLoader`                    | `LASLoader` with `las.shape: 'arrow-table'`                                               |
 | `NDJSONArrowLoader`                 | `NDJSONLoader` with `ndjson.shape: 'arrow-table'`                                         |
 | `KMLArrowLoader`                    | `KMLLoader` with `kml.shape: 'arrow-table'`                                               |
@@ -498,17 +576,7 @@ For example:
 ```
 import {load, encode} from '@loaders.gl/core';
 
-import {ExcelLoader} from '@loaders.gl/tables/excel';
-
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
-
-
-
-const excelArrowTable = await load(excelUrl, ExcelLoader, {
-
-  excel: {shape: 'arrow-table'}
-
-});
 
 
 
@@ -545,7 +613,7 @@ For Arrow output, read `graph.tables[0].table.data` and `graph.tables[1].table.d
 #### Parquet backends and exact integers[​](#parquet-backends-and-exact-integers "Direct link to Parquet backends and exact integers")
 
 * `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoaderWithParser`, or `ParquetJSWriter` instead depending on the backend you want.
-* `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. For the experimental parquetjs backend, import `ParquetJSLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-js-loader` and `ParquetJSWriter` from `@loaders.gl/tables/parquet/parquet-js-writer`.
+* `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. For the experimental parquetjs backend, import `ParquetJSLoaderWithParser` from `@loaders.gl/tables/parquet-js-loader` and `ParquetJSWriter` from `@loaders.gl/tables/parquet-js-writer`.
 * `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or the parser-bearing `ParquetJSLoaderWithParser` for the TypeScript parquetjs implementation.
 * Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetJSWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
 
@@ -649,7 +717,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 | `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
 | `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
 
-**@loaders.gl/draco**
+**@loaders.gl/scene**
 
 * `DracoLoader` no longer supports `draco.libraryPath`. Supply `modules: {draco3d}` instead of configuring decoder library paths manually.
 
@@ -1023,7 +1091,7 @@ The foillowing top-level options are deprecated and will be removed in v2.0
 | `uri`                  | `baseUri`                               | Auto-populated when loading from a url-equipped source                    |
 | `fetch`                | N/A                                     | fetch is automatically available to sub-loaders.                          |
 
-### `@loaders.gl/draco`[​](#loadersgldraco "Direct link to loadersgldraco")
+### `@loaders.gl/scene`[​](#loadersglscene "Direct link to loadersglscene")
 
 | Removal        | Replacement   |
 | -------------- | ------------- |

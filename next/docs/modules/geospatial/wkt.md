@@ -1,6 +1,6 @@
 WKT and WKB module
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWKT
+[![](/next/images/format-logos/ogc-mark.svg)OGCWKT](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt.md)
 
 # Keep geometry and coordinate systems interoperable.
 
@@ -85,4 +85,4 @@ The `WKTLoader` is based on a fork of the Mapbox [`wellknown`](https://github.co
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/geospatial/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/geospatial/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).

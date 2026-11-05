@@ -1,6 +1,6 @@
 glTF module / loader
 
-![](/next/images/format-logos/gltf-logo.svg)
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)
 
 # GLTFLoader
 
@@ -20,7 +20,7 @@ Load a standards-shaped scene while the loader resolves buffers, images, compres
 
 [ ↗](https://loaders.gl/next/examples/gltf)
 
-![](/next/images/format-logos/gltf-logo.svg)[Overview](https://loaders.gl/next/docs/modules/scene/gltf.md)[glTF Format](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Iterator](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)[Scenegraph](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)[Post-processing](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
+[![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[Overview](https://loaders.gl/next/docs/modules/scene/gltf.md)[glTF Format](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)[GLTFLoader](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-loader.md)[Iterator](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-iterator.md)[Scenegraph](https://loaders.gl/next/docs/modules/scene/gltf/api-reference/gltf-scenegraph.md)[Post-processing](https://luma.gl/docs/api-reference/gltf/post-process-gltf)
 
 A layered 3D format stack
 
@@ -44,7 +44,7 @@ Geometry and texture payloads
 
 Compression and GPU-ready delivery underneath the formats
 
-[Draco↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)
+[Draco↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
 
 Application-facing results
 
@@ -235,8 +235,12 @@ In addition, certain glTF extensions, including Draco and [meshopt compression](
   <!-- -->
   :s
   <!-- -->
-  are decoded through [`ImageBitmapLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md), producing `ImageBitmap` in browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is installed.
+  are decoded through [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md), producing `ImageBitmap` in browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/core/polyfills` is installed.
 * Draco meshes can be decoded asynchronously on worker threads (in parallel!).
+
+## Legacy Gaussian splats[​](#legacy-gaussian-splats "Direct link to Legacy Gaussian splats")
+
+Some draft SPZ2-compressed Gaussian glTF files, including the Cesium Gaussian splat test assets, omit the now-required kernel and color-space metadata. When the asset's color space is known, set `gltf.legacyGaussianSplatColorSpace` to `'srgb_rec709_display'` or `'lin_rec709_display'`. The loader then supplies the missing color space and an `ellipse` kernel in the returned Gaussian primitive descriptor. It retains the original JSON and never overrides authored values. Without the option, missing metadata remains an error. This option is an application-provided assumption, not a conversion of color values; choose it based on the asset's provenance. Inject an SPZ loader in the normal loader list to decode the payload.
 
 ## Options[​](#options "Direct link to Options")
 
@@ -373,7 +377,7 @@ References inside these arrays remain numeric. Resource decoding may replace com
 
   // Images can optionally be loaded and decoded, they will be stored here.
 
-  // Standard raster images are decoded through ImageBitmapLoader.
+  // Standard raster images are decoded through ImageLoader.
 
   // Length and indices of this array will match `json.buffers`
 
@@ -403,3 +407,9 @@ For draft GLB v3 files, `GLTFLoader` resolves each `json.buffers[*].chunk` index
 ## Interactivity graphs[​](#interactivity-graphs "Direct link to Interactivity graphs")
 
 The loader preserves `KHR_interactivity` graph declarations. See the [glTF format guide](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#khr_interactivity) for the graph types, `getGLTFInteractivity` accessor, validation, and runtime responsibilities.
+
+### Double-precision accessor declarations[​](#double-precision-accessor-declarations "Direct link to Double-precision accessor declarations")
+
+For assets declaring the draft `KHR_accessor_float64`, `GLTFLoader` verifies that both extension declaration arrays contain the extension and that accessors with `componentType: 5130` are not normalized. Invalid declarations throw before resource loading. The extension is retained, and accessor reads preserve binary64 precision using the existing `Float64Array` path. No new loader option is required.
+
+This check uses the standard extension pipeline and is skipped if the extension is listed in `gltf.excludeExtensions`. It does not certify renderer support or validate every accessor usage site. See the [format documentation](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#draft-khr_accessor_float64) for the pinned draft and limitations.

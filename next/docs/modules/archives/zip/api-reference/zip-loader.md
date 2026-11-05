@@ -108,7 +108,7 @@ The total-map, decoded-entry and compressed-entry limits are independent. Raisin
 The package root exports metadata. For direct parser access:
 
 ```
-import {ZipLoaderWithParser} from '@loaders.gl/archives/zip/zip-loader';
+import {ZipLoaderWithParser} from '@loaders.gl/archives/zip-loader';
 
 const files = await ZipLoaderWithParser.parse(arrayBuffer, {
 

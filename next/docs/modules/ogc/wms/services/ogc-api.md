@@ -1,6 +1,6 @@
 OGC API services
 
-![](/next/images/format-logos/ogc-mark.svg)OGCAPI
+[![](/next/images/format-logos/ogc-mark.svg)OGCAPI](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md)
 
 # Use the service path that matches the data.
 

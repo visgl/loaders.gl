@@ -1,6 +1,6 @@
 Polygon and vertex format
 
-PLY
+[PLY](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)
 
 # Let the header describe the mesh you have.
 
@@ -16,7 +16,14 @@ PLY defines elements and properties in its header, then stores those records as 
 
 [ ↗](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)
 
-PLY[Try It](https://loaders.gl/next/examples/pointclouds/ply)[Overview](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/ply/format.md)[PLYLoader](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)[PLYWriter](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/ply/benchmarks.md)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------- |
+| Loader | [`PLYLoader`](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md) |
+| Writer | [`PLYWriter`](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md) |
+
+[PLY](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)[Try It](https://loaders.gl/next/examples/pointclouds/ply)[Overview](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/ply/format.md)[PLYLoader](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-loader.md)[PLYWriter](https://loaders.gl/next/docs/modules/pointclouds/ply/api-reference/ply-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/pointclouds/ply/benchmarks.md)
 
 One point-cloud family
 

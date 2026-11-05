@@ -1,6 +1,6 @@
 CSV module · loader API
 
-CSV
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)
 
 # CSVLoader
 
@@ -16,9 +16,11 @@ Load CSV and TSV text into a table shape that suits the next stage of your appli
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/csv.md)
 
-⛶⛶ Explore fullscreen
+CSVLoader table map exampleEnter fullscreen
 
-CSV[Try It](https://loaders.gl/next/examples/geospatial/csv)[Overview](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Format](https://loaders.gl/next/docs/modules/tables/csv/format.md)[CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md)
+⛶ Explore fullscreen
+
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Try It](https://loaders.gl/next/examples/geospatial/csv)[Overview](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Format](https://loaders.gl/next/docs/modules/tables/csv/format.md)[CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md)
 
 What it returns
 
@@ -73,7 +75,7 @@ const table = await load(url, CSVLoader);
 The CSV format export is metadata-only and works with async core APIs such as `load`, `parse`, and `parseInBatches`, which preload the parser implementation when needed. Applications that need a parser-bearing loader object directly can import it from the explicit loader subpath:
 
 ```
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
 ```
 
 The bare `@loaders.gl/tables/csv` entry point is the metadata-only import. Core async APIs call `preload()` and dynamically import the parser-bearing implementation when parsing starts.

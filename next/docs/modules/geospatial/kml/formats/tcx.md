@@ -1,6 +1,6 @@
 Training Center XML
 
-TCX
+[TCX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md)
 
 # Keep activity data with its useful measurements.
 
@@ -16,7 +16,13 @@ TCX describes GPS-backed activities as structured workouts, with laps and measur
 
 [ ↗](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader.md)
 
-TCX[Try It](https://loaders.gl/next/examples/geospatial/kml)[Overview](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md)[Format](https://loaders.gl/next/docs/modules/geospatial/kml/format.md)[GPX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/gpx.md)[TCX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md)[KMLLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md)[GPXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/gpx-loader.md)[TCXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader.md)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                 |
+| ------ | --------------------------------------------------------------------------------------------------- |
+| Loader | [`TCXLoader`](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader.md) |
+
+[TCX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md)[Try It](https://loaders.gl/next/examples/geospatial/kml)[Overview](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md)[Format](https://loaders.gl/next/docs/modules/geospatial/kml/format.md)[GPX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/gpx.md)[TCX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md)[KMLLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md)[GPXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/gpx-loader.md)[TCXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader.md)
 
 The TCX document
 

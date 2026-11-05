@@ -1,6 +1,6 @@
 Geographic annotation format
 
-![](/next/images/format-logos/ogc-mark.svg)OGCKML
+[![](/next/images/format-logos/ogc-mark.svg)OGCKML](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md)
 
 # Put places, paths, and views in an Earth-ready document.
 
@@ -16,7 +16,16 @@ KML uses XML elements to describe geographic annotations and visualization instr
 
 [ ↗](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md)
 
-![](/next/images/format-logos/ogc-mark.svg)OGCKML[Try It](https://loaders.gl/next/examples/geospatial/kml)[Overview](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md)[Format](https://loaders.gl/next/docs/modules/geospatial/kml/format.md)[GPX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/gpx.md)[TCX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md)[KMLLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md)[GPXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/gpx-loader.md)[TCXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader.md)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                 |
+| ------ | --------------------------------------------------------------------------------------------------- |
+| Loader | [`KMLLoader`](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md) |
+| Loader | [`KMZLoader`](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md) |
+| Writer | [`KMLWriter`](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md) |
+| Writer | [`KMZWriter`](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md) |
+
+[![](/next/images/format-logos/ogc-mark.svg)OGCKML](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md)[Try It](https://loaders.gl/next/examples/geospatial/kml)[Overview](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md)[Format](https://loaders.gl/next/docs/modules/geospatial/kml/format.md)[GPX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/gpx.md)[TCX](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md)[KMLLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md)[GPXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/gpx-loader.md)[TCXLoader](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader.md)
 
 The KML document
 
@@ -50,7 +59,7 @@ OGC KML for interoperable Earth browsers
 
 KML (Keyhole Markup Language) is an XML format for geographic annotation and visualization in two-dimensional maps and three-dimensional Earth browsers. KMZ is the ZIP-based packaging of a KML document and its related resources, such as images, models, and screen overlays.
 
-The `@loaders.gl/geospatial/kml` module parses both formats with the native `@loaders.gl/xml` parser. It does not require a browser DOM or Node DOM polyfill.
+The `@loaders.gl/geospatial/kml` module parses both formats with the native `@loaders.gl/documents` parser. It does not require a browser DOM or Node DOM polyfill.
 
 * [KML Tutorial - Google](https://developers.google.com/kml/documentation/kml_tut)
 
@@ -144,7 +153,7 @@ A minimal KML document looks like this:
 
     <Placemark>
 
-      <name>Loaders.gl</name>
+      <name>loaders.gl</name>
 
       <description>A point with a human-readable description.</description>
 

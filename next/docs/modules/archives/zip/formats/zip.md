@@ -18,6 +18,16 @@ ZIP packages related files behind one container. loaders.gl’s random-access su
 
 [ ↗](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-archive.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type    | API                                                                                                       |
+| ------- | --------------------------------------------------------------------------------------------------------- |
+| Loader  | [`ZipLoader`](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-loader.md)         |
+| Writer  | [`ZipWriter`](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-writer.md)         |
+| Utility | [`ZipArchive`](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-archive.md)       |
+| Utility | [`ZipFileSystem`](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-filesystem.md) |
+| Utility | [`encodeZip`](https://loaders.gl/next/docs/modules/archives/zip/api-reference/encode-zip.md)         |
+
 The archive path
 
 ## Inspect the directory. Select an entry. Read only what the pipeline needs.

@@ -1,6 +1,6 @@
 GeoJSON geometry
 
-GeoJSON
+[GeoJSON](https://loaders.gl/next/docs/modules/tables/json/formats/geojson.md)
 
 # GeoJSON Geometry
 
@@ -19,6 +19,13 @@ GeoJSON geometry objects describe coordinates and their type without carrying fe
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/specifications/category-gis.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                      |
+| ------ | -------------------------------------------------------------------------------------------------------- |
+| Loader | [`GeoJSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-loader.md) |
+| Writer | [`GeoJSONWriter`](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-writer.md) |
 
 The geometry boundary
 

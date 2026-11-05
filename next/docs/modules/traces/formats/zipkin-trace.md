@@ -20,6 +20,13 @@ Zipkin v2 is compact and widely deployed. loaders.gl maps its spans, endpoints, 
 
 [ ↗](https://loaders.gl/next/docs/modules/traces/api-reference/zipkin-trace-loader.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------ |
+| Loader | [`ZipkinTraceLoader`](https://loaders.gl/next/docs/modules/traces/api-reference/zipkin-trace-loader.md) |
+| Writer | [`ZipkinTraceWriter`](https://loaders.gl/next/docs/modules/traces/api-reference/zipkin-trace-writer.md) |
+
 The Zipkin path
 
 ## Read spans and annotations. Put them beside the other trace dialects.

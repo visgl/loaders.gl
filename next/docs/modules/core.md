@@ -136,4 +136,74 @@ import {convertWKTToGeometry} from '@loaders.gl/core/wkt';
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
+
+## Package exports[​](#package-exports "Direct link to Package exports")
+
+All exported subpaths (<!-- -->61<!-- -->)
+
+These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
+
+| Format                                                                                                                                 | Import subpath                                                |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry`                             |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/binary-features`             |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/binary-geometry-to-wkb`      |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/feature-collection-to-arrow` |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/feature-table`               |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/geojson-table`               |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/geometry-codecs`             |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/geometry-field`              |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/legacy-binary`               |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/native-geometry`             |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/sampled-bounds`              |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/wkb-arrow-utils`             |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/wkb-statistics`              |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/wkb-table`                   |
+|                                                                                                                                        | `@loaders.gl/core/cluster-source`                             |
+|                                                                                                                                        | `@loaders.gl/core/constants`                                  |
+|                                                                                                                                        | `@loaders.gl/core/federated-table-scan-source`                |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow`                                   |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/cluster-index`                     |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/geoarrow-bounds`                   |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/geoarrow-builder`                  |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/geoarrow-capabilities`             |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/geoarrow-conformance`              |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/geoarrow-geometry-converter`       |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/geoarrow-inspection`               |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/geoarrow-layout`                   |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/geoarrow-stream`                   |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/get-representative-point`          |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/map-geoarrow-coordinates`          |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/rewind-geoarrow`                   |
+|                                                                                                                                        | `@loaders.gl/core/loader-utils`                               |
+|                                                                                                                                        | `@loaders.gl/core/loader-utils/tile-grid`                     |
+|                                                                                                                                        | `@loaders.gl/core/null-worker-node.js`                        |
+|                                                                                                                                        | `@loaders.gl/core/null-worker.js`                             |
+|                                                                                                                                        | `@loaders.gl/core/polyfills`                                  |
+|                                                                                                                                        | `@loaders.gl/core/scan`                                       |
+|                                                                                                                                        | `@loaders.gl/core/scan/arrow-query`                           |
+|                                                                                                                                        | `@loaders.gl/core/scan/bind-sql-predicate`                    |
+|                                                                                                                                        | `@loaders.gl/core/scan/parse-sql-predicate`                   |
+|                                                                                                                                        | `@loaders.gl/core/scan/query-arrow-table`                     |
+|                                                                                                                                        | `@loaders.gl/core/scan/rows-to-arrow`                         |
+|                                                                                                                                        | `@loaders.gl/core/scan/scan-engine`                           |
+|                                                                                                                                        | `@loaders.gl/core/scan/scan-query`                            |
+|                                                                                                                                        | `@loaders.gl/core/scan/sql-predicate`                         |
+|                                                                                                                                        | `@loaders.gl/core/scan/sql-predicate-schema`                  |
+|                                                                                                                                        | `@loaders.gl/core/scan/sql-predicate-types`                   |
+|                                                                                                                                        | `@loaders.gl/core/scan/sql-predicate-zod`                     |
+|                                                                                                                                        | `@loaders.gl/core/scan/table-query`                           |
+|                                                                                                                                        | `@loaders.gl/core/scan/table-query-capabilities`              |
+|                                                                                                                                        | `@loaders.gl/core/schema`                                     |
+|                                                                                                                                        | `@loaders.gl/core/schema-utils`                               |
+|                                                                                                                                        | `@loaders.gl/core/schema-utils/arrow-transport`               |
+|                                                                                                                                        | `@loaders.gl/core/schema/geoarrow-metadata.schema.json`       |
+|                                                                                                                                        | `@loaders.gl/core/schema/geoparquet.schema.json`              |
+|                                                                                                                                        | `@loaders.gl/core/schema/geospatial-metadata-zod-schema`      |
+|                                                                                                                                        | `@loaders.gl/core/vector-table-scan-source`                   |
+| [![](/next/images/format-logos/ogc-mark.svg)OGCWKT](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt.md)           | `@loaders.gl/core/wkt`                                        |
+| [![](/next/images/format-logos/ogc-mark.svg)OGCWKT](https://loaders.gl/next/docs/modules/geospatial/wkt/formats/wkt.md)           | `@loaders.gl/core/wkt/twkb`                                   |
+|                                                                                                                                        | `@loaders.gl/core/worker-utils`                               |
+|                                                                                                                                        | `@loaders.gl/core/worker-utils/null-worker-node.js`           |
+|                                                                                                                                        | `@loaders.gl/core/worker-utils/null-worker.js`                |

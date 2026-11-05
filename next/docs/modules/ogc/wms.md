@@ -1,6 +1,6 @@
 OGC service module
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)
 
 # @loaders.gl/ogc/wms
 
@@ -16,7 +16,9 @@ The WMS module covers classic OGC Web Services, modern OGC APIs, and GML respons
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/using-sources.md)
 
-⛶⛶ Explore fullscreen
+OGC Web Map Service exampleEnter fullscreen
+
+⛶ Explore fullscreen
 
 Remote data, explicit steps
 
@@ -217,7 +219,7 @@ loaders.gl documents its actual implemented subset on each service page. Optiona
 
 ## Attributions[​](#attributions "Direct link to Attributions")
 
-`@loaders.gl/ogc/wms` uses `@loaders.gl/xml` for XML parsing. Some test fixtures originated from OpenLayers and retain their licenses in the test data; no OpenLayers runtime code is included in the published module.
+`@loaders.gl/ogc/wms` uses `@loaders.gl/documents` for XML parsing. Some test fixtures originated from OpenLayers and retain their licenses in the test data; no OpenLayers runtime code is included in the published module.
 
 ## Spatial queries beyond picking[​](#spatial-queries-beyond-picking "Direct link to Spatial queries beyond picking")
 

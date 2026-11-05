@@ -1,6 +1,6 @@
 Polygon and vertex format
 
-PLY
+[PLY](https://loaders.gl/next/docs/modules/pointclouds/ply/formats/ply.md)
 
 # Describe a mesh as elements and properties.
 
@@ -75,4 +75,4 @@ PLYLoader is a fork of the THREE.js PLYLoader under MIT License. The THREE.js so
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).

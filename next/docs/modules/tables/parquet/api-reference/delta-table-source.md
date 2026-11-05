@@ -1,6 +1,6 @@
 Versioned table source
 
-![](/next/images/format-logos/parquet-logo.png)
+[![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)
 
 # DeltaTableSource
 

@@ -1,6 +1,6 @@
 CSV module · writer API
 
-CSV
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)
 
 # CSVWriter
 
@@ -16,7 +16,7 @@ Write loaders.gl tables back to CSV or another delimiter-separated text represen
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/csv.md)
 
-CSV[Try It](https://loaders.gl/next/examples/geospatial/csv)[Overview](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Format](https://loaders.gl/next/docs/modules/tables/csv/format.md)[CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md)
+[CSV](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Try It](https://loaders.gl/next/examples/geospatial/csv)[Overview](https://loaders.gl/next/docs/modules/tables/csv/formats/csv.md)[Format](https://loaders.gl/next/docs/modules/tables/csv/format.md)[CSVLoader](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)[CSVWriter](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)[Benchmarks](https://loaders.gl/next/docs/modules/tables/csv/benchmarks.md)
 
 What it accepts
 

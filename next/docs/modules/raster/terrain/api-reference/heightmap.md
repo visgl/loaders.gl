@@ -15,7 +15,7 @@ import {
 
 
 
-// image is an already decoded image, for example from ImageBitmapLoader.
+// image is an already decoded image, for example from ImageLoader.
 
 const heightmap = decodeTerrainHeightmap(getImageData(image), TERRARIUM_ELEVATION_DECODER);
 

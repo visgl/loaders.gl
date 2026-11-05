@@ -1,6 +1,6 @@
 WMS source
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)
 
 # Treat a map service as a queryable image source.
 

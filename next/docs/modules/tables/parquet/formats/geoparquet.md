@@ -1,6 +1,6 @@
 Geospatial columnar format
 
-GeoParquet
+[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)
 
 # GeoParquet
 
@@ -16,9 +16,19 @@ GeoParquet adds geospatial metadata and encoding conventions to Parquet. The res
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)
 
-⛶⛶ Explore fullscreen
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-GeoParquet[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
+| Type          | API                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Loader        | [`GeoParquetLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)        |
+| Source loader | [`ParquetSourceLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md) |
+| Writer        | [`ParquetWriter`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)              |
+
+GeoParquet table map exampleEnter fullscreen
+
+⛶ Explore fullscreen
+
+[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
 
 The GeoArrow boundary
 

@@ -102,7 +102,7 @@ Detailed guide
 
 The reference below documents supported column types, source and parser entry points, known limitations, and the browser example.
 
-![Status: Work-In-Progress](https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square)
+![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)
 
 The `@loaders.gl/tables/lance` module provides read-only access to Lance dataset manifests, data-file metadata, and a small Arrow decoding MVP.
 

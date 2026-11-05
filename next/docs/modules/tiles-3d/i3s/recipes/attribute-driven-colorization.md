@@ -1,6 +1,6 @@
 I3S recipe · scene attributes
 
-![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+[![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
 # Let the scene data drive the color.
 
@@ -20,7 +20,9 @@ Use feature attributes such as building height to derive colors, labels, or opac
 
 [ ↗](https://loaders.gl/next/examples/i3s-arcgis)
 
-⛶⛶ Explore fullscreen
+I3S attribute-driven colorizationEnter fullscreen
+
+⛶ Explore fullscreen
 
 What this recipe demonstrates
 

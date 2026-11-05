@@ -1,6 +1,6 @@
 Point-cloud module
 
-![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)
+[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)
 
 # @loaders.gl/tiles-3d/copc
 
@@ -18,7 +18,7 @@ Read only the points the view needs. COPC packages a LAS point cloud as a range-
 
 See [Coordinate Reference Systems](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md) for the current COPC/LAS projection-record support and vertical/compound CRS roadmap.
 
-![From-v4.1](https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square)![source loader from v5.0](https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square)[![Scan supported](https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
+![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)![From-v4.1](https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square)![source loader from v5.0](https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square)[![Scan supported](https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
 
 The cloud point path
 
@@ -54,7 +54,7 @@ bounded request
 
 The same source can serve progressive viewport tiles or a bounded scan without changing the underlying point representation.
 
-![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
+[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
 
 The COPC path
 

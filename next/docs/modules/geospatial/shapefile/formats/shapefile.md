@@ -1,6 +1,6 @@
 Legacy geospatial vector format
 
-SHP
+[SHP](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)
 
 # Treat the sidecars as part of the dataset.
 
@@ -19,6 +19,14 @@ A Shapefile is a coordinated group of files: geometry, attributes, indexes, coor
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/specifications/category-gis.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                                   |
+| ------ | --------------------------------------------------------------------------------------------------------------------- |
+| Loader | [`ShapefileLoader`](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md) |
+| Loader | [`SHPLoader`](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader.md)             |
+| Loader | [`DBFLoader`](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md)             |
 
 The Shapefile path
 
@@ -50,7 +58,7 @@ Output
 
 Common vector features with CRS-aware coordinates
 
-SHP[Try It](https://loaders.gl/next/examples/geospatial/shapefile)[Overview](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Format](https://loaders.gl/next/docs/modules/geospatial/shapefile/format.md)[ShapefileLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md)[SHPLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader.md)[DBFLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md)
+[SHP](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Try It](https://loaders.gl/next/examples/geospatial/shapefile)[Overview](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)[Format](https://loaders.gl/next/docs/modules/geospatial/shapefile/format.md)[ShapefileLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md)[SHPLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader.md)[DBFLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md)
 
 ESRI Shapefiles is a file format for storing geospatial vector data.
 

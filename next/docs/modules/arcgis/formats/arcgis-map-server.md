@@ -1,6 +1,6 @@
 ArcGIS service protocol
 
-![](/next/images/format-logos/arcgis-logo.jpg)Map
+[![](/next/images/format-logos/arcgis-logo.svg)Map](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)
 
 # ArcGIS MapServer protocol and formats
 
@@ -16,7 +16,13 @@ Display your published map through cached image tiles or dynamic map exports.
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md)
 
-![](/next/images/format-logos/arcgis-logo.jpg)Map[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-map-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| Source loader | [`ArcGISMapTileSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
+
+[![](/next/images/format-logos/arcgis-logo.svg)Map](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-map-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
 Use this path when you want the map as rendered by ArcGIS, including its server-side cartography. Cached tiles are useful for stable basemaps; dynamic exports can honor supported layer and time parameters.
 

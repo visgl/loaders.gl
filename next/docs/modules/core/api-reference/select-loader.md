@@ -109,7 +109,7 @@ await selectLoader(blob, [CSVLoader]); // => CSVLoader
 The async `selectLoader` function can identify loaders without extension and mimeType by content sniffing `Blob` and `File` objects (useful when user drags and drops files into your application).
 
 ```
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 
 
 

@@ -1,6 +1,6 @@
 Shapefile module
 
-SHP
+[SHP](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md)
 
 # Read the geometry and attributes that travel together.
 

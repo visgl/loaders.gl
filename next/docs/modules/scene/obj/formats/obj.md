@@ -1,6 +1,6 @@
 Text mesh format
 
-OBJ
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)
 
 # A simple text description of 3D geometry.
 
@@ -16,7 +16,16 @@ Wavefront OBJ keeps mesh interchange readable: vertices, normals, texture coordi
 
 [ ↗](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)
 
-OBJ[Try It](https://loaders.gl/next/examples/pointclouds/obj)[Overview](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Format](https://loaders.gl/next/docs/modules/scene/obj/format.md)[OBJLoader](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[OBJWriter](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                            |
+| ------ | ---------------------------------------------------------------------------------------------- |
+| Loader | [`OBJLoader`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md) |
+| Writer | [`OBJWriter`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md) |
+
+Load companion Wavefront material libraries with [`MTLLoader`](https://loaders.gl/next/docs/modules/scene/obj/api-reference/mtl-loader.md).
+
+[OBJ](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Try It](https://loaders.gl/next/examples/pointclouds/obj)[Overview](https://loaders.gl/next/docs/modules/scene/obj/formats/obj.md)[Format](https://loaders.gl/next/docs/modules/scene/obj/format.md)[OBJLoader](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-loader.md)[OBJWriter](https://loaders.gl/next/docs/modules/scene/obj/api-reference/obj-writer.md)
 
 The record vocabulary
 

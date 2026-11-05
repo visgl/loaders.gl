@@ -79,3 +79,45 @@ The `QuantizedMeshLoader` is a fork of [`quantized-mesh-decoder`](https://github
 The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini) or [Delatin](https://github.com/mapbox/delatin) for mesh reconstruction which are both under the ISC License.
 
 Terrain and quantized mesh are now provided by `@loaders.gl/raster`. Neither requires the optional `geotiff` or `lerc` decoder. See the [raster package](https://loaders.gl/next/docs/modules/raster.md).
+
+## Shared terrain algorithms[​](#shared-terrain-algorithms "Direct link to Shared terrain algorithms")
+
+TerrainLoader delegates Martini and Delatin reconstruction to `@math.gl/geospatial/terrain`. loaders.gl owns image decoding, padded borders, geographic bounds, UVs, skirts, and Mesh/Arrow packaging. math.gl owns adaptive triangulation and independent source-node error validation; meshes may refine beyond the old backend output to meet `meshMaxError`. The shared backend admits up to 1,100,000 padded samples.
+
+For analysis without rebuilding a display mesh, pass decoded heights to math.gl `HeightField`. Its terrain entry point offers gradients, slope/aspect, contours, profiles, viewsheds, tiled fields, mesh seams, and terrain surface queries. Supply an explicit metric frame and retain the height reference; these APIs do not convert vertical datums.
+
+```
+import {HeightField, createTerrainGradientGrid} from '@math.gl/geospatial/terrain';
+
+
+
+// grid comes from createTerrainHeightGrid; bounds are EPSG:3857 meters.
+
+const [west, south, east, north] = grid.bounds;
+
+const cell = grid.registration === 'pixel-center';
+
+const field = new HeightField({
+
+  width: grid.width,
+
+  height: grid.height,
+
+  heights: grid.heights,
+
+  validity: grid.valid,
+
+  registration: cell ? 'cell' : 'vertex',
+
+  origin: [west, north],
+
+  columnStep: [(east - west) / (cell ? grid.width : grid.width - 1), 0],
+
+  rowStep: [0, -(north - south) / (cell ? grid.height : grid.height - 1)],
+
+  heightReference: grid.verticalDatum
+
+});
+
+const gradients = createTerrainGradientGrid(field);
+```

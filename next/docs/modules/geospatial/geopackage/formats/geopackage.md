@@ -1,6 +1,6 @@
 Portable geospatial package
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)
 
 # GeoPackage
 
@@ -16,9 +16,18 @@ GeoPackage uses SQLite to package geospatial tables and metadata in one portable
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
 
-⛶⛶ Explore fullscreen
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage[Try It](https://loaders.gl/next/examples/geospatial/geopackage)[Overview](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)[Format](https://loaders.gl/next/docs/modules/geospatial/geopackage/format.md)[GeoPackageLoader](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader.md)[GeoPackageSource](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source.md)
+| Type   | API                                                                                                                      |
+| ------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Loader | [`GeoPackageLoader`](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader.md) |
+| Source | [`GeoPackageSource`](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source.md) |
+
+GeoPackage format exampleEnter fullscreen
+
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)[Try It](https://loaders.gl/next/examples/geospatial/geopackage)[Overview](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)[Format](https://loaders.gl/next/docs/modules/geospatial/geopackage/format.md)[GeoPackageLoader](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader.md)[GeoPackageSource](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source.md)
 
 Container discovery
 

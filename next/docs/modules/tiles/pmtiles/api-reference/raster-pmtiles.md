@@ -1,8 +1,8 @@
 PMTiles module · authoring API
 
-From v5.0
-
 # Raster to PNG to PMTiles
+
+From v5.0
 
 Reuse an existing raster region source to export selected image tiles in a downloadable archive.
 
@@ -27,7 +27,7 @@ Try the [browser PMTiles export example](https://loaders.gl/next/examples/tiles/
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/geotiff-source-loader';
+import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff-source-loader';
 
 import {encodeRasterPMTiles} from '@loaders.gl/tiles/pmtiles/raster';
 
@@ -70,7 +70,7 @@ try {
 }
 ```
 
-The implementation subpath keeps raster export orchestration outside packaging-only root imports. Browser encoding requires canvas APIs. Node applications must install `@loaders.gl/core/polyfills` and its optional image encoder dependencies (`save-pixels` and `ndarray`), and import the polyfills **before** importing the authoring API. No Node APIs or new codec dependencies are introduced by this helper.
+The implementation subpath keeps raster export orchestration outside packaging-only root imports. Browser encoding requires canvas APIs. Node applications must install `@loaders.gl/core/polyfills` and its optional `sharp` image codec peer dependency, and import the polyfills **before** importing the authoring API. No Node APIs or new codec dependencies are introduced by this helper.
 
 ## Options[​](#options "Direct link to Options")
 

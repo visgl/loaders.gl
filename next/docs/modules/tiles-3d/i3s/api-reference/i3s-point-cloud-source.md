@@ -1,6 +1,6 @@
 I3S point-cloud source
 
-![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+[![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
 # Use I3S point clouds with one traversal API.
 

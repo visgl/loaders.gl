@@ -1,74 +1,74 @@
-Images API · compatibility loader
+Image loader
 
-# Keep older image pipelines working while you migrate.
+# Decode pixels into the browser’s portable image type.
 
-ImageLoader preserves the older environment-dependent return modes used by existing applications. New code should prefer ImageBitmapLoader, but this page explains the compatibility contract when a migration must be gradual.
+`ImageLoader` is the preferred image loader for new code. It turns common encoded image files into `ImageBitmap` values in supported browsers and through the loaders.gl polyfill path under Node.js.
 
 [Images module](https://loaders.gl/next/docs/modules/images.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/images.md)[ImageBitmapLoader](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/images.md)[Image category](https://loaders.gl/next/docs/specifications/category-image.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md)[Image category](https://loaders.gl/next/docs/specifications/category-image.md)
+[ ↗](https://loaders.gl/next/docs/specifications/category-image.md)[Image utilities](https://loaders.gl/next/docs/modules/images/api-reference/parsed-image-api.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/specifications/category-image.md)
+[ ↗](https://loaders.gl/next/docs/modules/images/api-reference/parsed-image-api.md)
 
-Migration at a glance
+The image path
 
-## Know which representation your old code expects.
+## Read encoded bytes. Decode once. Hand pixels to the application.
 
-ImageLoader can return an ImageBitmap, an HTMLImageElement, or raw pixel data depending on options and runtime. Make that choice explicit while moving new paths to the stable bitmap-first loader.
+The loader keeps environment-specific decoding at the boundary. Applications can use the same output shape in rendering, analysis, and image conversion code.
 
 01
 
-Legacy modes
+Input
 
-auto, data, imagebitmap, and image
+PNG, JPEG, GIF, WebP, AVIF, BMP, ICO, or SVG
 
 02
 
-Preferred path
+Decode
 
-ImageBitmapLoader plus getImageData when needed
+Browser \`createImageBitmap\` or Node polyfill
 
 03
 
-Runtime
+Output
 
-Browser-first, with Node.js polyfill support
+An \`ImageBitmap\` value
 
 04
 
-Status
+Next step
 
-Compatibility API; not recommended for new code
+Read pixels with \`getImageData\` or render directly
+
+![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
+
+The preferred image loader for new code. `ImageLoader` returns `ImageBitmap` in supported browsers and under Node.js when `@loaders.gl/core/polyfills` is installed.
 
 Detailed guide
 
-## ImageLoader compatibility reference
+## Decode and portability details
 
-The sections below document supported formats, return modes, imagebitmap options, portability notes, and migration guidance.
-
-![From-v1.0](https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square)![Deprecated-v4.4](https://img.shields.io/badge/Deprecated-v4.4-orange.svg?style=flat-square)
-
-> Deprecated in 4.4. Use [`ImageBitmapLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md) for new code.
-
-A compatibility image loader that preserves the older environment-dependent return types and `image.type` modes.
+The reference below covers supported image formats, output behavior, browser options, Node.js polyfills, and portability limitations.
 
 | ImageLoader    |                                                                           |
 | -------------- | ------------------------------------------------------------------------- |
 | File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.avif`, `.bmp`, `.ico`, `.svg` |
 | File Type      | Binary                                                                    |
 | File Format    | PNG, JPEG, GIF, WEBP, AVIF, BMP, SVG                                      |
-| Data Format    | `ImageBitmap`, `Image`, or raw image data                                 |
+| Data Format    | `ImageBitmap`                                                             |
 | Supported APIs | `load`, `parse`                                                           |
 | Worker Thread  | ❌ No (but may run on separate native thread in browsers)                 |
 | Streaming      | ❌ No                                                                     |
+
+`ImageLoader` was previously named `ImageBitmapLoader`. The older loader with `auto`, `image`, and `data` output modes is now [`LegacyImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/legacy-image-loader.md). Use `ImageLoaderOptions` for bitmap options and `LegacyImageLoaderOptions` for those older output modes.
 
 ## Usage[​](#usage "Direct link to Usage")
 
@@ -86,20 +86,18 @@ const image = await load(url, ImageLoader, options);
 
 ## Data Format[​](#data-format "Direct link to Data Format")
 
-`ImageLoader` parses binary encoded images (such as JPEG or PNG images) into one of the older compatibility image representations:
+`ImageLoader` parses binary encoded images (such as JPEG or PNG images) into:
 
-* `ImageBitmap`
-* `Image` (aka `HTMLImageElement`)
-* raw image data (`{data, width, height}`)
+* `ImageBitmap` in browsers with `createImageBitmap` support.
+* A minimal `ImageBitmap` polyfill under Node.js via `@loaders.gl/core/polyfills`.
 
-For new code, prefer [`ImageBitmapLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md) and call `getImageData(image)` when raw pixels are needed.
+If application code needs raw pixels, load with `ImageLoader` and then call `getImageData(image)`.
 
 ## Options[​](#options "Direct link to Options")
 
-| Option         | Type     | Default  | Description                                                                                                       |
-| -------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
-| `image.type`   | `string` | `'auto'` | Compatibility mode selector. One of `auto`, `data`, `imagebitmap`, or `image`.                                    |
-| `image.decode` | boolean  | `true`   | Applies to `image` loading. Waits for `HTMLImageElement.decode()` when available before the load promise settles. |
+| Option       | Type     | Default | Description                                                                            |
+| ------------ | -------- | ------- | -------------------------------------------------------------------------------------- |
+| `image.type` | `string` | unset   | Optional compatibility alias. Only `imagebitmap` is accepted. Legacy values now throw. |
 
 ### ImageBitmap Options[​](#imagebitmap-options "Direct link to ImageBitmap Options")
 
@@ -114,11 +112,17 @@ Pass through options to [`createImageBitmap`](https://developer.mozilla.org/en-U
 | `imagebitmap.resizeHeight`         | number | -           | Output image height.                                                                                                          |
 | `imagebitmap.resizeQuality`        | string | `'low'`     | Algorithm to be used for resizing the input to match the output dimensions. One of pixelated, low (default), medium, or high. |
 
-Portability note: The exact set of `imagebitmap` options supported may depend on the browser and do not apply when `ImageLoader` is used in legacy `image` or `data` modes.
+Portability note: The exact set of `imagebitmap` options supported may depend on the browser. Node.js does not implement `createImageBitmap()` or `imagebitmap` option handling.
 
 ## Remarks[​](#remarks "Direct link to Remarks")
 
-* `ImageLoader` is retained for compatibility and migration.
-* New applications should use [`ImageBitmapLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-bitmap-loader.md) instead.
-* If application code needs raw pixels from either loader, call `getImageData(image)`.
-* Node.js support requires import `@loaders.gl/core/polyfills` before installing this module.
+* In browsers without `ImageBitmap` support, `ImageLoader` throws instead of falling back to `HTMLImageElement`.
+* Under Node.js, the installed `ImageBitmap` polyfill is intentionally minimal and only supports the functionality needed by `ImageLoader` and `getImageData(image)`.
+* The SVG path may still use `HTMLImageElement` internally as a bridge before producing the final `ImageBitmap`.
+* Node.js support requires import `@loaders.gl/core/polyfills` before loading images.
+
+## Node.js codec setup[​](#nodejs-codec-setup "Direct link to Node.js codec setup")
+
+Install `sharp` explicitly and import `@loaders.gl/core/polyfills` before loading images under Node.js. The optional backend detects formats from the encoded bytes and wraps RGBA pixels in the minimal Node `ImageBitmap` polyfill. Browser decoding continues to use native `createImageBitmap()`.
+
+The Node wrapper supports `getImageData()` and `close()`. Browser canvas integration, transferability, and `ImageBitmapOptions` such as resize/crop are not implemented by this wrapper. These options remain browser-dependent.

@@ -1,6 +1,6 @@
 ArcGIS module · ArcGIS 3D source
 
-![](/next/images/format-logos/arcgis-logo.jpg)Scene
+[![](/next/images/format-logos/arcgis-logo.svg)Scene](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md)
 
 # ArcGIS SceneServer
 
@@ -24,7 +24,9 @@ Connect your published scene layer to an I3S source. Inspect its layer profile a
 
 [ ↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
-⛶⛶ Explore fullscreen
+ArcGIS SceneServer metadata inspectorEnter fullscreen
+
+⛶ Explore fullscreen
 
 The embedded inspector loads SceneServer metadata through this module. It does not render the scene. For 3D rendering, use the [I3S examples](https://loaders.gl/next/docs/modules/tiles-3d/i3s/recipes/profile-gallery.md); building roots use a separate I3S loader.
 

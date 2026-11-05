@@ -1,6 +1,6 @@
 Cesium ion loader
 
-![](/next/images/format-logos/3d-tiles-logo.png)
+[![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)
 
 # Resolve an ion asset without leaking its credentials.
 

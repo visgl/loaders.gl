@@ -16,7 +16,7 @@ ArrowParquetselective reads
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md)
 
-![](/next/images/format-logos/parquet-logo.png)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
+[![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
 
 The Parquet layout
 
@@ -99,7 +99,7 @@ Load a Parquet file as object rows when a row-oriented result is required.
 ```
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
 
 import {load} from '@loaders.gl/core';
 
@@ -112,7 +112,7 @@ const wasmRows = await load(url, ParquetLoader, loaderOptions);
 const typeScriptRows = await load(url, ParquetJSLoader, loaderOptions);
 ```
 
-Applications normally import metadata loaders from the package root. Code that needs a parser-bearing loader directly can import `ParquetLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-loader` or `ParquetJSLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-js-loader`.
+Applications normally import metadata loaders from the package root. Code that needs a parser-bearing loader directly can import `ParquetLoaderWithParser` from `@loaders.gl/tables/parquet-loader` or `ParquetJSLoaderWithParser` from `@loaders.gl/tables/parquet-js-loader`.
 
 Load a Parquet file as Arrow using the primary loader.
 
@@ -290,12 +290,12 @@ Supports table category options such as `batchType` and `batchSize`.
 * Use `ParquetLoader` for the primary TypeScript-backed loader. It supports object-row and Arrow output and can use the package's prebuilt worker.
 * Use `ParquetJSLoader` for the experimental TypeScript implementation. It supports object-row and Arrow output plus the common row options listed above, including `columns`, `limit`, `offset`, `batchSize`, and `preserveBinary`. It can also read AES-GCM and AES-GCM-CTR encrypted column metadata, page indexes, Bloom filters, and page modules when `keyRetriever` is supplied. Plaintext footer signatures are verified by default.
 
-For the optional WASM reader, import `ParquetWasmLoaderWithParser` from `@loaders.gl/tables/parquet/parquet-wasm-loader` and install `parquet-wasm`. The implementation is selected by the loader import. There is no runtime backend option. The [JavaScript and WebAssembly performance](https://loaders.gl/next/docs/developer-guide/concepts/javascript-and-wasm-performance.md) concept guide explains why selective I/O, direct Arrow construction, memory copies, and startup cost can matter more than the language used for a decoder's inner loop.
+For the optional WASM reader, import `ParquetWasmLoaderWithParser` from `@loaders.gl/tables/parquet-wasm-loader` and install `parquet-wasm`. The implementation is selected by the loader import. There is no runtime backend option. The [JavaScript and WebAssembly performance](https://loaders.gl/next/docs/developer-guide/concepts/javascript-and-wasm-performance.md) concept guide explains why selective I/O, direct Arrow construction, memory copies, and startup cost can matter more than the language used for a decoder's inner loop.
 
 ```
 import {load} from '@loaders.gl/core';
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
 
 
 

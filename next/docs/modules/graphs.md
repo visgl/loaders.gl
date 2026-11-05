@@ -176,4 +176,16 @@ This is a static graph parser, not a complete GEXF schema validator. Dynamic gra
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/graphs/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/graphs/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
+
+## Package exports[​](#package-exports "Direct link to Package exports")
+
+All exported subpaths (<!-- -->3<!-- -->)
+
+These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
+
+| Format | Import subpath                      |
+| ------ | ----------------------------------- |
+|        | `@loaders.gl/graphs/dot-loader`     |
+|        | `@loaders.gl/graphs/gexf-loader`    |
+|        | `@loaders.gl/graphs/graphml-loader` |

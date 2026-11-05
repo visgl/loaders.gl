@@ -14,6 +14,12 @@ OpenUSD describes scenes as composed layers and prims. The initial loaders.gl im
 
 [ ↗](https://loaders.gl/next/docs/specifications/category-scenegraph.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                            |
+| ------ | ---------------------------------------------------------------------------------------------- |
+| Loader | [`USDLoader`](https://loaders.gl/next/docs/modules/scene/usd/api-reference/usd-loader.md) |
+
 A layered 3D format stack
 
 ## Choose the delivery layer. Keep the data path.
@@ -36,7 +42,7 @@ Geometry and texture payloads
 
 Compression and GPU-ready delivery underneath the formats
 
-[Draco↗](https://loaders.gl/next/docs/modules/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/textures/formats/ktx.md)
+[Draco↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)[Meshopt compression↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#meshopt-compression)[Basis Universal / KTX2↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
 
 Application-facing results
 

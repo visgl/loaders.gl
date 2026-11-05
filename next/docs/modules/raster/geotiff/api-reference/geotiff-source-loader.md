@@ -1,6 +1,6 @@
 Cloud raster source
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)
 
 # GeoTIFFSourceLoader
 
@@ -16,9 +16,11 @@ GeoTIFFSourceLoader discovers raster metadata, selects an overview and band set,
 
 [ ↗](https://loaders.gl/next/docs/modules/raster/geotiff.md)
 
-⛶⛶ Explore fullscreen
+Cloud-optimized GeoTIFF window exampleEnter fullscreen
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
 
 Windowed raster access
 
@@ -103,7 +105,7 @@ The sections below cover source construction, metadata, viewport requests, raste
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff/geotiff-source-loader';
+import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff-source-loader';
 
 
 

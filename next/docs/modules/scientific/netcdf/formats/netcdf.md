@@ -1,6 +1,6 @@
 Scientific array format
 
-![](/next/images/format-logos/netcdf-logo.png)NetCDF
+[![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md)
 
 # Keep the dimensions that give data meaning.
 
@@ -15,6 +15,13 @@ NetCDF stores typed multidimensional arrays together with named dimensions and a
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                  |
+| ------------- | -------------------- |
+| Loader        | `NetCDFLoader`       |
+| Source loader | `NetCDFSourceLoader` |
 
 The array model
 
@@ -59,7 +66,7 @@ Detailed guide
 
 The sections below describe the file variants, source discovery, variable selection, dimension slicing, and current implementation boundaries.
 
-## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+## loaders.gl support[​](#loadersgl-support-1 "Direct link to loaders.gl support")
 
 | Format feature                                             | Support                                       |
 | ---------------------------------------------------------- | --------------------------------------------- |

@@ -1,6 +1,6 @@
 Geospatial database module
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)
 
 # @loaders.gl/geospatial/geopackage
 
@@ -16,7 +16,9 @@ GeoPackage is a SQLite-based container for vector features, tiles, and metadata.
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md)
 
-⛶⛶ Explore fullscreen
+GeoPackage map exampleEnter fullscreen
+
+⛶ Explore fullscreen
 
 Container discovery
 

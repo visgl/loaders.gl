@@ -116,7 +116,7 @@ For tile-converter v4.0 and up:
 
 Operationg Systems: Windows 8.1 or higher, Ubuntu 20.04 or higher
 
-A [supported Node.js LTS release](https://loaders.gl/next/docs/developer-guide/node.md#supported-nodejs-versions) is required.
+A [supported Node.js LTS release](https://loaders.gl/next/docs/developer-guide/node.md#supported-nodejs-versions) is required. The legacy v4 dependency installer and texture-atlas joining require Node.js 24 or newer because `join-images@1.5.0` requires it. The installer pairs that release with `sharp@0.35.5`.
 
 ## Options[​](#options "Direct link to Options")
 

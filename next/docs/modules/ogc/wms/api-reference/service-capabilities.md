@@ -1,6 +1,6 @@
 Service metadata
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)
 
 # Inspect different services through one small capability shape.
 

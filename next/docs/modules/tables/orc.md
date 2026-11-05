@@ -1,8 +1,8 @@
 ORC module
 
-![](/next/images/format-logos/orc-logo.png)
+[![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)
 
-![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)
+[![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)](https://www.apache.org/)
 
 # @loaders.gl/tables/orc
 
@@ -21,6 +21,8 @@ ORC module
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
+
+ORC loader exampleEnter fullscreen
 
 ## Hosted ORC loader
 

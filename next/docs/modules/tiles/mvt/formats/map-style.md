@@ -18,6 +18,12 @@ Map style JSON describes sources, layer order, and rendering intent; it does not
 
 [ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/formats/tilejson.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                       |
+| ------ | --------------------------------------------------------------------------------------------------------- |
+| Loader | [`MapStyleLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/map-style-loader.md) |
+
 The style path
 
 ## Read the document. Resolve its sources. Hand rendering rules to the client.

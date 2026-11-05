@@ -140,7 +140,7 @@ import draco3d from 'draco3d';
 
 import {load} from '@loaders.gl/core';
 
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoader} from '@loaders.gl/scene';
 
 
 
@@ -234,8 +234,8 @@ The supported `options.modules` keys are loader-specific and writer-specific.
 
 Examples:
 
-* [DracoLoader](https://loaders.gl/next/docs/modules/draco/api-reference/draco-loader.md)
-* [DracoWriter](https://loaders.gl/next/docs/modules/draco/api-reference/draco-writer.md)
-* [BasisLoader](https://loaders.gl/next/docs/modules/textures/api-reference/basis-loader.md)
-* [CompressedTextureLoader](https://loaders.gl/next/docs/modules/textures/api-reference/compressed-texture-loader.md)
-* [KTX2BasisWriter](https://loaders.gl/next/docs/modules/textures/api-reference/ktx2-basis-texture-writer.md)
+* [DracoLoader](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md)
+* [DracoWriter](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-writer.md)
+* [BasisLoader](https://loaders.gl/next/docs/modules/images/textures/api-reference/basis-loader.md)
+* [CompressedTextureLoader](https://loaders.gl/next/docs/modules/images/textures/api-reference/compressed-texture-loader.md)
+* [KTX2BasisWriter](https://loaders.gl/next/docs/modules/images/textures/api-reference/ktx2-basis-texture-writer.md)

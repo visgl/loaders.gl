@@ -5,7 +5,7 @@
 `ArrowTableTileSourceLoader` generates clipped, simplified vector tiles from an in-memory Arrow table. It is a separate alternative to [`TableTileSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-source-loader.md): input and output stay in Arrow, and attributes do not pass through GeoJSON objects.
 
 ```
-import {ArrowTableTileSourceLoaderWithParser} from '@loaders.gl/tiles/mvt/arrow-table-tile-source-loader';
+import {ArrowTableTileSourceLoaderWithParser} from '@loaders.gl/tiles/arrow-table-tile-source-loader';
 
 
 
@@ -46,7 +46,7 @@ const source = await load('/features.geojson', ArrowTableTileSourceLoader, {
 const tile = await source.getTile({z: 0, x: 0, y: 0});
 ```
 
-Source selection must be explicit: this source has no file extension or URL autodetection. The package-root export is lightweight metadata: async `load` preloads its implementation. Synchronous `createDataSource` calls require `ArrowTableTileSourceLoaderWithParser` from the explicit `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` subpath. That subpath also exports the `ArrowTableVectorTileSource` class. Direct construction requires an injected core API for URLs/blobs; in-memory tables do not require `@loaders.gl/core`.
+Source selection must be explicit: this source has no file extension or URL autodetection. The package-root export is lightweight metadata: async `load` preloads its implementation. Synchronous `createDataSource` calls require `ArrowTableTileSourceLoaderWithParser` from the explicit `@loaders.gl/tiles/arrow-table-tile-source-loader` subpath. That subpath also exports the `ArrowTableVectorTileSource` class. Direct construction requires an injected core API for URLs/blobs; in-memory tables do not require `@loaders.gl/core`.
 
 ## Input and output[​](#input-and-output "Direct link to Input and output")
 

@@ -1,6 +1,6 @@
 Service sources
 
-![](/next/images/format-logos/arcgis-logo.jpg)API
+[![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)
 
 # @loaders.gl/arcgis
 
@@ -16,7 +16,9 @@ Use layers already published in ArcGIS Online or Enterprise in your own applicat
 
 [ ↗](https://loaders.gl/next/docs/modules/arcgis/services.md)
 
-⛶⛶ Explore fullscreen
+ArcGIS feature service exampleEnter fullscreen
+
+⛶ Explore fullscreen
 
 Remote data, explicit steps
 
@@ -337,4 +339,32 @@ Use `resolveArcGISItem` from `@loaders.gl/arcgis/items` to resolve service-backe
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/arcgis/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/arcgis/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
+
+## Format guides[​](#format-guides "Direct link to Format guides")
+
+* [ArcGIS FeatureServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)
+* [ArcGIS ImageServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)
+* [ArcGIS MapServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)
+* [ArcGIS SceneServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md)
+* [ArcGIS VectorTileServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)
+
+## Package exports[​](#package-exports "Direct link to Package exports")
+
+All exported subpaths (<!-- -->11<!-- -->)
+
+These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
+
+| Format                                                                                                                                             | Import subpath                                               |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)         | `@loaders.gl/arcgis/arcgis-feature-server-source-loader`     |
+| [![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)             | `@loaders.gl/arcgis/arcgis-image-server-source-loader`       |
+| [![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)                                           | `@loaders.gl/arcgis/arcgis-image-tile-source-loader`         |
+| [![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)                                           | `@loaders.gl/arcgis/arcgis-map-tile-source-loader`           |
+| [![](/next/images/format-logos/arcgis-logo.svg)Scene](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md)             | `@loaders.gl/arcgis/arcgis-scene-server-source-loader`       |
+| [![](/next/images/format-logos/arcgis-logo.svg)Vector Tile](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md) | `@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader` |
+|                                                                                                                                                    | `@loaders.gl/arcgis/authentication`                          |
+|                                                                                                                                                    | `@loaders.gl/arcgis/bundled`                                 |
+|                                                                                                                                                    | `@loaders.gl/arcgis/discovery`                               |
+|                                                                                                                                                    | `@loaders.gl/arcgis/items`                                   |
+|                                                                                                                                                    | `@loaders.gl/arcgis/scene-aggregation`                       |

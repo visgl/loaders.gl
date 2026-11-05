@@ -1,6 +1,6 @@
 OGC vector service
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWFS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWFS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)
 
 # Query features without taking ownership of the whole service response.
 
@@ -19,6 +19,12 @@ WFS exposes vector features over HTTP. The loaders.gl source handles capabilitie
 <!-- -->
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)
+
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API               |
+| ------------- | ----------------- |
+| Source loader | `WFSSourceLoader` |
 
 The WFS request path
 
@@ -50,7 +56,7 @@ Return
 
 Vector features, binary data, or Arrow tables
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWFS[Try WFS](https://loaders.gl/next/examples/tiles/wfs)[WFS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)
+[![](/next/images/format-logos/ogc-mark.svg)OGCWFS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)[Try WFS](https://loaders.gl/next/examples/tiles/wfs)[WFS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)
 
 [![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/scan#vector-table-views)
 
@@ -292,6 +298,10 @@ const layer = new SourceLayer({
 ```
 
 ## Live example[​](#live-example "Direct link to Live example")
+
+WFS map service exampleEnter fullscreen
+
+⛶ Explore fullscreen
 
 ## References[​](#references "Direct link to References")
 

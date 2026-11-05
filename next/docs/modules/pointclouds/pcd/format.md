@@ -1,6 +1,6 @@
 Point-cloud format
 
-PCD
+[PCD](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)
 
 # A simple point-cloud interchange.
 
@@ -20,7 +20,7 @@ PCD describes point records with a compact header and ASCII or binary payload. l
 
 [ ↗](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)
 
-PCD[Try It](https://loaders.gl/next/examples/pointclouds/pcd)[Overview](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/pcd/format.md)[PCDLoader](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PCDWriter](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)
+[PCD](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Try It](https://loaders.gl/next/examples/pointclouds/pcd)[Overview](https://loaders.gl/next/docs/modules/pointclouds/pcd/formats/pcd.md)[Format](https://loaders.gl/next/docs/modules/pointclouds/pcd/format.md)[PCDLoader](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-loader.md)[PCDWriter](https://loaders.gl/next/docs/modules/pointclouds/pcd/api-reference/pcd-writer.md)
 
 Point records
 

@@ -3,7 +3,7 @@
 Packages already-authored 3D Tiles resources into a deterministic indexed `.3tz` archive. This writes an archive container, not a scene, mesh hierarchy, or I3S layer.
 
 ```
-import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles/3d-tiles-archive-writer';
+import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles-archive-writer';
 
 
 
@@ -24,7 +24,7 @@ The writer uses STORE compression, populated local headers (CRC and sizes), no d
 
 The result is an `ArrayBuffer`. For a browser download, wrap it in a Blob with MIME type `application/vnd.maxar.archive.3tz+zip`, save as `.3tz`, and revoke object URLs when no longer needed. The v5 tile converter provides `createSingleMeshTilesetArchive` for its finalized single-mesh output. Existing 3TZ readers can read the resulting indexed archive.
 
-`createTileConversionArchive` also provides a general finalized-resource Blob handoff for 3TZ and SLPK. Each format requires already-authored resources in its own layout. The shared `@loaders.gl/archives/zip/indexed-zip-writer` encoder retains the existing deterministic 3TZ layout.
+`createTileConversionArchive` also provides a general finalized-resource Blob handoff for 3TZ and SLPK. Each format requires already-authored resources in its own layout. The shared `@loaders.gl/archives/indexed-zip-writer` encoder retains the existing deterministic 3TZ layout.
 
 ### Cancellation and temporary buffers[​](#cancellation-and-temporary-buffers "Direct link to Cancellation and temporary buffers")
 
@@ -37,7 +37,7 @@ Payload reads/copies use blocks of at most 64 KiB. A checksum pass precedes each
 `encodeTiles3DArchiveInBatches` is exported from the implementation subpath. It accepts the same resources/options and yields `Uint8Array` views with byte-identical archive content:
 
 ```
-import {encodeTiles3DArchiveInBatches} from '@loaders.gl/tiles-3d/3d-tiles/3d-tiles-archive-writer';
+import {encodeTiles3DArchiveInBatches} from '@loaders.gl/tiles-3d/3d-tiles-archive-writer';
 
 
 

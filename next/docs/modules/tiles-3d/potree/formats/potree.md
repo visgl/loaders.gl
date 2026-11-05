@@ -18,6 +18,14 @@ Potree datasets separate metadata, octree hierarchy, and point payloads. Applica
 
 [ ↗](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Loader        | [`PotreeLoader`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)              |
+| Source loader | [`PotreeSourceLoader`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) |
+| Writer        | [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md)              |
+
 [Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
 
 The dataset layout
@@ -108,7 +116,7 @@ Modern point decoding returns Float64 XYZ using the declared scale and offset. L
 
 ## Loaders, sources, and writers[​](#loaders-sources-and-writers "Direct link to Loaders, sources, and writers")
 
-* [PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md) parses metadata for both layouts. The package root is metadata-only; direct parser access uses `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree/potree-loader`.
+* [PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md) parses metadata for both layouts. The package root is metadata-only; direct parser access uses `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree-loader`.
 * [PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) traverses hierarchy and decodes requested point tiles. Pass `cloud.js` for 1.x or `metadata.json` for 2.0; directory inputs retain the legacy `cloud.js` default.
 * [PotreeWriter](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md) writes a metadata document through `encode` or `encodeSync`. `encodePotreeDataset` produces the complete collection of relative filenames and typed byte buffers from decoded Mesh/Arrow data.
 

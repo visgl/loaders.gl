@@ -1,6 +1,6 @@
 WMS module · geospatial loader
 
-![](/next/images/format-logos/ogc-mark.svg)OGCGML
+[![](/next/images/format-logos/ogc-mark.svg)OGCGML](https://loaders.gl/next/docs/modules/ogc/wms/formats/gml.md)
 
 # GMLLoader
 
@@ -10,11 +10,11 @@ Parse the practical feature and geometry subset of OGC Geography Markup Language
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/wms.md)[XMLLoader](https://loaders.gl/next/docs/modules/xml/api-reference/xml-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/wms.md)[XMLLoader](https://loaders.gl/next/docs/modules/documents/xml/api-reference/xml-loader.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/xml/api-reference/xml-loader.md)[GIS category](https://loaders.gl/next/docs/specifications/category-gis.md)
+[ ↗](https://loaders.gl/next/docs/modules/documents/xml/api-reference/xml-loader.md)[GIS category](https://loaders.gl/next/docs/specifications/category-gis.md)
 
 <!-- -->
 
@@ -94,7 +94,7 @@ const data = await load(url, GMLLoader, options);
 
 The `GMLLoader` supports the standard geospatial subset of geometries (points, multipoints, lines, linestrings, polygons and multipolygons). By default, it returns `{shape: 'arrow-table', schema, data}`. Feature properties and IDs become columns and geometry uses `geoarrow.wkb`. A bare geometry becomes a one-row table; an empty result becomes an empty table. Coordinates are not reprojected, and CRS metadata is explicitly unknown (`crs: null`); this loader does not yet resolve GML `srsName` into Arrow CRS metadata.
 
-Set `gml.shape: 'geojson'` to retain the previous FeatureCollection, bare geometry, or null result. Arrow conversion rejects properties that collide with the output `geometry` column or a feature ID's `id` column; explicit GeoJSON retains both values. The root `GMLLoader` is metadata-only (`_GMLLoader` remains an alias). Synchronous parsing uses `GMLLoaderWithParser` from `@loaders.gl/ogc/wms/gml-loader`.
+Set `gml.shape: 'geojson'` to retain the previous FeatureCollection, bare geometry, or null result. Arrow conversion rejects properties that collide with the output `geometry` column or a feature ID's `id` column; explicit GeoJSON retains both values. The root `GMLLoader` is metadata-only (`_GMLLoader` remains an alias). Synchronous parsing uses `GMLLoaderWithParser` from `@loaders.gl/ogc/gml-loader`.
 
 For large WFS responses, the parser-bearing loader also supports incremental feature batches:
 

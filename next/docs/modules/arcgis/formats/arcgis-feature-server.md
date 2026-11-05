@@ -1,6 +1,6 @@
 ArcGIS service protocol
 
-![](/next/images/format-logos/arcgis-logo.jpg)Feature
+[![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)
 
 # ArcGIS FeatureServer protocol and formats
 
@@ -16,7 +16,13 @@ Read your published feature layers and tables as bounded queries with explicit c
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md)
 
-![](/next/images/format-logos/arcgis-logo.jpg)Feature[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-feature-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| Source loader | [`ArcGISFeatureServerSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
+
+[![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-feature-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
 Use this path when you need your layer’s geometries and attributes for custom styling, filtering or analysis. Select the layer or table from your existing service; the service root can contain several.
 

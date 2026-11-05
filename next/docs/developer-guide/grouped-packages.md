@@ -1,6 +1,6 @@
 # Packages and format entrypoints
 
-loaders.gl groups related formats into independently installable packages. Start with the [Packages overview](https://loaders.gl/next/docs/packages.md) to find the owner of a format, then use its format reference for options and output types. For example, CSV belongs to `@loaders.gl/tables`, LAS belongs to `@loaders.gl/pointclouds`, and glTF belongs to `@loaders.gl/scene`.
+loaders.gl groups related formats into independently installable packages. Start with the [Modules page](https://loaders.gl/next/docs/modules.md) to find the owner of a format, then use its format reference for options and output types. For example, CSV belongs to `@loaders.gl/tables`, LAS belongs to `@loaders.gl/pointclouds`, and glTF belongs to `@loaders.gl/scene`.
 
 ## Install packages, import formats[​](#install-packages-import-formats "Direct link to Install packages, import formats")
 
@@ -37,7 +37,7 @@ For synchronous parsing, import the parser-bearing loader explicitly:
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv/csv-loader';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
 
 
 
@@ -48,7 +48,7 @@ See [Metadata loaders and parser loading](https://loaders.gl/next/docs/developer
 
 ## Sources and writers[​](#sources-and-writers "Direct link to Sources and writers")
 
-A loader parses an input into a result. A source opens a dataset or service and supports requests such as scans, raster windows, or tile reads. Source constructors and advanced APIs have explicit subpaths, for example `@loaders.gl/raster/geotiff/geotiff-source-loader` and `@loaders.gl/tables/parquet/parquet-source-loader`.
+A loader parses an input into a result. A source opens a dataset or service and supports requests such as scans, raster windows, or tile reads. Source constructors and advanced APIs have explicit subpaths, for example `@loaders.gl/raster/geotiff-source-loader` and `@loaders.gl/tables/parquet-source-loader`.
 
 Writers are documented by their format. Some writers import encoding dependencies eagerly, so an entrypoint that exports both metadata and a writer is not necessarily dependency-free.
 
@@ -56,15 +56,14 @@ Writers are documented by their format. Some writers import encoding dependencie
 
 Subpaths let bundlers select code and defer parsers. They do not change which ordinary npm dependencies are installed for a package. Measure installation size, initial application code, and deferred parser chunks separately.
 
-| Format or capability      | Additional package       | Installation contract                                                                    |
-| ------------------------- | ------------------------ | ---------------------------------------------------------------------------------------- |
-| Excel                     | `xlsx`                   | Optional dependency of tables; install explicitly if optional dependencies were omitted. |
-| BSON                      | `bson`                   | Optional dependency of tables; needed by BSON parsing and synchronous writing.           |
-| Parquet WASM backend      | `parquet-wasm`           | Optional backend; the JavaScript backend has separate capabilities.                      |
-| GeoPackage                | `sql.js`                 | Optional peer dependency; applications install it explicitly.                            |
-| GeoTIFF image/source APIs | `geotiff`                | Optional peer dependency; the native numeric decoder supports a subset without it.       |
-| LERC                      | `lerc`                   | Optional peer dependency.                                                                |
-| Database engines          | Engine-specific packages | See the [SQL package](https://loaders.gl/next/docs/modules/sql.md).                 |
+| Format or capability      | Additional package       | Installation contract                                                              |
+| ------------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
+| BSON                      | `bson`                   | Optional dependency of tables; needed by BSON parsing and synchronous writing.     |
+| Parquet WASM backend      | `parquet-wasm`           | Optional backend; the JavaScript backend has separate capabilities.                |
+| GeoPackage                | `sql.js`                 | Optional peer dependency; applications install it explicitly.                      |
+| GeoTIFF image/source APIs | `geotiff`                | Optional peer dependency; the native numeric decoder supports a subset without it. |
+| LERC                      | `lerc`                   | Optional peer dependency.                                                          |
+| Database engines          | Engine-specific packages | See the [SQL package](https://loaders.gl/next/docs/modules/sql.md).           |
 
 Keep core and format packages on compatible versions. See the owning format reference for supported backend versions, WASM configuration, and runtime-specific requirements.
 

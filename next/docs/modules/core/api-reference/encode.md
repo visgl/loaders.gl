@@ -67,7 +67,7 @@ encodeSync(data, writer, options?): ArrayBuffer
 ```
 import {encode} from '@loaders.gl/core';
 
-import {DracoWriter} from '@loaders.gl/draco';
+import {DracoWriter} from '@loaders.gl/scene/draco-writer';
 
 
 

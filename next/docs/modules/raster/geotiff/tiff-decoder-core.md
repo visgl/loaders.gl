@@ -22,4 +22,4 @@ Qualify original range-backed directory reads and numeric region decoding agains
 
 ## Implementation provenance[​](#implementation-provenance "Direct link to Implementation provenance")
 
-The directory reader, block planner and numeric decoder are original TypeScript, written from [TIFF 6.0](https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf) and the [BigTIFF specification](https://libtiff.gitlab.io/libtiff/specification/bigtiff.html). They are not copied or translated geotiff.js implementation code. Compatibility adapters call geotiff.js under its MIT license. Existing fast-xml-parser handles GDAL XML.
+The directory reader, block planner and numeric decoder are original TypeScript, written from [TIFF 6.0](https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf) and the [BigTIFF specification](https://libtiff.gitlab.io/libtiff/specification/bigtiff.html). They are not copied or translated geotiff.js implementation code. Compatibility adapters call geotiff.js under its MIT license. `@loaders.gl/documents/xml-parser` handles GDAL XML.

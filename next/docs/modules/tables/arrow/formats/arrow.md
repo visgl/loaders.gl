@@ -1,6 +1,6 @@
 Binary columnar format
 
-![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)
+[![Apache Software Foundation](/next/assets/images/apache-logo-3530356552600b45779f409084590362.png)](https://www.apache.org/)
 
 # Apache Arrow
 
@@ -18,9 +18,25 @@ typed columnszero-copyArrow IPC
 
 [ ↗](https://loaders.gl/next/examples/table/arrow)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Loader        | [`ArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)                  |
+| Writer        | [`ArrowWriter`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)                  |
+| Source loader | `ArrowSourceLoader`                                                                                                    |
+| Source        | `ArrowTableSource`                                                                                                     |
+| Utility       | [Arrow Schema Utilities](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-schema-utils.md)   |
+| Utility       | [Arrow table transport](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-table-transport.md) |
+| Utility       | [`IndexedArrowTable`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/indexed-arrow-table.md)     |
+| Utility       | [`MappedArrowTable`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/mapped-arrow-table.md)       |
+| Utility       | [`splitArrowBuffers`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/split-arrow-buffers.md)     |
+
 ## Try a selective read[​](#try-a-selective-read "Direct link to Try a selective read")
 
 Use the panel below to inspect Arrow IPC metadata, choose columns, and limit the rows returned from a remote table. The same source contract is used by the broader scan architecture.
+
+Arrow scan exampleEnter fullscreen
 
 Arrow IPC URLhttps\://raw\.githubusercontent.com/visgl/loaders.gl/master/modules/tables/test/arrow/data/arrow/simple.arrow
 
@@ -28,7 +44,7 @@ Arrow IPC URLhttps\://raw\.githubusercontent.com/visgl/loaders.gl/master/modules
 
 Reading source metadata before opening the data…
 
-![](/next/images/format-logos/apache-arrow-logo.png)[Try It](https://loaders.gl/next/examples/table/arrow)[Overview](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Format](https://loaders.gl/next/docs/modules/tables/arrow/format.md)[ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)[GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)[GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)
+[![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Try It](https://loaders.gl/next/examples/table/arrow)[Overview](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)[Format](https://loaders.gl/next/docs/modules/tables/arrow/format.md)[ArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)[ArrowWriter](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)[GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md)[GeoArrowLoader](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md)
 
 The common data plane
 
@@ -82,7 +98,7 @@ The same table model is shared across languages
 
 04
 
-Loaders.gl
+loaders.gl
 
 ArrowLoader, ArrowWriter, and GeoArrow utilities
 

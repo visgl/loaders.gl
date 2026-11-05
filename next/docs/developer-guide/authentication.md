@@ -2,7 +2,7 @@ Application-owned credentials
 
 # Keep authentication with the request.
 
-Loaders.gl carries tokens through file, tile, and service requests while your application remains responsible for sign-in, secure storage, and token issuance.
+loaders.gl carries tokens through file, tile, and service requests while your application remains responsible for sign-in, secure storage, and token issuance.
 
 [Services module](https://loaders.gl/next/docs/modules/services.md)
 
@@ -28,7 +28,7 @@ Acquires, stores, and refreshes credentials
 
 02
 
-Loaders.gl
+loaders.gl
 
 Matches credentials to the request origin
 

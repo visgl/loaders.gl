@@ -12,11 +12,7 @@ Crypto module
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/developer-guide/using-streaming-loaders.md)[Worker loaders](https://loaders.gl/next/docs/developer-guide/using-worker-loaders.md)
-
-<!-- -->
-
-[ ↗](https://loaders.gl/next/docs/developer-guide/using-worker-loaders.md)
+[ ↗](https://loaders.gl/next/docs/developer-guide/using-streaming-loaders.md)
 
 The hashing path
 
@@ -54,7 +50,7 @@ Detailed guide
 
 The reference below covers supported algorithms, digest encodings, transform usage, synchronous methods, and performance considerations.
 
-![From-v3.0](https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square)
+![From v2.3](https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square)
 
 The `@loaders.gl/crypto` module provides a selection of optional cryptographic hash plugins for loaders.gl.
 
@@ -139,4 +135,13 @@ Cryptographic Hash
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
-See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md) and the project-wide [References and credits](https://loaders.gl/next/docs/references-and-credits.md).
+See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
+
+## Package exports[​](#package-exports "Direct link to Package exports")
+
+All exported subpaths (<!-- -->0<!-- -->)
+
+These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
+
+| Format | Import subpath |
+| ------ | -------------- |

@@ -18,6 +18,16 @@ SPLAT, KSPLAT, SPZ, and RAD store Gaussian splats with different tradeoffs in he
 
 [ ↗](https://loaders.gl/next/docs/modules/splats/api-reference/rad-source-loader.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Loader        | [`SPLATLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/splat-loader.md)                      |
+| Loader        | [`KSPLATLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/ksplat-loader.md)                    |
+| Loader        | [`SPZLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/spz-loader.md)                          |
+| Loader        | `RADLoader`                                                                                                          |
+| Source loader | [RADLoader and RADSourceLoader](https://loaders.gl/next/docs/modules/splats/api-reference/rad-source-loader.md) |
+
 The format family
 
 ## Choose the container for the access pattern.

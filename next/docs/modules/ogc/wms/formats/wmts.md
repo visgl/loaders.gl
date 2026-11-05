@@ -1,6 +1,6 @@
 OGC tiled image service
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMTS
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md)
 
 # WMTS
 
@@ -16,9 +16,18 @@ WMTS describes discrete tile matrix sets, layers, styles, image formats, and res
 
 [ ↗](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)
 
-⛶⛶ Explore fullscreen
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-![](/next/images/format-logos/ogc-mark.svg)OGCWMTS[Try WMTS](https://loaders.gl/next/examples/tiles/wmts)[WMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md)
+| Type          | API                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Source loader | `WMTSSourceLoader`                                                                                                    |
+| Loader        | [`WMTSCapabilitiesLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wmts-capability-loader.md) |
+
+WMTS tile service exampleEnter fullscreen
+
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/ogc-mark.svg)OGCWMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md)[Try WMTS](https://loaders.gl/next/examples/tiles/wmts)[WMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md)
 
 The tile-service sequence
 

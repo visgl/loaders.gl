@@ -1,6 +1,6 @@
 JSON module · streaming selection
 
-![](/next/images/format-logos/json-logo.gif)JSON
+[![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)
 
 # JSONPath
 

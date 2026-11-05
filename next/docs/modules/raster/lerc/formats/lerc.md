@@ -18,6 +18,12 @@ LERC is designed for analytical rasters: arbitrary numeric pixel types, masks, N
 
 [ ↗](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                |
+| ------ | -------------------------------------------------------------------------------------------------- |
+| Loader | [`LERCLoader`](https://loaders.gl/next/docs/modules/raster/lerc/api-reference/lerc-loader.md) |
+
 The LERC path
 
 ## Choose the numeric type. Set the tolerance. Decode the raster.

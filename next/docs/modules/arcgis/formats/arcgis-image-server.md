@@ -1,6 +1,6 @@
 ArcGIS service protocol
 
-![](/next/images/format-logos/arcgis-logo.jpg)Image
+[![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)
 
 # ArcGIS ImageServer protocol and formats
 
@@ -16,7 +16,14 @@ Choose rendered imagery or numerical pixels from your existing imagery service.
 
 [ ↗](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md)
 
-![](/next/images/format-logos/arcgis-logo.jpg)Image[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-image-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type          | API                                                                                                         |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Source loader | [`ArcGISImageServerSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
+| Source loader | [`ArcGISImageTileSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md)   |
+
+[![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-image-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
 Use rendered images for display and LERC rasters when your application needs band values, masks or analysis. A colorized PNG and a numerical raster are different outputs from the same imagery service.
 

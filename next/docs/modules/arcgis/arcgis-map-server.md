@@ -1,6 +1,6 @@
 ArcGIS module · ArcGIS tile source
 
-![](/next/images/format-logos/arcgis-logo.jpg)Map
+[![](/next/images/format-logos/arcgis-logo.svg)Map](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)
 
 # ArcGIS MapServer
 
@@ -24,9 +24,11 @@ Display your published ArcGIS map using its existing cache or dynamic map export
 
 [ ↗](https://loaders.gl/next/docs/modules/tiles.md)
 
-⛶⛶ Explore fullscreen
+ArcGIS MapServer exampleEnter fullscreen
 
-![](/next/images/format-logos/arcgis-logo.jpg)Map[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-map-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
+⛶ Explore fullscreen
+
+[![](/next/images/format-logos/arcgis-logo.svg)Map](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-map-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
 Remote data, explicit steps
 

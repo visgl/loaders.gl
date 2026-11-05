@@ -1,6 +1,6 @@
 Arrow worker transport
 
-![](/next/images/format-logos/apache-arrow-logo.png)
+[![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)
 
 # Arrow table transport
 

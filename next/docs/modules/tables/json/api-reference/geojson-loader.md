@@ -1,6 +1,6 @@
 GeoJSON loader
 
-GeoJSON
+[GeoJSON](https://loaders.gl/next/docs/modules/tables/json/formats/geojson.md)
 
 # GeoJSONLoader
 
@@ -16,9 +16,11 @@ GeoJSONLoader preserves the familiar feature and geometry model while supporting
 
 [ ↗](https://loaders.gl/next/docs/modules/tables/json.md)
 
-⛶⛶ Explore fullscreen
+GeoJSONLoader map exampleEnter fullscreen
 
-GeoJSON[Try It](https://loaders.gl/next/examples/geospatial/geojson)[Overview](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[Format](https://loaders.gl/next/docs/modules/tables/json/format.md)[JSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)[JSONTableLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-table-loader.md)[NDJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md)[GeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-loader.md)[NDGeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndgeojson-loader.md)[JSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-writer.md)[GeoJSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-writer.md)
+⛶ Explore fullscreen
+
+[GeoJSON](https://loaders.gl/next/docs/modules/tables/json/formats/geojson.md)[Try It](https://loaders.gl/next/examples/geospatial/geojson)[Overview](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)[Format](https://loaders.gl/next/docs/modules/tables/json/format.md)[JSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md)[JSONTableLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-table-loader.md)[NDJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndjson-loader.md)[GeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-loader.md)[NDGeoJSONLoader](https://loaders.gl/next/docs/modules/tables/json/api-reference/ndgeojson-loader.md)[JSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-writer.md)[GeoJSONWriter](https://loaders.gl/next/docs/modules/tables/json/api-reference/geojson-writer.md)
 
 The GeoArrow boundary
 

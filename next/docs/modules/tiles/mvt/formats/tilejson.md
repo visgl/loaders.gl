@@ -14,6 +14,12 @@ TileJSON describes a vector tileset’s URL template, layers, fields, and displa
 
 [ ↗](https://loaders.gl/next/docs/modules/tiles/mvt.md)
 
+## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
+
+| Type   | API                                                                                                      |
+| ------ | -------------------------------------------------------------------------------------------------------- |
+| Loader | [`TileJSONLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/tilejson-loader.md) |
+
 Metadata before payloads
 
 ## Describe the tileset once. Let clients plan around it.

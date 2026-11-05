@@ -1,10 +1,10 @@
 I3S recipe · building scenes
 
-![](/next/images/format-logos/ogc-mark.svg)OGCI3S
+[![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)
 
 # Turn a building layer tree into visible scene layers.
 
-An I3S Building Scene Layer is a hierarchy of groups and content layers. Loaders.gl flattens the metadata into renderable sublayers that a deck.gl application can show, hide, and organize.
+An I3S Building Scene Layer is a hierarchy of groups and content layers. loaders.gl flattens the metadata into renderable sublayers that a deck.gl application can show, hide, and organize.
 
 [I3S module](https://loaders.gl/next/docs/modules/tiles-3d/i3s.md)
 
@@ -22,7 +22,9 @@ An I3S Building Scene Layer is a hierarchy of groups and content layers. Loaders
 
 ![From-v3.2](https://img.shields.io/badge/From-v3.2-blue.svg?style=flat-square)
 
-⛶⛶ Explore fullscreen
+I3S building scene layerEnter fullscreen
+
+⛶ Explore fullscreen
 
 What this recipe demonstrates
 
@@ -68,7 +70,7 @@ BSL doesn't have content resources. It is a composite layer that consists of mul
 
 `group` sublayer is also just a composite layer. It contains further levels of sublayers and provides a nested structure for BSL. As a result, BSL has a tree-like sublayers structure with `3DObject` and `Point` layers;
 
-`3DObject` and `Point` sublayers are content layers. Those layer types are separated types of layers in I3S spec and can be used independently. Loaders.gl supports both profiles through the standard I3S source.
+`3DObject` and `Point` sublayers are content layers. Those layer types are separated types of layers in I3S spec and can be used independently. loaders.gl supports both profiles through the standard I3S source.
 
 ## BSL visualization with deck.gl[​](#bsl-visualization-with-deckgl "Direct link to BSL visualization with deck.gl")
 
@@ -80,7 +82,7 @@ I3S `3DObject` layer is shown in deck.gl with [Tile3DLayer](https://deck.gl/docs
 
 For BSL it is necessary to do preparation steps to obtain data for `Tile3DLayer`.
 
-Loaders.gl has `I3SBuildingSceneLayerLoader` that is used to load BSL JSON metadata and pick `3DObject` sublayers.
+loaders.gl has `I3SBuildingSceneLayerLoader` that is used to load BSL JSON metadata and pick `3DObject` sublayers.
 
 ```
 import {load} from '@loaders.gl/core';
