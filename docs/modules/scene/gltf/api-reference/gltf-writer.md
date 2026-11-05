@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="The writer takes the loaders.gl scenegraph representation and assembles the JSON, buffers, images, and optional compression extensions required by the target glTF container."
   tone="mint"
   items={[
-    {label: 'Input', value: 'Loaders.gl scenegraph data'},
+    {label: 'Input', value: 'loaders.gl scenegraph data'},
     {label: 'Assembly', value: 'Nodes, meshes, materials, buffers, and images'},
     {label: 'Compression', value: 'Optional asynchronous Draco compression'},
     {label: 'Output', value: '`.glb` binary'}

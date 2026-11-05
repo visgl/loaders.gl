@@ -18,8 +18,6 @@ export type FormatMetadata = {
   readonly ogc?: boolean;
   /** Optical size adjustment for assets with different intrinsic margins. */
   readonly logoScale?: number;
-  /** Backing surface for an official asset supplied on a dark background. */
-  readonly logoSurface?: 'dark';
   /** Short neutral mark used when no official or ecosystem logo is available. */
   readonly mark?: string;
   readonly tags: readonly FormatTag[];
@@ -77,7 +75,7 @@ export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'html', label: 'HTML', mark: 'HTML', tags: []},
   {slug: 'i3s', label: 'I3S', ogc: true, tags: ['geospatial', 'meshes']},
   {slug: 'json', label: 'JSON', logo: 'json-logo.gif', logoText: 'JSON', tags: ['tables']},
-  {slug: 'toml', label: 'TOML', logo: 'toml-logo.svg', tags: []},
+  {slug: 'toml', label: 'TOML', logo: 'toml-logo.svg', logoText: 'TOML', tags: []},
   {slug: 'kml', label: 'KML', ogc: true, tags: ['geospatial']},
   {slug: 'ktx', label: 'KTX / KTX2', logo: 'ktx-logo.svg', tags: ['textures']},
   {slug: 'las', label: 'LAS', mark: 'LAS', tags: ['geospatial', 'pointclouds']},
@@ -109,19 +107,19 @@ export const FORMAT_METADATA: ReadonlyArray<FormatMetadata> = [
   {slug: 'wkt-crs', label: 'WKT-CRS', ogc: true, tags: ['geospatial']},
   {slug: 'xml', label: 'XML', mark: 'XML', tags: []},
   {slug: 'yaml', label: 'YAML', logo: 'yaml-logo.svg', tags: []},
-  {slug: 'zarr', label: 'Zarr', logo: 'zarr-logo.svg', logoScale: 1.15, tags: ['geospatial', 'tables']},
+  {slug: 'zarr', label: 'Zarr', logo: 'zarr-logo.svg', logoText: 'Zarr', tags: ['geospatial', 'tables']},
   {slug: 'zip', label: 'ZIP', mark: 'ZIP', tags: ['archives']},
   {slug: 'wcs', label: 'WCS', ogc: true, tags: ['geospatial', 'services']},
   {slug: 'wfs', label: 'WFS', ogc: true, tags: ['geospatial', 'services']},
   {slug: 'wmc', label: 'WMC', ogc: true, tags: ['geospatial', 'services']},
   {slug: 'wms', label: 'WMS', ogc: true, tags: ['geospatial', 'services']},
   {slug: 'wmts', label: 'WMTS', ogc: true, tags: ['geospatial', 'services']},
-  {slug: 'arcgis-image-server', logoText: 'Image', label: 'ArcGIS Image Server', logo: 'arcgis-logo.jpg', logoScale: 2.5, logoSurface: 'dark', tags: ['geospatial', 'services']},
-  {slug: 'arcgis-feature-server', logoText: 'Feature', label: 'ArcGIS Feature Server', logo: 'arcgis-logo.jpg', logoScale: 2.5, logoSurface: 'dark', tags: ['geospatial', 'services']},
-  {slug: 'arcgis-map-server', logoText: 'Map', label: 'ArcGIS MapServer', logo: 'arcgis-logo.jpg', logoScale: 2.5, logoSurface: 'dark', tags: ['geospatial', 'services']},
-  {slug: 'arcgis-vector-tile-server', logoText: 'Vector Tile', label: 'ArcGIS VectorTileServer', logo: 'arcgis-logo.jpg', logoScale: 2.5, logoSurface: 'dark', tags: ['geospatial', 'services']},
-  {slug: 'arcgis-scene-server', logoText: 'Scene', label: 'ArcGIS Scene Server', logo: 'arcgis-logo.jpg', logoScale: 2.5, logoSurface: 'dark', tags: ['geospatial', 'services']},
-  {slug: 'arcgis', logoText: 'API', label: 'ArcGIS API Reference', logo: 'arcgis-logo.jpg', logoScale: 2.5, logoSurface: 'dark', tags: ['geospatial', 'services']}
+  {slug: 'arcgis-image-server', logoText: 'Image', label: 'ArcGIS Image Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis-feature-server', logoText: 'Feature', label: 'ArcGIS Feature Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis-map-server', logoText: 'Map', label: 'ArcGIS MapServer', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis-vector-tile-server', logoText: 'Vector Tile', label: 'ArcGIS VectorTileServer', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis-scene-server', logoText: 'Scene', label: 'ArcGIS Scene Server', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']},
+  {slug: 'arcgis', logoText: 'API', label: 'ArcGIS API Reference', logo: 'arcgis-logo.svg', tags: ['geospatial', 'services']}
 ];
 
 /** Resolves a gallery logo from either the static gallery directory or a bundled asset import. */
@@ -166,14 +164,13 @@ function FormatVisual({
   format: FormatMetadata;
   logoBaseUrl: string;
 }) {
-  const visualClass = `${styles.visual} ${format.logoSurface === 'dark' ? styles.darkVisual : ''}`;
   const badgeName = format.label === 'OGC API Services' ? 'API' : format.logoText ?? format.mark ?? format.label;
   const nameSize = badgeName.length > 10 ? 'long' : badgeName.length > 7 ? 'medium' : 'short';
 
   if (format.ogc) {
     return (
       <span
-        className={`${visualClass} ${styles.ogcBadge}`}
+        className={`${styles.visual} ${styles.ogcBadge}`}
         data-name-size={nameSize}
         role="img"
         aria-label={`${format.label.startsWith('OGC') ? format.label : `OGC ${format.label}`} format badge`}
@@ -192,7 +189,7 @@ function FormatVisual({
   if (!format.logo) {
     return (
       <span
-        className={`${visualClass} ${styles.formatBadge}`}
+        className={`${styles.visual} ${styles.formatBadge}`}
         data-name-size={nameSize}
         data-category={format.tags[0] ?? 'other'}
         role="img"
@@ -207,15 +204,15 @@ function FormatVisual({
   }
 
   if (format.logoText) {
-    return <span className={`${visualClass} ${styles.compositeLogo}`} data-name-size={nameSize} role="img" aria-label={`${format.label} logo`}>
-      <span className={format.logoSurface === 'dark' ? styles.arcgisLogo : styles.smallLogo}>
+    return <span className={`${styles.visual} ${styles.compositeLogo}`} data-name-size={nameSize} role="img" aria-label={`${format.label} logo`}>
+      <span className={styles.smallLogo}>
         <img alt="" loading="lazy" src={getLogoUrl(format.logo, logoBaseUrl)} />
       </span>
       <span className={styles.badgeName} aria-hidden="true">{format.logoText}</span>
     </span>;
   }
   return (
-    <span className={visualClass} role="img" aria-label={`${format.label} logo`}>
+    <span className={styles.visual} role="img" aria-label={`${format.label} logo`}>
       <img
         className={styles.logo}
         alt=""

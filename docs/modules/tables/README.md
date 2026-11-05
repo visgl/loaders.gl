@@ -18,7 +18,7 @@ Table and record formats share one package, with format-specific metadata and pa
 | <FormatLogo slug="orc" /> | [`/orc`](./orc/README.md) | [Apache ORC](./orc/formats/orc.md) |
 | <FormatLogo slug="parquet" /> | [`/parquet`](./parquet/README.md) | [Parquet](./parquet/formats/parquet.md) and [GeoParquet](./parquet/formats/geoparquet.md) |
 
-Import metadata from `@loaders.gl/tables` or a bare format subpath such as `@loaders.gl/tables/csv`. Import parser-bearing loaders from named implementation subpaths such as `@loaders.gl/tables/csv-loader`. See [Packages](../../packages.md) for installation and loading patterns.
+Import metadata from `@loaders.gl/tables` or a bare format subpath such as `@loaders.gl/tables/csv`. Import parser-bearing loaders from named implementation subpaths such as `@loaders.gl/tables/csv-loader`. See [Get Started](../../developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
 
 BSON document loaders and codecs live in [`@loaders.gl/documents`](/docs/modules/documents).
 Parquet BSON logical columns use that codec automatically.

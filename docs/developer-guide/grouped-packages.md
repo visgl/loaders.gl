@@ -1,7 +1,7 @@
 # Packages and format entrypoints
 
 loaders.gl groups related formats into independently installable packages. Start with the
-[Packages overview](../packages.md) to find the owner of a format, then use its format reference
+[Modules page](../modules/README.md) to find the owner of a format, then use its format reference
 for options and output types. For example, CSV belongs to `@loaders.gl/tables`, LAS belongs to
 `@loaders.gl/pointclouds`, and glTF belongs to `@loaders.gl/scene`.
 

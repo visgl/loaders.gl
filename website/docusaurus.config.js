@@ -413,6 +413,22 @@ const config = {
             scene: ['obj', 'gltf', 'draco']
           };
           const pageRedirects = {
+            '/docs/packages': '/docs/developer-guide/get-started',
+            '/docs/modules/_sections/tables/loaders': '/docs/modules/_sections/tables/api-and-guides',
+            '/docs/modules/_sections/tables/writers': '/docs/modules/_sections/tables/api-and-guides',
+            '/docs/modules/_sections/geospatial/loaders': '/docs/modules/_sections/geospatial/api-and-guides',
+            '/docs/modules/_sections/geospatial/sources': '/docs/modules/_sections/geospatial/api-and-guides',
+            '/docs/modules/_sections/point-clouds/loaders': '/docs/modules/_sections/point-clouds/api-and-guides',
+            '/docs/modules/_sections/point-clouds/writers': '/docs/modules/_sections/point-clouds/api-and-guides',
+            '/docs/modules/_sections/raster/loaders': '/docs/modules/_sections/raster/api-and-guides',
+            '/docs/modules/_sections/scene/loaders': '/docs/modules/_sections/scene/api-and-guides',
+            '/docs/modules/_sections/scene/writers': '/docs/modules/_sections/scene/api-and-guides',
+            '/docs/modules/_sections/tiles/loaders': '/docs/modules/_sections/tiles/api-and-guides',
+            '/docs/modules/_sections/tiles/writers': '/docs/modules/_sections/tiles/api-and-guides',
+            '/docs/modules/_sections/tiles/sources': '/docs/modules/_sections/tiles/api-and-guides',
+            '/docs/modules/_sections/3d-tiles/loaders': '/docs/modules/_sections/3d-tiles/api-and-guides',
+            '/docs/modules/_sections/3d-tiles/sources': '/docs/modules/_sections/3d-tiles/api-and-guides',
+            '/docs/modules/_sections/ogc/sources': '/docs/modules/_sections/ogc/api-and-guides',
             '/docs/modules/textures/api-reference/npy-loader': '/docs/modules/scientific/api-reference/npy-loader',
             '/docs/modules/images/api-reference/image-bitmap-loader': '/docs/modules/images/api-reference/image-loader',
             '/docs/developer-guide/using-unbundled-loaders': '/docs/developer-guide/using-metadata-loaders',

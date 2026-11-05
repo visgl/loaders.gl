@@ -80,7 +80,7 @@ Apache Avro is a schema-based data serialization system. This loader targets Avr
 
 | Output | Supported |
 | --- | :---: |
-| Loaders.gl `arrow-table` wrapper | ✓ |
+| loaders.gl `arrow-table` wrapper | ✓ |
 | Apache Arrow `Table` | ✓ |
 | Object-row table output | — |
 | Arrow schema metadata copied from Avro schema annotations | — |
@@ -112,7 +112,7 @@ These limitations are intentional and should not be inferred as supported merely
 
 | Loader | Input | Output |
 | --- | --- | --- |
-| `AvroLoader` | `.avro` Object Container Files | Loaders.gl `arrow-table` containing an Apache Arrow `Table` |
+| `AvroLoader` | `.avro` Object Container Files | loaders.gl `arrow-table` containing an Apache Arrow `Table` |
 | `AvroSchemaLoader` | `.avsc` standalone JSON schemas | Parsed and validated Avro schema object |
 | `AvroWriter` | Arrow `arrow-table` | `.avro` Object Container File; null codec |
 

@@ -351,7 +351,7 @@ native stream. LZO encoding and raw LZ4 incremental encoding are not supported.
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/compression/THIRD-PARTY-NOTICES.md)
-and the project-wide [References and credits](/docs/references-and-credits).
+and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 
 ## Package exports

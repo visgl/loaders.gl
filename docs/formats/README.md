@@ -57,7 +57,7 @@ through the format's purpose, physical or logical layout, important features, ve
 example when one makes the structure easier to see. The goal is a useful orientation, not a complete
 replacement for the normative specification.
 
-Loaders.gl support notes may appear in a clearly labeled column or section. They describe the
+loaders.gl support notes may appear in a clearly labeled column or section. They describe the
 implementation boundary and should not be read as part of the format specification. For API
 behavior, follow the module and loader links instead.
 

@@ -47,7 +47,7 @@ instead of depending on the larger processing module.
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md)
-and the project-wide [References and credits](/docs/references-and-credits).
+and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 ## Inspiration and attribution
 

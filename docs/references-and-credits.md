@@ -1,4 +1,4 @@
-# References and credits
+# Attributions and Credits
 
 loaders.gl brings together work by many people: original loaders and integration code,
 carefully adapted parsers, independently maintained codecs, open specifications, and

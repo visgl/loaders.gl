@@ -148,7 +148,7 @@ A minimal KML document looks like this:
   <Document>
     <name>Example places</name>
     <Placemark>
-      <name>Loaders.gl</name>
+      <name>loaders.gl</name>
       <description>A point with a human-readable description.</description>
       <Point>
         <coordinates>-122.0822035425683,37.42228990140251,0</coordinates>

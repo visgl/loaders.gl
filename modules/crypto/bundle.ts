@@ -92,8 +92,6 @@ export {
   SHA256Hash,
   CryptoHash,
   NodeHash,
-  CryptoWorker,
-  CryptoJSWorker,
   encodeNumber,
   encodeHex,
   encodeBase64,

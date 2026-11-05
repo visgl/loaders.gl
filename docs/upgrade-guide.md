@@ -384,6 +384,8 @@ on completion. See [worker processing](/docs/modules/core/worker-utils/api-refer
 
 ### Runtime, workers, and codecs
 
+`@loaders.gl/crypto` no longer ships `CryptoWorker`, `CryptoJSWorker`, or worker scripts. Use the corresponding hash classes directly, including as transforms with `loadInBatches()`.
+
 #### Native BSON value contract
 
 The optional `bson` backend and its MongoDB-specific options/classes are removed.

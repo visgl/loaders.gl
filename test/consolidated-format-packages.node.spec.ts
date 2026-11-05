@@ -65,13 +65,13 @@ test.each([
   ).toEqual([]);
 });
 
-test('the packages overview introduces every public workspace package', () => {
-  const overview = fs.readFileSync('docs/packages.md', 'utf8');
+test('the Modules page introduces every public workspace package', () => {
+  const overview = fs.readFileSync('docs/modules/README.md', 'utf8');
   for (const name of fs.readdirSync('modules')) {
     const filename = `modules/${name}/package.json`;
     if (!fs.existsSync(filename)) continue;
     const manifest = JSON.parse(fs.readFileSync(filename, 'utf8'));
-    if (!manifest.private) expect(overview, manifest.name).toContain(`./modules/${name}/README.md`);
+    if (!manifest.private) expect(overview, manifest.name).toContain(`./${name}/README.md`);
   }
 });
 

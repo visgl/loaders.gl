@@ -24,7 +24,7 @@ const TOKEN = Cesium.Ion.defaultAccessToken;
 const ASSET_ID = CAIRO_ASSET_ID;
 
 if (VIEW_MODE === VIEW_TYPES.SINGLE) {
-  // Just use the Loaders.gl traversal
+  // Just use the loaders.gl traversal
   const viewer = new Cesium.Viewer('loadersViewer');
 
   document.querySelector('#cesiumViewer').style.display = 'none';

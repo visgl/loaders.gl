@@ -14,4 +14,4 @@ Version information is recorded where the repository preserves it. Unpinned
 historical ports are identified by retained source and Git history; no upstream
 version is inferred from a current dependency. Keep copyright headers, full
 terms, source/version information and material modification notes when updating.
-Retain this file and the applicable licenses when redistributing bundles or workers.
+Retain this file and the applicable licenses when redistributing bundles.

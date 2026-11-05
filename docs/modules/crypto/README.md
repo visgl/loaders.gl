@@ -19,8 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['CRC32 and CRC32C', 'MD5 and SHA-256', 'Incremental transforms']}
   links={[
     {label: 'Hash API', to: '/docs/modules/crypto/api-reference/hash'},
-    {label: 'Using streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'},
-    {label: 'Worker loaders', to: '/docs/developer-guide/using-worker-loaders'}
+    {label: 'Using streaming loaders', to: '/docs/developer-guide/using-streaming-loaders'}
   ]}
 />
 
@@ -44,7 +43,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <p className="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From v2.3" />
 </p>
 
 The `@loaders.gl/crypto` module provides a selection of optional cryptographic hash plugins for loaders.gl.
@@ -119,7 +118,7 @@ Cryptographic Hash
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/crypto/THIRD-PARTY-NOTICES.md)
-and the project-wide [References and credits](/docs/references-and-credits).
+and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 
 ## Package exports

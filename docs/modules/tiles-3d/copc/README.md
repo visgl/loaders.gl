@@ -27,6 +27,7 @@ See [Coordinate Reference Systems](/docs/developer-guide/coordinate-reference-sy
 current COPC/LAS projection-record support and vertical/compound CRS roadmap.
 
 <p className="badges">
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
   <img src="https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square" alt="From-v4.1" />
   <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />
   <a href="/docs/developer-guide/common-scan-architecture">

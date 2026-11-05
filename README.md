@@ -41,9 +41,9 @@ Formats, encodings, and protocols by module (see each README for runtime and imp
 
 loaders.gl is extensively documented on the [loaders.gl](https://loaders.gl) website.
 
-## References and credits
+## Attributions and Credits
 
-See [References and credits](https://loaders.gl/docs/references-and-credits) for the
+See [Attributions and Credits](https://loaders.gl/docs/references-and-credits) for the
 people, upstream implementations, specifications and datasets behind loaders.gl.
 Each published package includes a source and license notice inventory.
 

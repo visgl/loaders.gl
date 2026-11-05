@@ -55,6 +55,7 @@ npm install @loaders.gl/core
 | -------------------------------------------------------------- | ----------------------------------- |
 | [`OBJLoader`](/docs/modules/scene/obj/api-reference/obj-loader)      | Loads OBJ meshes as Mesh objects or Mesh Arrow tables. |
 | [`OBJWriter`](/docs/modules/scene/obj/api-reference/obj-writer)      | Writes Mesh or Mesh Arrow table data as OBJ text. |
+| [`MTLLoader`](./api-reference/mtl-loader.md) | Reads Wavefront material libraries referenced by OBJ files. |
 
 ## Attribution
 
@@ -63,4 +64,4 @@ OBJLoader is a port of [three.js](https://github.com/mrdoob/three.js)'s OBJLoade
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md)
-and the project-wide [References and credits](/docs/references-and-credits).
+and the project-wide [Attributions and Credits](/docs/references-and-credits).

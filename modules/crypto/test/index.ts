@@ -10,4 +10,3 @@ import './crypto.spec';
 import './lib/crc32c-hash.spec';
 
 import './lib/crypto-hash.spec';
-import './crypto-worker.spec';
