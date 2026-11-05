@@ -172,7 +172,7 @@ individual unload callbacks.
 Failed tile requests are cached as settled tile entries with:
 
 - `content = null`
-- `error` set on the corresponding `SharedTile2DHeader`
+- `error` set on the corresponding `Tile2DHeader`
 
 This prevents repeated requests for the same failing tile until the tileset is explicitly reloaded,
 for example with `reloadAll()`.

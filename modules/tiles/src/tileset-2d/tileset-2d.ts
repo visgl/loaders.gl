@@ -8,7 +8,7 @@ import {
   type TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
 import {Stats} from 'probe.gl/stats';
-import {SharedTile2DHeader} from './tile-2d-header';
+import {Tile2DHeader} from './tile-2d-header';
 import type {Tileset2DAdapter, Tileset2DTileContext} from './adapter';
 import type {TileIndex, TileLoadProps, ZRange} from './types';
 
@@ -26,8 +26,8 @@ export const STRATEGY_DEFAULT = 'best-available';
  * to control placeholder visibility for individual tiles.
  */
 export type RefinementStrategyFunction = (
-  tiles: SharedTile2DHeader[],
-  setVisible: (tile: SharedTile2DHeader, isVisible: boolean) => void
+  tiles: Tile2DHeader[],
+  setVisible: (tile: Tile2DHeader, isVisible: boolean) => void
 ) => void;
 
 /** Strategy controlling how parent and child placeholder tiles are displayed while content loads. */
@@ -66,13 +66,13 @@ export type Tileset2DBaseProps<DataT = any, ViewStateT = unknown> = {
   /** Integer zoom offset applied when choosing tile levels. */
   zoomOffset?: number;
   /** Callback fired when a tile loads successfully. */
-  onTileLoad?: (tile: SharedTile2DHeader<DataT>) => void;
+  onTileLoad?: (tile: Tile2DHeader<DataT>) => void;
   /** Callback for a late payload discarded after cancellation or supersession. */
-  onTileDiscard?: (tile: SharedTile2DHeader<DataT>, content: DataT) => void;
+  onTileDiscard?: (tile: Tile2DHeader<DataT>, content: DataT) => void;
   /** Callback fired when a tile is evicted from cache. */
-  onTileUnload?: (tile: SharedTile2DHeader<DataT>) => void;
+  onTileUnload?: (tile: Tile2DHeader<DataT>) => void;
   /** Callback fired when a tile request fails. */
-  onTileError?: (err: any, tile: SharedTile2DHeader<DataT>) => void;
+  onTileError?: (err: any, tile: Tile2DHeader<DataT>) => void;
 };
 
 /** Options for creating a shared tile cache that can be reused by multiple layers and views. */
@@ -89,13 +89,13 @@ export type Tileset2DProps<DataT = any, ViewStateT = unknown> = Omit<
 /** Subscription callbacks emitted by {@link Tileset2D}. */
 export type Tile2DListener<DataT = any> = {
   /** Fired after a tile loads successfully. */
-  onTileLoad?: (tile: SharedTile2DHeader<DataT>) => void;
+  onTileLoad?: (tile: Tile2DHeader<DataT>) => void;
   /** Fired after a tile request fails. */
-  onTileError?: (error: any, tile: SharedTile2DHeader<DataT>) => void;
+  onTileError?: (error: any, tile: Tile2DHeader<DataT>) => void;
   /** Fired when canceled or superseded work returns a non-null payload. */
-  onTileDiscard?: (tile: SharedTile2DHeader<DataT>, content: DataT) => void;
+  onTileDiscard?: (tile: Tile2DHeader<DataT>, content: DataT) => void;
   /** Fired after a tile is evicted from cache. */
-  onTileUnload?: (tile: SharedTile2DHeader<DataT>) => void;
+  onTileUnload?: (tile: Tile2DHeader<DataT>) => void;
   /** Fired when metadata or effective configuration changes. */
   onUpdate?: () => void;
   /** Fired when asynchronous metadata initialization fails. */
@@ -105,8 +105,8 @@ export type Tile2DListener<DataT = any> = {
 };
 
 type ConsumerState<DataT = any> = {
-  selectedTiles: Set<SharedTile2DHeader<DataT>>;
-  visibleTiles: Set<SharedTile2DHeader<DataT>>;
+  selectedTiles: Set<Tile2DHeader<DataT>>;
+  visibleTiles: Set<Tile2DHeader<DataT>>;
 };
 
 const DEFAULT_TILESET2D_PROPS: Omit<Required<Tileset2DProps>, 'getTileData'> = {
@@ -139,9 +139,9 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   protected opts: Required<Tileset2DProps<DataT, ViewStateT>>;
 
   private _requestScheduler: RequestScheduler;
-  private _cache: Map<string, SharedTile2DHeader<DataT>>;
+  private _cache: Map<string, Tile2DHeader<DataT>>;
   private _dirty: boolean;
-  private _tiles: SharedTile2DHeader<DataT>[];
+  private _tiles: Tile2DHeader<DataT>[];
   private _cacheByteSize: number;
   private _unloadedTileCount: number;
   private _listeners = new Set<Tile2DListener<DataT>>();
@@ -213,7 +213,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** All tiles currently present in the shared cache. */
-  get tiles(): SharedTile2DHeader<DataT>[] {
+  get tiles(): Tile2DHeader<DataT>[] {
     return this._tiles;
   }
 
@@ -223,12 +223,12 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Union of tiles selected by all attached consumers. */
-  get selectedTiles(): SharedTile2DHeader<DataT>[] {
+  get selectedTiles(): Tile2DHeader<DataT>[] {
     return Array.from(this._getSelectedTilesUnion());
   }
 
   /** Union of tiles contributing to the visible result across all consumers and views. */
-  get visibleTiles(): SharedTile2DHeader<DataT>[] {
+  get visibleTiles(): Tile2DHeader<DataT>[] {
     const union = this._getVisibleTilesUnion();
     for (const tile of this._getSelectedTilesUnion()) {
       union.add(tile);
@@ -237,12 +237,12 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Tiles currently loading anywhere in the shared cache. */
-  get loadingTiles(): SharedTile2DHeader<DataT>[] {
+  get loadingTiles(): Tile2DHeader<DataT>[] {
     return Array.from(this._cache.values()).filter(tile => tile.isLoading);
   }
 
   /** Pending, canceled, or stale cached tiles; settled failures are excluded until reloaded. */
-  get unloadedTiles(): SharedTile2DHeader<DataT>[] {
+  get unloadedTiles(): Tile2DHeader<DataT>[] {
     return Array.from(this._cache.values()).filter(tile => !tile.isLoaded);
   }
 
@@ -322,18 +322,17 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     }
   }
 
-  /** Clears consumers and cache, aborting requests and suppressing late tile and metadata results. */
+  /** Aborts pending requests, clears consumers, and notifies listeners about unloaded tiles. */
   finalize(): void {
     this._lifecycleVersion++;
-    for (const tile of this._cache.values()) {
-      if (tile.isLoading) {
-        tile.abort();
-      }
-    }
+    const tiles = [...this._cache.values()];
     this._cache.clear();
     this._tiles = [];
     this._consumers.clear();
     this._cacheByteSize = 0;
+    for (const tile of tiles) {
+      this._handleTileUnload(tile);
+    }
     this._unloadedTileCount = 0;
     this._updateStats();
   }
@@ -360,8 +359,8 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   /** Updates the selected and visible tile sets for one consumer. */
   updateConsumer(
     id: symbol,
-    selectedTiles: SharedTile2DHeader<DataT>[],
-    visibleTiles: SharedTile2DHeader<DataT>[]
+    selectedTiles: Tile2DHeader<DataT>[],
+    visibleTiles: Tile2DHeader<DataT>[]
   ): void {
     this._consumers.set(id, {
       selectedTiles: new Set(selectedTiles),
@@ -452,16 +451,16 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
    * Returns a cached tile, updating its LRU recency, and optionally creates and loads it.
    * Cache/loading counters update immediately; request statistics notifications are coalesced.
    */
-  getTile(index: TileIndex, create: true): SharedTile2DHeader<DataT>;
-  getTile(index: TileIndex, create?: false): SharedTile2DHeader<DataT> | undefined;
-  getTile(index: TileIndex, create?: boolean): SharedTile2DHeader<DataT> | undefined {
+  getTile(index: TileIndex, create: true): Tile2DHeader<DataT>;
+  getTile(index: TileIndex, create?: false): Tile2DHeader<DataT> | undefined;
+  getTile(index: TileIndex, create?: boolean): Tile2DHeader<DataT> | undefined {
     index = this.opts.adapter?.resolveTileIndex?.(index) ?? index;
     const id = this.getTileId(index);
     let tile = this._cache.get(id);
     let needsReload = false;
 
     if (!tile && create) {
-      tile = new SharedTile2DHeader(index);
+      tile = new Tile2DHeader(index);
       Object.assign(tile, this.getTileMetadata(tile.index));
       Object.assign(tile, {id, zoom: this.getTileZoom(tile.index)});
       needsReload = true;
@@ -591,7 +590,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Handles successful tile loads. */
-  private _handleTileLoad(tile: SharedTile2DHeader<DataT>): void {
+  private _handleTileLoad(tile: Tile2DHeader<DataT>): void {
     const lifecycleVersion = this._lifecycleVersion;
     if (this._cache.get(tile.id) !== tile) {
       return;
@@ -612,7 +611,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Handles tile load failures. */
-  private _handleTileError(error: any, tile: SharedTile2DHeader<DataT>): void {
+  private _handleTileError(error: any, tile: Tile2DHeader<DataT>): void {
     const lifecycleVersion = this._lifecycleVersion;
     if (this._cache.get(tile.id) !== tile) {
       return;
@@ -634,8 +633,8 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
 
   /** Handles tile eviction from cache. */
   private _handleTileUnload(
-    tile: SharedTile2DHeader<DataT>,
-    onTileUnload: (tile: SharedTile2DHeader<DataT>) => void = this.opts.onTileUnload
+    tile: Tile2DHeader<DataT>,
+    onTileUnload: (tile: Tile2DHeader<DataT>) => void = this.opts.onTileUnload
   ): void {
     tile.abort();
     this._unloadedTileCount++;
@@ -694,8 +693,8 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Returns the union of selected tiles across all consumers. */
-  private _getSelectedTilesUnion(): Set<SharedTile2DHeader<DataT>> {
-    const union = new Set<SharedTile2DHeader<DataT>>();
+  private _getSelectedTilesUnion(): Set<Tile2DHeader<DataT>> {
+    const union = new Set<Tile2DHeader<DataT>>();
     for (const consumer of this._consumers.values()) {
       for (const tile of consumer.selectedTiles) {
         union.add(tile);
@@ -705,8 +704,8 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Returns the union of visible tiles across all consumers. */
-  private _getVisibleTilesUnion(): Set<SharedTile2DHeader<DataT>> {
-    const union = new Set<SharedTile2DHeader<DataT>>();
+  private _getVisibleTilesUnion(): Set<Tile2DHeader<DataT>> {
+    const union = new Set<Tile2DHeader<DataT>>();
     for (const consumer of this._consumers.values()) {
       for (const tile of consumer.visibleTiles) {
         union.add(tile);
@@ -716,7 +715,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Moves a touched tile to the back of the cache map for LRU eviction ordering. */
-  private _touchTile(id: string, tile: SharedTile2DHeader<DataT>): void {
+  private _touchTile(id: string, tile: Tile2DHeader<DataT>): void {
     this._cache.delete(id);
     this._cache.set(id, tile);
   }
@@ -735,7 +734,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
     const {maxRequests = 0} = this.opts;
     const selectedTiles = this._getSelectedTilesUnion();
     const visibleTiles = this._getVisibleTilesUnion();
-    const abortCandidates: SharedTile2DHeader<DataT>[] = [];
+    const abortCandidates: Tile2DHeader<DataT>[] = [];
     let ongoingRequestCount = 0;
 
     for (const tile of this._cache.values()) {
@@ -757,7 +756,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Clears source-dependent cache entries and consumer selections when identity changes. */
-  private _clearTileCache(onTileUnload: (tile: SharedTile2DHeader<DataT>) => void): void {
+  private _clearTileCache(onTileUnload: (tile: Tile2DHeader<DataT>) => void): void {
     const discardedTiles = Array.from(this._cache.values());
     this._cache.clear();
     this._tiles = [];
@@ -827,7 +826,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   }
 
   /** Finds the nearest cached ancestor tile for placeholder rendering. */
-  private _getNearestAncestor(tile: SharedTile2DHeader<DataT>): SharedTile2DHeader<DataT> | null {
+  private _getNearestAncestor(tile: Tile2DHeader<DataT>): Tile2DHeader<DataT> | null {
     const {_minZoom = 0} = this;
     let index = tile.index;
     while (this.getTileZoom(index) > _minZoom) {

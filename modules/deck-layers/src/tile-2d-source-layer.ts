@@ -26,7 +26,7 @@ import type {
 import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import {SharedTile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
+import {Tile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
 import {Matrix4, type NumericArray} from '@math.gl/core';
 import {sharedTile2DDeckAdapter} from './shared-tile-2d/deck-tileset-adapter';
 import {SharedTile2DView} from './shared-tile-2d/shared-tile-2d-view';
@@ -70,14 +70,14 @@ export type Tile2DSourceLayerProps<DataT = unknown> = Omit<
     /** Called when a tile payload cannot be fetched or parsed. */
     onTileError?: (error: unknown, tileParameters?: unknown) => void;
     /** Called when the viewport's currently selected tiles are loaded. */
-    onTilesLoad?: (tiles: SharedTile2DHeader<DataT>[]) => void;
+    onTilesLoad?: (tiles: Tile2DHeader<DataT>[]) => void;
     /** Custom sub-layer factory for non-local shared-tile rendering. */
     renderSubLayers?: (
       props: Tile2DSourceLayerProps<DataT> & {
         id: string;
         data: DataT;
         _offset: number;
-        tile: SharedTile2DHeader<DataT>;
+        tile: Tile2DHeader<DataT>;
         tileSource: TileSourceRuntime;
       }
     ) => Layer | null | LayersList;
@@ -113,9 +113,9 @@ export type Tile2DSourceLayerPickingInfo<
   SubLayerPickingInfo = PickingInfo
 > = SubLayerPickingInfo & {
   /** Picked tile when a tile sub-layer is hit. */
-  tile?: SharedTile2DHeader<DataT>;
+  tile?: Tile2DHeader<DataT>;
   /** Tile that produced the picked sub-layer. */
-  sourceTile: SharedTile2DHeader<DataT>;
+  sourceTile: Tile2DHeader<DataT>;
   /** Concrete sub-layer instance that handled the pick. */
   sourceTileSubLayer: Layer;
 };
@@ -362,7 +362,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     if (!sourceLayer) {
       throw new Error('Tile2DSourceLayer picking info requires a source layer.');
     }
-    const sourceTile: SharedTile2DHeader<DataT> = (sourceLayer.props as any).tile;
+    const sourceTile: Tile2DHeader<DataT> = (sourceLayer.props as any).tile;
     const info = params.info as Tile2DSourceLayerPickingInfo<DataT>;
     if (info.picked) {
       info.tile = sourceTile;
@@ -393,7 +393,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     if (!this.state.tileset) {
       return true;
     }
-    const {tile} = (layer as Layer<{tile: SharedTile2DHeader<DataT>}>).props;
+    const {tile} = (layer as Layer<{tile: Tile2DHeader<DataT>}>).props;
     const tilesetView = this._getOrCreateTilesetView(this._getViewportKey());
     return tilesetView.isTileVisible(
       tile,
@@ -650,20 +650,20 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   }
 
   /** Clears cached sub-layers when a tile loads. */
-  private _onTileLoad(tile: SharedTile2DHeader<DataT>): void {
+  private _onTileLoad(tile: Tile2DHeader<DataT>): void {
     this.state.tileLayers.delete(tile.id);
     this.setNeedsUpdate();
   }
 
   /** Clears cached sub-layers when a tile errors. */
-  private _onTileError(error: any, tile: SharedTile2DHeader<DataT>): void {
+  private _onTileError(error: any, tile: Tile2DHeader<DataT>): void {
     this.state.tileLayers.delete(tile.id);
     this.props.onTileError?.(error, tile);
     this.setNeedsUpdate();
   }
 
   /** Removes cached sub-layers when a tile is evicted. */
-  private _onTileUnload(tile: SharedTile2DHeader<DataT>): void {
+  private _onTileUnload(tile: Tile2DHeader<DataT>): void {
     this.state.tileLayers.delete(tile.id);
   }
 
@@ -756,7 +756,7 @@ function defaultRenderSubLayers<DataT>(
     id: string;
     data: DataT;
     _offset: number;
-    tile: SharedTile2DHeader<DataT>;
+    tile: Tile2DHeader<DataT>;
     tileSource: TileSourceRuntime;
   }
 ) {

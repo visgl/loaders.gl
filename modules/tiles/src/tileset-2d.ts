@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export {
-  SharedTile2DHeader,
+  Tile2DHeader,
   Tileset2D,
   STRATEGY_DEFAULT,
   STRATEGY_NEVER,
