@@ -5,7 +5,6 @@ import {name as name_archives, exports as exports_archives} from '../../../../mo
 import {name as name_compression, exports as exports_compression} from '../../../../modules/compression/package.json';
 import {name as name_core, exports as exports_core} from '../../../../modules/core/package.json';
 import {name as name_crypto, exports as exports_crypto} from '../../../../modules/crypto/package.json';
-import {name as name_deck_layers, exports as exports_deck_layers} from '../../../../modules/deck-layers/package.json';
 import {name as name_documents, exports as exports_documents} from '../../../../modules/documents/package.json';
 import {name as name_geospatial, exports as exports_geospatial} from '../../../../modules/geospatial/package.json';
 import {name as name_graphs, exports as exports_graphs} from '../../../../modules/graphs/package.json';
@@ -29,7 +28,6 @@ const manifests = {
   'compression': {name: name_compression, exports: exports_compression},
   'core': {name: name_core, exports: exports_core},
   'crypto': {name: name_crypto, exports: exports_crypto},
-  'deck-layers': {name: name_deck_layers, exports: exports_deck_layers},
   'documents': {name: name_documents, exports: exports_documents},
   'geospatial': {name: name_geospatial, exports: exports_geospatial},
   'graphs': {name: name_graphs, exports: exports_graphs},

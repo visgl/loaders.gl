@@ -8,13 +8,12 @@
 
  Create as many sidebars as you want.
  */
- const tutorialSidebar = require('../../docs/docs-sidebar.json');
-
- // Add ArrowJS sidebar
+const tutorialSidebar = [...require('../../docs/docs-sidebar.json')];
 const arrowSidebar = require('../../docs/arrowjs/arrow-sidebar.json');
-tutorialSidebar.push(arrowSidebar);
+const modulesIndex = tutorialSidebar.findIndex(item => item.label === 'Modules');
+tutorialSidebar.splice(modulesIndex, 0, arrowSidebar);
 
- const sidebars = {
+const sidebars = {
   tutorialSidebar
 };
 

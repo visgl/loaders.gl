@@ -29,6 +29,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Loader | [`OBJLoader`](../api-reference/obj-loader.md) |
 | Writer | [`OBJWriter`](../api-reference/obj-writer.md) |
 
+Load companion Wavefront material libraries with [`MTLLoader`](../api-reference/mtl-loader.md).
+
 <ObjDocsTabs active="overview" />
 
 <DocOrientation

@@ -1,6 +1,10 @@
 {
   "type": "category",
-  "label": "Arrow JS API Reference",
+  "label": "Apache Arrow JS API",
+  "link": {
+    "type": "doc",
+    "id": "arrowjs/README"
+  },
   "items": [
     {
       "type": "category",
@@ -44,6 +48,11 @@
     {
       "type": "category",
       "label": "API Reference",
+      "collapsed": false,
+      "link": {
+        "type": "doc",
+        "id": "arrowjs/api-reference/README"
+      },
       "items": [
         "arrowjs/api-reference/README",
         "arrowjs/api-reference/builder",

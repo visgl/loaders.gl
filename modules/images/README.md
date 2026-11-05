@@ -9,7 +9,7 @@ For documentation please visit the [website](https://loaders.gl).
 ## Sources and credits
 
 See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
-and applicable notices, and the project-wide [References and credits](https://loaders.gl/docs/references-and-credits).
+and applicable notices, and the project-wide [Attributions and Credits](https://loaders.gl/docs/references-and-credits).
 
 Texture and video metadata loaders are exported from the same lightweight root.
 Direct parsers use `*WithParser` exports from flat subpaths such as

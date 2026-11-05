@@ -21,7 +21,7 @@ See the [developer guide](https://loaders.gl/docs/developer-guide/dev-env) on th
 When adapting code, retain upstream authors, copyright headers, complete license
 texts and applicable NOTICE files. Record the source URL, version or commit, and
 material modifications in the owning package’s `THIRD-PARTY-NOTICES.md`. Update
-[References and credits](https://loaders.gl/docs/references-and-credits) as needed.
+[Attributions and Credits](https://loaders.gl/docs/references-and-credits) as needed.
 A renamed package or removed dependency does not remove retained code’s provenance.
 
 Credit algorithm references and inspiration separately from copied implementations.

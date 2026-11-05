@@ -63,7 +63,7 @@ remote table. The same source contract is used by the broader scan architecture.
     {label: 'Storage', value: 'Columns are typed and laid out for efficient access'},
     {label: 'Transport', value: 'IPC messages can stream or cross worker boundaries'},
     {label: 'Interop', value: 'The same table model is shared across languages'},
-    {label: 'Loaders.gl', value: 'ArrowLoader, ArrowWriter, and GeoArrow utilities'}
+    {label: 'loaders.gl', value: 'ArrowLoader, ArrowWriter, and GeoArrow utilities'}
   ]}
 />
 

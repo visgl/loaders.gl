@@ -71,7 +71,7 @@ names, default output shapes, and writer behavior are preserved; loader `module`
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/raster/THIRD-PARTY-NOTICES.md)
-and the project-wide [References and credits](/docs/references-and-credits).
+and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 
 ## Format guides

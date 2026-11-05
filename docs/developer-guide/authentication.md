@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Application-owned credentials"
   title="Keep authentication with the request."
-  description="Loaders.gl carries tokens through file, tile, and service requests while your application remains responsible for sign-in, secure storage, and token issuance."
+  description="loaders.gl carries tokens through file, tile, and service requests while your application remains responsible for sign-in, secure storage, and token issuance."
   tone="blue"
   meta={['Static tokens', 'Refresh callbacks', 'Origin-scoped requests']}
   links={[
@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
   items={[
     {label: 'Application', value: 'Acquires, stores, and refreshes credentials'},
-    {label: 'Loaders.gl', value: 'Matches credentials to the request origin'},
+    {label: 'loaders.gl', value: 'Matches credentials to the request origin'},
     {label: 'Sources', value: 'Reuse credentials for nested requests'},
     {label: 'Precedence', value: 'Explicit URL or request headers win'}
   ]}

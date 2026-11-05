@@ -1,5 +1,5 @@
 ---
-title: Loaders.gl
+title: Overview
 description: Load, scan, transform, and write the data formats used by modern web applications.
 hide_title: true
 page_style: designed
@@ -29,7 +29,7 @@ import Link from '@docusaurus/Link';
   }
   links={[
     {label: 'Get started', to: '/docs/developer-guide/get-started'},
-    {label: 'Packages', to: '/docs/packages'},
+    {label: 'Modules', to: '/docs/modules'},
     {label: 'Loader categories', to: '/docs/developer-guide/loader-categories'},
     {label: 'Common scan architecture', to: '/docs/developer-guide/common-scan-architecture'}
   ]}
@@ -56,23 +56,27 @@ import Link from '@docusaurus/Link';
 
 Choose the loader that matches your data and use the same small set of APIs to load, stream, or
 write it. Related formats share owner packages. Install the packages you need and use their
-format subpaths to select APIs and defer parsers. The [Packages overview](./packages.md) maps
-formats and utilities to their current owners.
+format subpaths to select APIs and defer parsers. Browse [Modules](./modules/README.md) to find the package for your format.
 
 <p className="badges">
   <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" alt="npm package" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT license" />
   <img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" alt="npm downloads" />
   <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat-square" alt="TypeScript 6.0" />
-  <a className="github-star-badge" href="https://github.com/visgl/loaders.gl" aria-label="Loaders.gl on GitHub">
-    <img src="https://img.shields.io/github/stars/visgl/loaders.gl.svg?style=flat-square&label=%E2%98%85&logo=github&logoColor=white&color=24292f&labelColor=24292f" alt="GitHub stars" />
-  </a>
-  <a href="https://github.com/visgl/loaders.gl/graphs/contributors">
-    <img src="https://img.shields.io/github/contributors/visgl/loaders.gl.svg?style=flat-square" alt="GitHub contributors" />
-  </a>
   <a href="https://coveralls.io/github/visgl/loaders.gl?branch=master">
     <img src="https://coveralls.io/repos/github/visgl/loaders.gl/badge.svg?branch=master" alt="Coverage status" />
   </a>
+  <span className="github-badge-row">
+    <a className="github-star-badge" href="https://github.com/visgl/loaders.gl" aria-label="loaders.gl on GitHub">
+      <img src="https://img.shields.io/github/stars/visgl/loaders.gl.svg?style=flat-square&label=%E2%98%85&logo=github&logoColor=white&color=24292f&labelColor=24292f" alt="GitHub stars" />
+    </a>
+    <a href="https://github.com/visgl/loaders.gl/graphs/contributors">
+      <img src="https://img.shields.io/github/contributors/visgl/loaders.gl.svg?style=flat-square&logo=github&logoColor=white&color=24292f&labelColor=24292f" alt="GitHub contributors" />
+    </a>
+    <a href="https://github.com/visgl/loaders.gl/pulls?q=is%3Apr">
+      <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Fsearch%2Fissues%3Fq%3Drepo%253Avisgl%252Floaders.gl%2520is%253Apr&query=%24.total_count&style=flat-square&label=PRs&logo=github&logoColor=white&color=24292f&labelColor=24292f" alt="Total GitHub pull requests" />
+    </a>
+  </span>
 </p>
 
 <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, margin: '40px 0 56px'}}>
@@ -193,7 +197,7 @@ While loaders.gl contains substantial amounts of original code, it also repackag
 
 Even so, we can make mistakes, and we may not have the full history of the code we are reusing. If you think that we have missed something, or that we could do better in regard to attribution, please let us know.
 
-See [References and credits](/docs/references-and-credits) for named authors,
+See [Attributions and Credits](/docs/references-and-credits) for named authors,
 implementation lineage, specifications, fixture provenance and package notice inventories.
 
 ## Organizational support
@@ -213,4 +217,4 @@ loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</
   </span>
 </a>
 
-See [Packages](./packages.md) to choose format packages and understand their public subpaths.
+See [Get Started](./developer-guide/get-started.md#install-packages-import-subpaths) for package installation and subpath imports.

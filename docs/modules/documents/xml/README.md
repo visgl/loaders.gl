@@ -46,7 +46,6 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 
 <p className="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
-  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 The `@loaders.gl/documents` module handles the [eXtensible Markup Language](https://www.w3.org/TR/xml/) format.
@@ -83,4 +82,4 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/documents/THIRD-PARTY-NOTICES.md)
-and the project-wide [References and credits](/docs/references-and-credits).
+and the project-wide [Attributions and Credits](/docs/references-and-credits).

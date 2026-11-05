@@ -80,11 +80,6 @@
   width: 100%;
 }
 
-.darkVisual {
-  background: #141414;
-  border-color: #141414;
-}
-
 .logo {
   height: var(--format-logo-image-height, 36px);
   object-fit: contain;
@@ -121,10 +116,6 @@
   gap: 8px;
   padding: 0 8px;
 }
-.darkVisual .badgeName {
-  color: white;
-  font-size: 18px;
-}
 .smallLogo {
   flex: 0 0 44px;
   height: 30px;
@@ -134,21 +125,6 @@
   width: 100%;
   object-fit: contain;
 }
-.arcgisLogo {
-  flex: 0 0 32px;
-  height: 34px;
-  overflow: hidden;
-  position: relative;
-}
-.arcgisLogo img {
-  height: 105px;
-  width: 185px;
-  max-width: none;
-  position: absolute;
-  left: -76px;
-  top: -27px;
-}
-
 .badgeName {
   white-space: nowrap;
   overflow-wrap: normal;
@@ -167,14 +143,6 @@
 
 .visual[data-name-size='long'] .badgeName {
   font-size: 12px;
-}
-
-.darkVisual[data-name-size='medium'] .badgeName {
-  font-size: 16px;
-}
-
-.darkVisual[data-name-size='long'] .badgeName {
-  font-size: 14px;
 }
 
 .formatBadge {

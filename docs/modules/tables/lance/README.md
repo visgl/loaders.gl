@@ -44,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <p className="badges">
-  <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 The `@loaders.gl/tables/lance` module provides read-only access to Lance dataset

@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Install by package', 'load() and parse()', 'Browser and Node.js']}
   links={[
     {label: 'Using loaders', to: '/docs/developer-guide/using-loaders'},
-    {label: 'Browse packages', to: '/docs/packages'}
+    {label: 'Browse modules', to: '/docs/modules'}
   ]}
 />
 
@@ -46,7 +46,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 Install loaders.gl core and the format modules you would like to use.
 
-Related formats share a package. Install the owner package, then import a format subpath. See the [Packages overview](../packages.md) to choose the packages you need.
+Related formats share a package. Install the owner package, then import a format subpath. See the [Modules](../modules/README.md) to choose the packages you need.
 
 ```shell
 yarn add @loaders.gl/core @loaders.gl/tables
@@ -100,3 +100,26 @@ Modern Node.js provides `fetch`, `Response`, `TextEncoder`, and `TextDecoder`.
 Import `@loaders.gl/core/polyfills` when you need loaders.gl's Node.js adapters for
 local files or image decoding. This package is intended for Node.js, not browser
 polyfills. See [Node.js support](/docs/developer-guide/node) for setup.
+
+## Install packages, import subpaths
+
+```bash
+npm install @loaders.gl/core @loaders.gl/pointclouds @loaders.gl/scene
+```
+
+```typescript
+import {parse, parseSync} from '@loaders.gl/core';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply-loader';
+
+const points = await parse(plyBytes, PLYLoader);
+const scene = await parse(gltfBytes, GLTFLoader);
+const mesh = parseSync(plyBytes, PLYLoaderWithParser, {ply: {shape: 'mesh'}});
+```
+
+These metadata loaders preload their parser when passed to an async core API. Synchronous APIs require a parser-bearing implementation. Entrypoint contracts vary by package; follow the owning reference. See [Packages and format entrypoints](./grouped-packages.md) for the complete import and dependency model.
+
+Subpaths are not separately installable packages. They control code loading; ordinary dependencies are installed for the whole package. Optional engines and codecs may need an additional installation. Worker and WASM assets must match the installed package version.
+
+Core utilities are documented under core. Core implementations do not depend on domain packages. Specialized scan, arrow-geometry, geoarrow, and WKT utilities require explicit subpath imports. Geometry loaders and writers belong to geospatial; point-cloud tile traversal belongs to tiles-3d.

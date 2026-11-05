@@ -39,7 +39,7 @@ Subpath imports control which code is loaded, but do not create separate install
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scientific/THIRD-PARTY-NOTICES.md)
-and the project-wide [References and credits](/docs/references-and-credits).
+and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 `NPYLoader` and `NPYFormat` are metadata exports from the lightweight package root.
 For parser access use the flat `@loaders.gl/scientific/npy-loader` subpath.

@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Upgrade the table library without losing the data path."
   description="Arrow JS uses a cross-language versioning scheme, so releases do not always map neatly to user-facing JavaScript changes. This guide highlights the migration points most relevant to loaders.gl and browser applications."
   tone="cyan"
-  meta={['Apache Arrow JS', 'Migration notes', 'Loaders.gl compatibility']}
+  meta={['Apache Arrow JS', 'Migration notes', 'loaders.gl compatibility']}
   links={[
     {label: 'Arrow JavaScript', to: '/docs/arrowjs'},
     {label: 'Arrow JS introduction', to: '/docs/arrowjs/developer-guide/introduction'},

@@ -20,7 +20,7 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 | <FormatLogo slug="wkb" /> | [`/wkb`](./wkt/formats/wkb.md) | WKB and Hex WKB |
 | — | [`/twkb`](./wkt/formats/twkb.md) | Tiny WKB |
 
-Import metadata from the package root or format subpaths. Parser-bearing loaders use named implementation entrypoints, such as `@loaders.gl/geospatial/wkb-loader`. GeoPackage requires the optional `sql.js` peer dependency. See [Packages](../../packages.md) for installation and loading patterns.
+Import metadata from the package root or format subpaths. Parser-bearing loaders use named implementation entrypoints, such as `@loaders.gl/geospatial/wkb-loader`. GeoPackage requires the optional `sql.js` peer dependency. See [Get Started](../../developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
 
 
 ## Format guides

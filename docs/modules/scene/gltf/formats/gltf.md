@@ -146,7 +146,7 @@ evolving specification and is intentionally marked separately from stable glTF 2
 | KTX2 / Basis Universal textures | 2.0 extension | ✅ Complete | ✅ Complete | `KHR_texture_basisu` |
 | WebP and AVIF textures | 2.0 extensions | ✅ Complete | ✅ Complete | Optional decoder support; required-extension failures preserved |
 | Texture transforms | 2.0 extension | ✅ Complete | ⚠️ Partial | `KHR_texture_transform` metadata is exposed for rendering integrations |
-| Mesh features and structural metadata | 2.0 / 3D Tiles extensions | ✅ Complete | ⚠️ Partial | Loaders.gl helpers expose metadata tables and feature IDs |
+| Mesh features and structural metadata | 2.0 / 3D Tiles extensions | ✅ Complete | ⚠️ Partial | loaders.gl helpers expose metadata tables and feature IDs |
 | Vector primitive topology | Draft 2.0 extensions | ✅ Complete | ⚠️ Partial | Primitive-restart ranges and polygon loops are decoded; rendering remains application-owned |
 | Punctual lights and unlit materials | 2.0 extensions | ✅ Complete | ⚠️ Partial | Parsed and retained; renderer-specific behavior remains application-owned |
 | Legacy techniques, programs, and shaders | 1.0 / legacy extension | 📦 Preserved only | ❌ Unsupported | Retained source data; glTF 1 shader/technique conversion is unsupported |

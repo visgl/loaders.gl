@@ -160,6 +160,13 @@
   display: none;
 }
 
+.badges :global(.github-badge-row) {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: inherit;
+}
+
 .logos {
   align-items: center;
   display: flex;
