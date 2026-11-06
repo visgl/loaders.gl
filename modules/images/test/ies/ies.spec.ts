@@ -32,3 +32,37 @@ test('IES metadata and parser subpath support public async and sync inputs', asy
   expect(IESLoaderWithParser.parseSync(bytes).dimensionUnit).toBe('meters');
   expect((await IESLoaderWithParser.parseText(input)).lampCount).toBe(1);
 });
+
+test.each([
+  'IESNA91',
+  'IESNA:LM-63-1995',
+  'IESNA:LM-63-2002'
+])('IES supports documented revision %s and feet units', revision => {
+  const source = input.replace('IESNA:LM-63-2002', revision).replace('3 2 1 2 0.1', '3 2 1 1 0.1');
+  const result = IESLoaderWithParser.parseTextSync(source);
+  expect(result.revision).toBe(revision);
+  expect(result.dimensionUnit).toBe('feet');
+});
+
+test.each([
+  input.replace('1 -1 2 3 2', 'one -1 2 3 2'),
+  'IESNA:LM-63-2002\nTILT=NONE\n1 100 1',
+  input.replace('1 -1 2 3 2', '0 -1 2 3 2'),
+  input.replace('3 2 1 2 0.1', '3 2 1 3 0.1'),
+  input.replace('40 50 60', '40 50 1e999'),
+  input.replace('40 50 60', '40 50 1e308'),
+  input.replace('1 -1 2 3 2', '1 -2 2 3 2'),
+  input.replace('TILT=NONE', '')
+])('IES rejects invalid numeric headers, units or intensity ranges %#', text => {
+  expect(() => IESLoaderWithParser.parseTextSync(text)).toThrow(/IES/);
+});
+
+test('IES retains a rotationally symmetric single horizontal sample without expansion', () => {
+  const source = input
+    .replace('3 2 1 2', '3 1 1 2')
+    .replace('30 210', '0')
+    .replace('\n40 50 60', '');
+  const result = IESLoaderWithParser.parseTextSync(source);
+  expect(Array.from(result.horizontalAngles)).toEqual([0]);
+  expect(Array.from(result.candelaValues)).toEqual([10, 20, 30]);
+});
