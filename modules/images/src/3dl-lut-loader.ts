@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {ThreeDLLUTLoader, type ThreeDLLUTLoaderOptions} from './3dl-lut-loader-types';
 import {parse3DLLUT} from './lut/parse-lut';
 const {preload: _preload, ...metadata} = ThreeDLLUTLoader;

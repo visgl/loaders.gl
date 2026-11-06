@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {CubeLUTLoader, type CubeLUTLoaderOptions} from './cube-lut-loader-types';
 import {parseCubeLUT} from './lut/parse-lut';
 const {preload: _preload, ...metadata} = CubeLUTLoader;

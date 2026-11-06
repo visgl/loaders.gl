@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import type {ColorLUT} from './lut-types';
 
 /** Parses a single 1D or 3D .cube table, retaining out-of-range float samples. */

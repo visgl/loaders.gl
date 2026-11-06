@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {ImageLUTLoader, type ImageLUTLoaderOptions} from './image-lut-loader-types';
 import {ImageLoaderWithParser} from './image-loader';
 import {getImageData} from './lib/category-api/parsed-image-api';

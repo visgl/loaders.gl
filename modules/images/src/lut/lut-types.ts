@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 /** Renderer-independent RGB lookup table. No color-space conversion is applied. */
 export type ColorLUT = {
   /** Number of input dimensions. */

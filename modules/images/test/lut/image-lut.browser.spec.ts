@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {parse} from '@loaders.gl/core';
 import {ImageLUTLoader} from '../../src/image-lut-loader-types';
-// SPDX-License-Identifier: MIT
 import {test, expect} from 'vitest';
 import {ImageLUTLoaderWithParser} from '../../src/image-lut-loader';
 

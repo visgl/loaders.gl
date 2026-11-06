@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {test, expect} from 'vitest';
 import {CubeLUTLoaderWithParser} from '../../src/cube-lut-loader';
 import {ThreeDLLUTLoaderWithParser} from '../../src/3dl-lut-loader';

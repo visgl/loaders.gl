@@ -1,42 +1,184 @@
-# Color lookup tables
+---
+title: "Color LUTs — Cube, 3dl and PNG"
+description: "Read color mappings as numerical tables with explicit domains, precision and image layouts."
+hide_title: true
+page_style: designed
+---
 
-Use `CubeLUTLoader` or `ThreeDLLUTLoader` from `@loaders.gl/images` with core load/parse.
-Parser-bearing exports live at `/cube-lut-loader` and `/3dl-lut-loader`.
+{/* SPDX-License-Identifier: MIT */}
+{/* Copyright (c) vis.gl contributors */}
 
-Outputs contain a dimension (1 or 3), edge size, interleaved Float32 RGB samples,
-and input domain bounds. Red input varies fastest, then green, then blue. Samples
-are data: no gamma conversion, clamping, interpolation, or GPU objects are applied.
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
-Cube supports a single 1D or 3D table, TITLE and DOMAIN_MIN/MAX. Combined shaper
-and 3D files and vendor directives are rejected. 3dl supports grid-first files
-with integer RGB rows (blue-fastest input order). Set `lut.outputBitDepth`
-explicitly; output scaling is never inferred. Nonuniform input knots are retained.
-Mesh-header/vendor 3dl variants are unsupported.
+<DocPageHeader
+  eyebrow="images format"
+  title="Color LUTs — Cube, 3dl and PNG"
+  description="Read color mappings as numerical tables with explicit domains, precision and image layouts."
+  tone="pink"
+  meta={["Cube · 3dl · PNG","Renderer-independent output","Explicit initial scope"]}
+  links={[{label: 'images module', to: '/docs/modules/images'}]}
+/>
 
-`parseImageLUT` from `@loaders.gl/images/color-lut` accepts decoded opaque RGB/RGBA
-8-bit pixels and explicit `{size, tilesPerRow}`. Red increases horizontally, green
-vertically, and blue slices advance across rows of tiles. Horizontal/vertical
-strips and rectangular tilings are supported. Decode images without color-space
-conversion or premultiplication before calling this utility. Encoded image loading
-is deliberately left to the existing image APIs; this utility requires exact pixels.
+<DocOrientation
+  eyebrow="Color LUT feature card"
+  title="Three encodings, one numerical table contract."
+  description="Choose the source format explicitly; retain domains, grid knots and precision before applying a color transform."
+  tone="pink"
+  items={[
+    {label: 'Cube', value: 'Single 1D or 3D text table with explicit domain bounds'},
+    {label: '3dl', value: 'Grid-first integer samples; caller supplies output bit depth'},
+    {label: 'PNG', value: 'Opaque 8-bit samples with explicit blue-slice tile layout'},
+    {label: 'Output', value: 'Float32 RGB with red input varying fastest'},
+    {label: 'Precision', value: 'Float64 input knots and retained source encoding precision'},
+    {label: 'Boundary', value: 'No interpolation, color-space conversion or GPU objects'}
+  ]}
+/>
 
-For encoded PNGs, explicitly pass `ImageLUTLoader` and `{lut: {size, tilesPerRow}}`.
-Its `/image-lut-loader` parser disables bitmap color-space conversion and
-premultiplication, closes temporary bitmaps, and rejects nonopaque samples. It
-uses the existing image APIs and requires their browser/Node bitmap facilities.
-PNG identification alone does not imply that an image is a LUT; select this loader
-explicitly. The initial image loader supports 8-bit samples only.
+A color lookup table maps input values to output RGB samples. The loaders below
+produce a common renderer-independent ColorLUT contract, while retaining each
+format's domain, grid, and precision information. Choose a source encoding first;
+interpolation and applying the table to an image remain application work.
 
-PNG precision and declared layout are checked before bitmap decoding. Cube edge
-sizes for image LUTs are limited to 256; higher-bit-depth PNGs are rejected rather
-than silently narrowed by the bitmap API.
+:::note Availability
 
-3dl results retain `sourceOutputBitDepth` and exact `sourceInputGrid` knots;
-normalized `inputGrid` knots use float64 precision. Decoded image LUTs identify
-8-bit source output channels. RGB sample storage remains float32 for every format.
+These loaders are introduced by [PR #4411](https://github.com/visgl/loaders.gl/pull/4411).
+Use a version containing that change.
 
-Encoded image LUTs allow only IHDR, PLTE, IDAT, IEND, tRNS and sRGB PNG chunks.
-Other metadata chunks, including embedded color profiles, gamma, chromaticity,
-significant-bit and EXIF orientation metadata, are rejected before decoding.
-This avoids platform image APIs silently transforming numerical LUT samples.
-Use the raw-pixel utility after a data-preserving decode for other PNG variants.
+:::
+
+| Input | Loader | Required format options |
+| --- | --- | --- |
+| [Cube](#cube-text-tables) | CubeLUTLoader | None |
+| [Grid-first 3dl](#grid-first-3dl-tables) | ThreeDLLUTLoader | lut.outputBitDepth |
+| [PNG tiling](#png-image-layouts) | ImageLUTLoader | lut.size and lut.tilesPerRow |
+
+## Output contract
+
+| Field | Meaning |
+| --- | --- |
+| `dimension`, `size` | One or three input dimensions and samples per axis |
+| `data` | Interleaved Float32 RGB output samples |
+| `domainMinimum`, `domainMaximum` | Input bounds for each channel |
+| `title` | Optional authored title |
+| `inputGrid` | Optional normalized Float64 input knots for nonuniform grids |
+| `sourceInputGrid` | Optional original integer grid knots |
+| `sourceOutputBitDepth` | Source precision where explicitly known |
+
+For a 3D table, red input varies fastest, followed by green, then blue. The RGB triple at integer grid coordinates (red, green, blue) starts at `3 * (red + size * (green + size * blue))`. The table is data: interpolation, gamut conversion, transfer functions, tone mapping, and GPU upload belong to the application. Float32 storage can round authored decimal values.
+
+
+
+## Cube text tables
+
+### What is a .cube LUT?
+
+A Cube file stores a sampled mapping from input color values to output RGB values. A 1D table defines channel curves; a 3D table samples an RGB input cube. Titles, table size, and optional domain bounds describe how to interpret the sample rows. A LUT is not itself a color-space declaration, a shader, or an image filter implementation.
+
+### Load a table
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {CubeLUTLoader} from '@loaders.gl/images';
+
+const table = await load('grade.cube', CubeLUTLoader);
+console.log(table.dimension, table.size, table.domainMinimum, table.domainMaximum);
+```
+### Supported features and limits
+
+The loader accepts a single 1D or 3D table with TITLE, DOMAIN_MIN, and DOMAIN_MAX. Defaults are an input domain of zero to one per channel. Output samples are preserved without clamping, so authored values can lie outside that interval. Comments and quoted titles are scanned without an ambiguous backtracking expression.
+
+Combined shaper-plus-3D files, unknown vendor directives, inconsistent dimensions, incomplete tables, non-finite numbers, and invalid domains reject. There is no writer or automatic interpolation. Know which color encoding the producer expects before applying the table to an image.
+
+### Direct parsing and related formats
+
+Import `CubeLUTLoaderWithParser` from `@loaders.gl/images/cube-lut-loader` for synchronous core `parseSync`. There are no Cube-specific options. The root loader is metadata-only and async core APIs preload its parser.
+
+Compare [grid-first 3dl](#grid-first-3dl-tables) for integer samples and nonuniform knots, or [PNG image LUTs](#png-image-layouts) for explicit blue-slice tilings. All three produce the same ColorLUT sample ordering.
+
+## Grid-first 3dl tables
+
+### What is a .3dl LUT?
+
+The supported 3dl layout starts with a row of integer input-grid knots followed by integer RGB output rows. Input knots can be nonuniform. Files sharing the .3dl extension can use other vendor headers and conventions, so the extension alone is not a complete interoperability contract.
+
+The first row determines the cube edge size. The supported source rows vary blue fastest; the loader reorders them into the shared red-fastest ColorLUT layout. The input knots and output encoding have separate meanings. An input-grid maximum is not an output-bit-depth declaration.
+
+### Supply the output bit depth
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {ThreeDLLUTLoader} from '@loaders.gl/images';
+
+const table = await load('grade.3dl', ThreeDLLUTLoader, {
+  lut: {outputBitDepth: 12}
+});
+console.log(table.sourceInputGrid, table.inputGrid, table.sourceOutputBitDepth);
+```
+
+Choose the bit depth from the producer's format contract. It is not guessed from the brightest sample. Output channels are normalized by `2 ** outputBitDepth - 1`; original input knots remain in sourceInputGrid, and their normalized coordinates use Float64 storage in inputGrid.
+
+### Supported features and limits
+
+Only grid-first integer files with a complete cubic set of RGB rows are supported. Input knots must be valid and ordered, and output samples must fit the explicit bit depth. Vendor mesh headers, implicit precision guessing, missing output rows, and malformed samples reject. The normalized input domain is zero to one; preserve and use inputGrid when interpolating a nonuniform table.
+
+### Loader options and direct parsing
+
+| Option | Required | Meaning |
+| --- | --- | --- |
+| `lut.outputBitDepth` | Yes | Integer output-channel encoding precision, 1 through 24; no inferred default |
+
+Import `ThreeDLLUTLoaderWithParser` from `@loaders.gl/images/3dl-lut-loader` for synchronous core parsing, passing the same options. The root export is metadata-only. No renderer object, interpolation implementation, or new codec dependency is added.
+
+See [Cube](#cube-text-tables) for text tables with domain directives and [image LUTs](#png-image-layouts) for PNG tilings.
+
+## PNG image layouts
+
+### What is an image LUT?
+
+An image LUT lays out slices of a 3D color cube in a 2D image. Red changes within each tile horizontally, green vertically, and each tile represents a blue slice. A horizontal strip, vertical strip, and rectangular tiling can contain the same mapping with different image dimensions.
+
+A PNG does not identify which layout its producer used or whether it is a LUT at all. Select ImageLUTLoader explicitly and supply the layout rather than relying on generic PNG detection.
+
+### Load an explicitly tiled PNG
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {ImageLUTLoader} from '@loaders.gl/images';
+
+// A 16-edge cube with 16 blue slices in one horizontal row: 256 × 16 pixels.
+const table = await load('grade.png', ImageLUTLoader, {
+  lut: {size: 16, tilesPerRow: 16}
+});
+```
+
+The required dimensions are `width = size * tilesPerRow` and `height = size * (size / tilesPerRow)`. The tile count must divide size exactly, with 1 ≤ tilesPerRow ≤ size and 2 ≤ size ≤ 256. Blue slices advance left to right and then to the next tile row. Pixel row zero is the source's top row; there is no application orientation flip.
+
+Image outputs have dimension 3, a zero-to-one input domain, and sourceOutputBitDepth 8. Each channel is divided by 255. The image is a data container; the loader does not interpret its samples as a photographic image that needs a display transform.
+
+### Precision, metadata and runtime
+
+Only opaque 8-bit samples are supported. Dimensions, cube edge size (at most 256), PNG signature and bit depth are checked before bitmap decoding. The encoded path permits only IHDR, PLTE, IDAT, IEND, tRNS, and sRGB chunks. Other metadata, including ICC profiles, gamma/chromaticity, significant-bit hints, and EXIF orientation, rejects before generic image APIs can rewrite the samples. Transparency rejects after decode.
+
+The parser requests no bitmap color conversion or premultiplication and closes its temporary bitmap. Browser image facilities are required in the browser. Node uses the existing images bitmap/polyfill backend and its optional Sharp peer; this feature adds no dependency, but encoded PNG decoding is not a standalone Node PNG codec. See [Node image codecs](../README.md#node-image-codecs).
+
+High-bit-depth, nonopaque, metadata-bearing, or differently arranged images need a separate data-preserving decoder and the raw-pixel utility below. JPEG is unsuitable for exact LUT samples because it is lossy and is not accepted by this loader.
+
+### Convert already decoded pixels
+
+```typescript
+import {parseImageLUT} from '@loaders.gl/images/color-lut';
+
+const table = parseImageLUT(opaqueRgbOrRgbaBytes, width, height, {
+  size: 16,
+  tilesPerRow: 16
+});
+```
+
+The utility accepts Uint8Array or Uint8ClampedArray RGB/RGBA samples and validates layout and opacity. The caller is responsible for keeping encoded sample values intact during decoding; decoding with a color profile or alpha premultiplication and then passing those pixels cannot recover the original values.
+
+### Loader API
+
+Both `lut.size` and `lut.tilesPerRow` are required. The metadata export lives at the images root; `ImageLUTLoaderWithParser` lives at `@loaders.gl/images/image-lut-loader`. Encoded parsing is async, not `parseSync`. The raw-pixel utility is synchronous.
+
+Compare [Cube](#cube-text-tables) and [3dl](#grid-first-3dl-tables) when a text LUT carries the mapping more directly.

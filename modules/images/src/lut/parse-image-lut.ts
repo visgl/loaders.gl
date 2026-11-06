@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import type {ColorLUT} from './lut-types';
 
 /** Layout of blue slices in an RGB/RGBA LUT image; red runs right, green runs down. */
