@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import {VTKLoader} from './vtk-loader-types';
-import {parseVTKLegacy, parseVTKXML} from './vtk';
+import {parseVTKLegacy, parseVTKXML} from './vtk/index.js';
 const {preload: _preload, ...metadata} = VTKLoader;
 /** Selects the existing VTK parser without changing its dataset representation. */
 function parseTextSync(text: string) {
