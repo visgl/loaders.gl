@@ -708,8 +708,9 @@
               "modules/images/textures/formats/hdr",
               "modules/images/textures/formats/ktx",
               "modules/images/textures/formats/pvr",
-              "modules/images/ies/README",
-              "modules/images/openexr/README"
+              "modules/images/color-lut/README",
+              "modules/images/openexr/README",
+              "modules/images/ies/README"
             ],
             "link": {
               "type": "generated-index",
