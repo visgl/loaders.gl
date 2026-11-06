@@ -33,3 +33,6 @@ Zarr v2 and v3 storage support is provided by the `zarr` and `zarrita` packages,
 
 See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
 and applicable notices, and the project-wide [Attributions and Credits](https://loaders.gl/docs/references-and-credits).
+
+
+- [PDB format guide](https://loaders.gl/docs/modules/scientific/pdb): format, usage, feature support and output contract.

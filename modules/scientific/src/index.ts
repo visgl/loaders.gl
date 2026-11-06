@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 export {NetCDFFormat} from './netcdf/netcdf-format';
 export {NetCDFLoader, NetCDFWorkerLoader} from './netcdf/netcdf-loader';
@@ -65,3 +65,6 @@ export {NPYLoader, NPYWorkerLoader} from './npy-loader-types';
 export type {NPYLoaderOptions} from './npy-loader-types';
 export type {NPYTile} from './lib/parsers/parse-npy';
 export {NPYFormat} from './npy-format';
+
+export {PDBLoader} from './pdb-loader-types';
+export type {PDBAtom, PDBModel, PDBStructure} from './pdb/parse-pdb';
