@@ -66,5 +66,8 @@ export type {NPYLoaderOptions} from './npy-loader-types';
 export type {NPYTile} from './lib/parsers/parse-npy';
 export {NPYFormat} from './npy-format';
 
+export {NRRDLoader} from './nrrd-loader-types';
+export type {NRRDData, NRRDArray} from './nrrd/parse-nrrd';
+
 export {VTKLoader} from './vtk-loader-types';
 export type {VTKDataset, VTKDataArray, VTKXMLDataset, VTKXMLPiece, VTKXMLArray} from './vtk';
