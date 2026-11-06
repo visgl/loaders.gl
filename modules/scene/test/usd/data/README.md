@@ -39,3 +39,10 @@ The two dictionary USDZ archives were generated with usdzip (stored entries and
 dictionary-binary-usd.usdz has that same binary content renamed root.usd, followed
 by a small secondary.usda layer containing an Xform named Secondary. These
 fixtures require no native tools at test time and add no package dependency.
+
+The embedded-assets directory contains original MIT-licensed vis.gl fixture data:
+small USDA layers, one-pixel PNG images, a JPEG converted with macOS sips, and a
+three-byte binary resource. embedded-assets.usdz packages its ASCII scene and
+resources using usdzip. parts/model.usdc was generated from parts/model.usda
+with usdcat; embedded-assets-binary.usdz packages that binary root and the same
+PNG/JPEG resources. Native tools generate fixtures only; tests use checked-in bytes.
