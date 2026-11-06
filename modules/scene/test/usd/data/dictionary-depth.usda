@@ -1,0 +1,138 @@
+#usda 1.0
+# SPDX-License-Identifier: MIT
+# Copyright (c) vis.gl contributors
+def Xform "World" (
+ customData = {
+dictionary level0 = {
+dictionary level1 = {
+dictionary level2 = {
+dictionary level3 = {
+dictionary level4 = {
+dictionary level5 = {
+dictionary level6 = {
+dictionary level7 = {
+dictionary level8 = {
+dictionary level9 = {
+dictionary level10 = {
+dictionary level11 = {
+dictionary level12 = {
+dictionary level13 = {
+dictionary level14 = {
+dictionary level15 = {
+dictionary level16 = {
+dictionary level17 = {
+dictionary level18 = {
+dictionary level19 = {
+dictionary level20 = {
+dictionary level21 = {
+dictionary level22 = {
+dictionary level23 = {
+dictionary level24 = {
+dictionary level25 = {
+dictionary level26 = {
+dictionary level27 = {
+dictionary level28 = {
+dictionary level29 = {
+dictionary level30 = {
+dictionary level31 = {
+dictionary level32 = {
+dictionary level33 = {
+dictionary level34 = {
+dictionary level35 = {
+dictionary level36 = {
+dictionary level37 = {
+dictionary level38 = {
+dictionary level39 = {
+dictionary level40 = {
+dictionary level41 = {
+dictionary level42 = {
+dictionary level43 = {
+dictionary level44 = {
+dictionary level45 = {
+dictionary level46 = {
+dictionary level47 = {
+dictionary level48 = {
+dictionary level49 = {
+dictionary level50 = {
+dictionary level51 = {
+dictionary level52 = {
+dictionary level53 = {
+dictionary level54 = {
+dictionary level55 = {
+dictionary level56 = {
+dictionary level57 = {
+dictionary level58 = {
+dictionary level59 = {
+dictionary level60 = {
+dictionary level61 = {
+dictionary level62 = {
+dictionary level63 = {
+dictionary level64 = {
+int leaf = 1
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+) {}
