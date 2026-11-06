@@ -82,8 +82,14 @@ test.each(
   expect(integrateIESProfile(profile)).toBeCloseTo(24 * Math.PI, 12);
 });
 
-test('IES integrates a linear polar ramp with the solid-angle sine weight', () => {
-  expect(integrateIESProfile(createProfile([0, 90], [0], [0, 1]))).toBeCloseTo(4, 12);
+test.each([
+  {angles: [0, 90], expected: 4},
+  {angles: [90, 180], expected: 2 * Math.PI - 4}
+])('IES integrates a linear polar ramp over %j with the solid-angle sine weight', ({
+  angles,
+  expected
+}) => {
+  expect(integrateIESProfile(createProfile(angles, [0], [0, 1]))).toBeCloseTo(expected, 12);
 });
 
 test('IES integrates nonuniform azimuth intervals with their actual widths', () => {

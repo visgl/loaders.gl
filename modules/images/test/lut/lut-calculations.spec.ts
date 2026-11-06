@@ -112,3 +112,12 @@ test.each([NaN, Infinity, 1e308])('LUT rejects unrepresentable alpha %s', alpha 
 test('LUT application rejects incomplete pixels', () => {
   expect(() => applyColorLUT(createAffineLUT(), Float32Array.of(0, 1))).toThrow(/component/);
 });
+
+test.each([
+  Float64Array.of(0, 0, 1),
+  Float64Array.of(0, NaN, 1)
+])('LUT rejects invalid interior knots %#', inputGrid => {
+  const lut = createAffineLUT(3);
+  lut.inputGrid = inputGrid;
+  expect(() => createColorLUTSampler(lut)).toThrow(/input grid/);
+});
