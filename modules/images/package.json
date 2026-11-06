@@ -263,6 +263,26 @@
       "types": "./dist/image-loader-types.d.ts",
       "import": "./dist/image-loader-types.js",
       "require": "./dist/image-loader-types.cjs"
+    },
+    "./cube-lut-loader": {
+      "types": "./dist/cube-lut-loader.d.ts",
+      "import": "./dist/cube-lut-loader.js",
+      "require": "./dist/cube-lut-loader.cjs"
+    },
+    "./3dl-lut-loader": {
+      "types": "./dist/3dl-lut-loader.d.ts",
+      "import": "./dist/3dl-lut-loader.js",
+      "require": "./dist/3dl-lut-loader.cjs"
+    },
+    "./color-lut": {
+      "types": "./dist/lut/index.d.ts",
+      "import": "./dist/lut/index.js",
+      "require": "./dist/lut/index.cjs"
+    },
+    "./image-lut-loader": {
+      "types": "./dist/image-lut-loader.d.ts",
+      "import": "./dist/image-lut-loader.js",
+      "require": "./dist/image-lut-loader.cjs"
     }
   },
   "sideEffects": false,
@@ -272,7 +292,8 @@
     "README.md",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
-    "third-party-licenses"
+    "third-party-licenses",
+    "COLOR-LUT.md"
   ],
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers && npm run build-metadata",

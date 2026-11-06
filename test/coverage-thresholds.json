@@ -133,7 +133,14 @@
         "modules/images/src/lib/parsers/svg-utils.ts",
         "modules/images/src/lib/utils/version.ts",
         "modules/images/src/types.ts",
-        "modules/images/src/unbundled.ts"
+        "modules/images/src/unbundled.ts",
+        "modules/images/src/cube-lut-loader-types.ts",
+        "modules/images/src/cube-lut-loader.ts",
+        "modules/images/src/3dl-lut-loader-types.ts",
+        "modules/images/src/3dl-lut-loader.ts",
+        "modules/images/src/image-lut-loader-types.ts",
+        "modules/images/src/image-lut-loader.ts",
+        "modules/images/src/lut/"
       ],
       "sourcePathReason": "Preserve the original image implementation gate, including its 89% function requirement. Texture and video implementations retain their unchanged independent images/textures and images/video gates; all image-package production files are checked for a coverage owner."
     },
@@ -1199,7 +1206,14 @@
         "modules/images/src/lib/parsers/svg-utils.ts",
         "modules/images/src/lib/utils/version.ts",
         "modules/images/src/types.ts",
-        "modules/images/src/unbundled.ts"
+        "modules/images/src/unbundled.ts",
+        "modules/images/src/cube-lut-loader-types.ts",
+        "modules/images/src/cube-lut-loader.ts",
+        "modules/images/src/3dl-lut-loader-types.ts",
+        "modules/images/src/3dl-lut-loader.ts",
+        "modules/images/src/image-lut-loader-types.ts",
+        "modules/images/src/image-lut-loader.ts",
+        "modules/images/src/lut/"
       ],
       "browser": {
         "statements": 82,

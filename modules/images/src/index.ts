@@ -91,3 +91,13 @@ export {CrunchLoader as CrunchWorkerLoader} from './crunch-loader';
 export {VideoLoader} from './video-loader-types';
 export type {VideoLoaderOptions} from './video-loader-types';
 export {VideoFormat} from './video-format';
+
+export {CubeLUTLoader} from './cube-lut-loader-types';
+export type {CubeLUTLoaderOptions} from './cube-lut-loader-types';
+
+export {ThreeDLLUTLoader} from './3dl-lut-loader-types';
+export type {ThreeDLLUTLoaderOptions} from './3dl-lut-loader-types';
+
+export {ImageLUTLoader} from './image-lut-loader-types';
+export type {ImageLUTLoaderOptions} from './image-lut-loader-types';
+export type {ColorLUT} from './lut/lut-types';
