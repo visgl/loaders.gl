@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 /** Numeric storage supported by the initial NRRD decoder. */
 export type NRRDArray =
   | Int8Array

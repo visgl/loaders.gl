@@ -1469,7 +1469,8 @@
             "items": [
               "modules/scientific/formats/npy",
               "modules/scientific/netcdf/formats/netcdf",
-              "modules/scientific/zarr/formats/zarr"
+              "modules/scientific/zarr/formats/zarr",
+              "modules/scientific/nrrd/README"
             ],
             "link": {
               "type": "generated-index",

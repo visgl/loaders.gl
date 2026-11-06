@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {test, expect} from 'vitest';
 import {NRRDLoaderWithParser} from '../../src/nrrd-loader';
 const header =
