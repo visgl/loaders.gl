@@ -3,7 +3,7 @@
 import type {Mesh} from '@loaders.gl/core/schema';
 import {deduceMeshSchema, getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 
-/** Parses strict ASCII or little-endian binary STL without changing authored normals. */
+/** Parses ASCII or little-endian binary STL without changing authored normals. */
 export function parseSTL(data: ArrayBuffer): Mesh {
   const view = new DataView(data);
   const binary = data.byteLength >= 84 && 84 + view.getUint32(80, true) * 50 === data.byteLength;
@@ -34,16 +34,20 @@ export function parseSTL(data: ArrayBuffer): Mesh {
     header = lines[0] || '';
     let lineIndex = 0;
     while (lineIndex < lines.length) {
-      if (!/^solid(?:\s|$)/.test(lines[lineIndex++]))
+      if (!/^solid(?:\s|$)/i.test(lines[lineIndex++]))
         throw new Error('STL: expected solid header or exact binary length');
-      while (lineIndex < lines.length && !/^endsolid(?:\s|$)/.test(lines[lineIndex])) {
+      while (lineIndex < lines.length && !/^endsolid(?:\s|$)/i.test(lines[lineIndex])) {
         const normal = parseVector(lines[lineIndex++], 'facet normal');
-        if (lines[lineIndex++] !== 'outer loop') throw new Error('STL: expected outer loop');
+        if (!/^outer\s+loop$/i.test(lines[lineIndex++] || ''))
+          throw new Error('STL: expected outer loop');
         for (let vertex = 0; vertex < 3; vertex++) {
           vertices.push(...parseVector(lines[lineIndex++], 'vertex'));
           normalValues.push(...normal);
         }
-        if (lines[lineIndex++] !== 'endloop' || lines[lineIndex++] !== 'endfacet')
+        if (
+          !/^endloop$/i.test(lines[lineIndex++] || '') ||
+          !/^endfacet$/i.test(lines[lineIndex++] || '')
+        )
           throw new Error('STL: incomplete facet');
       }
       if (lineIndex >= lines.length) throw new Error('STL: missing endsolid');
@@ -75,7 +79,7 @@ function parseVector(line: string | undefined, prefix: string): number[] {
   const prefixTokens = prefix.split(' ');
   const components = tokens.slice(prefixTokens.length);
   if (
-    prefixTokens.some((token, index) => tokens[index] !== token) ||
+    prefixTokens.some((token, index) => tokens[index]?.toLowerCase() !== token) ||
     components.length !== 3 ||
     components.some(value => !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value))
   ) {

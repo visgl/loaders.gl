@@ -53,3 +53,12 @@ test('STL metadata upgrades through the public async API', async () => {
   const result = await parse(encode(ascii), STLLoader);
   expect(result.header?.vertexCount).toBe(3);
 });
+
+test.each([
+  ['uppercase', ascii.toUpperCase()],
+  ['tabs and repeated spaces', ascii.replaceAll(' ', '\t  ')]
+])('STL ASCII accepts %s without changing mesh data', (_name, source) => {
+  const result = STLLoaderWithParser.parseSync(encode(source));
+  expect(Array.from(result.attributes.POSITION.value)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+  expect(result.loaderData?.header).toBe(source.split('\n')[0]);
+});

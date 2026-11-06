@@ -11,3 +11,6 @@ must choose the unit convention. Multiple ASCII solids are flattened in file ord
 Binary inputs must match the declared triangle count exactly. Malformed facets,
 truncated buffers, and non-finite coordinates are rejected. Vendor color encodings,
 solid groups, vertex welding, normal repair, and writers are outside the initial scope.
+
+ASCII record keywords are case-insensitive; tabs and repeated whitespace separate
+keyword and numeric tokens. Authored header text retains its original case.
