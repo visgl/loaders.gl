@@ -16,18 +16,8 @@ export function parseImageLUT(
   height: number,
   layout: ImageLUTLayout
 ): ColorLUT {
+  validateImageLUTLayout(width, height, layout);
   const {size, tilesPerRow} = layout;
-  if (
-    !Number.isSafeInteger(size) ||
-    size < 2 ||
-    !Number.isSafeInteger(tilesPerRow) ||
-    tilesPerRow < 1 ||
-    tilesPerRow > size ||
-    size % tilesPerRow ||
-    width !== size * tilesPerRow ||
-    height !== size * (size / tilesPerRow)
-  )
-    throw new Error('LUT: invalid image layout');
   const channels = pixels.length / (width * height);
   if (channels !== 3 && channels !== 4) throw new Error('LUT: expected RGB or RGBA pixels');
   const data = new Float32Array(size ** 3 * 3);
@@ -43,5 +33,33 @@ export function parseImageLUT(
         for (let channel = 0; channel < 3; channel++)
           data[target + channel] = pixels[source + channel] / 255;
       }
-  return {dimension: 3, size, data, domainMinimum: [0, 0, 0], domainMaximum: [1, 1, 1]};
+  return {
+    dimension: 3,
+    size,
+    data,
+    domainMinimum: [0, 0, 0],
+    domainMaximum: [1, 1, 1],
+    sourceOutputBitDepth: 8
+  };
+}
+
+/** Checks dimensions and limits before image decoding or sample allocation. */
+export function validateImageLUTLayout(
+  width: number,
+  height: number,
+  layout: ImageLUTLayout
+): void {
+  const {size, tilesPerRow} = layout;
+  if (
+    !Number.isSafeInteger(size) ||
+    size < 2 ||
+    size > 256 ||
+    !Number.isSafeInteger(tilesPerRow) ||
+    tilesPerRow < 1 ||
+    tilesPerRow > size ||
+    size % tilesPerRow ||
+    width !== size * tilesPerRow ||
+    height !== size * (size / tilesPerRow)
+  )
+    throw new Error('LUT: invalid image layout');
 }

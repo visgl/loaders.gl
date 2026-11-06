@@ -26,3 +26,11 @@ premultiplication, closes temporary bitmaps, and rejects nonopaque samples. It
 uses the existing image APIs and requires their browser/Node bitmap facilities.
 PNG identification alone does not imply that an image is a LUT; select this loader
 explicitly. The initial image loader supports 8-bit samples only.
+
+PNG precision and declared layout are checked before bitmap decoding. Cube edge
+sizes for image LUTs are limited to 256; higher-bit-depth PNGs are rejected rather
+than silently narrowed by the bitmap API.
+
+3dl results retain `sourceOutputBitDepth` and exact `sourceInputGrid` knots;
+normalized `inputGrid` knots use float64 precision. Decoded image LUTs identify
+8-bit source output channels. RGB sample storage remains float32 for every format.

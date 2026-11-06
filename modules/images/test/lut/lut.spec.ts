@@ -24,6 +24,9 @@ test('grid-first 3dl explicitly scales and reorders asymmetric samples', () => {
   const result = ThreeDLLUTLoaderWithParser.parseTextSync(input, {lut: {outputBitDepth: 10}});
   expect(Array.from(result.data.slice(3, 6))).toEqual([1, 0, 0]);
   expect(Array.from(result.inputGrid!)).toEqual([0, 1]);
+  expect(result.inputGrid).toBeInstanceOf(Float64Array);
+  expect(Array.from(result.sourceInputGrid!)).toEqual([0, 1023]);
+  expect(result.sourceOutputBitDepth).toBe(10);
   expect(() => ThreeDLLUTLoaderWithParser.parseTextSync(input)).toThrow(/outputBitDepth/);
 });
 
@@ -66,4 +69,55 @@ test('text LUT metadata preloads parser subpaths and preserves async/sync API co
     expect(implementation.parseSync(bytes, options).size).toBe(2);
     expect((await implementation.parseText(entry.text, options)).size).toBe(2);
   }
+});
+
+test('cube ignores quotes inside comments without repeatedly scanning the line', () => {
+  const input = 'LUT_1D_SIZE 2\n0 0 0\n1 1 1\n' + '#'.repeat(10000) + '"';
+  expect(CubeLUTLoaderWithParser.parseTextSync(input).size).toBe(2);
+});
+
+test('cube 3D samples retain red-fastest ordering', () => {
+  const input = 'LUT_3D_SIZE 2\n0 0 0\n1 0 0\n0 1 0\n1 1 0\n0 0 1\n1 0 1\n0 1 1\n1 1 1';
+  const result = CubeLUTLoaderWithParser.parseTextSync(input);
+  expect(result.dimension).toBe(3);
+  expect(Array.from(result.data.slice(3, 6))).toEqual([1, 0, 0]);
+});
+
+test.each([
+  '0 0 0',
+  'LUT_3D_SIZE 1',
+  'TITLE unquoted\nLUT_1D_SIZE 2\n0 0 0\n1 1 1',
+  'LUT_1D_SIZE 2\nLUT_1D_SIZE 2',
+  'LUT_1D_SIZE 2\n0 0\n1 1 1'
+])('cube rejects invalid declaration or numeric arity %#', text => {
+  expect(() => CubeLUTLoaderWithParser.parseTextSync(text)).toThrow(/LUT/);
+});
+
+test.each([
+  '0 0\n0 0 0',
+  '0 1\n' + Array.from({length: 8}, () => '2048 0 0').join('\n')
+])('3dl rejects invalid grid or out-of-range samples %#', text => {
+  expect(() => ThreeDLLUTLoaderWithParser.parseTextSync(text, {lut: {outputBitDepth: 10}})).toThrow(
+    /LUT/
+  );
+});
+
+test('image LUT rejects unsupported channel counts, transparency and oversized cubes', () => {
+  expect(() => parseImageLUT(new Uint8Array(1), 4, 2, {size: 2, tilesPerRow: 2})).toThrow(
+    /RGB or RGBA/
+  );
+  const pixels = new Uint8Array(4 * 2 * 4).fill(255);
+  pixels[3] = 0;
+  expect(() => parseImageLUT(pixels, 4, 2, {size: 2, tilesPerRow: 2})).toThrow(/transparent/);
+  expect(() =>
+    parseImageLUT(new Uint8Array(0), 262144, 512, {size: 512, tilesPerRow: 512})
+  ).toThrow(/layout/);
+});
+
+test('3dl retains distinct large integer knots without float32 collapse', () => {
+  const grid = [0, Number.MAX_SAFE_INTEGER - 1, Number.MAX_SAFE_INTEGER];
+  const input = grid.join(' ') + '\n' + Array.from({length: 27}, () => '0 0 0').join('\n');
+  const result = ThreeDLLUTLoaderWithParser.parseTextSync(input, {lut: {outputBitDepth: 10}});
+  expect(Array.from(result.sourceInputGrid!)).toEqual(grid);
+  expect(result.inputGrid![1]).toBeLessThan(result.inputGrid![2]);
 });

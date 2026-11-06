@@ -14,5 +14,9 @@ export type ColorLUT = {
   /** Optional authored title. */
   title?: string;
   /** Optional nonuniform input grid, normalized to [0, 1]. */
-  inputGrid?: Float32Array;
+  inputGrid?: Float64Array;
+  /** Original integer input knots for grid-first 3dl files. */
+  sourceInputGrid?: Float64Array;
+  /** Encoded RGB output bit depth, when specified by the source or loader options. */
+  sourceOutputBitDepth?: number;
 };

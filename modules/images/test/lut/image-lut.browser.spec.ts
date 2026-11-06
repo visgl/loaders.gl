@@ -24,3 +24,16 @@ test('PNG LUT loader decodes opaque pixels without changing sample values', asyn
   expect(result.data[result.data.length - 1]).toBeCloseTo(144 / 255, 6);
   await expect(ImageLUTLoaderWithParser.parse(data)).rejects.toThrow(/layout options/);
 });
+
+test('PNG LUT loader rejects unsupported precision before bitmap decoding', async () => {
+  await expect(
+    ImageLUTLoaderWithParser.parse(new ArrayBuffer(0), {lut: {size: 2, tilesPerRow: 2}})
+  ).rejects.toThrow(/PNG bytes/);
+  const canvas = new OffscreenCanvas(4, 2);
+  canvas.getContext('2d')!.fillRect(0, 0, 4, 2);
+  const buffer = await (await canvas.convertToBlob({type: 'image/png'})).arrayBuffer();
+  new Uint8Array(buffer)[24] = 16;
+  await expect(
+    ImageLUTLoaderWithParser.parse(buffer, {lut: {size: 2, tilesPerRow: 2}})
+  ).rejects.toThrow(/8-bit PNG/);
+});

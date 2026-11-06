@@ -91,7 +91,9 @@ export function parse3DLLUT(text: string, outputBitDepth: number): ColorLUT {
     data,
     domainMinimum: [0, 0, 0],
     domainMaximum: [1, 1, 1],
-    inputGrid: Float32Array.from(grid, value => value / grid[grid.length - 1])
+    inputGrid: Float64Array.from(grid, value => value / grid[grid.length - 1]),
+    sourceInputGrid: Float64Array.from(grid),
+    sourceOutputBitDepth: outputBitDepth
   };
 }
 
@@ -99,7 +101,18 @@ export function parse3DLLUT(text: string, outputBitDepth: number): ColorLUT {
 function getLines(text: string): string[] {
   return text
     .split(/\r?\n/)
-    .map(line => line.replace(/#(?=(?:[^"]*"[^"]*")*[^"]*$).*$/, '').trim())
+    .map(line => {
+      let quoted = false;
+      let end = line.length;
+      for (let index = 0; index < line.length; index++) {
+        if (line[index] === '"') quoted = !quoted;
+        else if (line[index] === '#' && !quoted) {
+          end = index;
+          break;
+        }
+      }
+      return line.slice(0, end).trim();
+    })
     .filter(Boolean);
 }
 
