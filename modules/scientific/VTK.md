@@ -25,3 +25,13 @@ XML piece arrays are decoded but not yet converted into a common mesh topology
 or field sampler. Geometry/topology validation is incomplete, and large XML
 documents are fully materialized in memory. This remains experimental support;
 real-file interoperability, build and browser tests are required.
+
+## Standard loader entry point
+
+`VTKLoader` from `@loaders.gl/scientific` selects the existing legacy/XML readers
+through core load/parse. Use `VTKLoaderWithParser` from
+`@loaders.gl/scientific/vtk-loader` for synchronous parsing. The returned dataset
+is the same as the direct parser result; it retains scientific cells and arrays
+rather than triangulating volumes or creating render objects. Legacy connectivity
+and point/cell attribute counts are validated. Existing subset limits above apply;
+this loader does not imply support for legacy binary or XML appended/compressed data.

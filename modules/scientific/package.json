@@ -76,6 +76,11 @@
       "types": "./dist/npy-loader-types.d.ts",
       "import": "./dist/npy-loader-types.js",
       "require": "./dist/npy-loader-types.cjs"
+    },
+    "./vtk-loader": {
+      "types": "./dist/vtk-loader.d.ts",
+      "import": "./dist/vtk-loader.js",
+      "require": "./dist/vtk-loader.cjs"
     }
   },
   "sideEffects": false,
@@ -88,7 +93,7 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field && npm run build-npy-worker && npm run build-metadata",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field && npm run build-npy-worker && npm run build-metadata && npm run build-cjs-vtk-loader",
     "build-bundle": "ocular-bundle ./netcdf-bundle.ts --output=dist/netcdf.min.js && ocular-bundle ./zarr-bundle.ts --output=dist/zarr.min.js",
     "build-bundle-dev": "ocular-bundle ./netcdf-bundle.ts --env=dev --output=dist/netcdf.dev.js && ocular-bundle ./zarr-bundle.ts --env=dev --output=dist/zarr.dev.js",
     "build-cjs-netcdf": "esbuild src/netcdf/*.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist/netcdf --out-extension:.js=.cjs --external:@loaders.gl/* --external:@math.gl/*",
@@ -98,7 +103,8 @@
     "build-cjs-vtk": "esbuild src/vtk/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vtk/index.cjs --external:@loaders.gl/*",
     "build-cjs-vector-field": "esbuild src/vector-field/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vector-field/index.cjs --external:@loaders.gl/*",
     "build-npy-worker": "esbuild src/workers/npy-worker.ts --outfile=dist/npy-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-metadata": "node ../../scripts/build-scientific-metadata.mjs"
+    "build-metadata": "node ../../scripts/build-scientific-metadata.mjs",
+    "build-cjs-vtk-loader": "esbuild src/vtk-loader.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vtk-loader.cjs --external:@loaders.gl/*"
   },
   "dependencies": {
     "@loaders.gl/documents": "5.0.0-beta.4",
