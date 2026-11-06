@@ -140,16 +140,16 @@ export async function parseNRRD(input: ArrayBuffer): Promise<NRRDData> {
   const metadata: Record<string, string> = Object.create(null);
   for (const line of lines) {
     if (!line || line.startsWith('#')) continue;
-    const pair = /^([^:]+):=(.*)$/.exec(line);
-    if (pair) {
-      metadata[pair[1]] = pair[2];
+    const separator = line.indexOf(':');
+    if (separator <= 0) throw new Error('NRRD: malformed header field');
+    const name = line.slice(0, separator);
+    if (line[separator + 1] === '=') {
+      metadata[name] = line.slice(separator + 2);
       continue;
     }
-    const match = /^([^:]+):\s*(.*)$/.exec(line);
-    if (!match) throw new Error('NRRD: malformed header field');
-    const key = match[1].toLowerCase();
+    const key = name.toLowerCase();
     if (key in fields) throw new Error('NRRD: duplicate header field');
-    fields[key] = match[2].trim();
+    fields[key] = line.slice(separator + 1).trim();
   }
   if (
     'data file' in fields ||
@@ -228,7 +228,10 @@ function parseVector(text: string): number[] {
     .trim()
     .slice(1, -1)
     .split(',')
-    .map(value => Number(value.trim()));
+    .map(value => {
+      if (!value.trim()) throw new Error('NRRD: empty spatial vector component');
+      return Number(value.trim());
+    });
   if (!values.length || values.some(value => !Number.isFinite(value)))
     throw new Error('NRRD: invalid spatial vector');
   return values;

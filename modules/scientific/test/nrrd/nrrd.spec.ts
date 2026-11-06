@@ -116,3 +116,21 @@ test('NRRD accepts CRLF headers and case-insensitive endian descriptors', async 
   const result = await NRRDLoaderWithParser.parse(attach(source, new Uint8Array([0, 7])));
   expect(result.data[0]).toBe(7);
 });
+
+test('NRRD preserves long whitespace-padded header values with linear field scanning', async () => {
+  const source =
+    'NRRD0005\ntype: uchar\ndimension: 1\nsizes: 1\nencoding: ascii\ncontent:' +
+    ' '.repeat(10000) +
+    'sample\n\n7';
+  const result = await NRRDLoaderWithParser.parse(new TextEncoder().encode(source).buffer);
+  expect(result.fields.content).toBe('sample');
+  expect(result.data[0]).toBe(7);
+});
+
+test('NRRD rejects empty spatial components instead of silently converting them to zero', async () => {
+  const source =
+    'NRRD0005\ntype: uchar\ndimension: 1\nsizes: 1\nencoding: ascii\nspace origin: (,0,0)\n\n7';
+  await expect(NRRDLoaderWithParser.parse(new TextEncoder().encode(source).buffer)).rejects.toThrow(
+    /empty spatial/
+  );
+});
