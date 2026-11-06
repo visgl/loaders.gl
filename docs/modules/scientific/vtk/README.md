@@ -78,6 +78,9 @@ The two results are not one normalized mesh schema. Applications select arrays, 
 
 ## Validation and limits
 
+Structured cell counts derive from point dimensions, preserving nonzero cells for
+one- and two-dimensional grids with singleton axes.
+
 The standard loader validates legacy connectivity and point/cell attribute counts and rejects malformed or float32-overflowing legacy values. XML topology validation remains incomplete. XML documents are fully materialized in memory; streaming and random access are not implemented. Use representative files from the actual producer to establish compatibility with this experimental subset.
 
 ## Direct and synchronous APIs

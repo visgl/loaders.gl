@@ -103,3 +103,33 @@ test.each([
 ])('VTK legacy rejects %s', (_name, input, error) => {
   expect(() => parseVTKLegacy(input)).toThrow(error);
 });
+
+test.each([
+  [[2, 2, 2], 1],
+  [[3, 2, 1], 2],
+  [[4, 1, 1], 3],
+  [[1, 1, 1], 1]
+] as const)('VTK structured cell fields match dimensions %j', (dimensions, expectedCells) => {
+  const header = [
+    '# vtk DataFile Version 3.0',
+    'structured cell counts',
+    'ASCII',
+    'DATASET STRUCTURED_POINTS',
+    'DIMENSIONS ' + dimensions.join(' ')
+  ].join('\n');
+  const valid =
+    header +
+    '\nCELL_DATA ' +
+    expectedCells +
+    '\nSCALARS field float\nLOOKUP_TABLE default\n' +
+    Array(expectedCells).fill('7').join(' ');
+  expect(parseVTKLegacy(valid).cellData[0].data.length).toBe(expectedCells);
+  const invalidCount = expectedCells + 1;
+  const invalid =
+    header +
+    '\nCELL_DATA ' +
+    invalidCount +
+    '\nSCALARS field float\nLOOKUP_TABLE default\n' +
+    Array(invalidCount).fill('7').join(' ');
+  expect(() => parseVTKLegacy(invalid)).toThrow(/cell attribute count mismatch/);
+});

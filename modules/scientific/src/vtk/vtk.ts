@@ -205,8 +205,10 @@ export function parseVTKLegacy(input: string): VTKDataset {
       'point attribute count mismatch'
     );
   }
-  if (result.cells) {
-    const cellCount = result.cells.offsets.length - 1;
+  const cellCount = result.cells
+    ? result.cells.offsets.length - 1
+    : result.dimensions?.reduce((product, dimension) => product * Math.max(dimension - 1, 1), 1);
+  if (cellCount !== undefined) {
     requireVTK(
       result.cellData.every(array => array.data.length / array.components === cellCount),
       'cell attribute count mismatch'
