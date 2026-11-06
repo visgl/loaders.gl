@@ -136,7 +136,10 @@
         "modules/images/src/unbundled.ts",
         "modules/images/src/ies-loader-types.ts",
         "modules/images/src/ies-loader.ts",
-        "modules/images/src/ies/"
+        "modules/images/src/ies/",
+        "modules/images/src/exr-loader-types.ts",
+        "modules/images/src/exr-loader.ts",
+        "modules/images/src/exr/"
       ],
       "sourcePathReason": "Preserve the original image implementation gate, including its 89% function requirement. Texture and video implementations retain their unchanged independent images/textures and images/video gates; all image-package production files are checked for a coverage owner."
     },
@@ -184,9 +187,12 @@
         "modules/scene/src/index.ts",
         "modules/scene/src/materialx/",
         "modules/scene/src/materialx-loader-types.ts",
-        "modules/scene/src/materialx-loader.ts"
+        "modules/scene/src/materialx-loader.ts",
+        "modules/scene/src/stl-loader-types.ts",
+        "modules/scene/src/stl-loader.ts",
+        "modules/scene/src/stl/"
       ],
-      "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf and scene/draco gates; every scene implementation belongs to one of these gates."
+      "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf and scene/draco gates; every scene implementation belongs to one of these gates. New STL implementations are included in this existing gate without changing its thresholds."
     },
     "@loaders.gl/scientific": {
       "path": "modules/scientific",
@@ -1205,7 +1211,10 @@
         "modules/images/src/unbundled.ts",
         "modules/images/src/ies-loader-types.ts",
         "modules/images/src/ies-loader.ts",
-        "modules/images/src/ies/"
+        "modules/images/src/ies/",
+        "modules/images/src/exr-loader-types.ts",
+        "modules/images/src/exr-loader.ts",
+        "modules/images/src/exr/"
       ],
       "browser": {
         "statements": 82,

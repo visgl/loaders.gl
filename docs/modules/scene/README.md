@@ -35,6 +35,8 @@ and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 ## Format guides
 
+- [STL](./stl/README.md)
+
 - [Draco3D](./draco/formats/draco.md)
 - [MaterialX](./formats/materialx.md)
 - [GLB binary](./gltf/formats/glb.md)

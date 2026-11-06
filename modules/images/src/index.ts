@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 // TYPES
 export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
@@ -94,3 +94,6 @@ export {VideoFormat} from './video-format';
 
 export {IESLoader} from './ies-loader-types';
 export type {IESProfile} from './ies/parse-ies';
+
+export {EXRLoader} from './exr-loader-types';
+export type {EXRImage, EXRChannel} from './exr/parse-exr';
