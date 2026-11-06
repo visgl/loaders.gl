@@ -94,3 +94,6 @@ export {VideoFormat} from './video-format';
 
 export {IESLoader} from './ies-loader-types';
 export type {IESProfile} from './ies/parse-ies';
+
+export {EXRLoader} from './exr-loader-types';
+export type {EXRImage, EXRChannel} from './exr/parse-exr';

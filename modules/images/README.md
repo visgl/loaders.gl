@@ -19,3 +19,5 @@ Node image codecs require the optional `sharp` peer of `@loaders.gl/core`;
 other polyfills and browser images do not load it.
 
 - [ies](IES.md): supported subset and renderer-independent output.
+
+- [openexr](OPENEXR.md): supported subset and renderer-independent output.
