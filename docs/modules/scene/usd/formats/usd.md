@@ -115,7 +115,7 @@ Supported ordinary prim, attribute, and relationship specifications include the 
 
 Unsupported crate versions, dictionaries, value list operations, compound path list operations, variants, binary reference/payload composition, and other unsupported value encodings fail explicitly. Do not treat acceptance of one crate fixture as general OpenUSD interoperability. Integers outside JavaScript's safe range reject instead of silently losing precision.
 
-Input is limited to 64 MiB. Decoded collections use element and aggregate allocation budgets, and section offsets and seeks are checked. Files are parsed in memory; there is no random-access layer source.
+Input is limited to 64 MiB. Logical collections are limited to four million entries; byte buffers and expanded vector components use a separate 256 MiB aggregate decoder-storage budget, and section offsets and seeks are checked. Files are parsed in memory; there is no random-access layer source.
 
 ### Loader API and runtime
 

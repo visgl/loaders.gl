@@ -213,3 +213,57 @@ test.each([
     spy.mockRestore();
   }
 });
+
+test('USDC time samples preserve vector tuples and asset values like defaults', async () => {
+  const mesh = parseUSDC(await readFixture('triangle.usdc')).rootPrims[0].children[0];
+  expect(mesh.attributes.points.metadata.timeSamples).toEqual({
+    times: [0, 1],
+    values: [
+      [
+        [0, 0, 0],
+        [1, 0, 0],
+        [0, 1, 0]
+      ],
+      [
+        [0, 0, 1],
+        [1, 0, 1],
+        [0, 1, 1]
+      ]
+    ]
+  });
+  expect(mesh.attributes.texture.metadata.timeSamples).toEqual({
+    times: [0, 1],
+    values: [{assetPath: 'start.png'}, {assetPath: 'end.png'}]
+  });
+});
+
+test('USDC byte storage can exceed the logical element cap while retaining allocation limits', async () => {
+  const source = await readFixture('sphere.usdc');
+  const view = new DataView(source);
+  const table = Number(view.getBigUint64(16, true));
+  const section = Number(view.getBigUint64(table + 8 + 16, true));
+  view.setBigUint64(section + 8, 4_000_001n, true);
+  expect(() => parseUSDC(source)).toThrow(/incomplete LZ4 output/);
+  view.setBigUint64(section + 8, 256n * 1024n * 1024n + 1n, true);
+  expect(() => parseUSDC(source)).toThrow(/decoded allocation limit/);
+});
+
+test.each([
+  null,
+  'invalid',
+  {times: null, values: []},
+  {times: [0], values: []}
+])('USDC rejects malformed decoded time samples %j', async samples => {
+  const source = await readFixture('sphere.usdc');
+  const spy = vi.spyOn(USDCParser.prototype, 'parseData').mockReturnValue({
+    specsByPath: {
+      '/World': {specType: 6, fields: {}},
+      '/World.texture': {specType: 1, fields: {typeName: 'asset', timeSamples: samples}}
+    }
+  });
+  try {
+    expect(() => parseUSDC(source)).toThrow(/invalid time samples/);
+  } finally {
+    spy.mockRestore();
+  }
+});

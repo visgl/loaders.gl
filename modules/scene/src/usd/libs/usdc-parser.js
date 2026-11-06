@@ -4,17 +4,24 @@
 // Copyright © 2010-2026 three.js authors. See THREE-LICENSE and README.md.
 // Adapted to fail on unsupported encodings and enforce bounded allocations/offsets.
 let allocationBytes = 0;
-/** Bounds aggregate decoded allocations before constructors are called. */
-function checkedLength(length) {
-  allocationBytes += length * 8;
+/** Budgets decoded storage without confusing byte/component lengths with logical counts. */
+function checkedLength(length, bytesPerElement = 8) {
+  const byteLength = length * bytesPerElement;
   if (
     !Number.isSafeInteger(length) ||
     length < 0 ||
-    length > 4_000_000 ||
-    allocationBytes > 256 * 1024 * 1024
+    !Number.isSafeInteger(byteLength) ||
+    byteLength > 256 * 1024 * 1024 - allocationBytes
   )
     throw new Error('USDC: decoded allocation limit exceeded');
+  allocationBytes += byteLength;
   return length;
+}
+/** Bounds logical collection entries independently of their storage representation. */
+function checkedCount(count) {
+  if (!Number.isSafeInteger(count) || count < 0 || count > 4_000_000)
+    throw new Error('USDC: decoded allocation limit exceeded');
+  return checkedLength(count);
 }
 const textDecoder = new TextDecoder();
 
@@ -177,7 +184,7 @@ function decompressLZ4(input, uncompressedSize, allowShortOutput = false) {
   // Single chunk (byte 0 == 0): [0] + LZ4 data
   // Multi chunk (byte 0 > 0): [numChunks] + [compressedSizes...] + [chunkData...]
 
-  const output = new Uint8Array(checkedLength(uncompressedSize));
+  const output = new Uint8Array(checkedLength(uncompressedSize, 1));
   if (!input.length) throw new Error('USDC: missing LZ4 chunk header');
   const numChunks = input[0];
 
@@ -533,7 +540,7 @@ class USDCParser {
     const reader = this.reader;
     reader.seek(section.start);
 
-    const numTokens = checkedLength(reader.readUint64());
+    const numTokens = checkedCount(reader.readUint64());
     this.tokens = [];
 
     if (this.version.major === 0 && this.version.minor < 4) {
@@ -557,6 +564,7 @@ class USDCParser {
       const compressedData = reader.readBytes(compressedSize);
 
       const tokensData = decompressLZ4(compressedData, uncompressedSize);
+      checkedLength(tokensData.length, 2);
 
       let strStart = 0;
       for (let i = 0; i < numTokens; i++) {
@@ -580,7 +588,7 @@ class USDCParser {
     const reader = this.reader;
     reader.seek(section.start);
 
-    const numStrings = checkedLength(reader.readUint64());
+    const numStrings = checkedCount(reader.readUint64());
     this.strings = [];
 
     for (let i = 0; i < numStrings; i++) {
@@ -613,7 +621,7 @@ class USDCParser {
       }
     } else {
       // Compressed fields (version >= 0.4.0)
-      const numFields = checkedLength(reader.readUint64());
+      const numFields = checkedCount(reader.readUint64());
 
       // Read compressed token indices
       const tokenIndicesCompressedSize = reader.readUint64();
@@ -662,7 +670,7 @@ class USDCParser {
       }
     } else {
       // Compressed field sets
-      const numFieldSets = checkedLength(reader.readUint64());
+      const numFieldSets = checkedCount(reader.readUint64());
       const compressedSize = reader.readUint64();
       const compressed = reader.readBytes(compressedSize);
 
@@ -684,7 +692,7 @@ class USDCParser {
     const reader = this.reader;
     reader.seek(section.start);
 
-    const numPaths = reader.readUint64();
+    const numPaths = checkedCount(reader.readUint64());
     this.paths = new Array(checkedLength(numPaths)).fill('');
 
     if (this.version.major === 0 && this.version.minor < 4) {
@@ -758,6 +766,7 @@ class USDCParser {
       }
     }
 
+    checkedLength(path.length, 2);
     this.paths[index] = path;
 
     // Process children and siblings
@@ -813,6 +822,7 @@ class USDCParser {
           }
         }
 
+        checkedLength(path.length, 2);
         this.paths[pathIndex] = path;
 
         // Determine children and siblings
@@ -869,7 +879,7 @@ class USDCParser {
       }
     } else {
       // Compressed specs
-      const numSpecs = checkedLength(reader.readUint64());
+      const numSpecs = checkedCount(reader.readUint64());
 
       const compressedSize1 = reader.readUint64();
       const pathIndicesCompressed = reader.readBytes(compressedSize1);
@@ -1094,7 +1104,7 @@ class USDCParser {
     reader.seek(valuesStart + valuesRelOffset);
 
     // Read number of values
-    const numValues = checkedLength(reader.readUint64());
+    const numValues = checkedCount(reader.readUint64());
 
     // Read all ValueReps
     const valueReps = [];
@@ -1201,7 +1211,7 @@ class USDCParser {
       }
 
       case TypeEnum.TokenVector: {
-        const count = checkedLength(reader.readUint64());
+        const count = checkedCount(reader.readUint64());
         const tokens = [];
         for (let i = 0; i < count; i++) {
           const index = reader.readUint32();
@@ -1212,7 +1222,7 @@ class USDCParser {
       }
 
       case TypeEnum.PathVector: {
-        const count = checkedLength(reader.readUint64());
+        const count = checkedCount(reader.readUint64());
         const paths = [];
         for (let i = 0; i < count; i++) {
           const index = reader.readUint32();
@@ -1224,7 +1234,7 @@ class USDCParser {
 
       case TypeEnum.DoubleVector: {
         // DoubleVector is a count-prefixed array of doubles
-        const count = checkedLength(reader.readUint64());
+        const count = checkedCount(reader.readUint64());
         const arr = new Float64Array(checkedLength(count));
         for (let i = 0; i < count; i++) arr[i] = reader.readFloat64();
         return arr;
@@ -1265,7 +1275,7 @@ class USDCParser {
         const hasAppendItems = (flags & 0x40) !== 0;
 
         const readPathList = () => {
-          const itemCount = checkedLength(reader.readUint64());
+          const itemCount = checkedCount(reader.readUint64());
           const paths = [];
           for (let i = 0; i < itemCount; i++) {
             const pathIdx = reader.readUint32();
@@ -1298,7 +1308,7 @@ class USDCParser {
       }
 
       case TypeEnum.VariantSelectionMap: {
-        const elementCount = checkedLength(reader.readUint64());
+        const elementCount = checkedCount(reader.readUint64());
         const map = Object.create(null);
 
         for (let i = 0; i < elementCount; i++) {
@@ -1341,7 +1351,7 @@ class USDCParser {
       throw new RangeError('USDCParser: Array size ' + size + ' exceeds implementation limits.');
     }
 
-    size = checkedLength(size);
+    size = checkedCount(size);
     if (size === 0) return [];
 
     // Handle compressed arrays

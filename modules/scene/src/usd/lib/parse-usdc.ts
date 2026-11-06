@@ -86,11 +86,17 @@ export function parseUSDC(data: ArrayBuffer, url?: string): USDStage {
       specification.specType === 8 ? fields.targetPaths : fields.default,
       type
     );
+    const metadata = convertFields(
+      fields,
+      new Set(['typeName', 'default', 'targetPaths', 'timeSamples'])
+    );
+    if (fields.timeSamples !== undefined)
+      metadata.timeSamples = convertTimeSamples(fields.timeSamples, type);
     prim.attributes[name] = {
       name,
       type,
       value,
-      metadata: convertFields(fields, new Set(['typeName', 'default', 'targetPaths']))
+      metadata
     };
   }
   return {
@@ -160,4 +166,23 @@ function orderPrims(prims: USDPrim[], names: unknown): void {
   }
   for (const prim of remaining.values()) ordered.push(prim);
   for (let index = 0; index < ordered.length; index++) prims[index] = ordered[index];
+}
+
+/** Converts every authored sample through the same type-aware path as an attribute default. */
+function convertTimeSamples(raw: unknown, type: string): USDValue {
+  if (!raw || typeof raw !== 'object') throw new Error('USDC: invalid time samples');
+  const samples = raw as {
+    /** Authored sample coordinates. */
+    times?: unknown;
+    /** Authored sample values before type-aware conversion. */
+    values?: unknown;
+  };
+  const times = convertValue(samples.times);
+  if (
+    !Array.isArray(times) ||
+    !Array.isArray(samples.values) ||
+    times.length !== samples.values.length
+  )
+    throw new Error('USDC: invalid time samples');
+  return {times, values: samples.values.map(value => convertAttributeValue(value, type))};
 }
