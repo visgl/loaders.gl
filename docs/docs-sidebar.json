@@ -707,7 +707,8 @@
               "modules/images/textures/formats/dds",
               "modules/images/textures/formats/hdr",
               "modules/images/textures/formats/ktx",
-              "modules/images/textures/formats/pvr"
+              "modules/images/textures/formats/pvr",
+              "modules/images/openexr/README"
             ],
             "link": {
               "type": "generated-index",
@@ -1573,7 +1574,8 @@
               "modules/scene/gltf/formats/glb",
               "modules/scene/gltf/formats/gltf",
               "modules/scene/obj/formats/obj",
-              "modules/scene/usd/formats/usd"
+              "modules/scene/usd/formats/usd",
+              "modules/scene/stl/README"
             ],
             "link": {
               "type": "generated-index",
