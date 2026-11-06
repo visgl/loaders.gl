@@ -787,69 +787,57 @@ class USDCParser {
     }
   }
 
+  /** Rebuilds compressed paths with an explicit stack instead of sibling recursion. */
   _buildPathsFromCompressed(pathIndices, elementTokenIndices, jumps) {
-    // Jump encoding from USD:
-    // 0 = only sibling (no child), next entry is sibling
-    // -1 = only child (no sibling), next entry is child
-    // -2 = leaf (no child, no sibling)
-    // >0 = has both child and sibling, value is offset to sibling
-
     let traversalCount = 0;
-    const buildPaths = (startIndex, parentPath) => {
-      let curIndex = startIndex;
-
-      while (curIndex < pathIndices.length) {
+    const pendingPaths = [{startIndex: 0, parentPath: ''}];
+    while (pendingPaths.length) {
+      const pendingPath = pendingPaths.pop();
+      let currentIndex = pendingPath.startIndex;
+      let parentPath = pendingPath.parentPath;
+      while (currentIndex < pathIndices.length) {
         if (++traversalCount > pathIndices.length * 2)
           throw new Error('USDC: path traversal limit exceeded');
-        const thisIndex = curIndex++;
-        const pathIndex = pathIndices[thisIndex];
-        const elementTokenIndex = elementTokenIndices[thisIndex];
-        const jump = jumps[thisIndex];
-
-        // Build path
+        const nodeIndex = currentIndex++;
+        const pathIndex = pathIndices[nodeIndex];
+        const elementTokenIndex = elementTokenIndices[nodeIndex];
+        const jump = jumps[nodeIndex];
+        if (
+          pathIndex < 0 ||
+          pathIndex >= this.paths.length ||
+          Math.abs(elementTokenIndex) >= this.tokens.length ||
+          jump < -2
+        )
+          throw new Error('USDC: invalid compressed path index');
         let path;
         if (parentPath === '') {
           path = '/';
           parentPath = path;
         } else {
-          const elemToken = this.tokens[Math.abs(elementTokenIndex)] || '';
-          const isPrimProperty = elementTokenIndex < 0;
-
-          if (isPrimProperty) {
-            path = parentPath + '.' + elemToken;
-          } else {
-            path = parentPath === '/' ? '/' + elemToken : parentPath + '/' + elemToken;
-          }
+          const elementToken = this.tokens[Math.abs(elementTokenIndex)];
+          path =
+            elementTokenIndex < 0
+              ? parentPath + '.' + elementToken
+              : parentPath === '/'
+                ? '/' + elementToken
+                : parentPath + '/' + elementToken;
         }
-
         checkedLength(path.length, 2);
         this.paths[pathIndex] = path;
-
-        // Determine children and siblings
         const hasChild = jump > 0 || jump === -1;
         const hasSibling = jump >= 0;
-
-        if (hasChild) {
-          if (hasSibling) {
-            // Has both child and sibling
-            // Recursively process sibling subtree
-            const siblingIndex = thisIndex + jump;
-            buildPaths(siblingIndex, parentPath);
-          }
-
-          // Child is next entry, continue with new parent path
-          parentPath = path;
-        } else if (hasSibling) {
-          // Only sibling, next entry is sibling with same parent
-          // Just continue loop with curIndex and same parentPath
-        } else {
-          // Leaf node, exit loop
-          break;
+        if ((hasChild || hasSibling) && currentIndex >= pathIndices.length)
+          throw new Error('USDC: missing compressed path entry');
+        if (hasChild && hasSibling) {
+          const siblingIndex = nodeIndex + jump;
+          if (siblingIndex <= currentIndex || siblingIndex >= pathIndices.length)
+            throw new Error('USDC: invalid compressed path jump');
+          pendingPaths.push({startIndex: siblingIndex, parentPath});
         }
+        if (hasChild) parentPath = path;
+        else if (!hasSibling) break;
       }
-    };
-
-    buildPaths(0, '');
+    }
   }
 
   _readSpecs() {
