@@ -65,3 +65,6 @@ export {NPYLoader, NPYWorkerLoader} from './npy-loader-types';
 export type {NPYLoaderOptions} from './npy-loader-types';
 export type {NPYTile} from './lib/parsers/parse-npy';
 export {NPYFormat} from './npy-format';
+
+export {NRRDLoader} from './nrrd-loader-types';
+export type {NRRDData, NRRDArray} from './nrrd/parse-nrrd';
