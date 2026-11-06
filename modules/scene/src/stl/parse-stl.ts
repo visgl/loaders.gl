@@ -77,7 +77,7 @@ function parseVector(line: string | undefined, prefix: string): number[] {
   if (
     prefixTokens.some((token, index) => tokens[index] !== token) ||
     components.length !== 3 ||
-    components.some(value => !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value))
+    components.some(value => !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value))
   ) {
     throw new Error(`STL: invalid ${prefix} record`);
   }

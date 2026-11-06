@@ -40,3 +40,16 @@ test.each([
 ])('STL rejects malformed data %#', input => {
   expect(() => STLLoaderWithParser.parseSync(encode(input))).toThrow(/STL/);
 });
+
+test('STL rejects long malformed numeric tokens promptly', () => {
+  const input = ascii.replace('vertex 0 1 0', `vertex ${'0'.repeat(10000)}x 1 0`);
+  expect(() => STLLoaderWithParser.parseSync(encode(input))).toThrow(/invalid vertex/);
+});
+
+test('STL metadata upgrades through the public async API', async () => {
+  const {parse} = await import('@loaders.gl/core');
+  const {STLLoader} = await import('../../src/stl-loader-types');
+  expect('parse' in STLLoader).toBe(false);
+  const result = await parse(encode(ascii), STLLoader);
+  expect(result.header?.vertexCount).toBe(3);
+});

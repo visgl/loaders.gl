@@ -1,3 +1,6 @@
+/** Package version injected by the build. */
+// @ts-ignore __VERSION__ is injected during compilation.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 import type {Mesh} from '@loaders.gl/core/schema';
@@ -13,7 +16,7 @@ export const STLLoader = {
   name: 'STL',
   id: 'stl',
   module: 'scene',
-  version: 'latest',
+  version: VERSION,
   extensions: ['stl'],
   mimeTypes: ['model/stl'],
   binary: true,
