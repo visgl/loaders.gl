@@ -17,3 +17,5 @@ Direct parsers use `*WithParser` exports from flat subpaths such as
 Texture writers, manifest schemas, and GIFBuilder also use direct subpaths.
 Node image codecs require the optional `sharp` peer of `@loaders.gl/core`;
 other polyfills and browser images do not load it.
+
+- [ies](IES.md): supported subset and renderer-independent output.
