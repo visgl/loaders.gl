@@ -146,7 +146,8 @@
         "modules/images/src/ies/",
         "modules/images/src/exr-loader-types.ts",
         "modules/images/src/exr-loader.ts",
-        "modules/images/src/exr/"
+        "modules/images/src/exr/",
+        "modules/images/src/lighting.ts"
       ],
       "sourcePathReason": "Preserve the original image implementation gate, including its 89% function requirement. Texture and video implementations retain their unchanged independent images/textures and images/video gates; all image-package production files are checked for a coverage owner."
     },
@@ -1228,7 +1229,8 @@
         "modules/images/src/ies/",
         "modules/images/src/exr-loader-types.ts",
         "modules/images/src/exr-loader.ts",
-        "modules/images/src/exr/"
+        "modules/images/src/exr/",
+        "modules/images/src/lighting.ts"
       ],
       "browser": {
         "statements": 82,

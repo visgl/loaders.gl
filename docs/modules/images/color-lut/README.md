@@ -190,8 +190,12 @@ The same opt-in `@loaders.gl/images/color-lut` entry point also provides
 loader root imports stay metadata-only and no dependencies are added.
 
 ```typescript
+import {load} from '@loaders.gl/core';
+import {CubeLUTLoader} from '@loaders.gl/images';
 import {createColorLUTSampler, applyColorLUT} from '@loaders.gl/images/color-lut';
 
+const lut = await load('grade.cube', CubeLUTLoader);
+const rgbaFloatPixels = Float32Array.of(0.25, 0.5, 0.75, 1);
 const sample = createColorLUTSampler(lut);
 const rgb = sample(0.25, 0.5, 0.75);
 const transformed = applyColorLUT(lut, rgbaFloatPixels, {components: 4});
