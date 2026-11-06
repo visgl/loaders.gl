@@ -155,7 +155,9 @@ export async function parseNRRD(input: ArrayBuffer): Promise<NRRDData> {
     'data file' in fields ||
     'datafile' in fields ||
     Number(fields['byte skip'] || 0) !== 0 ||
-    Number(fields['line skip'] || 0) !== 0
+    Number(fields.byteskip || 0) !== 0 ||
+    Number(fields['line skip'] || 0) !== 0 ||
+    Number(fields.lineskip || 0) !== 0
   )
     throw new Error('NRRD: detached data and skip directives are unsupported');
   const dimension = Number(fields.dimension);

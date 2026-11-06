@@ -134,3 +134,19 @@ test('NRRD rejects empty spatial components instead of silently converting them 
     /empty spatial/
   );
 });
+
+test.each([
+  'byte skip',
+  'byteskip',
+  'line skip',
+  'lineskip'
+])('NRRD handles zero and nonzero %s directives consistently', async name => {
+  const prefix = 'NRRD0005\ntype: uchar\ndimension: 1\nsizes: 1\nencoding: raw\n';
+  await expect(
+    NRRDLoaderWithParser.parse(attach(`${prefix}${name}: 1\n\n`, new Uint8Array([7])))
+  ).rejects.toThrow(/skip directives/);
+  const result = await NRRDLoaderWithParser.parse(
+    attach(`${prefix}${name}: 0\n\n`, new Uint8Array([7]))
+  );
+  expect(result.data[0]).toBe(7);
+});
