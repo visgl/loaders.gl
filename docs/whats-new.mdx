@@ -35,6 +35,10 @@ Images adds bounded Type C IES profile decoding that retains measured angles, in
 
 The scene USD loader adds a documented crate 0.8.0 subset, including binary-root USDZ and renderer-independent prim/property values. See [USDC scope](./modules/scene/usd/formats/usd.md#binary-usdc-reference).
 
+### OpenEXR channel planes
+
+Images adds single-part scanline OpenEXR decoding with NONE/RLE/ZIPS/ZIP compression and renderer-independent named channels. See [OpenEXR](./modules/images/openexr/README.md).
+
 ### Draco joins scene
 
 Draco geometry support now ships in `@loaders.gl/scene`, with metadata at the root and flat parser, writer, and runtime-helper imports.

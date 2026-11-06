@@ -136,7 +136,10 @@
         "modules/images/src/unbundled.ts",
         "modules/images/src/ies-loader-types.ts",
         "modules/images/src/ies-loader.ts",
-        "modules/images/src/ies/"
+        "modules/images/src/ies/",
+        "modules/images/src/exr-loader-types.ts",
+        "modules/images/src/exr-loader.ts",
+        "modules/images/src/exr/"
       ],
       "sourcePathReason": "Preserve the original image implementation gate, including its 89% function requirement. Texture and video implementations retain their unchanged independent images/textures and images/video gates; all image-package production files are checked for a coverage owner."
     },
@@ -1205,7 +1208,10 @@
         "modules/images/src/unbundled.ts",
         "modules/images/src/ies-loader-types.ts",
         "modules/images/src/ies-loader.ts",
-        "modules/images/src/ies/"
+        "modules/images/src/ies/",
+        "modules/images/src/exr-loader-types.ts",
+        "modules/images/src/exr-loader.ts",
+        "modules/images/src/exr/"
       ],
       "browser": {
         "statements": 82,
