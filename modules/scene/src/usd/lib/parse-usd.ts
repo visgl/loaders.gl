@@ -1,3 +1,4 @@
+import {parseUSDC} from './parse-usdc';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -54,9 +55,11 @@ export async function parseUSD(
   let stage: USDStage;
   if (isZIPArchive(data)) {
     const archive = parseUSDZArchive(data);
-    const rootFilename = Array.from(archive.keys()).find(filename => /\.usda?$/i.test(filename));
+    const rootFilename = Array.from(archive.keys()).find(filename =>
+      /\.(?:usd[ac]?)$/i.test(filename)
+    );
     if (!rootFilename) {
-      throw new Error('USDZ archives with binary USDC root layers are not implemented yet.');
+      throw new Error('USDZ archive has no supported USD root layer.');
     }
 
     const archiveBase = 'https://usd.archive/';
@@ -126,7 +129,7 @@ const USD_LOADER_DEFAULT_OPTIONS = {
 function parseUSDLayer(data: ArrayBuffer, url?: string): USDStage {
   const signature = TEXT_DECODER.decode(data.slice(0, 8));
   if (signature === CRATE_SIGNATURE) {
-    throw new Error('Binary USDC crate layers are not implemented yet; use ASCII USDA layers.');
+    return parseUSDC(data, url);
   }
   return parseUSDA(TEXT_DECODER.decode(data), url);
 }

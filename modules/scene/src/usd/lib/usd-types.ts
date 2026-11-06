@@ -76,7 +76,7 @@ export type USDPrim = {
 /** Parsed OpenUSD stage. */
 export type USDStage = {
   /** Container format used for the root layer. */
-  format: 'usda' | 'usdz';
+  format: 'usda' | 'usdc' | 'usdz';
   /** URL of the root layer when available. */
   url?: string;
   /** Root-layer metadata. */

@@ -9,7 +9,7 @@ import {USDLoader as USDLoaderMetadata} from './usd-loader-types';
 
 const {preload: _USDLoaderPreload, ...USDLoaderMetadataWithoutPreload} = USDLoaderMetadata;
 
-/** Parser-bearing loader for OpenUSD ASCII and uncompressed USDZ scenes. */
+/** Parser-bearing loader for OpenUSD ASCII, supported binary crate layers, and stored USDZ scenes. */
 export const USDLoaderWithParser = {
   ...USDLoaderMetadataWithoutPreload,
   parse: parseUSD,
