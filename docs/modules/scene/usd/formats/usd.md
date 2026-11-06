@@ -5,6 +5,9 @@ hide_title: true
 page_style: designed
 ---
 
+{/* SPDX-License-Identifier: MIT */}
+{/* Copyright (c) vis.gl contributors */}
+
 import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {ThreeDDataFormatsGraphic} from '@site/src/components/docs/three-d-data-formats-graphic';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
@@ -14,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Compose a scene without flattening it first."
   description="OpenUSD describes scenes as composed layers and prims. The initial loaders.gl implementation reads a useful, explicit subset so applications can inspect the stage and retain source relationships."
   tone="pink"
-  meta={['USDA / USD', 'USDZ', 'References and variants']}
+  meta={['USDA / USDC', 'USDZ', 'Shared USDStage']}
   links={[
     {label: 'Scene module', to: '/docs/modules/scene'},
     {label: 'Scenegraph category', to: '/docs/specifications/category-scenegraph'}
@@ -35,25 +38,89 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="OpenUSD is useful when the relationships between scene elements matter. loaders.gl exposes those relationships in a typed stage representation rather than reducing the file to a flat mesh."
   tone="pink"
   items={[
-    {label: 'Reads', value: 'ASCII USDA/USD layers and uncompressed USDZ'},
-    {label: 'Preserves', value: 'Prim hierarchy, references, payloads, variants, and overrides'},
+    {label: 'Reads', value: 'USDA text, the initial USDC crate subset, and stored USDZ'},
+    {label: 'Preserves', value: 'Prim hierarchy and values; composition support differs by encoding'},
     {label: 'Output', value: 'Typed stage and prim data for application-specific use'},
-    {label: 'Boundary', value: 'Binary USDC, compressed ZIP entries, and full composition remain future work'}
+    {label: 'Boundary', value: 'USDC crate 0.8.0 subset; no full composition or compressed ZIP entries'}
   ]}
 />
 
-[OpenUSD](https://openusd.org/release/index.html) describes hierarchical 3D scenes in text and
-binary layer formats. The initial loaders.gl implementation supports:
+[OpenUSD](https://openusd.org/release/index.html) is the scene description model.
+USDA and USDC are its text and binary layer encodings; USDZ packages layers and assets.
+The .usd extension can identify either layer encoding, so content matters.
 
-<ReferenceBoundary
-  title="OpenUSD support details"
-  description="The sections below list the supported layers and the explicit boundaries of the current implementation."
-  tone="pink"
-/>
+## One loader, one stage contract
 
-- ASCII `.usda` layers and ASCII content stored with a `.usd` extension
-- Uncompressed `.usdz` ZIP archives whose root layer is ASCII
-- External and packaged references, payloads, authored variants, and local overrides
+Use [USDLoader](../api-reference/usd-loader.md) for supported USDA, USDC, and USDZ inputs.
+They all return USDStage with rootPrims, metadata, and layer provenance. Applications
+inspect the same prim and attribute structures regardless of the root encoding.
+There is no separate USDCLoader or renderer-specific stage.
 
-Binary USDC crate layers, compressed ZIP entries, and the complete OpenUSD composition semantics
-are not yet supported.
+| Representation | Supported subset | Composition boundary |
+| --- | --- | --- |
+| USDA / text .usd | Authored ASCII scene layers | Existing references, payloads, variants and local overrides |
+| USDC / binary .usd | Crate 0.8.0 ordinary specifications and supported values | No binary reference/payload composition or variants |
+| USDZ | Stored ZIP archives with a supported text or binary root | Root encoding limits still apply; compressed ZIP entries reject |
+
+The binary subset is introduced by [PR #4416](https://github.com/visgl/loaders.gl/pull/4416).
+Use a version containing that change. Read the [USDC encoding reference](#binary-usdc-reference)
+for exact value, allocation, and compatibility limits. Common usage, output types,
+and composition options belong to the [USDLoader reference](../api-reference/usd-loader.md).
+
+## What stays authored
+
+Prim types, attribute declarations, hierarchy, metadata, asset paths, and time samples
+remain scene data. The loader does not create GPU meshes, apply a shading model,
+evaluate an animation, or supply the complete OpenUSD composition engine.
+A supported ASCII composition feature does not imply its binary equivalent is implemented.
+
+## Binary USDC reference
+
+### What is USDC?
+
+OpenUSD describes scenes through typed prims, attributes, relationships, and layers. USDA is its text representation; USDC is the binary crate representation. USDZ packages layers and assets in an archive. A binary layer is still scene description data: it is not a GPU scene or a pre-rendered image.
+
+The initial decoder accepts crate version 0.8.0 only. An extension such as `.usd` does not establish the crate version or prove that every authored value and composition feature is supported.
+
+### Read a layer
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {USDLoader} from '@loaders.gl/scene/usd';
+
+const stage = await load('scene.usdc', USDLoader, {usd: {compose: false}});
+for (const prim of stage.rootPrims) {
+  console.log(prim.path, prim.type, prim.attributes);
+}
+```
+
+`compose: false` makes the example an inspection of the supported root layer. It does not enable otherwise unsupported binary reference or payload composition. The existing ASCII composition options do not imply equivalent binary coverage.
+
+### Output contract
+
+| Field | Meaning |
+| --- | --- |
+| `stage.format` | `usdc` for a binary root layer; `usdz` for the archive container |
+| `stage.rootPrims` | Ordered prim hierarchy with `name`, `path`, `type`, `specifier`, `children` |
+| `prim.attributes` | Named declarations with authored type, value, and metadata |
+| Asset/path values | Objects such as `{assetPath: 'texture.png'}` and `{path: '/World'}` |
+| Time samples | Authored times and values in attribute metadata; no animation evaluation |
+| `stage.metadata`, `stage.layers` | Root metadata and layer provenance |
+
+Vector arrays retain tuple structure. Mesh attributes such as points and face indices remain USD values; the loader does not triangulate, upload, shade, or animate them. Authored units and axis metadata remain data for the application to interpret.
+
+### Supported features and limits
+
+Supported ordinary prim, attribute, and relationship specifications include the implemented scalar/vector/array defaults, asset/path values, signed integers, and time-sample fields. Stored USDZ archives can have a supported binary root layer.
+
+Unsupported crate versions, dictionaries, value list operations, compound path list operations, variants, binary reference/payload composition, and other unsupported value encodings fail explicitly. Do not treat acceptance of one crate fixture as general OpenUSD interoperability. Integers outside JavaScript's safe range reject instead of silently losing precision.
+
+Input is limited to 64 MiB. Logical collections are limited to four million entries; byte buffers and expanded vector components use a separate 256 MiB aggregate decoder-storage budget, and section offsets and seeks are checked. Files are parsed in memory; there is no random-access layer source.
+
+### Loader API and runtime
+
+The metadata export is `USDLoader` from `@loaders.gl/scene/usd`. For direct async parsing, import `USDLoaderWithParser` from `@loaders.gl/scene/usd-loader` and pass it to core `parse`. Do not use the metadata loader with `parseSync`.
+
+The renderer-free crate decoder is adapted from THREE.js r187 with retained MIT terms. It adds no THREE.js runtime import or package dependency. Applications receive the same USDStage contract used by the ASCII loader.
+
+See the [OpenUSD format guide](#one-loader-one-stage-contract) and [USDLoader reference](../api-reference/usd-loader.md) for the surrounding ASCII/archive APIs; their broader ASCII features are separate from this binary subset.

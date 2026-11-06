@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
 import {USDLoader} from '@loaders.gl/scene';
@@ -242,11 +244,11 @@ test('USDA parser reports invalid headers and expected punctuation with line num
     'Expected "{" at USDA line 2'
   );
 });
-test('USDLoader rejects unsupported binary USDC layers', async () => {
+test('USDLoader rejects truncated binary USDC layers', async () => {
   await expect(
     parse(new TextEncoder().encode('PXR-USDC\0\0'), USDLoader),
     'reports unsupported binary crates'
-  ).rejects.toThrow(/Binary USDC crate layers are not implemented/);
+  ).rejects.toThrow(/USDC: invalid input size/);
 });
 test('USDLoader reads uncompressed ASCII-root USDZ archives', async () => {
   const archive = makeUSDZArchive('scene.usda', '#usda 1.0\ndef Xform "PackagedWorld" {}');
@@ -255,9 +257,12 @@ test('USDLoader reads uncompressed ASCII-root USDZ archives', async () => {
   expect(stage.rootPrims[0].name, 'parses the archive root layer').toBe('PackagedWorld');
 });
 /** Builds a minimal stored ZIP archive containing one ASCII USD layer. */
-function makeUSDZArchive(filenameValue: string, contentsValue: string): ArrayBuffer {
+function makeUSDZArchive(filenameValue: string, contentsValue: string | ArrayBuffer): ArrayBuffer {
   const filename = new TextEncoder().encode(filenameValue);
-  const contents = new TextEncoder().encode(contentsValue);
+  const contents =
+    typeof contentsValue === 'string'
+      ? new TextEncoder().encode(contentsValue)
+      : new Uint8Array(contentsValue);
   const localHeaderLength = 30 + filename.length;
   const centralDirectoryOffset = localHeaderLength + contents.length;
   const centralDirectoryLength = 46 + filename.length;
@@ -286,3 +291,11 @@ function makeUSDZArchive(filenameValue: string, contentsValue: string): ArrayBuf
   view.setUint32(endOffset + 16, centralDirectoryOffset, true);
   return archive;
 }
+
+test('USDLoader reads binary-root USDZ archives', async () => {
+  const response = await fetch(new URL('./usd/data/sphere.usdc', import.meta.url));
+  const archive = makeUSDZArchive('scene.usdc', await response.arrayBuffer());
+  const stage = await USDLoaderWithParser.parse(archive, {usd: {compose: false}});
+  expect(stage.format).toBe('usdz');
+  expect(stage.rootPrims[0].name).toBe('Sphere');
+});

@@ -262,7 +262,7 @@
     "DRACO-README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev && npm run copy-libs-draco && npm run build-draco-workers",
+    "pre-build": "npm run copy-libs-usd && npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev && npm run copy-libs-draco && npm run build-draco-workers",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker-obj": "node ../../scripts/build-codec-worker.mjs src/obj/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -274,7 +274,8 @@
     "build-draco-loader-worker": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-worker.ts --outfile=dist/draco-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-draco-loader-worker-node": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-draco-writer-worker": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-draco-writer-worker-node": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-draco-writer-worker-node": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "copy-libs-usd": "mkdir -p dist/usd/libs && cp src/usd/libs/usdc-parser.js src/usd/libs/THREE-LICENSE src/usd/libs/README.md dist/usd/libs/"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"

@@ -1,0 +1,10 @@
+#usda 1.0
+# SPDX-License-Identifier: MIT
+# Copyright (c) vis.gl contributors
+def Xform "Zebra" {
+    def Xform "Zulu" {}
+    def Xform "Alpha" {}
+    def Xform "Middle" {}
+}
+def Xform "Alpha" {}
+def Xform "Middle" {}

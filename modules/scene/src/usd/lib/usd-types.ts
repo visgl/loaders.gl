@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 
@@ -76,7 +76,7 @@ export type USDPrim = {
 /** Parsed OpenUSD stage. */
 export type USDStage = {
   /** Container format used for the root layer. */
-  format: 'usda' | 'usdz';
+  format: 'usda' | 'usdc' | 'usdz';
   /** URL of the root layer when available. */
   url?: string;
   /** Root-layer metadata. */

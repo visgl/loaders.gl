@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
 import type {USDLoaderOptions, USDStage} from './lib/usd-types';
@@ -15,7 +15,7 @@ async function preload() {
   return USDLoaderWithParser;
 }
 
-/** Metadata-only loader for OpenUSD ASCII and uncompressed USDZ scenes. */
+/** Metadata-only loader for OpenUSD ASCII, supported binary crate layers, and stored USDZ scenes. */
 export const USDLoader = {
   dataType: null as unknown as USDStage,
   batchType: null as never,
@@ -23,11 +23,11 @@ export const USDLoader = {
   id: 'usd',
   module: 'scene',
   version: VERSION,
-  extensions: ['usd', 'usda', 'usdz'],
-  mimeTypes: ['model/vnd.usd', 'model/vnd.usda', 'model/vnd.usdz+zip'],
+  extensions: ['usd', 'usda', 'usdc', 'usdz'],
+  mimeTypes: ['model/vnd.usd', 'model/vnd.usda', 'model/vnd.usdc', 'model/vnd.usdz+zip'],
   text: true,
   binary: true,
-  tests: ['#usda', 'PK'],
+  tests: ['#usda', 'PXR-USDC', 'PK'],
   options: {
     usd: {
       compose: true,
