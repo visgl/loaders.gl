@@ -1333,7 +1333,7 @@ class USDCParser {
       throw new Error('USDC: dictionary depth limit exceeded');
     this._activeDictionaries.add(dictionaryOffset);
     try {
-      const count = checkedLength(reader.readUint64());
+      const count = checkedCount(reader.readUint64());
       if (count > Math.floor((this.buffer.byteLength - reader.tell()) / 20))
         throw new Error('USDC: truncated dictionary entries');
       const dictionary = Object.create(null);
