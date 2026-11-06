@@ -1,0 +1,23 @@
+#usda 1.0
+# SPDX-License-Identifier: MIT
+# Copyright (c) vis.gl contributors
+(
+    customLayerData = {
+        string author = "loaders.gl"
+        int revision = 2
+    }
+)
+def Xform "World" (
+    customData = {
+        string description = "metadata fixture"
+        bool disabled = false
+        asset texture = @textures/grade.png@
+        dictionary emptyMetadata = {}
+        dictionary nested = {
+            float scale = 1.5
+            int[] samples = [1, 2, 3]
+            string empty = ""
+        }
+    }
+) {
+}

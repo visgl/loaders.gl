@@ -55,10 +55,8 @@ export async function parseUSD(
   let stage: USDStage;
   if (isZIPArchive(data)) {
     const archive = parseUSDZArchive(data);
-    const rootFilename = Array.from(archive.keys()).find(filename =>
-      /\.(?:usd[ac]?)$/i.test(filename)
-    );
-    if (!rootFilename) {
+    const rootFilename = archive.keys().next().value;
+    if (!rootFilename || !/\.(?:usd[ac]?)$/i.test(rootFilename)) {
       throw new Error('USDZ archive has no supported USD root layer.');
     }
 

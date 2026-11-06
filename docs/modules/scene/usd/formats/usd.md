@@ -39,8 +39,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="pink"
   items={[
     {label: 'Reads', value: 'USDA text, the initial USDC crate subset, and stored USDZ'},
-    {label: 'Preserves', value: 'Prim hierarchy and values; composition support differs by encoding'},
-    {label: 'Output', value: 'Typed stage and prim data for application-specific use'},
+    {label: 'Preserves', value: 'Prim hierarchy, authored values and bounded dictionary metadata'},
+    {label: 'Output', value: 'Shared USDStage data without renderer objects'},
     {label: 'Boundary', value: 'USDC crate 0.8.0 subset; no full composition or compressed ZIP entries'}
   ]}
 />
@@ -113,7 +113,7 @@ Vector arrays retain tuple structure. Mesh attributes such as points and face in
 
 Supported ordinary prim, attribute, and relationship specifications include the implemented scalar/vector/array defaults, asset/path values, signed integers, and time-sample fields. Stored USDZ archives can have a supported binary root layer.
 
-Unsupported crate versions, dictionaries, value list operations, compound path list operations, variants, binary reference/payload composition, and other unsupported value encodings fail explicitly. Do not treat acceptance of one crate fixture as general OpenUSD interoperability. Integers outside JavaScript's safe range reject instead of silently losing precision.
+Unsupported crate versions, value list operations, compound path list operations, variants, binary reference/payload composition, and other unsupported value encodings fail explicitly. Do not treat acceptance of one crate fixture as general OpenUSD interoperability. Integers outside JavaScript's safe range reject instead of silently losing precision.
 
 Input is limited to 64 MiB. Logical collections are limited to four million entries; byte buffers and expanded vector components use a separate 256 MiB aggregate decoder-storage budget, and section offsets and seeks are checked. Files are parsed in memory; there is no random-access layer source.
 
@@ -124,3 +124,26 @@ The metadata export is `USDLoader` from `@loaders.gl/scene/usd`. For direct asyn
 The renderer-free crate decoder is adapted from THREE.js r187 with retained MIT terms. It adds no THREE.js runtime import or package dependency. Applications receive the same USDStage contract used by the ASCII loader.
 
 See the [OpenUSD format guide](#one-loader-one-stage-contract) and [USDLoader reference](../api-reference/usd-loader.md) for the surrounding ASCII/archive APIs; their broader ASCII features are separate from this binary subset.
+
+### Dictionary metadata and USDZ packages
+
+The authored-value follow-up adds bounded nested dictionary metadata, including
+empty dictionaries, supported primitive and numeric-array values, tokens, and
+asset-path values. Keys are retained as own data properties, including names such
+as `__proto__`. Complex vector, matrix, and quaternion values inside dictionaries
+remain unsupported until their typed shapes are covered explicitly.
+
+Dictionary nesting is limited to 64 levels and shares the decoder allocation and
+value-traversal budgets. Cycles, duplicate or invalid keys, and invalid offsets
+reject. This support requires the authored-value follow-up to the initial decoder.
+
+USDZ uses the same USDLoader: its first file must be a supported native USD layer,
+including binary content named .usd. A later layer is not selected as a fallback
+when the first file is an image. Native usdzip fixtures cover both .usdc and binary
+.usd roots and preservation of dictionary values. Stored, unencrypted entries follow the
+[USDZ specification](https://openusd.org/release/spec_usdz.html); compressed ZIP
+entries reject.
+
+Embedded texture bytes are not exposed as a public asset bundle by USDStage.
+The stage preserves authored asset paths and supported packaged layer composition;
+applications still choose how to obtain and render image resources.

@@ -461,6 +461,8 @@ class USDCParser {
    */
   parseData(buffer) {
     allocationBytes = 0;
+    this._valueReadCount = 0;
+    this._activeDictionaries = new Set();
 
     this.buffer = buffer instanceof ArrayBuffer ? buffer : buffer.buffer;
     this.reader = new BinaryReader(this.buffer);
@@ -964,6 +966,9 @@ class USDCParser {
     const view = this._conversionView;
 
     switch (type) {
+      case TypeEnum.Dictionary:
+        if (payload !== 0) throw new Error('USDC: invalid inline dictionary');
+        return Object.create(null);
       case TypeEnum.Bool:
         return payload !== 0;
       case TypeEnum.UChar:
@@ -1229,7 +1234,7 @@ class USDCParser {
       }
 
       case TypeEnum.Dictionary:
-        throw new Error('USDC: dictionaries are not supported in the initial decoder');
+        return this._readDictionary();
       case TypeEnum.TokenListOp:
       case TypeEnum.StringListOp:
       case TypeEnum.IntListOp:
@@ -1314,6 +1319,49 @@ class USDCParser {
         throw new Error(
           'USDC: unsupported encoding: ' + ['USDCParser: Unsupported scalar type', type].join(' ')
         );
+    }
+  }
+
+  /** Reads bounded string-keyed dictionary entries and their recursive value representations. */
+  _readDictionary() {
+    const reader = this.reader;
+    const dictionaryOffset = reader.tell();
+    this._activeDictionaries ||= new Set();
+    if (this._activeDictionaries.has(dictionaryOffset))
+      throw new Error('USDC: cyclic dictionary value');
+    if (this._activeDictionaries.size >= 64)
+      throw new Error('USDC: dictionary depth limit exceeded');
+    this._activeDictionaries.add(dictionaryOffset);
+    try {
+      const count = checkedLength(reader.readUint64());
+      if (count > Math.floor((this.buffer.byteLength - reader.tell()) / 20))
+        throw new Error('USDC: truncated dictionary entries');
+      const dictionary = Object.create(null);
+      for (let index = 0; index < count; index++) {
+        const stringIndex = reader.readUint32();
+        const key = this.tokens[this.strings[stringIndex]];
+        if (typeof key !== 'string' || Object.hasOwn(dictionary, key))
+          throw new Error('USDC: invalid dictionary key');
+        const offsetLocation = reader.tell();
+        const relativeOffset = reader.readInt64();
+        if (relativeOffset < 8) throw new Error('USDC: invalid dictionary value offset');
+        reader.seek(offsetLocation + relativeOffset);
+        const representation = new ValueRep(reader.readUint32(), reader.readUint32());
+        if (
+          representation.typeEnum < TypeEnum.Bool ||
+          (representation.typeEnum > TypeEnum.AssetPath &&
+            representation.typeEnum !== TypeEnum.Dictionary)
+        )
+          throw new Error('USDC: unsupported dictionary value type');
+        const nextEntry = reader.tell();
+        const value = this._readValue(representation);
+        dictionary[key] =
+          representation.typeEnum === TypeEnum.AssetPath ? {assetPath: value} : value;
+        reader.seek(nextEntry);
+      }
+      return dictionary;
+    } finally {
+      this._activeDictionaries.delete(dictionaryOffset);
     }
   }
 
