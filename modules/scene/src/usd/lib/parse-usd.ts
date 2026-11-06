@@ -6,7 +6,15 @@ import {parseUSDC} from './parse-usdc';
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {parseUSDA} from './parse-usda';
 import {parseUSDZArchive} from './parse-usdz';
-import type {USDAssetPath, USDLoaderOptions, USDPrim, USDStage, USDValue} from './usd-types';
+import type {
+  USDAssetPath,
+  USDEmbeddedAsset,
+  USDLoaderOptions,
+  USDPrim,
+  USDStage,
+  USDValue,
+  USDVariant
+} from './usd-types';
 
 type USDParseEnvironment = {
   /** Fetch implementation used for external layers. */
@@ -61,17 +69,39 @@ export async function parseUSD(
     }
 
     const archiveBase = 'https://usd.archive/';
+    const assets: Record<string, USDEmbeddedAsset> = Object.create(null);
     for (const [filename, content] of archive) {
-      environment.archiveFiles.set(new URL(filename, archiveBase).href, content);
+      const assetUrl = new URL(filename, archiveBase);
+      if (
+        filename.startsWith('/') ||
+        /^[a-z][a-z\d+.-]*:/i.test(filename) ||
+        filename.includes('\\') ||
+        /[\u0000-\u001f\u007f]/.test(filename) ||
+        filename.trim() !== filename ||
+        filename.split('/').some(segment => {
+          const normalizedSegment = segment.replace(/%2e/gi, '.');
+          return normalizedSegment === '.' || normalizedSegment === '..';
+        }) ||
+        assetUrl.origin !== new URL(archiveBase).origin ||
+        assetUrl.search ||
+        assetUrl.hash ||
+        assets[assetUrl.href]
+      ) {
+        throw new Error(`USDZ entry "${filename}" has an ambiguous package URL.`);
+      }
+      environment.archiveFiles.set(assetUrl.href, content);
+      assets[assetUrl.href] = createEmbeddedAsset(filename, content);
     }
     const rootUrl = new URL(rootFilename, archiveBase).href;
     stage = parseUSDLayer(archive.get(rootFilename)!, rootUrl);
     stage.format = 'usdz';
+    stage.assets = assets;
   } else {
     stage = parseUSDLayer(data, url);
   }
 
   if (stage.url) {
+    setAttributeSourceUrls(stage, stage.url);
     environment.layers.add(stage.url);
   }
   if (environment.options.usd?.compose !== false) {
@@ -82,6 +112,14 @@ export async function parseUSD(
     stage.url = url;
   }
   return stage;
+}
+
+/** Retains encoded file data and a conservative filename-based image MIME hint. */
+function createEmbeddedAsset(path: string, data: ArrayBuffer): USDEmbeddedAsset {
+  const extension = path.slice(path.lastIndexOf('.') + 1).toLowerCase();
+  const mimeType =
+    extension === 'png' ? 'image/png' : /^(?:jpe?g)$/.test(extension) ? 'image/jpeg' : undefined;
+  return mimeType ? {path, data, mimeType} : {path, data};
 }
 
 /** Selects a source location suitable for resolving referenced layers. */
@@ -130,6 +168,27 @@ function parseUSDLayer(data: ArrayBuffer, url?: string): USDStage {
     return parseUSDC(data, url);
   }
   return parseUSDA(TEXT_DECODER.decode(data), url);
+}
+
+/** Retains each attribute's authored layer before composition merges prims from different files. */
+function setAttributeSourceUrls(stage: USDStage, sourceUrl: string): void {
+  const pendingContents: (USDPrim | USDVariant)[] = [...stage.rootPrims];
+  while (pendingContents.length) {
+    const contents = pendingContents.pop()!;
+    for (const attribute of Object.values(contents.attributes)) {
+      attribute.sourceUrl = sourceUrl;
+    }
+    for (const child of contents.children) {
+      pendingContents.push(child);
+    }
+    if ('variants' in contents) {
+      for (const variants of Object.values(contents.variants)) {
+        for (const variant of Object.values(variants)) {
+          pendingContents.push(variant);
+        }
+      }
+    }
+  }
 }
 
 /** Recursively applies variants, references, overrides, and class filtering. */
@@ -228,6 +287,7 @@ async function loadReferencedStage(
         content = response.arrayBuffer();
       }
       const stage = parseUSDLayer(await content, url);
+      setAttributeSourceUrls(stage, url);
       environment.layers.add(url);
       return stage;
     })();

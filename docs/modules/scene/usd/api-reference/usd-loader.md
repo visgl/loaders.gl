@@ -32,7 +32,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Input', value: 'USDA text, the initial USDC crate subset, and stored USDZ assets.'},
     {label: 'Compose', value: 'ASCII references, variants, and overrides; binary support is narrower.'},
-    {label: 'Output', value: 'A typed USDStage with a hierarchy of prims.'},
+    {label: 'Output', value: 'A shared USDStage with prims and encoded USDZ asset bytes.'},
     {label: 'Control', value: 'Bound reference depth and reference loading through options.'}
   ]}
 />
@@ -83,6 +83,60 @@ Applications that need the parser-bearing object can import `USDLoaderWithParser
 Relative references require a source URL from `load()` or `core.baseUrl` when parsing in-memory
 content.
 
+## Embedded USDZ assets
+
+For USDZ input, `stage.assets` contains every stored package file, including texture images,
+USD layers and files with unknown extensions. Standalone USD/USDA/USDC layers omit this property.
+Extraction also runs when `usd.compose` is `false`.
+
+The collection is a plain data record keyed by resolved package URLs. Resolve an authored
+asset path relative to the attribute's `sourceUrl`, falling back to the owning prim's
+`sourceUrl` when needed. Attribute source URLs survive composition, even when one prim
+combines local attributes and attributes inherited from a layer in a different directory. `stage.url` identifies the input archive and is
+not the base URL for its embedded files.
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {USDLoader} from '@loaders.gl/scene';
+import type {USDAssetPath} from '@loaders.gl/scene';
+
+const stage = await load('model.usdz', USDLoader);
+// Find the shader prim using your application's scene traversal.
+const shader = stage.rootPrims[0].children[0];
+const attribute = shader.attributes['inputs:file'];
+const texturePath = attribute?.value as USDAssetPath | undefined;
+const sourceUrl = attribute?.sourceUrl || shader.sourceUrl;
+const textureUrl = texturePath && sourceUrl
+  ? new URL(texturePath.assetPath, sourceUrl).href
+  : undefined;
+const texture = textureUrl ? stage.assets?.[textureUrl] : undefined;
+if (texture) {
+  // Pass the original encoded bytes to an image decoder chosen by the application.
+  console.log(texture.path, texture.mimeType, texture.data.byteLength);
+}
+```
+
+Each `USDEmbeddedAsset` contains:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `path` | `string` | Original archive-relative filename, including directories and case |
+| `data` | `ArrayBuffer` | Exact encoded file bytes, copied from the input archive |
+| `mimeType` | `string` or absent | Filename-based PNG/JPEG hint, not validation of the encoded content |
+
+The returned files do not share the caller's input buffer. They do share storage with the
+loader's internal package lookup, so extraction does not make another copy of every file.
+Their lifetime is the lifetime of the returned stage or references retained by the application.
+No object URLs, image objects, GPU textures, color conversion or pixel decoding are created.
+
+Missing asset paths have no entry; texture extraction never fetches them. Reference loading
+is controlled separately by `usd.loadReferences`. Unsupported image encodings are still
+available as bytes with no MIME hint. Invalid/truncated stored entries, encryption,
+duplicate names and ambiguous package URLs reject instead of returning misleading assets.
+This includes literal or percent-encoded dot segments and control/edge-whitespace names
+that URL parsing would normalize. Ordinary interior spaces and dots within filenames are preserved.
+The sum of copied stored bytes cannot exceed the input archive size.
+
 ## Limitations
 
 The same loader returns USDStage for text and binary layers. Binary USDC support
@@ -95,8 +149,8 @@ enable unsupported binary features.
 
 ## Shared output
 
-A stage contains format, optional url, metadata, rootPrims, and layers. Each prim
+A stage contains format, optional url, metadata, rootPrims, layers and an optional USDZ assets collection. Each prim
 retains name, path, type, specifier, attributes, metadata, variants, and children.
-Attributes contain name, authored type, value, and metadata. Supported USDC values
+Attributes contain name, authored type, value, metadata and optional sourceUrl provenance. Supported USDC values
 use this same contract, including asset/path objects and authored time samples.
 No mesh construction or renderer object is implied by a prim type such as Mesh.
