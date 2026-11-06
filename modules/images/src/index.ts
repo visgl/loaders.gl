@@ -104,3 +104,6 @@ export type {ColorLUT} from './lut/lut-types';
 
 export {IESLoader} from './ies-loader-types';
 export type {IESProfile} from './ies/parse-ies';
+
+export {EXRLoader} from './exr-loader-types';
+export type {EXRImage, EXRChannel} from './exr/parse-exr';

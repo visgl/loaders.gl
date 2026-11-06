@@ -269,6 +269,11 @@
       "import": "./dist/ies-loader.js",
       "require": "./dist/ies-loader.cjs"
     },
+    "./exr-loader": {
+      "types": "./dist/exr-loader.d.ts",
+      "import": "./dist/exr-loader.js",
+      "require": "./dist/exr-loader.cjs"
+    },
     "./cube-lut-loader": {
       "types": "./dist/cube-lut-loader.d.ts",
       "import": "./dist/cube-lut-loader.js",

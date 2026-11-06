@@ -152,6 +152,8 @@ Sharp is loaded only when Node image decoding or encoding is requested.
 
 - [Color LUTs: Cube, 3dl and PNG](./color-lut/README.md)
 
+- [OpenEXR](./openexr/README.md)
+
 - [Basis Universal](./textures/formats/basis.md)
 - [Compressed Textures](./textures/formats/compressed-textures.md)
 - [Crunch texture](./textures/formats/crunch.md)
