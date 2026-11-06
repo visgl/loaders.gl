@@ -9,6 +9,8 @@ import type {USDAssetPath, USDEmbeddedAsset, USDStage} from '@loaders.gl/scene';
 // Regenerate from data/embedded-assets using usdzip ../embedded-assets.usdz scene/root.usda
 // parts/model.usda textures/albedo.PNG alternate/albedo.jpg parts/albedo.PNG alternate/albedo.PNG textures/palette.bin.
 // Native tools are fixture-generation tools only; tests have no runtime dependency on them.
+// The binary-root package uses usdcat parts/model.usda -o parts/model.usdc, then usdzip
+// ../embedded-assets-binary.usdz parts/model.usdc parts/albedo.PNG alternate/albedo.jpg.
 
 let source: ArrayBuffer;
 let stage: USDStage;
@@ -84,6 +86,27 @@ test('USDZ extraction retains encoded bytes without sharing the caller input buf
 test('standalone USD layers do not expose an embedded asset collection', async () => {
   const parsed = await USDLoaderWithParser.parseText('#usda 1.0\ndef Xform "World" {}');
   expect(parsed.assets).toBeUndefined();
+});
+
+test('USDZ exposes texture bytes and attribute provenance for a native USDC root', async () => {
+  const binarySource = await (
+    await fetch(new URL('./data/embedded-assets-binary.usdz', import.meta.url))
+  ).arrayBuffer();
+  const parsed = await USDLoaderWithParser.parse(binarySource, {usd: {compose: false}});
+  const root = parsed.rootPrims[0];
+  const inherited = root.attributes.inherited;
+  expect(inherited.sourceUrl).toBe(archiveBase + 'parts/model.usdc');
+  const pngUrl = new URL((inherited.value as USDAssetPath).assetPath, inherited.sourceUrl).href;
+  expect(parsed.assets![pngUrl].mimeType).toBe('image/png');
+  expect(new Uint8Array(parsed.assets![pngUrl].data)).toEqual(
+    new Uint8Array(stage.assets![archiveBase + 'parts/albedo.PNG'].data)
+  );
+  const texture = root.children[0].attributes['inputs:file'];
+  const jpegUrl = new URL((texture.value as USDAssetPath).assetPath, texture.sourceUrl).href;
+  expect(parsed.assets![jpegUrl].mimeType).toBe('image/jpeg');
+  expect(new Uint8Array(parsed.assets![jpegUrl].data)).toEqual(
+    new Uint8Array(stage.assets![archiveBase + 'alternate/albedo.jpg'].data)
+  );
 });
 
 /** Locates ZIP records in the tiny immutable fixture for malformed-input regressions. */
