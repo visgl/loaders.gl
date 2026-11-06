@@ -241,6 +241,11 @@
       "types": "./dist/materialx-loader.d.ts",
       "import": "./dist/materialx-loader.js",
       "require": "./dist/materialx-loader.cjs"
+    },
+    "./stl-loader": {
+      "types": "./dist/stl-loader.d.ts",
+      "import": "./dist/stl-loader.js",
+      "require": "./dist/stl-loader.cjs"
     }
   },
   "sideEffects": false,
@@ -254,7 +259,8 @@
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
     "third-party-licenses",
-    "DRACO-README.md"
+    "DRACO-README.md",
+    "STL.md"
   ],
   "scripts": {
     "pre-build": "npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev && npm run copy-libs-draco && npm run build-draco-workers",

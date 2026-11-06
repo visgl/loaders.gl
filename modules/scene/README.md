@@ -32,3 +32,5 @@ and applicable notices, and the project-wide [Attributions and Credits](https://
 ## Draco geometry
 
 `DracoLoader` metadata is available from the scene root. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco-loader` for direct parsing, `DracoWriter` and encoding helpers from `@loaders.gl/scene/draco-writer`, and `getDracoLibraryOptions` from `@loaders.gl/scene/draco-library-options` for bundled runtime URLs. Draco supports both meshes and point clouds.
+
+- [STL](./STL.md): ASCII and binary triangle meshes.
