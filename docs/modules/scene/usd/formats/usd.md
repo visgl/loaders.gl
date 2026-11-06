@@ -133,6 +133,13 @@ asset-path values. Keys are retained as own data properties, including names suc
 as `__proto__`. Complex vector, matrix, and quaternion values inside dictionaries
 remain unsupported until their typed shapes are covered explicitly.
 
+| Dictionary values | Supported representation |
+| --- | --- |
+| Scalars | Boolean, uchar, int32/uint32, safe int64/uint64, half/float/double, string, token and asset path |
+| Arrays | Int32/uint32, half/float/double, string and token; supported numeric compression is decoded without changing precision |
+| Nested data | Bounded dictionaries, including empty dictionaries and special keys as own properties |
+| Deferred | Boolean/uchar/int64/uint64/asset arrays and complex vector, matrix or quaternion dictionary values |
+
 Dictionary nesting is limited to 64 levels and shares the decoder allocation and
 value-traversal budgets. Cycles, duplicate or invalid keys, and invalid offsets
 reject. This support requires the authored-value follow-up to the initial decoder.

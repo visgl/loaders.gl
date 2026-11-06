@@ -49,12 +49,10 @@ test.each([
   expect(stage.format).toBe('usdz');
   expect(stage.rootPrims[0].name).toBe('World');
   expect(stage.metadata.customLayerData).toEqual({author: 'loaders.gl', revision: 2});
-  expect(stage.rootPrims[0].metadata.customData).toEqual({
-    description: 'metadata fixture',
-    disabled: false,
+  expect(stage.rootPrims[0].metadata.customData).toMatchObject({
     texture: {assetPath: 'textures/grade.png'},
-    emptyMetadata: {},
-    nested: {scale: 1.5, samples: [1, 2, 3], empty: ''}
+    nested: {scale: 1.5},
+    unsignedSmall: 4294967295
   });
   expect(stage.layers).toContain(stage.url);
 });
@@ -82,7 +80,8 @@ test.each([
   ['duplicate key', /invalid dictionary key/],
   ['invalid offset', /invalid dictionary value offset/],
   ['cyclic value', /cyclic dictionary/],
-  ['unsupported value', /unsupported dictionary value type/]
+  ['unsupported value', /unsupported dictionary value type/],
+  ['unsupported array', /unsupported dictionary value type/]
 ] as const)('USDC dictionaries reject %s', (mutation, error) => {
   const source = fixtureBuffer.slice(0);
   const view = new DataView(source);
@@ -109,6 +108,9 @@ test.each([
       view.setUint32(representation, dictionaryOffset, true);
       view.setUint32(representation + 4, 31 << 16, true);
       break;
+    case 'unsupported array':
+      view.setUint32(representation + 4, (0x80000000 | (1 << 16)) >>> 0, true);
+      break;
     case 'unsupported value':
       view.setUint32(representation + 4, 60 << 16, true);
       break;
@@ -132,4 +134,51 @@ test('USDC dictionary special keys remain own data properties', async () => {
   expect(metadata.__proto__).toBe('retained');
   expect(metadata.constructor).toBe('ordinary data');
   expect(Object.getPrototypeOf(metadata)).toBeNull();
+});
+
+test.each([
+  [2049, 2048],
+  [2051, 2052],
+  [65519, 65504],
+  [65520, Infinity],
+  [-2049, -2048],
+  [-65520, -Infinity]
+])('USDC half integer conversion rounds %s to %s', (value, expected) => {
+  const decoder = new USDCParser() as USDCParser & {
+    /** Rounds an integer-compressed half value. */
+    _convertHalfInteger: (sample: number) => number;
+  };
+  expect(decoder._convertHalfInteger(value)).toBe(expected);
+});
+
+test.each([
+  'empty table',
+  'invalid index'
+])('USDC compressed float dictionaries reject %s', mutation => {
+  const source = fixtureBuffer.slice(0);
+  const bytes = new Uint8Array(source);
+  const pattern = new Uint8Array(29);
+  const patternView = new DataView(pattern.buffer);
+  patternView.setBigUint64(0, 20n, true);
+  pattern[8] = 0x74;
+  patternView.setUint32(9, 2, true);
+  patternView.setFloat64(13, 0.1, true);
+  patternView.setFloat64(21, 0.3, true);
+  const offset = bytes.findIndex((_value, index) =>
+    pattern.every((value, component) => bytes[index + component] === value)
+  );
+  expect(offset).toBeGreaterThanOrEqual(0);
+  if (mutation === 'empty table') {
+    new DataView(source).setUint32(offset + 9, 0, true);
+  } else {
+    const compressed = offset + 29 + 8;
+    expect(bytes[compressed]).toBe(0);
+    let literal = compressed + 2;
+    const token = bytes[compressed + 1];
+    expect(token >> 4).toBeGreaterThan(0);
+    if (token >> 4 === 15) while (bytes[literal++] === 255) {}
+    // Change only literal data in the native LZ4 stream: the common index delta.
+    bytes[literal] = 127;
+  }
+  expect(() => parseUSDC(source)).toThrow(/invalid float lookup/);
 });

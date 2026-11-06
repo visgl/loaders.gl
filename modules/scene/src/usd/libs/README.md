@@ -20,3 +20,8 @@ representations, retaining false, empty strings, empty dictionaries and asset pa
 It rejects duplicate/invalid keys, cycles, nesting beyond 64, and unsupported
 complex dictionary value types. These checks extend the r187 source while
 preserving its MIT attribution; no THREE runtime is imported.
+
+The authored-value extension decodes inline half and signed/unsigned 64-bit scalars,
+string arrays, and compressed half/double arrays. Dictionary array support is an
+explicit allowlist; unsupported representations fail before payload decoding.
+Half integer compression uses ties-to-even rounding, and lookup indices are checked.

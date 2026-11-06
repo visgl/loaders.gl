@@ -100,6 +100,17 @@ const TypeEnum = {
   AnimationBlock: 60
 };
 
+/** Scalar arrays with an implemented dictionary value representation. */
+const DICTIONARY_ARRAY_TYPES = new Set([
+  TypeEnum.Int,
+  TypeEnum.UInt,
+  TypeEnum.Float,
+  TypeEnum.Double,
+  TypeEnum.Half,
+  TypeEnum.String,
+  TypeEnum.Token
+]);
+
 // Field set terminator marker
 const FIELD_SET_TERMINATOR = 0xffffffff;
 
@@ -974,9 +985,13 @@ class USDCParser {
       case TypeEnum.UChar:
         return payload & 0xff;
       case TypeEnum.Int:
+      case TypeEnum.Int64:
         return payload | 0;
       case TypeEnum.UInt:
+      case TypeEnum.UInt64:
         return payload >>> 0;
+      case TypeEnum.Half:
+        return this._halfToFloat(payload & 0xffff);
       case TypeEnum.Float: {
         view.setUint32(0, payload, true);
         return view.getFloat32(0, true);
@@ -1350,7 +1365,8 @@ class USDCParser {
         if (
           representation.typeEnum < TypeEnum.Bool ||
           (representation.typeEnum > TypeEnum.AssetPath &&
-            representation.typeEnum !== TypeEnum.Dictionary)
+            representation.typeEnum !== TypeEnum.Dictionary) ||
+          (representation.isArray && !DICTIONARY_ARRAY_TYPES.has(representation.typeEnum))
         )
           throw new Error('USDC: unsupported dictionary value type');
         const nextEntry = reader.tell();
@@ -1466,11 +1482,15 @@ class USDCParser {
         return arr;
       }
 
+      case TypeEnum.String:
       case TypeEnum.Token: {
         const arr = [];
         for (let i = 0; i < size; i++) {
           const index = reader.readUint32();
-          arr.push(this.tokens[index] || '');
+          const tokenIndex = type === TypeEnum.String ? this.strings[index] : index;
+          const value = this.tokens[tokenIndex];
+          if (typeof value !== 'string') throw new Error('USDC: invalid string array index');
+          arr.push(value);
         }
 
         return arr;
@@ -1506,6 +1526,8 @@ class USDCParser {
           : values;
       }
 
+      case TypeEnum.Half:
+      case TypeEnum.Double:
       case TypeEnum.Float: {
         // Float compression: 'i' = compressed as ints, 't' = lookup table
         const code = reader.readInt8();
@@ -1517,13 +1539,27 @@ class USDCParser {
             compressed.buffer.slice(compressed.byteOffset, compressed.byteOffset + compressedSize),
             size
           );
-          const floats = new Float32Array(checkedLength(size));
-          for (let i = 0; i < size; i++) floats[i] = ints[i];
+          const floats =
+            type === TypeEnum.Double
+              ? new Float64Array(checkedLength(size))
+              : new Float32Array(checkedLength(size));
+          for (let i = 0; i < size; i++)
+            floats[i] = type === TypeEnum.Half ? this._convertHalfInteger(ints[i]) : ints[i];
           return floats;
         } else if (code === FLOAT_COMPRESSION_LUT) {
-          const lutSize = reader.readUint32();
-          const lut = new Float32Array(checkedLength(lutSize));
-          for (let i = 0; i < lutSize; i++) lut[i] = reader.readFloat32();
+          const lutSize = checkedCount(reader.readUint32());
+          if (lutSize === 0) throw new Error('USDC: invalid float lookup table');
+          const lut =
+            type === TypeEnum.Double
+              ? new Float64Array(checkedLength(lutSize))
+              : new Float32Array(checkedLength(lutSize));
+          for (let i = 0; i < lutSize; i++)
+            lut[i] =
+              type === TypeEnum.Half
+                ? this._readHalf()
+                : type === TypeEnum.Double
+                  ? reader.readFloat64()
+                  : reader.readFloat32();
 
           const compressedSize = reader.readUint64();
           const compressed = reader.readBytes(compressedSize);
@@ -1532,8 +1568,15 @@ class USDCParser {
             size
           );
 
-          const floats = new Float32Array(checkedLength(size));
-          for (let i = 0; i < size; i++) floats[i] = lut[indices[i]];
+          const floats =
+            type === TypeEnum.Double
+              ? new Float64Array(checkedLength(size))
+              : new Float32Array(checkedLength(size));
+          for (let i = 0; i < size; i++) {
+            if (indices[i] < 0 || indices[i] >= lutSize)
+              throw new Error('USDC: invalid float lookup index');
+            floats[i] = lut[indices[i]];
+          }
           return floats;
         }
 
@@ -1549,6 +1592,22 @@ class USDCParser {
             ['USDCParser: Unsupported compressed array type', type].join(' ')
         );
     }
+  }
+
+  /** Rounds integer-compressed half samples using IEEE ties-to-even semantics. */
+  _convertHalfInteger(value) {
+    const absoluteValue = Math.abs(value);
+    if (absoluteValue <= 2048) return value;
+    if (absoluteValue >= 65520) return Math.sign(value) * Infinity;
+    const spacing = 2 ** (Math.floor(Math.log2(absoluteValue)) - 10);
+    const scaledValue = absoluteValue / spacing;
+    const lowerValue = Math.floor(scaledValue);
+    const fractionValue = scaledValue - lowerValue;
+    const roundedValue =
+      fractionValue > 0.5 || (fractionValue === 0.5 && lowerValue % 2 !== 0)
+        ? lowerValue + 1
+        : lowerValue;
+    return Math.sign(value) * roundedValue * spacing;
   }
 
   _readHalf() {
