@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 /** One decoded full-resolution OpenEXR channel. */
 export type EXRChannel = {
   /** Authored channel name, including any layer prefix. */

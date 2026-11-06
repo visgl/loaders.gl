@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {EXRLoader} from './exr-loader-types';
 import {parseEXR} from './exr/parse-exr';
 const {preload: _preload, ...metadata} = EXRLoader;
