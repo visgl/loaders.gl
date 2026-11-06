@@ -1,5 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// loaders.gl
 import type {Mesh} from '@loaders.gl/core/schema';
 import {deduceMeshSchema, getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 

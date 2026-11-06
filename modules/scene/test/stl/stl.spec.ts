@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
 import {STLLoaderWithParser} from '../../src/stl-loader';
 

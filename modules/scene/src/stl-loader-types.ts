@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 /** Package version injected by the build. */
 // @ts-ignore __VERSION__ is injected during compilation.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 // loaders.gl
-// SPDX-License-Identifier: MIT
 import type {Mesh} from '@loaders.gl/core/schema';
 
 /** Loads the STL parser on demand. */

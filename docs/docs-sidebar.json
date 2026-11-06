@@ -1573,7 +1573,8 @@
               "modules/scene/gltf/formats/glb",
               "modules/scene/gltf/formats/gltf",
               "modules/scene/obj/formats/obj",
-              "modules/scene/usd/formats/usd"
+              "modules/scene/usd/formats/usd",
+              "modules/scene/stl/README"
             ],
             "link": {
               "type": "generated-index",
