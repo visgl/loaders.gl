@@ -101,3 +101,6 @@ export type {ThreeDLLUTLoaderOptions} from './3dl-lut-loader-types';
 export {ImageLUTLoader} from './image-lut-loader-types';
 export type {ImageLUTLoaderOptions} from './image-lut-loader-types';
 export type {ColorLUT} from './lut/lut-types';
+
+export {IESLoader} from './ies-loader-types';
+export type {IESProfile} from './ies/parse-ies';

@@ -140,7 +140,10 @@
         "modules/images/src/3dl-lut-loader.ts",
         "modules/images/src/image-lut-loader-types.ts",
         "modules/images/src/image-lut-loader.ts",
-        "modules/images/src/lut/"
+        "modules/images/src/lut/",
+        "modules/images/src/ies-loader-types.ts",
+        "modules/images/src/ies-loader.ts",
+        "modules/images/src/ies/"
       ],
       "sourcePathReason": "Preserve the original image implementation gate, including its 89% function requirement. Texture and video implementations retain their unchanged independent images/textures and images/video gates; all image-package production files are checked for a coverage owner."
     },
@@ -1213,7 +1216,10 @@
         "modules/images/src/3dl-lut-loader.ts",
         "modules/images/src/image-lut-loader-types.ts",
         "modules/images/src/image-lut-loader.ts",
-        "modules/images/src/lut/"
+        "modules/images/src/lut/",
+        "modules/images/src/ies-loader-types.ts",
+        "modules/images/src/ies-loader.ts",
+        "modules/images/src/ies/"
       ],
       "browser": {
         "statements": 82,

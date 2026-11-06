@@ -264,6 +264,11 @@
       "import": "./dist/image-loader-types.js",
       "require": "./dist/image-loader-types.cjs"
     },
+    "./ies-loader": {
+      "types": "./dist/ies-loader.d.ts",
+      "import": "./dist/ies-loader.js",
+      "require": "./dist/ies-loader.cjs"
+    },
     "./cube-lut-loader": {
       "types": "./dist/cube-lut-loader.d.ts",
       "import": "./dist/cube-lut-loader.js",
@@ -293,6 +298,7 @@
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
     "third-party-licenses",
+    "IES.md",
     "COLOR-LUT.md"
   ],
   "scripts": {
