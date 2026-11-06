@@ -521,7 +521,7 @@ class USDCParser {
     const reader = this.reader;
     reader.seek(section.start);
 
-    const numTokens = reader.readUint64();
+    const numTokens = checkedLength(reader.readUint64());
     this.tokens = [];
 
     if (this.version.major === 0 && this.version.minor < 4) {
@@ -534,6 +534,7 @@ class USDCParser {
         let strEnd = strStart;
         while (strEnd < tokensData.length && tokensData[strEnd] !== 0) strEnd++;
 
+        if (strEnd >= tokensData.length) throw new Error('USDC: unterminated token data');
         this.tokens.push(textDecoder.decode(tokensData.subarray(strStart, strEnd)));
         strStart = strEnd + 1;
       }
@@ -550,6 +551,7 @@ class USDCParser {
         let strEnd = strStart;
         while (strEnd < tokensData.length && tokensData[strEnd] !== 0) strEnd++;
 
+        if (strEnd >= tokensData.length) throw new Error('USDC: unterminated token data');
         this.tokens.push(textDecoder.decode(tokensData.subarray(strStart, strEnd)));
         strStart = strEnd + 1;
       }
@@ -566,7 +568,7 @@ class USDCParser {
     const reader = this.reader;
     reader.seek(section.start);
 
-    const numStrings = reader.readUint64();
+    const numStrings = checkedLength(reader.readUint64());
     this.strings = [];
 
     for (let i = 0; i < numStrings; i++) {
@@ -599,7 +601,7 @@ class USDCParser {
       }
     } else {
       // Compressed fields (version >= 0.4.0)
-      const numFields = reader.readUint64();
+      const numFields = checkedLength(reader.readUint64());
 
       // Read compressed token indices
       const tokenIndicesCompressedSize = reader.readUint64();
@@ -648,7 +650,7 @@ class USDCParser {
       }
     } else {
       // Compressed field sets
-      const numFieldSets = reader.readUint64();
+      const numFieldSets = checkedLength(reader.readUint64());
       const compressedSize = reader.readUint64();
       const compressed = reader.readBytes(compressedSize);
 
@@ -855,7 +857,7 @@ class USDCParser {
       }
     } else {
       // Compressed specs
-      const numSpecs = reader.readUint64();
+      const numSpecs = checkedLength(reader.readUint64());
 
       const compressedSize1 = reader.readUint64();
       const pathIndicesCompressed = reader.readBytes(compressedSize1);
@@ -1080,7 +1082,7 @@ class USDCParser {
     reader.seek(valuesStart + valuesRelOffset);
 
     // Read number of values
-    const numValues = reader.readUint64();
+    const numValues = checkedLength(reader.readUint64());
 
     // Read all ValueReps
     const valueReps = [];
@@ -1187,7 +1189,7 @@ class USDCParser {
       }
 
       case TypeEnum.TokenVector: {
-        const count = reader.readUint64();
+        const count = checkedLength(reader.readUint64());
         const tokens = [];
         for (let i = 0; i < count; i++) {
           const index = reader.readUint32();
@@ -1198,7 +1200,7 @@ class USDCParser {
       }
 
       case TypeEnum.PathVector: {
-        const count = reader.readUint64();
+        const count = checkedLength(reader.readUint64());
         const paths = [];
         for (let i = 0; i < count; i++) {
           const index = reader.readUint32();
@@ -1210,7 +1212,7 @@ class USDCParser {
 
       case TypeEnum.DoubleVector: {
         // DoubleVector is a count-prefixed array of doubles
-        const count = reader.readUint64();
+        const count = checkedLength(reader.readUint64());
         const arr = new Float64Array(checkedLength(count));
         for (let i = 0; i < count; i++) arr[i] = reader.readFloat64();
         return arr;
@@ -1251,7 +1253,7 @@ class USDCParser {
         const hasAppendItems = (flags & 0x40) !== 0;
 
         const readPathList = () => {
-          const itemCount = reader.readUint64();
+          const itemCount = checkedLength(reader.readUint64());
           const paths = [];
           for (let i = 0; i < itemCount; i++) {
             const pathIdx = reader.readUint32();
@@ -1284,7 +1286,7 @@ class USDCParser {
       }
 
       case TypeEnum.VariantSelectionMap: {
-        const elementCount = reader.readUint64();
+        const elementCount = checkedLength(reader.readUint64());
         const map = Object.create(null);
 
         for (let i = 0; i < elementCount; i++) {
@@ -1343,7 +1345,7 @@ class USDCParser {
       }
 
       case TypeEnum.UInt: {
-        const arr = new Uint32Array(size);
+        const arr = new Uint32Array(checkedLength(size));
         for (let i = 0; i < size; i++) arr[i] = reader.readUint32();
         return arr;
       }

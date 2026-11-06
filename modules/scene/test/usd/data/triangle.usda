@@ -10,6 +10,7 @@ def Xform "World" {
         int[] faceVertexCounts = [3]
         int[] faceVertexIndices = [0, 1, 2]
         color3f[] primvars:displayColor = [(0.1, 0.4, 0.9)]
+        custom uint[] unsignedValues = [4045620583, 2309737967, 324508639]
         custom int negative = -7
         custom float weight.timeSamples = {0: 1, 1: 2}
         custom asset texture = @texture.png@

@@ -113,3 +113,33 @@ test.each([
   }
   expect(() => parseUSDC(source)).toThrow(error);
 });
+
+test('USDC bounds token counts before allocating decoded entries', async () => {
+  const source = await readFixture('sphere.usdc');
+  const view = new DataView(source);
+  const table = Number(view.getBigUint64(16, true));
+  const entry = table + 8;
+  expect(new TextDecoder().decode(new Uint8Array(source, entry, 6))).toBe('TOKENS');
+  const section = Number(view.getBigUint64(entry + 16, true));
+  view.setBigUint64(section, 4_000_001n, true);
+  expect(() => parseUSDC(source)).toThrow(/decoded allocation limit/);
+});
+
+test('USDC preserves unsigned arrays and bounds their declared allocations', async () => {
+  const source = await readFixture('triangle.usdc');
+  const values = [4045620583, 2309737967, 324508639];
+  expect(parseUSDC(source).rootPrims[0].children[0].attributes.unsignedValues.value).toEqual(
+    values
+  );
+  const pattern = new Uint8Array(20);
+  const patternView = new DataView(pattern.buffer);
+  patternView.setBigUint64(0, 3n, true);
+  values.forEach((value, index) => patternView.setUint32(8 + index * 4, value, true));
+  const bytes = new Uint8Array(source);
+  const offset = bytes.findIndex((_value, index) =>
+    pattern.every((value, component) => bytes[index + component] === value)
+  );
+  expect(offset).toBeGreaterThanOrEqual(0);
+  new DataView(source).setBigUint64(offset, 4_000_001n, true);
+  expect(() => parseUSDC(source)).toThrow(/decoded allocation limit/);
+});
