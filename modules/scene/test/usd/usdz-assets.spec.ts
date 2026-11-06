@@ -96,6 +96,45 @@ function getRecordOffsets(bytes: ArrayBuffer, signature: number): number[] {
   return offsets;
 }
 
+/** Renames the last fixture entry in both ZIP headers without changing its encoded bytes. */
+function renameLastEntry(bytes: ArrayBuffer, filename: string): string {
+  const view = new DataView(bytes);
+  const directories = getRecordOffsets(bytes, 0x02014b50);
+  const entry = directories[directories.length - 1];
+  const local = view.getUint32(entry + 42, true);
+  const filenameLength = view.getUint16(entry + 28, true);
+  const paddedFilename = filename.padEnd(filenameLength, 'x');
+  const replacement = new TextEncoder().encode(paddedFilename);
+  expect(replacement.length).toBe(filenameLength);
+  new Uint8Array(bytes, entry + 46, filenameLength).set(replacement);
+  new Uint8Array(bytes, local + 30, filenameLength).set(replacement);
+  return paddedFilename;
+}
+
+test.each([
+  '%2e/a.png',
+  '%2E%2e/a.png',
+  '.%2e/a.png',
+  '%2e./a.png',
+  '.\t./a.png',
+  ' a.png'
+])('USDZ rejects URL-normalized package identity %j', async filename => {
+  const bytes = source.slice(0);
+  renameLastEntry(bytes, filename);
+  await expect(USDLoaderWithParser.parse(bytes, {usd: {compose: false}})).rejects.toThrow(
+    /ambiguous package URL/
+  );
+});
+
+test('USDZ preserves spaces and encoded dots within a filename', async () => {
+  const bytes = source.slice(0);
+  const filename = renameLastEntry(bytes, 'textures/ab c%2e.png');
+  const parsed = await USDLoaderWithParser.parse(bytes, {usd: {compose: false}});
+  const asset = parsed.assets![new URL(filename, archiveBase).href];
+  expect(asset.path).toBe(filename);
+  expect(Array.from(new Uint8Array(asset.data))).toEqual([0, 127, 255]);
+});
+
 test.each([
   'compressed',
   'encrypted',

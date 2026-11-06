@@ -133,6 +133,8 @@ Missing asset paths have no entry; texture extraction never fetches them. Refere
 is controlled separately by `usd.loadReferences`. Unsupported image encodings are still
 available as bytes with no MIME hint. Invalid/truncated stored entries, encryption,
 duplicate names and ambiguous package URLs reject instead of returning misleading assets.
+This includes literal or percent-encoded dot segments and control/edge-whitespace names
+that URL parsing would normalize. Ordinary interior spaces and dots within filenames are preserved.
 The sum of copied stored bytes cannot exceed the input archive size.
 
 ## Limitations

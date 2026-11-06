@@ -76,7 +76,12 @@ export async function parseUSD(
         filename.startsWith('/') ||
         /^[a-z][a-z\d+.-]*:/i.test(filename) ||
         filename.includes('\\') ||
-        filename.split('/').some(segment => segment === '.' || segment === '..') ||
+        /[\u0000-\u001f\u007f]/.test(filename) ||
+        filename.trim() !== filename ||
+        filename.split('/').some(segment => {
+          const normalizedSegment = segment.replace(/%2e/gi, '.');
+          return normalizedSegment === '.' || normalizedSegment === '..';
+        }) ||
         assetUrl.origin !== new URL(archiveBase).origin ||
         assetUrl.search ||
         assetUrl.hash ||
