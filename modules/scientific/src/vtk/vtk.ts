@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 /** Parsed legacy VTK ASCII numeric attribute. */
 export type VTKDataArray = {
@@ -59,6 +59,7 @@ function numbers(tokens: string[], index: number, count: number): [Float32Array,
     const value = Number(tokens[index + i]);
     requireVTK(Number.isFinite(value), 'invalid numeric value');
     data[i] = value;
+    requireVTK(Number.isFinite(data[i]), 'float32 overflow');
   }
   return [data, index + count];
 }
@@ -186,6 +187,32 @@ export function parseVTKLegacy(input: string): VTKDataset {
     } else {
       throw new Error('VTK: unsupported keyword ' + keyword);
     }
+  }
+  if (result.cells) {
+    requireVTK(result.points, 'cells require points');
+    const pointCount = result.points.length / 3;
+    requireVTK(
+      result.cells.connectivity.every(index => index < pointCount),
+      'vertex index out of range'
+    );
+  }
+  const pointCount = result.points
+    ? result.points.length / 3
+    : result.dimensions?.reduce((product, dimension) => product * dimension, 1);
+  if (pointCount !== undefined) {
+    requireVTK(
+      result.pointData.every(array => array.data.length / array.components === pointCount),
+      'point attribute count mismatch'
+    );
+  }
+  const cellCount = result.cells
+    ? result.cells.offsets.length - 1
+    : result.dimensions?.reduce((product, dimension) => product * Math.max(dimension - 1, 1), 1);
+  if (cellCount !== undefined) {
+    requireVTK(
+      result.cellData.every(array => array.data.length / array.components === cellCount),
+      'cell attribute count mismatch'
+    );
   }
   return result;
 }

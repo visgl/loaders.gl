@@ -21,7 +21,7 @@ npm install @loaders.gl/core @loaders.gl/scientific
 | — | `/scientific-array` | Common scientific-array interfaces and helpers | Shared source contracts |
 | — | `/vector-field` | Vector-field processing helpers | Explicit processing entrypoint |
 
-The root exports NetCDF and Zarr metadata loaders, NRRDLoader, and shared types. It does not re-export every
+The root exports NetCDF, Zarr, NRRD and VTK metadata loaders and shared types. It does not re-export every
 parser or experimental source. For direct NetCDF parsing:
 
 ```ts
@@ -48,6 +48,8 @@ For parser access use the flat `@loaders.gl/scientific/npy-loader` subpath.
 ## Format guides
 
 - [NRRD](./nrrd/README.md)
+
+- [VTK](./vtk/README.md)
 
 - [NumPy NPY](./formats/npy.md)
 - [NetCDF](./netcdf/formats/netcdf.md)
