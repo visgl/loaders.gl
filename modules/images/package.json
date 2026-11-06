@@ -293,6 +293,11 @@
       "types": "./dist/image-lut-loader.d.ts",
       "import": "./dist/image-lut-loader.js",
       "require": "./dist/image-lut-loader.cjs"
+    },
+    "./lighting": {
+      "types": "./dist/lighting.d.ts",
+      "import": "./dist/lighting.js",
+      "require": "./dist/lighting.cjs"
     }
   },
   "sideEffects": false,

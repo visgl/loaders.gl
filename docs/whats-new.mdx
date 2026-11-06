@@ -27,6 +27,13 @@ The [release tracker](https://github.com/visgl/loaders.gl/issues/3316) records r
 
 <span id="whats-new" />
 
+### CPU lighting and color calculations
+
+Opt-in [IES photometric calculations](./modules/images/ies/README.md#photometric-calculations)
+provide angular sampling, peak-relative resampling and solid-angle flux integration.
+[Color LUT utilities](./modules/images/color-lut/README.md#cpu-sampling-and-application)
+add 1D/trilinear sampling and RGB/RGBA application, with renderer-independent outputs and no new dependencies.
+
 ### Multidimensional NRRD arrays
 
 Scientific adds attached raw, ASCII, and gzip NRRD decoding, retaining typed samples and spatial metadata. See [NRRD](./modules/scientific/nrrd/README.md).

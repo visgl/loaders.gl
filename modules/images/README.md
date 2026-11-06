@@ -24,3 +24,8 @@ other polyfills and browser images do not load it.
 - [Color LUT format guide](https://loaders.gl/docs/modules/images/color-lut): format, usage, feature support and output contract.
 
 - [OpenEXR format guide](https://loaders.gl/docs/modules/images/openexr): format, usage, feature support and output contract.
+
+Numerical lighting helpers use `@loaders.gl/images/lighting`; CPU LUT sampling and
+application use `@loaders.gl/images/color-lut`. See the consolidated
+[IES guide](https://loaders.gl/docs/modules/images/ies#photometric-calculations) and
+[color LUT guide](https://loaders.gl/docs/modules/images/color-lut#cpu-sampling-and-application).

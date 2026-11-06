@@ -31,14 +31,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'PNG', value: 'Opaque 8-bit samples with explicit blue-slice tile layout'},
     {label: 'Output', value: 'Float32 RGB with red input varying fastest'},
     {label: 'Precision', value: 'Float64 input knots and retained source encoding precision'},
-    {label: 'Boundary', value: 'No interpolation, color-space conversion or GPU objects'}
+    {label: 'Boundary', value: 'Opt-in CPU interpolation; no color-space conversion or GPU objects'}
   ]}
 />
 
 A color lookup table maps input values to output RGB samples. The loaders below
 produce a common renderer-independent ColorLUT contract, while retaining each
 format's domain, grid, and precision information. Choose a source encoding first;
-interpolation and applying the table to an image remain application work.
+the opt-in utilities below can interpolate or apply that table without renderer objects.
 
 :::note Availability
 
@@ -65,7 +65,7 @@ Use a version containing that change.
 | `sourceInputGrid` | Optional original integer grid knots |
 | `sourceOutputBitDepth` | Source precision where explicitly known |
 
-For a 3D table, red input varies fastest, followed by green, then blue. The RGB triple at integer grid coordinates (red, green, blue) starts at `3 * (red + size * (green + size * blue))`. The table is data: interpolation, gamut conversion, transfer functions, tone mapping, and GPU upload belong to the application. Float32 storage can round authored decimal values.
+For a 3D table, red input varies fastest, followed by green, then blue. The RGB triple at integer grid coordinates (red, green, blue) starts at `3 * (red + size * (green + size * blue))`. The loader returns table data; applications can choose the CPU interpolation helpers below and their own gamut conversion, transfer functions, tone mapping and GPU upload. Float32 storage can round authored decimal values.
 
 
 
@@ -88,7 +88,7 @@ console.log(table.dimension, table.size, table.domainMinimum, table.domainMaximu
 
 The loader accepts a single 1D or 3D table with TITLE, DOMAIN_MIN, and DOMAIN_MAX. Defaults are an input domain of zero to one per channel. Output samples are preserved without clamping, so authored values can lie outside that interval. Comments and quoted titles are scanned without an ambiguous backtracking expression.
 
-Combined shaper-plus-3D files, unknown vendor directives, inconsistent dimensions, incomplete tables, non-finite numbers, and invalid domains reject. There is no writer or automatic interpolation. Know which color encoding the producer expects before applying the table to an image.
+Combined shaper-plus-3D files, unknown vendor directives, inconsistent dimensions, incomplete tables, non-finite numbers, and invalid domains reject. There is no writer, and loading does not apply the table automatically. Know which color encoding the producer expects before applying the table to an image.
 
 ### Direct parsing and related formats
 
@@ -128,7 +128,7 @@ Only grid-first integer files with a complete cubic set of RGB rows are supporte
 | --- | --- | --- |
 | `lut.outputBitDepth` | Yes | Integer output-channel encoding precision, 1 through 24; no inferred default |
 
-Import `ThreeDLLUTLoaderWithParser` from `@loaders.gl/images/3dl-lut-loader` for synchronous core parsing, passing the same options. The root export is metadata-only. No renderer object, interpolation implementation, or new codec dependency is added.
+Import `ThreeDLLUTLoaderWithParser` from `@loaders.gl/images/3dl-lut-loader` for synchronous core parsing, passing the same options. The root export is metadata-only. The parser adds no renderer object or codec dependency; CPU interpolation uses the separate opt-in utilities below.
 
 See [Cube](#cube-text-tables) for text tables with domain directives and [image LUTs](#png-image-layouts) for PNG tilings.
 
@@ -182,3 +182,35 @@ The utility accepts Uint8Array or Uint8ClampedArray RGB/RGBA samples and validat
 Both `lut.size` and `lut.tilesPerRow` are required. The metadata export lives at the images root; `ImageLUTLoaderWithParser` lives at `@loaders.gl/images/image-lut-loader`. Encoded parsing is async, not `parseSync`. The raw-pixel utility is synchronous.
 
 Compare [Cube](#cube-text-tables) and [3dl](#grid-first-3dl-tables) when a text LUT carries the mapping more directly.
+
+## CPU sampling and application
+
+The same opt-in `@loaders.gl/images/color-lut` entry point also provides
+`createColorLUTSampler` and `applyColorLUT`. Neither imports a renderer or image codec;
+loader root imports stay metadata-only and no dependencies are added.
+
+```typescript
+import {createColorLUTSampler, applyColorLUT} from '@loaders.gl/images/color-lut';
+
+const sample = createColorLUTSampler(lut);
+const rgb = sample(0.25, 0.5, 0.75);
+const transformed = applyColorLUT(lut, rgbaFloatPixels, {components: 4});
+```
+
+The sampler snapshots the table, domains and optional knots, so subsequent source mutations
+do not change its results. It performs independent channel interpolation for 1D tables
+and trilinear interpolation for 3D tables, using red-fastest storage. Nonuniform normalized
+3dl input knots determine interval selection and weights. Finite input coordinates clamp
+to the authored per-channel domain. Outputs retain signed/HDR values without clamping.
+
+These operations apply numerical tables, without implicit sRGB/linear conversion,
+byte-to-unit scaling, exposure or gamut mapping. Applications must supply input values
+in the LUT's expected domain and color encoding. NaN/infinite inputs and malformed tables,
+knots or domains reject. Domain spans must be finite and positive.
+
+`applyColorLUT(lut, colors, options)` accepts interleaved `Float32Array` or `Float64Array`
+RGB pixels by default. Set `components: 4` for RGBA. It returns a new `Float32Array`
+and preserves the input. Alpha bypasses the LUT and is copied at float32 precision;
+nonfinite or unrepresentable alpha rejects. Empty buffers return empty arrays, and
+incomplete pixels reject. These are CPU preprocessing helpers, not GPU texture objects
+or an automatic image decoding/color-management pipeline.
