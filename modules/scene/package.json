@@ -241,6 +241,11 @@
       "types": "./dist/materialx-loader.d.ts",
       "import": "./dist/materialx-loader.js",
       "require": "./dist/materialx-loader.cjs"
+    },
+    "./stl-loader": {
+      "types": "./dist/stl-loader.d.ts",
+      "import": "./dist/stl-loader.js",
+      "require": "./dist/stl-loader.cjs"
     }
   },
   "sideEffects": false,

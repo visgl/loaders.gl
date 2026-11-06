@@ -35,3 +35,5 @@ and applicable notices, and the project-wide [Attributions and Credits](https://
 
 
 - [USD and USDC format guide](https://loaders.gl/docs/modules/scene/usd/formats/usd): format, usage, feature support and output contract.
+
+- [STL format guide](https://loaders.gl/docs/modules/scene/stl): format, usage, feature support and output contract.
