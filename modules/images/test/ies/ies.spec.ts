@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {test, expect} from 'vitest';
 import {IESLoaderWithParser} from '../../src/ies-loader';
 const input =

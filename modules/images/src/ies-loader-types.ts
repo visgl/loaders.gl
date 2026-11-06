@@ -1,5 +1,6 @@
-import {VERSION} from './lib/utils/version';
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+import {VERSION} from './lib/utils/version';
 import type {IESProfile} from './ies/parse-ies';
 /** Loads the IES parser on demand. */
 async function preload() {
