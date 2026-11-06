@@ -19,7 +19,11 @@ export function parseUSDC(data: ArrayBuffer, url?: string): USDStage {
   const sectionNames = new Set<string>();
   for (let index = 0; index < Number(count); index++) {
     const entry = offset + 8 + index * 32;
-    const name = new TextDecoder().decode(bytes.subarray(entry, entry + 16)).replace(/\0.*$/, '');
+    const nameBytes = bytes.subarray(entry, entry + 16);
+    const terminator = nameBytes.indexOf(0);
+    const name = new TextDecoder().decode(
+      nameBytes.subarray(0, terminator < 0 ? nameBytes.length : terminator)
+    );
     if (sectionNames.has(name)) throw new Error('USDC: duplicate section');
     sectionNames.add(name);
     const start = reader.getBigUint64(entry + 16, true),

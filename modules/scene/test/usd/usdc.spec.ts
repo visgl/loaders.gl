@@ -60,3 +60,15 @@ test('USDC retains authored time samples as data without animation objects', asy
   expect(attribute.value).toBeNull();
   expect(attribute.metadata.timeSamples).toEqual({times: [0, 1], values: [1, 2]});
 });
+
+test('USDC section names stop at the first null rather than scanning padding', async () => {
+  const source = await readFixture('sphere.usdc');
+  const view = new DataView(source);
+  const table = Number(view.getBigUint64(16, true));
+  const entry = table + 8;
+  const name = new Uint8Array(source, entry, 16);
+  const terminator = name.indexOf(0);
+  expect(terminator).toBeLessThan(15);
+  name[terminator + 1] = 10;
+  expect(parseUSDC(source).rootPrims[0].name).toBe('Sphere');
+});
