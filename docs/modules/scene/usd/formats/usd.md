@@ -39,8 +39,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="pink"
   items={[
     {label: 'Reads', value: 'USDA text, the initial USDC crate subset, and stored USDZ'},
-    {label: 'Preserves', value: 'Prim hierarchy, authored values and bounded dictionary metadata'},
-    {label: 'Output', value: 'Shared USDStage data without renderer objects'},
+    {label: 'Preserves', value: 'Prim hierarchy, dictionary metadata and encoded USDZ files'},
+    {label: 'Output', value: 'Shared USDStage and asset buffers without renderer objects'},
     {label: 'Boundary', value: 'USDC crate 0.8.0 subset; no full composition or compressed ZIP entries'}
   ]}
 />
@@ -151,6 +151,22 @@ when the first file is an image. Native usdzip fixtures cover both .usdc and bin
 [USDZ specification](https://openusd.org/release/spec_usdz.html); compressed ZIP
 entries reject.
 
-Embedded texture bytes are not exposed as a public asset bundle by USDStage.
-The stage preserves authored asset paths and supported packaged layer composition;
-applications still choose how to obtain and render image resources.
+## USDZ textures and packaged resources
+
+USDZ is a package around USD layers and their resources. Extracting an image from the package
+does not create a material or GPU texture: the loader returns the exact encoded file bytes.
+Applications choose an image decoder, renderer, color-space interpretation and sampling policy.
+This avoids requiring a renderer or an image-decoding dependency merely to inspect a package.
+
+`USDStage.assets` retains all stored files, including PNG/JPEG textures, additional layers
+and files with unknown extensions. Full archive paths distinguish textures with the same basename
+in different directories. The collection uses resolved package URLs so an authored asset path
+can be looked up relative to its attribute's `sourceUrl` (or the owning prim's source URL).
+Attribute provenance survives composition when a prim combines opinions from different layers.
+These package URLs are identifiers for in-memory data, not public URLs to fetch.
+
+The [USDLoader reference](../api-reference/usd-loader.md#embedded-usdz-assets) documents the
+`USDEmbeddedAsset` fields, lookup example, buffer ownership and missing-file behavior. PNG and
+JPEG filenames receive MIME hints; other resources remain available without a hint. Image
+pixels, decoded dimensions, material bindings, UV transforms and renderer texture objects
+are outside extraction's scope. No package dependencies are added.

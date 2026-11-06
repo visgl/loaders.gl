@@ -1,0 +1,14 @@
+#usda 1.0
+# SPDX-License-Identifier: MIT
+# Copyright (c) vis.gl contributors
+(
+    defaultPrim = "Model"
+)
+def Xform "Model"
+{
+    asset inherited = @albedo.PNG@
+    def Shader "Texture"
+    {
+        asset inputs:file = @../alternate/albedo.jpg@
+    }
+}

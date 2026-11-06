@@ -6,6 +6,7 @@ export {USDLoader} from './usd-loader-types';
 export type {
   USDAssetPath,
   USDAttribute,
+  USDEmbeddedAsset,
   USDLoaderOptions,
   USDPrim,
   USDScenePath,
