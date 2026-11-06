@@ -91,3 +91,6 @@ export {CrunchLoader as CrunchWorkerLoader} from './crunch-loader';
 export {VideoLoader} from './video-loader-types';
 export type {VideoLoaderOptions} from './video-loader-types';
 export {VideoFormat} from './video-format';
+
+export {IESLoader} from './ies-loader-types';
+export type {IESProfile} from './ies/parse-ies';
