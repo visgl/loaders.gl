@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 export * from './usd/index';
 export type * from './gltf/index';
@@ -23,3 +23,5 @@ export {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from './draco/dra
 
 export {MaterialXLoader} from './materialx-loader-types';
 export type {MaterialXDocument, MaterialXElement} from './materialx/parse-materialx';
+
+export {STLLoader} from './stl-loader-types';
