@@ -268,6 +268,11 @@
       "types": "./dist/ies-loader.d.ts",
       "import": "./dist/ies-loader.js",
       "require": "./dist/ies-loader.cjs"
+    },
+    "./exr-loader": {
+      "types": "./dist/exr-loader.d.ts",
+      "import": "./dist/exr-loader.js",
+      "require": "./dist/exr-loader.cjs"
     }
   },
   "sideEffects": false,
