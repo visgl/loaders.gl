@@ -18,6 +18,9 @@ Texture writers, manifest schemas, and GIFBuilder also use direct subpaths.
 Node image codecs require the optional `sharp` peer of `@loaders.gl/core`;
 other polyfills and browser images do not load it.
 
+
 - [ies](IES.md): supported subset and renderer-independent output.
+
+- [Color LUT format guide](https://loaders.gl/docs/modules/images/color-lut): format, usage, feature support and output contract.
 
 - [OpenEXR format guide](https://loaders.gl/docs/modules/images/openexr): format, usage, feature support and output contract.
