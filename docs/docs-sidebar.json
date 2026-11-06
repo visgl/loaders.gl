@@ -1469,7 +1469,8 @@
             "items": [
               "modules/scientific/formats/npy",
               "modules/scientific/netcdf/formats/netcdf",
-              "modules/scientific/zarr/formats/zarr"
+              "modules/scientific/zarr/formats/zarr",
+              "modules/scientific/vtk/README"
             ],
             "link": {
               "type": "generated-index",
@@ -1492,8 +1493,7 @@
                 "label": "Zarr"
               },
               "modules/scientific/hdf5/README",
-              "modules/scientific/grib2/README",
-              "modules/scientific/vtk/README"
+              "modules/scientific/grib2/README"
             ],
             "link": {
               "type": "generated-index",

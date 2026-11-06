@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 /** Parsed legacy VTK ASCII numeric attribute. */
 export type VTKDataArray = {

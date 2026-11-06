@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {VTKLoader} from './vtk-loader-types';
 import {parseVTKLegacy, parseVTKXML} from './vtk';
 const {preload: _preload, ...metadata} = VTKLoader;

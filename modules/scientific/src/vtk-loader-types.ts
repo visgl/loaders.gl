@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 /** Package version injected by the build. */
 // @ts-ignore __VERSION__ is injected during compilation.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-// SPDX-License-Identifier: MIT
 import type {VTKDataset, VTKXMLDataset} from './vtk';
 /** Loads the existing VTK readers on demand. */
 async function preload() {
