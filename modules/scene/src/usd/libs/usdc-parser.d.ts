@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 /** Typed boundary around the pinned, dependency-free THREE r187 crate decoder. */
 export class USDCParser {
   /** Decodes binary crate specifications; unsupported value encodings throw. */

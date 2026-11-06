@@ -11,6 +11,8 @@ def Xform "World" {
         int[] faceVertexIndices = [0, 1, 2]
         color3f[] primvars:displayColor = [(0.1, 0.4, 0.9)]
         custom uint[] unsignedValues = [4045620583, 2309737967, 324508639]
+        custom uint[] compressedUnsigned = [3000000000, 3000000001, 3000000002, 3000000003, 3000000004, 3000000005, 3000000006, 3000000007, 3000000008, 3000000009, 3000000010, 3000000011, 3000000012, 3000000013, 3000000014, 3000000015, 3000000016, 3000000017, 3000000018, 3000000019]
+        custom token[] tokens = ["uniqueTokenA", "uniqueTokenB"]
         custom int negative = -7
         custom float weight.timeSamples = {0: 1, 1: 2}
         custom asset texture = @texture.png@

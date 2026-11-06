@@ -1,7 +1,7 @@
-import {parseUSDC} from './parse-usdc';
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+import {parseUSDC} from './parse-usdc';
+// loaders.gl
 
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {parseUSDA} from './parse-usda';

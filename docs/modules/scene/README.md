@@ -10,7 +10,7 @@ Load scene graphs and meshes from glTF/GLB, OBJ/MTL, OpenUSD and Draco. Install 
 | <FormatLogo slug="draco" /> | [Package root](./draco/README.md) | Draco compressed meshes and point clouds |
 | <FormatLogo slug="gltf" /> | [`/gltf`](./gltf/README.md) | glTF and GLB |
 | — | [`/obj`](./obj/README.md) | OBJ and MTL |
-| <FormatLogo slug="usd" /> | [`/usd`](./usd/api-reference/usd-loader.md) | USD ASCII and uncompressed USDZ |
+| <FormatLogo slug="usd" /> | [`/usd`](./usd/api-reference/usd-loader.md) | USD text, initial binary crate subset, and stored USDZ |
 
 ```bash
 npm install @loaders.gl/core @loaders.gl/scene

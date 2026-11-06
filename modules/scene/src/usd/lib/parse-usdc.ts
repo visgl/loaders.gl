@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {USDCParser} from '../libs/usdc-parser.js';
 import type {USDPrim, USDStage, USDValue} from './usd-types';
 
@@ -70,6 +71,9 @@ export function parseUSDC(data: ArrayBuffer, url?: string): USDStage {
       parent.children.push(prim);
     }
   }
+  orderPrims(roots, specsByPath['/']?.fields.primChildren);
+  for (const prim of prims.values())
+    orderPrims(prim.children, specsByPath[prim.path]?.fields.primChildren);
   for (const [path, specification] of Object.entries(specsByPath)) {
     if (specification.specType !== 1 && specification.specType !== 8) continue;
     const separator = path.indexOf('.');
@@ -140,4 +144,20 @@ function convertAttributeValue(raw: unknown, type: string): USDValue {
     return tuples;
   }
   return value;
+}
+
+/** Applies authored child-name order while retaining any other decoded specifications. */
+function orderPrims(prims: USDPrim[], names: unknown): void {
+  if (names === undefined) return;
+  if (!Array.isArray(names)) throw new Error('USDC: invalid primChildren order');
+  const remaining = new Map(prims.map(prim => [prim.name, prim]));
+  const ordered: USDPrim[] = [];
+  for (const name of names) {
+    const prim = typeof name === 'string' ? remaining.get(name) : undefined;
+    if (!prim) throw new Error('USDC: invalid primChildren reference');
+    ordered.push(prim);
+    remaining.delete(name as string);
+  }
+  for (const prim of remaining.values()) ordered.push(prim);
+  for (let index = 0; index < ordered.length; index++) prims[index] = ordered[index];
 }

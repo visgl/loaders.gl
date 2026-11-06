@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
 import type {USDLoaderOptions, USDStage} from './lib/usd-types';

@@ -254,8 +254,7 @@
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
     "third-party-licenses",
-    "DRACO-README.md",
-    "USDC.md"
+    "DRACO-README.md"
   ],
   "scripts": {
     "pre-build": "npm run copy-libs-usd && npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev && npm run copy-libs-draco && npm run build-draco-workers",

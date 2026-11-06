@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
-import {expect, test} from 'vitest';
+// Copyright (c) vis.gl contributors
+import {expect, test, vi} from 'vitest';
 import {USDLoaderWithParser} from '../../src/usd-loader';
 import {parseUSDA} from '../../src/usd/lib/parse-usda';
 import {parseUSDC} from '../../src/usd/lib/parse-usdc';
+import {USDCParser} from '../../src/usd/libs/usdc-parser';
 
 /** Loads a tiny checked-in official OpenUSD fixture through Vite. */
 async function readFixture(name: string): Promise<ArrayBuffer> {
@@ -142,4 +144,72 @@ test('USDC preserves unsigned arrays and bounds their declared allocations', asy
   expect(offset).toBeGreaterThanOrEqual(0);
   new DataView(source).setBigUint64(offset, 4_000_001n, true);
   expect(() => parseUSDC(source)).toThrow(/decoded allocation limit/);
+});
+
+test('USDC compressed unsigned arrays preserve values above signed int32 range', async () => {
+  const stage = parseUSDC(await readFixture('triangle.usdc'));
+  expect(stage.rootPrims[0].children[0].attributes.compressedUnsigned.value).toEqual(
+    Array.from({length: 20}, (_value, index) => 3000000000 + index)
+  );
+});
+
+test('USDC retains authored sibling order at root and child levels', async () => {
+  const stage = parseUSDC(await readFixture('siblings.usdc'));
+  expect(stage.rootPrims.map(prim => prim.name)).toEqual(['Zebra', 'Alpha', 'Middle']);
+  expect(stage.rootPrims[0].children.map(prim => prim.name)).toEqual(['Zulu', 'Alpha', 'Middle']);
+});
+
+test.each([
+  ['missing literal length', [0, 0xf0]],
+  ['missing match offset', [0, 0x10, 65, 1]],
+  ['missing match length', [0, 0x1f, 65, 1, 0]],
+  ['short output', [0, 0x10, 65]]
+] as const)('USDC rejects LZ4 %s instead of returning padded zeros', async (_name, compressed) => {
+  const source = await readFixture('sphere.usdc');
+  const view = new DataView(source);
+  const table = Number(view.getBigUint64(16, true));
+  const section = Number(view.getBigUint64(table + 8 + 16, true));
+  view.setBigUint64(section, 1n, true);
+  view.setBigUint64(section + 8, 2n, true);
+  view.setBigUint64(section + 16, BigInt(compressed.length), true);
+  new Uint8Array(source).set(compressed, section + 24);
+  expect(() => parseUSDC(source)).toThrow(/LZ4/);
+});
+
+test('USDC bounds token-array declarations before allocating entries', async () => {
+  const source = await readFixture('triangle.usdc');
+  // Inspect the fixture's token indices only to locate its unique uncompressed wire array.
+  const decoder = new USDCParser() as USDCParser & {tokens: string[]};
+  decoder.parseData(source);
+  const pattern = new Uint8Array(16);
+  const patternView = new DataView(pattern.buffer);
+  patternView.setBigUint64(0, 2n, true);
+  patternView.setUint32(8, decoder.tokens.indexOf('uniqueTokenA'), true);
+  patternView.setUint32(12, decoder.tokens.indexOf('uniqueTokenB'), true);
+  const bytes = new Uint8Array(source);
+  const offset = bytes.findIndex((_value, index) =>
+    pattern.every((value, component) => bytes[index + component] === value)
+  );
+  expect(offset).toBeGreaterThanOrEqual(0);
+  new DataView(source).setBigUint64(offset, 4_000_001n, true);
+  expect(() => parseUSDC(source)).toThrow(/decoded allocation limit/);
+});
+
+test.each([
+  ['non-array order', 'World', /invalid primChildren order/],
+  ['missing child', ['Missing'], /invalid primChildren reference/],
+  ['duplicate child', ['World', 'World'], /invalid primChildren reference/]
+] as const)('USDC rejects %s in decoded child metadata', async (_name, order, error) => {
+  const source = await readFixture('sphere.usdc');
+  const spy = vi.spyOn(USDCParser.prototype, 'parseData').mockReturnValue({
+    specsByPath: {
+      '/': {specType: 7, fields: {primChildren: order}},
+      '/World': {specType: 6, fields: {}}
+    }
+  });
+  try {
+    expect(() => parseUSDC(source)).toThrow(error);
+  } finally {
+    spy.mockRestore();
+  }
 });

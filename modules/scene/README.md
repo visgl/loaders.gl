@@ -33,4 +33,5 @@ and applicable notices, and the project-wide [Attributions and Credits](https://
 
 `DracoLoader` metadata is available from the scene root. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco-loader` for direct parsing, `DracoWriter` and encoding helpers from `@loaders.gl/scene/draco-writer`, and `getDracoLibraryOptions` from `@loaders.gl/scene/draco-library-options` for bundled runtime URLs. Draco supports both meshes and point clouds.
 
-- [usdc](USDC.md): supported subset and renderer-independent output.
+
+- [USD and USDC format guide](https://loaders.gl/docs/modules/scene/usd/formats/usd): format, usage, feature support and output contract.

@@ -1,5 +1,6 @@
-// @ts-nocheck -- Vendored r187 decoder; the handwritten adapter provides the checked public boundary.
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// @ts-nocheck -- Vendored r187 decoder; the handwritten adapter provides the checked public boundary.
 // Copyright © 2010-2026 three.js authors. See THREE-LICENSE and README.md.
 // Adapted to fail on unsupported encodings and enforce bounded allocations/offsets.
 let allocationBytes = 0;
@@ -108,17 +109,17 @@ function lz4DecompressBlock(input, inputOffset, inputEnd, output, outputOffset, 
   while (inputOffset < inputEnd) {
     // Read token
     const token = input[inputOffset++];
-    if (inputOffset > inputEnd) break;
+    if (inputOffset > inputEnd) throw new Error('USDC: truncated LZ4 token');
 
     // Literal length
     let literalLength = token >> 4;
     if (literalLength === 15) {
       let b;
       do {
-        if (inputOffset >= inputEnd) break;
+        if (inputOffset >= inputEnd) throw new Error('USDC: truncated LZ4 length');
         b = input[inputOffset++];
         literalLength += b;
-      } while (b === 255 && inputOffset < inputEnd);
+      } while (b === 255);
     }
 
     // Copy literals
@@ -137,7 +138,7 @@ function lz4DecompressBlock(input, inputOffset, inputEnd, output, outputOffset, 
     if (inputOffset >= inputEnd) break;
 
     // Read match offset (little-endian 16-bit)
-    if (inputOffset + 2 > inputEnd) break;
+    if (inputOffset + 2 > inputEnd) throw new Error('USDC: truncated LZ4 offset');
     const matchOffset = input[inputOffset++] | (input[inputOffset++] << 8);
 
     if (matchOffset === 0) {
@@ -149,10 +150,10 @@ function lz4DecompressBlock(input, inputOffset, inputEnd, output, outputOffset, 
     if (matchLength === 19) {
       let b;
       do {
-        if (inputOffset >= inputEnd) break;
+        if (inputOffset >= inputEnd) throw new Error('USDC: truncated LZ4 length');
         b = input[inputOffset++];
         matchLength += b;
-      } while (b === 255 && inputOffset < inputEnd);
+      } while (b === 255);
     }
 
     // Copy match (byte-by-byte to handle overlapping)
@@ -171,23 +172,27 @@ function lz4DecompressBlock(input, inputOffset, inputEnd, output, outputOffset, 
 }
 
 // USD uses TfFastCompression which wraps LZ4 with chunk headers
-function decompressLZ4(input, uncompressedSize) {
+function decompressLZ4(input, uncompressedSize, allowShortOutput = false) {
   // TfFastCompression format (used by OpenUSD):
   // Single chunk (byte 0 == 0): [0] + LZ4 data
   // Multi chunk (byte 0 > 0): [numChunks] + [compressedSizes...] + [chunkData...]
 
   const output = new Uint8Array(checkedLength(uncompressedSize));
+  if (!input.length) throw new Error('USDC: missing LZ4 chunk header');
   const numChunks = input[0];
 
   if (numChunks === 0) {
     // Single chunk - all remaining bytes are LZ4 compressed
-    lz4DecompressBlock(input, 1, input.length, output, 0, uncompressedSize);
-    return output;
+    const written = lz4DecompressBlock(input, 1, input.length, output, 0, uncompressedSize);
+    if (!allowShortOutput && written !== uncompressedSize)
+      throw new Error('USDC: incomplete LZ4 output');
+    return output.subarray(0, written);
   } else {
     // Multiple chunks - each chunk decompresses to max 65536 bytes
     const CHUNK_SIZE = 65536;
 
     // First, read all chunk sizes
+    if (1 + numChunks * 4 > input.length) throw new Error('USDC: truncated LZ4 chunk sizes');
     let headerOffset = 1;
     const compressedSizes = [];
 
@@ -210,7 +215,9 @@ function decompressLZ4(input, uncompressedSize) {
       const chunkCompressedSize = compressedSizes[i];
       const chunkOutputSize = Math.min(CHUNK_SIZE, uncompressedSize - outputOffset);
 
-      lz4DecompressBlock(
+      if (chunkCompressedSize > input.length - inputOffset)
+        throw new Error('USDC: truncated LZ4 chunk');
+      const written = lz4DecompressBlock(
         input,
         inputOffset,
         inputOffset + chunkCompressedSize,
@@ -220,10 +227,14 @@ function decompressLZ4(input, uncompressedSize) {
       );
 
       inputOffset += chunkCompressedSize;
-      outputOffset += chunkOutputSize;
+      if (i < numChunks - 1 && written !== outputOffset + chunkOutputSize)
+        throw new Error('USDC: incomplete LZ4 chunk');
+      outputOffset = written;
     }
 
-    return output;
+    if (inputOffset !== input.length || (!allowShortOutput && outputOffset !== uncompressedSize))
+      throw new Error('USDC: incomplete LZ4 output');
+    return output.subarray(0, outputOffset);
   }
 }
 
@@ -234,7 +245,7 @@ function decompressLZ4(input, uncompressedSize) {
 function decompressIntegers32(compressedData, numInts) {
   // First decompress with LZ4
   const encodedSize = numInts * 4 + ((numInts * 2 + 7) >> 3) + 4;
-  const encoded = decompressLZ4(new Uint8Array(compressedData), encodedSize);
+  const encoded = decompressLZ4(new Uint8Array(compressedData), encodedSize, true);
 
   // Then decode
   return decodeIntegers32(encoded, numInts);
@@ -249,6 +260,7 @@ function decodeIntegers32(data, numInts) {
   offset += 4;
 
   const numCodesBytes = (numInts * 2 + 7) >> 3;
+  if (data.length < offset + numCodesBytes) throw new Error('USDC: truncated integer codes');
   const codesStart = offset;
   const vintsStart = offset + numCodesBytes;
 
@@ -1329,6 +1341,7 @@ class USDCParser {
       throw new RangeError('USDCParser: Array size ' + size + ' exceeds implementation limits.');
     }
 
+    size = checkedLength(size);
     if (size === 0) return [];
 
     // Handle compressed arrays
@@ -1438,10 +1451,13 @@ class USDCParser {
       case TypeEnum.UInt: {
         const compressedSize = reader.readUint64();
         const compressed = reader.readBytes(compressedSize);
-        return decompressIntegers32(
+        const values = decompressIntegers32(
           compressed.buffer.slice(compressed.byteOffset, compressed.byteOffset + compressedSize),
           size
         );
+        return type === TypeEnum.UInt
+          ? new Uint32Array(values.buffer, values.byteOffset, values.length)
+          : values;
       }
 
       case TypeEnum.Float: {
