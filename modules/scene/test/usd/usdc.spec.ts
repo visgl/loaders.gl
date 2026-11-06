@@ -72,3 +72,44 @@ test('USDC section names stop at the first null rather than scanning padding', a
   name[terminator + 1] = 10;
   expect(parseUSDC(source).rootPrims[0].name).toBe('Sphere');
 });
+
+test.each([
+  ['too many sections', 'count-limit', /table length/],
+  ['truncated table', 'truncated-table', /table length/],
+  ['duplicate section names', 'duplicate', /duplicate section/],
+  ['section before bootstrap', 'before-bootstrap', /out of bounds/],
+  ['section outside file', 'outside-file', /out of bounds/],
+  ['missing required section', 'missing', /missing required/],
+  ['unterminated bounded name', 'unterminated', /missing required/]
+] as const)('USDC rejects %s before decoding payloads', async (_name, mutation, error) => {
+  const source = await readFixture('sphere.usdc');
+  const view = new DataView(source);
+  const bytes = new Uint8Array(source);
+  const table = Number(view.getBigUint64(16, true));
+  const entry = table + 8;
+  switch (mutation) {
+    case 'count-limit':
+      view.setBigUint64(table, 17n, true);
+      break;
+    case 'truncated-table':
+      view.setBigUint64(table, view.getBigUint64(table, true) + 1n, true);
+      break;
+    case 'duplicate':
+      bytes.set(bytes.slice(entry, entry + 16), entry + 32);
+      break;
+    case 'before-bootstrap':
+      view.setBigUint64(entry + 16, 0n, true);
+      break;
+    case 'outside-file':
+      view.setBigUint64(entry + 24, BigInt(source.byteLength), true);
+      break;
+    case 'missing':
+      bytes.fill(0, entry, entry + 16);
+      bytes.set(new TextEncoder().encode('UNKNOWN'), entry);
+      break;
+    case 'unterminated':
+      bytes.fill(65, entry, entry + 16);
+      break;
+  }
+  expect(() => parseUSDC(source)).toThrow(error);
+});
