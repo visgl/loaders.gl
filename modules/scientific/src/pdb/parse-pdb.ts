@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 /** An authored PDB atom, without inferred chemistry or display styling. */
 export type PDBAtom = {
   /** Atom serial number in its model. */

@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 export {NetCDFFormat} from './netcdf/netcdf-format';
 export {NetCDFLoader, NetCDFWorkerLoader} from './netcdf/netcdf-loader';

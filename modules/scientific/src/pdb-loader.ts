@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {PDBLoader} from './pdb-loader-types';
 import {parsePDB} from './pdb/parse-pdb';
 const {preload: _preload, ...metadata} = PDBLoader;
