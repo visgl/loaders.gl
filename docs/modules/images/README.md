@@ -150,6 +150,7 @@ Sharp is loaded only when Node image decoding or encoding is requested.
 
 ## Format guides
 
+- [IES](./ies/README.md)
 - [Color LUTs: Cube, 3dl and PNG](./color-lut/README.md)
 
 - [OpenEXR](./openexr/README.md)

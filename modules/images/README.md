@@ -19,7 +19,8 @@ Node image codecs require the optional `sharp` peer of `@loaders.gl/core`;
 other polyfills and browser images do not load it.
 
 
-- [ies](IES.md): supported subset and renderer-independent output.
+- [IES format guide](https://loaders.gl/docs/modules/images/ies): format, usage, feature support and output contract.
+
 
 - [Color LUT format guide](https://loaders.gl/docs/modules/images/color-lut): format, usage, feature support and output contract.
 
