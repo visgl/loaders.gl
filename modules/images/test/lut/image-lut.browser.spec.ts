@@ -37,3 +37,41 @@ test('PNG LUT loader rejects unsupported precision before bitmap decoding', asyn
     ImageLUTLoaderWithParser.parse(buffer, {lut: {size: 2, tilesPerRow: 2}})
   ).rejects.toThrow(/8-bit PNG/);
 });
+
+test.each([
+  'iCCP',
+  'eXIf',
+  'gAMA',
+  'cHRM',
+  'cICP',
+  'sBIT'
+])('PNG LUT rejects %s metadata before generic image decoding', async name => {
+  const canvas = new OffscreenCanvas(4, 2);
+  canvas.getContext('2d');
+  const source = new Uint8Array(
+    await (await canvas.convertToBlob({type: 'image/png'})).arrayBuffer()
+  );
+  const tagged = new Uint8Array(source.length + 12);
+  tagged.set(source.subarray(0, 33));
+  tagged.set(new TextEncoder().encode(name), 37);
+  tagged.set(source.subarray(33), 45);
+  await expect(
+    ImageLUTLoaderWithParser.parse(tagged.buffer, {lut: {size: 2, tilesPerRow: 2}})
+  ).rejects.toThrow(/unsupported PNG metadata/);
+});
+
+test('PNG LUT rejects truncated chunk boundaries before generic image decoding', async () => {
+  const canvas = new OffscreenCanvas(4, 2);
+  canvas.getContext('2d');
+  const source = new Uint8Array(
+    await (await canvas.convertToBlob({type: 'image/png'})).arrayBuffer()
+  );
+  const options = {lut: {size: 2, tilesPerRow: 2}};
+  await expect(ImageLUTLoaderWithParser.parse(source.slice(0, 34).buffer, options)).rejects.toThrow(
+    /truncated PNG chunk/
+  );
+  new DataView(source.buffer).setUint32(33, 0xffffffff);
+  await expect(ImageLUTLoaderWithParser.parse(source.buffer, options)).rejects.toThrow(
+    /truncated PNG chunk/
+  );
+});

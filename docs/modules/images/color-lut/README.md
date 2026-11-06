@@ -34,3 +34,9 @@ than silently narrowed by the bitmap API.
 3dl results retain `sourceOutputBitDepth` and exact `sourceInputGrid` knots;
 normalized `inputGrid` knots use float64 precision. Decoded image LUTs identify
 8-bit source output channels. RGB sample storage remains float32 for every format.
+
+Encoded image LUTs allow only IHDR, PLTE, IDAT, IEND, tRNS and sRGB PNG chunks.
+Other metadata chunks, including embedded color profiles, gamma, chromaticity,
+significant-bit and EXIF orientation metadata, are rejected before decoding.
+This avoids platform image APIs silently transforming numerical LUT samples.
+Use the raw-pixel utility after a data-preserving decode for other PNG variants.
