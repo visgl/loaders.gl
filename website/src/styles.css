@@ -1116,3 +1116,7 @@ body:has(.benchmark-page) footer.theme-layout-footer {
 .deck-widget-container .top-right:has(.deck-widget-sidebar) {
   inset: 0;
 }
+
+.deck-widget-sidebar [role='dialog'][aria-hidden='true'] {
+  visibility: hidden;
+}
