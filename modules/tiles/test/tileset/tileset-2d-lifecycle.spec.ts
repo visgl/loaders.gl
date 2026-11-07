@@ -274,3 +274,34 @@ test('an aborted request keeps its concurrency slot until the loader settles', a
   expect(getData).toHaveBeenCalledTimes(3);
   tileset.finalize();
 });
+
+test('finalize unloads resident tiles and discards late request results separately', async () => {
+  const late = createDeferred<{byteLength: number}>();
+  const loadedContent = {byteLength: 4};
+  const lateContent = {byteLength: 8};
+  const onTileUnload = vi.fn();
+  const onTileDiscard = vi.fn();
+  const tileset = new Tileset2D({
+    adapter: TEST_ADAPTER,
+    getTileData: ({index}) => (index.x === 0 ? loadedContent : late.promise),
+    onTileUnload,
+    onTileDiscard
+  });
+  const listener = vi.fn();
+  tileset.subscribe({onTileUnload: listener});
+  prepareTileset(tileset);
+  const loaded = tileset.getTile({x: 0, y: 0, z: 1}, true);
+  const pending = tileset.getTile({x: 1, y: 0, z: 1}, true);
+  await loaded.data;
+  const pendingData = pending.data;
+  tileset.finalize();
+  tileset.finalize();
+  expect(onTileUnload.mock.calls).toEqual([[loaded], [pending]]);
+  expect(listener.mock.calls).toEqual([[loaded], [pending]]);
+  expect(onTileDiscard).not.toHaveBeenCalled();
+
+  late.resolve(lateContent);
+  await pendingData;
+  expect(onTileDiscard).toHaveBeenCalledExactlyOnceWith(pending, lateContent);
+  expect(onTileUnload).toHaveBeenCalledTimes(2);
+});

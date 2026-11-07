@@ -17,7 +17,7 @@ export type {
   Tileset2DTraversalContext
 } from './adapter';
 export type {Tile2DLoadDataProps} from './tile-2d-header';
-export {SharedTile2DHeader} from './tile-2d-header';
+export {Tile2DHeader} from './tile-2d-header';
 export type {
   RefinementStrategy,
   RefinementStrategyFunction,
