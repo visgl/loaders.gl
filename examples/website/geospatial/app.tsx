@@ -242,7 +242,7 @@ export default function App(props: AppProps = {}) {
         id: 'geospatial-example-sidebar',
         placement: 'top-right',
         side: 'right',
-        widthPx: Math.min(420, window.innerWidth - 100),
+        widthPx: Math.min(420, window.innerWidth - 100, window.innerHeight - 100),
         button: true,
         defaultOpen: !window.matchMedia('(max-width: 996px) and (pointer: coarse)').matches,
         panel: new ColumnPanel({
