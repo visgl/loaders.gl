@@ -37,11 +37,11 @@ export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/m
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   MVT: {
-    'MapLibre Demo Tiles': {
+    'OpenFreeMap Tiles': {
       sourceType: 'mvt',
-      data: 'https://demotiles.maplibre.org/tiles/{z}/{x}/{y}.pbf',
-      metadataUrl: 'https://demotiles.maplibre.org/tiles/tiles.json',
-      attributions: ['© MapLibre'],
+      data: 'https://tiles.openfreemap.org/planet',
+      metadataUrl: 'https://tiles.openfreemap.org/planet',
+      attributions: ['OpenFreeMap', '© OpenMapTiles', '© OpenStreetMap contributors'],
       viewState: {...VIEW_STATE, longitude: 40, latitude: 57, zoom: 5}
     }
   },
