@@ -1079,3 +1079,40 @@ body:has(.benchmark-page) footer.theme-layout-footer {
   min-width: 0 !important;
   white-space: nowrap !important;
 }
+
+/* Keep phone navigation and example controls reachable in both orientations. */
+@media (max-width: 996px) {
+  .navbar__toggle,
+  .navbar-sidebar__close,
+  .navbar-sidebar .menu__caret {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .navbar__toggle {
+    margin-right: 0.5rem;
+  }
+
+  .navbar-sidebar .menu__link {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 996px) {
+  [data-sidebar-handle-button] {
+    min-width: 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+}
+
+@media (max-width: 996px) and (pointer: coarse) {
+  .deck-widget {
+    --button-size: 46px;
+  }
+}
+
+/* Sidebar overlays need the full canvas bounds rather than a zero-size widget anchor. */
+.deck-widget-container .top-right:has(.deck-widget-sidebar) {
+  inset: 0;
+}

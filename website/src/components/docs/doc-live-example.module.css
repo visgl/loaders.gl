@@ -15,6 +15,15 @@
   overflow: auto;
 }
 
+.frame[data-expanded] {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  margin: 0;
+  z-index: 10000;
+}
+
 .content {
   height: var(--doc-live-example-height);
   position: relative;
@@ -64,12 +73,13 @@
   cursor: pointer;
   display: flex;
   font-size: 1.2rem;
-  height: 2.4rem;
+  height: 44px;
+  flex-shrink: 0;
   justify-content: center;
   line-height: 1;
   padding: 0;
   position: relative;
-  width: 2.4rem;
+  width: 44px;
   z-index: 4;
 }
 
@@ -138,12 +148,12 @@
   z-index: 2;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 996px) {
   .frame {
     border-radius: 16px;
   }
 
   .frame[data-variant='map']:not([data-fullscreen]) .content {
-    height: min(var(--doc-live-example-height), 56vh);
+    height: min(var(--doc-live-example-height), 56dvh, calc(100dvh - var(--ifm-navbar-height) - 5rem));
   }
 }

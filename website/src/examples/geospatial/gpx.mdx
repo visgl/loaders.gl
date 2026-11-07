@@ -8,7 +8,7 @@ import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
 
 <KmlDocsTabs active="try-it" tryItHref="/examples/geospatial/gpx" />
 
-<div style={{height: 'calc(100vh - 76px)'}}> 
+<div style={{height: 'calc(100dvh - var(--ifm-navbar-height) - 2rem)'}}>
   <ClientExample kind="geospatial" format="GPX" >
       [**`GPXLoader`**](/docs/modules/geospatial/kml/api-reference/gpx-loader) loads GPX files, optionally into GPX.
   </ClientExample>

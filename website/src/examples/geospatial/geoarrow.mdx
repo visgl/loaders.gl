@@ -5,7 +5,7 @@ hide_title: true
 
 import {ClientExample} from '../../components';
 
-<div style={{height: '100vh'}}> 
+<div style={{height: 'calc(100dvh - var(--ifm-navbar-height) - 2rem)'}}>
   <ClientExample kind="geospatial" format="GeoArrow" >
     [**`GeoArrowLoader`**](/docs/modules/tables/arrow/api-reference/geoarrow-loader) loads GeoArrow tables, optionally into GeoJSON.
   </ClientExample>

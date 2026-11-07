@@ -8,7 +8,7 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
 
 <ParquetDocsTabs active="try-it" />
 
-<div style={{height: 'calc(100vh - 76px)'}}> 
+<div style={{height: 'calc(100dvh - var(--ifm-navbar-height) - 2rem)'}}>
   <ClientExample kind="geospatial" format="GeoParquet" >
       [**`GeoParquetLoader`**](/docs/modules/tables/parquet/api-reference/geoparquet-loader) loads GeoParquet files, optionally into GeoJSON.
   </ClientExample>

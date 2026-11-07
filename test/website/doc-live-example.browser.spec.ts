@@ -1,0 +1,78 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {act, createElement} from 'react';
+import {createRoot, type Root} from 'react-dom/client';
+import {afterEach, beforeEach, expect, test, vi} from 'vitest';
+import {DocLiveExample} from '../../website/src/components/docs/doc-live-example';
+
+let container: HTMLDivElement;
+let root: Root;
+
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.append(container);
+  root = createRoot(container);
+});
+
+afterEach(async () => {
+  await act(async () => root.unmount());
+  container.remove();
+  vi.restoreAllMocks();
+});
+
+test.each([
+  'missing',
+  'rejected'
+])('inline examples expand when fullscreen is %s', async failure => {
+  const fullscreen = vi.spyOn(HTMLElement.prototype, 'requestFullscreen');
+  if (failure === 'missing') {
+    Object.defineProperty(HTMLElement.prototype, 'requestFullscreen', {
+      configurable: true,
+      value: undefined
+    });
+  } else {
+    fullscreen.mockRejectedValue(new Error('Fullscreen denied'));
+  }
+  const previousOverflow = document.body.style.overflow;
+  await act(async () =>
+    root.render(
+      createElement(DocLiveExample, {
+        label: 'Test map',
+        children: createElement('input', {
+          'aria-label': 'Example state',
+          defaultValue: 'Keep this value'
+        })
+      })
+    )
+  );
+  const button = container.querySelector('button')!;
+  await act(async () => button.click());
+  const frame = container.querySelector('[data-expanded]')!;
+  expect(frame.getAttribute('role')).toBe('dialog');
+  expect(frame.getAttribute('aria-modal')).toBe('true');
+  expect(document.body.style.overflow).toBe('hidden');
+  expect(document.activeElement).toBe(button);
+  await act(async () => document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'})));
+  expect(container.querySelector('[data-expanded]')).toBeNull();
+  expect(document.body.style.overflow).toBe(previousOverflow);
+  expect(container.querySelector('input')!.value).toBe('Keep this value');
+  expect(document.activeElement).toBe(button);
+});
+
+test('the exit control closes expanded examples and unmount restores scrolling', async () => {
+  vi.spyOn(HTMLElement.prototype, 'requestFullscreen').mockRejectedValue(new Error('Denied'));
+  await act(async () =>
+    root.render(
+      createElement(DocLiveExample, {label: 'Test panel', variant: 'panel', children: 'Content'})
+    )
+  );
+  const button = container.querySelector('button')!;
+  await act(async () => button.click());
+  await act(async () => button.click());
+  expect(container.querySelector('[data-expanded]')).toBeNull();
+  await act(async () => button.click());
+  await act(async () => root.render(null));
+  expect(document.body.style.overflow).not.toBe('hidden');
+});
