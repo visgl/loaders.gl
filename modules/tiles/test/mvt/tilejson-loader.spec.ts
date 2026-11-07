@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 
-import {load} from '@loaders.gl/core';
+import {load, parse} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/tables/json/index';
 import {TileJSONLoader} from '@loaders.gl/tiles/mvt';
 import {parseTileJSON} from '../../src/mvt/lib/parse-tilejson';
@@ -73,4 +73,15 @@ test('parseTileJSON#reads nested metadata and tolerates indexed Tilestats attrib
 
   expect(metadata?.metaJson).toEqual({tilestats: {layers: []}});
   expect(metadata?.layers?.[0]?.fields).toEqual([]);
+});
+
+test.each([
+  '2.2.0',
+  '3.0.0'
+])('TileJSONLoader preserves tile templates in TileJSON %s', async version => {
+  const tiles = ['https://example.invalid/tiles/{z}/{x}/{y}.pbf'];
+  const metadata = await parse(JSON.stringify({tilejson: version, tiles}), TileJSONLoader, {
+    core: {worker: false}
+  });
+  expect(metadata.tiles).toEqual(tiles);
 });

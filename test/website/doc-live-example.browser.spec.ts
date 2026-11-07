@@ -49,6 +49,7 @@ test.each([
     )
   );
   const button = container.querySelector('button')!;
+  container.querySelector('input')!.value = 'Edited value';
   button.focus();
   await act(async () => button.click());
   const frame = container.querySelector('[data-expanded]')!;
@@ -61,7 +62,7 @@ test.each([
   expect(container.querySelector('[data-expanded]')).toBeNull();
   expect(document.body.style.overflow).toBe(previousOverflow);
   expect(document.documentElement.style.overflow).toBe(previousRootOverflow);
-  expect(container.querySelector('input')!.value).toBe('Keep this value');
+  expect(container.querySelector('input')!.value).toBe('Edited value');
   expect(document.activeElement).toBe(button);
 });
 

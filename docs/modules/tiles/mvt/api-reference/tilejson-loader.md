@@ -63,6 +63,8 @@ const tileJSON = await load(url, TileJSONLoader, options);
 
 ## Data Format
 
+The returned `tiles` array preserves the advertised URL templates, including `{z}`, `{x}`, and `{y}` placeholders. Use `tileJSON.tiles[0]` to obtain the current template from providers that publish versioned tile endpoints.
+
 See [TileJSON format](/docs/modules/tiles/mvt/formats/tilejson).
 
 ## Options

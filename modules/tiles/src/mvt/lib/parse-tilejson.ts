@@ -113,6 +113,7 @@ export function parseTileJSON(jsonMetadata: unknown, options: TileJSONOptions): 
   let tileJSON: TileJSON = {
     name: metadata.name || '',
     description: metadata.description || '',
+    ...(metadata.tiles ? {tiles: metadata.tiles} : {}),
     ...(metadata.scheme ? {scheme: metadata.scheme} : {})
   };
 
