@@ -10,6 +10,15 @@ on:
     types:
       - completed
   workflow_dispatch:
+    inputs:
+      site:
+        description: Website to publish
+        required: true
+        default: next
+        type: choice
+        options:
+          - next
+          - release
 
 concurrency: website-gh-pages
 
@@ -40,12 +49,17 @@ jobs:
         id: deploy_config
         env:
           EVENT_NAME: ${{ github.event_name }}
+          SITE: ${{ inputs.site }}
           LATEST_RELEASE_BRANCH: ${{ steps.get_version.outputs.latest }}
           RELEASE_WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
-          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
-            # A manual website run is the explicit preview deployment: always publish master at /next,
-            # even when the workflow UI was opened from another branch.
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ] && [ "${SITE}" = "release" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=${LATEST_RELEASE_BRANCH}" >> "$GITHUB_OUTPUT"
+            echo "target_folder=" >> "$GITHUB_OUTPUT"
+            echo "website_base_url=/" >> "$GITHUB_OUTPUT"
+          elif [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            # Manual preview deployments publish master at /next, regardless of the selected UI branch.
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "checkout_ref=master" >> "$GITHUB_OUTPUT"
             echo "target_folder=next" >> "$GITHUB_OUTPUT"
@@ -114,6 +128,9 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Build modules
+        run: yarn build
 
       - name: Build website
         env:
