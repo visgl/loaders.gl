@@ -6,6 +6,8 @@ export type Example = {
   sourceType: 'mvt' | 'pmtiles' | 'table' | 'mlt';
   data: string | File;
   attributions?: string[];
+  /** Optional TileJSON metadata endpoint for vector tile templates. */
+  metadataUrl?: string;
   viewState?: Record<string, unknown>;
   tileSize?: number[];
   localRangeServer?: boolean;
@@ -35,11 +37,11 @@ export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/m
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   MVT: {
-    'OpenStreetMap Tiles': {
+    'MapLibre Demo Tiles': {
       sourceType: 'mvt',
-      data: 'https://c.tile.openstreetmap.org',
-      // TODO deduce from templates
-      // data: 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      data: 'https://demotiles.maplibre.org/tiles/{z}/{x}/{y}.pbf',
+      metadataUrl: 'https://demotiles.maplibre.org/tiles/tiles.json',
+      attributions: ['© MapLibre'],
       viewState: {...VIEW_STATE, longitude: 40, latitude: 57, zoom: 5}
     }
   },

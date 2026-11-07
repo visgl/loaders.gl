@@ -118,7 +118,7 @@ export default function App(props: AppProps = {}) {
               onEvent: onTileRangeRequest
             },
             table: {coordinates: 'wgs84'},
-            mvt: {shape: 'arrow-table'},
+            mvt: {shape: 'arrow-table', metadataUrl: currentExample.metadataUrl},
             mlt: {shape: 'arrow-table'},
             core: {
               worker: false,
