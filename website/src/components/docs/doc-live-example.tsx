@@ -25,7 +25,10 @@ export function DocLiveExample({
   variant = 'map'
 }: DocLiveExampleProps): ReactNode {
   const frameReference = useRef<HTMLDivElement>(null);
+  const openerReference = useRef<HTMLElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isOpen = isFullscreen || isExpanded;
 
   useEffect(() => {
     const handleFullscreenChange = (): void => {
@@ -36,11 +39,62 @@ export function DocLiveExample({
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  const toggleFullscreen = async (): Promise<void> => {
+  useEffect(() => {
+    if (!isExpanded) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setIsExpanded(false);
+      if (event.key !== 'Tab') return;
+      const controls = Array.from(frameReference.current?.querySelectorAll<HTMLElement>(
+        'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) ?? []).filter(element => {
+        const visibility = getComputedStyle(element).visibility;
+        return element.tabIndex >= 0 && !element.matches(':disabled') &&
+          !element.closest('[inert], [hidden], [aria-hidden="true"]') &&
+          visibility !== 'hidden' && visibility !== 'collapse' && element.getClientRects().length > 0;
+      });
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      const isFocusOutside = !frameReference.current?.contains(document.activeElement);
+      if (event.shiftKey && (document.activeElement === first || isFocusOutside)) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || isFocusOutside)) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    frameReference.current?.querySelector<HTMLButtonElement>('button')?.focus({preventScroll: true});
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
+      openerReference.current?.focus({preventScroll: true});
+    };
+  }, [isExpanded]);
+
+  const toggleFullscreen = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+    if (isExpanded) {
+      setIsExpanded(false);
+      return;
+    }
     if (document.fullscreenElement === frameReference.current) {
       await document.exitFullscreen();
     } else {
-      await frameReference.current?.requestFullscreen();
+      openerReference.current = event.currentTarget;
+      try {
+        if (frameReference.current?.requestFullscreen) {
+          await frameReference.current.requestFullscreen();
+          return;
+        }
+      } catch {
+        // Embedded browsers may expose the API while denying fullscreen requests.
+      }
+      setIsExpanded(true);
     }
   };
 
@@ -48,7 +102,10 @@ export function DocLiveExample({
     <div
       aria-label={label}
       className={styles.frame}
-      data-fullscreen={isFullscreen || undefined}
+      data-fullscreen={isOpen || undefined}
+      data-expanded={isExpanded || undefined}
+      role={isExpanded ? 'dialog' : undefined}
+      aria-modal={isExpanded || undefined}
       data-variant={variant}
       ref={frameReference}
       style={{'--doc-live-example-height': height} as React.CSSProperties}
@@ -56,26 +113,26 @@ export function DocLiveExample({
       <div className={styles.toolbar}>
         <span className={styles.label}>{label}</span>
       <button
-        aria-label={isFullscreen ? `Exit fullscreen ${label}` : `Open ${label} fullscreen`}
+        aria-label={isOpen ? `Exit fullscreen ${label}` : `Open ${label} fullscreen`}
         className={styles.fullscreenButton}
         onClick={toggleFullscreen}
         type="button"
       >
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          {isFullscreen ? (
+          {isOpen ? (
             <path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5" />
           ) : (
             <path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" />
           )}
         </svg>
         <span className={styles.tooltip} aria-hidden="true">
-          {isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          {isOpen ? 'Exit fullscreen' : 'Enter fullscreen'}
         </span>
       </button>
       </div>
       <div className={styles.content}>{children}</div>
-      {variant === 'map' && !isFullscreen && (
-        <button className={styles.interactionGate} onClick={toggleFullscreen} type="button">
+      {variant === 'map' && (
+        <button className={styles.interactionGate} hidden={isOpen} onClick={toggleFullscreen} type="button">
           <span>
             <span aria-hidden="true">⛶</span> Explore fullscreen
           </span>

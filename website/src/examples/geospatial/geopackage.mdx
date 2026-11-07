@@ -8,7 +8,7 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
 
 <GeoPackageDocsTabs active="try-it" />
 
-<div style={{height: 'calc(100vh - 76px)'}}> 
+<div style={{height: 'calc(100dvh - var(--ifm-navbar-height) - 2rem)'}}>
   <ClientExample kind="geospatial" format="GeoPackage" >
       [**`GeoPackageLoader`**](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader) loads GeoPackage files, optionally into GeoJSON.
   </ClientExample>

@@ -242,12 +242,14 @@ export default function App(props: AppProps = {}) {
         id: 'geospatial-example-sidebar',
         placement: 'top-right',
         side: 'right',
-        widthPx: 420,
+        widthPx: Math.min(420, window.innerWidth - 100, window.innerHeight - 100),
+        button: true,
+        defaultOpen: !window.matchMedia('(max-width: 996px) and (pointer: coarse)').matches,
         panel: new ColumnPanel({
           id: 'geospatial-example-panel',
             title: getLoaderDisplayName(state.selectedCategoryName, tableFormat, parquetLoaderName),
-          panels: {
-            source: createExampleSourcePanel({
+          panels: [
+            createExampleSourcePanel({
               surface: 'geospatial',
               selectedLabel: getExampleSourceName(state.selectedExample, state.selectedExampleName),
               selectedUrl: typeof state.selectedExample?.data === 'string' ? state.selectedExample.data : undefined,
@@ -255,7 +257,7 @@ export default function App(props: AppProps = {}) {
                 void loadExampleSource(source);
               }
             }),
-            controls: new CustomPanel({
+            new CustomPanel({
               id: 'geospatial-example-controls',
               title: '',
               onRenderHTML: (rootElement) =>
@@ -291,7 +293,7 @@ export default function App(props: AppProps = {}) {
                   onParquetLoaderChange: setParquetLoaderName
                 })
             })
-          }
+          ]
         })
       })
     ];

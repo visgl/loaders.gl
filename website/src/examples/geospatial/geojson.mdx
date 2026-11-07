@@ -8,7 +8,7 @@ import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
 
 <JsonDocsTabs active="try-it" tryItHref="/examples/geospatial/geojson" />
 
-<div style={{height: '100vh'}}> 
+<div style={{height: 'calc(100dvh - var(--ifm-navbar-height) - 2rem)'}}>
   <ClientExample kind="geospatial" format="GeoJSON">
     [**`GeoJSONLoader`**](/docs/modules/tables/json/api-reference/geojson-loader) loads GeoJSON files into tables.
   </ClientExample>
