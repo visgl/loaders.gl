@@ -25,6 +25,7 @@ export function DocLiveExample({
   variant = 'map'
 }: DocLiveExampleProps): ReactNode {
   const frameReference = useRef<HTMLDivElement>(null);
+  const openerReference = useRef<HTMLElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const isOpen = isFullscreen || isExpanded;
@@ -41,13 +42,15 @@ export function DocLiveExample({
   useEffect(() => {
     if (!isExpanded) return;
     const previousOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') setIsExpanded(false);
       if (event.key !== 'Tab') return;
       const controls = Array.from(frameReference.current?.querySelectorAll<HTMLElement>(
-        'button, a[href], input, select, textarea, [tabindex="0"]'
-      ) ?? []).filter(element => element.getClientRects().length > 0);
+        'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) ?? []).filter(element => !element.matches(':disabled') && element.getClientRects().length > 0);
       const first = controls[0];
       const last = controls[controls.length - 1];
       if (event.shiftKey && document.activeElement === first) {
@@ -58,16 +61,17 @@ export function DocLiveExample({
         first?.focus();
       }
     };
-    frameReference.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    frameReference.current?.querySelector<HTMLButtonElement>('button')?.focus({preventScroll: true});
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
       document.removeEventListener('keydown', handleKeyDown);
-      frameReference.current?.querySelector<HTMLButtonElement>('button')?.focus();
+      openerReference.current?.focus({preventScroll: true});
     };
   }, [isExpanded]);
 
-  const toggleFullscreen = async (): Promise<void> => {
+  const toggleFullscreen = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
     if (isExpanded) {
       setIsExpanded(false);
       return;
@@ -75,6 +79,7 @@ export function DocLiveExample({
     if (document.fullscreenElement === frameReference.current) {
       await document.exitFullscreen();
     } else {
+      openerReference.current = event.currentTarget;
       try {
         if (frameReference.current?.requestFullscreen) {
           await frameReference.current.requestFullscreen();
@@ -120,8 +125,8 @@ export function DocLiveExample({
       </button>
       </div>
       <div className={styles.content}>{children}</div>
-      {variant === 'map' && !isOpen && (
-        <button className={styles.interactionGate} onClick={toggleFullscreen} type="button">
+      {variant === 'map' && (
+        <button className={styles.interactionGate} hidden={isOpen} onClick={toggleFullscreen} type="button">
           <span>
             <span aria-hidden="true">⛶</span> Explore fullscreen
           </span>

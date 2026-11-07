@@ -157,3 +157,7 @@
     height: min(var(--doc-live-example-height), 56dvh, calc(100dvh - var(--ifm-navbar-height) - 5rem));
   }
 }
+
+.interactionGate[hidden] {
+  display: none;
+}

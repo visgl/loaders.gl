@@ -36,6 +36,7 @@ test.each([
     fullscreen.mockRejectedValue(new Error('Fullscreen denied'));
   }
   const previousOverflow = document.body.style.overflow;
+  const previousRootOverflow = document.documentElement.style.overflow;
   await act(async () =>
     root.render(
       createElement(DocLiveExample, {
@@ -48,15 +49,18 @@ test.each([
     )
   );
   const button = container.querySelector('button')!;
+  button.focus();
   await act(async () => button.click());
   const frame = container.querySelector('[data-expanded]')!;
   expect(frame.getAttribute('role')).toBe('dialog');
   expect(frame.getAttribute('aria-modal')).toBe('true');
   expect(document.body.style.overflow).toBe('hidden');
+  expect(document.documentElement.style.overflow).toBe('hidden');
   expect(document.activeElement).toBe(button);
   await act(async () => document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'})));
   expect(container.querySelector('[data-expanded]')).toBeNull();
   expect(document.body.style.overflow).toBe(previousOverflow);
+  expect(document.documentElement.style.overflow).toBe(previousRootOverflow);
   expect(container.querySelector('input')!.value).toBe('Keep this value');
   expect(document.activeElement).toBe(button);
 });
@@ -75,4 +79,16 @@ test('the exit control closes expanded examples and unmount restores scrolling',
   await act(async () => button.click());
   await act(async () => root.render(null));
   expect(document.body.style.overflow).not.toBe('hidden');
+});
+
+test('expanded examples restore focus to the interaction gate that opened them', async () => {
+  vi.spyOn(HTMLElement.prototype, 'requestFullscreen').mockRejectedValue(new Error('Denied'));
+  await act(async () =>
+    root.render(createElement(DocLiveExample, {label: 'Test map', children: 'Map'}))
+  );
+  const gate = container.querySelectorAll('button')[1];
+  gate.focus();
+  await act(async () => gate.click());
+  await act(async () => container.querySelector('button')!.click());
+  expect(document.activeElement).toBe(gate);
 });
