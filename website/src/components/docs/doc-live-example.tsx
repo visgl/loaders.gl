@@ -50,13 +50,19 @@ export function DocLiveExample({
       if (event.key !== 'Tab') return;
       const controls = Array.from(frameReference.current?.querySelectorAll<HTMLElement>(
         'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      ) ?? []).filter(element => !element.matches(':disabled') && element.getClientRects().length > 0);
+      ) ?? []).filter(element => {
+        const visibility = getComputedStyle(element).visibility;
+        return element.tabIndex >= 0 && !element.matches(':disabled') &&
+          !element.closest('[inert], [hidden], [aria-hidden="true"]') &&
+          visibility !== 'hidden' && visibility !== 'collapse' && element.getClientRects().length > 0;
+      });
       const first = controls[0];
       const last = controls[controls.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      const isFocusOutside = !frameReference.current?.contains(document.activeElement);
+      if (event.shiftKey && (document.activeElement === first || isFocusOutside)) {
         event.preventDefault();
         last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && (document.activeElement === last || isFocusOutside)) {
         event.preventDefault();
         first?.focus();
       }

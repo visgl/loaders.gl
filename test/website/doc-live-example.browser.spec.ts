@@ -92,3 +92,29 @@ test('expanded examples restore focus to the interaction gate that opened them',
   await act(async () => container.querySelector('button')!.click());
   expect(document.activeElement).toBe(gate);
 });
+
+test('expanded examples trap focus around visible controls and skip hidden or inert sidebars', async () => {
+  vi.spyOn(HTMLElement.prototype, 'requestFullscreen').mockRejectedValue(new Error('Denied'));
+  await act(async () =>
+    root.render(
+      createElement(DocLiveExample, {
+        label: 'Test map',
+        children: createElement(
+          'div',
+          null,
+          createElement('button', {id: 'visible-control'}, 'Visible control'),
+          createElement('button', {style: {visibility: 'hidden'}}, 'Hidden control'),
+          createElement('div', {inert: true}, createElement('button', null, 'Inert control'))
+        )
+      })
+    )
+  );
+  const fullscreenButton = container.querySelector('button')!;
+  await act(async () => fullscreenButton.click());
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', {key: 'Tab', shiftKey: true, cancelable: true})
+  );
+  expect(document.activeElement).toBe(container.querySelector('#visible-control'));
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Tab', cancelable: true}));
+  expect(document.activeElement).toBe(fullscreenButton);
+});
