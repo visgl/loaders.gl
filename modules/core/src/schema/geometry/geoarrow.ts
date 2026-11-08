@@ -2,28 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/** Canonical GeoArrow extension names. */
-export type GeoArrowEncoding =
-  | 'geoarrow.geometry'
-  | 'geoarrow.geometrycollection'
-  | 'geoarrow.multipolygon'
-  | 'geoarrow.polygon'
-  | 'geoarrow.multilinestring'
-  | 'geoarrow.linestring'
-  | 'geoarrow.multipoint'
-  | 'geoarrow.point'
-  | 'geoarrow.box'
-  | 'geoarrow.wkb'
-  | 'geoarrow.wkt';
+import type {GeoArrowEncoding} from '@math.gl/arrow/geoarrow-utils';
+
+/** Canonical geometry encodings are shared with math.gl. */
+export type {
+  GeoArrowEncoding,
+  GeoArrowDimension,
+  GeoArrowCoordinateLayout
+} from '@math.gl/arrow/geoarrow-utils';
 
 /** Preferred output policy for loader-facing GeoArrow conversions. */
 export type GeoArrowEncodingPreference = 'geoarrow.wkb' | 'geoarrow.geometry' | 'optimized';
-
-/** Coordinate dimensions understood by GeoArrow and GeoParquet. */
-export type GeoArrowDimension = 'xy' | 'xyz' | 'xym' | 'xyzm';
-
-/** Coordinate memory layouts understood by GeoArrow. */
-export type GeoArrowCoordinateLayout = 'interleaved' | 'separated';
 
 /** Offset widths supported by variable-length GeoArrow arrays. */
 export type GeoArrowOffsetType = 'int32' | 'int64';

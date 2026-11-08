@@ -8,7 +8,7 @@ import {
   hydrateArrowTable,
   type DehydratedArrowTable,
   type SerializedArrowTableIPC
-} from '@loaders.gl/tables/arrow/transport';
+} from '@math.gl/arrow';
 import {
   convertGeometryValuesToBinaryFeatureCollection,
   type GeometryColumnBinaryFeatureCollectionScratch
@@ -184,20 +184,14 @@ function isApacheArrowTable(table: unknown): table is arrow.Table {
 function isDehydratedArrowTable(table: unknown): table is DehydratedArrowTable {
   const arrowTable = table as DehydratedArrowTable;
   return Boolean(
-    arrowTable &&
-      typeof arrowTable === 'object' &&
-      arrowTable.shape === 'arrow-table' &&
-      arrowTable.transport === 'arrow-js'
+    arrowTable && typeof arrowTable === 'object' && arrowTable.transport === 'arrow-js'
   );
 }
 
 function isSerializedArrowTableIPC(table: unknown): table is SerializedArrowTableIPC {
   const arrowTable = table as SerializedArrowTableIPC;
   return Boolean(
-    arrowTable &&
-      typeof arrowTable === 'object' &&
-      arrowTable.shape === 'arrow-table' &&
-      arrowTable.transport === 'arrow-ipc'
+    arrowTable && typeof arrowTable === 'object' && arrowTable.transport === 'arrow-ipc'
   );
 }
 

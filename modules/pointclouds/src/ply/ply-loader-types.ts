@@ -8,7 +8,7 @@ import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {PLYFormat} from './ply-format';
-import {serializeArrowWorkerTable} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {serializeArrowWorkerTable} from '@loaders.gl/core/arrow-worker-transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

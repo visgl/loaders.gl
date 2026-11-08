@@ -67,7 +67,7 @@ Use `@loaders.gl/tables/arrow/types` for types exported by the module and types 
 including classes exported as types:
 
 ```typescript
-import type {Table, Vector, ArrowLoaderOptions, IndexedArrowTable} from '@loaders.gl/tables/arrow/types';
+import type {Table, Vector, ArrowLoaderOptions} from '@loaders.gl/tables/arrow/types';
 ```
 
 Types added in newer Apache Arrow releases, such as `Utf8View` and `BinaryView`,
@@ -90,7 +90,7 @@ class instances, import their runtime values from `apache-arrow` or `@loaders.gl
 
 `@loaders.gl/tables/arrow` also provides utilities for working with Apache Arrow JS tables after loading
 or when integrating Arrow-backed data sources. Arrow worker transport helpers are available from
-the focused `@loaders.gl/tables/arrow/transport` subpath as well as the root export.
+`@math.gl/arrow` directly.
 
 | Utility                                                                          | Description                                                            |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {formatWKT} from '@math.gl/geospatial';
+import {formatWKT} from '@math.gl/arrow/wkb';
 import type {GeoArrowDimension, Geometry} from '@loaders.gl/core/schema';
-import type {WellKnownGeometry} from '@math.gl/geospatial';
+import type {WellKnownGeometry} from '@math.gl/arrow/wkb';
 
 /** Options controlling dimensional tokens in WKT output. */
 export type WKTGeometryOptions = {

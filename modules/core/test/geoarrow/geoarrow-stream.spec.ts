@@ -39,6 +39,14 @@ test('convertGeoArrowBatches freezes an unknown WKB stream to one union schema',
   expect((firstVector.type as arrow.DenseUnion).typeIds).toEqual(
     (secondVector.type as arrow.DenseUnion).typeIds
   );
+  expect(
+    Array.from((firstVector.type as arrow.DenseUnion).typeIds).sort(
+      (first, second) => first - second
+    )
+  ).toEqual([
+    1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27, 31, 32, 33, 34, 35,
+    36, 37
+  ]);
   expect(convertGeoArrowVectorCellToGeoJSON(firstVector, 0, 'geoarrow.geometry')).toEqual({
     type: 'Point',
     coordinates: [1, 2]

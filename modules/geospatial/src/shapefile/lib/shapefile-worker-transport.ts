@@ -5,7 +5,7 @@
 import {
   serializeArrowWorkerTable,
   deserializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/arrow-worker-transport';
 
 /** Transfers owned Arrow columns or WKB buffers, with small SHP/DBF header envelopes. */
 export function serializeShapefileWorkerResult(result: any): unknown {

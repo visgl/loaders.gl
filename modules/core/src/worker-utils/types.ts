@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TaskProgress, TaskRunControls} from '@math.gl/core/tasks';
+import type {TaskProgress, TaskRunControls} from '@math.gl/tasks';
 
 /** Progress from a loader task, with explicit loader phase and unit names. */
 export type WorkerProgress = TaskProgress & {

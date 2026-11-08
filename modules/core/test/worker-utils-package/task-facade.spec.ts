@@ -3,13 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import * as tasks from '@math.gl/core/tasks';
 import * as workers from '../../src/worker-utils';
 
-test('loader tasks expose the public math.gl lifecycle without transport internals', () => {
-  expect(workers.TaskRunner).toBe(tasks.TaskRunner);
-  expect(workers.initializeTaskWorker).toBeTypeOf('function');
-  expect(workers.preloadTasks).toBe(tasks.preloadTasks);
+test('loader workers expose loader adapters without forwarding upstream task APIs', () => {
+  expect(workers).not.toHaveProperty('TaskRunner');
+  expect(workers).not.toHaveProperty('initializeTaskWorker');
+  expect(workers).not.toHaveProperty('preloadTasks');
+  expect(workers.createWorker).toBeTypeOf('function');
   expect(workers).not.toHaveProperty('WorkerFarm');
   expect(workers).not.toHaveProperty('WorkerBody');
   expect(workers.NullWorker.module).toBe('core');

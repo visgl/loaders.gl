@@ -2,12 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  TaskRunner,
-  preloadTasks,
-  type InitializedTask,
-  type TaskRunControls
-} from '@math.gl/core/tasks';
+import {TaskRunner, preloadTasks, type InitializedTask, type TaskRunControls} from '@math.gl/tasks';
 import type {WorkerObject, WorkerOptions, CallerThreadContext, WorkerJobContext} from '../../types';
 import {getConfiguredWorkerURL, getCustomWorkerURL, getWorkerURL} from './get-worker-url';
 import {normalizeTaskProgress, type WorkerTask, type WorkerTaskPayload} from './task-runtime';

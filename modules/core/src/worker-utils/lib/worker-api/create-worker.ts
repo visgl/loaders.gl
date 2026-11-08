@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TaskContext} from '@math.gl/core/tasks';
+import type {TaskContext} from '@math.gl/tasks';
 import type {Process, ProcessInBatches, WorkerContext} from '../../types';
 import {
   initializeTaskWorker,

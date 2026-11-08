@@ -7,7 +7,7 @@ import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 import {
   serializeArrowWorkerTable,
   deserializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/arrow-worker-transport';
 import type {ArrowLoaderOptions} from '../exports/arrow-loader';
 
 /** Owns all Arrow column buffers, including dictionaries retained by successive parser batches. */

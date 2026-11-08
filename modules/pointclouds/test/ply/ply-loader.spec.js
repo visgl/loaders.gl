@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {validateArrowTableSchema} from '@loaders.gl/tables/arrow/index';
+import {validateArrowTableSchema} from '@math.gl/arrow';
 import {getFloat16Value, indexedMeshArrowSchema} from '@loaders.gl/core/schema';
 import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/pointclouds/ply';
 import {parsePLYToElementTables} from '../../src/ply/lib/parse-ply-arrow';

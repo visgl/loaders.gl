@@ -182,10 +182,6 @@
       "types": "./dist/arrow/unbundled.d.ts",
       "import": "./dist/arrow/unbundled.js"
     },
-    "./arrow/transport": {
-      "types": "./dist/arrow/transport.d.ts",
-      "import": "./dist/arrow/transport.js"
-    },
     "./arrow/index": {
       "types": "./dist/arrow/index.d.ts",
       "import": "./dist/arrow/index.js",
@@ -618,7 +614,8 @@
   "dependencies": {
     "@loaders.gl/compression": "5.0.0-beta.4",
     "@loaders.gl/documents": "5.0.0-beta.4",
-    "@math.gl/geospatial": "5.0.0-beta.4",
+    "@math.gl/arrow": "5.0.0-beta.5",
+    "@math.gl/geospatial": "5.0.0-beta.5",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0"
   },

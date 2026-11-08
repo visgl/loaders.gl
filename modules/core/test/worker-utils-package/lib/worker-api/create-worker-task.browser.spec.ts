@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import type {TaskContext} from '@math.gl/core/tasks';
+import type {TaskContext} from '@math.gl/tasks';
 import {createWorkerTask} from '../../../../src/worker-utils/lib/worker-api/create-worker';
 import type {WorkerTaskState} from '../../../../src/worker-utils/lib/worker-api/task-runtime';
 

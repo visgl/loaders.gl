@@ -89,11 +89,6 @@
     },
     "./schema/geoparquet.schema.json": "./dist/schema/geoparquet.schema.json",
     "./schema/geoarrow-metadata.schema.json": "./dist/schema/geoarrow-metadata.schema.json",
-    "./schema-utils/arrow-transport": {
-      "types": "./dist/schema-utils/arrow-transport.d.ts",
-      "import": "./dist/schema-utils/arrow-transport.js",
-      "require": "./dist/schema-utils/arrow-transport.cjs"
-    },
     "./arrow-geometry": {
       "types": "./dist/arrow-geometry/index.d.ts",
       "import": "./dist/arrow-geometry/index.js",
@@ -328,6 +323,11 @@
       "types": "./dist/constants/index.d.ts",
       "import": "./dist/constants/index.js",
       "require": "./dist/constants/index.cjs"
+    },
+    "./arrow-worker-transport": {
+      "types": "./dist/arrow-worker-transport.d.ts",
+      "import": "./dist/arrow-worker-transport.js",
+      "require": "./dist/arrow-worker-transport.cjs"
     }
   },
   "sideEffects": [
@@ -378,15 +378,17 @@
     "build-worker-utils-worker": "esbuild src/worker-utils/workers/null-worker.ts --outfile=dist/worker-utils/null-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-utils-worker-node": "esbuild src/worker-utils/workers/null-worker.ts --outfile=dist/worker-utils/null-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-polyfills-node-entrypoint": "esbuild src/polyfills/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/polyfills/index.cjs",
-    "build-schema-subpaths": "esbuild src/schema/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/index.cjs && esbuild src/schema/geospatial-metadata-zod-schema.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/geospatial-metadata-zod-schema.cjs && esbuild src/schema-utils/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/index.cjs && esbuild src/schema-utils/arrow-transport.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/arrow-transport.cjs",
+    "build-schema-subpaths": "esbuild src/schema/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/index.cjs && esbuild src/schema/geospatial-metadata-zod-schema.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema/geospatial-metadata-zod-schema.cjs && esbuild src/schema-utils/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/schema-utils/index.cjs && esbuild src/arrow-worker-transport.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/arrow-worker-transport.cjs",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoParquetMetadataSchema --output ./dist/schema/geoparquet.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoparquet.schema.json --title 'loaders.gl GeoParquet metadata' && node ../../scripts/generate-json-schema.mjs --schema ./dist/schema/geospatial-metadata-zod-schema.js --export GeoArrowMetadataSchema --output ./dist/schema/geoarrow-metadata.schema.json --id https://unpkg.com/@loaders.gl/core/schema/geoarrow-metadata.schema.json --title 'loaders.gl GeoArrow field metadata'",
     "build-utility-subpaths": "node ../../scripts/build-core-utility-subpaths.mjs",
     "build-constants": "esbuild src/constants/index.ts --bundle --platform=node --format=cjs --outfile=dist/constants/index.cjs"
   },
   "dependencies": {
-    "@math.gl/core": "5.0.0-beta.4",
-    "@math.gl/geometry": "5.0.0-beta.4",
-    "@math.gl/geospatial": "5.0.0-beta.4",
+    "@math.gl/arrow": "5.0.0-beta.5",
+    "@math.gl/core": "5.0.0-beta.5",
+    "@math.gl/geometry": "5.0.0-beta.5",
+    "@math.gl/geospatial": "5.0.0-beta.5",
+    "@math.gl/tasks": "5.0.0-beta.5",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0",

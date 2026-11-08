@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  dehydrateArrowTable,
-  hydrateArrowTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
-import {IndexedArrowTable} from '../arrow/lib/utils/indexed-arrow-table';
+import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/arrow';
+import {IndexedArrowTable} from '@math.gl/arrow';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {
   BlobFile,

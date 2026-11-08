@@ -27,7 +27,7 @@ import {GeoJSONLoader as GeoJSONLoaderMetadata} from './geojson-loader-types';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/arrow-worker-transport';
 
 /** Compatibility metadata retains Arrow worker transport hooks. */
 export const GeoJSONLoader = {

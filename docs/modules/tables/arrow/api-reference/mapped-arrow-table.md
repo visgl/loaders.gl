@@ -57,7 +57,7 @@ slicing, and concatenation.
 ## Usage
 
 ```typescript
-import {MappedArrowTable} from '@loaders.gl/tables/arrow';
+import {MappedArrowTable} from '@math.gl/arrow';
 
 const rowIndexMap = new Map([
   ['gamma', 2],

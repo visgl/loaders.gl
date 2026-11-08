@@ -9,7 +9,7 @@ import type {
   BinaryPolygonGeometry
 } from '@loaders.gl/core/schema';
 import type {GeoParquetGeometryType} from '@loaders.gl/core/schema';
-import {visitWKB} from '@math.gl/geospatial';
+import {visitWKB} from '@math.gl/arrow/wkb';
 import {WKBBuilder, type WKBCoordinateTransform} from './wkb-builder';
 
 /** XY coordinate transform retained by legacy binary output helpers. */

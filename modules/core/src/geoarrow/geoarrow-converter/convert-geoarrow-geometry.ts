@@ -7,8 +7,8 @@ import {
   convertGeoArrowColumn,
   decodeGeoArrowWKB,
   encodeGeoArrowWKB
-} from '@math.gl/geospatial/geoarrow';
-import type {DecodeGeoArrowWKBOptions} from '@math.gl/geospatial/geoarrow';
+} from '@math.gl/arrow/geoarrow-utils';
+import type {DecodeGeoArrowWKBOptions} from '@math.gl/arrow/geoarrow-utils';
 import {
   convertGeometryToWKB,
   convertGeometryToWKT
@@ -35,7 +35,7 @@ import {assertGeoArrowResourceLimits} from '../geoarrow-resource-limits';
 import {
   makeArrowVectorFromGeoArrowColumn,
   makeGeoArrowColumnFromArrowVector
-} from '../lib/arrow-geoarrow-adapter';
+} from '@math.gl/arrow/geoarrow';
 import {getGeoArrowUnionGeometryKind} from '../lib/kernels/geoarrow-union';
 
 type GeoArrowGeometryKind =

@@ -53,7 +53,7 @@ them because the GeoArrow collection member union cannot recursively contain Geo
 - `@loaders.gl/core/geoarrow` owns conversion, layout inspection, validation, bounds, coordinate
   iteration, canonicalization, and metadata operations.
 - `@loaders.gl/tables/parquet` owns GeoParquet I/O and remains independent of GeoArrow processing code.
-- `@loaders.gl/tables/arrow/transport` owns worker transfer and sliced-buffer isolation.
+- `@math.gl/arrow` owns worker transfer and sliced-buffer isolation.
 
 These boundaries are part of the foundation review. Moving more code between packages requires a
 measured bundle or ownership benefit, not just conceptual neatness.

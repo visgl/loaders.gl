@@ -4,24 +4,12 @@
 
 import {expect, test} from 'vitest';
 
-import {hydrateArrowTable} from '@loaders.gl/tables/arrow/index';
+import {hydrateArrowTable} from '@math.gl/arrow';
 import {createDataSource, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {
-  PARQUET_SOURCE_CAPABILITIES,
-  type ParquetBatch,
-  type ParquetEncodedPageBatch,
-  ParquetJSWriter,
-  ParquetSourceLoader,
-  type ParquetSourceLoaderOptions,
-  type ParquetSourceMetadata,
-  type ParquetTelemetryEvent
-} from '@loaders.gl/tables/parquet/index';
-import {
-  ParquetSource,
-  ParquetSourceLoader as ParquetSourceLoaderWithParser
-} from '@loaders.gl/tables/parquet-source-loader';
+import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetJSWriter, ParquetSourceLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet/index';
+import {ParquetSource, ParquetSourceLoader as ParquetSourceLoaderWithParser} from '@loaders.gl/tables/parquet-source-loader';
 
 import {getSchemaFromParquetReader} from '../../src/parquet/lib/parsers/get-parquet-schema';
 import {decodeParquetSourceWorkerInput} from '../../src/parquet/lib/parquet-source-worker-decoder';

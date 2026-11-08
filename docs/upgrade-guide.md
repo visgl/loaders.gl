@@ -40,7 +40,7 @@ The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` pa
 **Schema packages move into core subpaths**
 
 - Replace imports from `@loaders.gl/schema` with `@loaders.gl/core/schema`, and imports from `@loaders.gl/schema-utils` with `@loaders.gl/core/schema-utils`.
-- Use `@loaders.gl/core/schema-utils/arrow-transport` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
+- Use `@math.gl/arrow` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
 - Install `@loaders.gl/core` as the package. Published loaders use it as a peer dependency so applications can provide one compatible core version.
 
 #### Point-cloud, scene and geometry package consolidation
@@ -274,7 +274,7 @@ for math.gl `5.0.0-beta.1`:
 | `@math.gl/crs` | `@math.gl/geospatial/crs` |
 | `@math.gl/projection` | `@math.gl/geospatial/projection` |
 | `@math.gl/wkb` | `@math.gl/geospatial` |
-| `@math.gl/geoarrow` | `@math.gl/geospatial/geoarrow` |
+| `@math.gl/geoarrow` | `@math.gl/arrow/geoarrow-utils` |
 | `@math.gl/geoid` | `@math.gl/earth` |
 
 Install the package name before the subpath, such as `@math.gl/geospatial`. Nested entry points move
@@ -1302,3 +1302,19 @@ Also, Node support now requires installing `@loaders.gl/core/polyfills` before u
 ## v1.0
 
 First official release of loaders.gl.
+### Arrow and task utilities in math.gl beta.5
+
+Import Arrow transport, indexed/mapped tables, column renaming, and schema validation from
+`@math.gl/arrow`, UTF-8 helpers from `@math.gl/arrow/utf8`, and Arrow/GeoArrow adapters from
+`@math.gl/arrow/geoarrow`. The v5 forwarding exports in tables and core/arrow-geometry,
+`core/schema-utils/arrow-transport`, and `tables/arrow/transport` are removed.
+Loader worker result hooks live in `@loaders.gl/core/arrow-worker-transport`.
+
+The upstream column-buffer payload uses schema-only IPC bytes and direct Arrow data nodes
+for batches. It has no loaders.gl `shape` discriminator. Loader result envelopes retain
+`shape: 'arrow-table'`. Regenerate payloads with the matching upstream serializer rather
+than reading former loaders.gl schema objects or `batch.data` wrappers. Transport types
+come from math.gl; `DehydratedArrowVector` and `DehydratedArrowRecordBatch` aliases are removed.
+
+Task imports move from `@math.gl/core/tasks` to `@math.gl/tasks`. The task API forwarding
+exports from `core/worker-utils` are removed; loader processing APIs remain there.

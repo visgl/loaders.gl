@@ -10,7 +10,7 @@ import type {
   Schema,
   TableBatch
 } from '@loaders.gl/core/schema';
-import {parseUTF8Boolean, parseUTF8Number} from '../arrow/lib/utils/utf8-utils';
+import {parseUTF8Boolean, parseUTF8Number} from '@math.gl/arrow/utf8';
 import {
   ArrowTableBuilder,
   convertArrowToSchema,

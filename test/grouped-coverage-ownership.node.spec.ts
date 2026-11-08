@@ -131,8 +131,7 @@ const productionSources = new Set(
 );
 
 test.each([
-  'modules/core/src/schema-utils/lib/arrow/arrow-table-transport.ts',
-  'modules/core/src/schema-utils/lib/arrow/split-arrow-buffers.ts',
+  'modules/core/src/arrow-worker-transport.ts',
   'modules/tables/src/arrow/arrow-loader.ts',
   'modules/tables/src/json/json-loader.ts',
   'modules/tables/src/lance/lance-loader.ts',

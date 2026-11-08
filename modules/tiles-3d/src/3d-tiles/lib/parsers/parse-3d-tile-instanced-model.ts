@@ -92,6 +92,7 @@ function extractInstancedAttributes(
 ) {
   const instances = new Array(instancesLength);
   const instancePosition = new Vector3();
+  const instanceFramePosition = new Vector3();
   const instanceNormalRight = new Vector3();
   const instanceNormalUp = new Vector3();
   const instanceNormalForward = new Vector3();
@@ -201,7 +202,9 @@ function extractInstancedAttributes(
         tile.hasCustomOrientation = true;
         hasCustomOrientation = true;
       } else if (tile.eastNorthUp) {
-        eastNorthUpToFixedFrame(Ellipsoid.WGS84, instancePosition, instanceTransform);
+        instanceFramePosition.copy(instancePosition);
+        if (tile.rtcCenter) instanceFramePosition.add(tile.rtcCenter);
+        eastNorthUpToFixedFrame(Ellipsoid.WGS84, instanceFramePosition, instanceTransform);
         instanceTransform.getRotationMatrix3(instanceRotation);
       } else {
         instanceRotation.identity();

@@ -1,7 +1,7 @@
 # Worker processing
 
 `@loaders.gl/core/worker-utils` adapts loader and writer requests to the public
-`TaskRunner` API from `@math.gl/core/tasks`. Worker transport and pool internals are
+`TaskRunner` API from `@math.gl/tasks`. Worker transport and pool internals are
 not exported. Atomic calls own one initialized task handle; a streaming call keeps
 one handle for the entire input iterator and releases it on completion or early return.
 
@@ -97,7 +97,7 @@ install worker handlers. A worker bundle installs exactly one task implementatio
 ## Task lifecycle
 
 `TaskRunner`, `initializeTaskWorker`, `preloadTasks`, `createTypedTaskDispatcher`, and their public task types are
-also exported from this subpath. Use them directly for application-defined typed
+imported directly from `@math.gl/tasks`. Use them for application-defined typed
 tasks; task input and output are plain objects with named fields.
 
 `maxConcurrency` limits active handles for one loader descriptor. Handles are

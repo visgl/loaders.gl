@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {WKBBuilder as MathWKBBuilder} from '@math.gl/geospatial';
-import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@math.gl/geospatial';
+import {WKBBuilder as MathWKBBuilder} from '@math.gl/arrow/wkb';
+import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@math.gl/arrow/wkb';
 import {WKBGeometryType} from './wkb-types';
 
 /** Function that writes one WKB geometry into a builder. */

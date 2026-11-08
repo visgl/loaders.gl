@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DehydratedArrowTable} from '@loaders.gl/core/schema-utils/arrow-transport';
+import type {DehydratedArrowTable} from '@math.gl/arrow';
 import type {StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
 

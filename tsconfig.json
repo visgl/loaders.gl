@@ -471,9 +471,6 @@
       "@loaders.gl/core/schema/test": [
         "modules/core/test/schema-package"
       ],
-      "@loaders.gl/core/schema-utils/arrow-transport": [
-        "modules/core/src/schema-utils/arrow-transport"
-      ],
       "@loaders.gl/core/schema-utils": [
         "modules/core/src/schema-utils"
       ],
@@ -1019,6 +1016,9 @@
       ],
       "@loaders.gl/scene/draco-library-options": [
         "modules/scene/src/draco-library-options.ts"
+      ],
+      "@loaders.gl/core/arrow-worker-transport": [
+        "modules/core/src/arrow-worker-transport"
       ]
     },
     "plugins": [
