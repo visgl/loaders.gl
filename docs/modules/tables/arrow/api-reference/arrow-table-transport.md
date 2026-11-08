@@ -104,7 +104,7 @@ type DehydratedArrowTable = {
 ```
 
 `@math.gl/arrow` owns this payload and its buffer handling. The table values remain separate
-column buffers; only the schema is IPC-encoded. Loader worker result hooks in `@loaders.gl/core/loader-utils` add the outer `shape`
+column buffers; only the schema is IPC-encoded. Loader worker result hooks in `@loaders.gl/core/arrow-worker-transport` add the outer `shape`
 discriminator. Payloads are version-coupled worker messages, not a persisted file format.
 
 ### `hydrateArrowTable`
@@ -168,7 +168,7 @@ load different Apache Arrow JS versions.
 ## Owned worker column buffers
 
 `serializeArrowWorkerTable(result)` and `deserializeArrowWorkerTable(result)` from
-`@loaders.gl/core/loader-utils` transfer Arrow table and batch columns directly.
+`@loaders.gl/core/arrow-worker-transport` transfer Arrow table and batch columns directly.
 The serializer uses `dehydrateArrowTable(table, {copy: 'all'})`; the receiver uses
 `hydrateArrowTable`. The worker protocol does not encode or decode Arrow IPC.
 

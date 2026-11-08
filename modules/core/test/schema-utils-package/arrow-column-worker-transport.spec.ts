@@ -9,7 +9,7 @@ import {hydrateArrowTable as hydrateMathArrowTable} from '@math.gl/arrow';
 import {
   deserializeArrowWorkerTable,
   serializeArrowWorkerTable
-} from '@loaders.gl/core/loader-utils';
+} from '@loaders.gl/core/arrow-worker-transport';
 
 test('Column worker transport owns dictionary and mesh index buffers across batch transfers', () => {
   const data = tableFromArrays({label: ['first', 'second']});

@@ -8,4 +8,4 @@ This module contains:
 
 Please visit the [website](https://loaders.gl).
 
-Arrow table transport and buffer ownership helpers are available directly from `@math.gl/arrow`. Loader result envelopes are handled by `@loaders.gl/core/loader-utils`. See the [schema utilities documentation](../../docs/modules/core/schema-utils/README.md).
+Arrow table transport and buffer ownership helpers are available directly from `@math.gl/arrow`. Loader result envelopes are handled by `@loaders.gl/core/arrow-worker-transport`. See the [schema utilities documentation](../../docs/modules/core/schema-utils/README.md).

@@ -6,7 +6,7 @@ import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import type {PCDMesh} from './lib/pcd-types';
 import {PCDFormat} from './pcd-format';
-import {serializeArrowWorkerTable} from '@loaders.gl/core/loader-utils';
+import {serializeArrowWorkerTable} from '@loaders.gl/core/arrow-worker-transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

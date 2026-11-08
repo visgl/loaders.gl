@@ -131,7 +131,7 @@ const productionSources = new Set(
 );
 
 test.each([
-  'modules/core/src/loader-utils/lib/worker-loader-utils/arrow-worker-transport.ts',
+  'modules/core/src/arrow-worker-transport.ts',
   'modules/tables/src/arrow/arrow-loader.ts',
   'modules/tables/src/json/json-loader.ts',
   'modules/tables/src/lance/lance-loader.ts',

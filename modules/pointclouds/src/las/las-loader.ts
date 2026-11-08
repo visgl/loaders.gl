@@ -14,7 +14,7 @@ import {
 import {
   serializeArrowWorkerTable,
   deserializeArrowWorkerTable
-} from '@loaders.gl/core/loader-utils';
+} from '@loaders.gl/core/arrow-worker-transport';
 import type {LASMesh} from './lib/las-types';
 import {
   decodeLAZChunkToArrowTable,

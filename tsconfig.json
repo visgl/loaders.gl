@@ -1016,6 +1016,9 @@
       ],
       "@loaders.gl/scene/draco-library-options": [
         "modules/scene/src/draco-library-options.ts"
+      ],
+      "@loaders.gl/core/arrow-worker-transport": [
+        "modules/core/src/arrow-worker-transport"
       ]
     },
     "plugins": [
