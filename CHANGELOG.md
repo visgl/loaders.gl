@@ -2,6 +2,17 @@
 
 ## v5.0
 
+### v5.0.0-beta.5
+
+- Upgrade to math.gl beta.5 and reuse its Arrow and tasks modules; remove duplicated utilities and v5 forwarding entry points.
+- Use versioned Arrow column transport with a schema-only IPC message; keep loader-specific hooks in the flat core/arrow-worker-transport entry point.
+- Preserve canonical GeoArrow union IDs and mixed dimensions, and fix i3dm RTC-relative ENU orientation.
+- Add dependency-free STL, NRRD, OpenEXR, IES, and color LUT loaders, and expose validated VTK readers.
+- Add bounded USDC decoding, preserve USD dictionary metadata, validate USDZ roots, and expose embedded USDZ assets.
+- Support legacy SPZ2 glTF metadata and add glTF emissive and scene geometry metadata schemas.
+- Unload cached tiles on finalization and rename Tile2DHeader; remove crypto workers.
+- Improve format documentation, navigation, mobile examples, and release finalization recovery.
+
 ### v5.0.0-beta.4
 
 _Supersedes the unpublished beta.3 release tag._
