@@ -85,3 +85,20 @@ test('CF packed values and backend selection pushdown', async () => {
   expect(fullReads).toBe(0);
   expect(Array.from(values.data as Float32Array)).toEqual([2, 3, 5, 6]);
 });
+
+test('HDF5 tolerates hidden Content-Range only for exact-length 206 responses', async () => {
+  const reader = new HTTPRangeReader(
+    'https://example.invalid/data.nc',
+    async () => new Response(new Uint8Array([2, 3, 4]), {status: 206})
+  );
+  expect(await reader.read(2, 3)).toEqual(new Uint8Array([2, 3, 4]));
+  for (const length of [2, 4])
+    await expect(reader.read(2, length)).rejects.toThrow(/truncated range response/);
+  for (const range of ['', 'invalid', 'bytes 0-2/10']) {
+    const invalid = new HTTPRangeReader(
+      'https://example.invalid/data.nc',
+      async () => new Response(new Uint8Array(3), {status: 206, headers: {'Content-Range': range}})
+    );
+    await expect(invalid.read(2, 3)).rejects.toThrow(/unexpected Content-Range/);
+  }
+});

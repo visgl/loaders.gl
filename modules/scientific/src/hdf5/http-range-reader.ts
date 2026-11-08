@@ -31,7 +31,10 @@ export class HTTPRangeReader {
     }
     const range = response.headers.get('Content-Range');
     const match = /^bytes (\d+)-(\d+)\/(\d+|\*)$/.exec(range ?? '');
-    if (!match || Number(match[1]) !== offset || Number(match[2]) !== offset + length - 1) {
+    if (
+      range !== null &&
+      (!match || Number(match[1]) !== offset || Number(match[2]) !== offset + length - 1)
+    ) {
       throw new Error('HDF5: unexpected Content-Range');
     }
     const bytes = new Uint8Array(await response.arrayBuffer());

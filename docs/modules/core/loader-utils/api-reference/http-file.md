@@ -61,8 +61,15 @@ console.log(new Uint8Array(footer), file.getTelemetry());
 await file.close();
 ```
 
-The server must support byte ranges. A normal request must return `206 Partial Content` with an
-exact `Content-Range`; `HttpFile` deliberately rejects a `200 OK` full-object fallback. A valid
+The server must support byte ranges. A normal request must return `206 Partial Content` with the
+exact requested body length; `HttpFile` deliberately rejects a `200 OK` full-object fallback.
+When `Content-Range` is visible, its syntax, offsets and total size are strictly validated.
+When CORS hides it, the reader accepts an exact-length 206 using the known object size or a
+one-time `HEAD` request with a valid `Content-Length`. The length of a partial response is never
+used as the total file size. If neither source provides the total size, opening fails.
+This fallback trusts the server's 206 status and cannot independently verify the returned offset
+or detect size changes through a hidden header. Visible validators and consistency settings
+continue to apply. A malformed or empty visible `Content-Range` never uses the fallback. A valid
 zero-byte object may respond to the opening probe with `416 Range Not Satisfiable` and
 `Content-Range: bytes */0`.
 
@@ -155,7 +162,7 @@ HTTP request after identity is known.
 Each non-empty response is accepted only when all of the following are true:
 
 - the status is `206`;
-- `Content-Range` exactly matches the requested offsets and pinned object length;
+- when visible, `Content-Range` exactly matches the requested offsets and pinned object length;
 - visible validators are consistent with the pinned identity; and
 - the consumed response body contains exactly the requested number of bytes.
 

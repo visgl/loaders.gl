@@ -213,7 +213,9 @@ export class ParquetRangeFile implements ReadableFile {
         );
       }
 
-      const contentRange = parseContentRange(response.headers.get('Content-Range'));
+      const contentRange = response.headers.has('Content-Range')
+        ? parseContentRange(response.headers.get('Content-Range'))
+        : await this.inferContentRange(response, offset, length, abortContext.signal);
       if (
         contentRange.start !== offset ||
         contentRange.end !== offset + length - 1 ||
@@ -255,6 +257,36 @@ export class ParquetRangeFile implements ReadableFile {
       throw error;
     } finally {
       abortContext.dispose();
+    }
+  }
+
+  /** Infers hidden range metadata using the pinned size or an initial HEAD request. */
+  private async inferContentRange(
+    response: Response,
+    offset: number,
+    length: number,
+    signal?: AbortSignal
+  ): Promise<ContentRange> {
+    try {
+      let total = this.fileByteLength;
+      if (!total) {
+        const headers = new Headers(this.headers);
+        headers.delete('Range');
+        const metadata = await this.fetch(this.url, {method: 'HEAD', headers, signal});
+        await metadata.body?.cancel().catch(() => {});
+        const value = metadata.headers.get('Content-Length');
+        total = value && /^\d+$/.test(value) ? Number(value) : NaN;
+        if (metadata.status !== 200 || !Number.isSafeInteger(total) || total < offset + length) {
+          throw new Error(
+            'Parquet Content-Range is missing and HEAD did not provide a valid file length'
+          );
+        }
+        assertObjectVersion(getObjectVersion(metadata.headers), getObjectVersion(response.headers));
+      }
+      return {start: offset, end: offset + length - 1, total};
+    } catch (error) {
+      await response.body?.cancel().catch(() => {});
+      throw error;
     }
   }
 
