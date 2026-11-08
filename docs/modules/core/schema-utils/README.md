@@ -62,8 +62,8 @@ message and separate column buffers, rather than a loaders.gl schema object. Col
 are not encoded into full-table IPC.
 `splitArrowBuffers` separates sliced backing buffers; its `copy` option also supports
 `'none'` and `'all'`. `serializeArrowWorkerResult` and `deserializeArrowWorkerResult`
-from `@loaders.gl/core/arrow-worker-transport` provide loaders.gl worker hooks. The subpath also exports IPC serialization
-helpers and transport types.
+from `@loaders.gl/core/arrow-worker-transport` provide loaders.gl worker hooks. Import IPC serialization
+helpers and transport types directly from math.gl.
 
 Import transport utilities directly from `@math.gl/arrow`; loaders.gl no longer exposes a
 parallel transport utility subpath.

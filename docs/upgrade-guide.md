@@ -225,7 +225,7 @@ to provide the query engine and federation APIs without depending on `@loaders.g
 #### Core utility subpaths
 
 The standalone `@loaders.gl/loader-utils` and `@loaders.gl/worker-utils` packages have moved to
-`@loaders.gl/core/arrow-worker-transport` and `@loaders.gl/core/worker-utils`, respectively. Install
+`@loaders.gl/core/loader-utils` and `@loaders.gl/core/worker-utils`, respectively. Install
 `@loaders.gl/core` and update imports to the corresponding subpath. Existing utility re-exports
 from the `@loaders.gl/core` root remain available for compatibility; the full utility APIs live
 at the subpaths.
@@ -482,7 +482,7 @@ prefer the default `ZstdDecompressor` if no reference backend is required.
 - Raw ZIP header parsers/serializers, signature/search helpers, central-header iteration and ZIP
   file utilities are no longer root exports. Use `openZipArchive`, `ZipArchive.entries()`,
   `getEntryAt()` and the native encoders. Use `ArrayBufferFile`/`BlobFile` from
-  `@loaders.gl/core/arrow-worker-transport` instead of the ZIP-exported `DataViewReadableFile`.
+  `@loaders.gl/core/loader-utils` instead of the ZIP-exported `DataViewReadableFile`.
 - Removed `ZIP_COMPRESSION_HANDLERS` and `CompressionHandler`. Use shared archive read methods
   instead of dispatching container compression in consumers. Complete generic filesystem
   responses now stream; consume the response body to observe integrity errors.
@@ -912,7 +912,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
-- `@loaders.gl/core/arrow-worker-transport` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
+- `@loaders.gl/core/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
 - `@loaders.gl/zip`/`@loaders.gl/tiles-3d/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
 
 **Deprecations**
