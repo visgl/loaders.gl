@@ -1316,4 +1316,5 @@ for batches. It has no loaders.gl `shape` discriminator. Loader result envelopes
 than reading former loaders.gl schema objects or `batch.data` wrappers. Transport types
 come from math.gl; `DehydratedArrowVector` and `DehydratedArrowRecordBatch` aliases are removed.
 
-Task imports move from `@math.gl/core/tasks` to `@math.gl/tasks`.
+Task imports move from `@math.gl/core/tasks` to `@math.gl/tasks`. The task API forwarding
+exports from `core/worker-utils` are removed; loader processing APIs remain there.

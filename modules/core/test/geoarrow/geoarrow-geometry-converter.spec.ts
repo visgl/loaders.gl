@@ -117,9 +117,7 @@ test('GeoArrow mixed WKB union preserves per-row Z and M dimensions', async () =
     });
 
   const sourceTypeCodes = getWKBTypeCodes(sourceColumn);
-  expect(getWKBTypeCodes(roundTripColumn)).toEqual(
-    sourceTypeCodes.map(typeCode => (typeCode === 7 ? 3007 : typeCode))
-  );
+  expect(getWKBTypeCodes(roundTripColumn)).toEqual(sourceTypeCodes);
 });
 
 /**

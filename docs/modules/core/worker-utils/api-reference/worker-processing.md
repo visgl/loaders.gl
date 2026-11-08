@@ -97,7 +97,7 @@ install worker handlers. A worker bundle installs exactly one task implementatio
 ## Task lifecycle
 
 `TaskRunner`, `initializeTaskWorker`, `preloadTasks`, `createTypedTaskDispatcher`, and their public task types are
-also exported from this subpath. Use them directly for application-defined typed
+imported directly from `@math.gl/tasks`. Use them for application-defined typed
 tasks; task input and output are plain objects with named fields.
 
 `maxConcurrency` limits active handles for one loader descriptor. Handles are

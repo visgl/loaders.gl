@@ -13,7 +13,7 @@ test('core utility subpaths expose independent ESM entry points', async () => {
   ]);
 
   expect(typeof loaderUtilities.HttpFile).toBe('function');
-  expect(typeof workerUtilities.TaskRunner).toBe('function');
+  expect(typeof workerUtilities.createWorker).toBe('function');
   expect('HttpFile' in core).toBe(false);
   expect('TaskRunner' in core).toBe(false);
   expect(core.isBrowser).toBe(loaderUtilities.isBrowser);
@@ -25,5 +25,5 @@ test('core utility subpaths expose independent CommonJS entry points', () => {
   const workerUtilities = require('@loaders.gl/core/worker-utils');
 
   expect(typeof loaderUtilities.HttpFile).toBe('function');
-  expect(typeof workerUtilities.TaskRunner).toBe('function');
+  expect(typeof workerUtilities.createWorker).toBe('function');
 });
