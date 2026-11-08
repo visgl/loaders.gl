@@ -6,6 +6,8 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {expect, test} from 'vitest';
+import {Matrix4} from '@math.gl/core';
+import {Ellipsoid, eastNorthUpToFixedFrame} from '@math.gl/geospatial';
 import {parse, encodeSync} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
@@ -163,10 +165,18 @@ test('instanced model tile#renders with feature defined non-uniform scale', asyn
   expect(tile, 'loaded tile with feature defined non-uniform scale').toBeTruthy();
 });
 // TODO - this should be a render test
-test('instanced model tile#renders with RTC_CENTER semantic', async () => {
+test('instanced model tile uses absolute RTC position for ENU rotation and relative translation', async () => {
   const tileData = await loadRootTileFromTileset(RTC_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   expect(tile, 'loaded tile with RTC_CENTER semantic').toBeTruthy();
+  const modelMatrix = tile.instances[0].modelMatrix;
+  const relativePosition = [modelMatrix[12], modelMatrix[13], modelMatrix[14]];
+  const absolutePosition = relativePosition.map((value, index) => value + tile.rtcCenter[index]);
+  const expectedFrame = eastNorthUpToFixedFrame(Ellipsoid.WGS84, absolutePosition, new Matrix4());
+  for (const index of [0, 1, 2, 4, 5, 6, 8, 9, 10]) {
+    expect(modelMatrix[index]).toBeCloseTo(expectedFrame[index], 6);
+  }
+  expect(relativePosition.every(Number.isFinite)).toBe(true);
 });
 // TODO - this should be a render test
 test('instanced model tile#renders with feature defined quantized position', async () => {

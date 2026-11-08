@@ -217,7 +217,7 @@ function getStableUnionChild(geometryType: GeoParquetGeometryType): StableUnionC
     'GeometryCollection'
   ].indexOf(kind);
   const dimensionIndex = ['xy', 'xyz', 'xym', 'xyzm'].indexOf(dimension);
-  return {kind, dimension, typeId: familyIndex * 4 + dimensionIndex + 1, name: geometryType};
+  return {kind, dimension, typeId: familyIndex + 1 + dimensionIndex * 10, name: geometryType};
 }
 
 /** Creates the physical Arrow type used for an empty stable-union child. */
