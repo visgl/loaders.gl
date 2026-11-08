@@ -239,21 +239,9 @@
       "types": "./dist/terrain/lib/terrain-contracts.d.ts",
       "import": "./dist/terrain/lib/terrain-contracts.js"
     },
-    "./terrain/lib/terrain-height-field": {
-      "types": "./dist/terrain/lib/terrain-height-field.d.ts",
-      "import": "./dist/terrain/lib/terrain-height-field.js"
-    },
-    "./terrain/lib/terrain-height-grid": {
-      "types": "./dist/terrain/lib/terrain-height-grid.d.ts",
-      "import": "./dist/terrain/lib/terrain-height-grid.js"
-    },
     "./terrain/lib/terrain-heightmap-types": {
       "types": "./dist/terrain/lib/terrain-heightmap-types.d.ts",
       "import": "./dist/terrain/lib/terrain-heightmap-types.js"
-    },
-    "./terrain/lib/terrain-neighborhood": {
-      "types": "./dist/terrain/lib/terrain-neighborhood.d.ts",
-      "import": "./dist/terrain/lib/terrain-neighborhood.js"
     },
     "./terrain/lib/utils/version": {
       "types": "./dist/terrain/lib/utils/version.d.ts",

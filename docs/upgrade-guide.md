@@ -18,6 +18,11 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Terrain sampling
+
+The beta terrain sampling helpers `createTerrainHeightGrid`, `sampleTerrainHeightGrid`, `TerrainHeightField`, `sampleTerrainNeighborhood`, and `resampleTerrainNodes` have been removed from `@loaders.gl/raster/terrain/heightmap`. Use `HeightField`, `GeographicHeightField`, or `TiledHeightField` from `@math.gl/geospatial/terrain` with decoded heights and explicit registration, coordinates, validity, and height reference. Review edge clamping, no-data, overlap, and tile-residency behavior when migrating; the APIs do not have identical sampling semantics. `decodeTerrainHeightmap` remains available.
+
+
 Version 5 is in prerelease development. Removed packages have no forwarding packages: install the
 new owner package and update imports and worker asset URLs together. Subpaths are import paths,
 not separately installable packages.
