@@ -262,7 +262,7 @@ without a direct kernel retain the compatibility GeoJSON bridge by default. Set 
 to require a direct kernel in performance-sensitive code and fail instead of materializing objects.
 
 WKB/WKT scalar columns may use standard, large, or Arrow view storage (`Binary`, `LargeBinary`,
-`BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@loaders.gl/tables/arrow/transport` to isolate
+`BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@math.gl/arrow` to isolate
 sliced Arrow buffers and prepare tables for worker transfer.
 
 WKB remains the compact interchange and persistence representation. WKT columns use direct

@@ -6,7 +6,7 @@ import {
   initializeTaskWorker as initializeMathTaskWorker,
   type Task,
   type TaskContext
-} from '@math.gl/core/tasks';
+} from '@math.gl/tasks';
 import type {WorkerJobContext, WorkerProgress} from '../../types';
 
 /** Named wire payload; TaskRunner requires plain object boundaries. */

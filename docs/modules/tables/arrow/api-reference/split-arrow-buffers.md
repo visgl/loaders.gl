@@ -50,7 +50,7 @@ detached without detaching unrelated bytes from a larger shared backing buffer.
 ## Usage
 
 ```ts
-import {splitArrowBuffers} from '@loaders.gl/tables/arrow/transport';
+import {splitArrowBuffers} from '@math.gl/arrow';
 
 const transferSafeTable = splitArrowBuffers(table);
 worker.postMessage({table: transferSafeTable}, transferList);

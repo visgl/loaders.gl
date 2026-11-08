@@ -5,7 +5,7 @@
 import {
   serializeArrowWorkerResult,
   deserializeArrowWorkerResult
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/loader-utils';
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseFromContext} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';

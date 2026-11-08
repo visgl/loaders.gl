@@ -751,8 +751,7 @@
       "path": "modules/tables/src/arrow",
       "sourcePaths": [
         "modules/tables/src/arrow/",
-        "modules/core/src/schema-utils/lib/arrow/arrow-table-transport.ts",
-        "modules/core/src/schema-utils/lib/arrow/split-arrow-buffers.ts"
+        "modules/core/src/loader-utils/lib/worker-loader-utils/arrow-worker-transport.ts"
       ],
       "browser": {
         "statements": 85,

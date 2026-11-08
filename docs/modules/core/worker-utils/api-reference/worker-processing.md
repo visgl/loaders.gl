@@ -1,7 +1,7 @@
 # Worker processing
 
 `@loaders.gl/core/worker-utils` adapts loader and writer requests to the public
-`TaskRunner` API from `@math.gl/core/tasks`. Worker transport and pool internals are
+`TaskRunner` API from `@math.gl/tasks`. Worker transport and pool internals are
 not exported. Atomic calls own one initialized task handle; a streaming call keeps
 one handle for the entire input iterator and releases it on completion or early return.
 

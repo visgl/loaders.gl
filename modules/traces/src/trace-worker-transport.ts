@@ -6,7 +6,7 @@ import {Table, RecordBatch} from 'apache-arrow';
 import {
   serializeArrowWorkerTable,
   deserializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/loader-utils';
 
 /** Transfers each logical trace table through the shared owned Arrow column transport. */
 export function serializeTraceWorkerResult(result: any): unknown {

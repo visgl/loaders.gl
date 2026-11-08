@@ -10,9 +10,9 @@ import {
   getGeoArrowRowCount,
   validateGeoArrowColumn,
   visitGeoArrowCoordinates
-} from '@math.gl/geospatial/geoarrow';
-import type {GeoArrowDimension, GeoArrowList} from '@math.gl/geospatial/geoarrow';
-import {makeArrowVectorFromGeoArrowColumn} from '../../src/geoarrow/lib/arrow-geoarrow-adapter';
+} from '@math.gl/arrow/geoarrow-utils';
+import type {GeoArrowDimension, GeoArrowList} from '@math.gl/arrow/geoarrow-utils';
+import {makeArrowVectorFromGeoArrowColumn} from '@math.gl/arrow/geoarrow';
 
 /** Two polygons: a square with a triangular hole, followed by a triangle. */
 function makePolygons(): BinaryPolygonGeometry {

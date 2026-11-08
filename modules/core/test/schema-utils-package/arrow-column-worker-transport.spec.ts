@@ -5,10 +5,11 @@
 import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {expect, test} from 'vitest';
 import {Table, vectorFromArray, List, Field, Int32, tableFromArrays} from 'apache-arrow';
+import {hydrateArrowTable as hydrateMathArrowTable} from '@math.gl/arrow';
 import {
   deserializeArrowWorkerTable,
   serializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/loader-utils';
 
 test('Column worker transport owns dictionary and mesh index buffers across batch transfers', () => {
   const data = tableFromArrays({label: ['first', 'second']});
@@ -52,7 +53,10 @@ test('Owned column copies preserve shared views within a message', () => {
   const vector = table.getChild('values')!;
   const aliased = new Table({first: vector, second: vector});
   const payload = serializeArrowWorkerTable({shape: 'arrow-table', data: aliased}) as any;
-  const children = payload.data.batches[0].data.children;
+  expect(payload.data.schema).toBeInstanceOf(Uint8Array);
+  expect(payload.data.version).toBe(1);
+  expect(Array.from(hydrateMathArrowTable(payload.data).getChild('first')!)).toEqual([1, 2, 3]);
+  const children = payload.data.batches[0].children;
   expect(children[0].buffers[1]).toBe(children[1].buffers[1]);
   const hydrated = deserializeArrowWorkerTable(
     structuredClone(payload, {transfer: getTransferList(payload)})

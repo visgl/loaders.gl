@@ -81,7 +81,7 @@ GeoArrow conversions split into two jobs:
 
 `makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension})` adapts an existing
 `BinaryPolygonGeometry` to the Arrow-independent `GeoArrowColumn` descriptor from
-`@math.gl/geospatial/geoarrow`. It produces one `geoarrow.polygon` row per polygon, including empty
+`@math.gl/arrow/geoarrow-utils`. It produces one `geoarrow.polygon` row per polygon, including empty
 polygons. It does not reconstruct MultiPolygon grouping or original feature identity.
 
 ```typescript
@@ -89,7 +89,7 @@ import {
   makeGeoArrowColumnFromBinaryPolygon,
   getGeoArrowRowBounds
 } from '@loaders.gl/core/geoarrow';
-import {getGeoArrowBounds} from '@math.gl/geospatial/geoarrow';
+import {getGeoArrowBounds} from '@math.gl/arrow/geoarrow-utils';
 
 const column = makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension: 'xym'});
 const bounds = getGeoArrowBounds(column);

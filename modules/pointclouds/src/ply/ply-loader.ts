@@ -11,7 +11,7 @@ import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerTable,
   serializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/loader-utils';
 import type {PLYHeader, PLYMesh} from './lib/ply-types';
 import {
   convertMeshToTable,

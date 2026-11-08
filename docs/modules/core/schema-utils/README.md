@@ -47,7 +47,7 @@ Use the dedicated subpath when passing Arrow tables across a worker boundary:
 
 ```typescript
 import {tableFromArrays} from 'apache-arrow';
-import {dehydrateArrowTable, hydrateArrowTable, splitArrowBuffers} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {dehydrateArrowTable, hydrateArrowTable, splitArrowBuffers} from '@math.gl/arrow';
 
 const table = tableFromArrays({value: [1, 2]});
 const transferableTable = splitArrowBuffers(table, {copy: 'sliced'});
@@ -57,10 +57,16 @@ const restoredTable = hydrateArrowTable(payload);
 
 The payload is structured-cloneable and preserves Arrow schema, vectors, dictionaries,
 and record batches. The receiving runtime must use a compatible Apache Arrow version.
+The payload contains an IPC **schema-only**
+message and separate column buffers, rather than a loaders.gl schema object. Column values
+are not encoded into full-table IPC.
 `splitArrowBuffers` separates sliced backing buffers; its `copy` option also supports
 `'none'` and `'all'`. `serializeArrowWorkerResult` and `deserializeArrowWorkerResult`
-provide matching loaders.gl worker hooks. The subpath also exports IPC serialization
+from `@loaders.gl/core/loader-utils` provide loaders.gl worker hooks. The subpath also exports IPC serialization
 helpers and transport types.
 
-The existing `@loaders.gl/tables/arrow/transport` API forwards to this implementation.
-Importing schema-utils transport avoids a dependency on the grouped table format engines.
+Import transport utilities directly from `@math.gl/arrow`; loaders.gl no longer exposes a
+parallel transport utility subpath.
+
+Indexed/mapped Arrow tables, column renaming, and schema validation are also available from
+`@math.gl/arrow`; UTF-8 comparison and parsing live in `@math.gl/arrow/utf8`.

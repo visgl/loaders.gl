@@ -5,7 +5,7 @@
 import {
   serializeArrowWorkerTable,
   deserializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ObjectRowTable,

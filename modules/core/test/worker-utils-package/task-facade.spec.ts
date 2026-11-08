@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import * as tasks from '@math.gl/core/tasks';
+import * as tasks from '@math.gl/tasks';
 import * as workers from '../../src/worker-utils';
 
 test('loader tasks expose the public math.gl lifecycle without transport internals', () => {

@@ -12,8 +12,8 @@ import type {
 } from '@loaders.gl/core/schema';
 import {convertWKBToGeometry} from './geometry-codecs';
 import {convertWKTToGeometry} from './geometry-codecs';
-import {makeGeoArrowColumnFromArrowVector} from './arrow-geoarrow-adapter';
-import {materializeGeoArrowRows} from '@math.gl/geospatial/geoarrow';
+import {makeGeoArrowColumnFromArrowVector} from '@math.gl/arrow/geoarrow';
+import {materializeGeoArrowRows} from '@math.gl/arrow/geoarrow-utils';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 
 /**

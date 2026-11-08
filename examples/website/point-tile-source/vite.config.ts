@@ -75,10 +75,6 @@ export default defineConfig(async () => {
           replacement: path.resolve(__dirname, '../../../modules/$1/src/index.ts')
         },
         {
-          find: /^@loaders\.gl\/arrow\/transport$/,
-          replacement: path.resolve(__dirname, '../../../modules/tables/src/arrow/transport.ts')
-        },
-        {
           find: /^@loaders\.gl\/compression\/(.+)$/,
           replacement: path.resolve(__dirname, '../../../modules/compression/src/$1.ts')
         },

@@ -15,7 +15,7 @@ import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerTable,
   serializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/loader-utils';
 import {
   convertMeshToTable,
   convertTableToMesh,

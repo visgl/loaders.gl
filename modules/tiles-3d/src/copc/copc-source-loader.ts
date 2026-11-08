@@ -16,7 +16,7 @@ import {
   makeMeshArrowTable,
   type MeshArrowAttributes
 } from '@loaders.gl/core/schema-utils';
-import {deserializeArrowWorkerTable} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {deserializeArrowWorkerTable} from '@loaders.gl/core/loader-utils';
 import type {
   CoreAPI,
   SourceLoader,
