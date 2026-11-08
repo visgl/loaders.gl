@@ -217,7 +217,7 @@ export async function loadLibraryInWorker(
   } catch {
     // Resolve local asset paths against the same worker location used by importScripts.
     const moduleUrl = new URL(moduleLibraryUrl, globalThis.location.href).href;
-    const library = await import(/* @vite-ignore */ moduleUrl);
+    const library = await import(/* webpackIgnore: true */ /* @vite-ignore */ moduleUrl);
     return library.default ?? library;
   }
   return importScripts(libraryUrl);
