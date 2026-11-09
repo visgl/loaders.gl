@@ -10,6 +10,7 @@
 
 - Upgrade math.gl dependencies to beta.6.
 - Add query/queryInBatches APIs, logical query planning, named data sources, explicit URL table sources, and tree-shakeable SQL SELECT parsers.
+- Add SHOW SOURCES, SHOW TABLES, and DESCRIBE queries for source discovery and table inspection.
 - Support zero-copy Arrow projection and aliases and consolidate streaming Arrow query execution.
 - Share bounded HTTP range validation, including Lance, NetCDF, Potree2, and CORS-hidden Content-Range handling.
 - Delegate terrain geometry to math.gl and add a shared terrain source.
