@@ -320,7 +320,7 @@ second argument. Each public execution reports completion once, including errors
 cancellation, limits, and consumer return. Observer errors do not alter results.
 
 Source metadata determines the output schema. Supported row and columnar batches are
-converted to Arrow; output type changes are rejected. Empty results, including limit zero,
+converted to Arrow; output schema changes, including field nullability, are rejected. Empty results, including limit zero,
 emit one empty schema-bearing batch so collected and streamed results retain their fields.
 Limit zero discovers metadata without calling the source's `read()` method.
 

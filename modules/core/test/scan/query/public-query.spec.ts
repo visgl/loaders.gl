@@ -284,3 +284,29 @@ test('equivalent Arrow float constructors compare as the same logical output typ
     data.getChild('value')!.data[0].values.buffer
   );
 });
+
+test('source nullability drift is rejected so empty and populated schemas stay consistent', async () => {
+  const table = makeTable();
+  const schema = {
+    ...table.schema!,
+    fields: table.schema!.fields.map(field => ({...field, nullable: !field.nullable}))
+  };
+  const source: TableScanSource = {
+    getQueryMetadata: async () =>
+      createScanQueryMetadata({
+        sourceType: 'test',
+        queryType: 'table',
+        schema,
+        execution: {status: 'supported', method: 'read'},
+        capabilities: {}
+      }),
+    read: async function* () {
+      yield {...table, batchType: 'data', length: table.data.numRows};
+    }
+  };
+  const empty = await query({limit: 0}, {source});
+  expect(empty.schema!.fields.map(field => field.nullable)).toEqual(
+    schema.fields.map(field => field.nullable)
+  );
+  await expect(query({}, {source})).rejects.toThrow('schema does not match');
+});
