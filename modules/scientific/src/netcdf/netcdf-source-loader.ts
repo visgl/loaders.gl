@@ -203,7 +203,30 @@ export class NetCDFSource extends DataSource<string | Blob, NetCDFSourceOptions>
       });
       if (!response.ok) throw new Error(`NetCDF request failed with status ${response.status}.`);
       arrayBuffer = await response.arrayBuffer();
-      const byteLength = getResponseByteLength(response, arrayBuffer.byteLength);
+      let byteLength = getResponseByteLength(response, arrayBuffer.byteLength);
+      if (
+        response.status === 206 &&
+        !response.headers.has('Content-Range') &&
+        arrayBuffer.byteLength === rangeSize
+      ) {
+        // Partial Content-Length is the prefix size, not the file size. CORS
+        // can hide Content-Range, so discover the total from a separate HEAD.
+        const metadata = await this.fetch(this.url, {method: 'HEAD'});
+        const value = metadata.headers.get('Content-Length');
+        await metadata.body?.cancel();
+        if (
+          metadata.status !== 200 ||
+          !value ||
+          !/^\d+$/.test(value) ||
+          !Number.isSafeInteger(Number(value)) ||
+          Number(value) < arrayBuffer.byteLength
+        ) {
+          throw new Error(
+            'NetCDF file size unavailable: expose Content-Range or provide HEAD Content-Length'
+          );
+        }
+        byteLength = Number(value);
+      }
       try {
         return {header: new NetCDFReader(arrayBuffer).header, byteLength};
       } catch (error) {
