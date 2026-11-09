@@ -467,6 +467,12 @@ const config = {
             '/examples/table/xml': '/docs/modules/documents/xml/try-it'
           };
           const redirectSources = [];
+          // Retired sidebar indexes redirect only to their replacement landing page.
+          for (const [oldLink, newLink] of Object.entries(require('./src/docs-sidebar-redirects.json'))) {
+            if (existingPath === newLink) {
+              redirectSources.push(oldLink);
+            }
+          }
           for (const [group, formats] of Object.entries(consolidatedModuleDocs)) {
             for (const format of formats) {
               const currentPrefix = `/docs/modules/${group}/${format}`;
