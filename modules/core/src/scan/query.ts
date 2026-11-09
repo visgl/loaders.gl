@@ -112,6 +112,7 @@ export async function* queryInBatches(
       readOptions.columns ? sourceSchema.select([...readOptions.columns]) : sourceSchema
     );
     const empty = projectArrowTable(new arrow.Table(sourceSchema), normalized.select);
+    const comparisonSchema = convertSchemaToArrow(convertArrowToSchema(empty.schema));
     let emitted = false;
     /** Adapts physical batches without pulling ahead of the query consumer. */
     async function* inputs(): AsyncIterable<ArrowTableBatch> {
@@ -147,7 +148,7 @@ export async function* queryInBatches(
       }
     )) {
       const batch = value as ArrowTableBatch;
-      if (!arrow.util.compareSchemas(empty.schema, batch.data.schema))
+      if (!arrow.util.compareSchemas(comparisonSchema, convertSchemaToArrow(batch.schema!)))
         throw new Error('Query output schema does not match source metadata.');
       emitted = true;
       rowsReturned += batch.length;

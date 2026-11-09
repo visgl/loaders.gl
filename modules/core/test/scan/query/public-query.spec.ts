@@ -259,3 +259,28 @@ test.each([
   expect(result.data.toArray().map(row => row.toJSON())).toEqual([{label: 'b'}]);
   expect(result.data.schema.fields[0].type.toString()).toBe('Utf8');
 });
+
+test('equivalent Arrow float constructors compare as the same logical output type', async () => {
+  const data = new arrow.Table({
+    value: arrow.vectorFromArray([1, 2], new arrow.Float(arrow.Precision.DOUBLE))
+  });
+  const schema = convertArrowToSchema(data.schema);
+  const source: TableScanSource = {
+    getQueryMetadata: async () =>
+      createScanQueryMetadata({
+        sourceType: 'ipc',
+        queryType: 'table',
+        schema,
+        execution: {status: 'supported', method: 'read'},
+        capabilities: {}
+      }),
+    read: async function* () {
+      yield {shape: 'arrow-table', data, schema, batchType: 'data', length: 2};
+    }
+  };
+  const result = await query({select: [{column: 'value', as: 'number'}]}, {source});
+  expect(result.data.toArray().map(row => row.number)).toEqual([1, 2]);
+  expect(result.data.getChild('number')!.data[0].values.buffer).toBe(
+    data.getChild('value')!.data[0].values.buffer
+  );
+});
