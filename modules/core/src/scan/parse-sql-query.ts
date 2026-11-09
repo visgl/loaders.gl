@@ -5,10 +5,30 @@
 import type {TableQuery} from '@loaders.gl/core/loader-utils';
 import {parseSQLPredicate} from './parse-sql-predicate';
 import type {BoundSQLPredicate, SQLPredicateProperty} from './sql-predicate-types';
-import {parseSQLSelect} from './parse-sql-select';
+import type {SQLCatalogQuery} from './sql-catalog';
+import {parseSQLSelect, SQLQueryReader} from './parse-sql-select';
 
-/** Parses the supported SELECT/AS/FROM/WHERE/LIMIT subset into a portable logical query. */
-export function parseSQLQuery(sql: string): TableQuery {
+/** Parses the supported SELECT subset or SHOW SOURCES, SHOW TABLES and DESCRIBE commands. */
+export function parseSQLQuery(sql: string): TableQuery | SQLCatalogQuery {
+  const reader = new SQLQueryReader(sql);
+  if (reader.takeKeyword('SHOW')) {
+    let request: SQLCatalogQuery;
+    if (reader.takeKeyword('SOURCES')) request = {command: 'showSources'};
+    else {
+      reader.expectKeyword('TABLES');
+      request = reader.takeKeyword('FROM')
+        ? {command: 'showTables', from: reader.identifier()}
+        : {command: 'showTables'};
+    }
+    reader.end();
+    return request;
+  }
+  if (reader.takeKeyword('DESCRIBE')) {
+    const source = reader.identifier();
+    const from = reader.takeSymbol('.') ? {source, table: reader.identifier()} : source;
+    reader.end();
+    return {command: 'describe', from};
+  }
   return parseSQLSelect(sql, {
     parseWhere: expression => {
       const predicate = parseSQLPredicate(expression);

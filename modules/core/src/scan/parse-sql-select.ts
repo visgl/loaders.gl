@@ -43,7 +43,7 @@ export type SQLSelectParserOptions = Readonly<{
 
 /** Parses SELECT columns/AS aliases, optional FROM, and LIMIT; WHERE requires a supplied parser. */
 export function parseSQLSelect(sql: string, options: SQLSelectParserOptions = {}): TableQuery {
-  const reader = new SQLSelectReader(sql);
+  const reader = new SQLQueryReader(sql);
   reader.expectKeyword('SELECT');
   let select: TableSelection[] | undefined;
   if (!reader.takeSymbol('*')) {
@@ -82,7 +82,7 @@ export function parseSQLSelect(sql: string, options: SQLSelectParserOptions = {}
 }
 
 /** Small bounded scanner shared by structural and predicate-enabled SELECT parsing. */
-class SQLSelectReader {
+export class SQLQueryReader {
   /** Original SQL, retained for exact WHERE substring extraction. */
   private readonly sql: string;
   /** Current character offset. */

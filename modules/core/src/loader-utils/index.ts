@@ -551,4 +551,8 @@ export type {
 
 export {readRangeResponse} from './lib/files/read-range-response';
 
-export type {TableSourceCollection} from './lib/sources/table-source-collection';
+export type {
+  TableSourceCollection,
+  TableDiscoverySource,
+  TableMetadata
+} from './lib/sources/table-source-collection';

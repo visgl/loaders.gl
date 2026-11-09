@@ -5,6 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {parseSQLQuery, parseSQLSelect} from '@loaders.gl/core/scan/query';
+import type {TableQuery} from '@loaders.gl/core/scan';
 import {query, queryInBatches} from '@loaders.gl/core/scan';
 import {parseSQLPredicate} from '@loaders.gl/core/scan/parse-sql-predicate';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
@@ -40,7 +41,9 @@ test('WHERE extraction respects strings, quoted keywords, parentheses, escaping 
     },
     limit: 3
   });
-  expect(parseSQLQuery('SELECT value WHERE value > 9007199254740993').where).toEqual({
+  expect(
+    (parseSQLQuery('SELECT value WHERE value > 9007199254740993') as TableQuery).where
+  ).toEqual({
     op: '>',
     args: [{property: 'value'}, 9007199254740993n]
   });

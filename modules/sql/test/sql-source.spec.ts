@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import type {Schema} from '@loaders.gl/core/schema';
 import {SQLDataSource, getSQLAdapterFactory, registerSQLAdapter} from '@loaders.gl/sql';
-import {parseSQLPredicate} from '@loaders.gl/core/scan';
+import {parseSQLPredicate, query as queryTables} from '@loaders.gl/core/scan';
 import {convertRowsToArrowTable} from '../src/sql-utils';
 import type {
   SQLAdapter,
@@ -251,4 +251,64 @@ test('SQLDataSource reports missing adapters with source context', async () => {
       throw error;
     }
   }, 'reports missing adapter failures').rejects.toThrow(/SQL adapter/);
+});
+
+test('SQL source metadata discovery is lazy and resolves native namespaces unambiguously', async () => {
+  const schema: Schema = {fields: [{name: 'id', type: 'int32', nullable: false}], metadata: {}};
+  const tables = [
+    {schemaName: 'public', tableName: 'cities'},
+    {schemaName: 'archive', tableName: 'cities'}
+  ];
+  let schemasRead = 0;
+  let rowsRead = 0;
+  const source = new StubSQLDataSource('memory', {
+    core: {name: 'warehouse'},
+    sql: {
+      browserAdapterFactory: async (): Promise<SQLAdapter> => ({
+        capabilities: {
+          supportsArrow: false,
+          supportsMetadata: true,
+          runtime: 'both',
+          isDynamic: true
+        },
+        async connect() {},
+        async close() {},
+        async listCatalogs() {
+          return [];
+        },
+        async listSchemas() {
+          return [];
+        },
+        async listTables() {
+          return tables;
+        },
+        async getTableSchema(table) {
+          schemasRead++;
+          expect(table).toEqual(tables[0]);
+          return schema;
+        },
+        async executeRows() {
+          rowsRead++;
+          throw new Error('row access forbidden');
+        }
+      })
+    }
+  });
+  const listed = await source.getTablesMetadata();
+  expect(listed).toEqual([
+    {name: '"public"."cities"', queryable: false},
+    {name: '"archive"."cities"', queryable: false}
+  ]);
+  expect(schemasRead).toBe(0);
+  await expect(source.getTableMetadata('cities')).rejects.toThrow('ambiguous');
+  expect((await source.getTableMetadata(listed[0].name)).schema).toBe(schema);
+  expect(schemasRead).toBe(1);
+  const listing = await queryTables({command: 'showTables'}, {sources: [source]});
+  expect(listing.data.getChild('table_name')?.toArray()).toEqual(listed.map(table => table.name));
+  const description = await queryTables(
+    {command: 'describe', from: {source: 'warehouse', table: listed[0].name}},
+    {sources: [source]}
+  );
+  expect(description.data.getChild('column_name')?.toArray()).toEqual(['id']);
+  expect(rowsRead).toBe(0);
 });
