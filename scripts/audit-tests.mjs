@@ -216,7 +216,7 @@ function findFixtureBranchViolations() {
 
   const violations = [];
   // Pull requests report their target branch in GITHUB_BASE_REF; pushes report it in GITHUB_REF_NAME.
-  const targetBranch = process.env.GITHUB_BASE_REF || process.env.GITHUB_REF_NAME;
+  const targetBranch = (process.env.GITHUB_BASE_REF || process.env.GITHUB_REF_NAME)?.replace(/^refs\/heads\//, '');
   if (targetBranch && /^(?:master|\d+\.\d+-release)$/.test(targetBranch)) {
     const npmTag = /NPM_TAG = '([^']+)'/.exec(fs.readFileSync(remoteFixturesPath, 'utf8'))?.[1];
     const expectedTag = targetBranch === 'master' ? 'beta' : 'latest';

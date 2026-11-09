@@ -6,6 +6,8 @@ on:
     branches:
     - master
   pull_request:
+  merge_group:
+    types: [checks_requested]
   schedule:
     - cron: '17 5 * * *'
   workflow_dispatch:
@@ -392,6 +394,23 @@ jobs:
           VITEST_MAX_WORKERS: 1
         run: yarn test-external
 
+  required-ci:
+    name: Required CI
+    if: always()
+    needs: [build, test, slow-tests, coverage-finished, tile-converter-tests, website-build, external-tests]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Require every selected CI job to pass
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: node scripts/ci-gate.mjs
+
   build:
     name: Build
     runs-on: ubuntu-22.04
@@ -439,6 +458,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Test the required CI gate
+        run: node --test scripts/ci-gate.test.mjs
+
       - name: Run Vitest async guardrails
         run: yarn run test-vitest-async-guardrails
 
@@ -446,6 +468,8 @@ jobs:
         run: yarn run check-attributions
 
       - name: Run test-suite audit
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref || github.event.merge_group.base_ref }}
         run: yarn run test-audit
 
       - name: Build
