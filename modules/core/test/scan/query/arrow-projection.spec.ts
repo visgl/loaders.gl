@@ -107,3 +107,15 @@ test('queryArrowTable resolves predicates before applying aliases and limits zer
   expect(() => projectArrowTable(data, ['missing'])).toThrow(/not found/);
   expect(() => projectArrowTable(data, ['text', 'text'])).toThrow(/duplicate/);
 });
+
+test('existing empty source field names remain valid in unchanged projections', () => {
+  const data = new arrow.Table({'': arrow.vectorFromArray([1, 2, 3], new arrow.Int32())});
+  const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
+  const projected = projectArrowTable(data, ['']);
+  expect(projected.getChild('')!.toArray()).toEqual(data.getChild('')!.toArray());
+  expect(projected.batches[0].data.children[0]).toBe(data.batches[0].data.children[0]);
+  expect(queryArrowTable(source).data.numRows).toBe(3);
+  expect(queryArrowTable(source, {columns: ['']}).data.schema.fields[0].name).toBe('');
+  expect(projectArrowTable(data, [{column: ''}]).schema.fields[0].name).toBe('');
+  expect(() => projectArrowTable(data, [{column: '', as: ''}])).toThrow(/Invalid/);
+});

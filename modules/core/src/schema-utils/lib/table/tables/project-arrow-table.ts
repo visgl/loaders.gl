@@ -25,7 +25,11 @@ export function projectArrowTable(
           : selection.as;
     const index = source.schema.fields.findIndex(field => field.name === column);
     if (index < 0) throw new Error(`Arrow projection column not found: ${column}`);
-    if (typeof name !== 'string' || !name.length || outputNames.has(name)) {
+    if (
+      typeof name !== 'string' ||
+      (typeof selection !== 'string' && selection.as !== undefined && !name.length) ||
+      outputNames.has(name)
+    ) {
       throw new Error(`Invalid or duplicate Arrow projection output name: ${name}`);
     }
     outputNames.add(name);
