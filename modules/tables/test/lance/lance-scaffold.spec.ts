@@ -456,7 +456,7 @@ test('Lance remote readers reject invalid requests and responses', async () => {
       0,
       async () => new Response(null, {status: 500})
     )
-  ).rejects.toThrow('Failed to read Lance byte range');
+  ).rejects.toThrow('requires 206');
   await expect(
     readLanceRemoteFileToArrow(
       url,
@@ -466,7 +466,7 @@ test('Lance remote readers reject invalid requests and responses', async () => {
       0,
       async () => new Response(new Uint8Array(0), {status: 206})
     )
-  ).rejects.toThrow('range response returned 0 bytes');
+  ).rejects.toThrow('range body has truncated length');
 });
 
 function createRangeFetch(bytes: Uint8Array) {
