@@ -328,6 +328,11 @@
       "types": "./dist/arrow-worker-transport.d.ts",
       "import": "./dist/arrow-worker-transport.js",
       "require": "./dist/arrow-worker-transport.cjs"
+    },
+    "./scan/arrow-execution": {
+      "types": "./dist/scan/arrow-execution.d.ts",
+      "import": "./dist/scan/arrow-execution.js",
+      "require": "./dist/scan/arrow-execution.cjs"
     }
   },
   "sideEffects": [

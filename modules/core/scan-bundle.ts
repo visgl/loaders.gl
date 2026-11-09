@@ -87,3 +87,5 @@ export type {
   LogicalTableQueryProjectStep,
   LogicalTableQueryPlan
 } from './src/scan/index';
+
+export {projectArrowTable} from './src/scan/arrow-execution';

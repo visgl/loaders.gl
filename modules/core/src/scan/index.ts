@@ -126,3 +126,5 @@ export type {
   LogicalTableQueryProjectStep,
   LogicalTableQueryPlan
 } from '../loader-utils/lib/scan-utils/logical-table-query';
+
+export {projectArrowTable} from './arrow-execution';

@@ -60,10 +60,7 @@ test('parseWithWorker#nested', async () => {
     name: 'Nested JSON worker',
     module: 'loader-utils',
     version: 'latest',
-    worker: new URL(
-      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
-      location.href
-    ).href,
+    worker: new URL('/modules/core/test/worker-utils/fixtures/task-worker.ts', location.href).href,
     extensions: [],
     mimeTypes: [],
     tests: [arrayBuffer => arrayBuffer instanceof ArrayBuffer],
@@ -105,10 +102,7 @@ test('parseWithWorker#nested preserves legacy parseOnMainThread options argument
     name: 'Nested Legacy Options Worker',
     module: 'loader-utils',
     version: 'latest',
-    worker: new URL(
-      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
-      location.href
-    ).href,
+    worker: new URL('/modules/core/test/worker-utils/fixtures/task-worker.ts', location.href).href,
     extensions: [],
     mimeTypes: [],
     tests: [arrayBuffer => arrayBuffer instanceof ArrayBuffer],
@@ -135,10 +129,7 @@ test('worker options retain Headers instances in namespaced and legacy fetch opt
     version: '1',
     extensions: [],
     mimeTypes: [],
-    worker: new URL(
-      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
-      location.href
-    ).href
+    worker: new URL('/modules/core/test/worker-utils/fixtures/task-worker.ts', location.href).href
   };
   const result = await parseWithWorker(loader, new ArrayBuffer(0), {
     echoFetch: true,

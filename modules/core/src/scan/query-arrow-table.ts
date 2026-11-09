@@ -5,6 +5,8 @@
 import * as arrow from 'apache-arrow';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {projectArrowTable} from './arrow-execution';
+import type {TableSelection} from '@loaders.gl/core/loader-utils';
 import {convertRowsToArrowTable} from './rows-to-arrow';
 
 import {
@@ -51,6 +53,8 @@ type ArrowChildQuery = Readonly<{
 /** Options for the lightweight in-memory Arrow query executor. */
 export type ArrowQueryOptions = TableQueryOptions &
   Readonly<{
+    /** Output source fields and aliases, in selection order. Cannot be combined with columns. */
+    select?: readonly TableSelection[];
     /** Cancels the query before or during predicate evaluation. */
     signal?: AbortSignal;
     /** Computed columns evaluated before ordering and projection. */
@@ -70,7 +74,35 @@ export type ArrowQueryOptions = TableQueryOptions &
   }>;
 
 /** Explains an Arrow table query without materializing or scanning table rows. */
-export function explainArrowTableQuery(sourceTable: ArrowTable, options: ArrowQueryOptions = {}) {
+export function explainArrowTableQuery(
+  sourceTable: ArrowTable,
+  options: ArrowQueryOptions = {}
+): import('./table-query').TableQueryExplain {
+  if (options.select !== undefined) {
+    if (options.columns !== undefined || hasRelationalOperators(options) || options.join) {
+      throw new Error('Arrow select cannot be combined with columns or relational operators.');
+    }
+    const projected = projectArrowTable(sourceTable.data, options.select);
+    const columns = [
+      ...new Set(
+        options.select.map(selection =>
+          typeof selection === 'string' ? selection : selection.column
+        )
+      )
+    ];
+    const {select, ...remainingOptions} = options;
+    const explanation = explainArrowTableQuery(sourceTable, {...remainingOptions, columns});
+    const outputColumns = Object.freeze(projected.schema.fields.map(field => field.name));
+    return Object.freeze({
+      ...explanation,
+      outputColumns,
+      plan: Object.freeze(
+        explanation.plan.map(step =>
+          step.kind === 'project' ? Object.freeze({...step, columns: outputColumns, select}) : step
+        )
+      )
+    });
+  }
   if (options.predicate) {
     validateSQLPredicate(options.predicate);
   }
@@ -96,6 +128,23 @@ export function queryArrowTable(
   options: ArrowQueryOptions = {}
 ): ArrowTable {
   throwIfAborted(options.signal);
+  if (options.select !== undefined) {
+    if (options.columns !== undefined || hasRelationalOperators(options) || options.join) {
+      throw new Error('Arrow select cannot be combined with columns or relational operators.');
+    }
+    // Validate aliases before evaluating any predicate, then apply them after filtering.
+    projectArrowTable(sourceTable.data, options.select);
+    const columns = [
+      ...new Set(
+        options.select.map(selection =>
+          typeof selection === 'string' ? selection : selection.column
+        )
+      )
+    ];
+    const {select, ...remainingOptions} = options;
+    const result = queryArrowTable(sourceTable, {...remainingOptions, columns});
+    return wrapArrowTable(projectArrowTable(result.data, select));
+  }
 
   if (options.join) {
     validateArrowJoinQuery(sourceTable, options);
@@ -118,7 +167,7 @@ export function queryArrowTable(
     options
   );
   const scannedData = sourceData.select([...getScanStep(plan).columns]);
-  const projectedData = scannedData.select([...getProjectStep(plan).columns]);
+  const projectedData = projectArrowTable(scannedData, getProjectStep(plan).columns);
   const predicate = getFilterStep(plan)?.predicate;
   const limit = getLimitStep(plan)?.limit ?? Number.POSITIVE_INFINITY;
   if (!predicate) {

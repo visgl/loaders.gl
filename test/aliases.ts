@@ -44,9 +44,7 @@ function makeAliases() {
     '@loaders.gl/tables/json/test': resolveTestPath('./modules/tables/test/json'),
     '@loaders.gl/geospatial/kml/test': resolveTestPath('./modules/geospatial/test/kml'),
     '@loaders.gl/pointclouds/las/test': resolveTestPath('./modules/pointclouds/test/las'),
-    '@loaders.gl/core/loader-utils/test': resolveTestPath(
-      './modules/core/test/loader-utils-package'
-    ),
+    '@loaders.gl/core/loader-utils/test': resolveTestPath('./modules/core/test/loader-utils'),
     '@loaders.gl/raster/test/lerc': resolveTestPath('./modules/raster/test/lerc'),
     '@loaders.gl/tiles/mlt/test': resolveTestPath('./modules/tiles/test/mlt'),
     '@loaders.gl/tiles/mvt/test': resolveTestPath('./modules/tiles/test/mvt'),
@@ -61,19 +59,17 @@ function makeAliases() {
     '@loaders.gl/splats/test': resolveTestPath('./modules/splats/test'),
     '@loaders.gl/ogc/stac/test': resolveTestPath('./modules/ogc/test/stac'),
     '@loaders.gl/tiles/pmtiles/test': resolveTestPath('./modules/tiles/test/pmtiles'),
-    '@loaders.gl/core/polyfills/test': resolveTestPath('./modules/core/test/polyfills-package'),
+    '@loaders.gl/core/polyfills/test': resolveTestPath('./modules/core/test/polyfills'),
     '@loaders.gl/tiles-3d/potree/test': resolveTestPath('./modules/tiles-3d/test/potree'),
     '@loaders.gl/geospatial/shapefile/test': resolveTestPath('./modules/geospatial/test/shapefile'),
-    '@loaders.gl/core/schema/test': resolveTestPath('./modules/core/test/schema-package'),
+    '@loaders.gl/core/schema/test': resolveTestPath('./modules/core/test/schema'),
     '@loaders.gl/raster/test/terrain': resolveTestPath('./modules/raster/test/terrain'),
     '@loaders.gl/tile-converter/test': resolveTestPath('./apps/tile-converter/test'),
     '@loaders.gl/tiles/test': resolveTestPath('./modules/tiles/test'),
     '@loaders.gl/traces/test': resolveTestPath('./modules/traces/test'),
     '@loaders.gl/geospatial/wkt/test': resolveTestPath('./modules/geospatial/test/wkt'),
     '@loaders.gl/ogc/wms/test': resolveTestPath('./modules/ogc/test/wms'),
-    '@loaders.gl/core/worker-utils/test': resolveTestPath(
-      './modules/core/test/worker-utils-package'
-    ),
+    '@loaders.gl/core/worker-utils/test': resolveTestPath('./modules/core/test/worker-utils'),
     '@loaders.gl/documents/test/xml': resolveTestPath('./modules/documents/test/xml'),
     '@loaders.gl/archives/zip/test': resolveTestPath('./modules/archives/test'),
     // eslint-disable-next-line camelcase
