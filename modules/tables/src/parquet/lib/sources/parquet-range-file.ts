@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile, Stat} from '@loaders.gl/core/loader-utils';
-import {RangeRequestCache, RangeRequestScheduler} from '@loaders.gl/core/loader-utils';
-
+import type {ReadableFile, Stat, HttpFileTelemetry} from '@loaders.gl/core/loader-utils';
+import {HttpFile, RangeRequestCache} from '@loaders.gl/core/loader-utils';
 import type {ParquetObjectVersion, ParquetRangeRequestOptions} from '../../parquet-source-types';
 
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
@@ -41,93 +40,84 @@ type ParquetRangeTelemetryEvent = {
   error?: unknown;
 };
 
-type ContentRange = {
-  start: number;
-  end: number;
-  total: number;
-};
-
-const DEFAULT_RANGE_CACHE_BYTES = 65536;
-
-/** Strict HTTP range-backed file with Parquet object-version validation. */
+/** Cached Parquet file adapter; Core owns HTTP headers, validation and scheduling. */
 export class ParquetRangeFile implements ReadableFile {
   /** URL used as the file handle. */
   readonly handle: string;
-  /** URL of the remote Parquet object. */
+  /** Remote object URL. */
   readonly url: string;
-
-  /** Fetch implementation inherited from source loader options. */
-  private readonly fetch: FetchLike;
-  /** Headers inherited from source loader options. */
-  private readonly headers?: HeadersInit;
-  /** Source telemetry callback invoked after transport and cache operations. */
-  private readonly onTelemetry?: (event: ParquetRangeTelemetryEvent) => void;
-  /** Scheduler used to coalesce later row-group reads. */
-  private readonly scheduler: RangeRequestScheduler;
-  /** Aborts all active requests when the file is closed. */
-  private readonly closeController = new AbortController();
-  /** Bounded cache for repeated metadata and small range reads. */
+  /** Core transport, including CORS-hidden Content-Range fallback. */
+  private readonly file: HttpFile;
+  /** Bounded cache for repeated metadata and small reads. */
   private readonly cache: RangeRequestCache;
-  /** Remote object byte length discovered from `Content-Range`. */
-  private fileByteLength = 0;
-  /** Object validators captured by the opening range request. */
-  private version: ParquetObjectVersion = {};
-  /** Whether `close()` has been called. */
+  /** Persistent signal aborting both discovery and reads when closed. */
+  private readonly closeController = new AbortController();
+  /** Source-local telemetry sink. */
+  private readonly onTelemetry?: (event: ParquetRangeTelemetryEvent) => void;
+  /** Last reported counters, shared across concurrent reads to avoid double counting. */
+  private reportedTelemetry: HttpFileTelemetry;
+  /** Whether the adapter has been closed. */
   private closed = false;
 
-  /** Creates an unopened remote Parquet file. Use `open()` before reading it. */
+  /** Creates a lazy file using Core's response-side consistency checks. */
   constructor(url: string, options: ParquetRangeFileOptions) {
     this.handle = url;
     this.url = url;
-    this.fetch = options.fetch;
-    this.headers = options.headers;
     this.onTelemetry = options.onTelemetry;
-    this.cache = new RangeRequestCache({
-      maxBytes: DEFAULT_RANGE_CACHE_BYTES,
-      onEvent: event => {
-        if (event.type === 'hit') {
-          this.onTelemetry?.({type: 'cache-hit', cacheHits: 1});
-        }
-      }
-    });
-    this.scheduler =
-      options.rangeRequests?.scheduler ||
-      new RangeRequestScheduler({
+    // Do not add format-specific conditional headers: they can force a failing
+    // CORS preflight. HttpFile validates visible response validators and preserves
+    // explicit caller headers. Hidden range metadata is handled only in Core.
+    this.file = new HttpFile(url, {
+      fetch: options.fetch,
+      onTelemetry: counters => this.reportTelemetry(counters),
+      fetchOptions: {headers: options.headers, signal: this.closeController.signal},
+      rangeScheduler: options.rangeRequests?.scheduler,
+      rangeSchedulerProps: {
         batchDelayMs: options.rangeRequests?.batchDelayMs ?? 0,
         maxGapBytes: options.rangeRequests?.maxGapBytes,
         rangeExpansionBytes: options.rangeRequests?.rangeExpansionBytes,
         maxMergedBytes: options.rangeRequests?.maxMergedBytes,
         stats: options.rangeRequests?.stats,
         onEvent: options.rangeRequests?.onEvent
-      });
+      }
+    });
+    this.reportedTelemetry = this.file.getTelemetry();
+    this.cache = new RangeRequestCache({
+      maxBytes: 65536,
+      onEvent: event => {
+        if (event.type === 'hit') this.onTelemetry?.({type: 'cache-hit', cacheHits: 1});
+      }
+    });
   }
 
-  /** Total remote object byte length after `open()`. */
+  /** Total remote object size after opening. */
   get size(): number {
-    return this.fileByteLength;
+    return this.file.size;
   }
-
-  /** Total remote object byte length as a bigint after `open()`. */
+  /** Total remote object size as a bigint. */
   get bigsize(): bigint {
-    return BigInt(this.fileByteLength);
+    return this.file.bigsize;
   }
-
-  /** Immutable copy of the HTTP validators captured when the object was opened. */
+  /** Validators pinned by Core during discovery. */
   get objectVersion(): ParquetObjectVersion {
-    return {...this.version};
+    const identity = this.file.getIdentitySnapshot();
+    return {etag: identity?.etag, lastModified: identity?.lastModified};
   }
 
-  /** Opens the object with a four-byte range probe and caches the Parquet header. */
+  /** Pins the object identity with Core's one-byte probe. */
   async open(signal?: AbortSignal): Promise<this> {
     this.assertOpen();
-    const result = await this.fetchExactRange(0, 4, signal, false);
-    this.fileByteLength = result.contentRange.total;
-    this.version = getObjectVersion(result.response.headers);
-    this.cache.set(getVersionedSourceId(this.url, this.version), 0, result.arrayBuffer);
-    return this;
+    try {
+      await this.file.open(signal);
+      // Keep the format header cached for footer/schema readers as before.
+      this.cache.set(this.url, 0, await this.file.read(0, 4, signal));
+      return this;
+    } finally {
+      this.reportTelemetry();
+    }
   }
 
-  /** Reads an exact byte range without downloading the complete object. */
+  /** Reads through the cache while Core coalesces and validates transport reads. */
   async read(
     start: number | bigint = 0,
     length: number = this.size - Number(start),
@@ -135,263 +125,69 @@ export class ParquetRangeFile implements ReadableFile {
   ): Promise<ArrayBuffer> {
     this.assertOpen();
     const offset = Number(start);
-    assertValidRange(offset, length, this.size);
-    if (length === 0) {
-      return new ArrayBuffer(0);
+    if (
+      !Number.isSafeInteger(offset) ||
+      !Number.isSafeInteger(length) ||
+      offset < 0 ||
+      length < 0 ||
+      offset + length > this.size
+    ) {
+      throw new Error('Parquet byte range exceeds the object length or is invalid');
     }
-
-    const abortContext = createCombinedAbortSignal(signal, this.closeController.signal);
     try {
       return await this.cache.read({
-        sourceId: getVersionedSourceId(this.url, this.version),
+        sourceId: this.url,
         offset,
         length,
-        signal: abortContext.signal,
-        fetchRange: async (rangeOffset, rangeLength, cacheSignal) =>
-          await this.scheduler.scheduleRequest({
-            sourceId: getVersionedSourceId(this.url, this.version),
-            offset: rangeOffset,
-            length: rangeLength,
-            signal: cacheSignal,
-            fetchRange: async (transportOffset, transportLength, transportSignal) => {
-              const result = await this.fetchExactRange(
-                transportOffset,
-                transportLength,
-                transportSignal,
-                true
-              );
-              return {
-                arrayBuffer: result.arrayBuffer,
-                status: result.response.status,
-                transportBytes: result.arrayBuffer.byteLength
-              };
-            }
-          })
+        signal,
+        fetchRange: (rangeOffset, rangeLength, cacheSignal) =>
+          this.file.read(rangeOffset, rangeLength, cacheSignal)
       });
     } finally {
-      abortContext.dispose();
+      this.reportTelemetry();
     }
   }
 
-  /** Returns file length information without another HTTP request. */
+  /** Returns pinned file information. */
   async stat(): Promise<Stat> {
     this.assertOpen();
-    return {size: this.size, bigsize: this.bigsize, isDirectory: false};
+    return this.file.stat();
   }
 
-  /** Aborts active requests and prevents future reads. */
+  /** Aborts active HTTP work and clears cached data. */
   async close(): Promise<void> {
     if (!this.closed) {
       this.closed = true;
       this.closeController.abort();
       this.cache.clear();
+      await this.file.close();
     }
   }
 
-  /** Fetches and validates one exact HTTP byte range. */
-  private async fetchExactRange(
-    offset: number,
-    length: number,
-    signal: AbortSignal | undefined,
-    validateVersion: boolean
-  ): Promise<{response: Response; arrayBuffer: ArrayBuffer; contentRange: ContentRange}> {
-    const abortContext = createCombinedAbortSignal(signal, this.closeController.signal);
-    const startTime = getCurrentTime();
-    try {
-      const response = await this.fetch(this.url, {
-        headers: createRangeHeaders(this.headers, offset, length, validateVersion && this.version),
-        signal: abortContext.signal
-      });
-
-      if (response.status === 412) {
-        throw new Error('Parquet object changed while it was being read');
-      }
-      if (response.status !== 206) {
-        await response.body?.cancel().catch(() => {});
-        throw new Error(
-          `ParquetSource requires HTTP byte ranges (expected 206, received ${response.status})`
-        );
-      }
-
-      const contentRange = response.headers.has('Content-Range')
-        ? parseContentRange(response.headers.get('Content-Range'))
-        : await this.inferContentRange(response, offset, length, abortContext.signal);
-      if (
-        contentRange.start !== offset ||
-        contentRange.end !== offset + length - 1 ||
-        (this.fileByteLength > 0 && contentRange.total !== this.fileByteLength)
-      ) {
-        await response.body?.cancel().catch(() => {});
-        throw new Error('Parquet range response does not match the requested object range');
-      }
-
-      if (validateVersion) {
-        assertObjectVersion(this.version, getObjectVersion(response.headers));
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
-      if (arrayBuffer.byteLength !== length) {
-        throw new Error(
-          `Parquet range response returned ${arrayBuffer.byteLength} bytes; expected ${length}`
-        );
-      }
-      this.onTelemetry?.({
-        type: 'range-request',
-        rangeRequestCount: 1,
-        requestedBytes: length,
-        downloadedBytes: arrayBuffer.byteLength,
-        networkDurationMs: getCurrentTime() - startTime
-      });
-      return {response, arrayBuffer, contentRange};
-    } catch (error) {
-      this.onTelemetry?.({
-        type: 'range-request',
-        rangeRequestCount: 1,
-        requestedBytes: length,
-        networkDurationMs: getCurrentTime() - startTime,
-        failedRangeRequestCount: 1,
-        abortedRangeRequestCount:
-          abortContext.signal.aborted || isAbortError(error) ? 1 : undefined,
-        error
-      });
-      throw error;
-    } finally {
-      abortContext.dispose();
-    }
+  /** Reports cumulative Core counters as non-overlapping source-local deltas. */
+  private reportTelemetry(current = this.file.getTelemetry()): void {
+    const previous = this.reportedTelemetry;
+    this.reportedTelemetry = current;
+    if (
+      Object.keys(current).every(
+        key => current[key as keyof HttpFileTelemetry] === previous[key as keyof HttpFileTelemetry]
+      )
+    )
+      return;
+    this.onTelemetry?.({
+      type: 'range-request',
+      rangeRequestCount: current.requestCount - previous.requestCount,
+      requestedBytes: current.requestedBytes - previous.requestedBytes,
+      downloadedBytes: current.downloadedBytes - previous.downloadedBytes,
+      networkDurationMs: current.networkTimeMs - previous.networkTimeMs,
+      failedRangeRequestCount:
+        current.errorCount + current.abortCount - previous.errorCount - previous.abortCount,
+      abortedRangeRequestCount: current.abortCount - previous.abortCount
+    });
   }
 
-  /** Infers hidden range metadata using the pinned size or an initial HEAD request. */
-  private async inferContentRange(
-    response: Response,
-    offset: number,
-    length: number,
-    signal?: AbortSignal
-  ): Promise<ContentRange> {
-    try {
-      let total = this.fileByteLength;
-      if (!total) {
-        const headers = new Headers(this.headers);
-        headers.delete('Range');
-        const metadata = await this.fetch(this.url, {method: 'HEAD', headers, signal});
-        await metadata.body?.cancel().catch(() => {});
-        const value = metadata.headers.get('Content-Length');
-        total = value && /^\d+$/.test(value) ? Number(value) : NaN;
-        if (metadata.status !== 200 || !Number.isSafeInteger(total) || total < offset + length) {
-          throw new Error(
-            'Parquet Content-Range is missing and HEAD did not provide a valid file length'
-          );
-        }
-        assertObjectVersion(getObjectVersion(metadata.headers), getObjectVersion(response.headers));
-      }
-      return {start: offset, end: offset + length - 1, total};
-    } catch (error) {
-      await response.body?.cancel().catch(() => {});
-      throw error;
-    }
-  }
-
-  /** Throws when the file has already been closed. */
+  /** Rejects operations after close, including cache hits. */
   private assertOpen(): void {
-    if (this.closed) {
-      throw new Error('Parquet source is closed');
-    }
+    if (this.closed) throw new Error('Parquet source is closed');
   }
-}
-
-/** Returns a monotonic timestamp when available and falls back to wall-clock time. */
-function getCurrentTime(): number {
-  return globalThis.performance?.now() ?? Date.now();
-}
-
-/** Returns true for DOM and cross-runtime abort errors. */
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'AbortError';
-}
-
-/** Validates a requested range against the known object byte length. */
-function assertValidRange(offset: number, length: number, fileByteLength: number): void {
-  if (!Number.isSafeInteger(offset) || !Number.isSafeInteger(length) || offset < 0 || length < 0) {
-    throw new Error('Parquet byte range must use non-negative safe integers');
-  }
-  if (offset + length > fileByteLength) {
-    throw new Error('Parquet byte range exceeds the object length');
-  }
-}
-
-/** Creates request headers for one byte range and optional object precondition. */
-function createRangeHeaders(
-  defaultHeaders: HeadersInit | undefined,
-  offset: number,
-  length: number,
-  version: ParquetObjectVersion | false
-): Headers {
-  const headers = new Headers(defaultHeaders);
-  headers.set('Range', `bytes=${offset}-${offset + length - 1}`);
-  if (version && version.etag && !version.etag.startsWith('W/')) {
-    headers.set('If-Match', version.etag);
-  } else if (version && version.lastModified) {
-    headers.set('If-Unmodified-Since', version.lastModified);
-  }
-  return headers;
-}
-
-/** Parses a satisfied single-range `Content-Range` header. */
-function parseContentRange(value: string | null): ContentRange {
-  const match = value?.match(/^bytes (\d+)-(\d+)\/(\d+)$/);
-  if (!match) {
-    throw new Error(`Invalid Parquet Content-Range header: ${value}`);
-  }
-  return {start: Number(match[1]), end: Number(match[2]), total: Number(match[3])};
-}
-
-/** Reads supported object validators from response headers. */
-function getObjectVersion(headers: Headers): ParquetObjectVersion {
-  const etag = headers.get('ETag') || undefined;
-  const lastModified = headers.get('Last-Modified') || undefined;
-  return {etag, lastModified};
-}
-
-/** Rejects a response that identifies a different remote object version. */
-function assertObjectVersion(expected: ParquetObjectVersion, actual: ParquetObjectVersion): void {
-  if (expected.etag && actual.etag && expected.etag !== actual.etag) {
-    throw new Error('Parquet object ETag changed while it was being read');
-  }
-  if (
-    !expected.etag &&
-    expected.lastModified &&
-    actual.lastModified &&
-    expected.lastModified !== actual.lastModified
-  ) {
-    throw new Error('Parquet object Last-Modified changed while it was being read');
-  }
-}
-
-/** Creates a scheduler identity that isolates object versions. */
-function getVersionedSourceId(url: string, version: ParquetObjectVersion): string {
-  return `${url}#${version.etag || version.lastModified || 'unversioned'}`;
-}
-
-/** Combines two abort signals and returns cleanup for installed listeners. */
-function createCombinedAbortSignal(
-  firstSignal?: AbortSignal,
-  secondSignal?: AbortSignal
-): {signal: AbortSignal; dispose: () => void} {
-  const controller = new AbortController();
-  const abort = () => controller.abort();
-  const signals = [firstSignal, secondSignal].filter(Boolean) as AbortSignal[];
-  for (const signal of signals) {
-    if (signal.aborted) {
-      controller.abort();
-      break;
-    }
-    signal.addEventListener('abort', abort, {once: true});
-  }
-  return {
-    signal: controller.signal,
-    dispose: () => {
-      for (const signal of signals) {
-        signal.removeEventListener('abort', abort);
-      }
-    }
-  };
 }

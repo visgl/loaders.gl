@@ -75,6 +75,23 @@ zero-byte object may respond to the opening probe with `416 Range Not Satisfiabl
 
 ## Opening a file
 
+### CORS header visibility
+
+Browsers can send a single explicit `Range: bytes=start-end` in a CORS request without
+a preflight. If the server does not expose `Content-Range` through
+`Access-Control-Expose-Headers`, JavaScript sees that response header as absent even
+when the server sent it. This does not strip the outgoing Range or turn HTTP 206 into
+a full-file response. The reader cannot distinguish a CORS-hidden header from one the
+server omitted, so both use the same exact-length 206 fallback described above.
+
+`Content-Length` is CORS-safelisted, but on a partial response it describes only the
+returned part. Size discovery therefore uses HEAD when a trusted total is not available.
+Suffix/multiple ranges and conditional request headers may require preflight; this
+fallback does not bypass failed preflights or relax strict validator requirements.
+
+See [CORS-safelisted request headers](https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_request_header)
+and [exposed response headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Access-Control-Expose-Headers).
+
 ### `HttpFile.open(url, options?, signal?): Promise<HttpFile>`
 
 Creates a file and immediately pins its identity. Unless a complete identity is supplied, opening
@@ -208,3 +225,10 @@ abort signals.
 Several files may share a [`RangeRequestScheduler`](./range-request-scheduler) to centralize queue
 configuration and stats. `HttpFile` assigns every instance a private isolation key, so requests
 with different credentials, validators, or fetch implementations are never coalesced together.
+
+### Transport telemetry callback
+
+`onTelemetry(snapshot)` receives cumulative transport counters after request completion or
+failure, including cancellations that finish after a caller stops waiting. Consumers mapping
+these snapshots to deltas should retain the last reported snapshot to avoid double counting
+concurrent reads. This is the hook used by Parquet's source telemetry adapter.

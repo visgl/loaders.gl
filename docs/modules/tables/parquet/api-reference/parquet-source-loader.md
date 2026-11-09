@@ -480,3 +480,15 @@ partial response length for the file size or download the full file as a fallbac
 An unavailable total size still prevents opening. Without visible range metadata the
 reader trusts the server to return the requested offset; visible version validators
 continue to be checked.
+
+CORS filtering makes the response header invisible to JavaScript; it does not remove
+the outgoing single-range request. An absent header and a CORS-hidden header are
+indistinguishable to the reader. Both use this fallback, while an exposed empty or
+malformed header still fails.
+
+Parquet delegates HTTP requests, size discovery, range validation, response validators,
+and request scheduling to Core's HttpFile. Its adapter retains the bounded read cache,
+source telemetry and close-time cancellation. Core uses a one-byte opening probe.
+No automatic If-Match or If-Unmodified-Since headers are added, avoiding unexpected
+CORS preflights even when Last-Modified is exposed. Explicit caller headers are preserved.
+Visible response validators are still checked against the pinned object version.
