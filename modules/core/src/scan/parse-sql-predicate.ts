@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  BoundSQLPredicate,
   SQLLogicalPredicate,
   SQLPredicate,
   SQLPredicateParameterValues,
@@ -29,6 +30,11 @@ type SQLPredicateToken = Readonly<{
  * parameters, scalar literals, and parentheses. The input is the expression after `WHERE`, not a
  * complete `SELECT` statement.
  */
+export function parseSQLPredicate(
+  source: string,
+  options?: SQLPredicateParserOptions & {preserveParameters?: false}
+): BoundSQLPredicate;
+export function parseSQLPredicate(source: string, options: SQLPredicateParserOptions): SQLPredicate;
 export function parseSQLPredicate(
   source: string,
   options: SQLPredicateParserOptions = {}
@@ -186,10 +192,10 @@ class SQLPredicateParser {
       validateParameterValue(value, token.value);
       return value;
     }
-    if (token.kind === 'identifier' && /^(TRUE|FALSE)$/i.test(token.value)) {
+    if (token.kind === 'identifier' && !token.quoted && /^(TRUE|FALSE)$/i.test(token.value)) {
       return /^TRUE$/i.test(token.value);
     }
-    if (token.kind === 'identifier' && /^NULL$/i.test(token.value)) {
+    if (token.kind === 'identifier' && !token.quoted && /^NULL$/i.test(token.value)) {
       throw new Error('SQL predicate comparisons with NULL must use IS NULL or IS NOT NULL');
     }
     throw new Error(`SQL predicate does not support scalar token ${JSON.stringify(token.value)}`);
@@ -212,7 +218,7 @@ class SQLPredicateParser {
   /** Returns whether the next token is a keyword without consuming it. */
   private peekKeyword(keyword: string): boolean {
     const token = this.peek();
-    return token?.kind === 'identifier' && token.value.toUpperCase() === keyword;
+    return token?.kind === 'identifier' && !token.quoted && token.value.toUpperCase() === keyword;
   }
 
   /** Consumes one optional keyword. */
