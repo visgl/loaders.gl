@@ -68,6 +68,11 @@ export async function addModuleBenchmarksToSuite(suite, filters = [], fixtureAli
     await csvBench(suite);
   }
 
+  if (shouldRunBenchmark('query')) {
+    const {default: queryBench} = await import('../../modules/tables/test/query.bench');
+    await queryBench(suite);
+  }
+
   if (shouldRunBenchmark('core')) {
     const {default: coreBench} = await import('../../modules/core/test/core.bench');
     await coreBench(suite);

@@ -19,7 +19,7 @@ import {ArrowFormat} from './exports/arrow-format';
 
 const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
-  projection: 'pushdown',
+  projection: 'residual',
   limit: 'pushdown',
   streaming: true,
   cancellation: true
