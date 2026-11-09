@@ -50,7 +50,7 @@ test.each([
     assert.equal(file.lastModified, 123);
     assert.deepEqual([...new Uint8Array(await file.arrayBuffer())], [0, 255]);
     assert.equal(await (await fetch('data:text/plain,hello%20world')).text(), 'hello world');
-    const fixture = 'modules/core/test/polyfills-package/data/data.txt';
+    const fixture = 'modules/core/test/polyfills/data/data.txt';
     for (const filename of [fixture, fixture + '.gz']) {
       const response = await globalThis.loaders.fetchNode(filename);
       assert.equal(response.ok, true);

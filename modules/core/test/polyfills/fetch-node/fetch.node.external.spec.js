@@ -17,7 +17,7 @@ const TEXT_URL_GZIPPED = `@loaders.gl/core/polyfills/test/data/data.txt.gz`;
 const TEXT_URL_WITH_REDIRECT = `https://unpkg.com/@loaders.gl/images@beta/dist/libs/basis_encoder.js`;
 // This type of links on github works via 302 redirect
 // ("https://github.com/repository/raw/commit-or-branch/path/to/file/file-name.extension")
-const REDIRECT_URL = `${LOADERS_GL_REDIRECTING_FIXTURE_URL}modules/core/test/polyfills-package/data/data.txt`;
+const REDIRECT_URL = `${LOADERS_GL_REDIRECTING_FIXTURE_URL}modules/core/test/polyfills/data/data.txt`;
 
 test('polyfills#fetch() (NODE)', async () => {
   const response = await fetch(PLY_CUBE_ATT_URL);

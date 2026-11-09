@@ -16,10 +16,7 @@ function createTestLoader(
     version: 'latest',
     extensions: ['estimate'],
     mimeTypes: ['application/x-worker-estimate'],
-    worker: new URL(
-      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
-      location.href
-    ).href,
+    worker: new URL('/modules/core/test/worker-utils/fixtures/task-worker.ts', location.href).href,
     options: {},
     parse: async (arrayBuffer: ArrayBuffer) => ({
       execution: 'main',

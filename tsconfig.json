@@ -145,7 +145,7 @@
         "modules/core/src/worker-utils"
       ],
       "@loaders.gl/core/worker-utils/test": [
-        "modules/core/test/worker-utils-package"
+        "modules/core/test/worker-utils"
       ],
       "@loaders.gl/core/loader-utils/tile-grid": [
         "modules/core/src/loader-utils/tile-grid"
@@ -154,13 +154,13 @@
         "modules/core/src/loader-utils"
       ],
       "@loaders.gl/core/loader-utils/test": [
-        "modules/core/test/loader-utils-package"
+        "modules/core/test/loader-utils"
       ],
       "@loaders.gl/core/polyfills": [
         "modules/core/src/polyfills"
       ],
       "@loaders.gl/core/polyfills/test": [
-        "modules/core/test/polyfills-package"
+        "modules/core/test/polyfills"
       ],
       "@loaders.gl/core": [
         "modules/core/src"
@@ -469,13 +469,13 @@
         "modules/core/src/schema/*"
       ],
       "@loaders.gl/core/schema/test": [
-        "modules/core/test/schema-package"
+        "modules/core/test/schema"
       ],
       "@loaders.gl/core/schema-utils": [
         "modules/core/src/schema-utils"
       ],
       "@loaders.gl/core/schema-utils/test": [
-        "modules/core/test/schema-utils-package"
+        "modules/core/test/schema-utils"
       ],
       "@loaders.gl/tables/arrow/test": [
         "modules/tables/test/arrow"
