@@ -273,7 +273,7 @@ test('modern source rejects status, metadata, range, hierarchy budgets and missi
     });
     await expect(source.initialize()).rejects.toThrow();
   }
-  for (const contentRange of [null, 'bytes 0-21/21', 'bytes 1-22/44']) {
+  for (const contentRange of ['', 'bytes 0-21/21', 'bytes 1-22/44']) {
     const source = new Potree2Source('https://example.com/dataset', {
       core: {
         fetch: async (url, init) =>
@@ -281,11 +281,11 @@ test('modern source rejects status, metadata, range, hierarchy budgets and missi
             ? transport.fetch(url, init)
             : new Response(new Uint8Array(22), {
                 status: 206,
-                headers: contentRange ? {'Content-Range': contentRange} : {}
+                headers: {'Content-Range': contentRange}
               })
       }
     });
-    await expect(source.initialize()).rejects.toThrow('honor');
+    await expect(source.initialize()).rejects.toThrow('Content-Range');
   }
   const source = new Potree2Source('https://example.com/dataset', {
     core: {fetch: transport.fetch},
@@ -432,4 +432,22 @@ test('legacy hierarchy accepts complete trees deeper than the page step and chec
     parsePotreeHierarchyChunk(bytes.slice(0, 15).buffer, {maximumDepth: 2}).children[0].children[0]
       .hasChildren
   ).toBe(true);
+});
+
+test('Potree2 accepts CORS-hidden range headers without HEAD requests', async () => {
+  const dataset = await encodePotreeDataset(createPoints());
+  const transport = createDatasetFetch(dataset);
+  const source = new Potree2Source('https://example.com/dataset', {
+    core: {
+      fetch: async (url, init) => {
+        expect(init?.method).not.toBe('HEAD');
+        const response = await transport.fetch(url, init);
+        response.headers.delete('Content-Range');
+        return response;
+      }
+    }
+  });
+  await source.initialize();
+  const root = await source.getRootTile();
+  expect(await source.loadTileContent(root)).toBeTruthy();
 });

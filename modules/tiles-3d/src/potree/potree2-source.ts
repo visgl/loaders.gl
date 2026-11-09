@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DataSource, type CoreAPI} from '@loaders.gl/core/loader-utils';
+import {DataSource, readRangeResponse, type CoreAPI} from '@loaders.gl/core/loader-utils';
 import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
 import type {PotreeSourceLoaderOptions} from './potree-source-options';
 import type {Potree2HierarchyNode, Potree2Metadata} from './potree2-types';
@@ -268,19 +268,8 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
       headers: {Range: `bytes=${offset}-${end}`}
     });
     this.signal.throwIfAborted();
-    const contentRange = response.headers.get('content-range');
-    const total = contentRange?.split('/')[1];
-    if (
-      response.status !== 206 ||
-      !contentRange ||
-      (total !== '*' && (!total || !/^[0-9]+$/.test(total) || BigInt(total) <= end)) ||
-      !new RegExp(`^bytes ${offset}-${end}/(?:[0-9]+|\\*)$`).test(contentRange)
-    ) {
-      await response.body?.cancel();
-      throw new Error('Potree server must honor the requested byte range');
-    }
-    const data = await this.readResponse(response, Number(size));
-    if (data.byteLength !== Number(size)) throw new Error('Truncated Potree byte range');
+    const bytes = await readRangeResponse(response, offset, Number(size), this.signal);
+    const data = bytes.buffer as ArrayBuffer;
     return data;
   }
 
