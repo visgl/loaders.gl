@@ -178,3 +178,23 @@ test('missing nested properties use SQL null semantics in the shared Arrow kerne
   expect(filterArrowTable(source, isNull).numRows).toBe(2);
   expect(filterArrowTable(source, {op: 'not', args: [isNull]}).numRows).toBe(0);
 });
+
+test('empty relational lists are absent while real relational operators are rejected', async () => {
+  async function* inputs() {
+    yield makeBatch([1, 2]);
+  }
+  const rows: number[] = [];
+  for await (const batch of queryArrowTableInBatches(inputs(), {
+    expressions: [],
+    orderBy: [],
+    groupBy: [],
+    aggregates: [],
+    union: []
+  }))
+    rows.push(...batch.data.toArray().map(row => row.value));
+  expect(rows).toEqual([1, 2]);
+  const iterator = queryArrowTableInBatches(inputs(), {orderBy: [{column: 'value'}]})[
+    Symbol.asyncIterator
+  ]();
+  await expect(iterator.next()).rejects.toThrow('support only');
+});

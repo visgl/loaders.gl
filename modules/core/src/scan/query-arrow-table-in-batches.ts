@@ -15,11 +15,11 @@ export async function* queryArrowTableInBatches(
   options: ArrowQueryOptions = {}
 ): AsyncIterable<ArrowTableBatch> {
   if (
-    options.expressions ||
-    options.orderBy ||
-    options.groupBy ||
-    options.aggregates ||
-    options.union ||
+    options.expressions?.length ||
+    options.orderBy?.length ||
+    options.groupBy?.length ||
+    options.aggregates?.length ||
+    options.union?.length ||
     options.join
   ) {
     throw new Error(
