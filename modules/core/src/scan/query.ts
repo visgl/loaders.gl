@@ -13,7 +13,12 @@ import {
   type TableQueryExecutionOptions,
   type TableQueryExecutionSummary,
   type TableScanSource,
-  type TableScanReadOptions
+  type TableScanReadOptions,
+  type LoaderOptions,
+  type DataSourceOptions,
+  type SourceLoader,
+  resolveLoaderAuthenticationOptions,
+  isSourceLoader
 } from '@loaders.gl/core/loader-utils';
 import {
   convertArrowToSchema,
@@ -24,10 +29,21 @@ import {projectArrowTable, filterArrowTable} from './arrow-execution';
 
 /** Input and execution controls for one public asynchronous table query. */
 export type QueryOptions = TableQueryExecutionOptions &
-  Readonly<{
-    /** Already loaded Arrow table or source implementing the table scan contract. */
-    source: ArrowTable | TableScanSource;
-  }>;
+  LoaderOptions &
+  Readonly<
+    | {
+        /** Already loaded Arrow table or caller-owned table scan source. */
+        source: ArrowTable | TableScanSource;
+        /** URL loader selection is only used with URL sources. */
+        loaders?: never;
+      }
+    | {
+        /** URL opened lazily with the explicitly supplied source loaders. */
+        source: string;
+        /** URL-capable source loaders; registered loaders are never selected implicitly. */
+        loaders: SourceLoader | SourceLoader[];
+      }
+  >;
 
 /** Collects the same ordered Arrow batch pipeline exposed by queryInBatches. */
 export async function query(tableQuery: TableQuery, options: QueryOptions): Promise<ArrowTable> {
@@ -53,10 +69,23 @@ export async function* queryInBatches(
   let batchesRead = 0;
   let sourcesRead = 0;
   let error: unknown;
+  let ownedSource: {close?: () => void | Promise<void>} | undefined;
   let earlyTerminationReason: TableQueryExecutionSummary['earlyTerminationReason'];
   try {
     options.signal?.throwIfAborted();
-    const source = options.source;
+    let source: unknown = options.source;
+    if (typeof source === 'string') {
+      const opened = await openQuerySource(options);
+      if (
+        opened &&
+        typeof opened === 'object' &&
+        'close' in opened &&
+        typeof opened.close === 'function'
+      )
+        ownedSource = opened as {close: () => void | Promise<void>};
+      source = opened;
+    }
+    options.signal?.throwIfAborted();
     if (!source || typeof source !== 'object')
       throw new Error('Query source must be an Arrow table or table scan source.');
     const inMemory = 'shape' in source && source.shape === 'arrow-table';
@@ -64,6 +93,7 @@ export async function* queryInBatches(
       !inMemory &&
       (!('read' in source) ||
         typeof source.read !== 'function' ||
+        !('getQueryMetadata' in source) ||
         typeof source.getQueryMetadata !== 'function')
     ) {
       throw new Error('Query source must be an Arrow table or table scan source.');
@@ -166,20 +196,31 @@ export async function* queryInBatches(
   } finally {
     if (status === 'early-terminated' && !earlyTerminationReason)
       earlyTerminationReason = 'consumer-return';
-    emitQueryComplete(
-      options.onQueryComplete,
-      Object.freeze({
-        status,
-        sourcesPlanned: 1,
-        sourcesRead,
-        batchesRead,
-        rowsRead,
-        rowsReturned,
-        durationMilliseconds: Date.now() - startedAt,
-        ...(earlyTerminationReason ? {earlyTerminationReason} : {}),
-        ...(error === undefined ? {} : {error})
-      })
-    );
+    try {
+      await ownedSource?.close?.();
+    } catch (failure) {
+      if (error === undefined) {
+        error = failure;
+        status = options.signal?.aborted ? 'cancelled' : 'failed';
+        earlyTerminationReason = undefined;
+        throw failure;
+      }
+    } finally {
+      emitQueryComplete(
+        options.onQueryComplete,
+        Object.freeze({
+          status,
+          sourcesPlanned: 1,
+          sourcesRead,
+          batchesRead,
+          rowsRead,
+          rowsReturned,
+          durationMilliseconds: Date.now() - startedAt,
+          ...(earlyTerminationReason ? {earlyTerminationReason} : {}),
+          ...(error === undefined ? {} : {error})
+        })
+      );
+    }
   }
 }
 
@@ -214,4 +255,27 @@ function wrapBatch(data: arrow.Table): ArrowTableBatch {
     batchType: 'data',
     length: data.numRows
   } as ArrowTableBatch;
+}
+
+/** Opens only explicit URL source loaders; the public query owns the returned source. */
+async function openQuerySource(options: QueryOptions): Promise<unknown> {
+  const candidates = Array.isArray(options.loaders) ? options.loaders : [options.loaders];
+  if (!candidates.length || candidates.some(loader => !isSourceLoader(loader) || !loader.fromUrl))
+    throw new Error('Query source must specify explicit URL-capable source loaders for a URL.');
+  const {source, loaders, onQueryComplete, ...sourceOptions} = options;
+  const url = source as string;
+  const selected =
+    candidates.length === 1 ? candidates[0]! : candidates.find(loader => loader!.testURL(url));
+  if (!selected) throw new Error('No explicit source loader matches the query URL.');
+  const implementation = selected.preload ? await selected.preload(url, sourceOptions) : selected;
+  options.signal?.throwIfAborted();
+  if (!isSourceLoader(implementation) || !implementation.fromUrl)
+    throw new Error('Query source preload did not return a URL-capable source loader.');
+  const authenticatedOptions = await resolveLoaderAuthenticationOptions(
+    selected.getAuthentications ? selected : implementation,
+    url,
+    {...sourceOptions, core: {...sourceOptions.core, ignoreRegisteredLoaders: true}}
+  );
+  options.signal?.throwIfAborted();
+  return implementation.createDataSource(url, authenticatedOptions as DataSourceOptions);
 }
