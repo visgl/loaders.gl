@@ -329,3 +329,25 @@ test.runIf(isBrowser)(
     await expect(source.getRaster({variables: ['wmoId']})).rejects.toThrow('status 503');
   }
 );
+
+test('NetCDF hidden range metadata discovers total size through HEAD', async () => {
+  const bytes = await (await fetchFile(NETCDF_FIXTURE)).arrayBuffer();
+  let heads = 0;
+  const source = new NetCDFSource('https://example.invalid/data.nc', {
+    core: {
+      fetch: async (_url, options) => {
+        if (options?.method === 'HEAD') {
+          heads++;
+          return new Response(null, {headers: {'Content-Length': String(bytes.byteLength)}});
+        }
+        return new Response(bytes.slice(0, 65536), {
+          status: 206,
+          headers: {'Content-Length': '65536'}
+        });
+      }
+    }
+  });
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.statistics?.byteLength).toBe(bytes.byteLength);
+  expect(heads).toBeGreaterThan(0);
+});

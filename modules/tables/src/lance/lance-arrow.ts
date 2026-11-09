@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {readRangeResponse} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 
 import {parseLanceColumnMetadata, parseLanceFileMetadata} from './lance-file';
@@ -87,15 +88,7 @@ async function fetchLanceRange(
   fetchFunction: LanceFetchFunction
 ): Promise<Uint8Array> {
   const response = await fetchFunction(url, {headers: {Range: `bytes=${start}-${end}`}});
-  if (!response.ok)
-    throw new Error(`Failed to read Lance byte range ${start}-${end}: ${response.status}`);
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  if (bytes.byteLength !== end - start + 1) {
-    throw new Error(
-      `Lance range response returned ${bytes.byteLength} bytes; expected ${end - start + 1}`
-    );
-  }
-  return bytes;
+  return readRangeResponse(response, start, end - start + 1);
 }
 
 /** Reads two-dimensional fixed-size float coordinate columns from a remote Lance file. */
