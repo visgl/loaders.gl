@@ -18,7 +18,7 @@ import {CSVFormat} from './csv-format';
 
 const CSV_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
-  projection: 'pushdown',
+  projection: 'residual',
   limit: 'pushdown',
   streaming: true,
   cancellation: true

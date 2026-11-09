@@ -11,14 +11,15 @@ import type {
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {TableBatch} from '@loaders.gl/core/schema';
+import {convertArrowToSchema, getDataTypeFromArray} from '@loaders.gl/core/schema-utils';
+import type {Schema, TableBatch} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import {NDJSONFormat} from './json-format';
 import type {NDJSONLoaderOptions} from './ndjson-loader';
 
 const NDJSON_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
-  projection: 'pushdown',
+  projection: 'residual',
   limit: 'pushdown',
   streaming: true,
   cancellation: true
@@ -87,10 +88,42 @@ export class NDJSONTableSource
         ? readStreamChunks(this.data.stream(), signal, onByteLength)
         : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
     const {NDJSONLoaderWithParser} = await import('./ndjson-loader');
-    yield* NDJSONLoaderWithParser.parseInBatches(chunks, {
+    const declaredSchema = this.options.ndjson?.schema;
+    let schema: Schema | undefined = declaredSchema
+      ? declaredSchema.metadata instanceof Map
+        ? convertArrowToSchema(declaredSchema as import('apache-arrow').Schema)
+        : (declaredSchema as Schema)
+      : undefined;
+    for await (const batch of NDJSONLoaderWithParser.parseInBatches(chunks, {
       ...this.options,
-      ndjson: {...this.options.ndjson, shape: 'object-row-table'}
-    });
+      ndjson: {
+        ...this.options.ndjson,
+        schema: undefined,
+        arrowConversion: undefined,
+        shape: 'object-row-table'
+      }
+    })) {
+      if (batch.shape !== 'object-row-table' && batch.shape !== 'array-row-table')
+        throw new Error('Expected NDJSON row batches');
+      schema ||= batch.schema;
+      if (schema && !declaredSchema) {
+        schema = {
+          ...schema,
+          fields: schema.fields.map((field, index) => {
+            if (field.type !== 'null') return field;
+            const value =
+              batch.shape === 'array-row-table'
+                ? batch.data.find(row => row[index] != null)?.[index]
+                : batch.data.find(row => row[field.name] != null)?.[field.name];
+            if (value == null) return field;
+            const {type} = getDataTypeFromArray([value]);
+            if (type === 'null') throw new Error(`Declare ndjson.schema for column ${field.name}`);
+            return {...field, type, nullable: true};
+          })
+        };
+      }
+      yield {...batch, schema};
+    }
   }
 }
 

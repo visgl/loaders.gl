@@ -330,3 +330,42 @@ used only when advertised; `read()` must perform exact filtering for both `pushd
 locally. A limit is never pushed below an outstanding local predicate. Child completion
 callbacks are omitted; the public query owns completion reporting. Its row counters describe
 batches received and emitted, rather than estimating physical rows pruned by a source.
+
+### Format conformance and benchmarks
+
+`query()` and `queryInBatches()` accept CSV, NDJSON, Arrow IPC, and Parquet table
+sources. WHERE uses source column names, including columns omitted by SELECT.
+The adapters preserve source row order and apply a global result limit. Metadata
+is preserved when the format and adapter provide it; text formats cannot recover
+Arrow field metadata from the original data.
+
+| Source | Projection | Predicate | Limit |
+| --- | --- | --- | --- |
+| CSV | After decoding | Local residual | Stops streaming |
+| NDJSON | After decoding | Local residual | Stops streaming |
+| Arrow IPC | Buffer views after decoding | Local residual | Stops streaming |
+| Parquet | Column reads | Statistics pruning plus exact residual | Stops after matches |
+
+Projection on sequential formats does not imply fewer input bytes or fewer decoded
+columns. Parquet statistics prune candidate row groups; exact predicates still run
+before the global limit. Public completion summaries count batches received by the
+query. Use source telemetry for physical bytes and Parquet row groups.
+
+CSV blank fields are empty strings, not SQL NULL. NDJSON infers primitive types from
+the first non-null value in each field of its first decoded batch, then retains known
+types in later all-null batches. Set `ndjson.schema` when the first batch is entirely
+null or when nested values require a declared type. Output schema changes are rejected.
+Discovery is bounded to one batch rather than reading the entire source.
+
+Run `yarn bench query` or `yarn bench-headless query` for the hermetic query benchmark.
+It generates 4096 identical rows in all four formats, warms metadata, and compares
+collected and streaming all-pass, all-reject, contiguous, scattered, and limited
+queries. Results are end-to-end queries per second; fixture encoding and metadata
+discovery are outside the timed region. These small, warm, in-memory inputs do not
+measure network performance or peak heap. Benchmark comparisons should use the same
+runtime and machine.
+
+Streaming retains predicate indices for one input batch and whatever buffers the
+consumer retains. Arrow slices can retain the whole original buffer. `query()`
+collects every output batch and therefore uses memory proportional to its result.
+Consumers own source resources and should call `close()` when their source provides it.

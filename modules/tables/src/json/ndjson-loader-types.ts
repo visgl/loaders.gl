@@ -28,7 +28,7 @@ export type NDJSONLoaderOptions = LoaderOptions & {
   ndjson?: {
     /** Requested output shape. */
     shape?: NDJSONShape;
-    /** Optional schema used when converting NDJSON rows to Arrow. */
+    /** Optional schema used for Arrow conversion and NDJSON table sources. */
     schema?: Schema | arrow.Schema;
     /** Optional recovery policy used when converting NDJSON rows to Arrow. */
     arrowConversion?: ArrowConversionOptions;
