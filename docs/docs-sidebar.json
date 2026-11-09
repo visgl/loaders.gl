@@ -1998,7 +1998,7 @@
                     ],
                     "link": {
                       "type": "doc",
-                      "id": "modules/tile-converter/README"
+                      "id": "modules/tile-converter/api-reference/README"
                     }
                   },
                   {
@@ -2011,7 +2011,7 @@
             ],
             "link": {
               "type": "doc",
-              "id": "modules/tile-converter/README"
+              "id": "modules/tile-converter/api-reference/README"
             }
           }
         ],

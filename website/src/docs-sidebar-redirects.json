@@ -56,7 +56,7 @@
   "/docs/modules/_sections/compression/root-api": "/docs/modules/compression",
   "/docs/modules/_sections/crypto/root-api": "/docs/modules/crypto",
   "/docs/modules/_sections/sql/root-api": "/docs/modules/sql",
-  "/docs/modules/_sections/tile-converter/root-api": "/docs/modules/tile-converter",
+  "/docs/modules/_sections/tile-converter/root-api": "/docs/modules/tile-converter/api-reference",
   "/docs/modules/_sections/tile-converter/api-v5": "/docs/modules/tile-converter/api-reference/v5-conversion",
   "/docs/modules/_sections/tile-converter/guide": "/docs/modules/tile-converter/api-reference/build-instructions"
 }
