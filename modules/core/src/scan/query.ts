@@ -26,15 +26,36 @@ import {
   convertTableToArrow
 } from '@loaders.gl/core/schema-utils';
 import {projectArrowTable, filterArrowTable} from './arrow-execution';
+import {resolveQuerySource} from './resolve-query-source';
+import type {DataSource} from '@loaders.gl/core/loader-utils';
+
+/** Injected SQL SELECT parser; core validates and executes the returned logical query. */
+export type SQLQueryParser = (sql: string) => TableQuery | Promise<TableQuery>;
 
 /** Input and execution controls for one public asynchronous table query. */
 export type QueryOptions = TableQueryExecutionOptions &
   LoaderOptions &
+  Readonly<{
+    /** Source construction options, including an explicit core.name. */
+    core?: DataSourceOptions['core'];
+    /** Named caller-owned data sources used when the logical query contains FROM. */
+    sources?: readonly DataSource<unknown, DataSourceOptions>[];
+    /** Parser or lazy parser promise, required only for SQL string input. */
+    sqlParser?: SQLQueryParser | Promise<SQLQueryParser>;
+  }> &
   Readonly<
     | {
         /** Already loaded Arrow table or caller-owned table scan source. */
         source: ArrowTable | TableScanSource;
         /** URL loader selection is only used with URL sources. */
+        loaders?: never;
+      }
+    | {
+        /** FROM chooses a source from the named registry when no default source is supplied. */
+        source?: undefined;
+        /** Named sources available for FROM resolution. */
+        sources: readonly DataSource<unknown, DataSourceOptions>[];
+        /** URL loader selection requires a URL source. */
         loaders?: never;
       }
     | {
@@ -46,7 +67,10 @@ export type QueryOptions = TableQueryExecutionOptions &
   >;
 
 /** Collects the same ordered Arrow batch pipeline exposed by queryInBatches. */
-export async function query(tableQuery: TableQuery, options: QueryOptions): Promise<ArrowTable> {
+export async function query(
+  tableQuery: TableQuery | string,
+  options: QueryOptions
+): Promise<ArrowTable> {
   let schema: arrow.Schema | undefined;
   const batches: arrow.RecordBatch[] = [];
   for await (const batch of queryInBatches(tableQuery, options)) {
@@ -59,7 +83,7 @@ export async function query(tableQuery: TableQuery, options: QueryOptions): Prom
 
 /** Executes one logical query with bounded batch buffering and cooperative cancellation. */
 export async function* queryInBatches(
-  tableQuery: TableQuery,
+  tableQuery: TableQuery | string,
   options: QueryOptions
 ): AsyncIterable<ArrowTableBatch> {
   const startedAt = Date.now();
@@ -73,8 +97,22 @@ export async function* queryInBatches(
   let earlyTerminationReason: TableQueryExecutionSummary['earlyTerminationReason'];
   try {
     options.signal?.throwIfAborted();
-    let source: unknown = options.source;
-    if (typeof source === 'string') {
+    let logicalQuery: TableQuery;
+    if (typeof tableQuery === 'string') {
+      const parser = await options.sqlParser;
+      options.signal?.throwIfAborted();
+      if (typeof parser !== 'function')
+        throw new Error('SQL queries require a sqlParser function or promise.');
+      logicalQuery = await parser(tableQuery);
+      options.signal?.throwIfAborted();
+    } else logicalQuery = tableQuery;
+    if (!logicalQuery || typeof logicalQuery !== 'object' || Array.isArray(logicalQuery))
+      throw new Error('Table query must be an object.');
+    let source: unknown =
+      logicalQuery.from === undefined
+        ? options.source
+        : await resolveQuerySource(logicalQuery.from, options.sources, options.signal);
+    if (logicalQuery.from === undefined && typeof source === 'string') {
       const opened = await openQuerySource(options);
       if (
         opened &&
@@ -114,7 +152,7 @@ export async function* queryInBatches(
       ? (source as ArrowTable).data.schema
       : convertSchemaToArrow(metadata!.schema);
     const names = sourceSchema.fields.map(field => field.name);
-    const normalized = normalizeTableQuery(names, tableQuery);
+    const normalized = normalizeTableQuery(names, logicalQuery);
     const outputColumns = [...new Set(normalized.select.map(selection => selection.column))];
     const plan = planTableQuery(names, {columns: outputColumns, predicate: normalized.where});
     const requiredColumns = plan[0].kind === 'scan' ? plan[0].columns : names;
@@ -262,7 +300,7 @@ async function openQuerySource(options: QueryOptions): Promise<unknown> {
   const candidates = Array.isArray(options.loaders) ? options.loaders : [options.loaders];
   if (!candidates.length || candidates.some(loader => !isSourceLoader(loader) || !loader.fromUrl))
     throw new Error('Query source must specify explicit URL-capable source loaders for a URL.');
-  const {source, loaders, onQueryComplete, ...sourceOptions} = options;
+  const {source, sources, loaders, sqlParser, onQueryComplete, ...sourceOptions} = options;
   const url = source as string;
   const selected =
     candidates.length === 1 ? candidates[0]! : candidates.find(loader => loader!.testURL(url));

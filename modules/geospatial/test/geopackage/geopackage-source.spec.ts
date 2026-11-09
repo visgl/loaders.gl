@@ -1,4 +1,5 @@
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
+import {query} from '@loaders.gl/core/scan';
 import * as arrow from 'apache-arrow';
 import {createDataSource, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/core/schema-utils';
@@ -117,3 +118,25 @@ function getRows(table): Record<string, unknown>[] {
   }
   return rows;
 }
+
+test('qualified FROM selects a loaded GeoPackage table without changing its default table', async () => {
+  const source = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+    core: {name: 'warehouse'},
+    geopackage: {}
+  });
+  const metadata = await source.getMetadata();
+  const getTable = vi.spyOn(source, 'getTable');
+  const result = await query(
+    {from: {source: 'warehouse', table: 'FEATURESriversds'}, limit: 1},
+    {sources: [source]}
+  );
+  expect(result.data.numRows).toBe(1);
+  expect(result.data.schema.fields.map(field => field.name)).toEqual(
+    metadata.tables
+      .find(table => table.name === 'FEATURESriversds')!
+      .schema.fields.map(field => field.name)
+  );
+  expect(getTable).toHaveBeenCalledExactlyOnceWith('FEATURESriversds', {signal: undefined});
+  expect(metadata.tables.find(table => table.isDefault)?.name).toBe('preferred_rivers');
+  expect(source.name).toBe('warehouse');
+});

@@ -79,3 +79,27 @@ test('WHERE resolves original names even when another column aliases to that nam
   expect(plan[0]).toEqual({kind: 'scan', columns: ['longitude', 'population']});
   expect(plan[1]).toEqual({kind: 'filter', predicate: where});
 });
+
+test('logical queries preserve immutable literal and qualified FROM references', () => {
+  expect(normalizeTableQuery(columns, {from: 'cities.v2'}).from).toBe('cities.v2');
+  const from = {source: 'warehouse.v2', table: 'cities.v3'};
+  const normalized = normalizeTableQuery(columns, {from});
+  expect(normalized.from).toEqual(from);
+  expect(normalized.from).not.toBe(from);
+  expect(Object.isFrozen(normalized.from)).toBe(true);
+  expect(planLogicalTableQuery(columns, {from, select: ['latitude']})).toEqual([
+    {kind: 'scan', columns: ['latitude']},
+    {kind: 'project', select: [{column: 'latitude', as: 'latitude'}]}
+  ]);
+});
+
+test.each([
+  '',
+  [],
+  null,
+  {source: 'warehouse'},
+  {source: '', table: 'cities'},
+  {source: 'warehouse', table: 'cities', extra: true}
+])('invalid FROM reference fails: %j', from => {
+  expect(() => normalizeTableQuery(columns, {from} as unknown as TableQuery)).toThrow('FROM must');
+});

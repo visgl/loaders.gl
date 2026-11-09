@@ -19,10 +19,22 @@ export type TableSelection =
       as?: string;
     }>;
 
+/** Named source, or a named table exposed by a source. Strings are literal names, not dotted paths. */
+export type TableReference =
+  | string
+  | Readonly<{
+      /** Name of a registered data source. */
+      source: string;
+      /** Name of a table exposed by that source. */
+      table: string;
+    }>;
+
 /** Logical query description, independent of cancellation and execution observers. */
 export type TableQuery<
   PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate
 > = Readonly<{
+  /** Optional named source or qualified table selected before planning. */
+  from?: TableReference;
   /** Output columns in selection order. Omission selects all source columns. */
   select?: readonly TableSelection[];
   /** Predicate evaluated against source columns before output aliases are applied. */

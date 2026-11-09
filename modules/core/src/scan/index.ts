@@ -32,6 +32,8 @@ export type {
   RelationalExpression,
   RelationalOrderKey,
   TableQuery,
+  TableReference,
+  TableSourceCollection,
   TableSelection,
   TableQueryExecutionOptions,
   TableQueryOptions
@@ -133,4 +135,4 @@ export {projectArrowTable, filterArrowTable} from './arrow-execution';
 export type {ArrowFilterOptions} from './arrow-execution';
 
 export {query, queryInBatches} from './query';
-export type {QueryOptions} from './query';
+export type {QueryOptions, SQLQueryParser} from './query';

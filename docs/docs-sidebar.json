@@ -97,6 +97,7 @@
         "type": "category",
         "label": "Basics",
         "items": [
+          "developer-guide/querying-tables",
           "developer-guide/clustering",
           "developer-guide/spatial-queries"
         ],
@@ -229,9 +230,15 @@
                 }
               },
               {
-                "type": "doc",
-                "id": "modules/core/scan/README",
-                "label": "@loaders.gl/core/scan"
+                "type": "category",
+                "label": "@loaders.gl/core/scan",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/core/scan/README"
+                },
+                "items": [
+                  "modules/core/scan/query"
+                ]
               },
               {
                 "type": "category",

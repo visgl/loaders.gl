@@ -11,6 +11,7 @@ import {
   planTableQuery,
   validateTableQueryLimit,
   type TableQuery,
+  type TableReference,
   type TableQueryPlanStep
 } from './table-query';
 
@@ -24,6 +25,8 @@ export type NormalizedTableSelection = Readonly<{
 
 /** Logical query with all output selections expanded into explicit mappings. */
 export type NormalizedTableQuery<PredicateT = ColumnarPredicate> = Readonly<{
+  /** Optional source reference preserved separately from physical scan operations. */
+  from?: TableReference;
   /** Output mappings in caller-specified order. */
   select: readonly NormalizedTableSelection[];
   /** Predicate resolved against source names before aliases. */
@@ -57,13 +60,14 @@ export function normalizeTableQuery<
     throw new Error('Table query must be an object.');
   }
   for (const key of Object.keys(query)) {
-    if (!['select', 'where', 'limit'].includes(key)) {
+    if (!['from', 'select', 'where', 'limit'].includes(key)) {
       throw new Error(`Unsupported table query option: ${key}`);
     }
   }
   if (query.select !== undefined && (!Array.isArray(query.select) || query.select.length === 0)) {
     throw new Error('Table query select must be a non-empty array.');
   }
+  validateTableReference(query.from);
   validateTableQueryLimit(query.limit);
   if (query.where !== undefined) {
     validateColumnarPredicate(query.where, new Set(sourceColumnNames));
@@ -109,6 +113,9 @@ export function normalizeTableQuery<
   });
   return Object.freeze({
     select: Object.freeze(select),
+    ...(query.from === undefined
+      ? {}
+      : {from: typeof query.from === 'string' ? query.from : Object.freeze({...query.from})}),
     ...(query.where === undefined ? {} : {where: query.where}),
     ...(query.limit === undefined ? {} : {limit: query.limit})
   });
@@ -134,4 +141,24 @@ export function planLogicalTableQuery<
         : step
     )
   );
+}
+
+/** Validates identifiers without interpreting dots or rewriting quoted names. */
+export function validateTableReference(
+  reference: unknown
+): asserts reference is TableReference | undefined {
+  if (reference === undefined) return;
+  if (typeof reference === 'string' && reference.trim()) return;
+  if (reference && typeof reference === 'object' && !Array.isArray(reference)) {
+    const value = reference as Record<string, unknown>;
+    if (
+      Object.keys(value).every(key => key === 'source' || key === 'table') &&
+      typeof value.source === 'string' &&
+      value.source.trim() &&
+      typeof value.table === 'string' &&
+      value.table.trim()
+    )
+      return;
+  }
+  throw new Error('FROM must be a source name or {source, table} with non-empty names.');
 }

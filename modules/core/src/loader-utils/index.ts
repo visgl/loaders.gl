@@ -431,6 +431,7 @@ export type {
   TableQueryLimitStep,
   TableQueryOperatorSupport,
   TableQuery,
+  TableReference,
   TableSelection,
   TableQueryExecutionOptions,
   TableQueryOptions,
@@ -536,7 +537,11 @@ export {createWebMercatorTileGrid, resolveXYZTileParameters} from './lib/sources
 export {getXYZTileGridOptions} from './lib/sources/xyz-grid-options';
 export type {XYZTileGridAssessment, XYZTileGridOptions} from './lib/sources/xyz-grid-options';
 
-export {normalizeTableQuery, planLogicalTableQuery} from './lib/scan-utils/logical-table-query';
+export {
+  normalizeTableQuery,
+  planLogicalTableQuery,
+  validateTableReference
+} from './lib/scan-utils/logical-table-query';
 export type {
   NormalizedTableSelection,
   NormalizedTableQuery,
@@ -545,3 +550,5 @@ export type {
 } from './lib/scan-utils/logical-table-query';
 
 export {readRangeResponse} from './lib/files/read-range-response';
+
+export type {TableSourceCollection} from './lib/sources/table-source-collection';
