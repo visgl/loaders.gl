@@ -351,3 +351,18 @@ test('NetCDF hidden range metadata discovers total size through HEAD', async () 
   expect(metadata.statistics?.byteLength).toBe(bytes.byteLength);
   expect(heads).toBeGreaterThan(0);
 });
+
+test('NetCDF complete short range response does not require HEAD', async () => {
+  const bytes = new Uint8Array(32);
+  bytes.set([67, 68, 70, 1]);
+  const source = new NetCDFSource('https://example.invalid/signed.nc', {
+    core: {
+      fetch: async (_url, options) => {
+        expect(options?.method).not.toBe('HEAD');
+        return new Response(bytes, {status: 206});
+      }
+    }
+  });
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.statistics?.byteLength).toBe(bytes.byteLength);
+});

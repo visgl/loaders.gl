@@ -204,7 +204,11 @@ export class NetCDFSource extends DataSource<string | Blob, NetCDFSourceOptions>
       if (!response.ok) throw new Error(`NetCDF request failed with status ${response.status}.`);
       arrayBuffer = await response.arrayBuffer();
       let byteLength = getResponseByteLength(response, arrayBuffer.byteLength);
-      if (response.status === 206 && !response.headers.has('Content-Range')) {
+      if (
+        response.status === 206 &&
+        !response.headers.has('Content-Range') &&
+        arrayBuffer.byteLength === rangeSize
+      ) {
         // Partial Content-Length is the prefix size, not the file size. CORS
         // can hide Content-Range, so discover the total from a separate HEAD.
         const metadata = await this.fetch(this.url, {method: 'HEAD'});
