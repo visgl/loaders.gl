@@ -9,11 +9,16 @@ export async function readRangeResponse(
   length: number,
   signal?: AbortSignal
 ): Promise<Uint8Array> {
-  const start = BigInt(offset);
-  if (!Number.isSafeInteger(length) || length <= 0 || start < 0n) {
-    await response.body?.cancel();
+  if (
+    (typeof offset === 'number' && (!Number.isSafeInteger(offset) || offset < 0)) ||
+    (typeof offset === 'bigint' && offset < 0n) ||
+    !Number.isSafeInteger(length) ||
+    length <= 0
+  ) {
+    await response.body?.cancel().catch(() => {});
     throw new RangeError('Invalid HTTP byte range');
   }
+  const start = BigInt(offset);
   const end = start + BigInt(length) - 1n;
   const value = response.headers.get('Content-Range');
   const match = value === null ? null : /^bytes (\d+)-(\d+)\/(\d+|\*)$/.exec(value);
@@ -27,12 +32,11 @@ export async function readRangeResponse(
         BigInt(match[2]) !== end ||
         (match[3] !== '*' && BigInt(match[3]) <= end)))
   ) {
-    await response.body?.cancel();
+    await response.body?.cancel().catch(() => {});
     throw new Error('HTTP range requires 206 and matching Content-Range when visible');
   }
   const reader = response.body?.getReader();
   if (!reader) throw new Error('HTTP range response has no body');
-  const bytes = new Uint8Array(length);
   let received = 0;
   const abort = () => {
     void reader.cancel(signal?.reason).catch(() => {});
@@ -40,6 +44,7 @@ export async function readRangeResponse(
   signal?.addEventListener('abort', abort, {once: true});
   try {
     signal?.throwIfAborted();
+    const bytes = new Uint8Array(length);
     for (;;) {
       const chunk = await reader.read();
       signal?.throwIfAborted();

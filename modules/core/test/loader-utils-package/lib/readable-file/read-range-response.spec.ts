@@ -66,3 +66,46 @@ test('range supports bigint offsets and cancellation', async () => {
     readRangeResponse(new Response(new Uint8Array(1), {status: 206}), 0, 1, controller.signal)
   ).rejects.toThrow();
 });
+
+test.each([
+  0.5,
+  NaN,
+  Infinity,
+  Number.MAX_SAFE_INTEGER + 1
+])('invalid offset %s cancels without masking validation', async offset => {
+  let cancelled = false;
+  const response = new Response(
+    new ReadableStream({
+      cancel() {
+        cancelled = true;
+        throw new Error('cancel failed');
+      }
+    }),
+    {status: 206}
+  );
+  await expect(readRangeResponse(response, offset, 1)).rejects.toThrow('Invalid HTTP byte range');
+  expect(cancelled).toBe(true);
+});
+test('allocation failure cancels and releases the stream lock', async () => {
+  let cancelled = false;
+  const body = new ReadableStream({
+    cancel() {
+      cancelled = true;
+    }
+  });
+  await expect(
+    readRangeResponse(new Response(body, {status: 206}), 0, Number.MAX_SAFE_INTEGER)
+  ).rejects.toThrow();
+  expect(cancelled).toBe(true);
+  expect(body.locked).toBe(false);
+});
+test('cancel failure does not mask status validation', async () => {
+  const response = new Response(
+    new ReadableStream({
+      cancel() {
+        throw new Error('cancel failed');
+      }
+    })
+  );
+  await expect(readRangeResponse(response, 0, 1)).rejects.toThrow(/requires 206/);
+});
