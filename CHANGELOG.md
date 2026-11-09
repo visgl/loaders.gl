@@ -1,5 +1,9 @@
 # CHANGELOG for loaders.gl
 
+## Unreleased
+
+- Add an experimental shared terrain source and same-level seam reconciliation backed by math.gl.
+
 ## v5.0
 
 ### v5.0.0-beta.5

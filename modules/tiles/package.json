@@ -32,6 +32,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./terrain": {
+      "types": "./dist/terrain/index.d.ts",
+      "import": "./dist/terrain/index.js",
+      "require": "./dist/terrain/index.cjs"
+    },
     "./mlt": {
       "types": "./dist/mlt/index.d.ts",
       "import": "./dist/mlt/index.js",
