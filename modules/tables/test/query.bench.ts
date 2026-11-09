@@ -15,6 +15,13 @@ import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 /** Adds hermetic cross-format query benchmarks with identical logical input. */
 export default async function queryBench(suite) {
   const rowCount = 4096;
+  const benchmarkOptions = {
+    iterations: undefined,
+    time: 100,
+    minIterations: 3,
+    maxTimeMs: 1000,
+    unit: 'queries'
+  };
   const rows = Array.from({length: rowCount}, (_, id) => ({id, value: id % 2, label: `row-${id}`}));
   const table = new arrow.Table({
     id: arrow.vectorFromArray(
@@ -60,10 +67,10 @@ export default async function queryBench(suite) {
   for (const [format, source] of Object.entries(sources)) {
     await source.getQueryMetadata();
     for (const [name, request] of Object.entries(scenarios)) {
-      group.addAsync(`${format} ${name} collect`, {minIterations: 3}, async () => {
+      group.addAsync(`${format} ${name} collect`, benchmarkOptions, async () => {
         return (await query(request, {source})).data.numRows;
       });
-      group.addAsync(`${format} ${name} stream`, {minIterations: 3}, async () => {
+      group.addAsync(`${format} ${name} stream`, benchmarkOptions, async () => {
         let count = 0;
         for await (const batch of queryInBatches(request, {source})) count += batch.data.numRows;
         return count;

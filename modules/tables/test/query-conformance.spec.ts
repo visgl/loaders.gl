@@ -293,3 +293,25 @@ test('NDJSON accepts native Arrow schemas without mutating their metadata', asyn
   expect(result.data.schema.fields[0].metadata.get('unit')).toBe('meters');
   expect(declaredSchema.fields[0].type).toBeInstanceOf(arrow.Float64);
 });
+
+test('NDJSON array rows preserve positional columns and nullable inference', async () => {
+  const source = new NDJSONTableSource(new Blob(['[null,"a"]\n[2,"b"]\n[null,"c"]\n']), {
+    core: {batchSize: 2}
+  });
+  const metadata = await source.getQueryMetadata();
+  const names = metadata.schema.fields.map(field => field.name);
+  const result = await query(
+    {
+      select: [
+        {column: names[0], as: 'value'},
+        {column: names[1], as: 'label'}
+      ]
+    },
+    {source}
+  );
+  expect(result.data.toArray().map(row => row.toJSON())).toEqual([
+    {value: null, label: 'a'},
+    {value: 2, label: 'b'},
+    {value: null, label: 'c'}
+  ]);
+});

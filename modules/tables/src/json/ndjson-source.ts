@@ -98,16 +98,20 @@ export class NDJSONTableSource
       ...this.options,
       ndjson: {...this.options.ndjson, schema: undefined, shape: 'object-row-table'}
     })) {
-      if (batch.shape !== 'object-row-table') throw new Error('Expected NDJSON object rows');
+      if (batch.shape !== 'object-row-table' && batch.shape !== 'array-row-table')
+        throw new Error('Expected NDJSON row batches');
       schema ||= batch.schema;
       if (schema && !declaredSchema) {
         schema = {
           ...schema,
-          fields: schema.fields.map(field => {
+          fields: schema.fields.map((field, index) => {
             if (field.type !== 'null') return field;
-            const row = batch.data.find(row => row[field.name] != null);
-            if (!row) return field;
-            const {type} = getDataTypeFromArray([row[field.name]]);
+            const value =
+              batch.shape === 'array-row-table'
+                ? batch.data.find(row => row[index] != null)?.[index]
+                : batch.data.find(row => row[field.name] != null)?.[field.name];
+            if (value == null) return field;
+            const {type} = getDataTypeFromArray([value]);
             if (type === 'null') throw new Error(`Declare ndjson.schema for column ${field.name}`);
             return {...field, type, nullable: true};
           })
