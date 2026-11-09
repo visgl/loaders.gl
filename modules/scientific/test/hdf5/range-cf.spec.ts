@@ -20,7 +20,7 @@ test('strict HTTP byte-range transport', async () => {
       'https://example.invalid',
       async () => new Response('full file', {status: 200})
     ).read(0, 4)
-  ).rejects.toThrow(/206 required/);
+  ).rejects.toThrow(/requires 206/);
 });
 
 test('HTTP byte ranges reject invalid requests and mismatched responses', async () => {
@@ -34,7 +34,7 @@ test('HTTP byte ranges reject invalid requests and mismatched responses', async 
   );
   await expect(reader.read(-1, 2)).rejects.toThrow(/invalid HTTP byte range/);
   await expect(reader.read(0, 0)).rejects.toThrow(/invalid HTTP byte range/);
-  await expect(reader.read(2, 2)).rejects.toThrow(/unexpected Content-Range/);
+  await expect(reader.read(2, 2)).rejects.toThrow(/Content-Range/);
   const truncated = new HTTPRangeReader(
     'https://example.invalid/data.nc',
     async () =>
@@ -43,7 +43,7 @@ test('HTTP byte ranges reject invalid requests and mismatched responses', async 
         headers: {'Content-Range': 'bytes 2-3/10'}
       })
   );
-  await expect(truncated.read(2, 2)).rejects.toThrow(/truncated range response/);
+  await expect(truncated.read(2, 2)).rejects.toThrow(/length/);
 });
 
 test('CF packed values and backend selection pushdown', async () => {
@@ -92,13 +92,12 @@ test('HDF5 tolerates hidden Content-Range only for exact-length 206 responses', 
     async () => new Response(new Uint8Array([2, 3, 4]), {status: 206})
   );
   expect(await reader.read(2, 3)).toEqual(new Uint8Array([2, 3, 4]));
-  for (const length of [2, 4])
-    await expect(reader.read(2, length)).rejects.toThrow(/truncated range response/);
+  for (const length of [2, 4]) await expect(reader.read(2, length)).rejects.toThrow(/length/);
   for (const range of ['', 'invalid', 'bytes 0-2/10']) {
     const invalid = new HTTPRangeReader(
       'https://example.invalid/data.nc',
       async () => new Response(new Uint8Array(3), {status: 206, headers: {'Content-Range': range}})
     );
-    await expect(invalid.read(2, 3)).rejects.toThrow(/unexpected Content-Range/);
+    await expect(invalid.read(2, 3)).rejects.toThrow(/Content-Range/);
   }
 });

@@ -232,3 +232,13 @@ with different credentials, validators, or fetch implementations are never coale
 failure, including cancellations that finish after a caller stops waiting. Consumers mapping
 these snapshots to deltas should retain the last reported snapshot to avoid double counting
 concurrent reads. This is the hook used by Parquet's source telemetry adapter.
+
+## Exact ranges without size discovery
+
+`readRangeResponse(response, offset, length, signal?)` validates and consumes one exact
+range response for adapters that do not need total file size. It requires HTTP 206,
+checks visible Content-Range offsets and bounds, tolerates a CORS-hidden header, and
+rejects short or oversized bodies. It collects at most the requested number of bytes
+and cancels the reader on overflow, error or abort. Offsets may be bigint; lengths must
+be positive safe integers. It does not send requests, add headers or discover file size.
+HDF5 uses this primitive for chunk reads. Use HttpFile for file identity and scheduling.
