@@ -1,10 +1,7 @@
-import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
   executeTableScanBatches,
-  explainTableQuery,
-  filterColumnarRowIndices,
-  validateColumnarPredicate
+  explainTableQuery
 } from '@loaders.gl/core/loader-utils';
 import type {
   CoreAPI,
@@ -16,7 +13,7 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {projectArrowTable} from '@loaders.gl/core/scan/arrow-execution';
+import {projectArrowTable, filterArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import {ArrowFormat} from './exports/arrow-format';
 
@@ -95,41 +92,14 @@ export class ArrowTableSource
   }
 }
 
-/** Applies the portable three-valued predicate evaluator without changing Arrow field types. */
-function filterArrowData(
-  data: arrow.Table,
-  predicate: TableScanReadOptions['predicate']
-): arrow.Table {
-  if (!predicate) return data;
-  const columnNames = new Set(data.schema.fields.map(field => field.name));
-  validateColumnarPredicate(predicate, columnNames);
-  const columns = Object.fromEntries(
-    data.schema.fields.map(field => [field.name, Array.from(data.getChild(field.name)!)])
-  );
-  const rowIndices = filterColumnarRowIndices(predicate as never, columns as never, data.numRows);
-  if (rowIndices.length === data.numRows) return data;
-  const filteredColumns = Object.fromEntries(
-    data.schema.fields.map(field => {
-      const vector = data.getChild(field.name)!;
-      return [
-        field.name,
-        arrow.vectorFromArray(
-          rowIndices.map(rowIndex => vector.get(rowIndex)),
-          field.type
-        )
-      ];
-    })
-  );
-  return new arrow.Table(data.schema, filteredColumns);
-}
-
 /** Applies the Arrow-native residual predicate while retaining the table-batch envelope. */
 function filterArrowBatch(
   batch: TableBatch,
-  predicate: TableScanReadOptions['predicate']
+  predicate: TableScanReadOptions['predicate'],
+  signal?: AbortSignal
 ): TableBatch {
   const arrowBatch = batch as ArrowTableBatch;
-  const data = filterArrowData(arrowBatch.data, predicate);
+  const data = predicate ? filterArrowTable(arrowBatch.data, predicate, {signal}) : arrowBatch.data;
   return {
     ...batch,
     data,

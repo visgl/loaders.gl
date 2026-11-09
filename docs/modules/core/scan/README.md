@@ -269,5 +269,26 @@ names/types/nullability/metadata, schema metadata, RecordBatch metadata and boun
 and row order; selected aliases replace only field names. Projection-only limits retain
 Arrow slice views. Predicates may still materialize new buffers for matching rows.
 
-Projection lives in the optional `scan/arrow-execution` subpath. Ordinary loader and
-schema utility entry points do not import query execution.
+### Streaming linear Arrow queries
+
+`queryArrowTableInBatches(batches, options)` consumes an asynchronous Arrow batch stream
+without collecting its output. It accepts predicates, ordered projection, aliases, a global
+limit, and cancellation. Sorting, aggregates, expressions, unions, and joins remain on the
+existing materializing paths.
+
+The in-memory executor and Arrow IPC source now share `filterArrowTable()` from
+`@loaders.gl/core/scan/arrow-execution`. Predicate evaluation reads Arrow vectors directly and
+operates independently on each RecordBatch. All-pass batches reuse their data; all-reject
+results retain the schema; contiguous results are slices; scattered results gather values.
+Memory for predicate indices is bounded by one input batch. Slices may retain the original
+input buffers. The collected in-memory API still retains its complete returned result.
+
+The common `executeTableScanBatches()` executor awaits asynchronous filter kernels and
+passes their abort signal, allowing adapters to dispatch work through the existing worker
+transport. It requests input only as the consumer advances, closes upstream on consumer
+return or failure, and stops without an extra pull when a global limit is reached exactly.
+Async worker kernels must observe the supplied signal; there is no new worker protocol.
+
+Projection and filtering kernels live in the optional `scan/arrow-execution` subpath.
+Schema utilities and ordinary loader entry points do not import these kernels; format
+query adapters import the focused subpath rather than the full scan entry point.
