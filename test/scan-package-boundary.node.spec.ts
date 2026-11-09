@@ -127,3 +127,22 @@ test.each([
   ).toBeLessThanOrEqual(maximumBytes);
   expect(output).not.toMatch(/RecordBatch|VectorLoader|ArrowTable/);
 });
+
+test('metadata-only catalog imports shake out Arrow execution', async () => {
+  const result = await build({
+    stdin: {
+      contents: `import {createSQLCatalog} from './modules/core/src/scan/query.ts'; console.log(createSQLCatalog([]).getSources());`,
+      resolveDir: REPOSITORY_ROOT,
+      sourcefile: 'sql-catalog-only.ts'
+    },
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    minify: true,
+    treeShaking: true,
+    write: false
+  });
+  expect(result.outputFiles.map(file => file.text).join('')).not.toMatch(
+    /RecordBatch|VectorLoader|ArrowTable/
+  );
+});

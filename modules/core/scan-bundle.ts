@@ -94,6 +94,6 @@ export {projectArrowTable, filterArrowTable} from './src/scan/arrow-execution';
 export type {ArrowFilterOptions} from './src/scan/arrow-execution';
 
 export {query, queryInBatches} from './src/scan/query';
-export type {QueryOptions, SQLQueryParser} from './src/scan/query';
+export type {Query, QueryOptions, SQLQueryParser} from './src/scan/query';
 
 export type {TableReference, TableSourceCollection} from './src/scan/index';

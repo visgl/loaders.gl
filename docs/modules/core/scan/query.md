@@ -9,8 +9,8 @@ For a step-by-step introduction, see [Querying tables](/docs/developer-guide/que
 Both functions are exported only from `@loaders.gl/core/scan`.
 
 ```ts
-query(query: TableQuery | string, options: QueryOptions): Promise<ArrowTable>;
-queryInBatches(query: TableQuery | string, options: QueryOptions): AsyncIterable<ArrowTableBatch>;
+query(query: Query | string, options: QueryOptions): Promise<ArrowTable>;
+queryInBatches(query: Query | string, options: QueryOptions): AsyncIterable<ArrowTableBatch>;
 ```
 
 ## Logical query
@@ -40,7 +40,7 @@ non-table results fail; there is no fallback after an explicit FROM fails.
 
 | Option | Contract |
 | --- | --- |
-| `source` | A loaders.gl `ArrowTable`, existing `TableScanSource`, or URL string. Optional when FROM selects a registered source. |
+| `source` | A loaders.gl `ArrowTable`, existing `TableScanSource`, or URL string. Optional for metadata commands or when FROM selects a registered source. |
 | `sources` | Readonly array of named `DataSource` objects. Names must be non-empty and unique. |
 | `loaders` | Required for URLs: one URL-capable `SourceLoader` or an array of explicit candidates. Omit for loaded inputs. |
 | `sqlParser` | Required for SQL strings: `SQLQueryParser` or `Promise<SQLQueryParser>`. Unused for logical input. |
@@ -49,7 +49,7 @@ non-table results fail; there is no fallback after an explicit FROM fails.
 | `core`, format namespaces | Existing source request and parser options, including `core.fetch`, credentials, and `core.name`. |
 
 ```ts
-type SQLQueryParser = (sql: string) => TableQuery | Promise<TableQuery>;
+type SQLQueryParser = (sql: string) => Query | Promise<Query>;
 
 interface TableSourceCollection {
   getTable(name: string, options?: {signal?: AbortSignal}):
@@ -65,10 +65,82 @@ match the URL extension. Preloading and authentication complete before source co
 File/URL basenames supply defaults without fetching; `core.type` or `source` is the final fallback.
 Names cannot be changed with `setProps()`.
 
+## Metadata commands
+
+`Query` is `TableQuery | SQLCatalogQuery`. Metadata commands use `options.sources`; they do not
+use the default `options.source`. SQL strings still require a `sqlParser`.
+
+```ts
+type SQLCatalogQuery =
+  | {command: 'showSources'}
+  | {command: 'showTables'; from?: string}
+  | {command: 'describe'; from: TableReference};
+
+await query('SHOW SOURCES;', {sources, sqlParser: parseSQLQuery});
+await query('SHOW TABLES FROM warehouse;', {sources, sqlParser: parseSQLQuery});
+await query('DESCRIBE warehouse.cities;', {sources, sqlParser: parseSQLQuery});
+```
+
+Both query functions return Arrow, including empty schema-bearing results. Commands accept no
+SELECT, WHERE or LIMIT clauses. Source/table identifiers follow the same quoted-name rules as FROM.
+
+| Command | Output columns, in order |
+| --- | --- |
+| `SHOW SOURCES` | `source_name: Utf8` |
+| `SHOW TABLES [FROM source]` | `source_name: Utf8`, `table_name: Utf8`, `table_reference: Utf8`, `queryable: Bool` |
+| `DESCRIBE source[.table]` | `source_name: Utf8`, `table_name: Utf8`, `column_name: Utf8`, `ordinal_position: Int32`, `data_type: Utf8`, `is_nullable: Bool`, `metadata: Utf8` |
+
+All result fields are non-nullable. Ordinals start at one. `data_type` uses Arrow's type display;
+`metadata` is JSON field metadata, or `{}`. `table_reference` is safely quoted SQL; use the catalog's
+structured references when passing logical queries. `queryable` means the common table query
+contract is available. SQL-native backends may expose metadata while requiring their own query API.
+
+### Lazy catalog and provider contract
+
+Import `createSQLCatalog`, `SQLCatalog`, `SQLCatalogSource`, `SQLCatalogTable` and `SQLCatalogQuery`
+from `@loaders.gl/core/scan/query`:
+
+```ts
+const catalog = createSQLCatalog(sources);
+catalog.getSources(); // readonly {name: string}[], no I/O
+await catalog.getTables(sourceName, {signal}); // sourceName may be undefined
+await catalog.getSchema(reference, {signal});
+```
+
+`getTables` returns `{name, sourceName, reference, queryable, schema?}` in source/table order;
+`reference` is a `TableReference`, and available schemas retain their original metadata.
+`getSchema` returns the portable `Schema`. Unknown or duplicate source names, malformed table
+listings and unavailable schemas throw. The catalog snapshots registered names, not provider data.
+
+Multi-table providers implement the following metadata methods (`TableMetadata` and
+`TableDiscoverySource` are exported from `@loaders.gl/core/loader-utils`):
+
+```ts
+type TableMetadata = {name: string; schema?: Schema; queryable?: boolean};
+interface TableDiscoverySource {
+  getTablesMetadata(options?: {signal?: AbortSignal}):
+    readonly TableMetadata[] | Promise<readonly TableMetadata[]>;
+  getTableMetadata?(name: string, options?: {signal?: AbortSignal}):
+    TableMetadata | Promise<TableMetadata>;
+}
+```
+
+Listings may omit schemas. A provider without `getTableMetadata` may include schemas in its listing
+instead. If `queryable` is omitted, a collection's `getTable` method supplies the default.
+Collections require a qualified DESCRIBE reference, even when they also expose a default table.
+Single-table scan sources use `getQueryMetadata`; non-table sources are skipped. GeoPackage and
+SQL data sources implement named metadata discovery. SQL source loaded names preserve quoted native
+catalog/schema/table components as one identifier; an unqualified name is accepted for DESCRIBE only
+when unique. Use returned references rather than constructing those names yourself.
+
+Discovery never calls `read()` or opens child handles through `getTable()`. Providers may read headers, schema samples or complete container files, or contact metadata services. Signals are forwarded and checked after awaited
+hooks; providers must cooperate to cancel in-flight work. Consumer return stops discovery of later
+sources. Catalogs and commands never close caller-owned sources.
+
 ## Optional SQL parsers
 
 Import `parseSQLQuery` or `parseSQLSelect` from `@loaders.gl/core/scan/query` and pass it as
-`sqlParser`. The former includes WHERE through `parseSQLPredicate`; the smaller latter parses
+`sqlParser`. The former supports metadata commands and includes WHERE through `parseSQLPredicate`; the smaller latter parses
 SELECT columns/AS aliases, optional FROM and LIMIT, rejecting WHERE unless supplied with a
 `parseWhere` callback. Both preserve case and double-quoted identifiers and reject unsupported
 clauses or multiple statements. ESM parser-only imports tree-shake Arrow execution away.

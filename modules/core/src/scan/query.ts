@@ -26,11 +26,16 @@ import {
   convertTableToArrow
 } from '@loaders.gl/core/schema-utils';
 import {projectArrowTable, filterArrowTable} from './arrow-execution';
+import {createCatalogQuerySource} from './catalog-query-source';
+import type {SQLCatalogQuery} from './sql-catalog';
 import {resolveQuerySource} from './resolve-query-source';
 import type {DataSource} from '@loaders.gl/core/loader-utils';
 
-/** Injected SQL SELECT parser; core validates and executes the returned logical query. */
-export type SQLQueryParser = (sql: string) => TableQuery | Promise<TableQuery>;
+/** Logical table or metadata request. */
+export type Query = TableQuery | SQLCatalogQuery;
+
+/** Injected SQL parser; core validates and executes the returned logical query. */
+export type SQLQueryParser = (sql: string) => Query | Promise<Query>;
 
 /** Input and execution controls for one public asynchronous table query. */
 export type QueryOptions = TableQueryExecutionOptions &
@@ -38,7 +43,7 @@ export type QueryOptions = TableQueryExecutionOptions &
   Readonly<{
     /** Source construction options, including an explicit core.name. */
     core?: DataSourceOptions['core'];
-    /** Named caller-owned data sources used when the logical query contains FROM. */
+    /** Named caller-owned data sources used by FROM and metadata commands. */
     sources?: readonly DataSource<unknown, DataSourceOptions>[];
     /** Parser or lazy parser promise, required only for SQL string input. */
     sqlParser?: SQLQueryParser | Promise<SQLQueryParser>;
@@ -68,7 +73,7 @@ export type QueryOptions = TableQueryExecutionOptions &
 
 /** Collects the same ordered Arrow batch pipeline exposed by queryInBatches. */
 export async function query(
-  tableQuery: TableQuery | string,
+  tableQuery: Query | string,
   options: QueryOptions
 ): Promise<ArrowTable> {
   let schema: arrow.Schema | undefined;
@@ -83,7 +88,7 @@ export async function query(
 
 /** Executes one logical query with bounded batch buffering and cooperative cancellation. */
 export async function* queryInBatches(
-  tableQuery: TableQuery | string,
+  tableQuery: Query | string,
   options: QueryOptions
 ): AsyncIterable<ArrowTableBatch> {
   const startedAt = Date.now();
@@ -97,21 +102,29 @@ export async function* queryInBatches(
   let earlyTerminationReason: TableQueryExecutionSummary['earlyTerminationReason'];
   try {
     options.signal?.throwIfAborted();
-    let logicalQuery: TableQuery;
+    let parsedQuery: Query;
     if (typeof tableQuery === 'string') {
       const parser = await options.sqlParser;
       options.signal?.throwIfAborted();
       if (typeof parser !== 'function')
         throw new Error('SQL queries require a sqlParser function or promise.');
-      logicalQuery = await parser(tableQuery);
+      parsedQuery = await parser(tableQuery);
       options.signal?.throwIfAborted();
-    } else logicalQuery = tableQuery;
-    if (!logicalQuery || typeof logicalQuery !== 'object' || Array.isArray(logicalQuery))
+    } else parsedQuery = tableQuery;
+    if (!parsedQuery || typeof parsedQuery !== 'object' || Array.isArray(parsedQuery))
       throw new Error('Table query must be an object.');
-    let source: unknown =
-      logicalQuery.from === undefined
-        ? options.source
-        : await resolveQuerySource(logicalQuery.from, options.sources, options.signal);
+    let logicalQuery: TableQuery;
+    let source: unknown;
+    if ('command' in parsedQuery) {
+      logicalQuery = {};
+      source = createCatalogQuerySource(parsedQuery, options.sources);
+    } else {
+      logicalQuery = parsedQuery;
+      source =
+        logicalQuery.from === undefined
+          ? options.source
+          : await resolveQuerySource(logicalQuery.from, options.sources, options.signal);
+    }
     if (logicalQuery.from === undefined && typeof source === 'string') {
       const opened = await openQuerySource(options);
       if (
@@ -321,3 +334,6 @@ async function openQuerySource(options: QueryOptions): Promise<unknown> {
 export {parseSQLQuery} from './parse-sql-query';
 export {parseSQLSelect} from './parse-sql-select';
 export type {SQLSelectParserOptions} from './parse-sql-select';
+
+export {createSQLCatalog} from './sql-catalog';
+export type {SQLCatalog, SQLCatalogQuery, SQLCatalogSource, SQLCatalogTable} from './sql-catalog';

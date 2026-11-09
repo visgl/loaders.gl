@@ -10,7 +10,8 @@ import type {
   ScanQueryMetadataOptions,
   SourceLoader,
   TableScanReadOptions,
-  TableScanSource
+  TableScanSource,
+  TableMetadata
 } from '@loaders.gl/core/loader-utils';
 import {
   getRequestedTileMatrix,
@@ -136,6 +137,29 @@ export class GeoPackageDataSource
     }
 
     return this.metadataPromise;
+  }
+
+  /** Lists vector table names and available schemas without reading feature rows. */
+  async getTablesMetadata(options: {signal?: AbortSignal} = {}): Promise<readonly TableMetadata[]> {
+    options.signal?.throwIfAborted();
+    const metadata = await this.getMetadata();
+    options.signal?.throwIfAborted();
+    return metadata.tables.map(table => ({
+      name: table.name,
+      schema: table.schema,
+      queryable: true
+    }));
+  }
+
+  /** Returns a named vector table schema without materializing its features. */
+  async getTableMetadata(
+    name: string,
+    options: {signal?: AbortSignal} = {}
+  ): Promise<TableMetadata> {
+    const tables = await this.getTablesMetadata(options);
+    const table = tables.find(table => table.name === name);
+    if (!table) throw new Error(`Unknown GeoPackage table: ${name}`);
+    return table;
   }
 
   /** Discovers the selected feature table schema and spatial bounds for the shared scan panel. */

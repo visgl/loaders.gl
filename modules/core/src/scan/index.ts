@@ -135,4 +135,4 @@ export {projectArrowTable, filterArrowTable} from './arrow-execution';
 export type {ArrowFilterOptions} from './arrow-execution';
 
 export {query, queryInBatches} from './query';
-export type {QueryOptions, SQLQueryParser} from './query';
+export type {Query, QueryOptions, SQLQueryParser} from './query';
