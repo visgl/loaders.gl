@@ -103,3 +103,27 @@ function listSourceFiles(directory: string): string[] {
   }
   return files;
 }
+
+test.each([
+  ['parseSQLSelect', 8 * 1024],
+  ['parseSQLQuery', 40 * 1024]
+] as const)('%s imports shake out Arrow and stay within the parser budget', async (parser, maximumBytes) => {
+  const result = await build({
+    stdin: {
+      contents: `import {${parser}} from './modules/core/src/scan/query.ts'; console.log(${parser}('SELECT *'));`,
+      resolveDir: REPOSITORY_ROOT,
+      sourcefile: 'sql-parser-only.ts'
+    },
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    minify: true,
+    treeShaking: true,
+    write: false
+  });
+  const output = result.outputFiles.map(file => file.text).join('');
+  expect(
+    result.outputFiles.reduce((sum, file) => sum + file.contents.byteLength, 0)
+  ).toBeLessThanOrEqual(maximumBytes);
+  expect(output).not.toMatch(/RecordBatch|VectorLoader|ArrowTable/);
+});
