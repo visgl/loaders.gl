@@ -8,7 +8,7 @@ import {DataType, FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 import type {CoreAPI} from './lib/sources/data-source';
 import type {Credential, AuthenticationConstructor} from './lib/request-utils/authentication';
-import type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
+import type {QueryOptions} from './lib/scan-utils/query-options';
 
 /** Query parameters appended to URL-backed loader requests. */
 export type SearchParams = Record<string, string | number | boolean>;
@@ -19,8 +19,8 @@ export type SearchParams = Record<string, string | number | boolean>;
  * Core Loader Options
  */
 export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
-  /** Experimental common scan request. Format loaders implement the fields they support. */
-  _scan?: ExperimentalScanOptions;
+  /** Common query request. Format loaders implement the fields they support. */
+  _scan?: QueryOptions;
   /** Query parameters appended to the initial URL request. */
   searchParams?: SearchParams;
   core?: {
@@ -110,8 +110,8 @@ export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> &
  * Core Loader Options
  */
 export type LoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
-  /** Experimental common scan request. Format loaders implement the fields they support. */
-  _scan?: ExperimentalScanOptions;
+  /** Common query request. Format loaders implement the fields they support. */
+  _scan?: QueryOptions;
   /** Query parameters appended to the initial URL request. */
   searchParams?: SearchParams;
   core?: StrictLoaderOptions['core'];

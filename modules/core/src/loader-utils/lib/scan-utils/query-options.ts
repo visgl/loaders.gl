@@ -7,13 +7,13 @@ import type {ScanBounds} from './scan-query-metadata';
 import type {TableQueryExecutionOptions} from './table-query';
 
 /**
- * Experimental common scan request accepted by loaders that implement the scan protocol.
+ * Common query request accepted by loaders that implement the scan protocol.
  *
  * Format loaders apply the fields relevant to their query family and must reject unsupported
  * fields rather than silently ignoring them. This intentionally remains a common superset in 5.0
  * so applications and Deck.gl adapters can forward one stable option object.
  */
-export type ExperimentalScanOptions = TableQueryExecutionOptions &
+export type QueryOptions = TableQueryExecutionOptions &
   Readonly<{
     /** Portable predicate for table-like sources. */
     predicate?: ColumnarPredicate;

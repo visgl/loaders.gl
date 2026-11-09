@@ -44,7 +44,7 @@ export type {
 } from './loader-types';
 export type {SearchParams} from './loader-types';
 
-export type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
+export type {QueryOptions} from './lib/scan-utils/query-options';
 
 export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';
 
