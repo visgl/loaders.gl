@@ -154,6 +154,9 @@ test('GeoPackage metadata commands discover named schemas without opening featur
   expect(tables.data.getChild('table_name')?.toArray()).toEqual(
     metadata.tables.map(table => table.name)
   );
+  await expect(
+    query({command: 'describe', from: 'warehouse'}, {sources: [source]})
+  ).rejects.toThrow('qualified table reference');
   const selected = metadata.tables[1];
   const result = await query(
     {command: 'describe', from: {source: 'warehouse', table: selected.name}},

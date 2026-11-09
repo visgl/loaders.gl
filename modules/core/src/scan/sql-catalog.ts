@@ -144,6 +144,10 @@ export function createSQLCatalog(
     const discovery = source as unknown as Partial<TableDiscoverySource & TableScanSource>;
     let schema: Schema | undefined;
     if (typeof reference === 'string') {
+      if (typeof discovery.getTablesMetadata === 'function')
+        throw new Error(
+          `DESCRIBE requires a qualified table reference for collection ${sourceName}.`
+        );
       if (typeof discovery.getQueryMetadata === 'function') {
         const metadata = await discovery.getQueryMetadata(options);
         if (metadata.queryType === 'table') schema = metadata.schema;

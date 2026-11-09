@@ -290,7 +290,7 @@ test('validates registries, command shapes, discovery names and unavailable sche
   expect(() => createSQLCatalog([source, source])).toThrow('Duplicate');
   const catalog = createSQLCatalog([source]);
   await expect(catalog.getTables('missing')).rejects.toThrow('Unknown');
-  await expect(catalog.getSchema('warehouse')).rejects.toThrow('No discoverable');
+  await expect(catalog.getSchema('warehouse')).rejects.toThrow('qualified table reference');
   for (const request of [
     {command: 'showTables', from: ''},
     {command: 'describe'},
@@ -362,4 +362,19 @@ test('streamed and collected table listings agree across sources in registration
   }
   expect(rows).toEqual(collected.data.toArray().map(row => row.toJSON()));
   expect(rows.map(row => row.source_name)).toEqual(['first', 'second']);
+});
+
+test('DESCRIBE requires a named table for hybrid collection and default-table sources', async () => {
+  const source = new MetadataCollection();
+  const defaultMetadata = new MetadataSource().getQueryMetadata;
+  Object.defineProperty(source, 'getQueryMetadata', {value: defaultMetadata});
+  await expect(
+    query({command: 'describe', from: 'warehouse'}, {sources: [source]})
+  ).rejects.toThrow('qualified table reference');
+  expect(defaultMetadata).not.toHaveBeenCalled();
+  const result = await query(
+    {command: 'describe', from: {source: 'warehouse', table: 'cities'}},
+    {sources: [source]}
+  );
+  expect(result.data.getChild('table_name')?.toArray()).toEqual(['cities', 'cities']);
 });

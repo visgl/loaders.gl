@@ -40,7 +40,7 @@ non-table results fail; there is no fallback after an explicit FROM fails.
 
 | Option | Contract |
 | --- | --- |
-| `source` | A loaders.gl `ArrowTable`, existing `TableScanSource`, or URL string. Optional when FROM selects a registered source. |
+| `source` | A loaders.gl `ArrowTable`, existing `TableScanSource`, or URL string. Optional for metadata commands or when FROM selects a registered source. |
 | `sources` | Readonly array of named `DataSource` objects. Names must be non-empty and unique. |
 | `loaders` | Required for URLs: one URL-capable `SourceLoader` or an array of explicit candidates. Omit for loaded inputs. |
 | `sqlParser` | Required for SQL strings: `SQLQueryParser` or `Promise<SQLQueryParser>`. Unused for logical input. |
@@ -49,7 +49,7 @@ non-table results fail; there is no fallback after an explicit FROM fails.
 | `core`, format namespaces | Existing source request and parser options, including `core.fetch`, credentials, and `core.name`. |
 
 ```ts
-type SQLQueryParser = (sql: string) => TableQuery | Promise<TableQuery>;
+type SQLQueryParser = (sql: string) => Query | Promise<Query>;
 
 interface TableSourceCollection {
   getTable(name: string, options?: {signal?: AbortSignal}):
@@ -120,20 +120,20 @@ type TableMetadata = {name: string; schema?: Schema; queryable?: boolean};
 interface TableDiscoverySource {
   getTablesMetadata(options?: {signal?: AbortSignal}):
     readonly TableMetadata[] | Promise<readonly TableMetadata[]>;
-  getTableMetadata(name: string, options?: {signal?: AbortSignal}):
+  getTableMetadata?(name: string, options?: {signal?: AbortSignal}):
     TableMetadata | Promise<TableMetadata>;
 }
 ```
 
 Listings may omit schemas. A provider without `getTableMetadata` may include schemas in its listing
 instead. If `queryable` is omitted, a collection's `getTable` method supplies the default.
+Collections require a qualified DESCRIBE reference, even when they also expose a default table.
 Single-table scan sources use `getQueryMetadata`; non-table sources are skipped. GeoPackage and
 SQL data sources implement named metadata discovery. SQL source loaded names preserve quoted native
 catalog/schema/table components as one identifier; an unqualified name is accepted for DESCRIBE only
 when unique. Use returned references rather than constructing those names yourself.
 
-Discovery never calls `read()` or opens child handles through `getTable()`. Providers may read headers
-or schema samples or contact metadata services. Signals are forwarded and checked after awaited
+Discovery never calls `read()` or opens child handles through `getTable()`. Providers may read headers, schema samples or complete container files, or contact metadata services. Signals are forwarded and checked after awaited
 hooks; providers must cooperate to cancel in-flight work. Consumer return stops discovery of later
 sources. Catalogs and commands never close caller-owned sources.
 

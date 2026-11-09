@@ -205,11 +205,11 @@ const columns = await query('DESCRIBE warehouse.cities;', options);
 `SHOW SOURCES` lists registered names without I/O. `SHOW TABLES` lists all discoverable tables in
 source registration order; add `FROM` to inspect one source. `DESCRIBE` reports fields in schema
 order, including their Arrow type, nullability, and JSON field metadata. Use `DESCRIBE cities`
-for a source that is itself a table. Empty results retain the command's output schema.
+for a single-table source. Collections require a qualified table name, even if they expose a default table. Empty results retain the command's output schema.
 
 Table listings include a safely quoted `table_reference` and a `queryable` flag. The flag indicates
 support for the common table query contract, not whether a backend has its own SQL API. Discovery
-never calls `read()` or `getTable()`. A provider may still access headers, schema samples, or a
+never calls `read()` or `getTable()`. A provider may still access headers, schema samples, a complete container file, or a
 remote metadata service; cancellation requires its cooperation. Sources remain caller-owned.
 
 For a schema explorer, use the lazy model directly and pass its structured reference to `query()`:
