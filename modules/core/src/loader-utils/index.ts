@@ -535,3 +535,11 @@ export type {
 export {createWebMercatorTileGrid, resolveXYZTileParameters} from './lib/sources/xyz-grid';
 export {getXYZTileGridOptions} from './lib/sources/xyz-grid-options';
 export type {XYZTileGridAssessment, XYZTileGridOptions} from './lib/sources/xyz-grid-options';
+
+export {normalizeTableQuery, planLogicalTableQuery} from './lib/scan-utils/logical-table-query';
+export type {
+  NormalizedTableSelection,
+  NormalizedTableQuery,
+  LogicalTableQueryProjectStep,
+  LogicalTableQueryPlan
+} from './lib/scan-utils/logical-table-query';

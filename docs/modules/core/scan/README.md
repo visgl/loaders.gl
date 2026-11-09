@@ -222,3 +222,26 @@ Its `status` is `completed`, `early-terminated`, `cancelled`, or `failed`.
 Exceptions thrown by the observer do not change query results. An iterator that is
 never started does not report completion. Format-specific diagnostic callbacks,
 such as `parquet.onTelemetry`, are separate from this terminal query callback.
+
+### Logical query planning
+
+`normalizeTableQuery(sourceColumns, query)` expands selections into explicit `{column, as}`
+mappings. `planLogicalTableQuery(sourceColumns, query)` reuses the scan planner to produce
+scan, filter, aliased project, and limit steps. Import these helpers from
+`@loaders.gl/core/scan` (format adapters can use `@loaders.gl/core/loader-utils`).
+
+```ts
+const plan = planLogicalTableQuery(['longitude', 'population'], {
+  select: [{column: 'longitude', as: 'lng'}],
+  where: {op: '>', args: [{property: 'population'}, 100000]},
+  limit: 1000
+});
+// scan longitude + population; filter population; project longitude as lng; limit 1000
+```
+
+WHERE always refers to source names. Output names must be unique and non-empty;
+one source column may be selected under multiple distinct aliases. Omitting `select`
+selects every source column; an explicit empty selection is rejected. Limits must be
+non-negative safe integers. Unknown query and selection fields are rejected.
+Normalization creates frozen selection mappings without modifying the input predicate.
+These helpers plan operations only; execution of aliased projections is a separate step.
