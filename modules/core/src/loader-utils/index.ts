@@ -543,3 +543,5 @@ export type {
   LogicalTableQueryProjectStep,
   LogicalTableQueryPlan
 } from './lib/scan-utils/logical-table-query';
+
+export {readRangeResponse} from './lib/files/read-range-response';

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {readRangeResponse} from '@loaders.gl/core/loader-utils';
+
 /** Strict byte-range transport for backends that can resolve HDF5 chunk addresses. */
 export class HTTPRangeReader {
   /** Create a strict range reader for one remote HDF5 URL. */
@@ -26,22 +28,6 @@ export class HTTPRangeReader {
       headers: {Range: `bytes=${offset}-${offset + length - 1}`},
       signal
     });
-    if (response.status !== 206) {
-      throw new Error('HDF5: remote server did not honor HTTP Range (206 required)');
-    }
-    // CORS may hide this response header without stripping the outgoing Range.
-    // A missing header is acceptable only with 206 and the exact body length;
-    // visible headers (including empty/malformed values) must match the offset.
-    const range = response.headers.get('Content-Range');
-    const match = /^bytes (\d+)-(\d+)\/(\d+|\*)$/.exec(range ?? '');
-    if (
-      range !== null &&
-      (!match || Number(match[1]) !== offset || Number(match[2]) !== offset + length - 1)
-    ) {
-      throw new Error('HDF5: unexpected Content-Range');
-    }
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength !== length) throw new Error('HDF5: truncated range response');
-    return bytes;
+    return readRangeResponse(response, offset, length, signal);
   }
 }
