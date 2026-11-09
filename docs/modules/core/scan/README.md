@@ -292,3 +292,41 @@ Async worker kernels must observe the supplied signal; there is no new worker pr
 Projection and filtering kernels live in the optional `scan/arrow-execution` subpath.
 Schema utilities and ordinary loader entry points do not import these kernels; format
 query adapters import the focused subpath rather than the full scan entry point.
+
+### Asynchronous query entry points
+
+Use `query()` for a collected Arrow table, or consume the same execution pipeline with
+`queryInBatches()`. Both functions and their `QueryOptions` type are exported only from
+`@loaders.gl/core/scan`.
+
+```ts
+import {query, queryInBatches} from '@loaders.gl/core/scan';
+
+const request = {
+  select: [{column: 'longitude', as: 'lng'}, 'latitude'],
+  where: {op: '>', args: [{property: 'population'}, 100000]},
+  limit: 1000
+} as const;
+const result = await query(request, {source: arrowTable, signal});
+for await (const batch of queryInBatches(request, {source: tableSource, signal})) {
+  consume(batch);
+}
+```
+
+Inputs are loaders.gl Arrow tables and existing `TableScanSource` objects. URL loading,
+named sources, SQL strings, and a synchronous entry point are deferred. Execution controls
+remain outside the logical query: `source`, `signal`, and `onQueryComplete` belong in the
+second argument. Each public execution reports completion once, including errors,
+cancellation, limits, and consumer return. Observer errors do not alter results.
+
+Source metadata determines the output schema. Supported row and columnar batches are
+converted to Arrow; output type changes are rejected. Empty results, including limit zero,
+emit one empty schema-bearing batch so collected and streamed results retain their fields.
+Limit zero discovers metadata without calling the source's `read()` method.
+
+Sources receive required columns including hidden predicate fields. Predicate pushdown is
+used only when advertised; `read()` must perform exact filtering for both `pushdown` and
+`pushdown+residual`, including its own residual work after pruning. Other predicates run
+locally. A limit is never pushed below an outstanding local predicate. Child completion
+callbacks are omitted; the public query owns completion reporting. Its row counters describe
+batches received and emitted, rather than estimating physical rows pruned by a source.

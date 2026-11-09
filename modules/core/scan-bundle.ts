@@ -92,3 +92,6 @@ export {queryArrowTableInBatches} from './src/scan/index';
 
 export {projectArrowTable, filterArrowTable} from './src/scan/arrow-execution';
 export type {ArrowFilterOptions} from './src/scan/arrow-execution';
+
+export {query, queryInBatches} from './src/scan/query';
+export type {QueryOptions} from './src/scan/query';

@@ -131,3 +131,6 @@ export {queryArrowTableInBatches} from './query-arrow-table-in-batches';
 
 export {projectArrowTable, filterArrowTable} from './arrow-execution';
 export type {ArrowFilterOptions} from './arrow-execution';
+
+export {query, queryInBatches} from './query';
+export type {QueryOptions} from './query';
