@@ -317,3 +317,7 @@ async function openQuerySource(options: QueryOptions): Promise<unknown> {
   options.signal?.throwIfAborted();
   return implementation.createDataSource(url, authenticatedOptions as DataSourceOptions);
 }
+
+export {parseSQLQuery} from './parse-sql-query';
+export {parseSQLSelect} from './parse-sql-select';
+export type {SQLSelectParserOptions} from './parse-sql-select';

@@ -249,6 +249,11 @@
       "import": "./dist/scan/parse-sql-predicate.js",
       "require": "./dist/scan/parse-sql-predicate.cjs"
     },
+    "./scan/query": {
+      "types": "./dist/scan/query.d.ts",
+      "import": "./dist/scan/query.js",
+      "require": "./dist/scan/query.cjs"
+    },
     "./scan/query-arrow-table": {
       "types": "./dist/scan/query-arrow-table.d.ts",
       "import": "./dist/scan/query-arrow-table.js",

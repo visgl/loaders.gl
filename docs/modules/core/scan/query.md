@@ -65,6 +65,17 @@ match the URL extension. Preloading and authentication complete before source co
 File/URL basenames supply defaults without fetching; `core.type` or `source` is the final fallback.
 Names cannot be changed with `setProps()`.
 
+## Optional SQL parsers
+
+Import `parseSQLQuery` or `parseSQLSelect` from `@loaders.gl/core/scan/query` and pass it as
+`sqlParser`. The former includes WHERE through `parseSQLPredicate`; the smaller latter parses
+SELECT columns/AS aliases, optional FROM and LIMIT, rejecting WHERE unless supplied with a
+`parseWhere` callback. Both preserve case and double-quoted identifiers and reject unsupported
+clauses or multiple statements. ESM parser-only imports tree-shake Arrow execution away.
+
+These exports parse the supported subset, not general SQL. Table aliases, qualified column
+references, comments, SELECT expressions, ordering, grouping, joins, and offsets are unsupported.
+
 ## Results and execution
 
 `queryInBatches()` is lazy and applies backpressure; `query()` collects that stream. Supported source

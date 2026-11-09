@@ -151,31 +151,39 @@ name; use the structured form for qualified lookup.
 
 ## Use SQL through an injected parser
 
-SQL strings use an application-supplied `SQLQueryParser`. Core does not bundle a SQL parser or
-execute arbitrary SQL. The adapter translates supported SELECT syntax into the logical query
-above and must reject unsupported SQL constructs.
+Pass the optional parser explicitly. `parseSQLQuery()` supports SELECT columns, AS aliases, optional
+FROM, WHERE, and LIMIT. It uses the existing predicate parser and adds no third-party SQL parser.
 
 ```ts
-import type {SQLQueryParser} from '@loaders.gl/core/scan';
-
-// This module belongs to your application and adapts your chosen SQL parser.
-const sqlParser: Promise<SQLQueryParser> = import('./app-sql-parser').then(
-  module => module.parseQuery
-);
+import {parseSQLQuery} from '@loaders.gl/core/scan/query';
 
 const result = await query('SELECT name FROM warehouse.cities LIMIT 20', {
   sources: [warehouse],
-  sqlParser
+  sqlParser: parseSQLQuery
 });
 ```
 
-The parser may be a function or a promise for one, and the function may return its logical query
-asynchronously. It is awaited only for SQL string input. A dynamic import starts when you create
-its promise; use an async parser function if the import itself should wait until SQL is used. The example's parser returns:
+You can also pass a parser promise:
 
 ```ts
-{from: {source: 'warehouse', table: 'cities'}, select: ['name'], limit: 20}
+const sqlParser = import('@loaders.gl/core/scan/query').then(module => module.parseSQLQuery);
 ```
+
+ESM imports are tree-shakeable: importing just the parser removes Arrow execution code from the
+bundle. For a smaller parser without built-in WHERE support, use `parseSQLSelect()` from the same
+subpath. It accepts SELECT, AS, FROM, and LIMIT; an optional `parseWhere` callback can add predicate
+support. WHERE is rejected when that callback is omitted.
+
+These are deliberately partial parsers. They preserve identifier case, accept double-quoted names
+and doubled-quote escapes, and require AS for column aliases. They reject comments, table aliases,
+qualified column references, expressions in SELECT, joins, sorting, grouping, offsets, and multiple
+statements. Quote literal column names containing dots. Input length, token count, and nesting
+are bounded.
+
+An application can still supply its own `SQLQueryParser` to translate supported syntax into the
+logical query. The function may return that query asynchronously. Parsers are invoked only for
+SQL string input. A dynamic import starts when its promise is created; use an async parser function
+if the import itself should wait until SQL is used.
 
 Omitting SQL FROM uses `options.source`. Preserve quoted identifiers as separate components:
 `FROM "warehouse.v2"."cities.v3"` maps to `{source: 'warehouse.v2', table: 'cities.v3'}`.
