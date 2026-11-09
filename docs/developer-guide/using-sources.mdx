@@ -76,8 +76,17 @@ This means that applications written against that interface can now support the 
 | `ImageSource`      | Loads image covering a region             | `WMSSourceLoader`, `ArcGISImageServerSourceLoader`         |
 | `RasterSource`     | Loads typed raster samples for a viewport | `GeoTIFFSourceLoader`, `OMETiffSourceLoader`                |
 | `VectorSource`     | Load "features" in a region               | WFS (N/A), ArcGIS FeatureServer                             |
+| `TableScanSource` | Streams ordered table batches             | CSV, Arrow IPC, Parquet                                     |
+| `TableSourceCollection` | Resolves tables by name                | GeoPackage                                                 |
 | `ImageTileSource`  | Load image covering a specific tile index | WMTS (N/A)                                                  |
 | `VectorTileSource` | Load "features" in a specific tile index  | Mapbox Vector Tiles, `PMTilesSourceLoader`                  |
+
+## Querying named tables
+
+Table sources can be queried through the optional `@loaders.gl/core/scan` APIs. Assign
+`core.name` when creating a source, register it in `sources`, and select it with `from`.
+Multi-table sources expose `getTable(name)` for qualified lookup. See
+[Querying tables](/docs/developer-guide/querying-tables) for examples and ownership rules.
 
 ## Metadata
 

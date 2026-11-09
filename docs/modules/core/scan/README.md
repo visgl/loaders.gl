@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Arrow results', 'Range-aware sources', 'Portable query contract']}
   links={[
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
-    {label: 'Get started', to: '/docs/developer-guide/get-started'}
+    {label: 'Querying tables', to: '/docs/developer-guide/querying-tables'}
   ]}
 />
 
@@ -43,6 +43,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 `@loaders.gl/core/scan` is the optional application-facing runtime for portable queries. It collects the
 reference Arrow executor, query parsing, source-neutral query metadata, ordered append federation,
 and adapters that expose an already-addressed vector result as a table.
+
+For application table queries, start with [Querying tables](/docs/developer-guide/querying-tables)
+and the [query API reference](/docs/modules/core/scan/query).
 
 Format packages do not depend on this runtime. They implement lightweight contracts from
 `@loaders.gl/core/loader-utils`, so applications that only load or decode a format do not pay the scan
@@ -293,114 +296,10 @@ Projection and filtering kernels live in the optional `scan/arrow-execution` sub
 Schema utilities and ordinary loader entry points do not import these kernels; format
 query adapters import the focused subpath rather than the full scan entry point.
 
-### Asynchronous query entry points
+### Asynchronous table queries
 
-Use `query()` for a collected Arrow table, or consume the same execution pipeline with
-`queryInBatches()`. Both functions and their `QueryOptions` type are exported only from
-`@loaders.gl/core/scan`.
-
-```ts
-import {query, queryInBatches} from '@loaders.gl/core/scan';
-
-const request = {
-  select: [{column: 'longitude', as: 'lng'}, 'latitude'],
-  where: {op: '>', args: [{property: 'population'}, 100000]},
-  limit: 1000
-} as const;
-const result = await query(request, {source: arrowTable, signal});
-for await (const batch of queryInBatches(request, {source: tableSource, signal})) {
-  consume(batch);
-}
-```
-
-Inputs are loaders.gl Arrow tables, existing `TableScanSource` objects, and URL strings
-with explicit source loaders. Named sources, SQL strings, and a synchronous entry point
-are deferred. Execution controls
-remain outside the logical query: `source`, `signal`, and `onQueryComplete` belong in the
-second argument. Each public execution reports completion once, including errors,
-cancellation, limits, and consumer return. Observer errors do not alter results.
-
-Source metadata determines the output schema. Supported row and columnar batches are
-converted to Arrow; output schema changes, including field nullability, are rejected. Empty results, including limit zero,
-emit one empty schema-bearing batch so collected and streamed results retain their fields.
-Limit zero discovers metadata without calling the source's `read()` method.
-
-Sources receive required columns including hidden predicate fields. Predicate pushdown is
-used only when advertised; `read()` must perform exact filtering for both `pushdown` and
-`pushdown+residual`, including its own residual work after pruning. Other predicates run
-locally. A limit is never pushed below an outstanding local predicate. Child completion
-callbacks are omitted; the public query owns completion reporting. Its row counters describe
-batches received and emitted, rather than estimating physical rows pruned by a source.
-
-### Format conformance and benchmarks
-
-`query()` and `queryInBatches()` accept CSV, NDJSON, Arrow IPC, and Parquet table
-sources. WHERE uses source column names, including columns omitted by SELECT.
-The adapters preserve source row order and apply a global result limit. Metadata
-is preserved when the format and adapter provide it; text formats cannot recover
-Arrow field metadata from the original data.
-
-| Source | Projection | Predicate | Limit |
-| --- | --- | --- | --- |
-| CSV | After decoding | Local residual | Stops streaming |
-| NDJSON | After decoding | Local residual | Stops streaming |
-| Arrow IPC | Buffer views after decoding | Local residual | Stops streaming |
-| Parquet | Column reads | Statistics pruning plus exact residual | Stops after matches |
-
-Projection on sequential formats does not imply fewer input bytes or fewer decoded
-columns. Parquet statistics prune candidate row groups; exact predicates still run
-before the global limit. Public completion summaries count batches received by the
-query. Use source telemetry for physical bytes and Parquet row groups.
-
-CSV blank fields are empty strings, not SQL NULL. NDJSON infers primitive types from
-the first non-null value in each field of its first decoded batch, then retains known
-types in later all-null batches. Set `ndjson.schema` when the first batch is entirely
-null or when nested values require a declared type. Output schema changes are rejected.
-Discovery is bounded to one batch rather than reading the entire source.
-
-Run `yarn bench query` or `yarn bench-headless query` for the hermetic query benchmark.
-It generates 4096 identical rows in all four formats, warms metadata, and compares
-collected and streaming all-pass, all-reject, contiguous, scattered, and limited
-queries. Results are end-to-end queries per second; fixture encoding and metadata
-discovery are outside the timed region. These small, warm, in-memory inputs do not
-measure network performance or peak heap. Benchmark comparisons should use the same
-runtime and machine.
-
-Streaming retains predicate indices for one input batch and whatever buffers the
-consumer retains. Arrow slices can retain the whole original buffer. `query()`
-collects every output batch and therefore uses memory proportional to its result.
-Consumers own source resources and should call `close()` when their source provides it.
-
-### Querying URL sources
-
-Supply an explicit URL-capable table source loader. A loader array selects only among
-the supplied candidates; global loader registration is ignored. Parser-only loaders
-are not source loaders and are rejected. Core does not import format implementations.
-
-```ts
-import {query} from '@loaders.gl/core/scan';
-import {ParquetSourceLoader} from '@loaders.gl/tables';
-
-const result = await query(
-  {select: ['name'], where: {op: '>', args: [{property: 'population'}, 100000]}, limit: 20},
-  {
-    source: 'https://example.com/cities.parquet',
-    loaders: ParquetSourceLoader,
-    core: {fetch: authenticatedFetch},
-    parquet: {batchSize: 1024},
-    signal,
-    onQueryComplete
-  }
-);
-```
-
-The source descriptor’s asynchronous preload hook and the shared authentication utilities
-handle initialization. URL sources use their own format implementations, as they do
-when constructed directly; this path does not import the full core loading API.
-Format and request options stay in their existing namespaces in the second argument.
-Logical projection, predicates, and limits belong in the first argument. Source loading
-starts when streaming consumption begins; limit zero may read metadata to discover the
-schema, but does not call the source's `read()`. The query closes sources it creates,
-including on errors, cancellation, and consumer return. Caller-provided source objects
-remain caller-owned. One completion summary includes source-open and cleanup failures;
-a cleanup failure never replaces an earlier execution failure.
+Use `query()` for a collected Arrow table and `queryInBatches()` for streamed Arrow batches.
+Both accept logical queries or SQL through an injected parser, with loaded tables, URL source
+loaders, and named data sources. See [Querying tables](/docs/developer-guide/querying-tables) for
+examples and the [query API reference](/docs/modules/core/scan/query) for signatures, execution
+semantics, source capabilities, and benchmarks.

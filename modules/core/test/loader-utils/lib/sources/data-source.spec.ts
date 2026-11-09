@@ -104,3 +104,44 @@ test.each([
     'Use core and root loader namespaces directly'
   );
 });
+
+test('source names use explicit names, available metadata, filenames and type fallbacks without fetching', () => {
+  class NamedDataSource extends DataSource<unknown, DataSourceOptions> {}
+  const fetch = vi.fn();
+  const source = new NamedDataSource(
+    'https://example.com/path/cities.parquet?token=secret#fragment',
+    {core: {name: 'warehouse', fetch}}
+  );
+  expect(source.name).toBe('warehouse');
+  expect(source.loadOptions.core).not.toHaveProperty('name');
+  expect(
+    new NamedDataSource('https://example.com/path/cities%20east.parquet?token=secret', {}).name
+  ).toBe('cities east');
+  expect(new NamedDataSource(new File([''], 'cities.csv'), {}).name).toBe('cities');
+  expect(new NamedDataSource({name: 'cities.v2'}, {}).name).toBe('cities.v2');
+  expect(new NamedDataSource({schema: {metadata: {name: 'embedded.table'}}}, {}).name).toBe(
+    'embedded.table'
+  );
+  expect(
+    new NamedDataSource({schema: {metadata: new Map([['name', 'arrowTable']])}}, {}).name
+  ).toBe('arrowTable');
+  expect(new NamedDataSource('https://example.com/', {core: {type: 'catalog'}}).name).toBe(
+    'catalog'
+  );
+  expect(new NamedDataSource(new Blob([]), {}).name).toBe('source');
+  expect(new NamedDataSource('data:text/plain,rows', {}).name).toBe('source');
+  expect(new NamedDataSource('blob:https://example.com/id', {}).name).toBe('source');
+  expect(new NamedDataSource('https://example.com/.hidden', {}).name).toBe('.hidden');
+  expect(new NamedDataSource('https://example.com/%ZZ.csv', {}).name).toBe('%ZZ');
+  expect(new NamedDataSource('https://[invalid', {}).name).toBe('source');
+  expect(fetch).not.toHaveBeenCalled();
+  expect(() => source.setProps({core: {name: 'renamed'}})).toThrow('fixed at creation');
+  source.setProps({core: {name: 'warehouse'}});
+  expect(source.name).toBe('warehouse');
+});
+
+test.each(['', '   ', 3])('invalid explicit source name fails: %j', name => {
+  expect(
+    () => new TestDataSource('cities.csv', {core: {name}} as unknown as DataSourceOptions)
+  ).toThrow('non-empty string');
+});

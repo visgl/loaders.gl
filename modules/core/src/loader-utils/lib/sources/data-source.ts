@@ -18,6 +18,8 @@ export type DataSourceOptions = StrictLoaderOptions & {
   core?: StrictLoaderOptions['core'] & {
     /** Allows application to specify which source should be selected. Matches `Source.type`. Defaults to 'auto' */
     type?: string;
+    /** Stable query-visible source name. Defaults to an available data or file name. */
+    name?: string;
     /** Any dataset attributions (in case underlying metadata does not include attributions) */
     attributions?: string[];
     /** Removed in v5. Move these options to `core` and the root loader namespaces. */
@@ -95,6 +97,8 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
   options: Required<OptionsT & DataSourceOptions>;
   readonly data: DataT;
   readonly url: string;
+  /** Stable query-visible name, resolved without fetching source data. */
+  readonly name: string;
 
   /** Shared parser options derived from the source options, excluding source-only core controls. */
   loadOptions: StrictLoaderOptions;
@@ -118,6 +122,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
     ) as Required<OptionsT & DataSourceOptions>;
     this.data = data;
     this.url = typeof data === 'string' ? resolvePath(data) : '';
+    this.name = getDataSourceName(data, this.options);
     const loadOptions = resolveAuthenticationOptions(getSourceLoaderOptions(this.options));
     this.loadOptions = loadOptions;
     const fetch = getFetchFunction(loadOptions);
@@ -127,6 +132,8 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
   }
 
   setProps(options: OptionsT) {
+    if (options.core?.name !== undefined && options.core.name !== this.name)
+      throw new Error('Data source names are fixed at creation.');
     const mergedOptions = mergeOptions<DataSourceOptions>(this.options, options) as Required<
       OptionsT & DataSourceOptions
     >;
@@ -193,7 +200,7 @@ export function getSourceLoaderOptions(options: DataSourceOptions): StrictLoader
   if (options?.core) {
     loadOptions.core = {...options.core};
     const parserCore = loadOptions.core as Record<string, unknown>;
-    for (const key of ['type', 'attributions', 'loaders', 'onError', 'loadOptions']) {
+    for (const key of ['type', 'name', 'attributions', 'loaders', 'onError', 'loadOptions']) {
       delete parserCore[key];
     }
     if (Object.keys(parserCore).length === 0) {
@@ -233,4 +240,50 @@ function unavailableCoreApiMethod(methodName: keyof CoreAPI) {
       `CoreAPI.${methodName} is unavailable. Use @loaders.gl/core.createDataSource().`
     );
   };
+}
+
+/** Derives a stable identifier from explicit options or already available data metadata. */
+function getDataSourceName(data: unknown, options: DataSourceOptions): string {
+  const explicitName = options.core?.name;
+  if (explicitName !== undefined) {
+    if (typeof explicitName !== 'string' || !explicitName.trim())
+      throw new Error('Data source name must be a non-empty string.');
+    return explicitName;
+  }
+  if (data && typeof data === 'object') {
+    const named = data as {
+      name?: unknown;
+      schema?: {metadata?: Map<string, unknown> | Record<string, unknown>};
+    };
+    if (typeof named.name === 'string' && named.name.trim())
+      return data instanceof Blob ? removeFileExtension(named.name) : named.name;
+    const metadata = named.schema?.metadata;
+    const embeddedName = metadata instanceof Map ? metadata.get('name') : metadata?.name;
+    if (typeof embeddedName === 'string' && embeddedName.trim()) return embeddedName;
+  }
+  if (typeof data === 'string') {
+    try {
+      const url = new URL(data.replace(/\\/g, '/'), 'https://source.invalid/');
+      if (!['data:', 'blob:'].includes(url.protocol)) {
+        let basename = url.pathname.split('/').filter(Boolean).pop();
+        if (basename) {
+          try {
+            basename = decodeURIComponent(basename);
+          } catch {
+            /* Keep malformed encoded names literal. */
+          }
+          return removeFileExtension(basename);
+        }
+      }
+    } catch {
+      /* Invalid URLs still receive a source-type fallback name. */
+    }
+  }
+  return options.core?.type && options.core.type !== 'auto' ? options.core.type : 'source';
+}
+
+/** Removes a filename suffix without erasing a hidden filename. */
+function removeFileExtension(name: string): string {
+  const extension = name.lastIndexOf('.');
+  return extension > 0 ? name.slice(0, extension) : name;
 }
