@@ -6,6 +6,16 @@
 
 ## v5.0
 
+### v5.0.0-beta.6
+
+- Upgrade math.gl dependencies to beta.6.
+- Add query/queryInBatches APIs, logical query planning, named data sources, explicit URL table sources, and tree-shakeable SQL SELECT parsers.
+- Add SHOW SOURCES, SHOW TABLES, and DESCRIBE queries for source discovery and table inspection.
+- Support zero-copy Arrow projection and aliases and consolidate streaming Arrow query execution.
+- Share bounded HTTP range validation, including Lance, NetCDF, Potree2, and CORS-hidden Content-Range handling.
+- Delegate terrain geometry to math.gl and add a shared terrain source.
+- Preserve runtime worker imports in webpack and align module documentation navigation.
+
 ### v5.0.0-beta.5
 
 - Upgrade to math.gl beta.5 and reuse its Arrow and tasks modules; remove duplicated utilities and v5 forwarding entry points.
