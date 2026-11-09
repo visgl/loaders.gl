@@ -16,8 +16,12 @@ export type TableScanBatchReader = (
 
 /** Optional batch kernels for formats with a native vectorized predicate implementation. */
 export type TableScanBatchOperators = Readonly<{
-  /** Applies a residual predicate while preserving the source batch shape. */
-  filter?: (batch: TableBatch, predicate: TableScanReadOptions['predicate']) => TableBatch;
+  /** Applies a residual predicate locally or on a worker; async kernels must observe the signal. */
+  filter?: (
+    batch: TableBatch,
+    predicate: TableScanReadOptions['predicate'],
+    signal?: AbortSignal
+  ) => TableBatch | Promise<TableBatch>;
   /** Applies a projection while preserving the source batch shape. */
   project?: (batch: TableBatch, columns?: readonly string[]) => TableBatch;
 }>;
@@ -54,6 +58,7 @@ export async function* executeTableScanBatches(
   let remaining =
     options.limit === undefined ? Number.POSITIVE_INFINITY : Math.max(0, options.limit);
   try {
+    options.signal?.throwIfAborted();
     if (remaining <= 0) {
       earlyTerminationReason = 'limit';
       return;
@@ -67,9 +72,15 @@ export async function* executeTableScanBatches(
         earlyTerminationReason = 'limit';
         return;
       }
+      options.signal?.throwIfAborted();
       batchesRead++;
       rowsRead += batch.length;
-      const filteredBatch = (operators.filter || filterTableBatch)(batch, options.predicate);
+      const filteredBatch = await (operators.filter || filterTableBatch)(
+        batch,
+        options.predicate,
+        options.signal
+      );
+      options.signal?.throwIfAborted();
       if (options.predicate) {
         rowsTested += batch.length;
         rowsRetained += filteredBatch.length;
@@ -82,6 +93,11 @@ export async function* executeTableScanBatches(
         remaining -= projectedBatch.length;
         rowsReturned += projectedBatch.length;
         yield projectedBatch;
+        options.signal?.throwIfAborted();
+        if (remaining === 0) {
+          earlyTerminationReason = 'limit';
+          return;
+        }
       } else {
         const outputBatch = truncateTableBatch(projectedBatch, remaining);
         rowsReturned += outputBatch.length;

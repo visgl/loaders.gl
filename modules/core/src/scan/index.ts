@@ -127,4 +127,7 @@ export type {
   LogicalTableQueryPlan
 } from '../loader-utils/lib/scan-utils/logical-table-query';
 
-export {projectArrowTable} from './arrow-execution';
+export {queryArrowTableInBatches} from './query-arrow-table-in-batches';
+
+export {projectArrowTable, filterArrowTable} from './arrow-execution';
+export type {ArrowFilterOptions} from './arrow-execution';
