@@ -8,7 +8,7 @@ import {expect, test} from 'vitest';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
 import {CSVTableSource} from '@loaders.gl/tables/csv/index';
 import {NDJSONTableSource} from '@loaders.gl/tables/json/index';
-import {DataSourceManager, type ScanExecutionTelemetry} from '@loaders.gl/core/loader-utils';
+import {DataSourceManager, type TableQueryExecutionSummary} from '@loaders.gl/core/loader-utils';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 import {DeltaTableSource} from '@loaders.gl/tables/delta';
 import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
@@ -98,12 +98,12 @@ test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () =>
 
   const provenance: string[] = [];
   const rows: Record<string, unknown>[] = [];
-  let telemetry: ScanExecutionTelemetry | undefined;
+  let telemetry: TableQueryExecutionSummary | undefined;
   for await (const batch of source.read({
     predicate: parseSQLPredicate('id >= 2'),
     columns: ['id', 'label'],
     limit: 7,
-    onTelemetry: value => {
+    onQueryComplete: value => {
       telemetry = value;
     }
   })) {

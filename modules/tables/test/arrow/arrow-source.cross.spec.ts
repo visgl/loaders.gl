@@ -24,7 +24,7 @@ test('ArrowTableSource applies residual predicates and stops after a batch limit
     predicate: parseSQLPredicate('value >= 20'),
     columns: ['id'],
     limit: 1,
-    onTelemetry: value => telemetry.push(value)
+    onQueryComplete: value => telemetry.push(value)
   }))
     batches.push(batch);
   expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([

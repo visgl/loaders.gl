@@ -164,7 +164,7 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
   const close = vi.fn();
   source.createParquetDataset = () => ({
     async *read(options: any) {
-      options.onTelemetry({status: 'completed', rowsReturned: 4, sourceType: 'parquet'});
+      options.onQueryComplete({status: 'completed', rowsReturned: 4, sourceType: 'parquet'});
       yield {
         shape: 'arrow-table',
         schema: {fields: []},
@@ -204,7 +204,7 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
   for await (const batch of source.read({
     applyDeletes: true,
     columns: ['id'],
-    onTelemetry: telemetry
+    onQueryComplete: telemetry
   })) {
     batches.push(batch);
   }
@@ -537,7 +537,7 @@ test.each([
     source.getScanPlan = async () => ({dataFiles: [{data: 'data.parquet'}], deleteFiles: []});
     source.createParquetDataset = () => ({
       async *read(options: any) {
-        options.onTelemetry({status: 'completed', rowsReturned: 0, sourceType: 'parquet'});
+        options.onQueryComplete({status: 'completed', rowsReturned: 0, sourceType: 'parquet'});
         throw new Error('delegated failure');
       },
       close: vi.fn()
@@ -546,7 +546,7 @@ test.each([
     if (aborted) abortController.abort();
     const telemetry = vi.fn();
     const consume = async () => {
-      for await (const _batch of source.scan({signal: abortController.signal, onTelemetry: telemetry})) {
+      for await (const _batch of source.scan({signal: abortController.signal, onQueryComplete: telemetry})) {
         // No batches are expected.
       }
     };

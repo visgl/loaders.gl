@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
-  emitScanExecutionTelemetry,
+  emitQueryComplete,
   explainTableQuery,
   getColumnarPredicateColumns,
   planTableQuery,
@@ -13,9 +13,9 @@ import {
   type ManageableDataSource,
   type ScanQueryMetadata,
   type ScanQueryMetadataOptions,
-  type ScanExecutionTelemetry,
-  type ScanExecutionTelemetryStatus,
-  type ScanSourceExecutionTelemetry,
+  type TableQueryExecutionSummary,
+  type TableQueryExecutionStatus,
+  type TableQuerySourceExecutionSummary,
   type TableQueryCapabilities,
   type TableQueryExplain,
   type TableScanReadOptions,
@@ -45,7 +45,7 @@ export type FederatedTableSourceEntry = Readonly<{
   /** Stable id resolved through the shared {@link DataSourceManager}. */
   dataSourceId: string;
   /** Source-local predicate, projection, and limit applied before schema reconciliation. */
-  query?: Omit<TableScanReadOptions<SQLPredicate>, 'signal' | 'onTelemetry'>;
+  query?: Omit<TableScanReadOptions<SQLPredicate>, 'signal' | 'onQueryComplete'>;
   /** Source-column to federated-column renames applied before compatibility checks. */
   columnMapping?: Readonly<Record<string, string>>;
 }>;
@@ -145,8 +145,8 @@ type FederatedTablePlan = Readonly<{
   sources: readonly ResolvedFederatedSource[];
 }>;
 
-type MutableScanExecutionTelemetry = {
-  status: ScanExecutionTelemetryStatus;
+type MutableTableQueryExecutionSummary = {
+  status: TableQueryExecutionStatus;
   sourcesPlanned: number;
   sourcesRead: number;
   batchesRead: number;
@@ -159,8 +159,8 @@ type MutableScanExecutionTelemetry = {
   tasksOpened: number;
   rowsPruned: number;
   durationMilliseconds: number;
-  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'];
-  sources: ScanSourceExecutionTelemetry[];
+  earlyTerminationReason?: TableQueryExecutionSummary['earlyTerminationReason'];
+  sources: TableQuerySourceExecutionSummary[];
   error?: unknown;
 };
 
@@ -269,7 +269,7 @@ export class FederatedTableScanSource
   ): AsyncIterableIterator<FederatedTableBatch> {
     const consumerId = this.createConsumerId('read');
     const startedAt = Date.now();
-    const telemetry: MutableScanExecutionTelemetry = {
+    const telemetry: MutableTableQueryExecutionSummary = {
       status: 'early-terminated',
       sourcesPlanned: this.sources.length,
       sourcesRead: 0,
@@ -304,7 +304,7 @@ export class FederatedTableScanSource
           return;
         }
         const sourceStartedAt = Date.now();
-        let childTelemetry: ScanExecutionTelemetry | undefined;
+        let childTelemetry: TableQueryExecutionSummary | undefined;
         let sourceCompleted = false;
         let sourceError: unknown;
         let sourceBatchesDecoded = 0;
@@ -429,13 +429,13 @@ export class FederatedTableScanSource
       if (telemetry.status === 'early-terminated' && !telemetry.earlyTerminationReason) {
         telemetry.earlyTerminationReason = 'consumer-return';
       }
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
+      emitQueryComplete(
+        options.onQueryComplete,
         Object.freeze({
           ...telemetry,
           batchesDecoded: telemetry.batchesRead,
           sources: Object.freeze([...telemetry.sources])
-        }) satisfies ScanExecutionTelemetry
+        }) satisfies TableQueryExecutionSummary
       );
     }
   }
@@ -661,7 +661,7 @@ function createSourceReadOptions(
   requiredOutputColumns: readonly string[],
   remaining: number,
   options: TableScanReadOptions<SQLPredicate>,
-  onTelemetry: (telemetry: ScanExecutionTelemetry) => void
+  onQueryComplete: (telemetry: TableQueryExecutionSummary) => void
 ): TableScanReadOptions<SQLPredicate> {
   const sourceResidualPredicate = getSourceResidualPredicate(source);
   const requiredSourceColumns = requiredOutputColumns
@@ -684,7 +684,7 @@ function createSourceReadOptions(
     predicate: sourceResidualPredicate ? undefined : source.entry.query?.predicate,
     limit: sourceResidualPredicate ? undefined : Number.isFinite(limit) ? limit : undefined,
     signal: options.signal,
-    onTelemetry
+    onQueryComplete
   };
 }
 
@@ -731,7 +731,7 @@ function createCanonicalArrowTable(
 function createSourceTelemetry(
   options: Readonly<{
     resolvedSource: ResolvedFederatedSource;
-    childTelemetry?: ScanExecutionTelemetry;
+    childTelemetry?: TableQueryExecutionSummary;
     sourceStartedAt: number;
     sourceCompleted: boolean;
     sourceError?: unknown;
@@ -742,9 +742,9 @@ function createSourceTelemetry(
     rowsRetained: number;
     rowsReturned: number;
   }>
-): ScanSourceExecutionTelemetry {
+): TableQuerySourceExecutionSummary {
   const {resolvedSource, childTelemetry} = options;
-  const status: ScanExecutionTelemetryStatus =
+  const status: TableQueryExecutionStatus =
     childTelemetry?.status ||
     (options.signal?.aborted
       ? 'cancelled'

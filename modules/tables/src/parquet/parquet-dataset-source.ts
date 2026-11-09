@@ -4,14 +4,14 @@
 
 import {
   executeScanTasks,
-  emitScanExecutionTelemetry,
+  emitQueryComplete,
   explainTableQuery,
   validateTableQueryLimit,
   type CoreAPI,
   type ScanFragment,
   type ScanFragmentProvider,
   type ScanTask,
-  type ScanExecutionTelemetry
+  type TableQueryExecutionSummary
 } from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
 
@@ -288,9 +288,9 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
     const telemetryBefore = this.getTelemetry();
     let remainingRows = options.limit ?? this.options.parquet?.limit ?? Number.POSITIVE_INFINITY;
     if (remainingRows === 0) {
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
-        createParquetDatasetScanExecutionTelemetry(
+      emitQueryComplete(
+        options.onQueryComplete,
+        createParquetDatasetTableQueryExecutionSummary(
           telemetryBefore,
           this.getTelemetry(),
           startedAt,
@@ -334,16 +334,16 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
       readContext.abortController.abort();
       readContext.removeSignalListener();
       this.activeReadControllers.delete(readContext.abortController);
-      const status: ScanExecutionTelemetry['status'] = readError
+      const status: TableQueryExecutionSummary['status'] = readError
         ? cancelled
           ? 'cancelled'
           : 'failed'
         : limitReached || !completed
           ? 'early-terminated'
           : 'completed';
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
-        createParquetDatasetScanExecutionTelemetry(
+      emitQueryComplete(
+        options.onQueryComplete,
+        createParquetDatasetTableQueryExecutionSummary(
           telemetryBefore,
           this.getTelemetry(),
           startedAt,
@@ -753,14 +753,14 @@ function createParquetDatasetTelemetry(): ParquetDatasetTelemetry {
 }
 
 /** Converts cumulative dataset and child counters into one portable read-scoped snapshot. */
-function createParquetDatasetScanExecutionTelemetry(
+function createParquetDatasetTableQueryExecutionSummary(
   before: ParquetDatasetTelemetry,
   after: ParquetDatasetTelemetry,
   startedAt: number,
-  status: ScanExecutionTelemetry['status'],
-  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'],
+  status: TableQueryExecutionSummary['status'],
+  earlyTerminationReason?: TableQueryExecutionSummary['earlyTerminationReason'],
   error?: unknown
-): ScanExecutionTelemetry {
+): TableQueryExecutionSummary {
   const parquet = Object.fromEntries(
     Object.keys(after.parquet).map(key => {
       const telemetryKey = key as keyof ParquetTelemetry;

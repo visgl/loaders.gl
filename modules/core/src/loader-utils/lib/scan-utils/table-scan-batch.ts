@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
-import type {TableScanReadOptions, ScanExecutionTelemetry} from './scan-query-metadata';
-import {emitScanExecutionTelemetry} from './scan-query-metadata';
+import type {TableScanReadOptions, TableQueryExecutionSummary} from './scan-query-metadata';
+import {emitQueryComplete} from './scan-query-metadata';
 import {filterColumnarRowIndices, validateColumnarPredicate} from './columnar-predicate';
 import {validateTableQueryLimit} from './table-query';
 
@@ -48,8 +48,8 @@ export async function* executeTableScanBatches(
   let rowsRetained = 0;
   let rowsReturned = 0;
   let bytesFetched = 0;
-  let status: ScanExecutionTelemetry['status'] = 'early-terminated';
-  let earlyTerminationReason: ScanExecutionTelemetry['earlyTerminationReason'];
+  let status: TableQueryExecutionSummary['status'] = 'early-terminated';
+  let earlyTerminationReason: TableQueryExecutionSummary['earlyTerminationReason'];
   let executionError: unknown;
   let remaining =
     options.limit === undefined ? Number.POSITIVE_INFINITY : Math.max(0, options.limit);
@@ -99,8 +99,8 @@ export async function* executeTableScanBatches(
     if (status === 'early-terminated' && !earlyTerminationReason) {
       earlyTerminationReason = 'consumer-return';
     }
-    emitScanExecutionTelemetry(
-      options.onTelemetry,
+    emitQueryComplete(
+      options.onQueryComplete,
       Object.freeze({
         status,
         sourcesPlanned: 1,

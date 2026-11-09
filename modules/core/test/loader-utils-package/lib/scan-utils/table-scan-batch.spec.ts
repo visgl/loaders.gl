@@ -1,4 +1,4 @@
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
 import {
   executeTableScanBatches,
@@ -39,7 +39,7 @@ test('shared table executor filters, projects, limits, and reports bytes', async
     predicate: {op: '>', args: [{property: 'value'}, 10]},
     columns: ['id'],
     limit: 1,
-    onTelemetry: snapshot => telemetry.push(snapshot)
+    onQueryComplete: snapshot => telemetry.push(snapshot)
   }))
     result.push(output);
   expect(result[0]?.data).toEqual([{id: 2}]);
@@ -113,12 +113,13 @@ test('shared table executor reports cancellation and consumer return', async () 
     (async () => {
       for await (const _batch of executeTableScanBatches(readCancelled, {
         signal: controller.signal,
-        onTelemetry: snapshot => cancelled.push(snapshot)
+        onQueryComplete: snapshot => cancelled.push(snapshot)
       })) {
         // expected to abort before yielding
       }
     })()
   ).rejects.toThrow();
+  expect(cancelled).toHaveLength(1);
   expect(cancelled[0]).toMatchObject({status: 'cancelled'});
 
   const returned: unknown[] = [];
@@ -127,9 +128,10 @@ test('shared table executor reports cancellation and consumer return', async () 
     yield batch;
   }
   for await (const _batch of executeTableScanBatches(readMany, {
-    onTelemetry: snapshot => returned.push(snapshot)
+    onQueryComplete: snapshot => returned.push(snapshot)
   }))
     break;
+  expect(returned).toHaveLength(1);
   expect(returned[0]).toMatchObject({
     status: 'early-terminated',
     earlyTerminationReason: 'consumer-return'
@@ -138,7 +140,7 @@ test('shared table executor reports cancellation and consumer return', async () 
   const zeroLimit: unknown[] = [];
   for await (const _batch of executeTableScanBatches(readMany, {
     limit: 0,
-    onTelemetry: snapshot => zeroLimit.push(snapshot)
+    onQueryComplete: snapshot => zeroLimit.push(snapshot)
   })) {
     // expected to stop before opening the reader
   }
@@ -151,12 +153,13 @@ test('shared table executor reports cancellation and consumer return', async () 
   await expect(
     (async () => {
       for await (const _batch of executeTableScanBatches(readFailed, {
-        onTelemetry: snapshot => failed.push(snapshot)
+        onQueryComplete: snapshot => failed.push(snapshot)
       })) {
         // expected to throw before yielding
       }
     })()
   ).rejects.toThrow('reader failed');
+  expect(failed).toHaveLength(1);
   expect(failed[0]).toMatchObject({status: 'failed'});
 });
 
@@ -179,5 +182,27 @@ test('filterTableBatch validates predicate columns', () => {
   ).toMatchObject({shape: 'array-row-table'});
   expect(() => filterTableBatch(batch, {op: '=', args: [{property: 'missing'}, 1]})).toThrow(
     'column not found'
+  );
+});
+
+test('query completion runs once and observer failures do not change results', async () => {
+  const batch: TableBatch = {shape: 'object-row-table', data: [{id: 1}], length: 1};
+  async function* readBatches(): AsyncIterable<TableBatch> {
+    yield batch;
+  }
+  const onQueryComplete = vi.fn(() => {
+    throw new Error('observer failed');
+  });
+  const outputs: TableBatch[] = [];
+  for await (const output of executeTableScanBatches(readBatches, {onQueryComplete})) {
+    outputs.push(output);
+  }
+  expect(outputs).toEqual([batch]);
+  expect(onQueryComplete).toHaveBeenCalledTimes(1);
+  expect(onQueryComplete).toHaveBeenCalledWith(
+    expect.objectContaining({
+      status: 'completed',
+      rowsReturned: 1
+    })
   );
 });

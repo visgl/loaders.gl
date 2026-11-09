@@ -366,7 +366,7 @@ export type {
 } from './lib/scan-utils/relational-query';
 export {
   createScanQueryMetadata,
-  emitScanExecutionTelemetry
+  emitQueryComplete
 } from './lib/scan-utils/scan-query-metadata';
 export {
   intersectPointCloudBounds,
@@ -392,10 +392,10 @@ export type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider,
-  ScanExecutionTelemetry,
-  ScanExecutionTelemetryCallback,
-  ScanExecutionTelemetryStatus,
-  ScanSourceExecutionTelemetry,
+  TableQueryExecutionSummary,
+  TableQueryCompleteCallback,
+  TableQueryExecutionStatus,
+  TableQuerySourceExecutionSummary,
   PointCloudScanReadOptions,
   PointCloudScanSource,
   TableScanReadOptions,
@@ -430,6 +430,9 @@ export type {
   TableQueryFilterStep,
   TableQueryLimitStep,
   TableQueryOperatorSupport,
+  TableQuery,
+  TableSelection,
+  TableQueryExecutionOptions,
   TableQueryOptions,
   TableQueryPlan,
   TableQueryPlanStep,

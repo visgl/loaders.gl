@@ -663,14 +663,14 @@ explanation.rowGroups?.prunedByStatistics;
 
 Plans must not contain bound secrets or backend handles. Values may be represented by named
 parameters, and telemetry remains the source of truth for what actually happened at execution
-time. Supply `onTelemetry` to receive one immutable terminal snapshot:
+time. Supply `onQueryComplete` to receive one immutable terminal snapshot:
 
 ```ts
 let telemetry;
 for await (const batch of source.read({
   predicate,
   limit: 100,
-  onTelemetry: value => {
+  onQueryComplete: value => {
     telemetry = value;
   }
 })) {

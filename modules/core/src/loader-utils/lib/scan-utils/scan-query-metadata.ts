@@ -7,7 +7,8 @@ import type {ColumnarPredicate, ColumnarPredicateProperty} from './columnar-pred
 import type {
   TableQueryCapabilities,
   TableQueryOperatorSupport,
-  TableQueryOptions
+  TableQueryOptions,
+  TableQueryExecutionOptions
 } from './table-query';
 import type {PointCloudQueryOptions} from './point-cloud-query';
 import type {RasterQueryCapabilities} from './raster-query';
@@ -153,14 +154,10 @@ export type ScanQueryMetadataOptions = Readonly<{
 }>;
 
 /** Terminal state of one observable scan execution. */
-export type ScanExecutionTelemetryStatus =
-  | 'completed'
-  | 'early-terminated'
-  | 'cancelled'
-  | 'failed';
+export type TableQueryExecutionStatus = 'completed' | 'early-terminated' | 'cancelled' | 'failed';
 
 /** Portable execution counters for one physical source in a federated scan. */
-export type ScanSourceExecutionTelemetry = Readonly<{
+export type TableQuerySourceExecutionSummary = Readonly<{
   /** Stable registry id when the source was resolved through a DataSourceManager. */
   sourceId?: string;
   /** Format or adapter type reported by scan metadata. */
@@ -168,7 +165,7 @@ export type ScanSourceExecutionTelemetry = Readonly<{
   /** Zero-based append position for a federated source. */
   sourceIndex?: number;
   /** Terminal state of this physical source iterator. */
-  status: ScanExecutionTelemetryStatus;
+  status: TableQueryExecutionStatus;
   /** Physical files opened by this source, when measurable. */
   filesOpened?: number;
   /** Independently scheduled physical tasks opened by this source, when measurable. */
@@ -196,9 +193,9 @@ export type ScanSourceExecutionTelemetry = Readonly<{
 }>;
 
 /** Portable execution counters reported when a table scan terminates. */
-export type ScanExecutionTelemetry = Readonly<{
+export type TableQueryExecutionSummary = Readonly<{
   /** Terminal state distinguishing completion, early return, cancellation, and failure. */
-  status: ScanExecutionTelemetryStatus;
+  status: TableQueryExecutionStatus;
   /** Number of physical sources included in the resolved plan. */
   sourcesPlanned: number;
   /** Number of physical source iterators that were opened. */
@@ -230,7 +227,7 @@ export type ScanExecutionTelemetry = Readonly<{
   /** Why a successfully shortened execution stopped before exhausting its plan. */
   earlyTerminationReason?: 'limit' | 'consumer-return';
   /** Per-source physical counters in deterministic append order. */
-  sources?: readonly ScanSourceExecutionTelemetry[];
+  sources?: readonly TableQuerySourceExecutionSummary[];
   /** Source-specific immutable counters retained for detailed diagnostics. */
   details?: Readonly<Record<string, unknown>>;
   /** Failure or cancellation reason when one terminated the scan. */
@@ -238,21 +235,21 @@ export type ScanExecutionTelemetry = Readonly<{
 }>;
 
 /** Receives the immutable final counters for one table scan execution. */
-export type ScanExecutionTelemetryCallback = (telemetry: ScanExecutionTelemetry) => void;
+export type TableQueryCompleteCallback = (summary: TableQueryExecutionSummary) => void;
 
 /**
- * Delivers a scan telemetry snapshot without allowing an observer failure to alter scan results.
- * Telemetry is best-effort by design: exporters and diagnostics must not become query failures.
+ * Delivers a terminal query summary without allowing an observer failure to alter scan results.
+ * Completion observers are best-effort and must not become query failures.
  */
-export function emitScanExecutionTelemetry(
-  callback: ScanExecutionTelemetryCallback | undefined,
-  telemetry: ScanExecutionTelemetry
+export function emitQueryComplete(
+  callback: TableQueryCompleteCallback | undefined,
+  summary: TableQueryExecutionSummary
 ): void {
   if (!callback) return;
   try {
-    callback(telemetry);
+    callback(summary);
   } catch {
-    // Telemetry observers must never change scan behavior.
+    // Completion observers must never change query behavior.
   }
 }
 
@@ -268,13 +265,7 @@ export type TableScanReadOptions<
     unknown,
     ColumnarPredicateProperty
   >
-> = TableQueryOptions<PredicateT> &
-  Readonly<{
-    /** Cooperatively cancels source discovery and execution. */
-    signal?: AbortSignal;
-    /** Receives one terminal execution snapshot without changing query semantics. */
-    onTelemetry?: ScanExecutionTelemetryCallback;
-  }>;
+> = TableQueryOptions<PredicateT> & TableQueryExecutionOptions;
 
 /**
  * Shared table-scan contract implemented by format-specific executors.
