@@ -147,3 +147,29 @@ test('same-level terrain seams reconcile detached view snapshots', async () => {
   ).toThrow(/lattice/);
   source.finalize();
 });
+
+test('same-level seams tolerate lattice roundoff near a coordinate-axis crossing', async () => {
+  const extent = 20037508.342789244;
+  const span = (2 * extent) / 2 ** 14;
+  const source = new TerrainSource({
+    metadata: {},
+    loadTile: async ({x}) => ({
+      width: 256,
+      height: 2,
+      heights: new Float32Array(512),
+      origin: [-extent + x * span, 0] as const,
+      columnStep: [span / 255, 0] as const,
+      rowStep: [0, 1] as const,
+      registration: 'vertex' as const,
+      heightReference: 'unknown'
+    })
+  });
+  const west = (await source.getTile({x: 8191, y: 0, z: 14}))!;
+  const east = (await source.getTile({x: 8192, y: 0, z: 14}))!;
+  const snapshot = reconcileTerrainTiles([
+    {matrixId: '14', column: 8191, row: 0, tile: west},
+    {matrixId: '14', column: 8192, row: 0, tile: east}
+  ]);
+  expect(snapshot.sharedVertices).toBe(2);
+  source.finalize();
+});

@@ -61,12 +61,21 @@ export function reconcileTerrainTiles(
       throw new Error('Terrain seam tiles require one matching vertex lattice');
     }
     for (let axis = 0; axis < 2; axis++) {
-      const expected =
-        origin[axis] +
-        column * (field.width - 1) * field.columnStep[axis] +
-        row * (field.height - 1) * field.rowStep[axis];
+      const columnOffset = column * (field.width - 1) * field.columnStep[axis];
+      const rowOffset = row * (field.height - 1) * field.rowStep[axis];
+      const expected = origin[axis] + columnOffset + rowOffset;
+      // Include the large lattice terms: cancellation near zero can hide their roundoff.
       const tolerance =
-        Number.EPSILON * 16 * Math.max(1, Math.abs(expected), Math.abs(candidate.origin[axis]));
+        Number.EPSILON *
+        16 *
+        Math.max(
+          1,
+          Math.abs(origin[axis]),
+          Math.abs(columnOffset),
+          Math.abs(rowOffset),
+          Math.abs(expected),
+          Math.abs(candidate.origin[axis])
+        );
       if (!Number.isFinite(expected) || Math.abs(candidate.origin[axis] - expected) > tolerance)
         throw new Error('Terrain seam tile origins do not align');
     }
