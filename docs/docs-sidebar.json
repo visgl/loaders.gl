@@ -1064,6 +1064,7 @@
                 "label": "@loaders.gl/tiles",
                 "items": [
                   "modules/tiles/api-reference/tileset-2d",
+                  "modules/tiles/api-reference/terrain-source",
                   "modules/tiles/api-reference/raster-set"
                 ],
                 "link": {
