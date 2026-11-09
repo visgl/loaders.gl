@@ -29,9 +29,15 @@ export class HTTPRangeReader {
     if (response.status !== 206) {
       throw new Error('HDF5: remote server did not honor HTTP Range (206 required)');
     }
+    // CORS may hide this response header without stripping the outgoing Range.
+    // A missing header is acceptable only with 206 and the exact body length;
+    // visible headers (including empty/malformed values) must match the offset.
     const range = response.headers.get('Content-Range');
     const match = /^bytes (\d+)-(\d+)\/(\d+|\*)$/.exec(range ?? '');
-    if (!match || Number(match[1]) !== offset || Number(match[2]) !== offset + length - 1) {
+    if (
+      range !== null &&
+      (!match || Number(match[1]) !== offset || Number(match[2]) !== offset + length - 1)
+    ) {
       throw new Error('HDF5: unexpected Content-Range');
     }
     const bytes = new Uint8Array(await response.arrayBuffer());

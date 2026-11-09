@@ -578,3 +578,94 @@ function getRequestedRange(options?: RequestInit): {offset: number; length: numb
   const offset = Number(match[1]);
   return {offset, length: Number(match[2]) - offset + 1};
 }
+
+test.each([true, false])('HttpFile#hidden Content-Range with known size %s', async knownSize => {
+  let headRequests = 0;
+  const file = await HttpFile.open(URL, {
+    byteLength: knownSize ? DATA.length : undefined,
+    fetch: async (_url, options) => {
+      if (options?.method === 'HEAD') {
+        headRequests++;
+        expect(new Headers(options.headers).has('Range')).toBe(false);
+        return new Response(null, {headers: {'Content-Length': String(DATA.length)}});
+      }
+      const response = createRangeResponse(options);
+      response.headers.delete('Content-Range');
+      return response;
+    }
+  });
+  expect(file.size).toBe(DATA.length);
+  expect(new Uint8Array(await file.read(8, 4))).toEqual(DATA.slice(8, 12));
+  expect(new Uint8Array(await file.read(20, 3))).toEqual(DATA.slice(20, 23));
+  expect(headRequests).toBe(knownSize ? 0 : 1);
+  await file.close();
+});
+
+test.each([2, 4])('HttpFile#hidden range rejects %s bytes when expecting 3', async byteLength => {
+  const file = new HttpFile(URL, {
+    byteLength: DATA.length,
+    etag: '"known"',
+    fetch: async () => new Response(new Uint8Array(byteLength), {status: 206})
+  });
+  await expect(file.read(4, 3)).rejects.toThrow(/expected 3/);
+});
+
+test.each([
+  null,
+  '',
+  'garbage',
+  '0',
+  '9007199254740992'
+])('HttpFile#hidden range requires valid HEAD size %s', async contentLength => {
+  await expect(
+    HttpFile.open(URL, {
+      fetch: async (_url, options) =>
+        options?.method === 'HEAD'
+          ? new Response(null, {
+              headers: contentLength === null ? {} : {'Content-Length': contentLength}
+            })
+          : new Response(new Uint8Array(1), {status: 206})
+    })
+  ).rejects.toThrow(/HEAD did not provide a valid file length/);
+});
+
+test('HttpFile#hidden ranges retain strict validator checks', async () => {
+  const file = new HttpFile(URL, {
+    byteLength: DATA.length,
+    etag: '"known"',
+    consistency: 'strict',
+    fetch: async () => new Response(new Uint8Array(3), {status: 206})
+  });
+  await expect(file.read(4, 3)).rejects.toThrow(/missing the pinned ETag/);
+});
+
+test('HttpFile#HEAD failure cancels the pending range body', async () => {
+  let cancelled = false;
+  await expect(
+    HttpFile.open(URL, {
+      fetch: async (_url, options) => {
+        if (options?.method === 'HEAD') throw new Error('HEAD unavailable');
+        return new Response(
+          new ReadableStream({
+            cancel() {
+              cancelled = true;
+            }
+          }),
+          {status: 206}
+        );
+      }
+    })
+  ).rejects.toThrow('HEAD unavailable');
+  expect(cancelled).toBe(true);
+});
+
+test('HttpFile#HEAD and range validators must agree', async () => {
+  await expect(
+    HttpFile.open(URL, {
+      fetch: async (_url, options) =>
+        options?.method === 'HEAD'
+          ? new Response(null, {headers: {'Content-Length': '32', ETag: '"new"'}})
+          : new Response(new Uint8Array(1), {status: 206, headers: {ETag: '"old"'}})
+    })
+  ).rejects.toThrow(/ETag changed/);
+});

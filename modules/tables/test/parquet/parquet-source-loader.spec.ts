@@ -620,9 +620,9 @@ test('ParquetSourceLoader#URL uses bounded, versioned range requests', async () 
   await source.getMetadata();
   await source.getSchema();
 
-  expect(requests[0].headers.get('Range')).toBe('bytes=0-3');
+  expect(requests[0].headers.get('Range')).toBe('bytes=0-0');
   expect(requests[0].headers.get('Authorization')).toBe('Bearer test');
-  expect(requests[1].headers.get('If-Match')).toBe('"fixture-v1"');
+  expect(requests.every(request => !request.headers.has('If-Match'))).toBe(true);
   expect(requests.length).toBe(requestCount);
   expect(metadata.fileByteLength).toBe(fixture.byteLength);
   expect(metadata.objectVersion?.etag).toBe('"fixture-v1"');
@@ -669,10 +669,11 @@ test('ParquetRangeFile#close cancels oversized uncached reads', async () => {
   const file = new ParquetRangeFile(REMOTE_URL, {
     fetch: async (_url, options = {}) => {
       requestCount++;
-      if (requestCount === 1) {
-        return new Response(new Uint8Array(4), {
+      if (requestCount <= 2) {
+        const length = requestCount === 1 ? 1 : 4;
+        return new Response(new Uint8Array(length), {
           status: 206,
-          headers: {'Content-Range': `bytes 0-3/${fileByteLength}`, ETag: '"fixture-v1"'}
+          headers: {'Content-Range': `bytes 0-${length - 1}/${fileByteLength}`, ETag: '"fixture-v1"'}
         });
       }
       markReadStarted();
