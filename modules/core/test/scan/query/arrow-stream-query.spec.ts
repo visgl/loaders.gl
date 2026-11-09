@@ -141,3 +141,40 @@ test('zero limits avoid input work, empty results preserve schema, and reader er
   await expect(iterator.next()).rejects.toThrow('reader failed');
   expect(closed).toBe(true);
 });
+
+test('portable mixed numeric bounds retain fractional and large bigint comparison semantics', () => {
+  const source = new arrow.Table({value: arrow.vectorFromArray([1n, 2n, 3n], new arrow.Int64())});
+  expect(
+    filterArrowTable(source, {op: '>', args: [{property: 'value'}, 1.5]})
+      .toArray()
+      .map(row => row.value)
+  ).toEqual([2n, 3n]);
+  const large = new arrow.Table({
+    value: arrow.vectorFromArray([9007199254740992n, 9007199254740993n], new arrow.Int64())
+  });
+  expect(
+    filterArrowTable(large, {op: '>', args: [{property: 'value'}, 9007199254740992]})
+      .toArray()
+      .map(row => row.value)
+  ).toEqual([9007199254740993n]);
+  const fractional = new arrow.Table({
+    value: arrow.vectorFromArray([1.5, 2, 2.5], new arrow.Float64())
+  });
+  expect(
+    filterArrowTable(fractional, {op: '<', args: [{property: 'value'}, 2n]})
+      .toArray()
+      .map(row => row.value)
+  ).toEqual([1.5]);
+});
+
+test('missing nested properties use SQL null semantics in the shared Arrow kernel', () => {
+  const source = new arrow.Table({
+    nested: arrow.vectorFromArray(
+      [{value: 1}, null],
+      new arrow.Struct([new arrow.Field('value', new arrow.Int32(), true)])
+    )
+  });
+  const isNull = {op: 'isNull' as const, args: [{property: ['nested', 'missing']}] as const};
+  expect(filterArrowTable(source, isNull).numRows).toBe(2);
+  expect(filterArrowTable(source, {op: 'not', args: [isNull]}).numRows).toBe(0);
+});

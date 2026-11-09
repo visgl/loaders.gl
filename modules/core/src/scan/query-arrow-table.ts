@@ -158,10 +158,10 @@ export function queryArrowTable(
     options
   );
   const scannedData = sourceData.select([...getScanStep(plan).columns]);
-  const projectedData = projectArrowTable(scannedData, getProjectStep(plan).columns);
   const predicate = getFilterStep(plan)?.predicate;
   const limit = getLimitStep(plan)?.limit ?? Number.POSITIVE_INFINITY;
   if (!predicate) {
+    const projectedData = projectArrowTable(scannedData, getProjectStep(plan).columns);
     return wrapArrowTable(
       projectedData.numRows === 0 ? projectedData : projectedData.slice(0, limit)
     );

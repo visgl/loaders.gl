@@ -121,7 +121,7 @@ function evaluatePredicate(
 
   const value = getColumnValue(columns, predicate.args[0].property, rowIndex);
   if (isNullPredicate(predicate)) {
-    return value === null;
+    return value === null || value === undefined;
   }
   if (isInPredicate(predicate)) {
     return evaluateIn(value, predicate.args[1]);
@@ -218,11 +218,15 @@ function compareValues(left: unknown, right: SQLPredicateValue): number {
   if (typeof left === 'bigint' && typeof right === 'bigint') {
     return left === right ? 0 : left < right ? -1 : 1;
   }
-  if (typeof left === 'bigint' && typeof right === 'number' && Number.isSafeInteger(right)) {
-    return compareValues(left, BigInt(right));
-  }
-  if (typeof left === 'number' && typeof right === 'bigint' && Number.isSafeInteger(left)) {
-    return compareValues(BigInt(left), right);
+  if (
+    (typeof left === 'bigint' && typeof right === 'number') ||
+    (typeof left === 'number' && typeof right === 'bigint')
+  ) {
+    const numericValue = typeof left === 'number' ? left : (right as number);
+    if (!Number.isFinite(numericValue))
+      throw new Error('Arrow query cannot compare non-finite numbers.');
+    // Native relational comparison preserves bigint precision and fractional number bounds.
+    return left < right ? -1 : left > right ? 1 : 0;
   }
   if (typeof left === 'number' && typeof right === 'number') {
     return compareArrowQueryNumbers(left, right);
