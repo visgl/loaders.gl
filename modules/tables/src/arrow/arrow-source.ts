@@ -15,7 +15,7 @@ import type {
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, projectArrowTable} from '@loaders.gl/core/schema-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import {ArrowFormat} from './exports/arrow-format';
 
@@ -140,7 +140,8 @@ function filterArrowBatch(
 /** Projects Arrow columns and updates the portable schema in one format-specific kernel. */
 function projectArrowBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
   const arrowBatch = batch as ArrowTableBatch;
-  const data = columns === undefined ? arrowBatch.data : arrowBatch.data.select([...columns]);
+  const data =
+    columns === undefined ? arrowBatch.data : projectArrowTable(arrowBatch.data, columns);
   return {
     ...batch,
     data,
