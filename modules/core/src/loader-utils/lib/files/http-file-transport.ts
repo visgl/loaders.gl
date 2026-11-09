@@ -65,7 +65,7 @@ export class HttpFileTransport {
   /** Failure objects already included in telemetry. */
   private readonly countedFailures = new WeakSet<object>();
   /** Observer for cumulative transport counters, including asynchronous cancellation. */
-  private readonly onTelemetry?: (telemetry: HttpFileTelemetry) => void;
+  private readonly onTelemetry?: (telemetry: HttpFileTelemetry, error?: unknown) => void;
   /** Mutable counters backing immutable telemetry snapshots. */
   private readonly telemetry: MutableHttpFileTelemetry = {
     requestedBytes: 0,
@@ -124,7 +124,7 @@ export class HttpFileTransport {
     } else {
       this.telemetry.errorCount++;
     }
-    this.onTelemetry?.(this.getTelemetry());
+    this.onTelemetry?.(this.getTelemetry(), error);
   }
 
   /** Performs and validates one exact HTTP range request. */

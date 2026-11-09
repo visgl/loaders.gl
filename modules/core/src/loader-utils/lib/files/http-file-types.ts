@@ -32,7 +32,7 @@ export type HttpFileOptions = {
   /** Configuration used when creating a private scheduler. */
   rangeSchedulerProps?: RangeRequestSchedulerProps;
   /** Receives cumulative transport counters after a request or failure completes. */
-  onTelemetry?: (telemetry: HttpFileTelemetry) => void;
+  onTelemetry?: (telemetry: HttpFileTelemetry, error?: unknown) => void;
 };
 
 /** Immutable identity pinned for an open HTTP file. */

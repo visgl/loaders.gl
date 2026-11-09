@@ -71,3 +71,14 @@ test.each(['ETag', 'Last-Modified'])('Parquet hidden ranges avoid automatic pref
   await file.close();
 });
 
+
+test('Parquet forwards the original transport error in telemetry', async () => {
+  const failure = new Error('connection lost');
+  const errors: unknown[] = [];
+  const file = new ParquetRangeFile('https://example.invalid/data.parquet', {
+    fetch: async () => {throw failure;},
+    onTelemetry: event => {if (event.failedRangeRequestCount) errors.push(event.error);}
+  });
+  await expect(file.open()).rejects.toBe(failure);
+  expect(errors).toEqual([failure]);
+});

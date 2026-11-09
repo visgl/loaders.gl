@@ -69,7 +69,7 @@ export class ParquetRangeFile implements ReadableFile {
     // explicit caller headers. Hidden range metadata is handled only in Core.
     this.file = new HttpFile(url, {
       fetch: options.fetch,
-      onTelemetry: counters => this.reportTelemetry(counters),
+      onTelemetry: (counters, error) => this.reportTelemetry(counters, error),
       fetchOptions: {headers: options.headers, signal: this.closeController.signal},
       rangeScheduler: options.rangeRequests?.scheduler,
       rangeSchedulerProps: {
@@ -165,7 +165,7 @@ export class ParquetRangeFile implements ReadableFile {
   }
 
   /** Reports cumulative Core counters as non-overlapping source-local deltas. */
-  private reportTelemetry(current = this.file.getTelemetry()): void {
+  private reportTelemetry(current = this.file.getTelemetry(), error?: unknown): void {
     const previous = this.reportedTelemetry;
     this.reportedTelemetry = current;
     if (
@@ -176,6 +176,7 @@ export class ParquetRangeFile implements ReadableFile {
       return;
     this.onTelemetry?.({
       type: 'range-request',
+      error,
       rangeRequestCount: current.requestCount - previous.requestCount,
       requestedBytes: current.requestedBytes - previous.requestedBytes,
       downloadedBytes: current.downloadedBytes - previous.downloadedBytes,
