@@ -17,14 +17,7 @@ export async function resolveQuerySource(
   signal?: AbortSignal
 ): Promise<unknown> {
   validateTableReference(reference);
-  if (!Array.isArray(sources)) throw new Error('FROM requires a sources array.');
-  const registry = new Map<string, DataSource<unknown, DataSourceOptions>>();
-  for (const source of sources) {
-    if (!source || typeof source.name !== 'string' || !source.name.trim())
-      throw new Error('Registered data sources require non-empty names.');
-    if (registry.has(source.name)) throw new Error(`Duplicate data source name: ${source.name}`);
-    registry.set(source.name, source);
-  }
+  const registry = createSourceRegistry(sources);
   const name = typeof reference === 'string' ? reference : reference.source;
   const source = registry.get(name);
   if (!source) throw new Error(`Unknown data source: ${name}`);
@@ -36,4 +29,19 @@ export async function resolveQuerySource(
   const table = await collection.getTable(reference.table, {signal});
   signal?.throwIfAborted();
   return table;
+}
+
+/** Snapshots source identities consistently for FROM and metadata queries. */
+export function createSourceRegistry(
+  sources: readonly DataSource<unknown, DataSourceOptions>[] | undefined
+): ReadonlyMap<string, DataSource<unknown, DataSourceOptions>> {
+  if (!Array.isArray(sources)) throw new Error('Query requires a sources array.');
+  const registry = new Map<string, DataSource<unknown, DataSourceOptions>>();
+  for (const source of sources) {
+    if (!source || typeof source.name !== 'string' || !source.name.trim())
+      throw new Error('Registered data sources require non-empty names.');
+    if (registry.has(source.name)) throw new Error(`Duplicate data source name: ${source.name}`);
+    registry.set(source.name, source);
+  }
+  return registry;
 }

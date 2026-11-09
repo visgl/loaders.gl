@@ -189,6 +189,46 @@ Omitting SQL FROM uses `options.source`. Preserve quoted identifiers as separate
 `FROM "warehouse.v2"."cities.v3"` maps to `{source: 'warehouse.v2', table: 'cities.v3'}`.
 Core validates the returned query and source capabilities before executing it.
 
+## Explore sources and schemas
+
+The same query APIs return Arrow tables for metadata commands:
+
+```ts
+import {parseSQLQuery, createSQLCatalog} from '@loaders.gl/core/scan/query';
+
+const options = {sources: [warehouse], sqlParser: parseSQLQuery};
+const sources = await query('SHOW SOURCES;', options);
+const tables = await query('SHOW TABLES FROM warehouse;', options);
+const columns = await query('DESCRIBE warehouse.cities;', options);
+```
+
+`SHOW SOURCES` lists registered names without I/O. `SHOW TABLES` lists all discoverable tables in
+source registration order; add `FROM` to inspect one source. `DESCRIBE` reports fields in schema
+order, including their Arrow type, nullability, and JSON field metadata. Use `DESCRIBE cities`
+for a source that is itself a table. Empty results retain the command's output schema.
+
+Table listings include a safely quoted `table_reference` and a `queryable` flag. The flag indicates
+support for the common table query contract, not whether a backend has its own SQL API. Discovery
+never calls `read()` or `getTable()`. A provider may still access headers, schema samples, or a
+remote metadata service; cancellation requires its cooperation. Sources remain caller-owned.
+
+For a schema explorer, use the lazy model directly and pass its structured reference to `query()`:
+
+```ts
+const catalog = createSQLCatalog([warehouse]);
+const registered = catalog.getSources(); // local names only
+const discovered = await catalog.getTables('warehouse');
+for (const table of discovered) {
+  const schema = await catalog.getSchema(table.reference);
+  // Render schema.fields; use table.reference as a query's from value.
+}
+```
+
+Multi-table providers expose `getTablesMetadata()` and, for lazy per-table schemas,
+`getTableMetadata(name)`. Single-table sources reuse `getQueryMetadata()`. Tables without a
+metadata discovery contract cannot be listed; requesting an unavailable schema fails explicitly.
+See the [API reference](/docs/modules/core/scan/query) for result columns and provider interfaces.
+
 ## Cancel work and observe completion
 
 Pass an `AbortSignal` to cancel cooperative source discovery and execution. Completion is reported

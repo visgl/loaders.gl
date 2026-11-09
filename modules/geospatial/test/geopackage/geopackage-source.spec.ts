@@ -140,3 +140,30 @@ test('qualified FROM selects a loaded GeoPackage table without changing its defa
   expect(metadata.tables.find(table => table.isDefault)?.name).toBe('preferred_rivers');
   expect(source.name).toBe('warehouse');
 });
+
+test('GeoPackage metadata commands discover named schemas without opening feature readers', async () => {
+  const source = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+    core: {type: 'geopackage', name: 'warehouse'},
+    geopackage: {}
+  }) as GeoPackageDataSource;
+  const metadata = await source.getMetadata();
+  const open = vi.spyOn(source, 'getTable').mockImplementation(() => {
+    throw new Error('must not open features');
+  });
+  const tables = await query({command: 'showTables', from: 'warehouse'}, {sources: [source]});
+  expect(tables.data.getChild('table_name')?.toArray()).toEqual(
+    metadata.tables.map(table => table.name)
+  );
+  const selected = metadata.tables[1];
+  const result = await query(
+    {command: 'describe', from: {source: 'warehouse', table: selected.name}},
+    {sources: [source]}
+  );
+  expect(result.data.getChild('column_name')?.toArray()).toEqual(
+    selected.schema.fields.map(field => field.name)
+  );
+  expect(open).not.toHaveBeenCalled();
+  expect((await source.getMetadata()).tables.find(table => table.isDefault)?.name).toBe(
+    'preferred_rivers'
+  );
+});

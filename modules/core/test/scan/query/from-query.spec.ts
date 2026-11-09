@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {expect, expectTypeOf, test, vi} from 'vitest';
 import {query, queryInBatches} from '@loaders.gl/core/scan';
-import type {SQLQueryParser, TableQuery} from '@loaders.gl/core/scan';
+import type {SQLQueryParser, Query} from '@loaders.gl/core/scan';
 import {DataSource, createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {DataSourceOptions, TableSourceCollection} from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
@@ -199,7 +199,7 @@ test('catalog failure and cancellation do not fall back or close caller-owned ha
 });
 
 test('public parser type accepts asynchronous logical queries', () => {
-  expectTypeOf<SQLQueryParser>().returns.toEqualTypeOf<TableQuery | Promise<TableQuery>>();
+  expectTypeOf<SQLQueryParser>().returns.toEqualTypeOf<Query | Promise<Query>>();
 });
 
 test('literal dotted source names are not split and FROM requires an explicit registry', async () => {
