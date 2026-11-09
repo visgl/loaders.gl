@@ -11,10 +11,7 @@ import {
   type WorkerObject
 } from '@loaders.gl/core/worker-utils';
 
-const url = new URL(
-  '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
-  location.href
-).href;
+const url = new URL('/modules/core/test/worker-utils/fixtures/task-worker.ts', location.href).href;
 const worker: WorkerObject = {...NullWorker, worker: url, workerInBatches: true};
 afterEach(() => destroyWorkerTasks());
 

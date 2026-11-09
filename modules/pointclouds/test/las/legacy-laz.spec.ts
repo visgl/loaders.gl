@@ -15,7 +15,7 @@ import {
 import {
   loadLegacyLAZFixture,
   type LegacyLAZFixture
-} from '../../../core/test/loader-utils-package/lib/laz/legacy-laz-fixtures';
+} from '../../../core/test/loader-utils/lib/laz/legacy-laz-fixtures';
 
 let fixtures: LegacyLAZFixture[];
 beforeAll(async () => {

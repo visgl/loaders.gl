@@ -97,7 +97,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = [], fixtureAli
   // await mvtBench(suite);
   if (shouldRunBenchmark('loader-utils')) {
     const {default: loaderUtilsBench} = await import(
-      '../../modules/core/test/loader-utils-package/loader-utils.bench'
+      '../../modules/core/test/loader-utils/loader-utils.bench'
     );
     await loaderUtilsBench(suite);
   }

@@ -24,8 +24,7 @@ const CHILD_LOADER = {
 const PARENT_LOADER = {
   ...CHILD_LOADER,
   id: 'nested-parent',
-  worker: new URL('/modules/core/test/worker-utils-package/fixtures/task-worker.ts', location.href)
-    .href
+  worker: new URL('/modules/core/test/worker-utils/fixtures/task-worker.ts', location.href).href
 };
 
 // The bytes have no identifying signature; only the explicit loader hint selects a parser.
