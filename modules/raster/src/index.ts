@@ -33,8 +33,6 @@ export type {
   TerrainHeightmapImage
 } from './terrain/lib/terrain-heightmap-types';
 export type {
-  TerrainGridMetadata,
-  TerrainHeightGrid,
   TerrainRay,
   TerrainSurfaceHit,
   TerrainSurfaceBounds,
@@ -44,11 +42,6 @@ export {GeoTIFFSourceLoader} from './geotiff/geotiff-source-loader-types';
 export {OMETiffSourceLoader} from './geotiff/ometiff-source-loader-types';
 export type {GeoTIFFSourceLoaderOptions} from './geotiff/geotiff-source-loader';
 export type {OMETiffSourceLoaderOptions} from './geotiff/ometiff-source-loader';
-export type {
-  TerrainFieldBounds,
-  TerrainHeightFieldOptions,
-  TerrainHeightFieldStatistics
-} from './terrain/lib/terrain-height-field';
 export type {
   GetOMETiffParameters,
   OMETiffChannelMetadata,
