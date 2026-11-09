@@ -115,3 +115,14 @@ export type {
   TableQueryProjectStep,
   TableQueryScanStep
 } from './table-query';
+
+export {
+  normalizeTableQuery,
+  planLogicalTableQuery
+} from '../loader-utils/lib/scan-utils/logical-table-query';
+export type {
+  NormalizedTableSelection,
+  NormalizedTableQuery,
+  LogicalTableQueryProjectStep,
+  LogicalTableQueryPlan
+} from '../loader-utils/lib/scan-utils/logical-table-query';

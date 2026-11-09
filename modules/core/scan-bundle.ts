@@ -79,3 +79,11 @@ export type {
   VectorTableScanSourceOptions,
   VectorTileTableScanSourceOptions
 } from './src/scan/index';
+
+export {normalizeTableQuery, planLogicalTableQuery} from './src/scan/index';
+export type {
+  NormalizedTableSelection,
+  NormalizedTableQuery,
+  LogicalTableQueryProjectStep,
+  LogicalTableQueryPlan
+} from './src/scan/index';
