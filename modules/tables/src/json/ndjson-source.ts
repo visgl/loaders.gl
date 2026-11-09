@@ -96,7 +96,12 @@ export class NDJSONTableSource
       : undefined;
     for await (const batch of NDJSONLoaderWithParser.parseInBatches(chunks, {
       ...this.options,
-      ndjson: {...this.options.ndjson, schema: undefined, shape: 'object-row-table'}
+      ndjson: {
+        ...this.options.ndjson,
+        schema: undefined,
+        arrowConversion: undefined,
+        shape: 'object-row-table'
+      }
     })) {
       if (batch.shape !== 'object-row-table' && batch.shape !== 'array-row-table')
         throw new Error('Expected NDJSON row batches');

@@ -315,3 +315,13 @@ test('NDJSON array rows preserve positional columns and nullable inference', asy
     {value: null, label: 'c'}
   ]);
 });
+
+test('NDJSON source accepts declared schema alongside Arrow-only parser controls', async () => {
+  const source = new NDJSONTableSource(new Blob(['{"value":null}\n{"value":3}\n']), {
+    ndjson: {
+      schema: {fields: [{name: 'value', type: 'float64', nullable: true}], metadata: {}},
+      arrowConversion: {}
+    }
+  });
+  expect((await query({}, {source})).data.toArray().map(row => row.value)).toEqual([null, 3]);
+});
