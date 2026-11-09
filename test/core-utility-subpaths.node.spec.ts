@@ -95,3 +95,33 @@ test('CommonJS scan entrypoints share backend registrations and public function 
   const geoarrow = require('@loaders.gl/core/geoarrow');
   expect(geoarrow.GeoArrowBuilder).toBe(geometry.GeoArrowBuilder);
 });
+
+test.each([
+  'modules/core/src/index.ts',
+  'modules/core/src/schema-utils/index.ts',
+  'modules/core/src/loader-utils/index.ts',
+  'modules/tables/src/index.ts'
+])('ordinary entry point %s excludes Arrow query execution', async entryPoint => {
+  const result = await build({
+    entryPoints: [entryPoint],
+    bundle: true,
+    platform: 'browser',
+    format: 'esm',
+    packages: 'external',
+    write: false,
+    metafile: true
+  });
+  expect(
+    Object.values(result.metafile!.outputs)
+      .flatMap(output => output.imports)
+      .filter(dependency => dependency.path.startsWith('@loaders.gl/core/scan'))
+  ).toEqual([]);
+  expect(
+    Object.keys(result.metafile!.inputs).filter(
+      filename =>
+        filename.includes('modules/core/src/scan/arrow-execution') ||
+        filename.endsWith('/filter-arrow-table.ts') ||
+        filename.endsWith('/project-arrow-table.ts')
+    )
+  ).toEqual([]);
+});

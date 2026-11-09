@@ -4,7 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import type {ArrowTable} from '@loaders.gl/core/schema';
-import {convertArrowToSchema, projectArrowTable} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {projectArrowTable} from './arrow-execution';
 import type {TableSelection} from '@loaders.gl/core/loader-utils';
 import {convertRowsToArrowTable} from './rows-to-arrow';
 

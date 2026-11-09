@@ -15,7 +15,8 @@ import type {
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
-import {convertArrowToSchema, projectArrowTable} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {projectArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import {ArrowFormat} from './exports/arrow-format';
 

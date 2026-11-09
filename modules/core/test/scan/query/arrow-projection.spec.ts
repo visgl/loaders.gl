@@ -4,7 +4,8 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {projectArrowTable, convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {projectArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {queryArrowTable, explainArrowTableQuery} from '../../../src/scan/query-arrow-table';
 
 /** Small fixture with validity, offsets, dictionaries, and nested children. */

@@ -163,5 +163,3 @@ export type {
   PointCloudTilerNode,
   PointCloudTileBounds
 } from './lib/mesh/point-cloud-tiler';
-
-export {projectArrowTable} from './lib/table/tables/project-arrow-table';

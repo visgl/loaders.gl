@@ -263,8 +263,11 @@ combined with `columns` or relational operators in this linear execution path.
 `explainArrowTableQuery()` reports the aliased output names and physical source columns.
 
 The shared `projectArrowTable(arrowTable, selections)` helper is available through
-`@loaders.gl/core/schema-utils`. Projection creates schema and batch wrappers while
+`@loaders.gl/core/scan/arrow-execution`. Projection creates schema and batch wrappers while
 reusing data buffers, including nested children and dictionaries. It preserves field
 names/types/nullability/metadata, schema metadata, RecordBatch metadata and boundaries,
 and row order; selected aliases replace only field names. Projection-only limits retain
 Arrow slice views. Predicates may still materialize new buffers for matching rows.
+
+Projection lives in the optional `scan/arrow-execution` subpath. Ordinary loader and
+schema utility entry points do not import query execution.
