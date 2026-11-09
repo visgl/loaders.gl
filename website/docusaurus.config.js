@@ -467,6 +467,13 @@ const config = {
             '/examples/table/xml': '/docs/modules/documents/xml/try-it'
           };
           const redirectSources = [];
+          const sidebarRedirectSources = [];
+          // Retired sidebar indexes redirect only to their replacement landing page.
+          for (const [oldLink, newLink] of Object.entries(require('./src/docs-sidebar-redirects.json'))) {
+            if (existingPath === newLink) {
+              sidebarRedirectSources.push(oldLink);
+            }
+          }
           for (const [group, formats] of Object.entries(consolidatedModuleDocs)) {
             for (const format of formats) {
               const currentPrefix = `/docs/modules/${group}/${format}`;
@@ -487,21 +494,22 @@ const config = {
             }
           }
           if (redirectSources.length) {
-            return redirectSources;
+            return [...new Set([...redirectSources, ...sidebarRedirectSources])];
           }
           if (pageRedirects[existingPath]) {
-            return [pageRedirects[existingPath]];
+            return [...new Set([pageRedirects[existingPath], ...sidebarRedirectSources])];
           }
           // docs/modules/*/api-reference <= modules/*/docs/api-reference
           if (existingPath.includes('/docs/modules/')) {
             return [
+              ...sidebarRedirectSources,
               existingPath
                 .replace('/docs/modules/', '/modules/')
                 // Replaces api-reference if present
                 .replace('/api-reference/', '/docs/api-reference/')
             ];
           }
-          return undefined; // Return a falsy value: no redirect created
+          return sidebarRedirectSources.length ? sidebarRedirectSources : undefined;
         }
       }
     ]

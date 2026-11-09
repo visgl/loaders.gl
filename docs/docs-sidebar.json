@@ -7,12 +7,33 @@
       "id": "README"
     },
     "items": [
-      "community",
-      "references-and-credits",
+      {
+        "type": "link",
+        "label": "Guide",
+        "href": "/docs/developer-guide"
+      },
+      {
+        "type": "doc",
+        "id": "community",
+        "label": "Community"
+      },
+      {
+        "type": "doc",
+        "id": "references-and-credits",
+        "label": "Attribution"
+      },
       "developer-guide/standards",
       "security",
-      "whats-new",
-      "upgrade-guide"
+      {
+        "type": "doc",
+        "id": "whats-new",
+        "label": "News"
+      },
+      {
+        "type": "doc",
+        "id": "upgrade-guide",
+        "label": "Upgrading"
+      }
     ]
   },
   {
@@ -31,7 +52,12 @@
           "developer-guide/concepts/streaming",
           "developer-guide/concepts/async-iterators",
           "developer-guide/concepts/worker-threads"
-        ]
+        ],
+        "link": {
+          "type": "generated-index",
+          "title": "Concepts",
+          "slug": "/guide/concepts"
+        }
       },
       {
         "type": "category",
@@ -42,7 +68,12 @@
           "developer-guide/coordinate-reference-systems",
           "developer-guide/tile-matrices",
           "developer-guide/dev-env"
-        ]
+        ],
+        "link": {
+          "type": "generated-index",
+          "title": "Advanced Topics",
+          "slug": "/guide/advanced-topics"
+        }
       },
       {
         "type": "category",
@@ -55,7 +86,12 @@
           "developer-guide/converters/feature-collection-converters",
           "developer-guide/converters/render-converters",
           "developer-guide/converters/format-categories"
-        ]
+        ],
+        "link": {
+          "type": "generated-index",
+          "title": "Converters",
+          "slug": "/guide/converters"
+        }
       },
       {
         "type": "category",
@@ -63,9 +99,18 @@
         "items": [
           "developer-guide/clustering",
           "developer-guide/spatial-queries"
-        ]
+        ],
+        "link": {
+          "type": "generated-index",
+          "title": "Basics",
+          "slug": "/guide/basics"
+        }
       }
-    ]
+    ],
+    "link": {
+      "type": "doc",
+      "id": "developer-guide/README"
+    }
   },
   {
     "type": "category",
@@ -79,11 +124,6 @@
           "id": "modules/core/README"
         },
         "items": [
-          {
-            "type": "doc",
-            "id": "modules/core/README",
-            "label": "Overview"
-          },
           {
             "type": "category",
             "label": "Guide",
@@ -111,7 +151,7 @@
           },
           {
             "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -137,13 +177,27 @@
                   "modules/core/api-reference/iterator-utilities"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/core API Reference",
-                  "slug": "/modules/_sections/core/root-api"
+                  "type": "doc",
+                  "id": "modules/core/README"
                 }
               },
-              "specifications/loader-object-format",
-              "specifications/writer-object-format",
+              {
+                "type": "doc",
+                "id": "modules/core/arrow-geometry/README",
+                "label": "@loaders.gl/core/arrow-geometry"
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/core/geoarrow",
+                "items": [
+                  "modules/core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection",
+                  "modules/core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson"
+                ],
+                "link": {
+                  "type": "doc",
+                  "id": "modules/core/geoarrow/README"
+                }
+              },
               {
                 "type": "category",
                 "label": "@loaders.gl/core/loader-utils",
@@ -165,39 +219,6 @@
               },
               {
                 "type": "category",
-                "label": "@loaders.gl/core/worker-utils",
-                "items": [
-                  "modules/core/worker-utils/api-reference/worker-processing"
-                ],
-                "link": {
-                  "type": "doc",
-                  "id": "modules/core/worker-utils/README"
-                }
-              },
-              {
-                "type": "category",
-                "label": "@loaders.gl/core/geoarrow",
-                "items": [
-                  "modules/core/geoarrow/api-reference/convert-geojson-to-binary-feature-collection",
-                  "modules/core/geoarrow/api-reference/convert-binary-feature-collection-to-geojson"
-                ],
-                "link": {
-                  "type": "doc",
-                  "id": "modules/core/geoarrow/README"
-                }
-              },
-              {
-                "type": "doc",
-                "id": "modules/core/arrow-geometry/README",
-                "label": "@loaders.gl/core/arrow-geometry"
-              },
-              {
-                "type": "doc",
-                "id": "modules/core/schema-utils/README",
-                "label": "@loaders.gl/core/schema-utils"
-              },
-              {
-                "type": "category",
                 "label": "@loaders.gl/core/polyfills",
                 "items": [
                   "modules/core/polyfills/api-reference/README"
@@ -206,6 +227,11 @@
                   "type": "doc",
                   "id": "modules/core/polyfills/README"
                 }
+              },
+              {
+                "type": "doc",
+                "id": "modules/core/scan/README",
+                "label": "@loaders.gl/core/scan"
               },
               {
                 "type": "category",
@@ -222,18 +248,31 @@
               },
               {
                 "type": "doc",
-                "id": "modules/core/scan/README",
-                "label": "@loaders.gl/core/scan"
+                "id": "modules/core/schema-utils/README",
+                "label": "@loaders.gl/core/schema-utils"
               },
               {
                 "type": "doc",
                 "id": "modules/core/wkt/README",
                 "label": "@loaders.gl/core/wkt"
-              }
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/core/worker-utils",
+                "items": [
+                  "modules/core/worker-utils/api-reference/worker-processing"
+                ],
+                "link": {
+                  "type": "doc",
+                  "id": "modules/core/worker-utils/README"
+                }
+              },
+              "specifications/loader-object-format",
+              "specifications/writer-object-format"
             ],
             "link": {
               "type": "generated-index",
-              "title": "API Reference",
+              "title": "Core API",
               "slug": "/modules/_sections/core/api-and-guides"
             }
           }
@@ -247,11 +286,6 @@
           "id": "modules/documents/README"
         },
         "items": [
-          {
-            "type": "doc",
-            "id": "modules/documents/README",
-            "label": "Overview"
-          },
           {
             "type": "category",
             "label": "Formats",
@@ -271,21 +305,7 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              "modules/documents/config/README",
-              "modules/documents/xml/README",
-              "modules/documents/bson/README"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Documents Guide",
-              "slug": "/modules/_sections/documents/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -301,15 +321,26 @@
                   "modules/documents/bson/api-reference/bson-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/documents API Reference",
-                  "slug": "/modules/_sections/documents/root-api"
+                  "type": "doc",
+                  "id": "modules/documents/README"
                 }
+              },
+              {
+                "type": "doc",
+                "id": "modules/documents/config/README"
+              },
+              {
+                "type": "doc",
+                "id": "modules/documents/xml/README"
+              },
+              {
+                "type": "doc",
+                "id": "modules/documents/bson/README"
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Documents API Reference",
+              "title": "Documents API",
               "slug": "/modules/_sections/documents/api-and-guides"
             }
           }
@@ -324,9 +355,29 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/tables/README",
-            "label": "Overview"
+            "type": "category",
+            "label": "Guide",
+            "items": [
+              "modules/core/schema/table-guide",
+              {
+                "type": "category",
+                "label": "Data Categories",
+                "items": [
+                  "specifications/category-json",
+                  "specifications/category-table"
+                ],
+                "link": {
+                  "type": "generated-index",
+                  "title": "Data Categories",
+                  "slug": "/modules/_sections/tables/data-categories"
+                }
+              }
+            ],
+            "link": {
+              "type": "generated-index",
+              "title": "Tables Guide",
+              "slug": "/modules/_sections/tables/guide"
+            }
           },
           {
             "type": "category",
@@ -353,72 +404,12 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              "modules/core/schema/table-guide",
-              {
-                "type": "category",
-                "label": "Data Categories",
-                "items": [
-                  "specifications/category-json",
-                  "specifications/category-table"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "Data Categories",
-                  "slug": "/modules/_sections/tables/data-categories"
-                }
-              },
-              {
-                "type": "doc",
-                "id": "modules/tables/arrow/README",
-                "label": "@loaders.gl/tables/arrow"
-              },
-              {
-                "type": "doc",
-                "id": "modules/tables/avro/README",
-                "label": "@loaders.gl/tables/avro"
-              },
-              {
-                "type": "doc",
-                "id": "modules/tables/csv/README",
-                "label": "@loaders.gl/tables/csv"
-              },
-              {
-                "type": "doc",
-                "id": "modules/tables/json/README",
-                "label": "@loaders.gl/tables/json"
-              },
-              {
-                "type": "doc",
-                "id": "modules/tables/lance/README",
-                "label": "@loaders.gl/tables/lance"
-              },
-              {
-                "type": "doc",
-                "id": "modules/tables/orc/README",
-                "label": "@loaders.gl/tables/orc"
-              },
-              {
-                "type": "doc",
-                "id": "modules/tables/parquet/README",
-                "label": "@loaders.gl/tables/parquet"
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Tables Guide",
-              "slug": "/modules/_sections/tables/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
-                "type": "link",
-                "label": "@loaders.gl/tables",
-                "href": "/docs/modules/tables"
+                "type": "doc",
+                "id": "modules/tables/README",
+                "label": "@loaders.gl/tables"
               },
               {
                 "type": "category",
@@ -436,10 +427,14 @@
                   "modules/tables/arrow/api-reference/utf8-utils"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tables/arrow API Reference",
-                  "slug": "/modules/_sections/tables/api-arrow"
+                  "type": "doc",
+                  "id": "modules/tables/arrow/README"
                 }
+              },
+              {
+                "type": "doc",
+                "id": "modules/tables/avro/README",
+                "label": "@loaders.gl/tables/avro"
               },
               {
                 "type": "category",
@@ -449,9 +444,8 @@
                   "modules/tables/csv/api-reference/csv-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tables/csv API Reference",
-                  "slug": "/modules/_sections/tables/api-csv"
+                  "type": "doc",
+                  "id": "modules/tables/csv/README"
                 }
               },
               {
@@ -467,10 +461,19 @@
                   "modules/tables/json/api-reference/json-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tables/json API Reference",
-                  "slug": "/modules/_sections/tables/api-json"
+                  "type": "doc",
+                  "id": "modules/tables/json/README"
                 }
+              },
+              {
+                "type": "doc",
+                "id": "modules/tables/lance/README",
+                "label": "@loaders.gl/tables/lance"
+              },
+              {
+                "type": "doc",
+                "id": "modules/tables/orc/README",
+                "label": "@loaders.gl/tables/orc"
               },
               {
                 "type": "category",
@@ -484,15 +487,14 @@
                   "modules/tables/parquet/api-reference/delta-table-source"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tables/parquet API Reference",
-                  "slug": "/modules/_sections/tables/api-parquet"
+                  "type": "doc",
+                  "id": "modules/tables/parquet/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Tables API Reference",
+              "title": "Tables API",
               "slug": "/modules/_sections/tables/api-and-guides"
             }
           }
@@ -507,9 +509,28 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/geospatial/README",
-            "label": "Overview"
+            "type": "category",
+            "label": "Guide",
+            "items": [
+              "modules/core/geoarrow/gis-migration",
+              {
+                "type": "category",
+                "label": "Data Categories",
+                "items": [
+                  "specifications/category-gis"
+                ],
+                "link": {
+                  "type": "generated-index",
+                  "title": "Data Categories",
+                  "slug": "/modules/_sections/geospatial/data-categories"
+                }
+              }
+            ],
+            "link": {
+              "type": "generated-index",
+              "title": "Geospatial Guide",
+              "slug": "/modules/_sections/geospatial/guide"
+            }
           },
           {
             "type": "category",
@@ -534,61 +555,12 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              "modules/core/geoarrow/gis-migration",
-              {
-                "type": "category",
-                "label": "Data Categories",
-                "items": [
-                  "specifications/category-gis"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "Data Categories",
-                  "slug": "/modules/_sections/geospatial/data-categories"
-                }
-              },
-              {
-                "type": "doc",
-                "id": "modules/geospatial/flatgeobuf/README",
-                "label": "@loaders.gl/geospatial/flatgeobuf"
-              },
-              {
-                "type": "doc",
-                "id": "modules/geospatial/geopackage/README",
-                "label": "@loaders.gl/geospatial/geopackage"
-              },
-              {
-                "type": "doc",
-                "id": "modules/geospatial/kml/README",
-                "label": "@loaders.gl/geospatial/kml"
-              },
-              {
-                "type": "doc",
-                "id": "modules/geospatial/shapefile/README",
-                "label": "@loaders.gl/geospatial/shapefile"
-              },
-              {
-                "type": "doc",
-                "id": "modules/geospatial/wkt/README",
-                "label": "@loaders.gl/geospatial/wkt"
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Geospatial Guide",
-              "slug": "/modules/_sections/geospatial/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
-                "type": "link",
-                "label": "@loaders.gl/geospatial",
-                "href": "/docs/modules/geospatial"
+                "type": "doc",
+                "id": "modules/geospatial/README",
+                "label": "@loaders.gl/geospatial"
               },
               {
                 "type": "category",
@@ -598,9 +570,8 @@
                   "modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/geospatial/flatgeobuf API Reference",
-                  "slug": "/modules/_sections/geospatial/api-flatgeobuf"
+                  "type": "doc",
+                  "id": "modules/geospatial/flatgeobuf/README"
                 }
               },
               {
@@ -611,9 +582,8 @@
                   "modules/geospatial/geopackage/api-reference/geopackage-source"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/geospatial/geopackage API Reference",
-                  "slug": "/modules/_sections/geospatial/api-geopackage"
+                  "type": "doc",
+                  "id": "modules/geospatial/geopackage/README"
                 }
               },
               {
@@ -625,9 +595,8 @@
                   "modules/geospatial/kml/api-reference/tcx-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/geospatial/kml API Reference",
-                  "slug": "/modules/_sections/geospatial/api-kml"
+                  "type": "doc",
+                  "id": "modules/geospatial/kml/README"
                 }
               },
               {
@@ -639,9 +608,8 @@
                   "modules/geospatial/shapefile/api-reference/dbf-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/geospatial/shapefile API Reference",
-                  "slug": "/modules/_sections/geospatial/api-shapefile"
+                  "type": "doc",
+                  "id": "modules/geospatial/shapefile/README"
                 }
               },
               {
@@ -670,15 +638,14 @@
                   }
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/geospatial/wkt API Reference",
-                  "slug": "/modules/_sections/geospatial/api-wkt"
+                  "type": "doc",
+                  "id": "modules/geospatial/wkt/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Geospatial API Reference",
+              "title": "Geospatial API",
               "slug": "/modules/_sections/geospatial/api-and-guides"
             }
           }
@@ -693,9 +660,17 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/images/README",
-            "label": "Overview"
+            "type": "category",
+            "label": "Data Categories",
+            "items": [
+              "specifications/category-image",
+              "specifications/category-texture"
+            ],
+            "link": {
+              "type": "generated-index",
+              "title": "Data Categories",
+              "slug": "/modules/_sections/images/data-categories"
+            }
           },
           {
             "type": "category",
@@ -720,41 +695,7 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              {
-                "type": "category",
-                "label": "Data Categories",
-                "items": [
-                  "specifications/category-image",
-                  "specifications/category-texture"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "Data Categories",
-                  "slug": "/modules/_sections/images/data-categories"
-                }
-              },
-              {
-                "type": "doc",
-                "id": "modules/images/textures/README",
-                "label": "Texture APIs"
-              },
-              {
-                "type": "doc",
-                "id": "modules/images/video/README",
-                "label": "Video APIs"
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Images Guide",
-              "slug": "/modules/_sections/images/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -800,27 +741,29 @@
                   "modules/images/textures/api-reference/texture-cube-array-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/images API Reference",
-                  "slug": "/modules/_sections/images/root-api"
+                  "type": "doc",
+                  "id": "modules/images/README"
                 }
               },
               {
-                "type": "category",
-                "label": "@loaders.gl/images/gif-builder",
-                "items": [
-                  "modules/images/video/api-reference/gif-builder"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/images/gif-builder API Reference",
-                  "slug": "/modules/_sections/images/api-gif-builder"
-                }
+                "type": "doc",
+                "id": "modules/images/video/api-reference/gif-builder",
+                "label": "@loaders.gl/images/gif-builder"
+              },
+              {
+                "type": "doc",
+                "id": "modules/images/textures/README",
+                "label": "Texture APIs"
+              },
+              {
+                "type": "doc",
+                "id": "modules/images/video/README",
+                "label": "Video APIs"
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Images API Reference",
+              "title": "Images API",
               "slug": "/modules/_sections/images/api-and-guides"
             }
           }
@@ -836,8 +779,7 @@
         "items": [
           {
             "type": "doc",
-            "id": "modules/pointclouds/README",
-            "label": "Overview"
+            "id": "modules/pointclouds/ply/benchmarks"
           },
           {
             "type": "category",
@@ -855,44 +797,12 @@
           },
           {
             "type": "category",
-            "label": "Guide",
+            "label": "API",
             "items": [
               {
                 "type": "doc",
-                "id": "modules/pointclouds/las/README",
-                "label": "@loaders.gl/pointclouds/las"
-              },
-              {
-                "type": "doc",
-                "id": "modules/pointclouds/pcd/README",
-                "label": "@loaders.gl/pointclouds/pcd"
-              },
-              {
-                "type": "category",
-                "label": "@loaders.gl/pointclouds/ply",
-                "items": [
-                  "modules/pointclouds/ply/benchmarks"
-                ],
-                "link": {
-                  "type": "doc",
-                  "id": "modules/pointclouds/ply/README"
-                }
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Point Clouds Guide",
-              "slug": "/modules/_sections/pointclouds/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
-            "items": [
-              {
-                "type": "link",
-                "label": "@loaders.gl/pointclouds",
-                "href": "/docs/modules/pointclouds"
+                "id": "modules/pointclouds/README",
+                "label": "@loaders.gl/pointclouds"
               },
               {
                 "type": "category",
@@ -902,9 +812,8 @@
                   "modules/pointclouds/las/api-reference/las-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/pointclouds/las API Reference",
-                  "slug": "/modules/_sections/pointclouds/api-las"
+                  "type": "doc",
+                  "id": "modules/pointclouds/las/README"
                 }
               },
               {
@@ -915,9 +824,8 @@
                   "modules/pointclouds/pcd/api-reference/pcd-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/pointclouds/pcd API Reference",
-                  "slug": "/modules/_sections/pointclouds/api-pcd"
+                  "type": "doc",
+                  "id": "modules/pointclouds/pcd/README"
                 }
               },
               {
@@ -928,15 +836,14 @@
                   "modules/pointclouds/ply/api-reference/ply-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/pointclouds/ply API Reference",
-                  "slug": "/modules/_sections/pointclouds/api-ply"
+                  "type": "doc",
+                  "id": "modules/pointclouds/ply/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Point Clouds API Reference",
+              "title": "Point Clouds API",
               "slug": "/modules/_sections/point-clouds/api-and-guides"
             }
           }
@@ -951,9 +858,9 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/splats/README",
-            "label": "Overview"
+            "type": "link",
+            "label": "Guide",
+            "href": "/docs/modules/splats#installation"
           },
           {
             "type": "category",
@@ -968,13 +875,8 @@
             }
           },
           {
-            "type": "link",
-            "label": "Guide",
-            "href": "/docs/modules/splats#installation"
-          },
-          {
             "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -986,15 +888,14 @@
                   "modules/splats/api-reference/rad-source-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/splats API Reference",
-                  "slug": "/modules/_sections/splats/root-api"
+                  "type": "doc",
+                  "id": "modules/splats/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Splats API Reference",
+              "title": "Splats API",
               "slug": "/modules/_sections/splats/api-reference"
             }
           }
@@ -1008,11 +909,6 @@
           "id": "modules/tiles/README"
         },
         "items": [
-          {
-            "type": "doc",
-            "id": "modules/tiles/README",
-            "label": "Overview"
-          },
           {
             "type": "category",
             "label": "Formats",
@@ -1031,33 +927,7 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              {
-                "type": "doc",
-                "id": "modules/tiles/mvt/README",
-                "label": "@loaders.gl/tiles/mvt"
-              },
-              {
-                "type": "doc",
-                "id": "modules/tiles/mlt/README",
-                "label": "@loaders.gl/tiles/mlt"
-              },
-              {
-                "type": "doc",
-                "id": "modules/tiles/pmtiles/README",
-                "label": "@loaders.gl/tiles/pmtiles"
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Tiles Guide",
-              "slug": "/modules/_sections/tiles/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -1068,9 +938,20 @@
                   "modules/tiles/api-reference/raster-set"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles API Reference",
-                  "slug": "/modules/_sections/tiles/root-api"
+                  "type": "doc",
+                  "id": "modules/tiles/README"
+                }
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/tiles/mlt",
+                "items": [
+                  "modules/tiles/mlt/api-reference/mlt-loader",
+                  "modules/tiles/mlt/api-reference/mlt-source-loader"
+                ],
+                "link": {
+                  "type": "doc",
+                  "id": "modules/tiles/mlt/README"
                 }
               },
               {
@@ -1086,22 +967,8 @@
                   "modules/tiles/mvt/api-reference/arrow-table-tile-source-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles/mvt API Reference",
-                  "slug": "/modules/_sections/tiles/api-mvt"
-                }
-              },
-              {
-                "type": "category",
-                "label": "@loaders.gl/tiles/mlt",
-                "items": [
-                  "modules/tiles/mlt/api-reference/mlt-loader",
-                  "modules/tiles/mlt/api-reference/mlt-source-loader"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles/mlt API Reference",
-                  "slug": "/modules/_sections/tiles/api-mlt"
+                  "type": "doc",
+                  "id": "modules/tiles/mvt/README"
                 }
               },
               {
@@ -1114,15 +981,14 @@
                   "modules/tiles/pmtiles/api-reference/pmtiles-source-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles/pmtiles API Reference",
-                  "slug": "/modules/_sections/tiles/api-pmtiles"
+                  "type": "doc",
+                  "id": "modules/tiles/pmtiles/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Tiles API Reference",
+              "title": "Tiles API",
               "slug": "/modules/_sections/tiles/api-and-guides"
             }
           }
@@ -1136,26 +1002,6 @@
           "id": "modules/tiles-3d/README"
         },
         "items": [
-          {
-            "type": "doc",
-            "id": "modules/tiles-3d/README",
-            "label": "Overview"
-          },
-          {
-            "type": "category",
-            "label": "Formats",
-            "items": [
-              "modules/tiles-3d/3d-tiles/formats/3d-tiles",
-              "modules/tiles-3d/copc/formats/copc",
-              "modules/tiles-3d/i3s/formats/i3s",
-              "modules/tiles-3d/potree/formats/potree"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Formats",
-              "slug": "/modules/_sections/3d-tiles/formats"
-            }
-          },
           {
             "type": "category",
             "label": "Guide",
@@ -1175,49 +1021,29 @@
               "modules/tiles-3d/runtime",
               {
                 "type": "category",
-                "label": "@loaders.gl/tiles-3d/3d-tiles",
+                "label": "Runtime Concepts",
                 "items": [
-                  {
-                    "type": "category",
-                    "label": "Runtime Concepts",
-                    "items": [
-                      "modules/tiles-3d/3d-tiles/concepts/renderer-contracts-and-metadata",
-                      "modules/tiles-3d/3d-tiles/concepts/styling-and-feature-access",
-                      "modules/tiles-3d/3d-tiles/concepts/observability-and-benchmarks",
-                      "modules/tiles-3d/3d-tiles/concepts/3d-tiles-2-0-experimental",
-                      "modules/tiles-3d/3d-tiles/concepts/correctness-and-conformance",
-                      "modules/tiles-3d/3d-tiles/concepts/coordinate-reference-systems",
-                      "modules/tiles-3d/3d-tiles/concepts/resource-resolution-and-content-detection",
-                      "modules/tiles-3d/3d-tiles/concepts/tile-hierarchy-and-refinement",
-                      "modules/tiles-3d/3d-tiles/concepts/implicit-tiling-and-subtrees",
-                      "modules/tiles-3d/3d-tiles/concepts/screen-space-error-and-lod",
-                      "modules/tiles-3d/3d-tiles/concepts/gaussian-vector-voxel-extensions",
-                      "modules/tiles-3d/3d-tiles/concepts/request-scheduling-and-priorities",
-                      "modules/tiles-3d/3d-tiles/concepts/caching-and-memory",
-                      "modules/tiles-3d/3d-tiles/concepts/runtime-tuning-and-diagnostics"
-                    ],
-                    "link": {
-                      "type": "doc",
-                      "id": "modules/tiles-3d/3d-tiles/concepts/README"
-                    }
-                  }
+                  "modules/tiles-3d/3d-tiles/concepts/renderer-contracts-and-metadata",
+                  "modules/tiles-3d/3d-tiles/concepts/styling-and-feature-access",
+                  "modules/tiles-3d/3d-tiles/concepts/observability-and-benchmarks",
+                  "modules/tiles-3d/3d-tiles/concepts/3d-tiles-2-0-experimental",
+                  "modules/tiles-3d/3d-tiles/concepts/correctness-and-conformance",
+                  "modules/tiles-3d/3d-tiles/concepts/coordinate-reference-systems",
+                  "modules/tiles-3d/3d-tiles/concepts/resource-resolution-and-content-detection",
+                  "modules/tiles-3d/3d-tiles/concepts/tile-hierarchy-and-refinement",
+                  "modules/tiles-3d/3d-tiles/concepts/implicit-tiling-and-subtrees",
+                  "modules/tiles-3d/3d-tiles/concepts/screen-space-error-and-lod",
+                  "modules/tiles-3d/3d-tiles/concepts/gaussian-vector-voxel-extensions",
+                  "modules/tiles-3d/3d-tiles/concepts/request-scheduling-and-priorities",
+                  "modules/tiles-3d/3d-tiles/concepts/caching-and-memory",
+                  "modules/tiles-3d/3d-tiles/concepts/runtime-tuning-and-diagnostics"
                 ],
                 "link": {
                   "type": "doc",
-                  "id": "modules/tiles-3d/3d-tiles/README"
+                  "id": "modules/tiles-3d/3d-tiles/concepts/README"
                 }
               },
-              {
-                "type": "category",
-                "label": "@loaders.gl/tiles-3d/i3s",
-                "items": [
-                  "modules/tiles-3d/i3s/concepts/coordinate-reference-systems"
-                ],
-                "link": {
-                  "type": "doc",
-                  "id": "modules/tiles-3d/i3s/README"
-                }
-              },
+              "modules/tiles-3d/i3s/concepts/coordinate-reference-systems",
               {
                 "type": "category",
                 "label": "Tutorials",
@@ -1230,9 +1056,19 @@
                       "modules/tiles-3d/i3s/recipes/profile-gallery",
                       "modules/tiles-3d/i3s/recipes/attribute-driven-colorization",
                       "modules/tiles-3d/i3s/recipes/picking"
-                    ]
+                    ],
+                    "link": {
+                      "type": "generated-index",
+                      "title": "I3S",
+                      "slug": "/sections/modules/3d-tiles/guide/tutorials/i3s"
+                    }
                   }
-                ]
+                ],
+                "link": {
+                  "type": "generated-index",
+                  "title": "Tutorials",
+                  "slug": "/sections/modules/3d-tiles/guide/tutorials"
+                }
               }
             ],
             "link": {
@@ -1243,7 +1079,22 @@
           },
           {
             "type": "category",
-            "label": "API Reference",
+            "label": "Formats",
+            "items": [
+              "modules/tiles-3d/3d-tiles/formats/3d-tiles",
+              "modules/tiles-3d/copc/formats/copc",
+              "modules/tiles-3d/i3s/formats/i3s",
+              "modules/tiles-3d/potree/formats/potree"
+            ],
+            "link": {
+              "type": "generated-index",
+              "title": "Formats",
+              "slug": "/modules/_sections/3d-tiles/formats"
+            }
+          },
+          {
+            "type": "category",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -1256,9 +1107,8 @@
                   "modules/tiles-3d/api-reference/tile-3d"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles-3d API Reference",
-                  "slug": "/modules/_sections/tiles-3d/root-api"
+                  "type": "doc",
+                  "id": "modules/tiles-3d/README"
                 }
               },
               {
@@ -1282,9 +1132,19 @@
                   "modules/tiles-3d/api-reference/tiles-3d-source"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles-3d/3d-tiles API Reference",
-                  "slug": "/modules/_sections/tiles-3d/api-3d-tiles"
+                  "type": "doc",
+                  "id": "modules/tiles-3d/3d-tiles/README"
+                }
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/tiles-3d/copc",
+                "items": [
+                  "modules/tiles-3d/copc/api-reference/copc-source-loader"
+                ],
+                "link": {
+                  "type": "doc",
+                  "id": "modules/tiles-3d/copc/README"
                 }
               },
               {
@@ -1297,9 +1157,8 @@
                   "modules/tiles-3d/api-reference/i3s-source"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles-3d/i3s API Reference",
-                  "slug": "/modules/_sections/tiles-3d/api-i3s"
+                  "type": "doc",
+                  "id": "modules/tiles-3d/i3s/README"
                 }
               },
               {
@@ -1310,27 +1169,14 @@
                   "modules/tiles-3d/potree/api-reference/potree-source-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles-3d/potree API Reference",
-                  "slug": "/modules/_sections/tiles-3d/api-potree"
-                }
-              },
-              {
-                "type": "category",
-                "label": "@loaders.gl/tiles-3d/copc",
-                "items": [
-                  "modules/tiles-3d/copc/api-reference/copc-source-loader"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tiles-3d/copc API Reference",
-                  "slug": "/modules/_sections/tiles-3d/api-copc"
+                  "type": "doc",
+                  "id": "modules/tiles-3d/potree/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "3D Tiles API Reference",
+              "title": "3D Tiles API",
               "slug": "/modules/_sections/3d-tiles/api-and-guides"
             }
           }
@@ -1344,11 +1190,6 @@
           "id": "modules/raster/README"
         },
         "items": [
-          {
-            "type": "doc",
-            "id": "modules/raster/README",
-            "label": "Overview"
-          },
           {
             "type": "category",
             "label": "Formats",
@@ -1364,34 +1205,12 @@
           },
           {
             "type": "category",
-            "label": "Guide",
+            "label": "API",
             "items": [
               {
                 "type": "doc",
-                "id": "modules/raster/geotiff/README",
-                "label": "GeoTIFF and OME-TIFF"
-              },
-              {
-                "type": "doc",
-                "id": "modules/raster/lerc/README",
-                "label": "LERC"
-              },
-              "modules/raster/terrain/README"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Raster Guide",
-              "slug": "/modules/_sections/raster/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
-            "items": [
-              {
-                "type": "link",
-                "label": "@loaders.gl/raster",
-                "href": "/docs/modules/raster"
+                "id": "modules/raster/README",
+                "label": "@loaders.gl/raster"
               },
               {
                 "type": "category",
@@ -1414,10 +1233,14 @@
                   }
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/raster/geotiff API Reference",
-                  "slug": "/modules/_sections/raster/api-geotiff"
+                  "type": "doc",
+                  "id": "modules/raster/geotiff/README"
                 }
+              },
+              {
+                "type": "doc",
+                "id": "modules/raster/lerc/README",
+                "label": "@loaders.gl/raster/lerc"
               },
               {
                 "type": "category",
@@ -1440,15 +1263,14 @@
                   }
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/raster/terrain API Reference",
-                  "slug": "/modules/_sections/raster/api-terrain"
+                  "type": "doc",
+                  "id": "modules/raster/terrain/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Raster API Reference",
+              "title": "Raster API",
               "slug": "/modules/_sections/raster/api-and-guides"
             }
           }
@@ -1462,11 +1284,6 @@
           "id": "modules/scientific/README"
         },
         "items": [
-          {
-            "type": "doc",
-            "id": "modules/scientific/README",
-            "label": "Overview"
-          },
           {
             "type": "category",
             "label": "Formats",
@@ -1485,30 +1302,7 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              {
-                "type": "doc",
-                "id": "modules/scientific/netcdf/README",
-                "label": "NetCDF"
-              },
-              {
-                "type": "doc",
-                "id": "modules/scientific/zarr/README",
-                "label": "Zarr"
-              },
-              "modules/scientific/hdf5/README",
-              "modules/scientific/grib2/README"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Scientific Guide",
-              "slug": "/modules/_sections/scientific/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -1517,10 +1311,19 @@
                   "modules/scientific/api-reference/npy-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/scientific API Reference",
-                  "slug": "/modules/_sections/scientific/root-api"
+                  "type": "doc",
+                  "id": "modules/scientific/README"
                 }
+              },
+              {
+                "type": "doc",
+                "id": "modules/scientific/grib2/README",
+                "label": "@loaders.gl/scientific/grib2"
+              },
+              {
+                "type": "doc",
+                "id": "modules/scientific/hdf5/README",
+                "label": "@loaders.gl/scientific/hdf5"
               },
               {
                 "type": "category",
@@ -1529,9 +1332,8 @@
                   "modules/scientific/netcdf/api-reference/README"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/scientific/netcdf API Reference",
-                  "slug": "/modules/_sections/scientific/api-netcdf"
+                  "type": "doc",
+                  "id": "modules/scientific/netcdf/README"
                 }
               },
               {
@@ -1542,15 +1344,14 @@
                   "modules/scientific/zarr/api-reference/ome-zarr-source-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/scientific/zarr API Reference",
-                  "slug": "/modules/_sections/scientific/api-zarr"
+                  "type": "doc",
+                  "id": "modules/scientific/zarr/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Scientific API Reference",
+              "title": "Scientific API",
               "slug": "/modules/_sections/scientific/api-and-guides"
             }
           }
@@ -1565,9 +1366,17 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/scene/README",
-            "label": "Overview"
+            "type": "category",
+            "label": "Data Categories",
+            "items": [
+              "specifications/category-mesh",
+              "specifications/category-scenegraph"
+            ],
+            "link": {
+              "type": "generated-index",
+              "title": "Data Categories",
+              "slug": "/modules/_sections/scene/data-categories"
+            }
           },
           {
             "type": "category",
@@ -1589,47 +1398,7 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              {
-                "type": "category",
-                "label": "Data Categories",
-                "items": [
-                  "specifications/category-mesh",
-                  "specifications/category-scenegraph"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "Data Categories",
-                  "slug": "/modules/_sections/scene/data-categories"
-                }
-              },
-              {
-                "type": "doc",
-                "id": "modules/scene/gltf/README",
-                "label": "@loaders.gl/scene/gltf"
-              },
-              {
-                "type": "doc",
-                "id": "modules/scene/obj/README",
-                "label": "@loaders.gl/scene/obj"
-              },
-              {
-                "type": "doc",
-                "id": "modules/scene/usd/README",
-                "label": "OpenUSD"
-              },
-              "modules/scene/draco/README"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Scene Guide",
-              "slug": "/modules/_sections/scene/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -1639,9 +1408,8 @@
                   "modules/scene/draco/api-reference/draco-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/scene API Reference",
-                  "slug": "/modules/_sections/scene/root-api"
+                  "type": "doc",
+                  "id": "modules/scene/README"
                 }
               },
               {
@@ -1657,9 +1425,8 @@
                   "modules/scene/gltf/api-reference/gltf-scenegraph"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/scene/gltf API Reference",
-                  "slug": "/modules/_sections/scene/api-gltf"
+                  "type": "doc",
+                  "id": "modules/scene/gltf/README"
                 }
               },
               {
@@ -1671,9 +1438,8 @@
                   "modules/scene/obj/api-reference/obj-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/scene/obj API Reference",
-                  "slug": "/modules/_sections/scene/api-obj"
+                  "type": "doc",
+                  "id": "modules/scene/obj/README"
                 }
               },
               {
@@ -1683,15 +1449,18 @@
                   "modules/scene/usd/api-reference/usd-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/scene/usd API Reference",
-                  "slug": "/modules/_sections/scene/api-usd"
+                  "type": "doc",
+                  "id": "modules/scene/usd/README"
                 }
+              },
+              {
+                "type": "doc",
+                "id": "modules/scene/draco/README"
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Scene API Reference",
+              "title": "Scene API",
               "slug": "/modules/_sections/scene/api-and-guides"
             }
           }
@@ -1706,11 +1475,6 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/archives/README",
-            "label": "Overview"
-          },
-          {
             "type": "category",
             "label": "Formats",
             "items": [
@@ -1724,25 +1488,17 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              "modules/archives/zip/README",
-              "modules/archives/tar/README"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Archives Guide",
-              "slug": "/modules/_sections/archives/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
-                "type": "link",
-                "label": "@loaders.gl/archives",
-                "href": "/docs/modules/archives"
+                "type": "doc",
+                "id": "modules/archives/README",
+                "label": "@loaders.gl/archives"
+              },
+              {
+                "type": "doc",
+                "id": "modules/archives/tar/README",
+                "label": "@loaders.gl/archives/tar"
               },
               {
                 "type": "category",
@@ -1777,15 +1533,14 @@
                   "modules/archives/zip/api-reference/encode-zip"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/archives/zip API Reference",
-                  "slug": "/modules/_sections/archives/api-zip"
+                  "type": "doc",
+                  "id": "modules/archives/zip/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Archives API Reference",
+              "title": "Archives API",
               "slug": "/modules/_sections/archives/api-and-guides"
             }
           }
@@ -1800,18 +1555,13 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/graphs/README",
-            "label": "Overview"
-          },
-          {
             "type": "link",
             "label": "Guide",
             "href": "/docs/modules/graphs#graph-output-shapes"
           },
           {
             "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -1824,15 +1574,14 @@
                   }
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/graphs API Reference",
-                  "slug": "/modules/_sections/graphs/root-api"
+                  "type": "doc",
+                  "id": "modules/graphs/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Graphs API Reference",
+              "title": "Graphs API",
               "slug": "/modules/_sections/graphs/api-reference"
             }
           }
@@ -1847,9 +1596,9 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/traces/README",
-            "label": "Overview"
+            "type": "link",
+            "label": "Guide",
+            "href": "/docs/modules/traces#quick-start"
           },
           {
             "type": "category",
@@ -1868,13 +1617,8 @@
             }
           },
           {
-            "type": "link",
-            "label": "Guide",
-            "href": "/docs/modules/traces#quick-start"
-          },
-          {
             "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -1887,15 +1631,14 @@
                   "modules/traces/api-reference/perfetto-trace-writer"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/traces API Reference",
-                  "slug": "/modules/_sections/traces/root-api"
+                  "type": "doc",
+                  "id": "modules/traces/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Traces API Reference",
+              "title": "Traces API",
               "slug": "/modules/_sections/traces/api-and-guides"
             }
           }
@@ -1911,24 +1654,11 @@
         "items": [
           {
             "type": "doc",
-            "id": "modules/services/README",
-            "label": "Overview"
+            "id": "developer-guide/authentication"
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              "developer-guide/authentication"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Services Guide",
-              "slug": "/modules/_sections/services/guides"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -1941,15 +1671,14 @@
                   }
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/services API Reference",
-                  "slug": "/modules/_sections/services/root-api"
+                  "type": "doc",
+                  "id": "modules/services/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "Services API Reference",
+              "title": "Services API",
               "slug": "/modules/_sections/services/api-reference"
             }
           }
@@ -1963,11 +1692,6 @@
           "id": "modules/ogc/README"
         },
         "items": [
-          {
-            "type": "doc",
-            "id": "modules/ogc/README",
-            "label": "Overview"
-          },
           {
             "type": "category",
             "label": "Formats",
@@ -1990,33 +1714,12 @@
           },
           {
             "type": "category",
-            "label": "Guide",
+            "label": "API",
             "items": [
               {
                 "type": "doc",
-                "id": "modules/ogc/wms/README",
-                "label": "WMS and OGC APIs"
-              },
-              {
-                "type": "doc",
-                "id": "modules/ogc/stac/README",
-                "label": "STAC"
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "OGC Guide",
-              "slug": "/modules/_sections/ogc/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
-            "items": [
-              {
-                "type": "link",
-                "label": "@loaders.gl/ogc",
-                "href": "/docs/modules/ogc"
+                "id": "modules/ogc/README",
+                "label": "@loaders.gl/ogc"
               },
               {
                 "type": "category",
@@ -2025,9 +1728,8 @@
                   "modules/ogc/stac/api-reference/stac-source-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/ogc/stac API Reference",
-                  "slug": "/modules/_sections/ogc/api-stac"
+                  "type": "doc",
+                  "id": "modules/ogc/stac/README"
                 }
               },
               {
@@ -2051,15 +1753,14 @@
                   "modules/ogc/wms/api-reference/wms-capabilities-loader"
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/ogc/wms API Reference",
-                  "slug": "/modules/_sections/ogc/api-wms"
+                  "type": "doc",
+                  "id": "modules/ogc/wms/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "OGC API Reference",
+              "title": "OGC API",
               "slug": "/modules/_sections/ogc/api-and-guides"
             }
           }
@@ -2074,9 +1775,20 @@
         },
         "items": [
           {
-            "type": "doc",
-            "id": "modules/arcgis/README",
-            "label": "Overview"
+            "type": "category",
+            "label": "Guide",
+            "items": [
+              "modules/arcgis/services",
+              "developer-guide/arcgis/authentication",
+              "developer-guide/arcgis/items",
+              "developer-guide/arcgis/feature-layers",
+              "developer-guide/arcgis/deck-gl",
+              "developer-guide/arcgis/troubleshooting"
+            ],
+            "link": {
+              "type": "doc",
+              "id": "developer-guide/arcgis/README"
+            }
           },
           {
             "type": "category",
@@ -2096,34 +1808,7 @@
           },
           {
             "type": "category",
-            "label": "Guide",
-            "items": [
-              {
-                "type": "category",
-                "label": "Guides",
-                "items": [
-                  "modules/arcgis/services",
-                  "developer-guide/arcgis/authentication",
-                  "developer-guide/arcgis/items",
-                  "developer-guide/arcgis/feature-layers",
-                  "developer-guide/arcgis/deck-gl",
-                  "developer-guide/arcgis/troubleshooting"
-                ],
-                "link": {
-                  "type": "doc",
-                  "id": "developer-guide/arcgis/README"
-                }
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "ArcGIS Guide",
-              "slug": "/modules/_sections/arcgis/guide"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API Reference",
+            "label": "API",
             "items": [
               {
                 "type": "category",
@@ -2148,15 +1833,14 @@
                   }
                 ],
                 "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/arcgis API Reference",
-                  "slug": "/modules/_sections/arcgis/root-api"
+                  "type": "doc",
+                  "id": "modules/arcgis/README"
                 }
               }
             ],
             "link": {
               "type": "generated-index",
-              "title": "ArcGIS API Reference",
+              "title": "ArcGIS API",
               "slug": "/modules/_sections/arcgis/api-reference"
             }
           }
@@ -2176,24 +1860,11 @@
             "items": [
               {
                 "type": "doc",
-                "id": "modules/compression/README",
-                "label": "Overview"
+                "id": "modules/compression/benchmarks"
               },
               {
                 "type": "category",
-                "label": "Guide",
-                "items": [
-                  "modules/compression/benchmarks"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "Compression Guide",
-                  "slug": "/modules/_sections/compression/guide"
-                }
-              },
-              {
-                "type": "category",
-                "label": "API Reference",
+                "label": "API",
                 "items": [
                   {
                     "type": "category",
@@ -2213,15 +1884,14 @@
                       "modules/compression/api-reference/no-compressor-decompressor"
                     ],
                     "link": {
-                      "type": "generated-index",
-                      "title": "@loaders.gl/compression API Reference",
-                      "slug": "/modules/_sections/compression/root-api"
+                      "type": "doc",
+                      "id": "modules/compression/README"
                     }
                   }
                 ],
                 "link": {
                   "type": "generated-index",
-                  "title": "Compression API Reference",
+                  "title": "Compression API",
                   "slug": "/modules/_sections/compression/api-and-guides"
                 }
               }
@@ -2236,18 +1906,13 @@
             },
             "items": [
               {
-                "type": "doc",
-                "id": "modules/crypto/README",
-                "label": "Overview"
-              },
-              {
                 "type": "link",
                 "label": "Guide",
                 "href": "/docs/modules/crypto#using-transforms"
               },
               {
                 "type": "category",
-                "label": "API Reference",
+                "label": "API",
                 "items": [
                   {
                     "type": "category",
@@ -2260,15 +1925,14 @@
                       "modules/crypto/api-reference/sha256-hash"
                     ],
                     "link": {
-                      "type": "generated-index",
-                      "title": "@loaders.gl/crypto API Reference",
-                      "slug": "/modules/_sections/crypto/root-api"
+                      "type": "doc",
+                      "id": "modules/crypto/README"
                     }
                   }
                 ],
                 "link": {
                   "type": "generated-index",
-                  "title": "Crypto API Reference",
+                  "title": "Crypto API",
                   "slug": "/modules/_sections/crypto/api-and-guides"
                 }
               }
@@ -2283,18 +1947,13 @@
             },
             "items": [
               {
-                "type": "doc",
-                "id": "modules/sql/README",
-                "label": "Overview"
-              },
-              {
                 "type": "link",
                 "label": "Guide",
                 "href": "/docs/modules/sql#duckdb-arrow-interoperability"
               },
               {
                 "type": "category",
-                "label": "API Reference",
+                "label": "API",
                 "items": [
                   {
                     "type": "category",
@@ -2303,15 +1962,14 @@
                       "modules/sql/api-reference/sql-source"
                     ],
                     "link": {
-                      "type": "generated-index",
-                      "title": "@loaders.gl/sql API Reference",
-                      "slug": "/modules/_sections/sql/root-api"
+                      "type": "doc",
+                      "id": "modules/sql/README"
                     }
                   }
                 ],
                 "link": {
                   "type": "generated-index",
-                  "title": "SQL API Reference",
+                  "title": "SQL API",
                   "slug": "/modules/_sections/sql/api-reference"
                 }
               }
@@ -2319,42 +1977,49 @@
           },
           {
             "type": "category",
-            "label": "@loaders.gl/tile-converter",
+            "label": "Tile Converter",
             "items": [
               {
                 "type": "category",
-                "label": "@loaders.gl/tile-converter",
-                "items": [
-                  "modules/tile-converter/api-reference/3d-tiles-converter",
-                  "modules/tile-converter/api-reference/i3s-converter",
-                  "modules/tile-converter/api-reference/tile-converter-bundle"
-                ],
+                "label": "API",
                 "link": {
                   "type": "generated-index",
-                  "title": "@loaders.gl/tile-converter API Reference",
-                  "slug": "/modules/_sections/tile-converter/root-api"
-                }
-              },
-              {
-                "type": "category",
-                "label": "@loaders.gl/tile-converter/v5",
+                  "title": "Tile Converter API",
+                  "slug": "/modules/_sections/tile-converter/api-and-guides"
+                },
                 "items": [
-                  "modules/tile-converter/api-reference/v5-conversion"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "@loaders.gl/tile-converter/v5 API Reference",
-                  "slug": "/modules/_sections/tile-converter/api-v5"
-                }
+                  {
+                    "type": "category",
+                    "label": "@loaders.gl/tile-converter",
+                    "items": [
+                      "modules/tile-converter/api-reference/3d-tiles-converter",
+                      "modules/tile-converter/api-reference/i3s-converter",
+                      "modules/tile-converter/api-reference/tile-converter-bundle"
+                    ],
+                    "link": {
+                      "type": "doc",
+                      "id": "modules/tile-converter/api-reference/README"
+                    }
+                  },
+                  {
+                    "type": "doc",
+                    "id": "modules/tile-converter/api-reference/v5-conversion",
+                    "label": "@loaders.gl/tile-converter/v5"
+                  }
+                ]
               }
             ],
             "link": {
-              "type": "generated-index",
-              "title": "Tile Converter API Reference",
-              "slug": "/modules/_sections/tile-converter/api-and-guides"
+              "type": "doc",
+              "id": "modules/tile-converter/api-reference/README"
             }
           }
-        ]
+        ],
+        "link": {
+          "type": "generated-index",
+          "title": "Data Processing",
+          "slug": "/sections/modules/data-processing"
+        }
       }
     ],
     "link": {
@@ -2376,20 +2041,7 @@
         "items": [
           {
             "type": "doc",
-            "id": "modules/tile-converter/README",
-            "label": "Overview"
-          },
-          {
-            "type": "category",
-            "label": "Guide",
-            "items": [
-              "modules/tile-converter/api-reference/build-instructions"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Tile Converter Guide",
-              "slug": "/modules/_sections/tile-converter/guide"
-            }
+            "id": "modules/tile-converter/api-reference/build-instructions"
           },
           {
             "type": "category",
@@ -2399,7 +2051,12 @@
               "modules/tile-converter/cli-reference/tile-converter",
               "modules/tile-converter/cli-reference/i3s-server",
               "modules/tile-converter/cli-reference/supported-features"
-            ]
+            ],
+            "link": {
+              "type": "generated-index",
+              "title": "Command-Line Reference",
+              "slug": "/sections/applications/tile-converter/command-line-reference"
+            }
           }
         ]
       },

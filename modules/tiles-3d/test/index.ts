@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import './tileset/tileset-3d.spec';
+import './tileset-3d/tileset-3d.spec';
