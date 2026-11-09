@@ -9,10 +9,11 @@ import {query, queryInBatches} from '@loaders.gl/core/scan';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
-import {CSVTableSource} from '@loaders.gl/tables/csv/index';
-import {NDJSONTableSource} from '@loaders.gl/tables/json/index';
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
+import {CSVTableSource, CSVSourceLoader} from '@loaders.gl/tables/csv/index';
+import {NDJSONTableSource, NDJSONSourceLoader} from '@loaders.gl/tables/json/index';
+import {ArrowTableSource, ArrowSourceLoader} from '@loaders.gl/tables/arrow/index';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSourceLoader} from '@loaders.gl/tables';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 
 const rows = [
@@ -216,6 +217,58 @@ for (const format of formats) {
     }
   });
 }
+
+test.each(
+  formats
+)('%s URLs use explicit source loaders and preserve query semantics', async format => {
+  const fixture = createSource(format) as TableScanSource & {data: Blob};
+  const blob = fixture.data;
+  const loaders = {
+    csv: CSVSourceLoader,
+    ndjson: NDJSONSourceLoader,
+    arrow: ArrowSourceLoader,
+    parquet: ParquetSourceLoader
+  };
+  const requests: string[] = [];
+  const fetch = async (url: string, options?: RequestInit): Promise<Response> => {
+    requests.push(url);
+    const range = new Headers(options?.headers).get('range');
+    const match = range?.match(/bytes=(\d+)-(\d*)/);
+    if (match) {
+      const start = Number(match[1]);
+      const end = match[2] ? Number(match[2]) : blob.size - 1;
+      return new Response(blob.slice(start, end + 1), {
+        status: 206,
+        headers: {
+          'Content-Range': `bytes ${start}-${end}/${blob.size}`,
+          'Content-Length': String(end - start + 1)
+        }
+      });
+    }
+    return new Response(options?.method === 'HEAD' ? null : blob, {
+      headers: {'Content-Length': String(blob.size), 'Accept-Ranges': 'bytes'}
+    });
+  };
+  try {
+    const result = await query(
+      {
+        select: [{column: 'label', as: 'name'}],
+        where: {op: '>', args: [{property: 'id'}, 2]},
+        limit: 2
+      },
+      {
+        source: `https://query.invalid/data.${format}`,
+        loaders: loaders[format],
+        core: {fetch, worker: false, batchSize: 2}
+      }
+    );
+    expect(result.data.toArray().map(row => row.name)).toEqual(['c', 'd']);
+    expect(requests.length).toBeGreaterThan(0);
+    expect(requests.every(url => url === `https://query.invalid/data.${format}`)).toBe(true);
+  } finally {
+    await closeSource(fixture);
+  }
+});
 
 test('CSV blank fields remain empty strings rather than SQL null', async () => {
   const source = new CSVTableSource(new Blob(['label\na\n""\n']), {core: {batchSize: 2}});

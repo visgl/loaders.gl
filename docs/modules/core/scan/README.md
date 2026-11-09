@@ -313,8 +313,9 @@ for await (const batch of queryInBatches(request, {source: tableSource, signal})
 }
 ```
 
-Inputs are loaders.gl Arrow tables and existing `TableScanSource` objects. URL loading,
-named sources, SQL strings, and a synchronous entry point are deferred. Execution controls
+Inputs are loaders.gl Arrow tables, existing `TableScanSource` objects, and URL strings
+with explicit source loaders. Named sources, SQL strings, and a synchronous entry point
+are deferred. Execution controls
 remain outside the logical query: `source`, `signal`, and `onQueryComplete` belong in the
 second argument. Each public execution reports completion once, including errors,
 cancellation, limits, and consumer return. Observer errors do not alter results.
@@ -369,3 +370,37 @@ Streaming retains predicate indices for one input batch and whatever buffers the
 consumer retains. Arrow slices can retain the whole original buffer. `query()`
 collects every output batch and therefore uses memory proportional to its result.
 Consumers own source resources and should call `close()` when their source provides it.
+
+### Querying URL sources
+
+Supply an explicit URL-capable table source loader. A loader array selects only among
+the supplied candidates; global loader registration is ignored. Parser-only loaders
+are not source loaders and are rejected. Core does not import format implementations.
+
+```ts
+import {query} from '@loaders.gl/core/scan';
+import {ParquetSourceLoader} from '@loaders.gl/tables';
+
+const result = await query(
+  {select: ['name'], where: {op: '>', args: [{property: 'population'}, 100000]}, limit: 20},
+  {
+    source: 'https://example.com/cities.parquet',
+    loaders: ParquetSourceLoader,
+    core: {fetch: authenticatedFetch},
+    parquet: {batchSize: 1024},
+    signal,
+    onQueryComplete
+  }
+);
+```
+
+The source descriptor’s asynchronous preload hook and the shared authentication utilities
+handle initialization. URL sources use their own format implementations, as they do
+when constructed directly; this path does not import the full core loading API.
+Format and request options stay in their existing namespaces in the second argument.
+Logical projection, predicates, and limits belong in the first argument. Source loading
+starts when streaming consumption begins; limit zero may read metadata to discover the
+schema, but does not call the source's `read()`. The query closes sources it creates,
+including on errors, cancellation, and consumer return. Caller-provided source objects
+remain caller-owned. One completion summary includes source-open and cleanup failures;
+a cleanup failure never replaces an earlier execution failure.
