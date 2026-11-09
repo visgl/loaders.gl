@@ -252,3 +252,35 @@ test('async filter kernels receive cancellation and preserve upstream backpressu
   expect(closed).toBe(true);
   expect(pulls).toBe(1);
 });
+
+test.each([
+  1, 2
+])('limit completion wins over abort after yielding the last row from a %i-row batch', async length => {
+  const controller = new AbortController();
+  let pulls = 0;
+  let closed = false;
+  const summaries: unknown[] = [];
+  async function* inputs(): AsyncIterable<TableBatch> {
+    try {
+      pulls++;
+      yield {shape: 'object-row-table', data: Array.from({length}, (_, id) => ({id})), length};
+      pulls++;
+      throw new Error('must not pull beyond limit');
+    } finally {
+      closed = true;
+    }
+  }
+  const iterator = executeTableScanBatches(() => inputs(), {
+    limit: 1,
+    signal: controller.signal,
+    onQueryComplete: summary => summaries.push(summary)
+  })[Symbol.asyncIterator]();
+  expect((await iterator.next()).value!.length).toBe(1);
+  controller.abort();
+  expect((await iterator.next()).done).toBe(true);
+  expect(pulls).toBe(1);
+  expect(closed).toBe(true);
+  expect(summaries).toEqual([
+    expect.objectContaining({status: 'early-terminated', earlyTerminationReason: 'limit'})
+  ]);
+});

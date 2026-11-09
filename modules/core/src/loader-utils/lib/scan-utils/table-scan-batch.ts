@@ -93,11 +93,11 @@ export async function* executeTableScanBatches(
         remaining -= projectedBatch.length;
         rowsReturned += projectedBatch.length;
         yield projectedBatch;
-        options.signal?.throwIfAborted();
         if (remaining === 0) {
           earlyTerminationReason = 'limit';
           return;
         }
+        options.signal?.throwIfAborted();
       } else {
         const outputBatch = truncateTableBatch(projectedBatch, remaining);
         rowsReturned += outputBatch.length;
