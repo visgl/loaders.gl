@@ -2,25 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TerrainHeightmap} from './terrain-heightmap-types';
-
-/** Georeferencing supplied by a source, never inferred from a provider name. */
-export type TerrainGridMetadata = {
-  /** West, south, east, north in unwrapped EPSG:3857 meters; row zero is north. */
-  readonly bounds: readonly [number, number, number, number];
-  /** Pixel centers or samples including both footprint edges. */
-  readonly registration: 'pixel-center' | 'grid-node';
-  /** Physical height reference; this API does not convert vertical datums. */
-  readonly verticalDatum: 'ellipsoidal' | 'orthometric' | 'unknown';
-};
-
-/** Physical source meters, independent of projection, display relief and mesh resolution. */
-export type TerrainHeightGrid = TerrainHeightmap &
-  TerrainGridMetadata & {
-    /** One byte per sample: zero is missing; invalid heights are NaN. Alpha is not inferred. */
-    readonly valid: Uint8Array;
-  };
-
 /** Ray coordinates must match the queried surface; direction need not be normalized. */
 export type TerrainRay = {
   /** Absolute content-space origin, before camera or room-placement transforms. */

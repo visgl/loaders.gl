@@ -10,7 +10,7 @@ import {
   DataSource,
   DataSourceManager,
   type DataSourceOptions,
-  type ScanExecutionTelemetry,
+  type TableQueryExecutionSummary,
   type ScanQueryMetadata,
   type TableScanReadOptions,
   type TableScanSource
@@ -430,12 +430,12 @@ describe('FederatedTableScanSource', () => {
     const source = new FederatedTableScanSource(dataSourceManager, {
       sources: [{dataSourceId: 'first'}, {dataSourceId: 'second'}]
     });
-    let telemetry: ScanExecutionTelemetry | undefined;
+    let telemetry: TableQueryExecutionSummary | undefined;
     await collectBatches(
       source.read({
         predicate: parseSQLPredicate('score >= 20'),
         limit: 1,
-        onTelemetry: value => {
+        onQueryComplete: value => {
           telemetry = value;
         }
       })
@@ -511,9 +511,9 @@ describe('FederatedTableScanSource', () => {
     const source = new FederatedTableScanSource(dataSourceManager, {
       sources: [{dataSourceId: 'broken'}]
     });
-    let telemetry: ScanExecutionTelemetry | undefined;
+    let telemetry: TableQueryExecutionSummary | undefined;
     await expect(
-      collectBatches(source.read({onTelemetry: value => (telemetry = value)}))
+      collectBatches(source.read({onQueryComplete: value => (telemetry = value)}))
     ).rejects.toThrow('broken child');
     expect(telemetry).toMatchObject({status: 'failed', sources: [{status: 'failed'}]});
   });

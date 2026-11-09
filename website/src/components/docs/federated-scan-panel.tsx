@@ -2,7 +2,7 @@ import React, {useEffect, useId, useState} from 'react';
 
 import type {
   FederatedTableSchemaPolicy,
-  ScanExecutionTelemetry,
+  TableQueryExecutionSummary,
   ScanQuery,
   ScanQueryMetadata
 } from '@loaders.gl/core/scan';
@@ -43,7 +43,7 @@ export type FederatedScanPanelResults = Readonly<{
   /** Serializable planned query and per-source work. */
   explanation?: unknown;
   /** Terminal actual execution counters. */
-  telemetry?: ScanExecutionTelemetry;
+  telemetry?: TableQueryExecutionSummary;
   /** Source ids observed in emitted batch order. */
   provenance?: readonly string[];
 }>;

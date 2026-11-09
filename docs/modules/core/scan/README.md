@@ -184,3 +184,41 @@ service response; table operators run locally and do not imply pagination or ser
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/core/THIRD-PARTY-NOTICES.md)
 and the project-wide [Attributions and Credits](/docs/references-and-credits).
+
+## Logical queries and execution options
+
+`TableQuery` describes the requested result with `select`, `where`, and `limit`.
+A selection is a column name or `{column, as}`. It contains neither an abort signal
+nor callbacks. `TableQueryExecutionOptions` holds the controls for one execution:
+`signal` and `onQueryComplete`.
+
+The logical type is the foundation for the upcoming query frontend; this change does
+not add `load(..., {query})` or execute aliased selections. Current scan methods still
+accept their `columns`, `predicate`, and `limit` options.
+
+```ts
+import type {TableQuery, TableQueryExecutionOptions} from '@loaders.gl/core/scan';
+
+const query: TableQuery = {
+  select: [{column: 'longitude', as: 'lng'}, 'latitude'],
+  where: {op: '>', args: [{property: 'population'}, 100000]},
+  limit: 1000
+};
+
+const execution: TableQueryExecutionOptions = {
+  signal: controller.signal,
+  onQueryComplete: summary => console.log(summary.status, summary.rowsReturned)
+};
+
+// Existing scan sources accept the execution controls alongside their scan options.
+for await (const batch of source.read({columns: ['longitude'], ...execution})) {
+  consume(batch);
+}
+```
+
+`onQueryComplete` receives one `TableQueryExecutionSummary` when an entered scan
+execution terminates, including failure, cancellation, a limit, or consumer return.
+Its `status` is `completed`, `early-terminated`, `cancelled`, or `failed`.
+Exceptions thrown by the observer do not change query results. An iterator that is
+never started does not report completion. Format-specific diagnostic callbacks,
+such as `parquet.onTelemetry`, are separate from this terminal query callback.

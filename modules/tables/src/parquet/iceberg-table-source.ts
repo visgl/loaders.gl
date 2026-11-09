@@ -11,7 +11,7 @@ import type {
 import {
   createScanQueryMetadata,
   DataSource as BaseDataSource,
-  emitScanExecutionTelemetry
+  emitQueryComplete
 } from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
 
@@ -40,7 +40,7 @@ import type {
   ParquetDatasetExplain,
   ParquetDatasetSourceOptions
 } from './parquet-source-types';
-import type {ScanExecutionTelemetry} from '@loaders.gl/core/loader-utils';
+import type {TableQueryExecutionSummary} from '@loaders.gl/core/loader-utils';
 
 type IcebergEqualityDelete = {
   /** Top-level data-column names covered by the delete. */
@@ -259,10 +259,10 @@ export class IcebergTableSource
       ? await this.loadEqualityDeletes(plan.deleteFiles, metadata, options.signal)
       : [];
     const equalityColumns = getEqualityDeleteColumns(equalityDeletes);
-    let childTelemetry: ScanExecutionTelemetry | undefined;
+    let childTelemetry: TableQueryExecutionSummary | undefined;
     const readOptions = {
       ...addEqualityColumns(options, equalityColumns),
-      onTelemetry: (telemetry: ScanExecutionTelemetry) => {
+      onQueryComplete: (telemetry: TableQueryExecutionSummary) => {
         childTelemetry = telemetry;
       }
     };
@@ -288,14 +288,14 @@ export class IcebergTableSource
       await parquetSource.close();
       if (childTelemetry) {
         const cancelled = options.signal?.aborted === true;
-        const status: ScanExecutionTelemetry['status'] = readError
+        const status: TableQueryExecutionSummary['status'] = readError
           ? cancelled
             ? 'cancelled'
             : 'failed'
           : completed
             ? childTelemetry.status
             : 'early-terminated';
-        emitScanExecutionTelemetry(options.onTelemetry, {
+        emitQueryComplete(options.onQueryComplete, {
           ...childTelemetry,
           status,
           rowsReturned,

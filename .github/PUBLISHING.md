@@ -7,7 +7,7 @@ Publish 5.0 prereleases with the `beta` dist-tag. Private workspaces are not pub
 
 All 22 public workspace packages already exist on npm at 5.0.0-beta.2, including
 documents, pointclouds, and tile-converter. The next coordinated release is
-5.0.0-beta.4. Private workspaces stay version-aligned but are not published.
+5.0.0-beta.5. Private workspaces stay version-aligned but are not published.
 
 The standalone config, XML, textures, video, and Draco packages have been
 consolidated into documents, images, and scene. Publish the current workspace
@@ -92,7 +92,7 @@ for npm trusted publishing. The npm relationship must name exactly
 1. Merge the reviewed version, dependency pins, lockfile, and changelog preparation
    into latest master. Keep `NPM_TAG` set to `beta` and fixture URLs on master.
 2. Verify all checks on the merged revision, then tag that exact master commit
-   `v5.0.0-beta.4` and push the tag. Do not run `yarn publish-beta` after a
+   `v5.0.0-beta.5` and push the tag. Do not run `yarn publish-beta` after a
    version-preparation PR: it increments the version again and pushes a tag.
 3. The workflow builds and tests packages, verifies embedded versions and the exact
    release tag, then publishes missing npm versions with the `beta` dist-tag.

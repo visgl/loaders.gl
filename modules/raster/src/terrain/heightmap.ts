@@ -13,18 +13,8 @@ export {
 } from './lib/decode-terrain-heightmap';
 
 export type {
-  TerrainGridMetadata,
-  TerrainHeightGrid,
   TerrainRay,
   TerrainSurfaceHit,
   TerrainSurfaceBounds,
   TerrainSurface
 } from './lib/terrain-contracts';
-export {createTerrainHeightGrid, sampleTerrainHeightGrid} from './lib/terrain-height-grid';
-export {TerrainHeightField} from './lib/terrain-height-field';
-export type {
-  TerrainFieldBounds,
-  TerrainHeightFieldOptions,
-  TerrainHeightFieldStatistics
-} from './lib/terrain-height-field';
-export {sampleTerrainNeighborhood, resampleTerrainNodes} from './lib/terrain-neighborhood';

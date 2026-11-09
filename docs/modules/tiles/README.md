@@ -32,6 +32,7 @@ be removed after deck.gl imports the 3D module directly.
 
 See the [`Tileset2D` API](/docs/modules/tiles/api-reference/tileset-2d)
 and [`RasterSet` API](/docs/modules/tiles/api-reference/raster-set).
+For shared terrain height fields, see the experimental [`TerrainSource`](/docs/modules/tiles/api-reference/terrain-source).
 
 For explicit native-CRS frames, see [TileMatrix selection and shared runtime traversal](/docs/modules/tiles/api-reference/tile-matrix). Viewport conversion and projected rendering remain application responsibilities.
 

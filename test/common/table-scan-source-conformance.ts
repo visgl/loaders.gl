@@ -5,7 +5,7 @@
 import {describe, expect, test} from 'vitest';
 
 import type {
-  ScanExecutionTelemetry,
+  TableQueryExecutionSummary,
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
@@ -70,11 +70,11 @@ export function describeTableScanSourceConformance(options: TableScanConformance
 
     test('reports a serializable terminal telemetry snapshot', async () => {
       await withFixture(options, async ({source}) => {
-        let telemetry: ScanExecutionTelemetry | undefined;
+        let telemetry: TableQueryExecutionSummary | undefined;
         expect(
           await collectRows(source, {
             limit: 0,
-            onTelemetry: value => {
+            onQueryComplete: value => {
               telemetry = value;
             }
           })
@@ -94,7 +94,7 @@ export function describeTableScanSourceConformance(options: TableScanConformance
       await withFixture(options, async ({source}) => {
         await expect(
           collectRows(source, {
-            onTelemetry: () => {
+            onQueryComplete: () => {
               throw new Error('telemetry exporter unavailable');
             }
           })

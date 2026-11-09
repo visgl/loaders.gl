@@ -4,13 +4,6 @@
 
 export type {TerrainLoaderOptions} from './terrain-loader-types';
 export type {
-  TerrainFieldBounds,
-  TerrainHeightFieldOptions,
-  TerrainHeightFieldStatistics
-} from './lib/terrain-height-field';
-export type {
-  TerrainGridMetadata,
-  TerrainHeightGrid,
   TerrainRay,
   TerrainSurfaceHit,
   TerrainSurfaceBounds,

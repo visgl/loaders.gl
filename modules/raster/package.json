@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/raster",
-  "version": "5.0.0-beta.4",
+  "version": "5.0.0-beta.5",
   "description": "GeoTIFF, OME-TIFF, LERC, and terrain raster loaders",
   "license": "MIT",
   "type": "module",
@@ -239,21 +239,9 @@
       "types": "./dist/terrain/lib/terrain-contracts.d.ts",
       "import": "./dist/terrain/lib/terrain-contracts.js"
     },
-    "./terrain/lib/terrain-height-field": {
-      "types": "./dist/terrain/lib/terrain-height-field.d.ts",
-      "import": "./dist/terrain/lib/terrain-height-field.js"
-    },
-    "./terrain/lib/terrain-height-grid": {
-      "types": "./dist/terrain/lib/terrain-height-grid.d.ts",
-      "import": "./dist/terrain/lib/terrain-height-grid.js"
-    },
     "./terrain/lib/terrain-heightmap-types": {
       "types": "./dist/terrain/lib/terrain-heightmap-types.d.ts",
       "import": "./dist/terrain/lib/terrain-heightmap-types.js"
-    },
-    "./terrain/lib/terrain-neighborhood": {
-      "types": "./dist/terrain/lib/terrain-neighborhood.d.ts",
-      "import": "./dist/terrain/lib/terrain-neighborhood.js"
     },
     "./terrain/lib/utils/version": {
       "types": "./dist/terrain/lib/utils/version.d.ts",
@@ -325,8 +313,8 @@
     "pre-build": "npm run copy-libs && node ./build-cjs.mjs && npm run build-worker-terrain && npm run build-worker-quantized-mesh"
   },
   "dependencies": {
-    "@loaders.gl/documents": "5.0.0-beta.4",
-    "@loaders.gl/images": "5.0.0-beta.4",
+    "@loaders.gl/documents": "5.0.0-beta.5",
+    "@loaders.gl/images": "5.0.0-beta.5",
     "@math.gl/geospatial": "5.0.0-beta.5"
   },
   "peerDependencies": {
