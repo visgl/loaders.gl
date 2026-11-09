@@ -133,3 +133,9 @@ examples. Native modern coordinates retain their CRS declaration without automat
 ## Attribution
 
 The `PotreeLoader` is a fork of Markus Schuetz' potree code (https://github.com/potree/potree) under BSD-2 clause license.
+
+Potree2 exact chunk reads use Core's bounded range-response reader. HTTP 206 and the
+requested body length are required. Visible Content-Range offsets and totals are
+validated; a CORS-hidden header is tolerated without a HEAD probe. In that case the
+reader trusts the server's 206 status for the offset. Bigint offset checks, configured
+point/hierarchy byte budgets and cancellation remain enforced.
