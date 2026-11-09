@@ -69,6 +69,6 @@ test('merge groups run the same workflow and required gate without PR-only guard
     /github.workflow.*github.event_name.*github.event.pull_request.number \|\| github.run_id/
   );
   expect(workflow).toMatch(
-    /GITHUB_BASE_REF:.*github.base_ref \|\| github.event.merge_group.base_ref/
+    /LOADERS_GL_TEST_BASE_REF:.*github.base_ref \|\| github.event.merge_group.base_ref/
   );
 });

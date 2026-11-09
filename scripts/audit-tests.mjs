@@ -215,8 +215,8 @@ function findFixtureBranchViolations() {
   }
 
   const violations = [];
-  // Pull requests report their target branch in GITHUB_BASE_REF; pushes report it in GITHUB_REF_NAME.
-  const targetBranch = (process.env.GITHUB_BASE_REF || process.env.GITHUB_REF_NAME)?.replace(/^refs\/heads\//, '');
+  // Merge groups supply an explicit base ref; PRs and pushes use the GitHub defaults.
+  const targetBranch = (process.env.LOADERS_GL_TEST_BASE_REF || process.env.GITHUB_BASE_REF || process.env.GITHUB_REF_NAME)?.replace(/^refs\/heads\//, '');
   if (targetBranch && /^(?:master|\d+\.\d+-release)$/.test(targetBranch)) {
     const npmTag = /NPM_TAG = '([^']+)'/.exec(fs.readFileSync(remoteFixturesPath, 'utf8'))?.[1];
     const expectedTag = targetBranch === 'master' ? 'beta' : 'latest';

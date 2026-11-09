@@ -466,7 +466,7 @@ jobs:
 
       - name: Run test-suite audit
         env:
-          GITHUB_BASE_REF: ${{ github.base_ref || github.event.merge_group.base_ref }}
+          LOADERS_GL_TEST_BASE_REF: ${{ github.base_ref || github.event.merge_group.base_ref }}
         run: yarn run test-audit
 
       - name: Build
