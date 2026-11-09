@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {describe, expect, test} from 'vitest';
+import {describe, expect, expectTypeOf, test} from 'vitest';
 
 import {
   bindColumnarPredicateParameters,
@@ -10,6 +10,9 @@ import {
   getColumnarPredicateParameterNames,
   planTableQuery,
   validateTableQueryLimit,
+  type TableQuery,
+  type TableQueryExecutionOptions,
+  type TableQueryExecutionSummary,
   type ParameterizedColumnarPredicate
 } from '../../../../src/loader-utils';
 
@@ -120,4 +123,18 @@ describe('portable table queries', () => {
   ])('rejects invalid limit %s independently of source planning', limit => {
     expect(() => validateTableQueryLimit(limit)).toThrow(/non-negative safe integer/);
   });
+});
+
+test('logical query fields exclude execution controls', () => {
+  expectTypeOf<keyof TableQuery>().toEqualTypeOf<'select' | 'where' | 'limit'>();
+  expectTypeOf<keyof TableQueryExecutionOptions>().toEqualTypeOf<'signal' | 'onQueryComplete'>();
+  expectTypeOf<NonNullable<TableQueryExecutionOptions['onQueryComplete']>>()
+    .parameter(0)
+    .toEqualTypeOf<TableQueryExecutionSummary>();
+  const query: TableQuery = {
+    select: [{column: 'longitude', as: 'lng'}, 'latitude'],
+    where: {op: '>', args: [{property: 'population'}, 100000]},
+    limit: 1000
+  };
+  expect(JSON.parse(JSON.stringify(query))).toEqual(query);
 });

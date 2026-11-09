@@ -8,7 +8,7 @@ import type {
   DataSourceOptions,
   RangeRequestScheduler,
   RangeRequestSchedulerProps,
-  ScanExecutionTelemetryCallback,
+  TableQueryExecutionOptions,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
 import type {ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
@@ -254,7 +254,7 @@ export type ParquetPredicate =
   | ParquetNotPredicate;
 
 /** Options for one selective `ParquetSource.read()` operation. */
-export type ParquetSourceReadOptions = {
+export type ParquetSourceReadOptions = TableQueryExecutionOptions & {
   /** Zero-based row-group indexes to decode, in output order. Defaults to all row groups. */
   rowGroups?: readonly number[];
   /** Top-level columns to fetch and decode. Defaults to all columns. */
@@ -273,10 +273,6 @@ export type ParquetSourceReadOptions = {
   bbox?: ParquetBoundingBox;
   /** Geometry column whose GeoParquet covering should serve `bbox`; defaults to `primary_column`. */
   geometryColumn?: string;
-  /** Abort this read and all of its outstanding range requests. */
-  signal?: AbortSignal;
-  /** Receives one portable terminal execution snapshot for this read. */
-  onTelemetry?: ScanExecutionTelemetryCallback;
 };
 
 /** Explain result for a Parquet table query, including footer-level row-group pruning. */

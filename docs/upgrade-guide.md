@@ -397,7 +397,6 @@ explicit native representations. Replace deserializer options with the documente
 native options. See the [BSON value contract](/docs/modules/documents/bson#native-value-representations).
 
 
-
 Use a supported Node.js LTS release and keep it patched, especially when decoding untrusted data. Node.js 20 is no longer supported. See [Node.js support](./developer-guide/node.md#supported-nodejs-versions) for runtime requirements and security updates.
 
 #### Module-worker decoder wrappers
@@ -507,6 +506,14 @@ prefer the default `ZstdDecompressor` if no reference backend is required.
 `ImageLoader` remains deprecated and supports platform-dependent output. Use `ImageBitmapLoader` for a predictable `ImageBitmap` result, and `getImageData(image)` when you need pixels. See the [image module](./modules/images/README.md).
 
 ### Sources, services, and tile traversal
+
+#### Query completion callback
+
+The v5 table-scan completion callback is now `onQueryComplete`, replacing `onTelemetry`
+on scan read options. Its payload type is `TableQueryExecutionSummary` (previously
+`ScanExecutionTelemetry`). Update custom scan adapters to call `emitQueryComplete`.
+There are no compatibility aliases. Format-specific diagnostics such as
+`parquet.onTelemetry` keep their existing names.
 
 #### SourceLoader names
 

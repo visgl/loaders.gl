@@ -31,6 +31,9 @@ export type {
   RelationalAggregate,
   RelationalExpression,
   RelationalOrderKey,
+  TableQuery,
+  TableSelection,
+  TableQueryExecutionOptions,
   TableQueryOptions
 } from '@loaders.gl/core/loader-utils';
 
@@ -55,10 +58,10 @@ export type {
   ScanColumnMetadata,
   ScanColumnRole,
   ScanExecutionMethod,
-  ScanExecutionTelemetry,
-  ScanExecutionTelemetryCallback,
-  ScanExecutionTelemetryStatus,
-  ScanSourceExecutionTelemetry,
+  TableQueryExecutionSummary,
+  TableQueryCompleteCallback,
+  TableQueryExecutionStatus,
+  TableQuerySourceExecutionSummary,
   ScanExecutionSupport,
   ScanQueryCapabilities,
   ScanQueryMetadata,

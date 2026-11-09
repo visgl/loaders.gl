@@ -9,7 +9,7 @@ import {
   BlobFile,
   DataSource,
   createScanQueryMetadata,
-  emitScanExecutionTelemetry,
+  emitQueryComplete,
   explainTableQuery,
   isBrowser,
   makeTableScanBatch,
@@ -17,7 +17,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import type {
   ScanColumnRole,
-  ScanExecutionTelemetry,
+  TableQueryExecutionSummary,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   TableScanSource
@@ -485,9 +485,9 @@ export class ParquetSource
     const telemetryBefore = this.getTelemetry();
     const readOptions = this.getReadOptions(options);
     if (readOptions.limit === 0) {
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
-        createParquetScanExecutionTelemetry(
+      emitQueryComplete(
+        options.onQueryComplete,
+        createParquetTableQueryExecutionSummary(
           telemetryBefore,
           this.getTelemetry(),
           startedAt,
@@ -696,16 +696,16 @@ export class ParquetSource
       readContext.removeSignalListener();
       this.activeReadControllers.delete(readContext.abortController);
       await Promise.allSettled([...inFlightReads]);
-      const status: ScanExecutionTelemetry['status'] = readError
+      const status: TableQueryExecutionSummary['status'] = readError
         ? cancelled
           ? 'cancelled'
           : 'failed'
         : limitReached || !completed
           ? 'early-terminated'
           : 'completed';
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
-        createParquetScanExecutionTelemetry(
+      emitQueryComplete(
+        options.onQueryComplete,
+        createParquetTableQueryExecutionSummary(
           telemetryBefore,
           this.getTelemetry(),
           startedAt,
@@ -1962,14 +1962,14 @@ function createParquetTelemetry(): ParquetTelemetry {
 }
 
 /** Converts cumulative Parquet counters into one portable read-scoped execution snapshot. */
-function createParquetScanExecutionTelemetry(
+function createParquetTableQueryExecutionSummary(
   before: ParquetTelemetry,
   after: ParquetTelemetry,
   startedAt: number,
-  status: ScanExecutionTelemetry['status'],
-  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'],
+  status: TableQueryExecutionSummary['status'],
+  earlyTerminationReason?: TableQueryExecutionSummary['earlyTerminationReason'],
   error?: unknown
-): ScanExecutionTelemetry {
+): TableQueryExecutionSummary {
   const delta = Object.fromEntries(
     Object.keys(after).map(key => {
       const telemetryKey = key as keyof ParquetTelemetry;

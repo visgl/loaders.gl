@@ -9,19 +9,48 @@ import {
   type ColumnarPredicateProperty
 } from './columnar-predicate';
 
+/** One source column selected for logical output, optionally under a new name. */
+export type TableSelection =
+  | string
+  | Readonly<{
+      /** Source column name, resolved before aliases are applied. */
+      column: string;
+      /** Output field name. Defaults to the source column name. */
+      as?: string;
+    }>;
+
+/** Logical query description, independent of cancellation and execution observers. */
+export type TableQuery<
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate
+> = Readonly<{
+  /** Output columns in selection order. Omission selects all source columns. */
+  select?: readonly TableSelection[];
+  /** Predicate evaluated against source columns before output aliases are applied. */
+  where?: PredicateT;
+  /** Maximum number of rows retained after filtering. */
+  limit?: number;
+}>;
+
+/** Controls one execution without becoming part of the logical query. */
+export type TableQueryExecutionOptions = Readonly<{
+  /** Cooperatively cancels source discovery and execution. */
+  signal?: AbortSignal;
+  /** Receives one terminal summary, including cancellation, failure, and early termination. */
+  onQueryComplete?: import('./scan-query-metadata').TableQueryCompleteCallback;
+}>;
+
 /** Immutable, backend-neutral request for a scan, filter, projection, and limit. */
 export type TableQueryOptions<
   PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate
-> = Readonly<{
-  /** Portable predicate applied before projection. */
-  predicate?: PredicateT;
-  /** Output columns in caller-specified order. Defaults to every source column. */
-  columns?: readonly string[];
-  /** Maximum number of rows retained after filtering and projection. */
-  limit?: number;
-  /** Cancels discovery and batch production. */
-  signal?: AbortSignal;
-}>;
+> = Pick<TableQueryExecutionOptions, 'signal'> &
+  Readonly<{
+    /** Portable predicate applied before projection. */
+    predicate?: PredicateT;
+    /** Output columns in caller-specified order. Defaults to every source column. */
+    columns?: readonly string[];
+    /** Maximum number of rows retained after filtering and projection. */
+    limit?: number;
+  }>;
 
 /** Reads the minimum source columns required by the remaining table-query plan. */
 export type TableQueryScanStep = Readonly<{

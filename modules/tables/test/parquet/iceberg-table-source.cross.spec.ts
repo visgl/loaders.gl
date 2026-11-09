@@ -465,7 +465,7 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
     for await (const batch of source.scan({
       applyDeletes: true,
       batchSize: 3,
-      onTelemetry: value => {
+      onQueryComplete: value => {
         telemetry = value;
       }
     }))

@@ -107,7 +107,7 @@ see the documentation for each loader for details:
 ## Experimental scan requests
 
 Loaders that implement the scan protocol accept a root `_scan` request typed as
-`ExperimentalScanOptions`. Supported fields depend on the format; this is not a promise that every
+`QueryOptions`. Supported fields depend on the format; this is not a promise that every
 loader implements every scan operation. See the
 [common scan architecture](/docs/developer-guide/common-scan-architecture) and each loader's reference
 for supported behavior. The final stability and naming policy, including its relationship to source
