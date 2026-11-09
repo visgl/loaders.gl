@@ -1,10 +1,9 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {test} from 'node:test';
-import {checkResults} from './ci-gate.mjs';
+import {expect, test} from 'vitest';
+import {checkResults} from '../scripts/ci-gate.mjs';
 
 const workflow = readFileSync(new URL('../.github/workflows/test.yml', import.meta.url), 'utf8');
 test('the aggregate gate rejects failed, cancelled, missing and unexpectedly skipped jobs', () => {
@@ -15,7 +14,7 @@ test('the aggregate gate rejects failed, cancelled, missing and unexpectedly ski
     'schedule',
     'workflow_dispatch'
   ]) {
-    const needs = Object.fromEntries(
+    const needs: Record<string, {result?: string}> = Object.fromEntries(
       [
         'build',
         'test',
@@ -34,29 +33,28 @@ test('the aggregate gate rejects failed, cancelled, missing and unexpectedly ski
         }
       ])
     );
-    assert.deepEqual(checkResults(needs, eventName), []);
+    expect(checkResults(needs, eventName)).toEqual([]);
     for (const name of Object.keys(needs)) {
       for (const result of ['success', 'failure', 'cancelled', 'skipped', undefined]) {
         const changed = structuredClone(needs);
         changed[name].result = result;
-        assert.equal(
+        expect(
           checkResults(changed, eventName).length === 0,
-          result === needs[name].result,
           `${eventName}/${name}/${result}`
-        );
+        ).toBe(result === needs[name].result);
       }
       const missing = structuredClone(needs);
       delete missing[name];
-      assert(checkResults(missing, eventName).length);
+      expect(checkResults(missing, eventName).length).toBeGreaterThan(0);
     }
   }
 });
 test('merge groups run the same workflow and required gate without PR-only guards', () => {
-  assert.match(workflow, /merge_group:\n    types: \[checks_requested\]/);
+  expect(workflow).toMatch(/merge_group:\n    types: \[checks_requested\]/);
   const gate = workflow.split('\n  required-ci:\n')[1].split('\n  build:\n')[0];
-  assert.match(gate, /if: always\(\)/);
-  assert.match(gate, /name: Required CI/);
-  assert.match(gate, /run: node scripts\/ci-gate.mjs/);
+  expect(gate).toMatch(/if: always\(\)/);
+  expect(gate).toMatch(/name: Required CI/);
+  expect(gate).toMatch(/run: node scripts\/ci-gate.mjs/);
   for (const name of [
     'build',
     'test',
@@ -66,13 +64,11 @@ test('merge groups run the same workflow and required gate without PR-only guard
     'website-build',
     'external-tests'
   ])
-    assert(gate.includes(name));
-  assert.match(
-    workflow,
+    expect(gate).toContain(name);
+  expect(workflow).toMatch(
     /github.workflow.*github.event_name.*github.event.pull_request.number \|\| github.run_id/
   );
-  assert.match(
-    workflow,
+  expect(workflow).toMatch(
     /GITHUB_BASE_REF:.*github.base_ref \|\| github.event.merge_group.base_ref/
   );
 });

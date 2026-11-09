@@ -458,9 +458,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Test the required CI gate
-        run: node --test scripts/ci-gate.test.mjs
-
       - name: Run Vitest async guardrails
         run: yarn run test-vitest-async-guardrails
 
