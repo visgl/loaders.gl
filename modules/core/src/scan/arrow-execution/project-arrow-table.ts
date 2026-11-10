@@ -7,7 +7,7 @@ import type {TableSelection} from '@loaders.gl/core/loader-utils';
 
 /**
  * Projects and aliases existing Arrow fields without copying their data.
- * ARRAY[x, y, z] creates an interleaved FixedSizeList<Float32> with row-level validity.
+ * ARRAY[x, y, z] creates an interleaved FixedSizeList<Float32|Float64> with row-level validity.
  * A null component marks the entire list null and leaves finite zero padding in its data buffer.
  */
 export function projectArrowTable(
@@ -17,7 +17,7 @@ export function projectArrowTable(
   const outputNames = new Set<string>();
   const fields: arrow.Field[] = [];
   const specifications: Array<
-    {kind: 'column'; index: number} | {kind: 'array'; indices: number[]}
+    {kind: 'column'; index: number} | {kind: 'array'; indices: number[]; precision: 'float32' | 'float64'}
   > = [];
 
   for (const selection of selections) {
@@ -38,12 +38,17 @@ export function projectArrowTable(
         throw new Error(`Invalid or duplicate Arrow projection output name: ${selection.as}`);
       }
       outputNames.add(selection.as);
+      const precision = selection.type ??
+        (indices.some(index => source.schema.fields[index].type instanceof arrow.Float64)
+          ? 'float64'
+          : 'float32');
+      const floatType = precision === 'float64' ? new arrow.Float64() : new arrow.Float32();
       fields.push(new arrow.Field(
         selection.as,
-        new arrow.FixedSizeList(indices.length, new arrow.Field('value', new arrow.Float32(), false)),
+        new arrow.FixedSizeList(indices.length, new arrow.Field('value', floatType, false)),
         indices.some(index => source.schema.fields[index].nullable)
       ));
-      specifications.push({kind: 'array', indices});
+      specifications.push({kind: 'array', indices, precision});
       continue;
     }
     const column = typeof selection === 'string' ? selection : selection.column;
@@ -62,8 +67,11 @@ export function projectArrowTable(
   const batches = source.batches.map(batch => {
     const children = specifications.map(specification => {
       if (specification.kind === 'column') return batch.data.children[specification.index];
-      const {indices} = specification;
-      const values = new Float32Array(batch.numRows * indices.length);
+      const {indices, precision} = specification;
+      const floatType = precision === 'float64' ? new arrow.Float64() : new arrow.Float32();
+      const values = precision === 'float64'
+        ? new Float64Array(batch.numRows * indices.length)
+        : new Float32Array(batch.numRows * indices.length);
       const bitmap = new Uint8Array(Math.ceil(batch.numRows / 8));
       const vectors = indices.map(index => batch.getChildAt(index)!);
       let nullCount = 0;
@@ -81,13 +89,13 @@ export function projectArrowTable(
       return arrow.makeData({
         type: new arrow.FixedSizeList(
           indices.length,
-          new arrow.Field('value', new arrow.Float32(), false)
+          new arrow.Field('value', floatType, false)
         ),
         length: batch.numRows,
         nullCount,
         nullBitmap: nullCount ? bitmap : undefined,
         child: arrow.makeData({
-          type: new arrow.Float32(),
+          type: floatType,
           data: values,
           length: values.length
         })
