@@ -576,3 +576,14 @@ export type {
   TableQueryPushdownPlan
 } from './lib/scan-utils/scan-query-metadata';
 export type {QueryPushdownCapabilityHints} from './lib/scan-utils/table-query';
+export {ResourceManager} from './lib/sources/resource-manager';
+export type {
+  ResourceDescription,
+  ResourceManagerOptions,
+  ResourceManagerEntryInfo,
+  ResourceManagerEntryStatus,
+  ResourceManagerAddParameters,
+  ResourceManagerGetOrCreateParameters,
+  ResourceManagerSubscribeParameters,
+  ResourceSubscriber
+} from './lib/sources/resource-manager';
