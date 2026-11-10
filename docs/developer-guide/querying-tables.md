@@ -71,14 +71,30 @@ const result = await query('SELECT ARRAY[x, y, z] AS position', {
 });
 ```
 
-The array is interleaved in a `Float32Array`, with no row filtering.
+The array is interleaved into one typed buffer, with no row filtering.
+By default, all Float32 source columns produce `FixedSizeList<Float32>`; the presence
+of any Float64 source column produces `FixedSizeList<Float64>`, preserving precision.
+
+Use an explicit type cast to choose the element precision:
+
+```sql
+SELECT ARRAY[x, y, z]::FLOAT32[3] AS position
+SELECT ARRAY[x, y, z]::REAL[3] AS position
+SELECT ARRAY[x, y, z]::FLOAT64[3] AS position
+SELECT ARRAY[x, y, z]::DOUBLE PRECISION[3] AS position
+```
+
+`REAL` and `DOUBLE PRECISION` are standard SQL type names; the PostgreSQL/DuckDB-style
+`::` cast notation is a dialect extension. The array size must match the number
+of source columns. The AST accepts `{array: ['x', 'y', 'z'], type: 'float32', as: 'position'}`
+(or `'float64'`); omitting `type` infers precision.
+
 If any component is SQL NULL, the entire list is null in the Arrow validity bitmap,
-and its three numeric slots contain finite zeros. This avoids using NaN as a null sentinel.
+and its numeric slots contain finite zeros. This avoids using NaN as a null sentinel.
 GPU consumers must honor the validity bitmap or choose an explicit treatment of invalid
-positions; reading the Float32 data alone will interpret invalid positions as zero.
-Input columns must have Arrow floating-point types (Float32 or Float64); Float64 inputs
-are converted to Float32. This SQL subset accepts column identifiers, not general
-expressions, inside `ARRAY[...]`.
+positions; reading the numeric buffer alone will interpret invalid positions as zero.
+Input columns must have Arrow floating-point types (Float32 or Float64).
+This SQL subset accepts column identifiers, not general expressions, inside `ARRAY[...]`.
 
 A predicate column need not appear in `select`. For example, selecting only `name` while filtering
 `population` retains `population` internally until filtering is complete. An output alias such as
