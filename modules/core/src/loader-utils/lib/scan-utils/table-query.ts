@@ -9,7 +9,7 @@ import {
   type ColumnarPredicateProperty
 } from './columnar-predicate';
 
-/** One source column or a packed fixed-length Float32 array selected for output. */
+/** One source column or a packed fixed-length floating-point array selected for output. */
 export type TableSelection =
   | string
   | Readonly<{
@@ -21,6 +21,8 @@ export type TableSelection =
   | Readonly<{
       /** Source numeric columns forming one fixed-size Arrow list. */
       array: readonly string[];
+      /** Optional explicit output element precision; omitted to infer from source columns. */
+      type?: 'float32' | 'float64';
       /** Required name of the resulting list column. */
       as: string;
     }>;
