@@ -321,7 +321,8 @@
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
     "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
-    "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5"
+    "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5",
+    "Use current published Webpack build plugins to remove serialize-javascript 6; remove overrides after Docusaurus upgrades its parent dependency ranges"
   ],
   "resolutions": {
     "apache-arrow@npm:>= 17.0.0": "^21.2.0",
@@ -346,6 +347,8 @@
     "@loaders.gl/raster": "^5.0.0-alpha.0",
     "@loaders.gl/geospatial": "^5.0.0-alpha.0",
     "@loaders.gl/ogc": "^5.0.0-alpha.0",
-    "@loaders.gl/pointclouds": "^5.0.0-alpha.0"
+    "@loaders.gl/pointclouds": "^5.0.0-alpha.0",
+    "copy-webpack-plugin@npm:^11.0.0": "npm:14.0.0",
+    "css-minimizer-webpack-plugin@npm:^5.0.1": "npm:8.0.0"
   }
 }
