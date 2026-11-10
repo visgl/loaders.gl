@@ -16,12 +16,14 @@ import {
 } from './table-query';
 
 /** Explicit source-to-output mapping for one selected field. */
-export type NormalizedTableSelection = Readonly<{
-  /** Column read from the source. */
-  column: string;
-  /** Name of the returned field. */
-  as: string;
-}>;
+export type NormalizedTableSelection =
+  | Readonly<{column: string; as: string}>
+  | Readonly<{array: readonly string[]; as: string}>;
+
+/** Physical source fields required by a normalized output selection. */
+export function getSelectionColumns(selection: NormalizedTableSelection): readonly string[] {
+  return 'array' in selection ? selection.array : [selection.column];
+}
 
 /** Logical query with all output selections expanded into explicit mappings. */
 export type NormalizedTableQuery<PredicateT = ColumnarPredicate> = Readonly<{
@@ -74,6 +76,24 @@ export function normalizeTableQuery<
   }
   const outputNames = new Set<string>();
   const select = (query.select ?? sourceColumnNames).map(selection => {
+    if (typeof selection === 'object' && selection !== null && 'array' in selection) {
+      if (
+        Object.keys(selection).some(key => key !== 'array' && key !== 'as') ||
+        !Array.isArray(selection.array) ||
+        selection.array.length === 0 ||
+        !selection.array.every(column => typeof column === 'string' && sourceColumnNames.includes(column))
+      ) {
+        throw new Error('Table query ARRAY requires one or more existing source columns.');
+      }
+      if (typeof selection.as !== 'string' || !selection.as.length) {
+        throw new Error('Table query ARRAY requires a non-empty output alias.');
+      }
+      if (outputNames.has(selection.as)) {
+        throw new Error(`Duplicate table query output name: ${selection.as}`);
+      }
+      outputNames.add(selection.as);
+      return Object.freeze({array: Object.freeze([...selection.array]), as: selection.as});
+    }
     if (
       typeof selection !== 'string' &&
       (!selection || typeof selection !== 'object' || Array.isArray(selection))
@@ -107,7 +127,7 @@ export function normalizeTableQuery<
   });
   // Reuse source-column and predicate validation; aliases never participate in WHERE resolution.
   planTableQuery(sourceColumnNames, {
-    columns: [...new Set(select.map(selection => selection.column))],
+    columns: [...new Set(select.flatMap(selection => [...getSelectionColumns(selection)]))],
     predicate: query.where,
     limit: query.limit
   });
@@ -130,7 +150,7 @@ export function planLogicalTableQuery<
 ): LogicalTableQueryPlan<PredicateT> {
   const normalized = normalizeTableQuery(sourceColumnNames, query);
   const plan = planTableQuery(sourceColumnNames, {
-    columns: [...new Set(normalized.select.map(selection => selection.column))],
+    columns: [...new Set(normalized.select.flatMap(selection => [...getSelectionColumns(selection)]))],
     predicate: normalized.where,
     limit: normalized.limit
   });
