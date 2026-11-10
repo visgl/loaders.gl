@@ -63,16 +63,15 @@ export function parseSQLSelect(sql: string, options: SQLSelectParserOptions = {}
         let type: 'float32' | 'float64' | undefined;
         if (reader.takeSymbol(':')) {
           reader.expectSymbol(':');
-          const typeName = reader.identifier().toUpperCase();
-          if (typeName === 'FLOAT32' || typeName === 'REAL') {
+          if (reader.takeKeyword('FLOAT32') || reader.takeKeyword('REAL')) {
             type = 'float32';
-          } else if (typeName === 'FLOAT64') {
+          } else if (reader.takeKeyword('FLOAT64')) {
             type = 'float64';
-          } else if (typeName === 'DOUBLE') {
+          } else if (reader.takeKeyword('DOUBLE')) {
             reader.expectKeyword('PRECISION');
             type = 'float64';
           } else {
-            throw new Error(`Unsupported ARRAY cast type: ${typeName}`);
+            throw new Error('Unsupported ARRAY cast type; use FLOAT32, REAL, FLOAT64, or DOUBLE PRECISION.');
           }
           reader.expectSymbol('[');
           const length = reader.limit();
