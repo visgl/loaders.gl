@@ -19,7 +19,7 @@
   "devDependencies": {
     "typescript": "^6.0.3",
     "vite": "^8.3.5",
-    "vitest": "5.0.2"
+    "vitest": "5.1.0"
   },
   "description": "Explore ECMWF atmospheric fields from Zarr arrays in the browser",
   "keywords": [

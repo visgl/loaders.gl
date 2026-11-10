@@ -189,3 +189,23 @@ test.runIf(isBrowser)('selectLoader#Blob data sniffing', async () => {
   loader = selectLoaderSync(blob, [Tiles3DLoader, DracoLoader, LASLoader], {nothrow: true});
   expect(loader, 'selectLoaderSync does not find loader by Blob content sniffing').toBe(null);
 });
+
+test.each([
+  false,
+  true
+])('selectLoader#unmatched text Response preserves its body (nothrow=%s)', async nothrow => {
+  const text = 'unrecognized loader data';
+  const response = new Response(text, {headers: {'content-type': 'text/plain'}});
+  const selection = selectLoader(response, [KMLLoader], {
+    core: {ignoreRegisteredLoaders: true, nothrow}
+  });
+
+  if (nothrow) {
+    expect(await selection).toBe(null);
+  } else {
+    await expect(selection).rejects.toThrow(/No valid loader found/);
+  }
+
+  expect(response.bodyUsed).toBe(false);
+  expect(await response.text()).toBe(text);
+});
