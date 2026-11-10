@@ -6,6 +6,7 @@ import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch, TableBatch, Schema} from '@loaders.gl/core/schema';
 import {
   normalizeTableQuery,
+  getSelectionColumns,
   executeTableScanBatches,
   planTableQuery,
   emitQueryComplete,
@@ -166,7 +167,7 @@ export async function* queryInBatches(
       : convertSchemaToArrow(metadata!.schema);
     const names = sourceSchema.fields.map(field => field.name);
     const normalized = normalizeTableQuery(names, logicalQuery);
-    const outputColumns = [...new Set(normalized.select.map(selection => selection.column))];
+    const outputColumns = [...new Set(normalized.select.flatMap(selection => [...getSelectionColumns(selection)]))];
     const plan = planTableQuery(names, {columns: outputColumns, predicate: normalized.where});
     const requiredColumns = plan[0].kind === 'scan' ? plan[0].columns : names;
     const capabilities = metadata?.capabilities.table;
