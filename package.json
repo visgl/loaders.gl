@@ -300,8 +300,8 @@
     "@types/node": "^25.3.0",
     "@vis.gl/dev-tools": "2.0.0-alpha.6",
     "@vis.gl/ts-plugins": "2.0.0-alpha.6",
-    "@vitest/browser-playwright": "5.0.2",
-    "@vitest/coverage-v8": "5.0.2",
+    "@vitest/browser-playwright": "5.1.0",
+    "@vitest/coverage-v8": "5.1.0",
     "gltf-validator": "^2.0.0-dev.3.10",
     "playwright": "^1.59.1",
     "pre-commit": "^1.2.2",
@@ -309,7 +309,7 @@
     "probe.gl": "^5.0.0",
     "sharp": "^0.35.5",
     "vite": "^8.0.0",
-    "vitest": "5.0.2",
+    "vitest": "5.1.0",
     "yaml": "^2.8.1",
     "zod": "^4.1.12"
   },
@@ -320,15 +320,18 @@
     "Keep published deck.gl/luma.gl 9.x on their declared glTF 4.x dependency; repository imports target v5",
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
     "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
+    "Use published textures 4.5.4 for legacy luma/glTF consumers to remove automatic texture-compressor/image-size 0.x installation",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5",
-    "Use published textures 4.5.4 for legacy luma/glTF consumers to remove automatic texture-compressor/image-size 0.x installation"
+    "Use published follow-redirects 1.16.3 for the exact Nx 1.16.0 dependency; remove after upgrading that parent"
   ],
   "resolutions": {
     "apache-arrow@npm:>= 17.0.0": "^21.2.0",
     "apache-arrow@npm:>=17.0.0": "^21.2.0",
     "typescript": "^6.0.3",
     "playwright": "1.59.1",
+    "@loaders.gl/textures@npm:4.4.5": "npm:4.5.4",
+    "@loaders.gl/textures@npm:~4.4.5": "npm:4.5.4",
     "@loaders.gl/tiles-3d": "^5.0.0-alpha.0",
     "@loaders.gl/compression": "^5.0.0-alpha.0",
     "@loaders.gl/core": "^5.0.0-alpha.0",
@@ -342,13 +345,12 @@
     "@loaders.gl/traces": "^5.0.0-alpha.0",
     "@loaders.gl/archives": "^5.0.0-alpha.0",
     "@deck.gl/arcgis@npm:9.4.0": "patch:@deck.gl/arcgis@npm%3A9.4.0#~/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch",
-    "@vitest/browser": "5.0.2",
-    "@vitest/browser-playwright": "5.0.2",
+    "@vitest/browser": "5.1.0",
+    "@vitest/browser-playwright": "5.1.0",
     "@loaders.gl/raster": "^5.0.0-alpha.0",
     "@loaders.gl/geospatial": "^5.0.0-alpha.0",
     "@loaders.gl/ogc": "^5.0.0-alpha.0",
     "@loaders.gl/pointclouds": "^5.0.0-alpha.0",
-    "@loaders.gl/textures@npm:4.4.5": "npm:4.5.4",
-    "@loaders.gl/textures@npm:~4.4.5": "npm:4.5.4"
+    "follow-redirects@npm:1.16.0": "npm:1.16.3"
   }
 }
