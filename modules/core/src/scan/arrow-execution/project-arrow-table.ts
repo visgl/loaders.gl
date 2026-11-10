@@ -86,11 +86,11 @@ export function projectArrowTable(
         length: batch.numRows,
         nullCount,
         nullBitmap: nullCount ? bitmap : undefined,
-        children: [arrow.makeData({
+        child: arrow.makeData({
           type: new arrow.Float32(),
           data: values,
           length: values.length
-        })]
+        })
       });
     });
     return new arrow.RecordBatch(
