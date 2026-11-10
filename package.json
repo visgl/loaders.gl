@@ -323,6 +323,7 @@
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
     "Use published Tinypool 2.1.2 for Docusaurus SSR workers until the parent upgrades its 1.x dependency",
     "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
+    "Use published textures 4.5.4 for legacy luma/glTF consumers to remove automatic texture-compressor/image-size 0.x installation",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5",
     "Use published Undici 7.30.2 for Nx 23.3.1 until its exact 7.29.0 dependency is upgraded"
@@ -333,6 +334,8 @@
     "typescript": "^6.0.3",
     "tinypool@npm:^1.0.2": "npm:2.1.2",
     "playwright": "1.59.1",
+    "@loaders.gl/textures@npm:4.4.5": "npm:4.5.4",
+    "@loaders.gl/textures@npm:~4.4.5": "npm:4.5.4",
     "@loaders.gl/tiles-3d": "^5.0.0-alpha.0",
     "@loaders.gl/compression": "^5.0.0-alpha.0",
     "@loaders.gl/core": "^5.0.0-alpha.0",
