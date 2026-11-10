@@ -75,7 +75,6 @@
     "d3-color": "^3.1.0",
     "d3-dsv": "^1.2.0",
     "d3-request": "^1.0.6",
-    "d3-scale": "^3.2.1",
     "docusaurus-mdx-checker": "^3.0.0",
     "docusaurus-node-polyfills": "^1.0.0",
     "esri-loader": "^2.15.0",
