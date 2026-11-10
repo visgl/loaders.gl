@@ -483,3 +483,28 @@ finalize(): Promise<void>;
 ```
 
 Releases every managed source and clears all subscriptions.
+
+### Declarative registration
+
+Call `manager.setProps({dataSources})` with the complete list of sources owned by
+this declaration. Each entry supplies a `dataSourceId`, optional `data` and
+`options`, and a stable `adapter` object. The adapter's
+`create(data, options, signal)` returns a source or a promise. Forward the
+signal to cancellable work. A ready source can be updated in place by supplying
+`update(source, options, previousOptions)` and returning `true` after applying
+the complete next options. Returning `false` replaces the source.
+
+Equivalent declarations reuse the existing source or pending promise. Plain
+options and arrays compare by value, while data objects, functions and opaque
+option values compare by identity. Omitting `dataSources` keeps the current
+declarations. Passing an empty list removes them. Call `refresh(dataSourceId)`
+to retry a failed declaration or explicitly recreate it.
+
+### Sharing resource values
+
+`ResourceManager<T>` from `@loaders.gl/core/loader-utils` exposes the same
+registration and subscription lifecycle for ordinary values and promises.
+Pass a custom `protocol` for deferred references. Strings are ordinary values,
+so callers can use their own URL loader and register its promise. Supply a
+`dispose` callback when the manager owns the values. `DataSourceManager`
+provides source disposal and scan discovery on top of this shared lifecycle.

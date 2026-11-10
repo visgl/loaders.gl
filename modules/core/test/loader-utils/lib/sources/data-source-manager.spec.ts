@@ -2,10 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {waitForCondition} from '@loaders.gl/test-utils/vitest';
 import type {DataSourceOptions, ScanQueryMetadata} from '../../../../src/loader-utils';
-import {createScanQueryMetadata, DataSource, DataSourceManager} from '../../../../src/loader-utils';
+import {
+  createScanQueryMetadata,
+  DataSource,
+  DataSourceManager,
+  ResourceManager
+} from '../../../../src/loader-utils';
 
 /** Test DataSource that records lifecycle cleanup calls. */
 class TestDataSource extends DataSource<string, DataSourceOptions> {
@@ -415,4 +420,73 @@ test('DataSourceManager#remove and finalize close managed DataSources', async ()
   expect(dataSourceManager.contains('source-b'), 'finalized DataSource is gone').toBe(false);
   expect(firstDataSource.closeCount, 'removed DataSource is closed').toBe(1);
   expect(secondDataSource.closeCount, 'finalized DataSource is closed').toBe(1);
+});
+
+test('ResourceManager shares deferred payloads and prunes after the last consumer', async () => {
+  const manager = new ResourceManager<string>({protocol: 'deck://'});
+  const onChange = vi.fn();
+  const subscribe = (consumerId: string) =>
+    manager.subscribe({dataSourceId: 'deck://pins', consumerId, onChange});
+  expect(subscribe('first')).toBeNull();
+  const pending = Promise.resolve('rows');
+  manager.add({dataSourceId: 'pins', dataSource: pending, persistent: false});
+  expect(subscribe('second')).toBe(onChange.mock.calls[0][0]);
+  manager.add({dataSourceId: 'pins', dataSource: pending, persistent: false, forceUpdate: true});
+  expect(onChange.mock.calls[1][0]).toBe(onChange.mock.calls[0][0]);
+  await expect(subscribe('second')).resolves.toBe('rows');
+  manager.unsubscribe({consumerId: 'first'});
+  manager.unsubscribe({consumerId: 'second'});
+  await waitForCondition(() => !manager.contains('pins'));
+});
+
+test('DataSourceManager reconciles equivalent descriptions and updates supported options in place', async () => {
+  const manager = new DataSourceManager();
+  const source = new TestDataSource('pins', {});
+  const adapter = {create: vi.fn(() => source), update: vi.fn(() => true)};
+  const onChange = vi.fn();
+  const subscribe = () =>
+    manager.subscribe({dataSourceId: 'datasource://pins', consumerId: 'layer', onChange});
+  expect(subscribe()).toBeNull();
+  const options = {nested: {first: 1, second: 2}};
+  manager.setProps({dataSources: [{dataSourceId: 'pins', options, adapter}]});
+  manager.setProps({
+    dataSources: [{dataSourceId: 'pins', options: {nested: {second: 2, first: 1}}, adapter}]
+  });
+  expect(adapter.create).toHaveBeenCalledTimes(1);
+  expect(onChange).toHaveBeenCalledTimes(1);
+  options.nested.first = 3;
+  manager.setProps({dataSources: [{dataSourceId: 'pins', options, adapter}]});
+  expect(adapter.update).toHaveBeenCalledWith(source, options, {nested: {first: 1, second: 2}});
+  expect(subscribe()).toBe(source);
+  expect(manager.listDataSources()[0].retainCount).toBe(0);
+  manager.setProps({dataSources: []});
+  expect(source.closeCount).toBe(1);
+});
+
+test('DataSourceManager aborts replaced creation, disposes late results and retries explicitly', async () => {
+  const manager = new DataSourceManager();
+  const late = new TestDataSource('late', {});
+  let resolveLate!: (source: TestDataSource) => void;
+  const pending = new Promise<TestDataSource>(resolve => {
+    resolveLate = resolve;
+  });
+  const create = vi.fn((input: unknown, _options: unknown, _signal: AbortSignal) =>
+    input === 'old' ? pending : Promise.reject(new Error('failed'))
+  );
+  const adapter = {create};
+  const set = (data: string) =>
+    manager.setProps({dataSources: [{dataSourceId: 'pins', data, adapter}]});
+  set('old');
+  set('old');
+  expect(create).toHaveBeenCalledTimes(1);
+  set('new');
+  expect(create.mock.calls[0][2].aborted).toBe(true);
+  resolveLate(late);
+  await waitForCondition(() => late.closeCount === 1);
+  expect(manager.listDataSources()[0].status).toBe('error');
+  set('new');
+  expect(create).toHaveBeenCalledTimes(2);
+  manager.refresh('pins');
+  expect(create).toHaveBeenCalledTimes(3);
+  await manager.finalize();
 });
