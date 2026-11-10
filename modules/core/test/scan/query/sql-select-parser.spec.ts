@@ -124,3 +124,43 @@ test('quoted WHERE identifiers execute through the injected parser and both resu
     (await query('SELECT * LIMIT 0', {source, sqlParser: parseSQLSelect})).data.schema.names
   ).toEqual(['not', 'field.name']);
 });
+
+test('ARRAY construction parses into a fixed-size selection and preserves null rows', async () => {
+  const sql = 'SELECT ARRAY[x, y, z] AS position, id LIMIT 3';
+  expect(parseSQLQuery(sql)).toEqual({
+    select: [{array: ['x', 'y', 'z'], as: 'position'}, 'id'],
+    limit: 3
+  });
+  const data = new arrow.Table({
+    id: arrow.vectorFromArray([10, 11, 12], new arrow.Int32()),
+    x: arrow.vectorFromArray([1, 4, 7], new arrow.Float32()),
+    y: arrow.vectorFromArray([2, null, 8], new arrow.Float32()),
+    z: arrow.vectorFromArray([3, 6, 9], new arrow.Float32())
+  });
+  const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
+  const result = await query(sql, {source, sqlParser: parseSQLQuery});
+  expect(result.data.schema.names).toEqual(['position', 'id']);
+  const position = result.data.getChild('position')!;
+  expect(position.type).toBeInstanceOf(arrow.FixedSizeList);
+  expect((position.type as arrow.FixedSizeList).listSize).toBe(3);
+  expect(position.get(1)).toBeNull();
+  expect(Array.from(position.get(0)!)).toEqual([1, 2, 3]);
+  expect(Array.from(position.get(2)!)).toEqual([7, 8, 9]);
+  expect(Array.from(position.data[0].children[0].values as Float32Array)).toEqual([
+    1, 2, 3,
+    0, 0, 0,
+    7, 8, 9
+  ]);
+  const batches = [];
+  for await (const batch of queryInBatches(sql, {source, sqlParser: parseSQLQuery})) {
+    batches.push(batch.data);
+  }
+  expect(batches.length).toBe(1);
+  expect(batches[0].getChild('position')!.get(1)).toBeNull();
+});
+
+test('ARRAY syntax rejects empty operands and requires an output alias', () => {
+  expect(() => parseSQLQuery('SELECT ARRAY[] AS position')).toThrow();
+  expect(() => parseSQLQuery('SELECT ARRAY[x, y, z]')).toThrow();
+  expect(() => parseSQLQuery('SELECT ARRAY[x, y, z] AS position')).not.toThrow();
+});
