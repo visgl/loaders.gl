@@ -366,6 +366,8 @@ function validateQueryExecutionSupport(query: Query): void {
     if (visited.has(candidate) || ++nodes > 4096)
       throw new Error('Query predicate must be an acyclic tree of at most 4096 nodes.');
     visited.add(candidate);
+    if (isUnsupportedQueryExpression(candidate))
+      throw new Error('CAST and computed WHERE operands are not supported by this query executor.');
     const predicate = candidate as {op?: unknown; args?: unknown};
     if (!Array.isArray(predicate.args)) continue;
     if (predicate.op === 'and' || predicate.op === 'or' || predicate.op === 'not') {
@@ -376,8 +378,25 @@ function validateQueryExecutionSupport(query: Query): void {
       continue;
     }
     visited.delete(candidate);
-    const operand = predicate.args[0];
-    if (operand && typeof operand === 'object' && ('casts' in operand || 'expression' in operand))
-      throw new Error('CAST and computed WHERE operands are not supported by this query executor.');
+    for (const operand of predicate.args) {
+      if (
+        isUnsupportedQueryExpression(operand) ||
+        (Array.isArray(operand) && operand.some(isUnsupportedQueryExpression))
+      )
+        throw new Error(
+          'CAST and computed WHERE operands are not supported by this query executor.'
+        );
+    }
   }
+}
+
+/** Identifies newer portable operands and raw expression ASTs without interpreting scalar values. */
+function isUnsupportedQueryExpression(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false;
+  if ('casts' in value || 'expression' in value) return true;
+  return (
+    'type' in value &&
+    typeof value.type === 'string' &&
+    /Expression$|^(Identifier|Literal|Compound)$/.test(value.type)
+  );
 }

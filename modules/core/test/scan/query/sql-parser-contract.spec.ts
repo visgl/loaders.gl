@@ -57,7 +57,18 @@ test.each([
       ]
     }
   },
-  {where: {op: '=', args: [{expression: {type: 'Identifier', name: 'value'}}, 1]}}
+  {where: {op: '=', args: [{expression: {type: 'Identifier', name: 'value'}}, 1]}},
+  {where: {op: '=', args: [{property: 'value'}, {expression: {type: 'Literal', value: 1}}]}},
+  {where: {op: '=', args: [{property: 'value'}, {value: 1, casts: ['int32']}]}},
+  {where: {op: 'in', args: [{property: 'value'}, [{expression: {type: 'Literal', value: 1}}]]}},
+  {where: {op: 'not', args: [{expression: {type: 'Identifier', name: 'value'}}]}},
+  {
+    where: {
+      op: 'and',
+      args: [{type: 'CallExpression', callee: {type: 'Identifier', name: 'cast'}, arguments: []}]
+    }
+  },
+  {where: {expression: {type: 'Identifier', name: 'value'}}}
 ])('unsupported parser extensions fail before source reads: %#', async logicalQuery => {
   const read = vi.fn(),
     getQueryMetadata = vi.fn();
