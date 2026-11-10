@@ -78,8 +78,8 @@ export function explainArrowTableQuery(
     const projected = projectArrowTable(sourceTable.data, options.select);
     const columns = [
       ...new Set(
-        options.select.map(selection =>
-          typeof selection === 'string' ? selection : selection.column
+        options.select.flatMap(selection =>
+          typeof selection === 'string' ? [selection] : 'array' in selection ? [...selection.array] : [selection.column]
         )
       )
     ];
@@ -127,8 +127,8 @@ export function queryArrowTable(
     projectArrowTable(sourceTable.data, options.select);
     const columns = [
       ...new Set(
-        options.select.map(selection =>
-          typeof selection === 'string' ? selection : selection.column
+        options.select.flatMap(selection =>
+          typeof selection === 'string' ? [selection] : 'array' in selection ? [...selection.array] : [selection.column]
         )
       )
     ];
