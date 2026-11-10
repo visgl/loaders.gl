@@ -113,6 +113,7 @@ export async function* queryInBatches(
     } else parsedQuery = tableQuery;
     if (!parsedQuery || typeof parsedQuery !== 'object' || Array.isArray(parsedQuery))
       throw new Error('Table query must be an object.');
+    validateQueryExecutionSupport(parsedQuery);
     let logicalQuery: TableQuery;
     let source: unknown;
     if ('command' in parsedQuery) {
@@ -337,3 +338,46 @@ export type {SQLSelectParserOptions} from './parse-sql-select';
 
 export {createSQLCatalog} from './sql-catalog';
 export type {SQLCatalog, SQLCatalogQuery, SQLCatalogSource, SQLCatalogTable} from './sql-catalog';
+
+/** Rejects parser extensions before source discovery or reads can observe an unsupported query. */
+function validateQueryExecutionSupport(query: Query): void {
+  if ('command' in query) return;
+  for (const selection of Array.isArray(query.select) ? query.select : []) {
+    if (
+      selection &&
+      typeof selection === 'object' &&
+      ('expression' in selection || 'array' in selection)
+    )
+      throw new Error(
+        'Computed SELECT expressions and ARRAY projections are not supported by this query executor.'
+      );
+  }
+  const pending: {value: unknown; exit?: boolean}[] = query.where ? [{value: query.where}] : [];
+  const visited = new WeakSet<object>();
+  let nodes = 0;
+  while (pending.length) {
+    const frame = pending.pop()!;
+    const candidate = frame.value;
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) continue;
+    if (frame.exit) {
+      visited.delete(candidate);
+      continue;
+    }
+    if (visited.has(candidate) || ++nodes > 4096)
+      throw new Error('Query predicate must be an acyclic tree of at most 4096 nodes.');
+    visited.add(candidate);
+    const predicate = candidate as {op?: unknown; args?: unknown};
+    if (!Array.isArray(predicate.args)) continue;
+    if (predicate.op === 'and' || predicate.op === 'or' || predicate.op === 'not') {
+      if (predicate.args.length > 4096 - nodes)
+        throw new Error('Query predicate exceeds 4096 nodes.');
+      pending.push({value: candidate, exit: true});
+      pending.push(...predicate.args.map(value => ({value})));
+      continue;
+    }
+    visited.delete(candidate);
+    const operand = predicate.args[0];
+    if (operand && typeof operand === 'object' && ('casts' in operand || 'expression' in operand))
+      throw new Error('CAST and computed WHERE operands are not supported by this query executor.');
+  }
+}
