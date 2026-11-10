@@ -539,6 +539,7 @@ export type {XYZTileGridAssessment, XYZTileGridOptions} from './lib/sources/xyz-
 
 export {
   normalizeTableQuery,
+  getSelectionColumns,
   planLogicalTableQuery,
   validateTableReference
 } from './lib/scan-utils/logical-table-query';
