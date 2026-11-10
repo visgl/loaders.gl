@@ -303,6 +303,7 @@
     "@vitest/browser-playwright": "5.1.0",
     "@vitest/coverage-v8": "5.1.0",
     "gltf-validator": "^2.0.0-dev.3.10",
+    "lerna": "10.1.2",
     "playwright": "^1.59.1",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
@@ -323,7 +324,7 @@
     "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5",
-    "Use published follow-redirects 1.16.3 for the exact Nx 1.16.0 dependency; remove after upgrading that parent"
+    "Use published Undici 7.30.2 for Nx 23.3.1 until its exact 7.29.0 dependency is upgraded"
   ],
   "resolutions": {
     "apache-arrow@npm:>= 17.0.0": "^21.2.0",
@@ -349,7 +350,7 @@
     "@loaders.gl/geospatial": "^5.0.0-alpha.0",
     "@loaders.gl/ogc": "^5.0.0-alpha.0",
     "@loaders.gl/pointclouds": "^5.0.0-alpha.0",
-    "follow-redirects@npm:1.16.0": "npm:1.16.3",
+    "undici@npm:7.29.0": "npm:7.30.2",
     "minimatch@npm:10.2.5": "npm:11.0.6",
     "minimatch@npm:^10.0.3": "npm:11.0.6",
     "minimatch@npm:^10.1.1": "npm:11.0.6",
