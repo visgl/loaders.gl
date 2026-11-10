@@ -54,10 +54,31 @@ See [authentication](/docs/developer-guide/authentication) for request credentia
 
 | Query field | Meaning |
 | --- | --- |
-| `select` | Ordered column names or `{column, as}` aliases. Omit it to select every column. |
+| `select` | Ordered column names, `{column, as}` aliases, or `{array: ['x', 'y', 'z'], as: 'position'}` fixed-size Float32 arrays. Omit it to select every column. |
 | `where` | A predicate over **source column names**, evaluated before aliases. |
 | `limit` | Maximum matching rows across the entire execution, including all batches. |
 | `from` | Optional registered source name or `{source, table}` reference. |
+
+### Build a packed position array
+
+Use `ARRAY[x, y, z] AS position` to construct a single Arrow
+`FixedSizeList<Float32>` field from floating-point source columns:
+
+```ts
+const result = await query('SELECT ARRAY[x, y, z] AS position', {
+  source: points,
+  sqlParser: parseSQLQuery
+});
+```
+
+The array is interleaved in a `Float32Array`, with no row filtering.
+If any component is SQL NULL, the entire list is null in the Arrow validity bitmap,
+and its three numeric slots contain finite zeros. This avoids using NaN as a null sentinel.
+GPU consumers must honor the validity bitmap or choose an explicit treatment of invalid
+positions; reading the Float32 data alone will interpret invalid positions as zero.
+Input columns must have Arrow floating-point types (Float32 or Float64); Float64 inputs
+are converted to Float32. This SQL subset accepts column identifiers, not general
+expressions, inside `ARRAY[...]`.
 
 A predicate column need not appear in `select`. For example, selecting only `name` while filtering
 `population` retains `population` internally until filtering is complete. An output alias such as
@@ -176,7 +197,7 @@ support. WHERE is rejected when that callback is omitted.
 
 These are deliberately partial parsers. They preserve identifier case, accept double-quoted names
 and doubled-quote escapes, and require AS for column aliases. They reject comments, table aliases,
-qualified column references, expressions in SELECT, joins, sorting, grouping, offsets, and multiple
+qualified column references, arbitrary expressions in SELECT (except ARRAY construction), joins, sorting, grouping, offsets, and multiple
 statements. Quote literal column names containing dots. Input length, token count, and nesting
 are bounded.
 
