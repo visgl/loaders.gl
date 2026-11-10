@@ -14,6 +14,11 @@ const MAXIMUM_SELECT_TOKENS = 4096;
 const RESERVED_WORDS = new Set([
   'SELECT',
   'ARRAY',
+  'REAL',
+  'FLOAT32',
+  'FLOAT64',
+  'DOUBLE',
+  'PRECISION',
   'FROM',
   'WHERE',
   'LIMIT',
@@ -55,8 +60,29 @@ export function parseSQLSelect(sql: string, options: SQLSelectParserOptions = {}
         const array: string[] = [reader.identifier()];
         while (reader.takeSymbol(',')) array.push(reader.identifier());
         reader.expectSymbol(']');
+        let type: 'float32' | 'float64' | undefined;
+        if (reader.takeSymbol(':')) {
+          reader.expectSymbol(':');
+          const typeName = reader.identifier().toUpperCase();
+          if (typeName === 'FLOAT32' || typeName === 'REAL') {
+            type = 'float32';
+          } else if (typeName === 'FLOAT64') {
+            type = 'float64';
+          } else if (typeName === 'DOUBLE') {
+            reader.expectKeyword('PRECISION');
+            type = 'float64';
+          } else {
+            throw new Error(`Unsupported ARRAY cast type: ${typeName}`);
+          }
+          reader.expectSymbol('[');
+          const length = reader.limit();
+          reader.expectSymbol(']');
+          if (length !== array.length) {
+            throw new Error('ARRAY cast length must match the number of components.');
+          }
+        }
         reader.expectKeyword('AS');
-        select.push({array, as: reader.identifier()});
+        select.push({array, ...(type ? {type} : {}), as: reader.identifier()});
       } else {
         const column = reader.identifier();
         select.push(reader.takeKeyword('AS') ? {column, as: reader.identifier()} : column);
