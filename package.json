@@ -322,7 +322,8 @@
     "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5",
-    "Use published follow-redirects 1.16.3 for the exact Nx 1.16.0 dependency; remove after upgrading that parent"
+    "Use published follow-redirects 1.16.3 for the exact Nx 1.16.0 dependency; remove after upgrading that parent",
+    "Use published webpack-dev-server 6 to remove the SockJS dependency on vulnerable UUID 8"
   ],
   "resolutions": {
     "apache-arrow@npm:>= 17.0.0": "^21.2.0",
@@ -348,6 +349,7 @@
     "@loaders.gl/geospatial": "^5.0.0-alpha.0",
     "@loaders.gl/ogc": "^5.0.0-alpha.0",
     "@loaders.gl/pointclouds": "^5.0.0-alpha.0",
-    "follow-redirects@npm:1.16.0": "npm:1.16.3"
+    "follow-redirects@npm:1.16.0": "npm:1.16.3",
+    "webpack-dev-server": "npm:6.1.0"
   }
 }
