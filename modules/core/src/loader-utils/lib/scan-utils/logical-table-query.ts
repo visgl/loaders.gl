@@ -18,7 +18,7 @@ import {
 /** Explicit source-to-output mapping for one selected field. */
 export type NormalizedTableSelection =
   | Readonly<{column: string; as: string}>
-  | Readonly<{array: readonly string[]; as: string}>;
+  | Readonly<{array: readonly string[]; as: string; type?: 'float32' | 'float64'}>;
 
 /** Physical source fields required by a normalized output selection. */
 export function getSelectionColumns(selection: NormalizedTableSelection): readonly string[] {
@@ -78,7 +78,8 @@ export function normalizeTableQuery<
   const select = (query.select ?? sourceColumnNames).map(selection => {
     if (typeof selection === 'object' && selection !== null && 'array' in selection) {
       if (
-        Object.keys(selection).some(key => key !== 'array' && key !== 'as') ||
+        Object.keys(selection).some(key => key !== 'array' && key !== 'as' && key !== 'type') ||
+        (selection.type !== undefined && selection.type !== 'float32' && selection.type !== 'float64') ||
         !Array.isArray(selection.array) ||
         selection.array.length === 0 ||
         !selection.array.every(column => typeof column === 'string' && sourceColumnNames.includes(column))
@@ -92,7 +93,7 @@ export function normalizeTableQuery<
         throw new Error(`Duplicate table query output name: ${selection.as}`);
       }
       outputNames.add(selection.as);
-      return Object.freeze({array: Object.freeze([...selection.array]), as: selection.as});
+      return Object.freeze({array: Object.freeze([...selection.array]), as: selection.as, ...(selection.type ? {type: selection.type} : {})});
     }
     if (
       typeof selection !== 'string' &&
