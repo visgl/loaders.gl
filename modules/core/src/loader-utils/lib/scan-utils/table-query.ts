@@ -9,7 +9,7 @@ import {
   type ColumnarPredicateProperty
 } from './columnar-predicate';
 
-/** One source column selected for logical output, optionally under a new name. */
+/** One source column or a packed fixed-length Float32 array selected for output. */
 export type TableSelection =
   | string
   | Readonly<{
@@ -17,6 +17,12 @@ export type TableSelection =
       column: string;
       /** Output field name. Defaults to the source column name. */
       as?: string;
+    }>
+  | Readonly<{
+      /** Source numeric columns forming one fixed-size Arrow list. */
+      array: readonly string[];
+      /** Required name of the resulting list column. */
+      as: string;
     }>;
 
 /** Named source, or a named table exposed by a source. Strings are literal names, not dotted paths. */
