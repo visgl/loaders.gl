@@ -164,3 +164,44 @@ test('ARRAY syntax rejects empty operands and requires an output alias', () => {
   expect(() => parseSQLQuery('SELECT ARRAY[x, y, z]')).toThrow();
   expect(() => parseSQLQuery('SELECT ARRAY[x, y, z] AS position')).not.toThrow();
 });
+
+test.each([
+  ['FLOAT32', 'float32'],
+  ['REAL', 'float32'],
+  ['FLOAT64', 'float64'],
+  ['DOUBLE PRECISION', 'float64']
+] as const)('SQL ARRAY explicit %s cast becomes %s', (sqlType, type) => {
+  expect(parseSQLQuery(`SELECT ARRAY[x, y, z]::${sqlType}[3] AS position`)).toEqual({
+    select: [{array: ['x', 'y', 'z'], type, as: 'position'}]
+  });
+});
+
+test.each([
+  'SELECT ARRAY[x, y]::FLOAT32[3] AS position',
+  'SELECT ARRAY[x, y]::FLOAT64[1] AS position',
+  'SELECT ARRAY[x, y]::REAL[3] AS position',
+  'SELECT ARRAY[x, y]::DECIMAL[2] AS position',
+  'SELECT ARRAY[x, y]::DOUBLE[2] AS position'
+])('SQL ARRAY rejects invalid cast: %s', sql => {
+  expect(() => parseSQLQuery(sql)).toThrow();
+});
+
+test('ARRAY infers the widest source floating point type without narrowing', async () => {
+  const data = new arrow.Table({
+    x: arrow.vectorFromArray([1.123456789012345], new arrow.Float64()),
+    y: arrow.vectorFromArray([2], new arrow.Float32()),
+    z: arrow.vectorFromArray([3], new arrow.Float32())
+  });
+  const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
+  const inferred = await query('SELECT ARRAY[x, y, z] AS position', {source, sqlParser: parseSQLQuery});
+  const position64 = inferred.data.getChild('position')!;
+  expect((position64.type as arrow.FixedSizeList).children[0].type).toBeInstanceOf(arrow.Float64);
+  expect(Array.from(position64.get(0)!)[0]).toBe(1.123456789012345);
+
+  const narrowed = await query('SELECT ARRAY[x, y, z]::REAL[3] AS position', {
+    source, sqlParser: parseSQLQuery
+  });
+  const position32 = narrowed.data.getChild('position')!;
+  expect((position32.type as arrow.FixedSizeList).children[0].type).toBeInstanceOf(arrow.Float32);
+  expect(Array.from(position32.get(0)!)[0]).toBe(Math.fround(1.123456789012345));
+});
