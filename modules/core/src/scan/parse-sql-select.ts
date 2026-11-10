@@ -13,6 +13,7 @@ const MAXIMUM_SQL_LENGTH = 65536;
 const MAXIMUM_SELECT_TOKENS = 4096;
 const RESERVED_WORDS = new Set([
   'SELECT',
+  'ARRAY',
   'FROM',
   'WHERE',
   'LIMIT',
@@ -41,7 +42,7 @@ export type SQLSelectParserOptions = Readonly<{
   parseWhere?: (expression: string) => ColumnarPredicate;
 }>;
 
-/** Parses SELECT columns/AS aliases, optional FROM, and LIMIT; WHERE requires a supplied parser. */
+/** Parses SELECT columns/AS aliases and ARRAY[x,y,z] expressions, optional FROM, and LIMIT; WHERE requires a supplied parser. */
 export function parseSQLSelect(sql: string, options: SQLSelectParserOptions = {}): TableQuery {
   const reader = new SQLQueryReader(sql);
   reader.expectKeyword('SELECT');
@@ -49,8 +50,17 @@ export function parseSQLSelect(sql: string, options: SQLSelectParserOptions = {}
   if (!reader.takeSymbol('*')) {
     select = [];
     do {
-      const column = reader.identifier();
-      select.push(reader.takeKeyword('AS') ? {column, as: reader.identifier()} : column);
+      if (reader.takeKeyword('ARRAY')) {
+        reader.expectSymbol('[');
+        const array: string[] = [reader.identifier()];
+        while (reader.takeSymbol(',')) array.push(reader.identifier());
+        reader.expectSymbol(']');
+        reader.expectKeyword('AS');
+        select.push({array, as: reader.identifier()});
+      } else {
+        const column = reader.identifier();
+        select.push(reader.takeKeyword('AS') ? {column, as: reader.identifier()} : column);
+      }
     } while (reader.takeSymbol(','));
   }
   let from: TableReference | undefined;
