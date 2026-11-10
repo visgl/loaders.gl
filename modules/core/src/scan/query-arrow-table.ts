@@ -75,7 +75,7 @@ export function explainArrowTableQuery(
     if (options.columns !== undefined || hasRelationalOperators(options) || options.join) {
       throw new Error('Arrow select cannot be combined with columns or relational operators.');
     }
-    const projected = projectArrowTable(sourceTable.data, options.select);
+    const projected = projectArrowTable(new arrow.Table(sourceTable.data.schema), options.select);
     const columns = [
       ...new Set(
         options.select.flatMap(selection =>
