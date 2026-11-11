@@ -99,7 +99,8 @@ test.each([
       }),
     read: async function* (options) {
       received = options;
-      const data = support === 'residual' ? table.data : table.data.slice(1, 2);
+      const data =
+        support === 'residual' ? table.data : table.data.slice(1, 1 + (options?.limit ?? 2));
       yield {
         shape: 'arrow-table',
         data,
@@ -115,6 +116,10 @@ test.each([
   expect(received!.onQueryComplete).toBeUndefined();
   expect(received!.predicate).toEqual(support === 'residual' ? undefined : logical.where);
   expect(received!.limit).toBe(support === 'residual' ? undefined : 1);
+
+  const page = await query({...logical, offset: 1}, {source});
+  expect(page.data.toArray().map(row => row.label)).toEqual(['c']);
+  expect(received!.limit).toBe(support === 'residual' ? undefined : 2);
 });
 
 test('computed SQL aligns projected source fields and keeps the limit above local filtering', async () => {
@@ -363,4 +368,43 @@ test('source nullability drift is rejected so empty and populated schemas stay c
     schema.fields.map(field => field.nullable)
   );
   await expect(query({}, {source})).rejects.toThrow('schema does not match');
+});
+
+test('stream pagination skips filtered batches and slices only the boundary batches', async () => {
+  const table = makeTable().data;
+  const data = new arrow.Table(table.schema, [
+    ...table.slice(0, 1).batches,
+    ...table.slice(1, 3).batches,
+    ...table.batches,
+    ...table.batches
+  ]);
+  const source: ArrowTable = {
+    shape: 'arrow-table',
+    data,
+    schema: convertArrowToSchema(data.schema)
+  };
+  const complete = vi.fn();
+  const batches = [];
+  for await (const batch of queryInBatches(
+    {
+      select: ['value'],
+      where: logical.where,
+      offset: 1,
+      limit: 2
+    },
+    {source, onQueryComplete: complete}
+  ))
+    batches.push(batch);
+  expect(batches.map(batch => batch.data.getChild('value')!.toArray())).toEqual([
+    new Int32Array([3]),
+    new Int32Array([2])
+  ]);
+  expect(batches[0].data.getChild('value')!.data[0].values.buffer).toBe(
+    table.getChild('value')!.data[0].values.buffer
+  );
+  expect(complete).toHaveBeenCalledWith(expect.objectContaining({batchesRead: 3, rowsReturned: 2}));
+  expect((await query({offset: 100}, {source})).data.numRows).toBe(0);
+  await expect(query({offset: -1}, {source})).rejects.toThrow(
+    'offset must be a non-negative safe integer'
+  );
 });

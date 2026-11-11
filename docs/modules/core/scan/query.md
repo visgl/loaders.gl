@@ -22,13 +22,14 @@ type TableQuery = {
   from?: TableReference;
   select?: readonly (string | {column: string; as?: string})[];
   where?: ColumnarPredicate;
+  offset?: number;
   limit?: number;
 };
 ```
 
 WHERE refers to source column names before aliases. Predicates are applied before projection and
 limits; predicate-only columns are retained internally. Rows and selected columns retain their
-specified order. `limit` must be a non-negative safe integer; `select`, when supplied, must be
+specified order. Both `offset` and `limit` must be non-negative safe integers. A supplied `select` must be
 non-empty and produce unique output names.
 
 `from` resolves an exact source name in `options.sources`. Its structured form calls
@@ -149,12 +150,17 @@ row limit and output projection. For example, `SELECT value + 1 AS next WHERE va
 filters source rows before computing `next`. Use `ARRAY[x, y, z]::REAL[3] AS position` for a packed
 Float32 column. Without an explicit type, math.gl infers component precision from the inputs.
 A null component makes the whole tuple null. Table aliases, qualified column references,
-ordering, grouping, joins, and offsets are outside this query API.
+Ordering, grouping and joins are outside this query API. Logical `offset` is supported here.
+SQL OFFSET syntax requires a parser release containing math.gl PR #500.
 
 ## Results and execution
 
 `queryInBatches()` is lazy and applies backpressure; `query()` collects that stream. Supported source
 batches are Arrow, object rows, array rows, and columnar tables. Other batch shapes are rejected.
+After filtering, `OFFSET` skips matching rows and `LIMIT` caps the remaining results. The stream
+discards fully filtered or skipped batches and slices boundary batches without copying Arrow
+buffers. An empty result still carries its schema.
+
 Source metadata determines the output schema. Projection and rename reuse Arrow data buffers;
 filtering may allocate. Field types, nullability, available metadata, column order, and row order
 are preserved. Output schema drift is rejected.

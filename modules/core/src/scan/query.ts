@@ -214,6 +214,8 @@ export async function* queryInBatches(
         ['pushdown', 'pushdown+residual'].includes(capabilities.predicate)
     );
     const residual = delegatePredicate ? undefined : normalized.where;
+    const requestedRows =
+      normalized.limit === undefined ? undefined : (normalized.offset ?? 0) + normalized.limit;
     const readOptions: TableScanReadOptions = {
       signal: options.signal,
       ...(capabilities && capabilities.projection !== 'unsupported'
@@ -223,9 +225,11 @@ export async function* queryInBatches(
       ...(!residual &&
       !expressionFilter &&
       !castPredicate &&
+      requestedRows !== undefined &&
+      Number.isSafeInteger(requestedRows) &&
       capabilities &&
       ['pushdown', 'pushdown+residual'].includes(capabilities.limit)
-        ? {limit: normalized.limit}
+        ? {limit: requestedRows}
         : {})
     };
     const inputSchema = readOptions.columns
@@ -276,7 +280,9 @@ export async function* queryInBatches(
       () => inputs(),
       {
         predicate: residual,
+        offset: normalized.offset,
         limit: normalized.limit,
+        skipEmptyBatches: true,
         signal: options.signal
       },
       {

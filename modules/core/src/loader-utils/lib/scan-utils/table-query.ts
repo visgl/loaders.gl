@@ -39,7 +39,9 @@ export type TableQuery<
   select?: readonly TableSelection[];
   /** Predicate evaluated against source columns before output aliases are applied. */
   where?: PredicateT;
-  /** Maximum number of rows retained after filtering. */
+  /** Number of filtered rows skipped before applying the limit. */
+  offset?: number;
+  /** Maximum number of rows retained after filtering and offset. */
   limit?: number;
 }>;
 
@@ -200,5 +202,12 @@ export function validateTableQueryOptions<
 export function validateTableQueryLimit(limit: number | undefined): void {
   if (limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0)) {
     throw new Error('Table query limit must be a non-negative safe integer.');
+  }
+}
+
+/** Validates a logical row offset before any batches are read. */
+export function validateTableQueryOffset(offset: number | undefined): void {
+  if (offset !== undefined && (!Number.isSafeInteger(offset) || offset < 0)) {
+    throw new Error('Table query offset must be a non-negative safe integer.');
   }
 }
