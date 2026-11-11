@@ -6,6 +6,14 @@
 
 ## v5.0
 
+### v5.0.0-beta.7
+
+- Upgrade math.gl dependencies to beta.7 and reuse upstream SQL parsing and Arrow expression execution.
+- Support computed SELECT and WHERE expressions, casts, and packed fixed-size ARRAY projections in streaming table queries.
+- Align source columns and validate Arrow schema drift before compiled query execution.
+- Update test, build, development-server, website, HTTP, and XML dependencies with security fixes.
+- Add merge queue validation and a shared Required CI gate.
+
 ### v5.0.0-beta.6
 
 - Upgrade math.gl dependencies to beta.6.
