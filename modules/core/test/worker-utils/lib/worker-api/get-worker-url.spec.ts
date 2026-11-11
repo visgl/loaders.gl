@@ -1,4 +1,5 @@
-import {expect, test} from 'vitest';
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
+import {expect, test, vi} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {NPM_TAG} from '@loaders.gl/core/constants';
 import {NullWorker} from '@loaders.gl/core/worker-utils';
@@ -94,10 +95,9 @@ test('getWorkerURL#grouped Node test workers', () => {
 });
 test('getWorkerURL#version fallback warning', () => {
   const warnings: string[] = [];
-  const originalConsoleWarn = console.warn;
-  console.warn = (message?: any) => {
-    warnings.push(String(message));
-  };
+  const warn = vi.spyOn(loaderLog, 'warn').mockImplementation(message => () => {
+    warnings.push(message);
+  });
   try {
     const LatestWorker: WorkerObject = {
       id: 'latest-test',
@@ -148,6 +148,6 @@ test('getWorkerURL#version fallback warning', () => {
     getWorkerURL(CustomUrlWorker, {'custom-url-test': {workerUrl: 'custom-url'}});
     expect(warnings.length, 'does not warn for custom workerUrl').toBe(1);
   } finally {
-    console.warn = originalConsoleWarn;
+    warn.mockRestore();
   }
 });

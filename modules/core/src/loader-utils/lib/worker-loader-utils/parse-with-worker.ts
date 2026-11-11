@@ -317,7 +317,16 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
     ...portableOptions,
     signal: undefined,
     onProgress: undefined,
-    ...(portableOptions.core ? {core: {...portableOptions.core, authentications: undefined}} : {})
+    log: portableOptions.log === null ? null : undefined,
+    ...(portableOptions.core
+      ? {
+          core: {
+            ...portableOptions.core,
+            authentications: undefined,
+            log: portableOptions.core.log === null ? null : undefined
+          }
+        }
+      : {})
   };
   const serializedOptions = JSON.parse(
     JSON.stringify(optionsToSerialize, (_key, value) => {

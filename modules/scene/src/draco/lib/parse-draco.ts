@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
@@ -37,7 +38,7 @@ export async function parseDraco(
   reportProgress?.({phase: 'decode', completed: 0, total: 1, unit: 'tasks'});
   const {draco} = await loadDecoderModule();
   (options?.signal || context?.signal)?.throwIfAborted();
-  const dracoParser = new DracoParser(draco);
+  const dracoParser = new DracoParser(draco, getLoaderLog(options));
   try {
     const mesh = dracoParser.parseSync(arrayBuffer, options?.draco);
     reportProgress?.({phase: 'decode', completed: 1, total: 1, unit: 'tasks'});

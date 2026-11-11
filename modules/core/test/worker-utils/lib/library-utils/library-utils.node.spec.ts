@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {afterEach, expect, test, vi} from 'vitest';
 import {
   extractLoadLibraryOptions,
@@ -61,7 +62,7 @@ test('loadLibrary retries local binary paths and reports non-library failures', 
 });
 
 test('loadLibrary converts thrown Node module loads to null after fallback failure', async () => {
-  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  const consoleError = vi.spyOn(loaderLog, 'error').mockReturnValue(() => {});
   (globalThis as any).loaders = {
     requireFromFile: vi.fn(async () => {
       throw new Error('cannot require');

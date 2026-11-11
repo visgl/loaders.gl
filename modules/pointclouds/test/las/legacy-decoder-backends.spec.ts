@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {MemoryLog} from 'probe.gl/log';
 import {expect, test, vi} from 'vitest';
 import {
   parseLAS as parseLASWithLazPerf,
@@ -142,10 +143,12 @@ test('legacy LAS backends reject signatures, versions, formats, and old compress
   expect(() => new LazPerfLASFile(oldCompression)).toThrow('Old style compression');
   expect(() => new LazRsLASFile(oldCompression)).toThrow('Old style compression');
 
-  const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const log = new MemoryLog();
   parseLASWithLazPerf(createLegacyLAS(0, [[0, 0, 0]]), {
+    core: {log},
     las: {colorDepth: 'invalid' as any}
   });
-  expect(warning).toHaveBeenCalledWith('las: illegal value for options.las.colorDepth');
-  warning.mockRestore();
+  expect(log.messages).toMatchObject([
+    {type: 'warning', message: 'las: illegal value for options.las.colorDepth'}
+  ]);
 });

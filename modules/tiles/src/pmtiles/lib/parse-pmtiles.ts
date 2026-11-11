@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {
   createTileGrid,
   createWebMercatorTileGrid,
@@ -88,8 +89,10 @@ export function parsePMTilesHeader(
     try {
       tilejson = parseTileJSON(pmtilesMetadata, (loadOptions as any)?.tilejson) || null;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('PMTiles metadata could not be interpreted as TileJSON', error);
+      getLoaderLog(loadOptions).warn(
+        'PMTiles metadata could not be interpreted as TileJSON',
+        error
+      )();
     }
   }
 

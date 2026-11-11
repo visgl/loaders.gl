@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog, type StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import {isSVG, getBlob} from './svg-utils';
 import {parseToImage} from './parse-to-image';
 
-type ImageBitmapParseOptions = {
+type ImageBitmapParseOptions = Pick<StrictLoaderOptions, 'core'> & {
   imagebitmap?: ImageBitmapOptions & Record<string, unknown>;
 };
 
@@ -39,7 +40,7 @@ export async function parseToImageBitmap(
     | null
     | undefined;
 
-  return await safeCreateImageBitmap(imageBitmapSource, imageBitmapOptions);
+  return await safeCreateImageBitmap(imageBitmapSource, imageBitmapOptions, getLoaderLog(options));
 }
 
 /**
@@ -57,7 +58,7 @@ export async function parseBlobToImageBitmap(
     | null
     | undefined;
 
-  return await safeCreateImageBitmap(blob, imageBitmapOptions);
+  return await safeCreateImageBitmap(blob, imageBitmapOptions, getLoaderLog(options));
 }
 
 /**
@@ -68,7 +69,8 @@ export async function parseBlobToImageBitmap(
  */
 async function safeCreateImageBitmap(
   imageBitmapSource: Blob | HTMLImageElement,
-  imageBitmapOptions: ImageBitmapOptions | null = null
+  imageBitmapOptions: ImageBitmapOptions | null = null,
+  loaderLog = getLoaderLog()
 ): Promise<ImageBitmap> {
   if (isEmptyObject(imageBitmapOptions) || !imagebitmapOptionsSupported) {
     imageBitmapOptions = null;
@@ -79,7 +81,7 @@ async function safeCreateImageBitmap(
       // @ts-ignore Options
       return await createImageBitmap(imageBitmapSource, imageBitmapOptions);
     } catch (error) {
-      console.warn(error); // eslint-disable-line
+      loaderLog.warn(String(error))();
       imagebitmapOptionsSupported = false;
     }
   }

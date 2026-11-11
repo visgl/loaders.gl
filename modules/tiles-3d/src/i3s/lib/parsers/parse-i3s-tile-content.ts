@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
 import type {TypedArray} from '@loaders.gl/core/schema';
 import {Vector3, Matrix4} from '@math.gl/core';
@@ -128,7 +129,7 @@ export async function parseI3STileContent(
         decodedTextures[textureResource.textureSetDefinitionId] = texture;
       }
     } catch (error) {
-      console.warn(error);
+      getLoaderLog(options).warn(String(error))();
     }
   }
 

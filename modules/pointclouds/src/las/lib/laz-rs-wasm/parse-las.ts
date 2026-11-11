@@ -3,11 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 // ported and es6-ified from https://github.com/verma/plasio/
-// import type {ArrowTable, ColumnarTable} from '@loaders.gl/core/schema';
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {LASLoaderOptions} from '../../las-loader-types';
 import type {LASMesh, LASHeader} from '../las-types';
 import type {MeshAttributes} from '@loaders.gl/core/schema';
-import {getMeshBoundingBox /* , convertMeshToTable */} from '@loaders.gl/core/schema-utils';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {getLASSchema} from '../get-las-schema';
 import {LASFile} from './laslaz-decoder';
@@ -133,7 +133,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
       offset: [offsetX, offsetY, offsetZ]
     } = lasHeader;
 
-    const twoByteColor = detectTwoByteColors(decoder, batchSize, options.las?.colorDepth);
+    const twoByteColor = detectTwoByteColors(decoder, batchSize, options);
 
     for (let i = 0; i < batchSize; i++) {
       const {position, color, intensity, classification} = decoder.getPoint(i);
@@ -270,7 +270,7 @@ function populateLASAttributes(
     scale: [scaleX, scaleY, scaleZ],
     offset: [offsetX, offsetY, offsetZ]
   } = lasHeader;
-  const twoByteColor = detectTwoByteColors(decoder, batchSize, options.las?.colorDepth);
+  const twoByteColor = detectTwoByteColors(decoder, batchSize, options);
 
   for (let i = 0; i < batchSize; i++) {
     const {position, color, intensity, classification} = decoder.getPoint(i);
@@ -382,10 +382,10 @@ function getBatchSize(options: LASLoaderOptions): number {
 function detectTwoByteColors(
   decoder: any = {},
   batchSize: number,
-  colorDepth?: number | string
+  options: LASLoaderOptions
 ): boolean {
   let twoByteColor = false;
-  switch (colorDepth) {
+  switch (options.las?.colorDepth) {
     case 8:
       twoByteColor = false;
       break;
@@ -404,8 +404,7 @@ function detectTwoByteColors(
       }
       break;
     default:
-      // eslint-disable-next-line
-      console.warn('las: illegal value for options.las.colorDepth');
+      getLoaderLog(options).warn('las: illegal value for options.las.colorDepth')();
       break;
   }
   return twoByteColor;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {getTileGridLayerOptions} from './lib/tile-grid-options';
 
 import {CompositeLayer} from '@deck.gl/core';
@@ -274,7 +275,7 @@ function renderSubLayers(props: any) {
       break;
 
     default:
-      console.error('Unknown tile mimeType', tileSource?.mimeType);
+      loaderLog.error('Unknown tile mimeType', tileSource?.mimeType)();
   }
 
   if (showTileBorders) {

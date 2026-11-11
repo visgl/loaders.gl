@@ -11,7 +11,7 @@ import {
   StrictLoaderOptions,
   path
 } from '@loaders.gl/core/loader-utils';
-import {probeLog, NullLog} from './loggers';
+import {probeLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 import {getShapeOptionKey} from './native-arrow';
 import {stripQueryString} from '../utils/url-utils';
@@ -274,11 +274,6 @@ function normalizeOptionsInternal(
     mergedOptions.core = {...loaderDefaultOptions.core};
   }
   moveDeprecatedTopLevelOptionsToCore(mergedOptions);
-
-  // LOGGING: options.log can be set to `null` to defeat logging
-  if (mergedOptions.core?.log === null) {
-    mergedOptions.core = {...mergedOptions.core, log: new NullLog()};
-  }
 
   const shapeKey = loader.defaultShape && getShapeOptionKey(loader);
   if (shapeKey) {

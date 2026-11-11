@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from './../../../loader-utils/lib/log-utils/log';
 import type {WorkerObject, WorkerOptions} from '../../types';
 import {assert} from '../env-utils/assert';
 import {isBrowser} from '../env-utils/globals';
@@ -121,8 +122,8 @@ function warnIfUsingNpmTagFallback(worker: WorkerObject, url: string): void {
   }
 
   warnedWorkerVersionFallbacks.add(workerId);
-  // eslint-disable-next-line no-console
-  console.warn(
+
+  loaderLog.warn(
     `loaders.gl: ${worker.name} loader worker version is "latest" because __VERSION__ was not injected. Fetching ${url} from CDN.`
-  );
+  )();
 }

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type * as arrow from 'apache-arrow';
+import type {Logger} from 'probe.gl/log';
 
 import type {Format} from './format-types';
 import type {LoadWorker, WorkerOptions, WorkerProgress} from '@loaders.gl/core/worker-utils';
@@ -48,7 +49,7 @@ export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> &
 
     // general
     /** Experimental: Supply a logger to the parser */
-    log?: any;
+    log?: Logger | null;
 
     // batched parsing
 
@@ -133,7 +134,7 @@ export type LoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
   /** @deprecated Use options.core.nothrow */
   nothrow?: boolean;
   /** @deprecated Use options.core.log */
-  log?: any;
+  log?: Logger | null;
   /** @deprecated Use options.core.useLocalLibraries */
   useLocalLibraries?: boolean;
   /** @deprecated Use options.core.CDN */
