@@ -37,7 +37,7 @@ import {CSVLoader} from '@loaders.gl/tables/csv';
 const batches = await loadInBatches('records.csv', CSVLoader);
 
 for await (const batch of batches) {
-  updateApplication(batch.data);
+  updateApplication(batch);
 }
 ```
 
@@ -78,7 +78,9 @@ For example, `GeoJSONLoader` can yield features from a large GeoJSON document in
 import {loadInBatches} from '@loaders.gl/core';
 import {GeoJSONLoader} from '@loaders.gl/tables/json';
 
-const batches = await loadInBatches('features.geojson', GeoJSONLoader);
+const batches = await loadInBatches('features.geojson', GeoJSONLoader, {
+  geojson: {shape: 'geojson-table'}
+});
 
 for await (const batch of batches) {
   for (const feature of batch.data) {
@@ -117,7 +119,8 @@ const checksum = new CRC32Hash({
 });
 
 const batches = await loadInBatches('records.csv', CSVLoader, {
-  core: {transforms: [checksum.hashBatches]}
+  core: {transforms: [checksum.hashBatches]},
+  csv: {shape: 'object-row-table'}
 });
 
 for await (const batch of batches) {

@@ -41,10 +41,7 @@ test('ParquetJSLoader#load alltypes_dictionary file', async () => {
 test('ParquetJSLoader#load defaults to Arrow table output', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/alltypes_dictionary.parquet';
     const table = await load(url, ParquetJSLoader, { core: { worker: false } });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        expect(table.data.numRows).toBe(2);
-    }
+    expect(table.numRows).toBe(2);
 });
 test('ParquetJSLoader#load supports arrow-table shape', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/alltypes_dictionary.parquet';

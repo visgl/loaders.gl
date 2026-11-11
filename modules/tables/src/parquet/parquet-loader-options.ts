@@ -40,7 +40,7 @@ type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
 /** Public options for the TypeScript-backed `ParquetLoader` and `GeoParquetLoader`. */
 export type ParquetLoaderOptions = LoaderOptions & {
   parquet?: {
-    shape?: 'object-row-table' | 'arrow-table';
+    shape?: 'arrow' | 'arrow-table' | 'object-row-table';
   } & {
     [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
   };
@@ -49,7 +49,7 @@ export type ParquetLoaderOptions = LoaderOptions & {
 /** Public options for the experimental parquetjs-backed `ParquetJSLoader`. */
 export type ParquetJSLoaderOptions = LoaderOptions & {
   parquet?: {
-    shape?: 'object-row-table' | 'arrow-table';
+    shape?: 'arrow' | 'arrow-table' | 'object-row-table';
   } & {
     [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
   };

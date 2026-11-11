@@ -2702,7 +2702,7 @@ var VertexBufferType;
   VertexBufferType2[VertexBufferType2["VEC_3"] = 2] = "VEC_3";
 })(VertexBufferType || (VertexBufferType = {}));
 
-// ../../node_modules/@maplibre/mlt/node_modules/@mapbox/point-geometry/index.js
+// ../../node_modules/@mapbox/point-geometry/index.js
 function Point(x, y) {
   this.x = x;
   this.y = y;

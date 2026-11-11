@@ -3,15 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   DataType,
   Loader,
   LoaderContext,
   LoaderOptions,
-  LoaderOptionsWithShape,
   LoaderOptionsType,
-  LoaderShapeType,
   LoaderReturnType,
-  LoaderArrayOptionsType,
   LoaderArrayReturnType,
   SourceLoader,
   SourcePropsType,
@@ -52,28 +53,44 @@ import {getLoaderImplementation} from './load-loader';
  * @param context
  */
 
+export async function load<LoaderT extends Loader>(
+  url: string | DataType,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
 export async function load<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   url: string | DataType,
   loader: LoaderT,
-  options?: LoaderT extends SourceLoader ? SourcePropsType<LoaderT> & DataSourceOptions : OptionsT,
+  options?: LoaderT extends SourceLoader
+    ? SourcePropsType<LoaderT> & DataSourceOptions
+    : OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT, OptionsT>>;
+
+export async function load<LoaderArrayT extends Loader[]>(
+  url: string | DataType,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
 
 export async function load<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   url: string | DataType,
   loaders: LoaderArrayT,
   options?: LoaderArrayT extends SourceLoader[] ? SourceArrayOptionsType<LoaderArrayT> : OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+): Promise<LoaderArrayReturnType<LoaderArrayT, OptionsT>>;
 
 /**
  * Loads data asynchronously by matching a pre-registered loader

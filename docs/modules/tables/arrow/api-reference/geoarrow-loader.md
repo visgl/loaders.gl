@@ -73,7 +73,7 @@ const data = await load(url, GeoArrowLoader, options);
 
 Atomic parsing and `parseInBatches()` support workers with `core.worker: true`. Each batch session
 retains one Arrow IPC reader, requests input on demand, and waits for the consumer before advancing
-past an output batch. Batches retain the existing `arrow-table` output shape. Atomic parsing converts
+past an output batch. Batched APIs yield native Apache Arrow `RecordBatch` objects by default. Atomic parsing converts
 to the requested output shape on the caller after hydrating the transferred Arrow data.
 
 Workers return owned Arrow column buffers, preserving dictionaries and extension metadata

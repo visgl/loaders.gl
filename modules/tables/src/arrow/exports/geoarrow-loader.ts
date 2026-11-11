@@ -9,7 +9,7 @@ import {ArrowWorkerLoader} from './arrow-loader';
 
 export type GeoArrowLoaderOptions = LoaderOptions & {
   arrow?: {
-    shape?: 'arrow-table' | 'geojson-table' | 'binary-geometry';
+    shape?: 'arrow' | 'arrow-table' | 'geojson-table' | 'binary-geometry';
   };
 };
 

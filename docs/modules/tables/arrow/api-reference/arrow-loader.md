@@ -32,7 +32,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
   items={[
     {label: 'Input', value: 'Arrow IPC files, streams, and compatible responses'},
-    {label: 'Default', value: "ArrowTable output with shape: 'arrow-table'"},
+    {label: 'Default', value: "Native Apache Arrow Table"},
     {label: 'Alternatives', value: 'Columnar, array-row, or object-row table wrappers'},
     {label: 'Streaming', value: 'Incremental Arrow batches with optional debounce'}
   ]}
@@ -61,10 +61,11 @@ const data = await load(url, ArrowLoader, options);
 
 ## Shapes
 
-`ArrowLoader` returns loaders.gl `ArrowTable` objects by default. Set `arrow.shape` to select another table representation.
+`ArrowLoader` returns native Apache Arrow `Table` objects by default. Set `arrow.shape` to select another table representation.
 
 | Shape              | Output                                                 |
 | ------------------ | ------------------------------------------------------ |
+| `arrow`            | Apache Arrow `Table` or streamed `RecordBatch` objects |
 | `arrow-table`      | loaders.gl `ArrowTable` wrapping an Apache Arrow table |
 | `columnar-table`   | loaders.gl columnar table                              |
 | `array-row-table`  | loaders.gl row table with arrays                       |
@@ -74,14 +75,14 @@ const data = await load(url, ArrowLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `arrow.shape` | `'arrow-table' \| 'columnar-table' \| 'array-row-table' \| 'object-row-table'` | `'arrow-table'` | Selects the returned loaders.gl table shape. |
+| `arrow.shape` | `'arrow' \| 'arrow-table' \| 'columnar-table' \| 'array-row-table' \| 'object-row-table'` | `'arrow'` | Selects the output shape. |
 | `arrow.batchDebounceMs` | `number` | `undefined` | Adds an async delay between emitted Arrow batches. |
 
 ## Worker parsing
 
 Atomic parsing and `parseInBatches()` support workers with `core.worker: true`. Each batch session
 retains one Arrow IPC reader, requests input on demand, and waits for the consumer before advancing
-past an output batch. Batches retain the existing `arrow-table` output shape. Atomic parsing converts
+past an output batch. Batched APIs yield native Apache Arrow `RecordBatch` objects by default. Atomic parsing converts
 to the requested output shape on the caller after hydrating the transferred Arrow data.
 
 Workers return owned Arrow column buffers, preserving dictionaries and extension metadata

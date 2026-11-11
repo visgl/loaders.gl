@@ -26,7 +26,7 @@ test('ArrowWriter#encode', async () => {
   ];
   const arrayBuffer = await encode(arraysData, ArrowWriter);
   expect(arrayBuffer).toBeTruthy();
-  const table = parseSync(arrayBuffer, ArrowLoader);
+  const table = parseSync(arrayBuffer, ArrowLoader, {arrow: {shape: 'columnar-table'}});
   expect(table).toBeTruthy();
   expect(table.shape).toBe('columnar-table');
   if (table.shape === 'columnar-table') {
@@ -47,7 +47,9 @@ test('ArrowWriter#encodeSync writes an Arrow IPC file / Feather V2 container', (
 
   expect(bytes.subarray(0, magic.length)).toEqual(magic);
   expect(bytes.subarray(bytes.length - magic.length)).toEqual(magic);
-  expect(parseSync(arrayBuffer, ArrowLoader).shape).toBe('columnar-table');
+  expect(parseSync(arrayBuffer, ArrowLoader, {arrow: {shape: 'columnar-table'}}).shape).toBe(
+    'columnar-table'
+  );
 });
 test('ArrowWriter writes LZ4 and Zstandard compressed Feather V2 files', async () => {
   const compressionAPI = arrow as unknown as {
@@ -113,7 +115,9 @@ test('ArrowWriter writes LZ4 and Zstandard compressed Feather V2 files', async (
       arrow: {container: 'file', compression: 'zstd'}
     });
     expect(zstdWithRegisteredEncoder.byteLength).toBe(zstd.byteLength);
-    expect(parseSync(zstd, ArrowLoader).shape).toBe('columnar-table');
+    expect(parseSync(zstd, ArrowLoader, {arrow: {shape: 'columnar-table'}}).shape).toBe(
+      'columnar-table'
+    );
   } finally {
     if (globalThis.loaders) {
       globalThis.loaders.modules = originalModules;
@@ -128,6 +132,10 @@ test('ArrowWriter writes LZ4 and Zstandard compressed Feather V2 files', async (
     throw new Error('Zstandard encoding did not produce an Arrow IPC buffer');
   }
   expect(zstd.byteLength).toBeLessThan(uncompressed.byteLength);
-  expect(parseSync(lz4, ArrowLoader).shape).toBe('columnar-table');
-  expect(parseSync(lz4Sync, ArrowLoader).shape).toBe('columnar-table');
+  expect(parseSync(lz4, ArrowLoader, {arrow: {shape: 'columnar-table'}}).shape).toBe(
+    'columnar-table'
+  );
+  expect(parseSync(lz4Sync, ArrowLoader, {arrow: {shape: 'columnar-table'}}).shape).toBe(
+    'columnar-table'
+  );
 });

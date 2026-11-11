@@ -27,6 +27,12 @@ The [release tracker](https://github.com/visgl/loaders.gl/issues/3316) records r
 
 <span id="whats-new" />
 
+### Native Apache Arrow output
+
+Tabular loaders support `shape: 'arrow'` through the core loading and parsing APIs,
+returning Apache Arrow `Table` objects or streaming native `RecordBatch` objects.
+See [native Arrow output](./modules/core/schema/table-guide.md#native-apache-arrow-output).
+
 ### Multidimensional NRRD arrays
 
 Scientific adds attached raw, ASCII, and gzip NRRD decoding, retaining typed samples and spatial metadata. See [NRRD](./modules/scientific/nrrd/README.md).
