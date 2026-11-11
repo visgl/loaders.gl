@@ -62,7 +62,7 @@ Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL)
 [format_ldjson]: http://jsonlines.org/
 [format_json_seq]: https://datatracker.ietf.org/doc/html/rfc7464
 
-`NDJSONLoader` loads NDJSON data as loaders.gl `ArrowTable` batches by default. Set `ndjson.shape: 'object-row-table'` or `ndjson.shape: 'array-row-table'` for row-oriented batches.
+`NDJSONLoader` loads NDJSON data as native Apache Arrow `RecordBatch` objects when streaming. Set `ndjson.shape: 'object-row-table'` or `ndjson.shape: 'array-row-table'` for row-oriented batches.
 
 ## Usage
 
@@ -92,7 +92,7 @@ for await (const batch of batches) {
 }
 ```
 
-To request Arrow output explicitly, set `ndjson.shape: 'arrow-table'` (this is the default).
+Set `ndjson.shape: 'arrow-table'` for loaders.gl table and batch objects.
 
 ```typescript
 import {load, loadInBatches} from '@loaders.gl/core';
@@ -131,11 +131,11 @@ Supports the table category options such as `batchSize`.
 
 | Option                   | Type                    | Default | Description |
 | ------------------------ | ----------------------- | ------- | ----------- |
-| `ndjson.shape`           | `string`                | `'arrow-table'` | Requested table shape. Supported values are `'object-row-table'`, `'array-row-table'`, and `'arrow-table'`. |
+| `ndjson.shape`           | `string`                | `'arrow'` | Requested table shape. Supported values are `'arrow'`, `'arrow-table'`, `'object-row-table'`, and `'array-row-table'`. |
 | `ndjson.schema`          | `Schema \| arrow.Schema` | `undefined` | Optional schema used when `ndjson.shape` is `'arrow-table'`. |
 | `ndjson.arrowConversion` | `object`                | strict recovery policy | Optional Arrow conversion policy. Supports `onTypeMismatch`, `onMissingField`, `onExtraField`, `integerConversion`, and `logRecoveries`. |
 | `ndjson.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'` | `'never'` | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
-| `json.shape`             | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `'arrow-table'` | Deprecated alias for `ndjson.shape`; `ndjson.shape` takes precedence. |
+| `json.shape` | `'arrow-table' \\| 'object-row-table' \\| 'array-row-table'` | `undefined` | Deprecated alias for `ndjson.shape`. |
 
 ## Worker batches
 

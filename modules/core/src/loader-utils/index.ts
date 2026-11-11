@@ -35,6 +35,7 @@ export type {
   LoaderOptions,
   LoaderShapeType,
   LoaderOptionsWithShape,
+  LoaderCallOptions,
   LoaderOptionsType,
   LoaderReturnType,
   LoaderBatchType,

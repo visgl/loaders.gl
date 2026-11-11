@@ -88,8 +88,7 @@ test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader 
 });
 test('CSVLoader#load(states.csv)', async () => {
   const table = await load(CSV_STATES_URL, CSVLoader);
-  expect(table.shape, 'CSV defaults to Arrow table output').toBe('arrow-table');
-  expect(getTableLength(table)).toBe(110);
+  expect(table.numRows).toBe(110);
 });
 test('CSVLoader#load(numbers-100.csv, shape: arrow-table)', async () => {
   const table = await load(CSV_NO_HEADER_URL, CSVLoader, {
@@ -257,7 +256,7 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async () => {
 // TSV
 test('CSVLoader#load(brazil.tsv)', async () => {
   const table = await load(TSV_BRAZIL, CSVLoader);
-  expect(getTableLength(table)).toBe(10);
+  expect(table.numRows).toBe(10);
 });
 // loadInBatches
 test('CSVLoader#loadInBatches(sample.csv, columns)', async () => {

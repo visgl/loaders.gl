@@ -49,7 +49,7 @@ import {ClientExample} from '@site/src/components';
   tone="blue"
 />
 
-`CSVLoader` loads CSV and TSV data as loaders.gl `ArrowTable` objects by default. Set `csv.shape: 'object-row-table'`, `csv.shape: 'array-row-table'`, or `csv.shape: 'columnar-table'` to request a row or columnar table instead.
+`CSVLoader` loads CSV and TSV data as native Apache Arrow `Table` objects by default. Set `csv.shape: 'object-row-table'`, `csv.shape: 'array-row-table'`, or `csv.shape: 'columnar-table'` to request a row or columnar table instead.
 
 ## Usage
 
@@ -130,7 +130,7 @@ const table = await load(url, CSVLoader, {
 
 | Option                      | Type                                                                                       | Default                       | Description                                                                                                                  |
 | --------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `csv.shape`                 | `'object-row-table' \| 'array-row-table' \| 'columnar-table' \| 'arrow-table'`             | `arrow-table`                 | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
+| `csv.shape`                 | `'arrow' \| 'arrow-table' \| 'object-row-table' \| 'array-row-table' \| 'columnar-table'`             | `'arrow'` | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
 | `csv.optimizeMemoryUsage`   | `boolean`                                                                                  | `false`                       | Optimize memory usage at the cost of additional parsing time.                                                                |
 | `csv.header`                | `boolean \| 'auto'`                                                                        | `auto`                        | If `true`, treat the first row as field names. If `false`, treat the first row as data. `'auto'` attempts to detect headers. |
 | `csv.columnPrefix`          | `string`                                                                                   | `column`                      | Prefix used when generating column names for files without headers, for example `column1`, `column2`, ...                    |

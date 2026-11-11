@@ -2,17 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
+
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderWithParser,
   LoaderOptions,
   LoaderContext,
-  LoaderOptionsWithShape,
   SyncDataType,
-  LoaderOptionsType,
-  LoaderShapeType,
   LoaderReturnType,
-  LoaderArrayOptionsType,
   LoaderArrayReturnType,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
@@ -30,31 +33,45 @@ import {getLoaderImplementationSync} from './load-loader';
 /**
  * Parses `data` synchronously using the specified loader
  */
+export function parseSync<LoaderT extends Loader>(
+  data: SyncDataType,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): LoaderReturnType<LoaderT>;
+
 export function parseSync<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   data: SyncDataType,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): LoaderReturnType<LoaderT>;
+): LoaderReturnType<LoaderT, OptionsT>;
 
 /**
  * Parses `data` synchronously by matching one of the supplied loaders
  */
+export function parseSync<LoaderArrayT extends Loader[]>(
+  data: SyncDataType,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): LoaderArrayReturnType<LoaderArrayT>;
+
 export function parseSync<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   data: SyncDataType,
   loaders: LoaderArrayT,
   options?: OptionsT,
   context?: LoaderContext
-): LoaderArrayReturnType<LoaderArrayT>;
+): LoaderArrayReturnType<LoaderArrayT, OptionsT>;
 
 /**
  * Parses `data` synchronously by matching a pre=registered loader
@@ -106,19 +123,21 @@ export function parseSync(
   const parse = () => {
     throw new Error('parseSync called parse (which is async');
   };
+  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, false);
   context = getLoaderContext(
     {url, _parseSync: parse, _parse: parse, loaders: loaders as Loader[]},
-    strictOptions,
+    nativeArrowOptions || strictOptions,
     context || null
   );
 
   const loaderWithParser = getLoaderImplementationSync(loader);
-  return parseWithLoaderSync(
+  const result = parseWithLoaderSync(
     loaderWithParser || (loader as LoaderWithParser),
     data,
-    strictOptions,
+    nativeArrowOptions || strictOptions,
     context
   );
+  return nativeArrowOptions ? unwrapArrowTable(result) : result;
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator

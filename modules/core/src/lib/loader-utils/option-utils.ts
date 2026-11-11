@@ -13,6 +13,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
+import {getShapeOptionKey} from './native-arrow';
 import {stripQueryString} from '../utils/url-utils';
 
 const CORE_LOADER_OPTION_KEYS = [
@@ -279,6 +280,13 @@ function normalizeOptionsInternal(
     mergedOptions.core = {...mergedOptions.core, log: new NullLog()};
   }
 
+  const shapeKey = loader.defaultShape && getShapeOptionKey(loader);
+  if (shapeKey) {
+    mergedOptions[shapeKey] = {
+      ...(loaderDefaultOptions[shapeKey] as object),
+      shape: loader.defaultShape
+    };
+  }
   mergeNestedFields(mergedOptions, normalizeLoaderOptions(getGlobalLoaderOptions()));
 
   const userOptions = normalizeLoaderOptions(options);
@@ -308,23 +316,27 @@ function applyCoreShapeDefault(
     return;
   }
 
-  const loaderScopedDefaults = loader.options?.[loader.id];
+  const shapeOptionKey = getShapeOptionKey(loader);
+  if (!shapeOptionKey) {
+    return;
+  }
+  const loaderScopedDefaults = loader.options?.[shapeOptionKey];
   if (!isPureObject(loaderScopedDefaults) || !('shape' in loaderScopedDefaults)) {
     return;
   }
 
-  const globalLoaderScopedOptions = getGlobalLoaderOptions()[loader.id];
+  const globalLoaderScopedOptions = getGlobalLoaderOptions()[shapeOptionKey];
   if (isPureObject(globalLoaderScopedOptions) && 'shape' in globalLoaderScopedOptions) {
     return;
   }
 
-  const userLoaderScopedOptions = userOptions[loader.id];
+  const userLoaderScopedOptions = userOptions[shapeOptionKey];
   if (isPureObject(userLoaderScopedOptions) && 'shape' in userLoaderScopedOptions) {
     return;
   }
 
-  const loaderScopedOptions = mergedOptions[loader.id];
-  mergedOptions[loader.id] = {
+  const loaderScopedOptions = mergedOptions[shapeOptionKey];
+  mergedOptions[shapeOptionKey] = {
     ...(isPureObject(loaderScopedOptions) ? loaderScopedOptions : {}),
     shape: coreShape
   };

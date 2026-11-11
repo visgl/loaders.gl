@@ -2,15 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
+
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderContext,
   LoaderOptions,
-  LoaderOptionsWithShape,
-  LoaderOptionsType,
-  LoaderShapeType,
   LoaderReturnType,
-  LoaderArrayOptionsType,
   LoaderArrayReturnType,
   LoaderWithParser,
   ReadableFile,
@@ -32,31 +35,45 @@ import {selectLoader} from './select-loader';
 /**
  * Parses a random access readable file asynchronously using the supplied loader.
  */
+export async function parseFile<LoaderT extends Loader>(
+  file: ReadableFile,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
 export async function parseFile<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   file: ReadableFile,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 /**
  * Parses a random access readable file asynchronously by matching one of the supplied loaders.
  */
+export async function parseFile<LoaderArrayT extends Loader[]>(
+  file: ReadableFile,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+
 export async function parseFile<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   file: ReadableFile,
   loaders: LoaderArrayT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+): Promise<LoaderArrayReturnType<LoaderArrayT, OptionsT>>;
 
 /**
  * Parses a random access readable file asynchronously by matching a pre-registered loader.
@@ -111,14 +128,21 @@ export async function parseFile(
     url,
     normalizedOptions
   );
+  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, false);
   context = getLoaderContext(
     // @ts-expect-error candidateLoaders may be a single forced loader
     {url, _parse: parse, loaders: candidateLoaders},
-    strictOptions,
+    nativeArrowOptions || strictOptions,
     context || null
   );
 
-  return await parseFileWithLoader(loader, file, strictOptions, context);
+  const result = await parseFileWithLoader(
+    loader,
+    file,
+    nativeArrowOptions || strictOptions,
+    context
+  );
+  return nativeArrowOptions ? unwrapArrowTable(result) : result;
 }
 
 /**

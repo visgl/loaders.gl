@@ -31,6 +31,7 @@ async function preloadGeoParquetLoader() {
 
 /** Metadata-only GeoParquet table loader. */
 export const GeoParquetLoader = {
+  defaultShape: 'arrow',
   ...ParquetFormat,
 
   dataType: null as unknown as GeoJSONTable | ArrowTable,

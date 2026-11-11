@@ -25,12 +25,13 @@ export type NDGeoJSONLoaderOptions = LoaderOptions & {
   /** Output options, shared with the legacy NDGeoJSON loader. */
   geojson?: {
     /** Arrow by default; object rows preserve complete GeoJSON features. */
-    shape?: 'arrow-table' | 'object-row-table';
+    shape?: 'arrow' | 'arrow-table' | 'object-row-table';
   };
 };
 
 /** Metadata-only loader for newline-delimited GeoJSON features. */
 export const NDGeoJSONLoader = {
+  defaultShape: 'arrow',
   ...NDGeoJSONFormat,
   version: VERSION,
   dataType: null as unknown as ArrowTable | ObjectRowTable,

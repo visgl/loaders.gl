@@ -25,6 +25,7 @@ async function preloadCSVLoader() {
 
 /** Metadata-only loader for CSV and other delimiter-separated tables. */
 export const CSVLoader = {
+  defaultShape: 'arrow',
   ...CSVFormat,
   dataType: null as unknown as ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
   batchType: null as unknown as TableBatch | ColumnarTableBatch | ArrowTableBatch,

@@ -32,7 +32,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="ParquetLoader can return familiar object rows, Arrow-compatible tables, or incremental batches. The same entry point can stay useful as files become wider, larger, and more selective."
   tone="mint"
   items={[
-    {label: 'Default', value: "ArrowTable output with parquet.shape: 'arrow-table'"},
+    {label: 'Default', value: "Native Apache Arrow Table"},
     {label: 'Rows', value: "Object-row tables with parquet.shape: 'object-row-table'"},
     {label: 'Streaming', value: 'Batches for incremental processing and lower peak memory'},
     {label: 'Selective path', value: 'Use ParquetSourceLoader for footer and range-aware reads'}
@@ -97,7 +97,7 @@ const arrowTable = await load(url, ParquetLoader, {
 
 ## Shapes
 
-Both `ParquetLoader` and `ParquetJSLoader` return loaders.gl `ArrowTable` objects by default. Set `parquet.shape: 'object-row-table'` when row objects are required.
+Both `ParquetLoader` and `ParquetJSLoader` return native Apache Arrow `Table` objects by default. Set `parquet.shape: 'object-row-table'` when row objects are required.
 
 | Shape              | Output                                           |
 | ------------------ | ------------------------------------------------ |
@@ -220,7 +220,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'arrow-table'` | Selects the returned table shape. |
+| `parquet.shape` | `'arrow' \| 'arrow-table' \| 'object-row-table'` | `'arrow'` | Selects the returned table shape. |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
 | `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |
