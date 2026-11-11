@@ -319,6 +319,7 @@
   "resolutions_notes": [
     "Ensure we use recent typescript",
     "Use current published Webpack build plugins to remove serialize-javascript 6; remove overrides after Docusaurus upgrades its parent dependency ranges",
+    "Use published KaTeX 0.18.2 for micromark math until its parent accepts the fixed renderer",
     "Keep published deck.gl/luma.gl 9.x on their declared glTF 4.x dependency; repository imports target v5",
     "Use published minimatch 11 for affected minimatch 10 dependency ranges until Nx and npm tooling upgrade; preserve minimatch 3 callers",
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
@@ -327,9 +328,11 @@
     "Use published textures 4.5.4 for legacy luma/glTF consumers to remove automatic texture-compressor/image-size 0.x installation",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5",
+    "Use published webpack-dev-server 6 to remove the SockJS dependency on vulnerable UUID 8",
     "Use published Undici 7.30.2 for Nx 23.3.1 until its exact 7.29.0 dependency is upgraded"
   ],
   "resolutions": {
+    "katex@npm:^0.16.0": "npm:0.18.2",
     "apache-arrow@npm:>= 17.0.0": "^21.2.0",
     "apache-arrow@npm:>=17.0.0": "^21.2.0",
     "typescript": "^6.0.3",
@@ -363,6 +366,7 @@
     "minimatch@npm:^10.0.3": "npm:11.0.6",
     "minimatch@npm:^10.1.1": "npm:11.0.6",
     "minimatch@npm:^10.2.2": "npm:11.0.6",
-    "minimatch@npm:^10.2.6": "npm:11.0.6"
+    "minimatch@npm:^10.2.6": "npm:11.0.6",
+    "webpack-dev-server": "npm:6.1.0"
   }
 }
