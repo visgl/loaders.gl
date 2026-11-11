@@ -428,7 +428,9 @@ function deduceJSONArrowSchema(table: ObjectRowTable | ArrayRowTable): Schema {
 
 /** Infers one synthetic struct field from an array row. */
 function inferArrayRowField(row: unknown[]): ArrowLikeField {
-  const fields = row.map((value, columnIndex) => inferValueField(`column${columnIndex + 1}`, value));
+  const fields = row.map((value, columnIndex) =>
+    inferValueField(`column${columnIndex + 1}`, value)
+  );
   return {
     name: 'row',
     type: {

@@ -110,8 +110,8 @@ describe('schema scalar and storage boundaries', () => {
 test('row adapters preserve nested values and explicit header ordering', () => {
   const nested = {list: [1, null], object: {name: 'nested'}};
   expect(convertToObjectRow([nested, false], null)).toEqual({
-    'column1': nested,
-    'column2': false
+    column1: nested,
+    column2: false
   });
   expect(convertToArrayRow({second: false, first: nested}, ['first', 'missing', 'second'])).toEqual(
     [nested, undefined, false]
@@ -131,13 +131,18 @@ test('row adapters preserve nested values and explicit header ordering', () => {
 });
 
 test('positional schema inference uses 1-based column names without renaming object keys', () => {
-  expect(deduceSchema([[10, 20, 30], [40, 50, 60]]).fields.map(field => field.name)).toEqual([
-    'column1', 'column2', 'column3'
+  expect(
+    deduceSchema([
+      [10, 20, 30],
+      [40, 50, 60]
+    ]).fields.map(field => field.name)
+  ).toEqual(['column1', 'column2', 'column3']);
+  expect(
+    deduceTableSchema({shape: 'array-row-table', data: [[1, 2]]}).fields.map(field => field.name)
+  ).toEqual(['column1', 'column2']);
+  expect(deduceSchema([{'0': 12, '1': 34}]).fields.map(field => field.name)).toEqual(['0', '1']);
+  expect(deduceSchema([{column1: 12, column2: 34}]).fields.map(field => field.name)).toEqual([
+    'column1',
+    'column2'
   ]);
-  expect(deduceTableSchema({shape: 'array-row-table', data: [[1, 2]]}).fields.map(field => field.name))
-    .toEqual(['column1', 'column2']);
-  expect(deduceSchema([{'0': 12, '1': 34}]).fields.map(field => field.name))
-    .toEqual(['0', '1']);
-  expect(deduceSchema([{column1: 12, column2: 34}]).fields.map(field => field.name))
-    .toEqual(['column1', 'column2']);
 });

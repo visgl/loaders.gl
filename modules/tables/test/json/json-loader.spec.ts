@@ -1324,7 +1324,10 @@ async function* makeChunkedTextIterator(text: string, chunkSize: number) {
 }
 
 test('JSON positional rows use column1-based names across row and Arrow outputs', () => {
-  const json = JSON.stringify([[12.5, 34.2, 100], [15.1, 35.8, 200]]);
+  const json = JSON.stringify([
+    [12.5, 34.2, 100],
+    [15.1, 35.8, 200]
+  ]);
   const rows = BundledJSONTableLoader.parseTextSync?.(json, {
     json: {shape: 'object-row-table'}
   });
