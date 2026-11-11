@@ -6,6 +6,7 @@ import {expect, test, vi} from 'vitest';
 import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/scan';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {SQLQueryParser} from '@loaders.gl/core/scan';
+import {parseSQLQuery} from '@loaders.gl/core/scan/query';
 
 function source() {
   const data = new arrow.Table({
@@ -14,7 +15,7 @@ function source() {
   });
   return {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
 }
-// Portable parser outputs intentionally mirror math.gl; no unreleased dependency is required.
+
 const baseline = {
   select: [{column: 'name', as: 'label'}],
   where: {op: '>=', args: [{property: 'value'}, 3]},
@@ -43,20 +44,43 @@ test('injected baseline limits retain schema for empty results', async () => {
   expect(result.data.schema.names).toEqual(['result']);
   expect(result.data.schema.fields[0]!.type).toEqual(new arrow.Int32());
 });
+test('streaming SQL computes projections, arrays and WHERE expressions from source columns', async () => {
+  const results = [];
+  for await (const batch of queryInBatches(
+    'SELECT name, value + 1 AS next, ARRAY[value, value] AS pair WHERE value + 1 >= 4 LIMIT 1',
+    {source: source(), sqlParser: parseSQLQuery}
+  ))
+    results.push(batch.data);
+  expect(results).toHaveLength(1);
+  expect(results[0]!.schema.names).toEqual(['name', 'next', 'pair']);
+  expect(results[0]!.getChild('name')!.get(0)).toBe('c');
+  expect(results[0]!.getChild('next')!.get(0)).toBe(4);
+  expect(Array.from(results[0]!.getChild('pair')!.get(0))).toEqual([3, 3]);
+});
+
+test('explicit REAL arrays preserve null tuple validity and zero padding', async () => {
+  const result = await query('SELECT ARRAY[value, value, value]::REAL[3] AS position', {
+    source: source(),
+    sqlParser: parseSQLQuery
+  });
+  const positions = result.data.getChild('position') as arrow.Vector<arrow.FixedSizeList>;
+  expect(positions.type.listSize).toBe(3);
+  expect(positions.type.valueType).toEqual(new arrow.Float32());
+  expect(positions.get(1)).toBeNull();
+  expect(Array.from(positions.data[0]!.children[0]!.values.slice(3, 6))).toEqual([0, 0, 0]);
+  expect(Array.from(positions.get(2)!)).toEqual([3, 3, 3]);
+});
+
+test('SQL casts filter nulls and computed empty results retain the output schema', async () => {
+  const options = {source: source(), sqlParser: parseSQLQuery};
+  const result = await query('SELECT name WHERE CAST(value AS BIGINT) >= 3', options);
+  expect(result.data.getChild('name')!.toArray()).toEqual(['c', 'd']);
+  const empty = await query('SELECT value + 1 AS next LIMIT 0', options);
+  expect(empty.data.numRows).toBe(0);
+  expect(empty.data.schema.names).toEqual(['next']);
+});
+
 test.each([
-  {select: [{expression: {type: 'Identifier', name: 'value'}, as: 'computed'}]},
-  {select: [{array: ['value'], as: 'position'}]},
-  {where: {op: '=', args: [{property: 'value', casts: ['int32']}, 1]}},
-  {where: {op: 'not', args: [{op: 'isNull', args: [{property: 'value', casts: ['int32']}]}]}},
-  {
-    where: {
-      op: 'and',
-      args: [
-        {op: '=', args: [{property: 'value'}, 1]},
-        {op: 'in', args: [{property: 'value', casts: ['int64']}, [1n]]}
-      ]
-    }
-  },
   {where: {op: '=', args: [{expression: {type: 'Identifier', name: 'value'}}, 1]}},
   {where: {op: '=', args: [{property: 'value'}, {expression: {type: 'Literal', value: 1}}]}},
   {where: {op: '=', args: [{property: 'value'}, {value: 1, casts: ['int32']}]}},
@@ -67,8 +91,7 @@ test.each([
       op: 'and',
       args: [{type: 'CallExpression', callee: {type: 'Identifier', name: 'cast'}, arguments: []}]
     }
-  },
-  {where: {expression: {type: 'Identifier', name: 'value'}}}
+  }
 ])('unsupported parser extensions fail before source reads: %#', async logicalQuery => {
   const read = vi.fn(),
     getQueryMetadata = vi.fn();
@@ -90,7 +113,7 @@ test('unsupported logical queries fail before FROM source discovery', async () =
     sources: [{name: 'warehouse', getTable}],
     sqlParser: () => ({
       from: 'warehouse',
-      where: {op: 'isNull', args: [{property: 'value', casts: ['float64']}]}
+      where: {op: 'isNull', args: [{expression: {type: 'Identifier', name: 'value'}}]}
     })
   } as unknown as QueryOptions;
   await expect(query('cast', options)).rejects.toThrow('CAST');
@@ -102,7 +125,7 @@ test('rejected parser output emits one terminal error summary', async () => {
     query('cast', {
       source: source(),
       sqlParser: (() => ({
-        where: {op: '=', args: [{property: 'value', casts: ['int32']}, 1]}
+        where: {op: '=', args: [{property: 'value'}, {value: 1, casts: ['int32']}]}
       })) as unknown as SQLQueryParser,
       onQueryComplete
     })

@@ -139,14 +139,17 @@ sources. Catalogs and commands never close caller-owned sources.
 
 ## Optional SQL parsers
 
-Import `parseSQLQuery` or `parseSQLSelect` from `@loaders.gl/core/scan/query` and pass it as
-`sqlParser`. The former supports metadata commands and includes WHERE through `parseSQLPredicate`; the smaller latter parses
-SELECT columns/AS aliases, optional FROM and LIMIT, rejecting WHERE unless supplied with a
-`parseWhere` callback. Both preserve case and double-quoted identifiers and reject unsupported
-clauses or multiple statements. ESM parser-only imports tree-shake Arrow execution away.
+Import `parseSQLQuery` from `@math.gl/core/sql` or `@loaders.gl/core/scan/query` and pass it as
+`sqlParser`. It supports SELECT, WHERE, FROM, LIMIT, and catalog commands. Use `parseSQLSelect`
+for SELECT parsing with an optional caller-supplied WHERE parser. Both preserve case and double-quoted identifiers.
 
-These exports parse the supported subset, not general SQL. Table aliases, qualified column
-references, comments, SELECT expressions, ordering, grouping, joins, and offsets are unsupported.
+Math.gl compiles computed SELECT expressions, fixed-size ARRAY projections, and computed or
+cast-bearing WHERE predicates against the source Arrow schema. Computed filters run before the
+row limit and output projection. For example, `SELECT value + 1 AS next WHERE value * 2 > 10`
+filters source rows before computing `next`. Use `ARRAY[x, y, z]::REAL[3] AS position` for a packed
+Float32 column. Without an explicit type, math.gl infers component precision from the inputs.
+A null component makes the whole tuple null. Table aliases, qualified column references,
+ordering, grouping, joins, and offsets are outside this query API.
 
 ## Results and execution
 

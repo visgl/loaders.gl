@@ -5,6 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {query, queryInBatches} from '@loaders.gl/core/scan';
+import {parseSQLQuery} from '@math.gl/core/sql';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
@@ -114,6 +115,53 @@ test.each([
   expect(received!.onQueryComplete).toBeUndefined();
   expect(received!.predicate).toEqual(support === 'residual' ? undefined : logical.where);
   expect(received!.limit).toBe(support === 'residual' ? undefined : 1);
+});
+
+test('computed SQL aligns projected source fields and keeps the limit above local filtering', async () => {
+  const table = makeTable();
+  const read = vi.fn(async function* (_options: TableScanReadOptions = {}) {
+    const data = new arrow.Table({
+      value: table.data.getChild('value')!,
+      extra: arrow.vectorFromArray([8, 9, 10], new arrow.Int32()),
+      name: table.data.getChild('name')!
+    });
+    yield {
+      shape: 'arrow-table' as const,
+      data,
+      length: data.numRows,
+      schema: convertArrowToSchema(data.schema),
+      batchType: 'data' as const
+    };
+  });
+  const source: TableScanSource = {
+    getQueryMetadata: async () =>
+      createScanQueryMetadata({
+        sourceType: 'test',
+        queryType: 'table',
+        schema: table.schema!,
+        execution: {status: 'supported', method: 'read'},
+        capabilities: {
+          table: {
+            projection: 'pushdown',
+            predicate: 'pushdown',
+            limit: 'pushdown',
+            streaming: true,
+            cancellation: true
+          }
+        }
+      }),
+    read
+  };
+  const result = await query('SELECT name, value * 10 AS score WHERE value + 1 > 2 LIMIT 1', {
+    source,
+    sqlParser: parseSQLQuery
+  });
+  expect(result.data.getChild('name')!.toArray()).toEqual(['b']);
+  expect(Array.from(result.data.getChild('score')!.toArray())).toEqual([20]);
+  expect(read).toHaveBeenCalledWith(expect.objectContaining({columns: ['name', 'value']}));
+  const [options] = read.mock.calls[0]!;
+  expect(options?.limit).toBeUndefined();
+  expect(options?.predicate).toBeUndefined();
 });
 
 test('row batches normalize to Arrow and failures/cancellation complete once', async () => {
@@ -228,6 +276,12 @@ test('unsupported inputs and changed output types fail with one completion summa
     }
   };
   await expect(query({}, {source: drift})).rejects.toThrow('schema does not match');
+  await expect(
+    query('SELECT name, 1 AS constant WHERE value > 10', {
+      source: drift,
+      sqlParser: parseSQLQuery
+    })
+  ).rejects.toThrow('Query input schema does not match source metadata.');
 });
 
 test.each([
