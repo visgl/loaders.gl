@@ -61,9 +61,9 @@ test('JSON Arrow conversion infers array rows and rejects incompatible inferred 
     data: [[1, 'one'], [2], [3, 'three', true]]
   } as any);
   expect(table.schema?.fields.map(field => [field.name, field.nullable])).toEqual([
-    ['column-0', true],
-    ['column-1', true],
-    ['column-2', true]
+    ['column1', true],
+    ['column2', true],
+    ['column3', true]
   ]);
   expect(table.data.numRows).toBe(3);
 
