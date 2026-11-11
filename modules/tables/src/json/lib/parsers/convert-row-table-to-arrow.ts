@@ -696,7 +696,7 @@ function normalizeArrayRowForArrow(
   if (row.length > schema.fields.length) {
     for (let fieldIndex = schema.fields.length; fieldIndex < row.length; fieldIndex++) {
       handleExtraField(
-        `column-${fieldIndex}`,
+        `column${fieldIndex + 1}`,
         conversionOptions,
         conversionLogger,
         `JSONLoader: incompatible Arrow schema, unexpected column index ${fieldIndex}`
