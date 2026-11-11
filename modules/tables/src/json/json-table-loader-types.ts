@@ -3,11 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, ArrowTableBatch, Schema, Table, TableBatch} from '@loaders.gl/core/schema';
-import type {Loader, LoaderOptions, LoaderWithDataSource} from '@loaders.gl/core/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type * as arrow from 'apache-arrow';
 import {JSON_WORKER_URL} from './json-worker-url';
 import {JSONFormat} from './json-format';
-import {JSON_TABLE_SOURCE, type JSONTableSource} from './json-table-source';
 import type {JSONBatch, MetadataBatch} from './json-loader-types';
 import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
 
@@ -56,8 +55,6 @@ export const JSONTableLoader = {
   batchType: null as unknown as TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
 
   ...JSONFormat,
-  ...JSON_TABLE_SOURCE,
-  sourceOnly: false,
   name: 'JSON Table',
   id: 'json-table',
   version: VERSION,
@@ -80,5 +77,4 @@ export const JSONTableLoader = {
   Table | ArrowTable,
   TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
   JSONTableLoaderOptions
-> &
-  LoaderWithDataSource<JSONTableSource>;
+>;

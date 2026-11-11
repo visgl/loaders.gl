@@ -99,7 +99,7 @@ If the selected JSON value is not a row array, atomic parsing throws instead of 
 
 ## Query a JSON table source
 
-Use `JSONTableLoader` with the loaders.gl query API to select and rename fields.
+Import `JSONTableLoader` from `@loaders.gl/tables/json` to use the loaders.gl query API to select and rename fields.
 The same descriptor accepts `load()` for parsing and `createDataSource()` for opening a reusable source.
 For array rows with no supplied schema, generated fields are named `column1`, `column2`, and so on (1-based), matching headerless CSV. A supplied schema takes precedence.
 

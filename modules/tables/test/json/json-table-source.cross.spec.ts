@@ -71,4 +71,11 @@ test('JSONTableLoader parses through load and opens a source through createDataS
   const metadata = await source.getQueryMetadata();
   expect(metadata.schema?.fields.map(field => field.name)).toEqual(['column1', 'column2']);
   expect(await load(input, JSONTableSourceLoader)).toBeInstanceOf(JSONTableSource);
+
+  const createSource = vi.fn(JSONTableLoader.createDataSource);
+  const combined = {...JSONTableLoader, createDataSource: createSource};
+  expect(
+    createDataSource('https://example.test/rows.json', [combined, JSONTableSourceLoader])
+  ).toBeInstanceOf(JSONTableSource);
+  expect(createSource).toHaveBeenCalledOnce();
 });
