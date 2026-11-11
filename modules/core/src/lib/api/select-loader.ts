@@ -48,40 +48,28 @@ export async function selectLoader(
   const normalizedOptions = normalizeLoaderOptions(options || {});
   normalizedOptions.core ||= {};
 
-  if (data instanceof Response && mayContainText(data)) {
-    const text = await data.clone().text();
-    const textLoader = selectLoaderSync(
-      text,
-      loaders,
-      {...normalizedOptions, core: {...normalizedOptions.core, nothrow: true}},
-      context
-    );
-    if (textLoader) {
-      return textLoader;
-    }
+  if (loaders && !Array.isArray(loaders)) {
+    return normalizeLoader(loaders);
   }
 
-  // First make a sync attempt, disabling exceptions
-  let loader = selectLoaderSync(
-    data,
-    loaders,
-    {...normalizedOptions, core: {...normalizedOptions.core, nothrow: true}},
-    context
-  );
-  if (loader) {
+  const text = data instanceof Response && mayContainText(data) ? await data.clone().text() : null;
+  let initialBytes: ArrayBuffer | undefined;
+
+  async function matchCandidates(candidates: Loader[]): Promise<Loader | null> {
+    normalizeLoaders(candidates);
+    const loader =
+      (text !== null && selectLoaderInternal(text, candidates, normalizedOptions, context)) ||
+      selectLoaderInternal(data, candidates, normalizedOptions, context);
+    if (!loader && isBlob(data) && candidates.length) {
+      initialBytes ??= await data.slice(0, 10).arrayBuffer();
+      return selectLoaderInternal(initialBytes, candidates, normalizedOptions, context);
+    }
     return loader;
   }
 
-  // For Blobs and Files, try to asynchronously read a small initial slice and test again with that
-  // to see if we can detect by initial content
-  if (isBlob(data)) {
-    data = await data.slice(0, 10).arrayBuffer();
-    loader = selectLoaderSync(data, loaders, normalizedOptions, context);
-  }
-
-  if (!loader && data instanceof Response && mayContainText(data)) {
-    const text = await data.clone().text();
-    loader = selectLoaderSync(text, loaders, normalizedOptions, context);
+  let loader = await matchCandidates(loaders || []);
+  if (!loader && !normalizedOptions.core.ignoreRegisteredLoaders) {
+    loader = await matchCandidates(getRegisteredLoaders());
   }
 
   // no loader available
@@ -132,21 +120,12 @@ export function selectLoaderSync(
     return normalizeLoader(loaders);
   }
 
-  // Build list of candidate loaders that will be searched in order for a match
-  let candidateLoaders: Loader[] = [];
-  // First search supplied loaders
-  if (loaders) {
-    candidateLoaders = candidateLoaders.concat(loaders);
+  const candidates = loaders || [];
+  normalizeLoaders(candidates);
+  let loader = selectLoaderInternal(data, candidates, normalizedOptions, context);
+  if (!loader && !normalizedOptions.core.ignoreRegisteredLoaders) {
+    loader = selectLoaderInternal(data, getRegisteredLoaders(), normalizedOptions, context);
   }
-  // Then fall back to registered loaders
-  if (!normalizedOptions.core.ignoreRegisteredLoaders) {
-    candidateLoaders.push(...getRegisteredLoaders());
-  }
-
-  // TODO - remove support for legacy loaders
-  normalizeLoaders(candidateLoaders);
-
-  const loader = selectLoaderInternal(data, candidateLoaders, normalizedOptions, context);
 
   // no loader available
   if (!loader && !normalizedOptions.core.nothrow) {
