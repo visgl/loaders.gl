@@ -190,11 +190,3 @@ JSONPaths are used only to identify which array should be streamed, so selectors
 ## Attribution
 
 This loader is based on a fork of dscape's [`clarinet`](https://github.com/dscape/clarinet) under BSD 2-clause license.
-
-## Native Arrow output
-
-Pass `geojson: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
-`load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
-yield native `RecordBatch` objects. Select `'arrow-table'` for loaders.gl table
-and batch objects with metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
-for streaming, metadata, and worker behavior.

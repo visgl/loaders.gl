@@ -146,11 +146,3 @@ for streaming behavior, schemas, backpressure, and Node/custom-worker options.
 Arrow tables return as directly transferred column buffers. Row tables and container metadata return as
 binary JSON frames decoded on the caller, preserving heterogeneous values without Arrow coercion.
 Decoded row objects are never structured-cloned across the worker boundary.
-
-## Native Arrow output
-
-Pass `ndjson: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
-`load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
-yield native `RecordBatch` objects. Select `'arrow-table'` for loaders.gl table
-and batch objects with metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
-for streaming, metadata, and worker behavior.

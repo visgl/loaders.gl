@@ -89,11 +89,3 @@ Browser workers use the published asset fallback; set `arrow.workerUrl` to self-
 worker bundle. Node worker threads require `core._nodeWorkers: true` and use the packaged CommonJS
 bundle. Set `core.workerInBatches: false` to keep batches on the caller. Custom worker URLs require
 `core.workerInBatches: true` to declare compatibility with the batch protocol.
-
-## Native Arrow output
-
-Pass `arrow: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
-`load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
-yield native `RecordBatch` objects. Select `'arrow-table'` for loaders.gl table
-and batch objects with metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
-for streaming, metadata, and worker behavior.
