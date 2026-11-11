@@ -320,6 +320,7 @@
     "Ensure we use recent typescript",
     "Use current published Webpack build plugins to remove serialize-javascript 6; remove overrides after Docusaurus upgrades its parent dependency ranges",
     "Keep published deck.gl/luma.gl 9.x on their declared glTF 4.x dependency; repository imports target v5",
+    "Use published minimatch 11 for affected minimatch 10 dependency ranges until Nx and npm tooling upgrade; preserve minimatch 3 callers",
     "Keep Playwright on 1.59.1: 1.63.0 closes Chromium during headless coverage shards",
     "Use published Tinypool 2.1.2 for Docusaurus SSR workers until the parent upgrades its 1.x dependency",
     "Align loaders.gl Arrow ranges with parquet-wasm; preserve DuckDB-Wasm’s separate ^17 dependency",
@@ -357,6 +358,11 @@
     "@loaders.gl/geospatial": "^5.0.0-alpha.0",
     "@loaders.gl/ogc": "^5.0.0-alpha.0",
     "@loaders.gl/pointclouds": "^5.0.0-alpha.0",
-    "undici@npm:7.29.0": "npm:7.30.2"
+    "undici@npm:7.29.0": "npm:7.30.2",
+    "minimatch@npm:10.2.5": "npm:11.0.6",
+    "minimatch@npm:^10.0.3": "npm:11.0.6",
+    "minimatch@npm:^10.1.1": "npm:11.0.6",
+    "minimatch@npm:^10.2.2": "npm:11.0.6",
+    "minimatch@npm:^10.2.6": "npm:11.0.6"
   }
 }
