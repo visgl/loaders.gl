@@ -268,3 +268,13 @@ These entry points currently support selection, aliases, predicates, and limits.
 joins, sorting, aggregates, SQL expressions in SELECT, or synchronous execution. For exact
 signatures, errors, capability details, and benchmark commands, see the
 [query API reference](/docs/modules/core/scan/query).
+
+### Injected SQL parser contract
+
+An injected `sqlParser` returns portable logical queries. The current executor accepts source-column
+selections and aliases, portable column predicates, limits, source references and catalog commands.
+Parser support for additional syntax does not imply execution support: computed SELECT expressions,
+ARRAY projections and cast-bearing or computed WHERE operands are rejected before source discovery,
+metadata reads or data loading. This prevents newer parser output from silently running with omitted
+operations. These execution capabilities will be enabled as the corresponding Arrow evaluator paths
+are integrated. Rejected queries still emit one terminal failure summary.
