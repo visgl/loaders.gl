@@ -3,12 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {fetchFile, selectLoader, selectLoaderSync, isBrowser} from '@loaders.gl/core';
+import {
+  fetchFile,
+  registerLoaders,
+  selectLoader,
+  selectLoaderSync,
+  isBrowser
+} from '@loaders.gl/core';
 import {LegacyImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/scene';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
+import {JSONTableLoader} from '@loaders.gl/tables/json';
+import {getRegisteredLoaders} from '../../../src/lib/api/register-loaders';
+import {getLoaderContext} from '../../../src/lib/loader-utils/loader-context';
 
 const KML_URL = '@loaders.gl/geospatial/kml/test/data/kml/KML_Samples.kml';
 const DRACO_URL = '@loaders.gl/scene/draco/test/data/bunny.drc';
@@ -208,4 +217,32 @@ test.each([
 
   expect(response.bodyUsed).toBe(false);
   expect(await response.text()).toBe(text);
+});
+
+test('selectLoader#explicit loaders take priority over registered loaders', async () => {
+  const body = '[{"loaderPriorityTest":true}]';
+  const registeredLoader = {
+    ...JSONTableLoader,
+    id: 'loader-priority-test',
+    mimeTypes: ['text/plain'],
+    testText: (text: string) => text === body
+  };
+  const response = () => new Response(body, {headers: {'Content-Type': 'text/plain'}});
+  const registry = getRegisteredLoaders();
+  registerLoaders(registeredLoader);
+
+  try {
+    const jsonContext = getLoaderContext({url: 'https://example.test/data.json'}, {}, null);
+    expect(await selectLoader(response(), [JSONTableLoader], {}, jsonContext)).toBe(
+      JSONTableLoader
+    );
+    const explicitTextLoader = {...registeredLoader, id: 'explicit-text', extensions: []};
+    expect(selectLoaderSync(response(), [explicitTextLoader], {}, jsonContext)).toBe(
+      explicitTextLoader
+    );
+    expect(await selectLoader(response(), [DracoLoader])).toBe(registeredLoader);
+    expect(selectLoaderSync(body, [DracoLoader])).toBe(registeredLoader);
+  } finally {
+    registry.splice(registry.indexOf(registeredLoader), 1);
+  }
 });
