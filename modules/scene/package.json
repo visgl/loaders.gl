@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scene",
-  "version": "5.0.0-beta.6",
+  "version": "5.0.0-beta.7",
   "description": "glTF, GLB, OBJ, MTL, OpenUSD, and Draco geometry loaders and writers",
   "license": "MIT",
   "type": "module",
@@ -281,8 +281,8 @@
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "dependencies": {
-    "@loaders.gl/documents": "5.0.0-beta.6",
-    "@loaders.gl/images": "5.0.0-beta.6",
+    "@loaders.gl/documents": "5.0.0-beta.7",
+    "@loaders.gl/images": "5.0.0-beta.7",
     "@math.gl/core": "5.0.0-beta.7",
     "@math.gl/geometry": "5.0.0-beta.7",
     "zod": "^4.1.12"
