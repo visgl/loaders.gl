@@ -97,6 +97,24 @@ Recovered Arrow conversion issues are logged once per issue kind and field path 
 
 If the selected JSON value is not a row array, atomic parsing throws instead of returning raw JSON. This keeps the loader contract table-only.
 
+## Query a JSON table source
+
+Use `JSONTableSourceLoader` with the loaders.gl query API to select and rename fields.
+For array rows with no supplied schema, field names are `column-0`, `column-1`, and so on.
+
+```typescript
+import {query} from '@loaders.gl/core/scan';
+import {JSONTableSourceLoader} from '@loaders.gl/tables/json';
+
+const table = await query(
+  {select: [{as: 'longitude', column: 'column-0'}]},
+  {source: url, loaders: JSONTableSourceLoader}
+);
+```
+
+The source downloads and decodes the entire JSON document before applying filters,
+projections, or limits.
+
 ## Streaming
 
 For larger JSON files, `JSONTableLoader` streams rows from one array. Set `json.jsonpaths` when the row array is embedded in a larger document.
