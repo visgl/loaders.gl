@@ -135,7 +135,7 @@ Supports the table category options such as `batchSize`.
 | `ndjson.schema`          | `Schema \| arrow.Schema` | `undefined` | Optional schema used when `ndjson.shape` is `'arrow-table'`. |
 | `ndjson.arrowConversion` | `object`                | strict recovery policy | Optional Arrow conversion policy. Supports `onTypeMismatch`, `onMissingField`, `onExtraField`, `integerConversion`, and `logRecoveries`. |
 | `ndjson.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'` | `'never'` | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
-| `json.shape`             | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `'arrow-table'` | Deprecated alias for `ndjson.shape`; `ndjson.shape` takes precedence. |
+| `json.shape` | `'arrow-table' \\| 'object-row-table' \\| 'array-row-table'` | `undefined` | Deprecated alias for `ndjson.shape`. |
 
 ## Worker batches
 

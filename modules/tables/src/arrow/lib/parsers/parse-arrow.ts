@@ -15,7 +15,7 @@ const UNSUPPORTED_COMPRESSION_ERROR_REGEXP = /Record batch compression not imple
 /** Parses arrow to a loaders.gl table. Defaults to `arrow-table` */
 export function parseArrowSync(
   arrayBuffer: ArrayBuffer,
-  options?: {shape?: Table['shape'] | 'arrow'}
+  options?: {shape?: 'arrow' | Table['shape']}
 ): Table {
   const shape = options?.shape === 'arrow' ? 'arrow-table' : options?.shape || 'arrow-table';
   const arrowTable = parseArrowTable(arrayBuffer);
