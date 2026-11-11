@@ -497,8 +497,15 @@ type RequiredOutputShape<T, Options> = [ScopedOutputShape<T, Options, true>] ext
     : never
   : ScopedOutputShape<T, Options, true>;
 
+/** Evaluates each options variant independently, including an absent options object. */
+type NativeArrowOutput<T, Options, Wrapped, Native> = [Options] extends [never]
+  ? NativeArrowOutputForOption<T, undefined, Wrapped, Native>
+  : Options extends unknown
+    ? NativeArrowOutputForOption<T, Options, Wrapped, Native>
+    : never;
+
 /** Selects native output when certain and a union when shape selection is dynamic. */
-type NativeArrowOutput<T, Options, Wrapped, Native> = T extends {createDataSource: unknown}
+type NativeArrowOutputForOption<T, Options, Wrapped, Native> = T extends {createDataSource: unknown}
   ? Wrapped
   : [Extract<Wrapped, {shape: 'arrow-table'}>] extends [never]
     ? Wrapped

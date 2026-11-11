@@ -84,3 +84,9 @@ const wrappedContextBatches = await parseInBatchesFromContext(
 );
 for await (const batch of wrappedContextBatches) batch.shape;
 void contextBatches;
+
+declare const optionalWrapped: {arrow: {shape: 'arrow-table'}} | undefined;
+const maybeWrapped = parseSyncFromContext(bytes, ArrowLoader, optionalWrapped, context);
+// @ts-expect-error The wrapped option changes the output when supplied.
+const alwaysNative: Table = maybeWrapped;
+void alwaysNative;
