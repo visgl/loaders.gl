@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {createDataSource, load} from '@loaders.gl/core';
+import {JSONTableLoader, JSONTableSource, JSONTableSourceLoader} from '@loaders.gl/tables/json';
 import {MVTSourceLoader, MVTTileSource} from '@loaders.gl/tiles/mvt';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
@@ -47,3 +48,13 @@ void load('memory://tiles', MVTSourceLoader, {core: {loadOptions: {}}});
 void load('memory://tiles', MVTSourceLoader, {mvt: {layers: 123}});
 // @ts-expect-error Source arrays use the same checked contract.
 void load('memory://tiles', [MVTSourceLoader, WMSSourceLoader], {mvt: {layers: 123}});
+
+const jsonSource: JSONTableSource = createDataSource('https://example.test/rows.json', [
+  JSONTableLoader
+]);
+const legacyJsonSource: Promise<JSONTableSource> = load(
+  'https://example.test/rows.json',
+  JSONTableSourceLoader
+);
+load(new ArrayBuffer(0), JSONTableLoader).then(table => table.numRows);
+void [jsonSource, legacyJsonSource];

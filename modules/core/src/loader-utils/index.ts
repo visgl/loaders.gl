@@ -307,11 +307,13 @@ export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-fil
 // EXPERIMENTAL: DATA SOURCES
 export type {
   SourceLoader,
+  DataSourceLoader,
+  LoaderWithDataSource,
   SourcePropsType,
   SourceArrayOptionsType,
   SourceArrayDataSourceType
 } from './source-types';
-export {isSourceLoader} from './source-types';
+export {isSourceLoader, hasDataSource} from './source-types';
 
 export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {getSourceLoaderOptions} from './lib/sources/data-source';

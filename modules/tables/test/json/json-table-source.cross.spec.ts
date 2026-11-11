@@ -3,10 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
+import {createDataSource, load} from '@loaders.gl/core';
+import {Table} from 'apache-arrow';
 import {query} from '@loaders.gl/core/scan';
 import {JSONTableLoader, JSONTableSource, JSONTableSourceLoader} from '@loaders.gl/tables/json';
 
-test('JSON table source queries inferred array columns from a URL', async () => {
+test.each([
+  JSONTableLoader,
+  JSONTableSourceLoader
+])('$id queries inferred array columns from a URL', async loader => {
   expect(JSONTableLoader.options.json.shape).toBe('arrow-table');
   const fetch = vi.fn(async () => new Response('[[-73.98,40.73,2],[-74,40.7,1]]'));
   const result = await query(
@@ -20,7 +25,7 @@ test('JSON table source queries inferred array columns from a URL', async () => 
     },
     {
       source: 'https://example.test/points.json',
-      loaders: JSONTableSourceLoader,
+      loaders: loader,
       core: {fetch}
     }
   );
@@ -53,4 +58,17 @@ test('JSON table source projects Blob rows and observes cancellation', async () 
   }
 
   await expect(source.getQueryMetadata({signal: AbortSignal.abort()})).rejects.toThrow();
+});
+
+test('JSONTableLoader parses through load and opens a source through createDataSource', async () => {
+  const input = new Blob(['[[10,20]]']);
+  const table = await load(await input.arrayBuffer(), JSONTableLoader, {core: {worker: false}});
+  expect(table).toBeInstanceOf(Table);
+  expect(table.getChild('column1')?.get(0)).toBe(10);
+
+  const source = createDataSource(input, [JSONTableLoader]);
+  expect(source).toBeInstanceOf(JSONTableSource);
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.schema?.fields.map(field => field.name)).toEqual(['column1', 'column2']);
+  expect(await load(input, JSONTableSourceLoader)).toBeInstanceOf(JSONTableSource);
 });

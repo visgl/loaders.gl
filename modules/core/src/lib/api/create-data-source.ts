@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  SourceLoader,
+  DataSourceLoader,
   SourceArrayOptionsType,
   SourceArrayDataSourceType
 } from '@loaders.gl/core/loader-utils';
@@ -20,7 +20,7 @@ import {selectLoaderSync} from './select-loader';
  */
 // DataSourceOptionsT extends DataSourceOptions = DataSourceOptions,
 // DataSourceT extends DataSource = DataSource
-export function createDataSource<SourceArrayT extends SourceLoader[]>(
+export function createDataSource<SourceArrayT extends DataSourceLoader[]>(
   data: unknown,
   sources: Readonly<SourceArrayT>,
   options: Readonly<
@@ -33,12 +33,13 @@ export function createDataSource<SourceArrayT extends SourceLoader[]>(
     sources.length === 1
       ? sources[0]
       : type === 'auto'
-        ? (selectLoaderSync(data as never, sources as unknown as SourceLoader[], {
+        ? (findMatchingSource(data, sources) ??
+          (selectLoaderSync(data as never, sources as unknown as DataSourceLoader[], {
             // `createDataSource` supports non-fetch inputs such as in-memory tables.
             // Selection remains best-effort for those cases.
             ...resolvedOptions,
             core: {...resolvedOptions?.core, type: 'auto'}
-          }) as SourceArrayT[number] | null)
+          }) as SourceArrayT[number] | null))
         : getSourceOfType(type, sources);
 
   if (!source) {
@@ -74,11 +75,30 @@ export function createDataSource<SourceArrayT extends SourceLoader[]>(
 }
 
 /** Guess service type from URL */
-function getSourceOfType(type: string, sources: Readonly<SourceLoader[]>): SourceLoader | null {
+function getSourceOfType(
+  type: string,
+  sources: Readonly<DataSourceLoader[]>
+): DataSourceLoader | null {
   for (const service of sources) {
     if (service.type === type) {
       return service;
     }
   }
   return null;
+}
+
+/** Matches a source by its input capabilities when the caller supplies a combined descriptor. */
+function findMatchingSource(
+  data: unknown,
+  sources: readonly DataSourceLoader[]
+): DataSourceLoader | undefined {
+  if (!sources.some(source => source.sourceOnly === false)) return undefined;
+  return sources.find(source =>
+    typeof data === 'string'
+      ? source.fromUrl && source.testURL(data)
+      : typeof Blob !== 'undefined' &&
+        data instanceof Blob &&
+        source.fromBlob &&
+        Boolean(source.testData?.(data))
+  );
 }

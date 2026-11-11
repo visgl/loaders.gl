@@ -18,7 +18,6 @@ import type {
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {JSONFormat} from './json-format';
 import type {JSONTableLoaderOptions} from './json-table-loader-types';
 
@@ -55,7 +54,9 @@ export class JSONTableSource
       name: this.name,
       queryType: 'table',
       execution: {status: 'supported', method: 'read'},
-      schema: table.schema ?? convertArrowToSchema(table.data.schema),
+      schema:
+        table.schema ??
+        (await import('@loaders.gl/core/schema-utils')).convertArrowToSchema(table.data.schema),
       capabilities: {
         table: {
           predicate: 'residual',
@@ -127,21 +128,26 @@ export class JSONTableSource
   }
 }
 
-/** Opens ordinary JSON row arrays through the table query API. */
-export const JSONTableSourceLoader = {
-  ...JSONFormat,
-  name: 'JSONTableSourceLoader',
-  id: 'json-table-source',
-  extensions: ['json'],
+/** Input selection and runtime factory shared by both JSON table descriptors. */
+export const JSON_TABLE_SOURCE = {
   type: 'json-table-source',
-  version: '1.0.0',
-  dataType: null as unknown as JSONTableSource,
-  batchType: null as never,
   fromUrl: true,
   fromBlob: true,
-  options: {},
   defaultOptions: {},
   testURL: (url: string): boolean => /\.json(?:$|[?#])/i.test(url),
   createDataSource: (data: string | Blob, options: JSONTableSourceOptions, coreApi?: CoreAPI) =>
     new JSONTableSource(data, options, coreApi)
+} as const;
+
+/** Opens ordinary JSON row arrays through the table query API. */
+export const JSONTableSourceLoader = {
+  ...JSONFormat,
+  ...JSON_TABLE_SOURCE,
+  name: 'JSONTableSourceLoader',
+  id: 'json-table-source',
+  extensions: ['json'],
+  version: '1.0.0',
+  dataType: null as unknown as JSONTableSource,
+  batchType: null as never,
+  options: {}
 } as const satisfies SourceLoader<JSONTableSource>;
