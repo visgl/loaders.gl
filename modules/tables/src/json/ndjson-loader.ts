@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {
   serializeJSONWorkerOptions,
   serializeJSONWorkerBatch,
@@ -69,7 +70,7 @@ function parseNDJSONText(
     ? convertRowTableToArrowTable(table, {
         schema: options?.ndjson?.schema,
         arrowConversion: options?.ndjson?.arrowConversion,
-        log: getNDJSONLoaderLog(options)
+        log: getLoaderLog(options)
       })
     : table;
 }
@@ -93,7 +94,7 @@ function parseNDJSONInRequestedShape(
     ? makeNDJSONArrowBatchIterator(batches, {
         schema: options?.ndjson?.schema,
         arrowConversion: options?.ndjson?.arrowConversion,
-        log: getNDJSONLoaderLog(options)
+        log: getLoaderLog(options)
       })
     : batches;
 }
@@ -103,11 +104,6 @@ function getNDJSONShape(options?: NDJSONLoaderOptions): NDJSONShape {
   return (
     options?.ndjson?.shape || options?.json?.shape || NDJSONLoaderWithParser.options.ndjson.shape
   );
-}
-
-/** Returns the loader log object from normalized or deprecated option locations. */
-function getNDJSONLoaderLog(options?: NDJSONLoaderOptions): any {
-  return options?.core?.log || options?.log;
 }
 
 function validateNDJSONArrowOptions(options?: NDJSONLoaderOptions): void {

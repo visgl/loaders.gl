@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {makeLineIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
@@ -80,7 +81,7 @@ function convertFeatures(
     arrowConversion: options?.json?.arrowConversion,
     geoarrowGeometryColumn: options?.json?.geoarrowGeometryColumn,
     geoarrow: options?.geoarrow || options?.json?.geoarrow,
-    log: options?.core?.log
+    log: getLoaderLog(options)
   });
 }
 

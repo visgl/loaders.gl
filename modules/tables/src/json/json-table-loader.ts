@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {
   ArrayRowTable,
   ArrowTable,
@@ -95,7 +96,7 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
   return convertRowTableToArrowTable(table, {
     schema: jsonOptions.json.schema,
     arrowConversion: jsonOptions.json.arrowConversion,
-    log: getJSONTableLoaderLog(jsonOptions)
+    log: getLoaderLog(jsonOptions)
   });
 }
 
@@ -133,7 +134,7 @@ function parseInBatches(
   return convertTableBatchesToArrow(rowBatches, {
     schema: jsonOptions.json.schema,
     arrowConversion: jsonOptions.json.arrowConversion,
-    log: getJSONTableLoaderLog(jsonOptions)
+    log: getLoaderLog(jsonOptions)
   });
 }
 
@@ -281,16 +282,6 @@ function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
 
   const schema = normalizeJSONArrowSchema(options.json.schema);
   return schema.fields.filter(field => field.type === 'utf8').map(field => field.name);
-}
-
-/**
- * Returns the loader log object from normalized or deprecated option locations.
- *
- * @param options - Normalized JSON table loader options.
- * @returns Logger object, when supplied by the caller.
- */
-function getJSONTableLoaderLog(options: JSONTableLoaderOptions): any {
-  return options.core?.log || options.log;
 }
 
 /**

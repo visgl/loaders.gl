@@ -9,6 +9,7 @@ import {
   isPureObject,
   isObject,
   StrictLoaderOptions,
+  getLoaderLog,
   path
 } from '@loaders.gl/core/loader-utils';
 import {probeLog} from './loggers';
@@ -287,6 +288,9 @@ function normalizeOptionsInternal(
   const userOptions = normalizeLoaderOptions(options);
   mergeNestedFields(mergedOptions, userOptions);
   applyCoreShapeDefault(mergedOptions, userOptions, loader);
+  if (mergedOptions.core?.log === null) {
+    mergedOptions.core = {...mergedOptions.core, log: getLoaderLog(mergedOptions)};
+  }
 
   addUrlOptions(mergedOptions, url);
   addDeprecatedTopLevelOptions(mergedOptions);

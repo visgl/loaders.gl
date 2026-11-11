@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader-types';
 import type {GLTF} from '../types/gltf-json-schema';
@@ -101,7 +102,7 @@ async function parseGLTFWithExternalAssets(
 
   const finishNormalization = normalizeGLTFV1WithDeferredBuffers(gltf, {
     normalize: options?.gltf?.normalize,
-    log: options?.core?.log
+    log: getLoaderLog(options)
   });
 
   await preprocessExtensions(gltf, options, context);

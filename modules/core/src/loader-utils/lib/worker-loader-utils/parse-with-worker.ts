@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {NullLog} from '../log-utils/log';
 import {
   canProcessOnWorker,
   canProcessOnWorkerInBatches,
@@ -317,13 +318,13 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
     ...portableOptions,
     signal: undefined,
     onProgress: undefined,
-    log: portableOptions.log === null ? null : undefined,
+    log: isDisabledLog(portableOptions.log) ? null : undefined,
     ...(portableOptions.core
       ? {
           core: {
             ...portableOptions.core,
             authentications: undefined,
-            log: portableOptions.core.log === null ? null : undefined
+            log: isDisabledLog(portableOptions.core.log) ? null : undefined
           }
         }
       : {})
@@ -406,4 +407,9 @@ function isLoaderWithWorkerResultDeserializer(
     typeof (loader as Loader & {deserializeWorkerResult?: unknown}).deserializeWorkerResult ===
     'function'
   );
+}
+
+/** Preserves explicit log suppression when crossing the worker boundary. */
+function isDisabledLog(logger: unknown): boolean {
+  return logger === null || logger instanceof NullLog;
 }

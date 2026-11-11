@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
@@ -97,7 +98,7 @@ function parseTextSync(
         geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
         geoarrow: options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow,
         crs: getGeoJSONCRS(geojson),
-        log: getGeoJSONLoaderLog(options)
+        log: getLoaderLog(options)
       });
     default:
       return table;
@@ -199,7 +200,7 @@ async function* makeGeoJSONArrowBatchIterator(
         ? {encodingPreference: streamingPreference}
         : configuredGeoArrowOptions,
       crs,
-      log: getGeoJSONLoaderLog(options)
+      log: getLoaderLog(options)
     });
 
     if (!frozenSchema && arrowTable.data.numRows > 0) {
@@ -241,11 +242,6 @@ function getGeoJSONCRS(geojson: unknown): LegacyGeoJSONCRS | null {
 
   const crs = (geojson as {crs?: unknown}).crs;
   return crs && typeof crs === 'object' && !Array.isArray(crs) ? (crs as LegacyGeoJSONCRS) : null;
-}
-
-/** Returns the loader log object from normalized or deprecated option locations. */
-function getGeoJSONLoaderLog(options: GeoJSONLoaderOptions): any {
-  return (options.core as {log?: any} | undefined)?.log || (options as {log?: any}).log;
 }
 
 /** Returns whether caller-visible metadata batches were requested. */
