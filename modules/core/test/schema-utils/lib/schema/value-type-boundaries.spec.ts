@@ -110,8 +110,8 @@ describe('schema scalar and storage boundaries', () => {
 test('row adapters preserve nested values and explicit header ordering', () => {
   const nested = {list: [1, null], object: {name: 'nested'}};
   expect(convertToObjectRow([nested, false], null)).toEqual({
-    'column-0': nested,
-    'column-1': false
+    'column1': nested,
+    'column2': false
   });
   expect(convertToArrayRow({second: false, first: nested}, ['first', 'missing', 'second'])).toEqual(
     [nested, undefined, false]
@@ -121,7 +121,7 @@ test('row adapters preserve nested values and explicit header ordering', () => {
     first: nested,
     missing: undefined
   });
-  expect(inferHeadersFromArrayRow([nested, null])).toEqual(['column-0', 'column-1']);
+  expect(inferHeadersFromArrayRow([nested, null])).toEqual(['column1', 'column2']);
   expect(inferHeadersFromObjectRow({first: nested, second: null})).toEqual(['first', 'second']);
   expect(() => convertToObjectRow(null as unknown as unknown[], null)).toThrow('null row');
   expect(() => convertToArrayRow(null as unknown as Record<string, unknown>, null)).toThrow(
