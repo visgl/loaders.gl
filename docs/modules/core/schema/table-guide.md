@@ -44,11 +44,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 The loaders.gl table category provides support for working interchangeably with row-oriented and columnar tables.
 
-
 ## Native Apache Arrow output
 
-Use `shape: 'arrow'` with the core parsing/loading APIs to receive Apache Arrow JS
-objects directly, without the loaders.gl `{shape, data, ...}` wrapper:
+Set `shape: 'arrow'` in the core parsing and loading APIs to receive native Apache
+Arrow JS objects.
 
 ```typescript
 import {load, loadInBatches} from '@loaders.gl/core';
@@ -76,7 +75,7 @@ Supported tabular loaders include `ArrowLoader`, `GeoArrowLoader`, `CSVLoader`,
 `GeoParquetLoader`, `GeoJSONLoader`, and `NDGeoJSONLoader`. Use the loader's regular
 shape namespace (`arrow`, `csv`, `json`, `ndjson`, `parquet`, or `geojson`), or the
 shared `core.shape` default. Explicit loader-scoped shapes take precedence.
-For tabular JSON, use `JSONTableLoader`; `JSONLoader` remains a general JSON parser.
+Use `JSONTableLoader` for JSON row arrays.
 
 Native output preserves Arrow schemas, field metadata, dictionaries, and column
 buffers. Streaming yields every RecordBatch in each internal table, in order,
@@ -86,8 +85,5 @@ messages are not yielded. `core.metadata: true` is incompatible with native
 streaming and throws; use `'arrow-table'` when you need loaders.gl batch metadata
 such as `bytesUsed`, scan metadata, or progress envelopes.
 
-The default shapes and `'arrow-table'` behavior are unchanged. Internal parser
-methods, scan/query operations, and worker transport continue to use loaders.gl
-wrappers. Native output is applied by the core APIs after parsing and worker
-hydration, without copying columns; it is not a new internal table discriminator.
-Call the core APIs rather than invoking a loader's parser methods directly.
+Parser methods and worker transport use loaders.gl table and batch objects.
+The core APIs expose the Arrow objects after parsing and worker hydration.

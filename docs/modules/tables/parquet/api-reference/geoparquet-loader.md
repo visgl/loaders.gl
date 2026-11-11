@@ -81,11 +81,10 @@ For GeoJSON output, geometry columns are converted to GeoJSON geometries where s
 
 `GeoParquetLoader` supports the same options as [`ParquetLoader`](/docs/modules/tables/parquet/api-reference/parquet-loader).
 
-
 ## Native Arrow output
 
 Pass `parquet: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
 `load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
-return native `RecordBatch` objects. Existing `'arrow-table'` output retains the
-loaders.gl wrapper and batch metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
+yield native `RecordBatch` objects. Select `'arrow-table'` for loaders.gl table
+and batch objects with metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
 for streaming, metadata, and worker behavior.

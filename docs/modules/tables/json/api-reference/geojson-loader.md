@@ -172,7 +172,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option                 | From                                                                                  | Type       | Default                                                                                                                                          | Description                                                                                                                           |
 | ---------------------- | ------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `geojson.shape`        |                                                                                       | `string`   | `'arrow-table'`                                                                                                                                  | Requested output shape. Native `'arrow'` is also supported. Supported wrapped values are `'arrow-table'`, `'geojson-table'`, and `'binary-feature-collection'`. |
+| `geojson.shape`        |                                                                                       | `string`   | `'arrow-table'`                                                                                                                                  | Requested output shape. Supported values are `'arrow'`, `'arrow-table'`, `'geojson-table'`, and `'binary-feature-collection'`. |
 | `json.schema`          |                                                                                       | `Schema \| arrow.Schema` | `undefined`                                                                                                                             | Optional full output schema used when `geojson.shape` is `'arrow-table'`. The schema must include the geometry column. |
 | `json.arrowConversion` |                                                                                       | `object`   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`                                                  | Optional Arrow conversion policy for `geojson.shape: 'arrow-table'`. `onTypeMismatch: 'null'`, `onMissingField: 'null'`, and `integerConversion: 'null'` write `null` only for nullable fields. `onExtraField: 'drop'` omits fields that are not in the schema. `integerConversion: 'clamp-and-round'` applies lossy integer conversion, and `'warn'` does the same while logging. |
 | `json.arrowConversion.viewTypes` |                                                                                | `'never' \| 'prefer' \| 'require'` | `'never'`                                                                                                                        | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
@@ -191,11 +191,10 @@ JSONPaths are used only to identify which array should be streamed, so selectors
 
 This loader is based on a fork of dscape's [`clarinet`](https://github.com/dscape/clarinet) under BSD 2-clause license.
 
-
 ## Native Arrow output
 
 Pass `geojson: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
 `load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
-return native `RecordBatch` objects. Existing `'arrow-table'` output retains the
-loaders.gl wrapper and batch metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
+yield native `RecordBatch` objects. Select `'arrow-table'` for loaders.gl table
+and batch objects with metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
 for streaming, metadata, and worker behavior.

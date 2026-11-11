@@ -149,11 +149,10 @@ const table = await load(url, CSVLoader, {
 
 `CSVWorkerLoader` is a deprecated alias for `CSVLoader`.
 
-
 ## Native Arrow output
 
 Pass `csv: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
 `load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
-return native `RecordBatch` objects. Existing `'arrow-table'` output retains the
-loaders.gl wrapper and batch metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
+yield native `RecordBatch` objects. Select `'arrow-table'` for loaders.gl table
+and batch objects with metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
 for streaming, metadata, and worker behavior.
