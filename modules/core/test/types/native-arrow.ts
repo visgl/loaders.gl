@@ -4,7 +4,13 @@
 
 import type {RecordBatch, Table} from 'apache-arrow';
 import {load, loadInBatches, parse, parseFile, parseInBatches, parseSync} from '@loaders.gl/core';
-import type {ReadableFile} from '@loaders.gl/core/loader-utils';
+import {
+  parseFromContext,
+  parseSyncFromContext,
+  parseInBatchesFromContext,
+  type LoaderContext,
+  type ReadableFile
+} from '@loaders.gl/core/loader-utils';
 import {
   ArrowLoader,
   CSVLoader,
@@ -57,3 +63,24 @@ parse(bytes, ArrowLoader, {arrow: {shape: 'invalid-shape'}});
 parse(bytes, ArrowLoader, {core: {shape: 'invalid-shape'}});
 // @ts-expect-error Arrow parser settings retain their declared types.
 parse(bytes, ArrowLoader, {arrow: {shape: 'arrow', batchDebounceMs: 'slow'}});
+
+declare const context: LoaderContext;
+parseFromContext(bytes, ArrowLoader, {arrow: {shape: 'arrow-table'}}, context).then(
+  result => result.shape
+);
+parseSyncFromContext(bytes, ArrowLoader, undefined, context).numRows;
+parseSyncFromContext(bytes, ArrowLoader, {core: {shape: 'arrow-table'}}, context).shape;
+const contextBatches: Promise<AsyncIterable<RecordBatch>> = parseInBatchesFromContext(
+  [bytes],
+  ArrowLoader,
+  undefined,
+  context
+);
+const wrappedContextBatches = await parseInBatchesFromContext(
+  [bytes],
+  ArrowLoader,
+  {arrow: {shape: 'arrow-table'}},
+  context
+);
+for await (const batch of wrappedContextBatches) batch.shape;
+void contextBatches;

@@ -500,26 +500,28 @@ type RequiredOutputShape<T, Options> = [ScopedOutputShape<T, Options, true>] ext
 /** Selects native output when certain and a union when shape selection is dynamic. */
 type NativeArrowOutput<T, Options, Wrapped, Native> = T extends {createDataSource: unknown}
   ? Wrapped
-  : [RequiredOutputShape<T, Options>] extends [never]
-    ? [
-        | ScopedOutputShape<T, Options>
-        | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
-      ] extends [never]
-      ? T extends {defaultShape: 'arrow'}
-        ? Native
-        : Wrapped
-      : T extends {defaultShape: 'arrow'}
-        ? Native | Wrapped
-        : 'arrow' extends
-              | ScopedOutputShape<T, Options>
-              | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
-          ? Native | Wrapped
+  : [Extract<Wrapped, {shape: 'arrow-table'}>] extends [never]
+    ? Wrapped
+    : [RequiredOutputShape<T, Options>] extends [never]
+      ? [
+          | ScopedOutputShape<T, Options>
+          | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
+        ] extends [never]
+        ? T extends {defaultShape: 'arrow'}
+          ? Native
           : Wrapped
-    : 'arrow' extends RequiredOutputShape<T, Options>
-      ? Exclude<RequiredOutputShape<T, Options>, 'arrow'> extends never
-        ? Native
-        : Native | Wrapped
-      : Wrapped;
+        : T extends {defaultShape: 'arrow'}
+          ? Native | Wrapped
+          : 'arrow' extends
+                | ScopedOutputShape<T, Options>
+                | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
+            ? Native | Wrapped
+            : Wrapped
+      : 'arrow' extends RequiredOutputShape<T, Options>
+        ? Exclude<RequiredOutputShape<T, Options>, 'arrow'> extends never
+          ? Native
+          : Native | Wrapped
+        : Wrapped;
 
 /** Typescript helper to extract the public data type, accounting for native Arrow output. */
 export type LoaderReturnType<T = Loader, Options = never> =
@@ -553,16 +555,16 @@ export type LoaderArrayBatchType<
  */
 export async function parseFromContext<
   LoaderT extends Loader,
-  OptionsT extends StrictLoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends StrictLoaderOptions | undefined = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   data: ArrayBuffer,
   loader: LoaderT,
-  options: OptionsT | undefined,
+  options: OptionsT,
   context: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 /**
  * Parses `data` asynchronously by matching one of the supplied loader
@@ -596,13 +598,13 @@ export async function parseFromContext(
  */
 export function parseSyncFromContext<
   LoaderT extends Loader,
-  OptionsT extends StrictLoaderOptions = LoaderOptionsType<LoaderT>
+  const OptionsT extends StrictLoaderOptions | undefined = LoaderOptionsType<LoaderT>
 >(
   data: ArrayBuffer,
   loader: LoaderT,
-  options: OptionsT | undefined,
+  options: OptionsT,
   context: LoaderContext
-): LoaderReturnType<LoaderT> {
+): LoaderReturnType<LoaderT, OptionsT> {
   if (!context._parseSync) {
     throw new Error('parseSync');
   }
@@ -614,13 +616,13 @@ export function parseSyncFromContext<
  */
 export async function parseInBatchesFromContext<
   LoaderT extends Loader,
-  OptionsT extends StrictLoaderOptions = LoaderOptionsType<LoaderT>
+  const OptionsT extends StrictLoaderOptions | undefined = LoaderOptionsType<LoaderT>
 >(
   data: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer> | Response,
   loader: LoaderT,
-  options: OptionsT | undefined,
+  options: OptionsT,
   context: LoaderContext
-): Promise<AsyncIterable<LoaderBatchType<LoaderT>>> {
+): Promise<AsyncIterable<LoaderBatchType<LoaderT, OptionsT>>> {
   if (!context._parseInBatches) {
     throw new Error('parseInBatches');
   }
