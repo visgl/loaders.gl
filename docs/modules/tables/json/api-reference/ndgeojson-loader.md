@@ -64,12 +64,12 @@ import {load, parseInBatches} from '@loaders.gl/core';
 import {NDGeoJSONLoader} from '@loaders.gl/tables/json';
 
 const table = await load('features.ndgeojson', NDGeoJSONLoader);
-console.log(table.data.numRows);
+console.log(table.numRows);
 
 for await (const batch of await parseInBatches(chunks, NDGeoJSONLoader, {
   core: {batchSize: 1000}
 })) {
-  console.log(batch.data.numRows);
+  console.log(batch.numRows);
 }
 ```
 
