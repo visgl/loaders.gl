@@ -12,10 +12,10 @@ test('JSON table source queries inferred array columns from a URL', async () => 
   const result = await query(
     {
       select: [
-        {as: 'longitude', column: 'column-0'},
-        {as: 'latitude', column: 'column-1'}
+        {as: 'longitude', column: 'column1'},
+        {as: 'latitude', column: 'column2'}
       ],
-      where: {op: '=', args: [{property: 'column-2'}, 1]},
+      where: {op: '=', args: [{property: 'column3'}, 1]},
       limit: 1
     },
     {

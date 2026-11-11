@@ -86,6 +86,21 @@ execution or IPC.
 | `columnar-table` | Typed columns are useful but Arrow is not required | `data` is a map of array-like columns |
 | `arrow-table` | The next step is columnar processing, scanning, or IPC | `data` contains an Apache Arrow table |
 
+### Generated names for positional columns
+
+When tabular rows contain values but no field names, loaders.gl assigns the SQL-friendly,
+**one-based** names `column1`, `column2`, `column3`, and so on. This convention is shared by
+headerless CSV (default `csv.columnPrefix: 'column'`) and positional JSON row arrays.
+The first array element remains at JavaScript index `0` but has logical field name `column1`.
+The convention applies when inferring a schema or adapting positional rows to object rows or
+Arrow; it does not rename keys of JSON object rows.
+
+Explicit field names, including names from a supplied schema or a CSV header, take precedence.
+CSV continues to allow an alternate prefix via `csv.columnPrefix`.
+
+For example, positional rows `[[12.5, 34.2], [15.1, 35.8]]` can be queried as
+`SELECT column1 AS longitude, column2 AS latitude` after conversion to a table source.
+
 Every wrapped result uses `shape` as its discriminant, so application code can select the correct
 branch without guessing from the payload:
 

@@ -100,14 +100,14 @@ If the selected JSON value is not a row array, atomic parsing throws instead of 
 ## Query a JSON table source
 
 Use `JSONTableSourceLoader` with the loaders.gl query API to select and rename fields.
-For array rows with no supplied schema, field names are `column-0`, `column-1`, and so on.
+For array rows with no supplied schema, generated fields are named `column1`, `column2`, and so on (1-based), matching headerless CSV. A supplied schema takes precedence.
 
 ```typescript
 import {query} from '@loaders.gl/core/scan';
 import {JSONTableSourceLoader} from '@loaders.gl/tables/json';
 
 const table = await query(
-  {select: [{as: 'longitude', column: 'column-0'}]},
+  {select: [{as: 'longitude', column: 'column1'}]},
   {source: url, loaders: JSONTableSourceLoader}
 );
 ```

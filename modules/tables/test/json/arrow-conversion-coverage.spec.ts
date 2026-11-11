@@ -61,9 +61,9 @@ test('JSON Arrow conversion infers array rows and rejects incompatible inferred 
     data: [[1, 'one'], [2], [3, 'three', true]]
   } as any);
   expect(table.schema?.fields.map(field => [field.name, field.nullable])).toEqual([
-    ['column-0', true],
-    ['column-1', true],
-    ['column-2', true]
+    ['column1', true],
+    ['column2', true],
+    ['column3', true]
   ]);
   expect(table.data.numRows).toBe(3);
 
@@ -107,6 +107,20 @@ test('JSON Arrow conversion handles empty schemas and extra-field policies', () 
     arrowConversion: {onExtraField: 'drop', logRecoveries: false}
   });
   expect(dropped.data.numRows).toBe(1);
+});
+
+test('JSON Arrow recovery reports the one-based name of an extra positional column', () => {
+  const warnings: string[] = [];
+  const table = convertRowTableToArrowTable(
+    {shape: 'array-row-table', data: [[1, 2]]},
+    {
+      schema: {fields: [{name: 'id', type: 'int32'}], metadata: {}},
+      arrowConversion: {onExtraField: 'drop', logRecoveries: true},
+      log: {warn: (message: string) => () => warnings.push(message)}
+    }
+  );
+  expect(table.data.get(0)?.toJSON()).toEqual({id: 1});
+  expect(warnings).toEqual(['JSONLoader: extra Arrow field column2; dropping value']);
 });
 
 test('JSON Arrow conversion normalizes nested schema recovery policies', () => {
