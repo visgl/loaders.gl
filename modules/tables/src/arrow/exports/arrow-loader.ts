@@ -16,7 +16,7 @@ export type ArrowLoaderOptions = LoaderOptions & {
   /** ArrowLoader options */
   arrow?: {
     /** Shape of returned data */
-    shape: 'arrow-table' | 'columnar-table' | 'array-row-table' | 'object-row-table';
+    shape: 'arrow-table' | 'arrow' | 'columnar-table' | 'array-row-table' | 'object-row-table';
     /** Debounce time between batches (prevent excessive numbers of small batches) */
     batchDebounceMs?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */

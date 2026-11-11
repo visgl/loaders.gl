@@ -23,7 +23,7 @@ export type JSONTableLoaderOptions = LoaderOptions & {
     /** Selects the streaming JSON parser backend. */
     backend?: 'clarinet' | 'fast';
     /** Requested table output shape. */
-    shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
+    shape?: 'object-row-table' | 'array-row-table' | 'arrow-table' | 'arrow';
     /** JSON paths identifying arrays that can be streamed as row batches. */
     jsonpaths?: string[];
     /** Optional schema used when converting JSON rows to Arrow. */

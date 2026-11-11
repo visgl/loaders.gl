@@ -101,3 +101,12 @@ records are not supported. Streaming handles arbitrary UTF-8 chunk boundaries an
 [format_ndjson]: http://ndjson.org/
 [format_ldjson]: http://jsonlines.org/
 [format_geojsonseq]: https://datatracker.ietf.org/doc/html/rfc7464
+
+
+## Native Arrow output
+
+Pass `geojson: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
+`load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
+return native `RecordBatch` objects. Existing `'arrow-table'` output retains the
+loaders.gl wrapper and batch metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
+for streaming, metadata, and worker behavior.

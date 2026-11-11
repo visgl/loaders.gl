@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getNativeArrowOptions, unwrapArrowBatches} from '../loader-utils/native-arrow';
+
 import type {Batch, Table} from '@loaders.gl/core/schema';
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import type {
@@ -10,12 +12,8 @@ import type {
   StrictLoaderOptions,
   LoaderOptions,
   LoaderContext,
-  LoaderOptionsWithShape,
   BatchableDataType,
-  LoaderOptionsType,
-  LoaderShapeType,
   LoaderBatchType,
-  LoaderArrayOptionsType,
   LoaderArrayBatchType,
   TransformBatches
 } from '@loaders.gl/core/loader-utils';
@@ -40,29 +38,26 @@ import {parse} from './parse';
  */
 export async function parseInBatches<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
-    LoaderOptionsType<LoaderT>,
-    LoaderShapeType<LoaderT>
-  >
+  const OptionsT extends LoaderOptions = {}
 >(
   data: BatchableDataType,
   loader: LoaderT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+): Promise<AsyncIterable<LoaderBatchType<LoaderT, OptionsT>>>;
 
 /**
  * Parses `data` using one of the supplied loaders
  */
 export async function parseInBatches<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = {}
 >(
   data: BatchableDataType,
   loaders: LoaderArrayT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayBatchType<LoaderArrayT>>;
+): Promise<AsyncIterable<LoaderArrayBatchType<LoaderArrayT, OptionsT>>>;
 
 /**
  * Parses `data` in batches by selecting a pre-registered loader
@@ -123,14 +118,22 @@ export async function parseInBatches(
     url || '',
     normalizedOptions
   );
+  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, true);
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
-    strictOptions,
+    nativeArrowOptions || strictOptions,
     context || null
   );
 
   const loaderWithParser = await getLoaderImplementation(loader, strictOptions, context.url);
-  return await parseWithLoaderInBatches(loader, loaderWithParser, data, strictOptions, context);
+  const batches = await parseWithLoaderInBatches(
+    loader,
+    loaderWithParser,
+    data,
+    nativeArrowOptions || strictOptions,
+    context
+  );
+  return nativeArrowOptions ? unwrapArrowBatches(batches) : batches;
 }
 
 /**

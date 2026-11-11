@@ -7,11 +7,8 @@ import type {
   Loader,
   LoaderContext,
   LoaderOptions,
-  LoaderOptionsWithShape,
   LoaderOptionsType,
-  LoaderShapeType,
   LoaderReturnType,
-  LoaderArrayOptionsType,
   LoaderArrayReturnType,
   SourceLoader,
   SourcePropsType,
@@ -52,28 +49,22 @@ import {getLoaderImplementation} from './load-loader';
  * @param context
  */
 
-export async function load<
-  LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
-    LoaderOptionsType<LoaderT>,
-    LoaderShapeType<LoaderT>
-  >
->(
+export async function load<LoaderT extends Loader, const OptionsT extends LoaderOptions = {}>(
   url: string | DataType,
   loader: LoaderT,
   options?: LoaderT extends SourceLoader ? SourcePropsType<LoaderT> & DataSourceOptions : OptionsT,
   context?: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 export async function load<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = {}
 >(
   url: string | DataType,
   loaders: LoaderArrayT,
   options?: LoaderArrayT extends SourceLoader[] ? SourceArrayOptionsType<LoaderArrayT> : OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+): Promise<LoaderArrayReturnType<LoaderArrayT, OptionsT>>;
 
 /**
  * Loads data asynchronously by matching a pre-registered loader

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type * as arrow from 'apache-arrow';
+
 import type {Format} from './format-types';
 import type {LoadWorker, WorkerOptions, WorkerProgress} from '@loaders.gl/core/worker-utils';
 import {DataType, FetchLike, TransformBatches} from './types';
@@ -446,24 +448,77 @@ export type LoaderOptionsWithShape<
       core?: Omit<NonNullable<Options['core']>, 'shape'> & {shape?: LoaderShapeOrString<Shape>};
     }
   : never;
-/** Typescript helper to extract data type from a loader type */
-export type LoaderReturnType<T = Loader> =
-  T extends Loader<infer Return, unknown, unknown> ? Return : never;
-/** Typescript helper to extract batch type from a loader type */
-export type LoaderBatchType<T = Loader> =
-  T extends Loader<unknown, infer Batch, unknown> ? Batch : never;
+/** Extracts possible shape selections, including optional option namespaces. */
+type OptionShape<Options> = Options extends {shape?: infer Shape} ? Extract<Shape, string> : never;
+
+/** Extracts required shape selections without treating omitted options as native output. */
+type RequiredOptionShape<Options> = [Options] extends [{shape: infer Shape}]
+  ? Extract<Shape, string>
+  : never;
+
+/** Extracts loader-scoped selection from the declared option namespaces. */
+type ScopedOutputShape<T, Options, Required extends boolean = false> = T extends {
+  options: infer Defaults;
+}
+  ? {
+      [Key in Exclude<keyof Defaults, 'core'> & keyof Options]: Required extends true
+        ? RequiredOptionShape<Options[Key]>
+        : OptionShape<Options[Key]>;
+    }[Exclude<keyof Defaults, 'core'> & keyof Options]
+  : never;
+
+/** Resolves an explicit loader-scoped selection before the common shape default. */
+type RequiredOutputShape<T, Options> = [ScopedOutputShape<T, Options, true>] extends [never]
+  ? [ScopedOutputShape<T, Options>] extends [never]
+    ? Options extends {core: infer Core}
+      ? RequiredOptionShape<Core>
+      : never
+    : never
+  : ScopedOutputShape<T, Options, true>;
+
+/** Selects native output when certain and a union when the caller supplies dynamic options. */
+type NativeArrowOutput<T, Options, Wrapped, Native> = T extends {createDataSource: unknown}
+  ? Wrapped
+  : [Options] extends [never]
+    ? Wrapped
+    : 'arrow' extends RequiredOutputShape<T, Options>
+      ? Exclude<RequiredOutputShape<T, Options>, 'arrow'> extends never
+        ? Native
+        : Wrapped | Native
+      : 'arrow' extends
+            | ScopedOutputShape<T, Options>
+            | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
+        ? [RequiredOutputShape<T, Options>] extends [never]
+          ? Wrapped | Native
+          : Wrapped
+        : Wrapped;
+
+/** Typescript helper to extract the public data type, accounting for native Arrow output. */
+export type LoaderReturnType<T = Loader, Options = never> =
+  T extends Loader<infer Return, unknown, unknown>
+    ? NativeArrowOutput<T, Options, Return, arrow.Table>
+    : never;
+/** Typescript helper to extract the public batch type, accounting for native Arrow output. */
+export type LoaderBatchType<T = Loader, Options = never> =
+  T extends Loader<unknown, infer Batch, unknown>
+    ? NativeArrowOutput<T, Options, Batch, arrow.RecordBatch>
+    : never;
 
 /** Typescript helper to extract options type from an array of loader types */
 export type LoaderArrayOptionsType<LoadersT extends Loader[] = Loader[]> = LoaderOptionsWithShape<
   LoadersT[number]['options'],
   LoaderShapeType<LoadersT[number]>
 >;
-/** Typescript helper to extract data type from a loader type */
-export type LoaderArrayReturnType<LoadersT extends Loader[] = Loader[]> =
-  LoadersT[number]['dataType'];
-/** Typescript helper to extract batch type from a loader type */
-export type LoaderArrayBatchType<LoadersT extends Loader[] = Loader[]> =
-  LoadersT[number]['batchType'];
+/** Typescript helper to extract data type from an array of loader types. */
+export type LoaderArrayReturnType<
+  LoadersT extends Loader[] = Loader[],
+  Options = never
+> = LoaderReturnType<LoadersT[number], Options>;
+/** Typescript helper to extract batch type from an array of loader types. */
+export type LoaderArrayBatchType<
+  LoadersT extends Loader[] = Loader[],
+  Options = never
+> = LoaderBatchType<LoadersT[number], Options>;
 
 /**
  * Parses `data` asynchronously using the supplied loader, parse function provided via the loader context

@@ -7,10 +7,7 @@ import type {
   LoaderOptions,
   LoaderContext,
   BatchableDataType,
-  LoaderBatchType,
-  LoaderOptionsType,
-  LoaderOptionsWithShape,
-  LoaderShapeType
+  LoaderBatchType
 } from '@loaders.gl/core/loader-utils';
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -28,16 +25,13 @@ type FileType = string | File | Blob | Response | (string | File | Blob | Respon
  */
 export async function loadInBatches<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
-    LoaderOptionsType<LoaderT>,
-    LoaderShapeType<LoaderT>
-  >
+  const OptionsT extends LoaderOptions = {}
 >(
   files: FileType,
   loader: LoaderT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+): Promise<AsyncIterable<LoaderBatchType<LoaderT, OptionsT>>>;
 
 /**
  * Parses `data` using a specified loader

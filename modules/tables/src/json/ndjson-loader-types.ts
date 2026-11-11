@@ -20,7 +20,7 @@ import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-ar
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type NDJSONShape = 'array-row-table' | 'object-row-table' | 'arrow-table';
+export type NDJSONShape = 'array-row-table' | 'object-row-table' | 'arrow-table' | 'arrow';
 
 /** Options for parsing newline-delimited JSON data. */
 export type NDJSONLoaderOptions = LoaderOptions & {
@@ -35,8 +35,8 @@ export type NDJSONLoaderOptions = LoaderOptions & {
   };
   /** Deprecated JSON parser alias used only for NDJSON shape selection. */
   json?: {
-    /** Deprecated alias for `ndjson.shape`; `ndjson.shape` takes precedence. */
-    shape?: NDJSONShape;
+    /** Deprecated alias for wrapped outputs; use `ndjson.shape` for native Arrow. */
+    shape?: Exclude<NDJSONShape, 'arrow'>;
   };
 };
 

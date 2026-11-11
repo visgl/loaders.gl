@@ -14,7 +14,7 @@ import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
 // Parses arrow to a columnar table
 export function parseGeoArrowSync(
   arrayBuffer,
-  options?: {shape?: 'arrow-table' | 'geojson-table' | 'binary-geometry'}
+  options?: {shape?: 'arrow' | 'arrow-table' | 'geojson-table' | 'binary-geometry'}
 ): ArrowTable | GeoJSONTable {
   // | BinaryGeometry
   const table = parseArrowSync(arrayBuffer, {shape: 'arrow-table'}) as ArrowTable;

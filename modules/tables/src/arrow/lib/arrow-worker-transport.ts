@@ -16,7 +16,11 @@ export const serializeArrowTableResult = serializeArrowWorkerTable;
 /** Hydrates columns before materializing the requested output shape on the caller. */
 export function deserializeArrowTableResult(result: unknown, options?: ArrowLoaderOptions): Table {
   const table = deserializeArrowTableBatch(result);
-  return convertArrowToTable(table.data, options?.arrow?.shape || 'columnar-table');
+  const shape = options?.arrow?.shape;
+  return convertArrowToTable(
+    table.data,
+    shape === 'arrow' ? 'arrow-table' : shape || 'columnar-table'
+  );
 }
 
 /** Hydrates column buffers while preserving batch metadata. */

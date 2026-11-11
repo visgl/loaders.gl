@@ -220,7 +220,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'arrow-table'` | Selects the returned table shape. |
+| `parquet.shape` | `'object-row-table' \| 'arrow-table' \| 'arrow'` | `'arrow-table'` | Selects the returned table shape. |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
 | `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |
@@ -319,3 +319,12 @@ versions appear in the table headers.
 ## Remarks
 
 - The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
+
+
+## Native Arrow output
+
+Pass `parquet: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
+`load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
+return native `RecordBatch` objects. Existing `'arrow-table'` output retains the
+loaders.gl wrapper and batch metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
+for streaming, metadata, and worker behavior.

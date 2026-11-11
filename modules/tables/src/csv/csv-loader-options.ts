@@ -18,7 +18,7 @@ export type CSVLoaderOptions = LoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   csv?: {
     /** Selects row-table, columnar-table, or Arrow-table output. */
-    shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
+    shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table' | 'arrow';
     /** optimizes memory usage but increases parsing time. */
     optimizeMemoryUsage?: boolean;
     columnPrefix?: string;

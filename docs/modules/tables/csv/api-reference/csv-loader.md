@@ -130,7 +130,7 @@ const table = await load(url, CSVLoader, {
 
 | Option                      | Type                                                                                       | Default                       | Description                                                                                                                  |
 | --------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `csv.shape`                 | `'object-row-table' \| 'array-row-table' \| 'columnar-table' \| 'arrow-table'`             | `arrow-table`                 | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
+| `csv.shape`                 | `'object-row-table' \| 'array-row-table' \| 'columnar-table' \| 'arrow-table' \| 'arrow'`             | `arrow-table`                 | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
 | `csv.optimizeMemoryUsage`   | `boolean`                                                                                  | `false`                       | Optimize memory usage at the cost of additional parsing time.                                                                |
 | `csv.header`                | `boolean \| 'auto'`                                                                        | `auto`                        | If `true`, treat the first row as field names. If `false`, treat the first row as data. `'auto'` attempts to detect headers. |
 | `csv.columnPrefix`          | `string`                                                                                   | `column`                      | Prefix used when generating column names for files without headers, for example `column1`, `column2`, ...                    |
@@ -148,3 +148,12 @@ const table = await load(url, CSVLoader, {
 ## Remarks
 
 `CSVWorkerLoader` is a deprecated alias for `CSVLoader`.
+
+
+## Native Arrow output
+
+Pass `csv: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
+`load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
+return native `RecordBatch` objects. Existing `'arrow-table'` output retains the
+loaders.gl wrapper and batch metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
+for streaming, metadata, and worker behavior.

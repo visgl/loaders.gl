@@ -27,7 +27,7 @@ export type GeoJSONLoaderOptions = Omit<JSONLoaderOptions, 'json'> & {
   /** GeoJSON-specific loader options. */
   geojson?: {
     /** Requested GeoJSON output shape. */
-    shape?: 'geojson-table' | 'arrow-table' | 'binary-feature-collection';
+    shape?: 'geojson-table' | 'arrow-table' | 'arrow' | 'binary-feature-collection';
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };

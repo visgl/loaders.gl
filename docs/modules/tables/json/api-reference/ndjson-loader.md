@@ -131,7 +131,7 @@ Supports the table category options such as `batchSize`.
 
 | Option                   | Type                    | Default | Description |
 | ------------------------ | ----------------------- | ------- | ----------- |
-| `ndjson.shape`           | `string`                | `'arrow-table'` | Requested table shape. Supported values are `'object-row-table'`, `'array-row-table'`, and `'arrow-table'`. |
+| `ndjson.shape`           | `string`                | `'arrow-table'` | Requested table shape. Native `'arrow'` is also supported. Supported wrapped values are `'object-row-table'`, `'array-row-table'`, and `'arrow-table'`. |
 | `ndjson.schema`          | `Schema \| arrow.Schema` | `undefined` | Optional schema used when `ndjson.shape` is `'arrow-table'`. |
 | `ndjson.arrowConversion` | `object`                | strict recovery policy | Optional Arrow conversion policy. Supports `onTypeMismatch`, `onMissingField`, `onExtraField`, `integerConversion`, and `logRecoveries`. |
 | `ndjson.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'` | `'never'` | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
@@ -146,3 +146,12 @@ for streaming behavior, schemas, backpressure, and Node/custom-worker options.
 Arrow tables return as directly transferred column buffers. Row tables and container metadata return as
 binary JSON frames decoded on the caller, preserving heterogeneous values without Arrow coercion.
 Decoded row objects are never structured-cloned across the worker boundary.
+
+
+## Native Arrow output
+
+Pass `ndjson: {shape: 'arrow'}` (or `core: {shape: 'arrow'}`) to the core
+`load`/`parse` APIs to return an Apache Arrow `Table` directly. The batched APIs
+return native `RecordBatch` objects. Existing `'arrow-table'` output retains the
+loaders.gl wrapper and batch metadata. See [Native Apache Arrow output](/docs/modules/core/schema/table-guide#native-apache-arrow-output)
+for streaming, metadata, and worker behavior.

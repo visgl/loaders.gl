@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
+
 import type {
   Loader,
   LoaderContext,
   LoaderOptions,
-  LoaderOptionsWithShape,
-  LoaderOptionsType,
-  LoaderShapeType,
   LoaderReturnType,
-  LoaderArrayOptionsType,
   LoaderArrayReturnType,
   LoaderWithParser,
   ReadableFile,
@@ -32,31 +30,25 @@ import {selectLoader} from './select-loader';
 /**
  * Parses a random access readable file asynchronously using the supplied loader.
  */
-export async function parseFile<
-  LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
-    LoaderOptionsType<LoaderT>,
-    LoaderShapeType<LoaderT>
-  >
->(
+export async function parseFile<LoaderT extends Loader, const OptionsT extends LoaderOptions = {}>(
   file: ReadableFile,
   loader: LoaderT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 /**
  * Parses a random access readable file asynchronously by matching one of the supplied loaders.
  */
 export async function parseFile<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = {}
 >(
   file: ReadableFile,
   loaders: LoaderArrayT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+): Promise<LoaderArrayReturnType<LoaderArrayT, OptionsT>>;
 
 /**
  * Parses a random access readable file asynchronously by matching a pre-registered loader.
@@ -111,14 +103,21 @@ export async function parseFile(
     url,
     normalizedOptions
   );
+  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, false);
   context = getLoaderContext(
     // @ts-expect-error candidateLoaders may be a single forced loader
     {url, _parse: parse, loaders: candidateLoaders},
-    strictOptions,
+    nativeArrowOptions || strictOptions,
     context || null
   );
 
-  return await parseFileWithLoader(loader, file, strictOptions, context);
+  const result = await parseFileWithLoader(
+    loader,
+    file,
+    nativeArrowOptions || strictOptions,
+    context
+  );
+  return nativeArrowOptions ? unwrapArrowTable(result) : result;
 }
 
 /**
