@@ -117,10 +117,14 @@ test.each([
   expect(received!.limit).toBe(support === 'residual' ? undefined : 1);
 });
 
-test('computed SQL requests filter columns and keeps the limit above local filtering', async () => {
+test('computed SQL aligns projected source fields and keeps the limit above local filtering', async () => {
   const table = makeTable();
-  const read = vi.fn(async function* (options: TableScanReadOptions = {}) {
-    const data = table.data.select([...(options.columns ?? table.data.schema.names)]);
+  const read = vi.fn(async function* (_options: TableScanReadOptions = {}) {
+    const data = new arrow.Table({
+      value: table.data.getChild('value')!,
+      extra: arrow.vectorFromArray([8, 9, 10], new arrow.Int32()),
+      name: table.data.getChild('name')!
+    });
     yield {
       shape: 'arrow-table' as const,
       data,
@@ -272,6 +276,12 @@ test('unsupported inputs and changed output types fail with one completion summa
     }
   };
   await expect(query({}, {source: drift})).rejects.toThrow('schema does not match');
+  await expect(
+    query('SELECT name, 1 AS constant WHERE value > 10', {
+      source: drift,
+      sqlParser: parseSQLQuery
+    })
+  ).rejects.toThrow('Query input schema does not match source metadata.');
 });
 
 test.each([

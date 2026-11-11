@@ -232,6 +232,7 @@ export async function* queryInBatches(
       ? sourceSchema.select([...readOptions.columns])
       : sourceSchema;
     const readSchema = convertArrowToSchema(inputSchema);
+    const comparisonInputSchema = expressionTools ? convertSchemaToArrow(readSchema) : undefined;
     const compiledFilter = expressionFilter
       ? expressionTools!.compileArrowExpression(expressionFilter.expression, {inputSchema})
       : castPredicate && portablePredicate
@@ -253,7 +254,19 @@ export async function* queryInBatches(
         : (source as TableScanSource).read(readOptions);
       for await (const value of batches) {
         options.signal?.throwIfAborted();
-        const batch = normalizeBatch(value, readSchema);
+        let batch = normalizeBatch(value, readSchema);
+        if (
+          comparisonInputSchema &&
+          !arrow.util.compareSchemas(comparisonInputSchema, convertSchemaToArrow(batch.schema!))
+        ) {
+          // A source may return a wider or differently ordered projection than requested.
+          const data = batch.data.select(inputSchema.names);
+          batch = {...batch, ...wrapBatch(data)};
+          if (
+            !arrow.util.compareSchemas(comparisonInputSchema, convertSchemaToArrow(batch.schema!))
+          )
+            throw new Error('Query input schema does not match source metadata.');
+        }
         batchesRead++;
         rowsRead += batch.length;
         yield batch;
