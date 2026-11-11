@@ -327,6 +327,7 @@
     "Use published textures 4.5.4 for legacy luma/glTF consumers to remove automatic texture-compressor/image-size 0.x installation",
     "Patch deck.gl/arcgis 9.4.0 to import MapView through the public core export; remove after the upstream packaging fix",
     "POC: align the browser packages required by @vis.gl/dev-tools with Vitest 5; remove after upstream supports Vitest 5",
+    "Use published webpack-dev-server 6 to remove the SockJS dependency on vulnerable UUID 8",
     "Use published Undici 7.30.2 for Nx 23.3.1 until its exact 7.29.0 dependency is upgraded"
   ],
   "resolutions": {
@@ -363,6 +364,7 @@
     "minimatch@npm:^10.0.3": "npm:11.0.6",
     "minimatch@npm:^10.1.1": "npm:11.0.6",
     "minimatch@npm:^10.2.2": "npm:11.0.6",
-    "minimatch@npm:^10.2.6": "npm:11.0.6"
+    "minimatch@npm:^10.2.6": "npm:11.0.6",
+    "webpack-dev-server": "npm:6.1.0"
   }
 }
