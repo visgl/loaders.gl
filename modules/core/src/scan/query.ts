@@ -3,9 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import type {SQLQuery} from '@math.gl/core/sql';
 import type {ArrowTable, ArrowTableBatch, TableBatch, Schema} from '@loaders.gl/core/schema';
 import {
   normalizeTableQuery,
+  getColumnarPredicateColumns,
   executeTableScanBatches,
   planTableQuery,
   emitQueryComplete,
@@ -26,13 +28,14 @@ import {
   convertTableToArrow
 } from '@loaders.gl/core/schema-utils';
 import {projectArrowTable, filterArrowTable} from './arrow-execution';
+import {filterArrowRows} from './arrow-execution/filter-arrow-table';
 import {createCatalogQuerySource} from './catalog-query-source';
 import type {SQLCatalogQuery} from './sql-catalog';
 import {resolveQuerySource} from './resolve-query-source';
 import type {DataSource} from '@loaders.gl/core/loader-utils';
 
 /** Logical table or metadata request. */
-export type Query = TableQuery | SQLCatalogQuery;
+export type Query = TableQuery | SQLQuery;
 
 /** Injected SQL parser; core validates and executes the returned logical query. */
 export type SQLQueryParser = (sql: string) => Query | Promise<Query>;
@@ -113,8 +116,9 @@ export async function* queryInBatches(
     } else parsedQuery = tableQuery;
     if (!parsedQuery || typeof parsedQuery !== 'object' || Array.isArray(parsedQuery))
       throw new Error('Table query must be an object.');
-    validateQueryExecutionSupport(parsedQuery);
-    let logicalQuery: TableQuery;
+    const castPredicate =
+      'command' in parsedQuery ? false : validatePredicateOperands(parsedQuery.where);
+    let logicalQuery: TableQuery | Exclude<SQLQuery, SQLCatalogQuery>;
     let source: unknown;
     if ('command' in parsedQuery) {
       logicalQuery = {};
@@ -166,9 +170,41 @@ export async function* queryInBatches(
       ? (source as ArrowTable).data.schema
       : convertSchemaToArrow(metadata!.schema);
     const names = sourceSchema.fields.map(field => field.name);
-    const normalized = normalizeTableQuery(names, logicalQuery);
-    const outputColumns = [...new Set(normalized.select.map(selection => selection.column))];
-    const plan = planTableQuery(names, {columns: outputColumns, predicate: normalized.where});
+    const {select, where, ...controls} = logicalQuery;
+    const computedProjection =
+      Array.isArray(select) &&
+      select.some(
+        selection =>
+          selection &&
+          typeof selection === 'object' &&
+          ('expression' in selection || 'array' in selection)
+      );
+    const expressionFilter =
+      where && typeof where === 'object' && 'expression' in where ? where : undefined;
+    const portablePredicate = expressionFilter ? undefined : (where as TableQuery['where']);
+    const normalized = normalizeTableQuery(names, {
+      ...controls,
+      select: computedProjection ? undefined : (select as TableQuery['select']),
+      where: castPredicate ? undefined : portablePredicate
+    });
+    const expressionTools =
+      computedProjection || expressionFilter || castPredicate
+        ? await import('./arrow-execution/expressions')
+        : undefined;
+    const outputColumns = computedProjection
+      ? expressionTools!.getProjectionColumns(select!)
+      : normalized.select.map(selection => selection.column);
+    const expressionColumns = expressionFilter
+      ? expressionTools!.getExpressionColumns(expressionFilter.expression)
+      : castPredicate && portablePredicate
+        ? getColumnarPredicateColumns(portablePredicate)
+        : [];
+    const required = [...new Set([...outputColumns, ...expressionColumns])];
+    const plan = planTableQuery(names, {
+      // A literal-only projection still needs a physical column to retain row counts.
+      columns: required.length ? required : names.slice(0, 1),
+      predicate: normalized.where
+    });
     const requiredColumns = plan[0].kind === 'scan' ? plan[0].columns : names;
     const capabilities = metadata?.capabilities.table;
     // read() must perform exact filtering when it advertises pushdown+residual, not only pruning.
@@ -185,15 +221,28 @@ export async function* queryInBatches(
         : {}),
       ...(delegatePredicate ? {predicate: normalized.where} : {}),
       ...(!residual &&
+      !expressionFilter &&
+      !castPredicate &&
       capabilities &&
       ['pushdown', 'pushdown+residual'].includes(capabilities.limit)
         ? {limit: normalized.limit}
         : {})
     };
-    const readSchema = convertArrowToSchema(
-      readOptions.columns ? sourceSchema.select([...readOptions.columns]) : sourceSchema
-    );
-    const empty = projectArrowTable(new arrow.Table(sourceSchema), normalized.select);
+    const inputSchema = readOptions.columns
+      ? sourceSchema.select([...readOptions.columns])
+      : sourceSchema;
+    const readSchema = convertArrowToSchema(inputSchema);
+    const compiledFilter = expressionFilter
+      ? expressionTools!.compileArrowExpression(expressionFilter.expression, {inputSchema})
+      : castPredicate && portablePredicate
+        ? expressionTools!.compileArrowPredicate(portablePredicate, {inputSchema})
+        : undefined;
+    if (compiledFilter && !arrow.DataType.isBool(compiledFilter.outputField.type))
+      throw new Error('SQL WHERE expression must return Boolean.');
+    const project = computedProjection
+      ? expressionTools!.compileArrowProjection(inputSchema, select!, options.signal)
+      : (data: arrow.Table) => projectArrowTable(data, normalized.select);
+    const empty = project(new arrow.Table(inputSchema));
     const comparisonSchema = convertSchemaToArrow(convertArrowToSchema(empty.schema));
     let emitted = false;
     /** Adapts physical batches without pulling ahead of the query consumer. */
@@ -220,16 +269,28 @@ export async function* queryInBatches(
       {
         filter: (batch, predicate, signal) => {
           const input = batch as ArrowTableBatch;
-          const data = predicate ? filterArrowTable(input.data, predicate, {signal}) : input.data;
+          const data = compiledFilter
+            ? filterArrowRows(
+                input.data,
+                batch => {
+                  const matches = compiledFilter.evaluate(batch, {signal});
+                  return index => matches.get(index) === true;
+                },
+                {signal}
+              )
+            : predicate
+              ? filterArrowTable(input.data, predicate, {signal})
+              : input.data;
           return {...input, ...wrapBatch(data)};
         },
         project: batch => {
           const input = batch as ArrowTableBatch;
-          return {...input, ...wrapBatch(projectArrowTable(input.data, normalized.select))};
+          return computedProjection ? input : {...input, ...wrapBatch(project(input.data))};
         }
       }
     )) {
-      const batch = value as ArrowTableBatch;
+      const input = value as ArrowTableBatch;
+      const batch = computedProjection ? {...input, ...wrapBatch(project(input.data))} : input;
       if (!arrow.util.compareSchemas(comparisonSchema, convertSchemaToArrow(batch.schema!)))
         throw new Error('Query output schema does not match source metadata.');
       emitted = true;
@@ -332,27 +393,20 @@ async function openQuerySource(options: QueryOptions): Promise<unknown> {
   return implementation.createDataSource(url, authenticatedOptions as DataSourceOptions);
 }
 
-export {parseSQLQuery} from './parse-sql-query';
-export {parseSQLSelect} from './parse-sql-select';
-export type {SQLSelectParserOptions} from './parse-sql-select';
+export {parseSQLQuery, parseSQLSelect, type SQLSelectParserOptions} from '@math.gl/core/sql';
 
 export {createSQLCatalog} from './sql-catalog';
 export type {SQLCatalog, SQLCatalogQuery, SQLCatalogSource, SQLCatalogTable} from './sql-catalog';
 
-/** Rejects parser extensions before source discovery or reads can observe an unsupported query. */
-function validateQueryExecutionSupport(query: Query): void {
-  if ('command' in query) return;
-  for (const selection of Array.isArray(query.select) ? query.select : []) {
-    if (
-      selection &&
-      typeof selection === 'object' &&
-      ('expression' in selection || 'array' in selection)
-    )
-      throw new Error(
-        'Computed SELECT expressions and ARRAY projections are not supported by this query executor.'
-      );
+/** Checks predicate tree bounds and detects casts that require Arrow execution. */
+function validatePredicateOperands(where: unknown): boolean {
+  if (where && typeof where === 'object' && 'expression' in where) {
+    if (Object.keys(where).some(key => key !== 'expression'))
+      throw new Error('Unsupported computed WHERE field.');
+    return false;
   }
-  const pending: {value: unknown; exit?: boolean}[] = query.where ? [{value: query.where}] : [];
+  let castPredicate = false;
+  const pending: {value: unknown; exit?: boolean}[] = where ? [{value: where}] : [];
   const visited = new WeakSet<object>();
   let nodes = 0;
   while (pending.length) {
@@ -378,7 +432,17 @@ function validateQueryExecutionSupport(query: Query): void {
       continue;
     }
     visited.delete(candidate);
-    for (const operand of predicate.args) {
+    for (const [index, operand] of predicate.args.entries()) {
+      if (
+        index === 0 &&
+        operand &&
+        typeof operand === 'object' &&
+        typeof operand.property === 'string' &&
+        'casts' in operand
+      ) {
+        castPredicate = true;
+        continue;
+      }
       if (
         isUnsupportedQueryExpression(operand) ||
         (Array.isArray(operand) && operand.some(isUnsupportedQueryExpression))
@@ -388,6 +452,7 @@ function validateQueryExecutionSupport(query: Query): void {
         );
     }
   }
+  return castPredicate;
 }
 
 /** Identifies newer portable operands and raw expression ASTs without interpreting scalar values. */

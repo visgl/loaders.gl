@@ -151,8 +151,8 @@ name; use the structured form for qualified lookup.
 
 ## Use SQL through an injected parser
 
-Pass the optional parser explicitly. `parseSQLQuery()` supports SELECT columns, AS aliases, optional
-FROM, WHERE, and LIMIT. It uses the existing predicate parser and adds no third-party SQL parser.
+Pass the optional parser explicitly. Math.gl’s `parseSQLQuery()` supports SELECT projections, AS
+aliases, optional FROM, WHERE, and LIMIT.
 
 ```ts
 import {parseSQLQuery} from '@loaders.gl/core/scan/query';
@@ -176,7 +176,7 @@ support. WHERE is rejected when that callback is omitted.
 
 These are deliberately partial parsers. They preserve identifier case, accept double-quoted names
 and doubled-quote escapes, and require AS for column aliases. They reject comments, table aliases,
-qualified column references, expressions in SELECT, joins, sorting, grouping, offsets, and multiple
+qualified column references, joins, sorting, grouping, offsets, and multiple
 statements. Quote literal column names containing dots. Input length, token count, and nesting
 are bounded.
 
@@ -265,16 +265,14 @@ Changing the output schema, including nullability, during execution is an error.
 be preserved when the format supplies it.
 
 These entry points currently support selection, aliases, predicates, and limits. They do not add
-joins, sorting, aggregates, SQL expressions in SELECT, or synchronous execution. For exact
+joins, sorting, aggregates, or synchronous execution. For exact
 signatures, errors, capability details, and benchmark commands, see the
 [query API reference](/docs/modules/core/scan/query).
 
 ### Injected SQL parser contract
 
-An injected `sqlParser` returns portable logical queries. The current executor accepts source-column
-selections and aliases, portable column predicates, limits, source references and catalog commands.
-Parser support for additional syntax does not imply execution support: computed SELECT expressions,
-ARRAY projections and cast-bearing or computed WHERE operands are rejected before source discovery,
-metadata reads or data loading. This prevents newer parser output from silently running with omitted
-operations. These execution capabilities will be enabled as the corresponding Arrow evaluator paths
-are integrated. Rejected queries still emit one terminal failure summary.
+An injected `sqlParser` returns a portable logical query. Use `parseSQLQuery` from
+`@math.gl/core/sql` for SELECT expressions, ARRAY projections, casts, computed WHERE expressions,
+and catalog commands. Math.gl compiles expressions against each source schema. Loaders.gl requests
+the referenced columns and evaluates computed filters before applying LIMIT. Sources can still
+push down portable column predicates. Unsupported expressions fail with a terminal query error.

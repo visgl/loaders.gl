@@ -5,6 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {query, queryInBatches} from '@loaders.gl/core/scan';
+import {parseSQLQuery} from '@math.gl/core/sql';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
@@ -114,6 +115,49 @@ test.each([
   expect(received!.onQueryComplete).toBeUndefined();
   expect(received!.predicate).toEqual(support === 'residual' ? undefined : logical.where);
   expect(received!.limit).toBe(support === 'residual' ? undefined : 1);
+});
+
+test('computed SQL requests filter columns and keeps the limit above local filtering', async () => {
+  const table = makeTable();
+  const read = vi.fn(async function* (options: TableScanReadOptions = {}) {
+    const data = table.data.select([...(options.columns ?? table.data.schema.names)]);
+    yield {
+      shape: 'arrow-table' as const,
+      data,
+      length: data.numRows,
+      schema: convertArrowToSchema(data.schema),
+      batchType: 'data' as const
+    };
+  });
+  const source: TableScanSource = {
+    getQueryMetadata: async () =>
+      createScanQueryMetadata({
+        sourceType: 'test',
+        queryType: 'table',
+        schema: table.schema!,
+        execution: {status: 'supported', method: 'read'},
+        capabilities: {
+          table: {
+            projection: 'pushdown',
+            predicate: 'pushdown',
+            limit: 'pushdown',
+            streaming: true,
+            cancellation: true
+          }
+        }
+      }),
+    read
+  };
+  const result = await query('SELECT name, value * 10 AS score WHERE value + 1 > 2 LIMIT 1', {
+    source,
+    sqlParser: parseSQLQuery
+  });
+  expect(result.data.getChild('name')!.toArray()).toEqual(['b']);
+  expect(Array.from(result.data.getChild('score')!.toArray())).toEqual([20]);
+  expect(read).toHaveBeenCalledWith(expect.objectContaining({columns: ['name', 'value']}));
+  const [options] = read.mock.calls[0]!;
+  expect(options?.limit).toBeUndefined();
+  expect(options?.predicate).toBeUndefined();
 });
 
 test('row batches normalize to Arrow and failures/cancellation complete once', async () => {

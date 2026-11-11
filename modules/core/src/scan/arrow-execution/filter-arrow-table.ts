@@ -39,6 +39,23 @@ export function filterArrowTable(
   options: ArrowFilterOptions = {}
 ): arrow.Table {
   validateColumnarPredicate(predicate, new Set(source.schema.fields.map(field => field.name)));
+  const columnNames = getColumnarPredicateColumns(predicate);
+  return filterArrowRows(
+    source,
+    batch => {
+      const columns = getPredicateColumns(new arrow.Table(source.schema, [batch]), columnNames);
+      return rowIndex => evaluatePredicate(predicate as SQLPredicate, columns, rowIndex) === true;
+    },
+    options
+  );
+}
+
+/** Retains matching rows while preserving Arrow schema and batch metadata. */
+export function filterArrowRows(
+  source: arrow.Table,
+  selectBatch: (batch: arrow.RecordBatch) => (rowIndex: number) => boolean,
+  options: ArrowFilterOptions = {}
+): arrow.Table {
   let remaining = options.limit ?? Infinity;
   if (remaining !== Infinity && (!Number.isSafeInteger(remaining) || remaining < 0)) {
     throw new Error('Arrow filter limit must be a non-negative safe integer.');
@@ -49,12 +66,11 @@ export function filterArrowTable(
     if (remaining === 0) break;
     options.signal?.throwIfAborted();
     const data = new arrow.Table(source.schema, [batch]);
-    const columns = getPredicateColumns(data, getColumnarPredicateColumns(predicate));
+    const selectRow = selectBatch(batch);
     const indices: number[] = [];
     for (let rowIndex = 0; rowIndex < batch.numRows && indices.length < remaining; rowIndex++) {
       options.signal?.throwIfAborted();
-      if (evaluatePredicate(predicate as SQLPredicate, columns, rowIndex) === true)
-        indices.push(rowIndex);
+      if (selectRow(rowIndex)) indices.push(rowIndex);
     }
     remaining -= indices.length;
     if (indices.length === 0) continue;
