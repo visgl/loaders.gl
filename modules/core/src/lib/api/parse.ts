@@ -6,6 +6,11 @@ import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-ar
 
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderContext,
   LoaderOptions,
@@ -38,19 +43,39 @@ import {selectLoader} from './select-loader';
 /**
  * Parses `data` asynchronously using the supplied loader
  */
-export async function parse<LoaderT extends Loader, const OptionsT extends LoaderOptions = {}>(
+export async function parse<LoaderT extends Loader>(
   data: DataType | Promise<DataType>,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
+export async function parse<
+  LoaderT extends Loader,
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
+>(
+  data: DataType | Promise<DataType>,
+  loader: LoaderT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 /**
  * Parses `data` asynchronously by matching one of the supplied loader
  */
+export async function parse<LoaderArrayT extends Loader[]>(
+  data: DataType | Promise<DataType>,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+
 export async function parse<
   LoaderArrayT extends Loader[],
-  const OptionsT extends LoaderOptions = {}
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   data: DataType | Promise<DataType>,
   loaders: LoaderArrayT,

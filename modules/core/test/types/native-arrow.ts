@@ -36,7 +36,9 @@ const loadedBatches: Promise<AsyncIterable<RecordBatch>> = loadInBatches(
   {core: {shape: 'arrow'}}
 );
 // Existing wrapped results remain wrapped, including loader-scoped overrides.
-parse(bytes, ArrowLoader).then(result => result.shape);
+parse(bytes, ArrowLoader).then(result => result.numRows);
+parse(bytes, CSVLoader, {core: {worker: false}}).then(result => result.numRows);
+parse<typeof ArrowLoader>(bytes, ArrowLoader, {arrow: {shape: 'arrow-table'}});
 parse(bytes, ArrowLoader, {core: {shape: 'arrow'}, arrow: {shape: 'arrow-table'}}).then(
   result => result.shape
 );
@@ -48,3 +50,10 @@ const dynamic = parse(bytes, ArrowLoader, dynamicOptions);
 // @ts-expect-error A dynamic shape can still select a loaders.gl wrapper.
 const nativeOnly: Promise<Table> = dynamic;
 void nativeOnly;
+
+// @ts-expect-error A loader-scoped shape must be a shape supported by ArrowLoader.
+parse(bytes, ArrowLoader, {arrow: {shape: 'invalid-shape'}});
+// @ts-expect-error The common shape is validated against ArrowLoader's shapes.
+parse(bytes, ArrowLoader, {core: {shape: 'invalid-shape'}});
+// @ts-expect-error Arrow parser settings retain their declared types.
+parse(bytes, ArrowLoader, {arrow: {shape: 'arrow', batchDebounceMs: 'slow'}});

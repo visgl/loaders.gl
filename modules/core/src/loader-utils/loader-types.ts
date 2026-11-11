@@ -193,6 +193,9 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
    */
   subloaders?: Readonly<Record<string, Loader>>;
 
+  /** Default public output shape applied by the core parse and load APIs. */
+  defaultShape?: string;
+
   /** Default Options */
   options: LoaderOptionsT;
   /** Deprecated Options */
@@ -429,25 +432,43 @@ export type LoaderContext = {
  */
 type Preload = (url: string, options?: PreloadOptions) => any;
 
-/** Typescript helper to extract options type from a loader type */
-export type LoaderOptionsType<T = Loader> =
-  T extends Loader<unknown, unknown, infer Options> ? Options : never;
-export type LoaderShapeType<T extends Loader = Loader> = LoaderOptionsType<T>[T['id']] extends {
-  shape?: infer Shape;
-}
-  ? Extract<Shape, string>
-  : LoaderOptionsType<T>[T['id']] extends {shape: infer Shape}
-    ? Extract<Shape, string>
-    : never;
+/** Extracts the declared parser options, including from metadata-only loaders. */
+export type LoaderOptionsType<T = Loader> = T extends {preload: (...args: any[]) => infer Parser}
+  ? LoaderOptionsType<Awaited<Parser>>
+  : T extends {parse: (data: any, options?: infer Options, ...args: any[]) => any}
+    ? NonNullable<Options> extends LoaderOptions
+      ? NonNullable<Options>
+      : LoaderOptions
+    : T extends Loader<unknown, unknown, infer Options>
+      ? Options
+      : never;
+
+/** Extracts shapes from the loader's declared option namespaces. */
+export type LoaderShapeType<T extends Loader = Loader> = T extends unknown
+  ? {
+      [Key in Exclude<keyof T['options'], 'core'>]: NonNullable<LoaderOptionsType<T>[Key]> extends {
+        shape?: infer Shape;
+      }
+        ? Extract<Shape, string>
+        : never;
+    }[Exclude<keyof T['options'], 'core'>]
+  : never;
 type LoaderShapeOrString<Shape extends string> = [Shape] extends [never] ? string : Shape;
 export type LoaderOptionsWithShape<
   Options extends LoaderOptions,
   Shape extends string
-> = Options extends LoaderOptions
-  ? Omit<Options, 'core'> & {
-      core?: Omit<NonNullable<Options['core']>, 'shape'> & {shape?: LoaderShapeOrString<Shape>};
-    }
-  : never;
+> = Options extends LoaderOptions ? Options & {core?: {shape?: LoaderShapeOrString<Shape>}} : never;
+/** Checks declared options while allowing an options variable with a dynamic common shape. */
+export type LoaderCallOptions<T extends Loader, Options extends LoaderOptions> = Options &
+  (T extends {defaultShape: 'arrow'}
+    ? LoaderOptionsType<T> &
+        (Options extends {core: {shape: infer Shape}}
+          ? string extends Shape
+            ? LoaderOptions
+            : LoaderOptionsWithShape<LoaderOptions, LoaderShapeType<T>>
+          : LoaderOptions)
+    : LoaderOptions);
+
 /** Extracts possible shape selections, including optional option namespaces. */
 type OptionShape<Options> = Options extends {shape?: infer Shape} ? Extract<Shape, string> : never;
 
@@ -476,22 +497,29 @@ type RequiredOutputShape<T, Options> = [ScopedOutputShape<T, Options, true>] ext
     : never
   : ScopedOutputShape<T, Options, true>;
 
-/** Selects native output when certain and a union when the caller supplies dynamic options. */
+/** Selects native output when certain and a union when shape selection is dynamic. */
 type NativeArrowOutput<T, Options, Wrapped, Native> = T extends {createDataSource: unknown}
   ? Wrapped
-  : [Options] extends [never]
-    ? Wrapped
+  : [RequiredOutputShape<T, Options>] extends [never]
+    ? [
+        | ScopedOutputShape<T, Options>
+        | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
+      ] extends [never]
+      ? T extends {defaultShape: 'arrow'}
+        ? Native
+        : Wrapped
+      : T extends {defaultShape: 'arrow'}
+        ? Native | Wrapped
+        : 'arrow' extends
+              | ScopedOutputShape<T, Options>
+              | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
+          ? Native | Wrapped
+          : Wrapped
     : 'arrow' extends RequiredOutputShape<T, Options>
       ? Exclude<RequiredOutputShape<T, Options>, 'arrow'> extends never
         ? Native
-        : Wrapped | Native
-      : 'arrow' extends
-            | ScopedOutputShape<T, Options>
-            | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
-        ? [RequiredOutputShape<T, Options>] extends [never]
-          ? Wrapped | Native
-          : Wrapped
-        : Wrapped;
+        : Native | Wrapped
+      : Wrapped;
 
 /** Typescript helper to extract the public data type, accounting for native Arrow output. */
 export type LoaderReturnType<T = Loader, Options = never> =
@@ -506,7 +534,7 @@ export type LoaderBatchType<T = Loader, Options = never> =
 
 /** Typescript helper to extract options type from an array of loader types */
 export type LoaderArrayOptionsType<LoadersT extends Loader[] = Loader[]> = LoaderOptionsWithShape<
-  LoadersT[number]['options'],
+  LoaderOptionsType<LoadersT[number]>,
   LoaderShapeType<LoadersT[number]>
 >;
 /** Typescript helper to extract data type from an array of loader types. */

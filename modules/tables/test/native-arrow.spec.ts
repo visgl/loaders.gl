@@ -49,51 +49,43 @@ beforeAll(async () => {
 afterEach(() => destroyWorkerTasks());
 
 const cases = [
-  {name: 'Arrow', loader: ArrowLoader, input: () => ipc.slice(), key: 'arrow'},
-  {name: 'GeoArrow', loader: GeoArrowLoader, input: () => ipc.slice(), key: 'arrow'},
+  {name: 'Arrow', loader: ArrowLoader, input: () => ipc.slice()},
+  {name: 'GeoArrow', loader: GeoArrowLoader, input: () => ipc.slice()},
   {
     name: 'CSV',
     loader: CSVLoader,
-    input: () => encoder.encode('id,label\n1,first\n2,second\n'),
-    key: 'csv'
+    input: () => encoder.encode('id,label\n1,first\n2,second\n')
   },
   {
     name: 'JSONTable',
     loader: JSONTableLoader,
-    input: () => encoder.encode('[{"id":1,"label":"first"},{"id":2,"label":"second"}]'),
-    key: 'json'
+    input: () => encoder.encode('[{"id":1,"label":"first"},{"id":2,"label":"second"}]')
   },
   {
     name: 'NDJSON',
     loader: NDJSONLoader,
-    input: () => encoder.encode('{"id":1,"label":"first"}\n{"id":2,"label":"second"}\n'),
-    key: 'ndjson'
+    input: () => encoder.encode('{"id":1,"label":"first"}\n{"id":2,"label":"second"}\n')
   },
-  {name: 'Parquet', loader: ParquetLoader, input: () => parquet.slice(0), key: 'parquet'},
-  {name: 'ParquetJS', loader: ParquetJSLoader, input: () => parquet.slice(0), key: 'parquet'},
-  {name: 'GeoParquet', loader: GeoParquetLoader, input: () => parquet.slice(0), key: 'parquet'}
+  {name: 'Parquet', loader: ParquetLoader, input: () => parquet.slice(0)},
+  {name: 'ParquetJS', loader: ParquetJSLoader, input: () => parquet.slice(0)},
+  {name: 'GeoParquet', loader: GeoParquetLoader, input: () => parquet.slice(0)}
 ];
 
-test.each(cases)('$name returns native Tables and all RecordBatches', async ({
-  loader,
-  input,
-  key
-}) => {
-  const options = {core: {worker: false}, [key]: {shape: 'arrow'}};
+test.each(cases)('$name returns native Tables and all RecordBatches', async ({loader, input}) => {
+  const options = {core: {worker: false}};
   const table = (await parse(input(), loader, options)) as Table;
   expect(table).toBeInstanceOf(Table);
   expect(table).not.toHaveProperty('shape');
   expect(table.getChild('label')!.toArray()).toEqual(['first', 'second']);
   const values: string[] = [];
   for await (const batch of await parseInBatches([input()], loader, {
-    core: {worker: false, shape: 'arrow'}
+    core: {worker: false}
   })) {
     expect(batch).toBeInstanceOf(RecordBatch);
     expect(batch).not.toHaveProperty('shape');
     values.push(...batch.getChild('label')!.toArray());
   }
   expect(values).toEqual(['first', 'second']);
-  expect(options[key].shape).toBe('arrow');
 });
 
 test.each(
@@ -116,7 +108,7 @@ test.each(
       parseInBatches: mainBatches
     })
   };
-  const options = {core: {worker: true, shape: 'arrow'}} as const;
+  const options = {core: {worker: true}} as const;
   const table = await parse(input(), loader, options);
   expect(table).toBeInstanceOf(Table);
   expect(table.getChild('label')!.get(1)).toBe('second');
@@ -150,7 +142,7 @@ test.each([GeoJSONLoader, NDGeoJSONLoader])('$id retains GeoArrow field metadata
       .metadata.get('ARROW:extension:name')
   ).toBe('geoarrow.wkb');
   for await (const batch of await loadInBatches(new Blob([input]), loader, {
-    core: {worker: false, shape: 'arrow'}
+    core: {worker: false}
   })) {
     expect(batch).toBeInstanceOf(RecordBatch);
     expect(batch.numRows).toBe(1);
@@ -165,7 +157,7 @@ test('sync and load APIs infer native output and preserve scoped overrides', asy
   const csv = parseSync('id\n1\n', CSVLoaderWithParser, {csv: {shape: 'arrow'}});
   expectTypeOf(csv).toEqualTypeOf<Table>();
   expect(csv.numRows).toBe(1);
-  const loaded = await load(new Blob([ipc]), ArrowLoader, {core: {worker: false, shape: 'arrow'}});
+  const loaded = await load(new Blob([ipc]), ArrowLoader, {core: {worker: false}});
   expectTypeOf(loaded).toEqualTypeOf<Table>();
   expect(loaded.numRows).toBe(2);
   const wrapped = await parse(ipc, ArrowLoader, {
@@ -173,12 +165,9 @@ test('sync and load APIs infer native output and preserve scoped overrides', asy
     arrow: {shape: 'arrow-table'}
   });
   expect(wrapped.shape).toBe('arrow-table');
-  expect(await parse(ipc, ArrowLoader, {core: {worker: false}})).toHaveProperty(
-    'shape',
-    'columnar-table'
-  );
+  expect(await parse(ipc, ArrowLoader, {core: {worker: false}})).toBeInstanceOf(Table);
   const batches = await loadInBatches(new Blob([ipc]), ArrowLoader, {
-    core: {worker: false, shape: 'arrow'}
+    core: {worker: false}
   });
   expectTypeOf(batches).toEqualTypeOf<AsyncIterable<RecordBatch>>();
 });

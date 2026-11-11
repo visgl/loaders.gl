@@ -5,6 +5,11 @@
 import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
 
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderContext,
   LoaderOptions,
@@ -30,19 +35,39 @@ import {selectLoader} from './select-loader';
 /**
  * Parses a random access readable file asynchronously using the supplied loader.
  */
-export async function parseFile<LoaderT extends Loader, const OptionsT extends LoaderOptions = {}>(
+export async function parseFile<LoaderT extends Loader>(
   file: ReadableFile,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
+export async function parseFile<
+  LoaderT extends Loader,
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
+>(
+  file: ReadableFile,
+  loader: LoaderT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 /**
  * Parses a random access readable file asynchronously by matching one of the supplied loaders.
  */
+export async function parseFile<LoaderArrayT extends Loader[]>(
+  file: ReadableFile,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+
 export async function parseFile<
   LoaderArrayT extends Loader[],
-  const OptionsT extends LoaderOptions = {}
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   file: ReadableFile,
   loaders: LoaderArrayT,

@@ -3,6 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderOptions,
   LoaderContext,
@@ -23,13 +27,23 @@ type FileType = string | File | Blob | Response | (string | File | Blob | Respon
 /**
  * Parses `data` synchronously using a specified loader
  */
+export async function loadInBatches<LoaderT extends Loader>(
+  files: FileType,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+
 export async function loadInBatches<
   LoaderT extends Loader,
-  const OptionsT extends LoaderOptions = {}
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   files: FileType,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
 ): Promise<AsyncIterable<LoaderBatchType<LoaderT, OptionsT>>>;
 

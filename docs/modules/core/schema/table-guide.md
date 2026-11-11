@@ -46,8 +46,8 @@ The loaders.gl table category provides support for working interchangeably with 
 
 ## Native Apache Arrow output
 
-Set `shape: 'arrow'` in the core parsing and loading APIs to receive native Apache
-Arrow JS objects.
+The tabular loaders listed below return native Apache Arrow JS objects through
+the core parsing and loading APIs. Set `shape: 'arrow'` to select this output explicitly.
 
 ```typescript
 import {load, loadInBatches} from '@loaders.gl/core';

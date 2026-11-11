@@ -20,7 +20,7 @@ import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-ar
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type NDJSONShape = 'array-row-table' | 'object-row-table' | 'arrow-table' | 'arrow';
+export type NDJSONShape = 'arrow' | 'arrow-table' | 'array-row-table' | 'object-row-table';
 
 /** Options for parsing newline-delimited JSON data. */
 export type NDJSONLoaderOptions = LoaderOptions & {
@@ -48,6 +48,7 @@ async function preload() {
 
 /** Metadata-only loader for newline-delimited JSON row and Arrow tables. */
 export const NDJSONLoader = {
+  defaultShape: 'arrow',
   dataType: null as unknown as ArrayRowTable | ObjectRowTable | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch,
 

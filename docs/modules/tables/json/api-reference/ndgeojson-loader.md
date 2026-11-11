@@ -78,8 +78,7 @@ The package root exports a metadata-only loader. For `parseSync`, import
 
 ## Output and options
 
-The default result is `{shape: 'arrow-table', schema, data}`, where `data` is an Apache Arrow
-table. Feature properties and IDs become columns and geometry uses the `geoarrow.wkb` extension.
+The default result is an Apache Arrow `Table`. Feature properties and IDs become columns and geometry uses the `geoarrow.wkb` extension.
 Feature IDs use the `id` column. If a feature ID collides with an existing property named `id`,
 Arrow conversion throws instead of overwriting either value; explicit object rows preserve both.
 Set `geojson.shape: 'object-row-table'` to return `{shape: 'object-row-table', data: Feature[]}`

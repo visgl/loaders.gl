@@ -22,6 +22,7 @@ test.each([
     [tableToIPC(tableFromArrays({id: new Int32Array([1])}))],
     loader,
     {
+      arrow: {shape: 'arrow-table'},
       core: {worker: true, _nodeWorkers: true, _workerType: 'classic'}
     }
   );

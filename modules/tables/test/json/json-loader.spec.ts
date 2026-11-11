@@ -1160,6 +1160,7 @@ for (const config of TABLE_STREAMING_LOADER_CONFIGS) {
 }
 test('GeoJSONLoader#loadInBatches(jsonpaths)', async () => {
   const iterator = await loadInBatches(GEOJSON_PATH, GeoJSONLoader, {
+    geojson: {shape: 'arrow-table'},
     json: {jsonpaths: ['$.features']}
   });
   let rowCount = 0;

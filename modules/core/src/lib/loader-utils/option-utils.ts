@@ -280,6 +280,13 @@ function normalizeOptionsInternal(
     mergedOptions.core = {...mergedOptions.core, log: new NullLog()};
   }
 
+  const shapeKey = loader.defaultShape && getShapeOptionKey(loader);
+  if (shapeKey) {
+    mergedOptions[shapeKey] = {
+      ...(loaderDefaultOptions[shapeKey] as object),
+      shape: loader.defaultShape
+    };
+  }
   mergeNestedFields(mergedOptions, normalizeLoaderOptions(getGlobalLoaderOptions()));
 
   const userOptions = normalizeLoaderOptions(options);

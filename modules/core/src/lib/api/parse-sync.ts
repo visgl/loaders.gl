@@ -5,6 +5,11 @@
 import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
 
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderWithParser,
   LoaderOptions,
@@ -28,17 +33,40 @@ import {getLoaderImplementationSync} from './load-loader';
 /**
  * Parses `data` synchronously using the specified loader
  */
-export function parseSync<LoaderT extends Loader, const OptionsT extends LoaderOptions = {}>(
+export function parseSync<LoaderT extends Loader>(
   data: SyncDataType,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: undefined,
+  context?: LoaderContext
+): LoaderReturnType<LoaderT>;
+
+export function parseSync<
+  LoaderT extends Loader,
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
+>(
+  data: SyncDataType,
+  loader: LoaderT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
 ): LoaderReturnType<LoaderT, OptionsT>;
 
 /**
  * Parses `data` synchronously by matching one of the supplied loaders
  */
-export function parseSync<LoaderArrayT extends Loader[], const OptionsT extends LoaderOptions = {}>(
+export function parseSync<LoaderArrayT extends Loader[]>(
+  data: SyncDataType,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): LoaderArrayReturnType<LoaderArrayT>;
+
+export function parseSync<
+  LoaderArrayT extends Loader[],
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+>(
   data: SyncDataType,
   loaders: LoaderArrayT,
   options?: OptionsT,

@@ -3,6 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   DataType,
   Loader,
   LoaderContext,
@@ -49,16 +53,38 @@ import {getLoaderImplementation} from './load-loader';
  * @param context
  */
 
-export async function load<LoaderT extends Loader, const OptionsT extends LoaderOptions = {}>(
+export async function load<LoaderT extends Loader>(
   url: string | DataType,
   loader: LoaderT,
-  options?: LoaderT extends SourceLoader ? SourcePropsType<LoaderT> & DataSourceOptions : OptionsT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
+export async function load<
+  LoaderT extends Loader,
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
+>(
+  url: string | DataType,
+  loader: LoaderT,
+  options?: LoaderT extends SourceLoader
+    ? SourcePropsType<LoaderT> & DataSourceOptions
+    : OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
+export async function load<LoaderArrayT extends Loader[]>(
+  url: string | DataType,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+
 export async function load<
   LoaderArrayT extends Loader[],
-  const OptionsT extends LoaderOptions = {}
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   url: string | DataType,
   loaders: LoaderArrayT,

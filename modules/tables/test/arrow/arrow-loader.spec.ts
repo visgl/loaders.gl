@@ -34,6 +34,7 @@ test('ArrowLoader#loader conformance', () => {
 });
 test('ArrowLoader#parseSync(simple.arrow)', async () => {
   const arrowTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
+    arrow: {shape: 'columnar-table'},
     core: {worker: false}
   });
   // Check loader specific results
@@ -78,6 +79,7 @@ test('ArrowLoader#parseSync(simple.arrow) loader shape overrides core.shape', as
 // https://github.com/apache/arrow/blob/f1d2fc92f9d898fc067d46a0d032d9b117a2d7fc/js/src/ipc/metadata/message.ts#L389
 test('ArrowLoader#parseSync(dictionary.arrow)', async () => {
   const columnarTable = await parse(fetchFile(ARROW_DICTIONARY), ArrowLoader, {
+    arrow: {shape: 'columnar-table'},
     core: {worker: false}
   });
   expect(columnarTable.shape).toBe('columnar-table');
@@ -144,7 +146,9 @@ test('ArrowLoader compression registration tolerates Apache Arrow JS 17', () => 
   expect(registerArrowCompressionCodecs({})).toBe(false);
 });
 test('ArrowLoader#parse(fetchFile(struct).arrow)', async () => {
-  const columns = await parse(fetchFile(ARROW_STRUCT), ArrowLoader);
+  const columns = await parse(fetchFile(ARROW_STRUCT), ArrowLoader, {
+    arrow: {shape: 'columnar-table'}
+  });
   // Check loader specific results
   expect(columns.shape).toBe('columnar-table');
   if (columns.shape === 'columnar-table') {

@@ -26,7 +26,10 @@ test.each([
   const parser = await metadata.preload();
   const mainParser = vi.fn(parser.parseInBatches);
   const loader = {...metadata, preload: async () => ({...parser, parseInBatches: mainParser})};
-  const batches = await parseInBatches([bytes], loader, {core: {worker: true}});
+  const batches = await parseInBatches([bytes], loader, {
+    core: {worker: true},
+    arrow: {shape: 'arrow-table'}
+  });
   const results: number[] = [];
   const labels: string[] = [];
   for await (const batch of batches) {

@@ -13,8 +13,7 @@ const NDJSON_EMPTY_OBJECTS_PATH = '@loaders.gl/tables/json/test/data/ndjson-empt
 const NDJSON_INVALID_PATH = '@loaders.gl/tables/json/test/data/ndjson-invalid.ndjson';
 test('NDJSONLoader#load(ndjson.ndjson) defaults to Arrow', async () => {
   const table = await load(NDJSON_PATH, NDJSONLoader);
-  expect(table.shape, 'Correct Arrow table type received').toBe('arrow-table');
-  expect(table.data.numRows, 'Correct number of rows received').toBe(11);
+  expect(table.numRows, 'Correct number of rows received').toBe(11);
 });
 test('NDJSONLoader#load(ndjson.ndjson, shape: arrow-table)', async () => {
   const classicTable = await load(NDJSON_PATH, NDJSONLoader, {

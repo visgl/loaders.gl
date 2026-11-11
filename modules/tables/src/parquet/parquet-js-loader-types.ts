@@ -33,6 +33,7 @@ async function preloadParquetJSLoader() {
 
 /** Metadata-only Parquet loader backed by the experimental TypeScript implementation. */
 export const ParquetJSLoader = {
+  defaultShape: 'arrow',
   ...ParquetFormat,
 
   dataType: null as unknown as ObjectRowTable | ArrowTable,

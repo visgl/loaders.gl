@@ -7,6 +7,11 @@ import {getNativeArrowOptions, unwrapArrowBatches} from '../loader-utils/native-
 import type {Batch, Table} from '@loaders.gl/core/schema';
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderWithParser,
   StrictLoaderOptions,
@@ -36,22 +41,39 @@ import {parse} from './parse';
 /**
  * Parses `data` synchronously using a specified loader
  */
+export async function parseInBatches<LoaderT extends Loader>(
+  data: BatchableDataType,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+
 export async function parseInBatches<
   LoaderT extends Loader,
-  const OptionsT extends LoaderOptions = {}
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   data: BatchableDataType,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
 ): Promise<AsyncIterable<LoaderBatchType<LoaderT, OptionsT>>>;
 
 /**
  * Parses `data` using one of the supplied loaders
  */
+export async function parseInBatches<LoaderArrayT extends Loader[]>(
+  data: BatchableDataType,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<AsyncIterable<LoaderArrayBatchType<LoaderArrayT>>>;
+
 export async function parseInBatches<
   LoaderArrayT extends Loader[],
-  const OptionsT extends LoaderOptions = {}
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   data: BatchableDataType,
   loaders: LoaderArrayT,

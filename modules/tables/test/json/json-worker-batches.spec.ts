@@ -49,7 +49,9 @@ test.each([
       closed = true;
     }
   })();
-  const batches = await parseInBatches(input, loader, {core: {worker: true, batchSize: 1}});
+  const batches = await parseInBatches(input, loader, {
+    core: {worker: true, batchSize: 1, ...(metadata.id === 'json' ? {} : {shape: 'arrow-table'})}
+  });
   const iterator = batches[Symbol.asyncIterator]();
   const first = await iterator.next();
   expect(first.value.length).toBe(1);
@@ -61,7 +63,12 @@ test.each([
   expect(pulls).toBe(1);
   const replacement = await collectBatches(
     await parseInBatches([encoder.encode(firstChunk + lastChunk)], loader, {
-      core: {worker: true, maxConcurrency: 1, batchSize: 1}
+      core: {
+        worker: true,
+        maxConcurrency: 1,
+        batchSize: 1,
+        ...(metadata.id === 'json' ? {} : {shape: 'arrow-table'})
+      }
     })
   );
   expect(replacement.reduce((total, batch) => total + batch.length, 0)).toBe(2);
@@ -86,7 +93,11 @@ test.each([
     namespace === 'json' ? JSON.stringify(rows) : rows.map(row => JSON.stringify(row)).join('\n');
   const bytes = encoder.encode(text);
   const onProgress = vi.fn();
-  const options = {core: {worker: true, batchSize: 1}, [namespace]: {schema}, onProgress};
+  const options = {
+    core: {worker: true, batchSize: 1},
+    [namespace]: {schema, shape: 'arrow-table'},
+    onProgress
+  };
   const {loader, mainParser} = observeLoader(metadata, implementation);
   const chunks = Array.from(bytes, byte => new Uint8Array([byte]));
   const batches = await collectBatches(await parseInBatches(chunks, loader, options));
