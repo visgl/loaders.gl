@@ -1321,3 +1321,33 @@ async function* makeChunkedTextIterator(text: string, chunkSize: number) {
     yield textEncoder.encode(text.slice(index, index + chunkSize));
   }
 }
+
+test('JSON positional rows use column1-based names across row and Arrow outputs', () => {
+  const json = JSON.stringify([[12.5, 34.2, 100], [15.1, 35.8, 200]]);
+  const rows = BundledJSONTableLoader.parseTextSync?.(json, {
+    json: {shape: 'object-row-table'}
+  });
+  expect(rows.schema?.fields.map(field => field.name)).toEqual(['column1', 'column2', 'column3']);
+  expect(rows.data[0]).toEqual({column1: 12.5, column2: 34.2, column3: 100});
+
+  const columns = BundledJSONTableLoader.parseTextSync?.(json, {
+    json: {shape: 'arrow-table'}
+  });
+  expect(columns.data.schema.names).toEqual(['column1', 'column2', 'column3']);
+  expect(columns.data.getChild('column2')?.get(1)).toBe(35.8);
+});
+
+test('JSON positional Arrow rows preserve explicitly provided schema field names', () => {
+  const schema: Schema = {
+    fields: [
+      {name: 'longitude', type: 'float64', nullable: false},
+      {name: 'latitude', type: 'float64', nullable: false}
+    ],
+    metadata: {}
+  };
+  const table = BundledJSONTableLoader.parseTextSync?.('[[1, 2], [3, 4]]', {
+    json: {shape: 'arrow-table', schema}
+  });
+  expect(table.data.schema.names).toEqual(['longitude', 'latitude']);
+  expect(table.data.getChild('latitude')?.get(1)).toBe(4);
+});
