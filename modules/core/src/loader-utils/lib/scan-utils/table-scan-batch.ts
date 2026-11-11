@@ -6,7 +6,7 @@ import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/core/sch
 import type {TableScanReadOptions, TableQueryExecutionSummary} from './scan-query-metadata';
 import {emitQueryComplete} from './scan-query-metadata';
 import {filterColumnarRowIndices, validateColumnarPredicate} from './columnar-predicate';
-import {validateTableQueryLimit} from './table-query';
+import {validateTableQueryLimit, validateTableQueryOffset} from './table-query';
 
 /** Reads source batches while allowing the shared executor to observe fetched bytes. */
 export type TableScanBatchReader = (
@@ -40,10 +40,18 @@ export function makeTableScanBatch(table: ArrowTable): ArrowTableBatch {
  */
 export async function* executeTableScanBatches(
   readBatches: TableScanBatchReader,
-  options: TableScanReadOptions = {},
+  options: TableScanReadOptions &
+    Readonly<{
+      /** Number of rows to skip after residual filtering. */
+      offset?: number;
+      /** Omits empty batches from the output stream. */
+      skipEmptyBatches?: boolean;
+    }> = {},
   operators: TableScanBatchOperators = {}
 ): AsyncIterable<TableBatch> {
   validateTableQueryLimit(options.limit);
+  validateTableQueryOffset(options.offset);
+  let skip = options.offset ?? 0;
   const startedAt = Date.now();
   let sourcesRead = 0;
   let batchesRead = 0;
@@ -85,26 +93,23 @@ export async function* executeTableScanBatches(
         rowsTested += batch.length;
         rowsRetained += filteredBatch.length;
       }
-      const projectedBatch = (operators.project || projectTableBatch)(
-        filteredBatch,
-        options.columns
-      );
-      if (projectedBatch.length <= remaining) {
-        remaining -= projectedBatch.length;
-        rowsReturned += projectedBatch.length;
-        yield projectedBatch;
-        if (remaining === 0) {
-          earlyTerminationReason = 'limit';
-          return;
-        }
-        options.signal?.throwIfAborted();
-      } else {
-        const outputBatch = truncateTableBatch(projectedBatch, remaining);
-        rowsReturned += outputBatch.length;
-        earlyTerminationReason = 'limit';
-        yield outputBatch;
-        return;
+      if (skip >= filteredBatch.length && (skip > 0 || options.skipEmptyBatches)) {
+        skip -= filteredBatch.length;
+        continue;
       }
+      const end = Math.min(filteredBatch.length, skip + remaining);
+      const window =
+        skip || end < filteredBatch.length
+          ? sliceTableBatch(filteredBatch, skip, end)
+          : filteredBatch;
+      skip = 0;
+      const output = (operators.project || projectTableBatch)(window, options.columns);
+      remaining -= window.length;
+      rowsReturned += output.length;
+      if (remaining === 0) earlyTerminationReason = 'limit';
+      yield output;
+      if (remaining === 0) return;
+      options.signal?.throwIfAborted();
     }
     status = 'completed';
   } catch (error) {
@@ -141,8 +146,14 @@ export async function* executeTableScanBatches(
 
 /** Truncates a batch without changing its native representation. */
 export function truncateTableBatch(batch: TableBatch, length: number): TableBatch {
+  return sliceTableBatch(batch, 0, length);
+}
+
+/** Slices rows in a batch, preserving Arrow buffers and the batch shape. */
+function sliceTableBatch(batch: TableBatch, start: number, end: number): TableBatch {
+  const length = end - start;
   if (batch.shape === 'object-row-table' || batch.shape === 'array-row-table') {
-    return {...batch, data: batch.data.slice(0, length), length} as TableBatch;
+    return {...batch, data: batch.data.slice(start, end), length} as TableBatch;
   }
   if (batch.shape === 'columnar-table') {
     return {
@@ -150,14 +161,14 @@ export function truncateTableBatch(batch: TableBatch, length: number): TableBatc
       data: Object.fromEntries(
         Object.entries(batch.data).map(([name, values]) => [
           name,
-          Array.from(values as ArrayLike<unknown>).slice(0, length)
+          Array.from(values as ArrayLike<unknown>).slice(start, end)
         ])
       ),
       length
     };
   }
-  if (batch.shape === 'arrow-table') return {...batch, data: batch.data.slice(0, length), length};
-  return {...batch, features: batch.features.slice(0, length), length};
+  if (batch.shape === 'arrow-table') return {...batch, data: batch.data.slice(start, end), length};
+  return {...batch, features: batch.features.slice(start, end), length};
 }
 
 /** Projects a batch in the caller-requested order while preserving its shape. */

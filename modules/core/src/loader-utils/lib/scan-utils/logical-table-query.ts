@@ -10,6 +10,7 @@ import {
 import {
   planTableQuery,
   validateTableQueryLimit,
+  validateTableQueryOffset,
   type TableQuery,
   type TableReference,
   type TableQueryPlanStep
@@ -31,6 +32,8 @@ export type NormalizedTableQuery<PredicateT = ColumnarPredicate> = Readonly<{
   select: readonly NormalizedTableSelection[];
   /** Predicate resolved against source names before aliases. */
   where?: PredicateT;
+  /** Global number of filtered rows skipped before applying the limit. */
+  offset?: number;
   /** Global post-filter row limit. */
   limit?: number;
 }>;
@@ -46,6 +49,7 @@ export type LogicalTableQueryProjectStep = Readonly<{
 /** Scan, filter, aliased projection, and limit operations in execution order. */
 export type LogicalTableQueryPlan<PredicateT = ColumnarPredicate> = readonly (
   | Exclude<TableQueryPlanStep<PredicateT>, {kind: 'project'}>
+  | Readonly<{kind: 'offset'; offset: number}>
   | LogicalTableQueryProjectStep
 )[];
 
@@ -60,7 +64,7 @@ export function normalizeTableQuery<
     throw new Error('Table query must be an object.');
   }
   for (const key of Object.keys(query)) {
-    if (!['from', 'select', 'where', 'limit'].includes(key)) {
+    if (!['from', 'select', 'where', 'offset', 'limit'].includes(key)) {
       throw new Error(`Unsupported table query option: ${key}`);
     }
   }
@@ -68,6 +72,7 @@ export function normalizeTableQuery<
     throw new Error('Table query select must be a non-empty array.');
   }
   validateTableReference(query.from);
+  validateTableQueryOffset(query.offset);
   validateTableQueryLimit(query.limit);
   if (query.where !== undefined) {
     validateColumnarPredicate(query.where, new Set(sourceColumnNames));
@@ -117,6 +122,7 @@ export function normalizeTableQuery<
       ? {}
       : {from: typeof query.from === 'string' ? query.from : Object.freeze({...query.from})}),
     ...(query.where === undefined ? {} : {where: query.where}),
+    ...(query.offset === undefined ? {} : {offset: query.offset}),
     ...(query.limit === undefined ? {} : {limit: query.limit})
   });
 }
@@ -134,13 +140,17 @@ export function planLogicalTableQuery<
     predicate: normalized.where,
     limit: normalized.limit
   });
-  return Object.freeze(
-    plan.map(step =>
-      step.kind === 'project'
-        ? Object.freeze({kind: 'project' as const, select: normalized.select})
-        : step
-    )
-  );
+  const steps: LogicalTableQueryPlan<PredicateT>[number][] = [];
+  for (const step of plan) {
+    if (step.kind === 'limit' && normalized.offset !== undefined)
+      steps.push(Object.freeze({kind: 'offset', offset: normalized.offset}));
+    steps.push(
+      step.kind === 'project' ? Object.freeze({kind: 'project', select: normalized.select}) : step
+    );
+  }
+  if (normalized.limit === undefined && normalized.offset !== undefined)
+    steps.push(Object.freeze({kind: 'offset', offset: normalized.offset}));
+  return Object.freeze(steps);
 }
 
 /** Validates identifiers without interpreting dots or rewriting quoted names. */

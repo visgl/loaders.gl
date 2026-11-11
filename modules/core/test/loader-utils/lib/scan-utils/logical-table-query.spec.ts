@@ -103,3 +103,19 @@ test.each([
 ])('invalid FROM reference fails: %j', from => {
   expect(() => normalizeTableQuery(columns, {from} as unknown as TableQuery)).toThrow('FROM must');
 });
+
+test('logical pagination skips filtered rows before applying the limit', () => {
+  const where = {op: '>' as const, args: [{property: 'population'}, 100] as const};
+  const request = {select: ['latitude'], where, offset: 2};
+  const steps = [
+    {kind: 'scan', columns: ['latitude', 'population']},
+    {kind: 'filter', predicate: where},
+    {kind: 'project', select: [{column: 'latitude', as: 'latitude'}]},
+    {kind: 'offset', offset: 2}
+  ];
+  expect(planLogicalTableQuery(columns, request)).toEqual(steps);
+  expect(planLogicalTableQuery(columns, {...request, limit: 3})).toEqual([
+    ...steps,
+    {kind: 'limit', limit: 3}
+  ]);
+});
