@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {SQLQuery} from '@math.gl/core/sql';
+import type {SQLQuery} from '@math.gl/expressions/sql';
 import type {ArrowTable, ArrowTableBatch, TableBatch, Schema} from '@loaders.gl/core/schema';
 import {
   normalizeTableQuery,
@@ -412,7 +412,7 @@ async function openQuerySource(options: QueryOptions): Promise<unknown> {
   return implementation.createDataSource(url, authenticatedOptions as DataSourceOptions);
 }
 
-export {parseSQLQuery, parseSQLSelect, type SQLSelectParserOptions} from '@math.gl/core/sql';
+export {parseSQLQuery, parseSQLSelect, type SQLSelectParserOptions} from '@math.gl/expressions/sql';
 
 export {createSQLCatalog} from './sql-catalog';
 export type {SQLCatalog, SQLCatalogQuery, SQLCatalogSource, SQLCatalogTable} from './sql-catalog';

@@ -171,14 +171,13 @@ const sqlParser = import('@loaders.gl/core/scan/query').then(module => module.pa
 
 ESM imports are tree-shakeable: importing just the parser removes Arrow execution code from the
 bundle. For a smaller parser without built-in WHERE support, use `parseSQLSelect()` from the same
-subpath. It accepts SELECT, AS, FROM, and LIMIT; an optional `parseWhere` callback can add predicate
-support. WHERE is rejected when that callback is omitted.
+subpath. It accepts SELECT, AS, FROM, LIMIT, and OFFSET. Pass a `parseWhere` callback to enable
+WHERE.
 
 These are deliberately partial parsers. They preserve identifier case, accept double-quoted names
 and doubled-quote escapes, and require AS for column aliases. They reject comments, table aliases,
-qualified column references, joins, sorting, grouping, offsets, and multiple
-statements. Quote literal column names containing dots. Input length, token count, and nesting
-are bounded.
+qualified column references, joins, sorting, grouping, and multiple statements. Quote literal column
+names containing dots. Input length, token count, and nesting are bounded.
 
 An application can still supply its own `SQLQueryParser` to translate supported syntax into the
 logical query. The function may return that query asynchronously. Parsers are invoked only for
@@ -272,7 +271,7 @@ signatures, errors, capability details, and benchmark commands, see the
 ### Injected SQL parser contract
 
 An injected `sqlParser` returns a portable logical query. Use `parseSQLQuery` from
-`@math.gl/core/sql` for SELECT expressions, ARRAY projections, casts, computed WHERE expressions,
+`@math.gl/expressions/sql` for SELECT expressions, ARRAY projections, casts, computed WHERE expressions,
 and catalog commands. Math.gl compiles expressions against each source schema. Loaders.gl requests
 the referenced columns and evaluates computed filters before applying LIMIT. Sources can still
 push down portable column predicates. Unsupported expressions fail with a terminal query error.

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {parseSQLPredicate as parseMathSQLPredicate} from '@math.gl/core/sql';
+import {parseSQLPredicate as parseMathSQLPredicate} from '@math.gl/expressions/sql';
 import {validateSQLPredicate} from './sql-predicate-schema';
 import type {
   BoundSQLPredicate,

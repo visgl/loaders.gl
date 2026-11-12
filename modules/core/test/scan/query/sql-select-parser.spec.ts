@@ -71,7 +71,6 @@ test.each([
   'SELECT a, *',
   'SELECT a ORDER BY a',
   'SELECT a GROUP BY a',
-  'SELECT a OFFSET 1',
   'SELECT a FROM a JOIN b',
   'SELECT a UNION SELECT a',
   'SELECT a LIMIT -1',
@@ -118,4 +117,15 @@ test('quoted WHERE identifiers execute through the injected parser and both resu
   expect(
     (await query('SELECT * LIMIT 0', {source, sqlParser: parseSQLSelect})).data.schema.names
   ).toEqual(['not', 'field.name']);
+});
+
+test('SQL OFFSET skips filtered rows before LIMIT', async () => {
+  const data = new arrow.Table({value: arrow.vectorFromArray([0, 1, 2, 3], new arrow.Int32())});
+  const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
+  const result = await query('SELECT value WHERE value > 0 LIMIT 1 OFFSET 1', {
+    source,
+    sqlParser: parseSQLQuery
+  });
+  expect(result.data.getChild('value')?.get(0)).toBe(2);
+  expect(result.data.numRows).toBe(1);
 });
