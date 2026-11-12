@@ -40,11 +40,11 @@ to sensitive organizational content.
 ## Static token or API key
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader, {
   core: {
     credentials: [new ArcGISAuthentication({
       origins: ['https://services.example.com'],
@@ -63,7 +63,7 @@ The descriptors also register `ArcGISAuthentication`, so declarative credentials
 `load()` and `SourceLayer`:
 
 ```ts
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader, {
   core: {credentials: [{type: 'arcgis', origins: ['https://services.example.com'], token: accessToken}]}
 });
 ```
@@ -82,7 +82,7 @@ const authentication = new ArcGISAuthentication({
   }
 });
 
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader, {
   core: {credentials: [authentication]}
 });
 ```
@@ -108,7 +108,7 @@ URLs, screenshots, application logs or source files.
 ## Use an existing Enterprise transport
 
 ```ts
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader, {
   core: {fetch: enterpriseFetch}
 });
 ```

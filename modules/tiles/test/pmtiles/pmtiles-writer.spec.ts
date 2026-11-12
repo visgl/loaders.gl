@@ -55,7 +55,7 @@ describe('PMTiles packaging', () => {
 
   test('supports the standard encode API, source metadata and raw tile reads', async () => {
     const bytes = await encode([TILE], PMTilesWriter, {pmtiles: OPTIONS});
-    const source = PMTilesSourceLoader.createDataSource(new Blob([bytes]), {});
+    const source = PMTilesSourceLoader.createDataSourceSync(new Blob([bytes]), {});
     expect(await source.getMetadata()).toMatchObject({
       formatVersion: 3,
       tileMIMEType: 'application/vnd.mapbox-vector-tile',

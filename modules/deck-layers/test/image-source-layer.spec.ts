@@ -28,7 +28,7 @@ const TEST_SOURCE_FACTORY = {
   fromUrl: true,
   fromBlob: true,
   testURL: () => true,
-  createDataSource() {
+  createDataSourceSync() {
     return TEST_IMAGE_SOURCE as any;
   }
 };
@@ -96,7 +96,7 @@ test.each([
   const ignoredParser = {id: 'ignored-parser'};
   const sourceFactory = {
     ...TEST_SOURCE_FACTORY,
-    createDataSource: vi.fn(() => TEST_IMAGE_SOURCE)
+    createDataSourceSync: vi.fn(() => TEST_IMAGE_SOURCE)
   };
   const sourceOptions = hasSourceOptions
     ? {
@@ -119,7 +119,7 @@ test.each([
   } as ImageSourceLayerProps);
 
   expect(layer._resolveData(layer.props)).toBe(TEST_IMAGE_SOURCE);
-  expect(sourceFactory.createDataSource).toHaveBeenCalledExactlyOnceWith(
+  expect(sourceFactory.createDataSourceSync).toHaveBeenCalledExactlyOnceWith(
     'memory://image-source',
     {
       ...sourceOptions,

@@ -69,7 +69,7 @@ export const DuckDBSQLSource = {
   },
   defaultOptions: SQL_SOURCE_DEFAULT_OPTIONS,
   testURL: (url: string): boolean => /^duckdb:\/\//i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string,
     options: SQLSourceOptions,
     coreApi?: CoreAPI

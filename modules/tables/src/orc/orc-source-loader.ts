@@ -143,7 +143,7 @@ export const ORCSourceLoaderWithParser = {
   options: {},
   defaultOptions: {},
   testURL: (url: string): boolean => /\.orc(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: ORCSourceOptions): ORCSource =>
+  createDataSourceSync: (data: string | Blob, options: ORCSourceOptions): ORCSource =>
     new ORCSource(data, options)
 } as const satisfies SourceLoader<ORCSource>;
 

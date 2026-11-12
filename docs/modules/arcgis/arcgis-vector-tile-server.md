@@ -82,10 +82,10 @@ loaders.gl `VectorTileSource` contract.
 ## Raw and decoded tiles
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader]);
+const source = await createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader]);
 
 const metadata = await source.getMetadata();
 const tileBytes = await source.getTile({z: 4, x: 6, y: 7});
@@ -100,7 +100,7 @@ needs decoded geometries and properties.
 MVT options are forwarded to `@loaders.gl/tiles/mvt`:
 
 ```ts
-const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader], {
+const source = await createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader], {
   mvt: {
     shape: 'geojson-table',
     layers: ['roads', 'labels']

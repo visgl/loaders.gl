@@ -18,7 +18,13 @@ export function selectSource(
   const type = options?.type || 'auto';
   let selectedSource: SourceLoader | null = null;
   if (type === 'auto') {
-    selectedSource = selectLoaderSync(url, sources, {core: {nothrow: true}}) as SourceLoader | null;
+    selectedSource = selectLoaderSync(
+      url,
+      sources,
+      {core: {nothrow: true}},
+      undefined,
+      'source'
+    ) as SourceLoader | null;
   } else {
     selectedSource = getSourceOfType(type, sources);
   }

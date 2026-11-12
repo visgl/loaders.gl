@@ -75,7 +75,7 @@ export const WMSSourceLoader = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
-  createDataSource: (url, options: WMSSourceLoaderOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (url, options: WMSSourceLoaderOptions, coreApi?: CoreAPI) =>
     new WMSImageSource(url as string, options, coreApi)
 } as const satisfies SourceLoader<WMSImageSource>;
 

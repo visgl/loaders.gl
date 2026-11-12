@@ -19,11 +19,7 @@ import type {
   ReadableFile,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import {
-  isSourceLoader,
-  mergeOptions,
-  resolveLoaderAuthenticationOptions
-} from '@loaders.gl/core/loader-utils';
+import {mergeOptions, resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import {validateWorkerVersion} from '@loaders.gl/core/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -111,12 +107,6 @@ export async function parseFile(
     return null;
   }
 
-  if (isSourceLoader(loader)) {
-    throw new Error(
-      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parseFile().`
-    );
-  }
-
   // @ts-expect-error candidateLoaders may be a single forced loader
   const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url);
   const authenticationLoader =
@@ -180,5 +170,8 @@ async function parseFileWithLoader(
     return await parse(data, loaderWithParser, options, context);
   }
 
+  if (loaderWithParser.createDataSourceSync) {
+    throw new Error(`${loader.id} has no file parser. Use createDataSource() to open a source.`);
+  }
   throw new Error(`${loader.id} loader - no file parser found`);
 }

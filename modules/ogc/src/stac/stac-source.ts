@@ -33,14 +33,14 @@ const DEFAULT_MAX_REQUESTS = 1000;
 
 const {
   preload: _preloadSTACSourceLoader,
-  createDataSource: _createMetadataDataSource,
+  createDataSourceSync: _createMetadataDataSource,
   ...STACSourceLoaderBase
 } = STACSourceLoaderMetadata;
 
 /** Runtime source factory for static STAC catalogs and STAC APIs. */
 export const STACSourceLoaderWithParser = {
   ...STACSourceLoaderBase,
-  createDataSource(
+  createDataSourceSync(
     data: string | Blob,
     options: STACSourceLoaderOptions,
     coreApi?: CoreAPI

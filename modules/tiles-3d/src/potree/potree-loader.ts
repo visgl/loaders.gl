@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {
   PotreeLoader as PotreeLoaderMetadata,
-  type PotreeDatasetMetadata,
-  type POTreeLoaderOptions
+  type PotreeDatasetMetadata
 } from './potree-loader-types';
+import type {PotreeSourceLoaderOptions} from './potree-source-options';
+import {PotreeNodesSource} from './lib/potree-node-source';
 import {PotreeMetadataSchema} from './types/potree-metadata';
 
 import {parsePotree2Metadata} from './parsers/parse-potree2';
@@ -18,8 +19,15 @@ const {preload: _PotreeLoaderPreload, ...PotreeLoaderMetadataWithoutPreload} = P
 export const PotreeLoaderWithParser = {
   ...PotreeLoaderMetadataWithoutPreload,
   parse: async (data: ArrayBuffer) => parsePotreeMetadata(new TextDecoder().decode(data)),
-  parseTextSync: parsePotreeMetadata
-} as const satisfies LoaderWithParser<PotreeDatasetMetadata, never, POTreeLoaderOptions>;
+  parseTextSync: parsePotreeMetadata,
+  createDataSourceSync: (url: string, options: PotreeSourceLoaderOptions, coreApi?: CoreAPI) =>
+    new PotreeNodesSource(url, options, coreApi)
+} as const satisfies LoaderWithParser<
+  PotreeDatasetMetadata,
+  never,
+  PotreeSourceLoaderOptions,
+  PotreeNodesSource
+>;
 
 /** Parses and validates a Potree cloud.js or metadata.json document. */
 function parsePotreeMetadata(text: string): PotreeDatasetMetadata {

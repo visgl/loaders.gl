@@ -14,7 +14,7 @@ import {
 } from '@deck.gl/core';
 import type {GeoJsonLayerProps} from '@deck.gl/layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/core/geoarrow';
 import type {GeoJSONTable} from '@loaders.gl/core/schema';
 import type {
@@ -370,7 +370,7 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
       throw new Error('VectorSourceLayer requires a SourceLoader for URL or Blob inputs.');
     }
     const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
-    return createDataSource(props.data, sourceLoaders, {
+    return createDataSourceSync(props.data, sourceLoaders, {
       ...props.sourceOptions,
       core: {
         ...props.sourceOptions?.core,

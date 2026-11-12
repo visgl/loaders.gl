@@ -54,10 +54,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Usage
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {OMETiffSourceLoader} from '@loaders.gl/raster/ometiff-source-loader';
 
-const source = createDataSource('multi-channel.ome.tif', [OMETiffSourceLoader], {
+const source = createDataSourceSync('multi-channel.ome.tif', [OMETiffSourceLoader], {
   core: {type: 'ometiff'},
   ometiff: {}
 });

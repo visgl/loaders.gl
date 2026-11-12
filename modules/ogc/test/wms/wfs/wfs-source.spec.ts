@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
 const WFS_URL = 'https://example.com/geoserver/wfs';
 test('WFSSourceLoader#getFeaturesURL', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       boundingBox: [
@@ -27,7 +27,7 @@ test('WFSSourceLoader#getFeaturesURL', () => {
   expect(featuresUrl.searchParams.get('OUTPUTFORMAT')).toBe('application/json');
 });
 test('WFSSourceLoader#getFeaturesURL separates request and output CRS', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       boundingBox: [
@@ -43,7 +43,7 @@ test('WFSSourceLoader#getFeaturesURL separates request and output CRS', () => {
   expect(featuresUrl.searchParams.get('SRSNAME')).toBe('EPSG:3857');
 });
 test('WFSSourceLoader#getCapabilitiesURL defaults version', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const capabilitiesUrl = new URL(source.getCapabilitiesURL());
   expect(capabilitiesUrl.origin + capabilitiesUrl.pathname, 'keeps the base WFS URL').toBe(WFS_URL);
   expect(capabilitiesUrl.searchParams.get('SERVICE')).toBe('WFS');
@@ -51,7 +51,7 @@ test('WFSSourceLoader#getCapabilitiesURL defaults version', () => {
   expect(capabilitiesUrl.searchParams.get('VERSION')).toBe('2.0.0');
 });
 test('WFSSourceLoader#getFeaturesURL supports WFS 1.1.0 parameter conventions', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       version: '1.1.0',
@@ -75,7 +75,7 @@ test('WFSSourceLoader#getFeaturesURL supports WFS 1.1.0 parameter conventions', 
   expect(mapUrl.searchParams.get('SRS')).toBe('EPSG:3857');
 });
 test('WFSSourceLoader#getFeatures returns Arrow by default', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
     features: [
@@ -100,7 +100,7 @@ test('WFSSourceLoader#getFeatures returns Arrow by default', async () => {
   expect(table.schema?.metadata?.geo, 'adds GeoArrow metadata').toBeTruthy();
 });
 test('WFSSourceLoader#getFeatures supports explicit GeoJSON', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
     features: [
@@ -127,7 +127,7 @@ test('WFSSourceLoader#getFeatures supports explicit GeoJSON', async () => {
   });
 });
 test('WFSSourceLoader#getFeatures parses GML feature responses', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   source.fetch = async () =>
     new Response(
       '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app"><gml:featureMember><app:road gml:id="road.1"><app:name>Main Street</app:name><app:geometry><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember></wfs:FeatureCollection>',
@@ -145,7 +145,7 @@ test('WFSSourceLoader#getFeatures parses GML feature responses', async () => {
   expect(table.data.numRows).toBe(1);
 });
 test('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const xml =
     '<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:app="urn:app"><gml:featureMember><app:road gml:id="road.1"><app:geometry><gml:Point><gml:pos>1 2</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember><gml:featureMember><app:road gml:id="road.2"><app:geometry><gml:Point><gml:pos>3 4</gml:pos></gml:Point></app:geometry></app:road></gml:featureMember></wfs:FeatureCollection>';
   source.fetch = async () =>
@@ -177,7 +177,7 @@ test('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', asyn
   expect(batches[0].data.numRows).toBe(1);
 });
 test('WFSSourceLoader#getFeaturesInBatches forwards GML property types', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {
     wfs: {propertyTypes: {height: 'number'}}
   });
   const xml =
@@ -209,14 +209,14 @@ test('WFSSourceLoader#getFeaturesInBatches forwards GML property types', async (
   expect((batches[0] as any).features[0].properties.height).toBe(12);
 });
 test('WFSSourceLoader#getFeatures honors configured output format', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {
     wfs: {wfsParameters: {outputFormat: 'application/vnd.ogc.gml'}}
   });
   const featuresUrl = new URL(source.getFeaturesURL({layers: ['roads'], crs: 'EPSG:4326'}));
   expect(featuresUrl.searchParams.get('OUTPUTFORMAT')).toBe('application/vnd.ogc.gml');
 });
 test('WFSSourceLoader#getFeaturesURL supports paging and server-side filters', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       version: '2.0.0',
@@ -239,7 +239,7 @@ test('WFSSourceLoader#getFeaturesURL supports paging and server-side filters', (
   expect(featuresUrl.searchParams.get('SORTBY')).toBe('name A,id D');
 });
 test('WFSSourceLoader#getFeaturesURL maps page size for WFS 1.1', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       version: '1.1.0',
@@ -254,7 +254,7 @@ test('WFSSourceLoader#getFeaturesURL maps page size for WFS 1.1', () => {
   expect(featuresUrl.searchParams.get('COUNT')).toBeNull();
 });
 test('WFSSourceLoader#getFeaturesURL encodes reserved filter characters', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       typeName: 'roads',
@@ -268,7 +268,7 @@ test('WFSSourceLoader#getFeaturesURL encodes reserved filter characters', () => 
   );
 });
 test('WFSSourceLoader#getFeaturesInBatches rejects successful WFS exception responses', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   source.fetch = async () =>
     new Response(
       '<ServiceExceptionReport><ServiceException>Denied</ServiceException></ServiceExceptionReport>',
@@ -285,7 +285,7 @@ test('WFSSourceLoader#getFeaturesInBatches rejects successful WFS exception resp
 });
 
 test('WFSSourceLoader exposes schema, metadata, and binary feature output', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   await expect(source.getSchema()).resolves.toEqual({metadata: {}, fields: []});
   source.getCapabilities = async () => ({title: 'WFS service'}) as any;
   await expect(source.getMetadata()).resolves.toMatchObject({
@@ -320,7 +320,7 @@ test('WFSSourceLoader exposes schema, metadata, and binary feature output', asyn
 });
 
 test('WFSSourceLoader builds auxiliary service URLs', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {
     wfs: {vendorParameters: {token: 'base'}}
   }) as any;
   expect(source._parseWFSUrl('https://example.com/wfs?SERVICE=WFS&REQUEST=GetFeature')).toEqual({
@@ -356,7 +356,7 @@ test('WFSSourceLoader builds auxiliary service URLs', () => {
 });
 
 test('WFSSourceLoader handles axis ordering, paging aliases, and malformed bounds', () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {}) as any;
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {}) as any;
   expect(source._flipBoundingBox('invalid', {version: '2.0.0', crs: 'EPSG:4326'})).toBeNull();
   expect(source._flipBoundingBox([1, 2, 3], {version: '2.0.0', crs: 'EPSG:4326'})).toBeNull();
   expect(
@@ -369,7 +369,7 @@ test('WFSSourceLoader handles axis ordering, paging aliases, and malformed bound
 });
 
 test('WFSSourceLoader rejects non-feature JSON and service errors', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {}) as any;
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {}) as any;
   source.fetch = async () =>
     new Response(JSON.stringify({type: 'NotAFeatureCollection'}), {
       headers: {'content-type': 'application/json'}
@@ -398,7 +398,7 @@ test('WFSSourceLoader rejects non-feature JSON and service errors', async () => 
 });
 
 test('WFS extent queries preserve endpoint parameters, defaults, zero offsets and bbox CRS', () => {
-  const source = WFSSourceLoader.createDataSource(`${WFS_URL}?token=a%26b&request=old`, {
+  const source = WFSSourceLoader.createDataSourceSync(`${WFS_URL}?token=a%26b&request=old`, {
     wfs: {wfsParameters: {version: '1.1.0', crs: 'EPSG:3857'}}
   });
   const generic = new URL(
@@ -431,7 +431,7 @@ test('WFS extent queries preserve endpoint parameters, defaults, zero offsets an
 });
 
 test('WFS extent loading forwards cancellation and rejects failed requests', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const controller = new AbortController();
   source.fetch = async (_url, options) => {
     expect(options?.signal).toBe(controller.signal);
@@ -453,7 +453,7 @@ test.each([
   '1.1.0',
   '2.0.0'
 ] as const)('WFS %s discovers feature types, projections and extent metadata', async version => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   const projectionTag = version === '2.0.0' ? 'DefaultCRS' : 'DefaultSRS';
   source.fetch = async () =>
     new Response(`<wfs:WFS_Capabilities xmlns:wfs="http://www.opengis.net/wfs" xmlns:ows="http://www.opengis.net/ows">
@@ -482,7 +482,7 @@ test.each([
 });
 
 test('WFS GeoJSON preserves count and paging metadata for completeness-aware loading', async () => {
-  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
   source.fetch = async () =>
     new Response(
       JSON.stringify({

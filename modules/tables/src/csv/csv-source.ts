@@ -7,14 +7,12 @@ import type {
   CoreAPI,
   DataSourceOptions,
   ScanQueryMetadata,
-  SourceLoader,
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {CSVLoaderOptions} from './csv-loader-options';
-import {CSVFormat} from './csv-format';
 
 const CSV_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
@@ -129,20 +127,3 @@ async function* readStreamChunks(
     await reader.cancel();
   }
 }
-
-/** Metadata-only CSV source loader. */
-export const CSVSourceLoader = {
-  ...CSVFormat,
-  name: 'CSVSourceLoader',
-  type: 'csv-source',
-  version: '1.0.0',
-  dataType: null as unknown as CSVTableSource,
-  batchType: null as never,
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.csv(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: CSVSourceOptions, coreApi?: CoreAPI) =>
-    new CSVTableSource(data, options, coreApi)
-} as const satisfies SourceLoader<CSVTableSource>;

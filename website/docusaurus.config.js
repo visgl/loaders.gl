@@ -46,10 +46,12 @@ const legacyMathPolygonEntry = require.resolve('@math.gl/polygon', {
   paths: [resolve('../node_modules/@deck.gl/layers')]
 });
 
+const isWebsiteDev = process.env.LOADERS_GL_WEBSITE_DEV === 'true';
+
 /** Creates the existing SWC loader with deterministic styled-components IDs. */
 function createJavaScriptLoader(isServer) {
   const {getSwcLoaderOptions, swcLoader} = require('@docusaurus/faster');
-  const options = getSwcLoaderOptions({isServer, bundlerName: 'rspack'});
+  const options = getSwcLoaderOptions({isServer, bundlerName: isWebsiteDev ? 'webpack' : 'rspack'});
   options.jsc.experimental = {
     plugins: [
       [
@@ -178,7 +180,9 @@ const config = {
     v4: true,
     // Use a custom SWC loader below so styled-components receives stable SSR IDs.
     faster: {
-      swcJsLoader: false
+      swcJsLoader: false,
+      // webpack-dev-server 6 expects compiler.webpack.cli, which Rspack does not expose.
+      ...(isWebsiteDev ? {rspackBundler: false, rspackPersistentCache: false} : {})
     }
   },
 

@@ -33,13 +33,13 @@ export const NetCDFSourceLoader = {
   defaultOptions: {},
   testURL: (url: string): boolean => /\.(?:cdf|nc)(?:$|[?#])/i.test(url),
   preload: preloadNetCDFSourceLoader,
-  createDataSource(
+  createDataSourceSync(
     _data: string | Blob,
     _options: NetCDFSourceOptions,
     _coreApi?: CoreAPI
   ): NetCDFSource {
     throw new Error(
-      'NetCDFSourceLoader requires async load() or an explicit @loaders.gl/scientific/netcdf/netcdf-source-loader import'
+      'NetCDFSourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/netcdf/netcdf-source-loader import'
     );
   }
 } as const satisfies SourceLoader<NetCDFSource>;

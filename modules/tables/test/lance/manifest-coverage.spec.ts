@@ -106,14 +106,14 @@ test('LanceSource resolves latest and explicit manifest URLs', async () => {
     return new Response(manifest, {status: 200});
   };
 
-  const latestSource = LanceSourceLoader.createDataSource('https://example.com/table.lance/', {
+  const latestSource = LanceSourceLoader.createDataSourceSync('https://example.com/table.lance/', {
     core: {fetch}
   } as any);
   expect((await latestSource.getMetadata()).manifestURL).toBe(
     'https://example.com/table.lance/_versions/9.manifest'
   );
 
-  const explicitSource = LanceSourceLoader.createDataSource('https://example.com/table.lance', {
+  const explicitSource = LanceSourceLoader.createDataSourceSync('https://example.com/table.lance', {
     lance: {version: 4},
     core: {fetch}
   } as any);
@@ -124,7 +124,7 @@ test('LanceSource resolves latest and explicit manifest URLs', async () => {
 
 test('LanceSource reports manifest discovery and HTTP failures', async () => {
   const failingFetch = async () => new Response('missing', {status: 404});
-  const source = LanceSourceLoader.createDataSource('https://example.com/table.lance', {
+  const source = LanceSourceLoader.createDataSourceSync('https://example.com/table.lance', {
     core: {fetch: failingFetch}
   } as any);
 
@@ -132,14 +132,17 @@ test('LanceSource reports manifest discovery and HTTP failures', async () => {
     'Unable to discover the latest Lance manifest'
   );
 
-  const invalidHintSource = LanceSourceLoader.createDataSource('https://example.com/table.lance', {
-    core: {fetch: async () => new Response(JSON.stringify({}), {status: 200})}
-  } as any);
+  const invalidHintSource = LanceSourceLoader.createDataSourceSync(
+    'https://example.com/table.lance',
+    {
+      core: {fetch: async () => new Response(JSON.stringify({}), {status: 200})}
+    } as any
+  );
   await expect(invalidHintSource.getMetadata()).rejects.toThrow('does not contain a version');
 });
 
 test('LanceSource reads manifest metadata from a Blob and caches its schema', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([createManifest()]), {});
+  const source = LanceSourceLoader.createDataSourceSync(new Blob([createManifest()]), {});
 
   const metadata = await source.getMetadata();
   expect(metadata.manifestURL).toBeUndefined();
@@ -148,7 +151,7 @@ test('LanceSource reads manifest metadata from a Blob and caches its schema', as
 });
 
 test('LanceSource reports unavailable decoding and malformed data files', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([createManifest()]), {});
+  const source = LanceSourceLoader.createDataSourceSync(new Blob([createManifest()]), {});
 
   await expect(async () => {
     for await (const _batch of source.readBatches()) {
@@ -156,7 +159,7 @@ test('LanceSource reports unavailable decoding and malformed data files', async 
     }
   }).rejects.toBeInstanceOf(LanceDecoderUnavailableError);
   await expect(source.getFileMetadata()).rejects.toThrow('Invalid Lance file magic');
-  const shortSource = LanceSourceLoader.createDataSource(new Blob([new Uint8Array(8)]), {});
+  const shortSource = LanceSourceLoader.createDataSourceSync(new Blob([new Uint8Array(8)]), {});
   await expect(shortSource.getFileMetadata()).rejects.toThrow('smaller than its footer');
 });
 

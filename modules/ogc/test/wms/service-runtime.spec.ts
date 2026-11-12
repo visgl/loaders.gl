@@ -156,7 +156,7 @@ describe('ServiceRuntime', () => {
     let created = 0;
     const sourceLoader = {
       testURL: (url: string) => url.endsWith('.service'),
-      createDataSource: () => {
+      createDataSourceSync: () => {
         created++;
         return {created};
       }

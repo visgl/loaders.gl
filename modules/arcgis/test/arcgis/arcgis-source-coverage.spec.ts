@@ -47,7 +47,7 @@ test('discovers ArcGIS services and nested folders', async () => {
 
 test('loads MapServer metadata and decodes cached tiles', async () => {
   const parse = vi.fn(async () => ({shape: 'image'}));
-  const source = ArcGISMapTileSourceLoader.createDataSource(
+  const source = ArcGISMapTileSourceLoader.createDataSourceSync(
     MAP_SERVER_URL,
     {
       'arcgis-map-server': {
@@ -81,7 +81,7 @@ test('loads MapServer metadata and decodes cached tiles', async () => {
 });
 
 test('loads MapServer metadata from the service and supports dynamic exports', async () => {
-  const source = ArcGISMapTileSourceLoader.createDataSource(MAP_SERVER_URL, {
+  const source = ArcGISMapTileSourceLoader.createDataSourceSync(MAP_SERVER_URL, {
     'arcgis-map-server': {mode: 'dynamic', exportParameters: {token: 'abc'}}
   });
   source.fetch = vi.fn(async url => {
@@ -96,7 +96,7 @@ test('loads MapServer metadata from the service and supports dynamic exports', a
 
 test('loads ImageServer tiles and metadata', async () => {
   const parse = vi.fn(async () => ({shape: 'image'}));
-  const source = ArcGISImageTileSourceLoader.createDataSource(
+  const source = ArcGISImageTileSourceLoader.createDataSourceSync(
     IMAGE_SERVER_URL,
     {'arcgis-image-server-tiles': {format: 'lerc'}},
     {parse} as never
@@ -119,7 +119,7 @@ test('loads ImageServer tiles and metadata', async () => {
 
 test('exports ImageServer images and analytical rasters', async () => {
   const parse = vi.fn(async (_data, loader) => ({loader}));
-  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {}, {
+  const source = ArcGISImageServerSourceLoader.createDataSourceSync(IMAGE_SERVER_URL, {}, {
     parse
   } as never);
   source.fetch = vi.fn(async () => new Response(new Uint8Array([7, 8])));

@@ -23,7 +23,7 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
     const raster = {data: new Float32Array([4]), width: 1, height: 1, bandCount: 1,
       dtype: 'float32', interleaved: true};
     if (sampleRaster(raster, [0, 0]).values[0] !== 4 ||
-        typeof discoverGeoTIFF !== 'function' || typeof GeoTIFFSourceLoader.createDataSource !== 'function')
+        typeof discoverGeoTIFF !== 'function' || typeof GeoTIFFSourceLoader.createDataSourceSync !== 'function')
       throw new Error('Raster package exports failed');`
     ],
     {cwd: process.cwd(), encoding: 'utf8', timeout: 30000}

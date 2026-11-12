@@ -295,7 +295,7 @@ export const COPCSourceLoader = {
   },
 
   testURL: (url: string) => /\.copc\.laz($|\?)/i.test(url),
-  createDataSource: (url: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (url: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) =>
     new COPCTileSource(url, options, coreApi)
 } as const satisfies SourceLoader<COPCTileSource>;
 

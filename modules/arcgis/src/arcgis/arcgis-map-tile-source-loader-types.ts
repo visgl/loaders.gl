@@ -15,20 +15,20 @@ async function preloadArcGISMapTileSourceLoader(): Promise<SourceLoader<ArcGISMa
   return ArcGISMapTileSourceLoaderWithParser;
 }
 
-/** Lightweight service descriptor; use load() or the synchronous /bundled entrypoint. */
+/** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
 export const ArcGISMapTileSourceLoader = {
   ...ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISMapTileSource,
   batchType: null as never,
   preload: preloadArcGISMapTileSourceLoader,
   /** Requires the runtime loader when constructing a source synchronously. */
-  createDataSource(
+  createDataSourceSync(
     _url: string,
     _options: ArcGISMapTileSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): ArcGISMapTileSource {
     throw new Error(
-      'ArcGISMapTileSourceLoader requires async load() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISMapTileSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISMapTileSource>;

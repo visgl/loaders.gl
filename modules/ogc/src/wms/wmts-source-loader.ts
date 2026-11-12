@@ -646,6 +646,6 @@ export const WMTSSourceLoader = {
   options: {wmts: {}},
   defaultOptions: {wmts: {}},
   testURL: (url: string): boolean => /wmts|GetTile/i.test(url),
-  createDataSource: (url: string, options: WMTSSourceLoaderOptions = {}, coreApi?: CoreAPI) =>
+  createDataSourceSync: (url: string, options: WMTSSourceLoaderOptions = {}, coreApi?: CoreAPI) =>
     new WMTSImageTileSource(url, options, coreApi)
 } as const satisfies SourceLoader<WMTSImageTileSource>;

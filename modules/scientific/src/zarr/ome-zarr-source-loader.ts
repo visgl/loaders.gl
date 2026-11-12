@@ -329,7 +329,7 @@ export const OMEZarrSourceLoaderWithParser = {
   },
 
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string,
     options: ZarrSourceLoaderOptions,
     coreApi?: CoreAPI

@@ -109,7 +109,7 @@ export const GeoPackageSource = {
   },
 
   testURL: (url: string): boolean => /\.gpkg(?:$|[?#])/i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string | Blob,
     options: GeoPackageSourceOptions,
     coreApi?: CoreAPI

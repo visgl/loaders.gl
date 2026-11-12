@@ -81,10 +81,10 @@ npm install @loaders.gl/core @loaders.gl/scientific
 ## Example
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {OMEZarrSourceLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSource('https://example.com/spatialdata.zarr', [OMEZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/spatialdata.zarr', [OMEZarrSourceLoader], {
   zarr: {path: 'images/example-image'}
 });
 
@@ -151,10 +151,10 @@ original attributes. Image and label descriptors use `ome-zarr`; point descripto
 `parquet-dataset`; shape descriptors use `geoparquet`; and table descriptors use `anndata-zarr`.
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {SpatialDataSourceLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSource(rootUrl, [SpatialDataSourceLoader]);
+const source = createDataSourceSync(rootUrl, [SpatialDataSourceLoader]);
 const metadata = await source.getMetadata();
 const image = await source.createRasterSource('image', metadata.images[0].name);
 const expression = await source.createTableArraySource('annotations', 'X');

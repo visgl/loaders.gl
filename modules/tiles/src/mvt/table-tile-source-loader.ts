@@ -118,7 +118,7 @@ export const TableTileSourceLoader = {
   },
 
   testURL: (url: string): boolean => url.endsWith('.geojson'),
-  createDataSource(
+  createDataSourceSync(
     url: string | Blob | GeoJSONTable | Promise<GeoJSONTable>,
     options: TableTileSourceLoaderOptions,
     coreApi?: CoreAPI

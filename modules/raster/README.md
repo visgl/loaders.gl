@@ -34,8 +34,8 @@ const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 | `@loaders.gl/raster/geotiff-source-loader` | Synchronous GeoTIFF/COG source constructor |
 | `@loaders.gl/raster/ometiff-source-loader` | Synchronous OME-TIFF source constructor |
 
-GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronous `load()`
-with metadata or import an explicit source implementation for synchronous `createDataSource()`.
+GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronous `createDataSource()`
+with metadata or import an explicit source implementation for synchronous `createDataSourceSync()`.
 The format `*/index` paths retain the existing advanced format APIs.
 
 ## Optional decoder packages

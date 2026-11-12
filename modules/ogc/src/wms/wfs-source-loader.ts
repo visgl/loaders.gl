@@ -82,8 +82,11 @@ export const WFSSourceLoader = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
-  createDataSource: (url: string, options: WFSourceOptions, coreApi?: CoreAPI): WFSVectorSource =>
-    new WFSVectorSource(url, options, coreApi)
+  createDataSourceSync: (
+    url: string,
+    options: WFSourceOptions,
+    coreApi?: CoreAPI
+  ): WFSVectorSource => new WFSVectorSource(url, options, coreApi)
 } as const satisfies SourceLoader<WFSVectorSource>;
 
 // PARAMETER TYPES FOR WFS SOURCE

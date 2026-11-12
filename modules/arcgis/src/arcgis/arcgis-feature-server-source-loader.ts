@@ -40,7 +40,7 @@ export const ArcGISFeatureServerSourceLoaderWithParser = {
   preload: undefined,
   /** Supplies ArcGIS credentials after loading the selected implementation. */
   getAuthentications: () => [ArcGISAuthentication],
-  createDataSource: (
+  createDataSourceSync: (
     url: string,
     options: ArcGISFeatureServerSourceLoaderOptions,
     coreApi?: CoreAPI

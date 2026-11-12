@@ -53,7 +53,7 @@ source loader per visual data contract and a shared registry for automatic selec
 | `arcgis-vector-tile-server` | `VectorTileServer` | `VectorTileSource` | `getMetadata`, `getTile`, `getVectorTile` | PBF or decoded vector tile |
 | `arcgis-scene-server` | `SceneServer` | `Tileset3DSource` or `PointCloudTilesetSource` | `getMetadata`, `getTilesetSource` | I3S mesh, Point, or Point Cloud source |
 
-`ARCGIS_LOADERS` contains these loaders in deterministic selection order. Pass it to async `load()` or deck.gl's `SourceLayer`:
+`ARCGIS_LOADERS` contains these loaders in deterministic selection order. Pass it to async `createDataSource()` or deck.gl's `SourceLayer`:
 
 ```ts
 import {load} from '@loaders.gl/core';
@@ -69,7 +69,7 @@ from the URL, specify the table's loader type through `core.type`.
 ## Runtime source classes
 
 Import source classes and synchronous service loaders from `@loaders.gl/arcgis/bundled`.
-The package root exports lightweight loaders for async `load()` and source instance types.
+The package root exports lightweight loaders for async `createDataSource()` and source instance types.
 
 | Source class | Source loader | Documentation |
 | --- | --- | --- |

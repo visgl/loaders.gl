@@ -35,6 +35,6 @@ export const DeltaSourceLoader = {
   testURL: (url: string): boolean =>
     /\/_delta_log\/(?:\d{20}\.json|_last_checkpoint)(?:$|[?#])/i.test(url),
   preload: preloadDeltaSourceLoader
-} as const satisfies Omit<SourceLoader<DeltaTableSource>, 'createDataSource'> & {
+} as const satisfies Omit<SourceLoader<DeltaTableSource>, 'createDataSourceSync'> & {
   preload: () => Promise<SourceLoader<DeltaTableSource>>;
 };

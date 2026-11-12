@@ -53,13 +53,13 @@ export const STACSourceLoader = {
   testURL: (url: string): boolean =>
     /(?:^|[/_.-])stac(?:[/_.?#-]|$)|\/(?:catalog|collection)\.json(?:$|[?#])/i.test(url),
   preload: preloadSTACSourceLoader,
-  createDataSource(
+  createDataSourceSync(
     _data: string | Blob,
     _options: STACSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): STACSource {
     throw new Error(
-      'STACSourceLoader requires async load() or an explicit @loaders.gl/ogc/stac-source import'
+      'STACSourceLoader requires async createDataSource() or an explicit @loaders.gl/ogc/stac-source import'
     );
   }
 } as const satisfies SourceLoader<STACSource>;

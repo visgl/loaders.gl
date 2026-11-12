@@ -15,11 +15,13 @@ describe('STACSource metadata loader', () => {
     expect(STACSourceLoader.fromUrl).toBe(true);
     expect(STACSourceLoader.fromBlob).toBe(false);
     expect(STACSourceLoader.testURL(ROOT_URL)).toBe(true);
-    expect(STACSourceLoaderWithParser.createDataSource).toBeTypeOf('function');
-    expect(STACSourceLoaderWithParser.createDataSource(ROOT_URL, {})).toBeInstanceOf(STACSource);
+    expect(STACSourceLoaderWithParser.createDataSourceSync).toBeTypeOf('function');
+    expect(STACSourceLoaderWithParser.createDataSourceSync(ROOT_URL, {})).toBeInstanceOf(
+      STACSource
+    );
     await expect(STACSourceLoader.preload()).resolves.toBe(STACSourceLoaderWithParser);
-    expect(() => STACSourceLoader.createDataSource(ROOT_URL, {})).toThrow(/async load/);
-    expect(() => STACSourceLoaderWithParser.createDataSource(new Blob(), {})).toThrow(
+    expect(() => STACSourceLoader.createDataSourceSync(ROOT_URL, {})).toThrow(/createDataSource/);
+    expect(() => STACSourceLoaderWithParser.createDataSourceSync(new Blob(), {})).toThrow(
       /catalog URL/
     );
   });

@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createDataSource} from '@loaders.gl/core';
 import {expect, test, vi} from 'vitest';
-import {encodePotreeDataset, PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {encodePotreeDataset, PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {Potree2Source} from '../../src/potree/potree2-source';
 import {createPoints, createDatasetFetch} from './potree-format-fixtures';
@@ -34,7 +35,7 @@ test('uses the resolved source path prefix before opening a dataset', async () =
   const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
   const prefix = getPathPrefix();
   setPathPrefix('https://example.com/');
-  const source = PotreeSourceLoader.createDataSource('dataset/metadata.json', {
+  const source = await createDataSource('dataset/metadata.json', PotreeLoader, {
     core: {fetch: transport.fetch}
   });
   try {
@@ -50,8 +51,9 @@ test('legacy URL query text does not select the modern dataset reader', async ()
   const transport = createDatasetFetch(
     await encodePotreeDataset(createPoints(), {potree: {version: '1.8'}})
   );
-  const source = PotreeSourceLoader.createDataSource(
+  const source = await createDataSource(
     'https://example.com/dataset/cloud.js?token=/metadata.json',
+    PotreeLoader,
     {core: {fetch: transport.fetch}}
   );
   try {

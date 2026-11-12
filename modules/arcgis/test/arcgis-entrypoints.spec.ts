@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {createDataSource, load} from '@loaders.gl/core';
+import {createDataSource, createDataSourceSync, preload} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader, ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis';
 import {ArcGISAuthentication, createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 import {
@@ -14,7 +14,7 @@ import {resolveCredentials} from '@loaders.gl/core/loader-utils';
 
 describe('ArcGIS public entrypoints', () => {
   test('the package root loads the FeatureServer implementation for queries', async () => {
-    const source = await load(
+    const source = await createDataSource(
       'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
       [ArcGISFeatureServerSourceLoader],
       {
@@ -49,8 +49,14 @@ describe('ArcGIS public entrypoints', () => {
     expect(loader.testURL('https://example.com/unrelated')).toBe(false);
 
     const requests: string[] = [];
-    expect(() => createDataSource(serviceUrl, [loader], {})).toThrow(/async load.*bundled/);
-    const source = await load(serviceUrl, ARCGIS_LOADERS, {
+    expect(() => loader.createDataSourceSync(serviceUrl, {})).toThrow(
+      /async createDataSource.*bundled/
+    );
+    const lazyLoader = {...loader};
+    expect(() => createDataSourceSync(serviceUrl, lazyLoader)).toThrow(/preload/);
+    await preload(lazyLoader);
+    const preloadedSource = createDataSourceSync(serviceUrl, lazyLoader);
+    const source = await createDataSource(serviceUrl, ARCGIS_LOADERS, {
       core: {
         type: serviceType,
         credentials: [
@@ -64,9 +70,10 @@ describe('ArcGIS public entrypoints', () => {
     });
     const runtimeLoader = getBundledArcGISLoader(serviceType)!;
     expect(runtimeLoader.preload).toBeUndefined();
-    const synchronousSource = createDataSource(serviceUrl, BUNDLED_ARCGIS_LOADERS, {
+    const synchronousSource = createDataSourceSync(serviceUrl, BUNDLED_ARCGIS_LOADERS, {
       core: {type: serviceType}
     });
+    expect(preloadedSource.constructor).toBe(source.constructor);
     expect(synchronousSource.constructor).toBe(source.constructor);
     expect(requests).toEqual([]);
     await source.fetch(serviceUrl);

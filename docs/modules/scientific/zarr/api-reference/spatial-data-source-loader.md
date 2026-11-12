@@ -12,10 +12,10 @@ points, shapes, and tables without reading element payloads.
 ## Usage
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {SpatialDataSourceLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSource('https://example.com/dataset.zarr', [SpatialDataSourceLoader]);
+const source = createDataSourceSync('https://example.com/dataset.zarr', [SpatialDataSourceLoader]);
 const metadata = await source.getMetadata();
 
 const imageSource = await source.createRasterSource('image', metadata.images[0].name);

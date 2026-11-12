@@ -59,7 +59,7 @@ Streaming loader for JSON files that must resolve to loaders.gl table output.
 
 ## Usage
 
-Load JSON as a native Apache Arrow table (the default):
+Load JSON as an Arrow table (the default):
 
 ```typescript
 import {JSONTableLoader} from '@loaders.gl/tables/json';
@@ -67,8 +67,6 @@ import {load} from '@loaders.gl/core';
 
 const table = await load(url, JSONTableLoader);
 ```
-
-Request a loaders.gl Arrow table wrapper with `json.shape: 'arrow-table'`.
 
 Request object rows with `json.shape: 'object-row-table'`:
 
@@ -101,8 +99,7 @@ If the selected JSON value is not a row array, atomic parsing throws instead of 
 
 ## Query a JSON table source
 
-Import `JSONTableLoader` from `@loaders.gl/tables/json` to use the loaders.gl query API to select and rename fields.
-The same descriptor accepts `load()` for parsing and `createDataSource()` for opening a reusable source. The package-root export supports parsing only.
+Use `JSONTableLoader` with the loaders.gl query API to select and rename fields.
 For array rows with no supplied schema, generated fields are named `column1`, `column2`, and so on (1-based), matching headerless CSV. A supplied schema takes precedence.
 
 ```typescript
@@ -114,6 +111,11 @@ const table = await query(
   {source: url, loaders: JSONTableLoader}
 );
 ```
+
+Use `createDataSource(input, [JSONTableLoader, CSVLoader])` to select a source from
+multiple loaders. JSON is identified by a `.json` filename or a Blob with the
+`application/json` MIME type. Pass `JSONTableLoader` directly for an unnamed Blob
+without a MIME type when the input is known to be JSON.
 
 The source downloads and decodes the entire JSON document before applying filters,
 projections, or limits.

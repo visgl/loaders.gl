@@ -235,14 +235,14 @@ type ParquetPhysicalRowGroupPlan = {
 
 const {
   preload: _preloadParquetSourceLoader,
-  createDataSource: _createMetadataDataSource,
+  createDataSourceSync: _createMetadataDataSource,
   ...ParquetSourceLoaderBase
 } = ParquetSourceLoaderMetadata;
 
 /** Runtime source factory for reusable, range-backed Parquet access. */
 export const ParquetSourceLoaderWithParser = {
   ...ParquetSourceLoaderBase,
-  createDataSource: (
+  createDataSourceSync: (
     data: string | Blob,
     options: ParquetSourceLoaderOptions,
     coreApi?: CoreAPI

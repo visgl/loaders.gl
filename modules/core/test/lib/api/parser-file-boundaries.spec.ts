@@ -82,9 +82,9 @@ test('parse entrypoints return null when loader selection is explicitly nonthrow
 
 test('file and synchronous parsing reject source descriptors before parser invocation', async () => {
   const createSource = vi.fn();
-  const loader = {...metadata, type: 'source' as const, createDataSource: createSource};
-  await expect(parseFile(createFile(2).file, loader)).rejects.toThrow('SourceLoader');
-  expect(() => parseSync(new ArrayBuffer(0), loader)).toThrow('SourceLoader');
+  const loader = {...metadata, type: 'source' as const, createDataSourceSync: createSource};
+  await expect(parseFile(createFile(2).file, loader)).rejects.toThrow('Use createDataSource()');
+  expect(() => parseSync(new ArrayBuffer(0), loader)).toThrow('Use createDataSource()');
   expect(createSource).not.toHaveBeenCalled();
 });
 

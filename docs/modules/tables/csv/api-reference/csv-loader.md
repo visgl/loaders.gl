@@ -126,6 +126,12 @@ const table = await load(url, CSVLoader, {
 });
 ```
 
+## Data sources
+
+Pass `CSVLoader` to [`createDataSource()`](/docs/modules/core/api-reference/create-data-source)
+to open a URL or Blob for table queries. Use `load()` to parse the input into a table.
+
+
 ## CSVLoader Options
 
 | Option                      | Type                                                                                       | Default                       | Description                                                                                                                  |

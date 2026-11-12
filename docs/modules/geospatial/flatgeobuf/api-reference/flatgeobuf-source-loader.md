@@ -57,10 +57,10 @@ The `FlatGeobufSourceLoader` creates an indexed vector source for remote `.fgb` 
 ## Usage
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {FlatGeobufSourceLoader} from '@loaders.gl/geospatial/flatgeobuf';
 
-const source = createDataSource(url, [FlatGeobufSourceLoader]);
+const source = createDataSourceSync(url, [FlatGeobufSourceLoader]);
 
 const arrowTable = await source.getFeatures({
   layers: 'dataset',

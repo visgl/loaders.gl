@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 import {
   GeoZarrRasterSource,
@@ -8,7 +8,7 @@ import {
 } from '@loaders.gl/scientific/zarr';
 const SPATIALDATA_V3_FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 test('GeoZarrSourceLoader supports browser-relative store metadata', async () => {
-  const source = createDataSource(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0'}
   });

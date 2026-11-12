@@ -24,12 +24,12 @@ const TILE_INFO = {
 };
 
 test('ArcGIS raster and vector sources expose the same partial native grid', async () => {
-  const raster = ArcGISMapTileSourceLoader.createDataSource('https://example.com/MapServer', {
+  const raster = ArcGISMapTileSourceLoader.createDataSourceSync('https://example.com/MapServer', {
     'arcgis-map-server': {
       metadata: {tileInfo: TILE_INFO, fullExtent: {xmin: 0, ymin: 0, xmax: 1, ymax: 1}}
     }
   });
-  const vector = ArcGISVectorTileServerSourceLoader.createDataSource(
+  const vector = ArcGISVectorTileServerSourceLoader.createDataSourceSync(
     'https://example.com/VectorTileServer',
     {}
   );

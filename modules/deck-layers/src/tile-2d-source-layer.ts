@@ -14,7 +14,7 @@ import {
 } from '@deck.gl/core';
 import {MVTLayer, TileLayer, type TileLayerProps} from '@deck.gl/geo-layers';
 import {BitmapLayer, GeoJsonLayer, PathLayer} from '@deck.gl/layers';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import type {
   DataSourceOptions,
   GetTileDataParameters,
@@ -697,7 +697,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     );
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
       const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
-      return createDataSource(data, sourceLoaders, {
+      return createDataSourceSync(data, sourceLoaders, {
         ...sourceOptions,
         core: {
           ...sourceOptions.core,

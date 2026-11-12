@@ -131,10 +131,10 @@ materialized rather than a network-streamed feature parser. These rules follow
 
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {OGCAPIFeaturesSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(
+const source = createDataSourceSync(
   'https://demo.ldproxy.net/daraa',
   [OGCAPIFeaturesSourceLoader],
   {'ogc-api': {collectionId: 'VegetationSrf'}}
@@ -165,10 +165,10 @@ const features = await source.getFeatures({
 | deck.gl | ⚠️ Foundation only | The generic tile contract is present; callers must provide the appropriate decoded tile type |
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {OGCAPITilesSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(landingPageUrl, [OGCAPITilesSourceLoader], {
+const source = createDataSourceSync(landingPageUrl, [OGCAPITilesSourceLoader], {
   'ogc-api': {
     tileTemplate: 'https://example.com/tiles/{tileMatrix}/{tileRow}/{tileCol}.png'
   }
@@ -269,7 +269,7 @@ set `discoverTileMatrixSet: false`: `{tileMatrix}` is then the `tileMatrix` para
 `z`, as before discovery existed. Templates that use only `{z}`, `{x}` and `{y}` never discover.
 
 ```ts
-const source = createDataSource('https://example.com/ogcapi', [OGCAPITilesSourceLoader], {
+const source = createDataSourceSync('https://example.com/ogcapi', [OGCAPITilesSourceLoader], {
   'ogc-api': {
     tileTemplate:
       'https://example.com/ogcapi/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt'
@@ -306,10 +306,10 @@ const tileBytes = await source.getTile({z: 3, x: 4, y: 5, tileMatrix: 'UTM18N:3'
 | Processing and visualization | ❌ Not provided | Values are not resampled or colorized implicitly |
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {OGCAPICoveragesSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(landingPageUrl, [OGCAPICoveragesSourceLoader], {
+const source = createDataSourceSync(landingPageUrl, [OGCAPICoveragesSourceLoader], {
   'ogc-api-coverages': {collectionId: 'temperature'}
 });
 
@@ -342,10 +342,10 @@ level, and parameter.
 | deck.gl | ❌ Not direct | Convert the selected response representation into a visual source first |
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {OGCAPIEDRSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(edrUrl, [OGCAPIEDRSourceLoader], {
+const source = createDataSourceSync(edrUrl, [OGCAPIEDRSourceLoader], {
   'ogc-api-edr': {collectionId: 'weather'}
 });
 

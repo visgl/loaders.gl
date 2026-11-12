@@ -7,7 +7,7 @@ import type {CoreAPI, DataSource, DataSourceOptions} from './lib/sources/data-so
 
 /**
  * A `SourceLoader` is a top-level loader that constructs a runtime `DataSource`.
- * It allows source-style loaders to participate in core loader selection and `load()`.
+ * It allows source-style loaders to participate in core source selection and `createDataSource()`.
  * @example
  *  `createDataSource(... , [MVTSourceLoader, PMTilesSourceLoader, ...])
  */
@@ -17,10 +17,7 @@ export type SourceLoader<
     DataSourceOptions
   >,
   LoaderOptionsT extends LoaderOptions & DataSourceOptions = LoaderOptions & DataSourceOptions
-> = Loader<DataSourceT, never, LoaderOptionsT> & {
-  /** Source-only descriptors are opened by load(). */
-  sourceOnly?: true;
-
+> = Loader<DataSourceT, never, LoaderOptionsT, DataSourceT> & {
   /** Type of source created by this source loader */
   dataSource?: DataSourceT;
   /** Type of options used when creating sources */
@@ -41,51 +38,31 @@ export type SourceLoader<
   /** Test data */
   testData?: (data: Blob) => boolean;
   /** Create a runtime data source  */
-  createDataSource(
+  createDataSourceSync(
     data: string | Blob,
     options: Readonly<DataSourceT['optionsType']>,
     coreApi?: CoreAPI
   ): DataSourceT;
 };
 
-/** A parser descriptor that can also construct a data source. */
-export type LoaderWithDataSource<
-  DataSourceT extends DataSource<unknown, DataSourceOptions> = DataSource<
-    unknown,
-    DataSourceOptions
-  >
-> = Loader &
-  Omit<SourceLoader<DataSourceT>, keyof Loader | 'sourceOnly'> & {
-    /** The core load and parse APIs use the parser on this descriptor. */
-    sourceOnly: false;
-  };
-
-/** A descriptor with a data source factory. */
-export type DataSourceLoader = SourceLoader | LoaderWithDataSource;
-
-/** Detects source capability independently of the core load routing. */
-export function hasDataSource(loader?: unknown): loader is DataSourceLoader {
+export function isSourceLoader(loader?: unknown): loader is SourceLoader {
   return Boolean(
     loader &&
       typeof loader === 'object' &&
-      'createDataSource' in loader &&
-      typeof loader.createDataSource === 'function'
+      'createDataSourceSync' in loader &&
+      'fromUrl' in loader &&
+      'testURL' in loader
   );
 }
 
-/** Detects legacy source-only descriptors. */
-export function isSourceLoader(loader?: unknown): loader is SourceLoader {
-  return hasDataSource(loader) && loader.sourceOnly !== false;
-}
-
 /** Extracts the full public options contract, including fields absent from runtime defaults. */
-export type SourcePropsType<SourceT extends DataSourceLoader> = NonNullable<
-  Parameters<SourceT['createDataSource']>[1]
+export type SourcePropsType<SourceT extends SourceLoader> = NonNullable<
+  Parameters<SourceT['createDataSourceSync']>[1]
 >;
 
 /** Typescript helper to extract the source options type from a source type */
-export type SourceDataSourceType<SourceT extends DataSourceLoader> = ReturnType<
-  SourceT['createDataSource']
+export type SourceDataSourceType<SourceT extends SourceLoader> = ReturnType<
+  SourceT['createDataSourceSync']
 >;
 
 /** Combines options for all candidate sources instead of accepting one candidate's untyped keys. */
@@ -96,10 +73,10 @@ type UnionToIntersection<Value> = (Value extends unknown ? (value: Value) => voi
   : never;
 
 /** Typescript helper to extract options type from an array of source types */
-export type SourceArrayOptionsType<SourcesT extends DataSourceLoader[] = DataSourceLoader[]> =
+export type SourceArrayOptionsType<SourcesT extends SourceLoader[] = SourceLoader[]> =
   UnionToIntersection<SourcePropsType<SourcesT[number]>> & DataSourceOptions;
 
 /** Typescript helper to extract data type from a source type */
-export type SourceArrayDataSourceType<SourcesT extends DataSourceLoader[] = DataSourceLoader[]> =
+export type SourceArrayDataSourceType<SourcesT extends SourceLoader[] = SourceLoader[]> =
   SourceDataSourceType<SourcesT[number]>;
 /** Typescript helper to extract batch type from a source type */

@@ -32,7 +32,7 @@ beforeEach(() => {
 });
 
 test('LanceSource reads direct Blob data files and wraps decoded Arrow batches', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([new Uint8Array([1, 2, 3])]), {
+  const source = LanceSourceLoader.createDataSourceSync(new Blob([new Uint8Array([1, 2, 3])]), {
     lance: {columnTypes: ['int32'], columnNames: ['value'], limit: 2}
   });
 
@@ -49,7 +49,7 @@ test('LanceSource reads direct Blob data files and wraps decoded Arrow batches',
 
 test('LanceSource uses ranged remote reads when manifest file sizes are available', async () => {
   const fetch = vi.fn();
-  const source = LanceSourceLoader.createDataSource('https://example.com/dataset', {
+  const source = LanceSourceLoader.createDataSourceSync('https://example.com/dataset', {
     lance: {columnTypes: ['float32', 'int64'], columnNames: ['x'], limit: 5},
     core: {fetch}
   } as any) as any;
@@ -76,7 +76,7 @@ test('LanceSource uses ranged remote reads when manifest file sizes are availabl
 
 test('LanceSource falls back to whole-file reads when manifests omit file sizes', async () => {
   const fetch = vi.fn(async () => new Response(new Uint8Array([4, 5, 6])));
-  const source = LanceSourceLoader.createDataSource('https://example.com/dataset/', {
+  const source = LanceSourceLoader.createDataSourceSync('https://example.com/dataset/', {
     lance: {columnTypes: ['uint8']},
     core: {fetch}
   } as any) as any;
@@ -96,14 +96,14 @@ test('LanceSource falls back to whole-file reads when manifests omit file sizes'
 });
 
 test('LanceSource validates manifest data files and reports HTTP failures', async () => {
-  const source = LanceSourceLoader.createDataSource('https://example.com/dataset', {
+  const source = LanceSourceLoader.createDataSourceSync('https://example.com/dataset', {
     lance: {columnTypes: ['int32']}
   }) as any;
   source.getMetadata = vi.fn(async () => ({fields: [], fragments: []}));
   await expect(source.getFileMetadata()).rejects.toThrow('does not contain a data file');
   await expect(collect(source.readBatches())).rejects.toThrow('does not contain a data file');
 
-  const directFile = LanceSourceLoader.createDataSource(
+  const directFile = LanceSourceLoader.createDataSourceSync(
     'https://example.com/dataset/data/part.lance?version=1',
     {}
   ) as any;

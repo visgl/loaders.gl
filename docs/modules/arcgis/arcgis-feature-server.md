@@ -107,10 +107,10 @@ common client-side query contract after the service has returned the bounded fea
 ## Create and query a source
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = await load(
+const source = await createDataSource(
   'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
   [ArcGISFeatureServerSourceLoader]
 );
@@ -129,7 +129,7 @@ projected GeoJSON output produce actionable errors.
 When the URL points to the FeatureServer root, `layers` chooses the layer used for the query:
 
 ```ts
-const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader]);
+const source = await createDataSource(featureServerUrl, [ArcGISFeatureServerSourceLoader]);
 const trails = await source.getFeatures({layers: ['3']});
 ```
 
@@ -171,7 +171,7 @@ ArcGIS query defaults live under `arcgis-feature-server`. Per-request viewport a
 combined with these parameters.
 
 ```ts
-const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader], {
+const source = await createDataSource(featureServerUrl, [ArcGISFeatureServerSourceLoader], {
   'arcgis-feature-server': {
     queryParameters: {
       where: 'status = 1',

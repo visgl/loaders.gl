@@ -19,7 +19,6 @@ import type {
   LoaderArrayReturnType,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -108,12 +107,6 @@ export function parseSync(
     return null;
   }
 
-  if (isSourceLoader(loader)) {
-    throw new Error(
-      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parseSync().`
-    );
-  }
-
   // Normalize options
   const strictOptions = normalizeOptions(options, loader, candidateLoaders as Loader[] | undefined);
 
@@ -160,6 +153,12 @@ function parseWithLoaderSync(
   if (loader.preload) {
     throw new Error(
       `${loader.name} loader: 'parseSync' requires a parser-bearing loader. Import the loader implementation directly, or call preload(loader) before parseSync(). ${context.url || ''}`
+    );
+  }
+
+  if (loader.createDataSourceSync) {
+    throw new Error(
+      `${loader.id} has no synchronous parser. Use createDataSource() to open a source.`
     );
   }
 

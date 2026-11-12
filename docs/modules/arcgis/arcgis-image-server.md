@@ -82,10 +82,10 @@ LERC requests. Configure it in `core.credentials`; explicit URL tokens take prec
 ## Viewport images
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = await load(imageServerUrl, [ArcGISImageServerSourceLoader]);
+const source = await createDataSource(imageServerUrl, [ArcGISImageServerSourceLoader]);
 
 const metadata = await source.getMetadata();
 const image = await source.getImage({
@@ -123,7 +123,7 @@ request.
 ```ts
 import {ArcGISImageTileSourceLoader} from '@loaders.gl/arcgis';
 
-const tileSource = await load(imageServerUrl, [ArcGISImageTileSourceLoader], {
+const tileSource = await createDataSource(imageServerUrl, [ArcGISImageTileSourceLoader], {
   'arcgis-image-server-tiles': {
     tileSize: 512,
     format: 'png32',

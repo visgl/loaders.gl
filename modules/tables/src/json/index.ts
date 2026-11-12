@@ -6,30 +6,15 @@ export type {JSONLoaderOptions} from './json-loader-types';
 export {JSONFormat, GeoJSONFormat, NDJSONFormat, NDGeoJSONFormat} from './json-format';
 export {JSONLoader} from './json-loader-types';
 export type {JSONTableLoaderOptions} from './json-table-loader-types';
-import {JSONTableLoader as JSONTableParserLoader} from './json-table-loader-types';
-import {JSON_TABLE_SOURCE, type JSONTableSource} from './json-table-source';
-import type {LoaderWithDataSource} from '@loaders.gl/core/loader-utils';
-
-/** Parses JSON tables or opens a query source through the JSON entry point. */
-export const JSONTableLoader = {
-  ...JSONTableParserLoader,
-  ...JSON_TABLE_SOURCE,
-  sourceOnly: false,
-  preload: async () => ({
-    ...(await JSONTableParserLoader.preload()),
-    ...JSON_TABLE_SOURCE,
-    sourceOnly: false as const
-  })
-} as const satisfies LoaderWithDataSource<JSONTableSource>;
+export {JSONTableLoader} from './json-table-loader-types';
 export {
   JSONTableSource,
-  JSONTableSourceLoader,
   type JSONTableSourceOptions
 } from './json-table-source';
 export type {NDJSONLoaderOptions} from './ndjson-loader-types';
 export {NDJSONLoader} from './ndjson-loader-types';
 export {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';
-export {NDJSONSourceLoader, NDJSONTableSource} from './ndjson-source';
+export {NDJSONTableSource} from './ndjson-source';
 export type {NDJSONSourceOptions} from './ndjson-source';
 export type {
   ArrowConversionOptions,

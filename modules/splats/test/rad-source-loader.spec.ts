@@ -6,7 +6,7 @@ import {preloadRADCompression} from '../src/lib/parse-rad-chunk';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {expect, test} from 'vitest';
 import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
-import {load, parse, parseSync} from '@loaders.gl/core';
+import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
 import {RADLoader, RADSourceLoader, resolveRADChunkUrl} from '@loaders.gl/splats';
 import type {RADSource} from '@loaders.gl/splats';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
@@ -35,7 +35,7 @@ test('RADLoader parses Spark RAD metadata', async () => {
 });
 test('RADSourceLoader reads inline RAD chunk metadata from a Blob', async () => {
   const data = makeRADFixture();
-  const source = (await load(new Blob([data]), RADSourceLoader)) as RADSource;
+  const source = (await createDataSource(new Blob([data]), RADSourceLoader)) as RADSource;
   const metadata = await source.getMetadata();
   const chunk = await source.getChunk(0);
   const chunkMetadata = await source.getChunkMetadata(0);
@@ -180,7 +180,7 @@ test('parseRADChunkToGaussianSplats reports corrupt compressed property payloads
   );
 });
 test('RADSourceLoader uses source-level splat encoding for chunk decoding', async () => {
-  const source = (await load(
+  const source = (await createDataSource(
     new Blob([
       makeRADFixture({
         splatEncoding: {
@@ -212,7 +212,7 @@ test('RADSourceLoader resolves and fetches sidecar RADC chunks', async () => {
   const chunk = makeRADChunkFixture();
   const rad = makeRADFixture({chunkFilename: 'chunks/scene-0.radc', inlineChunk: false});
   const fetchedUrls: string[] = [];
-  const source = RADSourceLoader.createDataSource('https://example.com/assets/scene.rad', {
+  const source = RADSourceLoader.createDataSourceSync('https://example.com/assets/scene.rad', {
     core: {
       fetch: async (url: string | RequestInfo | URL) => {
         const urlString = String(url);
@@ -247,7 +247,7 @@ test('RADSourceLoader bounds concurrent pruned chunk table reads', async () => {
   });
   let activeChunkFetchCount = 0;
   let maxActiveChunkFetchCount = 0;
-  const source = RADSourceLoader.createDataSource('https://example.com/assets/scene.rad', {
+  const source = RADSourceLoader.createDataSourceSync('https://example.com/assets/scene.rad', {
     core: {
       fetch: async (url: string | RequestInfo | URL) => {
         const urlString = String(url);
@@ -285,7 +285,7 @@ test('RAD parsing validates magic headers', () => {
 });
 
 test('RAD sources validate indices, cache chunk metadata and expose inline URLs', async () => {
-  const source = RADSourceLoader.createDataSource(new Blob([makeRADFixture()]), {});
+  const source = RADSourceLoader.createDataSourceSync(new Blob([makeRADFixture()]), {});
   await source.initialize();
   expect(await source.getChunkUrl(0)).toBeNull();
   const [first, second] = await Promise.all([
@@ -296,13 +296,16 @@ test('RAD sources validate indices, cache chunk metadata and expose inline URLs'
   for (const index of [-1, 1, 0.5, NaN]) {
     await expect(source.getChunk(index)).rejects.toThrow(/chunk index .*outside/);
   }
-  const sidecar = RADSourceLoader.createDataSource(
+  const sidecar = RADSourceLoader.createDataSourceSync(
     new Blob([makeRADFixture({chunkFilename: '0.radc', inlineChunk: false})]),
     {}
   );
   await expect(sidecar.getChunk(0)).rejects.toThrow(/sidecar RADC chunks require a URL/);
   await expect(sidecar.getChunkUrl(0)).rejects.toThrow(/without a RAD URL/);
-  const empty = RADSourceLoader.createDataSource(new Blob([makeRADFixture({chunkBytes: 0})]), {});
+  const empty = RADSourceLoader.createDataSourceSync(
+    new Blob([makeRADFixture({chunkBytes: 0})]),
+    {}
+  );
   expect((await empty.getChunk(0)).byteLength).toBe(0);
 });
 
@@ -311,7 +314,7 @@ test.each([
 ])('RAD inline requests handle HTTP %i ranges and forward request options', async status => {
   const data = makeRADFixture();
   const requests: RequestInit[] = [];
-  const source = RADSourceLoader.createDataSource('https://example.test/scene.rad', {
+  const source = RADSourceLoader.createDataSourceSync('https://example.test/scene.rad', {
     rad: {headerByteLengths: [8, 2048], headers: {'X-Fixture': 'tiny'}, withCredentials: true},
     core: {
       fetch: async (_input: RequestInfo | URL, options?: RequestInit) => {
@@ -339,14 +342,14 @@ test.each([
 
 test('RAD reports failed metadata probes and failed chunk requests', async () => {
   const incomplete = makeRADFixture().slice(0, 8);
-  const blobSource = RADSourceLoader.createDataSource(new Blob([incomplete]), {});
+  const blobSource = RADSourceLoader.createDataSourceSync(new Blob([incomplete]), {});
   await expect(blobSource.metadata).rejects.toThrow(/Blob does not contain a complete/);
-  const remoteSource = RADSourceLoader.createDataSource('https://example.test/scene.rad', {
+  const remoteSource = RADSourceLoader.createDataSourceSync('https://example.test/scene.rad', {
     rad: {headerByteLengths: [8, 16]},
     core: {fetch: async () => new Response(incomplete)}
   });
   await expect(remoteSource.metadata).rejects.toThrow(/failed to load a complete/);
-  const source = RADSourceLoader.createDataSource('https://example.test/scene.rad', {
+  const source = RADSourceLoader.createDataSourceSync('https://example.test/scene.rad', {
     core: {
       fetch: async (input: RequestInfo | URL) =>
         String(input).endsWith('.radc')
@@ -361,7 +364,7 @@ test('RAD reports failed metadata probes and failed chunk requests', async () =>
 test('RAD uses injected fetchFile when no source fetch override was supplied', async () => {
   const data = makeRADFixture();
   const requests: RequestInit[] = [];
-  const source = RADSourceLoader.createDataSource('https://example.test/scene.rad', {}, {
+  const source = RADSourceLoader.createDataSourceSync('https://example.test/scene.rad', {}, {
     fetchFile: async (_url: string, options?: RequestInit) => {
       requests.push(options!);
       return new Response(data);
@@ -378,7 +381,7 @@ test.each([
   NaN,
   1.8
 ])('RAD pruning preserves retained row attributes with concurrency %s', async maxConcurrentChunkRequests => {
-  const source = RADSourceLoader.createDataSource(
+  const source = RADSourceLoader.createDataSourceSync(
     new Blob([
       makeRADFixture({
         chunkOptions: {includeSphericalHarmonics: true, childStart: 0}
@@ -401,7 +404,7 @@ test.each([
 });
 
 test('RAD iterator budgets omit reads and retain chunks without a LoD tree', async () => {
-  const source = RADSourceLoader.createDataSource(
+  const source = RADSourceLoader.createDataSourceSync(
     new Blob([makeRADFixture({chunkOptions: {includeLoDTree: false}})]),
     {}
   );

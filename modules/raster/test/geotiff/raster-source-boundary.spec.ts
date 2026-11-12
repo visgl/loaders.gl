@@ -51,10 +51,12 @@ test('GeoTIFF source loader recognizes GeoTIFF but not OME-TIFF URLs', () => {
   expect(GeoTIFFSourceLoader.testURL('image.ome.tif')).toBe(false);
   expect(OMETiffSourceLoader.testURL('image.ome.tiff?token=1')).toBe(true);
   expect(OMETiffSourceLoader.testURL('image.tiff')).toBe(false);
-  expect(GeoTIFFSourceLoader.createDataSource(new Blob([]), {})).toBeInstanceOf(
+  expect(GeoTIFFSourceLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(
     GeoTIFFRasterSource
   );
-  expect(OMETiffSourceLoader.createDataSource(new Blob([]), {})).toBeInstanceOf(OMETiffImageSource);
+  expect(OMETiffSourceLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(
+    OMETiffImageSource
+  );
 });
 
 test('GeoTIFF raster reads clip bounds and normalize planar and interleaved output', async () => {

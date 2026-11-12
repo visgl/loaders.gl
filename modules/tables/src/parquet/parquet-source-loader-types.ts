@@ -85,13 +85,13 @@ export const ParquetSourceLoader = {
   },
   testURL: (url: string): boolean => /\.parquet(?:$|[?#])/i.test(url),
   preload: preloadParquetSourceLoader,
-  createDataSource(
+  createDataSourceSync(
     _data: string | Blob,
     _options: ParquetSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): ParquetSource {
     throw new Error(
-      'ParquetSourceLoader requires async load() or an explicit @loaders.gl/tables/parquet-source-loader import'
+      'ParquetSourceLoader requires async createDataSource() or an explicit @loaders.gl/tables/parquet-source-loader import'
     );
   }
 } as const satisfies SourceLoader<ParquetSource>;

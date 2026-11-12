@@ -3,15 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {createDataSource, load} from '@loaders.gl/core';
-import {Table} from 'apache-arrow';
+import {createDataSource, createDataSourceSync, load, preload} from '@loaders.gl/core';
 import {query} from '@loaders.gl/core/scan';
-import {JSONTableLoader, JSONTableSource, JSONTableSourceLoader} from '@loaders.gl/tables/json';
+import {CSVLoader, CSVTableSource} from '@loaders.gl/tables/csv';
+import {JSONLoader, JSONTableLoader, JSONTableSource} from '@loaders.gl/tables/json';
 
-test.each([
-  JSONTableLoader,
-  JSONTableSourceLoader
-])('$id queries inferred array columns from a URL', async loader => {
+test('JSON table source queries inferred array columns from a URL', async () => {
   expect(JSONTableLoader.options.json.shape).toBe('arrow-table');
   const fetch = vi.fn(async () => new Response('[[-73.98,40.73,2],[-74,40.7,1]]'));
   const result = await query(
@@ -25,7 +22,7 @@ test.each([
     },
     {
       source: 'https://example.test/points.json',
-      loaders: loader,
+      loaders: JSONTableLoader,
       core: {fetch}
     }
   );
@@ -35,6 +32,18 @@ test.each([
   expect(result.data.schema.fields.map(field => field.name)).toEqual(['longitude', 'latitude']);
   expect(result.data.get(0)?.toJSON()).toEqual({longitude: -74, latitude: 40.7});
   expect(result.data.numRows).toBe(1);
+});
+
+test('JSONTableLoader parses data and creates a source after preload', async () => {
+  const data = new Blob(['[{"value":1}]']);
+  await preload(JSONTableLoader);
+  const table = await load('https://example.test/data.json', JSONTableLoader, {
+    core: {fetch: async () => new Response(data), worker: false}
+  });
+  expect(table.numRows).toBe(1);
+  const source = createDataSourceSync(data, JSONTableLoader);
+  expect(source).toBeInstanceOf(JSONTableSource);
+  expect((await source.getQueryMetadata()).columns).toHaveLength(1);
 });
 
 test('JSON table source projects Blob rows and observes cancellation', async () => {
@@ -60,33 +69,38 @@ test('JSON table source projects Blob rows and observes cancellation', async () 
   await expect(source.getQueryMetadata({signal: AbortSignal.abort()})).rejects.toThrow();
 });
 
-test('JSONTableLoader parses through load and opens a source through createDataSource', async () => {
-  const input = new Blob(['[[10,20]]']);
-  const table = await load(await input.arrayBuffer(), JSONTableLoader, {core: {worker: false}});
-  expect(table).toBeInstanceOf(Table);
-  expect(table.getChild('column1')?.get(0)).toBe(10);
-
-  const source = createDataSource(input, [JSONTableLoader]);
-  expect(source).toBeInstanceOf(JSONTableSource);
-  const metadata = await source.getQueryMetadata();
-  expect(metadata.schema?.fields.map(field => field.name)).toEqual(['column1', 'column2']);
-  expect(await load(input, JSONTableSourceLoader)).toBeInstanceOf(JSONTableSource);
-
-  const createSource = vi.fn(JSONTableLoader.createDataSource);
-  const combined = {...JSONTableLoader, createDataSource: createSource};
-  expect(
-    createDataSource('https://example.test/rows.json', [combined, JSONTableSourceLoader])
-  ).toBeInstanceOf(JSONTableSource);
-  expect(createSource).toHaveBeenCalledOnce();
-
-  const alternateFactory = vi.fn(JSONTableSourceLoader.createDataSource);
-  const alternate = {
-    ...JSONTableSourceLoader,
-    mimeTypes: ['application/vnd.rows+json'],
-    createDataSource: alternateFactory
-  };
-  createDataSource('https://example.test/rows.json', [combined, alternate], {
-    core: {mimeType: 'application/vnd.rows+json'}
+test('JSONTableLoader source matching preserves parser order for JSON URLs', async () => {
+  const fetch = vi.fn(
+    async () => new Response('[{"value":1}]', {headers: {'Content-Type': 'application/json'}})
+  );
+  const data = await load('https://example.test/data.json', [JSONLoader, JSONTableLoader], {
+    core: {fetch, worker: false}
   });
-  expect(alternateFactory).toHaveBeenCalledOnce();
+  expect(data).toEqual([{value: 1}]);
+});
+
+test('JSONTableLoader does not auto-select a GeoJSON URL as a table source', async () => {
+  const fetch = vi.fn();
+  await expect(
+    createDataSource('https://example.test/features.geojson', [JSONTableLoader, CSVLoader], {
+      core: {fetch}
+    })
+  ).rejects.toThrow('No explicit source loader matches the input');
+  expect(fetch).not.toHaveBeenCalled();
+});
+
+test.each([
+  new Blob(['[{"value":1}]'], {type: 'application/json'}),
+  new File(['[{"value":1}]'], 'rows.json')
+])('JSONTableLoader selects a JSON Blob or File among multiple source loaders', async input => {
+  const source = await createDataSource(input, [CSVLoader, JSONTableLoader]);
+  expect(source).toBeInstanceOf(JSONTableSource);
+});
+
+test('createDataSource prefers the explicit MIME type to a JSON filename', async () => {
+  const input = new File(['value\n1'], 'rows.json');
+  const source = await createDataSource(input, [JSONTableLoader, CSVLoader], {
+    core: {mimeType: 'text/csv'}
+  });
+  expect(source).toBeInstanceOf(CSVTableSource);
 });

@@ -177,10 +177,10 @@ most useful for normalizing and refining an already-bounded result.
 ## Query features
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSSourceLoader], {
   wfs: {wfsParameters: {version: '2.0.0'}}
 });
 
@@ -199,7 +199,7 @@ Request GML explicitly when a service does not provide GeoJSON or when a large r
 processed incrementally:
 
 ```ts
-const source = createDataSource(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSSourceLoader], {
   wfs: {wfsParameters: {outputFormat: 'application/vnd.ogc.gml'}}
 });
 

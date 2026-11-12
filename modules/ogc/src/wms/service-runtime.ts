@@ -121,7 +121,7 @@ export class ServiceRuntime {
     const loader = this.options.loaders.find(candidate => candidate.testURL(url));
     if (!loader) throw new Error(`No geospatial service loader recognized URL: ${url}`);
     const sourceOptions = this._getSourceOptions(options);
-    const source = loader.createDataSource(url, sourceOptions, this.options.coreApi);
+    const source = loader.createDataSourceSync(url, sourceOptions, this.options.coreApi);
     this._sources.set(url, {source, expires: Date.now() + this.options.cacheTTL});
     return source;
   }

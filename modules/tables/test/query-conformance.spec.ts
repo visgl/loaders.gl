@@ -9,8 +9,8 @@ import {query, queryInBatches} from '@loaders.gl/core/scan';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
-import {CSVTableSource, CSVSourceLoader} from '@loaders.gl/tables/csv/index';
-import {NDJSONTableSource, NDJSONSourceLoader} from '@loaders.gl/tables/json/index';
+import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv/index';
+import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json/index';
 import {ArrowTableSource, ArrowSourceLoader} from '@loaders.gl/tables/arrow/index';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import {ParquetSourceLoader} from '@loaders.gl/tables';
@@ -224,8 +224,8 @@ test.each(
   const fixture = createSource(format) as TableScanSource & {data: Blob};
   const blob = fixture.data;
   const loaders = {
-    csv: CSVSourceLoader,
-    ndjson: NDJSONSourceLoader,
+    csv: CSVLoader,
+    ndjson: NDJSONLoader,
     arrow: ArrowSourceLoader,
     parquet: ParquetSourceLoader
   };
