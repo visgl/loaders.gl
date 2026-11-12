@@ -34,12 +34,14 @@ const EXT_PATTERN = /\.([^.]+)$/;
  * @param loaders
  * @param options
  * @param context used internally, applications should not provide this parameter
+ * @param operation selects the URL matching priority for parsing or source creation
  */
 export async function selectLoader(
   data: DataType,
   loaders: Loader[] | Loader = [],
   options?: LoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  operation: 'parse' | 'source' = 'parse'
 ): Promise<Loader | null> {
   if (!validHTTPResponse(data)) {
     return null;
@@ -58,11 +60,12 @@ export async function selectLoader(
   async function matchCandidates(candidates: Loader[]): Promise<Loader | null> {
     normalizeLoaders(candidates);
     const loader =
-      (text !== null && selectLoaderInternal(text, candidates, normalizedOptions, context)) ||
-      selectLoaderInternal(data, candidates, normalizedOptions, context);
+      (text !== null &&
+        selectLoaderInternal(text, candidates, normalizedOptions, context, operation)) ||
+      selectLoaderInternal(data, candidates, normalizedOptions, context, operation);
     if (!loader && isBlob(data) && candidates.length) {
       initialBytes ??= await data.slice(0, 10).arrayBuffer();
-      return selectLoaderInternal(initialBytes, candidates, normalizedOptions, context);
+      return selectLoaderInternal(initialBytes, candidates, normalizedOptions, context, operation);
     }
     return loader;
   }
@@ -98,12 +101,14 @@ function mayContainText(response: Response): boolean {
  * @param loaders
  * @param options
  * @param context used internally, applications should not provide this parameter
+ * @param operation selects the URL matching priority for parsing or source creation
  */
 export function selectLoaderSync(
   data: DataType,
   loaders: Loader[] | Loader = [],
   options?: LoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  operation: 'parse' | 'source' = 'parse'
 ): Loader | null {
   if (!validHTTPResponse(data)) {
     return null;
@@ -122,9 +127,15 @@ export function selectLoaderSync(
 
   const candidates = loaders || [];
   normalizeLoaders(candidates);
-  let loader = selectLoaderInternal(data, candidates, normalizedOptions, context);
+  let loader = selectLoaderInternal(data, candidates, normalizedOptions, context, operation);
   if (!loader && !normalizedOptions.core.ignoreRegisteredLoaders) {
-    loader = selectLoaderInternal(data, getRegisteredLoaders(), normalizedOptions, context);
+    loader = selectLoaderInternal(
+      data,
+      getRegisteredLoaders(),
+      normalizedOptions,
+      context,
+      operation
+    );
   }
 
   // no loader available
@@ -141,7 +152,8 @@ function selectLoaderInternal(
   data: DataType,
   loaders: Loader[],
   options?: LoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  operation: 'parse' | 'source' = 'parse'
 ) {
   const url = getResourceUrl(data);
   const type = getResourceMIMEType(data);
@@ -165,12 +177,17 @@ function selectLoaderInternal(
     reason = `match forced by supplied MIME type ${options?.core?.mimeType}`;
   }
 
-  loader = loader || findSourceLoaderByTestURL(loaders, testUrl);
-  reason = reason || (loader ? `matched source url ${testUrl}` : '');
+  // Source URL rules take priority only when opening a data source.
+  if (!loader && operation === 'source') {
+    loader = findSourceLoaderByTestURL(loaders, testUrl);
+    reason = loader ? `matched source url ${testUrl}` : '';
+  }
 
-  // Look up loader by url
   loader = loader || findLoaderByUrl(loaders, testUrl);
   reason = reason || (loader ? `matched url ${testUrl}` : '');
+
+  loader = loader || findSourceLoaderByTestURL(loaders, testUrl);
+  reason = reason || (loader ? `matched source url ${testUrl}` : '');
 
   // Look up loader by mime type
   loader = loader || findLoaderByMIMEType(loaders, type);

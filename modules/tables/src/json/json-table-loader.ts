@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source';
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {
   ArrayRowTable,
@@ -18,7 +19,7 @@ import {
   serializeJSONWorkerBatch,
   deserializeJSONWorkerResult
 } from './lib/json-worker-transport';
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
 import {parseJSONSync} from './lib/parsers/parse-json';
@@ -49,11 +50,14 @@ export const JSONTableLoaderWithParser = {
   deserializeWorkerBatch: deserializeJSONWorkerResult,
   parse,
   parseTextSync,
-  parseInBatches
+  parseInBatches,
+  createDataSourceSync: (data: string | Blob, options: JSONTableSourceOptions, coreApi?: CoreAPI) =>
+    new JSONTableSource(data, options, coreApi)
 } as const satisfies LoaderWithParser<
   Table | ArrowTable,
   TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
-  JSONTableLoaderOptions
+  JSONTableLoaderOptions,
+  JSONTableSource
 >;
 
 /**

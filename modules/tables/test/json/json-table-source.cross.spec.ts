@@ -3,8 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
+import {createDataSourceSync, load, preload} from '@loaders.gl/core';
 import {query} from '@loaders.gl/core/scan';
-import {JSONTableLoader, JSONTableSource, JSONTableSourceLoader} from '@loaders.gl/tables/json';
+import {JSONLoader, JSONTableLoader, JSONTableSource} from '@loaders.gl/tables/json';
 
 test('JSON table source queries inferred array columns from a URL', async () => {
   expect(JSONTableLoader.options.json.shape).toBe('arrow-table');
@@ -20,7 +21,7 @@ test('JSON table source queries inferred array columns from a URL', async () => 
     },
     {
       source: 'https://example.test/points.json',
-      loaders: JSONTableSourceLoader,
+      loaders: JSONTableLoader,
       core: {fetch}
     }
   );
@@ -30,6 +31,18 @@ test('JSON table source queries inferred array columns from a URL', async () => 
   expect(result.data.schema.fields.map(field => field.name)).toEqual(['longitude', 'latitude']);
   expect(result.data.get(0)?.toJSON()).toEqual({longitude: -74, latitude: 40.7});
   expect(result.data.numRows).toBe(1);
+});
+
+test('JSONTableLoader parses data and creates a source after preload', async () => {
+  const data = new Blob(['[{"value":1}]']);
+  await preload(JSONTableLoader);
+  const table = await load('https://example.test/data.json', JSONTableLoader, {
+    core: {fetch: async () => new Response(data), worker: false}
+  });
+  expect(table.numRows).toBe(1);
+  const source = createDataSourceSync(data, JSONTableLoader);
+  expect(source).toBeInstanceOf(JSONTableSource);
+  expect((await source.getQueryMetadata()).columns).toHaveLength(1);
 });
 
 test('JSON table source projects Blob rows and observes cancellation', async () => {
@@ -53,4 +66,14 @@ test('JSON table source projects Blob rows and observes cancellation', async () 
   }
 
   await expect(source.getQueryMetadata({signal: AbortSignal.abort()})).rejects.toThrow();
+});
+
+test('JSONTableLoader source matching preserves parser order for JSON URLs', async () => {
+  const fetch = vi.fn(
+    async () => new Response('[{"value":1}]', {headers: {'Content-Type': 'application/json'}})
+  );
+  const data = await load('https://example.test/data.json', [JSONLoader, JSONTableLoader], {
+    core: {fetch, worker: false}
+  });
+  expect(data).toEqual([{value: 1}]);
 });

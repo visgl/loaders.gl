@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {RecordBatch, Table} from 'apache-arrow';
+import {query} from '@loaders.gl/core/scan';
 import {load, loadInBatches, parse, parseFile, parseInBatches, parseSync} from '@loaders.gl/core';
 import {
   parseFromContext,
@@ -25,6 +26,7 @@ declare const file: ReadableFile;
 const table: Promise<Table> = parse(bytes, ArrowLoader, {arrow: {shape: 'arrow'}});
 const csv: Promise<Table> = load('data.csv', CSVLoader, {csv: {shape: 'arrow'}});
 const json: Promise<Table> = parse(bytes, JSONTableLoader, {json: {shape: 'arrow'}});
+void query({}, {source: 'data.json', loaders: JSONTableLoader});
 const shared: Promise<Table> = parse(bytes, [ArrowLoader, CSVLoader], {core: {shape: 'arrow'}});
 const sync: Table = parseSync(bytes, ArrowLoaderWithParser, {core: {shape: 'arrow'}});
 const randomAccess: Promise<Table> = parseFile(file, ParquetLoader, {parquet: {shape: 'arrow'}});

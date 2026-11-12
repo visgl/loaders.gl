@@ -57,7 +57,13 @@ export async function createDataSource(
   const loader =
     candidates.length === 1
       ? candidates[0]
-      : await selectLoader(data as DataType, candidates, getSelectionOptions(options));
+      : await selectLoader(
+          data as DataType,
+          candidates,
+          getSelectionOptions(options),
+          undefined,
+          'source'
+        );
   if (!loader) {
     throw new Error('No explicit source loader matches the input');
   }
@@ -94,7 +100,13 @@ export function createDataSourceSync(
   const loader =
     candidates.length === 1
       ? candidates[0]
-      : selectLoaderSync(data as DataType, candidates, getSelectionOptions(options));
+      : selectLoaderSync(
+          data as DataType,
+          candidates,
+          getSelectionOptions(options),
+          undefined,
+          'source'
+        );
   if (!loader) {
     throw new Error('No explicit source loader matches the input');
   }

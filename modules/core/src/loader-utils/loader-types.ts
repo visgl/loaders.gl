@@ -529,32 +529,30 @@ type NativeArrowOutput<T, Options, Wrapped, Native> = [Options] extends [never]
     : never;
 
 /** Selects native output when certain and a union when shape selection is dynamic. */
-type NativeArrowOutputForOption<T, Options, Wrapped, Native> = T extends {
-  createDataSourceSync: unknown;
-}
+type NativeArrowOutputForOption<T, Options, Wrapped, Native> = [
+  Extract<Wrapped, {shape: 'arrow-table'}>
+] extends [never]
   ? Wrapped
-  : [Extract<Wrapped, {shape: 'arrow-table'}>] extends [never]
-    ? Wrapped
-    : [RequiredOutputShape<T, Options>] extends [never]
-      ? [
-          | ScopedOutputShape<T, Options>
-          | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
-        ] extends [never]
-        ? T extends {defaultShape: 'arrow'}
-          ? Native
-          : Wrapped
-        : T extends {defaultShape: 'arrow'}
+  : [RequiredOutputShape<T, Options>] extends [never]
+    ? [
+        | ScopedOutputShape<T, Options>
+        | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
+      ] extends [never]
+      ? T extends {defaultShape: 'arrow'}
+        ? Native
+        : Wrapped
+      : T extends {defaultShape: 'arrow'}
+        ? Native | Wrapped
+        : 'arrow' extends
+              | ScopedOutputShape<T, Options>
+              | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
           ? Native | Wrapped
-          : 'arrow' extends
-                | ScopedOutputShape<T, Options>
-                | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
-            ? Native | Wrapped
-            : Wrapped
-      : 'arrow' extends RequiredOutputShape<T, Options>
-        ? Exclude<RequiredOutputShape<T, Options>, 'arrow'> extends never
-          ? Native
-          : Native | Wrapped
-        : Wrapped;
+          : Wrapped
+    : 'arrow' extends RequiredOutputShape<T, Options>
+      ? Exclude<RequiredOutputShape<T, Options>, 'arrow'> extends never
+        ? Native
+        : Native | Wrapped
+      : Wrapped;
 
 /** Typescript helper to extract the public data type, accounting for native Arrow output. */
 export type LoaderReturnType<T = Loader, Options = never> =

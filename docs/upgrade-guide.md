@@ -535,6 +535,9 @@ If you are upgrading from the 4.4 release line, migrate top-level source factori
 | `COPCSource` | `COPCSourceLoader` |
 | `PotreeSource` | `PotreeLoader` |
 | `PotreeSourceLoader` | `PotreeLoader` |
+| `CSVSourceLoader` | `CSVLoader` |
+| `JSONTableSourceLoader` | `JSONTableLoader` |
+| `NDJSONSourceLoader` | `NDJSONLoader` |
 | `TableTileSource` | `TableTileSourceLoader` |
 | `FlatGeobufSource` | `FlatGeobufSourceLoader` |
 | `GeoTIFFSource` | `GeoTIFFSourceLoader` |
