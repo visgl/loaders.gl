@@ -117,14 +117,25 @@ export function encodeTextSync<WriterT extends WriterWithEncoder>(
  * Encode loaded data into a sequence (iterator) of binary ArrayBuffers using the specified Writer.
  */
 export function encodeInBatches<WriterT extends WriterWithEncoder>(
-  data: WriterBatchType<WriterT>,
+  data:
+    | WriterBatchType<WriterT>
+    | Iterable<WriterBatchType<WriterT>>
+    | AsyncIterable<WriterBatchType<WriterT>>,
   writer: WriterT,
   options?: WriterOptionsType<WriterT>
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
-    const dataIterator = getIterator(data);
+    let dataIterator: unknown;
+    if (data && typeof data === 'object') {
+      if ('numRows' in data && 'schema' in data) {
+        // A native Arrow batch is itself iterable over rows.
+        dataIterator = [data];
+      } else if (Symbol.iterator in data || Symbol.asyncIterator in data) {
+        dataIterator = data;
+      }
+    }
     // @ts-expect-error
-    return writer.encodeInBatches(dataIterator, options);
+    return writer.encodeInBatches(dataIterator ?? getIterator(data), options);
   }
   // TODO -fall back to atomic encode?
   throw new Error(`Writer ${writer.name} could not encode in batches`);

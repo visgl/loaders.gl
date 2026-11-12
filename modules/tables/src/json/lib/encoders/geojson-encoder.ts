@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import type {TableBatch} from '@loaders.gl/core/schema';
+import {Table as ArrowJSTable, type RecordBatch} from 'apache-arrow';
+import type {Table} from '@loaders.gl/core/schema';
+import {wrapWriterTable} from '../../../arrow/wrap-writer-table';
 import {getTableLength} from '@loaders.gl/core/schema-utils';
 import {detectGeometryColumnIndex} from '../encoder-utils/encode-utils';
 import {encodeTableRow} from '../encoder-utils/encode-table-row';
@@ -15,7 +17,9 @@ import type {GeoJSONWriterOptions} from '../../geojson-writer';
  */
 // eslint-disable-next-line max-statements
 export async function* encodeTableAsGeojsonInBatches(
-  batchIterator: AsyncIterable<TableBatch> | Iterable<TableBatch>, // | Iterable<TableBatch>,
+  batchIterator:
+    | AsyncIterable<Table | ArrowJSTable | RecordBatch>
+    | Iterable<Table | ArrowJSTable | RecordBatch>,
   inputOpts: GeoJSONWriterOptions = {}
 ): AsyncIterable<ArrayBuffer> {
   // @ts-expect-error
@@ -32,16 +36,17 @@ export async function* encodeTableAsGeojsonInBatches(
 
   let isFirstLine = true;
 
-  let start = 0;
-  for await (const tableBatch of batchIterator) {
-    const end = start + getTableLength(tableBatch);
-
-    // Deduce geometry column if not already done
-    if (!geometryColumn) {
-      geometryColumn = geometryColumn || detectGeometryColumnIndex(tableBatch);
+  for await (const input of batchIterator) {
+    const tableBatch = wrapWriterTable(
+      'shape' in input || 'batches' in input ? input : new ArrowJSTable([input])
+    );
+    const length = getTableLength(tableBatch);
+    if (length === 0) {
+      continue;
     }
+    geometryColumn ??= detectGeometryColumnIndex(tableBatch);
 
-    for (let rowIndex = start; rowIndex < end; ++rowIndex) {
+    for (let rowIndex = 0; rowIndex < length; ++rowIndex) {
       // Add a comma except on final feature
       if (!isFirstLine) {
         utf8Encoder.push(',');
@@ -55,8 +60,6 @@ export async function* encodeTableAsGeojsonInBatches(
       if (utf8Encoder.isFull()) {
         yield utf8Encoder.getArrayBufferBatch();
       }
-
-      start = end;
     }
 
     const arrayBufferBatch = utf8Encoder.getArrayBufferBatch();

@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 /* global TextEncoder */
+import type {Table as ArrowJSTable} from 'apache-arrow';
+import {wrapWriterTable} from '../arrow/wrap-writer-table';
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {encodeTableAsCSV} from './lib/encoders/encode-csv';
@@ -27,6 +29,6 @@ export const CSVWriter = {
   },
   text: true,
   encode: async (table, options) =>
-    new TextEncoder().encode(encodeTableAsCSV(table, options)).buffer,
-  encodeTextSync: (table, options) => encodeTableAsCSV(table, options)
-} as const satisfies WriterWithEncoder<Table, TableBatch, CSVWriterOptions>;
+    new TextEncoder().encode(encodeTableAsCSV(wrapWriterTable(table), options)).buffer,
+  encodeTextSync: (table, options) => encodeTableAsCSV(wrapWriterTable(table), options)
+} as const satisfies WriterWithEncoder<Table | ArrowJSTable, TableBatch, CSVWriterOptions>;

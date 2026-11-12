@@ -4,6 +4,8 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 /* global TextEncoder */
+import type {Table as ArrowJSTable} from 'apache-arrow';
+import {wrapWriterTable} from '../arrow/wrap-writer-table';
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {encodeTableAsJSON} from './lib/encoders/json-encoder';
@@ -29,7 +31,8 @@ export const JSONWriter = {
   version: 'latest',
   options: {},
   text: true,
-  encode: async (table: Table, options: JSONWriterOptions) =>
-    new TextEncoder().encode(encodeTableAsJSON(table, options)).buffer,
-  encodeTextSync: (table: Table, options: JSONWriterOptions) => encodeTableAsJSON(table, options)
-} as const satisfies WriterWithEncoder<Table, TableBatch, JSONWriterOptions>;
+  encode: async (table: Table | ArrowJSTable, options: JSONWriterOptions) =>
+    new TextEncoder().encode(encodeTableAsJSON(wrapWriterTable(table), options)).buffer,
+  encodeTextSync: (table: Table | ArrowJSTable, options: JSONWriterOptions) =>
+    encodeTableAsJSON(wrapWriterTable(table), options)
+} as const satisfies WriterWithEncoder<Table | ArrowJSTable, TableBatch, JSONWriterOptions>;

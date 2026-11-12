@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
+import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import type {Feature, Geometry, Table} from '@loaders.gl/core/schema';
 import {getTableRowAsObject} from '@loaders.gl/core/schema-utils';
 import {getRowPropertyObject, parseGeometryString} from './encode-utils';
@@ -38,12 +39,16 @@ function getFeatureFromRow(table: Table, row: Row, geometryColumnIndex: number):
   // Extract geometry feature
   const columnName = table.schema?.fields[geometryColumnIndex].name;
   let featureOrGeometry =
-    columnName && (row[columnName] as Feature | Geometry | string | null | undefined);
+    columnName && (row[columnName] as Feature | Geometry | Uint8Array | string | null | undefined);
 
   // GeoJSON support null geometries
   if (!featureOrGeometry) {
     // @ts-ignore Feature type does not support null geometries
     return {type: 'Feature', geometry: null, properties};
+  }
+
+  if (featureOrGeometry instanceof Uint8Array) {
+    featureOrGeometry = convertWKBToGeometry(featureOrGeometry);
   }
 
   if (typeof featureOrGeometry === 'string') {

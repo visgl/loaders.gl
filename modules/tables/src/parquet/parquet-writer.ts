@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowJSTable} from 'apache-arrow';
+import {wrapWriterTable} from '../arrow/wrap-writer-table';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, Table, TableBatch} from '@loaders.gl/core/schema';
 import {convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
@@ -28,7 +30,8 @@ export const ParquetWriter = {
   options: {
     parquet: {}
   },
-  encode(table: Table, options?: ParquetWriterOptions) {
+  encode(input: Table | ArrowJSTable, options?: ParquetWriterOptions) {
+    const table = wrapWriterTable(input);
     const arrowTable =
       table.shape === 'arrow-table'
         ? (table as ArrowTable)
@@ -39,4 +42,4 @@ export const ParquetWriter = {
     const parquetOptions = normalizeParquetOptions(options, ParquetWriter.options.parquet);
     return encodeArrowToParquet(ensureGeoParquetMetadataOnArrowTable(arrowTable), parquetOptions);
   }
-} as const satisfies WriterWithEncoder<Table, TableBatch, ParquetWriterOptions>;
+} as const satisfies WriterWithEncoder<Table | ArrowJSTable, TableBatch, ParquetWriterOptions>;

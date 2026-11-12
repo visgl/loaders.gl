@@ -18,7 +18,7 @@ import {load, encode} from '@loaders.gl/core';
 import {AvroLoader, AvroWriter} from '@loaders.gl/tables/avro';
 
 const table = await load('records.avro', AvroLoader);
-const bytes = await encode({shape: 'arrow-table', data: table}, AvroWriter);
+const bytes = await encode(table, AvroWriter);
 ```
 
 `load` returns an Apache Arrow `Table`, and `loadInBatches` yields Apache Arrow
