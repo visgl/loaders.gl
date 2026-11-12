@@ -15,15 +15,7 @@ import {
   parseParquetFileToArrowWithJs,
   parseParquetFileToArrowInBatchesWithJs
 } from './parse-parquet-to-arrow-js';
-import {
-  convertArrowBatchToObjectRows,
-  convertArrowTableToObjectRows
-} from './convert-parquet-tables';
-
-export {
-  convertArrowBatchToObjectRows,
-  convertArrowTableToObjectRows
-} from './convert-parquet-tables';
+import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema-utils';
 
 /**
  * Parses a parquet file into an Arrow-backed table.
@@ -65,7 +57,7 @@ export async function parseParquetObjectRowTable(
   options: ParquetLoaderOptions
 ): Promise<ObjectRowTable> {
   const arrowTable = await parseParquetArrowTable(file, options);
-  return convertArrowTableToObjectRows(arrowTable);
+  return convertArrowTable(arrowTable, 'object-row-table');
 }
 
 /**
@@ -80,6 +72,6 @@ export async function* parseParquetObjectRowTableInBatches(
   options: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
   for await (const batch of parseParquetArrowTableInBatches(file, options)) {
-    yield convertArrowBatchToObjectRows(batch);
+    yield convertArrowTableBatch(batch, 'object-row-table');
   }
 }

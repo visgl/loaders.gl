@@ -13,10 +13,7 @@ import type {
   ObjectRowTableBatch
 } from '@loaders.gl/core/schema';
 import type {ParquetLoaderOptions} from '../parquet-loader-options';
-import {
-  convertArrowBatchToObjectRows,
-  convertArrowTableToObjectRows
-} from './parsers/convert-parquet-tables';
+import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema-utils';
 
 /** Transfers owned Arrow column buffers for an atomic Parquet result. */
 export const serializeParquetWorkerResult = serializeArrowWorkerTable;
@@ -28,7 +25,7 @@ export function deserializeParquetWorkerResult(
 ): ArrowTable | ObjectRowTable {
   const table = deserializeArrowWorkerTable(result);
   return options?.parquet?.shape === 'object-row-table'
-    ? convertArrowTableToObjectRows(table)
+    ? convertArrowTable(table, 'object-row-table')
     : table;
 }
 
@@ -47,6 +44,6 @@ export function deserializeParquetWorkerBatch(
 ): ArrowTableBatch | ObjectRowTableBatch {
   const table = deserializeArrowWorkerTable(batch);
   return table.resultShape === 'object-row-table'
-    ? {...table, ...convertArrowBatchToObjectRows(table)}
+    ? convertArrowTableBatch(table, 'object-row-table')
     : table;
 }
