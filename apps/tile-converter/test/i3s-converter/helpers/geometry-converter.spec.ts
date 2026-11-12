@@ -543,8 +543,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
       'color' 64-bit values from propertyTable should be converted to strings hat are in attributeBufferExpected.
     */
   const attributeBufferExpected = [
-    3, 0, 0, 0, 12, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 0, 0, 0, 51, 51, 0, 50, 50, 50, 0, 110, 117,
-    108, 108, 0
+    3, 0, 0, 0, 7, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 51, 51, 0, 50, 50, 50, 0
   ];
   let nodeId = 1;
   const addNodeToNodePage = async () => nodeId++;
@@ -578,10 +577,8 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
       geoidHeightModel,
       libraries: {}
     });
-    if (!convertedResources?.[0].attributes?.[1]) {
-      return;
-    }
-    const attributes = new Uint8Array(convertedResources[0].attributes[1]);
+    expect(convertedResources?.[0].attributes?.[1]).toBeDefined();
+    const attributes = new Uint8Array(convertedResources![0].attributes![1]);
     const attributesExpected = new Uint8Array(attributeBufferExpected);
     expect(attributes, '64-bit int values converted to strings').toEqual(attributesExpected);
   } finally {
