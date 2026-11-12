@@ -83,7 +83,7 @@ export async function query(
 ): Promise<ArrowTable> {
   let schema: arrow.Schema | undefined;
   const batches: arrow.RecordBatch[] = [];
-  for await (const batch of queryInBatches(tableQuery, {...options, queryOutput: 'batches'})) {
+  for await (const batch of queryInBatches(tableQuery, {...options, queryOutput: undefined})) {
     schema = batch.data.schema;
     batches.push(...batch.data.batches);
   }
@@ -92,8 +92,9 @@ export async function query(
 }
 
 /**
- * Default mode retains the existing loaders.gl batch envelope.
- * Snapshot mode returns pure Arrow RecordBatch objects; each supersedes the last.
+ * Without queryOutput, preserves the legacy loaders.gl ArrowTableBatch envelope.
+ * With queryOutput, yields pure Arrow RecordBatch objects. Each snapshot replaces
+ * all earlier snapshots; batches are append-only.
  */
 export function queryInBatches(
   tableQuery: import('./query-progressive').ProgressiveAggregateQuery,
@@ -101,7 +102,11 @@ export function queryInBatches(
 ): AsyncIterable<arrow.RecordBatch>;
 export function queryInBatches(
   tableQuery: Query | string,
-  options: QueryOptions & {queryOutput?: 'batches'}
+  options: QueryOptions & {queryOutput: 'batches'}
+): AsyncIterable<arrow.RecordBatch>;
+export function queryInBatches(
+  tableQuery: Query | string,
+  options: QueryOptions & {queryOutput?: undefined}
 ): AsyncIterable<ArrowTableBatch>;
 export function queryInBatches(
   tableQuery: Query | string | import('./query-progressive').ProgressiveAggregateQuery,
@@ -133,7 +138,13 @@ export async function* queryInBatches(
   if (typeof tableQuery === 'object' && tableQuery && 'aggregates' in tableQuery) {
     throw new Error('Aggregate queries require queryOutput: snapshots.');
   }
-  yield* queryAppendBatches(tableQuery as Query | string, options);
+  for await (const batch of queryAppendBatches(tableQuery as Query | string, options)) {
+    if (options.queryOutput === 'batches') {
+      yield* batch.data.batches;
+    } else {
+      yield batch;
+    }
+  }
 }
 
 /** Executes one logical query with bounded batch buffering and cooperative cancellation. */
