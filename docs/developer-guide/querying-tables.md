@@ -96,6 +96,45 @@ the upstream iterator. An empty execution yields one empty schema-bearing batch.
 batch size, but batches you retain still occupy memory. Arrow projection and rename reuse column
 buffers; slices can retain their original buffers, and scattered filtering can allocate new ones.
 
+## Progressive aggregate snapshots
+
+`queryProgressive()` streams complete replacement tables for aggregate views. Replace the
+previous table on every yield. Each result covers all input rows processed so far.
+
+```ts
+import {queryProgressive} from '@loaders.gl/core/scan';
+
+for await (const {table, rowsProcessed, final} of queryProgressive(
+  {
+    groupBy: 'country',
+    where: {op: '>', args: [{property: 'temperature'}, 30]},
+    aggregates: [
+      {function: 'count', as: 'samples'},
+      {function: 'avg', column: 'temperature', as: 'average'}
+    ]
+  },
+  {source, emitEveryBatches: 8}
+)) {
+  updateVisualization(table);
+  if (final) console.log('Finished', rowsProcessed);
+}
+```
+
+Pass a structured `groupBy` and `aggregates` request. Supported reductions are COUNT, SUM, AVG,
+MIN, and MAX. Filtering runs first. Group keys may be finite numbers, strings, booleans, or null
+and appear in first-seen order. COUNT(column) and numeric reductions skip nulls. An empty numeric
+reduction returns null. Counts use safe integers, and aggregate columns use Float64.
+
+State grows with the number of groups and aggregates. `rowsProcessed` counts filtered rows.
+The iterator always emits a final snapshot, including for empty inputs, and closes the source on
+early return. Use `emitEveryBatches` to control how often it rebuilds the output.
+
+For pure Arrow `RecordBatch` streams, set `queryOutput: 'snapshots'` on
+`queryInBatches(aggregateQuery, options)` and replace the prior result on every yield. Set
+`queryOutput: 'batches'` with a regular query to append new rows. Without `queryOutput`,
+`queryInBatches()` yields loaders.gl batch envelopes. Use `queryProgressive()` for explicit
+`rowsProcessed` and `final` metadata.
+
 ## Reuse and name sources
 
 Create a source once when you want repeated queries. Give it an explicit name when it will be
