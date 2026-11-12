@@ -562,7 +562,6 @@ async function createParquetBenchmarkImplementations(): Promise<
   const [
     loadersGlTypeScript,
     loadersGlWasmRuntime,
-    loadersGlTableConverters,
     loadersGlSchemaUtils,
     arrowJs,
     hyparquet,
@@ -570,7 +569,6 @@ async function createParquetBenchmarkImplementations(): Promise<
   ] = await Promise.all([
     import('../../../modules/tables/src/parquet/parquet-js-loader'),
     import('../../../modules/tables/src/parquet/lib/utils/load-wasm'),
-    import('../../../modules/tables/src/parquet/lib/parsers/convert-parquet-tables'),
     import('@loaders.gl/core/schema-utils'),
     import('apache-arrow'),
     import('hyparquet'),
@@ -609,7 +607,7 @@ async function createParquetBenchmarkImplementations(): Promise<
         if (scenario.shape === 'arrow-table') {
           return arrowTable.data.numRows;
         }
-        const objectRowTable = loadersGlTableConverters.convertArrowTableToObjectRows(arrowTable);
+        const objectRowTable = loadersGlSchemaUtils.convertArrowTable(arrowTable, 'object-row-table');
         return objectRowTable.data.length;
       }
     },
