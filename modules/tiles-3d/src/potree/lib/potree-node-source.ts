@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import type {PotreeSourceLoaderOptions} from '../potree-source-loader';
 import type {PotreeDatasetMetadata} from '../potree-loader-types';
 import type {Potree2Source} from '../potree2-source';
@@ -904,14 +905,14 @@ export class PotreeNodesSource
     }
 
     this.invalidBoundsWarningIds.add(tileId);
-    console.warn('PotreeNodesSource derived an invalid child bounding box.', {
+    loaderLog.warn('PotreeNodesSource derived an invalid child bounding box.', {
       tileId,
       parentTileId,
       parentBounds,
       childBounds,
       isDegenerate,
       exceedsParent
-    });
+    })();
   }
 
   /**

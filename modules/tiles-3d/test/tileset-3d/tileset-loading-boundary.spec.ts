@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Tileset3D} from '../../src/tileset-3d/common/tileset-3d';
@@ -41,7 +42,7 @@ describe('Tileset3D loading lifecycle boundaries', () => {
     failure,
     message
   }) => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(loaderLog, 'error').mockReturnValue(() => {});
     const {tileset, source, onSourceError, onTileError, onTileLoad} = await createTileset();
     const tile = tileset.root!;
     vi.spyOn(Tile3D.prototype, 'loadContent').mockRejectedValueOnce(failure);
@@ -66,7 +67,7 @@ describe('Tileset3D loading lifecycle boundaries', () => {
     failure,
     message
   }) => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(loaderLog, 'error').mockReturnValue(() => {});
     const {tileset, source, onSourceError, onTileError, onTileLoad} = await createTileset();
     const tile = tileset.root!;
     const frameState = {frameNumber: 1, viewport: {id: 'main'}} as any;

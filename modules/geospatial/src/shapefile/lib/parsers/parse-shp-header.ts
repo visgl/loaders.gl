@@ -32,7 +32,7 @@ const SHP_MAGIC_NUMBER = 0x0000270a;
  * @param headerView
  * @returns SHPHeader
  */
-export function parseSHPHeader(headerView: DataView): SHPHeader {
+export function parseSHPHeader(headerView: DataView, options?: LoaderOptions): SHPHeader {
   // Note: The SHP format switches endianness between fields!
   // https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
   const header = {
@@ -53,12 +53,11 @@ export function parseSHPHeader(headerView: DataView): SHPHeader {
     }
   };
   if (header.magic !== SHP_MAGIC_NUMBER) {
-    // eslint-disable-next-line
-    console.error(`SHP file: bad magic number ${header.magic}`);
+    getLoaderLog(options).error(`SHP file: bad magic number ${header.magic}`)();
   }
   if (header.version !== 1000) {
-    // eslint-disable-next-line
-    console.error(`SHP file: bad version ${header.version}`);
+    getLoaderLog(options).error(`SHP file: bad version ${header.version}`)();
   }
   return header;
 }
+import {getLoaderLog, type LoaderOptions} from '@loaders.gl/core/loader-utils';

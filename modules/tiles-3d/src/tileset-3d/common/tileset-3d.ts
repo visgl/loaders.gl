@@ -4,6 +4,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from 'probe.gl/stats';
@@ -1022,7 +1023,7 @@ export class Tileset3D {
 
     const message = error.message || error.toString();
     const url = tile.url;
-    console.error(`A 3D tile failed to load: ${tile.url} ${message}`);
+    loaderLog.error(`A 3D tile failed to load: ${tile.url} ${message}`)();
     this.options.onTileError(tile, message, url);
   }
 

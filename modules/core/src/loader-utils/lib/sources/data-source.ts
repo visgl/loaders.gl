@@ -7,7 +7,7 @@ import type {BatchableDataType, DataType, SyncDataType} from '../../types';
 import type {ReadableFile} from '../files/file';
 import {mergeOptions} from '../option-utils/merge-options';
 import {resolvePath} from '../path-utils/file-aliases';
-import {log} from '../log-utils/log';
+import {getLoaderLog} from '../log-utils/log';
 import {getAuthenticatedFetch} from '../request-utils/request-credentials';
 import {resolveAuthenticationOptions} from '../request-utils/authentication';
 
@@ -169,7 +169,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
     if (callback) {
       callback(normalizedError, this);
     } else {
-      log.warn(`${this.constructor.name}: ${normalizedError.message}`)();
+      getLoaderLog(this.options).warn(`${this.constructor.name}: ${normalizedError.message}`)();
     }
     return normalizedError;
   }

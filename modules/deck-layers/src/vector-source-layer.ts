@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {
   CompositeLayer,
   type CompositeLayerProps,
@@ -99,8 +100,7 @@ const defaultProps: DefaultProps<VectorSourceLayerProps> = {
     type: 'function',
     compare: false,
     value: (error: Error) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      loaderLog.error(String(error))();
     }
   },
   onLoadingStateChange: {type: 'function', value: () => {}}

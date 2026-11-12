@@ -32,7 +32,7 @@ export function makeSHPGeoArrowGeometryTable(
   options?: SHPLoaderOptions,
   geoArrowOptions?: SHPGeoArrowGeometryOptions
 ): ArrowTable {
-  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE));
+  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE), options);
   const encoding = getDefaultGeoArrowEncoding(header);
   const builderOptions = {
     encoding,

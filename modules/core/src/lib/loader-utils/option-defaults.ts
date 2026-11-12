@@ -4,7 +4,7 @@
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {isBrowser} from '@loaders.gl/core/loader-utils';
-import {ConsoleLog} from './loggers';
+import {probeLog} from './loggers';
 
 export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   searchParams: undefined,
@@ -17,7 +17,7 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
     ignoreRegisteredLoaders: undefined,
     nothrow: false,
     shape: undefined,
-    log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
+    log: probeLog,
     useLocalLibraries: false,
     subloaders: undefined,
 

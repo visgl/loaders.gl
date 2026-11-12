@@ -9,9 +9,10 @@ import {
   isPureObject,
   isObject,
   StrictLoaderOptions,
+  getLoaderLog,
   path
 } from '@loaders.gl/core/loader-utils';
-import {probeLog, NullLog} from './loggers';
+import {probeLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 import {getShapeOptionKey} from './native-arrow';
 import {stripQueryString} from '../utils/url-utils';
@@ -275,11 +276,6 @@ function normalizeOptionsInternal(
   }
   moveDeprecatedTopLevelOptionsToCore(mergedOptions);
 
-  // LOGGING: options.log can be set to `null` to defeat logging
-  if (mergedOptions.core?.log === null) {
-    mergedOptions.core = {...mergedOptions.core, log: new NullLog()};
-  }
-
   const shapeKey = loader.defaultShape && getShapeOptionKey(loader);
   if (shapeKey) {
     mergedOptions[shapeKey] = {
@@ -292,6 +288,9 @@ function normalizeOptionsInternal(
   const userOptions = normalizeLoaderOptions(options);
   mergeNestedFields(mergedOptions, userOptions);
   applyCoreShapeDefault(mergedOptions, userOptions, loader);
+  if (mergedOptions.core?.log === null) {
+    mergedOptions.core = {...mergedOptions.core, log: getLoaderLog(mergedOptions)};
+  }
 
   addUrlOptions(mergedOptions, url);
   addDeprecatedTopLevelOptions(mergedOptions);

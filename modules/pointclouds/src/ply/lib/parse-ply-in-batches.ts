@@ -25,6 +25,7 @@
 //   }
 // });
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {
   makeLineIterator,
   makeTextDecoderIterator,
@@ -656,8 +657,7 @@ async function parseASCIIHeader(
         break;
 
       default:
-        // eslint-disable-next-line
-        console.log('unhandled', lineType, lineValues);
+        loaderLog.log(0, 'unhandled', lineType, lineValues)();
     }
 
     return false;

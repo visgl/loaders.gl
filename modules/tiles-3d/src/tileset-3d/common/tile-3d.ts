@@ -5,6 +5,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/geometry/culling';
 import type {CullingResult} from '@math.gl/geometry/culling';
@@ -1085,8 +1086,10 @@ export class Tile3D {
       this.lodMetricType = header.lodMetricType;
     } else {
       this.lodMetricType = (this.parent && this.parent.lodMetricType) || this.tileset.lodMetricType;
-      // eslint-disable-next-line
-      console.warn(`3D Tile: Required prop lodMetricType is undefined. Using parent lodMetricType`);
+
+      loaderLog.warn(
+        `3D Tile: Required prop lodMetricType is undefined. Using parent lodMetricType`
+      )();
     }
 
     // This is used to compute screen space error, i.e., the error measured in pixels.
@@ -1098,10 +1101,10 @@ export class Tile3D {
       this._unscaledLodMetricValue = this.parent
         ? this.parent._unscaledLodMetricValue
         : this.tileset.lodMetricValue;
-      // eslint-disable-next-line
-      console.warn(
+
+      loaderLog.warn(
         '3D Tile: Required prop lodMetricValue is undefined. Using parent lodMetricValue'
-      );
+      )();
     }
 
     this.lodMetricValue = this._unscaledLodMetricValue;
