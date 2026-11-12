@@ -367,6 +367,6 @@
     "minimatch@npm:^10.1.1": "npm:11.0.6",
     "minimatch@npm:^10.2.2": "npm:11.0.6",
     "minimatch@npm:^10.2.6": "npm:11.0.6",
-    "webpack-dev-server": "patch:webpack-dev-server@npm%3A6.1.0#~/.yarn/patches/webpack-dev-server-npm-6.1.0-abf6bc7739.patch"
+    "webpack-dev-server": "npm:6.1.0"
   }
 }
