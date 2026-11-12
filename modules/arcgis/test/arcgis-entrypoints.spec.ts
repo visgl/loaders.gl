@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {createDataSource, createDataSourceSync, load} from '@loaders.gl/core';
+import {createDataSource, createDataSourceSync, preload} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader, ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis';
 import {ArcGISAuthentication, createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 import {
@@ -49,9 +49,10 @@ describe('ArcGIS public entrypoints', () => {
     expect(loader.testURL('https://example.com/unrelated')).toBe(false);
 
     const requests: string[] = [];
-    expect(() => createDataSourceSync(serviceUrl, [loader], {})).toThrow(
-      /async createDataSource.*bundled/
-    );
+    const lazyLoader = {...loader};
+    expect(() => createDataSourceSync(serviceUrl, lazyLoader)).toThrow(/preload/);
+    await preload(lazyLoader);
+    const preloadedSource = createDataSourceSync(serviceUrl, lazyLoader);
     const source = await createDataSource(serviceUrl, ARCGIS_LOADERS, {
       core: {
         type: serviceType,
@@ -69,6 +70,7 @@ describe('ArcGIS public entrypoints', () => {
     const synchronousSource = createDataSourceSync(serviceUrl, BUNDLED_ARCGIS_LOADERS, {
       core: {type: serviceType}
     });
+    expect(preloadedSource.constructor).toBe(source.constructor);
     expect(synchronousSource.constructor).toBe(source.constructor);
     expect(requests).toEqual([]);
     await source.fetch(serviceUrl);
