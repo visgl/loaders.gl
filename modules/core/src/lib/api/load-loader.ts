@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isSourceLoader, mergeOptions} from '@loaders.gl/core/loader-utils';
+import {mergeOptions} from '@loaders.gl/core/loader-utils';
 import type {
   Loader,
   LoaderOptions,
@@ -13,22 +13,13 @@ import type {
 const loaderImplementationPromises = new Map<Loader, Map<string, Promise<LoaderWithParser>>>();
 const loaderImplementations = new Map<Loader, Map<string, LoaderWithParser>>();
 
-/** Gets a parser-bearing implementation for a loader, loading it if needed. */
+/** Gets a loader implementation with parsing or source creation methods. */
 export async function getLoaderImplementation(
   loader: Loader,
   options?: LoaderOptions,
   url?: string
 ): Promise<LoaderWithParser> {
-  if (isSourceLoader(loader)) {
-    const source = loader.preload ? await loader.preload(url || '', options) : loader;
-    if (!isSourceLoader(source)) {
-      throw new Error(
-        `${loader.id} source loader preload() did not return a runtime source loader`
-      );
-    }
-    return source;
-  }
-  if (isLoaderWithParser(loader) || loader.createDataSourceSync) {
+  if (isLoaderWithParser(loader) || (!loader.preload && loader.createDataSourceSync)) {
     return loader;
   }
 
@@ -70,18 +61,21 @@ export async function getLoaderImplementation(
   return await loaderImplementationPromise;
 }
 
-/** Gets a cached parser-bearing implementation for a loader without loading it. */
-export function getLoaderImplementationSync(loader: Loader): LoaderWithParser | null {
+/** Gets an available loader implementation without loading it. */
+export function getLoaderImplementationSync(
+  loader: Loader,
+  options?: LoaderOptions
+): LoaderWithParser | null {
   if (loader.subloaders && !preparedLoaders.has(loader)) {
     const prepared = preparedDefaults.get(loader);
     if (prepared) return prepared;
     if (!isLoaderWithParser(loader)) return null;
   }
-  if (isLoaderWithParser(loader) || loader.createDataSourceSync) {
+  if (isLoaderWithParser(loader) || (!loader.preload && loader.createDataSourceSync)) {
     return loader;
   }
 
-  const implementationCacheKey = getLoaderImplementationCacheKey(loader);
+  const implementationCacheKey = getLoaderImplementationCacheKey(loader, options);
   return loaderImplementations.get(loader)?.get(implementationCacheKey) || null;
 }
 
@@ -101,7 +95,7 @@ export function isLoaderWithParser(loader: Loader): loader is LoaderWithParser {
   );
 }
 
-/** Resolves a parser-bearing implementation through loader preload or the test import fallback. */
+/** Resolves a loader implementation through preload or the test import fallback. */
 async function resolveLoaderImplementation(
   loader: Loader,
   options?: LoaderOptions,

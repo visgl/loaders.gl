@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createDataSource} from '@loaders.gl/core';
 import {COPCSourceLoader} from '@loaders.gl/tiles-3d/copc';
 import type {COPCTileSource, COPCSourceLoaderOptions} from '@loaders.gl/tiles-3d/copc';
-import {PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import type {
   PotreeDataset,
+  PotreeNodesSource,
   PotreeWriterNode,
   PotreeWriterOptions,
   PotreeSourceLoaderOptions
@@ -46,7 +48,7 @@ export type OpenPointCloudFileOptions = {
 /** An initialized source with an owned local file lifetime. */
 export interface OpenedPointCloudFile {
   /** Lazy node access through the existing unified source APIs. */
-  readonly source: ReturnType<typeof PotreeSourceLoader.createDataSourceSync> | COPCTileSource;
+  readonly source: PotreeNodesSource | COPCTileSource;
   /** Closes the source and rejects subsequent bundle reads; idempotent. */
   readonly close: () => Promise<void>;
 }
@@ -138,7 +140,7 @@ export async function openPointCloudFile(
   const signal = AbortSignal.any(signals);
   let archive: ZipArchive | undefined;
   const entries = new Map<string, ZipEntry>();
-  let source: ReturnType<typeof PotreeSourceLoader.createDataSourceSync> | undefined;
+  let source: PotreeNodesSource | undefined;
   try {
     archive = await openZipArchive(input, {
       maxArchiveBytes: BigInt(options.maxFileBytes),
@@ -209,7 +211,7 @@ export async function openPointCloudFile(
       signal.throwIfAborted();
       return response;
     };
-    source = PotreeSourceLoader.createDataSourceSync(`${prefix}${metadataPath}`, {
+    source = await createDataSource(`${prefix}${metadataPath}`, PotreeLoader, {
       ...options.sourceOptions,
       core: {...options.sourceOptions?.core, fetch: fetchResource},
       potree: {...options.sourceOptions?.potree, signal}

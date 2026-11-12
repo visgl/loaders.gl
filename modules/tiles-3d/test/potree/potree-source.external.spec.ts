@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createDataSource} from '@loaders.gl/core';
 import {expect, test} from 'vitest';
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
 const POTREE_LAZ_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted';
 
-test('PotreeSourceLoader#derives cartographic view metadata from the remote dataset', async () => {
-  const source = PotreeSourceLoader.createDataSourceSync(POTREE_LAZ_URL, {});
+test('PotreeLoader#derives cartographic view metadata from the remote dataset', async () => {
+  const source = await createDataSource(POTREE_LAZ_URL, PotreeLoader, {});
   const metadata = await source.getMetadata();
   const viewState = source.getViewState();
 

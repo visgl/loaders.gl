@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Type | API |
 | --- | --- |
 | Loader | [`PotreeLoader`](../api-reference/potree-loader.md) |
-| Source loader | [`PotreeSourceLoader`](../api-reference/potree-source-loader.md) |
+| Source loader | [`PotreeLoader`](../api-reference/potree-source-loader.md) |
 | Writer | [Potree writers](../api-reference/potree-writer.md) |
 
 <PotreeDocsTabs active="format" />
@@ -98,7 +98,7 @@ independent certification against every producer or viewer.
 | Exact 64-bit attribute values | ✅ 2.0 | ✅ 2.0 | Point values stay exact; JSON min/max statistics can be approximate above Number's exact integer range |
 | Custom normalization metadata | ✅ 2.0 | ✅ 2.0 | A loaders.gl metadata extension; independent viewer behavior requires qualification |
 | CRS declaration | ✅ | ✅ | Modern native coordinates retain the declaration; writers do not infer or apply a CRS transformation |
-| Progressive tile traversal | ✅ | — | One `PotreeSourceLoader` exposes the shared point-cloud tile methods |
+| Progressive tile traversal | ✅ | — | One `PotreeLoader` exposes the shared point-cloud tile methods |
 | Query scans and Arrow batches | ⚠️ | — | Compatible legacy layouts support `scan()`; modern sources report metadata-only query support |
 | Mesh/Arrow dataset authoring | — | ✅ | Accepts a decoded point Mesh, MeshArrowTable, or explicitly owned additive octree nodes |
 | Automatic sampling and LOD generation | — | ❌ | Applications supply node ownership; the writer does not sample or duplicate points |
@@ -114,7 +114,7 @@ CRS conversion is an explicit application step before writing. See
 - [PotreeLoader](/docs/modules/tiles-3d/potree/api-reference/potree-loader) parses metadata for both layouts.
   The package root is metadata-only; direct parser access uses
   `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree-loader`.
-- [PotreeSourceLoader](/docs/modules/tiles-3d/potree/api-reference/potree-source-loader) traverses hierarchy
+- [PotreeLoader](/docs/modules/tiles-3d/potree/api-reference/potree-source-loader) traverses hierarchy
   and decodes requested point tiles. Pass `cloud.js` for 1.x or `metadata.json` for 2.0;
   directory inputs retain the legacy `cloud.js` default.
 - [PotreeWriter](/docs/modules/tiles-3d/potree/api-reference/potree-writer) writes a metadata document through

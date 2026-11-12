@@ -6,7 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import {DeckGL} from '@deck.gl/react';
 import {MapViewState} from '@deck.gl/core';
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
 import {PointTileSourceLayer} from './point-tile-source-layer';
 import * as maplibregl from 'maplibre-gl';
@@ -34,7 +34,7 @@ export default function App() {
     const layers = new PointTileSourceLayer({
       data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/refs/heads/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted',
       pointSize: 1,
-      source: PotreeSourceLoader
+      source: PotreeLoader
     });
     return [layers];
   }

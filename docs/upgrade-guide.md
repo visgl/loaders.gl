@@ -533,7 +533,8 @@ If you are upgrading from the 4.4 release line, migrate top-level source factori
 | `MLTSource` | `MLTSourceLoader` |
 | `PMTilesSource` | `PMTilesSourceLoader` |
 | `COPCSource` | `COPCSourceLoader` |
-| `PotreeSource` | `PotreeSourceLoader` |
+| `PotreeSource` | `PotreeLoader` |
+| `PotreeSourceLoader` | `PotreeLoader` |
 | `TableTileSource` | `TableTileSourceLoader` |
 | `FlatGeobufSource` | `FlatGeobufSourceLoader` |
 | `GeoTIFFSource` | `GeoTIFFSourceLoader` |

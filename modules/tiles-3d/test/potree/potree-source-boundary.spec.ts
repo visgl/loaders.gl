@@ -134,7 +134,7 @@ test('Potree source covers loader fallbacks, failures, and color usability', asy
       [0, 0, 0],
       [1, 1, 1]
     ])
-  ).toEqual({las: {colorDepth: 'auto', colorFormat: 'uint8norm'}});
+  ).toEqual({las: {shape: 'mesh', colorDepth: 'auto', colorFormat: 'uint8norm'}});
 
   const sourceWithLoadOptions = createSource();
   sourceWithLoadOptions.metadata = {version: '1.7', pointAttributes: 'LAZ'};
@@ -146,7 +146,7 @@ test('Potree source covers loader fallbacks, failures, and color usability', asy
     ])
   ).toMatchObject({
     core: {worker: false},
-    las: {colorDepth: 'auto', colorFormat: 'uint8norm'}
+    las: {shape: 'mesh', colorDepth: 'auto', colorFormat: 'uint8norm'}
   });
 });
 

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {log as loaderLog} from '@loaders.gl/core/loader-utils';
-import type {PotreeSourceLoaderOptions} from '../potree-source-loader';
+import type {PotreeSourceLoaderOptions} from '../potree-source-options';
 import type {PotreeDatasetMetadata} from '../potree-loader-types';
 import type {Potree2Source} from '../potree2-source';
 import type {
@@ -993,6 +993,7 @@ export class PotreeNodesSource
       // TypeScript LAS loader to use its packaged worker by default.
       const loaderOptions: LoaderOptions = {
         las: {
+          shape: 'mesh',
           colorDepth: 'auto',
           colorFormat:
             (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
@@ -1013,6 +1014,7 @@ export class PotreeNodesSource
 
     return {
       potree: {
+        shape: 'mesh',
         pointAttributes: this.metadata.pointAttributes,
         version: this.metadata.version,
         scale: this.metadata.scale,
