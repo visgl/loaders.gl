@@ -6,7 +6,7 @@ import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {isNativeWriterTable} from '../arrow/table-writer-input';
 import type {TableWriterInput, TableWriterBatch} from '../arrow/table-writer-input';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import {convertArrowToTable, convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
 
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {encodeTableToParquetJs} from './lib/encoders/encode-table-to-parquet-js';
@@ -90,7 +90,11 @@ export const ParquetJSWriter = {
   },
   async encode(input: TableWriterInput, options?: ParquetJSWriterOptions) {
     const objectRowTable = isNativeWriterTable(input)
-      ? convertArrowToTable(input, 'object-row-table')
+      ? {
+          shape: 'object-row-table' as const,
+          schema: convertArrowToSchema(input.schema),
+          data: Array.from(input, row => row.toJSON())
+        }
       : (convertTable(
           {...input, schema: input.schema || deduceTableSchema(input)},
           'object-row-table'

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {tableFromArrays, tableFromIPC} from 'apache-arrow';
+import {Int32, tableFromArrays, tableFromIPC, vectorFromArray} from 'apache-arrow';
 import {encode, encodeInBatches, encodeSync, parse} from '@loaders.gl/core';
 import {
   ArrowWriter,
@@ -13,6 +13,7 @@ import {
   GeoJSONWriter,
   JSONWriter,
   ORCWriter,
+  ParquetJSLoader,
   ParquetJSWriter,
   ParquetWriter
 } from '@loaders.gl/tables';
@@ -40,6 +41,14 @@ test.each([
   const result = await encode(table, writer);
   expect(result.byteLength).toBeGreaterThan(0);
   await expect(encode(wrapped as never, writer)).rejects.toThrow();
+});
+
+test('ParquetJSWriter preserves nulls in native numeric columns', async () => {
+  const input = tableFromArrays({value: vectorFromArray([1, null], new Int32())});
+  const bytes = await encode(input, ParquetJSWriter);
+  const result = await parse(bytes, ParquetJSLoader, {core: {worker: false}});
+  expect(result.getChild('value')?.get(0)).toBe(1);
+  expect(result.getChild('value')?.get(1)).toBeNull();
 });
 
 test('GeoJSON writes a native GeoArrow table and multiple native batches', async () => {
