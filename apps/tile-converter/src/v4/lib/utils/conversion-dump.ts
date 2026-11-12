@@ -27,6 +27,8 @@ export type ConversionDumpOptions = {
   metadataClass: string;
   analyze: boolean;
   outputVersion: string;
+  /** Invalidates resumable output when the I3S attribute schema or encoding changes. */
+  attributeEncodingVersion?: number;
 };
 
 type NodeDoneStatus = {
@@ -93,7 +95,8 @@ export class ConversionDump {
       mergeMaterials = true,
       metadataClass,
       analyze = false,
-      outputVersion = '1.1'
+      outputVersion = '1.1',
+      attributeEncodingVersion
     } = currentOptions;
     this.options = {
       tilesetName,
@@ -109,7 +112,8 @@ export class ConversionDump {
       mergeMaterials,
       metadataClass,
       analyze,
-      outputVersion
+      outputVersion,
+      ...(attributeEncodingVersion === undefined ? {} : {attributeEncodingVersion})
     };
 
     const dumpFilename = join(
