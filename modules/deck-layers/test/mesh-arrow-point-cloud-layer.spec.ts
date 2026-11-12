@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {tableFromArrays} from 'apache-arrow';
 import {
   getBatchIndexFromLayerId,
   getSerializableArrowValue,
-  isArrowTable,
   isArrowTableBatch,
   isAsyncIterable
 } from '../src/mesh-arrow-point-cloud-layer-utils';
@@ -34,13 +34,8 @@ test('mesh-arrow-point-cloud-layer-utils identifies supported data shapes', () =
       yield null;
     }
   };
-  const arrowTable = {
-    getChild(): null {
-      return null;
-    }
-  };
+  const arrowTable = tableFromArrays({value: [1]});
   expect(isAsyncIterable(asyncIterable), 'identifies async iterable data').toBeTruthy();
-  expect(isArrowTable(arrowTable), 'identifies Arrow table-like data').toBeTruthy();
   expect(
     isArrowTableBatch({shape: 'arrow-table', batchType: 'data', data: arrowTable}),
     'identifies Arrow table batches'

@@ -13,6 +13,7 @@ import {
 } from '@luma.gl/core';
 import type {Color} from '@deck.gl/core';
 import type {ArrowTableBatch} from '@loaders.gl/core/schema';
+import {isArrowTableBatch} from '../mesh-arrow-point-cloud-layer-utils';
 import {BoundingSphere, CullingVolume} from '@math.gl/geometry/culling';
 import {
   projectSplatCovarianceToScreen,
@@ -1004,21 +1005,6 @@ function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> 
   return Boolean(
     data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
   );
-}
-
-/** Returns true when a value is a loaders.gl Arrow table data batch. */
-function isArrowTableBatch(data: unknown): data is ArrowTableBatch {
-  const arrowTableBatch = data as ArrowTableBatch;
-  return (
-    arrowTableBatch?.shape === 'arrow-table' &&
-    arrowTableBatch.batchType === 'data' &&
-    isArrowTable(arrowTableBatch.data)
-  );
-}
-
-/** Returns true when a value is an Apache Arrow table. */
-function isArrowTable(data: unknown): data is arrow.Table {
-  return Boolean(data && typeof (data as arrow.Table).getChild === 'function');
 }
 
 /** Return a stable signature for projection inputs that affect render buffers. */

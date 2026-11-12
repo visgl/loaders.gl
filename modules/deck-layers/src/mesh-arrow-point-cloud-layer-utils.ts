@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type * as arrow from 'apache-arrow';
+import {isArrowTable} from '@math.gl/arrow';
 import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
 
 /** Data accepted by MeshArrowPointCloudLayer. */
@@ -105,13 +106,4 @@ export function isArrowTableBatch(data: unknown): data is ArrowTableBatch {
     arrowTableBatch.batchType === 'data' &&
     isArrowTable(arrowTableBatch.data)
   );
-}
-
-/**
- * Returns true when a value is an Apache Arrow table.
- * @param data Value to test.
- * @returns `true` when the value behaves like an Apache Arrow table.
- */
-export function isArrowTable(data: unknown): data is arrow.Table {
-  return Boolean(data && typeof (data as arrow.Table).getChild === 'function');
 }

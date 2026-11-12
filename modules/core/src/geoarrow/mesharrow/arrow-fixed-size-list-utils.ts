@@ -3,15 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import {TypedArray} from '@math.gl/core';
+import {isFixedSizeListArrowType} from '@math.gl/arrow';
 import * as arrow from 'apache-arrow';
 import {getDataTypeFromArray, deserializeArrowType} from '@loaders.gl/core/schema-utils';
 
 export function isFixedSizeList(vector: arrow.Vector): vector is arrow.Vector<arrow.FixedSizeList> {
-  return vector.type instanceof arrow.FixedSizeList;
+  return isFixedSizeListArrowType(vector.type);
 }
 
 export function getFixedSizeListSize(vector: arrow.Vector): number {
-  return vector.type instanceof arrow.FixedSizeList ? vector.type.listSize : 1;
+  return isFixedSizeListArrowType(vector.type) ? vector.type.listSize : 1;
 }
 
 /** Get Arrow FixedSizeList vector from a typed array */
