@@ -187,18 +187,20 @@ async function parseWithLoader(
 
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
 
-  if (shouldParseWithWorker(loaderWithParser, data, options, context, loader)) {
-    data = await getArrayBufferFromData(data, options);
-    return await parseWithWorker(loaderWithParser, data, options, context, parse);
+  const output = loaderWithParser.prepareParseOutput?.(options);
+  const parseOptions = output?.options ?? options;
+  let result: unknown;
+
+  if (shouldParseWithWorker(loaderWithParser, data, parseOptions, context, loader)) {
+    data = await getArrayBufferFromData(data, parseOptions);
+    result = await parseWithWorker(loaderWithParser, data, parseOptions, context, parse);
+  } else if (isBlob(data) && loaderWithParser.parseBlob) {
+    result = await loaderWithParser.parseBlob(data, parseOptions, context);
+  } else {
+    data = await getArrayBufferOrStringFromData(data, loader, parseOptions);
+    result = await parseWithLoaderImplementation(loaderWithParser, data, parseOptions, context);
   }
-
-  if (isBlob(data) && loaderWithParser.parseBlob) {
-    return await loaderWithParser.parseBlob(data, options, context);
-  }
-
-  data = await getArrayBufferOrStringFromData(data, loader, options);
-
-  return await parseWithLoaderImplementation(loaderWithParser, data, options, context);
+  return output ? output.convert(result) : result;
 }
 
 async function parseWithLoaderImplementation(

@@ -282,6 +282,15 @@ export type LoaderWithParser<
   BatchT = any,
   LoaderOptionsT = StrictLoaderOptions
 > = Loader<DataT, BatchT, LoaderOptionsT> & {
+  /**
+   * Optionally selects a parser representation for an atomic core parse call.
+   * Core uses the returned options for decoding and applies convert on the caller
+   * after decoding or worker hydration. Direct parser calls do not invoke this hook.
+   */
+  prepareParseOutput?: (options: StrictLoaderOptions) => {
+    options: StrictLoaderOptions;
+    convert: (result: DataT) => DataT;
+  } | null;
   /** Parse asynchronously and atomically from an arraybuffer */
   parse: (
     arrayBuffer: ArrayBuffer,
