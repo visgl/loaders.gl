@@ -20,7 +20,7 @@ describe('STACSource metadata loader', () => {
       STACSource
     );
     await expect(STACSourceLoader.preload()).resolves.toBe(STACSourceLoaderWithParser);
-    expect(() => STACSourceLoader.createDataSourceSync(ROOT_URL, {})).toThrow(/async load/);
+    expect(() => STACSourceLoader.createDataSourceSync(ROOT_URL, {})).toThrow(/createDataSource/);
     expect(() => STACSourceLoaderWithParser.createDataSourceSync(new Blob(), {})).toThrow(
       /catalog URL/
     );

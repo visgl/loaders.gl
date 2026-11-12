@@ -20,7 +20,7 @@ import type {ArrowTable, Geometry, GeoArrowEncodingPreference} from '@loaders.gl
 const ROOT_TILE = {x: 0, y: 0, z: 0};
 const POINT: Geometry = {type: 'Point', coordinates: [-90, 40]};
 
-test('Arrow tile source metadata preloads the runtime through async load', async () => {
+test('Arrow tile source metadata preloads the runtime through createDataSource()', async () => {
   expect(ArrowTableTileSourceLoaderMetadata.testURL()).toBe(false);
   expect(() => ArrowTableTileSourceLoaderMetadata.createDataSourceSync(makeTable([POINT]))).toThrow(
     'requires async createDataSource()'
