@@ -52,7 +52,7 @@ function getPropertiesByFeatureIds(
 
   if (properties) {
     for (const featureIdKey in featureIdsMap) {
-      const property = properties[featureIdKey] || null;
+      const property = properties[featureIdKey] ?? null;
       resultProperties.push(property);
     }
   }
@@ -90,7 +90,9 @@ export function getAttributeType(attribute: unknown): string {
   if (typeof attribute === 'string' || typeof attribute === 'bigint') {
     return AttributeType.STRING_TYPE;
   } else if (typeof attribute === 'number') {
-    return Number.isInteger(attribute) ? AttributeType.SHORT_INT_TYPE : AttributeType.DOUBLE_TYPE;
+    return Number.isInteger(attribute) && attribute > -0x80000000 && attribute <= 0x7fffffff
+      ? AttributeType.SHORT_INT_TYPE
+      : AttributeType.DOUBLE_TYPE;
   }
   return AttributeType.STRING_TYPE;
 }
@@ -244,3 +246,34 @@ const getAttributeTypeFromExtStructuralMetadata = (
   }
   return attributeType;
 };
+
+/**
+ * Collects a stable batch-table schema before nodes are written. Null-only columns
+ * defer type selection; numeric columns widen to Float64 and mixed columns to String.
+ */
+export function collectBatchTableAttributeTypes(
+  propertyTable: FeatureTableJson,
+  attributeTypes: Map<string, Attribute | null>
+): void {
+  for (const [name, values] of Object.entries(propertyTable)) {
+    if (name === 'OBJECTID' || !Array.isArray(values)) {
+      continue;
+    }
+    let type = attributeTypes.get(name) ?? null;
+    for (const value of values) {
+      if (value === null || value === undefined) {
+        continue;
+      }
+      const valueType = getAttributeType(value) as Attribute;
+      if (!type) {
+        type = valueType;
+      } else if (type !== valueType) {
+        type =
+          type === AttributeType.STRING_TYPE || valueType === AttributeType.STRING_TYPE
+            ? AttributeType.STRING_TYPE
+            : AttributeType.DOUBLE_TYPE;
+      }
+    }
+    attributeTypes.set(name, type);
+  }
+}
