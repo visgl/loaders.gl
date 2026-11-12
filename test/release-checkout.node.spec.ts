@@ -10,7 +10,7 @@ import {afterEach, expect, test} from 'vitest';
 import YAML from 'yaml';
 
 const workflow = YAML.parse(readFileSync('.github/workflows/release.yml', 'utf8'));
-const cleanupScript = workflow.jobs.release.steps.find(
+const cleanupScript = workflow.jobs.build.steps.find(
   step => step.name === 'Verify clean release checkout'
 ).run;
 const temporaryDirectories: string[] = [];
