@@ -80,13 +80,10 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
   const deleteManifestUrl = 'https://example.com/table/metadata/delete-manifest.avro';
   const dataFileUrl = 'https://example.com/table/data/part-000.parquet';
   const manifestList = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({
+    arrow.tableFromArrays({
         manifest_path: [manifestUrl, deleteManifestUrl],
         content: [0, 1]
-      })
-    },
+      }),
     {
       avro: {
         schema: {
@@ -101,9 +98,7 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
     }
   );
   const manifest = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromJSON([
+    arrow.tableFromJSON([
         {
           status: 1,
           data_file: {
@@ -114,8 +109,7 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
             upper_bounds: {value: 1}
           }
         }
-      ])
-    },
+      ]),
     {
       avro: {
         schema: {
@@ -164,9 +158,7 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
     }
   );
   const deleteManifest = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromJSON([
+    arrow.tableFromJSON([
         {
           status: 1,
           data_file: {
@@ -176,8 +168,7 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
             referenced_data_file: dataFileUrl
           }
         }
-      ])
-    },
+      ]),
     {
       avro: {
         schema: {
@@ -273,10 +264,7 @@ test('IcebergTableSource resolves equality delete field IDs during opt-in scans'
   const deleteManifestUrl = 'https://example.com/table/metadata/equality-manifest.avro';
   const deleteFileUrl = 'https://example.com/table/deletes/equality.avro';
   const manifestList = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({manifest_path: [deleteManifestUrl], content: [1]})
-    },
+    arrow.tableFromArrays({manifest_path: [deleteManifestUrl], content: [1]}),
     {
       avro: {
         schema: {
@@ -291,9 +279,7 @@ test('IcebergTableSource resolves equality delete field IDs during opt-in scans'
     }
   );
   const deleteManifest = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromJSON([
+    arrow.tableFromJSON([
         {
           status: 1,
           data_file: {
@@ -303,8 +289,7 @@ test('IcebergTableSource resolves equality delete field IDs during opt-in scans'
             equality_ids: 1
           }
         }
-      ])
-    },
+      ]),
     {
       avro: {
         schema: {
@@ -331,10 +316,7 @@ test('IcebergTableSource resolves equality delete field IDs during opt-in scans'
     }
   );
   const equalityDelete = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({value: [7]})
-    },
+    arrow.tableFromArrays({value: [7]}),
     {
       avro: {
         schema: {
@@ -382,13 +364,10 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
   const deleteFileUrl = 'https://example.com/table/deletes/part-000.avro';
   const [manifestList, dataManifest, deleteManifest, positionDelete] = await Promise.all([
     AvroWriter.encode(
-      {
-        shape: 'arrow-table',
-        data: arrow.tableFromArrays({
+      arrow.tableFromArrays({
           manifest_path: [dataManifestUrl, deleteManifestUrl],
           content: [0, 1]
-        })
-      },
+        }),
       {
         avro: {
           schema: {
@@ -405,10 +384,7 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
     createManifestEntry(dataFileUrl, 'PARQUET'),
     createManifestEntry(deleteFileUrl, 'AVRO', 1),
     AvroWriter.encode(
-      {
-        shape: 'arrow-table',
-        data: arrow.tableFromArrays({file_path: [dataFileUrl], pos: [1]})
-      },
+      arrow.tableFromArrays({file_path: [dataFileUrl], pos: [1]}),
       {
         avro: {
           schema: {
@@ -519,9 +495,7 @@ async function createManifestEntry(
   content?: number
 ): Promise<ArrayBuffer> {
   return AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromJSON([
+    arrow.tableFromJSON([
         {
           status: 1,
           data_file: {
@@ -530,8 +504,7 @@ async function createManifestEntry(
             ...(content === undefined ? {} : {content})
           }
         }
-      ])
-    },
+      ]),
     {
       avro: {
         schema: {

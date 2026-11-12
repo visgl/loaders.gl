@@ -3,10 +3,9 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import {Table as ArrowJSTable, type RecordBatch} from 'apache-arrow';
-import type {Table} from '@loaders.gl/core/schema';
-import {wrapWriterTable} from '../../../arrow/wrap-writer-table';
-import {getTableLength} from '@loaders.gl/core/schema-utils';
+import type {RecordBatch} from 'apache-arrow';
+import {isNativeWriterTable, type TableWriterInput} from '../../../arrow/table-writer-input';
+import {convertArrowToSchema, getTableLength} from '@loaders.gl/core/schema-utils';
 import {detectGeometryColumnIndex} from '../encoder-utils/encode-utils';
 import {encodeTableRow} from '../encoder-utils/encode-table-row';
 import {Utf8ArrayBufferEncoder} from '../encoder-utils/utf8-encoder';
@@ -18,8 +17,8 @@ import type {GeoJSONWriterOptions} from '../../geojson-writer';
 // eslint-disable-next-line max-statements
 export async function* encodeTableAsGeojsonInBatches(
   batchIterator:
-    | AsyncIterable<Table | ArrowJSTable | RecordBatch>
-    | Iterable<Table | ArrowJSTable | RecordBatch>,
+    | AsyncIterable<TableWriterInput | RecordBatch>
+    | Iterable<TableWriterInput | RecordBatch>,
   inputOpts: GeoJSONWriterOptions = {}
 ): AsyncIterable<ArrayBuffer> {
   // @ts-expect-error
@@ -37,9 +36,14 @@ export async function* encodeTableAsGeojsonInBatches(
   let isFirstLine = true;
 
   for await (const input of batchIterator) {
-    const tableBatch = wrapWriterTable(
-      'shape' in input || 'batches' in input ? input : new ArrowJSTable([input])
-    );
+    const tableBatch =
+      'shape' in input && !isNativeWriterTable(input)
+        ? input
+        : {
+            shape: 'object-row-table' as const,
+            schema: convertArrowToSchema(input.schema),
+            data: Array.from(input, row => row.toJSON())
+          };
     const length = getTableLength(tableBatch);
     if (length === 0) {
       continue;

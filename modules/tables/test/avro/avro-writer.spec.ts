@@ -34,10 +34,7 @@ test('Avro metadata loader preloads the parser implementation', async () => {
   await expect(AvroLoader.preload?.()).resolves.toBe(AvroLoaderWithParser);
 });
 test('AvroWriter#encode round-trips an Arrow table', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({id: [1, 2], name: ['one', 'two']})
-  };
+  const input = arrow.tableFromArrays({id: [1, 2], name: ['one', 'two']});
   const output = await AvroWriter.encode(input);
   const result = await AvroLoaderWithParser.parse(output);
   expect(result.shape).toBe('arrow-table');
@@ -50,10 +47,7 @@ test('AvroWriter#encode round-trips an Arrow table', async () => {
   }
 });
 test('AvroWriter#encode supports an explicit nullable schema', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({value: [1, null]})
-  };
+  const input = arrow.tableFromArrays({value: [1, null]});
   const output = await AvroWriter.encode(input, {
     avro: {
       schema: {
@@ -74,18 +68,16 @@ test('AvroWriter#encode writes a single-object datum', async () => {
     name: 'SingleValue',
     fields: [{name: 'id', type: 'int'}]
   } as const;
-  const output = await AvroWriter.encode(
-    {shape: 'arrow-table', data: arrow.tableFromArrays({id: [42]})},
-    {avro: {schema, encoding: 'single-object'}}
-  );
+  const output = await AvroWriter.encode(arrow.tableFromArrays({id: [42]}), {
+    avro: {schema, encoding: 'single-object'}
+  });
   const result = await AvroLoaderWithParser.parse(output, {avro: {schema}});
   if (result.shape === 'arrow-table')
     expect(result.data.toArray().map(row => row.toJSON())).toEqual([{id: 42}]);
   await await expect(
-    AvroWriter.encode(
-      {shape: 'arrow-table', data: arrow.tableFromArrays({id: [1, 2]})},
-      {avro: {schema, encoding: 'single-object'}}
-    )
+    AvroWriter.encode(arrow.tableFromArrays({id: [1, 2]}), {
+      avro: {schema, encoding: 'single-object'}
+    })
   ).rejects.toThrow(/exactly one table row/);
 });
 test('AvroWriter#encode writes raw Avro records', async () => {
@@ -94,22 +86,18 @@ test('AvroWriter#encode writes raw Avro records', async () => {
     name: 'RawValue',
     fields: [{name: 'id', type: 'int'}]
   } as const;
-  const output = await AvroWriter.encode(
-    {shape: 'arrow-table', data: arrow.tableFromArrays({id: [7]})},
-    {avro: {schema, encoding: 'raw'}}
-  );
+  const output = await AvroWriter.encode(arrow.tableFromArrays({id: [7]}), {
+    avro: {schema, encoding: 'raw'}
+  });
   const result = await AvroLoaderWithParser.parse(output, {avro: {schema, encoding: 'raw'}});
   if (result.shape === 'arrow-table')
     expect(result.data.toArray().map(row => row.toJSON())).toEqual([{id: 7}]);
 });
 test('AvroWriter#encode supports named records and logical timestamps', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({
-      user: [{id: 7, name: 'Ada'}],
-      created: [new Date(1700000000000)]
-    })
-  };
+  const input = arrow.tableFromArrays({
+    user: [{id: 7, name: 'Ada'}],
+    created: [new Date(1700000000000)]
+  });
   const output = await AvroWriter.encode(input, {
     avro: {
       schema: {
@@ -142,7 +130,7 @@ test('AvroWriter#encode supports named records and logical timestamps', async ()
 });
 test('AvroWriter#encode supports Avro time and local timestamp logical types', async () => {
   const output = await AvroWriter.encode(
-    {shape: 'arrow-table', data: arrow.tableFromArrays({time: [11045678000], local: [1234]})},
+    arrow.tableFromArrays({time: [11045678000], local: [1234]}),
     {
       avro: {
         schema: {
@@ -163,10 +151,7 @@ test('AvroWriter#encode supports Avro time and local timestamp logical types', a
   }
 });
 test('AvroWriter#encode round-trips decimal bytes logical types', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({amount: [12.34, -5.67]})
-  };
+  const input = arrow.tableFromArrays({amount: [12.34, -5.67]});
   const output = await AvroWriter.encode(input, {
     avro: {
       schema: {
@@ -192,10 +177,7 @@ test('AvroWriter#encode round-trips scalable big-decimal values', async () => {
     fields: [{name: 'amount', type: {type: 'bytes', logicalType: 'big-decimal'}}]
   } as const;
   const output = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({amount: [{value: '12345678901234567890.12', scale: 2}]})
-    },
+    arrow.tableFromArrays({amount: [{value: '12345678901234567890.12', scale: 2}]}),
     {avro: {schema}}
   );
   const result = await AvroLoaderWithParser.parse(output);
@@ -206,13 +188,10 @@ test('AvroWriter#encode round-trips scalable big-decimal values', async () => {
   }
 });
 test('AvroWriter#encode round-trips UUID and duration logical types', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({
-      identifier: ['550e8400-e29b-41d4-a716-446655440000'],
-      elapsed: [{months: 2, days: 3, milliseconds: 4000}]
-    })
-  };
+  const input = arrow.tableFromArrays({
+    identifier: ['550e8400-e29b-41d4-a716-446655440000'],
+    elapsed: [{months: 2, days: 3, milliseconds: 4000}]
+  });
   const output = await AvroWriter.encode(input, {
     avro: {
       schema: {
@@ -247,12 +226,9 @@ test('AvroWriter#encode supports recursive named schemas', async () => {
     ]
   };
   const output = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({
-        node: [{value: 1, next: {value: 2, next: null}}]
-      })
-    },
+    arrow.tableFromArrays({
+      node: [{value: 1, next: {value: 2, next: null}}]
+    }),
     {avro: {schema: {type: 'record', name: 'Envelope', fields: [{name: 'node', type: nodeSchema}]}}}
   );
   const result = await AvroLoaderWithParser.parse(output);
@@ -264,10 +240,7 @@ test('AvroWriter#encode supports recursive named schemas', async () => {
   }
 });
 test('AvroWriter#encode writes compressed multi-block files', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({id: [1, 2, 3], name: ['alpha', 'beta', 'gamma']})
-  };
+  const input = arrow.tableFromArrays({id: [1, 2, 3], name: ['alpha', 'beta', 'gamma']});
   const output = await AvroWriter.encode(input, {avro: {codec: 'deflate', blockSize: 1}});
   const result = await AvroLoaderWithParser.parse(output);
   expect(result.shape).toBe('arrow-table');
@@ -278,13 +251,9 @@ test('AvroWriter#encode writes compressed multi-block files', async () => {
   }
 });
 test('Avro OCF inspection exposes block offsets without decoding records', async () => {
-  const output = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({id: [1, 2, 3]})
-    },
-    {avro: {blockSize: 1}}
-  );
+  const output = await AvroWriter.encode(arrow.tableFromArrays({id: [1, 2, 3]}), {
+    avro: {blockSize: 1}
+  });
   const ocf = parseAvroOCF(output);
   expect(ocf.codec).toBe('null');
   expect(ocf.blocks.length).toBe(3);
@@ -293,28 +262,20 @@ test('Avro OCF inspection exposes block offsets without decoding records', async
   expect(ocf.blocks[1].offset > ocf.blocks[0].offset).toBe(true);
 });
 test('AvroWriter#encode writes custom OCF metadata', async () => {
-  const output = await AvroWriter.encode(
-    {shape: 'arrow-table', data: arrow.tableFromArrays({id: [1]})},
-    {avro: {metadata: {application: 'loaders.gl', binaryTag: new Uint8Array([1, 2, 3])}}}
-  );
+  const output = await AvroWriter.encode(arrow.tableFromArrays({id: [1]}), {
+    avro: {metadata: {application: 'loaders.gl', binaryTag: new Uint8Array([1, 2, 3])}}
+  });
   const ocf = parseAvroOCF(output);
   expect(new TextDecoder().decode(ocf.metadata.get('application'))).toBe('loaders.gl');
   expect(ocf.metadata.get('binaryTag')).toEqual(new Uint8Array([1, 2, 3]));
   await await expect(
-    AvroWriter.encode(
-      {shape: 'arrow-table', data: arrow.tableFromArrays({id: [1]})},
-      {avro: {metadata: {'avro.codec': 'null'}}}
-    )
+    AvroWriter.encode(arrow.tableFromArrays({id: [1]}), {avro: {metadata: {'avro.codec': 'null'}}})
   ).rejects.toThrow(/reserved/);
 });
 test('AvroLoader#parse selects indexed OCF blocks', async () => {
-  const output = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({id: new Int32Array([1, 2, 3])})
-    },
-    {avro: {blockSize: 1}}
-  );
+  const output = await AvroWriter.encode(arrow.tableFromArrays({id: new Int32Array([1, 2, 3])}), {
+    avro: {blockSize: 1}
+  });
   const result = await AvroLoaderWithParser.parse(output, {avro: {blockIndices: [1]}});
   if (result.shape === 'arrow-table') {
     expect(result.data.numRows).toBe(1);
@@ -323,10 +284,7 @@ test('AvroLoader#parse selects indexed OCF blocks', async () => {
 });
 test('AvroLoader#parseInBatchesFromUrl uses HTTP byte ranges', async () => {
   const output = new Uint8Array(
-    await AvroWriter.encode(
-      {shape: 'arrow-table', data: arrow.tableFromArrays({id: [1, 2, 3]})},
-      {avro: {blockSize: 1}}
-    )
+    await AvroWriter.encode(arrow.tableFromArrays({id: [1, 2, 3]}), {avro: {blockSize: 1}})
   );
   const originalFetch = globalThis.fetch;
   const ranges: string[] = [];
@@ -359,9 +317,7 @@ test('AvroLoader#parseInBatchesFromUrl uses HTTP byte ranges', async () => {
   }
 });
 test('core load routes URL-backed Avro files through random-access parsing', async () => {
-  const output = new Uint8Array(
-    await AvroWriter.encode({shape: 'arrow-table', data: arrow.tableFromArrays({id: [9]})})
-  );
+  const output = new Uint8Array(await AvroWriter.encode(arrow.tableFromArrays({id: [9]})));
   const originalFetch = globalThis.fetch;
   const ranges: string[] = [];
   const fetchFunction = async (
@@ -399,10 +355,9 @@ test('core load routes URL-backed Avro files through random-access parsing', asy
 });
 test('encodeAvroInChunks emits a parseable OCF incrementally', async () => {
   const chunks: Uint8Array[] = [];
-  for await (const chunk of encodeAvroInChunks(
-    {shape: 'arrow-table', data: arrow.tableFromArrays({id: [1, 2, 3]})},
-    {avro: {blockSize: 1}}
-  ))
+  for await (const chunk of encodeAvroInChunks(arrow.tableFromArrays({id: [1, 2, 3]}), {
+    avro: {blockSize: 1}
+  }))
     chunks.push(chunk);
   const length = chunks.reduce((total, chunk) => total + chunk.length, 0);
   const bytes = new Uint8Array(length);
@@ -417,10 +372,7 @@ test('encodeAvroInChunks emits a parseable OCF incrementally', async () => {
   expect(chunks.length).toBe(4);
 });
 test('AvroLoader#parseInBatches yields Arrow batches', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({id: [1, 2, 3], name: ['alpha', 'beta', 'gamma']})
-  };
+  const input = arrow.tableFromArrays({id: [1, 2, 3], name: ['alpha', 'beta', 'gamma']});
   const output = await AvroWriter.encode(input);
   const batches = [];
   for await (const batch of AvroLoaderWithParser.parseInBatches([output], {avro: {batchSize: 2}})) {
@@ -432,10 +384,11 @@ test('AvroLoader#parseInBatches yields Arrow batches', async () => {
   expect(batches[1].data.getChild('id')?.get(0)).toBe(3);
 });
 test('AvroLoader#parse applies reader-schema projection, aliases, and defaults', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({id: new Int32Array([7]), name: ['Ada'], ignored: ['drop me']})
-  };
+  const input = arrow.tableFromArrays({
+    id: new Int32Array([7]),
+    name: ['Ada'],
+    ignored: ['drop me']
+  });
   const output = await AvroWriter.encode(input);
   const result = await AvroLoaderWithParser.parse(output, {
     avro: {
@@ -460,10 +413,7 @@ test('AvroLoader#parse applies reader-schema projection, aliases, and defaults',
   }
 });
 test('AvroLoader#parse applies numeric promotions and rejects incompatible types', async () => {
-  const output = await AvroWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({id: new Int32Array([7])})
-  });
+  const output = await AvroWriter.encode(arrow.tableFromArrays({id: new Int32Array([7])}));
   const promoted = await AvroLoaderWithParser.parse(output, {
     avro: {
       readerSchema: {
@@ -500,10 +450,7 @@ test('AvroLoader#parse applies numeric promotions and rejects incompatible types
   ).rejects.toThrow(/cannot promote int to string/);
 });
 test('AvroLoader#parse validates record, enum, and fixed compatibility', async () => {
-  const recordOutput = await AvroWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({id: new Int32Array([1])})
-  });
+  const recordOutput = await AvroWriter.encode(arrow.tableFromArrays({id: new Int32Array([1])}));
   await await expect(
     AvroLoaderWithParser.parse(recordOutput, {
       avro: {
@@ -516,10 +463,9 @@ test('AvroLoader#parse validates record, enum, and fixed compatibility', async (
     name: 'EnumRecord',
     fields: [{name: 'kind', type: {type: 'enum', name: 'Kind', symbols: ['A']}}]
   };
-  const enumOutput = await AvroWriter.encode(
-    {shape: 'arrow-table', data: arrow.tableFromArrays({kind: ['A']})},
-    {avro: {schema: enumSchema}}
-  );
+  const enumOutput = await AvroWriter.encode(arrow.tableFromArrays({kind: ['A']}), {
+    avro: {schema: enumSchema}
+  });
   await await expect(
     AvroLoaderWithParser.parse(enumOutput, {
       avro: {
@@ -548,10 +494,9 @@ test('AvroLoader#parse validates record, enum, and fixed compatibility', async (
       }
     ]
   };
-  const fixedOutput = await AvroWriter.encode(
-    {shape: 'arrow-table', data: arrow.tableFromArrays({value: [1.23]})},
-    {avro: {schema: fixedSchema}}
-  );
+  const fixedOutput = await AvroWriter.encode(arrow.tableFromArrays({value: [1.23]}), {
+    avro: {schema: fixedSchema}
+  });
   await await expect(
     AvroLoaderWithParser.parse(fixedOutput, {
       avro: {
@@ -577,10 +522,7 @@ test('AvroLoader#parse validates record, enum, and fixed compatibility', async (
   ).rejects.toThrow(/fixed schemas/);
 });
 test('Avro long values support exact bigint round trips', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({id: [9007199254740993n]})
-  };
+  const input = arrow.tableFromArrays({id: [9007199254740993n]});
   const output = await AvroWriter.encode(input);
   const result = await AvroLoaderWithParser.parse(output, {avro: {longType: 'bigint'}});
   expect(result.shape).toBe('arrow-table');
@@ -624,15 +566,12 @@ test('AvroWriter#encode covers arrays, maps, unions, enums, and fixed values', a
     ]
   } as const;
   const output = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({
-        tags: ['one'],
-        attributes: [3],
-        choice: [7],
-        kind: ['B']
-      })
-    },
+    arrow.tableFromArrays({
+      tags: ['one'],
+      attributes: [3],
+      choice: [7],
+      kind: ['B']
+    }),
     {avro: {schema}}
   );
   const result = await AvroLoaderWithParser.parse(output, {avro: {schema}});

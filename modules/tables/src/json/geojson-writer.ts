@@ -8,8 +8,8 @@ import {
   type WriterOptions,
   concatenateArrayBuffersAsync
 } from '@loaders.gl/core/loader-utils';
-import type {RecordBatch, Table as ArrowJSTable} from 'apache-arrow';
-import type {Table, TableBatch} from '@loaders.gl/core/schema';
+import type {RecordBatch} from 'apache-arrow';
+import type {TableWriterInput, TableWriterBatch} from '../arrow/table-writer-input';
 import {encodeTableAsGeojsonInBatches} from './lib/encoders/geojson-encoder';
 import {GeoJSONFormat} from './json-format';
 
@@ -32,17 +32,19 @@ export const GeoJSONWriter = {
     }
   },
 
-  async encode(table: Table | ArrowJSTable, options: GeoJSONWriterOptions): Promise<ArrayBuffer> {
+  async encode(table: TableWriterInput, options: GeoJSONWriterOptions): Promise<ArrayBuffer> {
     const batches = encodeTableAsGeojsonInBatches([table], options);
     return await concatenateArrayBuffersAsync(batches);
   },
 
   encodeInBatches: (
-    tableIterator: AsyncIterable<TableBatch | RecordBatch> | Iterable<TableBatch | RecordBatch>,
+    tableIterator:
+      | AsyncIterable<TableWriterBatch | RecordBatch>
+      | Iterable<TableWriterBatch | RecordBatch>,
     options
   ) => encodeTableAsGeojsonInBatches(tableIterator, options)
 } as const satisfies WriterWithEncoder<
-  Table | ArrowJSTable,
-  TableBatch | RecordBatch,
+  TableWriterInput,
+  TableWriterBatch | RecordBatch,
   GeoJSONWriterOptions
 >;

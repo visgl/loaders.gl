@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {compressAvro, type AvroCodec} from '../../avro-compression';
 import {getAvroSchemaFingerprint} from '../parsers/parse-avro';
 
@@ -48,10 +48,7 @@ const DEFAULT_SYNC_MARKER = new Uint8Array([
 ]);
 
 /** Encodes an Arrow table as a null-codec Avro Object Container File. */
-export async function encodeAvro(
-  table: ArrowTable,
-  options?: AvroWriterOptions
-): Promise<ArrayBuffer> {
+export async function encodeAvro(table: Table, options?: AvroWriterOptions): Promise<ArrayBuffer> {
   if (options?.avro?.encoding === 'raw') return encodeAvroRaw(table, options);
   if (options?.avro?.encoding === 'single-object') return encodeAvroSingleObject(table, options);
   const chunks: Uint8Array[] = [];
@@ -61,7 +58,7 @@ export async function encodeAvro(
 
 /** Encodes an Arrow table as an async sequence of OCF header and block chunks. */
 export async function* encodeAvroInChunks(
-  table: ArrowTable,
+  table: Table,
   options?: AvroWriterOptions
 ): AsyncIterable<Uint8Array> {
   if (options?.avro?.encoding === 'raw' || options?.avro?.encoding === 'single-object')
@@ -77,10 +74,10 @@ export async function* encodeAvroInChunks(
 
   yield createAvroHeader(schema, codec, syncMarker, options?.avro?.metadata);
   const fields = schema.fields || [];
-  const columns = fields.map(field => table.data.getChild(field.name));
+  const columns = fields.map(field => table.getChild(field.name));
   let block = new ByteWriter();
   let blockRowCount = 0;
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
     const record: Record<string, unknown> = {};
     for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex++) {
       record[fields[fieldIndex].name] = columns[fieldIndex]?.get(rowIndex);
@@ -100,28 +97,27 @@ export async function* encodeAvroInChunks(
 }
 
 /** Encodes exactly one Arrow record as a raw Avro binary datum. */
-function encodeAvroRaw(table: ArrowTable, options: AvroWriterOptions): ArrayBuffer {
-  if (table.data.numRows !== 1) throw new Error('Avro raw encoding requires exactly one table row');
+function encodeAvroRaw(table: Table, options: AvroWriterOptions): ArrayBuffer {
+  if (table.numRows !== 1) throw new Error('Avro raw encoding requires exactly one table row');
   const schema = options.avro?.schema || deriveRecordSchema(table);
   if (!isRecordSchema(schema)) throw new Error('AvroWriter requires a root record schema');
   const namedTypes = collectNamedTypes(schema);
   const output = new ByteWriter();
   const fields = schema.fields || [];
   const record: Record<string, unknown> = {};
-  for (const field of fields) record[field.name] = table.data.getChild(field.name)?.get(0);
+  for (const field of fields) record[field.name] = table.getChild(field.name)?.get(0);
   writeValue(output, schema, record, namedTypes);
   return output.finish().buffer as ArrayBuffer;
 }
 
 /** Encodes exactly one Arrow record using Avro's single-object encoding. */
-function encodeAvroSingleObject(table: ArrowTable, options: AvroWriterOptions): ArrayBuffer {
-  if (table.data.numRows !== 1)
+function encodeAvroSingleObject(table: Table, options: AvroWriterOptions): ArrayBuffer {
+  if (table.numRows !== 1)
     throw new Error('Avro single-object encoding requires exactly one table row');
   const schema = options.avro?.schema || deriveRecordSchema(table);
   if (!isRecordSchema(schema)) throw new Error('AvroWriter requires a root record schema');
   const record: Record<string, unknown> = {};
-  for (const field of schema.fields || [])
-    record[field.name] = table.data.getChild(field.name)?.get(0);
+  for (const field of schema.fields || []) record[field.name] = table.getChild(field.name)?.get(0);
   const writer = new ByteWriter();
   writeValue(writer, schema, record, collectNamedTypes(schema));
   const output = new Uint8Array(10 + writer.length);
@@ -187,11 +183,11 @@ function concatBytes(chunks: Uint8Array[]): Uint8Array {
 }
 
 /** Derives a flat Avro record schema from Arrow fields. */
-function deriveRecordSchema(table: ArrowTable): AvroSchema {
+function deriveRecordSchema(table: Table): AvroSchema {
   return {
     type: 'record',
     name: 'ArrowRecord',
-    fields: table.data.schema.fields.map(field => ({
+    fields: table.schema.fields.map(field => ({
       name: field.name,
       type: deriveFieldSchema(field.type.toString())
     }))

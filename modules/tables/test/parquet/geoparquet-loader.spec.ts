@@ -41,7 +41,7 @@ test.skip('GeoParquetLoader#load', async () => {
 });
 test.skip('ParquetWriterLoader round trip', async () => {
     const table = createArrowTable();
-    const parquetBuffer = await encode(table, ParquetWriter, {
+    const parquetBuffer = await encode(table.data, ParquetWriter, {
         core: { worker: false }
     });
     const newTable = await load(parquetBuffer, ParquetLoader, {

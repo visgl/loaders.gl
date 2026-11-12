@@ -22,10 +22,7 @@ import {
 } from '../../src/orc/lib/parsers/orc-compression';
 
 test('ORCSource exposes footer metadata and shared projection/limit reads', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
-  };
+  const input = arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']});
   const encoded = await ORCWriter.encode(input);
   const source = new ORCSource(new Blob([encoded]));
 
@@ -84,10 +81,7 @@ test.each([
 });
 
 test('ORCSource applies residual predicates with three-valued semantics', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
-  };
+  const input = arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']});
   const encoded = await ORCWriter.encode(input);
   const source = new ORCSource(new Blob([encoded]));
   const result = await source.query({
@@ -97,20 +91,14 @@ test('ORCSource applies residual predicates with three-valued semantics', async 
 });
 
 test('ORCSource validates query limits before decoding rows', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b']})
-  };
+  const input = arrow.tableFromArrays({name: ['a', 'b']});
   const encoded = await ORCWriter.encode(input);
   const source = new ORCSource(new Blob([encoded]));
   await expect(source.query({limit: -1})).rejects.toThrow('non-negative safe integer');
 });
 
 test('ORCSource clears failed URL fetches so a retry can succeed', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a']})
-  };
+  const input = arrow.tableFromArrays({name: ['a']});
   const encoded = await ORCWriter.encode(input);
   let attempts = 0;
   const source = new ORCSource('https://example.com/data.orc', {
@@ -251,10 +239,7 @@ test('ORC compression decodes framed Snappy chunks', async () => {
 });
 
 test('ORCWriter#encode writes dictionary-encoded repeated strings', async () => {
-  const output = await ORCWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({name: ['a', 'bb', 'a', 'bb']})
-  });
+  const output = await ORCWriter.encode(arrow.tableFromArrays({name: ['a', 'bb', 'a', 'bb']}));
   const result = await ORCLoaderWithParser.parse(output);
   expect(result.shape).toBe('arrow-table');
   if (result.shape === 'arrow-table')
@@ -262,15 +247,14 @@ test('ORCWriter#encode writes dictionary-encoded repeated strings', async () => 
 });
 
 test('ORCWriter#encode writes dictionary-encoded repeated binary values', async () => {
-  const output = await ORCWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({
+  const output = await ORCWriter.encode(
+    arrow.tableFromArrays({
       payload: arrow.vectorFromArray(
         [new Uint8Array([1, 2]), new Uint8Array([1, 2])],
         new arrow.Binary()
       )
     })
-  });
+  );
   const result = await ORCLoaderWithParser.parse(output);
   expect(result.shape).toBe('arrow-table');
   if (result.shape === 'arrow-table') {

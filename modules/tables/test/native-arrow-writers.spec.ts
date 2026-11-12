@@ -39,9 +39,7 @@ test.each([
   const wrapped = {shape: 'arrow-table' as const, data: table};
   const result = await encode(table, writer);
   expect(result.byteLength).toBeGreaterThan(0);
-  if (writer !== AvroWriter) {
-    expect(result).toEqual(await encode(wrapped, writer));
-  }
+  await expect(encode(wrapped as never, writer)).rejects.toThrow();
 });
 
 test('GeoJSON writes a native GeoArrow table and multiple native batches', async () => {

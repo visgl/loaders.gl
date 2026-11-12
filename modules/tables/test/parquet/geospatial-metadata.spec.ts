@@ -368,7 +368,10 @@ describe('geospatial metadata', () => {
     expect(normalized.data.schema.fields[0].metadata.get('ARROW:extension:name')).toBe(
       'geoarrow.wkb'
     );
-    expect(ensureGeoParquetMetadataOnArrowTable(normalized).schema).toBe(normalized.schema);
+    const encoded = ensureGeoParquetMetadataOnArrowTable(normalized.data);
+    expect(JSON.parse(encoded.schema.metadata.get('geo')!).columns).toEqual({
+      wkb: {encoding: 'wkb', geometry_types: [], crs_type: 'projjson', crs: {type: 'GeographicCRS'}}
+    });
   });
 
   it('returns the parquet-wasm key/value metadata map unchanged', () => {

@@ -3,8 +3,12 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import type {Table} from '@loaders.gl/core/schema';
-import {makeArrayRowIterator, getTableNumCols} from '@loaders.gl/core/schema-utils';
+import {isNativeWriterTable, type TableWriterInput} from '../../../arrow/table-writer-input';
+import {
+  makeArrayRowIterator,
+  getTableNumCols,
+  convertArrowToSchema
+} from '@loaders.gl/core/schema-utils';
 import type {CSVWriterOptions} from '../../csv-writer';
 
 type EncodableData = string | null;
@@ -13,12 +17,14 @@ type EncodableData = string | null;
  * Encode a Table object as CSV
  */
 export function encodeTableAsCSV(
-  table: Table,
+  table: TableWriterInput,
   options: CSVWriterOptions = {csv: {useDisplayNames: true}}
 ): string {
   const useDisplayNames = options.useDisplayNames || options.csv?.useDisplayNames;
 
-  const fields = table.schema?.fields || [];
+  const native = isNativeWriterTable(table);
+  const fields = (native ? convertArrowToSchema(table.schema) : table.schema)?.fields || [];
+  const columnCount = native ? table.numCols : getTableNumCols(table);
 
   const columnNames = fields.map(f => {
     // This is a leaky abstraction, assuming Kepler metadata
@@ -27,9 +33,10 @@ export function encodeTableAsCSV(
   });
   const formattedData: EncodableData[][] = [columnNames];
 
-  for (const row of makeArrayRowIterator(table)) {
+  for (const inputRow of native ? table : makeArrayRowIterator(table)) {
+    const row = Array.isArray(inputRow) ? inputRow : inputRow?.toArray() || [];
     const formattedRow: EncodableData[] = [];
-    for (let columnIndex = 0; columnIndex < getTableNumCols(table); ++columnIndex) {
+    for (let columnIndex = 0; columnIndex < columnCount; ++columnIndex) {
       const value = row[columnIndex];
       formattedRow[columnIndex] = preformatFieldValue(value);
     }

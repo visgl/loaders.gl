@@ -183,7 +183,7 @@ test('ParquetJSLoader#empty projection batches preserve their row counts', async
 });
 test('ParquetWriter#Arrow table round trip', async () => {
     const table = createArrowTable();
-    const parquetBuffer = await encode(table, ParquetWriter, {
+    const parquetBuffer = await encode(table.data, ParquetWriter, {
         worker: false
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
@@ -312,7 +312,7 @@ test('GeoParquetLoader#supports arrow-table shape', async () => {
 });
 test('ParquetWriter#synthesizes GeoParquet metadata from GeoArrow WKB fields', async () => {
     const table = createGeoArrowWKBTable();
-    const parquetBuffer = await encode(table, ParquetWriter, {
+    const parquetBuffer = await encode(table.data, ParquetWriter, {
         core: { worker: false }
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
@@ -339,7 +339,7 @@ test('ParquetWriter#preserves valid GeoParquet metadata from GeoArrow input', as
             }
         }
     });
-    const parquetBuffer = await encode(table, ParquetWriter, {
+    const parquetBuffer = await encode(table.data, ParquetWriter, {
         core: { worker: false }
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
@@ -357,7 +357,7 @@ test('ParquetWriter#replaces invalid GeoParquet metadata from GeoArrow input', a
             columns: {}
         }
     });
-    const parquetBuffer = await encode(table, ParquetWriter, {
+    const parquetBuffer = await encode(table.data, ParquetWriter, {
         core: { worker: false }
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
@@ -371,7 +371,7 @@ test('ParquetWriter#replaces invalid GeoParquet metadata from GeoArrow input', a
 test('ParquetWriter#synthesizes native GeoParquet encoding from GeoArrow input', async () => {
     const response = await fetchFile(new URL('../../../core/test/geoarrow/data/geoarrow/point.arrow', import.meta.url).href);
     const arrayBuffer = await response.arrayBuffer();
-    const pointTable = { shape: 'arrow-table' as const, data: arrow.tableFromIPC(arrayBuffer) };
+    const pointTable = arrow.tableFromIPC(arrayBuffer);
     const parquetBuffer = await encode(pointTable, ParquetWriter, {
         core: { worker: false }
     });

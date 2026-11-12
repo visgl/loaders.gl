@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table as ArrowJSTable} from 'apache-arrow';
-import {wrapWriterTable} from '../arrow/wrap-writer-table';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
+import {isNativeWriterTable} from '../arrow/table-writer-input';
+import type {TableWriterInput, TableWriterBatch} from '../arrow/table-writer-input';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import type {ObjectRowTable, Table, TableBatch} from '@loaders.gl/core/schema';
-import {convertArrowToSchema, convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
+import {convertArrowToTable, convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
 
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {encodeTableToParquetJs} from './lib/encoders/encode-table-to-parquet-js';
@@ -88,18 +88,17 @@ export const ParquetJSWriter = {
   options: {
     parquet: DEFAULT_PARQUET_JS_OPTIONS
   },
-  async encode(input: Table | ArrowJSTable, options?: ParquetJSWriterOptions) {
-    const table = wrapWriterTable(input);
-    const schema =
-      table.schema ||
-      (table.shape === 'arrow-table'
-        ? convertArrowToSchema(table.data.schema)
-        : deduceTableSchema(table));
-    const objectRowTable = convertTable({...table, schema}, 'object-row-table') as ObjectRowTable;
+  async encode(input: TableWriterInput, options?: ParquetJSWriterOptions) {
+    const objectRowTable = isNativeWriterTable(input)
+      ? convertArrowToTable(input, 'object-row-table')
+      : (convertTable(
+          {...input, schema: input.schema || deduceTableSchema(input)},
+          'object-row-table'
+        ) as ObjectRowTable);
     return await encodeTableToParquetJs(
-      {...table, schema},
+      objectRowTable,
       objectRowTable,
       normalizeParquetOptions(options, DEFAULT_PARQUET_JS_OPTIONS)
     );
   }
-} as const satisfies WriterWithEncoder<Table | ArrowJSTable, TableBatch, ParquetJSWriterOptions>;
+} as const satisfies WriterWithEncoder<TableWriterInput, TableWriterBatch, ParquetJSWriterOptions>;

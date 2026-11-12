@@ -3,9 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table as ArrowJSTable} from 'apache-arrow';
-import {wrapWriterTable} from '../arrow/wrap-writer-table';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
   encodeAvro,
   type AvroSchema,
@@ -25,13 +23,9 @@ export const AvroWriter = {
   ...AvroFormat,
   version: VERSION,
   options: {avro: {}},
-  async encode(table: ArrowTable | ArrowJSTable, options?: AvroWriterOptions) {
-    return encodeAvro(wrapWriterTable(table), options);
+  async encode(table: ArrowJSTable, options?: AvroWriterOptions) {
+    return encodeAvro(table, options);
   }
-} as const satisfies WriterWithEncoder<
-  ArrowTable | ArrowJSTable,
-  ArrowTableBatch,
-  AvroWriterOptions
->;
+} as const satisfies WriterWithEncoder<ArrowJSTable, never, AvroWriterOptions>;
 
 export type {AvroSchema};
