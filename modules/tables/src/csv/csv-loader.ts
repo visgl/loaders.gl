@@ -22,6 +22,7 @@ import {
   convertToArrayRow,
   convertToObjectRow
 } from '@loaders.gl/core/schema-utils';
+import {parseCSVSchemaRow, validateCSVSchemaHeader} from './lib/csv-schema';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 import {DEFAULT_CSV_SHAPE} from './csv-loader-options';
@@ -29,7 +30,8 @@ import {
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
   parseCSVTextAsArrow,
-  convertCSVRowTableToArrowTable
+  convertCSVRowTableToArrowTable,
+  convertCSVRowBatchesToArrowBatches
 } from './csv-arrow-table-parser';
 import {
   deduceCSVSchemaFromRows,
@@ -55,19 +57,27 @@ export type {CSVLoaderOptions} from './csv-loader-types';
 export const CSVLoaderWithParser = {
   ...CSVLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
-    getCSVShape(options) === 'arrow-table'
+    getCSVShape(options) === 'arrow-table' && !options?.csv?.schema
       ? parseCSVArrayBufferAsArrow(arrayBuffer, options)
       : parseCSVText(new TextDecoder().decode(arrayBuffer), options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     parseCSVTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseText: (text: string, options?: CSVLoaderOptions) =>
-    getCSVShape(options) === 'arrow-table'
+    getCSVShape(options) === 'arrow-table' && !options?.csv?.schema
       ? parseCSVTextAsArrow(text, options)
       : parseCSVText(text, options),
   parseTextSync: (text: string, options?: CSVLoaderOptions) => parseCSVTextSync(text, options),
   parseInBatches: (asyncIterator, options?: CSVLoaderOptions) =>
     getCSVShape(options) === 'arrow-table'
-      ? parseCSVInArrowBatches(asyncIterator, options)
+      ? options?.csv?.schema
+        ? convertCSVRowBatchesToArrowBatches(
+            parseCSVInBatches(asyncIterator, {
+              ...options,
+              csv: {...options.csv, shape: 'object-row-table'}
+            }),
+            options.csv.viewTypes
+          )
+        : parseCSVInArrowBatches(asyncIterator, options)
       : parseCSVInBatches(asyncIterator, options),
   serializeWorkerResult: serializeCSVWorkerResult,
   deserializeWorkerResult: deserializeCSVWorkerResult,
@@ -112,13 +122,16 @@ function parseCSVTextSync(
   const firstRow = firstRowResult.data[0] || [];
   const configuredDelimiter = (csvOptions as typeof csvOptions & {delimiter?: string}).delimiter;
   const header: boolean =
-    csvOptions.header === 'auto' ? isHeaderRow(firstRow) : Boolean(csvOptions.header);
+    csvOptions.header === 'auto'
+      ? Boolean(csvOptions.schema) || isHeaderRow(firstRow)
+      : Boolean(csvOptions.header);
 
   const parseWithHeader = header;
 
   const papaparseConfig = {
     // dynamicTyping: true,
     ...csvOptions,
+    dynamicTyping: !csvOptions.schema && csvOptions.dynamicTyping,
     delimiter: configuredDelimiter || firstRowResult.meta.delimiter,
     header: parseWithHeader,
     download: false, // We handle loading, no need for papaparse to do it for us
@@ -129,9 +142,21 @@ function parseCSVTextSync(
   };
 
   const result = Papa.parse(csvText, papaparseConfig);
-  const rows = result.data as any[];
+  let rows = result.data as any[];
 
   const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix, firstRow.length);
+
+  if (csvOptions.schema) {
+    if (firstRow.length > 0) {
+      validateCSVSchemaHeader(csvOptions.schema, headerRow);
+    }
+    rows = rows.map(row =>
+      parseCSVSchemaRow(
+        csvOptions.schema!,
+        Array.isArray(row) ? row : convertToArrayRow(row, headerRow)
+      )
+    );
+  }
 
   const shape = csvOptions.shape || DEFAULT_CSV_SHAPE;
   let table: ArrayRowTable | ObjectRowTable;
@@ -151,13 +176,14 @@ function parseCSVTextSync(
     default:
       throw new Error(shape);
   }
-  const detectedGeometryColumns = csvOptions.detectGeometryColumns
-    ? detectGeometryColumns(
-        headerRow,
-        rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow))),
-        csvOptions.geometryEncoding
-      )
-    : [];
+  const detectedGeometryColumns =
+    !csvOptions.schema && csvOptions.detectGeometryColumns
+      ? detectGeometryColumns(
+          headerRow,
+          rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow))),
+          csvOptions.geometryEncoding
+        )
+      : [];
 
   if (detectedGeometryColumns.length > 0) {
     table =
@@ -172,7 +198,8 @@ function parseCSVTextSync(
           };
   }
 
-  table.schema = deduceCSVSchemaFromRows(table.data, headerRow, detectedGeometryColumns);
+  table.schema =
+    csvOptions.schema ?? deduceCSVSchemaFromRows(table.data, headerRow, detectedGeometryColumns);
   return table;
 }
 
@@ -208,11 +235,12 @@ function parseCSVInBatches(
   let schema: Schema | null = null;
   let sniffedRows: unknown[][] = [];
   let detectedGeometryColumns = [] as ReturnType<typeof detectGeometryColumns>;
-  let geometryDetectionFinalized = !csvOptions.detectGeometryColumns;
+  let geometryDetectionFinalized = Boolean(csvOptions.schema) || !csvOptions.detectGeometryColumns;
 
   const config = {
     // dynamicTyping: true, // Convert numbers and boolean values in rows from strings,
     ...csvOptions,
+    dynamicTyping: !csvOptions.schema && csvOptions.dynamicTyping,
     header: false, // Unfortunately, header detection is not automatic and does not infer shapes
     download: false, // We handle loading, no need for papaparse to do it for us
     // chunkSize is set to 5MB explicitly (same as Papaparse default) due to a bug where the
@@ -239,7 +267,7 @@ function parseCSVInBatches(
         }
       } else if (csvOptions.skipEmptyLines === true) {
         row = normalizePapaStreamingRow(row);
-        if (row.length === 1 && row[0] === null) {
+        if (row.length === 1 && (row[0] === null || (csvOptions.schema && row[0] === ''))) {
           return;
         }
       }
@@ -248,9 +276,15 @@ function parseCSVInBatches(
       // Check if we need to save a header row
       if (isFirstRow && !headerRow) {
         // Auto detects or can be forced with csvOptions.header
-        const header = csvOptions.header === 'auto' ? isHeaderRow(row) : Boolean(csvOptions.header);
+        const header =
+          csvOptions.header === 'auto'
+            ? Boolean(csvOptions.schema) || isHeaderRow(row)
+            : Boolean(csvOptions.header);
         if (header) {
           headerRow = row.map(duplicateColumnTransformer());
+          if (csvOptions.schema) {
+            validateCSVSchemaHeader(csvOptions.schema, headerRow!);
+          }
           return;
         }
       }
@@ -262,7 +296,14 @@ function parseCSVInBatches(
         }
       }
 
-      if (csvOptions.optimizeMemoryUsage) {
+      if (csvOptions.schema) {
+        if (isFirstRow && csvOptions.header === false) {
+          validateCSVSchemaHeader(csvOptions.schema, headerRow!);
+        }
+        row = parseCSVSchemaRow(csvOptions.schema, row);
+      }
+
+      if (csvOptions.optimizeMemoryUsage && !csvOptions.schema) {
         // A workaround to allocate new strings and don't retain pointers to original strings.
         // https://bugs.chromium.org/p/v8/issues/detail?id=2869
         row = JSON.parse(JSON.stringify(row));
@@ -304,16 +345,23 @@ function parseCSVInBatches(
         if (!headerRow) {
           return;
         }
-        schema = deduceCSVSchemaFromRows(
-          [normalizeGeometryArrayRow(row, detectedGeometryColumns)],
-          headerRow,
-          detectedGeometryColumns
-        );
+        schema =
+          csvOptions.schema ??
+          deduceCSVSchemaFromRows(
+            [normalizeGeometryArrayRow(row, detectedGeometryColumns)],
+            headerRow,
+            detectedGeometryColumns
+          );
         isFirstRow = false;
       }
 
       const normalizedRow = normalizeGeometryArrayRow(row, detectedGeometryColumns);
       addCSVBatchRow(normalizedRow, shape, bytesUsed);
+    },
+
+    error(error: Error) {
+      asyncQueue.enqueue(error);
+      asyncQueue.close();
     },
 
     // complete is called when all rows have been read

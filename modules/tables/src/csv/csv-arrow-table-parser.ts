@@ -268,7 +268,7 @@ export function convertCSVRowTableToArrowTable(
 }
 
 /** Converts CSV row batches to Arrow batches while preserving the CSV-derived schema. */
-async function* convertCSVRowBatchesToArrowBatches(
+export async function* convertCSVRowBatchesToArrowBatches(
   rowBatchIterator: AsyncIterable<TableBatch>,
   viewTypes?: ArrowViewTypeMode,
   encodingPreference?: import('@loaders.gl/core/schema').GeoArrowEncodingPreference

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
+import type {GeoArrowEncodingPreference, Schema} from '@loaders.gl/core/schema';
 import type {ArrowViewTypeMode} from '@loaders.gl/core/schema-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -26,6 +26,8 @@ export type CSVLoaderOptions = LoaderOptions & {
     quoteChar?: string;
     escapeChar?: string;
     dynamicTyping?: boolean;
+    /** Declares scalar CSV fields in file order and overrides type inference. */
+    schema?: Schema;
     /** Controls whether Arrow table output uses supported Utf8View columns. */
     viewTypes?: ArrowViewTypeMode;
     comments?: boolean;
@@ -49,6 +51,7 @@ export const CSV_LOADER_OPTIONS = {
     quoteChar: '"',
     escapeChar: '"',
     dynamicTyping: true,
+    schema: undefined as Schema | undefined,
     viewTypes: 'never',
     comments: false,
     skipEmptyLines: true,
