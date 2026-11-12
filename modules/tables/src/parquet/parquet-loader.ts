@@ -35,22 +35,46 @@ export type {ParquetLoaderOptions} from './parquet-loader-options';
 const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
   ParquetLoaderMetadata;
 
+/** Selects Arrow decoding when the core caller requests object rows. */
+function getArrowDecodeOptions(options: StrictLoaderOptions): StrictLoaderOptions | null {
+  const parquet = options.parquet as ParquetLoaderOptions['parquet'];
+  return parquet?.shape === 'object-row-table'
+    ? {...options, parquet: {...parquet, shape: 'arrow-table'}}
+    : null;
+}
+
 /** TypeScript-backed Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoaderWithParser = {
   ...ParquetLoaderMetadataWithoutPreload,
   /** Decodes Arrow for core object-row requests and materializes rows at the caller boundary. */
   prepareParseOutput(options: StrictLoaderOptions) {
-    const parquet = options.parquet as ParquetLoaderOptions['parquet'];
-    if (parquet?.shape !== 'object-row-table') {
+    const decodeOptions = getArrowDecodeOptions(options);
+    if (!decodeOptions) {
       return null;
     }
     return {
-      options: {...options, parquet: {...parquet, shape: 'arrow-table'}},
+      options: decodeOptions,
       convert(table: ArrowTable | ObjectRowTable) {
         if (table.shape !== 'arrow-table') {
           throw new Error('Parquet object-row conversion requires Arrow table output');
         }
         return convertArrowTable(table, 'object-row-table');
+      }
+    };
+  },
+  /** Materializes each Arrow batch when the core caller consumes it. */
+  prepareParseBatchOutput(options: StrictLoaderOptions) {
+    const decodeOptions = getArrowDecodeOptions(options);
+    if (!decodeOptions) {
+      return null;
+    }
+    return {
+      options: decodeOptions,
+      convert(batch: ArrowTableBatch | ObjectRowTableBatch) {
+        if (batch.shape !== 'arrow-table') {
+          throw new Error('Parquet object-row conversion requires Arrow batch output');
+        }
+        return convertArrowTableBatch(batch, 'object-row-table');
       }
     };
   },

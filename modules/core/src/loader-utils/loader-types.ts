@@ -305,6 +305,15 @@ export type LoaderWithParser<
     options: StrictLoaderOptions;
     convert: (result: DataT) => DataT;
   } | null;
+  /**
+   * Optionally selects a parser representation for core batch parsing.
+   * Core applies convert lazily to decoded or hydrated batches on the caller.
+   * The hook applies to native batch parsers and receives no core metadata envelopes.
+   */
+  prepareParseBatchOutput?: (options: StrictLoaderOptions) => {
+    options: StrictLoaderOptions;
+    convert: (batch: BatchT) => BatchT;
+  } | null;
   /** Parse asynchronously and atomically from an arraybuffer */
   parse?: (
     arrayBuffer: ArrayBuffer,
