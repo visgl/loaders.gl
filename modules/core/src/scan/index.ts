@@ -135,4 +135,12 @@ export {projectArrowTable, filterArrowTable} from './arrow-execution';
 export type {ArrowFilterOptions} from './arrow-execution';
 
 export {query, queryInBatches} from './query';
+
+export {queryProgressive} from './query-progressive';
+export type {
+  ProgressiveAggregate,
+  ProgressiveAggregateQuery,
+  ProgressiveQueryOptions,
+  ProgressiveQuerySnapshot
+} from './query-progressive';
 export type {Query, QueryOptions, SQLQueryParser} from './query';
