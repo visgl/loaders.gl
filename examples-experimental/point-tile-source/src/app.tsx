@@ -6,7 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import {DeckGL} from '@deck.gl/react';
 import {MapViewState} from '@deck.gl/core';
-import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree/bundled';
 
 import {PointTileSourceLayer} from './point-tile-source-layer';
 import * as maplibregl from 'maplibre-gl';
