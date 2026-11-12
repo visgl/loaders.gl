@@ -4,8 +4,9 @@
 
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {Table} from 'apache-arrow';
-import {encode, parse, parseInBatches} from '@loaders.gl/core';
+import {encode, load, parse, parseFile, parseInBatches} from '@loaders.gl/core';
 import type {ArrowTableBatch, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
+import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ParquetLoader, ParquetJSWriter} from '@loaders.gl/tables/parquet';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
@@ -144,22 +145,62 @@ test('encrypted Parquet batches retain their key callback on the caller', async 
   expect(batches.reduce((total, batch) => total + batch.length, 0)).toBe(rows.length);
 });
 
-test('Parquet atomic object rows are materialized after receiving Arrow columns', async () => {
+test.each(
+  (['parse', 'load', 'parseFile'] as const).flatMap(api =>
+    [false, true].map(worker => ({api, worker}))
+  )
+)('Parquet $api converts Arrow output on the caller (worker: $worker)', async ({api, worker}) => {
   const deserialize = vi.fn(ParquetLoaderWithParser.deserializeWorkerResult);
-  const result = await parse(
-    input.slice(0),
-    {
-      ...ParquetLoader,
-      preload: async () => ({...ParquetLoaderWithParser, deserializeWorkerResult: deserialize})
-    },
-    {core: {worker: true}, parquet: {shape: 'object-row-table'}}
-  );
-  expect(deserialize).toHaveBeenCalledOnce();
-  expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
-    data: {transport: 'arrow-js'}
+  const parseBuffer = vi.fn(ParquetLoaderWithParser.parse);
+  const parseReadableFile = vi.fn(ParquetLoaderWithParser.parseFile);
+  const loader = {
+    ...ParquetLoader,
+    preload: async () => ({
+      ...ParquetLoaderWithParser,
+      parse: parseBuffer,
+      parseFile: parseReadableFile,
+      deserializeWorkerResult: deserialize
+    })
+  };
+  const options = {
+    core: {worker, shape: 'arrow' as const},
+    parquet: {shape: 'object-row-table' as const, columns: ['id', 'label']}
+  };
+  const buffer = input.slice(0);
+  const result =
+    api === 'parseFile'
+      ? await parseFile(new ArrayBufferFile(buffer), loader, options)
+      : await (api === 'parse' ? parse : load)(buffer, loader, options);
+
+  if (api === 'parseFile') {
+    expect(parseReadableFile).toHaveBeenCalledOnce();
+    expect(await parseReadableFile.mock.results[0].value).toMatchObject({shape: 'arrow-table'});
+    expect(deserialize).not.toHaveBeenCalled();
+  } else if (worker) {
+    expect(parseBuffer).not.toHaveBeenCalled();
+    expect(deserialize).toHaveBeenCalledOnce();
+    expect(deserialize.mock.calls[0][0]).toMatchObject({
+      shape: 'arrow-table',
+      data: {transport: 'arrow-js'}
+    });
+    expect(deserialize.mock.results[0].value).toMatchObject({shape: 'arrow-table'});
+  } else {
+    expect(deserialize).not.toHaveBeenCalled();
+    expect(parseBuffer).toHaveBeenCalledOnce();
+    expect(await parseBuffer.mock.results[0].value).toMatchObject({shape: 'arrow-table'});
+  }
+  expect(result).toMatchObject({
+    shape: 'object-row-table',
+    data: rows.map(({id, label}) => ({id, label})),
+    schema: {metadata: {origin: 'worker-batches'}}
   });
-  expect(result.shape).toBe('object-row-table');
-  expect(result.data).toHaveLength(5);
-  expect(result.data[0].id).toBe(1n);
+});
+
+test('Direct Parquet parser calls still return requested object rows', async () => {
+  const options = {parquet: {shape: 'object-row-table' as const, columns: ['id']}};
+  const expected = {shape: 'object-row-table', data: rows.map(({id}) => ({id}))};
+  await expect(ParquetLoaderWithParser.parse(input, options)).resolves.toMatchObject(expected);
+  await expect(
+    ParquetLoaderWithParser.parseFile(new ArrayBufferFile(input), options)
+  ).resolves.toMatchObject(expected);
 });
