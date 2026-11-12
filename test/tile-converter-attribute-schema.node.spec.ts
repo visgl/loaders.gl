@@ -5,11 +5,12 @@ import I3SConverter from '../apps/tile-converter/src/v4/i3s-converter/i3s-conver
 import {AttributeMetadataInfo} from '../apps/tile-converter/src/v4/i3s-converter/helpers/attribute-metadata-info';
 import {collectBatchTableAttributeTypes} from '../apps/tile-converter/src/v4/i3s-converter/helpers/feature-attributes';
 import {convertPropertyTableToAttributeBuffers} from '../apps/tile-converter/src/v4/i3s-converter/helpers/geometry-converter';
+import {loadTile3DContent} from '../apps/tile-converter/src/v4/i3s-converter/helpers/load-3d-tiles';
 import {Progress} from '../apps/tile-converter/src/v4/i3s-converter/helpers/progress';
 
 vi.mock('../apps/tile-converter/src/v4/i3s-converter/helpers/load-3d-tiles', () => ({
   isNestedTileset: () => false,
-  loadTile3DContent: async (_tileset, tile) => ({batchTableJson: tile.properties})
+  loadTile3DContent: vi.fn(async (_tileset, tile) => ({batchTableJson: tile.properties}))
 }));
 vi.mock('../apps/tile-converter/src/v4/i3s-converter/helpers/preprocess-3d-tiles', () => ({
   analyzeTileContent: async () => ({
@@ -144,4 +145,16 @@ test('legacy I3S emits a complete null row set for a tile without properties', (
   expect(decodeStrings(buffers[1])).toEqual([null, null]);
   expect(Array.from(new Int32Array(buffers[2], 4))).toEqual([-2147483648, -2147483648]);
   expect(Array.from(new Float64Array(buffers[3], 8))).toEqual([Number.NaN, Number.NaN]);
+});
+
+test('legacy I3S stops before writing nodes when preprocessing cannot discover all fields', async () => {
+  const converter = new I3SConverter();
+  converter.progresses['phase1-count'] = new Progress();
+  converter.sourceTileset = {
+    root: {id: 'failed', contentUrl: 'failed.b3dm', children: []}
+  } as never;
+  vi.mocked(loadTile3DContent).mockRejectedValueOnce(new Error('temporary read failure'));
+  await expect(converter['preprocessConversion']()).rejects.toThrow(
+    'cannot determine the complete attribute schema'
+  );
 });
