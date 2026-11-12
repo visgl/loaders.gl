@@ -61,6 +61,7 @@ import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
+  collectBatchTableAttributeTypes,
   getAttributeTypesMapFromPropertyTable,
   getAttributeTypesMapFromSchema
 } from './helpers/feature-attributes';
@@ -114,6 +115,8 @@ type ConverterProps = {
  */
 export default class I3SConverter {
   attributeMetadataInfo: AttributeMetadataInfo;
+  /** Batch-table types collected across the complete preprocessing traversal. */
+  private batchTableAttributeTypes = new Map<string, Attribute | null>();
   nodePages: NodePages;
   options: Partial<ConverterProps>;
   layers0Path: string;
@@ -279,8 +282,7 @@ export default class I3SConverter {
       }
       this.sourceTileset = await loadFromArchive(tilesetUrl, this.Loader, this.loadOptions);
 
-      const preprocessResult =
-        this.Loader === Tiles3DLoader || analyze ? await this.preprocessConversion() : true;
+      const preprocessResult = await this.preprocessConversion();
 
       if (preprocessResult && !analyze) {
         const selectMetadataClassResult = await this.selectMetadataClass();
@@ -316,6 +318,13 @@ export default class I3SConverter {
       maxDepth: this.options.maxDepth
     });
     const {meshTopologyTypes, metadataClasses} = this.preprocessData;
+    if (!metadataClasses.size && !this.options.metadataClass) {
+      this.attributeMetadataInfo.addMetadataInfo(
+        Object.fromEntries(
+          Array.from(this.batchTableAttributeTypes, ([name, type]) => [name, type || 'string'])
+        )
+      );
+    }
 
     // eslint-disable-next-line no-console
     console.log('------------------------------------------------');
@@ -386,6 +395,9 @@ export default class I3SConverter {
         `[warning]: Failed to load ${sourceTile.contentUrl}. An I3S tile with empty content will be added to the output tileset`
       );
     }
+    if (tileContent?.batchTableJson) {
+      collectBatchTableAttributeTypes(tileContent.batchTableJson, this.batchTableAttributeTypes);
+    }
     const tilePreprocessData = await analyzeTileContent(tileContent);
     mergePreprocessData(this.preprocessData, tilePreprocessData);
     return null;
@@ -437,7 +449,10 @@ export default class I3SConverter {
   private async _createAndSaveTileset(outputPath: string, tilesetName: string): Promise<void> {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
 
-    await this.conversionDump.createDump(this.options as ConversionDumpOptions);
+    await this.conversionDump.createDump({
+      ...(this.options as ConversionDumpOptions),
+      attributeEncodingVersion: 2
+    });
     if (this.conversionDump.restored && this.options.inquirer) {
       const result = await this.options.inquirer.prompt([
         {
@@ -1410,12 +1425,10 @@ export default class I3SConverter {
     nodeId: number
   ): Promise<void> {
     if (attributes?.length && this.attributeMetadataInfo.attributeStorageInfo.length) {
-      const minimumLength =
-        attributes.length < this.attributeMetadataInfo.attributeStorageInfo.length
-          ? attributes.length
-          : this.attributeMetadataInfo.attributeStorageInfo.length;
-
-      for (let index = 0; index < minimumLength; index++) {
+      if (attributes.length !== this.attributeMetadataInfo.attributeStorageInfo.length) {
+        throw new Error('Attribute buffers do not match the layer schema');
+      }
+      for (let index = 0; index < attributes.length; index++) {
         const folderName = this.attributeMetadataInfo.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
         this.conversionDump.updateDoneStatus(
