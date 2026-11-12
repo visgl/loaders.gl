@@ -16,7 +16,8 @@ export const dumpJsonSchema = {
         generateTextures: {type: 'boolean'},
         generateBoundingVolumes: {type: 'boolean'},
         metadataClass: {type: 'string'},
-        analyze: {type: 'boolean'}
+        analyze: {type: 'boolean'},
+        attributeEncodingVersion: {type: 'number'}
       },
       required: ['inputUrl', 'outputPath', 'tilesetName']
     },
