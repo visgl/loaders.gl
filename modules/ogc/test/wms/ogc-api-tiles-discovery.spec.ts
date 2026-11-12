@@ -34,7 +34,7 @@ type Route = unknown;
 function createSource(routes: Record<string, Route>, options: OGCAPISourceOptions['ogc-api']) {
   const requestedUrls: string[] = [];
   const errors: Error[] = [];
-  const source = OGCAPITilesSourceLoader.createDataSource(LANDING_PAGE_URL, {
+  const source = OGCAPITilesSourceLoader.createDataSourceSync(LANDING_PAGE_URL, {
     'ogc-api': options,
     core: {onError: error => errors.push(error)}
   });
@@ -317,7 +317,7 @@ test('OGCAPITilesSource discovers again when the tile template changes', async (
 });
 
 test('OGCAPITilesSource resolves path-relative metadata and content against the same API', async () => {
-  const source = OGCAPITilesSourceLoader.createDataSource('../api', {
+  const source = OGCAPITilesSourceLoader.createDataSourceSync('../api', {
     'ogc-api': {tileTemplate: 'tiles/named/{tileMatrix}/{tileRow}/{tileCol}'}
   });
   const requests: string[] = [];

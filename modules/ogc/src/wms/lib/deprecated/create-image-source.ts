@@ -45,7 +45,10 @@ export function createImageSource<SourceArrayT extends SourceLoader[]>(options: 
   if (!source) {
     throw new Error('Not a valid image source type');
   }
-  return source.createDataSource(url, loadOptions || {}) as SourceArrayDataSourceType<SourceArrayT>;
+  return source.createDataSourceSync(
+    url,
+    loadOptions || {}
+  ) as SourceArrayDataSourceType<SourceArrayT>;
 }
 
 /** Guess service type from URL */

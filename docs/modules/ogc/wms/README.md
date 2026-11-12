@@ -89,10 +89,10 @@ Install `@loaders.gl/deck-layers` when visual services should render directly th
 Every service source can be created through the loaders.gl core API:
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(wmsUrl, [WMSSourceLoader], {
+const source = createDataSourceSync(wmsUrl, [WMSSourceLoader], {
   wms: {wmsParameters: {layers: ['workspace:roads']}}
 });
 

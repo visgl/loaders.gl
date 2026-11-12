@@ -38,7 +38,7 @@ function makeURLSource() {
     read,
     close
   };
-  const createDataSource = vi.fn(
+  const createDataSourceSync = vi.fn(
     (_url: string, _options: LoaderOptions, _coreApi?: CoreAPI) => source
   );
   const loader = {
@@ -54,9 +54,9 @@ function makeURLSource() {
     options: {},
     defaultOptions: {},
     testURL: (url: string) => url.endsWith('.query-test'),
-    createDataSource
+    createDataSourceSync
   } as unknown as SourceLoader;
-  return {source, loader, close, read, createDataSource};
+  return {source, loader, close, read, createDataSourceSync};
 }
 
 test('URL sources open lazily with explicit loaders and close after one public completion', async () => {
@@ -73,26 +73,51 @@ test('URL sources open lazily with explicit loaders and close after one public c
       onQueryComplete: complete
     }
   );
-  expect(fixture.createDataSource).not.toHaveBeenCalled();
+  expect(fixture.createDataSourceSync).not.toHaveBeenCalled();
   const batches: ArrowTableBatch[] = [];
   for await (const batch of iterator) batches.push(batch);
   expect(batches.flatMap(batch => batch.data.toArray().map(row => row.number))).toEqual([1, 2]);
-  expect(fixture.createDataSource).toHaveBeenCalledTimes(1);
-  expect(fixture.createDataSource.mock.calls[0].slice(0, 2)).toMatchObject([
+  expect(fixture.createDataSourceSync).toHaveBeenCalledTimes(1);
+  expect(fixture.createDataSourceSync.mock.calls[0].slice(0, 2)).toMatchObject([
     'data.query-test',
     {
       core: {fetch, ignoreRegisteredLoaders: true},
       customFormat: {enabled: true}
     }
   ]);
-  expect(fixture.createDataSource.mock.calls[0][1]).not.toHaveProperty('onQueryComplete');
-  expect(fixture.createDataSource.mock.calls[0][1]).not.toHaveProperty('source');
+  expect(fixture.createDataSourceSync.mock.calls[0][1]).not.toHaveProperty('onQueryComplete');
+  expect(fixture.createDataSourceSync.mock.calls[0][1]).not.toHaveProperty('source');
   expect(fixture.close).toHaveBeenCalledTimes(1);
   expect(complete).toHaveBeenCalledTimes(1);
   expect(complete.mock.calls[0][0]).toMatchObject({
     rowsReturned: 2,
     earlyTerminationReason: 'limit'
   });
+});
+
+test('URL queries preload a format loader with a synchronous source factory', async () => {
+  const fixture = makeURLSource();
+  const metadata = {
+    id: 'query-test',
+    name: 'Query test',
+    module: 'core',
+    version: '1',
+    extensions: ['query-test'],
+    mimeTypes: [],
+    options: {}
+  };
+  const preload = vi.fn(async () => ({
+    ...metadata,
+    createDataSourceSync: fixture.createDataSourceSync
+  }));
+  const result = await query(
+    {select: [{column: 'value', as: 'number'}]},
+    {source: 'data.query-test', loaders: {...metadata, preload}}
+  );
+  expect(result.data.getChild('number')?.toArray()).toEqual(new Int32Array([1, 2, 3]));
+  expect(preload).toHaveBeenCalledTimes(1);
+  expect(fixture.createDataSourceSync).toHaveBeenCalledTimes(1);
+  expect(fixture.close).toHaveBeenCalledTimes(1);
 });
 
 test('URL loader arrays select only explicit candidates', async () => {
@@ -104,7 +129,7 @@ test('URL loader arrays select only explicit candidates', async () => {
     {source: 'data.query-test', loaders: [otherLoader, fixture.loader]}
   );
   expect(result.data.numRows).toBe(3);
-  expect(other.createDataSource).not.toHaveBeenCalled();
+  expect(other.createDataSourceSync).not.toHaveBeenCalled();
   expect(fixture.close).toHaveBeenCalledTimes(1);
 });
 
@@ -112,7 +137,7 @@ test.each([
   undefined,
   [],
   [{}],
-  [{fromUrl: false, createDataSource() {}}]
+  [{fromUrl: false, createDataSourceSync() {}}]
 ])('invalid explicit URL loaders fail before source creation: %j', async loaders => {
   const complete = vi.fn();
   await expect(
@@ -173,7 +198,7 @@ test('pre-aborted URL queries never construct sources', async () => {
   await expect(
     query({}, {source: 'data.query-test', loaders: fixture.loader, signal: controller.signal})
   ).rejects.toThrow();
-  expect(fixture.createDataSource).not.toHaveBeenCalled();
+  expect(fixture.createDataSourceSync).not.toHaveBeenCalled();
 });
 
 test('async source preload receives the URL and cancellation prevents construction', async () => {
@@ -191,7 +216,7 @@ test('async source preload receives the URL and cancellation prevents constructi
     'data.query-test',
     expect.objectContaining({signal: controller.signal})
   );
-  expect(fixture.createDataSource).not.toHaveBeenCalled();
+  expect(fixture.createDataSourceSync).not.toHaveBeenCalled();
   expect(fixture.close).not.toHaveBeenCalled();
 });
 
@@ -249,7 +274,7 @@ test('source preload failures report one public completion', async () => {
   await expect(
     query({}, {source: 'data.query-test', loaders: loader, onQueryComplete: complete})
   ).rejects.toThrow('preload failed');
-  expect(fixture.createDataSource).not.toHaveBeenCalled();
+  expect(fixture.createDataSourceSync).not.toHaveBeenCalled();
   expect(fixture.close).not.toHaveBeenCalled();
   expect(complete).toHaveBeenCalledTimes(1);
   expect(complete.mock.calls[0][0]).toMatchObject({status: 'failed', sourcesRead: 0});

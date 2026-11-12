@@ -102,7 +102,7 @@ export const CSWSourceLoader = {
   defaultOptions: {csw: {}},
 
   testURL: (url: string): boolean => CSWCatalogSource.testURL(url),
-  createDataSource: (
+  createDataSourceSync: (
     url: string,
     options: CSWSourceLoaderOptions,
     coreApi?: CoreAPI

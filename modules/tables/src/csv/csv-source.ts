@@ -143,6 +143,6 @@ export const CSVSourceLoader = {
   options: {},
   defaultOptions: {},
   testURL: (url: string): boolean => /\.csv(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: CSVSourceOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (data: string | Blob, options: CSVSourceOptions, coreApi?: CoreAPI) =>
     new CSVTableSource(data, options, coreApi)
 } as const satisfies SourceLoader<CSVTableSource>;

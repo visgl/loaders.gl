@@ -48,5 +48,7 @@ test('CSVTableSource handles zero limits and empty projections', async () => {
 test('CSVSourceLoader exposes URL matching and construction', () => {
   expect(CSVSourceLoader.testURL('data.csv')).toBe(true);
   expect(CSVSourceLoader.testURL('data.txt')).toBe(false);
-  expect(CSVSourceLoader.createDataSource(new Blob(['a\n1\n']), {})).toBeInstanceOf(CSVTableSource);
+  expect(CSVSourceLoader.createDataSourceSync(new Blob(['a\n1\n']), {})).toBeInstanceOf(
+    CSVTableSource
+  );
 });

@@ -123,7 +123,7 @@ export const GeoTIFFSourceLoader = {
     }
     return /\.(?:geotiff?|tiff?)(?:$|[?#])/i.test(url);
   },
-  createDataSource: (
+  createDataSourceSync: (
     data: string | Blob,
     options: GeoTIFFSourceLoaderOptions
   ): GeoTIFFRasterSource => new GeoTIFFRasterSource(data, options)

@@ -62,10 +62,10 @@ tables.
 Use `RADSourceLoader` when working with remote LoD assets:
 
 ```typescript
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {RADSourceLoader} from '@loaders.gl/splats';
 
-const source = await load(url, RADSourceLoader);
+const source = await createDataSource(url, RADSourceLoader);
 const metadata = await source.getMetadata();
 const firstChunk = await source.getChunk(0);
 const firstChunkTable = await source.getChunkTable(0);

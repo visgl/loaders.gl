@@ -105,7 +105,7 @@ export const ZarrArraySourceLoaderWithParser = {
     zarrArray: {path: undefined!, dimensions: undefined!}
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string,
     options: ZarrArraySourceLoaderOptions,
     coreApi?: CoreAPI

@@ -113,7 +113,7 @@ export async function parseFile(
 
   if (isSourceLoader(loader)) {
     throw new Error(
-      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parseFile().`
+      `${loader.id} is a SourceLoader. Use createDataSource() to create a runtime source object instead of parseFile().`
     );
   }
 

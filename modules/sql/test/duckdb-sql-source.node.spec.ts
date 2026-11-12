@@ -3,16 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {DuckDBSQLDataSource, DuckDBSQLSource} from '@loaders.gl/sql';
 test('DuckDBSQLSource#createDataSource selects DuckDB source from URL', () => {
-  const dataSource = createDataSource('duckdb:///:memory:', [DuckDBSQLSource], {
+  const dataSource = createDataSourceSync('duckdb:///:memory:', [DuckDBSQLSource], {
     duckdb: {}
   });
   expect(dataSource instanceof DuckDBSQLDataSource, 'returns DuckDBSQLDataSource').toBeTruthy();
 });
 test('DuckDBSQLSource executes queries and exposes metadata', async () => {
-  const dataSource = createDataSource('duckdb:///:memory:', [DuckDBSQLSource], {
+  const dataSource = createDataSourceSync('duckdb:///:memory:', [DuckDBSQLSource], {
     duckdb: {}
   }) as DuckDBSQLDataSource;
   await dataSource.queryRows(
@@ -41,7 +41,7 @@ test('DuckDBSQLSource executes queries and exposes metadata', async () => {
 });
 
 test('DuckDBSQLSource exposes complete filtered metadata and lifecycle behavior', async () => {
-  const dataSource = createDataSource('duckdb:///:memory:', [DuckDBSQLSource], {
+  const dataSource = createDataSourceSync('duckdb:///:memory:', [DuckDBSQLSource], {
     duckdb: {accessMode: 'read_write'}
   }) as DuckDBSQLDataSource;
 

@@ -51,10 +51,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Usage
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {OMEZarrSourceLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSource('https://example.com/spatialdata.zarr', [OMEZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/spatialdata.zarr', [OMEZarrSourceLoader], {
   zarr: {
     path: 'images/example-image',
     requireConsolidatedMetadata: true

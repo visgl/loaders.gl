@@ -37,12 +37,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v4.2-blue.svg?style=flat-square" alt="From v4.2" />
 </p>
 
-This function synchronously creates a runtime `DataSource` from a source-supported input, such as
-a URL, Blob, or an already loaded table. The returned object offers methods for requesting metadata
-and additional data; construction does not imply that the entire dataset has been loaded.
+Use `createDataSource()` to construct a runtime source from a URL, Blob, or another
+input supported by the loader. The function preloads the loader implementation
+and invokes its synchronous source factory. The resulting source can request
+metadata, tiles, windows, or other data on demand.
 
-Use `parse()` for parser loaders. `load()` can also accept a source loader and asynchronously return
-its runtime source, including resolving a lazy implementation when supported.
+Use `createDataSourceSync()` when the implementation is already available.
+Use `load()` to fetch and parse data.
 
 <ReferenceBoundary
   title="Data source construction and options"
@@ -58,7 +59,7 @@ Provide a source loader with a runtime factory and an input it supports:
 import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
-const source = createDataSource(url, [PMTilesSourceLoader]);
+const source = await createDataSource(url, [PMTilesSourceLoader]);
 const metadata = await source.getMetadata();
 ```
 
@@ -69,7 +70,7 @@ import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 
-const dataSource = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader]);
+const dataSource = await createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader]);
 const metadata = await dataSource.getMetadata();
 ```
 
@@ -78,13 +79,14 @@ const metadata = await dataSource.getMetadata();
 ### createDataSource()
 
 ```ts
-createDataSource(data: unknown, sources: SourceLoader[], options?: DataSourceOptions) : DataSource
+createDataSource(data: unknown, loaders: Loader | Loader[], options?: DataSourceOptions): Promise<DataSource>
+createDataSourceSync(data: unknown, loaders: Loader | Loader[], options?: DataSourceOptions): DataSource
 ```
 
 Creates a runtime `DataSource` either using the provided source loader or source loaders.
 
 - `data`: The resource that the selected source will use. Supported inputs depend on the source.
-- `sources`: An array of source loaders with runtime factories. A one-element array uses that source
+- `loaders`: A loader or array of loaders with source factories. A one-element array uses that loader
   directly; multiple candidates use `core.type` or best-effort selection.
 - `options`: One flat options object, with shared `core` controls beside source and parser namespaces.
   Options and the returned source type are inferred from the supplied factories.

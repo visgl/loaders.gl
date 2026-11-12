@@ -85,7 +85,7 @@ test('ArrowTableSource forwards cancellation and reports empty input', async () 
 test('ArrowSourceLoader exposes URL matching and construction', () => {
   expect(ArrowSourceLoader.testURL('data.arrow')).toBe(true);
   expect(ArrowSourceLoader.testURL('data.csv')).toBe(false);
-  expect(ArrowSourceLoader.createDataSource(new Blob([]), {})).toBeInstanceOf(ArrowTableSource);
+  expect(ArrowSourceLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(ArrowTableSource);
 });
 
 test('ArrowTableSource rejects a source with no discoverable batch', async () => {

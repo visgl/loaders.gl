@@ -52,7 +52,7 @@ export {encode, encodeSync, encodeInBatches, encodeURLtoURL} from './lib/api/enc
 export {encodeText, encodeTextSync} from './lib/api/encode';
 
 // SERVICES AND SOURCES
-export {createDataSource} from './lib/api/create-data-source';
+export {createDataSource, createDataSourceSync} from './lib/api/create-data-source';
 export {selectSource as _selectSource} from './lib/api/select-source';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)

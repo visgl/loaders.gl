@@ -5,7 +5,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import type {RasterData, RasterViewport} from '@loaders.gl/core/loader-utils';
 import {RasterSet} from '@loaders.gl/tiles';
 import type {
@@ -84,7 +84,7 @@ export default function App(props: AppProps = {}) {
   const source = useMemo(
     () =>
       selectedPath !== null
-        ? createDataSource(rootUrl, [OMEZarrSourceLoader], {
+        ? createDataSourceSync(rootUrl, [OMEZarrSourceLoader], {
             zarr: {
               path: selectedPath || null,
               requireConsolidatedMetadata

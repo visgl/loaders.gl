@@ -37,13 +37,13 @@ export const OMEZarrSourceLoader = {
   preload: async () =>
     (await import('@loaders.gl/scientific/zarr/ome-zarr-source-loader'))
       .OMEZarrSourceLoaderWithParser,
-  createDataSource(
+  createDataSourceSync(
     _data: string,
     _options: ZarrSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): OMEZarrImageSource {
     throw new Error(
-      'OMEZarrSourceLoader requires async load() or an explicit @loaders.gl/scientific/zarr/ome-zarr-source-loader import'
+      'OMEZarrSourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/ome-zarr-source-loader import'
     );
   }
 } as const satisfies SourceLoader<OMEZarrImageSource>;
@@ -85,13 +85,13 @@ export const GeoZarrSourceLoader = {
   preload: async () =>
     (await import('@loaders.gl/scientific/zarr/geo-zarr-source-loader'))
       .GeoZarrSourceLoaderWithParser,
-  createDataSource(
+  createDataSourceSync(
     _data: string,
     _options: GeoZarrSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): GeoZarrRasterSource {
     throw new Error(
-      'GeoZarrSourceLoader requires async load() or an explicit @loaders.gl/scientific/zarr/geo-zarr-source-loader import'
+      'GeoZarrSourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/geo-zarr-source-loader import'
     );
   }
 } as const satisfies SourceLoader<GeoZarrRasterSource>;
@@ -120,13 +120,13 @@ export const ZarrArraySourceLoader = {
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
     (await import('@loaders.gl/scientific/zarr/zarr-array-source')).ZarrArraySourceLoaderWithParser,
-  createDataSource(
+  createDataSourceSync(
     _data: string,
     _options: ZarrArraySourceLoaderOptions,
     _coreApi?: CoreAPI
   ): ZarrArraySource {
     throw new Error(
-      'ZarrArraySourceLoader requires async load() or an explicit @loaders.gl/scientific/zarr/zarr-array-source import'
+      'ZarrArraySourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/zarr-array-source import'
     );
   }
 } as const satisfies SourceLoader<ZarrArraySource>;
@@ -154,13 +154,13 @@ export const SpatialDataSourceLoader = {
   preload: async () =>
     (await import('@loaders.gl/scientific/zarr/spatial-data-source'))
       .SpatialDataSourceLoaderWithParser,
-  createDataSource(
+  createDataSourceSync(
     _data: string,
     _options: SpatialDataSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): SpatialDataSource {
     throw new Error(
-      'SpatialDataSourceLoader requires async load() or an explicit @loaders.gl/scientific/zarr/spatial-data-source import'
+      'SpatialDataSourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/spatial-data-source import'
     );
   }
 } as const satisfies SourceLoader<SpatialDataSource>;

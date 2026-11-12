@@ -38,6 +38,6 @@ export const PotreeSourceLoader = {
   },
 
   testURL: (url: string) => /(?:\.js|(?:^|\/)metadata\.json)(?:[?#]|$)/.test(url),
-  createDataSource: (url: string, options: PotreeSourceLoaderOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (url: string, options: PotreeSourceLoaderOptions, coreApi?: CoreAPI) =>
     new PotreeNodesSource(url, options, coreApi) // , PotreeNodesSource.defaultOptions)
 } as const satisfies SourceLoader<PotreeNodesSource>;

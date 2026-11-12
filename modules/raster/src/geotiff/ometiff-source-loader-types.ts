@@ -39,9 +39,12 @@ export const OMETiffSourceLoader = {
   preload: async () =>
     (await import('@loaders.gl/raster/ometiff-source-loader')).OMETiffSourceLoader,
   /** Synchronous construction requires the source implementation subpath. */
-  createDataSource(_data: string | Blob, _options: OMETiffSourceLoaderOptions): OMETiffImageSource {
+  createDataSourceSync(
+    _data: string | Blob,
+    _options: OMETiffSourceLoaderOptions
+  ): OMETiffImageSource {
     throw new Error(
-      'OMETiffSourceLoader requires async load() or its source implementation subpath'
+      'OMETiffSourceLoader requires async createDataSource() or its source implementation subpath'
     );
   }
 } as const satisfies SourceLoader<OMETiffImageSource>;

@@ -15,20 +15,20 @@ async function preloadArcGISImageServerSourceLoader(): Promise<SourceLoader<ArcG
   return ArcGISImageServerSourceLoaderWithParser;
 }
 
-/** Lightweight service descriptor; use load() or the synchronous /bundled entrypoint. */
+/** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
 export const ArcGISImageServerSourceLoader = {
   ...ARCGIS_IMAGE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISImageSource,
   batchType: null as never,
   preload: preloadArcGISImageServerSourceLoader,
   /** Requires the runtime loader when constructing a source synchronously. */
-  createDataSource(
+  createDataSourceSync(
     _url: string,
     _options: ArcGISImageSourceLoaderProps,
     _coreApi?: CoreAPI
   ): ArcGISImageSource {
     throw new Error(
-      'ArcGISImageServerSourceLoader requires async load() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISImageServerSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISImageSource>;

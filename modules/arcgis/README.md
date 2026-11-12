@@ -9,11 +9,11 @@ application. Connect to existing feature, map, imagery, vector tile and scene se
 exporting or republishing the data.
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
 // Copy your layer's REST URL from its ArcGIS item page or Services Directory.
-const source = await load(featureLayerUrl, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerSourceLoader);
 const features = await source.getFeatures({format: 'geojson'});
 ```
 
@@ -38,7 +38,7 @@ See [authentication](https://loaders.gl/docs/developer-guide/arcgis/authenticati
 ## Choose imports and outputs
 
 The root exports lightweight service loaders. Async `load()` and deck.gl `SourceLayer` import the
-selected implementation on demand. For synchronous `createDataSource()` or direct source classes,
+selected implementation on demand. For synchronous `createDataSourceSync()` or direct source classes,
 use `@loaders.gl/arcgis/bundled`; network requests remain asynchronous. Authentication, discovery,
 item resolution and scene aggregation have dedicated subpaths.
 

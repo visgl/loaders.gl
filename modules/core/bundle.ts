@@ -33,6 +33,7 @@ export {
   encodeText,
   encodeTextSync,
   createDataSource,
+  createDataSourceSync,
   _selectSource,
   setPathPrefix,
   getPathPrefix,

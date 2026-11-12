@@ -7,7 +7,7 @@ import {join} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
-import {createDataSource, resolvePath} from '@loaders.gl/core';
+import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
 import {GeoZarrRasterSource, GeoZarrSourceLoader} from '@loaders.gl/scientific/zarr';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 
@@ -18,7 +18,7 @@ const FIXTURE_URL = pathToFileURL(
 ).href;
 
 function createSource(array: string, url = FIXTURE_URL): GeoZarrRasterSource {
-  return createDataSource(url, [GeoZarrSourceLoader], {
+  return createDataSourceSync(url, [GeoZarrSourceLoader], {
     geozarr: {array}
   }) as GeoZarrRasterSource;
 }
@@ -185,7 +185,7 @@ test.skipIf(process.getuid?.() === 0)(
       await writeFile(join(store, 'zarr.json'), JSON.stringify(root));
       await chmod(join(store, '1', 'spatial_ref', 'zarr.json'), 0o000);
 
-      const source = createDataSource(pathToFileURL(store).href, [GeoZarrSourceLoader], {
+      const source = createDataSourceSync(pathToFileURL(store).href, [GeoZarrSourceLoader], {
         zarr: {requireConsolidatedMetadata: false},
         geozarr: {array: '1/values'}
       }) as GeoZarrRasterSource;

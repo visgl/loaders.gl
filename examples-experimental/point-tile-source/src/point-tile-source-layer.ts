@@ -40,7 +40,7 @@ export class PointTileSourceLayer<
   }
 
   private async _loadTileset(tilesetUrl) {
-    const dataSource = this.props.source.createDataSource(tilesetUrl, {});
+    const dataSource = this.props.source.createDataSourceSync(tilesetUrl, {});
 
     const tileset3d = new PointCloudTileset(dataSource);
 

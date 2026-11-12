@@ -4,7 +4,7 @@ import {OGCAPIFeaturesSourceLoader, OGCAPITilesSourceLoader} from '@loaders.gl/o
 const OGC_API_URL = 'https://example.com/ogcapi';
 
 test('OGCAPIFeaturesSource#getCollections and getMetadata', async () => {
-  const source = OGCAPIFeaturesSourceLoader.createDataSource(OGC_API_URL, {});
+  const source = OGCAPIFeaturesSourceLoader.createDataSourceSync(OGC_API_URL, {});
   source.fetch = async url => {
     if (url.endsWith('/collections')) {
       return new Response(
@@ -25,7 +25,7 @@ test('OGCAPIFeaturesSource#getCollections and getMetadata', async () => {
 });
 
 test('OGCAPIFeaturesSource#getFeatures uses standard bbox query', async () => {
-  const source = OGCAPIFeaturesSourceLoader.createDataSource(OGC_API_URL, {
+  const source = OGCAPIFeaturesSourceLoader.createDataSourceSync(OGC_API_URL, {
     'ogc-api': {collectionId: 'roads'}
   });
   source.fetch = async (url, options) => {
@@ -48,7 +48,7 @@ test('OGCAPIFeaturesSource#getFeatures uses standard bbox query', async () => {
 });
 
 test('OGCAPIFeaturesSource#getFeatures separates bbox and output CRS', async () => {
-  const source = OGCAPIFeaturesSourceLoader.createDataSource(OGC_API_URL, {
+  const source = OGCAPIFeaturesSourceLoader.createDataSourceSync(OGC_API_URL, {
     'ogc-api': {collectionId: 'roads'}
   });
   source.fetch = async url => {
@@ -69,7 +69,7 @@ test('OGCAPIFeaturesSource#getFeatures separates bbox and output CRS', async () 
 });
 
 test('OGCAPIFeaturesSource supports binary and Arrow output', async () => {
-  const source = OGCAPIFeaturesSourceLoader.createDataSource(OGC_API_URL, {
+  const source = OGCAPIFeaturesSourceLoader.createDataSourceSync(OGC_API_URL, {
     'ogc-api': {collectionId: 'roads'}
   });
   source.fetch = async () =>
@@ -95,7 +95,7 @@ test('OGCAPIFeaturesSource supports binary and Arrow output', async () => {
 });
 
 test('OGCAPIFeaturesSource handles a collection URL', async () => {
-  const source = OGCAPIFeaturesSourceLoader.createDataSource(
+  const source = OGCAPIFeaturesSourceLoader.createDataSourceSync(
     `${OGC_API_URL}/collections/roads`,
     {}
   );
@@ -113,7 +113,7 @@ test('OGCAPIFeaturesSource handles a collection URL', async () => {
 });
 
 test('OGCAPITilesSource#getTileURL expands OGC templates', () => {
-  const source = OGCAPITilesSourceLoader.createDataSource(OGC_API_URL, {
+  const source = OGCAPITilesSourceLoader.createDataSourceSync(OGC_API_URL, {
     'ogc-api': {
       tileTemplate: `${OGC_API_URL}/tiles/{tileMatrix}/{tileRow}/{tileCol}.png`,
       discoverTileMatrixSet: false
@@ -123,7 +123,7 @@ test('OGCAPITilesSource#getTileURL expands OGC templates', () => {
 });
 
 test('OGC API Features forwards cancellation and preserves paging completion metadata', async () => {
-  const source = OGCAPIFeaturesSourceLoader.createDataSource(OGC_API_URL, {});
+  const source = OGCAPIFeaturesSourceLoader.createDataSourceSync(OGC_API_URL, {});
   const controller = new AbortController();
   source.fetch = async (_url, options) => {
     expect(options?.signal).toBe(controller.signal);

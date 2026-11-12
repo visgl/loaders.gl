@@ -153,7 +153,7 @@ export const OMETiffSourceLoader = {
   },
 
   testURL: (url: string): boolean => /\.ome\.tiff?(?:$|[?#])/i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string | Blob,
     options: OMETiffSourceLoaderOptions
   ): OMETiffImageSource => new OMETiffImageSource(data, options)

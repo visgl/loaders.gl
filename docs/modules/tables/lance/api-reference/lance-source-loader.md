@@ -50,7 +50,7 @@ fragments, data-file metadata, and read-only Arrow batches.
 ```ts
 import {LanceSourceLoader} from '@loaders.gl/tables/lance';
 
-const source = LanceSourceLoader.createDataSource(datasetURL, {
+const source = LanceSourceLoader.createDataSourceSync(datasetURL, {
   lance: {
     version: 3,
     columnTypes: ['double', 'int64'],

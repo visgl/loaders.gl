@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {encode, load} from '@loaders.gl/core';
+import {createDataSource, encode, load} from '@loaders.gl/core';
 import {encodeWKBGeometryValue} from '@loaders.gl/core/arrow-geometry/geometry-field';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {
@@ -70,7 +70,7 @@ test('Parquet native geospatial statistics round-trip all dimensions and geometr
 });
 
 test('ParquetSourceLoader reads the canonical GeoParquet 2.0 interoperability fixture', async () => {
-  const source = (await load(
+  const source = (await createDataSource(
     '@loaders.gl/tables/parquet/test/data/geoparquet/example-2.0.parquet',
     ParquetSourceLoader,
     {core: {worker: false}}
@@ -133,7 +133,7 @@ test('ParquetJSWriter emits GeoParquet 2.0 logical types and row-group statistic
     parquet: {rowGroupSize: 1},
     worker: false
   });
-  const source = (await load(new Blob([parquetBuffer]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetSourceLoader, {
     core: {worker: false}
   })) as ParquetSource;
   const metadata = (await source.getMetadata({
@@ -183,7 +183,7 @@ test('ParquetJSWriter emits native Parquet geo types directly from GeoArrow WKB 
     data: [{geometry: encodeWKBGeometryValue({type: 'Point', coordinates: [1, 2]})!}]
   };
   const parquetBuffer = await encode(table, ParquetJSWriter, {worker: false});
-  const source = (await load(new Blob([parquetBuffer]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetSourceLoader, {
     core: {worker: false}
   })) as ParquetSource;
   const metadata = await source.getMetadata({formatSpecificMetadata: true});
@@ -205,7 +205,7 @@ test('ParquetJSWriter ignores nulls and omits bounds for empty native geometries
     encodeWKBGeometryValue({type: 'LineString', coordinates: []})!
   ]);
   const parquetBuffer = await encode(table, ParquetJSWriter, {worker: false});
-  const source = (await load(new Blob([parquetBuffer]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetSourceLoader, {
     core: {worker: false}
   })) as ParquetSource;
   const metadata = await source.getMetadata({formatSpecificMetadata: true});

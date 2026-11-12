@@ -9,7 +9,7 @@ import {PointCloudTileSourceLoader} from '@loaders.gl/tiles-3d';
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
 const runtime = await PointCloudTileSourceLoader.preload();
-const source = runtime.createDataSource(pointMesh, {
+const source = runtime.createDataSourceSync(pointMesh, {
   pointCloudTiler: {nodePointLimit: 10000, maximumDepth: 12}
 });
 await source.ready;

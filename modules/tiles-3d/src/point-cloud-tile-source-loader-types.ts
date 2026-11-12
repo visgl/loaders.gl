@@ -41,7 +41,7 @@ export const PointCloudTileSourceLoader = {
   defaultOptions: {pointCloudTiler: {}},
   preload: preloadPointCloudTileSource,
   /** Direct construction requires the runtime rather than this metadata export. */
-  createDataSource(
+  createDataSourceSync(
     _input: PointCloudTileSourceInput | string | Blob,
     _options: PointCloudTileSourceOptions = {},
     _coreApi?: CoreAPI

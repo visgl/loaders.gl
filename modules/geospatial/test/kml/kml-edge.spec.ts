@@ -302,7 +302,7 @@ test('KMZ archive and source cover KML fallback selection and output formats', a
     {'doc.kml': '<kml><Document><Placemark><name>Empty</name></Placemark></Document></kml>'},
     ZipWriter
   );
-  const source = KMZSourceLoader.createDataSource(
+  const source = KMZSourceLoader.createDataSourceSync(
     new Blob([sourceArchive], {type: 'application/vnd.google-earth.kmz'}),
     {kmz: {format: 'geojson'}}
   );

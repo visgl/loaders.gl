@@ -31,6 +31,7 @@ export {
   encodeText,
   encodeTextSync,
   createDataSource,
+  createDataSourceSync,
   _selectSource,
   makeIterator,
   makeStream,

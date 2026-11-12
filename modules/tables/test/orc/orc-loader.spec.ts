@@ -46,7 +46,7 @@ test('ORCSource exposes footer metadata and shared projection/limit reads', asyn
 test('ORC source loader exposes explicit parser entry points', () => {
   expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
   expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
-  expect(ORCSourceLoaderWithParser.createDataSource(new Blob())).toBeInstanceOf(ORCSource);
+  expect(ORCSourceLoaderWithParser.createDataSourceSync(new Blob())).toBeInstanceOf(ORCSource);
 });
 
 test('ORC metadata preserves nested map and struct types', () => {

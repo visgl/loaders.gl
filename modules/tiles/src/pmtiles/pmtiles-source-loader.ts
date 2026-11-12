@@ -85,8 +85,11 @@ export const PMTilesSourceLoader = {
   },
 
   testURL: (url: string) => url.endsWith('.pmtiles'),
-  createDataSource: (url: string | Blob, options: PMTilesSourceLoaderOptions, coreApi?: CoreAPI) =>
-    new PMTilesTileSource(url, options, coreApi)
+  createDataSourceSync: (
+    url: string | Blob,
+    options: PMTilesSourceLoaderOptions,
+    coreApi?: CoreAPI
+  ) => new PMTilesTileSource(url, options, coreApi)
 } as const satisfies SourceLoader<PMTilesTileSource>;
 
 /**

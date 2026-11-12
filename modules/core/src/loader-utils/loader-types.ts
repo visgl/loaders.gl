@@ -9,7 +9,7 @@ import type {Format} from './format-types';
 import type {LoadWorker, WorkerOptions, WorkerProgress} from '@loaders.gl/core/worker-utils';
 import {DataType, FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
-import type {CoreAPI} from './lib/sources/data-source';
+import type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 import type {Credential, AuthenticationConstructor} from './lib/request-utils/authentication';
 import type {QueryOptions} from './lib/scan-utils/query-options';
 
@@ -181,7 +181,18 @@ type PreloadOptions = {
 /**
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
-export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptions> = Format & {
+export type Loader<
+  DataT = any,
+  BatchT = any,
+  LoaderOptionsT = StrictLoaderOptions,
+  SourceT = unknown
+> = Format & {
+  /** Constructs a source synchronously from an available implementation. */
+  createDataSourceSync?: (
+    data: any,
+    options: LoaderOptionsT & DataSourceOptions,
+    coreApi?: CoreAPI
+  ) => SourceT;
   /** The result type of this loader  */
   dataType?: DataT;
   /** The batched result type of this loader  */
@@ -280,8 +291,11 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
 export type LoaderWithParser<
   DataT = any,
   BatchT = any,
-  LoaderOptionsT = StrictLoaderOptions
-> = Loader<DataT, BatchT, LoaderOptionsT> & {
+  LoaderOptionsT = StrictLoaderOptions,
+  SourceT = unknown
+> = Loader<DataT, BatchT, LoaderOptionsT, SourceT> & {
+  /** Parses data from a URL using the loader's own request strategy. */
+  parseUrl?: (url: string, options?: LoaderOptionsT, context?: LoaderContext) => Promise<DataT>;
   /**
    * Optionally selects a parser representation for an atomic core parse call.
    * Core uses the returned options for decoding and applies convert on the caller
@@ -292,7 +306,7 @@ export type LoaderWithParser<
     convert: (result: DataT) => DataT;
   } | null;
   /** Parse asynchronously and atomically from an arraybuffer */
-  parse: (
+  parse?: (
     arrayBuffer: ArrayBuffer,
     options?: LoaderOptionsT,
     context?: LoaderContext
@@ -515,7 +529,9 @@ type NativeArrowOutput<T, Options, Wrapped, Native> = [Options] extends [never]
     : never;
 
 /** Selects native output when certain and a union when shape selection is dynamic. */
-type NativeArrowOutputForOption<T, Options, Wrapped, Native> = T extends {createDataSource: unknown}
+type NativeArrowOutputForOption<T, Options, Wrapped, Native> = T extends {
+  createDataSourceSync: unknown;
+}
   ? Wrapped
   : [Extract<Wrapped, {shape: 'arrow-table'}>] extends [never]
     ? Wrapped

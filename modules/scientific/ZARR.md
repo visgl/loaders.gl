@@ -31,10 +31,10 @@ the current GeoZarr `proj:` and `spatial:` attributes and falls back to regular 
 coordinate variables used by xarray climate and weather stores.
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {GeoZarrSourceLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSource('https://example.com/weather.zarr', [GeoZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/weather.zarr', [GeoZarrSourceLoader], {
   geozarr: {
     array: 'air_temperature',
     defaultSelection: {time: 0, pressure: 10}
@@ -64,10 +64,10 @@ climatology data directly from a public Zarr store and renders it on an interact
 - it requires consolidated metadata by default (`zarr.json`, `.zmetadata`, or `zmetadata`)
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {OMEZarrSourceLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSource('https://example.com/image.zarr', [OMEZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/image.zarr', [OMEZarrSourceLoader], {
   omezarr: {}
 });
 
@@ -81,11 +81,11 @@ const raster = await source.getRaster({channels: [0, 1, 2]});
 arrays directly.
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {SpatialDataSourceLoader} from '@loaders.gl/scientific/zarr';
 
 const rootUrl = 'https://example.com/spatialdata.zarr';
-const spatialDataSource = createDataSource(rootUrl, [SpatialDataSourceLoader]);
+const spatialDataSource = createDataSourceSync(rootUrl, [SpatialDataSourceLoader]);
 const spatialDataMetadata = await spatialDataSource.getMetadata();
 const imageSource = await spatialDataSource.createRasterSource(
   'image',

@@ -54,11 +54,11 @@ reads.
 ## Usage
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ParquetSourceLoader} from '@loaders.gl/tables/parquet';
 
 const abortController = new AbortController();
-const source = await load(
+const source = await createDataSource(
   'https://example.com/trips.parquet',
   ParquetSourceLoader,
   {parquet: {headers: {Authorization: 'Bearer token'}}}
@@ -89,17 +89,17 @@ try {
 }
 ```
 
-Both URL and `Blob` inputs are supported. The root loader is metadata-only; async `load()` imports its
+Both URL and `Blob` inputs are supported. The root loader is metadata-only; async `createDataSource()` imports its
 runtime implementation from the package's `parquet-source-loader` subpath. File access begins when
 `getSchema()`, `getMetadata()`, `getScanPlan()`, or `read()` is first called.
 
-Applications that need synchronous `createDataSource()` can import the runtime loader explicitly:
+Applications that need synchronous `createDataSourceSync()` can import the runtime loader explicitly:
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {ParquetSourceLoader} from '@loaders.gl/tables/parquet-source-loader';
 
-const source = createDataSource(url, [ParquetSourceLoader], {});
+const source = createDataSourceSync(url, [ParquetSourceLoader], {});
 ```
 
 ## Multi-file datasets
@@ -384,7 +384,7 @@ receives snapshots after range requests, cache hits, pruning, decoding, Arrow co
 cancellation, and failures. Exceptions thrown by the callback do not interrupt a read.
 
 ```typescript
-const source = createDataSource(url, [ParquetSourceLoader], {
+const source = createDataSourceSync(url, [ParquetSourceLoader], {
   parquet: {
     onTelemetry: event => console.log(event.type, event.telemetry)
   }

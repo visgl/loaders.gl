@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource, fetchFile, resolvePath} from '@loaders.gl/core';
+import {createDataSourceSync, fetchFile, resolvePath} from '@loaders.gl/core';
 import {
   FlatGeobufSourceLoader,
   FlatGeobufVectorSource
@@ -23,7 +23,7 @@ const EMPTY_BOUNDING_BOX: [[number, number], [number, number]] = [
   [1, -89]
 ];
 test('FlatGeobufSourceLoader#createDataSource selects FlatGeobuf source from URL', async () => {
-  const source = createDataSource(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
+  const source = createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
     flatgeobuf: {},
     core: {fetch: await createRangeFetch()}
   });
@@ -234,7 +234,7 @@ test('FlatGeobufSourceLoader recognizes URL query and fragment suffixes', () => 
 });
 test('FlatGeobufSourceLoader#getFeatures respects abort signals', async () => {
   const abortController = new AbortController();
-  const delayedSource = createDataSource(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
+  const delayedSource = createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
     flatgeobuf: {},
     core: {fetch: await createRangeFetch({delayMs: 20})}
   }) as FlatGeobufVectorSource;
@@ -257,7 +257,7 @@ test('FlatGeobufSourceLoader#getFeatures respects abort signals', async () => {
 });
 async function createSource(fetchOverride?: typeof fetch): Promise<FlatGeobufVectorSource> {
   const fetch = fetchOverride || (await createRangeFetch());
-  return createDataSource(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
+  return createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
     flatgeobuf: {},
     core: {fetch}
   }) as FlatGeobufVectorSource;

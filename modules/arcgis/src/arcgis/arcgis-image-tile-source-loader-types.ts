@@ -15,20 +15,20 @@ async function preloadArcGISImageTileSourceLoader(): Promise<SourceLoader<ArcGIS
   return ArcGISImageTileSourceLoaderWithParser;
 }
 
-/** Lightweight service descriptor; use load() or the synchronous /bundled entrypoint. */
+/** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
 export const ArcGISImageTileSourceLoader = {
   ...ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISImageTileSource,
   batchType: null as never,
   preload: preloadArcGISImageTileSourceLoader,
   /** Requires the runtime loader when constructing a source synchronously. */
-  createDataSource(
+  createDataSourceSync(
     _url: string,
     _options: ArcGISImageTileSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): ArcGISImageTileSource {
     throw new Error(
-      'ArcGISImageTileSourceLoader requires async load() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISImageTileSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISImageTileSource>;

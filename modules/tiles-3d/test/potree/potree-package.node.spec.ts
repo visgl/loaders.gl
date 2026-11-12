@@ -31,7 +31,7 @@ test('installed Potree metadata, writer and source subpaths work in ESM and Comm
       assert.equal((await root.PotreeLoader.preload()).parseTextSync(JSON.stringify(dataset.metadata)).points, 1);
     }
     for (const root of [await import('@loaders.gl/tiles-3d/potree'), require('@loaders.gl/tiles-3d/potree')]) {
-      const source = root.PotreeSourceLoader.createDataSource('https://example.com/dataset/metadata.json', {core: {fetch: async () => new Response(null, {status: 404})}});
+      const source = root.PotreeSourceLoader.createDataSourceSync('https://example.com/dataset/metadata.json', {core: {fetch: async () => new Response(null, {status: 404})}});
       await assert.rejects(source.initialize(), /404/);
       source.close();
     }
@@ -59,7 +59,7 @@ test.each([
   const prefix = getPathPrefix();
   setPathPrefix('');
   const paths: string[] = [];
-  const source = PotreeSourceLoader.createDataSource(input, {
+  const source = PotreeSourceLoader.createDataSourceSync(input, {
     core: {
       fetch: async (resource, options) => {
         paths.push(String(resource));

@@ -44,12 +44,12 @@ export const GeoTIFFSourceLoader = {
   preload: async () =>
     (await import('@loaders.gl/raster/geotiff-source-loader')).GeoTIFFSourceLoader,
   /** Synchronous construction requires the source implementation subpath. */
-  createDataSource(
+  createDataSourceSync(
     _data: string | Blob,
     _options: GeoTIFFSourceLoaderOptions
   ): GeoTIFFRasterSource {
     throw new Error(
-      'GeoTIFFSourceLoader requires async load() or its source implementation subpath'
+      'GeoTIFFSourceLoader requires async createDataSource() or its source implementation subpath'
     );
   }
 } as const satisfies SourceLoader<GeoTIFFRasterSource>;

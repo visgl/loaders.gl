@@ -26,9 +26,9 @@ export async function getLoaderImplementation(
         `${loader.id} source loader preload() did not return a runtime source loader`
       );
     }
-    return source as unknown as LoaderWithParser;
+    return source;
   }
-  if (isLoaderWithParser(loader)) {
+  if (isLoaderWithParser(loader) || loader.createDataSourceSync) {
     return loader;
   }
 
@@ -77,7 +77,7 @@ export function getLoaderImplementationSync(loader: Loader): LoaderWithParser | 
     if (prepared) return prepared;
     if (!isLoaderWithParser(loader)) return null;
   }
-  if (isLoaderWithParser(loader)) {
+  if (isLoaderWithParser(loader) || loader.createDataSourceSync) {
     return loader;
   }
 
@@ -90,6 +90,8 @@ export function isLoaderWithParser(loader: Loader): loader is LoaderWithParser {
   const candidate = loader as LoaderWithParser;
   return Boolean(
     candidate.parse ||
+      candidate.parseBlob ||
+      candidate.parseUrl ||
       candidate.parseSync ||
       candidate.parseInBatches ||
       candidate.parseText ||
@@ -107,11 +109,16 @@ async function resolveLoaderImplementation(
 ): Promise<LoaderWithParser> {
   if (loader.preload) {
     const preloadedLoader = await loader.preload(url || '', options);
-    if (isLoaderWithParser(preloadedLoader as Loader)) {
+    if (
+      preloadedLoader &&
+      (isLoaderWithParser(preloadedLoader) || preloadedLoader.createDataSourceSync)
+    ) {
       return preloadedLoader as LoaderWithParser;
     }
 
-    throw new Error(`${loader.id} loader preload() did not return a parser-bearing loader`);
+    throw new Error(
+      `${loader.id} loader preload() did not return a parser-bearing loader or a source factory`
+    );
   }
 
   const implementationSpecifier = getLoaderImplementationSpecifier(loader, options);
@@ -266,7 +273,7 @@ async function bindSubloaders(
   prepared.worker = false;
   for (const method of [
     'parseBlob',
-    'createDataSource',
+    'createDataSourceSync',
     'parse',
     'parseSync',
     'parseText',

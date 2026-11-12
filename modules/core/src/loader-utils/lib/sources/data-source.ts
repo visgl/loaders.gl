@@ -237,7 +237,7 @@ function normalizeError(error: unknown, message: string): Error {
 function unavailableCoreApiMethod(methodName: keyof CoreAPI) {
   return () => {
     throw new Error(
-      `CoreAPI.${methodName} is unavailable. Use @loaders.gl/core.createDataSource().`
+      `CoreAPI.${methodName} is unavailable. Use @loaders.gl/core.createDataSourceSync().`
     );
   };
 }

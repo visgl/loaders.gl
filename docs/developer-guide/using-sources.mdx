@@ -150,7 +150,9 @@ While most `SourceLoader` implementations provide an interface for interacting w
 
 ## Source auto-selection
 
-Just like the appropriate parser loader can be selected automatically from a list of `Loader` objects, `createDataSource()`, `selectSource()`, and `load()` can accept `SourceLoader` objects and attempt to select the correct one based on URL pattern matching, extensions, and root file bytes.
+Pass one or more source-capable loaders to `createDataSource()` or
+`createDataSourceSync()`. Multiple candidates are matched using URL patterns,
+extensions, MIME types, or content tests.
 
 ## Creating new Sources
 
@@ -186,10 +188,10 @@ Sources and their internal parsers share one options object:
 For a single source and parser, use the same namespace for both:
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 
-const source = createDataSource(url, [MVTSourceLoader], {
+const source = createDataSourceSync(url, [MVTSourceLoader], {
   core: {worker: false},
   mvt: {
     metadataUrl: null, // Source setting
@@ -203,7 +205,7 @@ For multiple candidate sources or multiple internal parsers, add their namespace
 ```typescript
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
-const source = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
+const source = createDataSourceSync(url, [PMTilesSourceLoader, MVTSourceLoader], {
   core: {worker: false, fetch: {headers: {Authorization: 'Bearer …'}}},
   pmtiles: {shape: 'arrow-table'},
   mvt: {layerProperty: 'sourceLayer', layers: ['roads']},
@@ -231,7 +233,7 @@ coordinates. Explicit source output settings, such as `pmtiles.shape`, take prec
 settings. When a source and its parser use the same namespace (for example `mvt`), their options
 are combined there. Source selection still uses `core.type`.
 
-This convention also applies to `load(url, SourceLoader, options)` and direct source constructors.
+This convention also applies to direct source constructors.
 The `core.loadOptions` and top-level source `loadOptions` wrappers are no longer accepted.
 Known parser namespaces are typed; additional namespaces remain extensible for dynamically chosen
 loaders. An unknown namespace is therefore not guaranteed to produce a TypeScript error.
@@ -251,12 +253,12 @@ These are Arrow tables, not encoded MVT bytes; the separate `TableTileSourceLoad
 GeoJSON interface.
 
 ```typescript
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/tables/json';
 
 // build an initial index of tiles.
-const tileSource = await load(url, ArrowTableTileSourceLoader, {
+const tileSource = await createDataSource(url, ArrowTableTileSourceLoader, {
   core: {
     loaders: [GeoJSONLoader]
   },

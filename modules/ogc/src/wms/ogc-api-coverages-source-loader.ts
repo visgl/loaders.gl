@@ -104,6 +104,9 @@ export const OGCAPICoveragesSourceLoader = {
   defaultOptions: {'ogc-api-coverages': {}},
   testURL: (url: string): boolean =>
     /(?:\/coverage(?:s)?(?:\/|$)|ogc[/-]?api[/-]?coverages)/i.test(url),
-  createDataSource: (url: string, options: OGCAPICoveragesSourceOptions = {}, coreApi?: CoreAPI) =>
-    new OGCAPICoveragesSource(url, options, coreApi)
+  createDataSourceSync: (
+    url: string,
+    options: OGCAPICoveragesSourceOptions = {},
+    coreApi?: CoreAPI
+  ) => new OGCAPICoveragesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPICoveragesSource>;

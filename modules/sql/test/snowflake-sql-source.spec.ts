@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {SnowflakeSQLDataSource, SnowflakeSQLSource} from '@loaders.gl/sql';
 test('SnowflakeSQLSource#createDataSource selects Snowflake source from URL', () => {
-  const dataSource = createDataSource('sql+snowflake://example-account', [SnowflakeSQLSource], {
+  const dataSource = createDataSourceSync('sql+snowflake://example-account', [SnowflakeSQLSource], {
     snowflake: {token: 'token'}
   });
   expect(
@@ -42,7 +42,7 @@ test('SnowflakeSQLSource executes SQL API queries through fetch', async () => {
       }
     );
   };
-  const dataSource = createDataSource('sql+snowflake://example-account', [SnowflakeSQLSource], {
+  const dataSource = createDataSourceSync('sql+snowflake://example-account', [SnowflakeSQLSource], {
     snowflake: {token: 'token'},
     core: {fetch: fetchResponse}
   }) as SnowflakeSQLDataSource;

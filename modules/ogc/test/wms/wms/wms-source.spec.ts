@@ -8,20 +8,20 @@ import {ImageSource, WMSSourceLoader} from '@loaders.gl/ogc/wms';
 const WMS_SERVICE_URL = 'https:/mock-wms-service';
 const WMS_VERSION = '1.3.0';
 test('WMSSourceLoader#constructor', async () => {
-  const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {});
+  const wmsImageSource = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {});
   const getCapabilitiesUrl = wmsImageSource.getCapabilitiesURL();
   expect(getCapabilitiesUrl, 'getCapabilitiesURL').toBe(
     `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=GetCapabilities`
   );
 });
 test('ImageSource legacy runtime guard recognizes the structural capability', () => {
-  const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {});
+  const wmsImageSource = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {});
 
   expect(wmsImageSource instanceof ImageSource).toBe(true);
   expect({} instanceof ImageSource).toBe(false);
 });
 test('WMSSourceLoader#getMapURL', async () => {
-  let wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {});
+  let wmsImageSource = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {});
   let getMapUrl = wmsImageSource.getMapURL({
     width: 800,
     height: 600,
@@ -32,7 +32,7 @@ test('WMSSourceLoader#getMapURL', async () => {
   expect(getMapUrl, 'getMapURL layers in params').toBe(
     `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=GetMap&FORMAT=image/png&LAYERS=oms&STYLES=&CRS=EPSG:3857&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75`
   );
-  wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+  wmsImageSource = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
     wmsParameters: {layers: ['oms'], crs: 'EPSG:3857'}
   });
   getMapUrl = wmsImageSource.getMapURL({
@@ -46,7 +46,7 @@ test('WMSSourceLoader#getMapURL', async () => {
 });
 test('WMSSourceLoader#getFeatureInfoURL', async () => {});
 test('WMSSourceLoader#getFeatureInfoURL maps WMS 1.3 coordinates and vendor parameters', () => {
-  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+  const source = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
     wms: {vendorParameters: {token: 'base'}},
     wmsParameters: {layers: ['roads'], query_layers: ['roads'], crs: 'EPSG:4326'}
   });
@@ -69,21 +69,25 @@ test('WMSSourceLoader#getFeatureInfoURL maps WMS 1.3 coordinates and vendor para
   expect(url.searchParams.get('EMPTY')).toBe('');
 });
 test('WMSSourceLoader#describeLayerURL', async () => {
-  const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {url: WMS_SERVICE_URL});
+  const wmsImageSource = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
+    url: WMS_SERVICE_URL
+  });
   const describeLayerUrl = wmsImageSource.describeLayerURL({});
   expect(describeLayerUrl, 'describeLayerURL').toBe(
     `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=DescribeLayer`
   );
 });
 test('WMSSourceLoader#getLegendGraphicURL', async () => {
-  const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {url: WMS_SERVICE_URL});
+  const wmsImageSource = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
+    url: WMS_SERVICE_URL
+  });
   const getLegendGraphicUrl = wmsImageSource.getLegendGraphicURL({});
   expect(getLegendGraphicUrl, 'getLegendGraphicURL').toBe(
     `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=GetLegendGraphic`
   );
 });
 test('WMSSourceLoader#WMS versions', async () => {
-  const wms111Service = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+  const wms111Service = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
     wmsParameters: {version: '1.1.1', layers: ['oms']}
   });
   let getMapUrl = wms111Service.getMapURL({
@@ -94,7 +98,7 @@ test('WMSSourceLoader#WMS versions', async () => {
   expect(getMapUrl, 'getMapURL replaces CRS with SRS in WMS 1.1.1').toBe(
     'https:/mock-wms-service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&LAYERS=oms&STYLES=&SRS=EPSG:4326&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75'
   );
-  const wms130Service = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+  const wms130Service = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
     wms: {
       substituteCRS84: true
     },
@@ -111,7 +115,7 @@ test('WMSSourceLoader#WMS versions', async () => {
 });
 // TODO - move to image-source.spec.ts
 test('WMSSourceLoader#fetch override', async () => {
-  const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+  const wmsImageSource = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
     core: {
       fetch: {headers: {Authorization: 'Bearer abc'}}
     },
@@ -149,7 +153,9 @@ test('WMSSourceLoader#fetch override', async () => {
   });
 });
 test('WMSSourceLoader#getImage', async () => {
-  const wmsImageSource = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {url: WMS_SERVICE_URL});
+  const wmsImageSource = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
+    url: WMS_SERVICE_URL
+  });
   let getMapParameters;
   // @ts-ignore
   wmsImageSource.getMap = parameters => {
@@ -173,7 +179,7 @@ test('WMSSourceLoader#getImage', async () => {
 });
 
 test('WMSSourceLoader parses base URLs and normalizes metadata', async () => {
-  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {});
+  const source = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {});
   expect(source._parseWMSUrl('https://example.com/wms?SERVICE=WMS&request=GetMap')).toEqual({
     url: 'https://example.com/wms',
     parameters: {SERVICE: 'WMS', request: 'GetMap'}
@@ -184,7 +190,7 @@ test('WMSSourceLoader parses base URLs and normalizes metadata', async () => {
 });
 
 test('WMSSourceLoader forwards text responses and abort signals', async () => {
-  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+  const source = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
     wmsParameters: {layers: ['roads'], query_layers: ['roads']}
   });
   let requestInit: RequestInit | undefined;
@@ -215,7 +221,7 @@ test('WMSSourceLoader forwards text responses and abort signals', async () => {
 });
 
 test('WMSSourceLoader validates bounding boxes and parses service errors', async () => {
-  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {}) as any;
+  const source = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {}) as any;
   expect(source._flipBoundingBox('invalid', source.wmsParameters)).toBeNull();
   expect(source._flipBoundingBox([1, 2, 3], source.wmsParameters)).toBeNull();
   expect(
@@ -237,7 +243,7 @@ test('WMSSourceLoader validates bounding boxes and parses service errors', async
 });
 
 test('WMSSourceLoader reports image parse failures as WMS errors', async () => {
-  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+  const source = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
     wmsParameters: {layers: ['roads']}
   });
   const errorXML = new TextEncoder().encode(
@@ -257,7 +263,7 @@ test.each([
   ['1.1.1', 'CRS:84', '170,-10,180,10'],
   ['1.3.0', 'CRS:84', '170,-10,180,10']
 ])('WMS %s %s preserves independent dateline regions and service axis order', (version, crs, expectedBounds) => {
-  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {
+  const source = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {
     wms: {wmsParameters: {version}}
   });
   const east = source.getMapURL({
@@ -279,7 +285,7 @@ test.each([
 });
 
 test('WMS rejects excessive images before fetch and discards canceled image decode', async () => {
-  const source = WMSSourceLoader.createDataSource(WMS_SERVICE_URL, {wms: {maxPixels: 4}});
+  const source = WMSSourceLoader.createDataSourceSync(WMS_SERVICE_URL, {wms: {maxPixels: 4}});
   let transfers = 0;
   source.fetch = async () => {
     transfers++;

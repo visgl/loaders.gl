@@ -63,7 +63,7 @@ test('NDJSONTableSource forwards cancellation and reports empty input', async ()
 test('NDJSONSourceLoader exposes URL matching and construction', () => {
   expect(NDJSONSourceLoader.testURL('data.jsonl')).toBe(true);
   expect(NDJSONSourceLoader.testURL('data.csv')).toBe(false);
-  expect(NDJSONSourceLoader.createDataSource(new Blob(['{"a":1}\n']), {})).toBeInstanceOf(
+  expect(NDJSONSourceLoader.createDataSourceSync(new Blob(['{"a":1}\n']), {})).toBeInstanceOf(
     NDJSONTableSource
   );
 });

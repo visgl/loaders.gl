@@ -3,14 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {SpatialDataSource, SpatialDataSourceLoader} from '@loaders.gl/scientific/zarr';
 
 const FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 
 describe('SpatialDataSource browser integration', () => {
   test('discovers the typed SpatialData catalog through createDataSource', async () => {
-    const source = createDataSource(FIXTURE_URL, [SpatialDataSourceLoader]);
+    const source = createDataSourceSync(FIXTURE_URL, [SpatialDataSourceLoader]);
     const metadata = await source.getMetadata();
 
     expect(source).toBeInstanceOf(SpatialDataSource);

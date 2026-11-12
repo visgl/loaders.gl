@@ -176,7 +176,7 @@ async function loadDataset(dataset: DatasetConfig): Promise<void> {
   pageIndex = 0;
   setStatus(`Reading ${dataset.label} with HTTP ranges…`);
   getElement('#arrow-rows').innerHTML = '';
-  const source = LanceSourceLoader.createDataSource(dataset.url, {lance: {version: dataset.version}});
+  const source = LanceSourceLoader.createDataSourceSync(dataset.url, {lance: {version: dataset.version}});
   const metadata = await source.getMetadata();
   const totalRows = metadata.fragments.reduce(
     (rowCount: number, fragment: {physicalRows: number}) => rowCount + fragment.physicalRows,

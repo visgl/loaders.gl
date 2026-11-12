@@ -11,14 +11,10 @@ import type {
   Loader,
   LoaderContext,
   LoaderOptions,
+  StrictLoaderOptions,
   LoaderOptionsType,
   LoaderReturnType,
-  LoaderArrayReturnType,
-  SourceLoader,
-  SourcePropsType,
-  SourceArrayOptionsType,
-  DataSourceOptions,
-  LoaderWithParser
+  SourceLoader
 } from '@loaders.gl/core/loader-utils';
 import {
   isBlob,
@@ -35,15 +31,14 @@ import {
   normalizeOptions,
   getGlobalLoaderOptions
 } from '../loader-utils/option-utils';
-import {fetchFile} from '../fetch/fetch-file';
 
 import {parse} from './parse';
-import {parseFile} from './parse-file';
-import {parseSync} from './parse-sync';
-import {parseInBatches} from './parse-in-batches';
-import {loadInBatches} from './load-in-batches';
 import {selectLoader} from './select-loader';
-import {getLoaderImplementation} from './load-loader';
+import {getLoaderImplementation, isLoaderWithParser} from './load-loader';
+
+type ParsedLoadResult<LoaderT, Options = never> = LoaderT extends SourceLoader
+  ? never
+  : LoaderReturnType<LoaderT, Options>;
 
 /**
  * Parses `data` using a specified loader
@@ -60,7 +55,7 @@ export async function load<LoaderT extends Loader>(
   loader: LoaderT,
   options?: undefined,
   context?: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<ParsedLoadResult<LoaderT>>;
 
 export async function load<
   LoaderT extends Loader,
@@ -71,18 +66,16 @@ export async function load<
 >(
   url: string | DataType,
   loader: LoaderT,
-  options?: LoaderT extends SourceLoader
-    ? SourcePropsType<LoaderT> & DataSourceOptions
-    : OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): Promise<LoaderReturnType<LoaderT, OptionsT>>;
+): Promise<ParsedLoadResult<LoaderT, OptionsT>>;
 
 export async function load<LoaderArrayT extends Loader[]>(
   url: string | DataType,
   loaders: LoaderArrayT,
   options?: undefined,
   context?: LoaderContext
-): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+): Promise<ParsedLoadResult<LoaderArrayT[number]>>;
 
 export async function load<
   LoaderArrayT extends Loader[],
@@ -90,9 +83,9 @@ export async function load<
 >(
   url: string | DataType,
   loaders: LoaderArrayT,
-  options?: LoaderArrayT extends SourceLoader[] ? SourceArrayOptionsType<LoaderArrayT> : OptionsT,
+  options?: OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayReturnType<LoaderArrayT, OptionsT>>;
+): Promise<ParsedLoadResult<LoaderArrayT[number], OptionsT>>;
 
 /**
  * Loads data asynchronously by matching a pre-registered loader
@@ -128,81 +121,15 @@ export async function load(
 
   resolvedOptions ||= getGlobalLoaderOptions();
 
-  if (!Array.isArray(resolvedLoaders) && isSourceLoader(resolvedLoaders)) {
-    const sourceLoader = await resolveSourceLoader(resolvedLoaders, url, resolvedOptions);
-    resolvedOptions = await resolveLoaderAuthenticationOptions(
-      resolvedLoaders.getAuthentications ? resolvedLoaders : sourceLoader,
-      typeof url === 'string' ? url : '',
-      resolvedOptions || {}
-    );
-    const runtimeCoreApi = {
-      fetchFile,
-      parse,
-      parseFile,
-      parseSync,
-      parseInBatches,
-      load,
-      loadInBatches
-    };
-    return sourceLoader.createDataSource(
-      url as string | Blob,
-      (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
-      runtimeCoreApi
-    );
-  }
-
-  if (
-    Array.isArray(resolvedLoaders) &&
-    resolvedLoaders.length === 1 &&
-    isSourceLoader(resolvedLoaders[0])
-  ) {
-    const sourceLoader = await resolveSourceLoader(resolvedLoaders[0], url, resolvedOptions);
-    resolvedOptions = await resolveLoaderAuthenticationOptions(
-      resolvedLoaders[0].getAuthentications ? resolvedLoaders[0] : sourceLoader,
-      typeof url === 'string' ? url : '',
-      resolvedOptions || {}
-    );
-    const runtimeCoreApi = {
-      fetchFile,
-      parse,
-      parseFile,
-      parseSync,
-      parseInBatches,
-      load,
-      loadInBatches
-    };
-    return sourceLoader.createDataSource(
-      url as string | Blob,
-      (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
-      runtimeCoreApi
-    );
-  }
-
   if (typeof url === 'string' || isBlob(url)) {
     const selectedLoader = await selectLoader(url, resolvedLoaders as Loader | Loader[], {
       ...resolvedOptions,
       core: {...resolvedOptions?.core, nothrow: true}
     });
 
-    if (selectedLoader && isSourceLoader(selectedLoader)) {
-      const sourceLoader = await resolveSourceLoader(selectedLoader, url, resolvedOptions);
-      resolvedOptions = await resolveLoaderAuthenticationOptions(
-        selectedLoader.getAuthentications ? selectedLoader : sourceLoader,
-        typeof url === 'string' ? url : '',
-        resolvedOptions || {}
-      );
-      return sourceLoader.createDataSource(
-        url,
-        (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
-        {
-          fetchFile,
-          parse,
-          parseFile,
-          parseSync,
-          parseInBatches,
-          load,
-          loadInBatches
-        }
+    if (isSourceLoader(selectedLoader)) {
+      throw new Error(
+        `${selectedLoader.id} creates sources. Use createDataSource() instead of load().`
       );
     }
 
@@ -212,27 +139,28 @@ export async function load(
         resolvedOptions,
         url
       );
+      if (loaderImplementation.createDataSourceSync && !isLoaderWithParser(loaderImplementation)) {
+        throw new Error(
+          `${selectedLoader.id} creates sources. Use createDataSource() instead of load().`
+        );
+      }
       resolvedOptions = await resolveLoaderAuthenticationOptions(
         selectedLoader.getAuthentications ? selectedLoader : loaderImplementation,
         url,
         resolvedOptions || {}
       );
-      const parseUrl = (
-        loaderImplementation as LoaderWithParser & {
-          parseUrl?: (
-            url: string,
-            options?: LoaderOptions,
-            context?: LoaderContext
-          ) => Promise<unknown>;
-        }
-      ).parseUrl;
+      const {parseUrl} = loaderImplementation;
       if (parseUrl) {
         const requestUrl = applySearchParamsToUrl(url, resolvedOptions);
         const nativeOptions = getNativeArrowOptions(
           selectedLoader,
           normalizeOptions(resolvedOptions, selectedLoader, [selectedLoader], url)
         );
-        const result = await parseUrl(requestUrl, nativeOptions || resolvedOptions, context);
+        const result = await parseUrl(
+          requestUrl,
+          (nativeOptions || resolvedOptions) as StrictLoaderOptions,
+          context
+        );
         return nativeOptions ? unwrapArrowTable(result) : result;
       }
     }
@@ -274,21 +202,4 @@ export async function load(
   return Array.isArray(resolvedLoaders)
     ? await parse(data, resolvedLoaders, resolvedOptions, context) // loader array overload
     : await parse(data, resolvedLoaders, resolvedOptions, context); // single loader overload
-}
-
-/** Resolves a lightweight source loader into its runtime implementation when necessary. */
-async function resolveSourceLoader(
-  loader: SourceLoader,
-  url: string | DataType,
-  options?: LoaderOptions
-): Promise<SourceLoader> {
-  if (!loader.preload) {
-    return loader;
-  }
-
-  const sourceLoader = await loader.preload(typeof url === 'string' ? url : '', options);
-  if (!isSourceLoader(sourceLoader)) {
-    throw new Error(`${loader.id} source loader preload() did not return a runtime source loader`);
-  }
-  return sourceLoader;
 }

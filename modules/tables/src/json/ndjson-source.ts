@@ -174,6 +174,6 @@ export const NDJSONSourceLoader = {
   options: {},
   defaultOptions: {},
   testURL: (url: string): boolean => /\.(?:ndjson|jsonl)(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: NDJSONSourceOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (data: string | Blob, options: NDJSONSourceOptions, coreApi?: CoreAPI) =>
     new NDJSONTableSource(data, options, coreApi)
 } as const satisfies SourceLoader<NDJSONTableSource>;
