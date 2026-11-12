@@ -78,4 +78,15 @@ test('JSONTableLoader parses through load and opens a source through createDataS
     createDataSource('https://example.test/rows.json', [combined, JSONTableSourceLoader])
   ).toBeInstanceOf(JSONTableSource);
   expect(createSource).toHaveBeenCalledOnce();
+
+  const alternateFactory = vi.fn(JSONTableSourceLoader.createDataSource);
+  const alternate = {
+    ...JSONTableSourceLoader,
+    mimeTypes: ['application/vnd.rows+json'],
+    createDataSource: alternateFactory
+  };
+  createDataSource('https://example.test/rows.json', [combined, alternate], {
+    core: {mimeType: 'application/vnd.rows+json'}
+  });
+  expect(alternateFactory).toHaveBeenCalledOnce();
 });

@@ -33,7 +33,7 @@ export function createDataSource<SourceArrayT extends DataSourceLoader[]>(
     sources.length === 1
       ? sources[0]
       : type === 'auto'
-        ? (findMatchingSource(data, sources) ??
+        ? ((resolvedOptions.core?.mimeType ? undefined : findMatchingSource(data, sources)) ??
           (selectLoaderSync(data as never, sources as unknown as DataSourceLoader[], {
             // `createDataSource` supports non-fetch inputs such as in-memory tables.
             // Selection remains best-effort for those cases.
