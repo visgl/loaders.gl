@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {createDataSource, createDataSourceSync, load, preload} from '@loaders.gl/core';
 import {query} from '@loaders.gl/core/scan';
-import {CSVLoader} from '@loaders.gl/tables/csv';
+import {CSVLoader, CSVTableSource} from '@loaders.gl/tables/csv';
 import {JSONLoader, JSONTableLoader, JSONTableSource} from '@loaders.gl/tables/json';
 
 test('JSON table source queries inferred array columns from a URL', async () => {
@@ -87,4 +87,20 @@ test('JSONTableLoader does not auto-select a GeoJSON URL as a table source', asy
     })
   ).rejects.toThrow('No explicit source loader matches the input');
   expect(fetch).not.toHaveBeenCalled();
+});
+
+test.each([
+  new Blob(['[{"value":1}]'], {type: 'application/json'}),
+  new File(['[{"value":1}]'], 'rows.json')
+])('JSONTableLoader selects a JSON Blob or File among multiple source loaders', async input => {
+  const source = await createDataSource(input, [CSVLoader, JSONTableLoader]);
+  expect(source).toBeInstanceOf(JSONTableSource);
+});
+
+test('createDataSource prefers the explicit MIME type to a JSON filename', async () => {
+  const input = new File(['value\n1'], 'rows.json');
+  const source = await createDataSource(input, [JSONTableLoader, CSVLoader], {
+    core: {mimeType: 'text/csv'}
+  });
+  expect(source).toBeInstanceOf(CSVTableSource);
 });
