@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {Int32, tableFromArrays, tableFromIPC, vectorFromArray} from 'apache-arrow';
-import {encode, encodeInBatches, encodeSync, parse} from '@loaders.gl/core';
+import {encode, encodeInBatches, encodeSync, fetchFile, parse} from '@loaders.gl/core';
 import {
   ArrowWriter,
   AvroWriter,
@@ -79,4 +79,18 @@ test('GeoJSON writes a native GeoArrow table and multiple native batches', async
     text += decoder.decode(chunk);
   }
   expect(JSON.parse(text).features).toEqual(features);
+});
+
+test('GeoJSON writes native GeoArrow geometry columns', async () => {
+  const response = await fetchFile(
+    new URL('../../core/test/geoarrow/data/geoarrow/point.arrow', import.meta.url).href
+  );
+  const source = tableFromIPC(await response.arrayBuffer());
+  const output = await encode(source, GeoJSONWriter);
+  const {features} = JSON.parse(new TextDecoder().decode(output));
+  expect(features).toHaveLength(source.numRows);
+  expect(features[0].geometry).toEqual({
+    type: 'Point',
+    coordinates: expect.arrayContaining([expect.any(Number), expect.any(Number)])
+  });
 });

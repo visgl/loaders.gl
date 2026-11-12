@@ -4,6 +4,9 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 import type {RecordBatch} from 'apache-arrow';
+import type {Table} from '@loaders.gl/core/schema';
+import {getGeometryColumnsFromSchema} from '@loaders.gl/core/geoarrow';
+import {convertGeoArrowVectorCellToGeoJSON} from '@loaders.gl/core/geoarrow/geoarrow-geometry-converter';
 import {isNativeWriterTable, type TableWriterInput} from '../../../arrow/table-writer-input';
 import {convertArrowToSchema, getTableLength} from '@loaders.gl/core/schema-utils';
 import {detectGeometryColumnIndex} from '../encoder-utils/encode-utils';
@@ -36,14 +39,33 @@ export async function* encodeTableAsGeojsonInBatches(
   let isFirstLine = true;
 
   for await (const input of batchIterator) {
-    const tableBatch =
-      'shape' in input && !isNativeWriterTable(input)
-        ? input
-        : {
-            shape: 'object-row-table' as const,
-            schema: convertArrowToSchema(input.schema),
-            data: Array.from(input, row => row.toJSON())
-          };
+    let tableBatch: Table;
+    if ('shape' in input && !isNativeWriterTable(input)) {
+      tableBatch = input;
+    } else {
+      const schema = convertArrowToSchema(input.schema);
+      const geometryColumns = getGeometryColumnsFromSchema(schema);
+      if (geometryColumn == null) {
+        const index = schema.fields.findIndex(field => Object.hasOwn(geometryColumns, field.name));
+        if (index >= 0) {
+          geometryColumn = index;
+        }
+      }
+      const geometryName = geometryColumn == null ? undefined : schema.fields[geometryColumn]?.name;
+      const encoding = geometryName ? geometryColumns[geometryName]?.encoding : undefined;
+      const column = encoding && geometryColumn != null ? input.getChildAt(geometryColumn) : null;
+      tableBatch = {
+        shape: 'object-row-table',
+        schema,
+        data: Array.from(input, (row, rowIndex) => {
+          const data = row.toJSON();
+          if (column && encoding && geometryName) {
+            data[geometryName] = convertGeoArrowVectorCellToGeoJSON(column, rowIndex, encoding);
+          }
+          return data;
+        })
+      };
+    }
     const length = getTableLength(tableBatch);
     if (length === 0) {
       continue;
