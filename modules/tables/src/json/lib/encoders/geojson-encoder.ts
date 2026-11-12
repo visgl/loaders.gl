@@ -6,9 +6,9 @@
 import type {RecordBatch} from 'apache-arrow';
 import type {Table} from '@loaders.gl/core/schema';
 import {
-  convertGeoArrowVectorCellToGeoJSON,
-  getGeometryColumnsFromSchema
-} from '@loaders.gl/core/geoarrow';
+  decodeGeoArrowGeometryColumn,
+  getGeoArrowGeometryFields
+} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {isNativeWriterTable, type TableWriterInput} from '../../../arrow/table-writer-input';
 import {convertArrowToSchema, getTableLength} from '@loaders.gl/core/schema-utils';
 import {detectGeometryColumnIndex} from '../encoder-utils/encode-utils';
@@ -46,23 +46,26 @@ export async function* encodeTableAsGeojsonInBatches(
       tableBatch = input;
     } else {
       const schema = convertArrowToSchema(input.schema);
-      const geometryColumns = getGeometryColumnsFromSchema(schema);
+      const geometryFields = getGeoArrowGeometryFields(input.schema, schema);
       if (geometryColumn == null) {
-        const index = schema.fields.findIndex(field => Object.hasOwn(geometryColumns, field.name));
+        const index = input.schema.fields.findIndex(field =>
+          geometryFields.some(entry => entry.field === field)
+        );
         if (index >= 0) {
           geometryColumn = index;
         }
       }
       const geometryName = geometryColumn == null ? undefined : schema.fields[geometryColumn]?.name;
-      const encoding = geometryName ? geometryColumns[geometryName]?.encoding : undefined;
+      const encoding = geometryFields.find(entry => entry.field.name === geometryName)?.encoding;
       const column = encoding && geometryColumn != null ? input.getChildAt(geometryColumn) : null;
+      const geometries = column && encoding ? decodeGeoArrowGeometryColumn(column, encoding) : null;
       tableBatch = {
         shape: 'object-row-table',
         schema,
         data: Array.from(input, (row, rowIndex) => {
           const data = row.toJSON();
-          if (column && encoding && geometryName) {
-            data[geometryName] = convertGeoArrowVectorCellToGeoJSON(column, rowIndex, encoding);
+          if (geometries && geometryName) {
+            data[geometryName] = geometries[rowIndex];
           }
           return data;
         })
