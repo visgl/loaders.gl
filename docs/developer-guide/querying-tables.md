@@ -96,6 +96,57 @@ the upstream iterator. An empty execution yields one empty schema-bearing batch.
 batch size, but batches you retain still occupy memory. Arrow projection and rename reuse column
 buffers; slices can retain their original buffers, and scattered filtering can allocate new ones.
 
+## Progressive aggregate snapshots
+
+`queryProgressive()` is an experimental **replacement-snapshot** API for aggregate views.
+Unlike `queryInBatches()`, its outputs must **not** be concatenated: every new table is a
+complete view of the input rows processed so far and replaces the previous snapshot.
+
+```ts
+import {queryProgressive} from '@loaders.gl/core/scan';
+
+for await (const {table, rowsProcessed, final} of queryProgressive(
+  {
+    groupBy: 'country',
+    where: {op: '>', args: [{property: 'temperature'}, 30]},
+    aggregates: [
+      {function: 'count', as: 'samples'},
+      {function: 'avg', column: 'temperature', as: 'average'}
+    ]
+  },
+  {source, emitEveryBatches: 8}
+)) {
+  updateVisualization(table);
+  if (final) console.log('Finished', rowsProcessed);
+}
+```
+
+This initial API takes a **structured aggregate query**; it does not parse SQL
+`GROUP BY`. Supported aggregates are `COUNT(*)`, `COUNT(column)`, `SUM`,
+`AVG`, `MIN`, and `MAX`. `WHERE` uses the existing portable predicate
+vocabulary; filtering occurs before aggregation. Group keys may be strings,
+finite numbers, booleans, or null. Null keys form one group. `COUNT(*)` counts
+every matching row; `COUNT(column)` and numeric aggregates ignore null input
+values. Empty sums/averages/minima/maxima produce null.
+
+The engine updates group state without retaining input rows: memory is proportional
+to the number of distinct groups and aggregate definitions, plus the current
+replacement snapshot. Group order is first-seen order. `rowsProcessed` counts
+rows reaching the aggregation after `WHERE` filtering, not rows skipped during
+source pruning. The final snapshot is emitted even for empty sources or when it
+duplicates the preceding provisional snapshot. Consumer cancellation closes the
+upstream iterator.
+
+By default a snapshot is emitted after each nonempty source batch. Use
+`emitEveryBatches` to amortize the cost of rebuilding the output table. A slow
+consumer imposes backpressure. Aggregate counts use safe JavaScript integer
+arithmetic and the initial Arrow output represents aggregate numeric results
+as Float64. High-cardinality group keys can still require substantial memory.
+
+This first tranche intentionally does not support `DISTINCT`, `ORDER BY`, top-K,
+joins, computed selectors, or changing/update streams. Ordinary `query()` and
+`queryInBatches()` preserve their existing final and append-only semantics.
+
 ## Reuse and name sources
 
 Create a source once when you want repeated queries. Give it an explicit name when it will be
