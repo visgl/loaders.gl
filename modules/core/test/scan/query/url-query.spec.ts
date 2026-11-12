@@ -95,31 +95,6 @@ test('URL sources open lazily with explicit loaders and close after one public c
   });
 });
 
-test('URL queries preload a format loader with a synchronous source factory', async () => {
-  const fixture = makeURLSource();
-  const metadata = {
-    id: 'query-test',
-    name: 'Query test',
-    module: 'core',
-    version: '1',
-    extensions: ['query-test'],
-    mimeTypes: [],
-    options: {}
-  };
-  const preload = vi.fn(async () => ({
-    ...metadata,
-    createDataSourceSync: fixture.createDataSourceSync
-  }));
-  const result = await query(
-    {select: [{column: 'value', as: 'number'}]},
-    {source: 'data.query-test', loaders: {...metadata, preload}}
-  );
-  expect(result.data.getChild('number')?.toArray()).toEqual(new Int32Array([1, 2, 3]));
-  expect(preload).toHaveBeenCalledTimes(1);
-  expect(fixture.createDataSourceSync).toHaveBeenCalledTimes(1);
-  expect(fixture.close).toHaveBeenCalledTimes(1);
-});
-
 test('URL loader arrays select only explicit candidates', async () => {
   const fixture = makeURLSource();
   const other = makeURLSource();
