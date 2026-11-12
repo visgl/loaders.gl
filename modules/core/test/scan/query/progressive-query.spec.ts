@@ -164,14 +164,14 @@ test('invalid progressive requests reject before reading', async () => {
     {groupBy: 'country', aggregates: [{function: 'count', as: 'country'}]}
   ];
   for (const request of requests) {
-    await expect(async () => {
+    await expect((async () => {
       for await (const _snapshot of queryProgressive(request as never, {source})) {}
-    }).rejects.toThrow();
+    })()).rejects.toThrow();
   }
-  await expect(async () => {
+  await expect((async () => {
     for await (const _snapshot of queryProgressive(
       {aggregates: [{function: 'count', as: 'count'}]},
       {source, emitEveryBatches: 0}
     )) {}
-  }).rejects.toThrow('emitEveryBatches');
+  })()).rejects.toThrow('emitEveryBatches');
 });
