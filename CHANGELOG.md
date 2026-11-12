@@ -6,6 +6,15 @@
 
 ## v5.0
 
+### v5.0.0-beta.8
+
+- Upgrade math.gl to beta.8 and adopt its standalone expressions package and Arrow inspection utilities.
+- Add progressive grouped aggregate snapshots, SQL OFFSET, and a queryable JSON table source.
+- Default supported table loaders to native Arrow and accept native Arrow in table writers.
+- Convert atomic and streaming Parquet results at the core API boundary and consolidate Arrow table conversion.
+- Separate parsing from data source creation and give explicit loaders priority over registered loaders.
+- Route library diagnostics through probe.gl, standardize unnamed positional columns, and preserve I3S attribute names and nulls in tile conversion.
+
 ### v5.0.0-beta.7
 
 - Upgrade math.gl dependencies to beta.7 and reuse upstream SQL parsing and Arrow expression execution.
