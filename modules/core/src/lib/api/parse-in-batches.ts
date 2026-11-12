@@ -168,7 +168,9 @@ async function parseWithLoaderInBatches(
   options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
-  const outputIterator = await parseToOutputIterator(loader, data, options, context);
+  const output = loader.parseInBatches ? loader.prepareParseBatchOutput?.(options) : null;
+  const decoded = await parseToOutputIterator(loader, data, output?.options ?? options, context);
+  const outputIterator = output ? convertOutputBatches(decoded, output.convert) : decoded;
 
   // Generate metadata batch if requested
   if (!options?.core?.metadata) {
@@ -195,6 +197,16 @@ async function parseWithLoaderInBatches(
   }
 
   return makeMetadataBatchIterator(outputIterator);
+}
+
+/** Converts batches as they are consumed and closes the decoder on early return. */
+async function* convertOutputBatches(
+  batches: AsyncIterable<unknown>,
+  convert: (batch: unknown) => unknown
+): AsyncIterable<unknown> {
+  for await (const batch of batches) {
+    yield convert(batch);
+  }
 }
 
 /**

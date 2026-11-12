@@ -29,13 +29,15 @@ export function deserializeParquetWorkerResult(
     : table;
 }
 
-/** Keeps the requested public shape separate from the columnar wire shape. */
+/** Carries the row request for callers using the legacy batch conversion path. */
 export function serializeParquetWorkerBatch(
   batch: unknown,
   options?: ParquetLoaderOptions
 ): unknown {
   const serialized = serializeArrowWorkerTable(batch) as object;
-  return {...serialized, resultShape: options?.parquet?.shape || 'arrow-table'};
+  return options?.parquet?.shape === 'object-row-table'
+    ? {...serialized, resultShape: 'object-row-table'}
+    : serialized;
 }
 
 /** Converts requested rows only after the column buffers reach the caller. */
