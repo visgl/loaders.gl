@@ -24,7 +24,7 @@ test('WMTSImageTileSource#getTileURL preserves endpoint parameters', () => {
 });
 
 test('WMTSImageTileSource#getTileURL expands REST templates', () => {
-  const source = WMTSSourceLoader.createDataSource(
+  const source = WMTSSourceLoader.createDataSourceSync(
     'https://example.com/{TileMatrix}/{TileRow}/{TileCol}.png',
     {
       wmts: {urlTemplate: 'https://tiles.example/{TileMatrix}/{TileRow}/{TileCol}.png'}

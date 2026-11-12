@@ -7,7 +7,7 @@ import {
 } from '@loaders.gl/ogc/wms';
 
 test('WCSCoverageSource builds GetCoverage requests and preserves binary responses', async () => {
-  const source = WCSCoverageSourceLoader.createDataSource('https://example.com/geoserver/wcs', {
+  const source = WCSCoverageSourceLoader.createDataSourceSync('https://example.com/geoserver/wcs', {
     wcs: {coverageId: 'elevation', format: 'image/tiff'}
   });
   source.fetch = async url => {
@@ -109,13 +109,13 @@ test('WCSCoverageSourceLoader recognizes service URLs and creates sources', () =
   expect(WCSCoverageSourceLoader.testURL('https://example.com/geoserver/wcs')).toBe(true);
   expect(WCSCoverageSourceLoader.testURL('https://example.com/api?service=WCS')).toBe(true);
   expect(WCSCoverageSourceLoader.testURL('https://example.com/api')).toBe(false);
-  expect(WCSCoverageSourceLoader.createDataSource('https://example.com/wcs')).toBeInstanceOf(
+  expect(WCSCoverageSourceLoader.createDataSourceSync('https://example.com/wcs')).toBeInstanceOf(
     WCSCoverageSource
   );
 });
 
 test('OGC API Coverages requests a collection subset and decodes JSON', async () => {
-  const source = OGCAPICoveragesSourceLoader.createDataSource('https://example.com/coverages', {
+  const source = OGCAPICoveragesSourceLoader.createDataSourceSync('https://example.com/coverages', {
     'ogc-api-coverages': {collectionId: 'temperature'}
   });
   source.fetch = async url => {
@@ -132,7 +132,7 @@ test('OGC API Coverages requests a collection subset and decodes JSON', async ()
 });
 
 test('OGC API EDR builds a position query with temporal and parameter filters', async () => {
-  const source = OGCAPIEDRSourceLoader.createDataSource('https://example.com/edr');
+  const source = OGCAPIEDRSourceLoader.createDataSourceSync('https://example.com/edr');
   source.fetch = async url => {
     expect(url).toContain('/collections/weather/position');
     expect(url).toContain('coords=POINT%2810+20%29');

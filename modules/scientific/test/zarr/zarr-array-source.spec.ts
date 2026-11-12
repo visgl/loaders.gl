@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {
   ZarrArraySource,
   ZarrArraySourceLoader,
@@ -14,7 +14,7 @@ test('ZarrArraySource reads array metadata and integer selections', async () => 
     zarr: {path: 'images/example-image'},
     zarrArray: {path: '0', dimensions: ['t', 'c', 'z', 'y', 'x']}
   };
-  const source = createDataSource(FIXTURE_URL, [ZarrArraySourceLoader], options);
+  const source = createDataSourceSync(FIXTURE_URL, [ZarrArraySourceLoader], options);
   expect(source instanceof ZarrArraySource).toBeTruthy();
   const metadata = await source.getMetadata();
   expect(metadata.shape).toEqual([1, 3, 1, 167, 439]);
@@ -42,14 +42,14 @@ test('ZarrArraySource reads array metadata and integer selections', async () => 
   expect(namedWindow.shape).toEqual([3, 3]);
 });
 test('ZarrArraySource validates selection rank and dimension labels', async () => {
-  const source = createDataSource(FIXTURE_URL, [ZarrArraySourceLoader], {
+  const source = createDataSourceSync(FIXTURE_URL, [ZarrArraySourceLoader], {
     zarr: {path: 'images/example-image'},
     zarrArray: {path: '0', dimensions: ['t']}
   });
   await expect(source.getMetadata()).rejects.toThrow(/dimensions must have length 5/);
 });
 test('ZarrArraySource rejects unknown named dimensions', async () => {
-  const source = createDataSource(FIXTURE_URL, [ZarrArraySourceLoader], {
+  const source = createDataSourceSync(FIXTURE_URL, [ZarrArraySourceLoader], {
     zarr: {path: 'images/example-image'},
     zarrArray: {path: '0'}
   });

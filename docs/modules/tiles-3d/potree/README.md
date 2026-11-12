@@ -97,11 +97,11 @@ runtime. The source resolves the Potree hierarchy and node payloads as the viewp
 Potree can also be used through the `DataSource` path with the lightweight point-cloud manager:
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
 
-const dataSource = createDataSource(POTREE_URL, [PotreeSourceLoader], {
+const dataSource = createDataSourceSync(POTREE_URL, [PotreeSourceLoader], {
   core: {type: 'potree'},
   potree: {}
 });

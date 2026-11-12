@@ -142,6 +142,6 @@ export const JSONTableSourceLoader = {
   options: {},
   defaultOptions: {},
   testURL: (url: string): boolean => /\.json(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: JSONTableSourceOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (data: string | Blob, options: JSONTableSourceOptions, coreApi?: CoreAPI) =>
     new JSONTableSource(data, options, coreApi)
 } as const satisfies SourceLoader<JSONTableSource>;

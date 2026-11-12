@@ -102,7 +102,7 @@ export const SpatialDataSourceLoaderWithParser = {
     }
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string,
     options: SpatialDataSourceLoaderOptions,
     coreApi?: CoreAPI

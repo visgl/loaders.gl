@@ -51,13 +51,13 @@ In your application's TypeScript entry point:
 ```ts
 import {Deck} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
 const serviceUrl =
   'https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0';
 
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader);
 const features = await source.getFeatures({
   layers: ['0'],
   format: 'geojson',
@@ -125,10 +125,10 @@ const source = await load(serviceUrl, ARCGIS_LOADERS, {
 For synchronous construction, import the same loader name from `/bundled`:
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis/bundled';
 
-const source = createDataSource(serviceUrl, [ArcGISFeatureServerSourceLoader], {});
+const source = createDataSourceSync(serviceUrl, [ArcGISFeatureServerSourceLoader], {});
 ```
 
 Source construction is synchronous in this example; network methods remain asynchronous.
@@ -140,7 +140,7 @@ applications already using runtime source classes.
 | Import | Use |
 | --- | --- |
 | `@loaders.gl/arcgis` | Async `load()`, deck.gl `SourceLayer`, lightweight registry and shared types |
-| `@loaders.gl/arcgis/bundled` | Synchronous `createDataSource()`, runtime registry, direct source classes and helpers |
+| `@loaders.gl/arcgis/bundled` | Synchronous `createDataSourceSync()`, runtime registry, direct source classes and helpers |
 | `@loaders.gl/arcgis/authentication` | `ArcGISAuthentication` and `createArcGISCredential` |
 | `@loaders.gl/arcgis/discovery` | `getArcGISServices`, `discoverArcGISCapabilities` and `selectArcGISService` |
 | `@loaders.gl/arcgis/scene-aggregation` | `aggregateArcGISSceneFeatures` |
@@ -148,8 +148,8 @@ applications already using runtime source classes.
 
 Each service loader has an equivalent implementation subpath. Named ESM imports from `/bundled`
 can still be tree-shaken; importing its entire registry intentionally includes all six clients.
-The package-root loaders require async `load()` and report a helpful error if passed directly to
-synchronous `createDataSource()`.
+The package-root loaders require async `createDataSource()` and report a helpful error if passed directly to
+synchronous `createDataSourceSync()`.
 
 Lazy imports defer download and initialization; they do not eliminate the implementation's bytes
 when that service is used. The result depends on the application's bundler and whether ESM code

@@ -72,10 +72,10 @@ contract.
 ## Search a catalog
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {CSWSourceLoader} from '@loaders.gl/ogc/wms';
 
-const catalog = createDataSource(cswUrl, [CSWSourceLoader]);
+const catalog = createDataSourceSync(cswUrl, [CSWSourceLoader]);
 const metadata = await catalog.getMetadata();
 
 for await (const record of catalog.search()) {

@@ -116,7 +116,7 @@ export const OGCAPIEDRSourceLoader = {
     /(?:\/edr(?:\/|$)|ogc[/-]?api[/-]?edr|\/collections\/[^/]+\/(?:position|radius|area|cube|trajectory|corridor|locations)(?:\/|$))/i.test(
       url
     ),
-  createDataSource: (url: string, options: OGCAPIEDRSourceOptions = {}, coreApi?: CoreAPI) =>
+  createDataSourceSync: (url: string, options: OGCAPIEDRSourceOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPIEDRSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPIEDRSource>;
 

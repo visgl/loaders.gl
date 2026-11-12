@@ -585,8 +585,10 @@ itself and the separate `Tileset3D.loadOptions` API are not removed by this chan
   their final v5 removal or retention decision is tracked in
   [the v5 release tracker](https://github.com/visgl/loaders.gl/issues/3316).
 - `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
-- `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
-- `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
+- Use `await createDataSource(url, loader, options)` to construct a source.
+  `load()` returns parsed data and rejects source-only loaders.
+- Rename synchronous `createDataSource()` calls to `createDataSourceSync()`.
+  This API requires an available source implementation.
 
 #### SourceLoader migration examples
 
@@ -606,21 +608,11 @@ const loaded = await load(url, WMSSource);
 Now, in v5:
 
 ```ts
-import type {SourceLoader} from '@loaders.gl/core/loader-utils';
-import {createDataSource, load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
-const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
-const wmsSource = createDataSource(url, [WMSSourceLoader], options);
-const loaded = await load(url, WMSSourceLoader); // WMSImageSource
+const source = await createDataSource(url, WMSSourceLoader, options);
 ```
-
-This unifies top-level loading behavior:
-
-- parser loaders still return parsed data
-- source loaders now return runtime source objects
-- metadata remains available from the returned runtime object, typically via `await source.getMetadata()`
 
 #### Source capability interfaces
 

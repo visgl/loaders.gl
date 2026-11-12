@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource, resolvePath} from '@loaders.gl/core';
+import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
 import {fetchFile} from '@loaders.gl/core';
 import {
   GeoTIFFRasterSource,
@@ -49,15 +49,19 @@ async function readFixtureBytes(url: string): Promise<Uint8Array> {
 }
 
 test('createDataSource selects GeoTIFFSourceLoader from URL', () => {
-  const dataSource = createDataSource('https://example.com/dataset.tif', [GeoTIFFSourceLoader], {
-    geotiff: {}
-  });
+  const dataSource = createDataSourceSync(
+    'https://example.com/dataset.tif',
+    [GeoTIFFSourceLoader],
+    {
+      geotiff: {}
+    }
+  );
 
   expect(dataSource).toBeInstanceOf(GeoTIFFRasterSource);
 });
 
 test('createDataSource selects GeoTIFFSourceLoader from explicit core.type', () => {
-  const dataSource = createDataSource(new Blob([new Uint8Array([0])]), [GeoTIFFSourceLoader], {
+  const dataSource = createDataSourceSync(new Blob([new Uint8Array([0])]), [GeoTIFFSourceLoader], {
     core: {type: 'geotiff'},
     geotiff: {}
   });
@@ -66,7 +70,7 @@ test('createDataSource selects GeoTIFFSourceLoader from explicit core.type', () 
 });
 
 test('createDataSource selects OMETiffSourceLoader from URL ahead of GeoTIFFSourceLoader', () => {
-  const dataSource = createDataSource(
+  const dataSource = createDataSourceSync(
     'https://example.com/multi-channel.ome.tif',
     [GeoTIFFSourceLoader, OMETiffSourceLoader],
     {geotiff: {}, ometiff: {}}
@@ -76,7 +80,7 @@ test('createDataSource selects OMETiffSourceLoader from URL ahead of GeoTIFFSour
 });
 
 test('createDataSource selects OMETiffSourceLoader from explicit core.type', () => {
-  const dataSource = createDataSource(new Blob([new Uint8Array([0])]), [OMETiffSourceLoader], {
+  const dataSource = createDataSourceSync(new Blob([new Uint8Array([0])]), [OMETiffSourceLoader], {
     core: {type: 'ometiff'},
     ometiff: {}
   });

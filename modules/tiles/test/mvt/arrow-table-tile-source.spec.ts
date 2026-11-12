@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {createDataSource, load} from '@loaders.gl/core';
+import {createDataSource, createDataSourceSync} from '@loaders.gl/core';
 import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import {ArrowTableTileSourceLoader as ArrowTableTileSourceLoaderMetadata} from '@loaders.gl/tiles/mvt';
@@ -22,12 +22,12 @@ const POINT: Geometry = {type: 'Point', coordinates: [-90, 40]};
 
 test('Arrow tile source metadata preloads the runtime through async load', async () => {
   expect(ArrowTableTileSourceLoaderMetadata.testURL()).toBe(false);
-  expect(() => ArrowTableTileSourceLoaderMetadata.createDataSource(makeTable([POINT]))).toThrow(
-    'requires async load()'
+  expect(() => ArrowTableTileSourceLoaderMetadata.createDataSourceSync(makeTable([POINT]))).toThrow(
+    'requires async createDataSource()'
   );
   expect(await ArrowTableTileSourceLoaderMetadata.preload()).toBe(ArrowTableTileSourceLoader);
   expect(ArrowTableTileSourceLoader).not.toHaveProperty('preload');
-  const source = await load(
+  const source = await createDataSource(
     new Blob([
       JSON.stringify({
         type: 'FeatureCollection',
@@ -89,7 +89,7 @@ test.each([
   'optimized',
   'geoarrow.geometry'
 ] as const)('Arrow tile source accepts %s and returns Arrow through every accessor', async encoding => {
-  const source = ArrowTableTileSourceLoader.createDataSource(
+  const source = ArrowTableTileSourceLoader.createDataSourceSync(
     Promise.resolve(makeTable([POINT, null], encoding))
   );
   expect(() => source.getTileSync(ROOT_TILE)).toThrow('Await');
@@ -319,7 +319,7 @@ test('Arrow tile source loads URLs and blobs through injected core and works thr
   const load = vi.fn().mockResolvedValue(table);
   const coreApi = {load} as unknown as CoreAPI;
   for (const input of ['memory.geojson', new Blob(['{}'])]) {
-    const source = ArrowTableTileSourceLoader.createDataSource(
+    const source = ArrowTableTileSourceLoader.createDataSourceSync(
       input,
       {core: {worker: false, loaders: [GeoJSONLoader]}},
       coreApi
@@ -330,9 +330,9 @@ test('Arrow tile source loads URLs and blobs through injected core and works thr
       table: {coordinates: 'local'}
     });
   }
-  const source = createDataSource(table, [ArrowTableTileSourceLoader], {});
+  const source = createDataSourceSync(table, [ArrowTableTileSourceLoader], {});
   expect((await source.getVectorTile(ROOT_TILE))?.shape).toBe('arrow-table');
-  const blobSource = createDataSource(
+  const blobSource = createDataSourceSync(
     new Blob(
       [
         JSON.stringify({

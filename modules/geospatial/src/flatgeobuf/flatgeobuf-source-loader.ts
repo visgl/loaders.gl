@@ -93,7 +93,7 @@ export const FlatGeobufSourceLoader = {
   options: {flatgeobuf: {format: 'arrow'}},
   defaultOptions: {flatgeobuf: {format: 'arrow'}},
   testURL: (url: string): boolean => /\.fgb($|[?#])/i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     url: string,
     options: FlatGeobufSourceLoaderOptions,
     coreApi?: CoreAPI

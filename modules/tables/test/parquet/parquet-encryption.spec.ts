@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
-import {fetchFile, load} from '@loaders.gl/core';
+import {createDataSource, fetchFile, load} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {
   ParquetReader,
@@ -121,7 +121,7 @@ test('ParquetJSLoader does not retrieve keys for unprojected encrypted columns',
 
 test('ParquetSource decrypts encrypted pages in a worker', async () => {
   const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
-  const source = (await load(url, ParquetSourceLoader, {
+  const source = (await createDataSource(url, ParquetSourceLoader, {
     core: {worker: true, reuseWorkers: false, _workerType: 'test'},
     parquet: {
       columns: ['double_field'],

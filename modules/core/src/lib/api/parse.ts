@@ -135,7 +135,7 @@ export async function parse(
 
   if (isSourceLoader(loader)) {
     throw new Error(
-      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parse().`
+      `${loader.id} is a SourceLoader. Use createDataSource() to create a runtime source object instead of parse().`
     );
   }
 
@@ -222,11 +222,14 @@ async function parseWithLoaderImplementation(
     return await loader.parse(data as ArrayBuffer, options, context);
   }
 
-  // All parser-bearing sync loaders should also offer `parse` so async APIs can use them.
   if (loader.parseSync) {
     throw new Error(
       `${loader.name} loader: 'parse' not available on parser-bearing sync loader. Add an async 'parse' function to this loader, or call preload(loader) before parseSync(). ${context.url || ''}`
     );
+  }
+
+  if (loader.createDataSourceSync) {
+    throw new Error(`${loader.id} creates sources. Use createDataSource() to open a source.`);
   }
 
   // TBD - If asynchronous parser not available, return null

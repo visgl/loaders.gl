@@ -34,7 +34,7 @@ test('uses the resolved source path prefix before opening a dataset', async () =
   const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
   const prefix = getPathPrefix();
   setPathPrefix('https://example.com/');
-  const source = PotreeSourceLoader.createDataSource('dataset/metadata.json', {
+  const source = PotreeSourceLoader.createDataSourceSync('dataset/metadata.json', {
     core: {fetch: transport.fetch}
   });
   try {
@@ -50,7 +50,7 @@ test('legacy URL query text does not select the modern dataset reader', async ()
   const transport = createDatasetFetch(
     await encodePotreeDataset(createPoints(), {potree: {version: '1.8'}})
   );
-  const source = PotreeSourceLoader.createDataSource(
+  const source = PotreeSourceLoader.createDataSourceSync(
     'https://example.com/dataset/cloud.js?token=/metadata.json',
     {core: {fetch: transport.fetch}}
   );

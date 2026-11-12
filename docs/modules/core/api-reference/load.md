@@ -67,8 +67,9 @@ core whether it needs text, JSON, binary data, or a stream.
 
 :::
 
-The return value depends on the selected loader's category data. For example, a CSV loader may
-return batches or a table, while a glTF loader returns a scenegraph-shaped object.
+`load()` returns parsed data. A CSV loader can return a table, while a glTF loader returns
+a scenegraph-shaped object. To open a data source for queries or tiled access, use
+[`createDataSource()`](./create-data-source).
 
 ## Parameters
 

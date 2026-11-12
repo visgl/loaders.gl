@@ -16,7 +16,7 @@ input and output stay in Arrow, and attributes do not pass through GeoJSON objec
 import {ArrowTableTileSourceLoaderWithParser} from '@loaders.gl/tiles/arrow-table-tile-source-loader';
 
 // table is a loaders.gl ArrowTable or an Apache Arrow Table (or a promise of either).
-const source = ArrowTableTileSourceLoaderWithParser.createDataSource(table, {
+const source = ArrowTableTileSourceLoaderWithParser.createDataSourceSync(table, {
   table: {coordinates: 'wgs84'}
 });
 const tile = await source.getVectorTile({z: 5, x: 10, y: 12});
@@ -29,11 +29,11 @@ URLs and blobs work through async `load` with an explicit Arrow-producing loader
 does not select a parser or override its output options. Configure the parser to return Arrow.
 
 ```typescript
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {GeoJSONLoader} from '@loaders.gl/tables/json';
 import {ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 
-const source = await load('/features.geojson', ArrowTableTileSourceLoader, {
+const source = await createDataSource('/features.geojson', ArrowTableTileSourceLoader, {
   core: {loaders: [GeoJSONLoader]}, // Arrow-primary in loaders.gl 5
   table: {coordinates: 'wgs84'}
 });

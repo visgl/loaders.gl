@@ -80,7 +80,11 @@ export const MVTSourceLoader = {
   },
 
   testURL: (url: string): boolean => true,
-  createDataSource(url: string, options: MVTSourceLoaderOptions, coreApi?: CoreAPI): MVTTileSource {
+  createDataSourceSync(
+    url: string,
+    options: MVTSourceLoaderOptions,
+    coreApi?: CoreAPI
+  ): MVTTileSource {
     return new MVTTileSource(url, options, coreApi);
   }
 } as const satisfies SourceLoader<MVTTileSource>;

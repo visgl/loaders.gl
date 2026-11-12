@@ -88,12 +88,12 @@ Or just import via a browser script tag:
 ### Usage
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {TableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/tables/json';
 
 // Build an initial index of tiles.
-const tileSource = createDataSource(url, [TableTileSourceLoader], {
+const tileSource = createDataSourceSync(url, [TableTileSourceLoader], {
   core: {
     loaders: [GeoJSONLoader]
   }
@@ -131,10 +131,10 @@ although the defaults are sensible and work well for most use cases.
 | `table.buffer`         | `64`      | Tile buffer on each side                                             |
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {TableTileSourceLoader} from '@loaders.gl/tiles/mvt';
 
-const tileSource = createDataSource(parsedGeojson, [TableTileSourceLoader], {
+const tileSource = createDataSourceSync(parsedGeojson, [TableTileSourceLoader], {
   table: {
     coordinates: 'local',
     maxZoom: 14,
@@ -161,7 +161,7 @@ Create a source directly from an already parsed GeoJSON table when the applicati
 core's source auto-selection:
 
 ```typescript
-const tileSource = TableTileSourceLoader.createDataSource(parsedGeojson, {
+const tileSource = TableTileSourceLoader.createDataSourceSync(parsedGeojson, {
   table: {coordinates: 'local'}
 });
 

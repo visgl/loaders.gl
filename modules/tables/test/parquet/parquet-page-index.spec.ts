@@ -4,7 +4,7 @@
 
 import {beforeAll, describe, expect, test} from 'vitest';
 
-import {createDataSource, isBrowser} from '@loaders.gl/core';
+import {createDataSourceSync, isBrowser} from '@loaders.gl/core';
 import type {ParquetBatch, ParquetSourceMetadata} from '@loaders.gl/tables/parquet/index';
 import type {ParquetSourceLoaderOptions} from '@loaders.gl/tables/parquet/index';
 import {
@@ -364,7 +364,7 @@ function createRemoteSource(
       }
     });
   };
-  return createDataSource(REMOTE_URL, [ParquetSourceLoader], {
+  return createDataSourceSync(REMOTE_URL, [ParquetSourceLoader], {
     ...options,
     core: {
       fetch: rangeFetch,

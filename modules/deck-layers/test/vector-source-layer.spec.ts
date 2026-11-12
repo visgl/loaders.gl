@@ -622,7 +622,7 @@ test('VectorSourceLayer reports incompatible sources and finalizes owned URL sou
     fromUrl: true,
     fromBlob: false,
     testURL: () => true,
-    createDataSource: () => source
+    createDataSourceSync: () => source
   };
   const layer = createLayer({
     id: 'owned-vector-source',

@@ -274,5 +274,5 @@ Prepared dependency graphs run locally because their function-valued bindings ca
 transferred to a worker. `core.worker` is forced to `false` in nested calls as well,
 even when parse-time options request workers. Use the original metadata loader for normal
 worker dispatch.
-`createDataSource()` remains synchronous; preload a source first when its dependencies must
+`createDataSourceSync()` requires a loaded implementation. Preload a source first when its dependencies must
 be available before source creation.

@@ -102,9 +102,9 @@ Create a source once when you want repeated queries. Give it an explicit name wh
 referenced by `from`:
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-const cities = await load('cities.parquet', ParquetSourceLoader, {
+const cities = await createDataSource('cities.parquet', ParquetSourceLoader, {
   core: {name: 'cities'}
 });
 

@@ -50,7 +50,7 @@ function createTileSource(overrides: Record<string, unknown> = {}) {
 
 function createSourceLoader(
   type: string,
-  createDataSource: SourceLoader['createDataSource'],
+  createDataSourceSync: SourceLoader['createDataSourceSync'],
   overrides: Partial<SourceLoader> = {}
 ): SourceLoader {
   return {

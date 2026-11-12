@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load, parse, parseSync} from '@loaders.gl/core';
+import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
 import {CSVLoader, AvroLoader, AvroSchemaLoader} from '@loaders.gl/tables';
 import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
 import {AvroLoaderWithParser} from '@loaders.gl/tables/avro-loader';
@@ -123,7 +123,9 @@ test('grouped Lance source metadata defers synchronous source construction', asy
   const {LanceSourceLoader: implementation} = await import(
     '@loaders.gl/tables/lance-source-loader'
   );
-  expect(() => LanceSourceLoader.createDataSource(new Blob(), {})).toThrow('requires async load()');
+  expect(() => LanceSourceLoader.createDataSourceSync(new Blob(), {})).toThrow(
+    'requires async createDataSource()'
+  );
   expect(await LanceSourceLoader.preload()).toBe(implementation);
   expect(LanceSourceLoader.options).toEqual(implementation.options);
   expect(LanceSourceLoader.testURL('dataset.lance/')).toBe(true);
@@ -142,7 +144,9 @@ test('core asynchronously constructs grouped Lance and ORC sources from metadata
   const {LanceSourceLoader, ORCSourceLoader} = await import('@loaders.gl/tables');
   const {LanceSource} = await import('@loaders.gl/tables/lance-source-loader');
   const {ORCSource} = await import('@loaders.gl/tables/orc-source-loader');
-  expect(await load(new Blob(), LanceSourceLoader)).toBeInstanceOf(LanceSource);
-  expect(await load(new Blob(), ORCSourceLoader)).toBeInstanceOf(ORCSource);
-  expect(() => ORCSourceLoader.createDataSource(new Blob(), {})).toThrow('requires async load()');
+  expect(await createDataSource(new Blob(), LanceSourceLoader)).toBeInstanceOf(LanceSource);
+  expect(await createDataSource(new Blob(), ORCSourceLoader)).toBeInstanceOf(ORCSource);
+  expect(() => ORCSourceLoader.createDataSourceSync(new Blob(), {})).toThrow(
+    'requires async createDataSource()'
+  );
 });

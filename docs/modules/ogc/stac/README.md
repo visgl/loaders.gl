@@ -60,10 +60,10 @@ npm install @loaders.gl/core @loaders.gl/services
 ## Usage
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {STACSourceLoader} from '@loaders.gl/ogc/stac';
 
-const source = await load('https://example.com/catalog.json', STACSourceLoader);
+const source = await createDataSource('https://example.com/catalog.json', STACSourceLoader);
 const {mode, root} = await source.getMetadata();
 
 if (mode === 'api') {

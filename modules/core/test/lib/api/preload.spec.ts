@@ -3,7 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import {parse, parseInBatches, parseSync, preload, preloadSync, load} from '@loaders.gl/core';
+import {
+  createDataSource,
+  parse,
+  parseInBatches,
+  parseSync,
+  preload,
+  preloadSync,
+  load
+} from '@loaders.gl/core';
 import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv/unbundled';
 
 const CSV_TEXT = 'city,population\nParis,2148000\nBerlin,3769000';
@@ -398,13 +406,13 @@ test('preloads a source dependency before synchronous source creation', async ()
     fromBlob: false,
     defaultOptions: {},
     testURL: () => true,
-    createDataSource: (_data, options) => options.source.subloaders
+    createDataSourceSync: (_data, options) => options.source.subloaders
   };
   const prepared = await preload(source as never);
-  expect((prepared as typeof source).createDataSource('', {}).DependencyLoader.id).toBe(
+  expect((prepared as typeof source).createDataSourceSync('', {}).DependencyLoader.id).toBe(
     'dependency'
   );
-  expect((await load('source://example', prepared as never)).DependencyLoader.id).toBe(
+  expect((await createDataSource('source://example', prepared as never)).DependencyLoader.id).toBe(
     'dependency'
   );
   expect(source.preload).toHaveBeenCalledTimes(1);

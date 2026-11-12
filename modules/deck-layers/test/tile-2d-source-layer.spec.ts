@@ -35,7 +35,9 @@ test.each([
     sourceOptions: {table: {coordinates}, core: {worker: false, type: 'table'}}
   });
   expect(resolved.sourceType).toBe('tile-2d');
-  const source = resolved.source as ReturnType<typeof ArrowTableTileSourceLoader.createDataSource>;
+  const source = resolved.source as ReturnType<
+    typeof ArrowTableTileSourceLoader.createDataSourceSync
+  >;
   const index = {x: 0, y: 0, z: 0};
   const tile = await source.getTileData({index});
   expect(tile?.shape).toBe('arrow-table');
@@ -93,7 +95,7 @@ const TEST_SOURCE_FACTORY = {
   fromUrl: true,
   fromBlob: true,
   testURL: () => true,
-  createDataSource() {
+  createDataSourceSync() {
     return TEST_TILE_SOURCE as any;
   }
 };
@@ -434,7 +436,7 @@ test('Tile2DSourceLayer finalizes owned sources and rejects incompatible source 
   const source = {...TEST_TILE_SOURCE, close};
   const sourceLoader = {
     ...TEST_SOURCE_FACTORY,
-    createDataSource: () => source
+    createDataSourceSync: () => source
   };
   const layer = createLayer({
     id: 'owned-tile-source',

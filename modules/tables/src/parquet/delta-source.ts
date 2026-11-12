@@ -218,7 +218,7 @@ export const DeltaSourceLoaderWithParser = {
   defaultOptions: {},
   testURL: (url: string): boolean =>
     /\/_delta_log\/(?:\d{20}\.json|_last_checkpoint)(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: DeltaSourceOptions = {}): DeltaTableSource =>
+  createDataSourceSync: (data: string | Blob, options: DeltaSourceOptions = {}): DeltaTableSource =>
     new DeltaTableSource(data, options)
 } as const satisfies SourceLoader<DeltaTableSource>;
 

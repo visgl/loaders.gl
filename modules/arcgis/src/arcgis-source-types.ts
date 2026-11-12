@@ -7,7 +7,7 @@ import type {LegacyImageLoaderOptions} from '@loaders.gl/images';
 import type {MVTLoaderOptions} from '@loaders.gl/tiles/mvt';
 
 /** Static source metadata shared by lazy descriptors and runtime loaders. */
-type ArcGISSourceMetadata = Omit<SourceLoader, 'dataType' | 'batchType' | 'createDataSource'>;
+type ArcGISSourceMetadata = Omit<SourceLoader, 'dataType' | 'batchType' | 'createDataSourceSync'>;
 
 /** Parameters for ArcGIS FeatureServer query requests. */
 export type ArcGISFeatureServiceQueryOptions = {

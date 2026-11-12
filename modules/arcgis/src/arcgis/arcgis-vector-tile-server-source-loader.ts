@@ -196,7 +196,7 @@ export const ArcGISVectorTileServerSourceLoaderWithParser = {
   preload: undefined,
   /** Supplies ArcGIS credentials after loading the selected implementation. */
   getAuthentications: () => [ArcGISAuthentication],
-  createDataSource: (
+  createDataSourceSync: (
     url: string,
     options: ArcGISVectorTileServerSourceLoaderOptions = {},
     coreApi?: CoreAPI

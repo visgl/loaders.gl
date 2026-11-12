@@ -73,7 +73,7 @@ export const MLTSourceLoader = {
 
   testURL: (url: string): boolean =>
     url.endsWith('.mlt') || url.endsWith('/plain') || isURLTemplate(url),
-  createDataSource: (
+  createDataSourceSync: (
     url: string,
     options: MLTSourceLoaderOptions,
     coreApi?: CoreAPI

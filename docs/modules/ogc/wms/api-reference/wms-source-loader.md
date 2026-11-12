@@ -56,7 +56,7 @@ The `WMSSourceLoader` implements the `ImageService` interface, allowing WMS serv
 A `WMSSourceLoader` instance provides type safe methods to send requests to a WMS service and parse the responses:
 
 ```typescript
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader], {
+const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSSourceLoader], {
   wmsParameters: {layers: ['oms']}
 });
 const mapImage = await wmsService.getMap({
@@ -70,7 +70,7 @@ const mapImage = await wmsService.getMap({
 Capabilities metadata can be queried:
 
 ```typescript
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader]);
+const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSSourceLoader]);
 const capabilities = await wmsService.getCapabilities({});
 // Check capabilities
 ```
@@ -79,7 +79,7 @@ The WMS version as well as other default WMS parameters can be specified in the 
 
 ```typescript
 // Specify the older 1.1.1 version (1.3.0 is the default)
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader], {
+const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSSourceLoader], {
   wms: {wmsParameters: {version: '1.1.1', layers: ['oms']}}
 });
 const getMap = await wmsService.getMap({
@@ -95,7 +95,7 @@ For shared loading controls and parser configuration, see
 For special use cases, is possible to use the `WMSSourceLoader` to just generate URLs, so that the application issue its own requests and parse responses.
 
 ```typescript
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader]);
+const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSSourceLoader]);
 const getMapUrl = await wmsService.getMapURL({
   width: 800,
   height: 600,

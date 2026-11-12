@@ -88,10 +88,10 @@ WMS (Web Map Service) is a protocol for serving geo-referenced **map images** ov
 ## Quick start
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(wmsUrl, [WMSSourceLoader], {
+const source = createDataSourceSync(wmsUrl, [WMSSourceLoader], {
   wms: {
     wmsParameters: {
       version: '1.3.0',

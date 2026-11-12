@@ -84,7 +84,7 @@ const dataset = await load('multiband.tif', GeoTIFFRasterLoader, {
 
 ## Parser loading
 
-The root export is metadata-only. Core's asynchronous `load()` and `parse()`
+The root export is metadata-only. Core's asynchronous `createDataSource()` and `parse()`
 automatically preload the parser on first use. To bundle the numeric parser explicitly:
 
 ```typescript

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
-import {createDataSource, encode, load} from '@loaders.gl/core';
+import {createDataSourceSync, encode, load} from '@loaders.gl/core';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import {ParquetSourceLoader as ParquetSourceLoaderWithParser} from '@loaders.gl/tables/parquet-source-loader';
@@ -209,7 +209,7 @@ test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
 
     expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});
 
-    const source = (await createDataSource(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+    const source = (await createDataSourceSync(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
       core: {type: 'parquet', worker: false},
       parquet: {keyRetriever: () => KEY}
     })) as ParquetSource;

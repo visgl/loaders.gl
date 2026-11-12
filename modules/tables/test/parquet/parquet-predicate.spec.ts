@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {encode, load, isBrowser} from '@loaders.gl/core';
+import {createDataSource, encode, load, isBrowser} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   ParquetJSWriter,
@@ -222,7 +222,7 @@ test('Parquet Thrift statistics retain modern exactness flags', () => {
 
 test('ParquetSource applies exact predicates without returning hidden filter columns', async () => {
   const fixture = await createPredicateFixture();
-  const source = (await load(new Blob([fixture]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([fixture]), ParquetSourceLoader, {
     core: {worker: false}
   })) as ParquetSource;
   const batches = await collectBatches(
@@ -262,7 +262,7 @@ test('ParquetSource transfers serializable predicates through worker decoding', 
     return;
   }
   const fixture = await createPredicateFixture();
-  const source = (await load(new Blob([fixture]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([fixture]), ParquetSourceLoader, {
     core: {worker: true, reuseWorkers: false, _workerType: 'test'}
   })) as ParquetSource;
   const batches = await collectBatches(

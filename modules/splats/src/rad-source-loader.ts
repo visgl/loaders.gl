@@ -89,7 +89,7 @@ export const RADSourceLoader = {
   },
 
   testURL: (url: string): boolean => /\.rad(?:$|[?#])/i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string | Blob,
     options: RADSourceLoaderOptions,
     coreApi?: CoreAPI

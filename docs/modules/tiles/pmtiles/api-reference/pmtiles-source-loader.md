@@ -60,10 +60,10 @@ coalesced before the archive bytes are fetched.
 />
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 
-const source = createDataSource(url, [PMTilesSourceLoader]);
+const source = createDataSourceSync(url, [PMTilesSourceLoader]);
 const tile = await source.getTile(...);
 ```
 

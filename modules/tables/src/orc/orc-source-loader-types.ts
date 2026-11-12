@@ -22,7 +22,7 @@ async function preloadORCSourceLoader() {
 
 /** Metadata-only ORC source loader; parser code is loaded through `preload()`. */
 export const ORCSourceLoader = {
-  /** Runtime source type returned by async load(). */
+  /** Runtime source type returned by async createDataSource(). */
   dataType: null as unknown as ORCSource,
   /** Sources are constructed rather than emitted as parse batches. */
   batchType: null as never,
@@ -37,13 +37,13 @@ export const ORCSourceLoader = {
   testURL: (url: string): boolean => /\.orc(?:$|[?#])/i.test(url),
   preload: preloadORCSourceLoader,
   /** Requires the parser-bearing source entrypoint for synchronous construction. */
-  createDataSource(
+  createDataSourceSync(
     _data: string | Blob,
     _options: ORCSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): ORCSource {
     throw new Error(
-      'ORCSourceLoader requires async load() or an explicit @loaders.gl/tables/orc-source-loader import'
+      'ORCSourceLoader requires async createDataSource() or an explicit @loaders.gl/tables/orc-source-loader import'
     );
   }
 } as const satisfies SourceLoader<ORCSource, ORCSourceLoaderOptions>;

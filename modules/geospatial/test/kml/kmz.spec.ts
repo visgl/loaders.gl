@@ -102,7 +102,7 @@ test('KMZ loader preserves the KML compatibility table shape', async () => {
 
 test('KMZ vector source exposes metadata, resources, and spatial filtering', async () => {
   const kmz = await encode({'doc.kml': SAMPLE_KML, 'images/map.png': 'image'}, ZipWriter);
-  const source = KMZSourceLoader.createDataSource(
+  const source = KMZSourceLoader.createDataSourceSync(
     new Blob([kmz], {type: 'application/vnd.google-earth.kmz'}),
     {}
   );

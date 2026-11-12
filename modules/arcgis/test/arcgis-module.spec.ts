@@ -14,7 +14,7 @@ import {
   selectArcGISService,
   getArcGISServices
 } from '@loaders.gl/arcgis/discovery';
-import {load} from '@loaders.gl/core';
+import {createDataSource, load} from '@loaders.gl/core';
 import {describe, expect, test} from 'vitest';
 
 describe('@loaders.gl/arcgis', () => {
@@ -54,7 +54,7 @@ describe('@loaders.gl/arcgis', () => {
   });
 
   test('passes the service registry directly to load', async () => {
-    const source = await load(
+    const source = await createDataSource(
       'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
       ARCGIS_LOADERS,
       {core: {type: 'arcgis-feature-server'}}

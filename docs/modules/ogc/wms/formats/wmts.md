@@ -109,10 +109,10 @@ metadata constraints explicit; **Not implemented** marks features that need addi
 ## Create a tile source
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSSourceLoader], {
   wmts: {
     layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
     tileMatrixSet: 'GoogleMapsCompatible_Level9',
@@ -148,7 +148,7 @@ rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
 ```ts
 import {getTileBounds} from '@math.gl/geospatial';
 
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSSourceLoader], {
   // A UTM matrix set: one CRS unit is one meter.
   wmts: {layer: 'orthophoto', tileMatrixSet: 'utm18n', metersPerUnit: 1}
 });
@@ -187,7 +187,7 @@ const layer = new SourceLayer({
 ## Configure from capabilities
 
 ```ts
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSSourceLoader], {
   wmts: {
     capabilitiesUrl,
     layer: 'imagery',

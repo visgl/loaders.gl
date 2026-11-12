@@ -35,7 +35,7 @@ import type {
 
 const {
   preload: _preloadArrowTableTileSourceLoader,
-  createDataSource: _createMetadataDataSource,
+  createDataSourceSync: _createMetadataDataSource,
   ...ArrowTableTileSourceLoaderBase
 } = ArrowTableTileSourceLoader;
 
@@ -43,7 +43,7 @@ const {
 export const ArrowTableTileSourceLoaderWithParser = {
   ...ArrowTableTileSourceLoaderBase,
   /** Creates an Arrow tile source; URLs and blobs require an injected core API and loaders. */
-  createDataSource(
+  createDataSourceSync(
     input: string | Blob | ArrowTableTileSourceInput | Promise<ArrowTableTileSourceInput>,
     options: ArrowTableTileSourceLoaderOptions = {},
     coreApi?: CoreAPI

@@ -15,10 +15,10 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 ArcGIS ImageServer can return analysis-ready LERC rasters instead of display images:
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = await load(url, [ArcGISImageServerSourceLoader], {
+const source = await createDataSource(url, [ArcGISImageServerSourceLoader], {
   core: {type: 'arcgis-image-server'}
 });
 

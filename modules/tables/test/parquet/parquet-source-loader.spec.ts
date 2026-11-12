@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 
 import {hydrateArrowTable} from '@math.gl/arrow';
-import {createDataSource, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
+import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetJSWriter, ParquetSourceLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet/index';
@@ -54,7 +54,7 @@ type RangeFetchOptions = {
 
 test('ParquetSourceLoader#Blob metadata and schema are cached', async () => {
   const fixture = await loadFixture();
-  const source = (await load(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
+  const source = (await createDataSource(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
 
   expect(source instanceof ParquetSource).toBeTruthy();
   expect(source.capabilities).toBe(PARQUET_SOURCE_CAPABILITIES);
@@ -90,7 +90,7 @@ test('ParquetSourceLoader#Blob metadata and schema are cached', async () => {
 
 test('ParquetSource#getQueryMetadata exposes panel-ready schema and statistics', async () => {
   const fixture = await loadFixture();
-  const source = (await load(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
+  const source = (await createDataSource(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
   const metadata = await source.getQueryMetadata();
 
   expect(metadata.sourceType).toBe('parquet');
@@ -153,7 +153,7 @@ test('ParquetSource#read applies snapshotted source defaults', async () => {
 
 test('ParquetSourceLoader#decodes optional column-chunk statistics', async () => {
   const fixture = await loadFixture(STATISTICS_FIXTURE_URL);
-  const source = createDataSource(new Blob([fixture]), [ParquetSourceLoaderWithParser], {
+  const source = createDataSourceSync(new Blob([fixture]), [ParquetSourceLoaderWithParser], {
     core: {type: 'parquet'}
   }) as ParquetSource;
   const metadata = await source.getMetadata();
@@ -212,7 +212,7 @@ test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', a
     ParquetJSWriter,
     {worker: false, parquet: {rowGroupSize: 2, bloomFilter: {id: true}}}
   );
-  const source = createDataSource(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+  const source = createDataSourceSync(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
     core: {type: 'parquet'}
   }) as ParquetSource;
   const metadata = await source.getMetadata();
@@ -246,7 +246,7 @@ test('ParquetJSWriter emits page indexes consumed by selective page planning', a
     ParquetJSWriter,
     {worker: false, parquet: {pageSize: 2, pageIndex: {x: true}}}
   );
-  const source = createDataSource(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+  const source = createDataSourceSync(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
     core: {type: 'parquet'}
   }) as ParquetSource;
   const metadata = await source.getMetadata();
@@ -409,7 +409,7 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
   }
 
   const fixture = await createSelectiveFixture();
-  const source = (await load(new Blob([fixture]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([fixture]), ParquetSourceLoader, {
     core: {worker: true, reuseWorkers: false, _workerType: 'test'}
   })) as ParquetSource;
   let mainThreadTicked = false;
@@ -831,7 +831,7 @@ function createRemoteSource(
   rangeFetch: (url: string, options?: RequestInit) => Promise<Response>,
   options: ParquetSourceLoaderOptions = {}
 ): ParquetSource {
-  return createDataSource(REMOTE_URL, [ParquetSourceLoaderWithParser], {
+  return createDataSourceSync(REMOTE_URL, [ParquetSourceLoaderWithParser], {
     ...options,
     core: {
       fetch: rangeFetch,

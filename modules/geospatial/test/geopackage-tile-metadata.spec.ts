@@ -60,7 +60,7 @@ test('raster-only GeoPackage source exposes tileTables without requiring feature
   const database = createDatabase();
   const blob = new Blob([new Uint8Array(database.export())]);
   database.close();
-  const source = GeoPackageSource.createDataSource(blob, {
+  const source = GeoPackageSource.createDataSourceSync(blob, {
     geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
   });
   const metadata = await source.getMetadata();
@@ -113,7 +113,7 @@ test('mixed packages keep vector default selection alongside tile-table metadata
   `);
   const blob = new Blob([new Uint8Array(database.export())]);
   database.close();
-  const source = GeoPackageSource.createDataSource(blob, {
+  const source = GeoPackageSource.createDataSourceSync(blob, {
     geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
   });
   const metadata = await source.getMetadata();
@@ -164,9 +164,12 @@ test('extent validation accepts floating-point roundoff in decimal pixel sizes',
 test('encoded tile reads select native levels, preserve sparse holes and enforce byte limits', async () => {
   const database = createDatabase();
   database.run('INSERT INTO regional VALUES (1, 7, 1, 2, ?)', [new Uint8Array([137, 80, 78, 71])]);
-  const source = GeoPackageSource.createDataSource(new Blob([new Uint8Array(database.export())]), {
-    geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
-  });
+  const source = GeoPackageSource.createDataSourceSync(
+    new Blob([new Uint8Array(database.export())]),
+    {
+      geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
+    }
+  );
   database.close();
   const parameters = {z: 0, tileMatrix: '7', x: 1, y: 2};
   expect(new Uint8Array((await source.getTile('regional', parameters))!)).toEqual(
@@ -205,9 +208,12 @@ test('tile reads quote discovered identifiers and reject malformed payloads', as
     UPDATE gpkg_tile_matrix_set SET table_name = 'regional"tiles' WHERE table_name = 'regional';
     UPDATE gpkg_tile_matrix SET table_name = 'regional"tiles' WHERE table_name = 'regional';
     INSERT INTO "regional""tiles" VALUES (1, 2, 0, 0, 'invalid'), (2, 2, 1, 0, X'');`);
-  const source = GeoPackageSource.createDataSource(new Blob([new Uint8Array(database.export())]), {
-    geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
-  });
+  const source = GeoPackageSource.createDataSourceSync(
+    new Blob([new Uint8Array(database.export())]),
+    {
+      geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
+    }
+  );
   database.close();
   await expect(source.getTile('regional"tiles', {z: 2, x: 0, y: 0})).rejects.toThrow(
     'Invalid GeoPackage tile payload'

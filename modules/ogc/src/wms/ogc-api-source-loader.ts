@@ -280,7 +280,7 @@ export const OGCAPIFeaturesSourceLoader = {
   options: {'ogc-api': {}},
   defaultOptions: {'ogc-api': {}},
   testURL: (url: string): boolean => /\/collections(?:\/|$)|ogc[/-]?api[/-]features/i.test(url),
-  createDataSource: (url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) =>
+  createDataSourceSync: (url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPIFeaturesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPIFeaturesSource>;
 
@@ -592,7 +592,7 @@ export const OGCAPITilesSourceLoader = {
   options: {},
   defaultOptions: {},
   testURL: (url: string): boolean => /\/tiles(?:\/|$)|ogc[/-]?api[/-]tiles/i.test(url),
-  createDataSource: (url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) =>
+  createDataSourceSync: (url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPITilesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPITilesSource>;
 

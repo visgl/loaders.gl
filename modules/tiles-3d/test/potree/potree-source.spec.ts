@@ -8,7 +8,7 @@ import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
 const POTREE_BIN_URL = '@loaders.gl/tiles-3d/potree/test/data/lion_takanawa';
 
 test('PotreeSourceLoader#initialize', async () => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const source = PotreeSourceLoader.createDataSourceSync(POTREE_BIN_URL, {});
   expect(source.isReady).toBe(false);
 
   await source.init();
@@ -20,7 +20,7 @@ test('PotreeSourceLoader#initialize', async () => {
 });
 
 test('PotreeSourceLoader#loadNodeContent decodes typed point attributes', async () => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const source = PotreeSourceLoader.createDataSourceSync(POTREE_BIN_URL, {});
   await source.initialize();
 
   const nodeContent = await source.loadNodeContent('0');
@@ -33,7 +33,7 @@ test('PotreeSourceLoader#loadNodeContent decodes typed point attributes', async 
 });
 
 test('PotreeSourceLoader#exposes normalized tile headers and bounds', async () => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const source = PotreeSourceLoader.createDataSourceSync(POTREE_BIN_URL, {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -57,7 +57,7 @@ test('PotreeSourceLoader#exposes normalized tile headers and bounds', async () =
 });
 
 test('PotreeSourceLoader#exposes conclusive point-cloud scan metadata', async () => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const source = PotreeSourceLoader.createDataSourceSync(POTREE_BIN_URL, {});
   await source.initialize();
 
   const metadata = await source.getQueryMetadata();
@@ -71,7 +71,7 @@ test('PotreeSourceLoader#exposes conclusive point-cloud scan metadata', async ()
 });
 
 test('PotreeSourceLoader#scans ordered Arrow point batches with a global limit', async () => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const source = PotreeSourceLoader.createDataSourceSync(POTREE_BIN_URL, {});
   const metadata = await source.getQueryMetadata();
   const bounds = metadata.spatial?.bounds;
   expect(bounds).toBeTruthy();
@@ -100,7 +100,7 @@ test('PotreeSourceLoader#scans ordered Arrow point batches with a global limit',
 });
 
 test('PotreeSourceLoader#preserves rows in an empty projection', async () => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const source = PotreeSourceLoader.createDataSourceSync(POTREE_BIN_URL, {});
   const batches = [];
 
   for await (const batch of source.scan({columns: [], maximumLevel: 0, limit: 2})) {
@@ -112,7 +112,7 @@ test('PotreeSourceLoader#preserves rows in an empty projection', async () => {
 });
 
 test('PotreeSourceLoader#does not advertise unsupported datasets as executable', async () => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const source = PotreeSourceLoader.createDataSourceSync(POTREE_BIN_URL, {});
   await source.initialize();
   source.metadata!.version = '2.0';
 
@@ -124,7 +124,7 @@ test('PotreeSourceLoader#does not advertise unsupported datasets as executable',
 });
 
 test('PotreeSourceLoader#validates scan batch size and cancellation', async () => {
-  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
+  const source = PotreeSourceLoader.createDataSourceSync(POTREE_BIN_URL, {});
   const invalidScan = source.scan({batchSize: 0});
   await expect(invalidScan.next()).rejects.toThrow('batchSize');
 

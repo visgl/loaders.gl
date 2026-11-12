@@ -37,7 +37,7 @@ If your data is already in ArcGIS, start with its item page or REST service URL.
 feature layer, display a published map, read imagery values, or connect to vector tiles and scenes.
 Your data stays in ArcGIS; loaders.gl reads the subset your application requests.
 
-Use async `load()` to create a source. Feature, image and tile sources can feed deck.gl's
+Use async `createDataSource()` to create a source. Feature, image and tile sources can feed deck.gl's
 `SourceLayer`; SceneServer needs a compatible I3S rendering path. Existing ArcGIS sharing and
 service permissions continue to apply.
 
@@ -71,7 +71,7 @@ includes unsupported operations and service families.
 
 The root exports lightweight service loaders. Authentication and discovery have dedicated
 `/authentication` and `/discovery` entrypoints. Async `load()`
-imports the selected implementation. For synchronous `createDataSource()` or direct source
+imports the selected implementation. For synchronous `createDataSourceSync()` or direct source
 classes, use `@loaders.gl/arcgis/bundled`; see
 [import patterns](/docs/developer-guide/arcgis#how-imports-work).
 
@@ -134,10 +134,10 @@ const metadata = await source.getMetadata();
 Use `load` when the application already knows the service type:
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = await load(serviceUrl, [ArcGISFeatureServerSourceLoader]);
+const source = await createDataSource(serviceUrl, [ArcGISFeatureServerSourceLoader]);
 const features = await source.getFeatures({
   layers: ['0'],
   boundingBox: [[-123, 37], [-121, 39]]

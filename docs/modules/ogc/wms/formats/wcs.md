@@ -75,10 +75,10 @@ WCS provides analytical geospatial coverages rather than server-rendered map ima
 ## Retrieve a coverage
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {WCSCoverageSourceLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource('https://example.com/wcs', [WCSCoverageSourceLoader], {
+const source = createDataSourceSync('https://example.com/wcs', [WCSCoverageSourceLoader], {
   wcs: {
     version: '2.0.1',
     coverageId: 'elevation',

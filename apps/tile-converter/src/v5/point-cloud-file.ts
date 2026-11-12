@@ -46,7 +46,7 @@ export type OpenPointCloudFileOptions = {
 /** An initialized source with an owned local file lifetime. */
 export interface OpenedPointCloudFile {
   /** Lazy node access through the existing unified source APIs. */
-  readonly source: ReturnType<typeof PotreeSourceLoader.createDataSource> | COPCTileSource;
+  readonly source: ReturnType<typeof PotreeSourceLoader.createDataSourceSync> | COPCTileSource;
   /** Closes the source and rejects subsequent bundle reads; idempotent. */
   readonly close: () => Promise<void>;
 }
@@ -116,7 +116,7 @@ export async function openPointCloudFile(
   if (input.size > options.maxFileBytes) throw new RangeError('Point file input budget exceeded');
   options.signal?.throwIfAborted();
   if (options.format === 'copc') {
-    const source = COPCSourceLoader.createDataSource(input, options.sourceOptions || {});
+    const source = COPCSourceLoader.createDataSourceSync(input, options.sourceOptions || {});
     try {
       await source.metadata;
       options.signal?.throwIfAborted();
@@ -138,7 +138,7 @@ export async function openPointCloudFile(
   const signal = AbortSignal.any(signals);
   let archive: ZipArchive | undefined;
   const entries = new Map<string, ZipEntry>();
-  let source: ReturnType<typeof PotreeSourceLoader.createDataSource> | undefined;
+  let source: ReturnType<typeof PotreeSourceLoader.createDataSourceSync> | undefined;
   try {
     archive = await openZipArchive(input, {
       maxArchiveBytes: BigInt(options.maxFileBytes),
@@ -209,7 +209,7 @@ export async function openPointCloudFile(
       signal.throwIfAborted();
       return response;
     };
-    source = PotreeSourceLoader.createDataSource(`${prefix}${metadataPath}`, {
+    source = PotreeSourceLoader.createDataSourceSync(`${prefix}${metadataPath}`, {
       ...options.sourceOptions,
       core: {...options.sourceOptions?.core, fetch: fetchResource},
       potree: {...options.sourceOptions?.potree, signal}

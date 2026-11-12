@@ -4,7 +4,7 @@
 
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {PMTiles, type Header} from 'pmtiles';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {createWebMercatorTileGrid, type CoreAPI} from '@loaders.gl/core/loader-utils';
 import {parsePMTilesHeader} from '../../src/pmtiles/lib/parse-pmtiles';
 import {MLTLoader} from '@loaders.gl/tiles/mlt';
@@ -97,7 +97,7 @@ test.each([
   {core: {loadOptions: {mvt: {shape: 'binary-geometry'}}}}
 ])('createDataSource rejects removed PMTiles option wrappers before fetching', options => {
   expect(() =>
-    createDataSource(
+    createDataSourceSync(
       'memory://tiles.pmtiles',
       [PMTilesSourceLoader],
       options as unknown as PMTilesSourceLoaderOptions

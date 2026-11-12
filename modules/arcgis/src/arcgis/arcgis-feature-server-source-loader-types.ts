@@ -15,20 +15,20 @@ async function preloadArcGISFeatureServerSourceLoader(): Promise<SourceLoader<Ar
   return ArcGISFeatureServerSourceLoaderWithParser;
 }
 
-/** Lightweight service descriptor; use load() or the synchronous /bundled entrypoint. */
+/** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
 export const ArcGISFeatureServerSourceLoader = {
   ...ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISVectorSource,
   batchType: null as never,
   preload: preloadArcGISFeatureServerSourceLoader,
   /** Requires the runtime loader when constructing a source synchronously. */
-  createDataSource(
+  createDataSourceSync(
     _url: string,
     _options: ArcGISFeatureServerSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): ArcGISVectorSource {
     throw new Error(
-      'ArcGISFeatureServerSourceLoader requires async load() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISFeatureServerSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISVectorSource>;

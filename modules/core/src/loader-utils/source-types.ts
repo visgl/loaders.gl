@@ -7,7 +7,7 @@ import type {CoreAPI, DataSource, DataSourceOptions} from './lib/sources/data-so
 
 /**
  * A `SourceLoader` is a top-level loader that constructs a runtime `DataSource`.
- * It allows source-style loaders to participate in core loader selection and `load()`.
+ * It allows source-style loaders to participate in core source selection and `createDataSource()`.
  * @example
  *  `createDataSource(... , [MVTSourceLoader, PMTilesSourceLoader, ...])
  */
@@ -17,7 +17,7 @@ export type SourceLoader<
     DataSourceOptions
   >,
   LoaderOptionsT extends LoaderOptions & DataSourceOptions = LoaderOptions & DataSourceOptions
-> = Loader<DataSourceT, never, LoaderOptionsT> & {
+> = Loader<DataSourceT, never, LoaderOptionsT, DataSourceT> & {
   /** Type of source created by this source loader */
   dataSource?: DataSourceT;
   /** Type of options used when creating sources */
@@ -38,7 +38,7 @@ export type SourceLoader<
   /** Test data */
   testData?: (data: Blob) => boolean;
   /** Create a runtime data source  */
-  createDataSource(
+  createDataSourceSync(
     data: string | Blob,
     options: Readonly<DataSourceT['optionsType']>,
     coreApi?: CoreAPI
@@ -46,17 +46,23 @@ export type SourceLoader<
 };
 
 export function isSourceLoader(loader?: unknown): loader is SourceLoader {
-  return Boolean(loader && typeof loader === 'object' && 'createDataSource' in loader);
+  return Boolean(
+    loader &&
+      typeof loader === 'object' &&
+      'createDataSourceSync' in loader &&
+      'fromUrl' in loader &&
+      'testURL' in loader
+  );
 }
 
 /** Extracts the full public options contract, including fields absent from runtime defaults. */
 export type SourcePropsType<SourceT extends SourceLoader> = NonNullable<
-  Parameters<SourceT['createDataSource']>[1]
+  Parameters<SourceT['createDataSourceSync']>[1]
 >;
 
 /** Typescript helper to extract the source options type from a source type */
 export type SourceDataSourceType<SourceT extends SourceLoader> = ReturnType<
-  SourceT['createDataSource']
+  SourceT['createDataSourceSync']
 >;
 
 /** Combines options for all candidate sources instead of accepting one candidate's untyped keys. */

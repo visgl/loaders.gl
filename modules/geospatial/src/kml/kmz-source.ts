@@ -48,7 +48,7 @@ export const KMZSourceLoader = {
     ['application/vnd.google-earth.kmz', 'application/vnd.google-earth.kmz+zip'].includes(
       data.type.toLowerCase()
     ),
-  createDataSource: (data: string | Blob, options: KMZSourceOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (data: string | Blob, options: KMZSourceOptions, coreApi?: CoreAPI) =>
     new KMZVectorSource(data, options, coreApi)
 } as const satisfies SourceLoader<KMZVectorSource>;
 

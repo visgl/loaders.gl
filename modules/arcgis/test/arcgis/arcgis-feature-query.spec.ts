@@ -5,7 +5,7 @@
 import {describe, expect, test, vi} from 'vitest';
 import {ArcGISVectorSource, ArcGISFeatureQueryError} from '@loaders.gl/arcgis/bundled';
 import {ArcGISFeatureServerSourceLoader, ARCGIS_LOADERS} from '@loaders.gl/arcgis';
-import {load} from '@loaders.gl/core';
+import {createDataSource, load} from '@loaders.gl/core';
 import type {ArcGISFeatureQueryProgress} from '@loaders.gl/arcgis';
 
 const LAYER_URL = 'https://example.com/FeatureServer/0?token=fixture';
@@ -433,7 +433,7 @@ describe('records, endpoints, errors and coordinate references', () => {
   test('the registry selects queryable MapServer layers without changing MapServer roots', async () => {
     expect(ArcGISFeatureServerSourceLoader.testURL('https://example.com/MapServer/3')).toBe(true);
     expect(ArcGISFeatureServerSourceLoader.testURL('https://example.com/MapServer')).toBe(false);
-    const source = await load('https://example.com/MapServer/3', ARCGIS_LOADERS);
+    const source = await createDataSource('https://example.com/MapServer/3', ARCGIS_LOADERS);
     expect(source).toBeInstanceOf(ArcGISVectorSource);
     expect(new URL(source.getFeaturesURL({})).pathname).toBe('/MapServer/3/query');
   });

@@ -177,7 +177,7 @@ test('OME-Zarr resolves legacy axes, transformations, names and automatic pyrami
 
 test('OME-Zarr honors default channels and validates fractional and negative selections', async () => {
   const {fetcher} = createFixture();
-  const source = OMEZarrSourceLoader.createDataSource('https://example.test/image.zarr', {
+  const source = OMEZarrSourceLoader.createDataSourceSync('https://example.test/image.zarr', {
     zarr: {requireConsolidatedMetadata: false},
     omezarr: {defaultChannels: [2], interleaved: true},
     core: {fetch: fetcher}

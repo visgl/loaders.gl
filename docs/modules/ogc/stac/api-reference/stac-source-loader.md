@@ -39,19 +39,19 @@ import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discove
 The `STACSourceLoader` creates a lightweight source for static STAC catalogs and STAC APIs.
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {STACSourceLoader} from '@loaders.gl/ogc/stac';
 
-const source = await load('https://example.com/stac', STACSourceLoader);
+const source = await createDataSource('https://example.com/stac', STACSourceLoader);
 ```
 
-For synchronous `createDataSource()`, import the runtime-bearing subpath:
+For synchronous `createDataSourceSync()`, import the runtime-bearing subpath:
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {STACSourceLoader} from '@loaders.gl/ogc/stac-source';
 
-const source = createDataSource('https://example.com/stac', STACSourceLoader);
+const source = createDataSourceSync('https://example.com/stac', STACSourceLoader);
 ```
 
 <ReferenceBoundary

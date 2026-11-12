@@ -1,6 +1,6 @@
 import {Deck, _GlobeView as GlobeView} from '@deck.gl/core';
 import {ScatterplotLayer} from '@deck.gl/layers';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {ZarrArraySourceLoader} from '@loaders.gl/scientific/zarr';
 import {readIcechunkField} from './icechunk';
 import {mountAtmosphericInfo} from './info';
@@ -54,7 +54,7 @@ async function loadField() {
     const root = rootInput.value.trim();
     if (!root || !/^https?:\/\//.test(root)) throw new Error('Enter an HTTP(S) Zarr root URL');
     if (!config.array || !config.dimensions?.length) throw new Error('Array path and dimension names are required');
-    const source = config.storage === 'icechunk' ? null : createDataSource(root, [ZarrArraySourceLoader], {
+    const source = config.storage === 'icechunk' ? null : createDataSourceSync(root, [ZarrArraySourceLoader], {
       zarrArray: {path: config.array, dimensions: config.dimensions}
     });
     const metadata = source ? await source.getMetadata(signal) : null;
