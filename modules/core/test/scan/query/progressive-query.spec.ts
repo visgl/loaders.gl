@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {expect, test, vi} from 'vitest';
+import {expect, test} from 'vitest';
 import {queryProgressive} from '@loaders.gl/core/scan';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
