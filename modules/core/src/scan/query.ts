@@ -50,6 +50,8 @@ export type QueryOptions = TableQueryExecutionOptions &
     sources?: readonly DataSource<unknown, DataSourceOptions>[];
     /** Parser or lazy parser promise, required only for SQL string input. */
     sqlParser?: SQLQueryParser | Promise<SQLQueryParser>;
+    /** Append-only batches (default), or complete progressive replacement snapshots. */
+    queryOutput?: 'batches' | 'snapshots';
   }> &
   Readonly<
     | {
@@ -81,7 +83,7 @@ export async function query(
 ): Promise<ArrowTable> {
   let schema: arrow.Schema | undefined;
   const batches: arrow.RecordBatch[] = [];
-  for await (const batch of queryInBatches(tableQuery, options)) {
+  for await (const batch of queryInBatches(tableQuery, {...options, queryOutput: 'batches'})) {
     schema = batch.data.schema;
     batches.push(...batch.data.batches);
   }
@@ -89,8 +91,53 @@ export async function query(
   return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
 }
 
-/** Executes one logical query with bounded batch buffering and cooperative cancellation. */
+/**
+ * Default mode retains the existing loaders.gl batch envelope.
+ * Snapshot mode returns pure Arrow RecordBatch objects; each supersedes the last.
+ */
+export function queryInBatches(
+  tableQuery: import('./query-progressive').ProgressiveAggregateQuery,
+  options: QueryOptions & {queryOutput: 'snapshots'; emitEveryBatches?: number}
+): AsyncIterable<arrow.RecordBatch>;
+export function queryInBatches(
+  tableQuery: Query | string,
+  options: QueryOptions & {queryOutput?: 'batches'}
+): AsyncIterable<ArrowTableBatch>;
+export function queryInBatches(
+  tableQuery: Query | string | import('./query-progressive').ProgressiveAggregateQuery,
+  options: QueryOptions
+): AsyncIterable<ArrowTableBatch | arrow.RecordBatch>;
 export async function* queryInBatches(
+  tableQuery: Query | string | import('./query-progressive').ProgressiveAggregateQuery,
+  options: QueryOptions
+): AsyncIterable<ArrowTableBatch | arrow.RecordBatch> {
+  if (options.queryOutput === 'snapshots') {
+    if (
+      !tableQuery ||
+      typeof tableQuery !== 'object' ||
+      !('aggregates' in tableQuery) ||
+      !Array.isArray(tableQuery.aggregates)
+    ) {
+      throw new Error('Snapshot query output currently requires a structured aggregate query.');
+    }
+    const {queryProgressive} = await import('./query-progressive');
+    const progressive = tableQuery as import('./query-progressive').ProgressiveAggregateQuery;
+    for await (const snapshot of queryProgressive(progressive, options)) {
+      for (const recordBatch of snapshot.table.data.batches) yield recordBatch;
+    }
+    return;
+  }
+  if (options.queryOutput !== undefined && options.queryOutput !== 'batches') {
+    throw new Error('Unsupported queryOutput; expected batches or snapshots.');
+  }
+  if (typeof tableQuery === 'object' && tableQuery && 'aggregates' in tableQuery) {
+    throw new Error('Aggregate queries require queryOutput: snapshots.');
+  }
+  yield* queryAppendBatches(tableQuery as Query | string, options);
+}
+
+/** Executes one logical query with bounded batch buffering and cooperative cancellation. */
+async function* queryAppendBatches(
   tableQuery: Query | string,
   options: QueryOptions
 ): AsyncIterable<ArrowTableBatch> {
@@ -394,7 +441,7 @@ async function openQuerySource(options: QueryOptions): Promise<unknown> {
   const candidates = Array.isArray(options.loaders) ? options.loaders : [options.loaders];
   if (!candidates.length || candidates.some(loader => !isSourceLoader(loader) || !loader.fromUrl))
     throw new Error('Query source must specify explicit URL-capable source loaders for a URL.');
-  const {source, sources, loaders, sqlParser, onQueryComplete, ...sourceOptions} = options;
+  const {source, sources, loaders, sqlParser, onQueryComplete, queryOutput, ...sourceOptions} = options;
   const url = source as string;
   const selected =
     candidates.length === 1 ? candidates[0]! : candidates.find(loader => loader!.testURL(url));
