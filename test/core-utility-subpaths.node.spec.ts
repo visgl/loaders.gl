@@ -101,27 +101,45 @@ test.each([
   'modules/core/src/schema-utils/index.ts',
   'modules/core/src/loader-utils/index.ts',
   'modules/tables/src/index.ts'
-])('ordinary entry point %s excludes Arrow query execution', async entryPoint => {
+])('ordinary entry point %s excludes eager Arrow query execution', async entryPoint => {
+  // The tables entry point can defer query kernels to a scan-only chunk.
+  const splitting = entryPoint === 'modules/tables/src/index.ts';
   const result = await build({
     entryPoints: [entryPoint],
+    outdir: 'dist/ordinary-entry-point-boundary',
     bundle: true,
+    splitting,
     platform: 'browser',
     format: 'esm',
     packages: 'external',
     write: false,
     metafile: true
   });
+  const outputs = result.metafile!.outputs;
+  const entry = Object.keys(outputs).find(output => outputs[output].entryPoint === entryPoint)!;
+  expect(entry).toBeDefined();
+  const eager = new Set([entry]);
+  for (const output of eager) {
+    for (const dependency of outputs[output].imports) {
+      if (!dependency.external && dependency.kind === 'import-statement') {
+        eager.add(dependency.path);
+      }
+    }
+  }
+  const eagerOutputs = [...eager].map(output => outputs[output]);
   expect(
-    Object.values(result.metafile!.outputs)
+    eagerOutputs
       .flatMap(output => output.imports)
       .filter(dependency => dependency.path.startsWith('@loaders.gl/core/scan'))
   ).toEqual([]);
   expect(
-    Object.keys(result.metafile!.inputs).filter(
-      filename =>
-        filename.includes('modules/core/src/scan/arrow-execution') ||
-        filename.endsWith('/filter-arrow-table.ts') ||
-        filename.endsWith('/project-arrow-table.ts')
-    )
+    eagerOutputs
+      .flatMap(output => Object.keys(output.inputs))
+      .filter(
+        filename =>
+          filename.includes('modules/core/src/scan/arrow-execution') ||
+          filename.endsWith('/filter-arrow-table.ts') ||
+          filename.endsWith('/project-arrow-table.ts')
+      )
   ).toEqual([]);
 });

@@ -183,19 +183,26 @@ function selectLoaderInternal(
     reason = loader ? `matched source url ${testUrl}` : '';
   }
 
-  loader = loader || findLoaderByUrl(loaders, testUrl);
+  // A declared source URL test is authoritative during automatic source selection.
+  const fallbackLoaders =
+    operation === 'source' && testUrl
+      ? loaders.filter(candidate => !isSourceLoader(candidate))
+      : loaders;
+  loader = loader || findLoaderByUrl(fallbackLoaders, testUrl);
   reason = reason || (loader ? `matched url ${testUrl}` : '');
 
-  loader = loader || findSourceLoaderByTestURL(loaders, testUrl);
-  reason = reason || (loader ? `matched source url ${testUrl}` : '');
+  if (!loader && operation === 'parse') {
+    loader = findSourceLoaderByTestURL(loaders, testUrl);
+    reason = loader ? `matched source url ${testUrl}` : '';
+  }
 
   // Look up loader by mime type
-  loader = loader || findLoaderByMIMEType(loaders, type);
+  loader = loader || findLoaderByMIMEType(fallbackLoaders, type);
   reason = reason || (loader ? `matched MIME type ${type}` : '');
 
   // Look for loader via initial bytes (Note: not always accessible (e.g. Response, stream, async iterator)
   // @ts-ignore Blob | Response
-  loader = loader || findLoaderByInitialBytes(loaders, data);
+  loader = loader || findLoaderByInitialBytes(fallbackLoaders, data);
   // @ts-ignore Blob | Response
   reason = reason || (loader ? `matched initial data ${getFirstCharacters(data)}` : '');
 
@@ -206,7 +213,7 @@ function selectLoaderInternal(
 
   // Look up loader by fallback mime type
   if (options?.core?.fallbackMimeType) {
-    loader = loader || findLoaderByMIMEType(loaders, options?.core?.fallbackMimeType);
+    loader = loader || findLoaderByMIMEType(fallbackLoaders, options?.core?.fallbackMimeType);
     reason = reason || (loader ? `matched fallback MIME type ${type}` : '');
   }
 

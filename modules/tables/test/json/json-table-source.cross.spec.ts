@@ -3,8 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {createDataSourceSync, load, preload} from '@loaders.gl/core';
+import {createDataSource, createDataSourceSync, load, preload} from '@loaders.gl/core';
 import {query} from '@loaders.gl/core/scan';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 import {JSONLoader, JSONTableLoader, JSONTableSource} from '@loaders.gl/tables/json';
 
 test('JSON table source queries inferred array columns from a URL', async () => {
@@ -76,4 +77,14 @@ test('JSONTableLoader source matching preserves parser order for JSON URLs', asy
     core: {fetch, worker: false}
   });
   expect(data).toEqual([{value: 1}]);
+});
+
+test('JSONTableLoader does not auto-select a GeoJSON URL as a table source', async () => {
+  const fetch = vi.fn();
+  await expect(
+    createDataSource('https://example.test/features.geojson', [JSONTableLoader, CSVLoader], {
+      core: {fetch}
+    })
+  ).rejects.toThrow('No explicit source loader matches the input');
+  expect(fetch).not.toHaveBeenCalled();
 });
