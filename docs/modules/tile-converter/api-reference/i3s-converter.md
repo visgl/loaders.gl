@@ -52,7 +52,8 @@ The legacy converter collects batch-table fields during preprocessing, before wr
 node attributes. Each node uses the same field order, with I3S null values for missing
 columns. Empty strings and numeric zero remain distinct from null. Numeric columns
 widen to double precision when needed across tiles; mixed numeric and text columns
-are stored as strings.
+are stored as strings. A tile read failure during preprocessing stops conversion
+rather than writing nodes against an incomplete schema.
 
 This applies to the legacy `I3SConverter` path, not the separate v5 conversion API.
 Reconvert existing outputs to correct attribute values written by earlier versions.
