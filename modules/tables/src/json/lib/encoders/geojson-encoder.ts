@@ -5,8 +5,10 @@
 
 import type {RecordBatch} from 'apache-arrow';
 import type {Table} from '@loaders.gl/core/schema';
-import {getGeometryColumnsFromSchema} from '@loaders.gl/core/geoarrow';
-import {convertGeoArrowVectorCellToGeoJSON} from '@loaders.gl/core/geoarrow/geoarrow-geometry-converter';
+import {
+  convertGeoArrowVectorCellToGeoJSON,
+  getGeometryColumnsFromSchema
+} from '@loaders.gl/core/geoarrow';
 import {isNativeWriterTable, type TableWriterInput} from '../../../arrow/table-writer-input';
 import {convertArrowToSchema, getTableLength} from '@loaders.gl/core/schema-utils';
 import {detectGeometryColumnIndex} from '../encoder-utils/encode-utils';
