@@ -94,18 +94,21 @@ for npm trusted publishing. The npm relationship must name exactly
 2. Verify all checks on the merged revision, then tag that exact master commit
    `v5.0.0-beta.8` and push the tag. Do not run `yarn publish-beta` after a
    version-preparation PR: it increments the version again and pushes a tag.
-3. The workflow builds and tests packages, verifies embedded versions and the exact
-   release tag, then publishes missing npm versions with the `beta` dist-tag.
+3. The workflow builds packages, workers, and apps once and verifies embedded
+   versions and the exact release tag. Node tests, browser shards, hermetic slow
+   tests, and npm publishing restore the same build artifact.
 4. A separate finalization job verifies every public workspace version and distribution
    tag in the registry before creating the GitHub prerelease announcement. It checks
    up to 60 times at 15-second intervals, allowing about 15 minutes for propagation.
    Missing versions, incorrect tags, and registry request failures still fail the job.
 
-If publication is interrupted, rerun the failed publishing job on the same tagged
-revision. A duplicate transparency-log entry (HTTP 409) can interrupt provenance
-creation; inspect the package/version and retry missing publications without disabling
-provenance or changing the tag. An upload log or an "already published" response
-does not replace public registry verification.
+If publication is interrupted, check which packages were uploaded and allow
+their npm metadata to propagate before rerunning the failed publishing job. The
+retry restores the existing release build. A duplicate transparency-log entry
+(HTTP 409) can interrupt provenance creation; inspect the package/version and
+retry missing publications without disabling provenance or changing the tag.
+An upload log or an "already published" response does not replace public registry
+verification.
 
 If only finalization fails, rerun that job. It reads the registry before installing
 announcement dependencies and does not rebuild or republish any packages. If metadata
@@ -124,7 +127,7 @@ republishing an existing version.
 See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) and
 [`npm trust`](https://docs.npmjs.com/cli/v11/commands/npm-trust/).
 
-The publishing job restores a known MLT dependency-hoisting comment variation only
+The release build job restores a known MLT dependency-hoisting comment variation only
 when the entire generated decoder matches the reviewed file after comment normalization.
 Any real decoder change or other tracked source modification aborts publication.
 
