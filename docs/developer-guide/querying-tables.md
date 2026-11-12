@@ -326,3 +326,33 @@ An injected `sqlParser` returns a portable logical query. Use `parseSQLQuery` fr
 and catalog commands. Math.gl compiles expressions against each source schema. Loaders.gl requests
 the referenced columns and evaluates computed filters before applying LIMIT. Sources can still
 push down portable column predicates. Unsupported expressions fail with a terminal query error.
+
+## Streaming query output for Arrow consumers
+
+Specify `queryOutput` when consuming pure Apache Arrow `RecordBatch` values:
+
+```ts
+for await (const batch of queryInBatches(
+  {select: ['country', 'temperature']},
+  {source, queryOutput: 'batches'}
+)) {
+  appendData(batch);
+}
+
+for await (const snapshot of queryInBatches(
+  {groupBy: 'country', aggregates: [{function: 'count', as: 'count'}]},
+  {source, queryOutput: 'snapshots'}
+)) {
+  replaceData(snapshot);
+}
+```
+
+- `'batches'` emits new rows only; concatenate the record batches.
+- `'snapshots'` emits the current complete aggregate result; replace the previous result.
+  A final snapshot is yielded before normal iterator completion. Progressive snapshots
+  currently accept structured `groupBy`/`aggregates` requests, not arbitrary SQL queries.
+
+For compatibility, omitting `queryOutput` retains the existing loaders.gl `ArrowTableBatch`
+envelope. Explicit `queryOutput` returns pure Arrow `RecordBatch` objects. Consumers
+know how to handle each batch from the option used to construct the iterator.
+
