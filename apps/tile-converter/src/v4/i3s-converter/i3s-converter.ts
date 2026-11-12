@@ -389,10 +389,11 @@ export default class I3SConverter {
         ...this.loadOptions,
         '3d-tiles': {...this.loadOptions['3d-tiles'], loadGLTF: false}
       });
-    } catch (_error) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `[warning]: Failed to load ${sourceTile.contentUrl}. An I3S tile with empty content will be added to the output tileset`
+    } catch (error) {
+      // Continuing could let a later retry introduce fields after earlier nodes are written.
+      throw new Error(
+        `Failed to preprocess ${sourceTile.contentUrl}; cannot determine the complete attribute schema`,
+        {cause: error}
       );
     }
     if (tileContent?.batchTableJson) {
