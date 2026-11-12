@@ -11,11 +11,11 @@ test.each([
   'fixture'
 ])('legacy image factory selects a %s source and forwards options', type => {
   const result = {id: 'created-source'};
-  const createDataSource = vi.fn(() => result);
+  const createDataSourceSync = vi.fn(() => result);
   const source = {
     type: 'fixture',
     testURL: (url: string) => url.endsWith('/map'),
-    createDataSource
+    createDataSourceSync
   } as unknown as SourceLoader;
   const loadOptions = {wms: {version: '1.3.0'}};
   expect(
@@ -27,15 +27,18 @@ test.each([
       sources: [{type: 'other'} as SourceLoader, source]
     })
   ).toBe(result);
-  expect(createDataSource).toHaveBeenCalledExactlyOnceWith('https://example.com/map', loadOptions);
+  expect(createDataSourceSync).toHaveBeenCalledExactlyOnceWith(
+    'https://example.com/map',
+    loadOptions
+  );
 });
 
 test.each(['auto', 'unknown'])('legacy image factory rejects an unmatched %s source', type => {
-  const createDataSource = vi.fn();
+  const createDataSourceSync = vi.fn();
   const source = {
     type: 'fixture',
     testURL: () => false,
-    createDataSource
+    createDataSourceSync
   } as unknown as SourceLoader;
   expect(() =>
     createImageSource({
@@ -46,7 +49,7 @@ test.each(['auto', 'unknown'])('legacy image factory rejects an unmatched %s sou
       sources: [source]
     })
   ).toThrow('Not a valid image source type');
-  expect(createDataSource).not.toHaveBeenCalled();
+  expect(createDataSourceSync).not.toHaveBeenCalled();
 });
 
 test('legacy image factory defaults to WMS URL detection without fetching', () => {
