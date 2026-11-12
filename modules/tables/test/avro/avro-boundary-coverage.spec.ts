@@ -25,13 +25,10 @@ afterEach(() => vi.unstubAllGlobals());
 function createStructuralTable(rows: Record<string, unknown>[]) {
   const fields = Object.keys(rows[0] || {}).map(name => ({name, type: {toString: () => 'Utf8'}}));
   return {
-    shape: 'arrow-table',
-    data: {
-      numRows: rows.length,
-      schema: {fields},
-      getChild(name: string) {
-        return {get: (index: number) => rows[index][name]};
-      }
+    numRows: rows.length,
+    schema: {fields},
+    getChild(name: string) {
+      return {get: (index: number) => rows[index][name]};
     }
   } as any;
 }
@@ -346,17 +343,14 @@ describe('Avro boundary coverage', () => {
   });
 
   test('derives common Avro schemas from Arrow field types', async () => {
-    const table = {
-      shape: 'arrow-table' as const,
-      data: arrow.tableFromArrays({
-        enabled: arrow.vectorFromArray([true], new arrow.Bool()),
-        payload: arrow.vectorFromArray([new Uint8Array([1])], new arrow.Binary()),
-        small: new Int16Array([2]),
-        large: arrow.vectorFromArray([3n], new arrow.Int64()),
-        ratio: new Float32Array([1.5]),
-        score: new Float64Array([2.5])
-      })
-    };
+    const table = arrow.tableFromArrays({
+      enabled: arrow.vectorFromArray([true], new arrow.Bool()),
+      payload: arrow.vectorFromArray([new Uint8Array([1])], new arrow.Binary()),
+      small: new Int16Array([2]),
+      large: arrow.vectorFromArray([3n], new arrow.Int64()),
+      ratio: new Float32Array([1.5]),
+      score: new Float64Array([2.5])
+    });
     const result = await parseAvro(await encodeAvro(table));
     expect(result.data.numRows).toBe(1);
   });

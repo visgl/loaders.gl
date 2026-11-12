@@ -256,25 +256,11 @@ export function ensureGeoParquetMetadata(schema: Schema): Schema {
   return schema;
 }
 
-/**
- * Ensures an Arrow table wrapper carries valid GeoParquet schema metadata when GeoArrow fields are present.
- *
- * @param arrowTable - Arrow table wrapper to inspect and update.
- * @returns Updated Arrow table wrapper.
- */
-export function ensureGeoParquetMetadataOnArrowTable(arrowTable: {
-  shape: 'arrow-table';
-  data: arrow.Table;
-  schema?: Schema;
-}): {shape: 'arrow-table'; data: arrow.Table; schema: Schema} {
-  const schema = arrowTable.schema || convertArrowToSchema(arrowTable.data.schema);
+/** Adds GeoParquet metadata for GeoArrow fields while preserving Arrow column buffers. */
+export function ensureGeoParquetMetadataOnArrowTable(table: arrow.Table): arrow.Table {
+  const schema = convertArrowToSchema(table.schema);
   ensureGeoParquetMetadata(schema);
-
-  return {
-    shape: 'arrow-table',
-    data: applyLoadersSchemaToArrowTable(arrowTable.data, schema),
-    schema
-  };
+  return applyLoadersSchemaToArrowTable(table, schema);
 }
 
 /**

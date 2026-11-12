@@ -758,7 +758,8 @@ to retain the loaders.gl table and batch wrappers. A loader-specific shape optio
 such as `csv.shape`, takes precedence over `core.shape`.
 
 See [native Apache Arrow output](./modules/core/schema/table-guide.md#native-apache-arrow-output)
-for batch metadata and examples.
+for batch metadata and examples. Pass the native Arrow table to writers. If a
+loader returns an `'arrow-table'` wrapper, pass its `data` property.
 
 #### NDGeoJSON, trace, and GML output defaults
 

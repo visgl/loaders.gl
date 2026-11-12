@@ -109,9 +109,7 @@ Parquet default CRS84.
 import {load, encode} from '@loaders.gl/core';
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 
-const arrowTable = await load(url, ParquetLoader, {
-  parquet: {shape: 'arrow-table'}
-});
+const arrowTable = await load(url, ParquetLoader);
 
 const parquetBuffer = await encode(arrowTable, ParquetWriter, {
   core: {worker: false}

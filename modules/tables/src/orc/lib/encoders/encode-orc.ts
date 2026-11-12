@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table} from '@loaders.gl/core/schema';
+import {isNativeWriterTable, type TableWriterInput} from '../../../arrow/table-writer-input';
 import type {WriterOptions} from '@loaders.gl/core/loader-utils';
 
 /** ORC writer options. */
@@ -31,7 +31,7 @@ const ORC_TYPE = {
 } as const;
 
 /** Encodes one uncompressed ORC stripe containing primitive, non-null columns. */
-export function encodeORC(table: Table, options?: ORCWriterOptions): ArrayBuffer {
+export function encodeORC(table: TableWriterInput, options?: ORCWriterOptions): ArrayBuffer {
   const fields = getFields(table, options);
   const rows = getRows(table, fields);
   const normalizedFields = fields.map((field, index) =>
@@ -84,9 +84,8 @@ type EncodedColumn = {
   dictionarySize?: number;
 };
 
-function getFields(table: Table, options?: ORCWriterOptions): ORCField[] {
-  const tableFields =
-    table.shape === 'arrow-table' ? table.data.schema.fields : table.schema?.fields;
+function getFields(table: TableWriterInput, options?: ORCWriterOptions): ORCField[] {
+  const tableFields = isNativeWriterTable(table) ? table.schema.fields : table.schema?.fields;
   return (
     options?.orc?.schema ||
     tableFields?.map(field => ({name: field.name, type: String(field.type)})) ||
@@ -94,9 +93,9 @@ function getFields(table: Table, options?: ORCWriterOptions): ORCField[] {
   );
 }
 
-function getRows(table: Table, fields: ORCField[]): unknown[][] {
-  if (table.shape === 'arrow-table') {
-    return table.data
+function getRows(table: TableWriterInput, fields: ORCField[]): unknown[][] {
+  if (isNativeWriterTable(table)) {
+    return table
       .toArray()
       .map(row => fields.map(field => (row as Record<string, unknown>)[field.name]));
   }

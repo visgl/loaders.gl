@@ -28,17 +28,7 @@ export function convertGeoArrowTableToGeoJSON(
   schema: Schema
 ): GeoJSONTable {
   const geoMetadata = getGeoMetadata(schema.metadata);
-  const geometryFields = arrowTable.schema.fields
-    .map(field => ({
-      field,
-      encoding: resolveGeoArrowEncoding(
-        geoMetadata?.columns?.[field.name]?.encoding,
-        field.metadata?.get('ARROW:extension:name')
-      )
-    }))
-    .filter(
-      (entry): entry is {field: arrow.Field; encoding: GeoArrowEncoding} => entry.encoding !== null
-    );
+  const geometryFields = getGeoArrowGeometryFields(arrowTable.schema, schema);
   const primaryGeometry =
     geometryFields.find(entry => entry.field.name === geoMetadata?.primary_column) ||
     geometryFields[0];
@@ -55,12 +45,7 @@ export function convertGeoArrowTableToGeoJSON(
     .filter(field => !geometryColumnNames.has(field.name))
     .map(field => field.name);
   const propertyColumns = propertyColumnNames.map(name => arrowTable.getChild(name));
-  const geometries =
-    encoding === 'geoarrow.wkb' || encoding === 'geoarrow.wkt'
-      ? Array.from({length: arrowTable.numRows}, (_, rowIndex) =>
-          convertGeoArrowCellToGeometry(geometryColumn, rowIndex, encoding)
-        )
-      : materializeGeoArrowRows(makeGeoArrowColumnFromArrowVector(geometryColumn, {encoding}));
+  const geometries = decodeGeoArrowGeometryColumn(geometryColumn, encoding);
   const features: Feature[] = [];
 
   for (let rowIndex = 0; rowIndex < arrowTable.numRows; rowIndex++) {
@@ -76,6 +61,31 @@ export function convertGeoArrowTableToGeoJSON(
   }
 
   return {shape: 'geojson-table', type: 'FeatureCollection', schema, features};
+}
+
+/** Identifies the Arrow fields that declare a supported geometry encoding. */
+export function getGeoArrowGeometryFields(schema: arrow.Schema, tableSchema: Schema) {
+  const geoMetadata = getGeoMetadata(tableSchema.metadata);
+  return schema.fields
+    .map(field => ({
+      field,
+      encoding: resolveGeoArrowEncoding(
+        geoMetadata?.columns?.[field.name]?.encoding,
+        field.metadata?.get('ARROW:extension:name')
+      )
+    }))
+    .filter(
+      (entry): entry is {field: arrow.Field; encoding: GeoArrowEncoding} => entry.encoding !== null
+    );
+}
+
+/** Decodes an encoded or native GeoArrow column into GeoJSON geometry values. */
+export function decodeGeoArrowGeometryColumn(column: arrow.Vector, encoding: GeoArrowEncoding) {
+  return encoding === 'geoarrow.wkb' || encoding === 'geoarrow.wkt'
+    ? Array.from({length: column.length}, (_, index) =>
+        convertGeoArrowCellToGeometry(column, index, encoding)
+      )
+    : materializeGeoArrowRows(makeGeoArrowColumnFromArrowVector(column, {encoding}));
 }
 
 /** Converts a GeoArrow vector cell into a GeoJSON geometry. */

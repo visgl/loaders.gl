@@ -30,15 +30,10 @@ export type ColumnarTable = {
  * @returns - encoded ArrayBuffer
  */
 export function encodeArrowSync(
-  data: ColumnarTable,
+  data: ColumnarTable | arrow.Table,
   options: EncodeArrowOptions = {}
 ): ArrayBuffer {
-  const vectors: Record<string, arrow.Vector> = {};
-  for (const arrayData of data) {
-    const arrayVector = createVector(arrayData.array, arrayData.type);
-    vectors[arrayData.name] = arrayVector;
-  }
-  const table = new arrow.Table(vectors);
+  const table = Array.isArray(data) ? makeArrowTable(data) : data;
   const container = options.container || 'stream';
   const compressionType = options.compression
     ? registerArrowCompressionEncoderSync(options.compression)
@@ -53,6 +48,15 @@ export function encodeArrowSync(
       ? tableToIPC(table, container)
       : tableToIPC(table, container, compressionType);
   return ensureArrayBuffer(arrowBuffer);
+}
+
+/** Converts the legacy column descriptors to an Arrow table. */
+function makeArrowTable(data: ColumnarTable): arrow.Table {
+  const vectors: Record<string, arrow.Vector> = {};
+  for (const column of data) {
+    vectors[column.name] = createVector(column.array, column.type);
+  }
+  return new arrow.Table(vectors);
 }
 
 /**

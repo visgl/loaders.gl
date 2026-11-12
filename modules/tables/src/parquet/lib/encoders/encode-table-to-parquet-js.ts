@@ -147,6 +147,15 @@ function convertFieldToParquetFieldDefinition(
 
   if (typeof dataType === 'object') {
     switch (dataType.type) {
+      case 'dictionary':
+        return convertFieldToParquetFieldDefinition(
+          {...field, type: dataType.dictionary},
+          rows,
+          geoParquetVersion,
+          geoColumnMetadata,
+          values,
+          int96AsTimestamp
+        );
       case 'struct':
         return {
           optional: nullable,

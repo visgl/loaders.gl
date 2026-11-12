@@ -517,10 +517,10 @@ function addWriterBenchmarks(bench, scenario: BenchmarkScenario, dynamicTyping: 
   );
 
   bench = bench.addAsync(
-    `CSVWriter rowType=arrow-table format=csv inputRows=${inputRows}#encodeText`,
+    `CSVWriter rowType=arrow format=csv inputRows=${inputRows}#encodeText`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => {
-      return await encodeTableAsText(arrowTable!, CSVWriter);
+      return await encodeTableAsText(arrowTable!.data, CSVWriter);
     }
   );
 

@@ -4,6 +4,7 @@
 
 // import type {} from '@loaders.gl/core/loader-utils';
 
+import type {Table as ArrowJSTable} from 'apache-arrow';
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import {ColumnarTable, encodeArrowSync} from './lib/encoders/encode-arrow';
 import {
@@ -46,4 +47,4 @@ export const ArrowWriter = {
   encodeSync(data, options?) {
     return encodeArrowSync(data, options?.arrow);
   }
-} as const satisfies WriterWithEncoder<ColumnarTable, never, ArrowWriterOptions>;
+} as const satisfies WriterWithEncoder<ColumnarTable | ArrowJSTable, never, ArrowWriterOptions>;

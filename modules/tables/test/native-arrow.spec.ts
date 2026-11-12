@@ -30,7 +30,7 @@ const ipc = tableToIPC(new Table([original.slice(0, 1).batches[0], original.slic
 let parquet: ArrayBuffer;
 let avro: ArrayBuffer;
 beforeAll(async () => {
-  avro = await encodeAvro({shape: 'arrow-table', data: original});
+  avro = await encodeAvro(original);
   parquet = await encode(
     {
       shape: 'object-row-table',
@@ -65,7 +65,7 @@ const cases = [
   {
     name: 'ORC',
     loader: ORCLoader,
-    input: () => encodeORC({shape: 'arrow-table', data: original})
+    input: () => encodeORC(original)
   },
   {
     name: 'CSV',

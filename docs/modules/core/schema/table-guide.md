@@ -86,3 +86,20 @@ through each batch's schema. To receive loaders.gl metadata events, use
 
 Parser methods and worker transport use loaders.gl table and batch objects.
 The core APIs expose the Arrow objects after parsing and worker hydration.
+
+## Writing native Arrow data
+
+Table writers take the Apache Arrow `Table` directly. If you have a loaders.gl
+`'arrow-table'` result, pass its `data` property to the writer. For example, load a
+CSV file and encode the resulting table as Arrow IPC:
+
+```typescript
+import {encode, load} from '@loaders.gl/core';
+import {ArrowWriter, CSVLoader} from '@loaders.gl/tables';
+
+const table = await load('data.csv', CSVLoader);
+const bytes = await encode(table, ArrowWriter);
+```
+
+`GeoJSONWriter` also accepts an iterable or async iterable of Arrow
+`RecordBatch` objects through `encodeInBatches`.

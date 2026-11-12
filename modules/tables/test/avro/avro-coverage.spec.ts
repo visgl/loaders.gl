@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table as ArrowTable} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {compressAvro, decompressAvro} from '../../src/avro/avro-compression';
 import {AvroLoaderWithParser} from '../../src/avro/avro-loader';
@@ -187,11 +187,8 @@ test('AvroWriter rejects invalid root schemas, unions, enums, fixed values, and 
 /** Creates the minimal Arrow table surface required by the Avro writer. */
 function makeArrowTable(record: Record<string, unknown>): ArrowTable {
   return {
-    shape: 'arrow-table',
-    data: {
-      numRows: 1,
-      getChild: (name: string) => ({get: () => record[name]})
-    }
+    numRows: 1,
+    getChild: (name: string) => ({get: () => record[name]})
   } as unknown as ArrowTable;
 }
 
@@ -200,17 +197,14 @@ function makeDerivedArrowTable(
   columns: Record<string, {type: string; value: unknown}>
 ): ArrowTable {
   return {
-    shape: 'arrow-table',
-    data: {
-      numRows: 1,
-      schema: {
-        fields: Object.entries(columns).map(([name, column]) => ({
-          name,
-          type: {toString: () => column.type}
-        }))
-      },
-      getChild: (name: string) => ({get: () => columns[name].value})
-    }
+    numRows: 1,
+    schema: {
+      fields: Object.entries(columns).map(([name, column]) => ({
+        name,
+        type: {toString: () => column.type}
+      }))
+    },
+    getChild: (name: string) => ({get: () => columns[name].value})
   } as unknown as ArrowTable;
 }
 

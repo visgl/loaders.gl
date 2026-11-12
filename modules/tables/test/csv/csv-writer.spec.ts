@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {CSVLoader, CSVWriterOptions, CSVWriter} from '@loaders.gl/tables/csv/index';
 import {encodeTableAsText, parse, preload} from '@loaders.gl/core';
 import {Table} from '@loaders.gl/core/schema';
-import {convertTable} from '@loaders.gl/core/schema-utils';
+import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
 import {
   makeTestTable,
   tableWithGeometryColumn
@@ -140,16 +140,16 @@ test('CSVWriter ', async () => {
     expect(output, name).toBe(expected);
   }
 });
-test('CSVWriter#arrow-table ', async () => {
+test('CSVWriter#native Arrow ', async () => {
   const preloadedLoader = await preload(CSVLoader);
   for (const {name, input, options, expected} of cases) {
     const arrowInput =
       expected === ''
-        ? convertTable(input, 'arrow-table')
+        ? convertTableToArrow(input)
         : await parse(expected, preloadedLoader, {
             core: {worker: false},
             csv: {
-              shape: 'arrow-table',
+              shape: 'arrow',
               header: true,
               dynamicTyping: false
             }

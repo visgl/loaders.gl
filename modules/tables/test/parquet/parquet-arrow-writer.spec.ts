@@ -51,7 +51,7 @@ test('ParquetWriter#removed JSON aliases are absent', () => {
 });
 test('ParquetWriter#encodes Arrow tables through primary writer', async () => {
     const table = createArrowTable();
-    const parquetBuffer = await encode(table, ParquetWriter, {
+    const parquetBuffer = await encode(table.data, ParquetWriter, {
         worker: false
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
