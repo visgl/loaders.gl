@@ -237,3 +237,20 @@ test('tile-converter(i3s)#ConversionDump - test setMaterialsDefinitions method',
   conversionDump.setMaterialsDefinitions(testMaterialDefinitions as I3SMaterialDefinition[]);
   expect(conversionDump.materialDefinitions).toEqual(testMaterialDefinitions);
 });
+
+test('tile-converter(i3s)#ConversionDump rejects old attribute encoding and resumes matching encoding', async () => {
+  const options = {...testOptions, tilesetName: 'attribute-version'};
+  const oldDump = new ConversionDump();
+  await oldDump.createDump(options);
+  await oldDump.addNode('1.b3dm', 1, testDumpMetadata);
+  const currentOptions = {...options, attributeEncodingVersion: 2};
+  const currentDump = new ConversionDump();
+  await currentDump.createDump(currentOptions);
+  expect(currentDump.restored).toBe(false);
+  expect(currentDump.tilesConverted).toEqual({});
+  await currentDump.addNode('1.b3dm', 1, testDumpMetadata);
+  const resumedDump = new ConversionDump();
+  await resumedDump.createDump(currentOptions);
+  expect(resumedDump.restored).toBe(true);
+  await resumedDump.deleteDumpFile();
+});
