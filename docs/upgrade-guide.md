@@ -749,9 +749,20 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 - `JSONLoader` remains the arbitrary JSON document loader. Use `JSONTableLoader` for table-only JSON workflows and for `json.shape: 'arrow-table'`.
 - `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
 
+#### Table loaders default to native Arrow
+
+Code that reads `result.data` from a table returned by a loader in
+`@loaders.gl/tables` can use the returned Apache Arrow `Table` directly.
+Batch APIs yield Apache Arrow `RecordBatch` objects. Set `core.shape: 'arrow-table'`
+to retain the loaders.gl table and batch wrappers. A loader-specific shape option,
+such as `csv.shape`, takes precedence over `core.shape`.
+
+See [native Apache Arrow output](./modules/core/schema/table-guide.md#native-apache-arrow-output)
+for batch metadata and examples.
+
 #### NDGeoJSON, trace, and GML output defaults
 
-- `NDGeoJSONLoader` now returns Arrow tables by default. Set `geojson.shape: 'object-row-table'`
+- `NDGeoJSONLoader` now returns native Arrow tables by default. Set `geojson.shape: 'object-row-table'`
   to keep complete GeoJSON features as object rows. Its loader ID is now `ndgeojson` rather than
   the ambiguous `ndjson`.
 - `ChromeTraceLoader` now defaults to its existing native Apache Arrow `Table` output. Set

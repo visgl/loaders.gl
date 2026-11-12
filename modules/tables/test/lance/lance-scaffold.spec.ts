@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {Table, RecordBatch} from 'apache-arrow';
+import {parse, parseInBatches} from '@loaders.gl/core';
 
 import {LanceFormat} from '../../src/lance/lance-format';
 import {LanceLoader} from '../../src/lance/lance-loader-types';
@@ -508,3 +510,22 @@ function createCoordinateFileFixture(): Uint8Array {
   bytes.set([0x4c, 0x41, 0x4e, 0x43], footerOffset + 36);
   return bytes;
 }
+
+test('Lance defaults to native tables and batches and accepts wrapped output', async () => {
+  const options = {lance: {columnTypes: ['int32' as const]}};
+  const table = await parse(FLAT_FILE_FIXTURE, LanceLoader, options);
+  expect(table).toBeInstanceOf(Table);
+  expect(table.numRows).toBe(3);
+
+  const batches = [];
+  for await (const batch of await parseInBatches([FLAT_FILE_FIXTURE], LanceLoader, options)) {
+    batches.push(batch);
+  }
+  expect(batches).toHaveLength(1);
+  expect(batches[0]).toBeInstanceOf(RecordBatch);
+
+  const wrapped = await parse(FLAT_FILE_FIXTURE, LanceLoader, {
+    lance: {...options.lance, shape: 'arrow-table'}
+  });
+  expect(wrapped).toMatchObject({shape: 'arrow-table'});
+});

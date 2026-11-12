@@ -13,6 +13,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /** Options for the Apache Avro loader. */
 export type AvroLoaderOptions = {
   avro?: {
+    /** Return native Arrow data or loaders.gl table envelopes. */
+    shape?: 'arrow' | 'arrow-table';
     /** Maximum number of rows yielded by each parseInBatches result. */
     batchSize?: number;
     /** Reader schema used for projection and compatible schema evolution. */
@@ -49,6 +51,7 @@ export const AvroLoader = {
   batchType: null as unknown as ArrowTableBatch,
   version: VERSION,
   worker: false,
-  options: {},
+  defaultShape: 'arrow',
+  options: {avro: {shape: 'arrow'}},
   preload: preloadAvroLoader
 } as const satisfies Loader<ArrowTable, ArrowTableBatch, AvroLoaderOptions>;
