@@ -56,7 +56,7 @@ Options interpreted by the core API and shared across loaders live under `option
 | `options.core.nothrow`               | `boolean`              | `false`    | Prevents throwing on loader errors and lets callers inspect failures manually.                                                                                                                                     |
 | `options.core.mimeType`              | `string`               | -          | Loader selection will first look for a loader matching `mimeType`. A specific loader can be specified using `'application/x-<loader.id>'`.                                                                       |
 | `options.core.fallbackMimeType`      | `string`               | -          | Loader selection fallback `mimeType` in case one is not provided by the server. A specific loader can be specified with `'application/x-<loader.id>'`.                                                            |
-| `options.core.log` | Probe.gl logger or `null` | loaders.gl Probe.gl logger | Routes operation diagnostics to the supplied logger. Set `null` to suppress diagnostics. |
+| `options.core.log` | Logger or `null` | Shared loaders.gl logger | Routes operation diagnostics to the supplied logger. Set `null` to suppress diagnostics. |
 | `options.core.worker`                | `boolean \| 'auto'`    | `true`     | Runs the loader on a worker thread, if the selected loader and the runtime environment support it. `'auto'` uses a loader's synchronous work estimate for atomic `parse()` calls.                                                                 |
 | `options.core.workerThreshold`       | `number`               | `0.1`      | Threshold for `worker: 'auto'`; scores below it stay on the calling thread and scores at or above it use a worker. Must be finite and between `0` and `1`.                                                                                              |
 | `options.core.maxConcurrency`        | `number`               | `3`        | Maximum concurrent task handles per loader descriptor, configured by its first request. Note that setting this higher than roughly the number CPU cores on your current machine will not provide much benefit and may create extra overhead. |
@@ -71,6 +71,23 @@ Deprecated top-level parser aliases such as `options.fetch`, `options.worker`, a
 are still accepted by the current implementation, but new code should use `options.core`.
 This does not restore the removed source `loadOptions` wrappers. Final v5 disposition of these
 parser aliases remains an open decision in [the release tracker](https://github.com/visgl/loaders.gl/issues/3316).
+
+### Logging
+
+Pass a [probe.gl](https://vis.gl/probe.gl) logger as `core.log` to capture operation diagnostics on
+the calling thread. Use `null` to suppress diagnostics. The example captures messages in a
+probe.gl `MemoryLog`.
+
+```typescript
+import {MemoryLog} from 'probe.gl/log';
+
+const log = new MemoryLog();
+const result = await parse(bytes, loader, {core: {log, worker: false}});
+const diagnostics = log.messages;
+```
+
+Workers use a logger in their own execution context and honor `core.log: null`. Set
+`core.worker` to `false` to capture parser diagnostics with your logger on the calling thread.
 
 ### Authentication options
 
@@ -125,15 +142,3 @@ for supported behavior. The final stability and naming policy, including its rel
 Notes:
 
 - `transforms` is an array functions that accept and return an `AsyncIterable<ArrayBuffer>`
-
-Use a Probe.gl `MemoryLog` to capture diagnostics from an operation on the calling thread:
-
-```typescript
-import {MemoryLog} from 'probe.gl/log';
-
-const log = new MemoryLog();
-const result = await parse(bytes, loader, {core: {log, worker: false}});
-const diagnostics = log.messages;
-```
-
-Workers use a logger in their own execution context. Logger instances are not transferred.
