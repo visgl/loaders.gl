@@ -1,9 +1,6 @@
 name: release
 
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/release.yml'
   workflow_dispatch:
     inputs:
       release_tag:
@@ -39,9 +36,7 @@ jobs:
         run: |
           result=
           release_commit=$(git rev-parse HEAD)
-          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
-            result=true
-          elif git branch -a --contains "$release_commit" | grep -q 'remotes/origin/master$'; then
+          if git branch -a --contains "$release_commit" | grep -q 'remotes/origin/master$'; then
             result=true
           elif git branch -a --contains "$release_commit" | grep -q 'remotes/origin/.*-release$'; then
             result=true
@@ -119,7 +114,6 @@ jobs:
         run: node scripts/check-built-versions.mjs
 
       - name: Verify release tag
-        if: ${{ github.event_name != 'pull_request' }}
         run: |
           release_tag=$(git describe --tags --exact-match HEAD)
           release_version=$(node -p "require('./lerna.json').version")
@@ -316,7 +310,7 @@ jobs:
       contents: write
       id-token: write
 
-    if: ${{ success() && github.event_name != 'pull_request' && github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
+    if: ${{ success() && github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

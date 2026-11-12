@@ -96,8 +96,7 @@ for npm trusted publishing. The npm relationship must name exactly
    version-preparation PR: it increments the version again and pushes a tag.
 3. The workflow builds packages, workers, and apps once and verifies embedded
    versions and the exact release tag. Node tests, browser shards, hermetic slow
-   tests, and npm publishing restore the same build artifact. Pull requests that
-   change the release workflow exercise the build and test jobs without publishing.
+   tests, and npm publishing restore the same build artifact.
 4. A separate finalization job verifies every public workspace version and distribution
    tag in the registry before creating the GitHub prerelease announcement. It checks
    up to 60 times at 15-second intervals, allowing about 15 minutes for propagation.
