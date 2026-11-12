@@ -12,10 +12,7 @@ import type {
 } from '@loaders.gl/core/schema';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 
-import {
-  convertArrowBatchToObjectRows,
-  convertArrowTableToObjectRows
-} from './lib/parsers/convert-parquet-tables';
+import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema-utils';
 import {
   parseParquetFileToArrow,
   parseParquetFileToArrowInBatches
@@ -86,7 +83,7 @@ async function parseParquetTable(
   }
 
   const arrowTable = await parseParquetFileToArrow(file, parquetOptions.parquet);
-  return convertArrowTableToObjectRows(arrowTable);
+  return convertArrowTable(arrowTable, 'object-row-table');
 }
 
 /**
@@ -107,7 +104,7 @@ async function* parseParquetTableInBatches(
   }
 
   for await (const batch of parseParquetFileToArrowInBatches(file, parquetOptions.parquet)) {
-    yield convertArrowBatchToObjectRows(batch);
+    yield convertArrowTableBatch(batch, 'object-row-table');
   }
 }
 

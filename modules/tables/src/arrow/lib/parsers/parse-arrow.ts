@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
-import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
+import {convertArrowTable, convertArrowToTable} from '@loaders.gl/core/schema-utils';
 import {makeTableScanBatch, toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {registerArrowCompressionCodecs, preloadArrowCompressionDecoders} from './arrow-compression';
 
@@ -19,7 +19,11 @@ export function parseArrowSync(
 ): Table {
   const shape = options?.shape === 'arrow' ? 'arrow-table' : options?.shape || 'arrow-table';
   const arrowTable = parseArrowTable(arrayBuffer);
-  return convertArrowToTable(arrowTable, shape);
+  // Preserve Arrow schema inference and the legacy direct-parser GeoJSON path.
+  if (shape === 'arrow-table' || shape === 'geojson-table') {
+    return convertArrowToTable(arrowTable, shape);
+  }
+  return convertArrowTable({shape: 'arrow-table', data: arrowTable}, shape);
 }
 
 /** Parses an Arrow IPC table, normalizing dictionary ids unsupported by Arrow JS. */

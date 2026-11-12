@@ -15,7 +15,10 @@ test.each([
   [undefined, 'columnar-table'],
   [{}, 'columnar-table'],
   [{arrow: {shape: 'arrow-table'}}, 'arrow-table'],
-  [{arrow: {shape: 'array-row-table'}}, 'array-row-table']
+  [{arrow: {shape: 'arrow'}}, 'arrow-table'],
+
+  [{arrow: {shape: 'array-row-table'}}, 'array-row-table'],
+  [{arrow: {shape: 'object-row-table'}}, 'object-row-table']
 ] as const)('Arrow column hydration honors options %j', (options, shape) => {
   const serialized = serializeArrowTableResult({
     shape: 'arrow-table',
@@ -28,6 +31,8 @@ test.each([
     expect(result.data.getChild('id')?.get(0)).toBe(1);
   } else if (result.shape === 'array-row-table') {
     expect(result.data).toEqual([[1]]);
+  } else if (result.shape === 'object-row-table') {
+    expect(result.data).toEqual([{id: 1}]);
   } else {
     expect(result.data).toMatchObject({id: new Int32Array([1])});
   }
