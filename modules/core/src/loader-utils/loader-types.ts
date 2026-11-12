@@ -535,31 +535,10 @@ export type LoaderReturnType<T = Loader, Options = never> =
   T extends Loader<infer Return, unknown, unknown>
     ? NativeArrowOutput<T, Options, Return, arrow.Table>
     : never;
-/** Optional metadata event emitted before data batches when core.metadata is enabled. */
-export type LoaderMetadataBatch = {
-  shape: 'metadata';
-  batchType: 'metadata';
-  metadata: {_loader: Loader; _context: LoaderContext};
-  data: [];
-  bytesUsed: number;
-};
-
-type RequestedMetadataBatch<Options> = Options extends unknown
-  ? true extends
-      | (Options extends {core?: infer Core}
-          ? NonNullable<Core> extends {metadata?: infer Metadata}
-            ? Metadata
-            : never
-          : never)
-      | (Options extends {metadata?: infer Metadata} ? Metadata : never)
-    ? LoaderMetadataBatch
-    : never
-  : never;
-
 /** Typescript helper to extract the public batch type, accounting for native Arrow output. */
 export type LoaderBatchType<T = Loader, Options = never> =
   T extends Loader<unknown, infer Batch, unknown>
-    ? NativeArrowOutput<T, Options, Batch, arrow.RecordBatch> | RequestedMetadataBatch<Options>
+    ? NativeArrowOutput<T, Options, Batch, arrow.RecordBatch>
     : never;
 
 /** Typescript helper to extract options type from an array of loader types */

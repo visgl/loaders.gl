@@ -14,7 +14,6 @@ import type {
   LoaderCallOptions,
   Loader,
   LoaderWithParser,
-  LoaderMetadataBatch,
   StrictLoaderOptions,
   LoaderOptions,
   LoaderContext,
@@ -141,7 +140,7 @@ export async function parseInBatches(
     url || '',
     normalizedOptions
   );
-  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions);
+  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, true);
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
     nativeArrowOptions || strictOptions,
@@ -149,14 +148,14 @@ export async function parseInBatches(
   );
 
   const loaderWithParser = await getLoaderImplementation(loader, strictOptions, context.url);
-  return await parseWithLoaderInBatches(
+  const batches = await parseWithLoaderInBatches(
     loader,
     loaderWithParser,
     data,
     nativeArrowOptions || strictOptions,
-    context,
-    Boolean(nativeArrowOptions)
+    context
   );
+  return nativeArrowOptions ? unwrapArrowBatches(batches) : batches;
 }
 
 /**
@@ -167,18 +166,16 @@ async function parseWithLoaderInBatches(
   loader: LoaderWithParser,
   data: BatchableDataType,
   options: StrictLoaderOptions,
-  context: LoaderContext,
-  nativeArrow: boolean
+  context: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
-  const batches = await parseToOutputIterator(loader, data, options, context);
-  const outputIterator = nativeArrow ? unwrapArrowBatches(batches) : batches;
+  const outputIterator = await parseToOutputIterator(loader, data, options, context);
 
   // Generate metadata batch if requested
   if (!options?.core?.metadata) {
     return outputIterator;
   }
 
-  const metadataBatch: LoaderMetadataBatch = {
+  const metadataBatch = {
     shape: 'metadata',
     batchType: 'metadata',
     metadata: {

@@ -197,17 +197,18 @@ test('sync and load APIs infer native output and preserve scoped overrides', asy
   expectTypeOf(batches).toEqualTypeOf<AsyncIterable<RecordBatch>>();
 });
 
-test('native streaming preserves opt-in metadata before raw RecordBatches', async () => {
+test('native streaming requires wrapped mode for loader metadata', async () => {
+  await expect(parseInBatches([ipc], ArrowLoader, {core: {metadata: true}})).rejects.toThrow(
+    'core.metadata'
+  );
+
   const output = await parseInBatches([ipc], ArrowLoader, {
-    core: {shape: 'arrow', metadata: true}
+    core: {shape: 'arrow-table', metadata: true, worker: false}
   });
-  expectTypeOf(output).toEqualTypeOf<
-    AsyncIterable<RecordBatch | import('@loaders.gl/core').LoaderMetadataBatch>
-  >();
   const events = [];
   for await (const event of output) events.push(event);
   const [metadata, ...batches] = events;
-  expect(metadata).toMatchObject({shape: 'metadata', batchType: 'metadata'});
+  expect(metadata).toMatchObject({batchType: 'metadata'});
   expect(batches).toHaveLength(2);
-  expect(batches.every(batch => batch instanceof RecordBatch)).toBe(true);
+  expect(batches[0]).toMatchObject({shape: 'arrow-table', batchType: 'data'});
 });

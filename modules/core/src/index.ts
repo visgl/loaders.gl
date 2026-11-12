@@ -6,7 +6,6 @@
 export type {
   Loader,
   LoaderWithParser,
-  LoaderMetadataBatch,
   LoaderContext,
   CoreAPI,
   LoaderOptions,

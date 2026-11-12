@@ -153,7 +153,7 @@ export async function parse(
   );
 
   // Get a context (if already present, will be unchanged)
-  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions);
+  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, false);
   context = getLoaderContext(
     // @ts-expect-error
     {url, _parse: parse, loaders: candidateLoaders},

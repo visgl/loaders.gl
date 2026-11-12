@@ -80,11 +80,9 @@ await load('data.csv', CSVLoader, {csv: {shape: 'arrow-table'}});
 Native output preserves Arrow schemas, field metadata, dictionaries, and column
 buffers. Streaming yields every RecordBatch in each internal table, in order,
 and closing the iterator closes the upstream iterator. An empty table with no
-record batches yields none. With `core.metadata: true`, the iterator first yields
-a loaders.gl event with `batchType: 'metadata'` containing the loader and its
-context. The data events are native record batches. Choose `'arrow-table'` to
-receive each data batch in a loaders.gl envelope with fields such as `bytesUsed`
-when the loader provides them.
+record batches yields none. Arrow schema and field metadata are available
+through each batch's schema. To receive loaders.gl metadata events, use
+`core.metadata: true` with `shape: 'arrow-table'`.
 
 Parser methods and worker transport use loaders.gl table and batch objects.
 The core APIs expose the Arrow objects after parsing and worker hydration.
