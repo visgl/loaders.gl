@@ -90,3 +90,16 @@ const maybeWrapped = parseSyncFromContext(bytes, ArrowLoader, optionalWrapped, c
 // @ts-expect-error The wrapped option changes the output when supplied.
 const alwaysNative: Table = maybeWrapped;
 void alwaysNative;
+
+const metadataBatches = await parseInBatches([bytes], ArrowLoader, {
+  core: {metadata: true}
+});
+for await (const batch of metadataBatches) {
+  if ('batchType' in batch) {
+    const metadata: import('@loaders.gl/core').LoaderMetadataBatch = batch;
+    void metadata;
+  } else {
+    const recordBatch: RecordBatch = batch;
+    void recordBatch;
+  }
+}

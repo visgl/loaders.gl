@@ -27,10 +27,12 @@ import {
   resolveLoaderAuthenticationOptions
 } from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
+import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 import {
   applySearchParamsToUrl,
   normalizeLoaderOptions,
+  normalizeOptions,
   getGlobalLoaderOptions
 } from '../loader-utils/option-utils';
 import {fetchFile} from '../fetch/fetch-file';
@@ -226,7 +228,12 @@ export async function load(
       ).parseUrl;
       if (parseUrl) {
         const requestUrl = applySearchParamsToUrl(url, resolvedOptions);
-        return await parseUrl(requestUrl, resolvedOptions, context);
+        const nativeOptions = getNativeArrowOptions(
+          selectedLoader,
+          normalizeOptions(resolvedOptions, selectedLoader, [selectedLoader], url)
+        );
+        const result = await parseUrl(requestUrl, nativeOptions || resolvedOptions, context);
+        return nativeOptions ? unwrapArrowTable(result) : result;
       }
     }
   }

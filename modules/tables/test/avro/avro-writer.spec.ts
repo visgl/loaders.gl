@@ -384,7 +384,14 @@ test('core load routes URL-backed Avro files through random-access parsing', asy
     const result = await load('https://example.test/data.avro', AvroLoader, {
       fetch: fetchFunction
     });
-    if (result.shape === 'arrow-table') expect(result.data.getChild('id')?.get(0)).toBe(9);
+    expect(result).toBeInstanceOf(arrow.Table);
+    expect(result.getChild('id')?.get(0)).toBe(9);
+    const wrapped = await load('https://example.test/data.avro', AvroLoader, {
+      fetch: fetchFunction,
+      avro: {shape: 'arrow-table'}
+    });
+    expect(wrapped.shape).toBe('arrow-table');
+    expect(wrapped.data.getChild('id')?.get(0)).toBe(9);
     expect(ranges.length > 0).toBe(true);
   } finally {
     globalThis.fetch = originalFetch;

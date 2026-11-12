@@ -128,7 +128,7 @@ export async function parseFile(
     url,
     normalizedOptions
   );
-  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, false);
+  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions);
   context = getLoaderContext(
     // @ts-expect-error candidateLoaders may be a single forced loader
     {url, _parse: parse, loaders: candidateLoaders},

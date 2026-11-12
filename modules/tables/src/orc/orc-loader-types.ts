@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {ORCFormat} from './orc-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline.
@@ -12,6 +12,10 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Options for the minimal ORC loader. */
 export type ORCLoaderOptions = {
+  orc?: {
+    /** Return native Arrow data or loaders.gl table envelopes. */
+    shape?: 'arrow' | 'arrow-table';
+  };
   /** Optional codec implementations injected into the compression module. */
   modules?: Record<string, any>;
 };
@@ -27,8 +31,9 @@ export const ORCLoader = {
   ...ORCFormat,
   version: VERSION,
   dataType: null as unknown as ArrowTable,
-  batchType: null as never,
+  batchType: null as unknown as ArrowTableBatch,
   worker: false,
-  options: {},
+  defaultShape: 'arrow',
+  options: {orc: {shape: 'arrow'}},
   preload: preloadORCLoader
-} as const satisfies Loader<ArrowTable, never, ORCLoaderOptions>;
+} as const satisfies Loader<ArrowTable, ArrowTableBatch, ORCLoaderOptions>;

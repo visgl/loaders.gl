@@ -18,16 +18,17 @@ import {load, encode} from '@loaders.gl/core';
 import {AvroLoader, AvroWriter} from '@loaders.gl/tables/avro';
 
 const table = await load('records.avro', AvroLoader);
-const bytes = await encode(table, AvroWriter);
+const bytes = await encode({shape: 'arrow-table', data: table}, AvroWriter);
 ```
 
-The returned table has `shape: 'arrow-table'` and an Apache Arrow table in `data`.
+The loader returns an Apache Arrow `Table` by default. Set `avro.shape: 'arrow-table'`
+for a loaders.gl table wrapper.
 Avro binary fields without a recognized logical type use Arrow `Binary` for
 `bytes` and `FixedSizeBinary` for `fixed`. Each value retains its own length,
 including empty byte arrays and nullable values. These types also apply inside
 records, arrays, and maps.
 
-Use `loadInBatches` with `AvroLoader` for Arrow table batches.
+Use `loadInBatches` with `AvroLoader` for native Arrow record batches.
 
 ## Loader options
 
@@ -35,6 +36,7 @@ Pass these options inside `avro`:
 
 | Option | Description |
 | --- | --- |
+| `shape` | `'arrow'` by default. Use `'arrow-table'` for wrapped output. |
 | `encoding` | `'auto'` detects OCF and single-object encoding; `'raw'` requires an external schema. |
 | `schema` | External Avro schema for raw datum or single-object input. |
 | `readerSchema` | Reader schema for projection and compatible schema evolution. |

@@ -72,17 +72,18 @@ for await (const recordBatch of batches) {
 
 Supported tabular loaders include `ArrowLoader`, `GeoArrowLoader`, `CSVLoader`,
 `JSONTableLoader`, `NDJSONLoader`, `ParquetLoader`, `ParquetJSLoader`,
-`GeoParquetLoader`, `GeoJSONLoader`, and `NDGeoJSONLoader`. Use the loader's regular
+`GeoParquetLoader`, `GeoJSONLoader`, `NDGeoJSONLoader`, `AvroLoader`, `LanceLoader`, and `ORCLoader`. Use the loader's regular
 shape namespace (`arrow`, `csv`, `json`, `ndjson`, `parquet`, or `geojson`), or the
-shared `core.shape` default. Explicit loader-scoped shapes take precedence.
+shared `core.shape` default. Avro, Lance, and ORC also accept their own scoped shape option. Explicit loader-scoped shapes take precedence.
 Use `JSONTableLoader` for JSON row arrays.
 
 Native output preserves Arrow schemas, field metadata, dictionaries, and column
 buffers. Streaming yields every RecordBatch in each internal table, in order,
 and closing the iterator closes the upstream iterator. An empty table with no
 record batches yields none. Parser metadata and partial/final JSON document
-messages are not yielded. `core.metadata: true` is incompatible with native
-streaming and throws; use `'arrow-table'` when you need loaders.gl batch metadata
+messages are not yielded. With `core.metadata: true`, the first event is a
+loaders.gl metadata object with `batchType: 'metadata'`. Subsequent data events
+are native record batches. Use `'arrow-table'` when you need loaders.gl batch metadata
 such as `bytesUsed`, scan metadata, or progress envelopes.
 
 Parser methods and worker transport use loaders.gl table and batch objects.

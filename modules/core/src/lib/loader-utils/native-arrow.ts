@@ -17,8 +17,7 @@ export function getShapeOptionKey(loader: Loader): string | undefined {
 /** Keeps native Arrow selection at the API boundary; parsers and workers receive wrappers. */
 export function getNativeArrowOptions(
   loader: Loader,
-  options: StrictLoaderOptions,
-  inBatches = false
+  options: StrictLoaderOptions
 ): StrictLoaderOptions | null {
   const key = getShapeOptionKey(loader);
   const scopedOptions = key && options[key];
@@ -29,11 +28,6 @@ export function getNativeArrowOptions(
     scopedOptions.shape !== 'arrow'
   ) {
     return null;
-  }
-  if (inBatches && options.core?.metadata) {
-    throw new Error(
-      'shape: "arrow" does not support core.metadata; use "arrow-table" for batch metadata'
-    );
   }
   return {
     ...options,

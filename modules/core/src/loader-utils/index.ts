@@ -39,6 +39,7 @@ export type {
   LoaderOptionsType,
   LoaderReturnType,
   LoaderBatchType,
+  LoaderMetadataBatch,
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
   LoaderArrayBatchType

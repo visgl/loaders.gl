@@ -123,7 +123,7 @@ export function parseSync(
   const parse = () => {
     throw new Error('parseSync called parse (which is async');
   };
-  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, false);
+  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions);
   context = getLoaderContext(
     {url, _parseSync: parse, _parse: parse, loaders: loaders as Loader[]},
     nativeArrowOptions || strictOptions,
