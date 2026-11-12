@@ -1,6 +1,9 @@
 name: release
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/release.yml'
   workflow_dispatch:
     inputs:
       release_tag:
@@ -10,6 +13,9 @@ on:
   push:
     tags:
       - 'v*'
+
+permissions:
+  contents: read
 
 jobs:
   check_branch:
@@ -33,18 +39,20 @@ jobs:
         run: |
           result=
           release_commit=$(git rev-parse HEAD)
-          if git branch -a --contains "$release_commit" | grep -q 'remotes/origin/master$'; then
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            result=true
+          elif git branch -a --contains "$release_commit" | grep -q 'remotes/origin/master$'; then
             result=true
           elif git branch -a --contains "$release_commit" | grep -q 'remotes/origin/.*-release$'; then
             result=true
           fi
           echo "result=${result}" >> "$GITHUB_OUTPUT"
 
-  node_tests:
-    name: Node tests
+  build:
+    name: Build release artifacts
     runs-on: ubuntu-22.04
     needs: check_branch
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     if: ${{ github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
 
@@ -58,178 +66,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-
-      - name: Enable Corepack / Yarn
-        run: |
-          corepack enable
-          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
-          yarn -v
-
-      - name: Restore Yarn 4 artifacts
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            .yarn/cache
-            .pnp.*
-            .yarn/install-state.gz
-          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            yarn-cache-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Build
-        run: yarn build
-
-      - name: Build workers
-        run: yarn build-workers
-
-      - name: Build apps
-        run: yarn build-apps
-
-      - name: Run Node tests
-        run: yarn test-node
-
-  browser_tests:
-    name: Headless tests (${{ matrix.shard }}/3)
-    runs-on: ubuntu-22.04
-    needs: check_branch
-    timeout-minutes: 20
-
-    if: ${{ github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.release_tag || github.ref }}
-
-      - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Enable Corepack / Yarn
-        run: |
-          corepack enable
-          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
-          yarn -v
-
-      - name: Restore Yarn 4 artifacts
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            .yarn/cache
-            .pnp.*
-            .yarn/install-state.gz
-          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            yarn-cache-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Install Playwright browsers
-        run: yarn playwright install --with-deps chromium
-
-      - name: Build
-        run: yarn build
-
-      - name: Build workers
-        run: yarn build-workers
-
-      - name: Run headless browser tests
-        run: yarn test-headless --shard=${{ matrix.shard }}/3
-
-  slow_tests:
-    name: Hermetic slow tests
-    runs-on: ubuntu-22.04
-    needs: check_branch
-    timeout-minutes: 30
-
-    if: ${{ github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.release_tag || github.ref }}
-
-      - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Enable Corepack / Yarn
-        run: |
-          corepack enable
-          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
-          yarn -v
-
-      - name: Restore Yarn 4 artifacts
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            .yarn/cache
-            .pnp.*
-            .yarn/install-state.gz
-          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            yarn-cache-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Install Playwright browsers
-        run: yarn playwright install --with-deps chromium
-
-      - name: Build
-        run: yarn build
-
-      - name: Build workers
-        run: yarn build-workers
-
-      - name: Run hermetic slow tests
-        env:
-          VITEST_MAX_WORKERS: 1
-        run: yarn test-slow
-
-  release:
-    name: Publish tagged packages to npm
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    needs: [check_branch, node_tests, browser_tests, slow_tests]
-    outputs:
-      distribution_tag: ${{ steps.publish.outputs.distribution_tag }}
-    permissions:
-      contents: write
-      id-token: write
-
-    if: ${{ success() && github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
-
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.release_tag || github.ref }}
-
-      - name: Setup Node (with Corepack)
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Update npm
-        run: npm install --global npm@^11.15.0
 
       - name: Enable Corepack / Yarn
         run: |
@@ -283,10 +119,251 @@ jobs:
         run: node scripts/check-built-versions.mjs
 
       - name: Verify release tag
+        if: ${{ github.event_name != 'pull_request' }}
         run: |
           release_tag=$(git describe --tags --exact-match HEAD)
           release_version=$(node -p "require('./lerna.json').version")
           test "$release_tag" = "v$release_version"
+
+      - name: Archive release build
+        run: |
+          find modules apps -mindepth 2 -maxdepth 2 -type d -name dist -print0 |
+            tar --null -T - -cf "$RUNNER_TEMP/release-build.tar"
+
+      - name: Upload release build
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-build
+          path: ${{ runner.temp }}/release-build.tar
+          retention-days: 14
+          overwrite: true
+          if-no-files-found: error
+
+  node_tests:
+    name: Node tests
+    runs-on: ubuntu-22.04
+    needs: [check_branch, build]
+    timeout-minutes: 15
+
+    if: ${{ github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack / Yarn
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          yarn -v
+
+      - name: Restore Yarn 4 artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download release build
+        uses: actions/download-artifact@v8
+        with:
+          name: release-build
+          path: ${{ runner.temp }}
+
+      - name: Restore release build
+        run: tar -xf "$RUNNER_TEMP/release-build.tar"
+
+      - name: Run Node tests
+        run: yarn test-node
+
+  browser_tests:
+    name: Headless tests (${{ matrix.shard }}/3)
+    runs-on: ubuntu-22.04
+    needs: [check_branch, build]
+    timeout-minutes: 20
+
+    if: ${{ github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack / Yarn
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          yarn -v
+
+      - name: Restore Yarn 4 artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install Playwright browsers
+        run: yarn playwright install --with-deps chromium
+
+      - name: Download release build
+        uses: actions/download-artifact@v8
+        with:
+          name: release-build
+          path: ${{ runner.temp }}
+
+      - name: Restore release build
+        run: tar -xf "$RUNNER_TEMP/release-build.tar"
+
+      - name: Run headless browser tests
+        run: yarn test-headless --shard=${{ matrix.shard }}/3
+
+  slow_tests:
+    name: Hermetic slow tests
+    runs-on: ubuntu-22.04
+    needs: [check_branch, build]
+    timeout-minutes: 30
+
+    if: ${{ github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack / Yarn
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          yarn -v
+
+      - name: Restore Yarn 4 artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install Playwright browsers
+        run: yarn playwright install --with-deps chromium
+
+      - name: Download release build
+        uses: actions/download-artifact@v8
+        with:
+          name: release-build
+          path: ${{ runner.temp }}
+
+      - name: Restore release build
+        run: tar -xf "$RUNNER_TEMP/release-build.tar"
+
+      - name: Run hermetic slow tests
+        env:
+          VITEST_MAX_WORKERS: 1
+        run: yarn test-slow
+
+  release:
+    name: Publish tagged packages to npm
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    needs: [check_branch, build, node_tests, browser_tests, slow_tests]
+    outputs:
+      distribution_tag: ${{ steps.publish.outputs.distribution_tag }}
+    permissions:
+      contents: write
+      id-token: write
+
+    if: ${{ success() && github.event_name != 'pull_request' && github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build == 'true' }}
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Update npm
+        run: npm install --global npm@^11.15.0
+
+      - name: Enable Corepack / Yarn
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          yarn -v
+
+      - name: Restore Yarn 4 artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download release build
+        uses: actions/download-artifact@v8
+        with:
+          name: release-build
+          path: ${{ runner.temp }}
+
+      - name: Restore release build
+        run: tar -xf "$RUNNER_TEMP/release-build.tar"
 
       - name: Publish tagged packages to npm
         id: publish
@@ -295,7 +372,7 @@ jobs:
         run: |
           distribution_tag=$(node node_modules/@vis.gl/dev-tools/dist/helpers/get-npm-dist-tag.js)
           echo "distribution_tag=$distribution_tag" >> "$GITHUB_OUTPUT"
-          npx lerna publish from-package --force-publish --yes --dist-tag "$distribution_tag" --no-commit-hooks
+          yarn lerna publish from-package --yes --dist-tag "$distribution_tag" --no-commit-hooks
 
   finalize_release:
     name: Verify npm publication and announce release
