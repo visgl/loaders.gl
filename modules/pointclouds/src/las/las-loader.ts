@@ -95,8 +95,19 @@ async function* convertLASMeshBatches(
   tableBatches: AsyncIterable<LASArrowTable>,
   options?: LASLoaderOptions
 ): AsyncIterable<LASMesh | MeshArrowTable> {
+  const interval = options?.core?.batchDebounceMs ?? 0;
+  let lastBatchTime: number | undefined;
   for await (const table of tableBatches) {
-    yield convertLASMesh(table, options);
+    const batch = convertLASMesh(table, options);
+    if (interval > 0 && Number.isFinite(interval)) {
+      const remaining = lastBatchTime === undefined ? 0 : interval - (Date.now() - lastBatchTime);
+      if (remaining > 0) {
+        await new Promise<void>(resolve => setTimeout(resolve, remaining));
+      }
+      options?.signal?.throwIfAborted();
+      lastBatchTime = Date.now();
+    }
+    yield batch;
   }
 }
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {getFloat16Value, isNativeFloat16Array} from '@loaders.gl/core/schema';
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/pointclouds/las';
@@ -87,6 +87,33 @@ test('LASLoader#small uncompressed and compressed fixtures agree', async () => {
   expect(compressed.attributes.classification.value).toEqual(
     uncompressed.attributes.classification.value
   );
+});
+
+test('LASLoader spaces batches without delaying the first batch', async () => {
+  const source = await (await fetchFile(PDRF_4_LAZ_URL)).arrayBuffer();
+  const batches = await parseInBatches(source, LASLoader, {
+    core: {worker: false, batchSize: 512, batchDebounceMs: 100},
+    las: {shape: 'arrow-table'}
+  });
+  const iterator = batches[Symbol.asyncIterator]();
+  vi.useFakeTimers({toFake: ['Date', 'setTimeout']});
+  try {
+    const first = iterator.next();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(vi.getTimerCount()).toBe(0);
+    expect((await first).value.data.numRows).toBe(512);
+
+    const second = vi.fn();
+    const next = iterator.next().then(second);
+    await vi.advanceTimersByTimeAsync(99);
+    expect(second).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await next;
+    expect(second.mock.calls[0][0].value.data.numRows).toBe(512);
+    expect((await iterator.next()).done).toBe(true);
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test('LASLoader#small fixture streams requested mesh batches', async () => {
