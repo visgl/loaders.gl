@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {ArrowTable} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 import type {TableQuery} from '@loaders.gl/core/loader-utils';
 import {queryInBatches, type QueryOptions} from './query';
 
@@ -20,8 +20,7 @@ export type ProgressiveAggregate = Readonly<{
 /**
  * Incremental aggregation over one table input.
  *
- * GROUP BY is intentionally a structured request: the current SQL parser does not parse
- * GROUP BY. Each snapshot is a complete replacement, not an append-only batch.
+ * Pass GROUP BY as a structured request. Each snapshot replaces the previous result.
  */
 export type ProgressiveAggregateQuery = Readonly<{
   from?: TableQuery['from'];
@@ -30,10 +29,11 @@ export type ProgressiveAggregateQuery = Readonly<{
   aggregates: readonly ProgressiveAggregate[];
 }>;
 
-export type ProgressiveQueryOptions = QueryOptions & Readonly<{
-  /** Emit a provisional complete table after this many nonempty input batches. Default: 1. */
-  emitEveryBatches?: number;
-}>;
+export type ProgressiveQueryOptions = QueryOptions &
+  Readonly<{
+    /** Emit a provisional complete table after this many nonempty input batches. Default: 1. */
+    emitEveryBatches?: number;
+  }>;
 
 /** Each table is independent of later updates and replaces all previous snapshots. */
 export type ProgressiveQuerySnapshot = Readonly<{
@@ -48,10 +48,7 @@ type AggregateState = {
   min: number | null;
   max: number | null;
 };
-type GroupState = {
-  key: string | number | boolean | null;
-  aggregates: AggregateState[];
-};
+type GroupKey = string | number | boolean | null;
 
 const MAX_SAFE_COUNT = Number.MAX_SAFE_INTEGER;
 
@@ -60,7 +57,7 @@ const MAX_SAFE_COUNT = Number.MAX_SAFE_INTEGER;
  * Snapshot creation is O(number of groups × number of aggregates) and can be throttled
  * with emitEveryBatches. Consumer early return closes the underlying source iterator.
  */
-export async function* queryProgressive(
+export async function* executeProgressiveQuery(
   query: ProgressiveAggregateQuery,
   options: ProgressiveQueryOptions
 ): AsyncIterable<ProgressiveQuerySnapshot> {
@@ -70,12 +67,11 @@ export async function* queryProgressive(
   if (query.groupBy) inputs.add(query.groupBy);
   for (const aggregate of query.aggregates) if (aggregate.column) inputs.add(aggregate.column);
   const columns = [...inputs];
-  const groups = new Map<string | number | boolean | null, GroupState>();
+  const groups = new Map<GroupKey, AggregateState[]>();
   let sourceSchema: arrow.Schema | undefined;
   let rowsProcessed = 0;
   let batchesSinceEmission = 0;
-  const globalGroup = query.groupBy === undefined;
-  if (globalGroup) groups.set(null, makeGroup(null, query.aggregates.length));
+  if (query.groupBy === undefined) groups.set(null, makeAggregateStates(query.aggregates.length));
 
   // A COUNT(*) request can have no input columns, but the query pipeline still needs
   // a source column to preserve row counts. The absence of select means all source
@@ -99,7 +95,7 @@ export async function* queryProgressive(
       const key = keyVector ? normalizeKey(keyVector.get(row)) : null;
       let group = groups.get(key);
       if (!group) {
-        group = makeGroup(key, query.aggregates.length);
+        group = makeAggregateStates(query.aggregates.length);
         groups.set(key, group);
       }
       for (let index = 0; index < query.aggregates.length; index++) {
@@ -107,13 +103,15 @@ export async function* queryProgressive(
         const value = aggregateVectors[index]?.get(row);
         if (operation.function === 'count') {
           if (!operation.column || (value !== null && value !== undefined)) {
-            increaseCount(group.aggregates[index]);
+            increaseCount(group[index]);
           }
         } else if (value !== null && value !== undefined) {
           if (typeof value !== 'number' || !Number.isFinite(value)) {
-            throw new Error(`Progressive ${operation.function} requires finite numeric values in column ${operation.column}`);
+            throw new Error(
+              `Progressive ${operation.function} requires finite numeric values in column ${operation.column}`
+            );
           }
-          updateNumeric(group.aggregates[index], value);
+          updateNumeric(group[index], value);
         }
       }
     }
@@ -157,7 +155,10 @@ function validateQuery(query: ProgressiveAggregateQuery, options: ProgressiveQue
     if (!aggregate.as || typeof aggregate.as !== 'string' || names.has(aggregate.as)) {
       throw new Error('Progressive aggregate aliases must be unique nonempty output names.');
     }
-    if (aggregate.column !== undefined && (typeof aggregate.column !== 'string' || !aggregate.column)) {
+    if (
+      aggregate.column !== undefined &&
+      (typeof aggregate.column !== 'string' || !aggregate.column)
+    ) {
       throw new Error('Progressive aggregate column must be nonempty.');
     }
     if (aggregate.function !== 'count' && !aggregate.column) {
@@ -171,14 +172,12 @@ function validateQuery(query: ProgressiveAggregateQuery, options: ProgressiveQue
   }
 }
 
-function makeGroup(key: GroupState['key'], length: number): GroupState {
-  return {
-    key,
-    aggregates: Array.from({length}, () => ({count: 0, sum: 0, min: null, max: null}))
-  };
+/** Initializes the independent aggregate state for one group. */
+function makeAggregateStates(length: number): AggregateState[] {
+  return Array.from({length}, () => ({count: 0, sum: 0, min: null, max: null}));
 }
 
-function normalizeKey(value: unknown): GroupState['key'] {
+function normalizeKey(value: unknown): GroupKey {
   if (value === null || value === undefined) return null;
   if (typeof value === 'string' || typeof value === 'boolean') return value;
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -186,7 +185,8 @@ function normalizeKey(value: unknown): GroupState['key'] {
 }
 
 function increaseCount(state: AggregateState): void {
-  if (state.count >= MAX_SAFE_COUNT) throw new Error('Progressive aggregate count exceeds safe integer range.');
+  if (state.count >= MAX_SAFE_COUNT)
+    throw new Error('Progressive aggregate count exceeds safe integer range.');
   state.count++;
 }
 
@@ -198,7 +198,7 @@ function updateNumeric(state: AggregateState, value: number): void {
 }
 
 function createSnapshot(
-  groups: Map<GroupState['key'], GroupState>,
+  groups: Map<GroupKey, AggregateState[]>,
   query: ProgressiveAggregateQuery,
   sourceSchema: arrow.Schema | undefined
 ): ArrowTable {
@@ -206,25 +206,26 @@ function createSnapshot(
   if (query.groupBy) {
     const field = sourceSchema?.fields.find(candidate => candidate.name === query.groupBy);
     if (!field) throw new Error(`Progressive group column not found: ${query.groupBy}`);
-    resultColumns[query.groupBy] = arrow.vectorFromArray(
-      [...groups.values()].map(group => group.key),
-      field.type
-    );
+    resultColumns[query.groupBy] = arrow.vectorFromArray([...groups.keys()], field.type);
   }
   for (let index = 0; index < query.aggregates.length; index++) {
     const aggregate = query.aggregates[index];
     const values = [...groups.values()].map(group => {
-      const state = group.aggregates[index];
+      const state = group[index];
       switch (aggregate.function) {
-        case 'count': return state.count;
-        case 'sum': return state.count ? state.sum : null;
-        case 'avg': return state.count ? state.sum / state.count : null;
-        case 'min': return state.min;
-        case 'max': return state.max;
+        case 'count':
+          return state.count;
+        case 'sum':
+          return state.count ? state.sum : null;
+        case 'avg':
+          return state.count ? state.sum / state.count : null;
+        case 'min':
+          return state.min;
+        case 'max':
+          return state.max;
       }
     });
     resultColumns[aggregate.as] = arrow.vectorFromArray(values, new arrow.Float64());
   }
-  const data = new arrow.Table(resultColumns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+  return convertArrowToTable(new arrow.Table(resultColumns), 'arrow-table');
 }

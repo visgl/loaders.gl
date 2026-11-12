@@ -134,9 +134,7 @@ export {queryArrowTableInBatches} from './query-arrow-table-in-batches';
 export {projectArrowTable, filterArrowTable} from './arrow-execution';
 export type {ArrowFilterOptions} from './arrow-execution';
 
-export {query, queryInBatches} from './query';
-
-export {queryProgressive} from './query-progressive';
+export {query, queryInBatches, queryProgressive} from './query';
 export type {
   ProgressiveAggregate,
   ProgressiveAggregateQuery,

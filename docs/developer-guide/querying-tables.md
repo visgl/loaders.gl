@@ -98,9 +98,8 @@ buffers; slices can retain their original buffers, and scattered filtering can a
 
 ## Progressive aggregate snapshots
 
-`queryProgressive()` is an experimental **replacement-snapshot** API for aggregate views.
-Unlike `queryInBatches()`, its outputs must **not** be concatenated: every new table is a
-complete view of the input rows processed so far and replaces the previous snapshot.
+`queryProgressive()` streams complete replacement tables for aggregate views. Replace the
+previous table on every yield. Each result covers all input rows processed so far.
 
 ```ts
 import {queryProgressive} from '@loaders.gl/core/scan';
@@ -121,31 +120,20 @@ for await (const {table, rowsProcessed, final} of queryProgressive(
 }
 ```
 
-This initial API takes a **structured aggregate query**; it does not parse SQL
-`GROUP BY`. Supported aggregates are `COUNT(*)`, `COUNT(column)`, `SUM`,
-`AVG`, `MIN`, and `MAX`. `WHERE` uses the existing portable predicate
-vocabulary; filtering occurs before aggregation. Group keys may be strings,
-finite numbers, booleans, or null. Null keys form one group. `COUNT(*)` counts
-every matching row; `COUNT(column)` and numeric aggregates ignore null input
-values. Empty sums/averages/minima/maxima produce null.
+Pass a structured `groupBy` and `aggregates` request. Supported reductions are COUNT, SUM, AVG,
+MIN, and MAX. Filtering runs first. Group keys may be finite numbers, strings, booleans, or null
+and appear in first-seen order. COUNT(column) and numeric reductions skip nulls. An empty numeric
+reduction returns null. Counts use safe integers, and aggregate columns use Float64.
 
-The engine updates group state without retaining input rows: memory is proportional
-to the number of distinct groups and aggregate definitions, plus the current
-replacement snapshot. Group order is first-seen order. `rowsProcessed` counts
-rows reaching the aggregation after `WHERE` filtering, not rows skipped during
-source pruning. The final snapshot is emitted even for empty sources or when it
-duplicates the preceding provisional snapshot. Consumer cancellation closes the
-upstream iterator.
+State grows with the number of groups and aggregates. `rowsProcessed` counts filtered rows.
+The iterator always emits a final snapshot, including for empty inputs, and closes the source on
+early return. Use `emitEveryBatches` to control how often it rebuilds the output.
 
-By default a snapshot is emitted after each nonempty source batch. Use
-`emitEveryBatches` to amortize the cost of rebuilding the output table. A slow
-consumer imposes backpressure. Aggregate counts use safe JavaScript integer
-arithmetic and the initial Arrow output represents aggregate numeric results
-as Float64. High-cardinality group keys can still require substantial memory.
-
-This first tranche intentionally does not support `DISTINCT`, `ORDER BY`, top-K,
-joins, computed selectors, or changing/update streams. Ordinary `query()` and
-`queryInBatches()` preserve their existing final and append-only semantics.
+For pure Arrow `RecordBatch` streams, set `queryOutput: 'snapshots'` on
+`queryInBatches(aggregateQuery, options)` and replace the prior result on every yield. Set
+`queryOutput: 'batches'` with a regular query to append new rows. Without `queryOutput`,
+`queryInBatches()` yields loaders.gl batch envelopes. Use `queryProgressive()` for explicit
+`rowsProcessed` and `final` metadata.
 
 ## Reuse and name sources
 
@@ -326,33 +314,3 @@ An injected `sqlParser` returns a portable logical query. Use `parseSQLQuery` fr
 and catalog commands. Math.gl compiles expressions against each source schema. Loaders.gl requests
 the referenced columns and evaluates computed filters before applying LIMIT. Sources can still
 push down portable column predicates. Unsupported expressions fail with a terminal query error.
-
-## Streaming query output for Arrow consumers
-
-Specify `queryOutput` when consuming pure Apache Arrow `RecordBatch` values:
-
-```ts
-for await (const batch of queryInBatches(
-  {select: ['country', 'temperature']},
-  {source, queryOutput: 'batches'}
-)) {
-  appendData(batch);
-}
-
-for await (const snapshot of queryInBatches(
-  {groupBy: 'country', aggregates: [{function: 'count', as: 'count'}]},
-  {source, queryOutput: 'snapshots'}
-)) {
-  replaceData(snapshot);
-}
-```
-
-- `'batches'` emits new rows only; concatenate the record batches.
-- `'snapshots'` emits the current complete aggregate result; replace the previous result.
-  A final snapshot is yielded before normal iterator completion. Progressive snapshots
-  currently accept structured `groupBy`/`aggregates` requests, not arbitrary SQL queries.
-
-For compatibility, omitting `queryOutput` retains the existing loaders.gl `ArrowTableBatch`
-envelope. Explicit `queryOutput` returns pure Arrow `RecordBatch` objects. Consumers
-know how to handle each batch from the option used to construct the iterator.
-
