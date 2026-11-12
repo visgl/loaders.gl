@@ -452,7 +452,7 @@ export default class I3SConverter {
 
     await this.conversionDump.createDump({
       ...(this.options as ConversionDumpOptions),
-      attributeEncodingVersion: 2
+      attributeEncodingVersion: 3
     });
     if (this.conversionDump.restored && this.options.inquirer) {
       const result = await this.options.inquirer.prompt([

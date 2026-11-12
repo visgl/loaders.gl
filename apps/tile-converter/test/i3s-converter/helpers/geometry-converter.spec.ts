@@ -458,24 +458,14 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
   if (isBrowser) {
     return;
   }
-  /*
-    This is "color" attributes that is actually an array[8] of arrays[3] of UINT8:
-    255,0,0
-    255,255,0
-    255,125,0
-    0,255,0
-    0,255,125
-    63,255,0
-    63,170,0
-    0,0,255
-    It should be converted to the following attributes buffer:
-    */
+  // Source mesh feature order is [60, 43, 21, 44, 22, 40, 42, 6], not ascending batch ID.
+  // Color rows are [blue, lime, yellow, dark lime, orange, green, turquoise, red].
   const expectedArray = new Uint8Array([
-    8, 0, 0, 0, 72, 0, 0, 0, 8, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0, 8, 0, 0, 0, 10, 0, 0, 0, 9, 0, 0,
-    0, 9, 0, 0, 0, 8, 0, 0, 0, 50, 53, 53, 44, 48, 44, 48, 0, 50, 53, 53, 44, 50, 53, 53, 44, 48, 0,
-    50, 53, 53, 44, 49, 50, 53, 44, 48, 0, 48, 44, 50, 53, 53, 44, 48, 0, 48, 44, 50, 53, 53, 44,
-    49, 50, 53, 0, 54, 51, 44, 50, 53, 53, 44, 48, 0, 54, 51, 44, 49, 55, 48, 44, 48, 0, 48, 44, 48,
-    44, 50, 53, 53, 0
+    8, 0, 0, 0, 72, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0, 10, 0, 0, 0, 9, 0, 0, 0, 10, 0, 0, 0, 8, 0, 0,
+    0, 10, 0, 0, 0, 8, 0, 0, 0, 48, 44, 48, 44, 50, 53, 53, 0, 54, 51, 44, 50, 53, 53, 44, 48, 0,
+    50, 53, 53, 44, 50, 53, 53, 44, 48, 0, 54, 51, 44, 49, 55, 48, 44, 48, 0, 50, 53, 53, 44, 49,
+    50, 53, 44, 48, 0, 48, 44, 50, 53, 53, 44, 48, 0, 48, 44, 50, 53, 53, 44, 49, 50, 53, 0, 50, 53,
+    53, 44, 48, 44, 48, 0
   ]);
   let nodeId = 1;
   const addNodeToNodePage = async () => nodeId++;
@@ -539,11 +529,9 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
       'Traffic Light'
     ]
   };
-  /*
-      'color' 64-bit values from propertyTable should be converted to strings hat are in attributeBufferExpected.
-    */
+  // Source mesh feature order is [12, 10, 2]: missing row, 222n, then 33n.
   const attributeBufferExpected = [
-    3, 0, 0, 0, 7, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 51, 51, 0, 50, 50, 50, 0
+    3, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 50, 50, 50, 0, 51, 51, 0
   ];
   let nodeId = 1;
   const addNodeToNodePage = async () => nodeId++;

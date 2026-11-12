@@ -60,7 +60,7 @@ test('legacy I3S preprocessing discovers later fields before any node buffers ar
   for (const [index, table] of tables.entries()) {
     const buffers = convertPropertyTableToAttributeBuffers(
       [index * 2, index * 2 + 1],
-      {},
+      [0, 1],
       table,
       schema
     );
@@ -88,7 +88,7 @@ test('legacy I3S aligns missing columns and preserves zero, empty and negative v
   metadata.addMetadataInfo({text: 'string', integer: 'Int32', real: 'double', missing: 'string'});
   const buffers = convertPropertyTableToAttributeBuffers(
     [0, 1, 2],
-    {},
+    [0, 1, 2],
     {
       real: [null, 0, -0.5],
       integer: [null, 0, -1],
@@ -104,7 +104,7 @@ test('legacy I3S aligns missing columns and preserves zero, empty and negative v
   expect(decodeStrings(buffers[4])).toEqual([null, null, null]);
   const subset = convertPropertyTableToAttributeBuffers(
     [10, 11],
-    {1: 10, 2: 11},
+    [1, 2],
     {
       text: ['unused', '', 'null'],
       integer: [1, 0, -1],
@@ -137,7 +137,7 @@ test('legacy I3S emits a complete null row set for a tile without properties', (
   metadata.addMetadataInfo({text: 'string', integer: 'Int32', real: 'double'});
   const buffers = convertPropertyTableToAttributeBuffers(
     [4, 5],
-    {},
+    [0, 1],
     {},
     metadata.attributeStorageInfo
   );
