@@ -751,14 +751,14 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 
 #### Table loaders default to native Arrow
 
-Table data loaders in `@loaders.gl/tables` default to `shape: 'arrow'`. The core atomic
-APIs return an Apache Arrow `Table` and the batch APIs yield Apache Arrow `RecordBatch`
-objects. To keep using loaders.gl table and batch wrappers, set `core.shape: 'arrow-table'`
-or set `shape: 'arrow-table'` in the loader's options namespace.
+Code that reads `result.data` from a table returned by a loader in
+`@loaders.gl/tables` can use the returned Apache Arrow `Table` directly.
+Batch APIs yield Apache Arrow `RecordBatch` objects. Set `core.shape: 'arrow-table'`
+to retain the loaders.gl table and batch wrappers. A loader-specific shape option,
+such as `csv.shape`, takes precedence over `core.shape`.
 
-With `core.metadata: true`, an initial metadata event precedes the data batches.
-Check `batchType: 'metadata'` before consuming the raw record batches. Source scan
-and query results keep their existing envelopes.
+See [native Apache Arrow output](./modules/core/schema/table-guide.md#native-apache-arrow-output)
+for batch metadata and examples.
 
 #### NDGeoJSON, trace, and GML output defaults
 

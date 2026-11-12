@@ -46,19 +46,17 @@ The loaders.gl table category provides support for working interchangeably with 
 
 ## Native Apache Arrow output
 
-The tabular loaders listed below return native Apache Arrow JS objects through
-the core parsing and loading APIs. Set `shape: 'arrow'` to select this output explicitly.
+The table loaders in `@loaders.gl/tables` return native Apache Arrow objects by default
+when called through the core parsing and loading APIs.
 
 ```typescript
 import {load, loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/tables';
 
-const table = await load('data.csv', CSVLoader, {csv: {shape: 'arrow'}});
+const table = await load('data.csv', CSVLoader);
 console.log(table.numRows, table.getChild('name')); // arrow.Table
 
-const batches = await loadInBatches('data.csv', CSVLoader, {
-  core: {shape: 'arrow'}
-});
+const batches = await loadInBatches('data.csv', CSVLoader);
 for await (const recordBatch of batches) {
   console.log(recordBatch.numRows); // arrow.RecordBatch
 }
@@ -70,21 +68,23 @@ for await (const recordBatch of batches) {
 | `parseSync` (where supported) | `arrow.Table` |
 | `parseInBatches`, single-file `loadInBatches` | `Promise<AsyncIterable<arrow.RecordBatch>>` |
 
-Supported tabular loaders include `ArrowLoader`, `GeoArrowLoader`, `CSVLoader`,
-`JSONTableLoader`, `NDJSONLoader`, `ParquetLoader`, `ParquetJSLoader`,
-`GeoParquetLoader`, `GeoJSONLoader`, `NDGeoJSONLoader`, `AvroLoader`, `LanceLoader`, and `ORCLoader`. Use the loader's regular
-shape namespace (`arrow`, `csv`, `json`, `ndjson`, `parquet`, or `geojson`), or the
-shared `core.shape` default. Avro, Lance, and ORC also accept their own scoped shape option. Explicit loader-scoped shapes take precedence.
-Use `JSONTableLoader` for JSON row arrays.
+Set `core.shape` to select an output shape across loaders. Set the loader's
+own `shape` option to override it for that loader. For example, both calls
+below return a loaders.gl table wrapper:
+
+```typescript
+await load('data.csv', CSVLoader, {core: {shape: 'arrow-table'}});
+await load('data.csv', CSVLoader, {csv: {shape: 'arrow-table'}});
+```
 
 Native output preserves Arrow schemas, field metadata, dictionaries, and column
 buffers. Streaming yields every RecordBatch in each internal table, in order,
 and closing the iterator closes the upstream iterator. An empty table with no
-record batches yields none. Parser metadata and partial/final JSON document
-messages are not yielded. With `core.metadata: true`, the first event is a
-loaders.gl metadata object with `batchType: 'metadata'`. Subsequent data events
-are native record batches. Use `'arrow-table'` when you need loaders.gl batch metadata
-such as `bytesUsed`, scan metadata, or progress envelopes.
+record batches yields none. With `core.metadata: true`, the iterator first yields
+a loaders.gl event with `batchType: 'metadata'` containing the loader and its
+context. The data events are native record batches. Choose `'arrow-table'` to
+receive each data batch in a loaders.gl envelope with fields such as `bytesUsed`
+when the loader provides them.
 
 Parser methods and worker transport use loaders.gl table and batch objects.
 The core APIs expose the Arrow objects after parsing and worker hydration.
