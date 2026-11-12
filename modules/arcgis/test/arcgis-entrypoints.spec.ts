@@ -49,6 +49,9 @@ describe('ArcGIS public entrypoints', () => {
     expect(loader.testURL('https://example.com/unrelated')).toBe(false);
 
     const requests: string[] = [];
+    expect(() => loader.createDataSourceSync(serviceUrl, {})).toThrow(
+      /async createDataSource.*bundled/
+    );
     const lazyLoader = {...loader};
     expect(() => createDataSourceSync(serviceUrl, lazyLoader)).toThrow(/preload/);
     await preload(lazyLoader);
