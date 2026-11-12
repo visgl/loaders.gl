@@ -99,7 +99,12 @@ export function createDataSourceSync(
     throw new Error('No explicit source loader matches the input');
   }
 
-  const implementation = getLoaderImplementationSync(loader) ?? loader;
+  const implementation = getLoaderImplementationSync(loader, options);
+  if (!implementation) {
+    throw new Error(
+      `${loader.id} has no synchronous source factory available. Call preload() first.`
+    );
+  }
   const authenticationLoader = loader.getAuthentications ? loader : implementation;
   const contributions = options.core?.credentials?.length
     ? authenticationLoader.getAuthentications?.(typeof data === 'string' ? data : '', options)

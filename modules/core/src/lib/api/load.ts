@@ -18,7 +18,6 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {
   isBlob,
-  isSourceLoader,
   resolveAuthenticationOptions,
   resolveLoaderAuthenticationOptions
 } from '@loaders.gl/core/loader-utils';
@@ -126,12 +125,6 @@ export async function load(
       ...resolvedOptions,
       core: {...resolvedOptions?.core, nothrow: true}
     });
-
-    if (isSourceLoader(selectedLoader)) {
-      throw new Error(
-        `${selectedLoader.id} creates sources. Use createDataSource() instead of load().`
-      );
-    }
 
     if (selectedLoader && typeof url === 'string') {
       const loaderImplementation = await getLoaderImplementation(

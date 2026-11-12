@@ -55,11 +55,11 @@ It is intended for source-backed octree formats such as Potree and COPC and expo
 ## Usage
 
 ```ts
-import {createDataSourceSync} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
-const dataSource = createDataSourceSync(POTREE_URL, [PotreeSourceLoader], {
+const dataSource = await createDataSource(POTREE_URL, PotreeLoader, {
   core: {type: 'potree'},
   potree: {}
 });

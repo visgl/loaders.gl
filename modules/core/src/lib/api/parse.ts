@@ -25,8 +25,7 @@ import {
   shouldParseWithWorker,
   mergeOptions,
   isResponse,
-  isBlob,
-  isSourceLoader
+  isBlob
 } from '@loaders.gl/core/loader-utils';
 import {validateWorkerVersion} from '@loaders.gl/core/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -35,7 +34,7 @@ import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getArrayBufferFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
-import {getLoaderImplementation} from './load-loader';
+import {getLoaderImplementation, isLoaderWithParser} from './load-loader';
 import {selectLoader} from './select-loader';
 
 // type LoaderArrayType<T> = T extends (infer Loader)[] ? LoaderOptionsType<Loader> : T
@@ -133,12 +132,6 @@ export async function parse(
     return null;
   }
 
-  if (isSourceLoader(loader)) {
-    throw new Error(
-      `${loader.id} is a SourceLoader. Use createDataSource() to create a runtime source object instead of parse().`
-    );
-  }
-
   // Normalize options
   // @ts-expect-error candidateLoaders
   const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
@@ -186,6 +179,10 @@ async function parseWithLoader(
   }
 
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
+
+  if (loaderWithParser.createDataSourceSync && !isLoaderWithParser(loaderWithParser)) {
+    throw new Error(`${loader.id} creates sources. Use createDataSource() to open a source.`);
+  }
 
   const output = loaderWithParser.prepareParseOutput?.(options);
   const parseOptions = output?.options ?? options;

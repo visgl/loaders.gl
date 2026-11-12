@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createDataSource} from '@loaders.gl/core';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {createPoints, createDatasetFetch} from './potree-format-fixtures';
 import {expect, test} from 'vitest';
@@ -19,19 +20,25 @@ test('installed Potree metadata, writer and source subpaths work in ESM and Comm
     import assert from 'node:assert/strict';
     import {createRequire} from 'node:module';
     const require = createRequire(import.meta.url);
+    const {createDataSourceSync, load, parseSync, preload} = await import('@loaders.gl/core');
     for (const root of [await import('@loaders.gl/tiles-3d/potree'), require('@loaders.gl/tiles-3d/potree')]) {
-      assert.equal(root.PotreeLoader.parse, undefined);
+      const {PotreeLoader} = root;
+      assert.equal(root.PotreeSourceLoader, undefined);
+      assert.equal(PotreeLoader.parse, undefined);
       assert.equal(root.Potree2Loader, undefined);
       assert.equal(root.Potree2SourceLoader, undefined);
       assert.equal(root.Potree2Source, undefined);
-      assert.equal(typeof root.PotreeLoader.preload, 'function');
+      assert.equal(typeof PotreeLoader.preload, 'function');
       assert.equal(typeof root.encodePotreeDataset, 'function');
+      const url = 'https://example.com/dataset/metadata.json';
+      assert.throws(() => createDataSourceSync(url, PotreeLoader), /preload/);
+      await preload(PotreeLoader);
       const dataset = await root.encodePotreeDataset({topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}}, attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}});
+      const json = JSON.stringify(dataset.metadata);
       assert.equal(dataset.metadata.version, '2.0');
-      assert.equal((await root.PotreeLoader.preload()).parseTextSync(JSON.stringify(dataset.metadata)).points, 1);
-    }
-    for (const root of [await import('@loaders.gl/tiles-3d/potree'), require('@loaders.gl/tiles-3d/potree')]) {
-      const source = root.PotreeSourceLoader.createDataSourceSync('https://example.com/dataset/metadata.json', {core: {fetch: async () => new Response(null, {status: 404})}});
+      assert.equal(parseSync(json, PotreeLoader).points, 1);
+      assert.equal((await load(url, PotreeLoader, {core: {fetch: async () => new Response(json)}})).points, 1);
+      const source = createDataSourceSync(url, [PotreeLoader], {core: {fetch: async () => new Response(null, {status: 404})}});
       await assert.rejects(source.initialize(), /404/);
       source.close();
     }
@@ -59,7 +66,7 @@ test.each([
   const prefix = getPathPrefix();
   setPathPrefix('');
   const paths: string[] = [];
-  const source = PotreeSourceLoader.createDataSourceSync(input, {
+  const source = await createDataSource(input, PotreeLoader, {
     core: {
       fetch: async (resource, options) => {
         paths.push(String(resource));

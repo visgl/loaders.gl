@@ -64,7 +64,7 @@ new SourceLayer({data: geotiffUrl, loaders: [GeoTIFFSourceLoader]});
 // COPC or Potree point-cloud hierarchy
 new SourceLayer({
   data: pointCloudUrl,
-  loaders: [COPCSourceLoader, PotreeSourceLoader]
+  loaders: [COPCSourceLoader, PotreeLoader]
 });
 
 // Parser-backed 3D Tiles, I3S, 3TZ, or SLPK

@@ -110,7 +110,7 @@ test('createDataSource#createDataSource returns OMEZarrImageSource for OMEZarrSo
 
 test('parse#parse rejects SourceLoader candidates', async () => {
   await expect(parse('https://example.com/service=wms', [WMSSourceLoader])).rejects.toThrow(
-    'SourceLoader'
+    'Use createDataSource()'
   );
 });
 

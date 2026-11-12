@@ -61,7 +61,7 @@ Potree reads dataset versions **1.0–1.8 and 2.0**. Writers produce legacy bina
 and modern DEFAULT output. See the [Potree format reference](/docs/modules/tiles-3d/potree/formats/potree)
 for the version matrix, read/write feature table, and qualification limits.
 
-Use [PotreeSourceLoader](/docs/modules/tiles-3d/potree/api-reference/potree-source-loader) for both layouts: pass
+Use [PotreeLoader](/docs/modules/tiles-3d/potree/api-reference/potree-source-loader) for both layouts: pass
 `cloud.js` for 1.x or `metadata.json` for 2.0. Directory inputs retain the legacy `cloud.js` default. Converter/viewer release numbers are distinct from dataset versions. See
 [Potree writers](/docs/modules/tiles-3d/potree/api-reference/potree-writer) for complete typed file collections.
 
@@ -97,11 +97,11 @@ runtime. The source resolves the Potree hierarchy and node payloads as the viewp
 Potree can also be used through the `DataSource` path with the lightweight point-cloud manager:
 
 ```ts
-import {createDataSourceSync} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
-const dataSource = createDataSourceSync(POTREE_URL, [PotreeSourceLoader], {
+const dataSource = await createDataSource(POTREE_URL, PotreeLoader, {
   core: {type: 'potree'},
   potree: {}
 });
@@ -112,18 +112,16 @@ await tileset.selectTiles(viewport);
 
 ## API
 
-This modules provides the following exports:
+This module provides the following exports:
 
 - `PotreeHierarchyChunkLoader` for the hierarchy indices
-- `PotreeSourceLoader` for point-cloud tile sources <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- `PotreeLoader` for metadata parsing and point-cloud tile sources <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ## Modern sources and authoring
 
-- `PotreeLoader`: one metadata-only declaration loader for both wire layouts, with the
-  `@loaders.gl/tiles-3d/potree-loader` parser subpath.
-- `PotreeSourceLoader`: version-specific readers behind one source factory, compatible with
-  `PointCloudTileset` and v5 tile-converter traversal. Modern 2.0 datasets use native-coordinate
-  range reads; query `scan()` remains available only for compatible legacy datasets.
+- `PotreeLoader` parses metadata and opens point-cloud sources for both layouts. Modern 2.0
+  datasets use native-coordinate range reads. Query `scan()` is available for compatible
+  legacy datasets.
 - `PotreeWriter`: standard metadata writer.
 - `encodePotreeDataset`: complete legacy or modern file collections from decoded Mesh/Arrow rows.
 

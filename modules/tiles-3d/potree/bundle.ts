@@ -92,7 +92,6 @@ export {
   PotreeLoader,
   PotreeHierarchyChunkLoader,
   PotreeBinLoader,
-  PotreeSourceLoader,
   PotreeWriter,
   encodePotreeDataset
 } from '@loaders.gl/tiles-3d/potree';

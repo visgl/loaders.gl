@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createDataSource} from '@loaders.gl/core';
 import {expect, test, vi} from 'vitest';
-import {PotreeLoader, PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import {Potree2Source} from '../../src/potree/potree2-source';
 import {PotreeLoaderWithParser} from '@loaders.gl/tiles-3d/potree-loader';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
@@ -169,8 +170,9 @@ test('modern source incrementally reads one hierarchy and each requested point r
     {potree: {projection: 'EPSG:4978'}}
   );
   const transport = createDatasetFetch(dataset);
-  const source = PotreeSourceLoader.createDataSourceSync(
+  const source = await createDataSource(
     'https://example.com/dataset/metadata.json?token=1',
+    PotreeLoader,
     {
       core: {fetch: transport.fetch}
     }
@@ -380,21 +382,16 @@ test('unified metadata loader parses both layouts without public version selecti
     );
   }
   expect(PotreeLoader.testText(JSON.stringify(createMetadata()))).toBe(true);
-  expect(PotreeSourceLoader.testURL('https://example.com/dataset/metadata.json?token=1')).toBe(
-    true
-  );
-  expect(PotreeSourceLoader.testURL('https://example.com/dataset/cloud.js?token=1')).toBe(true);
+  expect(PotreeLoader.testURL('https://example.com/dataset/metadata.json?token=1')).toBe(true);
+  expect(PotreeLoader.testURL('https://example.com/dataset/cloud.js?token=1')).toBe(true);
 });
 
 test('unified modern source exposes query limitations and shared range limits', async () => {
   const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
-  const source = PotreeSourceLoader.createDataSourceSync(
-    'https://example.com/dataset/metadata.json',
-    {
-      core: {fetch: transport.fetch},
-      potree: {maxPointBytes: 1}
-    }
-  );
+  const source = await createDataSource('https://example.com/dataset/metadata.json', PotreeLoader, {
+    core: {fetch: transport.fetch},
+    potree: {maxPointBytes: 1}
+  });
   try {
     await source.initialize();
     expect((await source.getQueryMetadata()).execution).toMatchObject({status: 'metadata-only'});
@@ -408,12 +405,9 @@ test('unified modern source exposes query limitations and shared range limits', 
 
 test('closing a unified modern source before initialization prevents metadata reads', async () => {
   const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
-  const source = PotreeSourceLoader.createDataSourceSync(
-    'https://example.com/dataset/metadata.json',
-    {
-      core: {fetch: transport.fetch}
-    }
-  );
+  const source = await createDataSource('https://example.com/dataset/metadata.json', PotreeLoader, {
+    core: {fetch: transport.fetch}
+  });
   source.close();
   await expect(source.initialize()).rejects.toThrow('closed');
   expect(transport.requests).toHaveLength(0);

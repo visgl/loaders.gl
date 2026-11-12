@@ -7,7 +7,7 @@ export {PotreeLoader} from './potree-loader-types';
 export type {PotreeDatasetMetadata} from './potree-loader-types';
 export {PotreeHierarchyChunkLoader} from './potree-hierarchy-chunk-loader';
 export {PotreeBinLoader} from './potree-bin-loader';
-export {PotreeSourceLoader} from './potree-source-loader';
+export type {PotreeNodesSource} from './lib/potree-node-source';
 
 export type {
   HierarchyItem,
