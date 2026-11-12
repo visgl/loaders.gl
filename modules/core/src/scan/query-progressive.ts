@@ -86,7 +86,7 @@ export async function* queryProgressive(
     ...(columns.length ? {select: columns} : {})
   };
 
-  for await (const batch of queryInBatches(tableQuery, queryOptions)) {
+  for await (const batch of queryInBatches(tableQuery, {...queryOptions, queryOutput: 'batches'})) {
     options.signal?.throwIfAborted();
     sourceSchema ??= batch.data.schema;
     if (batch.length === 0) continue;
