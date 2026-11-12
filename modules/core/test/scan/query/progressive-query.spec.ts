@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {queryProgressive} from '@loaders.gl/core/scan';
+import {queryProgressive, queryInBatches} from '@loaders.gl/core/scan';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {TableScanSource} from '@loaders.gl/core/loader-utils';
@@ -174,4 +174,30 @@ test('invalid progressive requests reject before reading', async () => {
       {source, emitEveryBatches: 0}
     )) {}
   })()).rejects.toThrow('emitEveryBatches');
+});
+
+test('queryOutput snapshots yields pure Arrow RecordBatch replacements', async () => {
+  const batches: arrow.RecordBatch[] = [];
+  for await (const batch of queryInBatches(
+    {groupBy: 'country', aggregates: [{function: 'count', as: 'rows'}]},
+    {source: makeSource(), queryOutput: 'snapshots'}
+  )) {
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
+    batches.push(batch);
+  }
+  // Each batch is a complete result, not a delta; the final snapshot is always emitted.
+  expect(batches.map(batch => batch.toArray().map(row => row.toJSON()))).toEqual([
+    [{country: 'SE', rows: 2}, {country: 'US', rows: 1}],
+    [{country: 'SE', rows: 3}, {country: 'US', rows: 2}],
+    [{country: 'SE', rows: 3}, {country: 'US', rows: 2}]
+  ]);
+});
+
+test('queryOutput snapshots rejects non-aggregate queries', async () => {
+  await expect((async () => {
+    for await (const _batch of queryInBatches(
+      {select: ['country']},
+      {source: makeSource(), queryOutput: 'snapshots'}
+    )) {}
+  })()).rejects.toThrow('structured aggregate query');
 });
