@@ -557,3 +557,15 @@ export type {
   TableDiscoverySource,
   TableMetadata
 } from './lib/sources/table-source-collection';
+
+export {ResourceManager} from './lib/sources/resource-manager';
+export type {
+  ResourceDescription,
+  ResourceManagerOptions,
+  ResourceManagerEntryInfo,
+  ResourceManagerEntryStatus,
+  ResourceManagerAddParameters,
+  ResourceManagerGetOrCreateParameters,
+  ResourceManagerSubscribeParameters,
+  ResourceSubscriber
+} from './lib/sources/resource-manager';
