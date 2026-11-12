@@ -201,3 +201,17 @@ test('queryOutput snapshots rejects non-aggregate queries', async () => {
     )) {}
   })()).rejects.toThrow('structured aggregate query');
 });
+
+test('queryOutput batches emits plain append-only Arrow RecordBatches', async () => {
+  const batches: arrow.RecordBatch[] = [];
+  for await (const batch of queryInBatches(
+    {select: ['country']},
+    {source: makeSource(), queryOutput: 'batches'}
+  )) {
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
+    batches.push(batch);
+  }
+  expect(batches.flatMap(batch => batch.toArray().map(row => row.toJSON()))).toEqual([
+    {country: 'SE'}, {country: 'US'}, {country: 'SE'}, {country: 'US'}, {country: 'SE'}
+  ]);
+});
