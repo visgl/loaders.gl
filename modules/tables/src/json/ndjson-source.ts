@@ -7,14 +7,12 @@ import type {
   CoreAPI,
   DataSourceOptions,
   ScanQueryMetadata,
-  SourceLoader,
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema, getDataTypeFromArray} from '@loaders.gl/core/schema-utils';
 import type {Schema, TableBatch} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import {NDJSONFormat} from './json-format';
 import type {NDJSONLoaderOptions} from './ndjson-loader';
 
 const NDJSON_TABLE_QUERY_CAPABILITIES = Object.freeze({
@@ -160,20 +158,3 @@ async function* readStreamChunks(
     await reader.cancel();
   }
 }
-
-/** Metadata-only NDJSON source loader. */
-export const NDJSONSourceLoader = {
-  ...NDJSONFormat,
-  name: 'NDJSONSourceLoader',
-  type: 'ndjson-source',
-  version: '1.0.0',
-  dataType: null as unknown as NDJSONTableSource,
-  batchType: null as never,
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.(?:ndjson|jsonl)(?:$|[?#])/i.test(url),
-  createDataSourceSync: (data: string | Blob, options: NDJSONSourceOptions, coreApi?: CoreAPI) =>
-    new NDJSONTableSource(data, options, coreApi)
-} as const satisfies SourceLoader<NDJSONTableSource>;

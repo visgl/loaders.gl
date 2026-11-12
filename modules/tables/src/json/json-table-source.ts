@@ -13,13 +13,11 @@ import type {
   DataSourceOptions,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
-  SourceLoader,
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {JSONFormat} from './json-format';
 import type {JSONTableLoaderOptions} from './json-table-loader-types';
 
 /** JSON parser options for a source that always scans Arrow batches. */
@@ -126,22 +124,3 @@ export class JSONTableSource
     return table;
   }
 }
-
-/** Opens ordinary JSON row arrays through the table query API. */
-export const JSONTableSourceLoader = {
-  ...JSONFormat,
-  name: 'JSONTableSourceLoader',
-  id: 'json-table-source',
-  extensions: ['json'],
-  type: 'json-table-source',
-  version: '1.0.0',
-  dataType: null as unknown as JSONTableSource,
-  batchType: null as never,
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.json(?:$|[?#])/i.test(url),
-  createDataSourceSync: (data: string | Blob, options: JSONTableSourceOptions, coreApi?: CoreAPI) =>
-    new JSONTableSource(data, options, coreApi)
-} as const satisfies SourceLoader<JSONTableSource>;

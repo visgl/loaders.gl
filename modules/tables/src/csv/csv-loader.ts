@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {CSVTableSource, type CSVSourceOptions} from './csv-source';
+import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   Schema,
   ArrayRowTable,
@@ -71,11 +72,14 @@ export const CSVLoaderWithParser = {
   serializeWorkerResult: serializeCSVWorkerResult,
   deserializeWorkerResult: deserializeCSVWorkerResult,
   serializeWorkerBatch: serializeCSVWorkerBatch,
-  deserializeWorkerBatch: deserializeCSVWorkerBatch
+  deserializeWorkerBatch: deserializeCSVWorkerBatch,
+  createDataSourceSync: (data: string | Blob, options: CSVSourceOptions, coreApi?: CoreAPI) =>
+    new CSVTableSource(data, options, coreApi)
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
   TableBatch | ColumnarTableBatch | ArrowTableBatch,
-  CSVLoaderOptions
+  CSVLoaderOptions,
+  CSVTableSource
 >;
 
 async function parseCSVText(

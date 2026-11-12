@@ -110,6 +110,12 @@ const batches = await loadInBatches('ndjson.ndjson', NDJSONLoader, {
 
 `NDJSONLoader` also accepts the deprecated `json.shape` alias for shape selection. `ndjson.shape` takes precedence, and schema/recovery options remain under `ndjson.*`. In Arrow mode, `ndjson.schema` accepts either a loaders.gl `Schema` or Apache Arrow `Schema`. `ndjson.arrowConversion` has the same strict-by-default recovery policy as `JSONTableLoader`: type mismatches, missing fields, and integer conversion issues throw unless configured to recover, and extra fields throw unless configured to drop. GeoJSON feature rows are converted as generic nested JSON rows; use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` for GeoArrow WKB output.
 
+## Data sources
+
+Pass `NDJSONLoader` to [`createDataSource()`](/docs/modules/core/api-reference/create-data-source)
+to open a URL or Blob for table queries. Use `load()` to parse the input into a table.
+
+
 ## Data Format
 
 Parsed `NDJSONLoader` batches are of the format.

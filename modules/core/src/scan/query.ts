@@ -23,7 +23,7 @@ import {
   type TableScanReadOptions,
   type LoaderOptions,
   type DataSourceOptions,
-  type SourceLoader,
+  type Loader,
   resolveLoaderAuthenticationOptions,
   isSourceLoader
 } from '@loaders.gl/core/loader-utils';
@@ -77,7 +77,7 @@ export type QueryOptions = TableQueryExecutionOptions &
         /** URL opened lazily with the explicitly supplied source loaders. */
         source: string;
         /** URL-capable source loaders; registered loaders are never selected implicitly. */
-        loaders: SourceLoader | SourceLoader[];
+        loaders: Loader | Loader[];
       }
   >;
 
@@ -462,9 +462,15 @@ function wrapBatch(data: arrow.Table): ArrowTableBatch {
 /** Opens only explicit URL source loaders; the public query owns the returned source. */
 async function openQuerySource(options: QueryOptions): Promise<unknown> {
   const candidates = Array.isArray(options.loaders) ? options.loaders : [options.loaders];
-  if (!candidates.length || candidates.some(loader => !isSourceLoader(loader) || !loader.fromUrl))
+  if (
+    !candidates.length ||
+    !candidates.every(isSourceLoader) ||
+    candidates.some(loader => !loader.fromUrl)
+  ) {
     throw new Error('Query source must specify explicit URL-capable source loaders for a URL.');
-  const {source, sources, loaders, sqlParser, onQueryComplete, queryOutput, ...sourceOptions} = options;
+  }
+  const {source, sources, loaders, sqlParser, onQueryComplete, queryOutput, ...sourceOptions} =
+    options;
   const url = source as string;
   const selected =
     candidates.length === 1 ? candidates[0]! : candidates.find(loader => loader!.testURL(url));

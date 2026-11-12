@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {NDJSONTableSource, NDJSONSourceOptions} from './ndjson-source';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {
   ObjectRowTable,
   ArrayRowTable,
@@ -46,8 +47,17 @@ async function preload() {
   return NDJSONLoaderWithParser;
 }
 
+const sourceMetadata = {
+  type: 'ndjson-source',
+  fromUrl: true,
+  fromBlob: true,
+  defaultOptions: {},
+  testURL: (url: string): boolean => /\.(?:ndjson|jsonl)(?:$|[?#])/i.test(url)
+} as const;
+
 /** Metadata-only loader for newline-delimited JSON row and Arrow tables. */
 export const NDJSONLoader = {
+  ...sourceMetadata,
   defaultShape: 'arrow',
   dataType: null as unknown as ArrayRowTable | ObjectRowTable | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch,
@@ -66,9 +76,17 @@ export const NDJSONLoader = {
       arrowConversion: undefined
     }
   },
-  preload
+  preload,
+  createDataSourceSync(
+    _data: string | Blob,
+    _options: NDJSONSourceOptions,
+    _coreApi?: CoreAPI
+  ): NDJSONTableSource {
+    throw new Error('Call preload(NDJSONLoader) before creating a source synchronously.');
+  }
 } as const satisfies Loader<
   ObjectRowTable | ArrayRowTable | ArrowTable,
   TableBatch | ArrowTableBatch,
-  NDJSONLoaderOptions
+  NDJSONLoaderOptions,
+  NDJSONTableSource
 >;
