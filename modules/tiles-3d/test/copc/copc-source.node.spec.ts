@@ -9,7 +9,7 @@ import {expect, test, vi} from 'vitest';
 const COPC_FILE_PATH = 'modules/tiles-3d/test/copc/data/ellipsoid.copc.laz';
 
 test('COPCSourceLoader reads local files through the native range reader', async () => {
-  const source = COPCSourceLoader.createDataSource(COPC_FILE_PATH, {});
+  const source = COPCSourceLoader.createDataSourceSync(COPC_FILE_PATH, {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -21,7 +21,7 @@ test('COPCSourceLoader reads local files through the native range reader', async
 });
 
 test('COPCSourceLoader closes its local file handle exactly once', async () => {
-  const source = COPCSourceLoader.createDataSource(COPC_FILE_PATH, {});
+  const source = COPCSourceLoader.createDataSourceSync(COPC_FILE_PATH, {});
   await source.initialize();
   const readableFile = source['_readableFile'];
   const close = vi.spyOn(readableFile, 'close');

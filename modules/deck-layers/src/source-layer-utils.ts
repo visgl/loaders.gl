@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {load, selectLoader} from '@loaders.gl/core';
+import {createDataSource, selectLoader} from '@loaders.gl/core';
 import type {DataSourceOptions, Loader, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import {isTileset3DSource} from '@loaders.gl/tiles-3d';
@@ -99,7 +99,7 @@ export async function resolveVisualSource(
   }
   if (selectedSourceLoader) {
     const sourceOptions = injectParserLoaders(options.sourceOptions, parserLoaders);
-    const source = await load(
+    const source = await createDataSource(
       options.data as string | Blob,
       selectedSourceLoader,
       sourceOptions as any

@@ -68,10 +68,10 @@ The source recognizes two interoperable metadata patterns:
 ## Usage
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {GeoZarrSourceLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSource('https://example.com/reanalysis.zarr', [GeoZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/reanalysis.zarr', [GeoZarrSourceLoader], {
   zarr: {
     path: null,
     requireConsolidatedMetadata: true

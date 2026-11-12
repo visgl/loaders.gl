@@ -4,8 +4,9 @@
 
 import {expect, test, vi} from 'vitest';
 import {
-  _selectSource as selectSource,
   createDataSource,
+  _selectSource as selectSource,
+  createDataSourceSync,
   fetchFile,
   load,
   parse,
@@ -46,12 +47,12 @@ test('source entrypoints share flat loading controls and parser namespaces', asy
     wms: {substituteCRS84: false, minimalErrors: true},
     imagebitmap: {imageOrientation: 'flipY' as const}
   };
-  const selected = createDataSource(
+  const selected = createDataSourceSync(
     'https://example.com/service',
     [MVTSourceLoader, WMSSourceLoader],
     options
   );
-  const loaded = await load('https://example.com/service', WMSSourceLoader, options);
+  const loaded = await createDataSource('https://example.com/service', WMSSourceLoader, options);
   for (const source of [selected, loaded]) {
     expect(source).toBeInstanceOf(WMSImageSource);
     expect(source.loadOptions.wms).toEqual(options.wms);
@@ -68,48 +69,48 @@ async function createPmtilesFixtureBlob(): Promise<Blob> {
 }
 
 test('createDataSource#createDataSource returns WMSImageSource for WMSSourceLoader', () => {
-  const source = createDataSource('https://example.com/service=wms', [WMSSourceLoader], {});
+  const source = createDataSourceSync('https://example.com/service=wms', [WMSSourceLoader], {});
   expect(source).toBeInstanceOf(WMSImageSource);
 });
 
 test('load#load returns WMSImageSource for WMSSourceLoader', async () => {
-  const source = await load('https://example.com/service=wms', WMSSourceLoader);
+  const source = await createDataSource('https://example.com/service=wms', WMSSourceLoader);
   expect(source).toBeInstanceOf(WMSImageSource);
 });
 
 test('load#load returns MVTTileSource for MVTSourceLoader', async () => {
-  const source = await load('https://example.com/tiles', MVTSourceLoader);
+  const source = await createDataSource('https://example.com/tiles', MVTSourceLoader);
   expect(source).toBeInstanceOf(MVTTileSource);
 });
 
 test('createDataSource#createDataSource returns MVTTileSource for MVTSourceLoader', () => {
-  const source = createDataSource('https://example.com/tiles', [MVTSourceLoader], {});
+  const source = createDataSourceSync('https://example.com/tiles', [MVTSourceLoader], {});
   expect(source).toBeInstanceOf(MVTTileSource);
 });
 
 test('load#load returns PMTilesTileSource for PMTilesSourceLoader', async () => {
-  const source = await load(await createPmtilesFixtureBlob(), PMTilesSourceLoader);
+  const source = await createDataSource(await createPmtilesFixtureBlob(), PMTilesSourceLoader);
   expect(source).toBeInstanceOf(PMTilesTileSource);
 });
 
 test('load#load returns TableVectorTileSource for TableTileSourceLoader', async () => {
-  const source = await load(GEOJSON_TABLE, TableTileSourceLoader);
+  const source = await createDataSource(GEOJSON_TABLE, TableTileSourceLoader);
   expect(source).toBeInstanceOf(TableVectorTileSource);
 });
 
 test('load#load returns OMEZarrImageSource for OMEZarrSourceLoader', async () => {
-  const source = await load(OME_ZARR_FIXTURE_URL, OMEZarrSourceLoader);
+  const source = await createDataSource(OME_ZARR_FIXTURE_URL, OMEZarrSourceLoader);
   expect(source).toBeInstanceOf(OMEZarrImageSource);
 });
 
 test('createDataSource#createDataSource returns OMEZarrImageSource for OMEZarrSourceLoader', () => {
-  const source = createDataSource(OME_ZARR_FIXTURE_URL, [OMEZarrSourceLoader], {});
+  const source = createDataSourceSync(OME_ZARR_FIXTURE_URL, [OMEZarrSourceLoader], {});
   expect(source).toBeInstanceOf(OMEZarrImageSource);
 });
 
 test('parse#parse rejects SourceLoader candidates', async () => {
   await expect(parse('https://example.com/service=wms', [WMSSourceLoader])).rejects.toThrow(
-    'SourceLoader'
+    'Use createDataSource()'
   );
 });
 
@@ -126,4 +127,56 @@ test('selectSource#selectSource returns null for an unknown type with nothrow', 
       nothrow: true
     })
   ).toBeNull();
+});
+
+test('one lazy loader can parse data and construct a source explicitly', async () => {
+  const createDataSourceSyncFactory = vi.fn((data: unknown) => ({input: data}));
+  const metadata = {
+    name: 'Dual capability test',
+    id: 'dual-test',
+    module: 'test',
+    version: '1',
+    extensions: ['dual-test'],
+    mimeTypes: ['text/plain'],
+    options: {},
+    text: true
+  };
+  const implementation = {
+    ...metadata,
+    parseText: async (text: string) => text.toUpperCase(),
+    createDataSourceSync: createDataSourceSyncFactory
+  };
+  const loader = {...metadata, preload: vi.fn(async () => implementation)};
+  const url = 'https://example.test/data.dual-test';
+  const fetch = vi.fn(async () => new Response('hello', {headers: {'Content-Type': 'text/plain'}}));
+
+  expect(() => createDataSourceSync(url, loader)).toThrow('no synchronous source factory');
+  expect(await load(url, loader, {core: {fetch}})).toBe('HELLO');
+  expect(createDataSourceSyncFactory).not.toHaveBeenCalled();
+  expect(await createDataSource(url, loader)).toEqual({input: url});
+  expect(createDataSourceSync(url, loader)).toEqual({input: url});
+  expect(loader.preload).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+test('load rejects source-only loaders without constructing a source', async () => {
+  const factory = vi.fn();
+  const metadata = {
+    name: 'Source factory test',
+    id: 'factory-test',
+    module: 'test',
+    version: '1',
+    extensions: ['factory-test'],
+    mimeTypes: [],
+    options: {}
+  };
+  const implementation = {...metadata, createDataSourceSync: factory};
+  const loader = {...metadata, preload: async () => implementation};
+  const url = 'https://example.test/data.factory-test';
+
+  await expect(load(url, loader)).rejects.toThrow('Use createDataSource()');
+  await expect(load('https://example.test/service?service=wms', WMSSourceLoader)).rejects.toThrow(
+    'Use createDataSource()'
+  );
+  expect(factory).not.toHaveBeenCalled();
 });

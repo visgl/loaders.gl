@@ -31,7 +31,7 @@ export const ArcGISImageServerSourceLoaderWithParser = {
   preload: undefined,
   /** Supplies ArcGIS credentials after loading the selected implementation. */
   getAuthentications: () => [ArcGISAuthentication],
-  createDataSource: (
+  createDataSourceSync: (
     url: string,
     props: ArcGISImageSourceLoaderProps,
     coreApi?: CoreAPI

@@ -82,10 +82,10 @@ the [authentication guide](/docs/developer-guide/authentication).
 ## Cached tiles
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISMapTileSourceLoader} from '@loaders.gl/arcgis';
 
-const source = await load(
+const source = await createDataSource(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
   [ArcGISMapTileSourceLoader]
 );
@@ -100,7 +100,7 @@ Select export mode when a service is not cached or when dynamic layer, time, or 
 parameters are required:
 
 ```ts
-const source = await load(mapServerUrl, [ArcGISMapTileSourceLoader], {
+const source = await createDataSource(mapServerUrl, [ArcGISMapTileSourceLoader], {
   'arcgis-map-server': {
     mode: 'dynamic',
     tileSize: 512,

@@ -12,7 +12,7 @@ import type {
 
 const {
   preload: _preload,
-  createDataSource: _createDataSource,
+  createDataSourceSync: _createDataSource,
   ...metadata
 } = PointCloudTileSourceLoader;
 
@@ -20,7 +20,7 @@ const {
 export const PointCloudTileSourceLoaderWithParser = {
   ...metadata,
   /** Creates a native-coordinate source with deferred child indexing. */
-  createDataSource(
+  createDataSourceSync(
     input: PointCloudTileSourceInput | string | Blob,
     options: PointCloudTileSourceOptions = {},
     coreApi?: CoreAPI

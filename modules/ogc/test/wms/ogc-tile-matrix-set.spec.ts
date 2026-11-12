@@ -186,7 +186,7 @@ test('OGCAPITilesSource#getMetadata reports a configured tile matrix set', async
   const landingPageUrl = 'https://example.com/ogcapi';
   const tileMatrixSetUrl = `${landingPageUrl}/tileMatrixSets/WebMercatorQuad`;
   const requestedUrls: string[] = [];
-  const source = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const source = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {tileMatrixSet: tileMatrixSetUrl}
   });
   source.fetch = async url => {
@@ -204,23 +204,23 @@ test('OGCAPITilesSource#getMetadata reports a configured tile matrix set', async
   expect(requestedUrls.filter(url => url === tileMatrixSetUrl)).toHaveLength(1);
 
   // A relative link resolves against the landing page.
-  const relative = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const relative = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {tileMatrixSet: 'tileMatrixSets/WebMercatorQuad'}
   });
   relative.fetch = source.fetch;
   expect((await relative.getMetadata()).tileGrid?.matrixIds).toEqual(['0', '1']);
 
   expect(() =>
-    OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {'ogc-api': {metersPerUnit: 0}})
+    OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {'ogc-api': {metersPerUnit: 0}})
   ).toThrow('metersPerUnit');
 
-  const inline = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const inline = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {tileMatrixSet: UTM_BOTTOM_LEFT, metersPerUnit: 1}
   });
   inline.fetch = async () => new Response(JSON.stringify({title: 'Demo API'}));
   expect((await inline.getMetadata()).tileGrid?.resolutions?.[0]).toBeCloseTo(280);
 
-  const unconfigured = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {});
+  const unconfigured = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {});
   unconfigured.fetch = async () => new Response(JSON.stringify({title: 'Demo API'}));
   expect((await unconfigured.getMetadata()).tileGrid).toBeUndefined();
 });
@@ -228,7 +228,7 @@ test('OGCAPITilesSource#getMetadata reports a configured tile matrix set', async
 test('OGCAPITilesSource resolves tile matrix set links like directory paths', async () => {
   const requestUrls = async (landingPageUrl: string, tileMatrixSet: string) => {
     const requestedUrls: string[] = [];
-    const source = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+    const source = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
       'ogc-api': {tileMatrixSet}
     });
     source.fetch = async url => {
@@ -270,7 +270,7 @@ test('OGCAPITilesSource resolves tile matrix set links like directory paths', as
 test('OGCAPITilesSource retries a failed tile matrix set and follows option changes', async () => {
   const landingPageUrl = 'https://example.com/ogcapi';
   let failNextTileMatrixSet = true;
-  const source = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const source = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {tileMatrixSet: `${landingPageUrl}/tileMatrixSets/WebMercatorQuad`}
   });
   const stubFetch: typeof source.fetch = async url => {
@@ -304,7 +304,7 @@ test('OGCAPITilesSource replaces an inline tile matrix set on setProps', async (
     crs: 'http://www.opengis.net/def/crs/EPSG/0/4326',
     tileMatrices: [{id: '0', cellSize: 1, pointOfOrigin: [90, -180]}]
   };
-  const source = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const source = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {tileMatrixSet: projected}
   });
   const stubFetch: typeof source.fetch = async () =>
@@ -324,13 +324,13 @@ test('OGCAPITilesSource replaces an inline tile matrix set on setProps', async (
 test('OGCAPITilesSource requests tiles by configured matrix identifier', async () => {
   const landingPageUrl = 'https://example.com/ogcapi';
   const tileTemplate = `${landingPageUrl}/tiles/{tileMatrix}/{tileRow}/{tileCol}?z={z}`;
-  const nonNumeric = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const nonNumeric = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {tileTemplate, tileMatrixSet: UTM_BOTTOM_LEFT, metersPerUnit: 1}
   });
   // z selects the matrix by index when no id equals z; {z} stays numeric
   expect(nonNumeric.getTileURL({z: 0, x: 1, y: 2})).toBe(`${landingPageUrl}/tiles/coarse/2/1?z=0`);
 
-  const offset = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const offset = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {
       tileTemplate,
       tileMatrixSet: {
@@ -353,7 +353,7 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
   );
   expect(() => offset.getTileURL({z: 2, x: 0, y: 0})).toThrow(RangeError);
   // XYZ placeholders retain numeric z, while configured matrix coverage still applies
-  const xyz = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const xyz = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {
       tileTemplate: `${landingPageUrl}/xyz/{z}/{x}/{y}`,
       tileMatrixSet: {tileMatrices: [{id: '5', cellSize: 2}]}
@@ -363,7 +363,7 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
   expect(() => xyz.getTileURL({z: 2, x: 0, y: 0})).toThrow('outside advertised coverage');
 
   // Without a tile matrix set, an explicit identifier is used verbatim
-  const unconfigured = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const unconfigured = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {tileTemplate, discoverTileMatrixSet: false}
   });
   expect(unconfigured.getTileURL({z: 3, x: 0, y: 0, tileMatrix: 'L03'})).toBe(
@@ -374,7 +374,7 @@ test('OGCAPITilesSource requests tiles by configured matrix identifier', async (
   // A matrix set given by URL is loaded before the tile request
   const tileMatrixSetUrl = `${landingPageUrl}/tileMatrixSets/utm18n`;
   const requestedUrls: string[] = [];
-  const byUrl = OGCAPITilesSourceLoader.createDataSource(landingPageUrl, {
+  const byUrl = OGCAPITilesSourceLoader.createDataSourceSync(landingPageUrl, {
     'ogc-api': {tileTemplate, tileMatrixSet: tileMatrixSetUrl, metersPerUnit: 1}
   });
   byUrl.fetch = async url => {
@@ -430,7 +430,7 @@ test('rejects duplicate matrix identifiers and unknown origin corners', () => {
 
 test('encodes matrix identifiers as URL components', () => {
   const identifier = 'level/a?b#c%$&';
-  const source = OGCAPITilesSourceLoader.createDataSource('https://example.com', {
+  const source = OGCAPITilesSourceLoader.createDataSourceSync('https://example.com', {
     'ogc-api': {
       tileTemplate:
         'https://example.com/tiles/{tileMatrix}/{tileRow}/{tileCol}?matrix={tileMatrix}',
@@ -443,7 +443,7 @@ test('encodes matrix identifiers as URL components', () => {
 });
 
 test('requires URL-configured matrix metadata before resolving a numeric zoom', () => {
-  const source = OGCAPITilesSourceLoader.createDataSource('https://example.com', {
+  const source = OGCAPITilesSourceLoader.createDataSourceSync('https://example.com', {
     'ogc-api': {
       tileTemplate: 'https://example.com/tiles/{tileMatrix}/{tileRow}/{tileCol}',
       tileMatrixSet: 'https://example.com/matrix-set'

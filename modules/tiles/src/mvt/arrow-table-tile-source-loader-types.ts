@@ -24,7 +24,7 @@ async function preloadArrowTableTileSourceLoader(): Promise<
   return ArrowTableTileSourceLoaderWithParser;
 }
 
-/** Lightweight Arrow tiler metadata; use async load() or the explicit runtime subpath. */
+/** Lightweight Arrow tiler metadata; use async createDataSource() or the explicit runtime subpath. */
 export const ArrowTableTileSourceLoader = {
   dataType: null as unknown as ArrowTableVectorTileSource,
   batchType: null as never,
@@ -43,13 +43,13 @@ export const ArrowTableTileSourceLoader = {
   defaultOptions: ARROW_TABLE_TILE_SOURCE_DEFAULT_OPTIONS,
   preload: preloadArrowTableTileSourceLoader,
   /** Direct construction requires the runtime loader rather than metadata. */
-  createDataSource(
+  createDataSourceSync(
     _input: string | Blob | ArrowTableTileSourceInput | Promise<ArrowTableTileSourceInput>,
     _options: ArrowTableTileSourceLoaderOptions = {},
     _coreApi?: CoreAPI
   ): ArrowTableVectorTileSource {
     throw new Error(
-      'ArrowTableTileSourceLoader requires async load() or an explicit @loaders.gl/tiles/arrow-table-tile-source-loader import'
+      'ArrowTableTileSourceLoader requires async createDataSource() or an explicit @loaders.gl/tiles/arrow-table-tile-source-loader import'
     );
   }
 } as const satisfies SourceLoader<ArrowTableVectorTileSource>;

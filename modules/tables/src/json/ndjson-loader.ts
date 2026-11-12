@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {NDJSONTableSource, type NDJSONSourceOptions} from './ndjson-source';
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {
   serializeJSONWorkerOptions,
   serializeJSONWorkerBatch,
   deserializeJSONWorkerResult
 } from './lib/json-worker-transport';
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ObjectRowTable,
   ArrayRowTable,
@@ -46,11 +47,14 @@ export const NDJSONLoaderWithParser = {
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options?: NDJSONLoaderOptions
-  ) => parseNDJSONInRequestedShape(asyncIterator, options)
+  ) => parseNDJSONInRequestedShape(asyncIterator, options),
+  createDataSourceSync: (data: string | Blob, options: NDJSONSourceOptions, coreApi?: CoreAPI) =>
+    new NDJSONTableSource(data, options, coreApi)
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrayRowTable | ArrowTable,
   TableBatch | ArrowTableBatch,
-  NDJSONLoaderOptions
+  NDJSONLoaderOptions,
+  NDJSONTableSource
 >;
 
 /**

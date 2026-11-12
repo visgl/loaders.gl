@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {JSONTableSource, JSONTableSourceOptions} from './json-table-source';
 import type {ArrowTable, ArrowTableBatch, Schema, Table, TableBatch} from '@loaders.gl/core/schema';
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type * as arrow from 'apache-arrow';
 import {JSON_WORKER_URL} from './json-worker-url';
 import {JSONFormat} from './json-format';
@@ -43,6 +44,14 @@ async function preload() {
   return JSONTableLoaderWithParser;
 }
 
+const sourceMetadata = {
+  type: 'json-table-source',
+  fromUrl: true,
+  fromBlob: true,
+  defaultOptions: {},
+  testURL: (url: string): boolean => /\.json(?:$|[?#])/i.test(url)
+} as const;
+
 /**
  * Metadata-only loader for tabular JSON documents and streamed JSON row arrays.
  *
@@ -50,6 +59,7 @@ async function preload() {
  * when the parsed payload may be an arbitrary JSON document.
  */
 export const JSONTableLoader = {
+  ...sourceMetadata,
   defaultShape: 'arrow',
   dataType: null as unknown as Table | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
@@ -72,9 +82,17 @@ export const JSONTableLoader = {
       arrowConversion: undefined
     }
   },
-  preload
+  preload,
+  createDataSourceSync(
+    _data: string | Blob,
+    _options: JSONTableSourceOptions,
+    _coreApi?: CoreAPI
+  ): JSONTableSource {
+    throw new Error('Call preload(JSONTableLoader) before creating a source synchronously.');
+  }
 } as const satisfies Loader<
   Table | ArrowTable,
   TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
-  JSONTableLoaderOptions
+  JSONTableLoaderOptions,
+  JSONTableSource
 >;

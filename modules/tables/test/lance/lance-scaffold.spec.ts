@@ -126,7 +126,7 @@ test('Lance MVP decodes length-prefixed manifest sections', () => {
 });
 
 test('Lance MVP caches Blob manifest metadata', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([MANIFEST_FIXTURE]), {});
+  const source = LanceSourceLoader.createDataSourceSync(new Blob([MANIFEST_FIXTURE]), {});
   const firstMetadata = await source.getMetadata();
   const secondMetadata = await source.getMetadata();
 
@@ -259,7 +259,7 @@ test('Lance loader returns an Arrow table for a flat Lance file', async () => {
 });
 
 test('Lance source emits an Arrow batch for a flat Lance file', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([FLAT_FILE_FIXTURE]), {
+  const source = LanceSourceLoader.createDataSourceSync(new Blob([FLAT_FILE_FIXTURE]), {
     lance: {columnTypes: ['int32'], columnNames: ['id']}
   });
   const batches = [];
@@ -284,7 +284,7 @@ test('Lance loader emits Arrow batches from an input iterator', async () => {
 });
 
 test('Lance source reads file metadata directly from a Blob', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([FILE_FIXTURE]), {});
+  const source = LanceSourceLoader.createDataSourceSync(new Blob([FILE_FIXTURE]), {});
   const metadata = await source.getFileMetadata();
 
   expect(metadata.majorVersion).toBe(2);

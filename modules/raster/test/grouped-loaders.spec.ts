@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load} from '@loaders.gl/core';
+import {createDataSource, load} from '@loaders.gl/core';
 import {
   GeoTIFFLoader,
   GeoTIFFRasterLoader,
@@ -36,11 +36,13 @@ test('raster source metadata defers constructors and keeps TIFF selection distin
   expect(GeoTIFFSourceLoader.testURL('https://example.com/a.ome.tif')).toBe(false);
   expect(OMETiffSourceLoader.testURL('https://example.com/a.ome.tif')).toBe(true);
   for (const metadata of [GeoTIFFSourceLoader, OMETiffSourceLoader]) {
-    expect(() => metadata.createDataSource(new Blob([]), {})).toThrow('requires async load()');
+    expect(() => metadata.createDataSourceSync(new Blob([]), {})).toThrow(
+      'requires async createDataSource()'
+    );
     const implementation = await metadata.preload();
     expect(implementation.id).toBe(metadata.id);
-    const source = implementation.createDataSource(new Blob([]), {});
+    const source = implementation.createDataSourceSync(new Blob([]), {});
     expect(source).toBeDefined();
-    expect((await load(new Blob([]), metadata)).constructor).toBe(source.constructor);
+    expect((await createDataSource(new Blob([]), metadata)).constructor).toBe(source.constructor);
   }
 });

@@ -253,7 +253,7 @@ export const NetCDFSourceLoaderWithParser = {
   options: {},
   defaultOptions: {},
   testURL: (url: string): boolean => /\.(?:cdf|nc)(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: NetCDFSourceOptions): NetCDFSource =>
+  createDataSourceSync: (data: string | Blob, options: NetCDFSourceOptions): NetCDFSource =>
     new NetCDFSource(data, options)
 } as const satisfies SourceLoader<NetCDFSource>;
 

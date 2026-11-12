@@ -8,7 +8,7 @@ test('PMTilesSourceLoader#urls', async () => {
     return;
   }
   for (const tilesetUrl of PMTILESETS) {
-    const source = PMTilesSourceLoader.createDataSource(tilesetUrl, {url: tilesetUrl});
+    const source = PMTilesSourceLoader.createDataSourceSync(tilesetUrl, {url: tilesetUrl});
     expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
     expect(metadata).toBeTruthy();
@@ -22,7 +22,7 @@ test('PMTilesSourceLoader#Blobs', async () => {
   for (const tilesetUrl of PMTILESETS) {
     const response = await fetchFile(tilesetUrl);
     const blob = await response.blob();
-    const source = PMTilesSourceLoader.createDataSource(blob, {url: blob});
+    const source = PMTilesSourceLoader.createDataSourceSync(blob, {url: blob});
     expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
     expect(metadata).toBeTruthy();

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {beforeAll, expect, test, vi} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {WMTSImageTileSource, WMTSSourceLoader, WMTSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
 import type {WMTSCapabilities, WMTSGetFeatureInfoParameters} from '@loaders.gl/ogc/wms';
 
@@ -211,7 +211,7 @@ test('WMTS explicit configuration supports legacy metadata without guessing info
 });
 
 test('WMTS public source loader discovers capabilities once and returns native JSON with cancellation', async () => {
-  const source = createDataSource('https://example.com/wmts', [WMTSSourceLoader], {
+  const source = createDataSourceSync('https://example.com/wmts', [WMTSSourceLoader], {
     wmts: {capabilitiesUrl: 'https://example.com/capabilities'}
   });
   const controller = new AbortController();

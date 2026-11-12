@@ -31,7 +31,7 @@ import {ClientExample} from '@site/src/components';
 | --- | --- |
 | Loader | [`CSVLoader`](../api-reference/csv-loader.md) |
 | Writer | [`CSVWriter`](../api-reference/csv-writer.md) |
-| Source loader | [`CSVSourceLoader`](../api-reference/csv-loader.md) |
+| Source loader | [`CSVLoader`](../api-reference/csv-loader.md) |
 
 <DocLiveExample label="CSV format map example" height="420px">
   <ClientExample kind="geospatial" format="CSV" />

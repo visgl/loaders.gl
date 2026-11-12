@@ -168,6 +168,6 @@ export const ArrowSourceLoader = {
   options: {},
   defaultOptions: {},
   testURL: (url: string): boolean => /\.(?:arrow|feather|ipc)(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: DataSourceOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (data: string | Blob, options: DataSourceOptions, coreApi?: CoreAPI) =>
     new ArrowTableSource(data, options, coreApi)
 } as const satisfies SourceLoader<ArrowTableSource>;

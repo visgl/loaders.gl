@@ -31,7 +31,7 @@ import {StructuredDataPathGraphic} from '@site/src/components/docs/structured-da
 | Loader | [`JSONTableLoader`](../api-reference/json-table-loader.md) |
 | Loader | [`NDJSONLoader`](../api-reference/ndjson-loader.md) |
 | Writer | [`JSONWriter`](../api-reference/json-writer.md) |
-| Source loader | [`NDJSONSourceLoader`](../api-reference/ndjson-loader.md) |
+| Source loader | [`NDJSONLoader`](../api-reference/ndjson-loader.md) |
 
 <JsonDocsTabs active="overview" />
 

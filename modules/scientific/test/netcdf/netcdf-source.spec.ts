@@ -118,7 +118,7 @@ test('NetCDF source validates cheap query options before loading data', async ()
   await expect(source.getRaster({channels: [0]})).rejects.toThrow('named variables');
   expect(NetCDFSourceLoader.testURL('data/file.nc?download=1')).toBe(true);
   expect(NetCDFSourceLoader.testURL('data/file.bin')).toBe(false);
-  expect(NetCDFSourceLoader.createDataSource(new Blob(), {})).toBeInstanceOf(NetCDFSource);
+  expect(NetCDFSourceLoader.createDataSourceSync(new Blob(), {})).toBeInstanceOf(NetCDFSource);
 });
 
 test('NetCDF source materializes every supported numeric type and slice form', async () => {

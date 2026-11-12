@@ -1,7 +1,7 @@
 import {expect, test, vi} from 'vitest';
 import {query} from '@loaders.gl/core/scan';
 import * as arrow from 'apache-arrow';
-import {createDataSource, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
+import {createDataSourceSync, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/core/schema-utils';
 import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geospatial/geopackage/index';
 import {GeoPackageLoader as BundledGeoPackageLoader} from '@loaders.gl/geospatial/geopackage/bundled';
@@ -19,11 +19,11 @@ test('GeoPackageSource#createDataSource selects GeoPackage source from URL', () 
   expect(GeoPackageSource.testURL?.('data.GPKG?download=1')).toBe(true);
   expect(GeoPackageSource.testURL?.('data.parquet')).toBe(false);
   expect(
-    GeoPackageSource.createDataSource(GPKG_RIVERS_MULTI, {geopackage: {}}) instanceof
+    GeoPackageSource.createDataSourceSync(GPKG_RIVERS_MULTI, {geopackage: {}}) instanceof
       GeoPackageDataSource
   ).toBe(true);
 
-  const dataSource = createDataSource(GPKG_RIVERS_MULTI, [GeoPackageSource], {
+  const dataSource = createDataSourceSync(GPKG_RIVERS_MULTI, [GeoPackageSource], {
     geopackage: {}
   });
   expect(dataSource instanceof GeoPackageDataSource, 'returns GeoPackageDataSource').toBeTruthy();
@@ -34,7 +34,7 @@ test('GeoPackageSource exposes URL matching and executes residual queries', asyn
   expect(GeoPackageSource.testURL('https://example.com/data.gpkg?table=rivers')).toBe(true);
   expect(GeoPackageSource.testURL('https://example.com/data.json')).toBe(false);
 
-  const source = GeoPackageSource.createDataSource(new Blob([]), {geopackage: {}});
+  const source = GeoPackageSource.createDataSourceSync(new Blob([]), {geopackage: {}});
   source.getTable = async () => ({
     shape: 'arrow-table',
     data: arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]})
@@ -49,7 +49,7 @@ test('GeoPackageSource exposes URL matching and executes residual queries', asyn
   expect(Array.from(result.data.getChild('value')?.toArray() || [])).toEqual([1]);
 });
 test('GeoPackageSource#getMetadata returns tables and default selection', async () => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+  const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageSource], {
     core: {type: 'geopackage'},
     geopackage: {}
   }) as GeoPackageDataSource;
@@ -69,7 +69,7 @@ test('GeoPackageSource#getMetadata returns tables and default selection', async 
   ).toBeTruthy();
 });
 test('GeoPackageSource#getQueryMetadata exposes the selected schema and bounds', async () => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+  const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageSource], {
     core: {type: 'geopackage'},
     geopackage: {}
   }) as GeoPackageDataSource;
@@ -85,7 +85,7 @@ test('GeoPackageSource#getQueryMetadata exposes the selected schema and bounds',
 test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async () => {
   const fixtureResponse = await fetchFile(GPKG_RIVERS_MULTI);
   const fixtureArrayBuffer = await fixtureResponse.arrayBuffer();
-  const dataSource = createDataSource(new Blob([fixtureArrayBuffer]), [GeoPackageSource], {
+  const dataSource = createDataSourceSync(new Blob([fixtureArrayBuffer]), [GeoPackageSource], {
     core: {type: 'geopackage'},
     geopackage: {}
   }) as GeoPackageDataSource;
@@ -96,7 +96,7 @@ test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async ()
   expect(getRows(sourceTable), 'source matches loader output').toEqual(getRows(loaderTable));
 });
 test('GeoPackageSource#getTable uses the default selection heuristic', async () => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+  const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageSource], {
     core: {type: 'geopackage'},
     geopackage: {}
   }) as GeoPackageDataSource;
@@ -120,7 +120,7 @@ function getRows(table): Record<string, unknown>[] {
 }
 
 test('qualified FROM selects a loaded GeoPackage table without changing its default table', async () => {
-  const source = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+  const source = createDataSourceSync(await createFixtureBlob(), [GeoPackageSource], {
     core: {name: 'warehouse'},
     geopackage: {}
   });
@@ -142,7 +142,7 @@ test('qualified FROM selects a loaded GeoPackage table without changing its defa
 });
 
 test('GeoPackage metadata commands discover named schemas without opening feature readers', async () => {
-  const source = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+  const source = createDataSourceSync(await createFixtureBlob(), [GeoPackageSource], {
     core: {type: 'geopackage', name: 'warehouse'},
     geopackage: {}
   }) as GeoPackageDataSource;

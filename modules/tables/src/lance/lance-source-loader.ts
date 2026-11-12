@@ -207,7 +207,7 @@ export const LanceSourceLoader = {
   preload: async (): Promise<SourceLoader<LanceSource, LanceSourceLoaderOptions>> =>
     LanceSourceLoader,
   /** Constructs a reusable Lance dataset source. */
-  createDataSource(
+  createDataSourceSync(
     data: string | Blob,
     options: LanceSourceLoaderOptions,
     coreApi?: CoreAPI

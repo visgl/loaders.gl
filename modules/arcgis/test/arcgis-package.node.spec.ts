@@ -79,7 +79,7 @@ test('built package exports resolve in Node without source aliases', () => {
       `
     import assert from 'node:assert/strict';
     import {createRequire} from 'node:module';
-    import {load, createDataSource} from '@loaders.gl/core';
+    import {createDataSource, createDataSourceSync} from '@loaders.gl/core';
     import * as root from '@loaders.gl/arcgis';
     import * as bundled from '@loaders.gl/arcgis/bundled';
     import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
@@ -94,8 +94,8 @@ test('built package exports resolve in Node without source aliases', () => {
     for (const loader of root.ARCGIS_LOADERS) {
       const runtime = await loader.preload();
       assert.equal(runtime, bundled.getArcGISLoader(loader.id));
-      const asynchronousSource = await load(serviceUrl, loader);
-      const synchronousSource = createDataSource(serviceUrl, [runtime], {});
+      const asynchronousSource = await createDataSource(serviceUrl, loader);
+      const synchronousSource = createDataSourceSync(serviceUrl, [runtime], {});
       assert.equal(asynchronousSource.constructor, synchronousSource.constructor);
     }
     const commonJs = createRequire(import.meta.url)('@loaders.gl/arcgis');

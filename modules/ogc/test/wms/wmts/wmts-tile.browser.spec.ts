@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
 import {IMAGE_DATA_URL} from '../../../../images/test/lib/test-cases';
 
 test('WMTS valid tiles still decode through the public source loader and forward cancellation', async () => {
-  const source = createDataSource('https://example.com/wmts', [WMTSSourceLoader], {
+  const source = createDataSourceSync('https://example.com/wmts', [WMTSSourceLoader], {
     wmts: {
       capabilities: {
         contents: {

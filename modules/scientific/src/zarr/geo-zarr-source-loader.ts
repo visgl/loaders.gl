@@ -184,7 +184,7 @@ export const GeoZarrSourceLoaderWithParser = {
   },
 
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string,
     options: GeoZarrSourceLoaderOptions,
     coreApi?: CoreAPI

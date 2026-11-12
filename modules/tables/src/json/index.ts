@@ -9,13 +9,12 @@ export type {JSONTableLoaderOptions} from './json-table-loader-types';
 export {JSONTableLoader} from './json-table-loader-types';
 export {
   JSONTableSource,
-  JSONTableSourceLoader,
   type JSONTableSourceOptions
 } from './json-table-source';
 export type {NDJSONLoaderOptions} from './ndjson-loader-types';
 export {NDJSONLoader} from './ndjson-loader-types';
 export {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';
-export {NDJSONSourceLoader, NDJSONTableSource} from './ndjson-source';
+export {NDJSONTableSource} from './ndjson-source';
 export type {NDJSONSourceOptions} from './ndjson-source';
 export type {
   ArrowConversionOptions,

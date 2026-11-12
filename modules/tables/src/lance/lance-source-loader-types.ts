@@ -47,13 +47,13 @@ export const LanceSourceLoader = {
   preload: async (): Promise<SourceLoader<LanceSource, LanceSourceLoaderOptions>> =>
     (await import('@loaders.gl/tables/lance-source-loader')).LanceSourceLoader,
   /** Requires the parser-bearing source entrypoint for synchronous construction. */
-  createDataSource(
+  createDataSourceSync(
     _data: string | Blob,
     _options: LanceSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): LanceSource {
     throw new Error(
-      'LanceSourceLoader requires async load() or an explicit @loaders.gl/tables/lance-source-loader import'
+      'LanceSourceLoader requires async createDataSource() or an explicit @loaders.gl/tables/lance-source-loader import'
     );
   }
 } as const satisfies SourceLoader<LanceSource, LanceSourceLoaderOptions>;

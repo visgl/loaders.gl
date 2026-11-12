@@ -53,7 +53,7 @@ types and mismatched endpoint families produce explicit errors.
 
 ```ts
 import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
 const itemId = '1bc3536f33374363b828e709b6f73597';
@@ -64,7 +64,7 @@ console.log(item.item.title, item.item.accessInformation, item.layers);
 const selected = await resolveArcGISItem(itemId, {layerId: 0});
 if (!selected.selectedLayer) throw new Error('Select a layer first.');
 console.log(selected.selectedLayer.metadata.fields);
-const source = await load(selected.selectedLayer.url, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(selected.selectedLayer.url, ArcGISFeatureServerSourceLoader);
 const result = await source.queryFeatures({maxFeatures: 5000});
 ```
 

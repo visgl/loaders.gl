@@ -353,7 +353,7 @@ describe('RasterSourceLayer lifecycle', () => {
       fromUrl: true,
       fromBlob: false,
       testURL: () => true,
-      createDataSource: () => source
+      createDataSourceSync: () => source
     };
     let subscriber: any;
     const rasterSet = {

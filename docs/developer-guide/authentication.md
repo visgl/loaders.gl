@@ -165,7 +165,7 @@ ArcGIS presets live in `@loaders.gl/arcgis/authentication`; other provider prese
 `core.credentials`:
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 
@@ -176,7 +176,7 @@ const credentials = [
   })
 ];
 
-const source = await load(featureServerUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(featureServerUrl, ArcGISFeatureServerSourceLoader, {
   core: {credentials}
 });
 const features = await source.getFeatures({layers: ['0']});
@@ -228,11 +228,11 @@ the service is reached through a proxy or another provider host.
 ### Mapbox tiles
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 import {createMapboxCredential} from '@loaders.gl/services';
 
-const source = createDataSource(tileJSONUrl, [MVTSourceLoader], {
+const source = createDataSourceSync(tileJSONUrl, [MVTSourceLoader], {
   core: {
     credentials: [createMapboxCredential({accessToken: mapboxToken})]
   }
@@ -312,7 +312,7 @@ before the I3S parser receives its options.
 Cookie-authenticated services still use standard fetch configuration:
 
 ```ts
-const source = createDataSource(url, loaders, {
+const source = createDataSourceSync(url, loaders, {
   core: {fetch: {credentials: 'include'}}
 });
 ```

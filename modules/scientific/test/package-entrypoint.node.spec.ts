@@ -33,7 +33,7 @@ test('scientific metadata loaders preload their parser subpaths', async () => {
   const netcdfParser = await NetCDFLoader.preload();
   const zarrParser = await OMEZarrSourceLoader.preload();
   expect(netcdfParser.parse).toBeTypeOf('function');
-  expect(zarrParser.createDataSource).toBeTypeOf('function');
+  expect(zarrParser.createDataSourceSync).toBeTypeOf('function');
 });
 
 test('NetCDF parser subpaths expose their CommonJS implementations', () => {
@@ -41,7 +41,7 @@ test('NetCDF parser subpaths expose their CommonJS implementations', () => {
     process.execPath,
     [
       '-e',
-      "const {NetCDFSourceLoader} = require('@loaders.gl/scientific/netcdf'); const {NetCDFSourceLoaderWithParser} = require('@loaders.gl/scientific/netcdf/netcdf-source-loader'); console.log(JSON.stringify({sourceLoader: typeof NetCDFSourceLoader.createDataSource, implementation: typeof NetCDFSourceLoaderWithParser.createDataSource}));"
+      "const {NetCDFSourceLoader} = require('@loaders.gl/scientific/netcdf'); const {NetCDFSourceLoaderWithParser} = require('@loaders.gl/scientific/netcdf/netcdf-source-loader'); console.log(JSON.stringify({sourceLoader: typeof NetCDFSourceLoader.createDataSourceSync, implementation: typeof NetCDFSourceLoaderWithParser.createDataSourceSync}));"
     ],
     {encoding: 'utf8'}
   );

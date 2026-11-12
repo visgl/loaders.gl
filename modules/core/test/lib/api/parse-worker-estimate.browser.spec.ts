@@ -66,6 +66,7 @@ test('parse worker auto mode preserves an estimator on a metadata loader after p
   const metadataLoader = {
     ...parserLoader,
     parse: undefined,
+    parseBlob: undefined,
     getWorkerEstimate,
     preload: async () => parserLoader
   } as LoaderWithParser;

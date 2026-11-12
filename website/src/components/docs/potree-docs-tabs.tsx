@@ -24,7 +24,7 @@ const POTREE_DOCS_TABS: PotreeDocsTab[] = [
   {id: 'loader', label: 'PotreeLoader', href: '/docs/modules/tiles-3d/potree/api-reference/potree-loader'},
   {
     id: 'source',
-    label: 'PotreeSourceLoader',
+    label: 'Data Source',
     href: '/docs/modules/tiles-3d/potree/api-reference/potree-source-loader'
   }
 ];

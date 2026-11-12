@@ -15,7 +15,7 @@ import {
   _deepEqual as deepEqual
 } from '@deck.gl/core';
 import {BitmapLayer} from '@deck.gl/layers';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import type {
   DataSourceOptions,
   GetImageParameters,
@@ -352,7 +352,7 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
     );
     const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
-      return createDataSource(data, sourceLoaders, {
+      return createDataSourceSync(data, sourceLoaders, {
         ...sourceOptions,
         core: {
           ...sourceOptions?.core,

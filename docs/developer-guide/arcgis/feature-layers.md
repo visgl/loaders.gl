@@ -10,10 +10,10 @@ one explicit `layers` selection. Nonspatial table endpoints use the same source.
 yet resolved automatically.
 
 ```ts
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
 
-const source = await load(featureLayerUrl, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerSourceLoader);
 const controller = new AbortController();
 const result = await source.queryFeatures({
   query: {where: "CATEGORY = 'Bicycle'", outFields: ['OBJECTID', 'CATEGORY']},
