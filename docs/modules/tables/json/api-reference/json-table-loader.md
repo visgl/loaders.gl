@@ -112,6 +112,11 @@ const table = await query(
 );
 ```
 
+Use `createDataSource(input, [JSONTableLoader, CSVLoader])` to select a source from
+multiple loaders. JSON is identified by a `.json` filename or a Blob with the
+`application/json` MIME type. Pass `JSONTableLoader` directly for an unnamed Blob
+without a MIME type when the input is known to be JSON.
+
 The source downloads and decodes the entire JSON document before applying filters,
 projections, or limits.
 
