@@ -54,7 +54,7 @@ import {
 import {Geoid} from '@math.gl/earth';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
-import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
+import {flattenPropertyTableByFeatureIds} from './feature-attributes';
 import {GL} from '@math.gl/geometry';
 
 /*
@@ -276,14 +276,15 @@ async function _makeNodeResources({
   const {faceRange, featureIds, positions, normals, colors, uvRegions, texCoords, featureCount} =
     generateAttributes(convertedAttributes);
 
-  let featureIdsMap: Record<string, number> = {};
+  // Attribute rows must follow geometry order, before IDs become layer-wide IDs.
+  const batchIds = [...featureIds];
   if (propertyTable) {
     /**
      * 3DTiles has featureIndices unique only for one tile.
      * In I3S featureIds are unique layer-wide. We create featureIds from all feature properties.
      * If 3DTiles features has equal set of properties they are considered as same feature in I3S.
      */
-    featureIdsMap = makeFeatureIdsUnique(
+    makeFeatureIdsUnique(
       featureIds,
       convertedAttributes.featureIndices,
       featuresHashArray,
@@ -330,7 +331,7 @@ async function _makeNodeResources({
   if (attributeStorageInfo?.length) {
     attributes = convertPropertyTableToAttributeBuffers(
       featureIds,
-      featureIdsMap,
+      batchIds,
       propertyTable || {},
       attributeStorageInfo
     );
@@ -1314,18 +1315,16 @@ function generateImageId(texture: ConversionTexture, nodeId: number) {
  * @param featureIndices
  * @param featuresHashArray
  * @param batchTable
- * @returns propertyTable indices to map featureIds
  */
 function makeFeatureIdsUnique(
   featureIds: number[],
   featureIndices: number[],
   featuresHashArray: string[],
   batchTable: {[key: string]: any}
-): Record<string, number> {
+): void {
   const replaceMap = getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray);
   replaceIndicesByUnique(featureIndices, replaceMap);
   replaceIndicesByUnique(featureIds, replaceMap);
-  return replaceMap;
 }
 
 /**
@@ -1344,7 +1343,7 @@ function getFeaturesReplaceMap(
 
   for (let index = 0; index < featureIds.length; index++) {
     const oldFeatureId = featureIds[index];
-    const uniqueFeatureId = getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray);
+    const uniqueFeatureId = getOrCreateUniqueFeatureId(oldFeatureId, batchTable, featuresHashArray);
     featureMap[oldFeatureId.toString()] = uniqueFeatureId;
   }
 
@@ -1401,21 +1400,18 @@ function replaceIndicesByUnique(indicesArray: number[], featureMap: Record<strin
 /**
  * Convert property table data to attribute buffers.
  * @param featureIds
- * @param featureIdsMap - original feature indices mapped to output IDs
+ * @param batchIds - original batch-table row indices in geometry feature order
  * @param propertyTable - table with metadata for particular feature.
  * @param attributeStorageInfo
  * @returns - Array of file buffers.
  */
 export function convertPropertyTableToAttributeBuffers(
   featureIds: number[],
-  featureIdsMap: Record<string, number>,
+  batchIds: number[],
   propertyTable: FeatureTableJson,
   attributeStorageInfo: AttributeStorageInfo[]
 ): ArrayBuffer[] {
-  const needFlattenPropertyTable = checkPropertiesLength(featureIds, propertyTable);
-  const properties = needFlattenPropertyTable
-    ? flattenPropertyTableByFeatureIds(featureIdsMap, propertyTable)
-    : propertyTable;
+  const properties = flattenPropertyTableByFeatureIds(batchIds, propertyTable);
 
   // The layer schema, not this tile's property order, determines buffer positions.
   return attributeStorageInfo.map(attribute => {

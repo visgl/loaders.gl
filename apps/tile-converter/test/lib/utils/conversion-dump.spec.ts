@@ -241,9 +241,9 @@ test('tile-converter(i3s)#ConversionDump - test setMaterialsDefinitions method',
 test('tile-converter(i3s)#ConversionDump rejects old attribute encoding and resumes matching encoding', async () => {
   const options = {...testOptions, tilesetName: 'attribute-version'};
   const oldDump = new ConversionDump();
-  await oldDump.createDump(options);
+  await oldDump.createDump({...options, attributeEncodingVersion: 2});
   await oldDump.addNode('1.b3dm', 1, testDumpMetadata);
-  const currentOptions = {...options, attributeEncodingVersion: 2};
+  const currentOptions = {...options, attributeEncodingVersion: 3};
   const currentDump = new ConversionDump();
   await currentDump.createDump(currentOptions);
   expect(currentDump.restored).toBe(false);
