@@ -66,7 +66,7 @@ function createSourceLoader(
     defaultOptions: {},
     testURL: () => true,
     testData: () => true,
-    createDataSource,
+    createDataSourceSync,
     ...overrides
   } as SourceLoader;
 }
