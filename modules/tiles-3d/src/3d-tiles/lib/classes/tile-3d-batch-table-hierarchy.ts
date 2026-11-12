@@ -8,6 +8,7 @@
 // TODO - Finish hierarchy suypport: this file is only half ported
 /* eslint-disable */
 // @ts-nocheck
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {GL} from '@math.gl/geometry';
 import {createTypedArrayFromAccessor} from './helpers/tile-3d-accessor-utils';
 
@@ -53,8 +54,7 @@ export function initializeHierarchy(batchTable, jsonHeader, binaryBody) {
 
   const legacyHierarchy = jsonHeader.HIERARCHY;
   if (legacyHierarchy) {
-    // eslint-disable-next-line
-    console.warn('3D Tile Parser: HIERARCHY is deprecated. Use 3DTILES_batch_table_hierarchy.');
+    loaderLog.warn('3D Tile Parser: HIERARCHY is deprecated. Use 3DTILES_batch_table_hierarchy.')();
     jsonHeader.extensions = jsonHeader.extensions || {};
     jsonHeader.extensions['3DTILES_batch_table_hierarchy'] = legacyHierarchy;
     hierarchy = legacyHierarchy;

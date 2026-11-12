@@ -29,12 +29,9 @@ async function encodeFixture(
 ): Promise<ArrayBuffer> {
   const values = encoding === 'ocf' ? PAYLOADS : [PAYLOADS[2]];
   return AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: new arrow.Table({
-        payload: arrow.vectorFromArray(values, new arrow.Binary())
-      })
-    },
+    new arrow.Table({
+      payload: arrow.vectorFromArray(values, new arrow.Binary())
+    }),
     {avro: {schema: SCHEMA, encoding, blockSize: 1}}
   );
 }
@@ -172,10 +169,7 @@ test('Avro uses reader field names and preserves binary types in empty tables', 
 test('Avro preserves the reported three unequal byte lengths', async () => {
   const values = PAYLOADS.slice(1, 4);
   const encoded = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: new arrow.Table({payload: arrow.vectorFromArray(values, new arrow.Binary())})
-    },
+    new arrow.Table({payload: arrow.vectorFromArray(values, new arrow.Binary())}),
     {avro: {schema: SCHEMA}}
   );
   expectPayloads((await parseAvro(encoded)).data, values);
@@ -200,12 +194,9 @@ test('Avro converts reader binary defaults by code point instead of UTF-8', asyn
 test('Avro preserves nullable bigint column types across batches', async () => {
   const schema = {type: 'record', name: 'Longs', fields: [{name: 'value', type: ['null', 'long']}]};
   const encoded = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: new arrow.Table({
-        value: arrow.vectorFromArray([null, 9007199254740993n], new arrow.Int64())
-      })
-    },
+    new arrow.Table({
+      value: arrow.vectorFromArray([null, 9007199254740993n], new arrow.Int64())
+    }),
     {avro: {schema}}
   );
   const batches = [];
@@ -227,10 +218,7 @@ test('Avro normalizes promoted longs and reader defaults for bigint columns', as
       {name: 'added', type: 'long', default: 7}
     ]
   };
-  const encoded = await AvroWriter.encode(
-    {shape: 'arrow-table', data: arrow.tableFromArrays({value: [42]})},
-    {avro: {schema}}
-  );
+  const encoded = await AvroWriter.encode(arrow.tableFromArrays({value: [42]}), {avro: {schema}});
   const table = (await parseAvro(encoded, {readerSchema, longType: 'bigint'})).data;
   expect(table.getChild('value')!.get(0)).toBe(42n);
   expect(table.getChild('added')!.get(0)).toBe(7n);

@@ -169,7 +169,7 @@ function parseState(
             return state;
           }
 
-          result.header = parseSHPHeader(dataView);
+          result.header = parseSHPHeader(dataView, options);
           result.progress = {
             bytesUsed: 0,
             bytesTotal: result.header.length,

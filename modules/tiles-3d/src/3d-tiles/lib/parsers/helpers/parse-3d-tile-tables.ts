@@ -5,6 +5,7 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {getStringFromArrayBuffer} from './parse-utils';
 import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../../types';
@@ -16,7 +17,8 @@ const DEPRECATION_WARNING = 'b3dm tile in legacy format.';
 export function parse3DTileTablesHeaderSync(
   tile: Tiles3DTileContent,
   arrayBuffer: ArrayBuffer,
-  byteOffset: number
+  byteOffset: number,
+  options?: Tiles3DLoaderOptions
 ) {
   const view = new DataView(arrayBuffer);
   let batchLength;
@@ -47,7 +49,7 @@ export function parse3DTileTablesHeaderSync(
     featureTableJsonByteLength = 0;
     featureTableBinaryByteLength = 0;
 
-    console.warn(DEPRECATION_WARNING); // eslint-disable-line
+    getLoaderLog(options).warn(DEPRECATION_WARNING)();
   } else if (batchTableBinaryByteLength >= 570425344) {
     byteOffset -= SIZEOF_UINT32;
     batchLength = batchTableJsonByteLength;
@@ -56,7 +58,7 @@ export function parse3DTileTablesHeaderSync(
     featureTableJsonByteLength = 0;
     featureTableBinaryByteLength = 0;
 
-    console.warn(DEPRECATION_WARNING); // eslint-disable-line
+    getLoaderLog(options).warn(DEPRECATION_WARNING)();
   }
 
   tile.header.featureTableJsonByteLength = featureTableJsonByteLength;

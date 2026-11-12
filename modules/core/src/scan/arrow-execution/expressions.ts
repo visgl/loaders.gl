@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {compileArrowArray, compileArrowExpression} from '@math.gl/arrow/expressions';
-import type {TableSelection} from '@math.gl/core/sql';
-import {getExpressionColumns} from '@math.gl/core/expressions';
+import {compileArrowArray, compileArrowExpression} from '@math.gl/expressions/arrow';
+import type {TableSelection} from '@math.gl/expressions/sql';
+import {getExpressionColumns} from '@math.gl/expressions';
 
-export {compileArrowExpression, compileArrowPredicate} from '@math.gl/arrow/expressions';
-export {getExpressionColumns} from '@math.gl/core/expressions';
+export {compileArrowExpression, compileArrowPredicate} from '@math.gl/expressions/arrow';
+export {getExpressionColumns} from '@math.gl/expressions';
 
 /** Finds source columns and rejects ambiguous projection shapes before a scan. */
 export function getProjectionColumns(selections: readonly TableSelection[]): string[] {

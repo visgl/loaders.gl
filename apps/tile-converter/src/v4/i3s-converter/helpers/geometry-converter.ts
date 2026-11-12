@@ -327,11 +327,11 @@ async function _makeNodeResources({
 
   let attributes: ArrayBuffer[] = [];
 
-  if (attributeStorageInfo && propertyTable) {
+  if (attributeStorageInfo?.length) {
     attributes = convertPropertyTableToAttributeBuffers(
       featureIds,
       featureIdsMap,
-      propertyTable,
+      propertyTable || {},
       attributeStorageInfo
     );
   }
@@ -1401,39 +1401,35 @@ function replaceIndicesByUnique(indicesArray: number[], featureMap: Record<strin
 /**
  * Convert property table data to attribute buffers.
  * @param featureIds
+ * @param featureIdsMap - original feature indices mapped to output IDs
  * @param propertyTable - table with metadata for particular feature.
  * @param attributeStorageInfo
  * @returns - Array of file buffers.
  */
-function convertPropertyTableToAttributeBuffers(
+export function convertPropertyTableToAttributeBuffers(
   featureIds: number[],
   featureIdsMap: Record<string, number>,
   propertyTable: FeatureTableJson,
   attributeStorageInfo: AttributeStorageInfo[]
-): any[] {
-  const attributeBuffers: ArrayBuffer[] = [];
-
+): ArrayBuffer[] {
   const needFlattenPropertyTable = checkPropertiesLength(featureIds, propertyTable);
   const properties = needFlattenPropertyTable
     ? flattenPropertyTableByFeatureIds(featureIdsMap, propertyTable)
     : propertyTable;
 
-  const propertyTableWithObjectIds = {
-    OBJECTID: featureIds,
-    ...properties
-  };
-
-  for (const propertyName in propertyTableWithObjectIds) {
-    const type = getAttributeType(propertyName, attributeStorageInfo);
-    if (type) {
-      const value = propertyTableWithObjectIds[propertyName];
-      const attributeBuffer = generateAttributeBuffer(type, value);
-
-      attributeBuffers.push(attributeBuffer);
+  // The layer schema, not this tile's property order, determines buffer positions.
+  return attributeStorageInfo.map(attribute => {
+    if (!attribute.attributeValues) {
+      throw new Error(`Missing attribute value type for ${attribute.name}`);
     }
-  }
-
-  return attributeBuffers;
+    const values =
+      attribute.name === 'OBJECTID'
+        ? featureIds
+        : Object.hasOwn(properties, attribute.name)
+          ? properties[attribute.name]
+          : new Array(featureIds.length).fill(null);
+    return generateAttributeBuffer(attribute.attributeValues.valueType, values);
+  });
 }
 
 /**
@@ -1446,8 +1442,10 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 
   switch (type) {
     case OBJECT_ID_TYPE:
+      attributeBuffer = generateShortIntegerAttributeBuffer(value, true);
+      break;
     case SHORT_INT_TYPE:
-      attributeBuffer = generateShortIntegerAttributeBuffer(value);
+      attributeBuffer = generateShortIntegerAttributeBuffer(value, false);
       break;
     case DOUBLE_TYPE:
       attributeBuffer = generateDoubleAttributeBuffer(value);
@@ -1463,40 +1461,15 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 }
 
 /**
- * Return attribute type.
- * @param key
- * @param attributeStorageInfo
- * @returns attribute type.
- */
-function getAttributeType(key: string, attributeStorageInfo: any[]): string {
-  const attribute = attributeStorageInfo.find(attr => attr.name === key);
-  if (!attribute) {
-    // eslint-disable-next-line no-console
-    console.error(
-      `attribute is null, key=${key}, attributeStorageInfo=${JSON.stringify(
-        attributeStorageInfo,
-        null,
-        2
-      )}`
-    );
-    return '';
-  }
-  if (!attribute.attributeValues) {
-    // eslint-disable-next-line no-console
-    console.error(`attributeValues is null, attribute=${attribute}`);
-    return '';
-  }
-  return attribute.attributeValues.valueType;
-}
-
-/**
- * Convert short integer to attribute arrayBuffer.
+ * Convert integers to an attribute buffer, using the I3S null sentinel.
+ * @param objectIds - whether values use unsigned object IDs rather than signed integers
  * @param featureIds
  * @returns ArrayBuffer with objectId data.
  */
-function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
+function generateShortIntegerAttributeBuffer(featureIds: any[], objectIds: boolean): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
-  const valuesArray = new Uint32Array(featureIds);
+  const values = featureIds.map(value => value ?? (objectIds ? 0xffffffff : -0x80000000));
+  const valuesArray = objectIds ? new Uint32Array(values) : new Int32Array(values);
   return concatenateArrayBuffers(count.buffer, valuesArray.buffer);
 }
 
@@ -1508,7 +1481,7 @@ function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
 function generateDoubleAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const padding = new Uint8Array(4);
-  const valuesArray = new Float64Array(featureIds);
+  const valuesArray = new Float64Array(featureIds.map(value => value ?? Number.NaN));
 
   return concatenateArrayBuffers(count.buffer, padding.buffer, valuesArray.buffer);
 }

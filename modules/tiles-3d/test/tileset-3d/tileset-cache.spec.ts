@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {coreApi} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
@@ -172,7 +173,7 @@ test('Tileset3D runtime bookkeeping covers loading, statistics, change detection
   tileset._onEndTileLoading();
   expect(tileset.stats.get('Tiles Loading').count).toBe(0);
 
-  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  const consoleError = vi.spyOn(loaderLog, 'error').mockReturnValue(() => {});
   tileset._onTileLoadError(root, new Error('broken tile'));
   expect(onTileError).toHaveBeenCalledWith(root, 'broken tile', root.url);
   expect(consoleError).toHaveBeenCalledOnce();

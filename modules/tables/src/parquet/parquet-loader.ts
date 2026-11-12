@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
+import type {
+  LoaderWithParser,
+  LoaderContext,
+  StrictLoaderOptions
+} from '@loaders.gl/core/loader-utils';
 import {BlobFile, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import type {
   ObjectRowTable,
@@ -12,10 +16,7 @@ import type {
 } from '@loaders.gl/core/schema';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 
-import {
-  convertArrowBatchToObjectRows,
-  convertArrowTableToObjectRows
-} from './lib/parsers/convert-parquet-tables';
+import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema-utils';
 import {
   parseParquetFileToArrowWithJs,
   parseParquetFileToArrowInBatchesWithJs
@@ -37,6 +38,22 @@ const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
 /** TypeScript-backed Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoaderWithParser = {
   ...ParquetLoaderMetadataWithoutPreload,
+  /** Decodes Arrow for core object-row requests and materializes rows at the caller boundary. */
+  prepareParseOutput(options: StrictLoaderOptions) {
+    const parquet = options.parquet as ParquetLoaderOptions['parquet'];
+    if (parquet?.shape !== 'object-row-table') {
+      return null;
+    }
+    return {
+      options: {...options, parquet: {...parquet, shape: 'arrow-table'}},
+      convert(table: ArrowTable | ObjectRowTable) {
+        if (table.shape !== 'arrow-table') {
+          throw new Error('Parquet object-row conversion requires Arrow table output');
+        }
+        return convertArrowTable(table, 'object-row-table');
+      }
+    };
+  },
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions, context?: LoaderContext) {
     return parseParquetTable(new BlobFile(arrayBuffer), options, context);
   },
@@ -87,7 +104,7 @@ async function parseParquetTable(
   }
 
   const arrowTable = await parseParquetFileToArrowWithJs(file, parquetOptions);
-  return convertArrowTableToObjectRows(arrowTable);
+  return convertArrowTable(arrowTable, 'object-row-table');
 }
 
 /**
@@ -116,7 +133,7 @@ async function* parseParquetTableInBatches(
     reportProgress?.({phase: 'decode', completed, unit: 'rows'});
     yield parquetOptions.parquet?.shape === 'arrow-table'
       ? batch
-      : convertArrowBatchToObjectRows(batch);
+      : convertArrowTableBatch(batch, 'object-row-table');
   }
 }
 

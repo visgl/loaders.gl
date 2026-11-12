@@ -1,11 +1,14 @@
 /**
  * Encodes I3S string attributes as little-endian counts followed by UTF-8 strings.
- * Each string's byte count includes its trailing null byte. Values retain the
- * converter's existing JavaScript string coercion, including null and undefined.
+ * Each string's byte count includes its trailing null byte. Null and undefined use a zero byte count, distinct from an empty string.
  */
 export function encodeStringAttribute(values: readonly unknown[]): ArrayBuffer {
   const textEncoder = new TextEncoder();
-  const encodedValues = Array.from(values, value => textEncoder.encode(`${String(value)}\0`));
+  const encodedValues = Array.from(values, value =>
+    value === null || value === undefined
+      ? new Uint8Array(0)
+      : textEncoder.encode(`${String(value)}\0`)
+  );
   const stringByteLength = encodedValues.reduce((total, value) => total + value.byteLength, 0);
   const headerByteLength = (2 + values.length) * Uint32Array.BYTES_PER_ELEMENT;
   const output = new Uint8Array(headerByteLength + stringByteLength);

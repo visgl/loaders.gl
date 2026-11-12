@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
+import {isNativeWriterTable} from '../arrow/table-writer-input';
+import type {TableWriterInput, TableWriterBatch} from '../arrow/table-writer-input';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import type {ObjectRowTable, Table, TableBatch} from '@loaders.gl/core/schema';
-import {convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
 
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {encodeTableToParquetJs} from './lib/encoders/encode-table-to-parquet-js';
@@ -86,13 +88,21 @@ export const ParquetJSWriter = {
   options: {
     parquet: DEFAULT_PARQUET_JS_OPTIONS
   },
-  async encode(table: Table, options?: ParquetJSWriterOptions) {
-    const schema = table.schema || deduceTableSchema(table);
-    const objectRowTable = convertTable({...table, schema}, 'object-row-table') as ObjectRowTable;
+  async encode(input: TableWriterInput, options?: ParquetJSWriterOptions) {
+    const objectRowTable = isNativeWriterTable(input)
+      ? {
+          shape: 'object-row-table' as const,
+          schema: convertArrowToSchema(input.schema),
+          data: Array.from(input, row => row.toJSON())
+        }
+      : (convertTable(
+          {...input, schema: input.schema || deduceTableSchema(input)},
+          'object-row-table'
+        ) as ObjectRowTable);
     return await encodeTableToParquetJs(
-      {...table, schema},
+      objectRowTable,
       objectRowTable,
       normalizeParquetOptions(options, DEFAULT_PARQUET_JS_OPTIONS)
     );
   }
-} as const satisfies WriterWithEncoder<Table, TableBatch, ParquetJSWriterOptions>;
+} as const satisfies WriterWithEncoder<TableWriterInput, TableWriterBatch, ParquetJSWriterOptions>;

@@ -34,10 +34,7 @@ test('ORCLoader#parse returns an Arrow table', async () => {
 });
 
 test('ORCWriter#encode writes an empty ORC file', async () => {
-  const output = await ORCWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({id: []})
-  });
+  const output = await ORCWriter.encode(arrow.tableFromArrays({id: []}));
   const result = parseORC(output);
   expect(result.postscript.compression).toBe('NONE');
   expect(result.footer.numberOfRows).toBe(0);
@@ -45,10 +42,9 @@ test('ORCWriter#encode writes an empty ORC file', async () => {
 });
 
 test('ORCWriter#encode round-trips primitive Arrow columns', async () => {
-  const output = await ORCWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({id: [1, 2, 3], name: ['a', 'bb', '']})
-  });
+  const output = await ORCWriter.encode(
+    arrow.tableFromArrays({id: [1, 2, 3], name: ['a', 'bb', '']})
+  );
   const result = await ORCLoaderWithParser.parse(output);
   expect(result.shape).toBe('arrow-table');
   if (result.shape === 'arrow-table') {
@@ -61,10 +57,9 @@ test('ORCWriter#encode round-trips primitive Arrow columns', async () => {
 });
 
 test('ORCWriter#encode round-trips null-present columns', async () => {
-  const output = await ORCWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({id: [1, null, 3], name: ['a', null, 'c']})
-  });
+  const output = await ORCWriter.encode(
+    arrow.tableFromArrays({id: [1, null, 3], name: ['a', null, 'c']})
+  );
   const result = await ORCLoaderWithParser.parse(output);
   expect(result.shape).toBe('arrow-table');
   if (result.shape === 'arrow-table')
@@ -77,10 +72,7 @@ test('ORCWriter#encode round-trips null-present columns', async () => {
 
 test('ORCWriter#encode round-trips multiple stripes', async () => {
   const output = await ORCWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({id: [1, 2, 3, 4], name: ['a', 'b', 'c', 'd']})
-    },
+    arrow.tableFromArrays({id: [1, 2, 3, 4], name: ['a', 'b', 'c', 'd']}),
     {orc: {stripeSize: 2}}
   );
   const parsed = parseORC(output);

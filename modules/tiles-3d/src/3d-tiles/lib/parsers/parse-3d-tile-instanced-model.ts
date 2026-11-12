@@ -43,7 +43,7 @@ function parseInstancedModel(
     throw new Error(`Instanced 3D Model version ${tile.version} is not supported`);
   }
 
-  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
 
   const view = new DataView(arrayBuffer);
 

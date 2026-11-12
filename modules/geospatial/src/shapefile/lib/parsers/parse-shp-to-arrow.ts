@@ -54,7 +54,7 @@ export function parseSHPToArrow(arrayBuffer: ArrayBuffer, options?: SHPLoaderOpt
     return makeSHPGeoArrowGeometryTable(arrayBuffer, options);
   }
 
-  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE));
+  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE), options);
   const schema = buildOutputSchema(header);
   return makeSHPWKBGeometryArrowTable(arrayBuffer, schema, options);
 }

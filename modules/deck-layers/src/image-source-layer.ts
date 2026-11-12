@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {
   CompositeLayer,
   type CompositeLayerProps,
@@ -90,8 +91,7 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
   onMetadataLoad: {type: 'function', value: () => {}},
   onMetadataLoadError: {
     type: 'function',
-    // eslint-disable-next-line no-console
-    value: console.error
+    value: (error: Error) => loaderLog.error(error.message)()
   },
   onImageLoadStart: {type: 'function', value: () => {}},
   onImageLoad: {type: 'function', value: () => {}},
@@ -99,8 +99,7 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
     type: 'function',
     compare: false,
     value: (requestId: number, error: Error) => {
-      // eslint-disable-next-line no-console
-      console.error(error, requestId);
+      loaderLog.error(String(error), requestId)();
     }
   },
   onLoadingStateChange: {type: 'function', value: () => {}},

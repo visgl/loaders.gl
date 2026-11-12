@@ -20,12 +20,11 @@ test('I3S string attributes count UTF-8 bytes and preserve embedded nulls', () =
   );
 });
 
-test('I3S string attributes retain value coercion and support empty tables', () => {
+test('I3S string attributes encode missing values as null and retain other coercions', () => {
   expect(new Uint8Array(encodeStringAttribute([]))).toEqual(new Uint8Array(8));
   const result = encodeStringAttribute([null, undefined, 42, ['a', 'b']]);
-  expect(new TextDecoder().decode(new Uint8Array(result, 24))).toBe(
-    `${['null', 'undefined', '42', 'a,b'].join('\0')}\0`
-  );
+  expect(new TextDecoder().decode(new Uint8Array(result, 24))).toBe('42\0a,b\0');
+  expect(Array.from(new Uint32Array(result, 0, 6))).toEqual([4, 7, 0, 0, 3, 4]);
   expect(encodeStringAttribute(new Array(2))).toEqual(
     encodeStringAttribute([undefined, undefined])
   );

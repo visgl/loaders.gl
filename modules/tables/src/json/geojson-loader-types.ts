@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/core/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -21,28 +21,29 @@ import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type GeoJSONLoaderOptions = Omit<JSONLoaderOptions, 'json'> & {
-  /** Preferred encoding for Arrow geometry output. */
-  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  /** GeoJSON-specific loader options. */
-  geojson?: {
-    /** Requested GeoJSON output shape. */
-    shape?: 'arrow' | 'arrow-table' | 'geojson-table' | 'binary-feature-collection';
+export type GeoJSONLoaderOptions = LoaderOptions &
+  Omit<JSONLoaderOptions, 'json'> & {
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+    /** GeoJSON-specific loader options. */
+    geojson?: {
+      /** Requested GeoJSON output shape. */
+      shape?: 'arrow' | 'arrow-table' | 'geojson-table' | 'binary-feature-collection';
+      /** Preferred encoding for Arrow geometry output. */
+      geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+    };
+    /** JSON parser and GeoArrow conversion options used by GeoJSONLoader. */
+    json?: Omit<NonNullable<JSONLoaderOptions['json']>, 'shape'> & {
+      /** Optional schema used when converting GeoJSON features to GeoArrow. */
+      schema?: Schema | arrow.Schema;
+      /** Optional recovery policy used when converting GeoJSON features to GeoArrow. */
+      arrowConversion?: ArrowConversionOptions;
+      /** Geometry column name to use when converting GeoJSON features to GeoArrow WKB. */
+      geoarrowGeometryColumn?: string;
+      /** Preferred encoding for Arrow geometry output. */
+      geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+    };
   };
-  /** JSON parser and GeoArrow conversion options used by GeoJSONLoader. */
-  json?: Omit<NonNullable<JSONLoaderOptions['json']>, 'shape'> & {
-    /** Optional schema used when converting GeoJSON features to GeoArrow. */
-    schema?: Schema | arrow.Schema;
-    /** Optional recovery policy used when converting GeoJSON features to GeoArrow. */
-    arrowConversion?: ArrowConversionOptions;
-    /** Geometry column name to use when converting GeoJSON features to GeoArrow WKB. */
-    geoarrowGeometryColumn?: string;
-    /** Preferred encoding for Arrow geometry output. */
-    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  };
-};
 
 /** Preloads the parser-bearing GeoJSON loader implementation. */
 async function preload() {

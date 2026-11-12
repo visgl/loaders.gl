@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
+import {MemoryLog} from 'probe.gl/log';
+import {parse, load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import type {Schema} from '@loaders.gl/core/schema';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/core/schema-utils';
 import {JSONLoader, JSONTableLoader, GeoJSONLoader} from '@loaders.gl/tables/json/index';
@@ -1354,4 +1355,19 @@ test('JSON positional Arrow rows preserve explicitly provided schema field names
   });
   expect(table.data.schema.names).toEqual(['longitude', 'latitude']);
   expect(table.data.getChild('latitude')?.get(1)).toBe(4);
+});
+
+test('JSON table recovery uses the operation logger and respects explicit suppression', async () => {
+  const log = new MemoryLog();
+  const json = {
+    schema: {fields: [{name: 'id', type: 'int32' as const}], metadata: {}},
+    arrowConversion: {onExtraField: 'drop' as const}
+  };
+  const input = '[[1,2]]';
+  await parse(input, JSONTableLoader, {json, core: {worker: false, log}});
+  expect(log.messages.map(message => message.message)).toEqual([
+    'JSONLoader: extra Arrow field column2; dropping value'
+  ]);
+  await parse(input, JSONTableLoader, {json, log, core: {worker: false, log: null}});
+  expect(log.messages).toHaveLength(1);
 });

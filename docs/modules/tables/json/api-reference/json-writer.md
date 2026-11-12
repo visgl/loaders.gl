@@ -44,13 +44,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="yellow"
 />
 
-`JSONWriter` writes loaders.gl tables as JSON text.
+`JSONWriter` writes native Arrow tables and loaders.gl row or columnar tables as JSON text.
 
 ## Usage
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import type {Table} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {JSONWriter} from '@loaders.gl/tables/json';
 
 declare const table: Table;
@@ -59,13 +59,8 @@ const data = await encode(table, JSONWriter); // ArrayBuffer
 const text = JSONWriter.encodeTextSync(table, {json: options}); // string
 ```
 
-`JSONWriter` accepts loaders.gl row, columnar, and Arrow tables. Arrow table inputs are serialized as JSON row objects by default.
-
-```typescript
-const json = await encode(arrowTable, JSONWriter, {
-  json: {shape: 'arrow-table'}
-});
-```
+Arrow table inputs are serialized as JSON row objects by default. Set
+`json.shape: 'array-row-table'` to serialize each row as an array.
 
 If an Arrow table has a `geoarrow.wkb` geometry column, `JSONWriter` decodes that column to GeoJSON geometry objects before serializing. This keeps JSON output readable while preserving the writer's normal array-of-rows shape.
 
@@ -84,6 +79,6 @@ Encoded batches are array buffers or strings.
 
 | Option          | Type                                            | Default              | Description                                                                                                                                      |
 | --------------- | ----------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `json.shape`    | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `'object-row-table'` | Requested JSON row shape. `'arrow-table'` is accepted for Arrow table inputs and serializes rows as objects.                                      |
+| `json.shape`    | `'object-row-table' \| 'array-row-table'` | `'object-row-table'` | Requested JSON row shape.                                      |
 | `json.geoarrow` | `'auto' \| 'none'`                              | `'auto'`             | Controls GeoArrow WKB decoding. `'auto'` decodes `geoarrow.wkb` columns to GeoJSON geometry objects. `'none'` serializes the raw values.          |
 | `json.wrapper`  | `(table: RowObject[] \| RowArray[]) => unknown` |                      | Wraps the encoded table rows in a custom JSON value.                                                                                             |

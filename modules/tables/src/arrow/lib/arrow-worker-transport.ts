@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTableBatch, Table} from '@loaders.gl/core/schema';
-import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
+import {convertArrowTable} from '@loaders.gl/core/schema-utils';
 import {
   serializeArrowWorkerTable,
   deserializeArrowWorkerTable
@@ -17,10 +17,7 @@ export const serializeArrowTableResult = serializeArrowWorkerTable;
 export function deserializeArrowTableResult(result: unknown, options?: ArrowLoaderOptions): Table {
   const table = deserializeArrowTableBatch(result);
   const shape = options?.arrow?.shape;
-  return convertArrowToTable(
-    table.data,
-    shape === 'arrow' ? 'arrow-table' : shape || 'columnar-table'
-  );
+  return convertArrowTable(table, shape === 'arrow' ? 'arrow-table' : shape || 'columnar-table');
 }
 
 /** Hydrates column buffers while preserving batch metadata. */

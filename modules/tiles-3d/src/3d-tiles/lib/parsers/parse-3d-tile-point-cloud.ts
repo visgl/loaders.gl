@@ -29,7 +29,7 @@ export async function parsePointCloud3DTile(
   context?: LoaderContext
 ): Promise<number> {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
-  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset);
+  byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
   initializeTile(tile);
 

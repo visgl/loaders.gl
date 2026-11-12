@@ -72,10 +72,5 @@ function getLoadableWorkerURLFromSource(workerSource: string): string {
  */
 function buildScriptSource(workerUrl: string): string {
   return `\
-try {
-  importScripts('${workerUrl}');
-} catch (error) {
-  console.error(error);
-  throw error;
-}`;
+importScripts('${workerUrl}');`;
 }

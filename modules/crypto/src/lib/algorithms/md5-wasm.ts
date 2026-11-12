@@ -12,6 +12,8 @@
  */
 
 // *-*=*  *=*-* *-*=*  *=*-* *-*=*  *=*-* *-*=*  *=*-* *-*=*  *=*-* *-*=*  *=*-*
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
+
 // This contains two functions designed to achieve the same thing
 //   -> A WebAssembly function for larger files
 //   -> A JavaScript function for the others
@@ -56,7 +58,7 @@ export default async function md5WASM(data) {
   });
   const memoryView = new Uint32Array(memory.buffer);
   const {instance} = await WebAssembly.instantiate(wasm, {
-    imports: {mem: memory, log: console.log}
+    imports: {mem: memory, log: (...values: number[]) => loaderLog.log(1, ...values)()}
   });
   return makeMD5WA()(input, instance.exports, memoryView);
 }

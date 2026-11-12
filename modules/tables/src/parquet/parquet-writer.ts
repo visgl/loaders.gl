@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {TableWriterInput, TableWriterBatch} from '../arrow/table-writer-input';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, Table, TableBatch} from '@loaders.gl/core/schema';
-import {convertTable, deduceTableSchema} from '@loaders.gl/core/schema-utils';
+import {convertTableToArrow, deduceTableSchema} from '@loaders.gl/core/schema-utils';
+import {isNativeWriterTable} from '../arrow/table-writer-input';
 
 import {encodeArrowToParquet} from './lib/encoders/encode-arrow-to-parquet';
 import {ensureGeoParquetMetadataOnArrowTable} from './lib/geo/geospatial-metadata';
@@ -28,15 +29,11 @@ export const ParquetWriter = {
   options: {
     parquet: {}
   },
-  encode(table: Table, options?: ParquetWriterOptions) {
-    const arrowTable =
-      table.shape === 'arrow-table'
-        ? (table as ArrowTable)
-        : (convertTable(
-            {...table, schema: table.schema || deduceTableSchema(table)},
-            'arrow-table'
-          ) as ArrowTable);
+  encode(input: TableWriterInput, options?: ParquetWriterOptions) {
+    const arrowTable = isNativeWriterTable(input)
+      ? input
+      : convertTableToArrow({...input, schema: input.schema || deduceTableSchema(input)});
     const parquetOptions = normalizeParquetOptions(options, ParquetWriter.options.parquet);
     return encodeArrowToParquet(ensureGeoParquetMetadataOnArrowTable(arrowTable), parquetOptions);
   }
-} as const satisfies WriterWithEncoder<Table, TableBatch, ParquetWriterOptions>;
+} as const satisfies WriterWithEncoder<TableWriterInput, TableWriterBatch, ParquetWriterOptions>;

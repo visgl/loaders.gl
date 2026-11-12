@@ -165,7 +165,9 @@ async function parseFileWithLoader(
 
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
   if (loaderWithParser.parseFile) {
-    return await loaderWithParser.parseFile(file, options, context);
+    const output = loaderWithParser.prepareParseOutput?.(options);
+    const result = await loaderWithParser.parseFile(file, output?.options ?? options, context);
+    return output ? output.convert(result) : result;
   }
 
   const parseFunction = (loaderWithParser as {parse?: LoaderWithParser['parse']}).parse;

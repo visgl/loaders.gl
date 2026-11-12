@@ -1,3 +1,4 @@
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {parseSHPHeader} from '../../src/shapefile/lib/parsers/parse-shp-header';
 import {BinaryReader} from '../../src/shapefile/lib/streaming/binary-reader';
@@ -28,7 +29,7 @@ test('parseSHPHeader reads mixed-endian fields and bounding boxes', () => {
 });
 
 test('parseSHPHeader reports malformed magic and version', () => {
-  const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+  const error = vi.spyOn(loaderLog, 'error').mockReturnValue(() => {});
   const buffer = new ArrayBuffer(100);
   const view = new DataView(buffer);
   view.setInt32(28, 999, true);

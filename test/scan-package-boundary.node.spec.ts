@@ -83,7 +83,7 @@ test('optional scan runtime budgets startup and lazy expression code separately'
   const totalBytes = Object.values(outputs).reduce((sum, output) => sum + output.bytes, 0);
   const eagerInputs = [...eager].flatMap(output => Object.keys(outputs[output].inputs));
   expect(
-    eagerInputs.some(input => input.includes('@math.gl/arrow/dist/expressions/compiler'))
+    eagerInputs.some(input => input.includes('@math.gl/expressions/dist/arrow/compiler'))
   ).toBe(false);
   expect(eagerBytes).toBeLessThanOrEqual(MAXIMUM_EAGER_SCAN_BUNDLE_BYTES);
   expect(totalBytes).toBeLessThanOrEqual(MAXIMUM_COMPLETE_SCAN_BUNDLE_BYTES);
@@ -128,8 +128,8 @@ function listSourceFiles(directory: string): string[] {
 }
 
 test.each([
-  // The upstream structural parser includes the computed SELECT expression grammar.
-  ['parseSQLSelect', 12 * 1024],
+  // The upstream structural parser includes SQL OFFSET and source-located diagnostics.
+  ['parseSQLSelect', 13 * 1024],
   ['parseSQLQuery', 40 * 1024]
 ] as const)('%s imports shake out Arrow and stay within the parser budget', async (parser, maximumBytes) => {
   const result = await build({

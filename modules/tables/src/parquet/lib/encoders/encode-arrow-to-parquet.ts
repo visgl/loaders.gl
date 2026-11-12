@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable} from '@loaders.gl/core/schema';
-
 import * as arrow from 'apache-arrow';
 import {loadWasm} from '../utils/load-wasm';
 
@@ -13,15 +11,14 @@ import type {ParquetWriterOptions} from '../../parquet-writer';
  * Encode Arrow arrow.Table to Parquet buffer
  */
 export async function encodeArrowToParquet(
-  table: ArrowTable,
+  table: arrow.Table,
   options: ParquetWriterOptions
 ): Promise<ArrayBuffer> {
   const wasmUrl = options.parquet?.wasmUrl;
   const wasm = await loadWasm(wasmUrl);
 
   // Serialize the table to the IPC format.
-  const arrowTable: arrow.Table = table.data;
-  const ipcStream = arrow.tableToIPC(arrowTable);
+  const ipcStream = arrow.tableToIPC(table);
 
   // Pass the IPC stream to the Parquet writer.
   const wasmTable = wasm.Table.fromIPCStream(ipcStream);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {PotreeNodesSource} from '../../src/potree/lib/potree-node-source';
 import {projectionEngine} from '@math.gl/geospatial/projection';
@@ -531,7 +532,7 @@ test('Potree scans skip meshes without decoded positions', async () => {
 test('Potree child-bound warnings are deduplicated and leave source bounds intact', () => {
   const source = createSource();
   source.hierarchyBoundingBox = BOUNDS;
-  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const warn = vi.spyOn(loaderLog, 'warn').mockReturnValue(() => {});
   try {
     source.warnIfInvalidChildBounds('r0', {...BOUNDS, lx: -1});
     source.warnIfInvalidChildBounds('r0', {...BOUNDS, lx: -1});

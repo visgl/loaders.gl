@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {describe, expect, test, vi} from 'vitest';
 import {TileSourceLayer, type TileSourceRuntime} from '../src/tile-source-layer';
 
@@ -109,7 +110,7 @@ describe('TileSourceLayer', () => {
     const source = createSource('application/unknown');
     source.getTileData = vi.fn(async () => Promise.reject(error));
     const onTileError = vi.fn();
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi.spyOn(loaderLog, 'error').mockReturnValue(() => {});
     const layer = createLayer(source, {onTileError});
     const [tileLayer] = layer.renderLayers();
 

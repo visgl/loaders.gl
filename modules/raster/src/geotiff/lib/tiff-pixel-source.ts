@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import type {GeoTIFFImage} from 'geotiff';
 import {getImageSize, isInterleaved, SIGNAL_ABORTED} from './utils/tiff-utils';
 
@@ -98,6 +99,6 @@ export class TiffPixelSource<S extends string[]> implements PixelSource<S> {
   }
 
   onTileError(err: Error) {
-    console.error(err); // eslint-disable-line no-console
+    loaderLog.error(String(err))();
   }
 }

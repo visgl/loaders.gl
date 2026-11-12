@@ -72,7 +72,7 @@ export {
   document
 } from './lib/env-utils/globals';
 
-export {log} from './lib/log-utils/log';
+export {log, getLoaderLog} from './lib/log-utils/log';
 
 export type {ReadableStreamType} from './lib/javascript-utils/is-type';
 export {

@@ -50,13 +50,15 @@ test.each([
     shape: 'arrow-table',
     batchType: 'data',
     length: 1,
+    bytesUsed: 123,
+    metadata: {source: 'fixture'},
     schema: {fields: [{name: 'value', type: 'uint8'}]},
     data: arrowTable.slice(0, 1)
   };
   const serialized = serializeParquetWorkerBatch(batch, {parquet: {shape}}) as any;
   const transferred = structuredClone(serialized, {transfer: getTransferList(serialized)});
   const hydrated = deserializeParquetWorkerBatch(transferred);
-  expect(hydrated).toMatchObject({batchType: 'data', length: 1, shape});
+  expect(hydrated).toMatchObject({batchType: 'data', length: 1, shape, bytesUsed: 123, metadata: {source: 'fixture'}, schema: batch.schema});
   expect(bytes).toEqual(new Uint8Array([1, 2, 3, 4]));
   expect(arrowTable.getChild('value')?.get(3)).toBe(4);
   const row = hydrated.shape === 'arrow-table' ? hydrated.data.get(0)!.toJSON() : hydrated.data[0];

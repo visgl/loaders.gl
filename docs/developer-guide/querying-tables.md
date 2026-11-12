@@ -96,6 +96,45 @@ the upstream iterator. An empty execution yields one empty schema-bearing batch.
 batch size, but batches you retain still occupy memory. Arrow projection and rename reuse column
 buffers; slices can retain their original buffers, and scattered filtering can allocate new ones.
 
+## Progressive aggregate snapshots
+
+`queryProgressive()` streams complete replacement tables for aggregate views. Replace the
+previous table on every yield. Each result covers all input rows processed so far.
+
+```ts
+import {queryProgressive} from '@loaders.gl/core/scan';
+
+for await (const {table, rowsProcessed, final} of queryProgressive(
+  {
+    groupBy: 'country',
+    where: {op: '>', args: [{property: 'temperature'}, 30]},
+    aggregates: [
+      {function: 'count', as: 'samples'},
+      {function: 'avg', column: 'temperature', as: 'average'}
+    ]
+  },
+  {source, emitEveryBatches: 8}
+)) {
+  updateVisualization(table);
+  if (final) console.log('Finished', rowsProcessed);
+}
+```
+
+Pass a structured `groupBy` and `aggregates` request. Supported reductions are COUNT, SUM, AVG,
+MIN, and MAX. Filtering runs first. Group keys may be finite numbers, strings, booleans, or null
+and appear in first-seen order. COUNT(column) and numeric reductions skip nulls. An empty numeric
+reduction returns null. Counts use safe integers, and aggregate columns use Float64.
+
+State grows with the number of groups and aggregates. `rowsProcessed` counts filtered rows.
+The iterator always emits a final snapshot, including for empty inputs, and closes the source on
+early return. Use `emitEveryBatches` to control how often it rebuilds the output.
+
+For pure Arrow `RecordBatch` streams, set `queryOutput: 'snapshots'` on
+`queryInBatches(aggregateQuery, options)` and replace the prior result on every yield. Set
+`queryOutput: 'batches'` with a regular query to append new rows. Without `queryOutput`,
+`queryInBatches()` yields loaders.gl batch envelopes. Use `queryProgressive()` for explicit
+`rowsProcessed` and `final` metadata.
+
 ## Reuse and name sources
 
 Create a source once when you want repeated queries. Give it an explicit name when it will be
@@ -171,14 +210,13 @@ const sqlParser = import('@loaders.gl/core/scan/query').then(module => module.pa
 
 ESM imports are tree-shakeable: importing just the parser removes Arrow execution code from the
 bundle. For a smaller parser without built-in WHERE support, use `parseSQLSelect()` from the same
-subpath. It accepts SELECT, AS, FROM, and LIMIT; an optional `parseWhere` callback can add predicate
-support. WHERE is rejected when that callback is omitted.
+subpath. It accepts SELECT, AS, FROM, LIMIT, and OFFSET. Pass a `parseWhere` callback to enable
+WHERE.
 
 These are deliberately partial parsers. They preserve identifier case, accept double-quoted names
 and doubled-quote escapes, and require AS for column aliases. They reject comments, table aliases,
-qualified column references, joins, sorting, grouping, offsets, and multiple
-statements. Quote literal column names containing dots. Input length, token count, and nesting
-are bounded.
+qualified column references, joins, sorting, grouping, and multiple statements. Quote literal column
+names containing dots. Input length, token count, and nesting are bounded.
 
 An application can still supply its own `SQLQueryParser` to translate supported syntax into the
 logical query. The function may return that query asynchronously. Parsers are invoked only for
@@ -272,7 +310,7 @@ signatures, errors, capability details, and benchmark commands, see the
 ### Injected SQL parser contract
 
 An injected `sqlParser` returns a portable logical query. Use `parseSQLQuery` from
-`@math.gl/core/sql` for SELECT expressions, ARRAY projections, casts, computed WHERE expressions,
+`@math.gl/expressions/sql` for SELECT expressions, ARRAY projections, casts, computed WHERE expressions,
 and catalog commands. Math.gl compiles expressions against each source schema. Loaders.gl requests
 the referenced columns and evaluates computed filters before applying LIMIT. Sources can still
 push down portable column predicates. Unsupported expressions fail with a terminal query error.

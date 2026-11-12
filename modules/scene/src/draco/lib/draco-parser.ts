@@ -4,6 +4,7 @@
 
 /* eslint-disable camelcase */
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {
   TypedArray,
   TypedArrayConstructor,
@@ -88,7 +89,10 @@ export default class DracoParser {
   metadataQuerier: MetadataQuerier;
 
   // draco - the draco decoder, either import `draco3d` or load dynamically
-  constructor(draco: Draco3D) {
+  constructor(
+    draco: Draco3D,
+    private readonly logger = getLoaderLog()
+  ) {
     this.draco = draco;
     this.decoder = new this.draco.Decoder();
     this.metadataQuerier = new this.draco.MetadataQuerier();
@@ -427,8 +431,7 @@ export default class DracoParser {
   ): {value: TypedArray; size: number} | null {
     const TypedArrayCtor = DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP[attribute.data_type];
     if (!TypedArrayCtor) {
-      // eslint-disable-next-line no-console
-      console.warn(`DRACO: Unsupported attribute type ${attribute.data_type}`);
+      this.logger.warn(`DRACO: Unsupported attribute type ${attribute.data_type}`)();
       return null;
     }
     const numComponents = attribute.num_components;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {describe, expect, test, vi} from 'vitest';
 import {parseI3STileContent} from '../../src/i3s/lib/parsers/parse-i3s-tile-content';
 
@@ -179,7 +180,7 @@ describe('I3S tile content boundaries', () => {
   });
 
   test('keeps geometry usable when optional texture requests fail', async () => {
-    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warning = vi.spyOn(loaderLog, 'warn').mockReturnValue(() => {});
     const content = await parseI3STileContent(
       createGeometry(),
       {mbs: [0, 0, 0], textureUrl: '/missing', textureFormat: 'png'} as any,

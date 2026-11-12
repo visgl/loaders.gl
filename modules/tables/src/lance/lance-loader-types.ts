@@ -11,6 +11,8 @@ import type {LanceFlatPrimitiveType} from './lance-decoder';
 /** Options for the read-only Lance loader. */
 export type LanceLoaderOptions = LoaderOptions & {
   lance?: {
+    /** Return native Arrow data or loaders.gl table envelopes. */
+    shape?: 'arrow' | 'arrow-table';
     /** Columns to project into the returned table. (Physical projection is not yet part of `_scan`.) */
     columns?: string[];
     /** @deprecated Use `_scan.limit` instead. */
@@ -25,6 +27,7 @@ export type LanceLoaderOptions = LoaderOptions & {
 /** Shared Lance loader options. */
 export const LANCE_LOADER_OPTIONS = {
   lance: {
+    shape: 'arrow',
     columns: undefined,
     limit: undefined,
     columnTypes: undefined,
@@ -46,6 +49,7 @@ export const LanceLoader = {
   id: 'lance',
   module: 'tables',
   version: 'latest',
+  defaultShape: 'arrow',
   options: LANCE_LOADER_OPTIONS,
   preload: preloadLanceLoader
 } as const satisfies Loader<ArrowTable, ArrowTableBatch, LanceLoaderOptions>;

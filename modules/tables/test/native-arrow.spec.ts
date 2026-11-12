@@ -18,13 +18,19 @@ import {NDGeoJSONLoader} from '../src/json/ndgeojson-loader-types';
 import {ParquetLoader} from '../src/parquet/parquet-loader-types';
 import {ParquetJSLoader} from '../src/parquet/parquet-js-loader-types';
 import {GeoParquetLoader} from '../src/parquet/geoparquet-loader-types';
+import {AvroLoader} from '../src/avro/avro-loader-types';
+import {ORCLoader} from '../src/orc/orc-loader-types';
+import {encodeAvro} from '../src/avro/lib/encoders/encode-avro';
+import {encodeORC} from '../src/orc/lib/encoders/encode-orc';
 import {ParquetJSWriter} from '../src/parquet/parquet-js-writer';
 
 const encoder = new TextEncoder();
 const original = tableFromArrays({id: new Int32Array([1, 2]), label: ['first', 'second']});
 const ipc = tableToIPC(new Table([original.slice(0, 1).batches[0], original.slice(1).batches[0]]));
 let parquet: ArrayBuffer;
+let avro: ArrayBuffer;
 beforeAll(async () => {
+  avro = await encodeAvro(original);
   parquet = await encode(
     {
       shape: 'object-row-table',
@@ -51,6 +57,16 @@ afterEach(() => destroyWorkerTasks());
 const cases = [
   {name: 'Arrow', loader: ArrowLoader, input: () => ipc.slice()},
   {name: 'GeoArrow', loader: GeoArrowLoader, input: () => ipc.slice()},
+  {
+    name: 'Avro',
+    loader: AvroLoader,
+    input: () => avro.slice(0)
+  },
+  {
+    name: 'ORC',
+    loader: ORCLoader,
+    input: () => encodeORC(original)
+  },
   {
     name: 'CSV',
     loader: CSVLoader,
@@ -86,6 +102,15 @@ test.each(cases)('$name returns native Tables and all RecordBatches', async ({lo
     values.push(...batch.getChild('label')!.toArray());
   }
   expect(values).toEqual(['first', 'second']);
+
+  const wrappedOptions = {core: {worker: false, shape: 'arrow-table' as const}};
+  expect(await parse(input(), loader, wrappedOptions)).toMatchObject({shape: 'arrow-table'});
+  let wrappedRows = 0;
+  for await (const batch of await parseInBatches([input()], loader, wrappedOptions)) {
+    expect(batch).toMatchObject({shape: 'arrow-table', batchType: 'data'});
+    wrappedRows += batch.length;
+  }
+  expect(wrappedRows).toBe(2);
 });
 
 test.each(
@@ -172,8 +197,18 @@ test('sync and load APIs infer native output and preserve scoped overrides', asy
   expectTypeOf(batches).toEqualTypeOf<AsyncIterable<RecordBatch>>();
 });
 
-test('native streaming rejects metadata envelopes', async () => {
-  await expect(
-    parseInBatches([ipc], ArrowLoader, {core: {shape: 'arrow', metadata: true}})
-  ).rejects.toThrow('core.metadata');
+test('native streaming requires wrapped mode for loader metadata', async () => {
+  await expect(parseInBatches([ipc], ArrowLoader, {core: {metadata: true}})).rejects.toThrow(
+    'core.metadata'
+  );
+
+  const output = await parseInBatches([ipc], ArrowLoader, {
+    core: {shape: 'arrow-table', metadata: true, worker: false}
+  });
+  const events = [];
+  for await (const event of output) events.push(event);
+  const [metadata, ...batches] = events;
+  expect(metadata).toMatchObject({batchType: 'metadata'});
+  expect(batches).toHaveLength(2);
+  expect(batches[0]).toMatchObject({shape: 'arrow-table', batchType: 'data'});
 });

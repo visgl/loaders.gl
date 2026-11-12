@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from './../../loader-utils/lib/log-utils/log';
 import {Metadata, SchemaWithMetadata, getMetadataValue} from './metadata-utils';
 import type {GeoArrowEncoding, GeoArrowMetadata} from '@loaders.gl/core/schema';
 import {GeoArrowMetadataSchema} from '@loaders.gl/core/schema/geospatial-metadata-zod-schema';
@@ -48,8 +49,7 @@ export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMe
       geoEncoding = 'geoarrow.wkt';
     }
     if (!GEOARROW_ENCODINGS.includes(geoEncoding as GeoArrowEncoding)) {
-      // eslint-disable-next-line no-console
-      console.warn(`Invalid GeoArrow encoding: ${geoEncoding}`);
+      loaderLog.warn(`Invalid GeoArrow encoding: ${geoEncoding}`)();
     } else {
       metadata ||= {} as GeoArrowMetadata;
       metadata.encoding = geoEncoding as GeoArrowEncoding;
@@ -66,8 +66,7 @@ export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMe
         ...parsedMetadata
       } as GeoArrowMetadata;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('Failed to parse GeoArrow metadata', error);
+      loaderLog.warn('Failed to parse GeoArrow metadata', error)();
     }
   }
 
