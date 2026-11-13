@@ -282,6 +282,8 @@ export type ParquetSourceExplain = TableQueryExplain<ParquetPredicate> &
   Readonly<{
     /** Physical source kind. */
     source: 'parquet';
+    /** Post-filter offset to apply when replaying this plan. */
+    offset?: number;
     /** Row groups selected by the request and conservative footer statistics. */
     rowGroups: Readonly<{
       /** Zero-based row-group indexes retained by every physical pruning stage. */

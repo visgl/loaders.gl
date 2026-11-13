@@ -935,3 +935,20 @@ test('Parquet source pages skip footer-counted row groups and retain row provena
     await source.close();
   }
 });
+
+
+test('Parquet scan plans preserve the source offset and allow per-read overrides', async () => {
+  const source = createRemoteSource(createRangeFetch(await createSelectiveFixture()), {
+    parquet: {offset: 3}
+  });
+  try {
+    expect((await source.getScanPlan({limit: 1})).offset).toBe(3);
+    const plan = await source.getScanPlan({offset: 4, limit: 1});
+    const replay = await collectParquetBatches(source.executeScanPlan(plan));
+    expect(replay.map(batch => batch.rowOffset)).toEqual([4]);
+    const override = await collectParquetBatches(source.executeScanPlan(plan, {offset: 0}));
+    expect(override.map(batch => batch.rowOffset)).toEqual([0]);
+  } finally {
+    await source.close();
+  }
+});

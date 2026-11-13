@@ -337,11 +337,12 @@ export class ParquetSource
         predicate: physicalPlan.predicate,
         limit: readOptions.limit
       },
-      PARQUET_TABLE_QUERY_CAPABILITIES
+      this.tableQueryCapabilities
     );
     return Object.freeze({
       ...explanation,
       source: 'parquet' as const,
+      offset: readOptions.offset,
       rowGroups: Object.freeze({
         indices: Object.freeze([...physicalPlan.rowGroupIndices]),
         requested: physicalPlan.requested,
@@ -388,6 +389,7 @@ export class ParquetSource
         options.predicate ??
         (predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined),
       limit: options.limit ?? (limitStep?.kind === 'limit' ? limitStep.limit : undefined),
+      offset: options.offset ?? plan.offset,
       rowGroups: plan.rowGroups.indices
     });
   }
@@ -969,7 +971,7 @@ export class ParquetSource
     const bbox = options.bbox ?? this.options.parquet?.bbox;
     const limit = options.limit ?? this.options.parquet?.limit;
     validateTableQueryLimit(limit);
-    const {offset} = options;
+    const offset = options.offset ?? this.options.parquet?.offset;
     if (offset !== undefined && (!Number.isSafeInteger(offset) || offset < 0)) {
       throw new Error('Parquet offset must be a non-negative safe integer.');
     }
