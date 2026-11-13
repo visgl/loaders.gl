@@ -135,7 +135,11 @@ export async function* makeNDJSONArrowBatchIterator(
     }
 
     emitted = true;
-    yield* arrowTable.data.batches;
+    if (arrowTable.data.batches.length) {
+      yield* arrowTable.data.batches;
+    } else {
+      yield new arrow.RecordBatch(arrowTable.data.schema, undefined);
+    }
   }
   if (!emitted) {
     const {data} = convertRowTableToArrowTable(

@@ -208,11 +208,14 @@ test('JSON Arrow batch adapters enforce supplied schemas from the first empty ba
       schema,
       arrowConversion: {onMissingField: 'null', logRecoveries: false}
     })[Symbol.asyncIterator]();
-    expect((await iterator.next()).value?.data.numRows).toBe(0);
+    const empty = (await iterator.next()).value;
     const first = (await iterator.next()).value;
-    expect(first?.schema.metadata).toEqual({source: 'fixture'});
-    expect(first?.data.getChild('value')!.get(0)).toBe(true);
-    expect((await iterator.next()).value?.data.getChild('value')!.get(0)).toBeNull();
+    const second = (await iterator.next()).value;
+    const tables = [empty, first, second].map(batch => ('shape' in batch ? batch.data : batch));
+    expect(tables[0].numRows).toBe(0);
+    expect(tables[1].schema.metadata.get('source')).toBe('fixture');
+    expect(tables[1].getChild('value')!.get(0)).toBe(true);
+    expect(tables[2].getChild('value')!.get(0)).toBeNull();
     expect((await iterator.next()).done).toBe(true);
   }
 });
