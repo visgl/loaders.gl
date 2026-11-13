@@ -29,7 +29,7 @@ export type JSONLoaderOptions = LoaderOptions & {
   json?: {
     /** Selects the streaming JSON parser backend. */
     backend?: 'clarinet' | 'fast';
-    /** Requested row-table output shape. Omitting shape preserves the default JSON result. */
+    /** Explicit row output. Batched table mode defaults to Arrow when shape is omitted. */
     shape?: 'object-row-table' | 'array-row-table';
     /** Whether non-streaming JSON should be interpreted as table rows. */
     table?: boolean;

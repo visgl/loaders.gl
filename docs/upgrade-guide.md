@@ -23,6 +23,9 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 - Replace `core.batchDebounceMs` and `arrow.batchDebounceMs` with
   `core.batchMaxRowsPerSecond`. For a fixed batch size, divide the batch row
   count by the old interval in seconds to approximate the previous rate.
+- When streaming tabular JSON with `json.table: true`, batches default to
+  Arrow. Set `json.shape: 'object-row-table'` or `'array-row-table'` for row
+  output. Atomic JSON parsing keeps its existing default.
 - Use table scans for offset and limit. The `core.limit` and `core._limitMB`
   loader options and their top-level aliases have been removed.
 - Use `ArrowTableBuilder` to construct Arrow batches and convert completed
