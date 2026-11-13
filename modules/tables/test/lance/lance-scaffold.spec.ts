@@ -253,9 +253,9 @@ test('Lance loader returns an Arrow table for a flat Lance file', async () => {
     lance: {columnTypes: ['int32'], columnNames: ['id']}
   });
 
-  expect(result.shape).toBe('arrow-table');
-  expect(result.data.numRows).toBe(3);
-  expect(Array.from(result.data.getChild('id').toArray())).toEqual([10, 20, 30]);
+  expect(result).toBeInstanceOf(Table);
+  expect(result.numRows).toBe(3);
+  expect(Array.from(result.getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
 test('Lance source emits an Arrow batch for a flat Lance file', async () => {
@@ -279,8 +279,8 @@ test('Lance loader emits Arrow batches from an input iterator', async () => {
   }
 
   expect(batches).toHaveLength(1);
-  expect(batches[0].length).toBe(3);
-  expect(Array.from(batches[0].data.getChild('id').toArray())).toEqual([10, 20, 30]);
+  expect(batches[0].numRows).toBe(3);
+  expect(Array.from(batches[0].getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
 test('Lance source reads file metadata directly from a Blob', async () => {
@@ -511,7 +511,7 @@ function createCoordinateFileFixture(): Uint8Array {
   return bytes;
 }
 
-test('Lance defaults to native tables and batches and accepts wrapped output', async () => {
+test('Lance returns native tables and batches', async () => {
   const options = {lance: {columnTypes: ['int32' as const]}};
   const table = await parse(FLAT_FILE_FIXTURE, LanceLoader, options);
   expect(table).toBeInstanceOf(Table);
@@ -523,9 +523,4 @@ test('Lance defaults to native tables and batches and accepts wrapped output', a
   }
   expect(batches).toHaveLength(1);
   expect(batches[0]).toBeInstanceOf(RecordBatch);
-
-  const wrapped = await parse(FLAT_FILE_FIXTURE, LanceLoader, {
-    lance: {...options.lance, shape: 'arrow-table'}
-  });
-  expect(wrapped).toMatchObject({shape: 'arrow-table'});
 });
