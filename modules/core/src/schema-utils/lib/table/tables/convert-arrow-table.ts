@@ -28,7 +28,7 @@ export function convertTableToArrow(
   table: Table | arrow.Table,
   options?: {batchSize?: number}
 ): arrow.Table {
-  if (arrow.Table.isTable(table)) return table;
+  if (!('shape' in table)) return table;
   switch (table.shape) {
     case 'arrow-table':
       return table.data;
