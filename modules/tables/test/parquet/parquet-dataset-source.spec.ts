@@ -66,6 +66,19 @@ describe('ParquetDatasetSource', () => {
     await source.close();
   });
 
+  test('does not apply a single-file offset to every dataset child', async () => {
+    const source = new ParquetDatasetSource([{data: westernFile}, {data: easternFile}], {
+      core: {worker: false},
+      parquet: {offset: 1}
+    });
+    try {
+      const batches = await collectBatches(source.read());
+      expect(batches.flatMap(batch => [...batch.data.getChild('id')!.toArray()])).toEqual([1, 2, 3, 4]);
+    } finally {
+      await source.close();
+    }
+  });
+
   test('aggregates descriptor and child Parquet physical scan plans', async () => {
     const source = new ParquetDatasetSource(
       [

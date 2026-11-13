@@ -915,3 +915,40 @@ function createAbortError(): Error {
   error.name = 'AbortError';
   return error;
 }
+
+test('Parquet source pages skip footer-counted row groups and retain row provenance', async () => {
+  const fixture = await createSelectiveFixture();
+  const source = createRemoteSource(createRangeFetch(fixture, {requests: []}));
+  try {
+    const first = await collectParquetBatches(source.read({offset: 3, limit: 1, concurrency: 3}));
+    const {query} = await import('@loaders.gl/core/query');
+    const second = await query({select: ['x'], offset: 4, limit: 1}, {source});
+    expect(first.map(batch => [batch.rowGroupIndex, batch.rowOffset, batch.length]))
+      .toEqual([[1, 3, 1]]);
+    expect(second.data.getChild('x')?.get(0)).toBe(4);
+    expect(source.getTelemetry().rowGroupsDecoded).toBe(2);
+    const filtered = await collectParquetBatches(source.read({
+      predicate: {op: '>=', args: [{property: 'x'}, 0]}, offset: 3, limit: 1
+    }));
+    expect(filtered.map(batch => batch.rowOffset)).toEqual([3]);
+  } finally {
+    await source.close();
+  }
+});
+
+
+test('Parquet scan plans preserve the source offset and allow per-read overrides', async () => {
+  const source = createRemoteSource(createRangeFetch(await createSelectiveFixture()), {
+    parquet: {offset: 3}
+  });
+  try {
+    expect((await source.getScanPlan({limit: 1})).offset).toBe(3);
+    const plan = await source.getScanPlan({offset: 4, limit: 1});
+    const replay = await collectParquetBatches(source.executeScanPlan(plan));
+    expect(replay.map(batch => batch.rowOffset)).toEqual([4]);
+    const override = await collectParquetBatches(source.executeScanPlan(plan, {offset: 0}));
+    expect(override.map(batch => batch.rowOffset)).toEqual([0]);
+  } finally {
+    await source.close();
+  }
+});

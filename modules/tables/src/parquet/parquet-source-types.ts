@@ -259,6 +259,8 @@ export type ParquetSourceReadOptions = TableQueryExecutionOptions & {
   rowGroups?: readonly number[];
   /** Top-level columns to fetch and decode. Defaults to all columns. */
   columns?: readonly string[];
+  /** Number of filtered rows to skip in source order. */
+  offset?: number;
   /** Maximum number of rows retained after filtering across all emitted batches. */
   limit?: number;
   /** Maximum number of rows in each emitted Arrow batch. Defaults to one row group per batch. */
@@ -280,6 +282,8 @@ export type ParquetSourceExplain = TableQueryExplain<ParquetPredicate> &
   Readonly<{
     /** Physical source kind. */
     source: 'parquet';
+    /** Post-filter offset to apply when replaying this plan. */
+    offset?: number;
     /** Row groups selected by the request and conservative footer statistics. */
     rowGroups: Readonly<{
       /** Zero-based row-group indexes retained by every physical pruning stage. */
@@ -552,7 +556,10 @@ export type ParquetDatasetSourceOptions = ParquetSourceLoaderOptions & {
 };
 
 /** Options for one multi-file Parquet dataset read. */
-export type ParquetDatasetReadOptions = Omit<ParquetSourceReadOptions, 'rowGroups' | 'signal'> &
+export type ParquetDatasetReadOptions = Omit<
+  ParquetSourceReadOptions,
+  'rowGroups' | 'signal' | 'offset'
+> &
   ParquetDatasetFileQuery & {
     /** Maximum files read concurrently for this operation. */
     fileConcurrency?: number;
