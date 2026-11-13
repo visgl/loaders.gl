@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {fetchFile} from '@loaders.gl/core';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {encodeLAZChunk} from '@loaders.gl/core/loader-utils';
 import {
@@ -616,6 +617,7 @@ test('TypeScript LAS emits trailing EVLR metadata without mutating previous batc
     batches.push(batch);
   expect(batches).toHaveLength(2);
   expect(batches[0].data.schema.metadata.has('las_wkt')).toBe(false);
+  expect(batches[0].data.schema.metadata.get('las_pointsOffset')).toBe('375');
   expect(batches[1].data.numRows).toBe(0);
   expect(batches[1].data.schema.metadata.get('las_wkt')).toBe(
     parseLAS(source).data.schema.metadata.get('las_wkt')
@@ -646,4 +648,28 @@ test('TypeScript LAS retains global header metadata and absolute trailing record
   expect(batches[0].data.schema.metadata.get('las_pointsOffset')).toBe(String(header.pointsOffset));
   expect(batches.at(-1)!.loaderData.metadata?.evlrs[0].offset).toBe(points.byteLength);
   expect(batches.at(-1)!.data.schema.metadata.get('las_wkt')).toBe('FINAL_WKT');
+});
+
+test('TypeScript LAZ emits trailing EVLR metadata after streamed points', async () => {
+  const points = await (
+    await fetchFile('@loaders.gl/pointclouds/las/test/data/pdrf6-1.4.laz')
+  ).arrayBuffer();
+  const extended = createLASMetadataFixture(
+    [],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('COMPRESSED_WKT')}]
+  ).slice(375);
+  const view = new DataView(points);
+  view.setBigUint64(235, BigInt(points.byteLength), true);
+  view.setUint32(243, 1, true);
+  const batches = [];
+  for await (const batch of parseLASInBatches([
+    points.slice(0, 375),
+    points.slice(375),
+    extended
+  ])) {
+    batches.push(batch);
+  }
+  expect(batches[0].data.numRows).toBeGreaterThan(0);
+  expect(batches.at(-1)?.data.numRows).toBe(0);
+  expect(batches.at(-1)?.data.schema.metadata.get('las_wkt')).toBe('COMPRESSED_WKT');
 });

@@ -389,6 +389,7 @@ export async function* parseLASInBatches(
     pending = concatenateUint8Arrays(pending, toUint8Array(chunk));
     if (!header) {
       header = tryParseHeader(pending, absoluteOffset);
+      if (header && pending.byteLength < header.pointsOffset) header = null;
       if (header) {
         header.totalToRead = header.pointsCount;
       }
@@ -397,8 +398,26 @@ export async function* parseLASInBatches(
       continue;
     }
     if (header.isCompressed) {
-      for await (const table of parseLAZInBatches(pending, inputIterator, header, options)) {
-        yield updateArrowTableMetadata(
+      const extendedOffset = header.metadata?.evlrOffset;
+      let inputOffset = pending.byteLength;
+      const extendedChunks: Uint8Array<ArrayBufferLike>[] = [];
+      if (extendedOffset && extendedOffset < inputOffset) {
+        extendedChunks.push(pending.subarray(extendedOffset));
+      }
+      const trackedIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView> = {
+        async next() {
+          const next = await inputIterator.next();
+          if (!next.done && extendedOffset) {
+            const bytes = toUint8Array(next.value);
+            const start = Math.max(extendedOffset - inputOffset, 0);
+            if (start < bytes.byteLength) extendedChunks.push(bytes.slice(start));
+            inputOffset += bytes.byteLength;
+          }
+          return next;
+        }
+      };
+      for await (const table of parseLAZInBatches(pending, trackedIterator, header, options)) {
+        lastTable = updateArrowTableMetadata(
           table,
           makeMetadataFromLasHeader({
             ...header,
@@ -406,6 +425,30 @@ export async function* parseLASInBatches(
             metadata: table.loaderData.metadata || header.metadata
           })
         );
+        yield lastTable;
+      }
+      if (
+        extendedOffset &&
+        lastTable &&
+        header.metadata?.evlrCount &&
+        (lastTable.loaderData.metadata?.evlrs.length ?? 0) < header.metadata.evlrCount
+      ) {
+        while (!(await trackedIterator.next()).done) {
+          // Finish reading trailing records if the decoder stopped at its chunk table.
+        }
+        // The tracked iterator retains only the extended-record suffix.
+        const suffix = extendedChunks.reduce<Uint8Array<ArrayBufferLike>>(
+          concatenateUint8Arrays,
+          new Uint8Array(0)
+        );
+        const update = makeLASMetadataUpdate(
+          lastTable,
+          header,
+          suffix,
+          extendedOffset,
+          lastTable.loaderData.totalRead
+        );
+        if (update) yield update;
       }
       return;
     }
@@ -437,13 +480,28 @@ export async function* parseLASInBatches(
     throw new Error('LASLoader: truncated LAS point data');
   }
   if (!lastTable) {
-    lastTable = parseLASArrowTableBatch(
-      new ArrayBuffer(0),
-      {...header, pointsOffset: 0, pointsCount: 0, totalRead},
-      options
+    lastTable = updateArrowTableMetadata(
+      parseLASArrowTableBatch(
+        new ArrayBuffer(0),
+        {...header, pointsOffset: 0, pointsCount: 0, totalRead},
+        options
+      ),
+      makeMetadataFromLasHeader({...header, totalRead})
     );
     yield lastTable;
   }
+  const update = makeLASMetadataUpdate(lastTable, header, pending, absoluteOffset, totalRead);
+  if (update) yield update;
+}
+
+/** Builds a schema-only batch carrying late extended records and their absolute offsets. */
+function makeLASMetadataUpdate(
+  lastTable: LASArrowTable,
+  header: LASHeader,
+  pending: Uint8Array,
+  absoluteOffset: number,
+  totalRead: number
+): LASArrowTable | undefined {
   const metadata = header.metadata;
   if (metadata?.evlrOffset && metadata.evlrCount) {
     const relativeOffset = metadata.evlrOffset - absoluteOffset;
@@ -465,9 +523,9 @@ export async function* parseLASInBatches(
       );
     resolveLASGeoTIFFKeyDirectory(finalMetadata);
     const finalHeader = {...header, totalRead, metadata: finalMetadata};
-    if (lastTable && records.length > 0) {
+    if (records.length > 0) {
       const data = new arrow.Table([makeArrowMetadataBatch(lastTable.data.schema)]);
-      yield updateArrowTableMetadata(
+      return updateArrowTableMetadata(
         {...lastTable, data, loaderData: finalHeader},
         makeMetadataFromLasHeader(finalHeader)
       );
