@@ -673,3 +673,28 @@ test('TypeScript LAZ emits trailing EVLR metadata after streamed points', async 
   expect(batches.at(-1)?.data.numRows).toBe(0);
   expect(batches.at(-1)?.data.schema.metadata.get('las_wkt')).toBe('COMPRESSED_WKT');
 });
+
+test('TypeScript LAZ retains trailing metadata in a zero-point stream', async () => {
+  const source = await (
+    await fetchFile('@loaders.gl/pointclouds/las/test/data/pdrf6-1.4.laz')
+  ).arrayBuffer();
+  const original = parseLASHeader(source);
+  const header = source.slice(0, original.pointsOffset);
+  const view = new DataView(header);
+  view.setUint32(107, 0, true);
+  view.setBigUint64(247, 0n, true);
+  view.setBigUint64(235, BigInt(header.byteLength), true);
+  view.setUint32(243, 1, true);
+  const extended = createLASMetadataFixture(
+    [],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('EMPTY_LAZ_WKT')}]
+  ).slice(375);
+  const batches = [];
+  for await (const batch of parseLASInBatches([header, extended])) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0].data.numRows).toBe(0);
+  expect(batches[0].data.schema.metadata.get('las_pointsOffset')).toBe(
+    String(original.pointsOffset)
+  );
+  expect(batches[0].data.schema.metadata.get('las_wkt')).toBe('EMPTY_LAZ_WKT');
+});

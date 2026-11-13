@@ -416,16 +416,22 @@ export async function* parseLASInBatches(
           return next;
         }
       };
-      for await (const table of parseLAZInBatches(pending, trackedIterator, header, options)) {
-        lastTable = updateArrowTableMetadata(
-          table,
-          makeMetadataFromLasHeader({
-            ...header,
-            totalRead: table.loaderData.totalRead,
-            metadata: table.loaderData.metadata || header.metadata
-          })
-        );
-        yield lastTable;
+      if (header.pointsCount === 0) {
+        const {laszip} = await readLASZipVLRFromInput(pending, trackedIterator, header);
+        validateTypeScriptLAZSupport(header, laszip);
+        lastTable = makeEmptyLASBatch(header, options);
+      } else {
+        for await (const table of parseLAZInBatches(pending, trackedIterator, header, options)) {
+          lastTable = updateArrowTableMetadata(
+            table,
+            makeMetadataFromLasHeader({
+              ...header,
+              totalRead: table.loaderData.totalRead,
+              metadata: table.loaderData.metadata || header.metadata
+            })
+          );
+          yield lastTable;
+        }
       }
       if (
         extendedOffset &&
@@ -448,8 +454,12 @@ export async function* parseLASInBatches(
           extendedOffset,
           lastTable.loaderData.totalRead
         );
-        if (update) yield update;
+        if (update) {
+          yield update;
+          return;
+        }
       }
+      if (header.pointsCount === 0 && lastTable) yield lastTable;
       return;
     }
 
@@ -480,18 +490,20 @@ export async function* parseLASInBatches(
     throw new Error('LASLoader: truncated LAS point data');
   }
   if (!lastTable) {
-    lastTable = updateArrowTableMetadata(
-      parseLASArrowTableBatch(
-        new ArrayBuffer(0),
-        {...header, pointsOffset: 0, pointsCount: 0, totalRead},
-        options
-      ),
-      makeMetadataFromLasHeader({...header, totalRead})
-    );
+    lastTable = makeEmptyLASBatch(header, options);
     yield lastTable;
   }
   const update = makeLASMetadataUpdate(lastTable, header, pending, absoluteOffset, totalRead);
   if (update) yield update;
+}
+
+/** Creates the declared point schema and original header metadata for a zero-point stream. */
+function makeEmptyLASBatch(header: LASHeader, options: LASLoaderOptions): LASArrowTable {
+  const table = parseLASArrowTableBatch(new ArrayBuffer(0), {...header, pointsOffset: 0}, options);
+  return updateArrowTableMetadata(
+    {...table, loaderData: header},
+    makeMetadataFromLasHeader(header)
+  );
 }
 
 /** Builds a schema-only batch carrying late extended records and their absolute offsets. */
