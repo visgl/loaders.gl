@@ -24,7 +24,11 @@ import {makeArrowRecordBatchIterator} from '../batches/make-arrow-batch-iterator
  * @param batchSize
  * @returns
  */
-export function convertTableToArrow(table: Table, options?: {batchSize?: number}): arrow.Table {
+export function convertTableToArrow(
+  table: Table | arrow.Table,
+  options?: {batchSize?: number}
+): arrow.Table {
+  if (arrow.Table.isTable(table)) return table;
   switch (table.shape) {
     case 'arrow-table':
       return table.data;
