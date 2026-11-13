@@ -3,10 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {serializeBinaryJSON, deserializeBinaryJSON} from './lib/json-binary-transport';
+import {serializeJSONWorkerBatch, deserializeJSONWorkerResult} from './lib/json-worker-transport';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
+import {convertTableBatchesToArrow} from './lib/parsers/convert-row-table-to-arrow';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
 import {
@@ -23,8 +25,8 @@ export const JSONLoaderWithParser = {
   ...JSONLoaderMetadataWithoutPreload,
   serializeWorkerResult: serializeBinaryJSON,
   deserializeWorkerResult: deserializeBinaryJSON,
-  serializeWorkerBatch: serializeBinaryJSON,
-  deserializeWorkerBatch: deserializeBinaryJSON,
+  serializeWorkerBatch: serializeJSONWorkerBatch,
+  deserializeWorkerBatch: deserializeJSONWorkerResult,
   parse,
   parseTextSync,
   parseInBatches
@@ -54,7 +56,10 @@ function parseInBatches(
     jsonOptions.json?.backend === 'fast'
       ? {parserFactory: getFastStreamingJSONParserFactory()}
       : undefined;
-  return parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, parseOptions);
+  const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, parseOptions);
+  return jsonOptions.json?.table && jsonOptions.json.shape === undefined
+    ? convertTableBatchesToArrow<MetadataBatch | JSONBatch>(batches)
+    : batches;
 }
 
 /**

@@ -3,19 +3,19 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, TableBatch} from '@loaders.gl/core/schema';
-import type {TableBatchAggregator, TableBatchConstructor} from './table-batch-aggregator';
-import {BaseTableBatchAggregator} from './base-table-batch-aggregator';
-import {RowTableBatchAggregator} from './row-table-batch-aggregator';
-import {ColumnarTableBatchAggregator} from './columnar-table-batch-aggregator';
-import {ArrowTableBatchAggregator} from './arrow-table-batch-aggregator';
+import {ArrowTableBuilder} from './arrow-table-builder';
+import {convertToColumnarTable} from '../tables/convert-table';
+import {
+  convertToArrayRow,
+  convertToObjectRow,
+  inferHeadersFromArrayRow,
+  inferHeadersFromObjectRow
+} from '../tables/row-utils';
 
 // TODO define interface instead
 type TableBatchBuilderOptions = {
   shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
   batchSize?: number | 'auto';
-  batchDebounceMs?: number;
-  limit?: number;
-  _limitMB?: number;
 };
 
 type GetBatchOptions = {
@@ -25,10 +25,7 @@ type GetBatchOptions = {
 
 const DEFAULT_OPTIONS: Required<TableBatchBuilderOptions> = {
   shape: undefined!,
-  batchSize: 'auto',
-  batchDebounceMs: 0,
-  limit: 0,
-  _limitMB: 0
+  batchSize: 'auto'
 };
 
 /** Incrementally builds batches from a stream of rows */
@@ -36,63 +33,31 @@ export class TableBatchBuilder {
   schema: Schema;
   options: Required<TableBatchBuilderOptions>;
 
-  private aggregator: TableBatchAggregator | null = null;
+  /** Persistent Arrow builders for typed output. */
+  private arrowBuilder: ArrowTableBuilder | null = null;
+  /** Rows retained for explicit raw output, including schema-less JSON. */
+  private rows: (any[] | Record<string, any>)[] = [];
   private batchCount: number = 0;
   private bytesUsed: number = 0;
   private isChunkComplete: boolean = false;
-  private lastBatchEmittedMs: number = Date.now();
-  private totalLength: number = 0;
-  private totalBytes: number = 0;
-  private rowBytes: number = 0;
-
-  static ArrowBatch?: TableBatchConstructor;
 
   constructor(schema: Schema, options?: TableBatchBuilderOptions) {
     this.schema = schema;
     this.options = {...DEFAULT_OPTIONS, ...options};
   }
 
-  limitReached(): boolean {
-    if (Boolean(this.options?.limit) && this.totalLength >= this.options.limit) {
-      return true;
-    }
-    if (Boolean(this.options?._limitMB) && this.totalBytes / 1e6 >= this.options._limitMB) {
-      return true;
-    }
-    return false;
-  }
-
   /** @deprecated Use addArrayRow or addObjectRow */
   addRow(row: any[] | {[columnName: string]: any}): void {
-    if (this.limitReached()) {
-      return;
-    }
-    this.totalLength++;
-    this.rowBytes = this.rowBytes || this._estimateRowMB(row);
-    this.totalBytes += this.rowBytes;
-    if (Array.isArray(row)) {
-      this.addArrayRow(row);
+    if (this.options.shape === 'arrow-table' || this.options.shape === 'columnar-table') {
+      this.arrowBuilder ??= new ArrowTableBuilder(this.schema);
+      if (Array.isArray(row)) {
+        this.arrowBuilder.addArrayRow(row);
+      } else {
+        this.arrowBuilder.addObjectRow(row);
+      }
     } else {
-      this.addObjectRow(row);
+      this.rows.push(row);
     }
-  }
-
-  /** Add one row to the batch */
-  protected addArrayRow(row: any[]) {
-    if (!this.aggregator) {
-      const TableBatchType = this._getTableBatchType();
-      this.aggregator = new TableBatchType(this.schema, this.options);
-    }
-    this.aggregator.addArrayRow(row);
-  }
-
-  /** Add one row to the batch */
-  protected addObjectRow(row: {[columnName: string]: any}): void {
-    if (!this.aggregator) {
-      const TableBatchType = this._getTableBatchType();
-      this.aggregator = new TableBatchType(this.schema, this.options);
-    }
-    this.aggregator.addObjectRow(row);
   }
 
   /** Mark an incoming raw memory chunk has completed */
@@ -116,13 +81,9 @@ export class TableBatchBuilder {
 
   // INTERNAL
 
-  _estimateRowMB(row: any[] | object): number {
-    return Array.isArray(row) ? row.length * 8 : Object.keys(row).length * 8;
-  }
-
   private _isFull(): boolean {
     // No batch, not ready
-    if (!this.aggregator || this.aggregator.rowCount() === 0) {
+    if (this.rowCount() === 0) {
       return false;
     }
 
@@ -132,18 +93,12 @@ export class TableBatchBuilder {
       if (!this.isChunkComplete) {
         return false;
       }
-    } else if (this.options.batchSize > this.aggregator.rowCount()) {
-      return false;
-    }
-
-    // Debounce batches
-    if (this.options.batchDebounceMs > Date.now() - this.lastBatchEmittedMs) {
+    } else if (this.options.batchSize > this.rowCount()) {
       return false;
     }
 
     // Emit batch
     this.isChunkComplete = false;
-    this.lastBatchEmittedMs = Date.now();
     return true;
   }
 
@@ -151,7 +106,7 @@ export class TableBatchBuilder {
    * bytesUsed can be set via chunkComplete or via getBatch*
    */
   private _getBatch(options?: GetBatchOptions): TableBatch | null {
-    if (!this.aggregator) {
+    if (this.rowCount() === 0) {
       return null;
     }
 
@@ -159,27 +114,53 @@ export class TableBatchBuilder {
     if (options?.bytesUsed) {
       this.bytesUsed = options.bytesUsed;
     }
-    const normalizedBatch = this.aggregator.getBatch() as TableBatch;
+    const normalizedBatch = this.takeBatch();
     normalizedBatch.count = this.batchCount;
     normalizedBatch.bytesUsed = this.bytesUsed;
     Object.assign(normalizedBatch, options);
 
     this.batchCount++;
-    this.aggregator = null;
     return normalizedBatch;
   }
 
-  private _getTableBatchType(): TableBatchConstructor {
-    switch (this.options.shape) {
-      case 'array-row-table':
-      case 'object-row-table':
-        return RowTableBatchAggregator;
-      case 'columnar-table':
-        return ColumnarTableBatchAggregator;
-      case 'arrow-table':
-        return ArrowTableBatchAggregator;
-      default:
-        return BaseTableBatchAggregator;
+  /** Returns the number of rows buffered for the next batch. */
+  private rowCount(): number {
+    return this.arrowBuilder?.length ?? this.rows.length;
+  }
+
+  /** Flushes typed output or takes ownership of the buffered raw rows. */
+  private takeBatch(): TableBatch {
+    if (this.arrowBuilder) {
+      const batch = this.arrowBuilder.flushBatch()!;
+      return this.options.shape === 'columnar-table'
+        ? {...batch, ...convertToColumnarTable(batch)}
+        : batch;
     }
+    const rows = this.rows;
+    this.rows = [];
+    const shape =
+      this.options.shape ?? (Array.isArray(rows[0]) ? 'array-row-table' : 'object-row-table');
+    const firstRow = rows[0];
+    const fieldNames =
+      this.schema?.fields.map(field => field.name) ??
+      (Array.isArray(firstRow)
+        ? inferHeadersFromArrayRow(firstRow)
+        : inferHeadersFromObjectRow(firstRow));
+    if (shape === 'array-row-table') {
+      return {
+        shape,
+        batchType: 'data',
+        data: rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, fieldNames))),
+        schema: this.schema,
+        length: rows.length
+      };
+    }
+    return {
+      shape: 'object-row-table',
+      batchType: 'data',
+      data: rows.map(row => (Array.isArray(row) ? convertToObjectRow(row, fieldNames) : row)),
+      schema: this.schema,
+      length: rows.length
+    };
   }
 }

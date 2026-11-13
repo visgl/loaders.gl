@@ -142,3 +142,26 @@ for supported behavior. The final stability and naming policy, including its rel
 Notes:
 
 - `transforms` is an array functions that accept and return an `AsyncIterable<ArrayBuffer>`
+
+Set `core.batchMaxRowsPerSecond` to pace data batch delivery by row count. A value
+of `0` (the default) disables pacing. The first data batch is immediate. After
+delivering 5,000 rows at 20,000 rows per second, the next data batch is eligible
+250 ms later. Time spent parsing or consuming the previous batch counts toward
+that interval. The schedule restarts at each delivery, so stalls do not cause
+catch-up bursts. Metadata does not affect the schedule, and pacing preserves
+native batch boundaries.
+
+```ts
+const batches = await loadInBatches(url, LASLoader, {
+  core: {batchSize: 5_000, batchMaxRowsPerSecond: 20_000}
+});
+```
+
+Use `batchSize` to control the number of points per update in a deck.gl
+point cloud and `batchMaxRowsPerSecond` to control how quickly they appear.
+
+For tagged trace outputs, the rate applies to span rows (slice rows in Perfetto).
+Related tables pass through without using that budget.
+
+Use table scans for offset and limit so sources can push row selection into their
+decoders. To stop a plain batch load early, break out of the async iterator.

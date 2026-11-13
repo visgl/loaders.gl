@@ -101,6 +101,10 @@ selective field decoding, direct typed output, memory copies, and module startup
 | `options.las.workerUrl`  | `string`             | -          | Overrides the packaged `LASLoader` worker. Supplying a URL for another LAS loader opts that loader into an application-built worker.                            |
 | `options.onProgress`     | `function`           | -          | Callback when a new chunk of data is read. Only works on the main thread.                                                                                        |
 
+For streamed LAS/LAZ batches, `core.batchSize` controls the number of points per
+batch. Set `core.batchMaxRowsPerSecond` to pace delivery by point count. The
+first batch is immediate. The default of zero delivers batches as they become ready.
+
 ### Interrupted LAZ writers
 
 `las.recoverMissingChunkTable: true` allows fixed-size LAZ chunks to be read when the LASzip chunk-table pointer equals the point-data offset, the marker left by an interrupted writer. The default remains strict. Recovery uses the header point count and fixed chunk size, verifies all point data, and rejects truncated records and unexpected trailing bytes. Variable-size chunks require their table; malformed existing tables are never bypassed. Recovery cannot restore points that the writer did not finish.

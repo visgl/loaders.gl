@@ -126,14 +126,17 @@ test.each([
       expectedTables[name].toArray().map(row => row.toJSON())
     );
   }
-  const rows: Record<string, any[]> = {};
-  const iterator = await parseInBatches(splitBytes(bytes), instrumentedLoader, {
-    ...workerOptions,
+  const batchOptions = {
     chromeTrace: {batchSize: 1},
     perfettoTrace: {batchSize: 1},
     otlpTrace: {batchSize: 1},
     jaegerTrace: {batchSize: 1},
     zipkinTrace: {batchSize: 1}
+  };
+  const rows: Record<string, any[]> = {};
+  const iterator = await parseInBatches(splitBytes(bytes), instrumentedLoader, {
+    ...workerOptions,
+    ...batchOptions
   });
   for await (const batch of iterator) {
     const name = format === 'chrome' ? 'events' : batch.table;
@@ -144,6 +147,19 @@ test.each([
   }
   for (const [name, table] of Object.entries(expectedTables))
     expect(rows[name] || []).toEqual(table.toArray().map(row => row.toJSON()));
+  // The direct parser also applies the row rate. Compare payloads to the worker
+  // path so pacing can't reorder or drop the related tables.
+  const directRows: Record<string, unknown[]> = {};
+  for await (const batch of parser.parseInBatches(splitBytes(bytes), {
+    ...batchOptions,
+    core: {batchMaxRowsPerSecond: 1_000_000}
+  })) {
+    const name = format === 'chrome' ? 'events' : batch.table;
+    const recordBatch = format === 'chrome' ? batch : batch.data;
+    directRows[name] ||= [];
+    directRows[name].push(...recordBatch.toArray().map((row: any) => row.toJSON()));
+  }
+  expect(directRows).toEqual(rows);
   expect(mainBatches).not.toHaveBeenCalled();
   expect(deserialize).toHaveBeenCalled();
   for (const [payload] of deserialize.mock.calls)

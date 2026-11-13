@@ -98,7 +98,7 @@ test('convertFeaturesToWKBArrowTable#preserves feature IDs and sparse properties
 
   expect(table.data.getChild('id')?.toArray()).toEqual(['first', 'second']);
   const populationColumn = table.data.getChild('population');
-  expect(populationColumn?.get(0)).toBeNaN();
+  expect(populationColumn?.get(0)).toBeNull();
   expect(populationColumn?.get(1)).toBe(42);
 });
 test('ArrowLoader#shape:geojson-table', async () => {

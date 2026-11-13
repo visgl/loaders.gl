@@ -35,11 +35,8 @@ const CORE_LOADER_OPTION_KEYS = [
   'workerTransferBufferCopy',
   '_nodeWorkers',
   '_workerType',
-  'limit',
-  '_limitMB',
   'shape',
   'batchSize',
-  'batchDebounceMs',
   'metadata',
   'transforms'
 ] as const;

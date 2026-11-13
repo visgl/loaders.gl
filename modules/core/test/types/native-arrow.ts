@@ -64,7 +64,7 @@ parse(bytes, ArrowLoader, {arrow: {shape: 'invalid-shape'}});
 // @ts-expect-error The common shape is validated against ArrowLoader's shapes.
 parse(bytes, ArrowLoader, {core: {shape: 'invalid-shape'}});
 // @ts-expect-error Arrow parser settings retain their declared types.
-parse(bytes, ArrowLoader, {arrow: {shape: 'arrow', batchDebounceMs: 'slow'}});
+parse(bytes, ArrowLoader, {arrow: {shape: 'arrow'}, core: {batchMaxRowsPerSecond: 'slow'}});
 
 declare const context: LoaderContext;
 parseFromContext(bytes, ArrowLoader, {arrow: {shape: 'arrow-table'}}, context).then(
