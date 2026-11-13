@@ -462,6 +462,7 @@
                   "modules/tables/json/api-reference/geojson-loader",
                   "modules/tables/json/api-reference/json-loader",
                   "modules/tables/json/api-reference/json-table-loader",
+                  "modules/tables/json/api-reference/convert-json-to-arrow",
                   "modules/tables/json/api-reference/ndgeojson-loader",
                   "modules/tables/json/api-reference/ndjson-loader",
                   "modules/tables/json/api-reference/geojson-writer",

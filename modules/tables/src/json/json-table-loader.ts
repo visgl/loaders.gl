@@ -4,15 +4,8 @@
 
 import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source';
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrayRowTable,
-  ArrowTable,
-  ArrowTableBatch,
-  ObjectRowTable,
-  Table,
-  TableBatch
-} from '@loaders.gl/core/schema';
-import {convertTable, makeTableFromData} from '@loaders.gl/core/schema-utils';
+import type {ArrowTable, ArrowTableBatch, Table, TableBatch} from '@loaders.gl/core/schema';
+import {convertTable} from '@loaders.gl/core/schema-utils';
 
 import {
   serializeJSONWorkerOptions,
@@ -22,6 +15,7 @@ import {
 import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
+import {getJSONRowTable} from './lib/parsers/convert-json-to-arrow';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {
@@ -192,74 +186,6 @@ function getRowBatchJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOpti
       jsonpaths: options.json?.jsonpaths
     }
   };
-}
-
-/**
- * Returns a row table when a JSON value contains row-array data.
- *
- * @param json - Parsed JSON value.
- * @returns A loaders.gl row table, or `null` when no row array is present.
- */
-function getJSONRowTable(json: unknown): ArrayRowTable | ObjectRowTable | null {
-  if (isRowTable(json)) {
-    return json;
-  }
-
-  const rows = Array.isArray(json) ? json : getFirstArray(json);
-  if (!rows) {
-    return null;
-  }
-
-  if (rows.length === 0) {
-    return {shape: 'object-row-table', schema: {fields: [], metadata: {}}, data: []};
-  }
-
-  const firstRow = rows[0];
-  if (Array.isArray(firstRow)) {
-    return makeTableFromData(rows as unknown[][]);
-  }
-  if (firstRow && typeof firstRow === 'object') {
-    return makeTableFromData(rows as {[key: string]: unknown}[]);
-  }
-
-  return null;
-}
-
-/**
- * Checks whether a parsed JSON value is already a row-table wrapper.
- *
- * @param value - Parsed JSON value.
- * @returns `true` when `value` is a loaders.gl object-row or array-row table.
- */
-function isRowTable(value: unknown): value is ArrayRowTable | ObjectRowTable {
-  return Boolean(
-    value &&
-      typeof value === 'object' &&
-      'shape' in value &&
-      ((value as Table).shape === 'array-row-table' ||
-        (value as Table).shape === 'object-row-table')
-  );
-}
-
-/**
- * Finds the first nested row array within a parsed JSON object.
- *
- * @param json - Parsed JSON value.
- * @returns The first nested array, or `null` when none exists.
- */
-function getFirstArray(json: unknown): unknown[] | null {
-  if (Array.isArray(json)) {
-    return json;
-  }
-  if (json && typeof json === 'object') {
-    for (const value of Object.values(json)) {
-      const array = getFirstArray(value);
-      if (array) {
-        return array;
-      }
-    }
-  }
-  return null;
 }
 
 /**
