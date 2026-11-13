@@ -52,6 +52,14 @@ export function getNativeArrowOptions(
   };
 }
 
+/** Normalizes legacy wrappers while allowing native parsers to return compound results. */
+export function normalizeNativeArrowResult(result: unknown, loader: Loader): unknown {
+  if (loader.supportsNativeArrow && (result as {shape?: string} | null)?.shape !== 'arrow-table') {
+    return result;
+  }
+  return unwrapArrowTable(result);
+}
+
 /** Returns the hydrated native table without copying its columns. */
 export function unwrapArrowTable(result: unknown): arrow.Table {
   if (isNativeArrowTable(result)) return result;

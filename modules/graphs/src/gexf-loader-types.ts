@@ -34,8 +34,9 @@ export const GEXFLoader = {
   mimeTypes: ['application/gexf+xml'],
   text: true,
   worker: false,
+  supportsNativeArrow: true,
   dataType: null as unknown as GEXFOutput,
   batchType: null as never,
-  options: {gexf: {shape: 'arrow-table'}},
+  options: {gexf: {shape: 'arrow'}},
   preload
 } as const satisfies Loader<GEXFOutput, never, GEXFLoaderOptions>;

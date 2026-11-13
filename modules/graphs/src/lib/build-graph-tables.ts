@@ -16,8 +16,7 @@ import {
   vectorFromArray
 } from 'apache-arrow';
 import type {DataType, Vector} from 'apache-arrow';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import type {
   GraphNode,
   GraphEdge,
@@ -37,7 +36,7 @@ export function buildGraphTables(
   if (shape === 'plain-graph-data') {
     return {shape, nodes: Array.from(nodes), edges: Array.from(edges)};
   }
-  if (shape !== 'arrow-table' && shape !== 'object-row-table') {
+  if (shape !== 'arrow' && shape !== 'object-row-table') {
     throw new Error(`Unsupported graph shape: ${shape}`);
   }
   const nodeTable = buildGraphTable(nodes, false, shape, declarations?.nodes);
@@ -56,9 +55,9 @@ export function buildGraphTables(
 function buildGraphTable(
   records: Iterable<GraphNode | GraphEdge>,
   isEdge: boolean,
-  shape: 'arrow-table' | 'object-row-table',
+  shape: 'arrow' | 'object-row-table',
   declarations?: Map<string, GraphAttributeType>
-): ArrowTable | ObjectRowTable {
+): Table | ObjectRowTable {
   const columnNames = isEdge
     ? ['id', 'sourceId', 'targetId', 'directed', 'label', 'attributes']
     : ['id', 'label', 'attributes'];
@@ -98,8 +97,7 @@ function buildGraphTable(
       type
     );
   }
-  const data = new Table(vectors);
-  return {shape, schema: convertArrowToSchema(data.schema), data};
+  return new Table(vectors);
 }
 
 /** Infers a struct using the union of declared and observed application keys. */

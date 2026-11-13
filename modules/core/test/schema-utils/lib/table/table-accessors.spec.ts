@@ -132,12 +132,13 @@ test('recognizes and measures every supported table shape', () => {
     {shape: 'object-row-table', data: [{a: 1, b: 2}]},
     {shape: 'geojson-table', features: [{type: 'Feature', geometry: null, properties: {a: 1}}]},
     {shape: 'columnar-table', data: {a: [1, 2], b: ['x', 'y']}},
-    {shape: 'arrow-table', data: arrowData}
-  ] as Table[];
+    {shape: 'arrow-table', data: arrowData},
+    arrowData
+  ] as (Table | arrow.Table)[];
 
-  expect(tables.map(table => isTable(table))).toEqual([true, true, true, true, true]);
-  expect(tables.map(table => getTableLength(table))).toEqual([1, 1, 1, 2, 2]);
-  expect(tables.map(table => getTableNumCols(table))).toEqual([2, 2, 3, 2, 2]);
+  expect(tables.map(table => isTable(table))).toEqual([true, true, true, true, true, true]);
+  expect(tables.map(table => getTableLength(table))).toEqual([1, 1, 1, 2, 2, 2]);
+  expect(tables.map(table => getTableNumCols(table))).toEqual([2, 2, 3, 2, 2, 2]);
 
   expect(isTable(null)).toBe(false);
   expect(isTable({shape: 'array-row-table', data: {}})).toBe(false);
@@ -184,7 +185,14 @@ test('accesses cells and rows for every table shape', () => {
   } as Table;
   const arrowTable = {shape: 'arrow-table', data: arrowData} as Table;
 
-  for (const table of [arrayTable, objectTable, geojsonTable, columnarTable, arrowTable]) {
+  for (const table of [
+    arrayTable,
+    objectTable,
+    geojsonTable,
+    columnarTable,
+    arrowTable,
+    arrowData
+  ]) {
     expect(getTableCell(table, 0, 'b')).toBe(2);
     expect(getTableCellAt(table, 0, 1)).toBe(2);
     expect(getTableRowAsObject(table, 0)).toEqual({a: 1, b: 2});
@@ -273,4 +281,18 @@ test('rejects invalid table variants in accessor switches', () => {
   expect(() => getTableCellAt(invalidTable, 0, 0)).toThrow('todo');
   expect(() => getTableRowAsObject(invalidTable, 0)).toThrow('shape');
   expect(() => getTableRowAsArray(invalidTable, 0)).toThrow('shape');
+});
+
+test('converts native Arrow rows with schema metadata intact', () => {
+  const data = arrow.tableFromArrays({id: [7]});
+  data.schema.metadata.set('source', 'graph');
+  expect(makeObjectRowTable(data)).toMatchObject({
+    schema: {metadata: {source: 'graph'}},
+    data: [{id: 7}]
+  });
+  expect(makeArrayRowTable(data).data).toEqual([[7]]);
+  expect(Array.from(makeObjectRowIterator(data))).toEqual([{id: 7}]);
+  expect(getTableColumnName(data, 0)).toBe('id');
+  expect(getTableColumnIndex(data, 'id')).toBe(0);
+  expect(() => getTableRowShape(data)).toThrow('Not a row table');
 });

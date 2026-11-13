@@ -33,8 +33,9 @@ export const GraphMLLoader = {
   mimeTypes: ['application/graphml+xml'],
   text: true,
   worker: false,
+  supportsNativeArrow: true,
   dataType: null as unknown as GraphOutput,
   batchType: null as never,
-  options: {graphml: {shape: 'arrow-table'}},
+  options: {graphml: {shape: 'arrow'}},
   preload
 } as const satisfies Loader<GraphOutput, never, GraphMLLoaderOptions>;

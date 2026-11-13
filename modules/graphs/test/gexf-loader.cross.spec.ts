@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table as ArrowTable} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import {GEXFLoader} from '../src';
@@ -13,13 +14,17 @@ test('GEXF metadata preloads Arrow parsing and sync parsing supports object rows
   expect(GEXFLoader).not.toHaveProperty('parse');
   expect(GEXFLoader.extensions).toEqual(['gexf']);
   expect(GEXFLoader.mimeTypes).toEqual(['application/gexf+xml']);
-  const graph = await parse(DOCUMENT, GEXFLoader);
+  const graph = await parse(DOCUMENT, GEXFLoader, {gexf: {shape: 'arrow'}});
   expect(graph.shape).toBe('tables');
-  if (graph.shape !== 'tables' || graph.tables[0].table.shape !== 'arrow-table')
+  if (graph.shape !== 'tables' || !(graph.tables[0].table instanceof ArrowTable))
     throw new Error('Expected Arrow output.');
-  expect(graph.tables[0].table.data.getChild('id')!.get(0)).toBe('n');
+  expect(graph.tables[0].table.getChild('id')!.get(0)).toBe('n');
   const rows = parseSync(DOCUMENT, GEXFLoaderWithParser, {gexf: {shape: 'object-row-table'}});
-  if (rows.shape !== 'tables' || rows.tables[0].table.shape !== 'object-row-table')
+  if (
+    rows.shape !== 'tables' ||
+    !('shape' in rows.tables[0].table) ||
+    rows.tables[0].table.shape !== 'object-row-table'
+  )
     throw new Error('Expected object rows.');
   expect(rows.tables[0].table.data).toEqual([{id: 'n', label: null, attributes: {}}]);
 });
