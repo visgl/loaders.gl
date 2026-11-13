@@ -112,15 +112,15 @@ export class JSONTableSource
     signal?.throwIfAborted();
     const table = await JSONTableLoaderWithParser.parse(bytes, {
       ...loadOptions,
-      json: {...json, shape: 'arrow-table'}
+      json: {...json, shape: 'arrow'}
     });
     signal?.throwIfAborted();
-    if (table.shape !== 'arrow-table') {
+    if ('shape' in table) {
       throw new Error('JSON table source expected an Arrow table');
     }
     if (this.revision === revision) {
-      this.table = table;
+      this.table = {shape: 'arrow-table', data: table, schema: convertArrowToSchema(table.schema)};
     }
-    return table;
+    return {shape: 'arrow-table', data: table, schema: convertArrowToSchema(table.schema)};
   }
 }

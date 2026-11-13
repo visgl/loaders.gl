@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowTable, RecordBatch as ArrowTableBatch} from 'apache-arrow';
 import type {CSVTableSource, CSVSourceOptions} from './csv-source';
 import type {CoreAPI, Loader} from '@loaders.gl/core/loader-utils';
 import type {
   ArrayRowTable,
-  ArrowTable,
-  ArrowTableBatch,
   ColumnarTable,
   ColumnarTableBatch,
   ObjectRowTable,
@@ -36,6 +35,7 @@ const sourceMetadata = {
 export const CSVLoader = {
   ...sourceMetadata,
   defaultShape: 'arrow',
+  supportsNativeArrow: true,
   ...CSVFormat,
   dataType: null as unknown as ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
   batchType: null as unknown as TableBatch | ColumnarTableBatch | ArrowTableBatch,

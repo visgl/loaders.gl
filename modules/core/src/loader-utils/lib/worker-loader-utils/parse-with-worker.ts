@@ -392,7 +392,7 @@ function getSerializableLoaderContext(context?: LoaderContext) {
  */
 function shouldParseCSVWithWorker(options?: StrictLoaderOptions): boolean {
   const csvOptions = options as {csv?: {shape?: string}; core?: {shape?: string}} | undefined;
-  return (csvOptions?.csv?.shape ?? csvOptions?.core?.shape) === 'arrow-table';
+  return (csvOptions?.csv?.shape ?? csvOptions?.core?.shape) === 'arrow';
 }
 
 /**

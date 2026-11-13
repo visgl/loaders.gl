@@ -208,7 +208,7 @@ export function parseCSVInArrowBatches(
           shape: 'object-row-table',
           dynamicTyping: csvOptions.dynamicTyping
         }
-      }),
+      }) as AsyncIterable<TableBatch>,
       csvOptions.viewTypes,
       normalizedOptions.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
     );

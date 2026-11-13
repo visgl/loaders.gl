@@ -53,7 +53,7 @@ test.each([
     core: {
       worker: true,
       batchSize: 1,
-      ...(metadata.id === 'json-table' ? {shape: 'arrow-table'} : {})
+      ...(metadata.id === 'json-table' ? {shape: 'arrow'} : {})
     }
   });
   const iterator = batches[Symbol.asyncIterator]();
@@ -71,7 +71,7 @@ test.each([
         worker: true,
         maxConcurrency: 1,
         batchSize: 1,
-        ...(metadata.id === 'json-table' ? {shape: 'arrow-table'} : {})
+        ...(metadata.id === 'json-table' ? {shape: 'arrow'} : {})
       }
     })
   );
@@ -99,7 +99,7 @@ test.each([
   const onProgress = vi.fn();
   const options = {
     core: {worker: true, batchSize: 1},
-    [namespace]: {schema, shape: namespace === 'ndjson' ? 'arrow' : 'arrow-table'},
+    [namespace]: {schema, shape: 'arrow'},
     onProgress
   };
   const {loader, mainParser} = observeLoader(metadata, implementation);
@@ -107,10 +107,8 @@ test.each([
   const batches = await collectBatches(await parseInBatches(chunks, loader, options));
   expect(mainParser).not.toHaveBeenCalled();
   expect(batches).toHaveLength(2);
-  const arrowBatches = namespace === 'ndjson' ? batches : batches.map(batch => batch.data);
-  expect(
-    arrowBatches.every(batch => batch instanceof (namespace === 'ndjson' ? RecordBatch : Table))
-  ).toBe(true);
+  const arrowBatches = batches;
+  expect(arrowBatches.every(batch => batch instanceof RecordBatch)).toBe(true);
   expect(arrowBatches.flatMap(batch => Array.from(batch, (row: any) => row.toJSON()))).toEqual(
     rows
   );
@@ -128,7 +126,7 @@ test.each([
       workerUrl: new URL('/modules/tables/dist/json-worker.js', location.href).href
     }
   });
-  const arrowTable = namespace === 'ndjson' ? atomic : atomic.data;
+  const arrowTable = atomic;
   expect(arrowTable).toBeInstanceOf(Table);
   expect(Array.from(arrowTable, (row: any) => row.toJSON())).toEqual(rows);
 });
@@ -282,13 +280,15 @@ test('JSONTable transfers binary container metadata alongside Arrow output', asy
   const {loader, mainParser} = observeLoader(JSONTableLoader, JSONTableLoaderWithParser);
   const batches = await collectBatches(
     await parseInBatches([encoder.encode('{"label":"before","rows":[{"id":1}]}')], loader, {
-      core: {worker: true, metadata: true},
-      json: {shape: 'arrow-table', jsonpaths: ['$.rows']}
+      core: {worker: true},
+      json: {shape: 'arrow', jsonpaths: ['$.rows']}
     })
   );
   expect(mainParser).not.toHaveBeenCalled();
-  expect(batches.find(batch => batch.batchType === 'data').data).toBeInstanceOf(Table);
-  expect(batches.at(-1)).toMatchObject({batchType: 'final-result', container: {label: 'before'}});
+  expect(batches[0]).toBeInstanceOf(RecordBatch);
+  expect(JSON.parse(batches.at(-1).schema.metadata.get('loaders.gl.containerJson'))).toMatchObject({
+    label: 'before'
+  });
 });
 
 test('JSON documents use binary results with a self-hosted worker URL', async () => {

@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {
+  RecordBatch,
+  type Table as ArrowTable,
+  type RecordBatch as ArrowTableBatch
+} from 'apache-arrow';
 import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source';
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, Table, TableBatch} from '@loaders.gl/core/schema';
+import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
 import {updateArrowTableMetadata} from '@loaders.gl/core/schema-utils';
 import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
@@ -87,7 +92,7 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
     );
   }
 
-  if (jsonOptions.json?.shape !== 'arrow-table') {
+  if (jsonOptions.json?.shape !== 'arrow') {
     return jsonOptions.json?.shape === 'array-row-table'
       ? convertTable(table, 'array-row-table')
       : convertTable(table, 'object-row-table');
@@ -100,7 +105,7 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
       log: getLoaderLog(jsonOptions)
     }),
     getJSONContainerMetadata(json)
-  );
+  ).data;
 }
 
 /**
@@ -130,7 +135,7 @@ function parseInBatches(
     parseOptions
   );
 
-  if (jsonOptions.json?.shape !== 'arrow-table') {
+  if (jsonOptions.json?.shape !== 'arrow') {
     return rowBatches;
   }
 
@@ -139,19 +144,19 @@ function parseInBatches(
     arrowConversion: jsonOptions.json.arrowConversion,
     log: getLoaderLog(jsonOptions)
   });
-  return filterArrowMetadataBatches(
-    arrowBatches,
-    Boolean(jsonOptions.core?.metadata || (jsonOptions as any).metadata)
-  );
+  return makeNativeJSONBatches(arrowBatches);
 }
 
-/** Keeps legacy metadata envelopes opt-in while always retaining Arrow metadata updates. */
-async function* filterArrowMetadataBatches(
-  batches: AsyncIterable<any>,
-  emitMetadata: boolean
-): AsyncIterable<any> {
+/** Yields Arrow batches including final schema and container metadata refinements. */
+async function* makeNativeJSONBatches(batches: AsyncIterable<any>): AsyncIterable<ArrowTableBatch> {
   for await (const batch of batches) {
-    if (emitMetadata || batch.shape === 'arrow-table') yield batch;
+    if (batch.shape === 'arrow-table') {
+      for (const recordBatch of batch.data.batches) {
+        const metadata = new Map<string, string>(recordBatch.metadata);
+        if (batch.jsonpath) metadata.set('jsonpath', String(batch.jsonpath));
+        yield new RecordBatch(recordBatch.schema, recordBatch.data, metadata);
+      }
+    }
   }
 }
 
@@ -200,7 +205,7 @@ function getRowBatchJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOpti
     ...options,
     core: {
       ...options.core,
-      metadata: options.json?.shape === 'arrow-table' || options.core?.metadata
+      metadata: options.json?.shape === 'arrow' || options.core?.metadata
     },
     json: {
       backend: options.json?.backend,
@@ -229,7 +234,7 @@ function getFastStreamingJSONParserFactory(
  * @returns Row-level Utf8 field names for streamed fast Arrow parsing.
  */
 function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
-  if (options.json?.shape !== 'arrow-table' || !options.json.schema) {
+  if (options.json?.shape !== 'arrow' || !options.json.schema) {
     return [];
   }
 
@@ -241,13 +246,16 @@ function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
  * Ensures Arrow-only options are used only when Arrow-table output is requested.
  *
  * @param options - Normalized JSON table loader options.
- * @throws If Arrow conversion options are supplied without `json.shape: 'arrow-table'`.
+ * @throws If Arrow conversion options are supplied without `json.shape: 'arrow'`.
  */
 function validateJSONTableArrowOptions(options: JSONTableLoaderOptions): void {
+  if ((options.json?.shape as string) === 'arrow-table') {
+    throw new Error('This loader uses shape: "arrow" for native Arrow output');
+  }
   const hasArrowOnlyOptions = Boolean(options.json?.schema || options.json?.arrowConversion);
-  if (hasArrowOnlyOptions && options.json?.shape !== 'arrow-table') {
+  if (hasArrowOnlyOptions && options.json?.shape !== 'arrow') {
     throw new Error(
-      'JSONTableLoader: json.schema and json.arrowConversion require json.shape to be "arrow-table"'
+      'JSONTableLoader: json.schema and json.arrowConversion require json.shape to be "arrow"'
     );
   }
 }

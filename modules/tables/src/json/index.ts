@@ -29,15 +29,15 @@ export {JSONWriter} from './json-writer';
 export type {GeoJSONLoaderOptions} from './geojson-loader-types';
 import {GeoJSONLoader as GeoJSONLoaderMetadata} from './geojson-loader-types';
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/core/arrow-worker-transport';
+  deserializeGeoJSONWorkerResult,
+  serializeGeoJSONWorkerResult
+} from './lib/geojson-worker-transport';
 
 /** Compatibility metadata retains Arrow worker transport hooks. */
 export const GeoJSONLoader = {
   ...GeoJSONLoaderMetadata,
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult
+  serializeWorkerResult: serializeGeoJSONWorkerResult,
+  deserializeWorkerResult: deserializeGeoJSONWorkerResult
 } as const;
 /** @deprecated Use GeoJSONLoader. */
 export const GeoJSONWorkerLoader = GeoJSONLoader;

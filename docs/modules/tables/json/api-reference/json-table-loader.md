@@ -70,8 +70,7 @@ const table = convertJSONToArrow(rows);
 console.log(table.getChild('name')?.get(0)); // 'Oslo'
 ```
 
-The converter returns a **native Apache Arrow `Table`**. By comparison, this loader's
-`json.shape: 'arrow-table'` output wraps that table in `{shape, schema, data}`. The converter accepts
+Both the converter and this loader's `json.shape: 'arrow'` output return a native Apache Arrow `Table`. The converter accepts
 flat `{schema, arrowConversion, log}` options; see its [full reference](./convert-json-to-arrow.md)
 for nested inputs, explicit schemas, recovery policies, and deck.gl `dataTransform` examples.
 
@@ -99,7 +98,7 @@ Arrow conversion supports nested JSON fields, supplied loaders.gl or Apache Arro
 ```typescript
 const table = await load(url, JSONTableLoader, {
   json: {
-    shape: 'arrow-table',
+    shape: 'arrow',
     schema,
     arrowConversion: {
       onTypeMismatch: 'null',
@@ -147,23 +146,23 @@ import {JSONTableLoader} from '@loaders.gl/tables/json';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('rows.json', JSONTableLoader, {
-  json: {jsonpaths: ['$.items'], shape: 'arrow-table'}
+  json: {jsonpaths: ['$.items'], shape: 'arrow'}
 });
 ```
 
-Arrow `data` batches use a frozen schema. If `json.schema` is supplied, that schema is used for every batch. Otherwise the schema is inferred from the first non-empty `data` batch, and later batches are converted against it. Metadata batches remain container-oriented when `metadata: true` is enabled.
+Arrow batches are native `RecordBatch` objects with a fixed column structure. A supplied `json.schema` determines that structure; otherwise it is inferred from the first nonempty batch. Each batch retains a metadata snapshot. Container properties accumulate in `schema.metadata.get('loaders.gl.containerJson')`, and a zero-row final batch carries any trailing refinements. Empty inputs retain their declared schema. The selected JSON path is available in `batch.metadata.get('jsonpath')`.
 
 ## Options
 
 | Option                 | Type                                                       | Default                                                                                                                                 | Description |
 | ---------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | `json.backend`         | `'clarinet' \| 'fast'`                                    | `'clarinet'`                                                                                                                            | Selects the streaming parser backend. |
-| `json.shape`           | `'arrow' \| 'arrow-table' \| 'object-row-table' \| 'array-row-table'` | `'arrow'` | Selects the requested table output shape. |
-| `json.schema`          | `Schema \| arrow.Schema`                                   | `undefined`                                                                                                                             | Optional schema used when `json.shape` is `'arrow-table'`. |
+| `json.shape`           | `'arrow' \| 'object-row-table' \| 'array-row-table'` | `'arrow'` | Selects the requested table output shape. |
+| `json.schema`          | `Schema \| arrow.Schema`                                   | `undefined`                                                                                                                             | Optional schema used when `json.shape` is `'arrow'`. |
 | `json.arrowConversion` | `object`                                                   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`         | Optional Arrow conversion policy. |
 | `json.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'`                 | `'never'`                                                                                                                             | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
 | `json.jsonpaths`       | `string[]`                                                 | `[]`                                                                                                                                    | Arrays that can be streamed as row batches. |
-| `metadata`             | `boolean`                                                  | `false`                                                                                                                                 | Emits container metadata batches for embedded streamed arrays. |
+| `metadata`             | `boolean`                                                  | `false`                                                                                                                                 | Emits container metadata envelopes for explicit row-table output. Arrow output carries container metadata in its schema. |
 
 ## Worker batches
 
