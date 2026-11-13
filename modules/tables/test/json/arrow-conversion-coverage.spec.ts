@@ -229,7 +229,7 @@ test('JSON Arrow batch adapters freeze schemas and preserve metadata batches', a
   for await (const batch of makeNDJSONArrowBatchIterator(yieldBatches(dataBatches))) {
     ndjson.push(batch);
   }
-  expect(ndjson.map(batch => batch.length)).toEqual([0, 1, 1]);
+  expect(ndjson.map(batch => batch.numRows)).toEqual([0, 1, 1]);
 
   const converted = [] as any[];
   for await (const batch of convertTableBatchesToArrow(

@@ -2,15 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table, RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {makeLineIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  Feature,
-  ObjectRowTable,
-  TableBatch
-} from '@loaders.gl/core/schema';
+import type {Feature, ObjectRowTable, TableBatch} from '@loaders.gl/core/schema';
 import {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';
 import {
   convertGeoJSONFeaturesToArrowTable,
@@ -27,13 +23,13 @@ export const NDGeoJSONLoaderWithParser = {
   parseTextSync: parseText,
   parseInBatches
 } as const satisfies LoaderWithParser<
-  ArrowTable | ObjectRowTable,
-  ArrowTableBatch | TableBatch,
+  Table | ObjectRowTable,
+  RecordBatch | TableBatch,
   NDGeoJSONLoaderOptions
 >;
 
 /** Parses a complete GeoJSON Lines document, including optional record separators. */
-function parseText(text: string, options?: NDGeoJSONLoaderOptions): ArrowTable | ObjectRowTable {
+function parseText(text: string, options?: NDGeoJSONLoaderOptions): Table | ObjectRowTable {
   const features = text.split('\n').flatMap((line, index) => {
     const feature = parseLine(line, index + 1);
     return feature ? [feature] : [];
@@ -61,7 +57,7 @@ function parseLine(line: string, lineNumber: number): Feature | null {
 function convertFeatures(
   features: Feature[],
   options?: NDGeoJSONLoaderOptions
-): ArrowTable | ObjectRowTable {
+): Table | ObjectRowTable {
   if (options?.geojson?.shape === 'object-row-table') {
     return {shape: 'object-row-table', data: features};
   }
@@ -82,7 +78,7 @@ function convertFeatures(
     geoarrowGeometryColumn: options?.json?.geoarrowGeometryColumn,
     geoarrow: options?.geoarrow || options?.json?.geoarrow,
     log: getLoaderLog(options)
-  });
+  }).data;
 }
 
 /** Streams bounded batches with a schema frozen by the first nonempty Arrow batch. */
@@ -91,7 +87,7 @@ async function* parseInBatches(
     | AsyncIterable<string | ArrayBufferLike | ArrayBufferView>
     | Iterable<string | ArrayBufferLike | ArrayBufferView>,
   options?: NDGeoJSONLoaderOptions
-): AsyncIterable<ArrowTableBatch | TableBatch> {
+): AsyncIterable<RecordBatch | TableBatch> {
   const configuredBatchSize = options?.core?.batchSize ?? options?.batchSize;
   const batchSize =
     configuredBatchSize === undefined || configuredBatchSize === 'auto'
@@ -113,28 +109,32 @@ async function* parseInBatches(
         : configuredGeoArrowOptions
   };
   let batchCount = 0;
+  let emittedArrowBatch = false;
   for await (const line of lines) {
     const feature = parseLine(line, ++lineNumber);
     if (feature) features.push(feature);
     if (features.length === batchSize) {
       const table = convertFeatures(features, batchOptions);
-      if (table.shape === 'arrow-table') {
+      if (!('shape' in table)) {
         batchOptions = {
           ...batchOptions,
-          json: {...batchOptions.json, schema: normalizeJSONArrowSchema(table.data.schema)}
+          json: {...batchOptions.json, schema: normalizeJSONArrowSchema(table.schema)}
         };
+        emittedArrowBatch = true;
+        yield* table.batches;
+      } else {
+        yield {...table, batchType: 'data', length: features.length, batchCount: batchCount++};
       }
-      yield {...table, batchType: 'data', length: features.length, batchCount: batchCount++};
       features = [];
     }
   }
   if (features.length) {
-    yield {
-      ...convertFeatures(features, batchOptions),
-      batchType: 'data',
-      length: features.length,
-      batchCount
-    };
+    const table = convertFeatures(features, batchOptions);
+    if (!('shape' in table)) yield* table.batches;
+    else yield {...table, batchType: 'data', length: features.length, batchCount};
+  } else if (!emittedArrowBatch && options?.geojson?.shape !== 'object-row-table') {
+    const table = convertFeatures([], batchOptions);
+    if (!('shape' in table)) yield makeArrowMetadataBatch(table.schema);
   }
 }
 

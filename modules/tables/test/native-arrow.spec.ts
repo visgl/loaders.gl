@@ -107,7 +107,8 @@ test.each(cases)('$name returns native Tables and all RecordBatches', async ({lo
     loader === ArrowLoader ||
     loader === GeoArrowLoader ||
     loader === ORCLoader ||
-    loader === AvroLoader
+    loader === AvroLoader ||
+    loader === NDJSONLoader
   ) {
     await expect(parse(input(), loader, {core: {shape: 'arrow-table'} as any})).rejects.toThrow(
       'uses shape: "arrow"'

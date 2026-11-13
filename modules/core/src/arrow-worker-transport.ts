@@ -37,7 +37,7 @@ export function serializeArrowWorkerTable(result: unknown): unknown {
   return {
     ...structuredClone(metadata),
     arrowBatchMetadata: snapshotBatchMetadata(data),
-    data: dehydrateArrowTable(data, {copy: 'all'})
+    data: dehydrateWorkerTable(data, {copy: 'all'})
   };
 }
 
@@ -47,6 +47,27 @@ export function deserializeArrowWorkerTable(result: unknown): any {
     throw new Error('Workers require Arrow column transport');
   }
   return hydrateWorkerTable(result);
+}
+
+/** Serializes a native Arrow table or batch with owned column buffers for worker transport. */
+export function serializeNativeArrowWorkerResult(result: arrow.Table | arrow.RecordBatch): unknown {
+  const batch = result instanceof arrow.RecordBatch;
+  return {
+    transport: batch ? 'arrow-record-batch' : 'arrow-table-columns',
+    columns: serializeArrowWorkerTable({
+      shape: 'arrow-table',
+      data: batch ? new arrow.Table(result.schema, [result]) : result
+    })
+  };
+}
+
+/** Hydrates a native Arrow worker result while preserving its table or batch type. */
+export function deserializeNativeArrowWorkerResult(
+  result: unknown
+): arrow.Table | arrow.RecordBatch {
+  const payload = result as {transport: string; columns: unknown};
+  const {data}: {data: arrow.Table} = deserializeArrowWorkerTable(payload.columns);
+  return payload.transport === 'arrow-record-batch' ? data.batches[0] : data;
 }
 
 /** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */
@@ -60,7 +81,7 @@ export function serializeArrowWorkerResult(result: unknown, options?: unknown): 
   return {
     ...result,
     arrowBatchMetadata: snapshotBatchMetadata(result.data),
-    data: dehydrateArrowTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
+    data: dehydrateWorkerTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
   };
 }
 
@@ -94,6 +115,20 @@ function isDehydratedArrowTableWrapper(value: unknown): value is SerializedArrow
   );
 }
 
+/** Preserves row counts for tables whose batches have no columns. */
+function dehydrateWorkerTable(
+  table: arrow.Table,
+  options?: SplitArrowBuffersOptions
+): DehydratedArrowTable {
+  const payload = dehydrateArrowTable(table, options);
+  if (table.numCols === 0) {
+    for (const [index, batch] of table.batches.entries()) {
+      payload.batches[index].length = batch.numRows;
+    }
+  }
+  return payload;
+}
+
 /** Captures batch schemas and custom metadata before transferring column buffers. */
 function snapshotBatchMetadata(table: arrow.Table): BatchMetadata[] {
   return table.batches.map(batch => ({
@@ -108,13 +143,21 @@ function hydrateWorkerTable(result: SerializedArrowWorkerTable): unknown {
   const table = hydrateArrowTable(data);
   const batches = table.batches.map((batch, index) => {
     const snapshot = arrowBatchMetadata?.[index];
-    return snapshot
+    const restored = snapshot
       ? new arrow.RecordBatch(
           arrow.tableFromIPC(snapshot.schema).schema,
           batch.data,
           new Map(snapshot.metadata)
         )
       : batch;
+    // Arrow JS derives the length of a struct from its children, which can be empty.
+    const rowCount = data.batches[index].length;
+    if (restored.numCols === 0 && restored.numRows !== rowCount) {
+      Object.defineProperty(restored, 'data', {
+        value: new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, [])
+      });
+    }
+    return restored;
   });
   return {...envelope, data: new arrow.Table(table.schema, batches)};
 }

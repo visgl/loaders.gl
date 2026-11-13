@@ -78,12 +78,12 @@ import {NDJSONLoader} from '@loaders.gl/tables/json';
 const controller = new AbortController();
 const batches = await loadInBatches('records.ndjson', NDJSONLoader, {
   core: {worker: true, batchSize: 1024},
-  ndjson: {shape: 'arrow-table'},
+  ndjson: {shape: 'arrow'},
   signal: controller.signal,
   onProgress: ({phase, completed, unit}) => console.log(phase, completed, unit)
 });
 for await (const batch of batches) {
-  consume(batch.data); // Hydrated Apache Arrow Table for arrow-table output.
+  consume(batch); // Hydrated Apache Arrow RecordBatch.
 }
 ```
 
