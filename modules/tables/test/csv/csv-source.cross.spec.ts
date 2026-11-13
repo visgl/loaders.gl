@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {createDataSourceSync, load, preload} from '@loaders.gl/core';
+import {createDataSourceSync, load, parseInBatches, preload} from '@loaders.gl/core';
 import {CSVLoader, CSVTableSource} from '@loaders.gl/tables/csv';
 
 test('CSVTableSource discovers schema and applies projection and limit', async () => {
@@ -59,4 +59,95 @@ test('CSVLoader parses data and creates a source after preload', async () => {
   const source = createDataSourceSync(data, CSVLoader);
   expect(source).toBeInstanceOf(CSVTableSource);
   expect((await source.getQueryMetadata()).columns).toHaveLength(1);
+});
+
+test('CSVLoader applies a declared schema before parsing and scanning', async () => {
+  const csv = 'id,latitude\n00123,\n00456,48.8635049\n';
+  const options = {
+    core: {worker: false, batchSize: 1},
+    csv: {
+      shape: 'arrow-table' as const,
+      schema: {
+        fields: [
+          {name: 'id', type: 'utf8' as const},
+          {name: 'latitude', type: 'float64' as const}
+        ],
+        metadata: {}
+      }
+    }
+  };
+  const table = await load('https://example.test/typed.csv', CSVLoader, {
+    ...options,
+    core: {...options.core, fetch: async () => new Response(csv)}
+  });
+  expect(table.shape).toBe('arrow-table');
+  if (table.shape !== 'arrow-table') {
+    throw new Error('Expected an Arrow table');
+  }
+  expect(Array.from(table.data.getChild('id')!)).toEqual(['00123', '00456']);
+  expect(Array.from(table.data.getChild('latitude')!)).toEqual([null, 48.8635049]);
+
+  const source = new CSVTableSource(new Blob([csv]), options);
+  expect((await source.getQueryMetadata()).schema).toMatchObject(options.csv.schema);
+  const rows = [];
+  for await (const batch of source.read({
+    predicate: {op: '>', args: [{property: 'latitude'}, 48]}
+  })) {
+    rows.push(...batch.data);
+  }
+  expect(rows).toEqual([{id: '00456', latitude: 48.8635049}]);
+});
+
+test('CSVTableSource rejects invalid values for a declared field', async () => {
+  const source = new CSVTableSource(new Blob(['id,latitude\n00123,invalid\n']), {
+    csv: {
+      schema: {
+        fields: [
+          {name: 'id', type: 'utf8'},
+          {name: 'latitude', type: 'float64'}
+        ],
+        metadata: {}
+      }
+    }
+  });
+  await expect(source.getQueryMetadata()).rejects.toThrow('Invalid CSV value for latitude');
+});
+
+const declaredSchema = {
+  fields: [
+    {name: 'id', type: 'utf8' as const},
+    {name: 'value', type: 'float64' as const}
+  ],
+  metadata: {}
+};
+
+test.each(['', 'id,value\n'])('empty CSV exposes its declared schema for %j', async csv => {
+  const options = {
+    core: {worker: false},
+    csv: {schema: declaredSchema, shape: 'arrow-table' as const}
+  };
+  const source = new CSVTableSource(new Blob([csv]), options);
+  expect((await source.getQueryMetadata()).schema).toMatchObject(declaredSchema);
+  const batches = await Array.fromAsync(
+    await parseInBatches([new TextEncoder().encode(csv)], CSVLoader, options)
+  );
+  expect(batches).toHaveLength(1);
+  expect(batches[0]).toMatchObject({shape: 'arrow-table', length: 0, schema: declaredSchema});
+});
+
+test('CSVLoader rejects surplus cells with a declared schema on load and in batches', async () => {
+  const csv = 'id,value\na,1\nb,2,extra\n';
+  const options = {
+    core: {worker: false},
+    csv: {schema: declaredSchema, shape: 'arrow-table' as const}
+  };
+  const message = 'CSV row contains more fields than csv.schema';
+  await expect(
+    load('https://example.test/extra.csv', CSVLoader, {
+      ...options,
+      core: {...options.core, fetch: async () => new Response(csv)}
+    })
+  ).rejects.toThrow(message);
+  const batches = await parseInBatches([new TextEncoder().encode(csv)], CSVLoader, options);
+  await expect(Array.fromAsync(batches)).rejects.toThrow(message);
 });

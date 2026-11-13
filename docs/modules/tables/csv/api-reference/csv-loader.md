@@ -132,6 +132,35 @@ Pass `CSVLoader` to [`createDataSource()`](/docs/modules/core/api-reference/crea
 to open a URL or Blob for table queries. Use `load()` to parse the input into a table.
 
 
+### Declaring field types
+
+Set `csv.schema` to a loaders.gl `Schema` to parse CSV cells into declared types.
+List every field in file order. The field names must match the header. For files
+without a header, set `csv.header: false` and use the generated column names.
+
+```ts
+const table = await load(url, CSVLoader, {
+  csv: {
+    schema: {
+      fields: [
+        {name: 'id', type: 'utf8'},
+        {name: 'latitude', type: 'float64'}
+      ],
+      metadata: {}
+    }
+  }
+});
+```
+
+The schema takes precedence over dynamic typing and geometry detection. Supported
+types are UTF-8 strings, booleans, 8- through 64-bit integers, and 32- and 64-bit
+floats. Empty cells become null, and a field with `nullable: false` rejects an
+empty cell. Invalid values produce a parse error.
+
+Pass the same `csv.schema` option to `createDataSource()` or to a URL-backed
+`query()`. The source uses it during schema discovery and parsing, before
+evaluating the query.
+
 ## CSVLoader Options
 
 | Option                      | Type                                                                                       | Default                       | Description                                                                                                                  |
