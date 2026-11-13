@@ -8,7 +8,7 @@ import {
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 import {
   OtlpTraceJsonLoader as OtlpTraceJsonLoaderMetadata,
@@ -32,7 +32,15 @@ export const OtlpTraceJsonLoaderWithParser = {
   parseSync: (arrayBuffer: ArrayBuffer) => parseOtlpTraceJson(decodeBytes(arrayBuffer)),
   parseText: async (text: string) => parseOtlpTraceJson(text),
   parseTextSync: (text: string) => parseOtlpTraceJson(text),
-  parseInBatches: parseOtlpTraceJsonInBatches
+  parseInBatches: (
+    iterator: Parameters<typeof parseOtlpTraceJsonInBatches>[0],
+    options?: OtlpTraceLoaderOptions
+  ) =>
+    paceBatchIterator(parseOtlpTraceJsonInBatches(iterator, options), {
+      batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+      getRowCount: batch => (batch.table === 'spans' ? batch.data.numRows : undefined),
+      signal: options?.signal
+    })
 } as const satisfies LoaderWithParser<OtlpTrace, OtlpTraceBatch, OtlpTraceLoaderOptions>;
 
 /** Parses a chunked OTLP JSON or JSON Lines stream into Arrow batches. */

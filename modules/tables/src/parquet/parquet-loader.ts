@@ -7,7 +7,11 @@ import type {
   LoaderContext,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import {BlobFile, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
+import {
+  BlobFile,
+  concatenateArrayBuffersAsync,
+  paceBatchIterator
+} from '@loaders.gl/core/loader-utils';
 import type {
   ObjectRowTable,
   ObjectRowTableBatch,
@@ -85,7 +89,11 @@ export const ParquetLoaderWithParser = {
     return parseParquetTable(file, options, context);
   },
   parseFileInBatches(file, options?: ParquetLoaderOptions, context?: LoaderContext) {
-    return parseParquetTableInBatches(file, options, context);
+    return paceBatchIterator(parseParquetTableInBatches(file, options, context), {
+      batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+      getRowCount: batch => batch.length,
+      signal: options?.signal ?? context?.signal ?? options?.parquet?.signal
+    });
   },
   async *parseInBatches(
     asyncIterator:
@@ -95,7 +103,7 @@ export const ParquetLoaderWithParser = {
     context?: LoaderContext
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
-    yield* parseParquetTableInBatches(new BlobFile(arrayBuffer), options, context);
+    yield* ParquetLoaderWithParser.parseFileInBatches(new BlobFile(arrayBuffer), options, context);
   },
   serializeWorkerResult: serializeParquetWorkerResult,
   deserializeWorkerResult: deserializeParquetWorkerResult,

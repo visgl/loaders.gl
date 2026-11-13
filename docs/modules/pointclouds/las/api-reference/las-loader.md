@@ -102,9 +102,8 @@ selective field decoding, direct typed output, memory copies, and module startup
 | `options.onProgress`     | `function`           | -          | Callback when a new chunk of data is read. Only works on the main thread.                                                                                        |
 
 For streamed LAS/LAZ batches, `core.batchSize` controls the number of points per
-batch. Set `core.batchDebounceMs` to a minimum interval between batches. The
-first batch is emitted as soon as it is ready, and the default of `0` emits all
-batches as they become ready.
+batch. Set `core.batchMaxRowsPerSecond` to pace delivery by point count. The
+first batch is immediate. The default of zero delivers batches as they become ready.
 
 ### Interrupted LAZ writers
 

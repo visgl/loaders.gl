@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {parseInBatches} from '@loaders.gl/core';
 const NoOpLoader = {
   name: 'JSON',
@@ -57,4 +57,45 @@ test('parseInBatches wraps table-shaped fallback output in a data batch', async 
       mimeType: 'application/x-test-table'
     }
   ]);
+});
+
+test('parseInBatches paces tagged spans and delivers related trace tables immediately', async () => {
+  const loader = {
+    id: 'test-trace',
+    name: 'Test Trace',
+    module: 'traces',
+    version: '1.0.0',
+    mimeTypes: ['application/x-test-trace'],
+    extensions: ['trace'],
+    async *parseInBatches() {
+      yield {table: 'resources', data: {numRows: 100}};
+      yield {table: 'spans', data: {numRows: 5}};
+      yield {table: 'events', data: {numRows: 100}};
+      yield {table: 'spans', data: {numRows: 5}};
+    }
+  };
+  const batches = await parseInBatches(new Uint8Array([1]), loader as any, {
+    core: {batchMaxRowsPerSecond: 10}
+  });
+  const iterator = batches[Symbol.asyncIterator]();
+  vi.useFakeTimers({toFake: ['performance', 'setTimeout', 'clearTimeout']});
+  try {
+    expect((await iterator.next()).value.table).toBe('resources');
+    expect((await iterator.next()).value.table).toBe('spans');
+    expect((await iterator.next()).value.table).toBe('events');
+    const delivered = vi.fn();
+    const pending = iterator.next().then(delivered);
+    await vi.advanceTimersByTimeAsync(499);
+    expect(delivered).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await pending;
+    expect(delivered).toHaveBeenCalledWith({
+      done: false,
+      value: {table: 'spans', data: {numRows: 5}}
+    });
+    expect((await iterator.next()).done).toBe(true);
+  } finally {
+    await iterator.return?.();
+    vi.useRealTimers();
+  }
 });

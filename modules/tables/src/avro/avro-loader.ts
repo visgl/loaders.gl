@@ -61,14 +61,20 @@ export const AvroLoaderWithParser = {
   },
   async *parseInBatches(asyncIterator, options?: AvroLoaderOptions) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
-    yield* parseAvroInBatches(arrayBuffer, options?.avro?.batchSize, {
-      readerSchema: options?.avro?.readerSchema,
-      longType: options?.avro?.longType,
-      schema: options?.avro?.schema,
-      encoding: options?.avro?.encoding,
-      validateFingerprint: options?.avro?.validateFingerprint,
-      blockIndices: options?.avro?.blockIndices
-    });
+    yield* parseAvroInBatches(
+      arrayBuffer,
+      typeof options?.core?.batchSize === 'number'
+        ? options.core.batchSize
+        : options?.avro?.batchSize,
+      {
+        readerSchema: options?.avro?.readerSchema,
+        longType: options?.avro?.longType,
+        schema: options?.avro?.schema,
+        encoding: options?.avro?.encoding,
+        validateFingerprint: options?.avro?.validateFingerprint,
+        blockIndices: options?.avro?.blockIndices
+      }
+    );
   },
   async *parseInBatchesFromUrl(url: string, options?: AvroLoaderOptions) {
     yield* parseAvroInBatchesFromUrl(url, {
@@ -78,7 +84,10 @@ export const AvroLoaderWithParser = {
       encoding: options?.avro?.encoding,
       validateFingerprint: options?.avro?.validateFingerprint,
       blockIndices: options?.avro?.blockIndices,
-      batchSize: options?.avro?.batchSize,
+      batchSize:
+        typeof options?.core?.batchSize === 'number'
+          ? options.core.batchSize
+          : options?.avro?.batchSize,
       headers: options?.avro?.headers,
       signal: options?.avro?.signal,
       rangeChunkSize: options?.avro?.rangeChunkSize

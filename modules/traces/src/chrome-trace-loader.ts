@@ -12,7 +12,7 @@ import {
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 import {
   parseChromeTraceToArrowRecordBatches,
@@ -59,10 +59,17 @@ export const ChromeTraceLoaderWithParser = {
       throw new Error('ChromeTraceLoader.parseInBatches currently requires shape: "arrow-table".');
     }
 
-    yield* parseChromeTraceToArrowRecordBatches(iterator, {
-      batchSize: resolveChromeTraceLoaderBatchSize(options),
-      maxLength: options?.maxLength
-    });
+    yield* paceBatchIterator(
+      parseChromeTraceToArrowRecordBatches(iterator, {
+        batchSize: resolveChromeTraceLoaderBatchSize(options),
+        maxLength: options?.maxLength
+      }),
+      {
+        batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+        getRowCount: batch => batch.numRows,
+        signal: options?.signal
+      }
+    );
   }
 } as const satisfies LoaderWithParser<
   ChromeTraceFileSchema | ChromeTraceEventArrowTable,
@@ -133,10 +140,10 @@ function resolveChromeTraceLoaderShape(
 function resolveChromeTraceLoaderBatchSize(
   options: ChromeTraceLoaderOptions | undefined
 ): number | undefined {
-  return (
-    options?.chromeTrace?.batchSize ??
-    (typeof options?.batchSize === 'number' ? options.batchSize : undefined)
-  );
+  return typeof options?.core?.batchSize === 'number'
+    ? options.core.batchSize
+    : (options?.chromeTrace?.batchSize ??
+        (typeof options?.batchSize === 'number' ? options.batchSize : undefined));
 }
 
 /**

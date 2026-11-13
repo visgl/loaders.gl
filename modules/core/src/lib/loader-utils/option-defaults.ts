@@ -31,10 +31,8 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
     _nodeWorkers: false, // By default do not support node workers
     _workerType: '', // 'test' to use locally generated workers
 
-    limit: 0,
-    _limitMB: 0,
     batchSize: 'auto',
-    batchDebounceMs: 0,
+    batchMaxRowsPerSecond: 0,
     metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
     transforms: []
   }
@@ -60,11 +58,9 @@ export const REMOVED_LOADER_OPTIONS = {
   _workerType: 'core._workerType',
   _worker: 'core._workerType',
 
-  limit: 'core.limit',
-  _limitMB: 'core._limitMB',
   shape: 'core.shape',
   batchSize: 'core.batchSize',
-  batchDebounceMs: 'core.batchDebounceMs',
+  batchDebounceMs: '(removed; use core.batchMaxRowsPerSecond)',
   metadata: 'core.metadata',
   transforms: 'core.transforms',
 

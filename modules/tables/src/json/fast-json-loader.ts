@@ -7,6 +7,7 @@ import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-types';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
+import {convertTableBatchesToArrow} from './lib/parsers/convert-row-table-to-arrow';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -82,7 +83,10 @@ function parseInBatches(
   options?: JSONLoaderOptions
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = {...options, json: {...FastJSONLoader.options.json, ...options?.json}};
-  return parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, {
+  const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, {
     parserFactory: parserOptions => new FastStreamingJSONParser(parserOptions)
   });
+  return jsonOptions.json?.table && jsonOptions.json.shape === undefined
+    ? convertTableBatchesToArrow<MetadataBatch | JSONBatch>(batches)
+    : batches;
 }

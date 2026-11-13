@@ -18,6 +18,17 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Batched parsing
+
+- Replace `core.batchDebounceMs` and `arrow.batchDebounceMs` with
+  `core.batchMaxRowsPerSecond`. For a fixed batch size, divide the batch row
+  count by the old interval in seconds to approximate the previous rate.
+- Use table scans for offset and limit. The `core.limit` and `core._limitMB`
+  loader options and their top-level aliases have been removed.
+- Use `ArrowTableBuilder` to construct Arrow batches and convert completed
+  batches to row or columnar output as needed. The legacy batch aggregators
+  have been removed.
+
 ### Terrain sampling
 
 The beta terrain sampling helpers `createTerrainHeightGrid`, `sampleTerrainHeightGrid`, `TerrainHeightField`, `sampleTerrainNeighborhood`, and `resampleTerrainNodes` have been removed from `@loaders.gl/raster/terrain/heightmap`. Use `HeightField`, `GeographicHeightField`, or `TiledHeightField` from `@math.gl/geospatial/terrain` with decoded heights and explicit registration, coordinates, validity, and height reference. Review edge clamping, no-data, overlap, and tile-residency behavior when migrating; the APIs do not have identical sampling semantics. `decodeTerrainHeightmap` remains available.

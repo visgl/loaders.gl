@@ -118,11 +118,11 @@ test('GeoArrow writer encodes numeric and date columns through sync and async en
   }
 });
 
-test('Arrow batch adapters preserve rows with debounce and GeoArrow entry points', async () => {
+test('Arrow batch adapters preserve rows across Arrow and GeoArrow entry points', async () => {
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({value: new Int32Array([7, 9])}));
   const batches = [];
   for await (const batch of parseArrowInBatches([bytes], {
-    arrow: {shape: 'arrow-table', batchDebounceMs: 1}
+    arrow: {shape: 'arrow-table'}
   }))
     batches.push(batch);
   expect(batches.map(batch => batch.length)).toEqual([2]);

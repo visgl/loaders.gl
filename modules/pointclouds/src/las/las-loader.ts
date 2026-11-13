@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
@@ -95,19 +95,12 @@ async function* convertLASMeshBatches(
   tableBatches: AsyncIterable<LASArrowTable>,
   options?: LASLoaderOptions
 ): AsyncIterable<LASMesh | MeshArrowTable> {
-  const interval = options?.core?.batchDebounceMs ?? 0;
-  let lastBatchTime: number | undefined;
-  for await (const table of tableBatches) {
-    const batch = convertLASMesh(table, options);
-    if (interval > 0 && Number.isFinite(interval)) {
-      const remaining = lastBatchTime === undefined ? 0 : interval - (Date.now() - lastBatchTime);
-      if (remaining > 0) {
-        await new Promise<void>(resolve => setTimeout(resolve, remaining));
-      }
-      options?.signal?.throwIfAborted();
-      lastBatchTime = Date.now();
-    }
-    yield batch;
+  for await (const table of paceBatchIterator(tableBatches, {
+    batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+    getRowCount: batch => batch.data.numRows,
+    signal: options?.signal
+  })) {
+    yield convertLASMesh(table, options);
   }
 }
 

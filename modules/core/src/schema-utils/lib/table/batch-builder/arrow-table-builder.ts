@@ -27,7 +27,7 @@ export class ArrowTableBuilder {
         ? convertArrowToSchema(this.arrowSchema)
         : schema;
     this.arrowBuilders = this.arrowSchema.fields.map(field =>
-      arrow.makeBuilder({type: field.type, nullValues: [null]})
+      arrow.makeBuilder({type: field.type, nullValues: [null, undefined]})
     );
     this.length = 0;
   }
@@ -53,11 +53,8 @@ export class ArrowTableBuilder {
 
   /** Makes sure that a first batch with schema is sent even if no rows */
   firstBatch(): ArrowTableBatch | null {
+    if (this.length > 0) return null;
     const arrowRecordBatch = this._getArrowRecordBatch();
-    // If there is data, a batch will be sent later
-    if (arrowRecordBatch.numCols !== 0) {
-      return null;
-    }
     return {
       shape: 'arrow-table',
       batchType: 'data',
@@ -69,10 +66,8 @@ export class ArrowTableBuilder {
 
   /** Flush the current batch if conditions are right */
   flushBatch(): ArrowTableBatch | null {
+    if (this.length === 0) return null;
     const arrowRecordBatch = this._getArrowRecordBatch();
-    if (arrowRecordBatch.numCols === 0) {
-      return null;
-    }
     return {
       shape: 'arrow-table',
       batchType: 'data',

@@ -55,12 +55,8 @@ export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> &
 
     /** Size of each batch. `auto` matches batches to size of incoming chunks */
     batchSize?: number | 'auto';
-    /** Minimal amount of time between batches */
-    batchDebounceMs?: number;
-    /** Stop loading after a given number of rows (compare SQL limit clause) */
-    limit?: 0;
-    /** Experimental: Stop loading after reaching */
-    _limitMB?: 0;
+    /** Maximum data rows delivered per second in batches. Zero means unlimited. */
+    batchMaxRowsPerSecond?: number;
     /** Generate metadata batches */
     metadata?: boolean;
     /** Transforms to run on incoming batches */
@@ -155,16 +151,10 @@ export type LoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
   _workerType?: string;
   /** @deprecated Use options.core._workerType */
   _worker?: string;
-  /** @deprecated Use options.core.limit */
-  limit?: 0;
-  /** @deprecated Use options.core._limitMB */
-  _limitMB?: 0;
   /** @deprecated Use options.core.shape */
   shape?: string;
   /** @deprecated Use options.core.batchSize */
   batchSize?: number | 'auto';
-  /** @deprecated Use options.core.batchDebounceMs */
-  batchDebounceMs?: number;
   /** @deprecated Use options.core.metadata */
   metadata?: boolean;
   /** @deprecated Use options.core.transforms */

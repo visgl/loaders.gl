@@ -9,7 +9,7 @@ import {
 // Copyright (c) vis.gl contributors
 
 import {fromBinary} from '@bufbuild/protobuf';
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 import {
   OtlpTraceLoader as OtlpTraceLoaderMetadata,
@@ -32,7 +32,15 @@ export const OtlpTraceLoaderWithParser = {
   deserializeWorkerBatch: deserializeTraceWorkerBatch,
   parse: async (arrayBuffer: ArrayBuffer) => parseOtlpTraceProtobuf(new Uint8Array(arrayBuffer)),
   parseSync: (arrayBuffer: ArrayBuffer) => parseOtlpTraceProtobuf(new Uint8Array(arrayBuffer)),
-  parseInBatches: parseOtlpTraceInBatches
+  parseInBatches: (
+    iterator: Parameters<typeof parseOtlpTraceInBatches>[0],
+    options?: OtlpTraceLoaderOptions
+  ) =>
+    paceBatchIterator(parseOtlpTraceInBatches(iterator, options), {
+      batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+      getRowCount: batch => (batch.table === 'spans' ? batch.data.numRows : undefined),
+      signal: options?.signal
+    })
 } as const satisfies LoaderWithParser<OtlpTrace, OtlpTraceBatch, OtlpTraceLoaderOptions>;
 
 /** Streams ResourceSpans messages into tagged Arrow record batches. */

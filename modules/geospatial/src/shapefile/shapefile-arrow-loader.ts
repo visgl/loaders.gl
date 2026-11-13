@@ -133,13 +133,22 @@ export async function* parseShapefileToArrowInBatches(
 
   const {cpg, prj, shx} = await loadShapefileSidecarFiles(options, context);
   const batchSize =
-    options?.shapefile?.batchSize || options?.shp?.batchSize || options?.dbf?.batchSize || 10000;
+    typeof options?.core?.batchSize === 'number'
+      ? options.core.batchSize
+      : (options?.shapefile?.batchSize ??
+        options?.shp?.batchSize ??
+        options?.dbf?.batchSize ??
+        10000);
+  const childOptions = {
+    ...options,
+    core: {...options?.core, batchMaxRowsPerSecond: 0}
+  };
 
   const shapeIterable = await parseInBatchesFromContext(
     toArrayBufferIterator(asyncIterator),
     SHPLoaderWithParser,
     {
-      ...options,
+      ...childOptions,
       shp: {
         ...options?.shp,
         shape: 'wkb',
@@ -161,7 +170,7 @@ export async function* parseShapefileToArrowInBatches(
     : null;
   if (dbfResponse?.ok) {
     const dbfOptions = {
-      ...options,
+      ...childOptions,
       dbf: {
         ...options?.dbf,
         shape: 'arrow-table' as const,

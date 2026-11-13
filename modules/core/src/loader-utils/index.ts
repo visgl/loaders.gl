@@ -557,3 +557,6 @@ export type {
   TableDiscoverySource,
   TableMetadata
 } from './lib/sources/table-source-collection';
+
+export {paceBatchIterator, validateBatchDeliveryRate} from './lib/pace-batch-iterator';
+export type {BatchPacingOptions} from './lib/pace-batch-iterator';

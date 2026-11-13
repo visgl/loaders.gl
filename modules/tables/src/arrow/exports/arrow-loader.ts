@@ -18,7 +18,6 @@ export type ArrowLoaderOptions = LoaderOptions & {
     /** Shape of returned data */
     shape?: 'arrow' | 'arrow-table' | 'columnar-table' | 'array-row-table' | 'object-row-table';
     /** Debounce time between batches (prevent excessive numbers of small batches) */
-    batchDebounceMs?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };

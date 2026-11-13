@@ -37,6 +37,10 @@ export function* makeArrowRecordBatchIterator(
   table: Table,
   options?: {batchSize?: number}
 ): IterableIterator<arrow.RecordBatch> {
+  if (table.shape === 'arrow-table' && options?.batchSize === undefined) {
+    yield* table.data.batches;
+    return;
+  }
   const arrowSchema = convertSchemaToArrow(table.schema!);
 
   const length = getTableLength(table);

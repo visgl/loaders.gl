@@ -2011,7 +2011,7 @@ function detectTwoByteColors(
 }
 
 function getBatchSize(options: LASLoaderOptions): number {
-  const batchSize = options.batchSize ?? options.core?.batchSize;
+  const batchSize = options.core?.batchSize ?? options.batchSize;
   return typeof batchSize === 'number' ? batchSize : DEFAULT_BATCH_SIZE;
 }
 

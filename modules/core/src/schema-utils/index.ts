@@ -93,9 +93,6 @@ export {
 // Table batch builders
 
 export {TableBatchBuilder} from './lib/table/batch-builder/table-batch-builder';
-export type {TableBatchAggregator} from './lib/table/batch-builder/table-batch-aggregator';
-export {RowTableBatchAggregator} from './lib/table/batch-builder/row-table-batch-aggregator';
-export {ColumnarTableBatchAggregator} from './lib/table/batch-builder/columnar-table-batch-aggregator';
 
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 

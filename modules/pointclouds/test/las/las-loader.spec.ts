@@ -92,11 +92,11 @@ test('LASLoader#small uncompressed and compressed fixtures agree', async () => {
 test('LASLoader spaces batches without delaying the first batch', async () => {
   const source = await (await fetchFile(PDRF_4_LAZ_URL)).arrayBuffer();
   const batches = await parseInBatches(source, LASLoader, {
-    core: {worker: false, batchSize: 512, batchDebounceMs: 100},
+    core: {worker: false, batchSize: 512, batchMaxRowsPerSecond: 5120},
     las: {shape: 'arrow-table'}
   });
   const iterator = batches[Symbol.asyncIterator]();
-  vi.useFakeTimers({toFake: ['Date', 'setTimeout']});
+  vi.useFakeTimers({toFake: ['performance', 'setTimeout', 'clearTimeout']});
   try {
     const first = iterator.next();
     await vi.advanceTimersByTimeAsync(0);
