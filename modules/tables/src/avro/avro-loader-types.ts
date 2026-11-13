@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/core/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {AvroFormat} from './avro-format';
 
@@ -11,7 +11,7 @@ import {AvroFormat} from './avro-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Options for the Apache Avro loader. */
-export type AvroLoaderOptions = {
+export type AvroLoaderOptions = LoaderOptions & {
   avro?: {
     /** Return native Arrow data or loaders.gl table envelopes. */
     shape?: 'arrow' | 'arrow-table';

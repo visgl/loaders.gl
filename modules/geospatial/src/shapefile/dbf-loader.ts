@@ -63,9 +63,13 @@ export const DBFLoaderWithParser: LoaderWithParser<
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options
   ) {
-    return getDBFShape(options) === 'arrow-table'
-      ? parseDBFToArrowInBatches(arrayBufferIterator, options)
-      : parseDBFToObjectRowsInBatches(arrayBufferIterator, options);
+    const batchOptions =
+      typeof options?.core?.batchSize === 'number'
+        ? {...options, dbf: {...options.dbf, batchSize: options.core.batchSize}}
+        : options;
+    return getDBFShape(batchOptions) === 'arrow-table'
+      ? parseDBFToArrowInBatches(arrayBufferIterator, batchOptions)
+      : parseDBFToObjectRowsInBatches(arrayBufferIterator, batchOptions);
   },
   serializeWorkerResult: serializeShapefileWorkerResult,
   deserializeWorkerResult: deserializeDBFWorkerResult,

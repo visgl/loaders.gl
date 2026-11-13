@@ -8,7 +8,7 @@ import {
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 import {
   JaegerTraceLoader as JaegerTraceLoaderMetadata,
@@ -31,7 +31,15 @@ export const JaegerTraceLoaderWithParser = {
   parseSync: (arrayBuffer: ArrayBuffer) => parseJaegerTraceJson(decodeBytes(arrayBuffer)),
   parseText: async (text: string) => parseJaegerTraceJson(text),
   parseTextSync: (text: string) => parseJaegerTraceJson(text),
-  parseInBatches: parseJaegerTraceInBatches
+  parseInBatches: (
+    iterator: Parameters<typeof parseJaegerTraceInBatches>[0],
+    options?: JaegerTraceLoaderOptions
+  ) =>
+    paceBatchIterator(parseJaegerTraceInBatches(iterator, options), {
+      batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+      getRowCount: batch => (batch.table === 'spans' ? batch.data.numRows : undefined),
+      signal: options?.signal
+    })
 } as const satisfies LoaderWithParser<OtlpTrace, OtlpTraceBatch, JaegerTraceLoaderOptions>;
 
 /** Parses chunked Jaeger JSON or JSON Lines into tagged Arrow batches. */

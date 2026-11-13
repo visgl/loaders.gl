@@ -280,3 +280,14 @@ test('JSON documents use binary results with a self-hosted worker URL', async ()
     data: expect.any(Uint8Array)
   });
 });
+
+test.each([false, true])('JSON table batches default to Arrow with worker=%s', async worker => {
+  const batches = await collectBatches(
+    await parseInBatches([encoder.encode('[{"id":1},{"id":2}]')], JSONLoader, {
+      core: {worker, batchSize: 1},
+      json: {table: true}
+    })
+  );
+  expect(batches.map(batch => batch.shape)).toEqual(['arrow-table', 'arrow-table']);
+  expect(batches.map(batch => batch.data.getChild('id').get(0))).toEqual([1, 2]);
+});

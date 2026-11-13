@@ -6,7 +6,11 @@ import * as arrow from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
 import {convertArrowTable, convertArrowToTable} from '@loaders.gl/core/schema-utils';
-import {makeTableScanBatch, toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
+import {
+  makeTableScanBatch,
+  paceBatchIterator,
+  toArrayBufferIterator
+} from '@loaders.gl/core/loader-utils';
 import {registerArrowCompressionCodecs, preloadArrowCompressionDecoders} from './arrow-compression';
 
 const UNSAFE_BIGINT_ERROR_REGEXP = /^(-?\d+) is not safe to convert to a number\.$/;
@@ -133,16 +137,12 @@ export function parseArrowInBatches(
   }
   */
 
-  async function* makeArrowAsyncIterator(): AsyncIterator<ArrowTableBatch> {
+  async function* makeArrowAsyncIterator(): AsyncIterable<ArrowTableBatch> {
     await preloadArrowCompressionDecoders();
     // @ts-ignore
     const readers = arrow.RecordBatchReader.readAll(toArrayBufferIterator(asyncIterator));
     for await (const reader of readers) {
       for await (const recordBatch of reader) {
-        // use options.batchDebounceMs to add a delay between batches if needed (use case: incremental loading)
-        if (options?.arrow?.batchDebounceMs !== undefined && options?.arrow?.batchDebounceMs > 0) {
-          await new Promise(resolve => setTimeout(resolve, options.arrow?.batchDebounceMs || 0));
-        }
         const arrowTabledBatch: ArrowTableBatch = makeTableScanBatch({
           shape: 'arrow-table',
           data: new arrow.Table([recordBatch])
@@ -154,7 +154,11 @@ export function parseArrowInBatches(
     }
   }
 
-  return makeArrowAsyncIterator() as any; // as AsyncIterator<ArrowTableBatch>;
+  return paceBatchIterator(makeArrowAsyncIterator(), {
+    batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+    getRowCount: batch => batch.length,
+    signal: options?.signal
+  });
 }
 
 // function processBatch(batch: RecordBatch): ArrowTableBatch {

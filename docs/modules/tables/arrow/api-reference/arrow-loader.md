@@ -76,7 +76,7 @@ const data = await load(url, ArrowLoader, options);
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `arrow.shape` | `'arrow' \| 'arrow-table' \| 'columnar-table' \| 'array-row-table' \| 'object-row-table'` | `'arrow'` | Selects the output shape. |
-| `arrow.batchDebounceMs` | `number` | `undefined` | Adds an async delay between emitted Arrow batches. |
+| `core.batchMaxRowsPerSecond` | `number` | `0` | Paces delivery by row count while preserving IPC batch boundaries. |
 
 ## Worker parsing
 

@@ -610,6 +610,22 @@ test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks af
   }
   expect(rows, 'preserves split UTF-8 characters').toEqual([{city: 'Zürich'}, {city: '東京'}]);
 });
+test('CSVLoader#parseInBatches preserves typed coordinates after an empty first field', async () => {
+  const csvText =
+    'LIBELLEFRANCAIS;CIRCONFERENCE(CM);LATITUDE;LONGITUDE\n;20.0;48.8635049;2.2684223\n';
+  const iterator = await parseInBatches([new TextEncoder().encode(csvText)], CSVLoader, {
+    csv: {header: true, shape: 'object-row-table', dynamicTyping: true}
+  });
+  const rows: unknown[] = [];
+  for await (const batch of iterator) {
+    if (batch.shape === 'object-row-table') {
+      rows.push(...batch.data);
+    }
+  }
+  expect(rows).toEqual([
+    {LIBELLEFRANCAIS: null, 'CIRCONFERENCE(CM)': 20, LATITUDE: 48.8635049, LONGITUDE: 2.2684223}
+  ]);
+});
 test('CSV parser loaders are available through direct implementation imports', async () => {
   const preloadedLoader = await preload(CSVLoader);
   const csvTable = await parse('city,population\nParis,2148000', preloadedLoader, {

@@ -9,6 +9,7 @@ import type {
   ArrowTableBatch
 } from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
+import type {GeoArrowLoaderOptions} from '../../exports/geoarrow-loader';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
 
 // Parses arrow to a columnar table
@@ -35,8 +36,9 @@ export function parseGeoArrowSync(
 export function parseGeoArrowInBatches(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-    | Iterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: GeoArrowLoaderOptions
 ): AsyncIterable<ArrowTableBatch | GeoJSONTableBatch> {
   // | BinaryGeometry
-  return parseArrowInBatches(asyncIterator);
+  return parseArrowInBatches(asyncIterator, {core: options?.core, signal: options?.signal});
 }

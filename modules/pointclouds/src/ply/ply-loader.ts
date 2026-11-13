@@ -71,7 +71,7 @@ export const PLYLoaderWithParser = {
   ) {
     const plyOptions = {
       ...options?.ply,
-      batchSize: options?.batchSize ?? options?.core?.batchSize
+      batchSize: options?.core?.batchSize ?? options?.batchSize
     };
     for await (const meshOrTable of parsePLYInBatches(arrayBuffer, plyOptions)) {
       const convertedData = isMeshArrowTable(meshOrTable)

@@ -63,12 +63,17 @@ export const SHPLoaderWithParser: LoaderWithParser<
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options
-  ): AsyncIterable<SHPHeader | (Uint8Array | null)[] | ArrowTableBatch> =>
-    (getSHPShape(options) === 'arrow-table'
-      ? parseSHPToArrowInBatches(arrayBufferIterator, options)
-      : parseSHPInBatches(arrayBufferIterator, options)) as AsyncIterable<
-      SHPHeader | (Uint8Array | null)[] | ArrowTableBatch
-    >,
+  ): AsyncIterable<SHPHeader | (Uint8Array | null)[] | ArrowTableBatch> => {
+    const batchOptions =
+      typeof options?.core?.batchSize === 'number'
+        ? {...options, shp: {...options.shp, batchSize: options.core.batchSize}}
+        : options;
+    return (
+      getSHPShape(batchOptions) === 'arrow-table'
+        ? parseSHPToArrowInBatches(arrayBufferIterator, batchOptions)
+        : parseSHPInBatches(arrayBufferIterator, batchOptions)
+    ) as AsyncIterable<SHPHeader | (Uint8Array | null)[] | ArrowTableBatch>;
+  },
   serializeWorkerResult: serializeShapefileWorkerResult,
   deserializeWorkerResult: deserializeShapefileWorkerResult,
   serializeWorkerBatch: serializeShapefileWorkerBatch,

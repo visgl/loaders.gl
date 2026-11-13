@@ -25,7 +25,9 @@ import type {
 import {
   canParseWithWorkerInBatches,
   concatenateArrayBuffersAsync,
-  parseWithWorkerInBatches
+  parseWithWorkerInBatches,
+  paceBatchIterator,
+  validateBatchDeliveryRate
 } from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -168,9 +170,33 @@ async function parseWithLoaderInBatches(
   options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
-  const output = loader.parseInBatches ? loader.prepareParseBatchOutput?.(options) : null;
-  const decoded = await parseToOutputIterator(loader, data, output?.options ?? options, context);
-  const outputIterator = output ? convertOutputBatches(decoded, output.convert) : decoded;
+  const {batchMaxRowsPerSecond = 0, batchSize} = options.core ?? {};
+  validateBatchDeliveryRate(batchMaxRowsPerSecond);
+  if (
+    batchSize !== undefined &&
+    batchSize !== 'auto' &&
+    (!Number.isSafeInteger(batchSize) || batchSize < 1)
+  ) {
+    throw new RangeError('core.batchSize must be a positive integer or "auto"');
+  }
+  const parserOptions = batchMaxRowsPerSecond
+    ? {...options, core: {...options.core, batchMaxRowsPerSecond: 0}}
+    : options;
+  const output = loader.parseInBatches ? loader.prepareParseBatchOutput?.(parserOptions) : null;
+  const decoded = await parseToOutputIterator(
+    loader,
+    data,
+    output?.options ?? parserOptions,
+    context
+  );
+  const batches = output ? convertOutputBatches(decoded, output.convert) : decoded;
+  const outputIterator = batchMaxRowsPerSecond
+    ? paceBatchIterator(batches, {
+        batchMaxRowsPerSecond,
+        getRowCount: batch => getBatchRowCount(batch, loader.module),
+        signal: options.signal ?? context.signal
+      })
+    : batches;
 
   // Generate metadata batch if requested
   if (!options?.core?.metadata) {
@@ -342,4 +368,37 @@ async function applyInputTransforms(
     iteratorChain = transformBatches(iteratorChain);
   }
   return iteratorChain;
+}
+
+/** Reads row counts from data batches, including tagged trace and point-cloud batches. */
+function getBatchRowCount(batch: unknown, module?: string): number | undefined {
+  if (!batch || typeof batch !== 'object') return undefined;
+  if (module === 'geospatial' && Array.isArray(batch)) return batch.length;
+  const result = batch as {
+    batchType?: string;
+    table?: string;
+    shape?: string;
+    length?: number;
+    features?: unknown[];
+    data?: {numRows?: number};
+    numRows?: number;
+    header?: {vertexCount?: number};
+  };
+  if (
+    module === 'traces' &&
+    result.table !== undefined &&
+    result.table !== 'spans' &&
+    result.table !== 'slices'
+  ) {
+    return undefined;
+  }
+  if (result.batchType !== undefined && result.batchType !== 'data') return undefined;
+  if (result.shape === 'unknown') return undefined;
+  return (
+    result.data?.numRows ??
+    result.numRows ??
+    result.header?.vertexCount ??
+    result.features?.length ??
+    result.length
+  );
 }

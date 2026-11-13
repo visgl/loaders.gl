@@ -221,7 +221,7 @@ function parseCSVInBatches(
   // TODO - investigate papaparse chunks mode
   options = {...options};
   if (options?.core?.batchSize === 'auto') {
-    options.core.batchSize = 4000;
+    options.core = {...options.core, batchSize: 4000};
   }
 
   // Apps can call the parse method directly, we so apply default options here
