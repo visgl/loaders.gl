@@ -90,14 +90,14 @@ test('CSVLoader#load(states.csv)', async () => {
   const table = await load(CSV_STATES_URL, CSVLoader);
   expect(table.numRows).toBe(110);
 });
-test('CSVLoader#load(numbers-100.csv, shape: arrow-table)', async () => {
+test('CSVLoader#load(numbers-100.csv, shape: arrow)', async () => {
   const table = await load(CSV_NO_HEADER_URL, CSVLoader, {
     core: {worker: false},
-    csv: {header: false, shape: 'arrow-table'}
+    csv: {header: false, shape: 'arrow'}
   });
-  expect(table.shape, 'Got correct table shape').toBe('arrow-table');
-  expect(table.data.numRows, 'Got correct row count').toBe(100);
-  expect(table.data.getChildAt(0)?.get(0), 'Got correct first value').toBe(1);
+  expect(table).not.toHaveProperty('shape');
+  expect(table.numRows, 'Got correct row count').toBe(100);
+  expect(table.getChildAt(0)?.get(0), 'Got correct first value').toBe(1);
 });
 test('CSVLoader#load(geospatial-points-wkt.csv, detectGeometryColumns)', async () => {
   const table = await load(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
@@ -316,39 +316,37 @@ test('CSVLoader#loadInBatches(geospatial-points-wkt.csv, detectGeometryColumns)'
     ).toBeTruthy();
   }
 });
-test('CSVLoader#load(geospatial-points-wkt.csv, arrow-table, detectGeometryColumns)', async () => {
+test('CSVLoader#load(geospatial-points-wkt.csv, arrow, detectGeometryColumns)', async () => {
   const table = await load(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
     core: {worker: false},
-    csv: {shape: 'arrow-table', detectGeometryColumns: true}
+    csv: {shape: 'arrow', detectGeometryColumns: true}
   });
-  expect(table.shape, 'Got correct table shape').toBe('arrow-table');
+  expect(table).not.toHaveProperty('shape');
   const geometryField = table.schema?.fields.find(field => field.name === 'geometry');
-  const geoMetadata = getGeoMetadata(table.schema?.metadata);
-  expect(geometryField?.type, 'WKT Arrow geometry field is binary').toBe('binary');
+  const geoMetadata = getGeoMetadata(Object.fromEntries(table.schema.metadata));
+  expect(geometryField?.type.toString()).toBe('Binary');
   expect(
-    geometryField?.metadata?.['ARROW:extension:name'],
+    geometryField?.metadata.get('ARROW:extension:name'),
     'WKT Arrow geometry field is annotated as WKB'
   ).toBe('geoarrow.wkb');
   expect(geoMetadata?.columns.geometry.encoding, 'Arrow geo metadata includes WKB encoding').toBe(
     'wkb'
   );
   expect(
-    table.data.getChild('geometry')?.get(0) instanceof Uint8Array,
+    table.getChild('geometry')?.get(0) instanceof Uint8Array,
     'Arrow geometry is WKB'
   ).toBeTruthy();
 });
-test('CSVLoader#loadInBatches(numbers-100.csv, shape: arrow-table)', async () => {
+test('CSVLoader#loadInBatches(numbers-100.csv, shape: arrow)', async () => {
   const iterator = await loadInBatches(CSV_STATES_URL, CSVLoader, {
     core: {worker: false, batchSize: 40},
-    csv: {shape: 'arrow-table'}
+    csv: {shape: 'arrow'}
   });
   let batchCount = 0;
   let rowCount = 0;
   for await (const batch of iterator) {
-    expect(batch.shape, `Got correct Arrow batch shape for batch ${batchCount}`).toBe(
-      'arrow-table'
-    );
-    rowCount += batch.data.numRows;
+    expect(batch).not.toHaveProperty('shape');
+    rowCount += batch.numRows;
     batchCount++;
   }
   expect(batchCount >= 1, 'Received one or more batches').toBeTruthy();

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowTable, RecordBatch as ArrowTableBatch} from 'apache-arrow';
+
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {
-  ArrowTable,
-  ArrowTableBatch,
   BinaryFeatureCollection,
   GeoJSONTable,
   Schema,
@@ -28,7 +28,7 @@ export type GeoJSONLoaderOptions = LoaderOptions &
     /** GeoJSON-specific loader options. */
     geojson?: {
       /** Requested GeoJSON output shape. */
-      shape?: 'arrow' | 'arrow-table' | 'geojson-table' | 'binary-feature-collection';
+      shape?: 'arrow' | 'geojson-table' | 'binary-feature-collection';
       /** Preferred encoding for Arrow geometry output. */
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     };
@@ -54,6 +54,7 @@ async function preload() {
 /** Metadata-only GeoJSON worker loader. */
 export const GeoJSONLoader = {
   defaultShape: 'arrow',
+  supportsNativeArrow: true,
   dataType: null as unknown as GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch,
 
@@ -62,7 +63,7 @@ export const GeoJSONLoader = {
   worker: true,
   options: {
     geojson: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     json: {
       jsonpaths: ['$.features'],

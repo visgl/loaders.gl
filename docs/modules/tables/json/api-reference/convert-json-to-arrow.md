@@ -221,10 +221,10 @@ consistency. This converter does not append to an existing Arrow table.
 
 ## Relationship to JSONTableLoader
 
-`convertJSONToArrow(rows)` returns the native Arrow table itself: use `.schema`, `.numRows`, and
-`.getChild()` directly. `JSONTableLoader` with `json.shape: 'arrow-table'` returns the loaders.gl
-wrapper `{shape: 'arrow-table', schema, data}`, whose `.data` is the native Arrow table. The core
-APIs also support the top-level `shape: 'arrow'` option for native Arrow output from encoded input.
+`convertJSONToArrow(rows)` and `JSONTableLoader` with `json.shape: 'arrow'` return native
+Arrow tables. Use `.schema`, `.numRows`, and `.getChild()` directly. Batched loader parsing
+returns native `RecordBatch` objects. The core APIs also support `core.shape: 'arrow'`.
+
 
 Use the converter when your data is already parsed. Use the loader when you need decoding,
 fetching, workers, or streamed JSON parsing. Conversion does not itself execute queries; pass the

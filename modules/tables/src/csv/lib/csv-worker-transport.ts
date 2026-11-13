@@ -16,7 +16,7 @@ export function serializeCSVWorkerResult(result: unknown, _options?: CSVLoaderOp
 
 /** Hydrates CSV columns on the caller. */
 export function deserializeCSVWorkerResult(result: unknown): ArrowTable {
-  return deserializeNativeArrowWorkerResult(result as ArrowTable | ArrowTableBatch);
+  return deserializeNativeArrowWorkerResult(result) as ArrowTable;
 }
 
 /** Applies the shared column transport to each CSV batch. */

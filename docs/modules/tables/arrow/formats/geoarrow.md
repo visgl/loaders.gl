@@ -235,8 +235,8 @@ encoding.
 
 | Loader or source | Arrow output | Preference location |
 | --- | --- | --- |
-| GeoJSON | `geojson.shape: 'arrow-table'` | `geoarrow.encodingPreference` |
-| CSV | `csv.shape: 'arrow-table'` and `csv.detectGeometryColumns: true` | `geoarrow.encodingPreference` |
+| GeoJSON | `geojson.shape: 'arrow'` | `geoarrow.encodingPreference` |
+| CSV | `csv.shape: 'arrow'` and `csv.detectGeometryColumns: true` | `geoarrow.encodingPreference` |
 | Shapefile | `shp.shape: 'arrow-table'` or `shapefile.shape: 'arrow-table'` | `geoarrow.encodingPreference` (legacy `shp.geoarrowEncoding` is also supported) |
 | FlatGeobuf, GeoPackage | Loader-specific Arrow shape | `geoarrow.encodingPreference` |
 | KML, GPX, TCX | Loader-specific Arrow shape | `geoarrow.encodingPreference` |

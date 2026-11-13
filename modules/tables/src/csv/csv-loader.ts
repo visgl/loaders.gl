@@ -17,6 +17,7 @@ import type {
 import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {
   AsyncQueue,
+  makeArrowMetadataBatch,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
@@ -93,7 +94,11 @@ function parseCSVTextSync(
   options?: CSVLoaderOptions
 ): ObjectRowTable | ArrayRowTable | ArrowTable {
   // Apps can call the parse method directly, so we apply default options here
-  const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
+  const csvOptions = {
+    ...CSVLoaderWithParser.options.csv,
+    ...options?.csv,
+    shape: getCSVShape(options)
+  };
 
   if (csvOptions.shape === 'arrow') {
     const rowTable = parseCSVTextSync(csvText, {
@@ -179,7 +184,11 @@ function getCSVShape(options?: CSVLoaderOptions): NonNullable<CSVLoaderOptions['
   const deprecatedShape = (
     options as {shape?: NonNullable<CSVLoaderOptions['csv']>['shape']} | undefined
   )?.shape;
-  return options?.csv?.shape || deprecatedShape || DEFAULT_CSV_SHAPE;
+  const shape = options?.csv?.shape || deprecatedShape || DEFAULT_CSV_SHAPE;
+  if ((shape as string) === 'arrow-table') {
+    throw new Error('CSVLoader uses shape: "arrow" for native Arrow output');
+  }
+  return shape;
 }
 
 // TODO - support batch size 0 = no batching/single batch?
@@ -197,7 +206,11 @@ function parseCSVInBatches(
   }
 
   // Apps can call the parse method directly, we so apply default options here
-  const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
+  const csvOptions = {
+    ...CSVLoaderWithParser.options.csv,
+    ...options?.csv,
+    shape: getCSVShape(options)
+  };
 
   const asyncQueue = new AsyncQueue<TableBatch>();
 
@@ -485,10 +498,16 @@ function convertToPapaObjectRow(
 
 /** Streams each native record batch produced by the CSV Arrow parser. */
 async function* parseNativeCSVInBatches(
-  input: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
+  input:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: CSVLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   for await (const batch of parseCSVInArrowBatches(input, options)) {
-    yield* batch.data.batches;
+    if (batch.data.batches.length) {
+      yield* batch.data.batches;
+    } else {
+      yield makeArrowMetadataBatch(batch.data.schema);
+    }
   }
 }

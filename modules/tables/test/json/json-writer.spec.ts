@@ -63,11 +63,11 @@ test('JSONWriter#encodeTableAsText - GeoArrow WKB arrow table input', async () =
       ]
     }),
     {
-      geojson: {shape: 'arrow-table'}
+      geojson: {shape: 'arrow'}
     }
   );
-  if (result?.shape !== 'arrow-table') throw new Error('Expected Arrow output');
-  const encodedText = await encodeTableAsText(result.data, JSONWriter);
+  if ('shape' in result) throw new Error('Expected Arrow output');
+  const encodedText = await encodeTableAsText(result, JSONWriter);
   expect(encodedText, 'got expected GeoJSON geometry output').toBe(
     '[{"name":"A","geometry":{"type":"Point","coordinates":[1,2]}}]'
   );
@@ -82,11 +82,11 @@ test('JSONWriter#encodeTableAsText - GeoArrow WKB decoding can be disabled', asy
       }
     ]),
     {
-      geojson: {shape: 'arrow-table'}
+      geojson: {shape: 'arrow'}
     }
   );
-  if (result?.shape !== 'arrow-table') throw new Error('Expected Arrow output');
-  const encodedText = await encodeTableAsText(result.data, JSONWriter, {
+  if ('shape' in result) throw new Error('Expected Arrow output');
+  const encodedText = await encodeTableAsText(result, JSONWriter, {
     json: {geoarrow: 'none'}
   });
   expect(encodedText.includes('"name":"A"'), 'preserves non-geometry columns').toBeTruthy();

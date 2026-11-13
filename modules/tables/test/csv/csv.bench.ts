@@ -68,7 +68,7 @@ export default async function csvBench(bench) {
 
   for (const scenario of standardScenarios) {
     const arrowOptions = {
-      csv: {header: true as const, shape: 'arrow-table' as const, dynamicTyping: false}
+      csv: {header: true as const, shape: 'arrow' as const, dynamicTyping: false}
     };
     const csvOptions = {
       csv: {
@@ -79,7 +79,7 @@ export default async function csvBench(bench) {
     };
     const loaderBenchmarks = [
       {
-        name: "CSVLoader#parse({header:true, shape: 'arrow-table', dynamicTyping: false})",
+        name: "CSVLoader#parse({header:true, shape: 'arrow', dynamicTyping: false})",
         loader: csvLoaderWithParser,
         options: arrowOptions
       },
@@ -103,7 +103,7 @@ export default async function csvBench(bench) {
 
   for (const scenario of standardScenarios) {
     const arrowOptions = {
-      csv: {header: true as const, shape: 'arrow-table' as const, dynamicTyping: true}
+      csv: {header: true as const, shape: 'arrow' as const, dynamicTyping: true}
     };
     const csvOptions = {
       csv: {
@@ -114,7 +114,7 @@ export default async function csvBench(bench) {
     };
     const loaderBenchmarks = [
       {
-        name: "CSVLoader#parse({header:true, shape: 'arrow-table', dynamicTyping: true})",
+        name: "CSVLoader#parse({header:true, shape: 'arrow', dynamicTyping: true})",
         loader: csvLoaderWithParser,
         options: arrowOptions
       },
@@ -191,7 +191,7 @@ async function addCSVArrowTableWorkerBenchmarks(
       {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
       async () =>
         await parse(scenario.arrayBuffer.slice(0), CSVLoader, {
-          csv: {header: true, shape: 'arrow-table', dynamicTyping: false}
+          csv: {header: true, shape: 'arrow', dynamicTyping: false}
         })
     );
 
@@ -209,7 +209,7 @@ async function addCSVArrowTableWorkerBenchmarks(
               parse(scenario.arrayBuffer.slice(0), loader, {
                 csv: {
                   header: true,
-                  shape: 'arrow-table',
+                  shape: 'arrow',
                   dynamicTyping: false,
                   workerUrl: browserWorkerUrl
                 },
@@ -476,14 +476,14 @@ async function addBenchmarkScenarioTables(
     scenario.untypedArrowTable = await parse(scenario.text, csvLoaderWithParser, {
       csv: {
         header: true,
-        shape: 'arrow-table',
+        shape: 'arrow',
         dynamicTyping: false
       }
     });
     scenario.typedArrowTable = await parse(scenario.text, csvLoaderWithParser, {
       csv: {
         header: true,
-        shape: 'arrow-table',
+        shape: 'arrow',
         dynamicTyping: true
       }
     });

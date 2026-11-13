@@ -92,7 +92,7 @@ export class CSVTableSource
     yield* CSVLoaderWithParser.parseInBatches(chunks, {
       ...this.options,
       csv: {...this.options.csv, shape: 'object-row-table'}
-    });
+    }) as AsyncIterable<TableBatch>;
   }
 }
 
