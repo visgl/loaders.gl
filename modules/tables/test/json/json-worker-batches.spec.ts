@@ -151,7 +151,7 @@ test('NDJSON worker retains the declared schema for empty input', async () => {
 test('NDJSON worker preserves row counts for records with no fields', async () => {
   const input = encoder.encode('{}\n{}\n');
   const options = {core: {worker: true, batchSize: 1}};
-  const table = await parse(input, NDJSONLoader, options);
+  const table = await parse(input.slice(), NDJSONLoader, options);
   expect(table).toBeInstanceOf(Table);
   expect(table.numRows).toBe(2);
   expect(table.numCols).toBe(0);
