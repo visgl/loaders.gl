@@ -9,6 +9,7 @@ import {
 } from './lib/arrow-worker-transport';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {parseArrowSync, parseArrowInBatches} from './lib/parsers/parse-arrow';
 
@@ -31,4 +32,8 @@ export const ArrowLoaderWithParser = {
   parseSync: (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
     parseArrowSync(arraybuffer, options?.arrow),
   parseInBatches: parseArrowInBatches
-} as const satisfies LoaderWithParser<Table, ArrowTableBatch, ArrowLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  Table | NativeArrowTable,
+  ArrowTableBatch | RecordBatch,
+  ArrowLoaderOptions
+>;

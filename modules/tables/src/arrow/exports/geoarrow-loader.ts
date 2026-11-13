@@ -24,6 +24,8 @@ async function preload() {
 /** Metadata-only GeoArrow worker loader. */
 export const GeoArrowWorkerLoader = {
   ...ArrowWorkerLoader,
+  supportsNativeArrow: false,
+  batchType: null as unknown as ArrowTableBatch,
   dataType: null as unknown as ArrowTable | GeoJSONTable,
   format: 'geoarrow',
   worker:

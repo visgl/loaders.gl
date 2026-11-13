@@ -87,8 +87,8 @@ export class ArrowTableSource
       this.data instanceof Blob
         ? readStreamChunks(this.data.stream(), signal, onByteLength)
         : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
-    const {ArrowLoaderWithParser} = await import('./arrow-loader');
-    yield* ArrowLoaderWithParser.parseInBatches(chunks);
+    const {parseArrowInBatches} = await import('./lib/parsers/parse-arrow');
+    yield* parseArrowInBatches(chunks);
   }
 }
 

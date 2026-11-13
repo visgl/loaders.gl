@@ -198,6 +198,9 @@ export type Loader<
   /** Default public output shape applied by the core parse and load APIs. */
   defaultShape?: string;
 
+  /** Passes the native Arrow shape to the parser and its worker result hooks. */
+  supportsNativeArrow?: boolean;
+
   /** Default Options */
   options: LoaderOptionsT;
   /** Deprecated Options */

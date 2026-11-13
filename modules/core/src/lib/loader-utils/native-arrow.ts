@@ -14,7 +14,7 @@ export function getShapeOptionKey(loader: Loader): string | undefined {
   return keys.includes(loader.id) ? loader.id : keys.length === 1 ? keys[0] : undefined;
 }
 
-/** Keeps native Arrow selection at the API boundary; parsers and workers receive wrappers. */
+/** Resolves native Arrow selection for native parsers and wrapper-based parsers. */
 export function getNativeArrowOptions(
   loader: Loader,
   options: StrictLoaderOptions,
@@ -32,9 +32,10 @@ export function getNativeArrowOptions(
   }
   if (inBatches && options.core?.metadata) {
     throw new Error(
-      'shape: "arrow" does not support core.metadata; use "arrow-table" for batch metadata'
+      'shape: "arrow" carries metadata in the Arrow schema and does not support core.metadata envelopes'
     );
   }
+  if (loader.supportsNativeArrow) return options;
   return {
     ...options,
     core: {...options.core, ...(options.core?.shape === 'arrow' ? {shape: 'arrow-table'} : {})},
@@ -44,6 +45,7 @@ export function getNativeArrowOptions(
 
 /** Returns the hydrated native table without copying its columns. */
 export function unwrapArrowTable(result: unknown): arrow.Table {
+  if (isNativeArrowTable(result)) return result;
   const table = result as {shape?: string; data?: arrow.Table} | null;
   if (table?.shape !== 'arrow-table' || !table.data || !Array.isArray(table.data.batches)) {
     throw new Error('shape: "arrow" requires a loader that supports "arrow-table" output');
@@ -65,6 +67,34 @@ export async function* unwrapArrowBatches(
     ) {
       continue;
     }
-    yield* unwrapArrowTable(batch).batches;
+    if (isNativeArrowRecordBatch(batch)) {
+      yield batch;
+    } else {
+      yield* unwrapArrowTable(batch).batches;
+    }
   }
+}
+
+/** Identifies native Arrow tables without loading Arrow in the core entry point. */
+function isNativeArrowTable(value: unknown): value is arrow.Table {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      'schema' in value &&
+      'batches' in value &&
+      Array.isArray(value.batches) &&
+      'numRows' in value &&
+      typeof value.numRows === 'number' &&
+      'getChildAt' in value &&
+      typeof value.getChildAt === 'function'
+  );
+}
+
+/** Identifies native record batches across Arrow package instances. */
+function isNativeArrowRecordBatch(value: unknown): value is arrow.RecordBatch {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      (value as Record<symbol, unknown>)[Symbol.for('apache-arrow/RecordBatch')] === true
+  );
 }
