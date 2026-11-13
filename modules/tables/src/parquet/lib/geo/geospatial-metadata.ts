@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {updateArrowTableSchema} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import {
@@ -183,7 +184,7 @@ export function applyGeoParquetToFieldMetadata(schema: Schema): Schema {
  */
 export function applyLoadersSchemaToArrowTable(table: arrow.Table, schema: Schema): arrow.Table {
   const arrowSchema = createArrowJsSchema(table.schema, schema);
-  return new arrow.Table(arrowSchema, table.batches);
+  return updateArrowTableSchema(table, arrowSchema);
 }
 
 /**

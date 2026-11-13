@@ -33,6 +33,8 @@ import {
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import {updateArrowTableMetadata} from '@loaders.gl/core/schema-utils';
+import {makeMetadataFromPlyHeader} from './get-ply-schema';
 import normalizePLY from './normalize-ply';
 import {PLYMesh, PLYHeader, PLYElement, PLYProperty, PLYAttributes} from './ply-types';
 import {
@@ -109,7 +111,10 @@ async function* parseBinaryPLYToArrowInBatches(
         );
   }
   for await (const table of tables) {
-    yield {...table, loaderData: header} as MeshArrowTable;
+    yield {
+      ...updateArrowTableMetadata(table, makeMetadataFromPlyHeader(header)),
+      loaderData: header
+    } as MeshArrowTable;
   }
 }
 

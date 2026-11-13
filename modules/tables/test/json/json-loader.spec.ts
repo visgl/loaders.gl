@@ -419,7 +419,7 @@ test('GeoJSONLoader#parseInBatches(arrow-table applies early legacy GeoJSON CRS)
   }
   expect(dataBatchCount, 'received one data batch').toBe(1);
 });
-test('GeoJSONLoader#parseInBatches(arrow-table ignores late legacy GeoJSON CRS)', async () => {
+test('GeoJSONLoader#parseInBatches(arrow-table refines late legacy GeoJSON CRS)', async () => {
   const iterator = BundledGeoJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(
       JSON.stringify({
@@ -441,11 +441,15 @@ test('GeoJSONLoader#parseInBatches(arrow-table ignores late legacy GeoJSON CRS)'
   for await (const batch of iterator) {
     expect(batch.batchType, 'late CRS does not force metadata batches').toBe('data');
     const geoMetadata = getGeoMetadata(batch.schema?.metadata);
-    expect(geoMetadata?.columns.geometry.geojson_crs, 'late CRS is ignored').toBe(undefined);
-    expect(geoMetadata?.columns.geometry.crs, 'late CRS is not mapped').toBe(undefined);
+    if (batch.length === 0) {
+      expect((geoMetadata?.columns.geometry.crs as any)?.id?.code).toBe(4326);
+    } else {
+      expect(geoMetadata?.columns.geometry.geojson_crs).toBeUndefined();
+      expect(geoMetadata?.columns.geometry.crs).toBeUndefined();
+    }
     dataBatchCount++;
   }
-  expect(dataBatchCount, 'received one data batch').toBe(1);
+  expect(dataBatchCount).toBe(2);
 });
 test('GeoJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async () => {
   const iterator = BundledGeoJSONLoader.parseInBatches?.(

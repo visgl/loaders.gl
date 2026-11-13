@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {makeArrowTableFromBatches, serializeArrowSchema} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {
@@ -116,15 +117,15 @@ export async function parseParquetFileToArrowWithJs(
   let schema: Schema | undefined;
 
   for await (const batch of parseParquetFileToArrowInBatchesWithJs(file, options)) {
-    schema ||= batch.schema;
+    schema = batch.schema || schema;
     recordBatches.push(...batch.data.batches);
   }
 
   schema ||= await readProjectedSchema(file, options);
   const table = recordBatches.length
-    ? new arrow.Table(recordBatches)
+    ? (await makeArrowTableFromBatches(recordBatches))!
     : new arrow.Table(createParquetArrowSchema(schema), []);
-  return {shape: 'arrow-table', data: table, schema};
+  return {shape: 'arrow-table', data: table, schema: serializeArrowSchema(table.schema)};
 }
 
 /** Parses complete row groups directly, bypassing batch slicing and wrapper reconstruction. */
@@ -170,7 +171,7 @@ async function parseCompleteParquetFileToArrowWithJs(
     shape: 'arrow-table',
     schema,
     data: recordBatches.length
-      ? new arrow.Table(recordBatches)
+      ? (await makeArrowTableFromBatches(recordBatches))!
       : new arrow.Table(createParquetArrowSchema(schema), [])
   };
 }

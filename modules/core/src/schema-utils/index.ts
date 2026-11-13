@@ -165,3 +165,13 @@ export type {
   PointCloudTilerNode,
   PointCloudTileBounds
 } from './lib/mesh/point-cloud-tiler';
+
+export {
+  snapshotArrowSchema,
+  mergeArrowSchemas,
+  updateArrowTableSchema,
+  updateArrowTableMetadata,
+  makeArrowMetadataBatch,
+  makeArrowTableFromBatches
+} from './lib/arrow/arrow-metadata';
+export {refineArrowTableBatches} from './lib/arrow/arrow-metadata';

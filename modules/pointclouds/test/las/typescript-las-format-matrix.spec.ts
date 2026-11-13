@@ -605,3 +605,45 @@ function getWaveformOffset(pointDataRecordFormat: number): number {
   if (pointDataRecordFormat === 10) return 38;
   return -1;
 }
+
+test('TypeScript LAS emits trailing EVLR metadata without mutating previous batches', async () => {
+  const source = createLASMetadataFixture(
+    [],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('TRAILING_WKT')}]
+  );
+  const batches = [];
+  for await (const batch of parseLASInBatches([source.slice(0, 375), source.slice(375)]))
+    batches.push(batch);
+  expect(batches).toHaveLength(2);
+  expect(batches[0].data.schema.metadata.has('las_wkt')).toBe(false);
+  expect(batches[1].data.numRows).toBe(0);
+  expect(batches[1].data.schema.metadata.get('las_wkt')).toBe(
+    parseLAS(source).data.schema.metadata.get('las_wkt')
+  );
+  expect(batches[1].loaderData.metadata?.wkt).toBe('TRAILING_WKT');
+});
+
+test('TypeScript LAS retains global header metadata and absolute trailing record offsets', async () => {
+  const points = createLASFixture(0, false);
+  const extended = createLASMetadataFixture(
+    [],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('FINAL_WKT')}]
+  ).slice(375);
+  const bytes = new Uint8Array(points.byteLength + extended.byteLength);
+  bytes.set(new Uint8Array(points));
+  bytes.set(new Uint8Array(extended), points.byteLength);
+  const view = new DataView(bytes.buffer);
+  view.setBigUint64(235, BigInt(points.byteLength), true);
+  view.setUint32(243, 1, true);
+  const batches = [];
+  for await (const batch of parseLASInBatches(
+    [bytes.subarray(0, points.byteLength), bytes.subarray(points.byteLength)],
+    {batchSize: 1}
+  ))
+    batches.push(batch);
+  const header = parseLASHeader(bytes.buffer);
+  expect(batches[0].data.schema.metadata.get('las_pointsCount')).toBe(String(header.pointsCount));
+  expect(batches[0].data.schema.metadata.get('las_pointsOffset')).toBe(String(header.pointsOffset));
+  expect(batches.at(-1)!.loaderData.metadata?.evlrs[0].offset).toBe(points.byteLength);
+  expect(batches.at(-1)!.data.schema.metadata.get('las_wkt')).toBe('FINAL_WKT');
+});

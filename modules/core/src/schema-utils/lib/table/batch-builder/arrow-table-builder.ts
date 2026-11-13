@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {snapshotArrowSchema} from '../../arrow/arrow-metadata';
 import type {Schema, ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {
@@ -59,7 +60,7 @@ export class ArrowTableBuilder {
       shape: 'arrow-table',
       batchType: 'data',
       length: arrowRecordBatch.numRows,
-      schema: this.schema,
+      schema: structuredClone(this.schema),
       data: new arrow.Table(arrowRecordBatch)
     };
   }
@@ -72,7 +73,7 @@ export class ArrowTableBuilder {
       shape: 'arrow-table',
       batchType: 'data',
       length: arrowRecordBatch.numRows,
-      schema: this.schema,
+      schema: structuredClone(this.schema),
       data: new arrow.Table(arrowRecordBatch)
     };
   }
@@ -88,7 +89,7 @@ export class ArrowTableBuilder {
       shape: 'arrow-table',
       batchType: 'data',
       length: arrowRecordBatch.numRows,
-      schema: this.schema,
+      schema: structuredClone(this.schema),
       data: new arrow.Table(arrowRecordBatch)
     };
   }
@@ -99,7 +100,7 @@ export class ArrowTableBuilder {
     this.arrowBuilders.forEach(builder => builder.finish());
     return {
       shape: 'arrow-table',
-      schema: this.schema,
+      schema: structuredClone(this.schema),
       data: new arrow.Table(arrowRecordBatch)
     };
   }
@@ -112,7 +113,10 @@ export class ArrowTableBuilder {
     this.length = 0;
     const structField = new arrow.Struct(arrowSchema.fields);
     const arrowStructData = new arrow.Data(structField, 0, length, 0, undefined, arrowDatas);
-    const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowStructData);
+    const arrowRecordBatch = new arrow.RecordBatch(
+      snapshotArrowSchema(arrowSchema),
+      arrowStructData
+    );
     return arrowRecordBatch;
   }
 }

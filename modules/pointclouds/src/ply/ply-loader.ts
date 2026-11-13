@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {refineArrowTableBatches} from '@loaders.gl/core/schema-utils';
 import type {PLYLoaderOptions} from './ply-loader-types';
 
 // PLY Loader
@@ -63,23 +64,8 @@ export const PLYLoaderWithParser = {
   parse: async (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
   parseTextSync: (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
   parseSync: (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
-  parseInBatches: async function* (
-    arrayBuffer:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ) {
-    const plyOptions = {
-      ...options?.ply,
-      batchSize: options?.core?.batchSize ?? options?.batchSize
-    };
-    for await (const meshOrTable of parsePLYInBatches(arrayBuffer, plyOptions)) {
-      const convertedData = isMeshArrowTable(meshOrTable)
-        ? convertPLYTable(meshOrTable, options)
-        : convertPLYMesh(meshOrTable, options);
-      yield isMeshArrowTable(convertedData) ? makeTableScanBatch(convertedData) : convertedData;
-    }
-  },
+  parseInBatches: (input, options) =>
+    refineArrowTableBatches(parsePLYWithMetadataInBatches(input, options)),
   serializeWorkerResult: serializeArrowWorkerTable,
   deserializeWorkerResult: deserializePLYWorkerResult,
   serializeWorkerBatch: serializeArrowWorkerTable,
@@ -182,4 +168,23 @@ function deserializePLYWorkerBatch(
   options?: PLYLoaderOptions
 ): PLYMesh | ArrowTableBatch {
   return deserializePLYWorkerResult(result, options) as PLYMesh | ArrowTableBatch;
+}
+
+/** Parses PLY batches before shared cumulative metadata refinement. */
+async function* parsePLYWithMetadataInBatches(
+  arrayBuffer:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: PLYLoaderOptions
+) {
+  const plyOptions = {
+    ...options?.ply,
+    batchSize: options?.core?.batchSize ?? options?.batchSize
+  };
+  for await (const meshOrTable of parsePLYInBatches(arrayBuffer, plyOptions)) {
+    const convertedData = isMeshArrowTable(meshOrTable)
+      ? convertPLYTable(meshOrTable, options)
+      : convertPLYMesh(meshOrTable, options);
+    yield isMeshArrowTable(convertedData) ? makeTableScanBatch(convertedData) : convertedData;
+  }
 }

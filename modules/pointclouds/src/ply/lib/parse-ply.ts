@@ -26,6 +26,7 @@
 // });
 import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import type {
   PLYMesh,
   PLYHeader,
@@ -637,6 +638,8 @@ function makePLYArrowTable(header: PLYHeader, attributes: PLYAttributes): MeshAr
   const schema = getPLYSchema(header, meshAttributes);
   schema.metadata.topology = 'point-list';
   schema.metadata.mode = '0';
+  const boundingBox = getMeshBoundingBox(meshAttributes);
+  if (boundingBox) schema.metadata.boundingBox = JSON.stringify(boundingBox);
 
   const columns: Record<string, arrow.Vector> = {};
   const fields: arrow.Field[] = [];

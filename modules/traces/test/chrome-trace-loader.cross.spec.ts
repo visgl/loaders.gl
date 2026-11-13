@@ -277,7 +277,8 @@ describe('ChromeTraceLoader', () => {
       batches.push(batch as arrow.RecordBatch);
     }
 
-    expect(batches).toHaveLength(2);
+    expect(batches).toHaveLength(3);
+    expect(batches.at(-1)?.numRows).toBe(0);
 
     const combinedTable = new arrow.Table(batches[0].schema, batches);
     expect(combinedTable.numRows).toBe(4);
@@ -307,7 +308,7 @@ describe('ChromeTraceLoader', () => {
       custom_flag: true
     });
 
-    expect(batches[1].schema.metadata.get('chromeTrace.metadataJson')).toBe(
+    expect(batches.at(-1)!.schema.metadata.get('chromeTrace.metadataJson')).toBe(
       JSON.stringify(traceFile.metadata)
     );
   });

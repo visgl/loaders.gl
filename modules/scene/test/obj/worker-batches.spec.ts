@@ -136,3 +136,19 @@ test('OBJ bundled entrypoint retains OBJ and MTL parser and format exports', () 
   expect(bundled.MTLLoader.parseTextSync).toBeTypeOf('function');
   expect(bundled.MTLWorkerLoader.id).toBe('mtl');
 });
+
+test('OBJ worker preserves cumulative and batch-local bounds', async () => {
+  const iterator = await parseInBatches(
+    [new TextEncoder().encode('v 1 2 3\nv -1 4 0\n')],
+    OBJLoader,
+    {
+      core: {worker: true, _workerType: 'test', batchSize: 1},
+      obj: {shape: 'arrow-table', pointCloud: true}
+    }
+  );
+  const batches: any[] = [];
+  for await (const batch of iterator) batches.push(batch);
+  expect(batches[0].data.schema.metadata.get('boundingBox')).toBe('[[1,2,3],[1,2,3]]');
+  expect(batches[1].data.schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
+  expect(batches[1].data.batches[0].metadata.get('boundingBox')).toBe('[[-1,4,0],[-1,4,0]]');
+});

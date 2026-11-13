@@ -5,7 +5,11 @@
 import * as arrow from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
-import {convertArrowTable, convertArrowToTable} from '@loaders.gl/core/schema-utils';
+import {
+  convertArrowTable,
+  convertArrowToTable,
+  updateArrowTableSchema
+} from '@loaders.gl/core/schema-utils';
 import {
   makeTableScanBatch,
   paceBatchIterator,
@@ -145,7 +149,7 @@ export function parseArrowInBatches(
       for await (const recordBatch of reader) {
         const arrowTabledBatch: ArrowTableBatch = makeTableScanBatch({
           shape: 'arrow-table',
-          data: new arrow.Table([recordBatch])
+          data: updateArrowTableSchema(new arrow.Table([recordBatch]), reader.schema)
         });
         // processBatch(recordBatch);
         yield arrowTabledBatch;
