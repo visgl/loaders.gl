@@ -96,7 +96,7 @@ must not be deferred as ordinary minor-release features.
 ### Per-module changes
 
 - **`@loaders.gl/tables/csv`**
-  - `CSVLoader` - Supports Apache Arrow table output through `csv.shape: 'arrow-table'`.
+  - `CSVLoader` - Supports Apache Arrow table output through `csv.shape: 'arrow'`.
 
 - **`@loaders.gl/tables/parquet`**
   - `ParquetLoader` can return Apache Arrow tables with `parquet.shape: 'arrow-table'` and leverages the high-performance `parquet-wasm` library.

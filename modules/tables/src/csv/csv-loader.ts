@@ -3,12 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {CSVTableSource, type CSVSourceOptions} from './csv-source';
+import type {Table as ArrowTable, RecordBatch as ArrowTableBatch} from 'apache-arrow';
 import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   Schema,
   ArrayRowTable,
-  ArrowTable,
-  ArrowTableBatch,
   ColumnarTable,
   ColumnarTableBatch,
   ObjectRowTable,
@@ -18,6 +17,7 @@ import type {
 import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {
   AsyncQueue,
+  makeArrowMetadataBatch,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
@@ -55,19 +55,19 @@ export type {CSVLoaderOptions} from './csv-loader-types';
 export const CSVLoaderWithParser = {
   ...CSVLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
-    getCSVShape(options) === 'arrow-table'
-      ? parseCSVArrayBufferAsArrow(arrayBuffer, options)
+    getCSVShape(options) === 'arrow'
+      ? parseCSVArrayBufferAsArrow(arrayBuffer, options).then(table => table.data)
       : parseCSVText(new TextDecoder().decode(arrayBuffer), options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     parseCSVTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseText: (text: string, options?: CSVLoaderOptions) =>
-    getCSVShape(options) === 'arrow-table'
-      ? parseCSVTextAsArrow(text, options)
+    getCSVShape(options) === 'arrow'
+      ? parseCSVTextAsArrow(text, options).then(table => table.data)
       : parseCSVText(text, options),
   parseTextSync: (text: string, options?: CSVLoaderOptions) => parseCSVTextSync(text, options),
   parseInBatches: (asyncIterator, options?: CSVLoaderOptions) =>
-    getCSVShape(options) === 'arrow-table'
-      ? parseCSVInArrowBatches(asyncIterator, options)
+    getCSVShape(options) === 'arrow'
+      ? parseNativeCSVInBatches(asyncIterator, options)
       : parseCSVInBatches(asyncIterator, options),
   serializeWorkerResult: serializeCSVWorkerResult,
   deserializeWorkerResult: deserializeCSVWorkerResult,
@@ -94,9 +94,13 @@ function parseCSVTextSync(
   options?: CSVLoaderOptions
 ): ObjectRowTable | ArrayRowTable | ArrowTable {
   // Apps can call the parse method directly, so we apply default options here
-  const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
+  const csvOptions = {
+    ...CSVLoaderWithParser.options.csv,
+    ...options?.csv,
+    shape: getCSVShape(options)
+  };
 
-  if (csvOptions.shape === 'arrow-table') {
+  if (csvOptions.shape === 'arrow') {
     const rowTable = parseCSVTextSync(csvText, {
       ...options,
       csv: {...options?.csv, shape: 'object-row-table'}
@@ -105,7 +109,7 @@ function parseCSVTextSync(
       rowTable as ObjectRowTable,
       csvOptions.viewTypes,
       options?.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
-    );
+    ).data;
   }
 
   const firstRowResult = readFirstRow(csvText, csvOptions.delimitersToGuess);
@@ -180,7 +184,11 @@ function getCSVShape(options?: CSVLoaderOptions): NonNullable<CSVLoaderOptions['
   const deprecatedShape = (
     options as {shape?: NonNullable<CSVLoaderOptions['csv']>['shape']} | undefined
   )?.shape;
-  return options?.csv?.shape || deprecatedShape || DEFAULT_CSV_SHAPE;
+  const shape = options?.csv?.shape || deprecatedShape || DEFAULT_CSV_SHAPE;
+  if ((shape as string) === 'arrow-table') {
+    throw new Error('CSVLoader uses shape: "arrow" for native Arrow output');
+  }
+  return shape;
 }
 
 // TODO - support batch size 0 = no batching/single batch?
@@ -198,7 +206,11 @@ function parseCSVInBatches(
   }
 
   // Apps can call the parse method directly, we so apply default options here
-  const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
+  const csvOptions = {
+    ...CSVLoaderWithParser.options.csv,
+    ...options?.csv,
+    shape: getCSVShape(options)
+  };
 
   const asyncQueue = new AsyncQueue<TableBatch>();
 
@@ -482,4 +494,20 @@ function convertToPapaObjectRow(
     objectRow.__parsed_extra = parsedExtra;
   }
   return objectRow;
+}
+
+/** Streams each native record batch produced by the CSV Arrow parser. */
+async function* parseNativeCSVInBatches(
+  input:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: CSVLoaderOptions
+): AsyncIterable<ArrowTableBatch> {
+  for await (const batch of parseCSVInArrowBatches(input, options)) {
+    if (batch.data.batches.length) {
+      yield* batch.data.batches;
+    } else {
+      yield makeArrowMetadataBatch(batch.data.schema);
+    }
+  }
 }

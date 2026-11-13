@@ -108,7 +108,9 @@ test.each(cases)('$name returns native Tables and all RecordBatches', async ({lo
     loader === GeoArrowLoader ||
     loader === ORCLoader ||
     loader === AvroLoader ||
-    loader === NDJSONLoader
+    loader === NDJSONLoader ||
+    loader === CSVLoader ||
+    loader === JSONTableLoader
   ) {
     await expect(parse(input(), loader, {core: {shape: 'arrow-table'} as any})).rejects.toThrow(
       'uses shape: "arrow"'
@@ -209,18 +211,22 @@ test('sync and load APIs infer native output and preserve scoped overrides', asy
   expectTypeOf(batches).toEqualTypeOf<AsyncIterable<RecordBatch>>();
 });
 
-test('native streaming requires wrapped mode for loader metadata', async () => {
+test('native streaming uses schema metadata and row output supports loader envelopes', async () => {
   await expect(parseInBatches([ipc], ArrowLoader, {core: {metadata: true}})).rejects.toThrow(
     'core.metadata'
   );
 
-  const output = await parseInBatches(['label\nfirst\nsecond\n'], CSVLoader, {
-    core: {shape: 'arrow-table', metadata: true, worker: false}
-  });
+  const output = await parseInBatches(
+    [new TextEncoder().encode('label\nfirst\nsecond\n')],
+    CSVLoader,
+    {
+      core: {shape: 'object-row-table', metadata: true, worker: false}
+    }
+  );
   const events = [];
   for await (const event of output) events.push(event);
   const [metadata, ...batches] = events;
   expect(metadata).toMatchObject({batchType: 'metadata'});
   expect(batches.length).toBeGreaterThan(0);
-  expect(batches[0]).toMatchObject({shape: 'arrow-table', batchType: 'data'});
+  expect(batches[0]).toMatchObject({shape: 'object-row-table', batchType: 'data'});
 });

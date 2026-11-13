@@ -94,15 +94,15 @@ test.each([
 
 test('convertJSONToArrow rejects non-row tables instead of converting their schema fields', () => {
   const wrappedTable = JSONTableLoaderWithParser.parseTextSync('[{"value": 1}]', {
-    json: {shape: 'arrow-table'}
+    json: {shape: 'arrow'}
   });
-  if (wrappedTable.shape !== 'arrow-table') throw new Error('Expected Arrow table');
+  if ('shape' in wrappedTable) throw new Error('Expected Arrow table');
   const columnarTable = {
     shape: 'columnar-table',
     schema: wrappedTable.schema,
     data: {value: [1]}
   };
-  for (const input of [wrappedTable, wrappedTable.data, columnarTable]) {
+  for (const input of [wrappedTable, {shape: 'arrow-table', data: wrappedTable}, columnarTable]) {
     expect(() => convertJSONToArrow(input)).toThrow(
       'convertJSONToArrow: expected a JSON row array'
     );
@@ -152,12 +152,12 @@ test('convertJSONToArrow matches JSONTableLoader Arrow conversion', () => {
   const rows = [{value: 1.6}];
   const directTable = convertJSONToArrow(rows, options);
   const loadedTable = JSONTableLoaderWithParser.parseTextSync(JSON.stringify(rows), {
-    json: {shape: 'arrow-table', ...options}
+    json: {shape: 'arrow', ...options}
   });
-  expect(loadedTable.shape).toBe('arrow-table');
-  if (loadedTable.shape !== 'arrow-table') throw new Error('Expected Arrow table');
-  expect(directTable.schema.toString()).toBe(loadedTable.data.schema.toString());
+  expect(loadedTable).not.toHaveProperty('shape');
+  if ('shape' in loadedTable) throw new Error('Expected Arrow table');
+  expect(directTable.schema.toString()).toBe(loadedTable.schema.toString());
   expect(directTable.toArray().map(row => row.toJSON())).toEqual(
-    loadedTable.data.toArray().map(row => row.toJSON())
+    loadedTable.toArray().map(row => row.toJSON())
   );
 });

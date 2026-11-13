@@ -9,7 +9,7 @@ import {CSVLoader, CSVTableSource} from '@loaders.gl/tables/csv';
 import {JSONLoader, JSONTableLoader, JSONTableSource} from '@loaders.gl/tables/json';
 
 test('JSON table source queries inferred array columns from a URL', async () => {
-  expect(JSONTableLoader.options.json.shape).toBe('arrow-table');
+  expect(JSONTableLoader.options.json.shape).toBe('arrow');
   const fetch = vi.fn(async () => new Response('[[-73.98,40.73,2],[-74,40.7,1]]'));
   const result = await query(
     {

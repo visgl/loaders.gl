@@ -756,21 +756,28 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 
 - The underscored GeoJSON exports have been removed. Replace `_GeoJSONLoader`, `_GeoJSONWorkerLoader`, and `_GeoJSONWriter` with `GeoJSONLoader`, `GeoJSONWorkerLoader`, and `GeoJSONWriter`.
 - `GeoJSONLoader` now returns a GeoArrow-compatible Arrow table by default. Set `options.geojson.shape: 'geojson-table'` for the previous object-row feature table, or use `'binary-feature-collection'` for deck.gl-style binary features.
-- `JSONLoader` remains the arbitrary JSON document loader. Use `JSONTableLoader` for table-only JSON workflows and for `json.shape: 'arrow-table'`.
-- `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
+- `JSONLoader` remains the arbitrary JSON document loader. Use `JSONTableLoader` for table-only JSON workflows and for `json.shape: 'arrow'`.
+- `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
 
 #### Table loaders default to native Arrow
 
 Code that reads `result.data` from a table returned by a loader in
 `@loaders.gl/tables` can use the returned Apache Arrow `Table` directly.
 Batch APIs yield Apache Arrow `RecordBatch` objects. Loaders that still support wrappers
-accept `core.shape: 'arrow-table'`. `NDJSONLoader` and `NDGeoJSONLoader` use `'arrow'`
+accept `core.shape: 'arrow-table'`. `CSVLoader`, `JSONTableLoader`, `GeoJSONLoader`, `NDJSONLoader`, and `NDGeoJSONLoader` use `'arrow'`
 for all Arrow output. A loader-specific shape option,
 such as `csv.shape`, takes precedence over `core.shape`.
 
 See [native Apache Arrow output](./modules/core/schema/table-guide.md#native-apache-arrow-output)
 for batch metadata and examples. Pass the native Arrow table to writers. If a
 loader returns an `'arrow-table'` wrapper, pass its `data` property.
+
+`CSVLoader`, `JSONTableLoader`, and `GeoJSONLoader` use `'arrow'` for Arrow output. Replace
+`'arrow-table'` shape options with `'arrow'`. Atomic parsing returns an Apache Arrow
+`Table` and batch parsing yields `RecordBatch` objects. Access columns directly on the
+returned value and use `numRows` for batch row counts. Schema and field metadata use
+Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
+JSON batch paths are available through `batch.metadata.get('jsonpath')`.
 
 #### NDGeoJSON, trace, and GML output defaults
 

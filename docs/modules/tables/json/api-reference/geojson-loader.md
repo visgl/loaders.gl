@@ -90,7 +90,7 @@ const binary = await load(url, GeoJSONLoader, {
 });
 
 const arrowTable = await load(url, GeoJSONLoader, {
-  geojson: {shape: 'arrow-table'}
+  geojson: {shape: 'arrow'}
 });
 ```
 
@@ -98,7 +98,7 @@ const arrowTable = await load(url, GeoJSONLoader, {
 
 ```typescript
 const nativeTable = await load(url, GeoJSONLoader, {
-  geojson: {shape: 'arrow-table'},
+  geojson: {shape: 'arrow'},
   geoarrow: {encodingPreference: 'optimized'}
 });
 ```
@@ -124,7 +124,7 @@ for await (const batch of batches) {
 }
 ```
 
-When batch parsing an embedded JSON array as a table, it is possible to get access to the containing object by setting `core.metadata: true`.
+With `geojson.shape: 'geojson-table'`, when batch parsing an embedded JSON array, it is possible to get access to the containing object by setting `core.metadata: true`.
 
 The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result` respectively.
 
@@ -157,7 +157,9 @@ for await (const batch of batches) {
 
 ## Data Format
 
-Parsed batches are of the format
+Arrow output consists of native `RecordBatch` objects. Schema metadata snapshots accumulate container properties under `loaders.gl.containerJson` and GeoArrow CRS information. A final zero-row batch carries trailing refinements. Empty inputs retain their declared schema. Batch-local paths use `batch.metadata.get('jsonpath')`.
+
+Explicit row-output batches use the following format
 
 ```ts
 {
@@ -177,14 +179,14 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option                 | From                                                                                  | Type       | Default                                                                                                                                          | Description                                                                                                                           |
 | ---------------------- | ------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `geojson.shape`        |                                                                                       | `string`   | `'arrow'` | Requested output shape. Supported values are `'arrow'`, `'arrow-table'`, `'geojson-table'`, and `'binary-feature-collection'`. |
-| `json.schema`          |                                                                                       | `Schema \| arrow.Schema` | `undefined`                                                                                                                             | Optional full output schema used when `geojson.shape` is `'arrow-table'`. The schema must include the geometry column. |
-| `json.arrowConversion` |                                                                                       | `object`   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`                                                  | Optional Arrow conversion policy for `geojson.shape: 'arrow-table'`. `onTypeMismatch: 'null'`, `onMissingField: 'null'`, and `integerConversion: 'null'` write `null` only for nullable fields. `onExtraField: 'drop'` omits fields that are not in the schema. `integerConversion: 'clamp-and-round'` applies lossy integer conversion, and `'warn'` does the same while logging. |
+| `geojson.shape`        |                                                                                       | `string`   | `'arrow'` | Requested output shape. Supported values are `'arrow'`, `'arrow'`, `'geojson-table'`, and `'binary-feature-collection'`. |
+| `json.schema`          |                                                                                       | `Schema \| arrow.Schema` | `undefined`                                                                                                                             | Optional full output schema used when `geojson.shape` is `'arrow'`. The schema must include the geometry column. |
+| `json.arrowConversion` |                                                                                       | `object`   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`                                                  | Optional Arrow conversion policy for `geojson.shape: 'arrow'`. `onTypeMismatch: 'null'`, `onMissingField: 'null'`, and `integerConversion: 'null'` write `null` only for nullable fields. `onExtraField: 'drop'` omits fields that are not in the schema. `integerConversion: 'clamp-and-round'` applies lossy integer conversion, and `'warn'` does the same while logging. |
 | `json.arrowConversion.viewTypes` |                                                                                | `'never' \| 'prefer' \| 'require'` | `'never'`                                                                                                                        | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
-| `json.geoarrowGeometryColumn` |                                                                                 | `string`   | `'geometry'`                                                                                                                                     | Geometry column name used for GeoArrow WKB output. Requires `geojson.shape: 'arrow-table'`. |
+| `json.geoarrowGeometryColumn` |                                                                                 | `string`   | `'geometry'`                                                                                                                                     | Geometry column name used for GeoArrow WKB output. Requires `geojson.shape: 'arrow'`. |
 | `geoarrow.encodingPreference` |                                                                                 | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `'geoarrow.wkb'` | Arrow geometry representation. WKB is compact and compatible; `geoarrow.geometry` is a stable dense union; `optimized` selects a concrete native encoding for homogeneous data and a dense union for mixed data. |
 | `json.jsonpaths`       | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `['$.features']`                                                                                                                                 | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
-| `core.metadata` | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`  | `false` | If `true`, yields an initial and final batch containing the partial and final result (i.e. the root object, excluding the array being streamed). |
+| `core.metadata` | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`  | `false` | For explicit row output, if `true`, yields an initial and final batch containing the partial and final result (i.e. the root object, excluding the array being streamed). |
 
 ## JSONPaths
 

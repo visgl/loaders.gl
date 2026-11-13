@@ -61,23 +61,23 @@ test('CSVLoader direct parser methods honor the Arrow default', async () => {
   const csvBytes = new TextEncoder().encode(csvText);
 
   const parseSyncResult = BundledCSVLoader.parseSync(csvBytes.buffer);
-  expect(parseSyncResult.shape).toBe('arrow-table');
-  expect(parseSyncResult.data.getChild('city')?.get(0)).toBe('Paris');
+  expect(parseSyncResult).not.toHaveProperty('shape');
+  expect(parseSyncResult.getChild('city')?.get(0)).toBe('Paris');
 
   const parseTextSyncResult = BundledCSVLoader.parseTextSync(csvText);
-  expect(parseTextSyncResult.shape).toBe('arrow-table');
-  expect(parseTextSyncResult.data.getChild('population')?.get(0)).toBe(2148000);
+  expect(parseTextSyncResult).not.toHaveProperty('shape');
+  expect(parseTextSyncResult.getChild('population')?.get(0)).toBe(2148000);
 
   const parseResult = await BundledCSVLoader.parse(csvBytes.buffer);
-  expect(parseResult.shape).toBe('arrow-table');
+  expect(parseResult).not.toHaveProperty('shape');
 
   const parseTextResult = await BundledCSVLoader.parseText(csvText);
-  expect(parseTextResult.shape).toBe('arrow-table');
+  expect(parseTextResult).not.toHaveProperty('shape');
 
   const deprecatedShapeResult = await BundledCSVLoader.parse(csvBytes.buffer, {
-    shape: 'arrow-table'
+    shape: 'arrow'
   } as any);
-  expect(deprecatedShapeResult.shape).toBe('arrow-table');
+  expect(deprecatedShapeResult).not.toHaveProperty('shape');
 });
 
 test('CSVLoader#unbundled export preloads parser implementation', async () => {
@@ -90,11 +90,11 @@ test('CSVLoader#unbundled export preloads parser implementation', async () => {
 
   const table = await parse('city,population\nParis,2148000', UnbundledCSVLoader, {
     core: {worker: false},
-    csv: {shape: 'arrow-table', header: true}
+    csv: {shape: 'arrow', header: true}
   });
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data.numRows).toBe(1);
-  expect(table.data.getChild('city')?.get(0)).toBe('Paris');
+  expect(table).not.toHaveProperty('shape');
+  expect(table.numRows).toBe(1);
+  expect(table.getChild('city')?.get(0)).toBe('Paris');
 
   const parserLoader = await preload(UnbundledCSVLoader);
   expect(typeof parserLoader.parse).toBe('function');
@@ -104,14 +104,14 @@ test('CSVLoader#unbundled export preloads parser implementation', async () => {
 test('CSVLoader#loadInBatches(numbers-100.csv)', async () => {
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVLoader, {
     core: {worker: false, batchSize: 40},
-    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
+    csv: {shape: 'arrow', dynamicTyping: false, skipEmptyLines: false}
   });
 
   expect(isIterator(iterator) || isAsyncIterable(iterator)).toBe(true);
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    expect(batch.data).toBeInstanceOf(arrow.Table);
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
     batchCount++;
   }
   expect(batchCount).toBe(3);
@@ -120,13 +120,13 @@ test('CSVLoader#loadInBatches(numbers-100.csv)', async () => {
 test('CSVLoader#loadInBatches(numbers-10000.csv)', async () => {
   const iterator = await loadInBatches(CSV_NUMBERS_10000_URL, CSVLoader, {
     core: {worker: false, batchSize: 2000},
-    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
+    csv: {shape: 'arrow', dynamicTyping: false, skipEmptyLines: false}
   });
   expect(isIterator(iterator) || isAsyncIterable(iterator)).toBe(true);
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    expect(batch.data).toBeInstanceOf(arrow.Table);
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
     batchCount++;
   }
   expect(batchCount).toBe(5);
@@ -135,13 +135,13 @@ test('CSVLoader#loadInBatches(numbers-10000.csv)', async () => {
 test('CSVLoader#loadInBatches(incidents.csv)', async () => {
   const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
     core: {worker: false},
-    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
+    csv: {shape: 'arrow', dynamicTyping: false, skipEmptyLines: false}
   });
   expect(isIterator(iterator) || isAsyncIterable(iterator)).toBe(true);
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    expect(batch.data).toBeInstanceOf(arrow.Table);
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
     batchCount++;
   }
   expect(batchCount).toBe(1);
@@ -150,16 +150,16 @@ test('CSVLoader#loadInBatches(incidents.csv)', async () => {
 test('CSVLoader#load(numbers-100.csv)', async () => {
   const table = await load(CSV_NUMBERS_100_URL, CSVLoader, {
     core: {worker: false},
-    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
+    csv: {shape: 'arrow', dynamicTyping: false, skipEmptyLines: false}
   });
 
-  expect(table.data).toBeInstanceOf(arrow.Table);
-  expect(table.data.numRows).toBe(100);
+  expect(table).toBeInstanceOf(arrow.Table);
+  expect(table.numRows).toBe(100);
 
-  const zipColumn = table.data.getChildAt(1);
+  const zipColumn = table.getChildAt(1);
   expect(zipColumn?.get(0)).toBe('09857');
 
-  const fieldTypeNames = table.data.schema.fields.map(field => field.type.toString());
+  const fieldTypeNames = table.schema.fields.map(field => field.type.toString());
   expect(fieldTypeNames.every(typeName => typeName === 'Utf8')).toBe(true);
 });
 
@@ -167,18 +167,16 @@ test('CSVLoader#load prefers supported Arrow Utf8View columns', async () => {
   const table = await load(CSV_NUMBERS_100_URL, CSVLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       dynamicTyping: false,
       skipEmptyLines: false,
       viewTypes: 'require'
     }
   });
 
-  expect(table.data.schema.fields.every(field => field.type.constructor.name === 'Utf8View')).toBe(
-    true
-  );
-  expect(table.schema.fields.every(field => field.type === 'utf8-view')).toBe(true);
-  expect(table.data.getChildAt(1)?.get(0)).toBe('09857');
+  expect(table.schema.fields.every(field => field.type.constructor.name === 'Utf8View')).toBe(true);
+  expect(table.schema.fields.every(field => field.type.constructor.name === 'Utf8View')).toBe(true);
+  expect(table.getChildAt(1)?.get(0)).toBe('09857');
 });
 
 test('CSVLoader#parseInBatches reports supported Arrow Utf8View columns', async () => {
@@ -187,7 +185,7 @@ test('CSVLoader#parseInBatches reports supported Arrow Utf8View columns', async 
   const iterator = await parseInBatches([csvBuffer], preloadedLoader, {
     core: {worker: false, batchSize: 1},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       dynamicTyping: false,
       skipEmptyLines: false,
@@ -197,9 +195,9 @@ test('CSVLoader#parseInBatches reports supported Arrow Utf8View columns', async 
 
   let rowCount = 0;
   for await (const batch of iterator) {
-    expect(batch.data.schema.fields[0]?.type.constructor.name).toBe('Utf8View');
-    expect(batch.schema?.fields[0]?.type).toBe('utf8-view');
-    rowCount += batch.length;
+    expect(batch.schema.fields[0]?.type.constructor.name).toBe('Utf8View');
+    expect(batch.schema?.fields[0]?.type.constructor.name).toBe('Utf8View');
+    rowCount += batch.numRows;
   }
   expect(rowCount).toBe(2);
 });
@@ -303,7 +301,7 @@ test('CSVLoader#load matches CSVLoader output across fixture cases', async () =>
     expect(csvShape).toBe(shape);
     const arrowTable = await load(url, CSVLoader, {
       core: {worker: false},
-      csv: {...arrowOptions, shape: 'arrow-table'}
+      csv: {...arrowOptions, shape: 'arrow'}
     });
     const arrowRows = materializeArrowTableRows(arrowTable, shape);
 
@@ -379,20 +377,20 @@ test('CSVLoader#parse handles raw UTF-8 and quoted fields without string tokeniz
   const table = await parse(csvBuffer.buffer, preloadedLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       dynamicTyping: false,
       header: true,
       skipEmptyLines: false
     }
   });
 
-  expect(table.data.numRows).toBe(4);
-  expect(table.data.numCols).toBe(2);
-  expect(table.data.getChild('name')?.get(0)).toBe('Åsa');
-  expect(table.data.getChild('note')?.get(0)).toBe('mañana');
-  expect(table.data.getChild('note')?.get(1)).toBe('x,y');
-  expect(table.data.getChild('note')?.get(2)).toBe('hello\nthere');
-  expect(table.data.getChild('note')?.get(3)).toBe('b"c');
+  expect(table.numRows).toBe(4);
+  expect(table.numCols).toBe(2);
+  expect(table.getChild('name')?.get(0)).toBe('Åsa');
+  expect(table.getChild('note')?.get(0)).toBe('mañana');
+  expect(table.getChild('note')?.get(1)).toBe('x,y');
+  expect(table.getChild('note')?.get(2)).toBe('hello\nthere');
+  expect(table.getChild('note')?.get(3)).toBe('b"c');
 });
 
 async function collectCSVLoaderBatchRows(
@@ -433,21 +431,16 @@ async function collectCSVArrowTableBatchRows(
   const {shape, ...arrowCSVOptions} = options.csv;
   const iterator = await loadInBatches(url, CSVLoader, {
     core: {worker: false},
-    csv: {...arrowCSVOptions, shape: 'arrow-table'}
+    csv: {...arrowCSVOptions, shape: 'arrow'}
   });
   for await (const batch of iterator) {
-    rows.push(
-      ...materializeArrowTableRows(
-        {shape: 'arrow-table', schema: batch.schema, data: batch.data},
-        shape
-      )
-    );
+    rows.push(...materializeArrowTableRows(batch, shape));
   }
   return rows;
 }
 
 function materializeArrowTableRows(
-  arrowTable: ArrowTable,
+  arrowTable: arrow.Table | arrow.RecordBatch,
   shape: 'array-row-table' | 'object-row-table'
 ): unknown[] {
   return shape === 'array-row-table'
@@ -455,26 +448,28 @@ function materializeArrowTableRows(
     : materializeArrowTableObjectRows(arrowTable);
 }
 
-function materializeArrowTableArrayRows(arrowTable: ArrowTable): unknown[][] {
+function materializeArrowTableArrayRows(arrowTable: arrow.Table | arrow.RecordBatch): unknown[][] {
   const rows: unknown[][] = [];
-  for (let rowIndex = 0; rowIndex < arrowTable.data.numRows; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < arrowTable.numRows; rowIndex++) {
     const row: unknown[] = [];
-    for (let columnIndex = 0; columnIndex < arrowTable.data.numCols; columnIndex++) {
-      row.push(materializeArrowCellValue(arrowTable.data.getChildAt(columnIndex)?.get(rowIndex)));
+    for (let columnIndex = 0; columnIndex < arrowTable.numCols; columnIndex++) {
+      row.push(materializeArrowCellValue(arrowTable.getChildAt(columnIndex)?.get(rowIndex)));
     }
     rows.push(row);
   }
   return rows;
 }
 
-function materializeArrowTableObjectRows(arrowTable: ArrowTable): Array<Record<string, unknown>> {
+function materializeArrowTableObjectRows(
+  arrowTable: arrow.Table | arrow.RecordBatch
+): Array<Record<string, unknown>> {
   const rows: Array<Record<string, unknown>> = [];
-  const fields = arrowTable.data.schema.fields;
-  for (let rowIndex = 0; rowIndex < arrowTable.data.numRows; rowIndex++) {
+  const fields = arrowTable.schema.fields;
+  for (let rowIndex = 0; rowIndex < arrowTable.numRows; rowIndex++) {
     const row: Record<string, unknown> = {};
     for (let columnIndex = 0; columnIndex < fields.length; columnIndex++) {
       const cellValue = materializeArrowCellValue(
-        arrowTable.data.getChildAt(columnIndex)?.get(rowIndex)
+        arrowTable.getChildAt(columnIndex)?.get(rowIndex)
       );
       if (cellValue === null && fields[columnIndex].type instanceof arrow.List) {
         continue;
@@ -501,18 +496,18 @@ test('CSVLoader#parse byte path handles TSV, duplicate headers, and missing cell
   const table = await parse(csvBuffer.buffer, preloadedLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       dynamicTyping: false,
       header: true,
       skipEmptyLines: false
     }
   });
 
-  expect(table.data.schema.fields.map(field => field.name)).toEqual(['a', 'a.1']);
-  expect(table.data.getChild('a')?.get(0)).toBe('1');
-  expect(table.data.getChild('a.1')?.get(0)).toBe('2');
-  expect(table.data.getChild('a')?.get(1)).toBe('3');
-  expect(table.data.getChild('a.1')?.get(1)).toBe(null);
+  expect(table.schema.fields.map(field => field.name)).toEqual(['a', 'a.1']);
+  expect(table.getChild('a')?.get(0)).toBe('1');
+  expect(table.getChild('a.1')?.get(0)).toBe('2');
+  expect(table.getChild('a')?.get(1)).toBe('3');
+  expect(table.getChild('a.1')?.get(1)).toBe(null);
 });
 
 test('CSVLoader#parse only adds __parsed_extra for Papa-compatible extra cells', async () => {
@@ -522,52 +517,52 @@ test('CSVLoader#parse only adds __parsed_extra for Papa-compatible extra cells',
   const noExtraTable = await parse(noExtraBuffer.buffer, preloadedLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       skipEmptyLines: true
     }
   });
 
-  expect(noExtraTable.data.getChild('__parsed_extra')).toBe(null);
+  expect(noExtraTable.getChild('__parsed_extra')).toBe(null);
 
   const extraText = 'A,B,C\nx,1,some text\n,,,\ny,2,other text\n';
   const extraBuffer = new TextEncoder().encode(extraText);
   const extraTable = await parse(extraBuffer.buffer, preloadedLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       skipEmptyLines: true
     }
   });
 
-  expect(extraTable.data.getChild('__parsed_extra')).toBeTruthy();
+  expect(extraTable.getChild('__parsed_extra')).toBeTruthy();
 
   const headerlessExtraTable = await parse(extraBuffer.buffer, preloadedLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: false,
       skipEmptyLines: true
     }
   });
 
-  expect(headerlessExtraTable.data.getChild('__parsed_extra')).toBe(null);
+  expect(headerlessExtraTable.getChild('__parsed_extra')).toBe(null);
 });
 
 test('CSVLoader#loadInBatches(numbers-100.csv, utf8 columns)', async () => {
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVLoader, {
     core: {worker: false, batchSize: 40},
-    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
+    csv: {shape: 'arrow', dynamicTyping: false, skipEmptyLines: false}
   });
 
   let rowCount = 0;
   for await (const batch of iterator) {
-    expect(batch.data).toBeInstanceOf(arrow.Table);
-    const fieldTypeNames = batch.data.schema.fields.map(field => field.type.toString());
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
+    const fieldTypeNames = batch.schema.fields.map(field => field.type.toString());
     expect(fieldTypeNames.every(typeName => typeName === 'Utf8')).toBe(true);
 
-    rowCount += batch.data.numRows;
+    rowCount += batch.numRows;
   }
 
   expect(rowCount).toBe(100);
@@ -577,18 +572,18 @@ test('CSVLoader#load(numbers-100.csv, dynamicTyping true)', async () => {
   const table = await load(CSV_NUMBERS_100_URL, CSVLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       dynamicTyping: true
     }
   });
 
-  expect(table.data).toBeInstanceOf(arrow.Table);
-  expect(table.data.numRows).toBe(100);
+  expect(table).toBeInstanceOf(arrow.Table);
+  expect(table.numRows).toBe(100);
 
-  const zipColumn = table.data.getChildAt(1);
+  const zipColumn = table.getChildAt(1);
   expect(zipColumn?.get(0)).toBe(9857);
 
-  const fieldTypeNames = table.data.schema.fields.map(field => field.type.toString());
+  const fieldTypeNames = table.schema.fields.map(field => field.type.toString());
   expect(fieldTypeNames.every(typeName => typeName === 'Float64')).toBe(true);
 });
 
@@ -596,18 +591,18 @@ test('CSVLoader#load(numbers-100.csv, dynamicTyping false)', async () => {
   const table = await load(CSV_NUMBERS_100_URL, CSVLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       dynamicTyping: false
     }
   });
 
-  expect(table.data).toBeInstanceOf(arrow.Table);
-  expect(table.data.numRows).toBe(100);
+  expect(table).toBeInstanceOf(arrow.Table);
+  expect(table.numRows).toBe(100);
 
-  const zipColumn = table.data.getChildAt(1);
+  const zipColumn = table.getChildAt(1);
   expect(zipColumn?.get(0)).toBe('09857');
 
-  const fieldTypeNames = table.data.schema.fields.map(field => field.type.toString());
+  const fieldTypeNames = table.schema.fields.map(field => field.type.toString());
   expect(fieldTypeNames.every(typeName => typeName === 'Utf8')).toBe(true);
 });
 
@@ -615,18 +610,18 @@ test('CSVLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async () =>
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVLoader, {
     core: {worker: false, batchSize: 40},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       dynamicTyping: true
     }
   });
 
   let rowCount = 0;
   for await (const batch of iterator) {
-    expect(batch.data).toBeInstanceOf(arrow.Table);
-    const fieldTypeNames = batch.data.schema.fields.map(field => field.type.toString());
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
+    const fieldTypeNames = batch.schema.fields.map(field => field.type.toString());
     expect(fieldTypeNames.every(typeName => typeName === 'Float64')).toBe(true);
 
-    rowCount += batch.data.numRows;
+    rowCount += batch.numRows;
   }
 
   expect(rowCount).toBe(100);
@@ -643,7 +638,7 @@ test('CSVLoader#parseInBatches freezes schema after first typed batch', async ()
       batchSize: 1
     },
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       dynamicTyping: true,
       skipEmptyLines: false
@@ -657,18 +652,18 @@ test('CSVLoader#parseInBatches freezes schema after first typed batch', async ()
 
   expect(batches.length).toBe(2);
 
-  const firstBatchColumnTypeName = batches[0]?.data.schema.fields[0]?.type.toString();
-  const secondBatchColumnTypeName = batches[1]?.data.schema.fields[0]?.type.toString();
+  const firstBatchColumnTypeName = batches[0]?.schema.fields[0]?.type.toString();
+  const secondBatchColumnTypeName = batches[1]?.schema.fields[0]?.type.toString();
   expect(firstBatchColumnTypeName).toBe('Float64');
   expect(secondBatchColumnTypeName).toBe('Float64');
 
-  const firstBatchValue = batches[0]?.data.getChildAt(0)?.get(0);
-  const secondBatchValue = batches[1]?.data.getChildAt(0)?.get(0);
+  const firstBatchValue = batches[0]?.getChildAt(0)?.get(0);
+  const secondBatchValue = batches[1]?.getChildAt(0)?.get(0);
   expect(firstBatchValue).toBe(1);
   expect(secondBatchValue).toBe(null);
 });
 
-test('CSVLoader#arrow-table dynamic typing covers booleans, dates, exponents, nulls, and mixed columns', async () => {
+test('CSVLoader#arrow dynamic typing covers booleans, dates, exponents, nulls, and mixed columns', async () => {
   const csvText = [
     'boolean,number,date,mixed,empty',
     'TRUE,-1.25e+2,2024-01-02T03:04:05Z,1,',
@@ -677,22 +672,22 @@ test('CSVLoader#arrow-table dynamic typing covers booleans, dates, exponents, nu
   ].join('\n');
   const table = await parse(csvText, CSVLoader, {
     core: {worker: false},
-    csv: {shape: 'arrow-table', header: true, dynamicTyping: true, skipEmptyLines: false}
+    csv: {shape: 'arrow', header: true, dynamicTyping: true, skipEmptyLines: false}
   });
 
-  expect(table.data.schema.fields.map(field => field.type.toString())).toEqual([
+  expect(table.schema.fields.map(field => field.type.toString())).toEqual([
     'Bool',
     'Utf8',
     'Utf8',
     'Utf8',
     'Utf8'
   ]);
-  expect(table.data.getChild('boolean')?.toArray()).toEqual([true, false, true]);
-  expect(table.data.getChild('number')?.toArray()).toEqual(['-125', '0.6', 'not-a-number']);
-  expect(table.data.getChild('empty')?.toArray()).toEqual([null, null, null]);
+  expect(table.getChild('boolean')?.toArray()).toEqual([true, false, true]);
+  expect(table.getChild('number')?.toArray()).toEqual(['-125', '0.6', 'not-a-number']);
+  expect(table.getChild('empty')?.toArray()).toEqual([null, null, null]);
 });
 
-test('CSVLoader#arrow-table types homogeneous temporal and numeric edge columns', async () => {
+test('CSVLoader#arrow types homogeneous temporal and numeric edge columns', async () => {
   const csvText = [
     'integer,decimal,exponent,date',
     '-1,.5,1e2,2024-01-02T03:04:05Z',
@@ -701,23 +696,21 @@ test('CSVLoader#arrow-table types homogeneous temporal and numeric edge columns'
   ].join('\n');
   const table = await parse(csvText, CSVLoader, {
     core: {worker: false},
-    csv: {shape: 'arrow-table', header: true, dynamicTyping: true}
+    csv: {shape: 'arrow', header: true, dynamicTyping: true}
   });
 
-  expect(table.data.schema.fields.map(field => field.type.toString())).toEqual([
+  expect(table.schema.fields.map(field => field.type.toString())).toEqual([
     'Float64',
     'Float64',
     'Utf8',
     'Utf8'
   ]);
-  expect(Array.from(table.data.getChild('integer')?.toArray() || [])).toEqual([-1, 0, 42]);
-  expect(Array.from(table.data.getChild('decimal')?.toArray() || [])).toEqual([0.5, 2, 4.25]);
-  expect(new Date(table.data.getChild('date')?.get(0)).toISOString()).toBe(
-    '2024-01-02T03:04:05.000Z'
-  );
+  expect(Array.from(table.getChild('integer')?.toArray() || [])).toEqual([-1, 0, 42]);
+  expect(Array.from(table.getChild('decimal')?.toArray() || [])).toEqual([0.5, 2, 4.25]);
+  expect(new Date(table.getChild('date')?.get(0)).toISOString()).toBe('2024-01-02T03:04:05.000Z');
 });
 
-test('CSVLoader#arrow-table fallback handles quoted cells, comments, and custom delimiters', async () => {
+test('CSVLoader#arrow fallback handles quoted cells, comments, and custom delimiters', async () => {
   const csvText = [
     '# ignored comment',
     'name;value;flag',
@@ -727,7 +720,7 @@ test('CSVLoader#arrow-table fallback handles quoted cells, comments, and custom 
   const table = await parse(csvText, CSVLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       delimiter: ';',
       comments: '#',
@@ -736,40 +729,40 @@ test('CSVLoader#arrow-table fallback handles quoted cells, comments, and custom 
     }
   });
 
-  expect(table.data.getChild('name')?.toArray()).toEqual(['comma, quote "inside"', 'plain']);
-  expect(table.data.getChild('value')?.get(0)).toBe(1);
-  expect(table.data.getChild('value')?.get(1)).toBe(null);
-  expect(table.data.getChild('flag')?.toArray()).toEqual([true, false]);
+  expect(table.getChild('name')?.toArray()).toEqual(['comma, quote "inside"', 'plain']);
+  expect(table.getChild('value')?.get(0)).toBe(1);
+  expect(table.getChild('value')?.get(1)).toBe(null);
+  expect(table.getChild('flag')?.toArray()).toEqual([true, false]);
 });
 
-test('CSVLoader#arrow-table geometry detection uses the row-table compatibility path', async () => {
+test('CSVLoader#arrow geometry detection uses the row-table compatibility path', async () => {
   const table = await parse('longitude,latitude,name\n10,20,point', CSVLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       dynamicTyping: true,
       detectGeometryColumns: true
     }
   });
-  expect(table.data.numRows).toBe(1);
-  expect(table.data.getChild('longitude')?.get(0)).toBe(10);
-  expect(table.data.getChild('latitude')?.get(0)).toBe(20);
+  expect(table.numRows).toBe(1);
+  expect(table.getChild('longitude')?.get(0)).toBe(10);
+  expect(table.getChild('latitude')?.get(0)).toBe(20);
 });
 
-test('CSVLoader#arrow-table geometry detection supports byte and streaming inputs', async () => {
+test('CSVLoader#arrow geometry detection supports byte and streaming inputs', async () => {
   const bytes = new TextEncoder().encode('longitude,latitude,name\n10,20,first\n11,21,second');
   const preloadedLoader = await preload(CSVLoader);
   const table = await parse(bytes.buffer, preloadedLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       dynamicTyping: true,
       detectGeometryColumns: true
     }
   });
-  expect(table.data.numRows).toBe(2);
+  expect(table.numRows).toBe(2);
 
   const batches: ArrowTableBatch[] = [];
   const iterator = await parseInBatches(
@@ -778,7 +771,7 @@ test('CSVLoader#arrow-table geometry detection supports byte and streaming input
     {
       core: {worker: false, batchSize: 1},
       csv: {
-        shape: 'arrow-table',
+        shape: 'arrow',
         header: true,
         dynamicTyping: true,
         detectGeometryColumns: true
@@ -788,11 +781,11 @@ test('CSVLoader#arrow-table geometry detection supports byte and streaming input
   for await (const batch of iterator) {
     batches.push(batch);
   }
-  expect(batches.reduce((sum, batch) => sum + batch.length, 0)).toBe(2);
-  expect(batches.every(batch => batch.shape === 'arrow-table')).toBe(true);
+  expect(batches.reduce((sum, batch) => sum + batch.numRows, 0)).toBe(2);
+  expect(batches.every(batch => batch instanceof arrow.RecordBatch)).toBe(true);
 });
 
-test('CSVLoader#arrow-table applies GeoArrow encoding preference to detected WKT', async () => {
+test('CSVLoader#arrow applies GeoArrow encoding preference to detected WKT', async () => {
   const bytes = new TextEncoder().encode(
     'geometry,name\nPOINT (10 20),first\nPOINT (11 21),second'
   );
@@ -800,7 +793,7 @@ test('CSVLoader#arrow-table applies GeoArrow encoding preference to detected WKT
     core: {worker: false, batchSize: 1},
     geoarrow: {encodingPreference: 'optimized'},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       detectGeometryColumns: true,
       geometryEncoding: 'source'
@@ -808,15 +801,15 @@ test('CSVLoader#arrow-table applies GeoArrow encoding preference to detected WKT
   });
   const batches: ArrowTableBatch[] = [];
   for await (const batch of iterator) {
-    if (batch.batchType === 'data') batches.push(batch);
+    batches.push(batch);
   }
   expect(batches).toHaveLength(1);
   expect(
-    batches[0].schema.fields.find(field => field.name === 'geometry')?.metadata?.[
-      'ARROW:extension:name'
-    ]
+    batches[0].schema.fields
+      .find(field => field.name === 'geometry')
+      ?.metadata.get('ARROW:extension:name')
   ).toBe('geoarrow.point');
-  expect(batches[0].data.numRows).toBe(2);
+  expect(batches[0].numRows).toBe(2);
 });
 
 test('CSVLoader#parseInBatches streams fragmented Arrow batches through one worker session', async () => {
@@ -830,25 +823,24 @@ test('CSVLoader#parseInBatches streams fragmented Arrow batches through one work
       core: {
         worker,
         batchSize: 1,
-        metadata: true,
         _workerType: 'test',
         reuseWorkers: false
       },
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: true, skipEmptyLines: false}
+      csv: {header: true, shape: 'arrow', dynamicTyping: true, skipEmptyLines: false}
     });
     const batchTypes: string[] = [];
     const rows: unknown[][] = [];
     for await (const batch of iterator) {
-      batchTypes.push(batch.batchType);
-      if (batch.batchType === 'data') {
-        for (let rowIndex = 0; rowIndex < batch.data.numRows; rowIndex++) {
+      batchTypes.push(batch.constructor.name);
+      if (batch instanceof arrow.RecordBatch) {
+        for (let rowIndex = 0; rowIndex < batch.numRows; rowIndex++) {
           rows.push(
-            Array.from({length: batch.data.numCols}, (_, columnIndex) =>
-              batch.data.getChildAt(columnIndex)?.get(rowIndex)
+            Array.from({length: batch.numCols}, (_, columnIndex) =>
+              batch.getChildAt(columnIndex)?.get(rowIndex)
             )
           );
         }
-        expect(batch.data.getChild('id')?.get(0)).toEqual(expect.any(Number));
+        expect(batch.getChild('id')?.get(0)).toEqual(expect.any(Number));
       }
     }
     return {batchTypes, rows};
@@ -858,7 +850,7 @@ test('CSVLoader#parseInBatches streams fragmented Arrow batches through one work
   const workerResult = await collectRows(true);
 
   expect(workerResult).toEqual(mainThreadResult);
-  expect(workerResult.batchTypes[0]).toBe('metadata');
+  expect(workerResult.batchTypes.every(type => type === 'RecordBatch')).toBe(true);
   expect(workerResult.rows).toEqual([
     [1, 'Alice'],
     [2, 'Bob'],
@@ -870,7 +862,7 @@ test('CSVLoader#worker transport serializes and hydrates Arrow table results', a
   const table = await parse('city,population\nParis,2148000', CSVLoader, {
     core: {worker: false},
     csv: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       header: true,
       dynamicTyping: false
     }
@@ -879,21 +871,21 @@ test('CSVLoader#worker transport serializes and hydrates Arrow table results', a
   const serialized = serializeCSVWorkerResult(table, {
     core: {workerTransferBufferCopy: 'all'}
   }) as {
-    shape: 'arrow-table';
+    shape: 'arrow';
     data: {transport: string; getChild?: unknown};
   };
-  expect(serialized.shape).toBe('arrow-table');
-  expect(serialized.data.transport).toBe('arrow-js');
-  expect(serialized.data.getChild).toBeFalsy();
+  expect(serialized).not.toHaveProperty('shape');
+  expect(serialized.columns.data.transport).toBe('arrow-js');
+  expect(serialized.getChild).toBeFalsy();
 
   const hydrated = deserializeCSVWorkerResult(serialized) as ArrowTable;
-  expect(hydrated.data).toBeInstanceOf(arrow.Table);
-  expect(hydrated.data.getChild('city')?.get(0)).toBe('Paris');
+  expect(hydrated).toBeInstanceOf(arrow.Table);
+  expect(hydrated.getChild('city')?.get(0)).toBe('Paris');
 
   const serializedWithDeprecatedOption = serializeCSVWorkerResult(table, {
     workerTransferBufferCopy: 'none'
   } as any) as {data: {transport: string}};
-  expect(serializedWithDeprecatedOption.data.transport).toBe('arrow-js');
+  expect(serializedWithDeprecatedOption.columns.data.transport).toBe('arrow-js');
 
   const plainResult = {shape: 'object-row-table', data: [{city: 'Paris'}]};
   expect(() => serializeCSVWorkerResult(plainResult)).toThrow('Arrow table output');

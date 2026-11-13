@@ -9,20 +9,18 @@ import {calculateInitialTypedColumnCapacity} from '../../src/csv/csv-arrow-table
 
 /** Reads one Arrow column into ordinary JavaScript values for assertions. */
 function getArrowColumnValues(table: any, columnName: string): unknown[] {
-  const column = table.data.getChild(columnName);
-  return column
-    ? Array.from({length: table.data.numRows}, (_, rowIndex) => column.get(rowIndex))
-    : [];
+  const column = table.getChild(columnName);
+  return column ? Array.from({length: table.numRows}, (_, rowIndex) => column.get(rowIndex)) : [];
 }
 
 describe('CSV optimized parsing paths', () => {
   test('preserves quoted UTF-8 fields, embedded newlines, delimiters, and escaped quotes', async () => {
     const csvText = 'name,note,empty\r\nÅsa,"mañana,\"\"世界\"\"",x\r\n"Eve","hello\nthere",\r\n';
     const table = await CSVLoader.parseText(csvText, {
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
+      csv: {header: true, shape: 'arrow', dynamicTyping: false, skipEmptyLines: false}
     });
 
-    expect(table.data.numRows).toBe(2);
+    expect(table.numRows).toBe(2);
     expect(getArrowColumnValues(table, 'name')).toEqual(['Åsa', 'Eve']);
     expect(getArrowColumnValues(table, 'note')).toEqual(['mañana,"世界"', 'hello\nthere']);
     expect(getArrowColumnValues(table, 'empty')).toEqual(['x', '']);
@@ -35,12 +33,12 @@ describe('CSV optimized parsing paths', () => {
       csv: {...options, shape: 'array-row-table' as const}
     });
     const arrowTable = await CSVLoader.parseText(csvText, {
-      csv: {...options, shape: 'arrow-table' as const}
+      csv: {...options, shape: 'arrow' as const}
     });
 
-    const arrowRows = Array.from({length: arrowTable.data.numRows}, (_, rowIndex) =>
-      Array.from({length: arrowTable.data.numCols}, (_, columnIndex) =>
-        arrowTable.data.getChildAt(columnIndex)?.get(rowIndex)
+    const arrowRows = Array.from({length: arrowTable.numRows}, (_, rowIndex) =>
+      Array.from({length: arrowTable.numCols}, (_, columnIndex) =>
+        arrowTable.getChildAt(columnIndex)?.get(rowIndex)
       )
     );
     expect(arrowRows).toEqual(rowTable.data);
@@ -48,7 +46,7 @@ describe('CSV optimized parsing paths', () => {
 
   test('coerces mixed dynamically typed UTF-8 columns to strings', async () => {
     const table = await CSVLoader.parseText('value\n42\ntext\n001\n', {
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+      csv: {header: true, shape: 'arrow', dynamicTyping: true}
     });
 
     expect(getArrowColumnValues(table, 'value')).toEqual(['42', 'text', '1']);
@@ -57,7 +55,7 @@ describe('CSV optimized parsing paths', () => {
   test('continues dynamic typing after a column is promoted to UTF-8', async () => {
     const dateText = '2018-05-04T21:08:03.269Z';
     const table = await CSVLoader.parseText(`value\ntext\n001\nTRUE\n 7 \n${dateText}\n`, {
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+      csv: {header: true, shape: 'arrow', dynamicTyping: true}
     });
 
     expect(getArrowColumnValues(table, 'value')).toEqual([
@@ -78,11 +76,11 @@ describe('CSV optimized parsing paths', () => {
       csv: {...options, shape: 'array-row-table'}
     });
     const arrowTable = await CSVLoader.parseText(csvText, {
-      csv: {...options, shape: 'arrow-table'}
+      csv: {...options, shape: 'arrow'}
     });
 
-    const arrowRow = Array.from({length: arrowTable.data.numCols}, (_, columnIndex) =>
-      arrowTable.data.getChildAt(columnIndex)?.get(0)
+    const arrowRow = Array.from({length: arrowTable.numCols}, (_, columnIndex) =>
+      arrowTable.getChildAt(columnIndex)?.get(0)
     );
     expect(arrowRow).toEqual(rowTable.data[0]);
     expect(arrowRow).toEqual([-42, -0.25, 1, 350, 7, 8, '+1', 'True', ' true ', true, false]);
@@ -94,7 +92,7 @@ describe('CSV optimized parsing paths', () => {
     const table = await CSVLoader.parse(encodedCSV.buffer, {
       csv: {
         header: true,
-        shape: 'arrow-table',
+        shape: 'arrow',
         dynamicTyping: true,
         skipEmptyLines: false
       }
@@ -107,10 +105,10 @@ describe('CSV optimized parsing paths', () => {
 
   test('parses an integer matrix directly into numeric Arrow columns', async () => {
     const table = await CSVLoader.parseText('a,b,c\r\n1,2,3\r\n4,5,6', {
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+      csv: {header: true, shape: 'arrow', dynamicTyping: true}
     });
 
-    expect(table.schema?.fields.map(field => field.type)).toEqual([
+    expect(table.schema?.fields.map(field => field.type.toString().toLowerCase())).toEqual([
       'float64',
       'float64',
       'float64'
@@ -122,10 +120,12 @@ describe('CSV optimized parsing paths', () => {
 
   test('parses a single integer column without a final newline', async () => {
     const table = await CSVLoader.parseText('value\r\n1\r\n2', {
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+      csv: {header: true, shape: 'arrow', dynamicTyping: true}
     });
 
-    expect(table.schema?.fields.map(field => field.type)).toEqual(['float64']);
+    expect(table.schema?.fields.map(field => field.type.toString().toLowerCase())).toEqual([
+      'float64'
+    ]);
     expect(getArrowColumnValues(table, 'value')).toEqual([1, 2]);
   });
 
@@ -138,19 +138,23 @@ describe('CSV optimized parsing paths', () => {
     expect(calculateInitialTypedColumnCapacity(csvBytes.length, columnCount)).toBeLessThan(4);
 
     const table = await CSVLoader.parse(csvBytes.buffer, {
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: true, skipEmptyLines: false}
+      csv: {header: true, shape: 'arrow', dynamicTyping: true, skipEmptyLines: false}
     });
-    expect(table.data.numCols).toBe(columnCount);
-    expect(table.data.numRows).toBe(1);
-    expect(table.data.getChildAt(columnCount - 1)?.get(0)).toBe(columnCount - 1);
+    expect(table.numCols).toBe(columnCount);
+    expect(table.numRows).toBe(1);
+    expect(table.getChildAt(columnCount - 1)?.get(0)).toBe(columnCount - 1);
   });
 
   test('preserves nulls and source strings in mixed typed columns', async () => {
     const table = await CSVLoader.parseText('id,label,optional\n1,item-1,\n2,item-2,+2\n', {
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: true}
+      csv: {header: true, shape: 'arrow', dynamicTyping: true}
     });
 
-    expect(table.schema?.fields.map(field => field.type)).toEqual(['float64', 'utf8', 'utf8']);
+    expect(table.schema?.fields.map(field => field.type.toString().toLowerCase())).toEqual([
+      'float64',
+      'utf8',
+      'utf8'
+    ]);
     expect(getArrowColumnValues(table, 'id')).toEqual([1, 2]);
     expect(getArrowColumnValues(table, 'label')).toEqual(['item-1', 'item-2']);
     expect(getArrowColumnValues(table, 'optional')).toEqual([null, '+2']);
@@ -173,7 +177,7 @@ describe('CSV optimized parsing paths', () => {
       csv: {
         delimiter: '|',
         header: true,
-        shape: 'arrow-table',
+        shape: 'arrow',
         dynamicTyping: true,
         skipEmptyLines: false
       }
@@ -247,7 +251,7 @@ describe('CSV optimized parsing paths', () => {
     const table = await CSVLoader.parseText(csvText as string, {
       csv: {
         header: true,
-        shape: 'arrow-table',
+        shape: 'arrow',
         dynamicTyping: true,
         ...(csvOptions as object)
       }
@@ -260,7 +264,7 @@ describe('CSV optimized parsing paths', () => {
         ...(csvOptions as object)
       }
     });
-    expect(table.data.numRows).toBe(expectedTable.data.length);
+    expect(table.numRows).toBe(expectedTable.data.length);
     const expectedFields = (expectedTable.schema?.fields || []).filter(
       field => field.name !== '__parsed_extra'
     );
@@ -289,10 +293,10 @@ describe('CSV optimized parsing paths', () => {
 
   test('does not create a data row for a header-only unquoted Arrow table', async () => {
     const table = await CSVLoader.parseText('name\n', {
-      csv: {header: true, shape: 'arrow-table', dynamicTyping: false}
+      csv: {header: true, shape: 'arrow', dynamicTyping: false}
     });
 
-    expect(table.data.numRows).toBe(0);
+    expect(table.numRows).toBe(0);
   });
 
   test.each([
@@ -310,14 +314,14 @@ describe('CSV optimized parsing paths', () => {
 
     const batches = await parseInBatches(createChunks(), CSVLoader, {
       core: {worker: false, batchSize: 2},
-      csv: {header: true, shape: 'arrow-table', dynamicTyping, skipEmptyLines: false}
+      csv: {header: true, shape: 'arrow', dynamicTyping, skipEmptyLines: false}
     });
     const rows: unknown[][] = [];
     for await (const batch of batches) {
-      for (let rowIndex = 0; rowIndex < batch.data.numRows; rowIndex++) {
+      for (let rowIndex = 0; rowIndex < batch.numRows; rowIndex++) {
         rows.push(
-          Array.from({length: batch.data.numCols}, (_, columnIndex) =>
-            batch.data.getChildAt(columnIndex)?.get(rowIndex)
+          Array.from({length: batch.numCols}, (_, columnIndex) =>
+            batch.getChildAt(columnIndex)?.get(rowIndex)
           )
         );
       }

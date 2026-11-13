@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowTable, RecordBatch as ArrowTableBatch} from 'apache-arrow';
 import type {JSONTableSource, JSONTableSourceOptions} from './json-table-source';
-import type {ArrowTable, ArrowTableBatch, Schema, Table, TableBatch} from '@loaders.gl/core/schema';
+import type {Schema, Table, TableBatch} from '@loaders.gl/core/schema';
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type * as arrow from 'apache-arrow';
 import {JSON_WORKER_URL} from './json-worker-url';
@@ -24,7 +25,7 @@ export type JSONTableLoaderOptions = LoaderOptions & {
     /** Selects the streaming JSON parser backend. */
     backend?: 'clarinet' | 'fast';
     /** Requested table output shape. */
-    shape?: 'arrow' | 'arrow-table' | 'object-row-table' | 'array-row-table';
+    shape?: 'arrow' | 'object-row-table' | 'array-row-table';
     /** JSON paths identifying arrays that can be streamed as row batches. */
     jsonpaths?: string[];
     /** Optional schema used when converting JSON rows to Arrow. */
@@ -61,6 +62,7 @@ const sourceMetadata = {
 export const JSONTableLoader = {
   ...sourceMetadata,
   defaultShape: 'arrow',
+  supportsNativeArrow: true,
   dataType: null as unknown as Table | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
 
@@ -76,7 +78,7 @@ export const JSONTableLoader = {
   options: {
     json: {
       backend: 'clarinet',
-      shape: 'arrow-table',
+      shape: 'arrow',
       jsonpaths: [],
       schema: undefined,
       arrowConversion: undefined
