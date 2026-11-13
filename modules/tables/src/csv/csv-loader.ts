@@ -147,6 +147,9 @@ function parseCSVTextSync(
   const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix, firstRow.length);
 
   if (csvOptions.schema) {
+    if (result.errors.some(error => error.code === 'TooManyFields')) {
+      throw new Error('CSV row contains more fields than csv.schema');
+    }
     if (firstRow.length > 0) {
       validateCSVSchemaHeader(csvOptions.schema, headerRow);
     }
@@ -401,6 +404,19 @@ function parseCSVInBatches(
         const batch = tableBatchBuilder && tableBatchBuilder.getFinalBatch({bytesUsed});
         if (batch) {
           asyncQueue.enqueue(batch);
+        } else if (isFirstRow && csvOptions.schema) {
+          asyncQueue.enqueue({
+            shape: getBatchShape(),
+            batchType: 'data',
+            schema: csvOptions.schema,
+            data:
+              getBatchShape() === 'columnar-table'
+                ? Object.fromEntries(csvOptions.schema.fields.map(field => [field.name, []]))
+                : [],
+            length: 0,
+            count: 0,
+            bytesUsed
+          });
         }
       } catch (error) {
         asyncQueue.enqueue(error as Error);

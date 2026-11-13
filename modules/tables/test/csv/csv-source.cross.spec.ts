@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {createDataSourceSync, load, preload} from '@loaders.gl/core';
+import {createDataSourceSync, load, parseInBatches, preload} from '@loaders.gl/core';
 import {CSVLoader, CSVTableSource} from '@loaders.gl/tables/csv';
 
 test('CSVTableSource discovers schema and applies projection and limit', async () => {
@@ -111,4 +111,43 @@ test('CSVTableSource rejects invalid values for a declared field', async () => {
     }
   });
   await expect(source.getQueryMetadata()).rejects.toThrow('Invalid CSV value for latitude');
+});
+
+const declaredSchema = {
+  fields: [
+    {name: 'id', type: 'utf8' as const},
+    {name: 'value', type: 'float64' as const}
+  ],
+  metadata: {}
+};
+
+test.each(['', 'id,value\n'])('empty CSV exposes its declared schema for %j', async csv => {
+  const options = {
+    core: {worker: false},
+    csv: {schema: declaredSchema, shape: 'arrow-table' as const}
+  };
+  const source = new CSVTableSource(new Blob([csv]), options);
+  expect((await source.getQueryMetadata()).schema).toMatchObject(declaredSchema);
+  const batches = await Array.fromAsync(
+    await parseInBatches([new TextEncoder().encode(csv)], CSVLoader, options)
+  );
+  expect(batches).toHaveLength(1);
+  expect(batches[0]).toMatchObject({shape: 'arrow-table', length: 0, schema: declaredSchema});
+});
+
+test('CSVLoader rejects surplus cells with a declared schema on load and in batches', async () => {
+  const csv = 'id,value\na,1\nb,2,extra\n';
+  const options = {
+    core: {worker: false},
+    csv: {schema: declaredSchema, shape: 'arrow-table' as const}
+  };
+  const message = 'CSV row contains more fields than csv.schema';
+  await expect(
+    load('https://example.test/extra.csv', CSVLoader, {
+      ...options,
+      core: {...options.core, fetch: async () => new Response(csv)}
+    })
+  ).rejects.toThrow(message);
+  const batches = await parseInBatches([new TextEncoder().encode(csv)], CSVLoader, options);
+  await expect(Array.fromAsync(batches)).rejects.toThrow(message);
 });
