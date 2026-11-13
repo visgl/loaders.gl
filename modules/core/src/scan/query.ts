@@ -333,6 +333,7 @@ async function* queryAppendBatches(
             capabilities,
             comparisonSchema,
             Boolean(computedProjection || expressionFilter),
+            inputSchema,
             options.signal
           )
         : null;
@@ -403,8 +404,14 @@ async function* queryAppendBatches(
       }
     )) {
       const input = value as ArrowTableBatch;
-      const batch =
-        !pushedPlan && computedProjection ? {...input, ...wrapBatch(project(input.data))} : input;
+      const finishProjection = pushedPlan
+        ? pushedPlan.project
+        : computedProjection
+          ? project
+          : undefined;
+      const batch = finishProjection
+        ? {...input, ...wrapBatch(finishProjection(input.data))}
+        : input;
       if (!arrow.util.compareSchemas(comparisonSchema, convertSchemaToArrow(batch.schema!)))
         throw new Error('Query output schema does not match source metadata.');
       emitted = true;

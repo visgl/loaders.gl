@@ -86,7 +86,7 @@ Reusable scan, geometry construction, geometry processing, and codec APIs are av
 | [`@loaders.gl/core/schema`](./schema/README.md) | Shared schemas, table and geometry types. |
 | [`@loaders.gl/core/schema-utils`](./schema-utils/README.md) | Schema conversion, table helpers, and Arrow transport. |
 | [`@loaders.gl/core/polyfills`](./polyfills/api-reference/README.md) | Independent Node platform adapters. |
-| `@loaders.gl/core/scan` | Scan planning and execution, Arrow queries, portable predicates, and format-neutral source wrappers. |
+| `@loaders.gl/core/query` | Scan planning and execution, Arrow queries, portable predicates, and format-neutral source wrappers. |
 | `@loaders.gl/core/arrow-geometry` | Geometry builders and loader-facing conversion helpers. |
 | `@loaders.gl/core/geoarrow` | GeoArrow inspection, validation, conversion, coordinate operations, clustering, and spatial indexes. |
 | `@loaders.gl/core/wkt` | Geometry codec helpers; TWKB is also available from `@loaders.gl/core/wkt/twkb`. |
@@ -94,7 +94,7 @@ Reusable scan, geometry construction, geometry processing, and codec APIs are av
 Import these APIs through their subpaths. The core root entrypoint keeps its existing exports. Format loader and writer descriptors remain in their format modules, including `@loaders.gl/geospatial/wkt`; database adapters remain in `@loaders.gl/sql`.
 
 ```typescript
-import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/query';
 import {GeoArrowBuilder} from '@loaders.gl/core/arrow-geometry';
 import {inspectGeoArrowVector} from '@loaders.gl/core/geoarrow';
 import {convertWKTToGeometry} from '@loaders.gl/core/wkt';

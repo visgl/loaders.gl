@@ -90,12 +90,12 @@ rendered hover/click interactions.
 
 ## Use the common scan/query interface
 
-Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/core/scan`
+Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/core/query`
 package. WFS, OGC API Features, and other sources that honor `format: 'arrow'` can use the same
 interface. Bind the service layers, extent, and input/output CRS when creating the table view:
 
 ```ts
-import {VectorFeatureTableScanSource} from '@loaders.gl/core/scan';
+import {VectorFeatureTableScanSource} from '@loaders.gl/core/query';
 
 const scanSource = new VectorFeatureTableScanSource(source, {
   request: {

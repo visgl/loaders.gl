@@ -7,7 +7,7 @@ description: Select, filter, and stream Arrow results from loaded tables, URLs, 
 
 Use `query()` when you need one Arrow table, or `queryInBatches()` to process Arrow batches as
 results arrive. Both execute the same logical query: filter source rows, select and rename columns,
-then apply a global limit. Import them from the optional `@loaders.gl/core/scan` entry point.
+then apply a global limit. Import them from the optional `@loaders.gl/core/query` entry point.
 
 ## Run your first query
 
@@ -15,7 +15,7 @@ A URL requires an explicit **source loader**. This lets the format choose useful
 making core depend on format implementations.
 
 ```ts
-import {query} from '@loaders.gl/core/scan';
+import {query} from '@loaders.gl/core/query';
 import {ParquetSourceLoader} from '@loaders.gl/tables';
 
 const result = await query(
@@ -79,7 +79,7 @@ limits are errors.
 Change the function, not the query:
 
 ```ts
-import {queryInBatches} from '@loaders.gl/core/scan';
+import {queryInBatches} from '@loaders.gl/core/query';
 
 for await (const batch of queryInBatches(
   {select: ['name'], where: {op: '>', args: [{property: 'population'}, 100000]}},
@@ -102,7 +102,7 @@ buffers; slices can retain their original buffers, and scattered filtering can a
 previous table on every yield. Each result covers all input rows processed so far.
 
 ```ts
-import {queryProgressive} from '@loaders.gl/core/scan';
+import {queryProgressive} from '@loaders.gl/core/query';
 
 for await (const {table, rowsProcessed, final} of queryProgressive(
   {
@@ -194,7 +194,7 @@ Pass the optional parser explicitly. Math.gl’s `parseSQLQuery()` supports SELE
 aliases, optional FROM, WHERE, and LIMIT.
 
 ```ts
-import {parseSQLQuery} from '@loaders.gl/core/scan/query';
+import {parseSQLQuery} from '@loaders.gl/core/query/query';
 
 const result = await query('SELECT name FROM warehouse.cities LIMIT 20', {
   sources: [warehouse],
@@ -205,7 +205,7 @@ const result = await query('SELECT name FROM warehouse.cities LIMIT 20', {
 You can also pass a parser promise:
 
 ```ts
-const sqlParser = import('@loaders.gl/core/scan/query').then(module => module.parseSQLQuery);
+const sqlParser = import('@loaders.gl/core/query/query').then(module => module.parseSQLQuery);
 ```
 
 ESM imports are tree-shakeable: importing just the parser removes Arrow execution code from the
@@ -232,7 +232,7 @@ Core validates the returned query and source capabilities before executing it.
 The same query APIs return Arrow tables for metadata commands:
 
 ```ts
-import {parseSQLQuery, createSQLCatalog} from '@loaders.gl/core/scan/query';
+import {parseSQLQuery, createSQLCatalog} from '@loaders.gl/core/query/query';
 
 const options = {sources: [warehouse], sqlParser: parseSQLQuery};
 const sources = await query('SHOW SOURCES;', options);

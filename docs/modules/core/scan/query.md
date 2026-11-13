@@ -6,7 +6,7 @@ description: Execute logical or parsed SQL queries against Arrow tables and tabl
 # query and queryInBatches
 
 For a step-by-step introduction, see [Querying tables](/docs/developer-guide/querying-tables).
-Both functions are exported only from `@loaders.gl/core/scan`.
+Both functions are available from `@loaders.gl/core/query`.
 
 ```ts
 query(query: Query | string, options: QueryOptions): Promise<ArrowTable>;
@@ -99,7 +99,7 @@ contract is available. SQL-native backends may expose metadata while requiring t
 ### Lazy catalog and provider contract
 
 Import `createSQLCatalog`, `SQLCatalog`, `SQLCatalogSource`, `SQLCatalogTable` and `SQLCatalogQuery`
-from `@loaders.gl/core/scan/query`:
+from `@loaders.gl/core/query/query`:
 
 ```ts
 const catalog = createSQLCatalog(sources);
@@ -140,7 +140,7 @@ sources. Catalogs and commands never close caller-owned sources.
 
 ## Optional SQL parsers
 
-Import `parseSQLQuery` from `@math.gl/expressions/sql` or `@loaders.gl/core/scan/query` and pass it as
+Import `parseSQLQuery` from `@math.gl/expressions/sql` or `@loaders.gl/core/query/query` and pass it as
 `sqlParser`. It supports SELECT, WHERE, FROM, LIMIT, OFFSET, and catalog commands. Use `parseSQLSelect`
 for SELECT parsing with an optional caller-supplied WHERE parser. Both preserve case and double-quoted identifiers.
 

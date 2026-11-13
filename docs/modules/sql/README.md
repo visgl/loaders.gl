@@ -94,3 +94,7 @@ The planner accepts signed integer identity and widening casts that preserve Arr
 semantics. Other casts run in Arrow. For example, Arrow truncates fractional values
 when casting to integers, while DuckDB can round them. The common reader currently
 supports signed integer, floating-point, Boolean, and VARCHAR columns.
+
+DuckDB also pushes down signed integer casts to `DOUBLE PRECISION` for input widths up to 32 bits,
+whose full range is exactly representable. In a mixed projection, a safe cast can run
+in DuckDB while other SELECT expressions run in Arrow on the same filtered and paged rows.

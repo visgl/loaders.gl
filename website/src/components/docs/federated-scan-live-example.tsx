@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 
-import type {TableQueryExecutionSummary, ScanQueryMetadata} from '@loaders.gl/core/scan';
+import type {TableQueryExecutionSummary, ScanQueryMetadata} from '@loaders.gl/core/query';
 
 import {
   FederatedScanPanel,
@@ -51,7 +51,7 @@ export function FederatedScanLiveExample(): JSX.Element {
             import('@loaders.gl/tables/csv'),
             import('@loaders.gl/tables/json'),
             import('@loaders.gl/core/loader-utils'),
-            import('@loaders.gl/core/scan')
+            import('@loaders.gl/core/query')
           ]);
         const dataSourceManager = new loaderUtilsModule.DataSourceManager();
         dataSourceManager.add({

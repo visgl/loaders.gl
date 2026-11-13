@@ -1,5 +1,5 @@
 import React, {useEffect, useId, useState} from 'react';
-import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/core/scan';
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/core/query';
 
 import styles from './scan-query-panel.module.css';
 
@@ -59,11 +59,12 @@ export function ScanQueryPanel({
   const execution = metadata?.execution;
   const isExecutable = execution?.status === 'supported';
   const isPointCloud = metadata?.queryType === 'point-cloud';
-  const hasLimit = metadata?.capabilities.table?.limit && metadata.capabilities.table.limit !== 'unsupported';
-  const hasBounds = metadata?.capabilities.bounds && metadata.capabilities.bounds !== 'unsupported';
+  const queryCapabilities = metadata?.queryCapabilities ?? metadata?.capabilities;
+  const hasLimit = queryCapabilities?.table?.limit && queryCapabilities.table.limit !== 'unsupported';
+  const hasBounds = queryCapabilities?.bounds && queryCapabilities.bounds !== 'unsupported';
   const hasLevel = Boolean(
     metadata?.levels?.length ||
-      (metadata?.capabilities.levelOfDetail && metadata.capabilities.levelOfDetail !== 'unsupported')
+      (queryCapabilities?.levelOfDetail && queryCapabilities.levelOfDetail !== 'unsupported')
   );
   const hasRasterLevels = !isPointCloud && Boolean(metadata?.levels?.length);
   const sourceBounds = metadata?.spatial?.bounds;

@@ -231,7 +231,7 @@
               },
               {
                 "type": "category",
-                "label": "@loaders.gl/core/scan",
+                "label": "@loaders.gl/core/query",
                 "link": {
                   "type": "doc",
                   "id": "modules/core/scan/README"

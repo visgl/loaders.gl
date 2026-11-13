@@ -1,5 +1,5 @@
 ---
-title: '@loaders.gl/core/scan'
+title: '@loaders.gl/core/query'
 description: A portable query runtime for bounded, selective reads across local and cloud data.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Module overview"
-  title="@loaders.gl/core/scan"
+  title="@loaders.gl/core/query"
   description="Describe the rows, columns, bounds, and limits you need once, then let each source plan the most useful reads it can perform."
   tone="violet"
   meta={['Arrow results', 'Range-aware sources', 'Portable query contract']}
@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-`@loaders.gl/core/scan` is the optional application-facing runtime for portable queries. It collects the
+`@loaders.gl/core/query` is the optional application-facing runtime for portable queries. It collects the
 reference Arrow executor, query parsing, source-neutral query metadata, ordered append federation,
 and adapters that expose an already-addressed vector result as a table.
 
@@ -77,7 +77,7 @@ Arrow is the built-in reference backend. `createScanEngine()` is asynchronous so
 register another backend lazily without changing its calling code.
 
 ```ts
-import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/query';
 
 const engine = await createScanEngine();
 const result = engine.query(table, {
@@ -177,7 +177,7 @@ service response; table operators run locally and do not imply pagination or ser
 ## Bundle-size boundary
 
 - Import a format package alone for ordinary loader and source APIs.
-- Import `@loaders.gl/core/scan` only when the application needs the reference executor, shared query
+- Import `@loaders.gl/core/query` only when the application needs the reference executor, shared query
   parser, federation, or vector table-view adapters.
 - Register optional backends with a loader function so their implementation can remain in a
   separate dynamic chunk.
@@ -200,7 +200,7 @@ not add `load(..., {query})` or execute aliased selections. Current scan methods
 accept their `columns`, `predicate`, and `limit` options.
 
 ```ts
-import type {TableQuery, TableQueryExecutionOptions} from '@loaders.gl/core/scan';
+import type {TableQuery, TableQueryExecutionOptions} from '@loaders.gl/core/query';
 
 const query: TableQuery = {
   select: [{column: 'longitude', as: 'lng'}, 'latitude'],
@@ -231,7 +231,7 @@ such as `parquet.onTelemetry`, are separate from this terminal query callback.
 `normalizeTableQuery(sourceColumns, query)` expands selections into explicit `{column, as}`
 mappings. `planLogicalTableQuery(sourceColumns, query)` reuses the scan planner to produce
 scan, filter, aliased project, and limit steps. Import these helpers from
-`@loaders.gl/core/scan` (format adapters can use `@loaders.gl/core/loader-utils`).
+`@loaders.gl/core/query` (format adapters can use `@loaders.gl/core/loader-utils`).
 
 ```ts
 const plan = planLogicalTableQuery(['longitude', 'population'], {
@@ -266,7 +266,7 @@ combined with `columns` or relational operators in this linear execution path.
 `explainArrowTableQuery()` reports the aliased output names and physical source columns.
 
 The shared `projectArrowTable(arrowTable, selections)` helper is available through
-`@loaders.gl/core/scan/arrow-execution`. Projection creates schema and batch wrappers while
+`@loaders.gl/core/query/arrow-execution`. Projection creates schema and batch wrappers while
 reusing data buffers, including nested children and dictionaries. It preserves field
 names/types/nullability/metadata, schema metadata, RecordBatch metadata and boundaries,
 and row order; selected aliases replace only field names. Projection-only limits retain
@@ -280,7 +280,7 @@ limit, and cancellation. Sorting, aggregates, expressions, unions, and joins rem
 existing materializing paths.
 
 The in-memory executor and Arrow IPC source now share `filterArrowTable()` from
-`@loaders.gl/core/scan/arrow-execution`. Predicate evaluation reads Arrow vectors directly and
+`@loaders.gl/core/query/arrow-execution`. Predicate evaluation reads Arrow vectors directly and
 operates independently on each RecordBatch. All-pass batches reuse their data; all-reject
 results retain the schema; contiguous results are slices; scattered results gather values.
 Memory for predicate indices is bounded by one input batch. Slices may retain the original
@@ -307,7 +307,7 @@ semantics, source capabilities, and benchmarks.
 ## Query naming and pushdown capabilities
 
 New applications can import `query` and `queryInBatches` from `@loaders.gl/core/query`.
-The existing `/scan` entry point and its focused subpaths remain available; `/query` aliases share
+The legacy `/scan` entry point and its focused subpaths remain available; `/query` aliases share
 exactly the same runtime implementation.
 
 Source metadata exposes `queryCapabilities` (with the legacy `capabilities` alias). Its `.table`
@@ -330,3 +330,10 @@ including CAST conversions, projection, predicates, offset, and limit. Planning 
 handles empty results, cancellation, and iterator cleanup. A source must match portable null,
 overflow, error, and row-order semantics before accepting a query. Existing format sources do not
 claim universal native CAST support; their unsupported conversions continue to execute in Arrow.
+
+For mixed SELECT lists, adapters can also implement
+`supportsQueryProjectionPushdown(selection)`. Return true only for expressions with exact
+native results and no row-dependent errors. Core can then ask the source to evaluate those
+items and return the input columns needed by Arrow for the remaining items. The source must
+accept the rewritten query with its original filter, offset, and limit. Returning `null`
+from planning keeps execution on the existing fallback path.

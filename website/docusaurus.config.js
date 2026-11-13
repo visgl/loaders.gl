@@ -317,6 +317,7 @@ const config = {
             '@loaders.gl/tiles/pmtiles': resolve('../modules/tiles/src/pmtiles'),
             '@loaders.gl/core/polyfills': resolve('../modules/core/src/polyfills'),
             '@loaders.gl/tiles-3d/potree': resolve('../modules/tiles-3d/src/potree'),
+            '@loaders.gl/core/query': resolve('../modules/core/src/scan'),
             '@loaders.gl/core/scan': resolve('../modules/core/src/scan'),
             '@loaders.gl/core/schema': resolve('../modules/core/src/schema'),
             '@loaders.gl/core/schema-utils': resolve('../modules/core/src/schema-utils'),

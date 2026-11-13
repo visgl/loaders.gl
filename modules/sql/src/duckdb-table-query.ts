@@ -204,6 +204,10 @@ export function makeDuckDBTableQuerySource(
       options?.signal?.throwIfAborted();
       return plan(query);
     },
+    /** Checks the exact CAST subset using the same compiler as whole-query execution. */
+    supportsQueryProjectionPushdown(selection) {
+      return Boolean(plan({select: [selection]}));
+    },
     /** Executes simple reads natively when possible and applies other operators in Arrow. */
     async *read(options = {}) {
       const {columns, predicate, limit, offset, signal} = options;
@@ -235,6 +239,9 @@ function getExactCast(
   field: Field,
   target: unknown
 ): {type: Field['type']; sqlType: string} | null {
+  if (target === 'float64' && ['int8', 'int16', 'int32'].includes(String(field.type))) {
+    return {type: target, sqlType: 'DOUBLE'};
+  }
   if (target !== 'int16' && target !== 'int32' && target !== 'int64') return null;
   const sourceType = getIntegerType(field.type);
   if (!sourceType || Number(String(field.type).slice(3)) > Number(target.slice(3))) return null;

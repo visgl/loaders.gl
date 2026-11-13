@@ -5,7 +5,7 @@ import type {
   TableQueryExecutionSummary,
   ScanQuery,
   ScanQueryMetadata
-} from '@loaders.gl/core/scan';
+} from '@loaders.gl/core/query';
 
 import {ScanQueryPanel} from './scan-query-panel';
 import styles from './federated-scan-panel.module.css';

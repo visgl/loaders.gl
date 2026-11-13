@@ -143,3 +143,42 @@ test('common queries page DuckDB tables, widen integers natively, and fall back 
     await source.close();
   }
 });
+
+test('common queries combine native DuckDB casts and residual Arrow expressions', async () => {
+  const source = new DuckDBSQLDataSource('duckdb:///:memory:', {});
+  try {
+    await source.queryRows('CREATE TABLE mixed (id INTEGER, fraction DOUBLE)');
+    await source.queryRows('INSERT INTO mixed VALUES (1, 1e30), (2, 2.9), (NULL, 3.9)');
+    const table = await source.getTable('mixed');
+    const statements: string[] = [];
+    const queryRows = source.queryRows.bind(source);
+    source.queryRows = (statement, options) => {
+      if (typeof statement === 'string') statements.push(statement);
+      return queryRows(statement, options);
+    };
+    const {query} = await import('@loaders.gl/core/query');
+    const {parseSQLQuery} = await import('@loaders.gl/core/query/query');
+    const projection =
+      'SELECT CAST(id AS DOUBLE PRECISION) AS wide, CAST(fraction AS INTEGER) AS truncated';
+    const result = await query(projection + ' LIMIT 2 OFFSET 1', {
+      source: table,
+      sqlParser: parseSQLQuery
+    });
+    expect(result.data.toArray().map(row => row.toJSON())).toEqual([
+      {wide: 2, truncated: 2},
+      {wide: null, truncated: 3}
+    ]);
+    expect(statements.at(-1)).toMatch(/CAST\("id" AS DOUBLE\).*LIMIT 2 OFFSET 1$/);
+    expect(statements.at(-1)).not.toContain('AS INTEGER');
+    await expect(query(projection, {source: table, sqlParser: parseSQLQuery})).rejects.toThrow(
+      /overflow/i
+    );
+    const reads = statements.length;
+    const empty = await query(projection + ' LIMIT 0', {source: table, sqlParser: parseSQLQuery});
+    expect(empty.data.schema.names).toEqual(['wide', 'truncated']);
+    expect(empty.data.numRows).toBe(0);
+    expect(statements).toHaveLength(reads);
+  } finally {
+    await source.close();
+  }
+});
