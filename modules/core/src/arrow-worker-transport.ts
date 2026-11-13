@@ -9,14 +9,9 @@ import {
   type DehydratedArrowTable,
   type SplitArrowBuffersOptions
 } from '@math.gl/arrow';
-import {
-  serializeArrowSchema,
-  deserializeArrowSchema
-} from './schema-utils/lib/schema/convert-arrow-schema';
-
 /** Per-batch metadata transferred alongside math.gl's column payload. */
 type BatchMetadata = {
-  schema: ReturnType<typeof serializeArrowSchema>;
+  schema: Uint8Array;
   metadata: [string, string][];
 };
 
@@ -102,7 +97,7 @@ function isDehydratedArrowTableWrapper(value: unknown): value is SerializedArrow
 /** Captures batch schemas and custom metadata before transferring column buffers. */
 function snapshotBatchMetadata(table: arrow.Table): BatchMetadata[] {
   return table.batches.map(batch => ({
-    schema: serializeArrowSchema(batch.schema),
+    schema: arrow.tableToIPC(new arrow.Table(batch.schema, [])),
     metadata: Array.from(batch.metadata)
   }));
 }
@@ -115,7 +110,7 @@ function hydrateWorkerTable(result: SerializedArrowWorkerTable): unknown {
     const snapshot = arrowBatchMetadata?.[index];
     return snapshot
       ? new arrow.RecordBatch(
-          deserializeArrowSchema(snapshot.schema),
+          arrow.tableFromIPC(snapshot.schema).schema,
           batch.data,
           new Map(snapshot.metadata)
         )
