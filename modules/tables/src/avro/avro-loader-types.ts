@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import {AvroFormat} from './avro-format';
 
 // __VERSION__ is injected by the build tooling.
@@ -13,8 +13,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /** Options for the Apache Avro loader. */
 export type AvroLoaderOptions = LoaderOptions & {
   avro?: {
-    /** Return native Arrow data or loaders.gl table envelopes. */
-    shape?: 'arrow' | 'arrow-table';
+    /** Return native Arrow data. */
+    shape?: 'arrow';
     /** Maximum number of rows yielded by each parseInBatches result. */
     batchSize?: number;
     /** Reader schema used for projection and compatible schema evolution. */
@@ -47,11 +47,12 @@ async function preloadAvroLoader() {
 /** Metadata-only loader for Apache Avro Object Container Files. */
 export const AvroLoader = {
   ...AvroFormat,
-  dataType: null as unknown as ArrowTable,
-  batchType: null as unknown as ArrowTableBatch,
+  dataType: null as unknown as Table,
+  batchType: null as unknown as RecordBatch,
   version: VERSION,
   worker: false,
   defaultShape: 'arrow',
+  supportsNativeArrow: true,
   options: {avro: {shape: 'arrow'}},
   preload: preloadAvroLoader
-} as const satisfies Loader<ArrowTable, ArrowTableBatch, AvroLoaderOptions>;
+} as const satisfies Loader<Table, RecordBatch, AvroLoaderOptions>;

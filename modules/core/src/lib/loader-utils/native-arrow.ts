@@ -85,7 +85,7 @@ export async function* unwrapArrowBatches(
 }
 
 /** Identifies native Arrow tables without loading Arrow in the core entry point. */
-function isNativeArrowTable(value: unknown): value is arrow.Table {
+export function isNativeArrowTable(value: unknown): value is arrow.Table {
   return Boolean(
     value &&
       typeof value === 'object' &&

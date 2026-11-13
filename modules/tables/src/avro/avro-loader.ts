@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {concatenateArrayBuffersAsync, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import {AvroLoader as AvroLoaderMetadata} from './avro-loader-types';
 import {
   parseAvro,
@@ -19,49 +19,55 @@ const {preload: _AvroLoaderPreload, ...AvroLoaderMetadataWithoutPreload} = AvroL
 /** Loader for Apache Avro Object Container Files. */
 export const AvroLoaderWithParser = {
   ...AvroLoaderMetadataWithoutPreload,
-  async parse(arrayBuffer: ArrayBuffer, options?: AvroLoaderOptions): Promise<ArrowTable> {
-    return parseAvro(arrayBuffer, {
-      readerSchema: options?.avro?.readerSchema,
-      longType: options?.avro?.longType,
-      schema: options?.avro?.schema,
-      encoding: options?.avro?.encoding,
-      validateFingerprint: options?.avro?.validateFingerprint,
-      blockIndices: options?.avro?.blockIndices,
-      headers: options?.avro?.headers,
-      signal: options?.avro?.signal,
-      rangeChunkSize: options?.avro?.rangeChunkSize
-    });
+  async parse(arrayBuffer: ArrayBuffer, options?: AvroLoaderOptions): Promise<Table> {
+    return (
+      await parseAvro(arrayBuffer, {
+        readerSchema: options?.avro?.readerSchema,
+        longType: options?.avro?.longType,
+        schema: options?.avro?.schema,
+        encoding: options?.avro?.encoding,
+        validateFingerprint: options?.avro?.validateFingerprint,
+        blockIndices: options?.avro?.blockIndices,
+        headers: options?.avro?.headers,
+        signal: options?.avro?.signal,
+        rangeChunkSize: options?.avro?.rangeChunkSize
+      })
+    ).data;
   },
-  async parseUrl(url: string, options?: AvroLoaderOptions): Promise<ArrowTable> {
-    return parseAvroFromUrl(url, {
-      readerSchema: options?.avro?.readerSchema,
-      longType: options?.avro?.longType,
-      schema: options?.avro?.schema,
-      encoding: options?.avro?.encoding,
-      validateFingerprint: options?.avro?.validateFingerprint,
-      blockIndices: options?.avro?.blockIndices,
-      batchSize: options?.avro?.batchSize,
-      headers: options?.avro?.headers,
-      signal: options?.avro?.signal,
-      rangeChunkSize: options?.avro?.rangeChunkSize
-    });
+  async parseUrl(url: string, options?: AvroLoaderOptions): Promise<Table> {
+    return (
+      await parseAvroFromUrl(url, {
+        readerSchema: options?.avro?.readerSchema,
+        longType: options?.avro?.longType,
+        schema: options?.avro?.schema,
+        encoding: options?.avro?.encoding,
+        validateFingerprint: options?.avro?.validateFingerprint,
+        blockIndices: options?.avro?.blockIndices,
+        batchSize: options?.avro?.batchSize,
+        headers: options?.avro?.headers,
+        signal: options?.avro?.signal,
+        rangeChunkSize: options?.avro?.rangeChunkSize
+      })
+    ).data;
   },
-  async parseFile(file, options?: AvroLoaderOptions): Promise<ArrowTable> {
-    return parseAvroFromFile(file, {
-      readerSchema: options?.avro?.readerSchema,
-      longType: options?.avro?.longType,
-      schema: options?.avro?.schema,
-      encoding: options?.avro?.encoding,
-      validateFingerprint: options?.avro?.validateFingerprint,
-      blockIndices: options?.avro?.blockIndices,
-      batchSize: options?.avro?.batchSize,
-      signal: options?.avro?.signal,
-      rangeChunkSize: options?.avro?.rangeChunkSize
-    });
+  async parseFile(file, options?: AvroLoaderOptions): Promise<Table> {
+    return (
+      await parseAvroFromFile(file, {
+        readerSchema: options?.avro?.readerSchema,
+        longType: options?.avro?.longType,
+        schema: options?.avro?.schema,
+        encoding: options?.avro?.encoding,
+        validateFingerprint: options?.avro?.validateFingerprint,
+        blockIndices: options?.avro?.blockIndices,
+        batchSize: options?.avro?.batchSize,
+        signal: options?.avro?.signal,
+        rangeChunkSize: options?.avro?.rangeChunkSize
+      })
+    ).data;
   },
   async *parseInBatches(asyncIterator, options?: AvroLoaderOptions) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
-    yield* parseAvroInBatches(
+    for await (const batch of parseAvroInBatches(
       arrayBuffer,
       typeof options?.core?.batchSize === 'number'
         ? options.core.batchSize
@@ -74,10 +80,12 @@ export const AvroLoaderWithParser = {
         validateFingerprint: options?.avro?.validateFingerprint,
         blockIndices: options?.avro?.blockIndices
       }
-    );
+    )) {
+      yield* batch.data.batches;
+    }
   },
   async *parseInBatchesFromUrl(url: string, options?: AvroLoaderOptions) {
-    yield* parseAvroInBatchesFromUrl(url, {
+    for await (const batch of parseAvroInBatchesFromUrl(url, {
       readerSchema: options?.avro?.readerSchema,
       longType: options?.avro?.longType,
       schema: options?.avro?.schema,
@@ -91,16 +99,15 @@ export const AvroLoaderWithParser = {
       headers: options?.avro?.headers,
       signal: options?.avro?.signal,
       rangeChunkSize: options?.avro?.rangeChunkSize
-    });
+    })) {
+      yield* batch.data.batches;
+    }
   }
-} as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, AvroLoaderOptions> & {
-  parseUrl: (url: string, options?: AvroLoaderOptions) => Promise<ArrowTable>;
+} as const satisfies LoaderWithParser<Table, RecordBatch, AvroLoaderOptions> & {
+  parseUrl: (url: string, options?: AvroLoaderOptions) => Promise<Table>;
   parseFile: (
     file: import('@loaders.gl/core/loader-utils').ReadableFile,
     options?: AvroLoaderOptions
-  ) => Promise<ArrowTable>;
-  parseInBatchesFromUrl: (
-    url: string,
-    options?: AvroLoaderOptions
-  ) => AsyncIterable<ArrowTableBatch>;
+  ) => Promise<Table>;
+  parseInBatchesFromUrl: (url: string, options?: AvroLoaderOptions) => AsyncIterable<RecordBatch>;
 };

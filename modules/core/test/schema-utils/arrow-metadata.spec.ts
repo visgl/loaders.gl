@@ -6,6 +6,7 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {
   makeArrowTableFromBatches,
+  convertTableToArrow,
   makeTableFromBatches,
   mergeArrowSchemas,
   updateArrowTableSchema,
@@ -153,4 +154,17 @@ test.each([
   const table = updateArrowTableSchema(new arrow.Table(first), merged);
   expect(table.numRows).toBe(0);
   expect(serializeArrowSchema(table.batches[0].schema)).toEqual(serializeArrowSchema(merged));
+});
+
+test('native table conversion works without Arrow static type guards', () => {
+  const table = arrow.tableFromArrays({id: new Int32Array([1, 2])});
+  const original = Object.getOwnPropertyDescriptor(arrow.Table, 'isTable');
+  Object.defineProperty(arrow.Table, 'isTable', {value: undefined, configurable: true});
+  try {
+    expect(convertTableToArrow(table)).toBe(table);
+    expect(convertTableToArrow({shape: 'arrow-table', data: table})).toBe(table);
+  } finally {
+    if (original) Object.defineProperty(arrow.Table, 'isTable', original);
+    else Reflect.deleteProperty(arrow.Table, 'isTable');
+  }
 });
