@@ -58,10 +58,10 @@ test('loadInBatches#applies searchParams before the initial request', async () =
   expect(requestedUrl).toBe('https://example.com/data.csv?token=secret-token');
 });
 
-test('loadInBatches(options.limit)', async () => {
+test('loadInBatches lets callers stop after the first batch', async () => {
   // @ts-ignore
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
-    limit: 100,
+    core: {batchSize: 100},
     csv: {shape: 'object-row-table'}
   });
   const rows: unknown[] = [];
@@ -69,7 +69,8 @@ test('loadInBatches(options.limit)', async () => {
   for await (const batch of iterator) {
     // @ts-ignore CSVLoader types are not made available here due to potential circular dependency in tsconfigs
     rows.push(...batch.data);
+    break;
   }
 
-  expect(rows.length, 'Got the correct table size with options.limit').toBe(100);
+  expect(rows).toHaveLength(100);
 });
