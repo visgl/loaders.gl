@@ -103,7 +103,12 @@ test.each(cases)('$name returns native Tables and all RecordBatches', async ({lo
   }
   expect(values).toEqual(['first', 'second']);
 
-  if (loader === ArrowLoader || loader === GeoArrowLoader) {
+  if (
+    loader === ArrowLoader ||
+    loader === GeoArrowLoader ||
+    loader === ORCLoader ||
+    loader === AvroLoader
+  ) {
     await expect(parse(input(), loader, {core: {shape: 'arrow-table'} as any})).rejects.toThrow(
       'uses shape: "arrow"'
     );

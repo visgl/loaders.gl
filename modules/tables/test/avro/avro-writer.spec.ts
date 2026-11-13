@@ -37,11 +37,10 @@ test('AvroWriter#encode round-trips an Arrow table', async () => {
   const input = arrow.tableFromArrays({id: [1, 2], name: ['one', 'two']});
   const output = await AvroWriter.encode(input);
   const result = await AvroLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    expect(result.data.numRows).toBe(2);
-    expect(JSON.stringify(Array.from(result.data.getChild('id')?.toArray() || []))).toBe('[1,2]');
-    expect(JSON.stringify(Array.from(result.data.getChild('name')?.toArray() || []))).toBe(
+  {
+    expect(result.numRows).toBe(2);
+    expect(JSON.stringify(Array.from(result.getChild('id')?.toArray() || []))).toBe('[1,2]');
+    expect(JSON.stringify(Array.from(result.getChild('name')?.toArray() || []))).toBe(
       '["one","two"]'
     );
   }
@@ -58,9 +57,8 @@ test('AvroWriter#encode supports an explicit nullable schema', async () => {
     }
   });
   const result = await AvroLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table')
-    expect(result.data.toArray().map(row => row.toJSON())).toEqual([{value: 1}, {value: null}]);
+
+  expect(result.toArray().map(row => row.toJSON())).toEqual([{value: 1}, {value: null}]);
 });
 test('AvroWriter#encode writes a single-object datum', async () => {
   const schema = {
@@ -72,8 +70,8 @@ test('AvroWriter#encode writes a single-object datum', async () => {
     avro: {schema, encoding: 'single-object'}
   });
   const result = await AvroLoaderWithParser.parse(output, {avro: {schema}});
-  if (result.shape === 'arrow-table')
-    expect(result.data.toArray().map(row => row.toJSON())).toEqual([{id: 42}]);
+
+  expect(result.toArray().map(row => row.toJSON())).toEqual([{id: 42}]);
   await await expect(
     AvroWriter.encode(arrow.tableFromArrays({id: [1, 2]}), {
       avro: {schema, encoding: 'single-object'}
@@ -90,8 +88,8 @@ test('AvroWriter#encode writes raw Avro records', async () => {
     avro: {schema, encoding: 'raw'}
   });
   const result = await AvroLoaderWithParser.parse(output, {avro: {schema, encoding: 'raw'}});
-  if (result.shape === 'arrow-table')
-    expect(result.data.toArray().map(row => row.toJSON())).toEqual([{id: 7}]);
+
+  expect(result.toArray().map(row => row.toJSON())).toEqual([{id: 7}]);
 });
 test('AvroWriter#encode supports named records and logical timestamps', async () => {
   const input = arrow.tableFromArrays({
@@ -121,11 +119,10 @@ test('AvroWriter#encode supports named records and logical timestamps', async ()
     }
   });
   const result = await AvroLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    expect(result.data.getChild('user')?.get(0)?.id).toBe(7);
-    expect(result.data.getChild('user')?.get(0)?.name).toBe('Ada');
-    expect(result.data.getChild('created')?.get(0)).toBe(1700000000000);
+  {
+    expect(result.getChild('user')?.get(0)?.id).toBe(7);
+    expect(result.getChild('user')?.get(0)?.name).toBe('Ada');
+    expect(result.getChild('created')?.get(0)).toBe(1700000000000);
   }
 });
 test('AvroWriter#encode supports Avro time and local timestamp logical types', async () => {
@@ -145,9 +142,9 @@ test('AvroWriter#encode supports Avro time and local timestamp logical types', a
     }
   );
   const result = await AvroLoaderWithParser.parse(output);
-  if (result.shape === 'arrow-table') {
-    expect(result.data.getChild('time')?.get(0)).toBe(11045678000);
-    expect(result.data.getChild('local')?.get(0)).toBe(1234);
+  {
+    expect(result.getChild('time')?.get(0)).toBe(11045678000);
+    expect(result.getChild('local')?.get(0)).toBe(1234);
   }
 });
 test('AvroWriter#encode round-trips decimal bytes logical types', async () => {
@@ -164,11 +161,8 @@ test('AvroWriter#encode round-trips decimal bytes logical types', async () => {
     }
   });
   const result = await AvroLoaderWithParser.parse(output);
-  if (result.shape === 'arrow-table')
-    expect(result.data.toArray().map(row => row.toJSON())).toEqual([
-      {amount: 12.34},
-      {amount: -5.67}
-    ]);
+
+  expect(result.toArray().map(row => row.toJSON())).toEqual([{amount: 12.34}, {amount: -5.67}]);
 });
 test('AvroWriter#encode round-trips scalable big-decimal values', async () => {
   const schema = {
@@ -181,8 +175,8 @@ test('AvroWriter#encode round-trips scalable big-decimal values', async () => {
     {avro: {schema}}
   );
   const result = await AvroLoaderWithParser.parse(output);
-  if (result.shape === 'arrow-table') {
-    const row = result.data.toArray()[0] as any;
+  {
+    const row = result.toArray()[0] as any;
     expect(row.amount.value).toBe(12345678901234567000);
     expect(row.amount.scale).toBe(2);
   }
@@ -208,8 +202,8 @@ test('AvroWriter#encode round-trips UUID and duration logical types', async () =
     }
   });
   const result = await AvroLoaderWithParser.parse(output);
-  if (result.shape === 'arrow-table') {
-    const row = result.data.toArray()[0] as any;
+  {
+    const row = result.toArray()[0] as any;
     expect(row.identifier).toBe('550e8400-e29b-41d4-a716-446655440000');
     expect(row.elapsed.months).toBe(2);
     expect(row.elapsed.days).toBe(3);
@@ -232,8 +226,8 @@ test('AvroWriter#encode supports recursive named schemas', async () => {
     {avro: {schema: {type: 'record', name: 'Envelope', fields: [{name: 'node', type: nodeSchema}]}}}
   );
   const result = await AvroLoaderWithParser.parse(output);
-  if (result.shape === 'arrow-table') {
-    const row = result.data.toArray()[0] as any;
+  {
+    const row = result.toArray()[0] as any;
     expect(row.node.value).toBe(1);
     expect(row.node.next.value).toBe(2);
     expect(row.node.next.next).toBeUndefined();
@@ -243,11 +237,10 @@ test('AvroWriter#encode writes compressed multi-block files', async () => {
   const input = arrow.tableFromArrays({id: [1, 2, 3], name: ['alpha', 'beta', 'gamma']});
   const output = await AvroWriter.encode(input, {avro: {codec: 'deflate', blockSize: 1}});
   const result = await AvroLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    expect(result.data.numRows).toBe(3);
-    expect(result.data.getChild('id')?.get(2)).toBe(3);
-    expect(result.data.getChild('name')?.get(1)).toBe('beta');
+  {
+    expect(result.numRows).toBe(3);
+    expect(result.getChild('id')?.get(2)).toBe(3);
+    expect(result.getChild('name')?.get(1)).toBe('beta');
   }
 });
 test('Avro OCF inspection exposes block offsets without decoding records', async () => {
@@ -277,9 +270,9 @@ test('AvroLoader#parse selects indexed OCF blocks', async () => {
     avro: {blockSize: 1}
   });
   const result = await AvroLoaderWithParser.parse(output, {avro: {blockIndices: [1]}});
-  if (result.shape === 'arrow-table') {
-    expect(result.data.numRows).toBe(1);
-    expect(result.data.getChild('id')?.get(0)).toBe(2);
+  {
+    expect(result.numRows).toBe(1);
+    expect(result.getChild('id')?.get(0)).toBe(2);
   }
 });
 test('AvroLoader#parseInBatchesFromUrl uses HTTP byte ranges', async () => {
@@ -310,7 +303,7 @@ test('AvroLoader#parseInBatchesFromUrl uses HTTP byte ranges', async () => {
       }
     ))
       batches.push(batch);
-    expect(batches.map(batch => batch.length)).toEqual([2, 1]);
+    expect(batches.map(batch => batch.numRows)).toEqual([2, 1]);
     expect(ranges.length > 2).toBe(true);
   } finally {
     globalThis.fetch = originalFetch;
@@ -342,12 +335,6 @@ test('core load routes URL-backed Avro files through random-access parsing', asy
     });
     expect(result).toBeInstanceOf(arrow.Table);
     expect(result.getChild('id')?.get(0)).toBe(9);
-    const wrapped = await load('https://example.test/data.avro', AvroLoader, {
-      fetch: fetchFunction,
-      avro: {shape: 'arrow-table'}
-    });
-    expect(wrapped.shape).toBe('arrow-table');
-    expect(wrapped.data.getChild('id')?.get(0)).toBe(9);
     expect(ranges.length > 0).toBe(true);
   } finally {
     globalThis.fetch = originalFetch;
@@ -367,8 +354,8 @@ test('encodeAvroInChunks emits a parseable OCF incrementally', async () => {
     offset += chunk.length;
   }
   const result = await AvroLoaderWithParser.parse(bytes.buffer);
-  if (result.shape === 'arrow-table')
-    expect(result.data.toArray().map(row => row.toJSON())).toEqual([{id: 1}, {id: 2}, {id: 3}]);
+
+  expect(result.toArray().map(row => row.toJSON())).toEqual([{id: 1}, {id: 2}, {id: 3}]);
   expect(chunks.length).toBe(4);
 });
 test('AvroLoader#parseInBatches yields Arrow batches', async () => {
@@ -379,9 +366,9 @@ test('AvroLoader#parseInBatches yields Arrow batches', async () => {
     batches.push(batch);
   }
   expect(batches.length).toBe(2);
-  expect(batches[0].length).toBe(2);
-  expect(batches[1].length).toBe(1);
-  expect(batches[1].data.getChild('id')?.get(0)).toBe(3);
+  expect(batches[0].numRows).toBe(2);
+  expect(batches[1].numRows).toBe(1);
+  expect(batches[1].getChild('id')?.get(0)).toBe(3);
 });
 test('AvroLoader#parse applies reader-schema projection, aliases, and defaults', async () => {
   const input = arrow.tableFromArrays({
@@ -404,12 +391,11 @@ test('AvroLoader#parse applies reader-schema projection, aliases, and defaults',
       }
     }
   });
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    expect(result.data.getChild('id')?.get(0)).toBe(7);
-    expect(result.data.getChild('label')?.get(0)).toBe('Ada');
-    expect(result.data.getChild('extra')?.get(0)).toBe('new');
-    expect(result.data.getChild('ignored')).toBe(null);
+  {
+    expect(result.getChild('id')?.get(0)).toBe(7);
+    expect(result.getChild('label')?.get(0)).toBe('Ada');
+    expect(result.getChild('extra')?.get(0)).toBe('new');
+    expect(result.getChild('ignored')).toBe(null);
   }
 });
 test('AvroLoader#parse applies numeric promotions and rejects incompatible types', async () => {
@@ -424,7 +410,7 @@ test('AvroLoader#parse applies numeric promotions and rejects incompatible types
       }
     }
   });
-  if (promoted.shape === 'arrow-table') expect(promoted.data.getChild('id')?.get(0)).toBe(7);
+  expect(promoted.getChild('id')?.get(0)).toBe(7);
   const union = await AvroLoaderWithParser.parse(output, {
     avro: {
       readerSchema: {
@@ -435,7 +421,7 @@ test('AvroLoader#parse applies numeric promotions and rejects incompatible types
       }
     }
   });
-  if (union.shape === 'arrow-table') expect(union.data.getChild('id')?.get(0)).toBe(7);
+  expect(union.getChild('id')?.get(0)).toBe(7);
   await await expect(
     AvroLoaderWithParser.parse(output, {
       avro: {
@@ -525,9 +511,8 @@ test('Avro long values support exact bigint round trips', async () => {
   const input = arrow.tableFromArrays({id: [9007199254740993n]});
   const output = await AvroWriter.encode(input);
   const result = await AvroLoaderWithParser.parse(output, {avro: {longType: 'bigint'}});
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table')
-    expect(result.data.getChild('id')?.get(0)).toBe(9007199254740993n);
+
+  expect(result.getChild('id')?.get(0)).toBe(9007199254740993n);
 });
 test('AvroLoader#parse supports raw and single-object encodings', async () => {
   const schema = {
@@ -546,10 +531,9 @@ test('AvroLoader#parse supports raw and single-object encodings', async () => {
     const result = await AvroLoaderWithParser.parse(bytes.buffer, {
       avro: {schema}
     });
-    expect(result.shape).toBe('arrow-table');
-    if (result.shape === 'arrow-table') {
-      expect(result.data.getChild('id')?.get(0)).toBe(7);
-      expect(result.data.getChild('name')?.get(0)).toBe('Ada');
+    {
+      expect(result.getChild('id')?.get(0)).toBe(7);
+      expect(result.getChild('name')?.get(0)).toBe('Ada');
     }
   }
 });
@@ -575,9 +559,8 @@ test('AvroWriter#encode covers arrays, maps, unions, enums, and fixed values', a
     {avro: {schema}}
   );
   const result = await AvroLoaderWithParser.parse(output, {avro: {schema}});
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    expect(result.data.numRows).toBe(1);
-    expect(result.data.getChild('kind')?.get(0)).toBe('B');
+  {
+    expect(result.numRows).toBe(1);
+    expect(result.getChild('kind')?.get(0)).toBe('B');
   }
 });
