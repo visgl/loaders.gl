@@ -103,3 +103,43 @@ test('DuckDB Node adapter reports unsupported IPC uploads', async () => {
     await source.close();
   }
 });
+
+test('common queries page DuckDB tables, widen integers natively, and fall back for rounding casts', async () => {
+  const source = new DuckDBSQLDataSource('duckdb:///:memory:', {core: {name: 'database'}});
+  try {
+    await source.queryRows('CREATE TABLE values_table (id INTEGER, value DOUBLE)');
+    await source.queryRows(
+      'INSERT INTO values_table VALUES (1, 1.9), (2, 2.9), (3, 3.9), (4, NULL)'
+    );
+    const table = await source.getTable('values_table');
+    const statements: string[] = [];
+    const queryRows = source.queryRows.bind(source);
+    source.queryRows = async (statement, options) => {
+      if (typeof statement === 'string') statements.push(statement);
+      return queryRows(statement, options);
+    };
+    const {query} = await import('@loaders.gl/core/query');
+    const {parseSQLQuery} = await import('@loaders.gl/core/query/query');
+    for (const offset of [0, 1]) {
+      const result = await query(
+        `SELECT CAST(id AS BIGINT) AS result WHERE CAST(id AS BIGINT) >= 2 LIMIT 1 OFFSET ${offset}`,
+        {source: table, sqlParser: parseSQLQuery}
+      );
+      expect(result.data.getChild('result')?.get(0)).toBe(BigInt(offset + 2));
+      expect(statements.at(-1)).toMatch(new RegExp(`CAST.*WHERE CAST.*LIMIT 1 OFFSET ${offset}$`));
+    }
+    const fallback = await query('SELECT CAST(value AS INTEGER) AS result LIMIT 1 OFFSET 1', {
+      source: table,
+      sqlParser: parseSQLQuery
+    });
+    expect(fallback.data.getChild('result')?.get(0)).toBe(2);
+    expect(statements.at(-1)).toMatch(/SELECT "value".*LIMIT 1 OFFSET 1$/);
+    const named = await query(
+      {from: {source: 'database', table: 'values_table'}, limit: 1},
+      {sources: [source]}
+    );
+    expect(named.data.getChild('id')?.get(0)).toBe(1);
+  } finally {
+    await source.close();
+  }
+});
