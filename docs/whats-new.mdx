@@ -1238,3 +1238,6 @@ First Official Release
 supports exact-query pushdown negotiation for CAST-capable sources. Offset-capable sources receive
 native row windows; other sources retain the safe residual offset and limit path. Existing scan
 imports and metadata remain compatible.
+
+DuckDB tables can now be queried through `@loaders.gl/core/query` with source-side
+paging and native signed integer widening casts. Other casts use Arrow.
