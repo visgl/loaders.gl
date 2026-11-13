@@ -15,7 +15,7 @@ import type {
 
 import {convertTable} from './convert-table';
 import {convertArrowToSchema} from '../../schema/convert-arrow-schema';
-import {makeArrowRecordBatchIterator} from '../batches/make-arrow-batch-iterator';
+import {makeWrappedTableRecordBatchIterator} from '../batches/make-arrow-batch-iterator';
 
 /**
  * * Convert a loaders.gl Table to an Apache Arrow Table
@@ -40,7 +40,7 @@ export function convertTableToArrow(
     // fall through
 
     default:
-      const arrowBatchIterator = makeArrowRecordBatchIterator(table, options);
+      const arrowBatchIterator = makeWrappedTableRecordBatchIterator(table, options);
       return new arrow.Table(arrowBatchIterator);
   }
 }

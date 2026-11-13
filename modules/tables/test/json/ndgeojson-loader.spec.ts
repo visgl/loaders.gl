@@ -2,17 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table, RecordBatch} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {parse, parseInBatches, parseSync} from '@loaders.gl/core';
 import {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from '@loaders.gl/tables/json/index';
 import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/ndgeojson-loader';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  Feature,
-  Geometry,
-  ObjectRowTable
-} from '@loaders.gl/core/schema';
+import type {Feature, Geometry, ObjectRowTable} from '@loaders.gl/core/schema';
 
 const features: Feature<Geometry | null>[] = [
   {
@@ -43,7 +38,7 @@ test('NDGeoJSON defaults to Arrow through metadata and parser entrypoints', asyn
   ).toBe('geoarrow.wkb');
   expect(parseSync(text, NDGeoJSONLoaderWithParser).numRows).toBe(2);
   const buffer = new TextEncoder().encode(text).buffer;
-  expect(((await NDGeoJSONLoaderWithParser.parse(buffer)) as ArrowTable).data.numRows).toBe(2);
+  expect(((await NDGeoJSONLoaderWithParser.parse(buffer)) as Table).numRows).toBe(2);
 });
 
 test('NDGeoJSON preserves explicit object rows, blank lines, and record separators', async () => {
@@ -53,6 +48,10 @@ test('NDGeoJSON preserves explicit object rows, blank lines, and record separato
     features
   );
   expect(parseSync('', NDGeoJSONLoaderWithParser).numRows).toBe(0);
+  const emptyBatches = [];
+  for await (const batch of await parseInBatches([''], NDGeoJSONLoader)) emptyBatches.push(batch);
+  expect(emptyBatches.map(batch => batch.numRows)).toEqual([0]);
+  expect(emptyBatches[0].schema.fields.some(field => field.name === 'geometry')).toBe(true);
   const batches = await parseInBatches([sequence], NDGeoJSONLoader, {...options, batchSize: 1});
   const rows = [];
   for await (const batch of batches) rows.push(...(batch as ObjectRowTable).data);
@@ -65,14 +64,13 @@ test('NDGeoJSON streams UTF-8 chunks into bounded Arrow batches', async () => {
   const batches = [];
   for await (const batch of await parseInBatches(chunks, NDGeoJSONLoader, {
     core: {batchSize: 2},
-    geojson: {shape: 'arrow-table'}
+    geojson: {shape: 'arrow'}
   })) {
-    batches.push(batch as ArrowTableBatch);
+    batches.push(batch as RecordBatch);
   }
-  expect(batches.map(batch => batch.length)).toEqual([2, 1]);
-  expect(batches.map(batch => batch.batchCount)).toEqual([0, 1]);
-  expect(batches[1].data.schema.fields).toEqual(batches[0].data.schema.fields);
-  expect(batches[0].data.getChild('name')!.get(0)).toBe('Zürich');
+  expect(batches.map(batch => batch.numRows)).toEqual([2, 1]);
+  expect(batches[1].schema.fields).toEqual(batches[0].schema.fields);
+  expect(batches[0].getChild('name')!.get(0)).toBe('Zürich');
 });
 
 test('NDGeoJSON uses a stable geometry union for optimized streams', async () => {
@@ -97,11 +95,11 @@ test('NDGeoJSON uses a stable geometry union for optimized streams', async () =>
     batchSize: 1,
     geoarrow: {encodingPreference: 'optimized'}
   }))
-    batches.push(batch as ArrowTableBatch);
+    batches.push(batch as RecordBatch);
   expect(batches).toHaveLength(2);
   for (const batch of batches) {
     expect(
-      batch.data.schema.fields
+      batch.schema.fields
         .find(field => field.name === 'geometry')!
         .metadata.get('ARROW:extension:name')
     ).toBe('geoarrow.geometry');
@@ -128,11 +126,11 @@ test('NDGeoJSON rejects invalid records, batch sizes, and incompatible later sch
 test('NDGeoJSON default batch size and ID collision handling do not lose data', async () => {
   const batches = [];
   for await (const batch of await parseInBatches([text], NDGeoJSONLoader, {
-    geojson: {shape: 'arrow-table'}
+    geojson: {shape: 'arrow'}
   }))
-    batches.push(batch as ArrowTableBatch);
+    batches.push(batch as RecordBatch);
   expect(batches).toHaveLength(1);
-  expect(batches[0].data.numRows).toBe(2);
+  expect(batches[0].numRows).toBe(2);
   const collision = JSON.stringify({...features[0], properties: {id: 'property-id'}});
   expect(() => parseSync(collision, NDGeoJSONLoaderWithParser)).toThrow(/conflicts/);
   const rows = parseSync(collision, NDGeoJSONLoaderWithParser, {
@@ -159,12 +157,12 @@ test.each([0, 'null-properties'])('NDGeoJSON preserves ID %s with null propertie
   const batches = [];
   for await (const batch of await parseInBatches([`${input}\n${input}`], NDGeoJSONLoader, {
     core: {batchSize: 1},
-    geojson: {shape: 'arrow-table'}
+    geojson: {shape: 'arrow'}
   })) {
-    batches.push(batch as ArrowTableBatch);
+    batches.push(batch as RecordBatch);
   }
-  expect(batches.map(batch => batch.data.numRows)).toEqual([1, 1]);
-  expect(batches.map(batch => batch.data.getChild('id')!.get(0))).toEqual([id, id]);
+  expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
+  expect(batches.map(batch => batch.getChild('id')!.get(0))).toEqual([id, id]);
   const rows = (await parse(input, NDGeoJSONLoader, {
     geojson: {shape: 'object-row-table'}
   })) as ObjectRowTable;

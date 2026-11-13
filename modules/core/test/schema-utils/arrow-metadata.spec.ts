@@ -7,6 +7,7 @@ import * as arrow from 'apache-arrow';
 import {
   makeArrowTableFromBatches,
   convertTableToArrow,
+  makeArrowRecordBatchIterator,
   makeTableFromBatches,
   mergeArrowSchemas,
   updateArrowTableSchema,
@@ -167,4 +168,16 @@ test('native table conversion works without Arrow static type guards', () => {
     if (original) Object.defineProperty(arrow.Table, 'isTable', original);
     else Reflect.deleteProperty(arrow.Table, 'isTable');
   }
+});
+
+test('native Arrow batch iteration retains identity and metadata when splitting', () => {
+  const table = arrow.tableFromArrays({id: new Int32Array([1, 2, 3])});
+  const batch = table.batches[0];
+  batch.metadata.set('source', 'original');
+  expect([...makeArrowRecordBatchIterator(table)][0]).toBe(batch);
+  const split = [...makeArrowRecordBatchIterator(table, {batchSize: 2})];
+  expect(split.map(part => part.numRows)).toEqual([2, 1]);
+  expect(split.flatMap(part => Array.from(part.getChild('id')!))).toEqual([1, 2, 3]);
+  expect(split.map(part => part.metadata.get('source'))).toEqual(['original', 'original']);
+  expect(() => [...makeArrowRecordBatchIterator(table, {batchSize: 0})]).toThrow(RangeError);
 });
