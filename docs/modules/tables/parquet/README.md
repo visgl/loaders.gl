@@ -104,3 +104,10 @@ See the [tables package notice inventory](https://github.com/visgl/loaders.gl/bl
 LZO decompression is supported through compress-utils 0.10.1. Parquet Hadoop block framing is handled in TypeScript. LZO compression is not supported.
 
 The TypeScript reader supports `parquet.rowGroups`, projection, offset, limit, batching, and cancellation. `parquet.wasmUrl` applies only to the explicit WASM reader. `parquet.concurrency` remains accepted for compatibility; the TypeScript loader reads row groups sequentially.
+
+For paging through a single Parquet file, reuse the source and pass `offset` and
+`limit` to the common table query API or `ParquetSource.read()`. For reads without
+row predicates or bounding boxes, the source uses footer row counts to avoid
+scheduling reads for row groups outside the requested page. Adjacent pages may
+decode the same boundary row group. With row predicates, the offset counts rows
+that pass the predicate.

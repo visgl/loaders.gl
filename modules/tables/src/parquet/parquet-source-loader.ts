@@ -258,7 +258,10 @@ export class ParquetSource
   implements TableScanSource<ParquetSourceBatch, ParquetPredicate>
 {
   /** Common projection, predicate, limit, streaming, and cancellation capabilities. */
-  readonly tableQueryCapabilities = PARQUET_TABLE_QUERY_CAPABILITIES;
+  readonly tableQueryCapabilities = {
+    ...PARQUET_TABLE_QUERY_CAPABILITIES,
+    offset: 'pushdown+residual'
+  } as const;
   /** Immutable feature support for the current range-backed source implementation. */
   readonly capabilities: ParquetSourceCapabilities = PARQUET_SOURCE_CAPABILITIES;
   /** Shared initialization for this source instance. */
@@ -514,12 +517,32 @@ export class ParquetSource
         readOptions,
         readContext.abortController.signal
       );
-      const {predicate, rowGroupIndices} = physicalPlan;
+      const {predicate} = physicalPlan;
+      let rowGroupIndices = physicalPlan.rowGroupIndices;
+      let remainingOffset = readOptions.offset ?? 0;
+      if (!predicate && !readOptions.bbox && readOptions.offset !== undefined) {
+        // Footer counts are exact here. Never schedule reads for groups outside the page.
+        let firstGroup = 0;
+        while (firstGroup < rowGroupIndices.length) {
+          const rowCount = initialization.metadata.rowGroups[rowGroupIndices[firstGroup]].rowCount;
+          if (remainingOffset < rowCount) break;
+          remainingOffset -= rowCount;
+          firstGroup++;
+        }
+        let endGroup = firstGroup;
+        let pageRows = 0;
+        const rowsNeeded = remainingOffset + (readOptions.limit ?? Infinity);
+        if (readOptions.limit === undefined) endGroup = rowGroupIndices.length;
+        while (endGroup < rowGroupIndices.length && pageRows < rowsNeeded) {
+          pageRows += initialization.metadata.rowGroups[rowGroupIndices[endGroup++]].rowCount;
+        }
+        rowGroupIndices = rowGroupIndices.slice(firstGroup, endGroup);
+      }
       this.recordTelemetry(
         'row-group-prune',
         {
           rowGroupsRequested: physicalPlan.requested,
-          rowGroupsPruned: physicalPlan.requested - rowGroupIndices.length,
+          rowGroupsPruned: physicalPlan.requested - physicalPlan.rowGroupIndices.length,
           rowGroupsPrunedByStatistics: physicalPlan.prunedByStatistics,
           rowGroupsPrunedByBloomFilter: physicalPlan.prunedByBloomFilter,
           bloomFiltersRead: physicalPlan.bloomFiltersRead,
@@ -598,6 +621,9 @@ export class ParquetSource
               {arrowConversionDurationMs: deserializationDurationMs},
               {rowGroupIndex, durationMs: deserializationDurationMs}
             );
+            const skip = Math.min(remainingOffset, workerBatch.rowCount);
+            remainingOffset -= skip;
+            if (skip === workerBatch.rowCount && skip > 0) continue;
             const batch = sliceParquetBatch(
               createParquetBatchFromArrow(
                 initialization.metadata,
@@ -608,7 +634,8 @@ export class ParquetSource
                 workerBatch.rowCount,
                 workerBatch.rowGroupRowIndices
               ),
-              Math.min(workerBatch.rowCount, remainingRows)
+              Math.min(workerBatch.rowCount - skip, remainingRows),
+              skip
             );
             this.recordTelemetry(
               'batch',
@@ -627,9 +654,11 @@ export class ParquetSource
         }
 
         const outputRowCount = rowCount;
+        const skip = Math.min(remainingOffset, outputRowCount);
+        remainingOffset -= skip;
         const outputBatchSize = batchSize || Math.max(outputRowCount, 1);
         for (
-          let outputRowOffset = 0;
+          let outputRowOffset = skip;
           outputRowOffset < outputRowCount;
           outputRowOffset += outputBatchSize
         ) {
@@ -940,12 +969,17 @@ export class ParquetSource
     const bbox = options.bbox ?? this.options.parquet?.bbox;
     const limit = options.limit ?? this.options.parquet?.limit;
     validateTableQueryLimit(limit);
+    const {offset} = options;
+    if (offset !== undefined && (!Number.isSafeInteger(offset) || offset < 0)) {
+      throw new Error('Parquet offset must be a non-negative safe integer.');
+    }
     return {
       rowGroups: rowGroups && [...rowGroups],
       columns: columns && [...columns],
       rowGroupFilter: options.rowGroupFilter ?? this.options.parquet?.rowGroupFilter,
       predicate: predicate ? copyParquetPredicate(predicate) : undefined,
       limit,
+      offset,
       bbox: bbox ? ([...bbox] as ParquetSourceReadOptions['bbox']) : undefined,
       geometryColumn: options.geometryColumn ?? this.options.parquet?.geometryColumn,
       batchSize: options.batchSize ?? this.options.parquet?.batchSize,
