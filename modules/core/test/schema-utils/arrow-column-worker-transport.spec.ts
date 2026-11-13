@@ -7,6 +7,8 @@ import {expect, test} from 'vitest';
 import {Table, vectorFromArray, List, Field, Int32, tableFromArrays} from 'apache-arrow';
 import {hydrateArrowTable as hydrateMathArrowTable} from '@math.gl/arrow';
 import {
+  deserializeNativeArrowWorkerResult,
+  serializeNativeArrowWorkerResult,
   deserializeArrowWorkerTable,
   serializeArrowWorkerTable
 } from '@loaders.gl/core/arrow-worker-transport';
@@ -116,4 +118,30 @@ test('Column worker transport owns retained header and sidecar buffers as well a
   }
   expect(Array.from(headerBytes)).toEqual([7, 8]);
   expect(Array.from(sidecarIndex)).toEqual([100, 200]);
+});
+
+test.each([
+  false,
+  true
+])('Native Arrow transport retains independent metadata with batch output %s', batchOutput => {
+  const table = tableFromArrays({value: [1, 2]});
+  table.schema.metadata.set('stage', 'complete');
+  const batch = table.batches[0];
+  batch.schema.metadata = new Map([['stage', 'partial']]);
+  batch.schema.fields[0].metadata.set('units', 'count');
+  batch.metadata.set('local', 'first');
+  const input = batchOutput ? batch : table;
+  const payload = serializeNativeArrowWorkerResult(input);
+  const received = deserializeNativeArrowWorkerResult(
+    structuredClone(payload, {
+      transfer: getTransferList(payload)
+    })
+  );
+  expect(received.numRows).toBe(2);
+  expect(received.getChild('value')?.get(1)).toBe(2);
+  expect(input.getChild('value')?.get(0)).toBe(1);
+  const receivedBatch = received instanceof Table ? received.batches[0] : received;
+  expect(receivedBatch.schema.metadata.get('stage')).toBe('partial');
+  expect(receivedBatch.schema.fields[0].metadata.get('units')).toBe('count');
+  expect(receivedBatch.metadata.get('local')).toBe('first');
 });
