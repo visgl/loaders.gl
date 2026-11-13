@@ -405,18 +405,23 @@ function parseCSVInBatches(
         if (batch) {
           asyncQueue.enqueue(batch);
         } else if (isFirstRow && csvOptions.schema) {
-          asyncQueue.enqueue({
-            shape: getBatchShape(),
-            batchType: 'data',
+          const shape = getBatchShape();
+          const emptyBatch = {
+            batchType: 'data' as const,
             schema: csvOptions.schema,
-            data:
-              getBatchShape() === 'columnar-table'
-                ? Object.fromEntries(csvOptions.schema.fields.map(field => [field.name, []]))
-                : [],
             length: 0,
             count: 0,
             bytesUsed
-          });
+          };
+          asyncQueue.enqueue(
+            shape === 'columnar-table'
+              ? {
+                  ...emptyBatch,
+                  shape,
+                  data: Object.fromEntries(csvOptions.schema.fields.map(field => [field.name, []]))
+                }
+              : {...emptyBatch, shape, data: []}
+          );
         }
       } catch (error) {
         asyncQueue.enqueue(error as Error);
