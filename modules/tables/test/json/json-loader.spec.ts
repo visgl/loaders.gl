@@ -989,10 +989,10 @@ test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsin
     /expected string/
   );
 });
-test('NDJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async () => {
+test('NDJSONLoader#parseInBatches(arrow freezes inferred schema)', async () => {
   const iterator = BundledNDJSONLoader.parseInBatches?.(
     makeChunkedTextIterator('{"id":1}\n{"id":2,"extra":true}\n', 9),
-    {batchSize: 1, ndjson: {shape: 'arrow-table'}}
+    {batchSize: 1, ndjson: {shape: 'arrow'}}
   );
   await await expect(async () => {
     for await (const _batch of iterator) {
@@ -1001,14 +1001,14 @@ test('NDJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async (
     /unexpected field extra/
   );
 });
-test('NDJSONLoader#parse(deprecated json.shape arrow-table alias)', async () => {
+test('NDJSONLoader#parse(deprecated json.shape arrow alias)', async () => {
   const table = BundledNDJSONLoader.parseTextSync?.('{"id":1}\n{"id":2}\n', {
-    json: {shape: 'arrow-table'}
+    json: {shape: 'arrow'}
   });
-  expect(table.shape, 'deprecated json.shape alias requests Arrow output').toBe('arrow-table');
-  expect(table.data.numRows, 'converts all rows').toBe(2);
+  expect(table).toBeInstanceOf(arrow.Table);
+  expect(table.numRows, 'converts all rows').toBe(2);
 });
-test('NDJSONLoader#parseInBatches(arrow-table treats GeoJSON features as generic rows)', async () => {
+test('NDJSONLoader#parseInBatches(arrow treats GeoJSON features as generic rows)', async () => {
   const ndjsonText = `${JSON.stringify({
     type: 'Feature',
     geometry: {type: 'Point', coordinates: [1, 2]},
@@ -1020,20 +1020,20 @@ test('NDJSONLoader#parseInBatches(arrow-table treats GeoJSON features as generic
   })}\n`;
   const iterator = BundledNDJSONLoader.parseInBatches?.(makeChunkedTextIterator(ndjsonText, 40), {
     batchSize: 1,
-    ndjson: {shape: 'arrow-table'}
+    ndjson: {shape: 'arrow'}
   });
   let rowCount = 0;
   for await (const batch of iterator) {
-    expect(batch.shape, 'data batch is converted to Arrow').toBe('arrow-table');
-    expect(batch.data.getChild('type')?.get(0), 'keeps feature envelope type').toBe('Feature');
-    expect(batch.data.getChild('name'), 'does not lift properties').toBe(null);
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
+    expect(batch.getChild('type')?.get(0), 'keeps feature envelope type').toBe('Feature');
+    expect(batch.getChild('name'), 'does not lift properties').toBe(null);
     expect(
-      batch.schema?.fields.find(field => field.name === 'geometry')?.metadata?.[
-        'ARROW:extension:name'
-      ],
+      batch.schema?.fields
+        .find(field => field.name === 'geometry')
+        ?.metadata.get('ARROW:extension:name'),
       'does not add GeoArrow metadata'
     ).toBe(undefined);
-    rowCount += batch.length;
+    rowCount += batch.numRows;
   }
   expect(rowCount, 'converts streamed feature rows generically').toBe(2);
 });

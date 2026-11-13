@@ -92,19 +92,19 @@ for await (const batch of batches) {
 }
 ```
 
-Set `ndjson.shape: 'arrow-table'` for loaders.gl table and batch objects.
+Set `ndjson.shape: 'arrow'` for a native Arrow Table from atomic loads and native RecordBatches from batch loads.
 
 ```typescript
 import {load, loadInBatches} from '@loaders.gl/core';
 import {NDJSONLoader} from '@loaders.gl/tables/json';
 
 const table = await load(url, NDJSONLoader, {
-  ndjson: {shape: 'arrow-table'}
+  ndjson: {shape: 'arrow'}
 });
 
 const batches = await loadInBatches('ndjson.ndjson', NDJSONLoader, {
   batchSize: 1000,
-  ndjson: {shape: 'arrow-table'}
+  ndjson: {shape: 'arrow'}
 });
 ```
 
@@ -137,11 +137,11 @@ Supports the table category options such as `batchSize`.
 
 | Option                   | Type                    | Default | Description |
 | ------------------------ | ----------------------- | ------- | ----------- |
-| `ndjson.shape`           | `string`                | `'arrow'` | Requested table shape. Supported values are `'arrow'`, `'arrow-table'`, `'object-row-table'`, and `'array-row-table'`. |
-| `ndjson.schema`          | `Schema \| arrow.Schema` | `undefined` | Optional schema used when `ndjson.shape` is `'arrow-table'`. |
+| `ndjson.shape`           | `string`                | `'arrow'` | Requested table shape. Supported values are `'arrow'`, `'object-row-table'`, and `'array-row-table'`. |
+| `ndjson.schema`          | `Schema \| arrow.Schema` | `undefined` | Optional schema used when `ndjson.shape` is `'arrow'`. |
 | `ndjson.arrowConversion` | `object`                | strict recovery policy | Optional Arrow conversion policy. Supports `onTypeMismatch`, `onMissingField`, `onExtraField`, `integerConversion`, and `logRecoveries`. |
 | `ndjson.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'` | `'never'` | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode. |
-| `json.shape` | `'arrow-table' \\| 'object-row-table' \\| 'array-row-table'` | `undefined` | Deprecated alias for `ndjson.shape`. |
+| `json.shape` | `'arrow' \\| 'object-row-table' \\| 'array-row-table'` | `undefined` | Deprecated alias for `ndjson.shape`. |
 
 ## Worker batches
 

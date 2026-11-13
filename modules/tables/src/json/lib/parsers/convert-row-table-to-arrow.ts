@@ -24,6 +24,7 @@ import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import {
   ArrowTableBuilder,
   convertArrowToSchema,
+  convertSchemaToArrow,
   type ArrowViewTypeMode
 } from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
@@ -112,15 +113,16 @@ const DEFAULT_ARROW_CONVERSION_OPTIONS: NormalizedArrowConversionOptions = {
   logRecoveries: true
 };
 
-/** Converts NDJSON row-table batches to Arrow table batches. */
+/** Streams native Arrow batches against the declared or first inferred NDJSON schema. */
 export async function* makeNDJSONArrowBatchIterator(
   batches: AsyncIterable<TableBatch>,
   options?: JSONArrowConversionOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.RecordBatch> {
   let frozenSchema: Schema | null = options?.schema
     ? normalizeJSONArrowSchema(options.schema)
     : null;
 
+  let emitted = false;
   for await (const batch of batches) {
     const rowBatch = batch as ObjectRowTable | ArrayRowTable;
     const arrowTable = convertRowTableToArrowTable(rowBatch, {
@@ -132,8 +134,15 @@ export async function* makeNDJSONArrowBatchIterator(
       frozenSchema = arrowTable.schema!;
     }
 
-    const arrowBatch: ArrowTableBatch = {...batch, ...makeTableScanBatch(arrowTable)};
-    yield arrowBatch;
+    emitted = true;
+    yield* arrowTable.data.batches;
+  }
+  if (!emitted) {
+    const {data} = convertRowTableToArrowTable(
+      {shape: 'object-row-table', data: []},
+      {...options, schema: frozenSchema || undefined}
+    );
+    yield data.batches[0] ?? new arrow.RecordBatch(data.schema, undefined);
   }
 }
 
@@ -417,7 +426,7 @@ function validateEmptySchemaRowTable(
 }
 
 function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): ArrowTable {
-  const arrowSchema = new arrow.Schema([]);
+  const arrowSchema = convertSchemaToArrow(schema);
   const arrowData = new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, []);
   const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowData);
   Object.defineProperty(arrowRecordBatch, 'data', {value: arrowData});

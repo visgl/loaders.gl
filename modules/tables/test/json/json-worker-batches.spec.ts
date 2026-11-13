@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Field, Int32, Schema, Table, Utf8} from 'apache-arrow';
+import {Field, Int32, RecordBatch, Schema, Table, Utf8} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {destroyWorkerTasks, getWorkerURL} from '@loaders.gl/core/worker-utils';
@@ -50,11 +50,15 @@ test.each([
     }
   })();
   const batches = await parseInBatches(input, loader, {
-    core: {worker: true, batchSize: 1, ...(metadata.id === 'json' ? {} : {shape: 'arrow-table'})}
+    core: {
+      worker: true,
+      batchSize: 1,
+      ...(metadata.id === 'json-table' ? {shape: 'arrow-table'} : {})
+    }
   });
   const iterator = batches[Symbol.asyncIterator]();
   const first = await iterator.next();
-  expect(first.value.length).toBe(1);
+  expect(first.value.numRows ?? first.value.length).toBe(1);
   expect(pulls).toBe(1);
   expect(closed).toBe(false);
   expect(mainParser).not.toHaveBeenCalled();
@@ -67,11 +71,11 @@ test.each([
         worker: true,
         maxConcurrency: 1,
         batchSize: 1,
-        ...(metadata.id === 'json' ? {} : {shape: 'arrow-table'})
+        ...(metadata.id === 'json-table' ? {shape: 'arrow-table'} : {})
       }
     })
   );
-  expect(replacement.reduce((total, batch) => total + batch.length, 0)).toBe(2);
+  expect(replacement.reduce((total, batch) => total + (batch.numRows ?? batch.length), 0)).toBe(2);
 });
 
 test.each([
@@ -95,7 +99,7 @@ test.each([
   const onProgress = vi.fn();
   const options = {
     core: {worker: true, batchSize: 1},
-    [namespace]: {schema, shape: 'arrow-table'},
+    [namespace]: {schema, shape: namespace === 'ndjson' ? 'arrow' : 'arrow-table'},
     onProgress
   };
   const {loader, mainParser} = observeLoader(metadata, implementation);
@@ -103,13 +107,16 @@ test.each([
   const batches = await collectBatches(await parseInBatches(chunks, loader, options));
   expect(mainParser).not.toHaveBeenCalled();
   expect(batches).toHaveLength(2);
-  expect(batches.every(batch => batch.data instanceof Table)).toBe(true);
-  expect(batches.flatMap(batch => Array.from(batch.data, (row: any) => row.toJSON()))).toEqual(
+  const arrowBatches = namespace === 'ndjson' ? batches : batches.map(batch => batch.data);
+  expect(
+    arrowBatches.every(batch => batch instanceof (namespace === 'ndjson' ? RecordBatch : Table))
+  ).toBe(true);
+  expect(arrowBatches.flatMap(batch => Array.from(batch, (row: any) => row.toJSON()))).toEqual(
     rows
   );
-  expect(batches[0].data.schema.fields[0].type).toMatchObject({isSigned: true, bitWidth: 32});
-  expect(batches[0].schema.metadata.origin).toBe('worker-test');
-  expect(batches[0].data.schema.fields[0].metadata.get('meaning')).toBe('identifier');
+  expect(arrowBatches[0].schema.fields[0].type).toMatchObject({isSigned: true, bitWidth: 32});
+  expect(arrowBatches[0].schema.metadata.get('origin')).toBe('worker-test');
+  expect(arrowBatches[0].schema.fields[0].metadata.get('meaning')).toBe('identifier');
   expect(onProgress).toHaveBeenLastCalledWith({phase: 'decode', completed: 2, unit: 'rows'});
   expect(schema).toBeInstanceOf(Schema);
   expect(schema.metadata.get('origin')).toBe('worker-test');
@@ -121,8 +128,35 @@ test.each([
       workerUrl: new URL('/modules/tables/dist/json-worker.js', location.href).href
     }
   });
-  expect(atomic.data).toBeInstanceOf(Table);
-  expect(Array.from(atomic.data, (row: any) => row.toJSON())).toEqual(rows);
+  const arrowTable = namespace === 'ndjson' ? atomic : atomic.data;
+  expect(arrowTable).toBeInstanceOf(Table);
+  expect(Array.from(arrowTable, (row: any) => row.toJSON())).toEqual(rows);
+});
+
+test('NDJSON worker retains the declared schema for empty input', async () => {
+  const schema = new Schema([new Field('id', new Int32())], new Map([['origin', 'empty']]));
+  const batches = await collectBatches(
+    await parseInBatches([encoder.encode('')], NDJSONLoader, {
+      core: {worker: true},
+      ndjson: {schema}
+    })
+  );
+  expect(batches).toHaveLength(1);
+  expect(batches[0]).toBeInstanceOf(RecordBatch);
+  expect(batches[0].numRows).toBe(0);
+  expect(batches[0].schema.fields[0].name).toBe('id');
+  expect(batches[0].schema.metadata.get('origin')).toBe('empty');
+});
+
+test('NDJSON worker preserves row counts for records with no fields', async () => {
+  const input = encoder.encode('{}\n{}\n');
+  const options = {core: {worker: true, batchSize: 1}};
+  const table = await parse(input, NDJSONLoader, options);
+  expect(table).toBeInstanceOf(Table);
+  expect(table.numRows).toBe(2);
+  expect(table.numCols).toBe(0);
+  const batches = await collectBatches(await parseInBatches([input], NDJSONLoader, options));
+  expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
 });
 
 test.each([

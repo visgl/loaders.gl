@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table, RecordBatch} from 'apache-arrow';
+import {
+  deserializeNativeArrowWorkerResult,
+  serializeNativeArrowWorkerResult
+} from '@loaders.gl/core/arrow-worker-transport';
 import {
   serializeBinaryJSON,
   deserializeBinaryJSON,
@@ -31,6 +36,9 @@ export function serializeJSONWorkerOptions(options: LoaderOptions): LoaderOption
 
 /** Owns all outgoing Arrow buffers so retained parser state cannot be detached by a transfer. */
 export function serializeJSONWorkerBatch(batch: unknown): unknown {
+  if (batch instanceof Table || batch instanceof RecordBatch) {
+    return serializeNativeArrowWorkerResult(batch);
+  }
   return (batch as {shape?: string})?.shape === 'arrow-table'
     ? serializeArrowTableResult(batch)
     : serializeBinaryJSON(batch);
@@ -40,6 +48,10 @@ export function serializeJSONWorkerBatch(batch: unknown): unknown {
 export function deserializeJSONWorkerResult(result: unknown) {
   if ((result as BinaryJSONResult)?.transport === 'json-utf8') {
     return deserializeBinaryJSON(result as BinaryJSONResult);
+  }
+  const transport = (result as {transport?: string})?.transport;
+  if (transport === 'arrow-record-batch' || transport === 'arrow-table-columns') {
+    return deserializeNativeArrowWorkerResult(result);
   }
   return deserializeArrowTableBatch(result);
 }

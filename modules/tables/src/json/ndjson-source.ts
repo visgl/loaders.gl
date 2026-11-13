@@ -103,7 +103,10 @@ export class NDJSONTableSource
         shape: 'object-row-table'
       }
     })) {
-      if (batch.shape !== 'object-row-table' && batch.shape !== 'array-row-table')
+      if (
+        !('shape' in batch) ||
+        (batch.shape !== 'object-row-table' && batch.shape !== 'array-row-table')
+      )
         throw new Error('Expected NDJSON row batches');
       schema ||= batch.schema;
       if (schema && !declaredSchema) {
