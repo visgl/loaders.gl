@@ -222,7 +222,10 @@ async function* makeGeoJSONArrowBatchIterator(
         );
         schema.metadata = {...schema.metadata, ...containerMetadata};
         if (JSON.stringify(schema) !== JSON.stringify(emittedSchema)) {
-          yield makeArrowMetadataBatch(convertSchemaToArrow(schema));
+          const finalBatch = makeArrowMetadataBatch(convertSchemaToArrow(schema));
+          const metadata = new Map(finalBatch.metadata);
+          if (batch.jsonpath) metadata.set('jsonpath', String(batch.jsonpath));
+          yield new RecordBatch(finalBatch.schema, finalBatch.data, metadata);
         }
       }
       continue;

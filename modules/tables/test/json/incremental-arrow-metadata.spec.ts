@@ -27,6 +27,10 @@ test('GeoJSON final Arrow batch refines trailing CRS and container metadata', as
     batches[0].schema.fields.map(field => Array.from(field.metadata))
   ]);
   expect(batches.at(-1)!.numRows).toBe(0);
+  expect(batches.map(batch => batch.metadata.get('jsonpath'))).toEqual([
+    '$.features',
+    '$.features'
+  ]);
   const table = await makeArrowTableFromBatches(batches);
   const full = GeoJSONLoaderWithParser.parseTextSync(parts.join(''), options) as ArrowTable;
   expect(table?.schema?.metadata.get('loaders.gl.containerJson')).toBe(
