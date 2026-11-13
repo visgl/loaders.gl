@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {fetchFile} from '@loaders.gl/core';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {encodeLAZChunk} from '@loaders.gl/core/loader-utils';
 import {
@@ -605,3 +606,95 @@ function getWaveformOffset(pointDataRecordFormat: number): number {
   if (pointDataRecordFormat === 10) return 38;
   return -1;
 }
+
+test('TypeScript LAS emits trailing EVLR metadata without mutating previous batches', async () => {
+  const source = createLASMetadataFixture(
+    [],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('TRAILING_WKT')}]
+  );
+  const batches = [];
+  for await (const batch of parseLASInBatches([source.slice(0, 375), source.slice(375)]))
+    batches.push(batch);
+  expect(batches).toHaveLength(2);
+  expect(batches[0].data.schema.metadata.has('las_wkt')).toBe(false);
+  expect(batches[0].data.schema.metadata.get('las_pointsOffset')).toBe('375');
+  expect(batches[1].data.numRows).toBe(0);
+  expect(batches[1].data.schema.metadata.get('las_wkt')).toBe(
+    parseLAS(source).data.schema.metadata.get('las_wkt')
+  );
+  expect(batches[1].loaderData.metadata?.wkt).toBe('TRAILING_WKT');
+});
+
+test('TypeScript LAS retains global header metadata and absolute trailing record offsets', async () => {
+  const points = createLASFixture(0, false);
+  const extended = createLASMetadataFixture(
+    [],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('FINAL_WKT')}]
+  ).slice(375);
+  const bytes = new Uint8Array(points.byteLength + extended.byteLength);
+  bytes.set(new Uint8Array(points));
+  bytes.set(new Uint8Array(extended), points.byteLength);
+  const view = new DataView(bytes.buffer);
+  view.setBigUint64(235, BigInt(points.byteLength), true);
+  view.setUint32(243, 1, true);
+  const batches = [];
+  for await (const batch of parseLASInBatches(
+    [bytes.subarray(0, points.byteLength), bytes.subarray(points.byteLength)],
+    {batchSize: 1}
+  ))
+    batches.push(batch);
+  const header = parseLASHeader(bytes.buffer);
+  expect(batches[0].data.schema.metadata.get('las_pointsCount')).toBe(String(header.pointsCount));
+  expect(batches[0].data.schema.metadata.get('las_pointsOffset')).toBe(String(header.pointsOffset));
+  expect(batches.at(-1)!.loaderData.metadata?.evlrs[0].offset).toBe(points.byteLength);
+  expect(batches.at(-1)!.data.schema.metadata.get('las_wkt')).toBe('FINAL_WKT');
+});
+
+test('TypeScript LAZ emits trailing EVLR metadata after streamed points', async () => {
+  const points = await (
+    await fetchFile('@loaders.gl/pointclouds/las/test/data/pdrf6-1.4.laz')
+  ).arrayBuffer();
+  const extended = createLASMetadataFixture(
+    [],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('COMPRESSED_WKT')}]
+  ).slice(375);
+  const view = new DataView(points);
+  view.setBigUint64(235, BigInt(points.byteLength), true);
+  view.setUint32(243, 1, true);
+  const batches = [];
+  for await (const batch of parseLASInBatches([
+    points.slice(0, 375),
+    points.slice(375),
+    extended
+  ])) {
+    batches.push(batch);
+  }
+  expect(batches[0].data.numRows).toBeGreaterThan(0);
+  expect(batches.at(-1)?.data.numRows).toBe(0);
+  expect(batches.at(-1)?.data.schema.metadata.get('las_wkt')).toBe('COMPRESSED_WKT');
+});
+
+test('TypeScript LAZ retains trailing metadata in a zero-point stream', async () => {
+  const source = await (
+    await fetchFile('@loaders.gl/pointclouds/las/test/data/pdrf6-1.4.laz')
+  ).arrayBuffer();
+  const original = parseLASHeader(source);
+  const header = source.slice(0, original.pointsOffset);
+  const view = new DataView(header);
+  view.setUint32(107, 0, true);
+  view.setBigUint64(247, 0n, true);
+  view.setBigUint64(235, BigInt(header.byteLength), true);
+  view.setUint32(243, 1, true);
+  const extended = createLASMetadataFixture(
+    [],
+    [{userId: 'LASF_Projection', recordId: 2112, data: encodeLASString('EMPTY_LAZ_WKT')}]
+  ).slice(375);
+  const batches = [];
+  for await (const batch of parseLASInBatches([header, extended])) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0].data.numRows).toBe(0);
+  expect(batches[0].data.schema.metadata.get('las_pointsOffset')).toBe(
+    String(original.pointsOffset)
+  );
+  expect(batches[0].data.schema.metadata.get('las_wkt')).toBe('EMPTY_LAZ_WKT');
+});

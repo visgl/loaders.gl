@@ -34,6 +34,10 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
   const arrowTable = table.data;
 
   const schema = serializeArrowSchema(arrowTable.schema);
+  // Legacy mesh batches describe their own vertices, not the cumulative stream extent.
+  const localBounds =
+    arrowTable.batches.length === 1 ? arrowTable.batches[0].metadata.get('boundingBox') : undefined;
+  if (localBounds) schema.metadata = {...schema.metadata, boundingBox: localBounds};
   const fields = schema.fields;
 
   const attributes: Mesh['attributes'] = {};

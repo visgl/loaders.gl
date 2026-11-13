@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {refineArrowTableBatches} from '@loaders.gl/core/schema-utils';
 import type {OBJLoaderOptions, OBJParsedBatch} from './obj-loader-types';
 
 import {
@@ -43,29 +44,8 @@ export const OBJLoaderWithParser = {
     convertOBJMesh(parseOBJ(new TextDecoder().decode(arrayBuffer), options), options),
   parseTextSync: (text: string, options?: OBJLoaderOptions) =>
     convertOBJMesh(parseOBJ(text, options), options),
-  parseInBatches: async function* (
-    arrayBuffer:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ): AsyncIterable<OBJParsedBatch> {
-    const batchSize = getNumericBatchSize(options);
-    if (options?.obj?.pointCloud) {
-      const textIterator = makeTextDecoderIterator(arrayBuffer as AsyncIterable<ArrayBuffer>);
-      const lineIterator = makeLineIterator(textIterator);
-      yield* parseOBJPointCloudLinesInBatches(lineIterator, options, batchSize);
-      return;
-    }
-
-    const data = await concatenateArrayBuffersAsync(arrayBuffer);
-    const text = new TextDecoder().decode(data);
-    if (hasOBJGeometryRecords(text)) {
-      yield makeOBJBatch(parseOBJ(text, options), options);
-      return;
-    }
-
-    yield* parseOBJPointCloudInBatches(text, options, batchSize);
-  },
+  parseInBatches: (input, options) =>
+    refineArrowTableBatches(parseOBJWithMetadataInBatches(input, options)),
   serializeWorkerResult: serializeArrowWorkerTable,
   deserializeWorkerResult: deserializeOBJWorkerResult,
   serializeWorkerBatch: serializeArrowWorkerTable,
@@ -200,4 +180,29 @@ function deserializeOBJWorkerBatch(result: unknown, options?: OBJLoaderOptions):
   if (options?.obj?.shape !== 'mesh') return table;
   const mesh = convertTableToMesh(table);
   return {shape: 'mesh', batchType: 'data', data: mesh, length: table.length};
+}
+
+/** Parses OBJ batches before shared cumulative metadata refinement. */
+async function* parseOBJWithMetadataInBatches(
+  arrayBuffer:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: OBJLoaderOptions
+): AsyncIterable<OBJParsedBatch> {
+  const batchSize = getNumericBatchSize(options);
+  if (options?.obj?.pointCloud) {
+    const textIterator = makeTextDecoderIterator(arrayBuffer as AsyncIterable<ArrayBuffer>);
+    const lineIterator = makeLineIterator(textIterator);
+    yield* parseOBJPointCloudLinesInBatches(lineIterator, options, batchSize);
+    return;
+  }
+
+  const data = await concatenateArrayBuffersAsync(arrayBuffer);
+  const text = new TextDecoder().decode(data);
+  if (hasOBJGeometryRecords(text)) {
+    yield makeOBJBatch(parseOBJ(text, options), options);
+    return;
+  }
+
+  yield* parseOBJPointCloudInBatches(text, options, batchSize);
 }

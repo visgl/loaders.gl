@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {refineArrowTableBatches} from '@loaders.gl/core/schema-utils';
 import type {PCDLoaderOptions} from './pcd-loader-types';
 
 import {
@@ -37,29 +38,8 @@ export const PCDLoaderWithParser = {
   ...PCDLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer, options), options),
   parseSync: (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer, options), options),
-  parseInBatches: async function* (
-    arrayBuffer:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ): AsyncIterable<PCDParsedBatch> {
-    const batchSize = getNumericBatchSize(options);
-    const data = await concatenateArrayBuffersAsync(arrayBuffer);
-    const textData = new TextDecoder().decode(data);
-    const pcdHeader = parsePCDHeader(textData);
-
-    if (pcdHeader.data === 'ascii') {
-      yield* parsePCDASCIIInBatches(data, options, batchSize);
-      return;
-    }
-
-    if (pcdHeader.data === 'binary') {
-      yield* parsePCDBinaryInBatches(data, options, batchSize);
-      return;
-    }
-
-    yield makePCDBatch(parsePCD(data, options), options);
-  },
+  parseInBatches: (input, options) =>
+    refineArrowTableBatches(parsePCDWithMetadataInBatches(input, options)),
   serializeWorkerResult: serializeArrowWorkerTable,
   deserializeWorkerResult: deserializePCDWorkerResult,
   serializeWorkerBatch: serializeArrowWorkerTable,
@@ -176,4 +156,29 @@ function deserializePCDWorkerResult(
 /** Restores the existing PCD batch shape after caller-side hydration. */
 function deserializePCDWorkerBatch(result: unknown, options?: PCDLoaderOptions): PCDParsedBatch {
   return deserializePCDWorkerResult(result, options) as PCDParsedBatch;
+}
+
+/** Parses PCD batches before shared cumulative metadata refinement. */
+async function* parsePCDWithMetadataInBatches(
+  arrayBuffer:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: PCDLoaderOptions
+): AsyncIterable<PCDParsedBatch> {
+  const batchSize = getNumericBatchSize(options);
+  const data = await concatenateArrayBuffersAsync(arrayBuffer);
+  const textData = new TextDecoder().decode(data);
+  const pcdHeader = parsePCDHeader(textData);
+
+  if (pcdHeader.data === 'ascii') {
+    yield* parsePCDASCIIInBatches(data, options, batchSize);
+    return;
+  }
+
+  if (pcdHeader.data === 'binary') {
+    yield* parsePCDBinaryInBatches(data, options, batchSize);
+    return;
+  }
+
+  yield makePCDBatch(parsePCD(data, options), options);
 }

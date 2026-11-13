@@ -9,7 +9,7 @@ import type {
   MeshArrowTable,
   TypedArray
 } from '@loaders.gl/core/schema';
-import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
+import {getMeshBoundingBox, serializeArrowSchema} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 import type {ParsePLYOptions} from './parse-ply';
 import {parsePLYHeader} from './parse-ply';
@@ -398,7 +398,7 @@ function convertPLYMeshToArrowTable(mesh: Mesh): MeshArrowTable {
 
   return {
     shape: 'arrow-table',
-    schema: mesh.schema,
+    schema: serializeArrowSchema(arrowSchema),
     data: new arrow.Table(arrowSchema, columns),
     topology: mesh.topology,
     indices: mesh.indices?.value.length ? mesh.indices : undefined

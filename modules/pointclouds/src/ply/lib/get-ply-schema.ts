@@ -24,7 +24,7 @@ export function getPLYSchema(plyHeader: PLYHeader, attributes: MeshAttributes): 
  * @param plyHeader
  * @returns
  */
-function makeMetadataFromPlyHeader(plyHeader: PLYHeader): Record<string, string> {
+export function makeMetadataFromPlyHeader(plyHeader: PLYHeader): Record<string, string> {
   /* eslint-disable camelcase */
   const metadata: Record<string, string> = {};
   metadata.ply_comments = JSON.stringify(plyHeader.comments);

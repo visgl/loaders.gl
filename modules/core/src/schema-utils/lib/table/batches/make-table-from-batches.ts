@@ -10,11 +10,18 @@ import type {
   ArrayRowTable,
   Feature
 } from '@loaders.gl/core/schema';
+import * as arrow from 'apache-arrow';
+import {
+  makeArrowTableFromBatches,
+  mergeArrowSchemas,
+  makeArrowMetadataBatch
+} from '../../arrow/arrow-metadata';
+import {convertSchemaToArrow, serializeArrowSchema} from '../../schema/convert-arrow-schema';
 import {getTableLength} from '../tables/table-accessors';
 
 /**
  * Assembles all batches from an async iterator into a single table.
- * @note All batches must have the same shape and schema
+ * @note All batches must have the same shape and compatible schemas; Arrow metadata is refined in emission order.
  * @param batchIterator
  * @returns `null` if no batches are yielded by the async iterator
  */
@@ -27,6 +34,8 @@ export async function makeTableFromBatches(
   let features: Feature[];
   let shape: Table['shape'] | null = null;
   let schema: Schema | undefined;
+  const arrowBatches: arrow.RecordBatch[] = [];
+  let arrowSchema: arrow.Schema | undefined;
 
   for await (const batch of batchIterator) {
     shape = shape || batch.shape;
@@ -57,8 +66,18 @@ export async function makeTableFromBatches(
         }
         break;
 
+      case 'arrow-table': {
+        for (const recordBatch of batch.data.batches) {
+          arrowSchema = mergeArrowSchemas(arrowSchema, recordBatch.schema);
+          arrowBatches.push(recordBatch);
+        }
+        arrowSchema = mergeArrowSchemas(arrowSchema, batch.data.schema);
+        if (batch.schema)
+          arrowSchema = mergeArrowSchemas(arrowSchema, convertSchemaToArrow(batch.schema));
+        if (batch.data.batches.length === 0) arrowBatches.push(makeArrowMetadataBatch(arrowSchema));
+        break;
+      }
       case 'columnar-table':
-      case 'arrow-table':
       default:
         throw new Error('shape');
     }
@@ -69,6 +88,11 @@ export async function makeTableFromBatches(
   }
 
   switch (shape) {
+    case 'arrow-table': {
+      const collected = await makeArrowTableFromBatches(arrowBatches);
+      const data = collected && new arrow.Table(arrowSchema || collected.schema, collected.batches);
+      return data ? {shape: 'arrow-table', data, schema: serializeArrowSchema(data.schema)} : null;
+    }
     case 'array-row-table':
       return {shape: 'array-row-table', data: arrayRows!, schema};
 

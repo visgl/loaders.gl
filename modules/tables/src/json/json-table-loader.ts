@@ -6,6 +6,8 @@ import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source'
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Table, TableBatch} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
+import {updateArrowTableMetadata} from '@loaders.gl/core/schema-utils';
+import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
 
 import {
   serializeJSONWorkerOptions,
@@ -91,11 +93,14 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
       : convertTable(table, 'object-row-table');
   }
 
-  return convertRowTableToArrowTable(table, {
-    schema: jsonOptions.json.schema,
-    arrowConversion: jsonOptions.json.arrowConversion,
-    log: getLoaderLog(jsonOptions)
-  });
+  return updateArrowTableMetadata(
+    convertRowTableToArrowTable(table, {
+      schema: jsonOptions.json.schema,
+      arrowConversion: jsonOptions.json.arrowConversion,
+      log: getLoaderLog(jsonOptions)
+    }),
+    getJSONContainerMetadata(json)
+  );
 }
 
 /**
@@ -129,11 +134,25 @@ function parseInBatches(
     return rowBatches;
   }
 
-  return convertTableBatchesToArrow(rowBatches, {
+  const arrowBatches = convertTableBatchesToArrow(rowBatches, {
     schema: jsonOptions.json.schema,
     arrowConversion: jsonOptions.json.arrowConversion,
     log: getLoaderLog(jsonOptions)
   });
+  return filterArrowMetadataBatches(
+    arrowBatches,
+    Boolean(jsonOptions.core?.metadata || (jsonOptions as any).metadata)
+  );
+}
+
+/** Keeps legacy metadata envelopes opt-in while always retaining Arrow metadata updates. */
+async function* filterArrowMetadataBatches(
+  batches: AsyncIterable<any>,
+  emitMetadata: boolean
+): AsyncIterable<any> {
+  for await (const batch of batches) {
+    if (emitMetadata || batch.shape === 'arrow-table') yield batch;
+  }
 }
 
 /**
@@ -179,6 +198,10 @@ function getRawJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOptions {
 function getRowBatchJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOptions {
   return {
     ...options,
+    core: {
+      ...options.core,
+      metadata: options.json?.shape === 'arrow-table' || options.core?.metadata
+    },
     json: {
       backend: options.json?.backend,
       shape: options.json?.shape === 'array-row-table' ? 'array-row-table' : 'object-row-table',

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {updateArrowTableMetadata} from '@loaders.gl/core/schema-utils';
+import {getJSONContainerMetadata} from './json-container-metadata';
 import type {
   ArrayRowTable,
   ArrowTable,
@@ -144,8 +146,25 @@ export async function* convertTableBatchesToArrow<TBatch extends {batchType?: st
     ? normalizeJSONArrowSchema(options.schema)
     : null;
 
+  let containerMetadata: Record<string, string> = {};
+  let emittedMetadata: string | undefined;
   for await (const batch of batches) {
     if (batch.batchType !== 'data') {
+      const metadataBatch = batch as {container?: unknown; jsonpath?: string};
+      containerMetadata = {
+        ...containerMetadata,
+        ...getJSONContainerMetadata(metadataBatch.container, metadataBatch.jsonpath)
+      };
+      if (
+        batch.batchType === 'final-result' &&
+        emittedMetadata !== JSON.stringify(containerMetadata)
+      ) {
+        const emptyTable = convertRowTableToArrowTable(
+          {shape: 'object-row-table', data: []},
+          {...options, schema: frozenSchema || undefined}
+        );
+        yield makeTableScanBatch(updateArrowTableMetadata(emptyTable, containerMetadata));
+      }
       yield batch as TBatch;
       continue;
     }
@@ -164,7 +183,11 @@ export async function* convertTableBatchesToArrow<TBatch extends {batchType?: st
       frozenSchema = arrowTable.schema!;
     }
 
-    const arrowBatch: ArrowTableBatch = {...batch, ...makeTableScanBatch(arrowTable)};
+    const arrowBatch: ArrowTableBatch = {
+      ...batch,
+      ...makeTableScanBatch(updateArrowTableMetadata(arrowTable, containerMetadata))
+    };
+    emittedMetadata = JSON.stringify(containerMetadata);
     yield arrowBatch;
   }
 }

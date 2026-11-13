@@ -124,7 +124,10 @@ test('ParquetJSLoader#arrow-table preserves GeoParquet metadata', async () => {
         ?.metadata.get('ARROW:extension:name'), 'TypeScript Arrow schema preserves GeoArrow field metadata').toBe('geoarrow.wkb');
     expect(table.data.schema.metadata.get('geo'), 'TypeScript Arrow schema preserves GeoParquet metadata').toBeTruthy();
     expect(table.data.schema.fields.find(field => field.name === 'pop_est')?.metadata.has('typeLength'), 'TypeScript Arrow schema omits absent physical metadata').toBeFalsy();
-    expect(table.data.batches.every(batch => batch.schema === table.data.schema), 'TypeScript Arrow batches reuse the table schema').toBeTruthy();
+    for (const batch of table.data.batches) {
+      expect(batch.schema.fields).toEqual(table.data.schema.fields);
+      expect(batch.schema.metadata).toEqual(table.data.schema.metadata);
+    }
     expect(table.data.schema.assign(table.data.schema.fields), 'TypeScript Arrow schema restores normal public assignment semantics').not.toBe(table.data.schema);
     expect(table.data.slice(1, 2).numRows, 'TypeScript Arrow table remains sliceable').toBe(1);
 });

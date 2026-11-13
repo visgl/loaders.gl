@@ -3,6 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
+import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
+import {
+  convertSchemaToArrow,
+  makeArrowMetadataBatch,
+  updateArrowTableMetadata
+} from '@loaders.gl/core/schema-utils';
+import {Table as ApacheArrowTable} from 'apache-arrow';
+import {getGeoMetadata, setGeoMetadata, type Schema} from '@loaders.gl/core/schema';
+import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
@@ -14,7 +23,10 @@ import type {
   TableBatch
 } from '@loaders.gl/core/schema';
 import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/core/arrow-geometry/legacy-binary';
-import {type LegacyGeoJSONCRS} from '@loaders.gl/core/arrow-geometry/feature-table';
+import {
+  applyLegacyGeoJSONCRSToSchema,
+  type LegacyGeoJSONCRS
+} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
@@ -92,14 +104,17 @@ function parseTextSync(
     case 'binary-feature-collection':
       return geojsonToBinary(table.features);
     case 'arrow-table':
-      return convertGeoJSONFeaturesToArrowTable(table.features, {
-        schema: options.json?.schema,
-        arrowConversion: options.json?.arrowConversion,
-        geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
-        geoarrow: options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow,
-        crs: getGeoJSONCRS(geojson),
-        log: getLoaderLog(options)
-      });
+      return updateArrowTableMetadata(
+        convertGeoJSONFeaturesToArrowTable(table.features, {
+          schema: options.json?.schema,
+          arrowConversion: options.json?.arrowConversion,
+          geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+          geoarrow: options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow,
+          crs: getGeoJSONCRS(geojson),
+          log: getLoaderLog(options)
+        }),
+        getJSONContainerMetadata(geojson, '$.features')
+      );
     default:
       return table;
   }
@@ -168,10 +183,47 @@ async function* makeGeoJSONArrowBatchIterator(
 ): AsyncIterable<TableBatch | ArrowTableBatch> {
   let frozenSchema = options.json?.schema ? normalizeJSONArrowSchema(options.json.schema) : null;
   let crs: LegacyGeoJSONCRS | null = null;
+  let containerMetadata: Record<string, string> = {};
+  let emittedSchema: Schema | undefined;
+  const configuredGeoArrowOptions =
+    options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow;
+  const configuredPreference = configuredGeoArrowOptions?.encodingPreference;
+  const streamingPreference =
+    configuredPreference && configuredPreference !== 'geoarrow.wkb'
+      ? 'geoarrow.geometry'
+      : configuredPreference;
 
   for await (const batch of geojsonIterator) {
     if (batch.batchType !== 'data') {
-      crs ||= getGeoJSONCRS(batch.container);
+      crs = getGeoJSONCRS(batch.container) || crs;
+      containerMetadata = {
+        ...containerMetadata,
+        ...getJSONContainerMetadata(batch.container, '$.features')
+      };
+      if (batch.batchType === 'final-result') {
+        const schema = emittedSchema
+          ? structuredClone(emittedSchema)
+          : convertGeoJSONFeaturesToArrowTable([], {
+              schema: frozenSchema || undefined,
+              arrowConversion: options.json?.arrowConversion,
+              geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+              geoarrow: streamingPreference
+                ? {encodingPreference: streamingPreference}
+                : configuredGeoArrowOptions,
+              crs,
+              log: getLoaderLog(options)
+            }).schema!;
+        applyLegacyGeoJSONCRSToSchema(
+          schema,
+          options.json?.geoarrowGeometryColumn || 'geometry',
+          crs
+        );
+        schema.metadata = {...schema.metadata, ...containerMetadata};
+        if (JSON.stringify(schema) !== JSON.stringify(emittedSchema)) {
+          const data = new ApacheArrowTable([makeArrowMetadataBatch(convertSchemaToArrow(schema))]);
+          yield {...batch, ...makeTableScanBatch({shape: 'arrow-table', data, schema})};
+        }
+      }
       if (emitMetadataBatches) {
         yield batch;
       }
@@ -185,13 +237,6 @@ async function* makeGeoJSONArrowBatchIterator(
     }
 
     const featureBatch = batch as ObjectRowTable & TableBatch;
-    const configuredGeoArrowOptions =
-      options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow;
-    const configuredPreference = configuredGeoArrowOptions?.encodingPreference;
-    const streamingPreference =
-      configuredPreference && configuredPreference !== 'geoarrow.wkb'
-        ? 'geoarrow.geometry'
-        : configuredPreference;
     const arrowTable = convertGeoJSONFeaturesToArrowTable(featureBatch.data as Feature[], {
       schema: frozenSchema || undefined,
       arrowConversion: options.json?.arrowConversion,
@@ -207,13 +252,25 @@ async function* makeGeoJSONArrowBatchIterator(
       frozenSchema = arrowTable.schema || null;
     }
 
-    yield {
-      ...batch,
-      shape: 'arrow-table',
-      schema: arrowTable.schema,
-      data: arrowTable.data,
-      length: arrowTable.data.numRows
-    };
+    const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata);
+    const previousGeoMetadata = getGeoMetadata(emittedSchema?.metadata);
+    if (geoMetadata && previousGeoMetadata) {
+      for (const [name, column] of Object.entries(geoMetadata.columns)) {
+        column.geometry_types = [
+          ...new Set([
+            ...(previousGeoMetadata.columns[name]?.geometry_types || []),
+            ...column.geometry_types
+          ])
+        ];
+      }
+      setGeoMetadata(arrowTable.schema!.metadata!, geoMetadata);
+    }
+    const refinedTable = updateArrowTableMetadata(arrowTable, {
+      ...arrowTable.schema?.metadata,
+      ...containerMetadata
+    });
+    emittedSchema = structuredClone(refinedTable.schema);
+    yield {...batch, ...makeTableScanBatch(refinedTable)};
   }
 }
 

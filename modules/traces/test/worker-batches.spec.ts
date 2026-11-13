@@ -210,3 +210,31 @@ test.each([
   );
   expect(result).toEqual(original);
 });
+
+test('Chrome worker delivers trailing metadata in a zero-row final Arrow batch', async () => {
+  const source = {
+    traceEvents: [{name: 'event', ph: 'i', pid: 1, tid: 1}],
+    metadata: {source: 'trailing'},
+    custom: 'retained'
+  };
+  const parser = await ChromeTraceLoader.preload();
+  const mainParser = vi.fn(parser.parseInBatches);
+  const iterator = await parseInBatches(
+    splitBytes(new TextEncoder().encode(JSON.stringify(source))),
+    {
+      ...ChromeTraceLoader,
+      preload: async () => ({...parser, parseInBatches: mainParser})
+    },
+    {...workerOptions, chromeTrace: {batchSize: 1}}
+  );
+  const batches: RecordBatch[] = [];
+  for await (const batch of iterator) batches.push(batch);
+  expect(mainParser).not.toHaveBeenCalled();
+  expect(batches.at(-1)!.numRows).toBe(0);
+  expect(batches.at(-1)!.schema.metadata.get('chromeTrace.metadataJson')).toBe(
+    '{"source":"trailing"}'
+  );
+  expect(batches.at(-1)!.schema.metadata.get('chromeTrace.containerJson')).toBe(
+    '{"custom":"retained"}'
+  );
+});

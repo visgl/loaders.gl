@@ -82,3 +82,43 @@ parallel transport utility subpath.
 
 Indexed/mapped Arrow tables, column renaming, and schema validation are also available from
 `@math.gl/arrow`; UTF-8 comparison and parsing live in `@math.gl/arrow/utf8`.
+
+## Incremental Arrow metadata
+
+Arrow batch schemas have compatible column names, order, nullability, and types.
+Schema and field metadata are snapshots: later batches can refine values without
+changing previously emitted batches. Missing keys retain their earlier values;
+later values replace earlier values with the same key.
+
+`RecordBatch.metadata` holds batch-local information and is separate from
+`RecordBatch.schema.metadata`, which describes the logical table. PLY, OBJ, and
+PCD Arrow streams publish cumulative `boundingBox` schema metadata and retain the
+current chunk's bounds under `boundingBox` in `RecordBatch.metadata`. LAS bounds
+remain the global bounds declared in its header.
+
+A zero-row final batch can carry metadata discovered after the last data rows,
+including trailing JSON container properties or LAS extended records. Consumers
+must process its schema even though it adds no rows. Empty results retain their
+declared schema. JSON container metadata uses `loaders.gl.containerJson`, with
+the streamed array replaced by an empty array; Chrome Trace retains its existing
+`chromeTrace.*` keys. CRS refinements describe the existing coordinates and do
+not reproject them.
+
+```typescript
+import {makeArrowTableFromBatches} from '@loaders.gl/core/schema-utils';
+
+// Accepts an Iterable or AsyncIterable of native Apache Arrow RecordBatch objects.
+const table = await makeArrowTableFromBatches(recordBatches);
+```
+
+The collector merges schema and nested field metadata in emission order, keeps
+batch metadata separate, and returns a Table with the completed schema. It rejects
+incompatible column structures and returns `null` when the iterator yields no
+batches. `makeTableFromBatches` also accepts existing loaders.gl Arrow wrappers.
+Loader shape options and wrapper return types are unchanged.
+
+The shared Arrow JS worker transport preserves the Table schema, each batch's
+schema, and each batch's custom metadata independently. Older transport payloads
+without batch schemas use the Table schema. This contract does not promise that
+differing batch schema metadata survives Arrow IPC serialization, nor does it
+change schema inference policies for CSV or JSON.
