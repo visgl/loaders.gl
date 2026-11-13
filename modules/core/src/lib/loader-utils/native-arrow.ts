@@ -23,6 +23,15 @@ export function getNativeArrowOptions(
   const key = getShapeOptionKey(loader);
   const scopedOptions = key && options[key];
   if (
+    loader.supportsNativeArrow &&
+    scopedOptions &&
+    typeof scopedOptions === 'object' &&
+    'shape' in scopedOptions &&
+    scopedOptions.shape === 'arrow-table'
+  ) {
+    throw new Error('This loader uses shape: "arrow" for native Arrow output');
+  }
+  if (
     !scopedOptions ||
     typeof scopedOptions !== 'object' ||
     !('shape' in scopedOptions) ||

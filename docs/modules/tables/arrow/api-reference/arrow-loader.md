@@ -66,7 +66,6 @@ const data = await load(url, ArrowLoader, options);
 | Shape              | Output                                                 |
 | ------------------ | ------------------------------------------------------ |
 | `arrow`            | Apache Arrow `Table` or streamed `RecordBatch` objects |
-| `arrow-table`      | loaders.gl `ArrowTable` wrapping an Apache Arrow table |
 | `columnar-table`   | loaders.gl columnar table                              |
 | `array-row-table`  | loaders.gl row table with arrays                       |
 | `object-row-table` | loaders.gl row table with objects                      |
@@ -75,7 +74,7 @@ const data = await load(url, ArrowLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `arrow.shape` | `'arrow' \| 'arrow-table' \| 'columnar-table' \| 'array-row-table' \| 'object-row-table'` | `'arrow'` | Selects the output shape. |
+| `arrow.shape` | `'arrow' \| 'columnar-table' \| 'array-row-table' \| 'object-row-table'` | `'arrow'` | Selects the output shape. |
 | `core.batchMaxRowsPerSecond` | `number` | `0` | Paces delivery by row count while preserving IPC batch boundaries. |
 
 ## Worker parsing

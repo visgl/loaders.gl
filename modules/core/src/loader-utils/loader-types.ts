@@ -532,7 +532,7 @@ type NativeArrowOutput<T, Options, Wrapped, Native> = [Options] extends [never]
 
 /** Selects native output when certain and a union when shape selection is dynamic. */
 type NativeArrowOutputForOption<T, Options, Wrapped, Native> = [
-  Extract<Wrapped, {shape: 'arrow-table'}>
+  Extract<Wrapped, {shape: 'arrow-table'} | Native>
 ] extends [never]
   ? Wrapped
   : [RequiredOutputShape<T, Options>] extends [never]
@@ -554,7 +554,7 @@ type NativeArrowOutputForOption<T, Options, Wrapped, Native> = [
       ? Exclude<RequiredOutputShape<T, Options>, 'arrow'> extends never
         ? Native
         : Native | Wrapped
-      : Wrapped;
+      : Exclude<Wrapped, Native>;
 
 /** Typescript helper to extract the public data type, accounting for native Arrow output. */
 export type LoaderReturnType<T = Loader, Options = never> =

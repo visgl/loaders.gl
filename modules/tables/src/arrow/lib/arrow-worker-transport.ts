@@ -17,7 +17,7 @@ export const serializeArrowTableResult = serializeArrowWorkerTable;
 /** Hydrates columns before materializing the requested output shape on the caller. */
 export function deserializeArrowTableResult(
   result: unknown,
-  options?: ArrowLoaderOptions
+  options?: ArrowLoaderOptions | {arrow: {shape: 'arrow-table'}}
 ): Table | NativeArrowTable {
   const table = deserializeArrowTableBatch(result);
   const shape = options?.arrow?.shape;

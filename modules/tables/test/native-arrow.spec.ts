@@ -103,6 +103,12 @@ test.each(cases)('$name returns native Tables and all RecordBatches', async ({lo
   }
   expect(values).toEqual(['first', 'second']);
 
+  if (loader === ArrowLoader) {
+    await expect(parse(input(), loader, {core: {shape: 'arrow-table'} as any})).rejects.toThrow(
+      'uses shape: "arrow"'
+    );
+    return;
+  }
   const wrappedOptions = {core: {worker: false, shape: 'arrow-table' as const}};
   expect(await parse(input(), loader, wrappedOptions)).toMatchObject({shape: 'arrow-table'});
   let wrappedRows = 0;
@@ -187,9 +193,9 @@ test('sync and load APIs infer native output and preserve scoped overrides', asy
   expect(loaded.numRows).toBe(2);
   const wrapped = await parse(ipc, ArrowLoader, {
     core: {worker: false, shape: 'arrow'},
-    arrow: {shape: 'arrow-table'}
+    arrow: {shape: 'object-row-table'}
   });
-  expect(wrapped.shape).toBe('arrow-table');
+  expect(wrapped.shape).toBe('object-row-table');
   expect(await parse(ipc, ArrowLoader, {core: {worker: false}})).toBeInstanceOf(Table);
   const batches = await loadInBatches(new Blob([ipc]), ArrowLoader, {
     core: {worker: false}
@@ -202,13 +208,13 @@ test('native streaming requires wrapped mode for loader metadata', async () => {
     'core.metadata'
   );
 
-  const output = await parseInBatches([ipc], ArrowLoader, {
+  const output = await parseInBatches(['label\nfirst\nsecond\n'], CSVLoader, {
     core: {shape: 'arrow-table', metadata: true, worker: false}
   });
   const events = [];
   for await (const event of output) events.push(event);
   const [metadata, ...batches] = events;
   expect(metadata).toMatchObject({batchType: 'metadata'});
-  expect(batches).toHaveLength(2);
+  expect(batches.length).toBeGreaterThan(0);
   expect(batches[0]).toMatchObject({shape: 'arrow-table', batchType: 'data'});
 });
