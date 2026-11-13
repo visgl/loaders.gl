@@ -53,9 +53,10 @@ schema must not silently become an output CAST pushdown. No existing format is g
 pushdown merely because it can decode typed columns. Native adapters can opt in only after matching
 portable conversion semantics and supplying the exact-query planning hook.
 
-Future partial negotiation should return explicit accepted operations and an executable residual
-plan, with ordering dependencies. It must not grow a collection of booleans that lets a source apply
-LIMIT before an unhandled filter. This is a follow-up extension, not part of the initial hook.
+Partial projection negotiation lets adapters identify computed SELECT items with exact results and
+no row-dependent errors. Core builds the native SELECT list and the remaining Arrow projection.
+The adapter still has to accept the rewritten query, including the original filter and row window,
+before core can use its output. Splitting predicates or other operators remains follow-up work.
 
 ## Offset and limit
 

@@ -16,7 +16,7 @@ import {tableFromJSON} from 'apache-arrow'
 
 import type {ArrowTable} from '@loaders.gl/core/schema'
 import {convertArrowToTable} from '@loaders.gl/core/schema-utils'
-import {bindSQLPredicate, parseSQLPredicate, queryArrowTable} from '@loaders.gl/core/scan';
+import {bindSQLPredicate, parseSQLPredicate, queryArrowTable} from '@loaders.gl/core/query';
 import {compileSQLTableQuery, DuckDBSQLDataSource} from '@loaders.gl/sql'
 import type {SQLTableQuery} from '@loaders.gl/sql'
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget'

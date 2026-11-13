@@ -294,6 +294,10 @@ export type TableScanSource<
     query: TableQueryPushdownRequest,
     options?: ScanQueryMetadataOptions
   ): Promise<TableQueryPushdownPlan | null>;
+  /** Identifies a computed SELECT item with exact native results and no row-dependent errors. Must not read rows. */
+  supportsQueryProjectionPushdown?(
+    selection: NonNullable<TableQueryPushdownRequest['select']>[number]
+  ): boolean;
   /** Explains the logical plan and physical support without decoding result rows. */
   explain?(options?: TableScanReadOptions<PredicateT>): Promise<TableQueryExplain<PredicateT>>;
   /** Reads the query result as ordered batches without changing the logical query semantics. */

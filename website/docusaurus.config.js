@@ -290,6 +290,7 @@ const config = {
             '@loaders.gl/tiles-3d/copc': resolve('../modules/tiles-3d/src/copc'),
             '@loaders.gl/core/loader-utils': resolve('../modules/core/src/loader-utils'),
             '@loaders.gl/core/worker-utils': resolve('../modules/core/src/worker-utils'),
+            '@loaders.gl/core/query': resolve('../modules/core/src/scan'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/tables/csv/index': resolve('../modules/tables/src/csv'),

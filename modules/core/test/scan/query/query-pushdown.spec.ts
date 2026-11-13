@@ -273,3 +273,43 @@ test('accepted empty plans preserve schema and reject batch schema drift', async
   });
   await expect(query({}, {source})).rejects.toThrow('pushdown batch schema');
 });
+
+test.each([
+  true,
+  false
+])('an external adapter can accept or decline a rewritten mixed projection (%s)', async accept => {
+  const {source, table, read} = makeSource({expressions: 'unsupported'});
+  source.supportsQueryProjectionPushdown = selection =>
+    typeof selection === 'object' &&
+    'expression' in selection &&
+    selection.expression.type === 'CallExpression';
+  const plan = vi.fn<NonNullable<TableQuerySource['planQueryPushdown']>>(
+    async (request, options) => {
+      if (!accept) return null;
+      const empty = await query({...request, limit: 0}, {source: table, signal: options?.signal});
+      return {
+        schema: empty.schema!,
+        async *read(options) {
+          yield makeTableScanBatch(await query(request, {source: table, signal: options?.signal}));
+        }
+      };
+    }
+  );
+  source.planQueryPushdown = plan;
+  const request = parseSQLQuery(
+    'SELECT CAST(value AS BIGINT) AS wide, value + 1 AS next LIMIT 1 OFFSET 2'
+  );
+  const result = await query(request, {source});
+  const expected = await query(request, {source: table});
+  expect(result.data.toArray().map(row => row.toJSON())).toEqual(
+    expected.data.toArray().map(row => row.toJSON())
+  );
+  expect(plan).toHaveBeenCalledOnce();
+  expect(plan.mock.calls[0][0]).toMatchObject({
+    select: ['value', {expression: {type: 'CallExpression'}}],
+    limit: 1,
+    offset: 2
+  });
+  if (accept) expect(read).not.toHaveBeenCalled();
+  else expect(read).toHaveBeenCalledOnce();
+});

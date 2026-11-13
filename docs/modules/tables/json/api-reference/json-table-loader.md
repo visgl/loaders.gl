@@ -120,7 +120,7 @@ Use `JSONTableLoader` with the loaders.gl query API to select and rename fields.
 For array rows with no supplied schema, generated fields are named `column1`, `column2`, and so on (1-based), matching headerless CSV. A supplied schema takes precedence.
 
 ```typescript
-import {query} from '@loaders.gl/core/scan';
+import {query} from '@loaders.gl/core/query';
 import {JSONTableLoader} from '@loaders.gl/tables/json';
 
 const table = await query(
