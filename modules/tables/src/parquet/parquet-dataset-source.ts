@@ -494,7 +494,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
   /** Creates a child source while preserving caller fetch, worker, range, and decode options. */
   private createSource(file: ParquetDatasetFile): ParquetSource {
     const parquetOptions = this.options.parquet
-      ? {...this.options.parquet, limit: undefined}
+      ? {...this.options.parquet, limit: undefined, offset: undefined}
       : undefined;
     return new ParquetSource(file.data, {...this.options, parquet: parquetOptions}, this.coreApi);
   }
