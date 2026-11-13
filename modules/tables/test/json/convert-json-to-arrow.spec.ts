@@ -92,6 +92,23 @@ test.each([
   expect(() => convertJSONToArrow(input)).toThrow('convertJSONToArrow: expected a JSON row array');
 });
 
+test('convertJSONToArrow rejects non-row tables instead of converting their schema fields', () => {
+  const wrappedTable = JSONTableLoaderWithParser.parseTextSync('[{"value": 1}]', {
+    json: {shape: 'arrow-table'}
+  });
+  if (wrappedTable.shape !== 'arrow-table') throw new Error('Expected Arrow table');
+  const columnarTable = {
+    shape: 'columnar-table',
+    schema: wrappedTable.schema,
+    data: {value: [1]}
+  };
+  for (const input of [wrappedTable, wrappedTable.data, columnarTable]) {
+    expect(() => convertJSONToArrow(input)).toThrow(
+      'convertJSONToArrow: expected a JSON row array'
+    );
+  }
+});
+
 test('convertJSONToArrow supports native and loaders.gl schemas', () => {
   const nativeSchema = new Schema([new Field('value', new Int32(), false)]);
   const loadersSchema: LoadersSchema = {
