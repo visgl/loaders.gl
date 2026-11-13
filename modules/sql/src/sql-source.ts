@@ -121,15 +121,21 @@ export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
     name: string,
     options: {signal?: AbortSignal} = {}
   ): Promise<TableMetadata> {
+    const table = await this.resolveTable(name, options.signal);
+    const schema = await this.getTableSchema(table);
     options.signal?.throwIfAborted();
+    return {name: getTableMetadataName(table), schema, queryable: false};
+  }
+
+  /** Resolves a qualified or unique unqualified table name. */
+  protected async resolveTable(name: string, signal?: AbortSignal): Promise<SQLTableInfo> {
+    signal?.throwIfAborted();
     const tables = await this.listTables();
-    options.signal?.throwIfAborted();
+    signal?.throwIfAborted();
     const exact = tables.filter(table => getTableMetadataName(table) === name);
     const matches = exact.length ? exact : tables.filter(table => table.tableName === name);
     if (matches.length !== 1) throw new Error(`Unknown or ambiguous SQL table: ${name}`);
-    const schema = await this.getTableSchema(matches[0]);
-    options.signal?.throwIfAborted();
-    return {name: getTableMetadataName(matches[0]), schema, queryable: false};
+    return matches[0];
   }
 
   /** Returns the schema for a specific SQL table. */
