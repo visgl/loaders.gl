@@ -142,3 +142,17 @@ export type {
   ProgressiveQuerySnapshot
 } from './query-progressive';
 export type {Query, QueryOptions, SQLQueryParser} from './query';
+
+export {createQueryMetadata} from '@loaders.gl/core/loader-utils';
+export type {
+  CreateQueryMetadataOptions,
+  QueryMetadata,
+  QueryMetadataOptions,
+  QueryCapabilities,
+  TableQuerySource,
+  TableQueryReadOptions,
+  TableQueryPushdownRequest,
+  TableQueryPushdownPlan,
+  TableQueryCapabilities,
+  QueryPushdownCapabilityHints
+} from '@loaders.gl/core/loader-utils';

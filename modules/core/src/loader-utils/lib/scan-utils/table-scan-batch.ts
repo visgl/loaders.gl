@@ -42,8 +42,6 @@ export async function* executeTableScanBatches(
   readBatches: TableScanBatchReader,
   options: TableScanReadOptions &
     Readonly<{
-      /** Number of rows to skip after residual filtering. */
-      offset?: number;
       /** Omits empty batches from the output stream. */
       skipEmptyBatches?: boolean;
     }> = {},

@@ -21,6 +21,8 @@ const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
   projection: 'residual',
   limit: 'pushdown',
+  offset: 'pushdown',
+  cast: 'unsupported',
   streaming: true,
   cancellation: true
 } as const);

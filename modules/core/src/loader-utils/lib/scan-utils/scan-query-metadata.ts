@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {SQLQuery} from '@math.gl/expressions/sql';
 import type {DataType, FieldMetadata, Schema} from '@loaders.gl/core/schema';
 import type {ColumnarPredicate, ColumnarPredicateProperty} from './columnar-predicate';
 import type {
@@ -139,6 +140,8 @@ export type ScanQueryMetadata = Readonly<{
   columns: readonly ScanColumnMetadata[];
   /** Portable and source-family-specific execution capabilities. */
   capabilities: ScanQueryCapabilities;
+  /** Effective source capabilities; preferred name during migration. */
+  queryCapabilities?: ScanQueryCapabilities;
   /** Optional spatial metadata used to populate bounds controls. */
   spatial?: ScanSpatialMetadata;
   /** Optional statistics obtained from source metadata. */
@@ -265,7 +268,12 @@ export type TableScanReadOptions<
     unknown,
     ColumnarPredicateProperty
   >
-> = TableQueryOptions<PredicateT> & TableQueryExecutionOptions;
+> = TableQueryOptions<PredicateT> &
+  TableQueryExecutionOptions &
+  Readonly<{
+    /** Number of filtered rows skipped before the source limit. */
+    offset?: number;
+  }>;
 
 /**
  * Shared table-scan contract implemented by format-specific executors.
@@ -281,6 +289,11 @@ export type TableScanSource<
     ColumnarPredicateProperty
   >
 > = ScanQueryMetadataProvider & {
+  /** Accepts an entire query only with equivalent semantics. Planning must not read rows. */
+  planQueryPushdown?(
+    query: TableQueryPushdownRequest,
+    options?: ScanQueryMetadataOptions
+  ): Promise<TableQueryPushdownPlan | null>;
   /** Explains the logical plan and physical support without decoding result rows. */
   explain?(options?: TableScanReadOptions<PredicateT>): Promise<TableQueryExplain<PredicateT>>;
   /** Reads the query result as ordered batches without changing the logical query semantics. */
@@ -331,9 +344,7 @@ export type CreateScanQueryMetadataOptions = Readonly<{
  *
  * Source adapters only need to supply semantic roles that cannot be inferred from Arrow types.
  */
-export function createScanQueryMetadata(
-  options: CreateScanQueryMetadataOptions
-): ScanQueryMetadata {
+export function createScanQueryMetadata(options: CreateScanQueryMetadataOptions): QueryMetadata {
   validateScanExecutionSupport(options.queryType, options.execution);
   const schema: Schema = Object.freeze({
     fields: Object.freeze(
@@ -355,6 +366,7 @@ export function createScanQueryMetadata(
     })
   );
 
+  const queryCapabilities = Object.freeze({...options.capabilities});
   return Object.freeze({
     sourceType: options.sourceType,
     queryType: options.queryType,
@@ -363,7 +375,8 @@ export function createScanQueryMetadata(
     description: options.description,
     schema,
     columns: Object.freeze(columns),
-    capabilities: Object.freeze({...options.capabilities}),
+    capabilities: queryCapabilities,
+    queryCapabilities,
     spatial: options.spatial
       ? Object.freeze({
           ...options.spatial,
@@ -427,4 +440,46 @@ function getNonEmptyMetadataValue(
 ): string | undefined {
   const value = metadata?.[key];
   return value || undefined;
+}
+
+/** Logical query offered for exact, all-or-nothing pushdown. FROM is already resolved. */
+export type TableQueryPushdownRequest = Omit<Exclude<SQLQuery, {command: unknown}>, 'from'>;
+
+/** Accepted plan; the source owns every operator, including casts, offset, and limit. */
+export type TableQueryPushdownPlan = Readonly<{
+  /** Exact output schema, including aliases, CAST types, and nullability. */
+  schema: Schema;
+  /** Executes on demand with equivalent order, error semantics, and cancellation. */
+  read: (
+    options?: ScanQueryMetadataOptions
+  ) => AsyncIterable<import('@loaders.gl/core/schema').ArrowTableBatch>;
+}>;
+
+/** Preferred name for source discovery metadata. */
+export type QueryMetadata = ScanQueryMetadata &
+  Readonly<{
+    /** Effective source capabilities, also exposed by the legacy capabilities alias. */
+    queryCapabilities: ScanQueryCapabilities;
+  }>;
+/** Preferred name for discovery controls. */
+export type QueryMetadataOptions = ScanQueryMetadataOptions;
+/** Preferred name for source-family execution capabilities. */
+export type QueryCapabilities = ScanQueryCapabilities;
+/** Preferred name for a table source; the physical read method is unchanged. */
+export type TableQuerySource<BatchT = unknown> = TableScanSource<BatchT>;
+/** Preferred name for physical table read controls. */
+export type TableQueryReadOptions = TableScanReadOptions;
+/** Inputs for the preferred metadata factory. */
+export type CreateQueryMetadataOptions = Omit<CreateScanQueryMetadataOptions, 'capabilities'> &
+  Readonly<{
+    /** Effective capabilities of this source instance. */
+    queryCapabilities: QueryCapabilities;
+  }>;
+/** Creates immutable metadata while retaining the legacy property. */
+export function createQueryMetadata(options: CreateQueryMetadataOptions): QueryMetadata {
+  const {queryCapabilities, ...metadataOptions} = options;
+  return createScanQueryMetadata({
+    ...metadataOptions,
+    capabilities: queryCapabilities
+  });
 }

@@ -1019,6 +1019,12 @@
       ],
       "@loaders.gl/core/arrow-worker-transport": [
         "modules/core/src/arrow-worker-transport"
+      ],
+      "@loaders.gl/core/query": [
+        "modules/core/src/scan/index.ts"
+      ],
+      "@loaders.gl/core/query/*": [
+        "modules/core/src/scan/*"
       ]
     },
     "plugins": [

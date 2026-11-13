@@ -124,6 +124,10 @@ export type TableQueryCapabilities = Readonly<{
   predicate: TableQueryOperatorSupport;
   /** Whether limits are unsupported, applied after execution, or stop physical work early. */
   limit: TableQueryOperatorSupport;
+  /** Whether exact CAST semantics can execute at the source; conversions require negotiation. */
+  cast?: TableQueryOperatorSupport;
+  /** Whether the source can skip filtered rows before its limit. */
+  offset?: TableQueryOperatorSupport;
   /** Whether the backend can stream bounded result batches. */
   streaming: boolean;
   /** Whether active and queued physical work observes cancellation. */
@@ -211,3 +215,17 @@ export function validateTableQueryOffset(offset: number | undefined): void {
     throw new Error('Table query offset must be a non-negative safe integer.');
   }
 }
+
+/** Static format hints only; omission means unknown and never authorizes execution. */
+export type QueryPushdownCapabilityHints = Readonly<{
+  /** The format may support reading only selected columns. */
+  projection?: boolean;
+  /** The format may support predicate evaluation or pruning. */
+  predicate?: boolean;
+  /** An implementation may evaluate some CAST conversions. */
+  cast?: boolean;
+  /** An implementation may skip rows at the source. */
+  offset?: boolean;
+  /** An implementation may stop source work after a row limit. */
+  limit?: boolean;
+}>;

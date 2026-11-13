@@ -7,6 +7,7 @@ import type {Format} from '@loaders.gl/core/loader-utils';
 export const ParquetFormat = {
   name: 'Apache Parquet',
   category: 'table',
+  queryPushdownCapabilityHints: {projection: true, predicate: true, limit: true},
   encoding: 'parquet',
   format: 'parquet',
   extensions: ['parquet'],
