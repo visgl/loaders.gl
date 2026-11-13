@@ -27,6 +27,13 @@ The [release tracker](https://github.com/visgl/loaders.gl/issues/3316) records r
 
 <span id="whats-new" />
 
+### Convert parsed JSON directly to Arrow
+
+[`convertJSONToArrow`](./modules/tables/json/api-reference/convert-json-to-arrow.md) turns
+application-built row arrays and already-parsed JSON into native Apache Arrow tables, with the
+same schema inference and recovery policies as `JSONTableLoader`. Use it directly or as a
+whole-dataset `dataTransform` for Arrow-compatible deck.gl layers.
+
 ### Native Apache Arrow output
 
 Tabular loaders support `shape: 'arrow'` through the core loading and parsing APIs,

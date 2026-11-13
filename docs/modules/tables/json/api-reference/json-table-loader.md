@@ -57,6 +57,24 @@ Streaming loader for JSON files that must resolve to loaders.gl table output.
 | Data Format    | [Tables](/docs/specifications/category-table)        |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
 
+## Already have parsed JSON or application-built rows?
+
+Use [`convertJSONToArrow`](./convert-json-to-arrow.md) to convert rows directly, without a
+stringify/parse round trip. It shares this loader's schema inference and conversion policies.
+
+```typescript
+import {convertJSONToArrow} from '@loaders.gl/tables/json-table-loader';
+
+const rows = [{name: 'Oslo', population: 717710}];
+const table = convertJSONToArrow(rows);
+console.log(table.getChild('name')?.get(0)); // 'Oslo'
+```
+
+The converter returns a **native Apache Arrow `Table`**. By comparison, this loader's
+`json.shape: 'arrow-table'` output wraps that table in `{shape, schema, data}`. The converter accepts
+flat `{schema, arrowConversion, log}` options; see its [full reference](./convert-json-to-arrow.md)
+for nested inputs, explicit schemas, recovery policies, and deck.gl `dataTransform` examples.
+
 ## Usage
 
 Load JSON as an Arrow table (the default):
