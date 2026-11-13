@@ -31,6 +31,7 @@ const loader: LoaderWithParser = {
 
 test('native adapters retain table and batch identities and close the upstream iterator', async () => {
   expect(unwrapArrowTable({shape: 'arrow-table', data: table})).toBe(table);
+  expect(unwrapArrowTable(table)).toBe(table);
   let closed = false;
   let pulls = 0;
   async function* input() {
@@ -39,7 +40,8 @@ test('native adapters retain table and batch identities and close the upstream i
       yield {batchType: 'partial-result'};
       yield {batchType: 'final-result'};
       pulls++;
-      yield {shape: 'arrow-table', data: table};
+      yield table.batches[0];
+      yield {shape: 'arrow-table', data: new Table([table.batches[1]])};
       pulls++;
       yield {shape: 'arrow-table', data: table};
     } finally {

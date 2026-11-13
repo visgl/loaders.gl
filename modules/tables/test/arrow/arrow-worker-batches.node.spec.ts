@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table, tableFromArrays, tableToIPC} from 'apache-arrow';
+import {RecordBatch, tableFromArrays, tableToIPC} from 'apache-arrow';
 import {parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ArrowLoader} from '../../src/arrow/arrow-loader-types';
@@ -22,7 +22,7 @@ test.each([
     [tableToIPC(tableFromArrays({id: new Int32Array([1])}))],
     loader,
     {
-      arrow: {shape: 'arrow-table'},
+      arrow: {shape: 'arrow'},
       core: {worker: true, _nodeWorkers: true, _workerType: 'classic'}
     }
   );
@@ -30,6 +30,6 @@ test.each([
   for await (const batch of batches) results.push(batch);
   expect(mainParser).not.toHaveBeenCalled();
   expect(results).toHaveLength(1);
-  expect(results[0].data).toBeInstanceOf(Table);
-  expect(results[0].data.getChild('id')?.get(0)).toBe(1);
+  expect(results[0]).toBeInstanceOf(RecordBatch);
+  expect(results[0].getChild('id')?.get(0)).toBe(1);
 });

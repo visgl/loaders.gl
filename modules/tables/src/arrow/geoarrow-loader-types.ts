@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Loader} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
@@ -28,7 +29,7 @@ export const GeoArrowLoader = {
   ...GeoArrowWorkerLoader,
   preload
 } as const satisfies Loader<
-  ArrowTable | GeoJSONTable, // | BinaryGeometry,
-  ArrowTableBatch | GeoJSONTableBatch, // | BinaryGeometry,
+  ArrowTable | GeoJSONTable | NativeArrowTable, // | BinaryGeometry,
+  ArrowTableBatch | GeoJSONTableBatch | RecordBatch, // | BinaryGeometry,
   GeoArrowLoaderOptions
 >;

@@ -98,7 +98,20 @@ test('metadata preload resolves the parser-bearing Arrow and GeoArrow loaders', 
   expect(arrowLoader.parseSync(bytes.buffer, {arrow: {shape: 'object-row-table'}}).data).toEqual([
     {value: 7}
   ]);
-  expect(geoArrowLoader.parseSync(bytes.buffer).data.numRows).toBe(1);
+  expect(geoArrowLoader.parseSync(bytes.buffer, {arrow: {shape: 'arrow'}})).toBeInstanceOf(
+    arrow.Table
+  );
+});
+
+test('Arrow parser entry points return native Arrow for the arrow shape', async () => {
+  const loader = await ArrowWorkerLoader.preload();
+  const bytes = arrow.tableToIPC(arrow.tableFromArrays({value: [7]}));
+  const options = {arrow: {shape: 'arrow' as const}};
+  expect(loader.parseSync(bytes.buffer, options)).toBeInstanceOf(arrow.Table);
+  const batches = [];
+  for await (const batch of loader.parseInBatches([bytes], options)) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0]).toBeInstanceOf(arrow.RecordBatch);
 });
 
 test('GeoArrow writer encodes numeric and date columns through sync and async entry points', async () => {

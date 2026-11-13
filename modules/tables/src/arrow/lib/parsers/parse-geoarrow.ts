@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {
   GeoJSONTable,
   GeoJSONTableBatch,
@@ -16,10 +17,12 @@ import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
 export function parseGeoArrowSync(
   arrayBuffer,
   options?: {shape?: 'arrow' | 'arrow-table' | 'geojson-table' | 'binary-geometry'}
-): ArrowTable | GeoJSONTable {
+): ArrowTable | GeoJSONTable | NativeArrowTable {
   // | BinaryGeometry
   const table = parseArrowSync(arrayBuffer, {shape: 'arrow-table'}) as ArrowTable;
   switch (options?.shape) {
+    case 'arrow':
+      return table.data;
     case 'geojson-table': {
       if (!table.schema) {
         throw new Error('Arrow table is missing its schema');
@@ -38,7 +41,11 @@ export function parseGeoArrowInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: GeoArrowLoaderOptions
-): AsyncIterable<ArrowTableBatch | GeoJSONTableBatch> {
+): AsyncIterable<ArrowTableBatch | GeoJSONTableBatch | RecordBatch> {
   // | BinaryGeometry
-  return parseArrowInBatches(asyncIterator, {core: options?.core, signal: options?.signal});
+  return parseArrowInBatches(asyncIterator, {
+    core: options?.core,
+    signal: options?.signal,
+    arrow: {shape: options?.arrow?.shape === 'arrow' ? 'arrow' : undefined}
+  });
 }

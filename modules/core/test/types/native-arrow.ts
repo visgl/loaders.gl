@@ -46,10 +46,8 @@ const loadedBatches: Promise<AsyncIterable<RecordBatch>> = loadInBatches(
 // Existing wrapped results remain wrapped, including loader-scoped overrides.
 parse(bytes, ArrowLoader).then(result => result.numRows);
 parse(bytes, CSVLoader, {core: {worker: false}}).then(result => result.numRows);
+// @ts-expect-error ArrowLoader uses the native Arrow shape.
 parse<typeof ArrowLoader>(bytes, ArrowLoader, {arrow: {shape: 'arrow-table'}});
-parse(bytes, ArrowLoader, {core: {shape: 'arrow'}, arrow: {shape: 'arrow-table'}}).then(
-  result => result.shape
-);
 void [table, csv, json, shared, sync, randomAccess, batches, candidateBatches, loadedBatches];
 
 // Optional options must not promise a native result when the shape can be omitted.
@@ -67,11 +65,11 @@ parse(bytes, ArrowLoader, {core: {shape: 'invalid-shape'}});
 parse(bytes, ArrowLoader, {arrow: {shape: 'arrow'}, core: {batchMaxRowsPerSecond: 'slow'}});
 
 declare const context: LoaderContext;
-parseFromContext(bytes, ArrowLoader, {arrow: {shape: 'arrow-table'}}, context).then(
+parseFromContext(bytes, ArrowLoader, {arrow: {shape: 'object-row-table'}}, context).then(
   result => result.shape
 );
 parseSyncFromContext(bytes, ArrowLoader, undefined, context).numRows;
-parseSyncFromContext(bytes, ArrowLoader, {core: {shape: 'arrow-table'}}, context).shape;
+parseSyncFromContext(bytes, ArrowLoader, {core: {shape: 'object-row-table'}}, context).shape;
 const contextBatches: Promise<AsyncIterable<RecordBatch>> = parseInBatchesFromContext(
   [bytes],
   ArrowLoader,
@@ -81,13 +79,13 @@ const contextBatches: Promise<AsyncIterable<RecordBatch>> = parseInBatchesFromCo
 const wrappedContextBatches = await parseInBatchesFromContext(
   [bytes],
   ArrowLoader,
-  {arrow: {shape: 'arrow-table'}},
+  {arrow: {shape: 'object-row-table'}},
   context
 );
 for await (const batch of wrappedContextBatches) batch.shape;
 void contextBatches;
 
-declare const optionalWrapped: {arrow: {shape: 'arrow-table'}} | undefined;
+declare const optionalWrapped: {arrow: {shape: 'object-row-table'}} | undefined;
 const maybeWrapped = parseSyncFromContext(bytes, ArrowLoader, optionalWrapped, context);
 // @ts-expect-error The wrapped option changes the output when supplied.
 const alwaysNative: Table = maybeWrapped;

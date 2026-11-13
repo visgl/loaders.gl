@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import {serializeArrowTableResult, deserializeArrowTableBatch} from './lib/arrow-worker-transport';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
@@ -32,6 +33,7 @@ export const GeoArrowLoaderWithParser = {
     if (options?.arrow?.shape === 'geojson-table' && !table.schema) {
       throw new Error('Arrow table is missing its schema');
     }
+    if (options?.arrow?.shape === 'arrow') return table.data;
     return options?.arrow?.shape === 'geojson-table'
       ? convertGeoArrowTableToGeoJSON(table.data, table.schema!)
       : table;
@@ -46,7 +48,7 @@ export const GeoArrowLoaderWithParser = {
     parseGeoArrowSync(arraybuffer, options?.arrow),
   parseInBatches: parseGeoArrowInBatches
 } as const satisfies LoaderWithParser<
-  ArrowTable | GeoJSONTable, // | BinaryGeometry,
-  ArrowTableBatch | GeoJSONTableBatch, // | BinaryGeometry,
+  ArrowTable | GeoJSONTable | NativeArrowTable, // | BinaryGeometry,
+  ArrowTableBatch | GeoJSONTableBatch | RecordBatch, // | BinaryGeometry,
   GeoArrowLoaderOptions
 >;

@@ -20,14 +20,20 @@ import {registerArrowCompressionCodecs, preloadArrowCompressionDecoders} from '.
 const UNSAFE_BIGINT_ERROR_REGEXP = /^(-?\d+) is not safe to convert to a number\.$/;
 const UNSUPPORTED_COMPRESSION_ERROR_REGEXP = /Record batch compression not implemented/i;
 
-/** Parses arrow to a loaders.gl table. Defaults to `arrow-table` */
+/** Parses Arrow IPC into the requested native or loaders.gl representation. */
+export function parseArrowSync(arrayBuffer: ArrayBuffer, options: {shape: 'arrow'}): arrow.Table;
+export function parseArrowSync(arrayBuffer: ArrayBuffer, options?: {shape?: Table['shape']}): Table;
 export function parseArrowSync(
   arrayBuffer: ArrayBuffer,
   options?: {shape?: 'arrow' | Table['shape']}
-): Table {
-  const shape = options?.shape === 'arrow' ? 'arrow-table' : options?.shape || 'arrow-table';
+): arrow.Table | Table;
+export function parseArrowSync(
+  arrayBuffer: ArrayBuffer,
+  options?: {shape?: 'arrow' | Table['shape']}
+): arrow.Table | Table {
+  const shape = options?.shape || 'arrow-table';
   const arrowTable = parseArrowTable(arrayBuffer);
-  // Preserve Arrow schema inference and the legacy direct-parser GeoJSON path.
+  if (shape === 'arrow') return arrowTable;
   if (shape === 'arrow-table' || shape === 'geojson-table') {
     return convertArrowToTable(arrowTable, shape);
   }
@@ -116,12 +122,27 @@ function hasBytesAtOffset(bytes: Uint8Array, pattern: Uint8Array, offset: number
   return true;
 }
 
+/** Streams IPC batches in the requested Arrow representation. */
+export function parseArrowInBatches(
+  iterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: ArrowLoaderOptions & {
+    arrow?: {shape?: Exclude<NonNullable<ArrowLoaderOptions['arrow']>['shape'], 'arrow'>};
+  }
+): AsyncIterable<ArrowTableBatch>;
+export function parseArrowInBatches(
+  iterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: ArrowLoaderOptions
+): AsyncIterable<ArrowTableBatch | arrow.RecordBatch>;
 export function parseArrowInBatches(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: ArrowLoaderOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<ArrowTableBatch | arrow.RecordBatch> {
   registerArrowCompressionCodecs();
   // Creates the appropriate arrow.RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
@@ -141,18 +162,18 @@ export function parseArrowInBatches(
   }
   */
 
-  async function* makeArrowAsyncIterator(): AsyncIterable<ArrowTableBatch> {
+  async function* makeArrowAsyncIterator(): AsyncIterable<ArrowTableBatch | arrow.RecordBatch> {
     await preloadArrowCompressionDecoders();
     // @ts-ignore
     const readers = arrow.RecordBatchReader.readAll(toArrayBufferIterator(asyncIterator));
     for await (const reader of readers) {
       for await (const recordBatch of reader) {
-        const arrowTabledBatch: ArrowTableBatch = makeTableScanBatch({
-          shape: 'arrow-table',
-          data: updateArrowTableSchema(new arrow.Table([recordBatch]), reader.schema)
-        });
-        // processBatch(recordBatch);
-        yield arrowTabledBatch;
+        const table = updateArrowTableSchema(new arrow.Table([recordBatch]), reader.schema);
+        if (options?.arrow?.shape === 'arrow') {
+          yield* table.batches;
+        } else {
+          yield makeTableScanBatch({shape: 'arrow-table', data: table});
+        }
       }
       break; // only processing one stream of batches
     }
@@ -160,7 +181,7 @@ export function parseArrowInBatches(
 
   return paceBatchIterator(makeArrowAsyncIterator(), {
     batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
-    getRowCount: batch => batch.length,
+    getRowCount: batch => (arrow.RecordBatch.isRecordBatch(batch) ? batch.numRows : batch.length),
     signal: options?.signal
   });
 }

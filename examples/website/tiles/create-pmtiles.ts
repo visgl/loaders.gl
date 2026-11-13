@@ -284,18 +284,17 @@ export async function createPMTilesExampleArchive(
         ? await parse(
             bytes,
             (await waitForPromiseWithSignal(import('@loaders.gl/tables/arrow/index'), signal)).ArrowLoader,
-            {core: {worker: false}, arrow: {shape: 'arrow-table'}}
+            {core: {worker: false}, arrow: {shape: 'arrow'}}
           )
         : await parse(
             bytes,
             (await waitForPromiseWithSignal(import('@loaders.gl/tables/json/index'), signal)).GeoJSONLoader,
             {
               core: {worker: false},
-              geojson: {shape: 'arrow-table'}
+              geojson: {shape: 'arrow'}
             }
           );
     signal.throwIfAborted();
-    if (table.shape !== 'arrow-table') throw new Error('Input did not produce a GeoArrow table.');
     const {encodeGeoArrowPMTiles} = await waitForPromiseWithSignal(
       import('@loaders.gl/tiles/pmtiles/geoarrow'),
       signal

@@ -309,26 +309,22 @@ async function testGetBinaryGeometriesFromArrow(
   arrowFile,
   expectedBinaryGeometries
 ): Promise<void> {
-  const arrowTable = await load(arrowFile, ArrowLoader, {
+  const table = await load(arrowFile, ArrowLoader, {
     core: {worker: false},
-    arrow: {shape: 'arrow-table'}
+    arrow: {shape: 'arrow'}
   });
-  expect(arrowTable.shape).toBe('arrow-table');
-  if (arrowTable.shape === 'arrow-table') {
-    const table = arrowTable.data;
-    const geoColumn = table.getChild('geometry');
-    expect(geoColumn, 'geoColumn is not null').not.toBe(null);
-    const schema = convertArrowToSchema(table.schema);
-    const geometryColumns = getGeometryColumnsFromSchema(schema);
-    const encoding = geometryColumns.geometry.encoding;
-    expect(encoding, 'encoding is not undefined').not.toBe(undefined);
-    if (geoColumn && encoding) {
-      const options = {calculateMeanCenters: true, triangulate: true};
-      const binaryData = convertGeoArrowToBinaryFeatureCollection(geoColumn, encoding, options);
-      expect(normalizeTypedArrays(binaryData), 'binary geometries are correct').toEqual(
-        normalizeTypedArrays(expectedBinaryGeometries)
-      );
-    }
+  const geoColumn = table.getChild('geometry');
+  expect(geoColumn, 'geoColumn is not null').not.toBe(null);
+  const schema = convertArrowToSchema(table.schema);
+  const geometryColumns = getGeometryColumnsFromSchema(schema);
+  const encoding = geometryColumns.geometry.encoding;
+  expect(encoding, 'encoding is not undefined').not.toBe(undefined);
+  if (geoColumn && encoding) {
+    const options = {calculateMeanCenters: true, triangulate: true};
+    const binaryData = convertGeoArrowToBinaryFeatureCollection(geoColumn, encoding, options);
+    expect(normalizeTypedArrays(binaryData), 'binary geometries are correct').toEqual(
+      normalizeTypedArrays(expectedBinaryGeometries)
+    );
   }
   return Promise.resolve();
 }
