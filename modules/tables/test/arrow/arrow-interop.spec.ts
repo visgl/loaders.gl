@@ -98,7 +98,9 @@ test('metadata preload resolves the parser-bearing Arrow and GeoArrow loaders', 
   expect(arrowLoader.parseSync(bytes.buffer, {arrow: {shape: 'object-row-table'}}).data).toEqual([
     {value: 7}
   ]);
-  expect(geoArrowLoader.parseSync(bytes.buffer).data.numRows).toBe(1);
+  expect(geoArrowLoader.parseSync(bytes.buffer, {arrow: {shape: 'arrow'}})).toBeInstanceOf(
+    arrow.Table
+  );
 });
 
 test('Arrow parser entry points return native Arrow for the arrow shape', async () => {

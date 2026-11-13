@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch, GeoJSONTable} from '@loaders.gl/core/schema';
 import {ARROW_WORKER_URL} from '../arrow-worker-url';
@@ -9,7 +10,7 @@ import {ArrowWorkerLoader} from './arrow-loader';
 
 export type GeoArrowLoaderOptions = LoaderOptions & {
   arrow?: {
-    shape?: 'arrow' | 'arrow-table' | 'geojson-table' | 'binary-geometry';
+    shape?: 'arrow' | 'geojson-table' | 'binary-geometry';
   };
 };
 
@@ -24,9 +25,8 @@ async function preload() {
 /** Metadata-only GeoArrow worker loader. */
 export const GeoArrowWorkerLoader = {
   ...ArrowWorkerLoader,
-  supportsNativeArrow: false,
-  batchType: null as unknown as ArrowTableBatch,
-  dataType: null as unknown as ArrowTable | GeoJSONTable,
+  batchType: null as unknown as ArrowTableBatch | RecordBatch,
+  dataType: null as unknown as ArrowTable | GeoJSONTable | NativeArrowTable,
   format: 'geoarrow',
   worker:
     typeof ARROW_WORKER_URL === 'string'
@@ -37,8 +37,12 @@ export const GeoArrowWorkerLoader = {
   workerSourceNode: 'arrow/workers/geoarrow-worker.ts',
   options: {
     arrow: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     }
   },
   preload
-} as const satisfies Loader<ArrowTable | GeoJSONTable, ArrowTableBatch, GeoArrowLoaderOptions>;
+} as const satisfies Loader<
+  ArrowTable | GeoJSONTable | NativeArrowTable,
+  ArrowTableBatch | RecordBatch,
+  GeoArrowLoaderOptions
+>;
