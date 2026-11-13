@@ -410,7 +410,7 @@ export class ParserHandle {
     }
 
     let incrementBy = 1;
-    if (!this._results.data[0] || Array.isArray(this._results.data[0])) {
+    if (this._results.data.length === 0 || Array.isArray(this._results.data[0])) {
       this._results.data = this._results.data.map(this.processRow.bind(this));
       incrementBy = this._results.data.length;
     } else {
