@@ -560,3 +560,16 @@ export type {
 
 export {paceBatchIterator, validateBatchDeliveryRate} from './lib/pace-batch-iterator';
 export type {BatchPacingOptions} from './lib/pace-batch-iterator';
+
+export {createQueryMetadata} from './lib/scan-utils/scan-query-metadata';
+export type {
+  CreateQueryMetadataOptions,
+  QueryMetadata,
+  QueryMetadataOptions,
+  QueryCapabilities,
+  TableQuerySource,
+  TableQueryReadOptions,
+  TableQueryPushdownRequest,
+  TableQueryPushdownPlan
+} from './lib/scan-utils/scan-query-metadata';
+export type {QueryPushdownCapabilityHints} from './lib/scan-utils/table-query';

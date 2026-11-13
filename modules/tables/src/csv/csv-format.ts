@@ -9,6 +9,7 @@ export const CSVFormat = {
   id: 'csv',
   module: 'tables',
   name: 'CSV',
+  queryPushdownCapabilityHints: {offset: true, limit: true},
   encoding: 'csv',
   format: 'csv',
   extensions: ['csv', 'tsv', 'dsv'],

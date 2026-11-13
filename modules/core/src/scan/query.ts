@@ -23,9 +23,7 @@ import {
   type TableScanReadOptions,
   type LoaderOptions,
   type DataSourceOptions,
-  type Loader,
-  resolveLoaderAuthenticationOptions,
-  isSourceLoader
+  type Loader
 } from '@loaders.gl/core/loader-utils';
 import {
   convertArrowToSchema,
@@ -201,7 +199,7 @@ async function* queryAppendBatches(
           : await resolveQuerySource(logicalQuery.from, options.sources, options.signal);
     }
     if (logicalQuery.from === undefined && typeof source === 'string') {
-      const opened = await openQuerySource(options);
+      const opened = await (await import('./query-open-source')).openQuerySource(options);
       if (
         opened &&
         typeof opened === 'object' &&
@@ -276,7 +274,7 @@ async function* queryAppendBatches(
       predicate: normalized.where
     });
     const requiredColumns = plan[0].kind === 'scan' ? plan[0].columns : names;
-    const capabilities = metadata?.capabilities.table;
+    const capabilities = (metadata?.queryCapabilities ?? metadata?.capabilities)?.table;
     // read() must perform exact filtering when it advertises pushdown+residual, not only pruning.
     const delegatePredicate = Boolean(
       normalized.where &&
@@ -284,17 +282,25 @@ async function* queryAppendBatches(
         ['pushdown', 'pushdown+residual'].includes(capabilities.predicate)
     );
     const residual = delegatePredicate ? undefined : normalized.where;
+    const canDelegateWindow = !residual && !expressionFilter && !castPredicate;
+    const delegateOffset = Boolean(
+      canDelegateWindow &&
+        normalized.offset !== undefined &&
+        capabilities &&
+        ['pushdown', 'pushdown+residual'].includes(capabilities.offset ?? 'unsupported')
+    );
     const requestedRows =
-      normalized.limit === undefined ? undefined : (normalized.offset ?? 0) + normalized.limit;
+      normalized.limit === undefined
+        ? undefined
+        : (delegateOffset ? 0 : (normalized.offset ?? 0)) + normalized.limit;
     const readOptions: TableScanReadOptions = {
       signal: options.signal,
       ...(capabilities && capabilities.projection !== 'unsupported'
         ? {columns: requiredColumns}
         : {}),
       ...(delegatePredicate ? {predicate: normalized.where} : {}),
-      ...(!residual &&
-      !expressionFilter &&
-      !castPredicate &&
+      ...(delegateOffset ? {offset: normalized.offset} : {}),
+      ...(canDelegateWindow &&
       requestedRows !== undefined &&
       Number.isSafeInteger(requestedRows) &&
       capabilities &&
@@ -319,17 +325,32 @@ async function* queryAppendBatches(
       : (data: arrow.Table) => projectArrowTable(data, normalized.select);
     const empty = project(new arrow.Table(inputSchema));
     const comparisonSchema = convertSchemaToArrow(convertArrowToSchema(empty.schema));
+    const pushedPlan =
+      !inMemory && !('command' in parsedQuery) && (source as TableScanSource).planQueryPushdown
+        ? await (await import('./query-pushdown')).planQueryPushdown(
+            source as TableScanSource,
+            logicalQuery,
+            capabilities,
+            comparisonSchema,
+            Boolean(computedProjection || expressionFilter),
+            options.signal
+          )
+        : null;
+    options.signal?.throwIfAborted();
     let emitted = false;
     /** Adapts physical batches without pulling ahead of the query consumer. */
     async function* inputs(): AsyncIterable<ArrowTableBatch> {
       sourcesRead = 1;
-      const batches: AsyncIterable<unknown> = inMemory
-        ? memoryBatches((source as ArrowTable).data)
-        : (source as TableScanSource).read(readOptions);
+      const batches: AsyncIterable<unknown> = pushedPlan
+        ? pushedPlan.read({signal: options.signal})
+        : inMemory
+          ? memoryBatches((source as ArrowTable).data)
+          : (source as TableScanSource).read(readOptions);
       for await (const value of batches) {
         options.signal?.throwIfAborted();
-        let batch = normalizeBatch(value, readSchema);
+        let batch = normalizeBatch(value, pushedPlan?.schema ?? readSchema);
         if (
+          !pushedPlan &&
           comparisonInputSchema &&
           !arrow.util.compareSchemas(comparisonInputSchema, convertSchemaToArrow(batch.schema!))
         ) {
@@ -349,14 +370,15 @@ async function* queryAppendBatches(
     for await (const value of executeTableScanBatches(
       () => inputs(),
       {
-        predicate: residual,
-        offset: normalized.offset,
+        predicate: pushedPlan ? undefined : residual,
+        offset: pushedPlan || delegateOffset ? undefined : normalized.offset,
         limit: normalized.limit,
         skipEmptyBatches: true,
         signal: options.signal
       },
       {
         filter: (batch, predicate, signal) => {
+          if (pushedPlan) return batch;
           const input = batch as ArrowTableBatch;
           const data = compiledFilter
             ? filterArrowRows(
@@ -374,12 +396,15 @@ async function* queryAppendBatches(
         },
         project: batch => {
           const input = batch as ArrowTableBatch;
-          return computedProjection ? input : {...input, ...wrapBatch(project(input.data))};
+          return pushedPlan || computedProjection
+            ? input
+            : {...input, ...wrapBatch(project(input.data))};
         }
       }
     )) {
       const input = value as ArrowTableBatch;
-      const batch = computedProjection ? {...input, ...wrapBatch(project(input.data))} : input;
+      const batch =
+        !pushedPlan && computedProjection ? {...input, ...wrapBatch(project(input.data))} : input;
       if (!arrow.util.compareSchemas(comparisonSchema, convertSchemaToArrow(batch.schema!)))
         throw new Error('Query output schema does not match source metadata.');
       emitted = true;
@@ -459,40 +484,6 @@ function wrapBatch(data: arrow.Table): ArrowTableBatch {
   } as ArrowTableBatch;
 }
 
-/** Opens only explicit URL source loaders; the public query owns the returned source. */
-async function openQuerySource(options: QueryOptions): Promise<unknown> {
-  const candidates = Array.isArray(options.loaders) ? options.loaders : [options.loaders];
-  if (
-    !candidates.length ||
-    !candidates.every(isSourceLoader) ||
-    candidates.some(loader => !loader.fromUrl)
-  ) {
-    throw new Error('Query source must specify explicit URL-capable source loaders for a URL.');
-  }
-  const {source, sources, loaders, sqlParser, onQueryComplete, queryOutput, ...sourceOptions} =
-    options;
-  const url = source as string;
-  const selected =
-    candidates.length === 1 ? candidates[0]! : candidates.find(loader => loader!.testURL(url));
-  if (!selected) throw new Error('No explicit source loader matches the query URL.');
-  const implementation = selected.preload ? await selected.preload(url, sourceOptions) : selected;
-  options.signal?.throwIfAborted();
-  if (!isSourceLoader(implementation) || !implementation.fromUrl)
-    throw new Error('Query source preload did not return a URL-capable source loader.');
-  const authenticatedOptions = await resolveLoaderAuthenticationOptions(
-    selected.getAuthentications ? selected : implementation,
-    url,
-    {...sourceOptions, core: {...sourceOptions.core, ignoreRegisteredLoaders: true}}
-  );
-  options.signal?.throwIfAborted();
-  return implementation.createDataSourceSync(url, authenticatedOptions as DataSourceOptions);
-}
-
-export {parseSQLQuery, parseSQLSelect, type SQLSelectParserOptions} from '@math.gl/expressions/sql';
-
-export {createSQLCatalog} from './sql-catalog';
-export type {SQLCatalog, SQLCatalogQuery, SQLCatalogSource, SQLCatalogTable} from './sql-catalog';
-
 /** Checks predicate tree bounds and detects casts that require Arrow execution. */
 function validatePredicateOperands(where: unknown): boolean {
   if (where && typeof where === 'object' && 'expression' in where) {
@@ -560,3 +551,8 @@ function isUnsupportedQueryExpression(value: unknown): boolean {
     /Expression$|^(Identifier|Literal|Compound)$/.test(value.type)
   );
 }
+
+export {parseSQLQuery, parseSQLSelect, type SQLSelectParserOptions} from '@math.gl/expressions/sql';
+
+export {createSQLCatalog} from './sql-catalog';
+export type {SQLCatalog, SQLCatalogQuery, SQLCatalogSource, SQLCatalogTable} from './sql-catalog';

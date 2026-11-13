@@ -1230,3 +1230,11 @@ Helper functions for loaders have been broken out from `@loaders.gl/core`. Indiv
 Release Date: April 2019
 
 First Official Release
+
+### Query capability discovery
+
+`@loaders.gl/core/query` is now an alias for the optional scan runtime. Sources expose
+`queryCapabilities`, formats can provide advisory `queryPushdownCapabilityHints`, and the runtime
+supports exact-query pushdown negotiation for CAST-capable sources. Offset-capable sources receive
+native row windows; other sources retain the safe residual offset and limit path. Existing scan
+imports and metadata remain compatible.

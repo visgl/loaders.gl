@@ -303,3 +303,30 @@ Both accept logical queries or SQL through an injected parser, with loaded table
 loaders, and named data sources. See [Querying tables](/docs/developer-guide/querying-tables) for
 examples and the [query API reference](/docs/modules/core/scan/query) for signatures, execution
 semantics, source capabilities, and benchmarks.
+
+## Query naming and pushdown capabilities
+
+New applications can import `query` and `queryInBatches` from `@loaders.gl/core/query`.
+The existing `/scan` entry point and its focused subpaths remain available; `/query` aliases share
+exactly the same runtime implementation.
+
+Source metadata exposes `queryCapabilities` (with the legacy `capabilities` alias). Its `.table`
+field is a `TableQueryCapabilities` contract, including optional `cast` and `offset` support.
+Use `createQueryMetadata({..., queryCapabilities: {table: ...}})` for new source adapters.
+`TableQuerySource` and `TableQueryReadOptions` are the preferred source contract names.
+
+Formats may expose `queryPushdownCapabilityHints` for discovery. These optional hints are not
+execution guarantees: effective source capabilities and per-query planning determine pushdown.
+Missing hints mean unknown.
+
+For simple queries, the runtime delegates offset only after all filtering has been handled by the
+source. Otherwise it retains the offset and may request `offset + limit` rows when safe. A residual
+CAST filter prevents premature offset/limit pushdown.
+
+Sources with exact native query support may implement `planQueryPushdown(query, {signal})`.
+It returns `null` to retain portable execution, or `{schema, read}` to accept the entire query,
+including CAST conversions, projection, predicates, offset, and limit. Planning must not read rows;
+`read({signal})` supplies Arrow table batches lazily. The runtime validates the output schema and
+handles empty results, cancellation, and iterator cleanup. A source must match portable null,
+overflow, error, and row-order semantics before accepting a query. Existing format sources do not
+claim universal native CAST support; their unsupported conversions continue to execute in Arrow.

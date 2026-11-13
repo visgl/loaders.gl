@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {QueryPushdownCapabilityHints} from './lib/scan-utils/table-query';
+
 /**
  * Physical serialization used by a format.
  */
@@ -40,6 +42,8 @@ export type Format = {
   extensions: string[];
   /** MIMETypes that indicate a match with this loader. @note Some MIMETypes are generic and supported by many loaders */
   mimeTypes: string[];
+  /** Advisory pushdown possibilities; source capabilities remain authoritative. */
+  queryPushdownCapabilityHints?: QueryPushdownCapabilityHints;
   /** Is this a binary format */
   binary?: boolean;
   /** Is this a text format */
