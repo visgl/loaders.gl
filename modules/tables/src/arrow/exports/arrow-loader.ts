@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {ARROW_WORKER_URL} from '../arrow-worker-url';
 import {ArrowFormat} from './arrow-format';
@@ -16,7 +17,7 @@ export type ArrowLoaderOptions = LoaderOptions & {
   /** ArrowLoader options */
   arrow?: {
     /** Shape of returned data */
-    shape?: 'arrow' | 'arrow-table' | 'columnar-table' | 'array-row-table' | 'object-row-table';
+    shape?: 'arrow' | 'columnar-table' | 'array-row-table' | 'object-row-table';
     /** Debounce time between batches (prevent excessive numbers of small batches) */
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
@@ -34,8 +35,9 @@ async function preload() {
 /** Metadata-only ArrowJS table worker loader. */
 export const ArrowWorkerLoader = {
   defaultShape: 'arrow',
-  dataType: null as unknown as Table,
-  batchType: null as unknown as ArrowTableBatch,
+  supportsNativeArrow: true,
+  dataType: null as unknown as Table | NativeArrowTable,
+  batchType: null as unknown as ArrowTableBatch | RecordBatch,
 
   ...ArrowFormat,
   version: VERSION,
@@ -50,4 +52,8 @@ export const ArrowWorkerLoader = {
     }
   },
   preload
-} as const satisfies Loader<Table, ArrowTableBatch, ArrowLoaderOptions>;
+} as const satisfies Loader<
+  Table | NativeArrowTable,
+  ArrowTableBatch | RecordBatch,
+  ArrowLoaderOptions
+>;

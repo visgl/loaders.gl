@@ -2,16 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {parseGeoArrowSync, parseGeoArrowInBatches} from '../lib/parsers/parse-geoarrow';
+import {preloadArrowCompressionDecoders} from '../lib/parsers/arrow-compression';
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 import {GeoArrowLoaderWithParser} from '../geoarrow-loader';
 
 createLoaderWorker({
   ...GeoArrowLoaderWithParser,
-  /** Always decodes columnar data; requested row conversion belongs to the caller. */
-  parse(input, options) {
-    return GeoArrowLoaderWithParser.parse(input, {
-      ...options,
-      arrow: {...options?.arrow, shape: 'arrow-table'}
-    });
+  /** Retains the worker transport envelope while decoding stream batches. */
+  parseInBatches(input, options) {
+    return parseGeoArrowInBatches(input, {...options, arrow: {shape: undefined}});
+  },
+  /** Decodes geometry columns for caller-side conversion. */
+  async parse(input) {
+    await preloadArrowCompressionDecoders();
+    return parseGeoArrowSync(input, {shape: 'arrow-table'});
   }
 });

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as NativeArrowTable} from 'apache-arrow';
 import type {ArrowTableBatch, Table} from '@loaders.gl/core/schema';
 import {convertArrowTable} from '@loaders.gl/core/schema-utils';
 import {
@@ -14,10 +15,13 @@ import type {ArrowLoaderOptions} from '../exports/arrow-loader';
 export const serializeArrowTableResult = serializeArrowWorkerTable;
 
 /** Hydrates columns before materializing the requested output shape on the caller. */
-export function deserializeArrowTableResult(result: unknown, options?: ArrowLoaderOptions): Table {
+export function deserializeArrowTableResult(
+  result: unknown,
+  options?: ArrowLoaderOptions | {arrow: {shape: 'arrow-table'}}
+): Table | NativeArrowTable {
   const table = deserializeArrowTableBatch(result);
   const shape = options?.arrow?.shape;
-  return convertArrowTable(table, shape === 'arrow' ? 'arrow-table' : shape || 'columnar-table');
+  return shape === 'arrow' ? table.data : convertArrowTable(table, shape || 'columnar-table');
 }
 
 /** Hydrates column buffers while preserving batch metadata. */

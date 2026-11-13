@@ -4,7 +4,7 @@
 
 import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table, tableFromArrays, tableToIPC} from 'apache-arrow';
+import {RecordBatch, Table, tableFromArrays, tableToIPC} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ArrowLoader} from '../../src/arrow/arrow-loader-types';
@@ -28,14 +28,14 @@ test.each([
   const loader = {...metadata, preload: async () => ({...parser, parseInBatches: mainParser})};
   const batches = await parseInBatches([bytes], loader, {
     core: {worker: true},
-    arrow: {shape: 'arrow-table'}
+    arrow: {shape: 'arrow'}
   });
   const results: number[] = [];
   const labels: string[] = [];
   for await (const batch of batches) {
-    expect(batch.data).toBeInstanceOf(Table);
-    results.push(...Array.from(batch.data.getChild('id')!));
-    labels.push(...Array.from(batch.data.getChild('label')!));
+    expect(batch).toBeInstanceOf(RecordBatch);
+    results.push(...Array.from(batch.getChild('id')!));
+    labels.push(...Array.from(batch.getChild('label')!));
   }
   expect(mainParser).not.toHaveBeenCalled();
   expect(results).toEqual([1, 2]);

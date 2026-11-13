@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
 
 import type {ArrowLoaderOptions} from './exports/arrow-loader';
@@ -20,4 +21,8 @@ async function preload() {
 export const ArrowLoader = {
   ...ArrowWorkerLoader,
   preload
-} as const satisfies Loader<Table, ArrowTableBatch, ArrowLoaderOptions>;
+} as const satisfies Loader<
+  Table | NativeArrowTable,
+  ArrowTableBatch | RecordBatch,
+  ArrowLoaderOptions
+>;

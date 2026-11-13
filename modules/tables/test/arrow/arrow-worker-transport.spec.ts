@@ -15,7 +15,7 @@ test.each([
   [undefined, 'columnar-table'],
   [{}, 'columnar-table'],
   [{arrow: {shape: 'arrow-table'}}, 'arrow-table'],
-  [{arrow: {shape: 'arrow'}}, 'arrow-table'],
+  [{arrow: {shape: 'arrow'}}, 'arrow'],
 
   [{arrow: {shape: 'array-row-table'}}, 'array-row-table'],
   [{arrow: {shape: 'object-row-table'}}, 'object-row-table']
@@ -25,6 +25,11 @@ test.each([
     data: tableFromArrays({id: new Int32Array([1])})
   });
   const result = deserializeArrowTableResult(serialized, options as ArrowLoaderOptions | undefined);
+  if (result instanceof Table) {
+    expect(shape).toBe('arrow');
+    expect(result.getChild('id')?.get(0)).toBe(1);
+    return;
+  }
   expect(result.shape).toBe(shape);
   if (result.shape === 'arrow-table') {
     expect(result.data).toBeInstanceOf(Table);
