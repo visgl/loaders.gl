@@ -16,7 +16,7 @@ export function* makeArrowTableBatchIterator(
   table: Table,
   options?: {batchSize?: number}
 ): IterableIterator<ArrowTableBatch> {
-  for (const batch of makeArrowRecordBatchIterator(table, options)) {
+  for (const batch of makeWrappedTableRecordBatchIterator(table, options)) {
     const arrowTable = new arrow.Table([batch]);
     yield {
       ...batch,
@@ -29,11 +29,42 @@ export function* makeArrowTableBatchIterator(
   }
 }
 
+/** Streams native Arrow batches, splitting existing batches without rebuilding columns. */
+function* sliceNativeArrowBatches(
+  table: arrow.Table,
+  batchSize?: number
+): IterableIterator<arrow.RecordBatch> {
+  if (batchSize !== undefined && (!Number.isSafeInteger(batchSize) || batchSize < 1)) {
+    throw new RangeError('batchSize must be a positive integer');
+  }
+  for (const batch of table.batches) {
+    if (batchSize === undefined || batch.numRows <= batchSize) {
+      yield batch;
+    } else {
+      for (let offset = 0; offset < batch.numRows; offset += batchSize) {
+        yield batch.slice(offset, offset + batchSize);
+      }
+    }
+  }
+}
+
 /**
  * Returns an iterator that yields a single table as a sequence of arrow.RecordBatch batches.
  * @note All batches will have the same shape and schema as the original table.
  */
 export function* makeArrowRecordBatchIterator(
+  table: Table | arrow.Table,
+  options?: {batchSize?: number}
+): IterableIterator<arrow.RecordBatch> {
+  if (!('shape' in table)) {
+    yield* sliceNativeArrowBatches(table, options?.batchSize);
+    return;
+  }
+  yield* makeWrappedTableRecordBatchIterator(table, options);
+}
+
+/** Converts loaders.gl table representations to record batches. */
+export function* makeWrappedTableRecordBatchIterator(
   table: Table,
   options?: {batchSize?: number}
 ): IterableIterator<arrow.RecordBatch> {

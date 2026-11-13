@@ -714,7 +714,7 @@ Redundant Arrow-specific loader and writer variants have been removed where the 
 | Removed API | Replacement |
 | --- | --- |
 | `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow-table'` |
-| `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow-table'` |
+| `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow'` |
 | `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow-table'` |
 | `GPXArrowLoader` | `GPXLoader` with `gpx.shape: 'arrow-table'` |
 | `TCXArrowLoader` | `TCXLoader` with `tcx.shape: 'arrow-table'` |
@@ -763,8 +763,9 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 
 Code that reads `result.data` from a table returned by a loader in
 `@loaders.gl/tables` can use the returned Apache Arrow `Table` directly.
-Batch APIs yield Apache Arrow `RecordBatch` objects. Set `core.shape: 'arrow-table'`
-to retain the loaders.gl table and batch wrappers. A loader-specific shape option,
+Batch APIs yield Apache Arrow `RecordBatch` objects. Loaders that still support wrappers
+accept `core.shape: 'arrow-table'`. `NDJSONLoader` and `NDGeoJSONLoader` use `'arrow'`
+for all Arrow output. A loader-specific shape option,
 such as `csv.shape`, takes precedence over `core.shape`.
 
 See [native Apache Arrow output](./modules/core/schema/table-guide.md#native-apache-arrow-output)

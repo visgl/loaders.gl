@@ -2,16 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {NDJSONTableSource, NDJSONSourceOptions} from './ndjson-source';
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {
-  ObjectRowTable,
-  ArrayRowTable,
-  ArrowTable,
-  ArrowTableBatch,
-  Schema,
-  TableBatch
-} from '@loaders.gl/core/schema';
+import type {ObjectRowTable, ArrayRowTable, Schema, TableBatch} from '@loaders.gl/core/schema';
 import type * as arrow from 'apache-arrow';
 import {JSON_WORKER_URL} from './json-worker-url';
 import {NDJSONFormat} from './json-format';
@@ -21,7 +15,7 @@ import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-ar
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type NDJSONShape = 'arrow' | 'arrow-table' | 'array-row-table' | 'object-row-table';
+export type NDJSONShape = 'arrow' | 'array-row-table' | 'object-row-table';
 
 /** Options for parsing newline-delimited JSON data. */
 export type NDJSONLoaderOptions = LoaderOptions & {
@@ -36,8 +30,8 @@ export type NDJSONLoaderOptions = LoaderOptions & {
   };
   /** Deprecated JSON parser alias used only for NDJSON shape selection. */
   json?: {
-    /** Deprecated alias for wrapped outputs; use `ndjson.shape` for native Arrow. */
-    shape?: Exclude<NDJSONShape, 'arrow'>;
+    /** Deprecated alias for `ndjson.shape`. */
+    shape?: NDJSONShape;
   };
 };
 
@@ -59,8 +53,9 @@ const sourceMetadata = {
 export const NDJSONLoader = {
   ...sourceMetadata,
   defaultShape: 'arrow',
-  dataType: null as unknown as ArrayRowTable | ObjectRowTable | ArrowTable,
-  batchType: null as unknown as TableBatch | ArrowTableBatch,
+  supportsNativeArrow: true,
+  dataType: null as unknown as ArrayRowTable | ObjectRowTable | NativeArrowTable,
+  batchType: null as unknown as TableBatch | RecordBatch,
 
   ...NDJSONFormat,
   version: VERSION,
@@ -71,7 +66,7 @@ export const NDJSONLoader = {
   workerInBatches: true,
   options: {
     ndjson: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       schema: undefined,
       arrowConversion: undefined
     }
@@ -85,8 +80,8 @@ export const NDJSONLoader = {
     throw new Error('Call preload(NDJSONLoader) before creating a source synchronously.');
   }
 } as const satisfies Loader<
-  ObjectRowTable | ArrayRowTable | ArrowTable,
-  TableBatch | ArrowTableBatch,
+  ObjectRowTable | ArrayRowTable | NativeArrowTable,
+  TableBatch | RecordBatch,
   NDJSONLoaderOptions,
   NDJSONTableSource
 >;
