@@ -75,7 +75,7 @@ test('AvroWriter selects primitive union branches and nested schema wrappers', a
     {avro: {schema}}
   );
 
-  await expect(AvroLoaderWithParser.parse(output)).resolves.toMatchObject({shape: 'arrow-table'});
+  await expect(AvroLoaderWithParser.parse(output)).resolves.toMatchObject({numRows: 1});
 });
 
 test('AvroWriter derives primitive and logical schemas from Arrow field names', async () => {

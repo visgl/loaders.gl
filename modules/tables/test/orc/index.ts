@@ -29,8 +29,7 @@ test('ORCLoader#parse returns an Arrow table', async () => {
     data: []
   });
   const result = await ORCLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') expect(result.data.numRows).toBe(0);
+  expect(result.numRows).toBe(0);
 });
 
 test('ORCWriter#encode writes an empty ORC file', async () => {
@@ -46,9 +45,8 @@ test('ORCWriter#encode round-trips primitive Arrow columns', async () => {
     arrow.tableFromArrays({id: [1, 2, 3], name: ['a', 'bb', '']})
   );
   const result = await ORCLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    expect(result.data.toArray()).toEqual([
+  {
+    expect(result.toArray()).toEqual([
       {id: 1, name: 'a'},
       {id: 2, name: 'bb'},
       {id: 3, name: ''}
@@ -61,13 +59,11 @@ test('ORCWriter#encode round-trips null-present columns', async () => {
     arrow.tableFromArrays({id: [1, null, 3], name: ['a', null, 'c']})
   );
   const result = await ORCLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table')
-    expect(result.data.toArray()).toEqual([
-      {id: 1, name: 'a'},
-      {id: null, name: null},
-      {id: 3, name: 'c'}
-    ]);
+  expect(result.toArray()).toEqual([
+    {id: 1, name: 'a'},
+    {id: null, name: null},
+    {id: 3, name: 'c'}
+  ]);
 });
 
 test('ORCWriter#encode round-trips multiple stripes', async () => {
@@ -78,13 +74,12 @@ test('ORCWriter#encode round-trips multiple stripes', async () => {
   const parsed = parseORC(output);
   expect(parsed.footer.stripeCount).toBe(2);
   const result = await ORCLoaderWithParser.parse(output);
-  if (result.shape === 'arrow-table')
-    expect(result.data.toArray()).toEqual([
-      {id: 1, name: 'a'},
-      {id: 2, name: 'b'},
-      {id: 3, name: 'c'},
-      {id: 4, name: 'd'}
-    ]);
+  expect(result.toArray()).toEqual([
+    {id: 1, name: 'a'},
+    {id: 2, name: 'b'},
+    {id: 3, name: 'c'},
+    {id: 4, name: 'd'}
+  ]);
 });
 
 test('ORCLoader#parse reads stripe metadata', () => {
@@ -152,9 +147,7 @@ test('ORCLoader#parse decodes an uncompressed RLEv2 delta integer column', async
   bytes[bytes.length - 1] = postscript.length;
 
   const result = await ORCLoaderWithParser.parse(bytes.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table')
-    expect(result.data.getChild('id')?.toArray()).toEqual(new Int32Array([10, 12, 14]));
+  expect(result.getChild('id')?.toArray()).toEqual(new Int32Array([10, 12, 14]));
 });
 
 test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
@@ -233,9 +226,7 @@ test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
   bytes[bytes.length - 1] = postscript.length;
 
   const result = await ORCLoaderWithParser.parse(bytes.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table')
-    expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'bb', 'a']);
+  expect(result.getChild('name')?.toArray()).toEqual(['a', 'bb', 'a']);
 });
 
 function concatBytes(...arrays: Uint8Array[]): Uint8Array {

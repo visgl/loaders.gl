@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getNativeArrowOptions, unwrapArrowBatches} from '../loader-utils/native-arrow';
+import {
+  getNativeArrowOptions,
+  isNativeArrowTable,
+  unwrapArrowBatches
+} from '../loader-utils/native-arrow';
 
 import type {Batch, Table} from '@loaders.gl/core/schema';
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
@@ -274,16 +278,21 @@ async function* parseChunkInBatches(
   loader: LoaderWithParser,
   options: StrictLoaderOptions,
   context: LoaderContext
-): AsyncIterable<Batch> {
+): AsyncIterable<unknown> {
   const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);
   // Call `parse` instead of `loader.parse` to ensure we can call workers etc.
-  const parsedData = await parse(
+  const parsedData: unknown = await parse(
     arrayBuffer,
     loader,
     // TODO - Hack: supply loaders MIME type to ensure we match it
     {...options, core: {...options?.core, mimeType: loader.mimeTypes[0]}},
     context
   );
+
+  if (isNativeArrowTable(parsedData)) {
+    yield* parsedData.batches;
+    return;
+  }
 
   // yield a single batch, the output from loader.parse() repackaged as a batch
   const batch = convertDataToBatch(parsedData, loader);
