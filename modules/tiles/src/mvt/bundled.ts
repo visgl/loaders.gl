@@ -8,7 +8,4 @@ export {TileJSONLoaderWithParser as TileJSONLoader} from './tilejson-loader-with
 export {MapStyleLoaderWithParser as MapStyleLoader} from './map-style-loader-with-parser';
 
 export type {MVTLoaderOptions} from './mvt-loader-with-parser';
-export {
-  MVTLoaderWithParser as MVTLoader,
-  MVTLoaderWithParser as MVTWorkerLoader
-} from './mvt-loader-with-parser';
+export {MVTLoaderWithParser as MVTLoader} from './mvt-loader-with-parser';

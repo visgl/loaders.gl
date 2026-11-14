@@ -64,8 +64,7 @@ export {
   isIterator,
   isResponse,
   isReadableStream,
-  isWritableStream,
-  NullWorkerLoader
+  isWritableStream
 } from '@loaders.gl/core';
 export type {
   Loader,
@@ -102,8 +101,7 @@ export {
   MVTTileSource,
   TableTileSourceLoader,
   TableVectorTileSource,
-  ArrowTableTileSourceLoader,
-  MVTWorkerLoader
+  ArrowTableTileSourceLoader
 } from '@loaders.gl/tiles/mvt';
 export type {
   TileJSONLoaderOptions,

@@ -3,7 +3,7 @@ import * as arrow from 'apache-arrow';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@math.gl/arrow';
 import {getFloat16Value, indexedMeshArrowSchema} from '@loaders.gl/core/schema';
-import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/pointclouds/ply';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import {parsePLYToElementTables} from '../../src/ply/lib/parse-ply-arrow';
 import {
   setLoaderOptions,
@@ -73,7 +73,6 @@ function validateTextPLY(data) {
 }
 test('PLYLoader#loader conformance', () => {
   validateLoader(PLYLoader, 'PLYLoader');
-  validateLoader(PLYWorkerLoader, 'PLYWorkerLoader');
 });
 test('PLYLoader#parse(textFile, legacy mesh shape)', async () => {
   const data = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {ply: {shape: 'mesh'}});
@@ -447,7 +446,7 @@ test('PLYLoader#parse(WORKER)', async () => {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(PLY_BUN_ZIPPER_URL, PLYWorkerLoader, {ply: {shape: 'mesh'}});
+  const data = await load(PLY_BUN_ZIPPER_URL, PLYLoader, {ply: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(107841);
 });

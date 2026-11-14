@@ -17,9 +17,3 @@ export {HexWKBLoader} from './hex-wkb-loader-types';
 
 export {TWKBLoader} from './twkb-loader-types';
 export {TWKBWriter} from './twkb-writer';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use WKTLoader. */
-export {WKTWorkerLoader} from './wkt-loader-types';
-/** @deprecated Use WKBLoader. */
-export {WKBWorkerLoader} from './wkb-loader-types';

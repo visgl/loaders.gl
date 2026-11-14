@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, load, parse} from '@loaders.gl/core';
-import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/pointclouds/ply';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
 const ASCII_PLY_URL = '@loaders.gl/pointclouds/ply/test/data/cube_att.ply';
 const BINARY_PLY_URL = '@loaders.gl/pointclouds/ply/test/data/bunny.ply';
@@ -30,7 +30,7 @@ export default async function PLYLoaderBench(bench) {
         // Duplicate it here to avoid breaking other tests
         const response = await fetchFile(ASCII_PLY_URL);
         const arrayBuffer = await response.arrayBuffer();
-        await load(arrayBuffer, PLYWorkerLoader);
+        await load(arrayBuffer, PLYLoader);
       })
       // .addAsync('Stream parsing', async () => {
       //   const stream = await createReadStream('@loaders.gl/pointclouds/ply/test/data/cube_att.ply');
@@ -44,7 +44,7 @@ export default async function PLYLoaderBench(bench) {
       .addAsync('PLYLoader Binary Worker parsing', async () => {
         const response = await fetchFile(BINARY_PLY_URL);
         const arrayBuffer = await response.arrayBuffer();
-        await load(arrayBuffer, PLYWorkerLoader);
+        await load(arrayBuffer, PLYLoader);
       })
 
       .group('PLYLoader (Gaussian Splat Binary Arrow)')

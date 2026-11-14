@@ -64,7 +64,6 @@ The scene root exports loader metadata and public Draco types. Import `DracoLoad
 | Loader                                                                | Description                                      |
 | --------------------------------------------------------------------- | ------------------------------------------------ |
 | [`DracoLoader`](/docs/modules/scene/draco/api-reference/draco-loader)       | Loads Draco meshes and point clouds as Mesh objects or [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
-| [`DracoWorkerLoader`](/docs/modules/scene/draco/api-reference/draco-loader) | Loads Draco meshes and point clouds in a worker. |
 | [`DracoWriter`](/docs/modules/scene/draco/api-reference/draco-writer)       | Encodes Draco meshes and point clouds from Mesh or Mesh Arrow table data. |
 
 `encodeDracoInBatches` accepts an async or synchronous iterator of geometry

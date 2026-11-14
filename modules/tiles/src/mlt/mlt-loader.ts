@@ -59,6 +59,3 @@ export const MLTLoader = {
   },
   preload
 } as const satisfies Loader<any, never, MLTLoaderOptions>;
-
-/** @deprecated Use MLTLoader. */
-export const MLTWorkerLoader = MLTLoader;

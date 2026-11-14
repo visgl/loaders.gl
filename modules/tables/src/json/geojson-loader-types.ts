@@ -78,6 +78,3 @@ export const GeoJSONLoader = {
   TableBatch | ArrowTableBatch,
   GeoJSONLoaderOptions
 >;
-
-/** @deprecated Use GeoJSONLoader. */
-export const GeoJSONWorkerLoader = GeoJSONLoader;

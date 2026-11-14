@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export type {LASLoaderOptions} from './las-loader-types';
-export {LASLoader, LASWorkerLoader} from './las-loader-types';
+export {LASLoader} from './las-loader-types';
 export {LASCOPCLoader} from './las-copc-loader-types';
 export {LAZPerfLoader} from './lazperf-loader-types';
 export {LAZRsLoader} from './laz-rs-loader-types';

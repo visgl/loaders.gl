@@ -65,6 +65,3 @@ export const FlatGeobufLoader = {
   ArrowTableBatch | any,
   FlatGeobufLoaderOptions
 >;
-
-/** @deprecated Use FlatGeobufLoader. */
-export const FlatGeobufWorkerLoader = FlatGeobufLoader;

@@ -132,9 +132,8 @@ test('OBJ bundled entrypoint retains OBJ and MTL parser and format exports', () 
   expect(bundled.OBJFormat.id).toBe('obj');
   expect(bundled.MTLFormat.id).toBe('mtl');
   expect(bundled.OBJLoader.parse).toBeTypeOf('function');
-  expect(bundled.OBJWorkerLoader).toBe(bundled.OBJLoader);
   expect(bundled.MTLLoader.parseTextSync).toBeTypeOf('function');
-  expect(bundled.MTLWorkerLoader.id).toBe('mtl');
+  expect(bundled.MTLLoader.id).toBe('mtl');
 });
 
 test('OBJ worker preserves cumulative and batch-local bounds', async () => {

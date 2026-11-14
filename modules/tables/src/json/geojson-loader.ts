@@ -40,7 +40,7 @@ import {
   normalizeJSONArrowSchema
 } from './lib/parsers/convert-row-table-to-arrow';
 import {
-  GeoJSONWorkerLoader as GeoJSONWorkerLoaderMetadata,
+  GeoJSONLoader as GeoJSONWorkerLoaderMetadata,
   GeoJSONLoader as GeoJSONLoaderMetadata,
   type GeoJSONLoaderOptions
 } from './geojson-loader-types';

@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {QuantizedMeshLoader, QuantizedMeshWorkerLoader} from '@loaders.gl/raster/terrain/index';
+import {QuantizedMeshLoader} from '@loaders.gl/raster/terrain/index';
 import {setLoaderOptions, load} from '@loaders.gl/core';
 const TILE_WITH_EXTENSIONS_URL =
   '@loaders.gl/raster/test/terrain/data/tile-with-extensions.terrain';
@@ -12,7 +12,6 @@ setLoaderOptions({
 });
 test('QuantizedMeshLoader#loader objects', async () => {
   validateLoader(QuantizedMeshLoader, 'QuantizedMeshLoader');
-  validateLoader(QuantizedMeshWorkerLoader, 'QuantizedMeshWorkerLoader');
 });
 test('QuantizedMeshLoader#parse tile-with-extensions', async () => {
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
@@ -38,12 +37,12 @@ test('QuantizedMeshLoader#add skirt to tile-with-extensions', async () => {
   expect(data.attributes.TEXCOORD_0.value.length, 'TEXCOORD_0 attribute was found').toBe(781 * 2);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(781 * 3);
 });
-test('QuantizedMeshWorkerLoader#tile-with-extensions', async () => {
+test('QuantizedMeshLoader#tile-with-extensions', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshWorkerLoader, {
+  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
     'quantized-mesh': {shape: 'mesh', skirtHeight: 0}
   });
   validateMeshCategoryData(data); // TODO: should there be a validateMeshCategoryData?

@@ -48,6 +48,3 @@ export const MVTLoaderWithParser = {
   never,
   MVTLoaderOptions
 >;
-
-/** @deprecated Use MVTLoaderWithParser. */
-export const MVTWorkerLoaderWithParser = MVTLoaderWithParser;

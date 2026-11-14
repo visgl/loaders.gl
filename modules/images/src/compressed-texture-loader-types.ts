@@ -64,6 +64,3 @@ export const CompressedTextureLoader = {
   },
   preload
 } as const satisfies Loader<any, never, CompressedTextureLoaderOptions>;
-
-/** @deprecated Use CompressedTextureLoader. */
-export const CompressedTextureWorkerLoader = CompressedTextureLoader;

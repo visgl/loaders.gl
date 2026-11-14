@@ -64,8 +64,7 @@ export {
   isIterator,
   isResponse,
   isReadableStream,
-  isWritableStream,
-  NullWorkerLoader
+  isWritableStream
 } from '@loaders.gl/core';
 export type {
   Loader,
@@ -88,8 +87,7 @@ export type {
 export {
   MLTFormat,
   MLTLoader,
-  MLTSourceLoader,
-  MLTWorkerLoader
+  MLTSourceLoader
 } from '@loaders.gl/tiles/mlt';
 export type {
   MLTLoaderOptions,

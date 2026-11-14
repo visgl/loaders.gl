@@ -100,7 +100,3 @@ export {
   isReadableStream,
   isWritableStream
 } from '@loaders.gl/core/loader-utils';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use NullLoader. */
-export {NullWorkerLoader} from './null-loader';

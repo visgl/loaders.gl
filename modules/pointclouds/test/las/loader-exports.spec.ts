@@ -13,7 +13,6 @@ import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/laz-rs-loader';
 
 test('LAS root exposes the primary metadata loader and compatibility alias', () => {
   expect(lasModule.LASLoader.id).toBe('las');
-  expect(lasModule.LASWorkerLoader).toBe(lasModule.LASLoader);
   expect(lasModule.LASLoader).not.toHaveProperty('parse');
   expect(lasModule.LASLoader.preload).toBeTypeOf('function');
 });

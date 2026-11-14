@@ -56,6 +56,3 @@ export const PLYLoader = {
   },
   preload
 } as const satisfies Loader<PLYMesh | MeshArrowTable, PLYMesh | ArrowTableBatch, LoaderOptions>;
-
-/** @deprecated Use PLYLoader. */
-export const PLYWorkerLoader = PLYLoader;

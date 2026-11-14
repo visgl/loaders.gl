@@ -41,6 +41,3 @@ export const BasisLoader = {
   },
   preload
 } as const satisfies Loader<TextureLevel[][], never, BasisLoaderOptions>;
-
-/** @deprecated Use BasisLoader. */
-export const BasisWorkerLoader = BasisLoader;

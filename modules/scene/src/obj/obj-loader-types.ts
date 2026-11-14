@@ -70,6 +70,3 @@ function testOBJFile(text: string): boolean {
   // TODO - There could be comment line first
   return text[0] === 'v';
 }
-
-/** @deprecated Use OBJLoader. */
-export const OBJWorkerLoader = OBJLoader;

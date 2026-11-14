@@ -18,6 +18,19 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Loader aliases and WMS options
+
+Use the canonical loader names in place of the removed worker aliases:
+`NullWorkerLoader` becomes `NullLoader`, and aliases such as `CSVWorkerLoader`,
+`LASWorkerLoader`, and `DracoWorkerLoader` become `CSVLoader`, `LASLoader`,
+and `DracoLoader`. Use `MVTLoader` and `TerrainLoader` in place of
+`MVTWorkerLoader` and `TerrainWorkerLoader`. The canonical format loaders retain their existing worker support.
+`NullLoader` returns null on the main thread. Code that used `NullWorkerLoader`
+specifically to exercise worker dispatch can use `{...NullLoader, worker: true}`.
+
+Pass WMS vendor defaults as `{wms: {vendorParameters: {...}}}` when creating a
+source. Per-request vendor parameters can still be passed to source methods.
+
 ### Batched parsing
 
 - Replace `core.batchDebounceMs` and `arrow.batchDebounceMs` with
@@ -79,7 +92,7 @@ Use parser-bearing loaders from named implementation subpaths such as `@loaders.
 
 #### Draco moves to scene
 
-`@loaders.gl/draco` has been removed. Import `DracoLoader`, `DracoWorkerLoader`, `DracoFormat` and public Draco types from `@loaders.gl/scene`. Use `@loaders.gl/scene/draco-loader` for `DracoLoaderWithParser`, `/draco-writer` for writers and encoding helpers, and `/draco-library-options` for runtime URLs and bundled library options. Decoder-specific parsers are available at `/draco-wasm-loader`, `/draco-javascript-loader`, and `/draco3d-loader`. Worker files move to the scene package root. Draco options and supported geometry representations are unchanged.
+`@loaders.gl/draco` has been removed. Import `DracoLoader`, `DracoFormat` and public Draco types from `@loaders.gl/scene`. Use `@loaders.gl/scene/draco-loader` for `DracoLoaderWithParser`, `/draco-writer` for writers and encoding helpers, and `/draco-library-options` for runtime URLs and bundled library options. Decoder-specific parsers are available at `/draco-wasm-loader`, `/draco-javascript-loader`, and `/draco3d-loader`. Worker files move to the scene package root. Draco options and supported geometry representations are unchanged.
 
 #### Raster package consolidation
 

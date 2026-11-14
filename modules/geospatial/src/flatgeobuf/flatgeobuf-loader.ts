@@ -11,7 +11,7 @@ import type {
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseFlatGeobuf, ParseFlatGeobufOptions} from './lib/parse-flatgeobuf';
 import {
-  FlatGeobufWorkerLoader as FlatGeobufWorkerLoaderMetadata,
+  FlatGeobufLoader as FlatGeobufWorkerLoaderMetadata,
   FlatGeobufLoader as FlatGeobufLoaderMetadata,
   type FlatGeobufLoaderOptions
 } from './flatgeobuf-loader-types';

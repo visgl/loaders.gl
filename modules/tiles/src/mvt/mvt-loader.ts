@@ -68,6 +68,3 @@ export const MVTLoader = {
   never,
   MVTLoaderOptions
 >;
-
-/** @deprecated Use MVTLoader. */
-export const MVTWorkerLoader = MVTLoader;

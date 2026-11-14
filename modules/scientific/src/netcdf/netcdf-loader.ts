@@ -57,6 +57,3 @@ export const NetCDFLoader = {
   },
   preload
 } as const satisfies Loader<NetCDF, never, NetCDFLoaderOptions>;
-
-/** @deprecated Use NetCDFLoader. */
-export const NetCDFWorkerLoader = NetCDFLoader;

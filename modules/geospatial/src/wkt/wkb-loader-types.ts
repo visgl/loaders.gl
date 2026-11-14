@@ -41,6 +41,3 @@ export const WKBLoader = {
   },
   preload
 } as const satisfies Loader<Geometry, never, WKBLoaderOptions>;
-
-/** @deprecated Use WKBLoader. */
-export const WKBWorkerLoader = WKBLoader;

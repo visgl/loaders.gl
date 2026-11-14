@@ -66,8 +66,7 @@ export {
   isIterator,
   isResponse,
   isReadableStream,
-  isWritableStream,
-  NullWorkerLoader
+  isWritableStream
 } from '@loaders.gl/core';
 export type {
   Loader,

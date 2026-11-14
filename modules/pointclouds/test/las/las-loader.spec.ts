@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {getFloat16Value, isNativeFloat16Array} from '@loaders.gl/core/schema';
-import {LASLoader, LASWorkerLoader} from '@loaders.gl/pointclouds/las';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {validateLoader} from 'test/common/conformance';
 import {parseLASHeader} from '../../src/las/lib/typescript/parse-las';
@@ -69,7 +69,6 @@ test('LASLoader#LAS 1.5 exposes and validates its extended header', async () => 
 
 test('LASLoader#loader conformance', () => {
   validateLoader(LASLoader, 'LASLoader');
-  validateLoader(LASWorkerLoader, 'LASWorkerLoader');
 });
 
 test('LASLoader#small uncompressed and compressed fixtures agree', async () => {

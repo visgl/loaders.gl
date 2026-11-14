@@ -85,9 +85,6 @@ export type {
 } from './texture-manifest-schema';
 export type {KTX2BasisWriterOptions} from './ktx2-basis-writer';
 export type {CompressedTextureLoaderOptions as TextureLoaderOptions} from './compressed-texture-loader-types';
-export {BasisWorkerLoader} from './basis-loader-types';
-export {CompressedTextureWorkerLoader} from './compressed-texture-loader-types';
-export {CrunchLoader as CrunchWorkerLoader} from './crunch-loader';
 export {VideoLoader} from './video-loader-types';
 export type {VideoLoaderOptions} from './video-loader-types';
 export {VideoFormat} from './video-format';

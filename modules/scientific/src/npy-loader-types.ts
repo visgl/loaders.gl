@@ -45,6 +45,3 @@ export const NPYLoader = {
   },
   preload
 } as const satisfies Loader<NPYTile, never, NPYLoaderOptions>;
-
-/** @deprecated Use NPYLoader. */
-export const NPYWorkerLoader = NPYLoader;

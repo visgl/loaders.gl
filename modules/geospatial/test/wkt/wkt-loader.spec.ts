@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-import {WKTLoader, WKTWorkerLoader} from '@loaders.gl/geospatial/wkt/bundled';
+import {WKTLoader} from '@loaders.gl/geospatial/wkt/bundled';
 import {setLoaderOptions, fetchFile, parseSync, encodeTextSync} from '@loaders.gl/core';
 import {WKTWriter} from '@loaders.gl/geospatial/wkt';
 import fuzzer from 'fuzzer';
@@ -11,9 +11,8 @@ const GEOMETRYCOLLECTION_GEOJSON_URL =
 setLoaderOptions({
   _workerType: 'test'
 });
-test('WKTWorkerLoader#loader objects', async () => {
+test('WKTLoader#loader objects', async () => {
   validateLoader(WKTLoader, 'WKTLoader');
-  validateLoader(WKTWorkerLoader, 'WKTWorkerLoader');
 });
 // eslint-disable-next-line max-statements
 test('WKTLoader', async () => {
@@ -508,13 +507,13 @@ test('WKTLoader', async () => {
   );
 });
 // NOTE(Kyle): Test disabled for now, to be fixed before 2.2.0 release
-// test('WKTWorkerLoader', async t => {
+// test('WKTLoader', async t => {
 //   if (typeof Worker === 'undefined') {
 //     t.comment('Worker is not usable in non-browser environments');
 //     t.end();
 //     return;
 //   }
-//   const GEOMETRYCOLLECTION_WKT = await load(GEOMETRYCOLLECTION_WKT_URL, WKTWorkerLoader);
+//   const GEOMETRYCOLLECTION_WKT = await load(GEOMETRYCOLLECTION_WKT_URL, WKTLoader);
 //   const response = await fetchFile(GEOMETRYCOLLECTION_GEOJSON_URL);
 //   const GEOMETRYCOLLECTION_GEOJSON = await response.json();
 //   t.deepEqual(parseSync(GEOMETRYCOLLECTION_WKT, WKTLoader), GEOMETRYCOLLECTION_GEOJSON);

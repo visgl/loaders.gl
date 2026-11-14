@@ -47,6 +47,3 @@ export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
   },
   preload: preloadDBFLoader
 } as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, DBFLoaderOptions>;
-
-/** @deprecated Use DBFLoader. */
-export const DBFWorkerLoader = DBFLoader;

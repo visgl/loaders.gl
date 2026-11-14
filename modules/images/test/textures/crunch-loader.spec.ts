@@ -4,19 +4,19 @@
 
 import {expect, test} from 'vitest';
 import {load, setLoaderOptions} from '@loaders.gl/core';
-import {CrunchWorkerLoader} from '@loaders.gl/images';
+import {CrunchLoader} from '@loaders.gl/images';
 const CRUNCH_URL = '@loaders.gl/images/test/textures/data/shannon-dxt1.crn';
 setLoaderOptions({
   _workerType: 'test',
   CDN: null
 });
-test('CrunchWorkerLoader#imports', () => {
-  expect(CrunchWorkerLoader, 'CrunchWorkerLoader defined').toBeTruthy();
+test('CrunchLoader#imports', () => {
+  expect(CrunchLoader, 'CrunchLoader defined').toBeTruthy();
 });
-test.skip('CrunchWorkerLoader#load', async () => {
+test.skip('CrunchLoader#load', async () => {
   // Decoder lib `src/libs/crunch.js` works only in browser
 
-  const texture = await load(CRUNCH_URL, CrunchWorkerLoader, {
+  const texture = await load(CRUNCH_URL, CrunchLoader, {
     core: {worker: false}
   });
   expect(texture, 'Crunch container loaded OK').toBeTruthy();

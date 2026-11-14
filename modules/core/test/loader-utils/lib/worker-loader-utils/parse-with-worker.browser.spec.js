@@ -4,13 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {toArrayBuffer, parseWithWorker} from '@loaders.gl/core/loader-utils';
-import {
-  registerLoaders,
-  _unregisterLoaders,
-  NullWorkerLoader,
-  coreApi,
-  parse
-} from '@loaders.gl/core';
+import {registerLoaders, _unregisterLoaders, NullLoader, coreApi, parse} from '@loaders.gl/core';
 test('parseWithWorker', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Workers not supported, skipping tests');
@@ -29,7 +23,7 @@ test('parseWithWorker', async () => {
     coreApi,
     _parse: async arrayBuffer => arrayBuffer
   };
-  const result = await parseWithWorker(NullWorkerLoader, testData, testOptions, testContext);
+  const result = await parseWithWorker(NullLoader, testData, testOptions, testContext);
   expect(result).toBe(null);
 });
 test('parseWithWorker#nested', async () => {
