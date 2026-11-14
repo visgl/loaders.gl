@@ -10,31 +10,31 @@ export type {
   ArcGISServiceSelection
 } from './arcgis/arcgis-capability-graph';
 
-export {ArcGISFeatureServerLoader} from './arcgis/arcgis-feature-server-source-loader-types';
-export type {ArcGISVectorSource} from './arcgis/arcgis-feature-server-source-loader';
-export {ArcGISImageServerLoader} from './arcgis/arcgis-image-server-source-loader-types';
-export type {ArcGISImageSource} from './arcgis/arcgis-image-server-source-loader';
-export {ArcGISImageTileLoader} from './arcgis/arcgis-image-tile-source-loader-types';
-export type {ArcGISImageTileSource} from './arcgis/arcgis-image-tile-source-loader';
-export {ArcGISMapTileLoader} from './arcgis/arcgis-map-tile-source-loader-types';
-export type {ArcGISMapTileSource} from './arcgis/arcgis-map-tile-source-loader';
-export {ArcGISSceneServerLoader} from './arcgis/arcgis-scene-server-source-loader-types';
+export {ArcGISFeatureServerLoader} from './arcgis/arcgis-feature-server-loader-types';
+export type {ArcGISVectorSource} from './arcgis/arcgis-feature-server-loader';
+export {ArcGISImageServerLoader} from './arcgis/arcgis-image-server-loader-types';
+export type {ArcGISImageSource} from './arcgis/arcgis-image-server-loader';
+export {ArcGISImageTileLoader} from './arcgis/arcgis-image-tile-loader-types';
+export type {ArcGISImageTileSource} from './arcgis/arcgis-image-tile-loader';
+export {ArcGISMapTileLoader} from './arcgis/arcgis-map-tile-loader-types';
+export type {ArcGISMapTileSource} from './arcgis/arcgis-map-tile-loader';
+export {ArcGISSceneServerLoader} from './arcgis/arcgis-scene-server-loader-types';
 export type {
   ArcGISSceneServerSource,
   ArcGISSceneServerQueryError
-} from './arcgis/arcgis-scene-server-source-loader';
-export {ArcGISVectorTileServerLoader} from './arcgis/arcgis-vector-tile-server-source-loader-types';
-export type {ArcGISVectorTileServerSource} from './arcgis/arcgis-vector-tile-server-source-loader';
+} from './arcgis/arcgis-scene-server-loader';
+export {ArcGISVectorTileServerLoader} from './arcgis/arcgis-vector-tile-server-loader-types';
+export type {ArcGISVectorTileServerSource} from './arcgis/arcgis-vector-tile-server-loader';
 export type {
   ArcGISFeatureServiceQueryOptions,
-  ArcGISFeatureServerSourceLoaderOptions,
+  ArcGISFeatureServerLoaderOptions,
   ArcGISExportImageParameters,
-  ArcGISImageSourceLoaderProps,
-  ArcGISImageTileSourceLoaderOptions,
-  ArcGISMapTileSourceLoaderOptions,
+  ArcGISImageServerLoaderOptions,
+  ArcGISImageTileLoaderOptions,
+  ArcGISMapTileLoaderOptions,
   ArcGISVectorTileServiceMetadata,
-  ArcGISVectorTileServerSourceLoaderOptions,
-  ArcGISSceneServerSourceOptions,
+  ArcGISVectorTileServerLoaderOptions,
+  ArcGISSceneServerLoaderOptions,
   ArcGISSceneQueryOptions,
   ArcGISSceneQueryResult
 } from './arcgis-source-types';

@@ -11,14 +11,14 @@ import type {
   SourceLoader
 } from '@loaders.gl/core/loader-utils';
 import {createAuthenticatedFetch, redactCredentialURL} from '@loaders.gl/core/loader-utils';
-import {CSWLoader} from './csw-source-loader';
-import {WMSLoader} from './wms-source-loader';
-import {WMTSLoader} from './wmts-source-loader';
-import {WFSLoader} from './wfs-source-loader';
-import {OGCAPIEDRLoader} from './ogc-api-edr-source-loader';
-import {OGCAPICoveragesLoader} from './ogc-api-coverages-source-loader';
-import {OGCAPIFeaturesLoader, OGCAPITilesLoader} from './ogc-api-source-loader';
-import {WCSCoverageLoader} from './wcs-source-loader';
+import {CSWLoader} from './csw-loader';
+import {WMSLoader} from './wms-loader';
+import {WMTSLoader} from './wmts-loader';
+import {WFSLoader} from './wfs-loader';
+import {OGCAPIEDRLoader} from './ogc-api-edr-loader';
+import {OGCAPICoveragesLoader} from './ogc-api-coverages-loader';
+import {OGCAPIFeaturesLoader, OGCAPITilesLoader} from './ogc-api-loaders';
+import {WCSCoverageLoader} from './wcs-coverage-loader';
 
 /** A source loader that can be selected by the universal service runtime. */
 export type ServiceSourceLoader = SourceLoader;

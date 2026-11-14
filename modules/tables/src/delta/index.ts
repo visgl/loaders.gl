@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {DeltaTableSource, DeltaLoaderWithParser} from '../parquet/delta-source';
-export {DeltaLoader} from '../parquet/delta-source-loader-types';
-export type {DeltaSourceLoaderOptions} from '../parquet/delta-source-loader-types';
+export {DeltaTableSource, DeltaLoaderWithParser} from '../parquet/delta-loader';
+export {DeltaLoader} from '../parquet/delta-loader-types';
+export type {DeltaLoaderOptions} from '../parquet/delta-loader-types';
 export type {
   DeltaAction,
   DeltaScanOptions,

@@ -72,9 +72,19 @@ const metadata = await load(url, PMTilesLoader);
 const source = await createDataSource(url, PMTilesLoader);
 ```
 
-## Source creation
+## Source-only loaders
 
-A loader provides general information about the supported resource format, and the capability to create a `DataSource` for that format.
+Source-only loaders such as `ArcGISFeatureServerLoader`, `WMSLoader`, and `STACLoader` use the same
+`Loader` suffix and the same `createDataSource()` API. The **Data source** row in a loader's API
+reference names the runtime type returned by the factory.
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+
+const source = await createDataSource(url, ArcGISFeatureServerLoader);
+const metadata = await source.getMetadata();
+```
 
 ## DataSource
 

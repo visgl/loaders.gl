@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import {
   OMEZarrImageSource,
   OMEZarrLoaderWithParser as OMEZarrLoader
-} from '../../src/zarr/ome-zarr-source-loader';
+} from '../../src/zarr/ome-zarr-loader';
 
 const NUMERIC_TYPES = [
   ['uint8', Uint8Array],

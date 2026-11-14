@@ -60,6 +60,10 @@ which [Parquet format features](/docs/modules/tables/parquet/formats/parquet) ar
 Use `createDataSource(url, ParquetLoader)` for reusable metadata and selective range reads.
 See the [Parquet source API](./parquet-source-loader) for query options.
 
+| Property | Value |
+| --- | --- |
+| Data source | `ParquetSource` |
+
 ## Usage
 
 Load a Parquet file as object rows when a row-oriented result is required.

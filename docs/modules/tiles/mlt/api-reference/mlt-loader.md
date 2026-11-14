@@ -56,6 +56,7 @@ Loader for the [MapLibre Tile (MLT)](/docs/modules/tiles/mlt/formats/mlt) geospa
 | File Format    | [MapLibre Tile](/docs/modules/tiles/mlt/formats/mlt) |
 | MIME Types     | `application/vnd.maplibre-tile`                |
 | Data Format    | [Geometry](/docs/specifications/category-gis)  |
+| Data source | `MLTTileSource` |
 | Supported APIs | `load`, `parse`, `parseSync`                   |
 | Worker Thread  | Not available for this loader                  |
 

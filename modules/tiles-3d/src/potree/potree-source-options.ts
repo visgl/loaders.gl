@@ -5,7 +5,7 @@
 import type {DataSourceOptions} from '@loaders.gl/core/loader-utils';
 
 /** Shared source options; range ceilings apply to modern 2.0 datasets. */
-export type PotreeSourceLoaderOptions = DataSourceOptions & {
+export type PotreeLoaderOptions = DataSourceOptions & {
   /** Legacy color storage and modern octree traversal limits. */
   potree?: {
     /** Legacy color storage; default uint8norm. */

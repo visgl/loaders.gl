@@ -18,7 +18,7 @@ export {
   WMTSCapabilitiesFormat
 } from './wms-format';
 
-export type {CSWLoaderOptions} from './csw-capabilities-loader';
+export type {CSWCapabilitiesLoaderOptions} from './csw-capabilities-loader';
 
 export type {CSWCapabilities} from './csw-capabilities-loader';
 export {CSWCapabilitiesLoader} from './csw-capabilities-loader';
@@ -50,7 +50,7 @@ export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms
 
 // WMTS - Web Map Tile Service
 
-export type {WMTSLoaderOptions} from './wmts-capabilities-loader';
+export type {WMTSCapabilitiesLoaderOptions} from './wmts-capabilities-loader';
 export type {
   WMTSCapabilities,
   WMTSLayer,
@@ -64,7 +64,7 @@ export {WMTSCapabilitiesLoader} from './wmts-capabilities-loader';
 
 // WFS - Web Feature Service
 
-export type {WFSLoaderOptions as _WFSLoaderOptions} from './wfs-capabilities-loader';
+export type {WFSCapabilitiesLoaderOptions as _WFSLoaderOptions} from './wfs-capabilities-loader';
 export type {WFSCapabilities as _WFSCapabilities} from './wfs-capabilities-loader';
 export {WFSCapabilitiesLoader as _WFSCapabilitiesLoader} from './wfs-capabilities-loader';
 
@@ -81,15 +81,16 @@ export {GMLLoader, GMLLoader as _GMLLoader} from './gml-loader-types';
 export type {
   CSWCatalogQuery,
   CSWRecord,
-  CSWSourceLoaderOptions
-} from './csw-source-loader';
-export {CSWCatalogSource, CSWLoader} from './csw-source-loader';
-export {WMSLoader, WMSImageSource} from './wms-source-loader';
-export type {WMTSSourceLoaderOptions, WMTSGetFeatureInfoParameters} from './wmts-source-loader';
+  CSWLoaderOptions
+} from './csw-loader';
+export {CSWCatalogSource, CSWLoader} from './csw-loader';
+export type {WMSLoaderOptions} from './wms-loader';
+export {WMSLoader, WMSImageSource} from './wms-loader';
+export type {WMTSLoaderOptions, WMTSGetFeatureInfoParameters} from './wmts-loader';
 export {
   WMTSLoader,
   WMTSImageTileSource
-} from './wmts-source-loader';
+} from './wmts-loader';
 export type {
   OGCTileMatrixSet,
   OGCTileMatrix,
@@ -106,46 +107,46 @@ export {
   getServiceCRSAxisOrder
 } from './crs-utils';
 export type {FeaturePaginationOptions} from './feature-pagination';
-export {WFSLoader, WFSVectorSource} from './wfs-source-loader';
-export type {WFSVersion, WFSGetFeatureParameters, WFSourceOptions} from './wfs-source-loader';
+export {WFSLoader, WFSVectorSource} from './wfs-loader';
+export type {WFSVersion, WFSGetFeatureParameters, WFSLoaderOptions} from './wfs-loader';
 export type {WFSFeatureType} from './lib/parsers/wfs/parse-wfs-capabilities';
 export type {
   OGCAPICollection,
   OGCAPILandingPage,
   OGCAPILink,
-  OGCAPISourceOptions,
+  OGCAPILoaderOptions,
   OGCAPITileMatrixSetSummary,
   OGCAPITileset
-} from './ogc-api-source-loader';
+} from './ogc-api-loaders';
 export {
   OGCAPIFeaturesSource,
   OGCAPIFeaturesLoader,
   OGCAPITilesSource,
   OGCAPITilesLoader
-} from './ogc-api-source-loader';
-export type {OGCAPIEDRQueryParameters, OGCAPIEDRSourceOptions} from './ogc-api-edr-source-loader';
+} from './ogc-api-loaders';
+export type {OGCAPIEDRQueryParameters, OGCAPIEDRLoaderOptions} from './ogc-api-edr-loader';
 export {
   OGCAPIEDRSource,
   OGCAPIEDRLoader
-} from './ogc-api-edr-source-loader';
+} from './ogc-api-edr-loader';
 export type {
   OGCAPICoveragesQueryParameters,
-  OGCAPICoveragesSourceOptions
-} from './ogc-api-coverages-source-loader';
+  OGCAPICoveragesLoaderOptions
+} from './ogc-api-coverages-loader';
 export {
   OGCAPICoveragesSource,
   OGCAPICoveragesLoader
-} from './ogc-api-coverages-source-loader';
+} from './ogc-api-coverages-loader';
 export type {
   WCSCoverage,
   WCSCoverageMetadata,
   WCSGetCoverageParameters,
-  WCSSourceOptions
-} from './wcs-source-loader';
+  WCSCoverageLoaderOptions
+} from './wcs-coverage-loader';
 export {
   WCSCoverageSource,
   WCSCoverageLoader
-} from './wcs-source-loader';
+} from './wcs-coverage-loader';
 
 export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';
 export {

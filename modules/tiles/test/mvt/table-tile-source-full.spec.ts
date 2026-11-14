@@ -5,7 +5,7 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {TableVectorTileSource, TableTileSourceLoaderOptions} from '@loaders.gl/tiles/mvt';
+import {TableVectorTileSource, TableTileLoaderOptions} from '@loaders.gl/tiles/mvt';
 const DATA_PATH = '@loaders.gl/tiles/mvt/test/data/geojson-vt';
 const TEST_CASES = [
   {
@@ -85,7 +85,7 @@ async function getJSON(name) {
 /** Generate tiles for a GeoJSON files */
 async function genTiles(
   data,
-  options?: TableTileSourceLoaderOptions['table']
+  options?: TableTileLoaderOptions['table']
 ): Promise<Record<string, unknown>> {
   const geojsonType = data?.type;
   const isGeometryType = [

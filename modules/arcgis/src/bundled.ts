@@ -2,38 +2,38 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ArcGISFeatureServerLoaderWithParser as ArcGISFeatureServerLoader} from './arcgis/arcgis-feature-server-source-loader';
+import {ArcGISFeatureServerLoaderWithParser as ArcGISFeatureServerLoader} from './arcgis/arcgis-feature-server-loader';
 export {
   ArcGISFeatureServerLoaderWithParser as ArcGISFeatureServerLoader,
   ArcGISVectorSource,
   ArcGISFeatureQueryError
-} from './arcgis/arcgis-feature-server-source-loader';
-import {ArcGISImageServerLoaderWithParser as ArcGISImageServerLoader} from './arcgis/arcgis-image-server-source-loader';
+} from './arcgis/arcgis-feature-server-loader';
+import {ArcGISImageServerLoaderWithParser as ArcGISImageServerLoader} from './arcgis/arcgis-image-server-loader';
 export {
   ArcGISImageServerLoaderWithParser as ArcGISImageServerLoader,
   ArcGISImageSource
-} from './arcgis/arcgis-image-server-source-loader';
-import {ArcGISImageTileLoaderWithParser as ArcGISImageTileLoader} from './arcgis/arcgis-image-tile-source-loader';
+} from './arcgis/arcgis-image-server-loader';
+import {ArcGISImageTileLoaderWithParser as ArcGISImageTileLoader} from './arcgis/arcgis-image-tile-loader';
 export {
   ArcGISImageTileLoaderWithParser as ArcGISImageTileLoader,
   ArcGISImageTileSource
-} from './arcgis/arcgis-image-tile-source-loader';
-import {ArcGISMapTileLoaderWithParser as ArcGISMapTileLoader} from './arcgis/arcgis-map-tile-source-loader';
+} from './arcgis/arcgis-image-tile-loader';
+import {ArcGISMapTileLoaderWithParser as ArcGISMapTileLoader} from './arcgis/arcgis-map-tile-loader';
 export {
   ArcGISMapTileLoaderWithParser as ArcGISMapTileLoader,
   ArcGISMapTileSource
-} from './arcgis/arcgis-map-tile-source-loader';
-import {ArcGISSceneServerLoaderWithParser as ArcGISSceneServerLoader} from './arcgis/arcgis-scene-server-source-loader';
+} from './arcgis/arcgis-map-tile-loader';
+import {ArcGISSceneServerLoaderWithParser as ArcGISSceneServerLoader} from './arcgis/arcgis-scene-server-loader';
 export {
   ArcGISSceneServerLoaderWithParser as ArcGISSceneServerLoader,
   ArcGISSceneServerSource,
   ArcGISSceneServerQueryError
-} from './arcgis/arcgis-scene-server-source-loader';
-import {ArcGISVectorTileServerLoaderWithParser as ArcGISVectorTileServerLoader} from './arcgis/arcgis-vector-tile-server-source-loader';
+} from './arcgis/arcgis-scene-server-loader';
+import {ArcGISVectorTileServerLoaderWithParser as ArcGISVectorTileServerLoader} from './arcgis/arcgis-vector-tile-server-loader';
 export {
   ArcGISVectorTileServerLoaderWithParser as ArcGISVectorTileServerLoader,
   ArcGISVectorTileServerSource
-} from './arcgis/arcgis-vector-tile-server-source-loader';
+} from './arcgis/arcgis-vector-tile-server-loader';
 
 export type {
   ArcGISService,
@@ -42,14 +42,14 @@ export type {
   ArcGISServiceCapabilities,
   ArcGISServiceSelection,
   ArcGISFeatureServiceQueryOptions,
-  ArcGISFeatureServerSourceLoaderOptions,
+  ArcGISFeatureServerLoaderOptions,
   ArcGISExportImageParameters,
-  ArcGISImageSourceLoaderProps,
-  ArcGISImageTileSourceLoaderOptions,
-  ArcGISMapTileSourceLoaderOptions,
+  ArcGISImageServerLoaderOptions,
+  ArcGISImageTileLoaderOptions,
+  ArcGISMapTileLoaderOptions,
   ArcGISVectorTileServiceMetadata,
-  ArcGISVectorTileServerSourceLoaderOptions,
-  ArcGISSceneServerSourceOptions,
+  ArcGISVectorTileServerLoaderOptions,
+  ArcGISSceneServerLoaderOptions,
   ArcGISSceneQueryOptions,
   ArcGISSceneQueryResult,
   ArcGISSceneAggregationOperation,

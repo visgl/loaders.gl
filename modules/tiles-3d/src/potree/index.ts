@@ -18,7 +18,7 @@ export type {
 
 export {type POTreeNode} from './parsers/parse-potree-hierarchy-chunk';
 
-export type {PotreeSourceLoaderOptions} from './potree-source-options';
+export type {PotreeLoaderOptions} from './potree-source-options';
 export type {
   Potree2Metadata,
   Potree2Attribute,

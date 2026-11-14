@@ -78,10 +78,10 @@
       "import": "./dist/point-cloud-tile-source.js",
       "require": "./dist/point-cloud-tile-source.cjs"
     },
-    "./point-cloud-tile-source-loader": {
-      "types": "./dist/point-cloud-tile-source-loader.d.ts",
-      "import": "./dist/point-cloud-tile-source-loader.js",
-      "require": "./dist/point-cloud-tile-source-loader.cjs"
+    "./point-cloud-tile-loader": {
+      "types": "./dist/point-cloud-tile-loader.d.ts",
+      "import": "./dist/point-cloud-tile-loader.js",
+      "require": "./dist/point-cloud-tile-loader.cjs"
     },
     "./3d-tiles": {
       "types": "./dist/3d-tiles/index.d.ts",

@@ -101,7 +101,7 @@ export type {
   PotreeBoundingBox,
   PotreeMetadata,
   POTreeNode,
-  PotreeSourceLoaderOptions,
+  PotreeLoaderOptions,
   Potree2Metadata,
   Potree2Attribute,
   Potree2AttributeType,

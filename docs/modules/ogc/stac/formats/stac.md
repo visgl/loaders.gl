@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Catalogs and Items', 'Space and time', 'Asset links']}
   links={[
     {label: 'STAC module', to: '/docs/modules/ogc/stac'},
-    {label: 'STAC source API', to: '/docs/modules/ogc/stac/api-reference/stac-source-loader'}
+    {label: 'STAC source API', to: '/docs/modules/ogc/stac/api-reference/stac-loader'}
   ]}
 />
 
@@ -25,7 +25,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| Source loader | [`STACLoader`](../api-reference/stac-source-loader.md) |
+| Source loader | [`STACLoader`](../api-reference/stac-loader.md) |
 
 <DatasetDiscoveryGraphic kind="stac" />
 

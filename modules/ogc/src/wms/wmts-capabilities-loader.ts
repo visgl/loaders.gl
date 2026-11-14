@@ -6,7 +6,7 @@ import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {WMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
 import {WMTSCapabilitiesFormat} from './wms-format';
 
-export type WMTSLoaderOptions = LoaderOptions & {wmts?: Record<string, unknown>};
+export type WMTSCapabilitiesLoaderOptions = LoaderOptions & {wmts?: Record<string, unknown>};
 
 /** Metadata-only loader for WMTS GetCapabilities responses. */
 export const WMTSCapabilitiesLoader = {
@@ -27,4 +27,4 @@ export const WMTSCapabilitiesLoader = {
   preload: async () =>
     (await import('@loaders.gl/ogc/wmts-capabilities-loader-with-parser'))
       .WMTSCapabilitiesLoaderWithParser
-} as const satisfies Loader<WMTSCapabilities, never, WMTSLoaderOptions>;
+} as const satisfies Loader<WMTSCapabilities, never, WMTSCapabilitiesLoaderOptions>;

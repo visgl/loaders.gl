@@ -55,20 +55,20 @@ features, coverages, environmental observations, and catalogs.
 
 ## Service matrix
 
-| Service or format | Primary source or loader | Data category | Status | Best use |
-| --- | --- | --- | --- | --- |
-| [WMS](/docs/modules/ogc/wms/formats/wms) | `WMSLoader` | Rendered image | ✅ Supported | Dynamic maps, feature information, legends |
-| [WMTS](/docs/modules/ogc/wms/formats/wmts) | `WMTSLoader` | Image tiles | ✅ Supported | Capability-driven tiled imagery |
-| [WFS](/docs/modules/ogc/wms/formats/wfs) | `WFSLoader` | Vector features | ✅ Supported | GeoJSON or streaming GML feature queries |
-| [WCS](/docs/modules/ogc/wms/formats/wcs) | `WCSCoverageLoader` | Analytical raster | ⚠️ Focused | Binary coverages and decoded LERC |
-| [CSW](/docs/modules/ogc/wms/formats/csw) | `CSWLoader` | Catalog records | ⚠️ Focused | Read-only catalog search and service references |
-| [GML](/docs/modules/ogc/wms/formats/gml) | `GMLLoader` | Vector format | ⚠️ Supported subset | High-volume WFS feature ingestion |
-| [OGC API Features](/docs/modules/ogc/wms/services/ogc-api#ogc-api-features) | `OGCAPIFeaturesLoader` | Vector features | ⚠️ Minimal | Common collections/items read path |
-| [OGC API Tiles](/docs/modules/ogc/wms/services/ogc-api#ogc-api-tiles) | `OGCAPITilesLoader` | Tile bytes | ⚠️ Minimal | Known tile templates |
-| [OGC API Coverages](/docs/modules/ogc/wms/services/ogc-api#ogc-api-coverages) | `OGCAPICoveragesLoader` | Coverage data | ⚠️ Minimal | Common collection coverage endpoint |
-| [OGC API EDR](/docs/modules/ogc/wms/services/ogc-api#ogc-api-edr) | `OGCAPIEDRLoader` | Environmental observations | ⚠️ Focused | Position, area, cube, and path queries |
-| [WMC](/docs/modules/ogc/wms/formats/wmc) | None | Map context | ❌ Not implemented | Documented to clarify scope |
-| [OWS Context](/docs/modules/ogc/wms/formats/ows-context) | None | Service context | ❌ Not implemented | Documented to clarify scope |
+| Service or format | Loader | Data source | Data category | Status | Best use |
+| --- | --- | --- | --- | --- | --- |
+| [WMS](/docs/modules/ogc/wms/formats/wms) | `WMSLoader` | `WMSImageSource` | Rendered image | ✅ Supported | Dynamic maps, feature information, legends |
+| [WMTS](/docs/modules/ogc/wms/formats/wmts) | `WMTSLoader` | `WMTSImageTileSource` | Image tiles | ✅ Supported | Capability-driven tiled imagery |
+| [WFS](/docs/modules/ogc/wms/formats/wfs) | `WFSLoader` | `WFSVectorSource` | Vector features | ✅ Supported | GeoJSON or streaming GML feature queries |
+| [WCS](/docs/modules/ogc/wms/formats/wcs) | `WCSCoverageLoader` | `WCSCoverageSource` | Analytical raster | ⚠️ Focused | Binary coverages and decoded LERC |
+| [CSW](/docs/modules/ogc/wms/formats/csw) | `CSWLoader` | `CSWCatalogSource` | Catalog records | ⚠️ Focused | Read-only catalog search and service references |
+| [GML](/docs/modules/ogc/wms/formats/gml) | `GMLLoader` | — | Vector format | ⚠️ Supported subset | High-volume WFS feature ingestion |
+| [OGC API Features](/docs/modules/ogc/wms/services/ogc-api#ogc-api-features) | `OGCAPIFeaturesLoader` | `OGCAPIFeaturesSource` | Vector features | ⚠️ Minimal | Common collections/items read path |
+| [OGC API Tiles](/docs/modules/ogc/wms/services/ogc-api#ogc-api-tiles) | `OGCAPITilesLoader` | `OGCAPITilesSource` | Tile bytes | ⚠️ Minimal | Known tile templates |
+| [OGC API Coverages](/docs/modules/ogc/wms/services/ogc-api#ogc-api-coverages) | `OGCAPICoveragesLoader` | `OGCAPICoveragesSource` | Coverage data | ⚠️ Minimal | Common collection coverage endpoint |
+| [OGC API EDR](/docs/modules/ogc/wms/services/ogc-api#ogc-api-edr) | `OGCAPIEDRLoader` | `OGCAPIEDRSource` | Environmental observations | ⚠️ Focused | Position, area, cube, and path queries |
+| [WMC](/docs/modules/ogc/wms/formats/wmc) | None | — | Map context | ❌ Not implemented | Documented to clarify scope |
+| [OWS Context](/docs/modules/ogc/wms/formats/ows-context) | None | — | Service context | ❌ Not implemented | Documented to clarify scope |
 
 “Focused” means the important read operations are implemented without claiming every optional
 operation. “Minimal” means a deliberately small interoperability adapter for the most common OGC

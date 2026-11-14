@@ -57,6 +57,10 @@ tables.
 | Input type | `ArrayBuffer`, URL, or `Blob`             |
 | Output     | RAD metadata or `RADSource`               |
 
+| Property | Value |
+| --- | --- |
+| Data source | `RADSource` |
+
 ## Usage
 
 Use `RADLoader` when working with remote LoD assets:

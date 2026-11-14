@@ -13,7 +13,7 @@ const {preload: _CSWDomainLoaderPreload, ...CSWDomainLoaderMetadataWithoutPreloa
 
 export type {CSWDomain};
 
-export type CSWLoaderOptions = XMLLoaderOptions & {
+export type CSWDomainLoaderOptions = XMLLoaderOptions & {
   csw?: {};
 };
 
@@ -22,7 +22,7 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
  */
 export const CSWDomainLoaderWithParser = {
   ...CSWDomainLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer, options?: CSWLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: CSWDomainLoaderOptions) =>
     parseCSWDomain(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: CSWLoaderOptions) => parseCSWDomain(text, options)
-} as const satisfies LoaderWithParser<CSWDomain, never, CSWLoaderOptions>;
+  parseTextSync: (text: string, options?: CSWDomainLoaderOptions) => parseCSWDomain(text, options)
+} as const satisfies LoaderWithParser<CSWDomain, never, CSWDomainLoaderOptions>;

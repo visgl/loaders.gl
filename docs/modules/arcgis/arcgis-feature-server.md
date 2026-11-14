@@ -66,6 +66,10 @@ ArcGIS FeatureServer endpoints expose queryable vector feature layers through th
 `ArcGISFeatureServerLoader` adapts a service or layer endpoint to the loaders.gl
 `VectorSource` contract.
 
+| Property | Value |
+| --- | --- |
+| Data source | `ArcGISVectorSource` |
+
 ## Feature support
 
 | Capability | Support | API and behavior |

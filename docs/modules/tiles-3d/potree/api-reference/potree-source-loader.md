@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Potree 1.0–1.8 and 2.0', 'Octree nodes', 'Progressive loading']}
   links={[
     {label: 'Potree module', to: '/docs/modules/tiles-3d/potree'},
-    {label: 'COPC source', to: '/docs/modules/tiles-3d/copc/api-reference/copc-source-loader'}
+    {label: 'COPC source', to: '/docs/modules/tiles-3d/copc/api-reference/copc-loader'}
   ]}
 />
 
@@ -48,6 +48,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="The sections below document source creation, returned tile methods, supported payloads, and compatibility notes."
   tone="violet"
 />
+
+| Property | Value |
+| --- | --- |
+| Data source | `PotreeNodesSource`, `Potree2Source` |
 
 ## Usage
 

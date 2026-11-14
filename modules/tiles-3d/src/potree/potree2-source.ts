@@ -4,7 +4,7 @@
 
 import {DataSource, readRangeResponse, type CoreAPI} from '@loaders.gl/core/loader-utils';
 import {convertMeshToArrowTableWrapper} from '@loaders.gl/core/schema-utils';
-import type {PotreeSourceLoaderOptions} from './potree-source-options';
+import type {PotreeLoaderOptions} from './potree-source-options';
 import type {Potree2HierarchyNode, Potree2Metadata} from './potree2-types';
 import {
   parsePotree2Metadata,
@@ -36,7 +36,7 @@ export type Potree2TileHeader = {
 };
 
 /** Range-backed, lazy Potree 2.0 octree with native-coordinate Arrow point content. */
-export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions> {
+export class Potree2Source extends DataSource<string, PotreeLoaderOptions> {
   /** Shared metadata and initial hierarchy loading. */
   readonly ready: Promise<void>;
   /** Whether the initial hierarchy is ready. */
@@ -47,7 +47,7 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
   private readonly signal: AbortSignal;
   /** Checked resource ceilings. */
   private readonly limits: Required<
-    Omit<NonNullable<PotreeSourceLoaderOptions['potree']>, 'signal' | 'colorFormat'>
+    Omit<NonNullable<PotreeLoaderOptions['potree']>, 'signal' | 'colorFormat'>
   >;
   /** Final metadata response URL, including redirect credentials. */
   private rootUrl: string;
@@ -61,7 +61,7 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
   private hierarchyBytes = 0;
 
   /** Starts opening one range-readable dataset; call close() when done. */
-  constructor(input: string, options: PotreeSourceLoaderOptions = {}, coreApi?: CoreAPI) {
+  constructor(input: string, options: PotreeLoaderOptions = {}, coreApi?: CoreAPI) {
     super(input, options, {potree: {}}, coreApi);
     const browserBase = typeof document !== 'undefined' ? document.baseURI : undefined;
     const inputUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(this.url)

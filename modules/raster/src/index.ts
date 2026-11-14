@@ -35,12 +35,12 @@ export type {
   TerrainSurface
 } from './terrain/lib/terrain-contracts';
 
-export {OMETiffLoader} from './geotiff/ometiff-source-loader-types';
+export {OMETiffLoader} from './geotiff/ometiff-loader-types';
 export type {GeoTIFFSourceLoaderOptions} from './geotiff/geotiff-source-loader';
-export type {OMETiffSourceLoaderOptions} from './geotiff/ometiff-source-loader';
+export type {OMETiffLoaderOptions} from './geotiff/ometiff-loader';
 export type {
   GetOMETiffParameters,
   OMETiffChannelMetadata,
   OMETiffLevelMetadata,
   OMETiffSourceLoaderMetadata
-} from './geotiff/ometiff-source-loader';
+} from './geotiff/ometiff-loader';

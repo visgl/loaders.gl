@@ -7,10 +7,10 @@ import type {MLTWriterOptions} from '@loaders.gl/tiles/mlt';
 import {MVTWriter} from '@loaders.gl/tiles/mvt';
 import type {
   ArrowTableTileSourceInput,
-  ArrowTableTileSourceLoaderOptions,
+  ArrowTableTileLoaderOptions,
   MVTWriterOptions
 } from '@loaders.gl/tiles/mvt';
-import {ArrowTableVectorTileSource} from '@loaders.gl/tiles/arrow-table-tile-source-loader';
+import {ArrowTableVectorTileSource} from '@loaders.gl/tiles/arrow-table-tile-loader';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import type {DataType} from '@loaders.gl/core/schema';
 import {encodePMTiles} from './lib/encode-pmtiles';
@@ -31,7 +31,7 @@ export type GeoArrowPMTilesOptions = {
   /** Finite selected tile addresses, including empty tiles; no implicit global enumeration. */
   readonly tiles: Iterable<GeoArrowPMTilesTileIndex> | AsyncIterable<GeoArrowPMTilesTileIndex>;
   /** Existing tiler options. Output coordinates are always normalized tile-local XY. */
-  readonly table?: Omit<NonNullable<ArrowTableTileSourceLoaderOptions['table']>, 'coordinates'>;
+  readonly table?: Omit<NonNullable<ArrowTableTileLoaderOptions['table']>, 'coordinates'>;
   /** Layer name, selected properties, feature IDs and per-tile row limit. */
   readonly mvt?: Pick<
     NonNullable<MVTWriterOptions['mvt']>,

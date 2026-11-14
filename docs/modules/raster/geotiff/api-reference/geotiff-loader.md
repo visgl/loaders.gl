@@ -53,6 +53,10 @@ the file. It is the straightforward path for local files or applications that al
 the complete file in memory. For remote windows, overviews, or band-selective reads, use
 [`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader).
 
+| Property | Value |
+| --- | --- |
+| Data source | `GeoTIFFRasterSource` |
+
 ## Usage
 
 ```typescript

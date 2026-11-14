@@ -54,6 +54,7 @@ Loader for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specifi
 | File Type      | Binary                                                                    |
 | File Format    | [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specification/) |
 | Data Format    | [Geometry](/docs/specifications/category-gis)                             |
+| Data source | `MVTTileSource` |
 | Supported APIs | `load`, `parse`, `parseSync`                                              |
 
 ## Usage

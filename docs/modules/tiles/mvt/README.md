@@ -65,8 +65,8 @@ npm install @loaders.gl/core
 | [`TileJSONLoader`](/docs/modules/tiles/mvt/api-reference/tilejson-loader) | Parses TileJSON metadata and tilestats. |
 | [`MVTWriter`](/docs/modules/tiles/mvt/api-reference/mvt-writer) | Writes Mapbox Vector Tile data. |
 | [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-source-loader) | Dynamically loads tiles from pre-tiled MVT hierarchies. |
-| [`TableTileLoader`](/docs/modules/tiles/mvt/api-reference/table-tile-source-loader) | Generates vector tiles from geospatial tables on the fly. |
-| [`ArrowTableTileLoader`](/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader) | Generates Arrow vector tiles from in-memory Arrow tables. |
+| [`TableTileLoader`](/docs/modules/tiles/mvt/api-reference/table-tile-loader) | Generates vector tiles from geospatial tables on the fly. |
+| [`ArrowTableTileLoader`](/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader) | Generates Arrow vector tiles from in-memory Arrow tables. |
 
 ## Formats
 

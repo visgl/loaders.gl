@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['OGC CSW', 'Catalog search', 'Service discovery']}
   links={[
     {label: 'WMS module', to: '/docs/modules/ogc/wms'},
-    {label: 'CSW service', to: '/docs/modules/ogc/wms/api-reference/csw-source-loader'},
+    {label: 'CSW service', to: '/docs/modules/ogc/wms/api-reference/csw-loader'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
@@ -26,7 +26,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| Source loader | [`CSWLoader`](../api-reference/csw-source-loader.md) |
+| Source loader | [`CSWLoader`](../api-reference/csw-loader.md) |
 
 <DocOrientation
   eyebrow="The catalog path"

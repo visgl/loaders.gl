@@ -4,8 +4,8 @@
 
 import {expect, test, vi} from 'vitest';
 import type {CoreAPI} from '@loaders.gl/core/loader-utils';
-import {ArcGISMapTileSource} from '../../src/arcgis/arcgis-map-tile-source-loader';
-import {ArcGISImageTileSource} from '../../src/arcgis/arcgis-image-tile-source-loader';
+import {ArcGISMapTileSource} from '../../src/arcgis/arcgis-map-tile-loader';
+import {ArcGISImageTileSource} from '../../src/arcgis/arcgis-image-tile-loader';
 import {ArcGISMapTileLoader, ArcGISVectorTileServerLoader} from '@loaders.gl/arcgis/bundled';
 import {createArcGISTileGrid} from '../../src/arcgis/arcgis-tile-grid';
 

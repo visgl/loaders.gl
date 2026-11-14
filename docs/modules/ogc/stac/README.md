@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="mint"
   meta={['STAC catalogs', 'API Item Search', 'Asset links']}
   links={[
-    {label: 'STAC source', to: '/docs/modules/ogc/stac/api-reference/stac-source-loader'},
+    {label: 'STAC source', to: '/docs/modules/ogc/stac/api-reference/stac-loader'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
@@ -81,7 +81,7 @@ if (mode === 'api') {
 }
 ```
 
-See [`STACLoader`](/docs/modules/ogc/stac/api-reference/stac-source-loader) for the source API and
+See [`STACLoader`](/docs/modules/ogc/stac/api-reference/stac-loader) for the source API and
 [STAC format notes](/docs/modules/ogc/stac/formats/stac) for protocol behavior.
 
 ## Browser access

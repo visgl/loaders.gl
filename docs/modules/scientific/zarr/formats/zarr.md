@@ -26,9 +26,9 @@ import {RasterWindowGraphic} from '@site/src/components/docs/raster-window-graph
 
 | Type | API |
 | --- | --- |
-| Source loader | [`GeoZarrLoader`](../api-reference/geo-zarr-source-loader.md) |
-| Source loader | [`OMEZarrLoader`](../api-reference/ome-zarr-source-loader.md) |
-| Source loader | [`SpatialDataLoader`](../api-reference/spatial-data-source-loader.md) |
+| Source loader | [`GeoZarrLoader`](../api-reference/geo-zarr-loader.md) |
+| Source loader | [`OMEZarrLoader`](../api-reference/ome-zarr-loader.md) |
+| Source loader | [`SpatialDataLoader`](../api-reference/spatial-data-loader.md) |
 
 <RasterWindowGraphic kind="zarr" />
 

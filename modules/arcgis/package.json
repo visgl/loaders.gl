@@ -39,29 +39,29 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
-    "./arcgis-feature-server-source-loader": {
-      "types": "./dist/arcgis-feature-server-source-loader.d.ts",
-      "import": "./dist/arcgis-feature-server-source-loader.js"
+    "./arcgis-feature-server-loader": {
+      "types": "./dist/arcgis-feature-server-loader.d.ts",
+      "import": "./dist/arcgis-feature-server-loader.js"
     },
-    "./arcgis-image-server-source-loader": {
-      "types": "./dist/arcgis-image-server-source-loader.d.ts",
-      "import": "./dist/arcgis-image-server-source-loader.js"
+    "./arcgis-image-server-loader": {
+      "types": "./dist/arcgis-image-server-loader.d.ts",
+      "import": "./dist/arcgis-image-server-loader.js"
     },
-    "./arcgis-image-tile-source-loader": {
-      "types": "./dist/arcgis-image-tile-source-loader.d.ts",
-      "import": "./dist/arcgis-image-tile-source-loader.js"
+    "./arcgis-image-tile-loader": {
+      "types": "./dist/arcgis-image-tile-loader.d.ts",
+      "import": "./dist/arcgis-image-tile-loader.js"
     },
-    "./arcgis-map-tile-source-loader": {
-      "types": "./dist/arcgis-map-tile-source-loader.d.ts",
-      "import": "./dist/arcgis-map-tile-source-loader.js"
+    "./arcgis-map-tile-loader": {
+      "types": "./dist/arcgis-map-tile-loader.d.ts",
+      "import": "./dist/arcgis-map-tile-loader.js"
     },
-    "./arcgis-scene-server-source-loader": {
-      "types": "./dist/arcgis-scene-server-source-loader.d.ts",
-      "import": "./dist/arcgis-scene-server-source-loader.js"
+    "./arcgis-scene-server-loader": {
+      "types": "./dist/arcgis-scene-server-loader.d.ts",
+      "import": "./dist/arcgis-scene-server-loader.js"
     },
-    "./arcgis-vector-tile-server-source-loader": {
-      "types": "./dist/arcgis-vector-tile-server-source-loader.d.ts",
-      "import": "./dist/arcgis-vector-tile-server-source-loader.js"
+    "./arcgis-vector-tile-server-loader": {
+      "types": "./dist/arcgis-vector-tile-server-loader.d.ts",
+      "import": "./dist/arcgis-vector-tile-server-loader.js"
     },
     "./authentication": {
       "types": "./dist/authentication.d.ts",

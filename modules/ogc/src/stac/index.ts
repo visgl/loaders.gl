@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {STACLoader} from './stac-source-loader-types';
-export type {STACSourceLoaderOptions} from './stac-source-loader-types';
+export {STACLoader} from './stac-loader-types';
+export type {STACLoaderOptions} from './stac-loader-types';
 export type {
   STACAsset,
   STACAssetSelection,

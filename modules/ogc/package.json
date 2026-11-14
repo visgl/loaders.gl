@@ -67,10 +67,10 @@
       "import": "./dist/stac/index.js",
       "require": "./dist/stac/index.cjs"
     },
-    "./stac-source": {
-      "types": "./dist/stac-source.d.ts",
-      "import": "./dist/stac-source.js",
-      "require": "./dist/stac-source.cjs"
+    "./stac-loader": {
+      "types": "./dist/stac-loader.d.ts",
+      "import": "./dist/stac-loader.js",
+      "require": "./dist/stac-loader.cjs"
     }
   },
   "sideEffects": false,
