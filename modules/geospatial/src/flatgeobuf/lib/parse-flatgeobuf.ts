@@ -160,7 +160,7 @@ export function parseFlatGeobufToArrowTable(
 export function queryFlatGeobufArrowTable(
   arrayBuffer: ArrayBuffer,
   options: FlatGeobufQueryOptions = {}
-): ArrowTable {
+): arrow.Table {
   throwIfAborted(options.signal);
   const sourceTable = parseFlatGeobufToArrowTable(arrayBuffer, {
     boundingBox: options.boundingBox
@@ -176,7 +176,7 @@ export function queryFlatGeobufArrowTable(
   const predicateStep = plan.find(step => step.kind === 'filter');
   const limitStep = plan.find(step => step.kind === 'limit');
   return queryArrowTable(
-    sourceTable,
+    sourceTable.data,
     {
       predicate: predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined,
       columns: projectStep.columns,

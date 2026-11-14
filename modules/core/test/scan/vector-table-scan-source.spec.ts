@@ -260,7 +260,7 @@ test('addressed vector scans isolate shared loads from caller cancellation', asy
 
   await expect(cancelledMetadata).rejects.toMatchObject({name: 'AbortError'});
   resolveLoad(sourceTable);
-  await expect(successfulQuery).resolves.toMatchObject({shape: 'arrow-table'});
+  await expect(successfulQuery).resolves.toBeInstanceOf(arrow.Table);
   expect(loadCount).toBe(1);
   expect(physicalSignal).toBeUndefined();
 });
@@ -320,10 +320,10 @@ test.each([
     limit: 1
   } as const;
   const result = await scanSource.query(queryOptions);
-  expect(result.data.getChild('name')?.get(0)).toBe('road.2');
-  expect(result.data.numRows).toBe(1);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name', 'geometry']);
-  expect(result.data.schema.fields[1].metadata.get('ARROW:extension:name')).toBe('geoarrow.wkb');
+  expect(result.getChild('name')?.get(0)).toBe('road.2');
+  expect(result.numRows).toBe(1);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['name', 'geometry']);
+  expect(result.schema.fields[1].metadata.get('ARROW:extension:name')).toBe('geoarrow.wkb');
   const explanation = await scanSource.explain(queryOptions);
   expect(explanation.plan.map(step => step.kind)).toEqual(['scan', 'filter', 'project', 'limit']);
   const scannedBatches = [];
@@ -395,7 +395,7 @@ test('addressed scans retain schema when a query returns no physical batches', a
       }
     }
   );
-  source.query = async () => ({shape: 'arrow-table', data});
+  source.query = async () => data;
   const {value} = await source.read().next();
   expect(value.numRows).toBe(0);
   expect(value.schema.names).toEqual(['id']);

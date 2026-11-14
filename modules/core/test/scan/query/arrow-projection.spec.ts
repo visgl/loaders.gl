@@ -4,7 +4,6 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {projectArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {queryArrowTable, explainArrowTableQuery} from '../../../src/scan/query-arrow-table';
 
@@ -88,21 +87,20 @@ test('repeated aliases share data and empty projections preserve row counts', ()
 
 test('queryArrowTable resolves predicates before applying aliases and limits zero-copy views', () => {
   const data = makeTable();
-  const table = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
-  const selected = queryArrowTable(table, {select: [{column: 'text', as: 'label'}], limit: 2});
-  expect(selected.data.numRows).toBe(2);
-  expect(selected.data.getChild('label')!.data[0].values.buffer).toBe(
+  const selected = queryArrowTable(data, {select: [{column: 'text', as: 'label'}], limit: 2});
+  expect(selected.numRows).toBe(2);
+  expect(selected.getChild('label')!.data[0].values.buffer).toBe(
     data.getChild('text')!.data[0].values.buffer
   );
-  const explanation = explainArrowTableQuery(table, {select: [{column: 'text', as: 'label'}]});
+  const explanation = explainArrowTableQuery(data, {select: [{column: 'text', as: 'label'}]});
   expect(explanation.outputColumns).toEqual(['label']);
   expect(explanation.requiredColumns).toEqual(['text']);
-  const filtered = queryArrowTable(table, {
+  const filtered = queryArrowTable(data, {
     select: [{column: 'text', as: 'number'}],
     predicate: {op: '>', args: [{property: 'number'}, 1]}
   });
-  expect(filtered.data.toArray().map(row => row.toJSON())).toEqual([{number: 'three'}]);
-  expect(() => queryArrowTable(table, {select: ['text'], columns: ['text']})).toThrow(
+  expect(filtered.toArray().map(row => row.toJSON())).toEqual([{number: 'three'}]);
+  expect(() => queryArrowTable(data, {select: ['text'], columns: ['text']})).toThrow(
     /cannot be combined/
   );
   expect(() => projectArrowTable(data, ['missing'])).toThrow(/not found/);
@@ -111,12 +109,11 @@ test('queryArrowTable resolves predicates before applying aliases and limits zer
 
 test('existing empty source field names remain valid in unchanged projections', () => {
   const data = new arrow.Table({'': arrow.vectorFromArray([1, 2, 3], new arrow.Int32())});
-  const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
   const projected = projectArrowTable(data, ['']);
   expect(projected.getChild('')!.toArray()).toEqual(data.getChild('')!.toArray());
   expect(projected.batches[0].data.children[0]).toBe(data.batches[0].data.children[0]);
-  expect(queryArrowTable(source).data.numRows).toBe(3);
-  expect(queryArrowTable(source, {columns: ['']}).data.schema.fields[0].name).toBe('');
+  expect(queryArrowTable(data).numRows).toBe(3);
+  expect(queryArrowTable(data, {columns: ['']}).schema.fields[0].name).toBe('');
   expect(projectArrowTable(data, [{column: ''}]).schema.fields[0].name).toBe('');
   expect(() => projectArrowTable(data, [{column: '', as: ''}])).toThrow(/Invalid/);
 });

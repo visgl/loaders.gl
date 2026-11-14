@@ -196,7 +196,7 @@ test('FlatGeobufVectorSource#query combines bbox pruning with portable projectio
     table.schema.fields.map(field => field.name),
     'projects requested fields'
   ).toEqual(['name']);
-  expect(table.data.numRows, 'applies a global limit after the residual predicate').toBe(2);
+  expect(table.numRows, 'applies a global limit after the residual predicate').toBe(2);
   expect(source.tableQueryCapabilities.predicate, 'reports conservative capability').toBe(
     'residual'
   );

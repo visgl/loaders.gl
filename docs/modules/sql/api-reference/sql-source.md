@@ -85,7 +85,7 @@ remains available for operations outside the portable scan subset.
 
 ### `queryArrow(query, options?)`
 
-Executes raw SQL or a portable table query and returns a loaders.gl Arrow table.
+Executes raw SQL or a portable table query and returns an Apache Arrow `Table`.
 
 ### `close()`
 
@@ -99,7 +99,7 @@ provide the optional `insertArrowIPC` method to support uploads.
 
 ### `insertArrowTable(table, options)`
 
-Serializes a loaders.gl `ArrowTable` with the application's Arrow runtime, then
+Serializes an Apache Arrow `Table` with the application's Arrow runtime, then
 uploads the IPC stream to DuckDB. No Arrow runtime objects cross the adapter boundary.
 
 ### `insertArrowIPC(bytes, options)`

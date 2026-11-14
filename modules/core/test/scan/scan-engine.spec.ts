@@ -4,8 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import type {ArrowTable} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {
   createScanEngine,
   createScanQueryMetadata,
@@ -22,8 +20,8 @@ test('creates the Arrow reference engine by default', async () => {
   });
 
   expect(engine.name).toBe('arrow');
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
-  expect(result.data.toArray().map(row => row?.toJSON())).toEqual([{name: 'b'}]);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['name']);
+  expect(result.toArray().map(row => row?.toJSON())).toEqual([{name: 'b'}]);
 });
 
 test('reports synchronous Arrow query failures as rejected promises', async () => {
@@ -82,7 +80,7 @@ test('preserves prototype methods and receiver when loading class backends', asy
   class ClassBackend {
     readonly name = 'class-backend' as const;
     readonly prefix = 'class';
-    query(sourceTable: ArrowTable) {
+    query(sourceTable: arrow.Table) {
       if (this.prefix !== 'class') throw new Error('backend receiver was lost');
       return sourceTable;
     }
@@ -132,8 +130,7 @@ test('reports unavailable backends clearly', async () => {
   );
 });
 
-/** Wraps simple test columns in the loaders.gl Arrow table shape. */
-function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
-  const data = arrow.tableFromArrays(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+/** Builds an Arrow table from test columns. */
+function makeArrowTable(columns: Record<string, readonly unknown[]>): arrow.Table {
+  return arrow.tableFromArrays(columns);
 }

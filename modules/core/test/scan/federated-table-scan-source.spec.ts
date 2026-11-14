@@ -1099,7 +1099,7 @@ class TestTableScanSource
       }
       for (let batchIndex = 0; batchIndex < this.tables.length && remaining > 0; batchIndex++) {
         if (options.signal?.aborted) throw options.signal.reason;
-        const result = queryArrowTable(this.tables[batchIndex], {
+        const result = queryArrowTable(this.tables[batchIndex].data, {
           ...options,
           limit: this.testOptions.ignoreLimit
             ? undefined
@@ -1107,14 +1107,16 @@ class TestTableScanSource
               ? remaining
               : undefined
         });
-        if (!result.data.numRows) continue;
-        remaining -= result.data.numRows;
+        if (!result.numRows) continue;
+        remaining -= result.numRows;
         yield {
           batchType: 'data',
           shape: 'arrow-table',
-          ...(this.testOptions.omitBatchSchema ? {} : {schema: result.schema}),
-          data: result.data,
-          length: result.data.numRows,
+          ...(this.testOptions.omitBatchSchema
+            ? {}
+            : {schema: convertArrowToSchema(result.schema)}),
+          data: result,
+          length: result.numRows,
           metadata: {partition: batchIndex}
         };
       }

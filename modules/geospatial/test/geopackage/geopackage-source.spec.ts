@@ -2,7 +2,6 @@ import {expect, test, vi} from 'vitest';
 import {query} from '@loaders.gl/core/scan';
 import * as arrow from 'apache-arrow';
 import {createDataSourceSync, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
-import {getTableRowAsObject} from '@loaders.gl/core/schema-utils';
 import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geospatial/geopackage/index';
 import {GeoPackageLoader as BundledGeoPackageLoader} from '@loaders.gl/geospatial/geopackage/bundled';
 const GPKG_RIVERS_MULTI = '@loaders.gl/geospatial/geopackage/test/data/rivers_multi.gpkg';
@@ -35,10 +34,7 @@ test('GeoPackageSource exposes URL matching and executes residual queries', asyn
   expect(GeoPackageSource.testURL('https://example.com/data.json')).toBe(false);
 
   const source = GeoPackageSource.createDataSourceSync(new Blob([]), {geopackage: {}});
-  source.getTable = async () => ({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]})
-  });
+  source.getTable = async () => arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]});
   const result = await source.query({
     predicate: {op: '=', args: [{property: 'name'}, 'a']},
     columns: ['value'],
@@ -46,7 +42,7 @@ test('GeoPackageSource exposes URL matching and executes residual queries', asyn
   });
 
   expect(result.schema.fields.map(field => field.name)).toEqual(['value']);
-  expect(Array.from(result.data.getChild('value')?.toArray() || [])).toEqual([1]);
+  expect(Array.from(result.getChild('value')?.toArray() || [])).toEqual([1]);
 });
 test('GeoPackageSource#getMetadata returns tables and default selection', async () => {
   const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageSource], {
@@ -93,7 +89,7 @@ test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async ()
   const loaderTable = await load(fixtureArrayBuffer, BundledGeoPackageLoader, {
     geopackage: {shape: 'arrow-table', table: 'FEATURESriversds'}
   });
-  expect(getRows(sourceTable), 'source matches loader output').toEqual(getRows(loaderTable));
+  expect(getRows(sourceTable), 'source matches loader output').toEqual(getRows(loaderTable.data));
 });
 test('GeoPackageSource#getTable uses the default selection heuristic', async () => {
   const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageSource], {
@@ -111,12 +107,8 @@ async function createFixtureBlob(): Promise<Blob> {
   const arrayBuffer = await response.arrayBuffer();
   return new Blob([arrayBuffer]);
 }
-function getRows(table): Record<string, unknown>[] {
-  const rows: Record<string, unknown>[] = [];
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    rows.push(getTableRowAsObject(table, rowIndex, {}));
-  }
-  return rows;
+function getRows(table: arrow.Table): Record<string, unknown>[] {
+  return table.toArray().map(row => row.toJSON());
 }
 
 test('qualified FROM selects a loaded GeoPackage table without changing its default table', async () => {

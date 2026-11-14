@@ -73,7 +73,8 @@ npm install @loaders.gl/core apache-arrow
 
 ## Query an Arrow table
 
-Arrow is the built-in reference backend. `createScanEngine()` is asynchronous so an application can
+Scan backends accept and return Apache Arrow `Table` objects. Arrow is the built-in
+reference backend. `createScanEngine()` is asynchronous so an application can
 register another backend lazily without changing its calling code.
 
 ```ts
@@ -251,7 +252,8 @@ These helpers plan operations only; execution of aliased projections is a separa
 
 ### Arrow projection and renaming
 
-`queryArrowTable()` accepts `select` for ordered projection with aliases:
+`queryArrowTable()` accepts and returns Apache Arrow `Table` objects. Use
+`select` for ordered projection with aliases:
 
 ```ts
 const result = queryArrowTable(table, {

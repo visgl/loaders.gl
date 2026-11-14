@@ -57,7 +57,7 @@ const table = await dataSource.getTable(metadata.tables[0]?.name);
 
 `getMetadata()` returns available vector tables, including geometry column metadata and the selected default table.
 
-`getTable(tableName?)` returns the selected table as an `ArrowTable` using the same default-table heuristic as `GeoPackageLoader` with `geopackage.shape: 'arrow-table'`.
+`getTable(tableName?)` returns the selected table as an Apache Arrow `Table` using the same default-table heuristic as `GeoPackageLoader` with `geopackage.shape: 'arrow-table'`.
 
 ## Raster tile-table metadata
 

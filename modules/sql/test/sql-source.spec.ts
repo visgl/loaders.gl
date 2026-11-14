@@ -110,9 +110,8 @@ test('SQLDataSource caches metadata, falls back to Arrow conversion, and resets 
   expect(metadataCallCount, 'loads metadata once').toBe(3);
   expect(firstMetadata, 'returns cached metadata promise result').toBe(secondMetadata);
   const arrowTable = await source.queryArrow('SELECT * FROM nulls');
-  expect(arrowTable.shape, 'returns Arrow table shape').toBe('arrow-table');
-  expect(arrowTable.data.numRows, 'converts row results into Arrow rows').toBe(2);
-  expect(arrowTable.data.get(1)?.toJSON()?.value, 'preserves row data after conversion').toBe(3);
+  expect(arrowTable.numRows, 'converts row results into Arrow rows').toBe(2);
+  expect(arrowTable.get(1)?.toJSON()?.value, 'preserves row data after conversion').toBe(3);
   await source.close();
   expect(closeCount, 'closes adapter').toBe(1);
   await source.getResolvedMetadata();

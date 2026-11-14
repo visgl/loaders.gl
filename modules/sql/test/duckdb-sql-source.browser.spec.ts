@@ -113,7 +113,7 @@ test('DuckDB browser adapter supports queries, metadata, parameters, and cleanup
     tableName: 'events'
   });
   expect(schema.fields[0]?.name).toBe('id');
-  expect((await source.queryArrow('SELECT 1 AS value')).data.numRows).toBe(1);
+  expect((await source.queryArrow('SELECT 1 AS value')).numRows).toBe(1);
 
   await source.close();
   expect(duckdbMocks.connection.close).toHaveBeenCalled();
@@ -128,14 +128,11 @@ test('DuckDB browser adapter closes failed prepared queries and uploads IPC', as
   await expect(source.queryArrow('SELECT ?', {parameters: [1]})).rejects.toThrow('query failed');
   expect(duckdbMocks.bindings.closePrepared).toHaveBeenCalledWith(1, 7);
   const data = arrow.tableFromArrays({value: [1, 2]});
-  await source.insertArrowTable(
-    {shape: 'arrow-table', data, schema: {fields: [], metadata: {}}},
-    {
-      tableName: 'uploaded',
-      create: false,
-      schemaName: 'main'
-    }
-  );
+  await source.insertArrowTable(data, {
+    tableName: 'uploaded',
+    create: false,
+    schemaName: 'main'
+  });
   const [bytes, options] = duckdbMocks.connection.insertArrowFromIPCStream.mock.calls[0];
   expect(bytes).toBeInstanceOf(Uint8Array);
   expect(
