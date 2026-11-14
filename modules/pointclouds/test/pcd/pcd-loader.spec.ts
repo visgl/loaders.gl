@@ -7,9 +7,7 @@ import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
 import {setLoaderOptions, fetchFile, parse, load, parseInBatches} from '@loaders.gl/core';
 const PCD_ASCII_URL = '@loaders.gl/pointclouds/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pointclouds/pcd/test/data/Zaghetto.pcd';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 function createBinaryArrayBufferWithCountedField(): ArrayBuffer {
   const headerText = [
     '# .PCD v0.7 - Point Cloud Data file format',
@@ -122,8 +120,7 @@ test('PCDLoader#parse(shape: arrow-table)', async () => {
 test('PCDLoader#parseInBatches(ascii, arrow-table)', async () => {
   const response = await fetchFile(PCD_ASCII_URL);
   const batches = await parseInBatches(response, PCDLoader, {
-    batchSize: 100,
-    core: {worker: false},
+    core: {worker: false, batchSize: 100},
     pcd: {shape: 'arrow-table'}
   });
   const batchRowCounts: number[] = [];
@@ -165,8 +162,7 @@ test('PCDLoader#parse(binary with counted fields)', async () => {
 test('PCDLoader#parseInBatches(binary with counted fields, arrow-table)', async () => {
   const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
   const batches = await parseInBatches([binaryArrayBuffer], PCDLoader, {
-    batchSize: 1,
-    core: {worker: false},
+    core: {worker: false, batchSize: 1},
     pcd: {shape: 'arrow-table'}
   });
   const positions: number[] = [];

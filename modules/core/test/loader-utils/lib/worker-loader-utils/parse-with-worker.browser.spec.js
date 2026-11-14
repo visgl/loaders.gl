@@ -72,7 +72,7 @@ test('parseWithWorker#nested', async () => {
         parseWithWorker(
           NestedJSONWorkerLoader,
           toArrayBuffer(testData.map(data => JSON.stringify(data)).join('\n')),
-          {callback: true, worker: true},
+          {core: {worker: true}, callback: true},
           {fetch, coreApi, _parse: async arrayBuffer => arrayBuffer},
           parse
         )
@@ -106,7 +106,7 @@ test('parseWithWorker#nested preserves legacy parseOnMainThread options argument
   const result = await parseWithWorker(
     NestedWorkerLoader,
     toArrayBuffer('abc'),
-    {callback: true, worker: true, custom: 'custom-option'},
+    {core: {worker: true}, callback: true, custom: 'custom-option'},
     {fetch, coreApi, _parse: async arrayBuffer => arrayBuffer},
     async (_arrayBuffer, options) => options
   );
@@ -115,7 +115,7 @@ test('parseWithWorker#nested preserves legacy parseOnMainThread options argument
   expect(result.worker).toBe(false);
 });
 
-test('worker options retain Headers instances in namespaced and legacy fetch options', async () => {
+test('worker options serialize Headers under core.fetch', async () => {
   const loader = {
     id: 'request-headers',
     name: 'Request headers',
@@ -129,13 +129,10 @@ test('worker options retain Headers instances in namespaced and legacy fetch opt
     echoFetch: true,
     core: {
       worker: true,
-      echoFetch: true,
       fetch: {headers: new Headers({Authorization: 'Bearer test', 'X-Sidecar': 'dbf'})}
-    },
-    fetch: {headers: new Headers({'X-Legacy': 'retained'})}
+    }
   });
   expect(JSON.parse(new TextDecoder().decode(result))).toEqual({
-    core: {headers: {authorization: 'Bearer test', 'x-sidecar': 'dbf'}},
-    legacy: {headers: {'x-legacy': 'retained'}}
+    core: {headers: {authorization: 'Bearer test', 'x-sidecar': 'dbf'}}
   });
 });

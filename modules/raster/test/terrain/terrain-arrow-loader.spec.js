@@ -12,9 +12,7 @@ registerLoaders([ImageLoader]);
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/terrarium.png';
 const TILE_WITH_EXTENSIONS_URL =
   '@loaders.gl/raster/test/terrain/data/tile-with-extensions.terrain';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('TerrainLoader#loader objects', () => {
   validateLoader(TerrainLoader, 'TerrainLoader');
   validateLoader(QuantizedMeshLoader, 'QuantizedMeshLoader');
@@ -44,7 +42,7 @@ test('TerrainLoader#removed Arrow loader exports', () => {
 });
 test('TerrainLoader#parse terrarium martini with shape: arrow-table', async () => {
   const table = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
-    worker: false,
+    core: {worker: false},
     terrain: {
       elevationDecoder: {
         rScaler: 256,
@@ -75,7 +73,7 @@ test('TerrainLoader#parse terrarium martini with shape: arrow-table', async () =
 });
 test('TerrainLoader#parse defaults to Arrow table', async () => {
   const table = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
-    worker: false,
+    core: {worker: false},
     terrain: {
       elevationDecoder: {rScaler: 256, gScaler: 1, bScaler: 1 / 256, offset: -32768},
       meshMaxError: 10.0,
@@ -90,7 +88,7 @@ test('TerrainLoader#parse defaults to Arrow table', async () => {
 });
 test('QuantizedMeshLoader#parse tile-with-extensions with shape: arrow-table', async () => {
   const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
-    worker: false,
+    core: {worker: false},
     'quantized-mesh': {shape: 'arrow-table'}
   });
   expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
@@ -106,7 +104,7 @@ test('QuantizedMeshLoader#parse tile-with-extensions with shape: arrow-table', a
   expect(indicesColumn.get(1), 'indices are null after row 0').toBe(null);
 });
 test('QuantizedMeshLoader#parse defaults to Arrow table', async () => {
-  const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {worker: false});
+  const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {core: {worker: false}});
   expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
   validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
     schemaName: 'QuantizedMeshLoader IndexedMesh table'

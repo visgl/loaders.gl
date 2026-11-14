@@ -88,7 +88,7 @@ test('legacy LAS backends stream small batches and honor explicit color depth', 
   ]);
   for (const parseLASInBatches of [parseLASInBatchesWithLazPerf, parseLASInBatchesWithLazRs]) {
     const batches = parseLASInBatches([source.slice(0, 100), source.slice(100)], {
-      batchSize: 2,
+      core: {batchSize: 2},
       las: {colorDepth: 8}
     });
     const vertexCounts: number[] = [];

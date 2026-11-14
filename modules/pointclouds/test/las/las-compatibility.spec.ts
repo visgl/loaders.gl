@@ -56,7 +56,7 @@ test.each(
     expect(parsed.loaderData.pointsFormatId).toBeLessThan(6);
     expect(convertTableToMesh(parsed).attributes).toEqual(expected);
     const streamed: Record<string, number[]> = {};
-    for await (const batch of parseLASInBatches(splitInput(file), {batchSize: 13})) {
+    for await (const batch of parseLASInBatches(splitInput(file), {core: {batchSize: 13}})) {
       for (const [name, attribute] of Object.entries(convertTableToMesh(batch).attributes)) {
         streamed[name] ??= [];
         streamed[name].push(...attribute.value);
@@ -83,7 +83,7 @@ test('projects reconstructed fields without publishing the internal Extra Bytes 
   expect(parsed.data.getChild('EXTRA_BYTES')).toBeNull();
   for await (const batch of parseLASInBatches(splitInput(fixture.compressed), {
     ...options,
-    batchSize: 11
+    core: {batchSize: 11}
   })) {
     expect(batch.data.getChild('EXTRA_BYTES')).toBeNull();
     expect(batch.data.getChild('NIR')).not.toBeNull();
@@ -100,7 +100,9 @@ test('raw compatibility mode and raw decompression retain the physical legacy re
   const view = new DataView(fixture.plain);
   const expected = new Uint8Array(fixture.plain, view.getUint32(96, true));
   const actual: number[] = [];
-  for await (const batch of decodeLAZFileInBatches(splitInput(fixture.compressed), {batchSize: 11}))
+  for await (const batch of decodeLAZFileInBatches(splitInput(fixture.compressed), {
+    core: {batchSize: 11}
+  }))
     actual.push(...new Uint8Array(batch.arrayBuffer));
   expect(actual).toEqual([...expected]);
 });

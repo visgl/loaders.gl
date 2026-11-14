@@ -111,13 +111,13 @@ test('data-driven root loading merges header fallbacks and initializes viewports
     id: 'tiles',
     preload: vi.fn(async () => ({credentials: [], headers: {authorization: 'token'}}))
   };
-  const layer = createLayer({loader, loadOptions: {fetch: {credentials: 'include'}}});
+  const layer = createLayer({loader, loadOptions: {core: {fetch: {credentials: 'include'}}}});
   await layer._loadTileset('tileset.json');
   expect(loadingMocks.load).toHaveBeenCalledWith(
     'tileset.json',
     loader,
     expect.objectContaining({
-      fetch: {credentials: 'include', headers: {authorization: 'token'}}
+      core: {fetch: {credentials: 'include', headers: {authorization: 'token'}}}
     })
   );
   expect(loadingMocks.options).toMatchObject({

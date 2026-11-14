@@ -115,8 +115,8 @@ describe('request credentials', () => {
 
     try {
       const authenticatedFetch = getAuthenticatedFetch({
-        fetch: {headers: {'x-default': 'default'}},
         core: {
+          fetch: {headers: {'x-default': 'default'}},
           credentials: [
             createBearerTokenCredential({
               id: 'source-token',

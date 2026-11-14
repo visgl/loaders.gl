@@ -158,7 +158,7 @@ test('TypeScript LAS streams fragmented modern records into exact batches', asyn
   const batches: MeshArrowTable[] = [];
 
   for await (const batch of parseLASInBatches(chunks, {
-    batchSize: 2,
+    core: {batchSize: 2},
     las: {columns: ALL_COLUMNS, colorDepth: 16, fp64: true}
   })) {
     batches.push(batch);
@@ -216,7 +216,7 @@ test('TypeScript LAS streams synchronous and asynchronous chunk shapes', async (
   ];
   const synchronousBatches: MeshArrowTable[] = [];
   for await (const batch of parseLASInBatches(synchronousChunks, {
-    batchSize: 1,
+    core: {batchSize: 1},
     las: {columns: ALL_COLUMNS, colorDepth: 'auto'}
   })) {
     synchronousBatches.push(batch);
@@ -230,7 +230,7 @@ test('TypeScript LAS streams synchronous and asynchronous chunk shapes', async (
   }
   const asynchronousBatches: MeshArrowTable[] = [];
   for await (const batch of parseLASInBatches(getAsynchronousChunks(), {
-    batchSize: 10,
+    core: {batchSize: 10},
     las: {columns: ['POSITION'], fp64: true}
   })) {
     asynchronousBatches.push(batch);
@@ -640,7 +640,7 @@ test('TypeScript LAS retains global header metadata and absolute trailing record
   const batches = [];
   for await (const batch of parseLASInBatches(
     [bytes.subarray(0, points.byteLength), bytes.subarray(points.byteLength)],
-    {batchSize: 1}
+    {core: {batchSize: 1}}
   ))
     batches.push(batch);
   const header = parseLASHeader(bytes.buffer);

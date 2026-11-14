@@ -144,9 +144,13 @@ export class DataDrivenTile3DLayer<
           credentials: [...(options.loadOptions.core?.credentials || []), ...credentials]
         };
       } else if (preloadOptions.headers) {
-        options.loadOptions.fetch = {
-          ...options.loadOptions.fetch,
-          headers: preloadOptions.headers
+        const fetchOptions = options.loadOptions.core?.fetch;
+        options.loadOptions.core = {
+          ...options.loadOptions.core,
+          fetch: {
+            ...(typeof fetchOptions === 'object' ? fetchOptions : {}),
+            headers: preloadOptions.headers
+          }
         };
       }
       Object.assign(options, preloadOptions);

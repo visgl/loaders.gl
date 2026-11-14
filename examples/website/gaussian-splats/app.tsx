@@ -411,7 +411,7 @@ async function* trackGaussianSplatBatches(
   try {
     for (const sourceUrl of sourceUrls) {
       const sourceBatches = (await loadInBatches(sourceUrl, PLYLoader, {
-        worker: false,
+        core: {worker: false},
         ply: {shape: 'arrow-table'}
       })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
 

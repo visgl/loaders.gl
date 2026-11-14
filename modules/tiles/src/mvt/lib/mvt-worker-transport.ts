@@ -70,5 +70,5 @@ function isSerializedArrowTable(value: unknown): value is SerializedArrowTable {
 function getWorkerTransferBufferCopyMode(
   options?: MVTLoaderOptions
 ): SplitArrowBuffersOptions['copy'] | undefined {
-  return options?.core?.workerTransferBufferCopy ?? options?.workerTransferBufferCopy;
+  return options?.core?.workerTransferBufferCopy;
 }

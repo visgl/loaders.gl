@@ -6,10 +6,7 @@ import {expect, test} from 'vitest';
 import {load, setLoaderOptions} from '@loaders.gl/core';
 import {CrunchLoader} from '@loaders.gl/images';
 const CRUNCH_URL = '@loaders.gl/images/test/textures/data/shannon-dxt1.crn';
-setLoaderOptions({
-  _workerType: 'test',
-  CDN: null
-});
+setLoaderOptions({core: {_workerType: 'test', CDN: null}});
 test('CrunchLoader#imports', () => {
   expect(CrunchLoader, 'CrunchLoader defined').toBeTruthy();
 });

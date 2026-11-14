@@ -17,30 +17,6 @@ import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults'
 import {getShapeOptionKey} from './native-arrow';
 import {stripQueryString} from '../utils/url-utils';
 
-const CORE_LOADER_OPTION_KEYS = [
-  'baseUrl',
-  'fetch',
-  'mimeType',
-  'fallbackMimeType',
-  'ignoreRegisteredLoaders',
-  'nothrow',
-  'log',
-  'useLocalLibraries',
-  'CDN',
-  'worker',
-  'workerThreshold',
-  'maxConcurrency',
-  'maxMobileConcurrency',
-  'reuseWorkers',
-  'workerTransferBufferCopy',
-  '_nodeWorkers',
-  '_workerType',
-  'shape',
-  'batchSize',
-  'metadata',
-  'transforms'
-] as const;
-
 /**
  * Appends loader search parameters to a URL while preserving existing parameters and fragments.
  * @param url URL to update
@@ -112,7 +88,7 @@ export function getGlobalLoaderOptions(): StrictLoaderOptions {
     ...DEFAULT_LOADER_OPTIONS,
     core: {...DEFAULT_LOADER_OPTIONS.core}
   };
-  return normalizeLoaderOptions(state.globalOptions);
+  return cloneLoaderOptions(state.globalOptions) as StrictLoaderOptions;
 }
 
 /**
@@ -122,8 +98,10 @@ export function getGlobalLoaderOptions(): StrictLoaderOptions {
 export function setGlobalOptions(options: LoaderOptions): void {
   const state = getGlobalLoaderState();
   const globalOptions = getGlobalLoaderOptions();
-  // @ts-expect-error First param looks incorrect
-  state.globalOptions = normalizeOptionsInternal(globalOptions, options);
+  validateOptions(options, []);
+  validateWorkerThreshold(options);
+  mergeNestedFields(globalOptions, options);
+  state.globalOptions = globalOptions;
   // Make sure any new modules are registered
   registerJSModules(options.modules);
 }
@@ -146,28 +124,9 @@ export function normalizeOptions(
 
   validateOptions(options, loaders);
   validateWorkerThreshold(options);
-  const normalizedOptions = normalizeLoaderOptions(normalizeOptionsInternal(loader, options, url));
+  const normalizedOptions = normalizeOptionsInternal(loader, options, url);
   validateWorkerThreshold(normalizedOptions);
-  return normalizedOptions;
-}
-
-/**
- * Returns a copy of the provided options with deprecated top-level core fields moved into `core`
- * and removed from the top level. This keeps global options from leaking deprecated aliases into
- * loader-specific option maps during normalization.
- */
-export function normalizeLoaderOptions(options: LoaderOptions): StrictLoaderOptions {
-  const normalized = cloneLoaderOptions(options);
-  moveDeprecatedTopLevelOptionsToCore(normalized);
-  for (const key of CORE_LOADER_OPTION_KEYS) {
-    if (normalized.core && normalized.core[key] !== undefined) {
-      delete (normalized as Record<string, unknown>)[key];
-    }
-  }
-  if (normalized.core && normalized.core._workerType !== undefined) {
-    delete (normalized as any)._worker;
-  }
-  return normalized as StrictLoaderOptions;
+  return normalizedOptions as StrictLoaderOptions;
 }
 
 // VALIDATE OPTIONS
@@ -218,10 +177,10 @@ function validateOptionsObject(
   for (const key in options) {
     // If top level option value is an object it could options for a loader, so ignore
     const isSubOptions = !id && isObject(options[key]);
-    const isBaseUriOption = !id && ['baseUri', 'signal', 'onProgress'].includes(key);
+    const isLifecycleOption = !id && ['signal', 'onProgress'].includes(key);
     const isWorkerUrlOption = key === 'workerUrl' && id;
     // <loader>.workerUrl requires special handling as it is now auto-generated and no longer specified as a default option.
-    if (!(key in defaultOptions) && !isBaseUriOption && !isWorkerUrlOption) {
+    if (!(key in defaultOptions) && !isLifecycleOption && !isWorkerUrlOption) {
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
         if (probeLog.level > 0) {
@@ -271,7 +230,6 @@ function normalizeOptionsInternal(
   if (loaderDefaultOptions.core) {
     mergedOptions.core = {...loaderDefaultOptions.core};
   }
-  moveDeprecatedTopLevelOptionsToCore(mergedOptions);
 
   const shapeKey = loader.defaultShape && getShapeOptionKey(loader);
   if (shapeKey) {
@@ -280,17 +238,15 @@ function normalizeOptionsInternal(
       shape: loader.defaultShape
     };
   }
-  mergeNestedFields(mergedOptions, normalizeLoaderOptions(getGlobalLoaderOptions()));
+  mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
 
-  const userOptions = normalizeLoaderOptions(options);
-  mergeNestedFields(mergedOptions, userOptions);
-  applyCoreShapeDefault(mergedOptions, userOptions, loader);
+  mergeNestedFields(mergedOptions, options);
+  applyCoreShapeDefault(mergedOptions, options, loader);
   if (mergedOptions.core?.log === null) {
     mergedOptions.core = {...mergedOptions.core, log: getLoaderLog(mergedOptions)};
   }
 
   addUrlOptions(mergedOptions, url);
-  addDeprecatedTopLevelOptions(mergedOptions);
 
   return mergedOptions;
 }
@@ -386,57 +342,4 @@ function cloneLoaderOptions(options: LoaderOptions): LoaderOptions {
     clonedOptions.core = {...options.core};
   }
   return clonedOptions;
-}
-
-/**
- * Moves deprecated top-level core option aliases into `options.core` without overwriting
- * explicitly provided `options.core` values.
- * @param options loader options to normalize in place
- */
-function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
-  if (options.baseUri !== undefined) {
-    options.core ||= {};
-    if (options.core.baseUrl === undefined) {
-      options.core.baseUrl = options.baseUri;
-    }
-  }
-
-  for (const key of CORE_LOADER_OPTION_KEYS) {
-    if ((options as Record<string, unknown>)[key] !== undefined) {
-      options.core ||= {};
-      const coreOptions = options.core;
-      const coreRecord = coreOptions as Record<string, unknown>;
-      // Treat deprecated top-level core options as aliases to `options.core`, but never override an explicitly
-      // provided `options.core` value.
-      if (coreRecord[key] === undefined) {
-        coreRecord[key] = (options as Record<string, unknown>)[key];
-      }
-    }
-  }
-
-  // Support the older internal `_worker` alias (used by some tests and integrations) for `_workerType`.
-  const workerTypeAlias = (options as any)._worker;
-  if (workerTypeAlias !== undefined) {
-    options.core ||= {};
-    if (options.core._workerType === undefined) {
-      options.core._workerType = workerTypeAlias;
-    }
-  }
-}
-
-/**
- * Rehydrates deprecated top-level aliases from `options.core` for compatibility with older
- * call sites that still read normalized options from the top level.
- * @param options normalized loader options to mutate in place
- */
-function addDeprecatedTopLevelOptions(options: LoaderOptions): void {
-  const coreOptions = options.core as Record<string, unknown> | undefined;
-  if (!coreOptions) {
-    return;
-  }
-  for (const key of CORE_LOADER_OPTION_KEYS) {
-    if (coreOptions[key] !== undefined) {
-      (options as Record<string, unknown>)[key] = coreOptions[key];
-    }
-  }
 }

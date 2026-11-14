@@ -257,7 +257,7 @@ test.each([
     bytes.set([row * 3 + 1, row * 3 + 2, row * 3 + 3, row + 1], row * 16 + 12);
   }
   const input = await parse(bytes.buffer, PotreeBinLoader, {
-    worker: false,
+    core: {worker: false},
     potree: {
       shape: shape === 'mesh' ? 'mesh' : 'arrow-table',
       pointAttributes: ['POSITION_CARTESIAN', 'RGB_PACKED', 'CLASSIFICATION'],

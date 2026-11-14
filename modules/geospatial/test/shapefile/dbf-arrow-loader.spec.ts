@@ -5,9 +5,7 @@
 import {expect, test} from 'vitest';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
 import {DBFLoader} from '@loaders.gl/geospatial/shapefile/index';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = [
   'boolean-property',
@@ -43,7 +41,7 @@ test('DBFLoader#parse arrow-table', async () => {
 test('DBFLoader#defaults to arrow-table output', async () => {
   const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/points.dbf`);
   const table = await parse(await response.arrayBuffer(), DBFLoader, {
-    worker: false,
+    core: {worker: false},
     dbf: {encoding: 'utf8'}
   });
   expect(table.shape).toBe('arrow-table');

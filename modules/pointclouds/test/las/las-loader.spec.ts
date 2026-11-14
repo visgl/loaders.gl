@@ -118,9 +118,8 @@ test('LASLoader spaces batches without delaying the first batch', async () => {
 test('LASLoader#small fixture streams requested mesh batches', async () => {
   const lazArrayBuffer = await (await fetchFile(PDRF_4_LAZ_URL)).arrayBuffer();
   const batches = await parseInBatches(lazArrayBuffer, LASLoader, {
-    batchSize: 127,
     las: {shape: 'mesh'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 127}
   });
   const batchVertexCounts: number[] = [];
 
@@ -342,12 +341,11 @@ test('LASLoader#parseInBatches preserves selected columns across chunked PDRF 7 
     core: {worker: false}
   })) as MeshArrowTable;
   const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
-    batchSize: 127,
     las: {
       shape: 'arrow-table',
       columns: ['intensity', 'classification', 'synthetic', 'keyPoint', 'withheld', 'overlap']
     },
-    core: {worker: false}
+    core: {worker: false, batchSize: 127}
   });
   const streamedColumns = {
     POSITION: [] as unknown[],
@@ -399,9 +397,8 @@ test('LASLoader#parseInBatches yields PDRF 7 rows before the compressed chunk ta
   }
 
   const batches = await parseInBatches(trackConsumedChunks(), LASLoader, {
-    batchSize: 127,
     las: {shape: 'arrow-table', columns: ['POSITION', 'classification']},
-    core: {worker: false}
+    core: {worker: false, batchSize: 127}
   });
   const iterator = (batches as AsyncIterable<MeshArrowTable>)[Symbol.asyncIterator]();
   const firstBatch = await iterator.next();
@@ -442,9 +439,8 @@ test('LASLoader#columns decodes GPS time and NIR for PDRF 8', async () => {
   expect(metadata?.extraBytes[0].data.byteLength).toBe(192);
 
   const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
-    batchSize: 127,
     las: {shape: 'arrow-table', columns: ['POSITION', 'GPS_TIME', 'NIR']},
-    core: {worker: false}
+    core: {worker: false, batchSize: 127}
   });
   const streamedValues = {
     POSITION: [] as unknown[],
@@ -498,9 +494,8 @@ test('LASLoader#columns preserves waveform packet references for PDRF 9 and 10',
       getArrowColumnValues(uncompressed, 'WAVEFORM')
     );
     const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
-      batchSize: 127,
       las: options.las,
-      core: {worker: false}
+      core: {worker: false, batchSize: 127}
     });
     const streamedWaveforms: unknown[] = [];
     for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
@@ -537,9 +532,8 @@ test('LASLoader#columns shares LAZ decode for waveform and typed Extra Bytes', a
     }
 
     const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
-      batchSize: 127,
       las: options.las,
-      core: {worker: false}
+      core: {worker: false, batchSize: 127}
     });
     const streamedColumns = new Map<string, unknown[]>();
     for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
@@ -572,9 +566,8 @@ test('LASLoader#columns preserves Extra Bytes for compressed PDRF 8', async () =
     getArrowColumnValues(uncompressed, 'EXTRA_BYTES')
   );
   const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
-    batchSize: 127,
     las: options.las,
-    core: {worker: false}
+    core: {worker: false, batchSize: 127}
   });
   const streamedExtraBytes: unknown[] = [];
   for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
@@ -609,9 +602,8 @@ test('LASLoader#columns decodes typed Extra Bytes for compressed PDRF 8', async 
     );
   }
   const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
-    batchSize: 127,
     las: options.las,
-    core: {worker: false}
+    core: {worker: false, batchSize: 127}
   });
   const streamedValues = new Map<string, unknown[]>();
   for await (const batch of batches as AsyncIterable<MeshArrowTable>) {
@@ -627,11 +619,7 @@ test('LASLoader#columns decodes typed Extra Bytes for compressed PDRF 8', async 
   const uncompressedBatches = await parseInBatches(
     splitArrayBuffer(lasArrayBuffer, 257),
     LASLoader,
-    {
-      batchSize: 127,
-      las: options.las,
-      core: {worker: false}
-    }
+    {las: options.las, core: {worker: false, batchSize: 127}}
   );
   const uncompressedStreamedValues = new Map<string, unknown[]>();
   for await (const batch of uncompressedBatches as AsyncIterable<MeshArrowTable>) {
@@ -746,9 +734,8 @@ test('LASLoader#columns decodes typed Extra Bytes vectors', async () => {
   expect(getArrowColumnNames(table)).toEqual(['POSITION', 'EXTRA_BYTES_vector']);
   expect(getArrowColumnValues(table, 'EXTRA_BYTES_vector')).toEqual([[13.5, 12]]);
   const batches = await parseInBatches(arrayBuffer, LASLoader, {
-    batchSize: 1,
     las: {shape: 'arrow-table', columns: ['POSITION', 'EXTRA_BYTES'], extraBytes: 'typed'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 1}
   });
   const streamedValues: unknown[] = [];
   for await (const batch of batches as AsyncIterable<MeshArrowTable>) {

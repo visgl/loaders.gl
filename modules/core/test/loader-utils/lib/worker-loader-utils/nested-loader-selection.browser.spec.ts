@@ -50,13 +50,7 @@ test.each([
   const result = await parseWithWorker(
     {...PARENT_LOADER, subloaders: {ChildLoader: child}},
     new ArrayBuffer(1),
-    {
-      nested: true,
-      worker: true,
-      reuseWorkers: false,
-      loaderIds: [child.id],
-      loaderIsArray
-    },
+    {core: {worker: true, reuseWorkers: false}, nested: true, loaderIds: [child.id], loaderIsArray},
     {fetch: fetchNested} as any,
     parse
   );
@@ -82,11 +76,9 @@ test('nested worker resolves caller loaders and named overrides without cloning 
       new ArrayBuffer(1),
       {
         nested: true,
-        worker: true,
-        reuseWorkers: false,
         loaderIds: [CHILD_LOADER.id, contextual.id],
         loaderIsArray: true,
-        core: {subloaders: {ChildLoader: replacement}}
+        core: {subloaders: {ChildLoader: replacement}, worker: true, reuseWorkers: false}
       },
       {loaders: [contextual]} as any,
       callback
@@ -100,7 +92,7 @@ test('nested worker fails explicitly for an unavailable loader', async () => {
     parseWithWorker(
       PARENT_LOADER,
       new ArrayBuffer(1),
-      {nested: true, worker: true, reuseWorkers: false, loaderIds: ['missing']},
+      {core: {worker: true, reuseWorkers: false}, nested: true, loaderIds: ['missing']},
       undefined,
       parse
     )
@@ -118,7 +110,7 @@ test('batched workers retain nested loader selection and worker-only context', a
   for await (const batch of parseWithWorkerInBatches(
     {...PARENT_LOADER, subloaders: {ChildLoader: CHILD_LOADER}},
     [new ArrayBuffer(1)],
-    {nested: true, worker: true, reuseWorkers: false, loaderIds: [CHILD_LOADER.id]},
+    {core: {worker: true, reuseWorkers: false}, nested: true, loaderIds: [CHILD_LOADER.id]},
     undefined,
     callback
   ))
@@ -184,12 +176,7 @@ test('empty worker contexts retain legacy callback options without an outer cont
   const result = await parseWithWorker(
     PARENT_LOADER,
     new ArrayBuffer(1),
-    {
-      nested: true,
-      worker: true,
-      reuseWorkers: false,
-      emptyContext: true
-    },
+    {core: {worker: true, reuseWorkers: false}, nested: true, emptyContext: true},
     undefined,
     callback
   );
@@ -215,8 +202,7 @@ test('shared bigint ZIP options survive unrelated worker selection and transport
   const zip = {maxTotalDecodedBytes: 2n ** 63n + 1n, nested: [1n, null, '1n'], callback: () => {}};
   expect(canParseWithWorker(PARENT_LOADER, {core: {worker: true}, zip})).toBe(true);
   const result = await parseWithWorker(PARENT_LOADER, new ArrayBuffer(0), {
-    worker: true,
-    reuseWorkers: false,
+    core: {worker: true, reuseWorkers: false},
     zip,
     echoZip: true
   });

@@ -57,10 +57,7 @@ function ignoreMessage(): void {}
 const nullLog = new NullLog();
 
 /** Resolves a caller's operation logger. A null logger suppresses diagnostics. */
-export function getLoaderLog(options?: {
-  core?: {log?: Logger | null};
-  log?: Logger | null;
-}): Logger {
-  const logger = options?.core?.log !== undefined ? options.core.log : options?.log;
+export function getLoaderLog(options?: {core?: {log?: Logger | null}}): Logger {
+  const logger = options?.core?.log;
   return logger === null ? nullLog : logger || log;
 }

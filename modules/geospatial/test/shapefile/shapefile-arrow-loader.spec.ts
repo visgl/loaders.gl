@@ -9,10 +9,7 @@ import {setLoaderOptions, fetchFile, load, loadInBatches} from '@loaders.gl/core
 import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/wkb-table';
 import {convertGeoArrowVectorCellToGeoJSON, getGeoMetadata} from '@loaders.gl/core/geoarrow';
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
-});
+setLoaderOptions({core: {_workerType: 'test', worker: false}});
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const TEST_FILES = [
   'points',
@@ -145,8 +142,8 @@ test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', asy
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const batches = await loadInBatches(filename, ShapefileLoader, {
-      shapefile: {shape: 'arrow-table'},
-      metadata: true
+      core: {metadata: true},
+      shapefile: {shape: 'arrow-table'}
     });
     const collectedRows = [];
     let schema = null;
@@ -172,8 +169,8 @@ test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', asy
 test('ShapefileLoader#loadInBatches arrow-table yields Arrow batches', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const batches = await loadInBatches(filename, ShapefileLoader, {
-    shapefile: {shape: 'arrow-table'},
-    metadata: true
+    core: {metadata: true},
+    shapefile: {shape: 'arrow-table'}
   });
   let sawDataBatch = false;
   for await (const batch of batches) {

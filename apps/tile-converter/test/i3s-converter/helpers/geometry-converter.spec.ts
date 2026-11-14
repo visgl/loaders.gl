@@ -24,9 +24,7 @@ const TRIANGLE_STRIP_B3DM_FILE_PATH =
 const HELSINKI_GLB_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/helsinki-glb-8-meshopt/0/0.glb';
 const BASEGLOBE_GLB_FILE_PATH = '@loaders.gl/tile-converter/test/data/baseglobe/0/0/0/0.glb';
-setLoaderOptions({
-  _worker: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 // TODO app breakout
 test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt tile content', async () => {
   if (isBrowser) {
