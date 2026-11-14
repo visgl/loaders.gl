@@ -1,4 +1,5 @@
 import {expect, test} from 'vitest';
+import {Table as NativeArrowTable} from 'apache-arrow';
 import {OGCAPIFeaturesSourceLoader, OGCAPITilesSourceLoader} from '@loaders.gl/ogc/wms';
 
 const OGC_API_URL = 'https://example.com/ogcapi';
@@ -91,7 +92,9 @@ test('OGCAPIFeaturesSource supports binary and Arrow output', async () => {
   expect((await source.getFeatures({...parameters, format: 'binary'})).shape).toBe(
     'binary-feature-collection'
   );
-  expect((await source.getFeatures({...parameters, format: 'arrow'})).shape).toBe('arrow-table');
+  expect(await source.getFeatures({...parameters, format: 'arrow'})).toBeInstanceOf(
+    NativeArrowTable
+  );
 });
 
 test('OGCAPIFeaturesSource handles a collection URL', async () => {

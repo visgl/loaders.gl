@@ -187,7 +187,7 @@ export class FlatGeobufVectorSource
     const info = await this.getHeaderInfo();
     assertNotAborted(parameters.signal);
     const format = parameters.format || this.options.flatgeobuf?.format || 'arrow';
-    return parseFlatGeobuf(info.arrayBuffer, {
+    const result = parseFlatGeobuf(info.arrayBuffer, {
       shape:
         format === 'arrow'
           ? 'arrow-table'
@@ -198,7 +198,8 @@ export class FlatGeobufVectorSource
       targetCrs: parameters.crs || 'WGS84',
       reproject: Boolean(parameters.crs),
       geoarrow: parameters.geoarrow
-    }) as VectorSourceData;
+    });
+    return format === 'arrow' ? result.data : result;
   }
 
   /** Executes a spatially pruned FlatGeobuf query and returns an Arrow table. */

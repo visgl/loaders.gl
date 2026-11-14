@@ -1,4 +1,5 @@
 import {expect, test} from 'vitest';
+import {Table as NativeArrowTable} from 'apache-arrow';
 import {LERCLoader} from '@loaders.gl/raster';
 import {
   ArcGISFeatureServerSourceLoader,
@@ -447,9 +448,12 @@ test('ArcGISVectorSource#getFeatures defaults to Arrow', async () => {
     layers: [],
     crs: '4326'
   });
-  expect(table.shape, 'returns Arrow tables by default').toBe('arrow-table');
-  expect(table.data.numRows, 'preserves feature rows').toBe(1);
-  expect(table.schema?.metadata?.geo, 'adds GeoArrow metadata').toBeTruthy();
+  expect(table).toBeInstanceOf(NativeArrowTable);
+  expect((table as NativeArrowTable).numRows, 'preserves feature rows').toBe(1);
+  expect(
+    (table as NativeArrowTable).schema.metadata.get('geo'),
+    'adds GeoArrow metadata'
+  ).toBeTruthy();
 });
 test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async () => {
   const source = ArcGISFeatureServerSourceLoader.createDataSourceSync(FEATURE_SERVER_URL, {});

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {Feature, GeoJSONTable, Schema} from '@loaders.gl/core/schema';
 import type {
   CoreAPI,
@@ -124,10 +123,7 @@ export class KMZVectorSource
         )
       : archive.document.features;
     const format = parameters.format || this.options.kmz?.format || 'arrow';
-    if (format === 'arrow') {
-      const data = convertFeatureCollectionToArrowTable(features);
-      return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
-    }
+    if (format === 'arrow') return convertFeatureCollectionToArrowTable(features);
     if (format === 'binary') {
       throw new Error('KMZVectorSource does not yet support binary geometry output');
     }

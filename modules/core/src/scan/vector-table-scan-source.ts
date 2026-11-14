@@ -225,12 +225,9 @@ export class VectorFeatureTableScanSource extends AddressedVectorTableScanSource
   }
 
   /** Loads the bound service request through the source's Arrow feature output. */
-  protected loadTable(signal?: AbortSignal): Promise<ArrowTable | null> {
-    return this.source.getFeatures({
-      ...this.request,
-      format: 'arrow',
-      signal
-    }) as Promise<ArrowTable | null>;
+  protected async loadTable(signal?: AbortSignal): Promise<ArrowTable | null> {
+    const data = await this.source.getFeatures({...this.request, format: 'arrow', signal});
+    return data && !('shape' in data) ? {shape: 'arrow-table', data} : null;
   }
 }
 

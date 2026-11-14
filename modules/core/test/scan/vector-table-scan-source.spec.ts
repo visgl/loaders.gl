@@ -89,7 +89,7 @@ test('VectorFeatureTableScanSource binds service controls and requests Arrow out
     },
     async getFeatures(parameters: GetFeaturesParameters) {
       requests.push(parameters);
-      return sourceTable;
+      return sourceTable.data;
     }
   } as VectorSource;
   const scanSource = new VectorFeatureTableScanSource(source, {
@@ -176,7 +176,6 @@ test('addressed vector scans propagate cancellation and reject non-Arrow output'
 
 test('addressed vector scans infer missing schema and optional service metadata', async () => {
   const data = arrow.tableFromArrays({id: [1]});
-  const sourceTable = {shape: 'arrow-table', data} as ArrowTable;
   const requests: GetFeaturesParameters[] = [];
   const source = {
     async getSchema() {
@@ -187,7 +186,7 @@ test('addressed vector scans infer missing schema and optional service metadata'
     },
     async getFeatures(parameters: GetFeaturesParameters) {
       requests.push(parameters);
-      return sourceTable;
+      return data;
     }
   } as VectorSource;
   const layers = ['roads', 'buildings'];
@@ -339,4 +338,31 @@ test.each([
     expect(searchParameters.get('bbox-crs')).toBe('CRS:84');
     expect(searchParameters.get('crs')).toBe('EPSG:3857');
   }
+});
+
+test.each([
+  {name: 'missing data', data: null},
+  {name: 'GeoJSON output', data: {shape: 'geojson-table', type: 'FeatureCollection', features: []}}
+])('VectorFeatureTableScanSource rejects $name for an Arrow request', async ({data}) => {
+  const source = {
+    async getSchema() {
+      return {fields: []};
+    },
+    async getMetadata() {
+      return {name: 'features', keywords: [], layers: []};
+    },
+    async getFeatures() {
+      return data;
+    }
+  } as VectorSource;
+  const scanSource = new VectorFeatureTableScanSource(source, {
+    request: {
+      layers: 'features',
+      boundingBox: [
+        [0, 0],
+        [1, 1]
+      ]
+    }
+  });
+  await expect(scanSource.query()).rejects.toThrow('did not return a feature table');
 });

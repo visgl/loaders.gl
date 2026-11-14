@@ -106,7 +106,7 @@ export class ArcGISVectorSource
       default:
         return convertFeaturesToWKBArrowTable(features, {
           encodingPreference: parameters.geoarrow?.encodingPreference
-        });
+        }).data;
     }
   }
 

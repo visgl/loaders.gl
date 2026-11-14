@@ -138,7 +138,7 @@ export class ManagedVectorSource implements VectorSource {
       case 'arrow':
         return convertFeaturesToWKBArrowTable(features, {
           encodingPreference: parameters.geoarrow?.encodingPreference
-        });
+        }).data;
       case 'binary':
         return convertGeojsonToBinaryFeatureCollection(features);
       default:
@@ -206,7 +206,7 @@ export class ManagedVectorSource implements VectorSource {
             const table = await this.source.getFeatures(request);
             throwIfAborted(controller.signal);
             const revision = ++this.responseRevision;
-            if (table.shape !== 'geojson-table')
+            if (!('shape' in table) || table.shape !== 'geojson-table')
               throw new Error('ManagedVectorSource requires GeoJSON responses');
             if (
               generation === this.generation &&

@@ -779,6 +779,13 @@ returned value and use `numRows` for batch row counts. Schema and field metadata
 Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
 JSON batch paths are available through `batch.metadata.get('jsonpath')`.
 
+#### Vector sources return native Arrow tables
+
+`getFeatures({format: 'arrow'})` returns an Apache Arrow `Table` directly.
+Read columns with `result.getChild(name)` and count rows with `result.numRows`.
+Custom vector sources should return their underlying Arrow table. This also
+applies to Arrow output from WFS `getFeaturesInBatches()`.
+
 #### KML, KMZ, GPX, and TCX return native Arrow tables
 
 Use `shape: 'arrow'` for these loaders and read the returned Apache Arrow Table

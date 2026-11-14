@@ -164,7 +164,7 @@ export class OGCAPIFeaturesSource
       case 'arrow':
         return convertFeaturesToWKBArrowTable(geoJSONTable.features, {
           encodingPreference: parameters.geoarrow?.encodingPreference
-        });
+        }).data;
       case 'geojson':
       default:
         return geoJSONTable;
