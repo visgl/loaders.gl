@@ -7,6 +7,7 @@ import type {Mesh, MeshAttribute, ColumnarTable, ArrowTable, Schema} from '@load
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListSize} from '../arrow-utils/arrow-fixed-size-list-utils';
 import {serializeArrowSchema} from '../schema/convert-arrow-schema';
+import {isNativeArrowTable} from '../../../lib/loader-utils/native-arrow';
 import {getMeshBoundingBox} from './mesh-utils';
 
 /**
@@ -15,7 +16,7 @@ import {getMeshBoundingBox} from './mesh-utils';
  * @returns Mesh reconstructed from the table.
  */
 export function convertTableToMesh(table: ColumnarTable | ArrowTable | arrow.Table): Mesh {
-  if (table instanceof arrow.Table) return convertArrowTableToMesh(table);
+  if (isNativeArrowTable(table)) return convertArrowTableToMesh(table);
   switch (table.shape) {
     // case 'columnar-table':
     //   return convertColumnarTableToMesh(table);
@@ -32,7 +33,7 @@ export function convertTableToMesh(table: ColumnarTable | ArrowTable | arrow.Tab
  * @returns Mesh reconstructed from the Arrow table.
  */
 export function convertArrowTableToMesh(table: ArrowTable | arrow.Table): Mesh {
-  const arrowTable = table instanceof arrow.Table ? table : table.data;
+  const arrowTable = isNativeArrowTable(table) ? table : table.data;
 
   const schema = serializeArrowSchema(arrowTable.schema);
   // Legacy mesh batches describe their own vertices, not the cumulative stream extent.

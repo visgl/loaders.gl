@@ -34,6 +34,25 @@ test('convertMeshToTable preserves empty vector and scalar attribute schemas', (
   expect(table.data.getChild('POSITION')!.type).toBeInstanceOf(arrow.FixedSizeList);
   expect(table.data.getChild('intensity')!.type).toBeInstanceOf(arrow.Uint16);
 });
+test('convertTableToMesh accepts native Arrow tables from a different constructor', () => {
+  const positions = new Float32Array([1, 2, 3]);
+  const attributes = {POSITION: {value: positions, size: 3}};
+  const {data} = convertMeshToTable(
+    {attributes, schema: deduceMeshSchema(attributes), topology: 'point-list', mode: 0},
+    'arrow-table'
+  );
+  const foreignTable = {
+    schema: data.schema,
+    batches: data.batches,
+    numRows: data.numRows,
+    getChildAt: data.getChildAt.bind(data),
+    getChild: data.getChild.bind(data)
+  };
+  expect(
+    convertTableToMesh(foreignTable as unknown as arrow.Table).attributes.POSITION.value
+  ).toEqual(positions);
+});
+
 test('meshArrowSchema', () => {
   expect(meshArrowSchema.fields.length, 'mesh schema has one predefined field').toBe(1);
   const positionField = meshArrowSchema.fields[0];

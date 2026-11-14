@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Table} from 'apache-arrow';
+import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
@@ -111,7 +111,7 @@ function encodePCD(data: Mesh | MeshArrowTable | Table, options?: PCDWriterOptio
 
 /** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
 function normalizeMeshArrowTable(data: Mesh | MeshArrowTable | Table): MeshArrowTable | Table {
-  if (data instanceof Table || ('shape' in data && data.shape === 'arrow-table')) {
+  if (!('attributes' in data)) {
     return data;
   }
   return convertMeshToTable(data as Mesh, 'arrow-table');

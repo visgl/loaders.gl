@@ -10,7 +10,7 @@ import {
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, isNativeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -429,14 +429,23 @@ async function getNextNonMetadataValue(iterator: AsyncIterator<any>): Promise<an
   }
 }
 
+/** Reads both native and legacy DBF column batches. */
 async function getNextArrowBatch(iterator: AsyncIterator<any>): Promise<ArrowTableBatch | null> {
   while (true) {
     const result = await iterator.next();
     if (result.done) {
       return null;
     }
-    if (result.value instanceof arrow.RecordBatch) {
-      const data = new arrow.Table(result.value.schema, [result.value]);
+    if (isNativeArrowRecordBatch(result.value)) {
+      const {schema, data: columns} = result.value;
+      const batch =
+        result.value instanceof arrow.RecordBatch
+          ? result.value
+          : new arrow.RecordBatch(schema, columns);
+      if (batch !== result.value) {
+        for (const [key, value] of result.value.metadata) batch.metadata.set(key, value);
+      }
+      const data = new arrow.Table(schema, [batch]);
       return makeTableScanBatch({
         shape: 'arrow-table',
         schema: convertArrowToSchema(data.schema),

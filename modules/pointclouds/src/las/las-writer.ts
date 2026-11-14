@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Table} from 'apache-arrow';
+import type {Table} from 'apache-arrow';
 import {
   encodeLASzipVLR,
   encodeLAZChunk,
@@ -657,7 +657,7 @@ function validateLAZOptions(
 
 /** Return mesh data as a Mesh, converting MeshArrowTable input first. */
 function normalizeMesh(data: Mesh | MeshArrowTable | Table): Mesh {
-  if (data instanceof Table || ('shape' in data && data.shape === 'arrow-table')) {
+  if (!('attributes' in data)) {
     return convertTableToMesh(data);
   }
   return data as Mesh;
@@ -665,9 +665,7 @@ function normalizeMesh(data: Mesh | MeshArrowTable | Table): Mesh {
 
 /** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
 function normalizeMeshArrowTable(data: Mesh | MeshArrowTable | Table): MeshArrowTable | Table {
-  return data instanceof Table || ('shape' in data && data.shape === 'arrow-table')
-    ? data
-    : convertMeshToTable(data as Mesh, 'arrow-table');
+  return !('attributes' in data) ? data : convertMeshToTable(data as Mesh, 'arrow-table');
 }
 
 /** Merge buffered mesh batches for `encodeInBatches`. */
