@@ -202,3 +202,25 @@ test('native streaming slices an unfiltered batch with its metadata intact', asy
   expect(results[0].numRows).toBe(2);
   expect(results[0].metadata.get('partition')).toBe('first');
 });
+
+test('native streaming rejects conflicting projections before reading input', async () => {
+  async function* inputs() {
+    throw new Error('must not read input');
+  }
+  const iterator = queryArrowTableInBatches(inputs(), {
+    columns: ['value'],
+    select: [{column: 'value', as: 'renamed'}]
+  })[Symbol.asyncIterator]();
+  await expect(iterator.next()).rejects.toThrow('Arrow select cannot be combined with columns');
+});
+
+test('native streaming stops before reading input when already cancelled', async () => {
+  async function* inputs() {
+    throw new Error('must not read input');
+  }
+  const reason = new Error('cancelled');
+  const iterator = queryArrowTableInBatches(inputs(), {signal: AbortSignal.abort(reason)})[
+    Symbol.asyncIterator
+  ]();
+  await expect(iterator.next()).rejects.toBe(reason);
+});
