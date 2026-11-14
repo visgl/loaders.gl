@@ -8,7 +8,8 @@ import type {
   DataSourceOptions,
   ScanQueryMetadata,
   TableScanReadOptions,
-  TableScanSource
+  TableScanSource,
+  TableQueryPushdownRequest
 } from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema, getDataTypeFromArray} from '@loaders.gl/core/schema-utils';
 import type {Schema, TableBatch} from '@loaders.gl/core/schema';
@@ -17,10 +18,10 @@ import type {NDJSONLoaderOptions} from './ndjson-loader';
 
 const NDJSON_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
-  projection: 'residual',
+  projection: 'pushdown+residual',
   limit: 'pushdown',
   offset: 'pushdown',
-  cast: 'unsupported',
+  cast: 'pushdown',
   streaming: true,
   cancellation: true
 } as const);
@@ -61,6 +62,13 @@ export class NDJSONTableSource
       (signal, onByteLength) => this.parseBatches(signal, onByteLength),
       options
     );
+  }
+
+  /** Plans typed output for numeric columns without building input Arrow vectors. */
+  async planQueryPushdown(query: TableQueryPushdownRequest, options: {signal?: AbortSignal} = {}) {
+    const {schema} = await this.getQueryMetadata(options);
+    const {planTextFloatProjection} = await import('../lib/plan-text-float-projection');
+    return planTextFloatProjection(schema, query, readOptions => this.read(readOptions));
   }
 
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
