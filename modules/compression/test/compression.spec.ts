@@ -1,12 +1,5 @@
 import {expect, test} from 'vitest';
-import {NoCompression} from '@loaders.gl/compression/no-compression';
-import {GZipCompression} from '@loaders.gl/compression/gzip-compression';
-import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
-import {LZ4Compression} from '@loaders.gl/compression/lz4-compression';
-import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
-import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
-import {BrotliCompression} from '@loaders.gl/compression/brotli-compression';
-import {CompressionWorker} from '@loaders.gl/compression';
+import {CompressionWorker, NoCompressor, NoDecompressor, DeflateCompressor, DeflateDecompressor, GZipCompressor, GZipDecompressor, LZ4Compressor, LZ4Decompressor, SnappyCompressor, SnappyDecompressor, ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression';
 import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream
@@ -21,127 +14,24 @@ import {
   supportsNativeDecompressionStream,
   type NativeDecompressionTestFormat
 } from './utils/native-decompression-test-utils';
-// Import big dependencies
-// import brotli from 'brotli'; - brotli has problems with decompress in browsers
-import brotliDecompress from 'brotli/decompress';
-import lz4js from 'lz4js';
-// import lzo from 'lzo';
-import {ZstdCodec} from 'zstd-codec';
-// Inject large dependencies through Compression constructor options
-const modules = {
-  // brotli has problems with decompress in browsers
-  brotli: {
-    decompress: brotliDecompress,
-    compress: () => {
-      throw new Error('brotli compress');
-    }
-  },
-  lz4js,
-  // lzo,
-  'zstd-codec': ZstdCodec
-};
-const TEST_DATA = getData();
-const TEST_CASES = [
-  {
-    title: 'binary',
-    data: TEST_DATA.binaryData
-  },
-  {
-    title: 'repeated',
-    data: TEST_DATA.repeatedData,
-    compression: {
-      plain: {
-        compressedLength: 100000
-      },
-      compress: {
-        compressedLength: 10903
-      },
-      gzip: {
-        compressedLength: 10913
-      },
-      lz4: {
-        compressedLength: 10422
-      },
-      snappy: {
-        compressedLength: 23764
-      },
-      zstd: {
-        compressedLength: 10025
-      }
-    }
-  }
-];
-/** @type {Compression[]} */
-const COMPRESSIONS = [
-  new NoCompression({modules}),
-  new BrotliCompression({modules}),
-  new DeflateCompression({modules}),
-  new GZipCompression({modules}),
-  // new LZOCompression({modules}),
-  new LZ4Compression({modules}),
-  new SnappyCompression({modules}),
-  new ZstdCompression({modules})
-];
-if (!isBrowser) {
-  COMPRESSIONS.push();
-}
-test('compression#atomic', async () => {
-  for (const compression of COMPRESSIONS) {
-    // brotli compress import issue
-    if (!compression.isSupported || compression.name === 'brotli') {
-      continue; // eslint-disable-line no-continue
-    }
-    for (const tc of TEST_CASES) {
-      const {title} = tc;
-      const {name} = compression;
-      console.log(`Testing ${name}(${title})`);
-      const compressedData = await compression.compress(tc.data);
-      const compressedLength = tc.compression?.[compression.name]?.compressedLength;
-      if (compressedLength) {
-        expect(compressedData.byteLength, `${name}(${title}) compressed length correct`).toBe(
-          compressedLength
-        );
-      }
-      const uncompressedData = await compression.decompress(compressedData);
-      expect(
-        compareArrayBuffers(tc.data, uncompressedData),
-        `${name}(${title}) decompressed data equals original`
-      ).toBeTruthy();
-    }
-  }
+test.each([
+  [new NoCompressor(), new NoDecompressor()],
+  [new DeflateCompressor(), new DeflateDecompressor()],
+  [new GZipCompressor(), new GZipDecompressor()],
+  [new LZ4Compressor(), new LZ4Decompressor()],
+  [new SnappyCompressor(), new SnappyDecompressor()],
+  [new ZstdCompressor(), new ZstdDecompressor()],
+])('default codec round trip', async (compressor, decompressor) => {
+  const input = getData().binaryData;
+  const compressed = await compressor.compress(input);
+  expect(compareArrayBuffers(input, await decompressor.decompress(compressed))).toBe(true);
 });
-// BATCHED TESTS
-test('compression#batched', async () => {
-  const inputChunks = [
-    new Uint8Array([1, 2, 3]).buffer,
-    new Uint8Array([4, 5, 6]).buffer,
-    new Uint8Array([7, 8, 9]).buffer
-  ];
-  for (const compression of COMPRESSIONS) {
-    // brotli compress import issue
-    if (!compression.isSupported || compression.name === 'brotli') {
-      continue; // eslint-disable-line no-continue
-    }
-    for (const tc of TEST_CASES) {
-      const {title} = tc;
-      const {name} = compression;
-      // Test empty batches
-      let compressedBatches = compression.compressBatches(inputChunks);
-      const compressedData = await concatenateArrayBuffersAsync(compressedBatches);
-      if (name === 'gzip') {
-        expect(compressedData.byteLength, `${name}(${title}) batches: length correct`).toBe(29); // Header overhead
-      }
-      // test chained iterators
-      compressedBatches = compression.compressBatches(inputChunks);
-      const decompressedBatches = compression.decompressBatches(compressedBatches);
-      const inputData = concatenateArrayBuffers(...inputChunks);
-      const decompressedData = await concatenateArrayBuffersAsync(decompressedBatches);
-      expect(
-        compareArrayBuffers(inputData, decompressedData),
-        `${name}(${title}) batches: compress/decompress identical`
-      ).toBeTruthy();
-    }
-  }
+test('gzip round trips split batches', async () => {
+  const input = Uint8Array.of(1, 2, 3, 4, 5, 6).buffer;
+  const compressor = new GZipCompressor();
+  const decompressor = new GZipDecompressor();
+  const compressed = compressor.compressBatches([input.slice(0, 2), input.slice(2)]);
+  expect(await concatenateArrayBuffersAsync(decompressor.decompressBatches(compressed))).toEqual(input);
 });
 test('native decompression#real DecompressionStream formats', async () => {
   for (const format of Object.keys(

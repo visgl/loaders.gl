@@ -4,7 +4,6 @@
 
 import {expect, test} from 'vitest';
 import {
-  CompressUtilsCompression,
   CompressUtilsCompressor,
   CompressUtilsDecompressor
 } from '../src/lib/compress-utils-compression';
@@ -51,32 +50,6 @@ test('compress-utils direction-specific bindings copy atomic and streaming outpu
   expect(destroyedStreams).toBe(2);
 });
 
-test('compress-utils combined binding supports both atomic directions', async () => {
-  const module = {
-    compress: async (input: Uint8Array) => Uint8Array.from(input, value => value + 1),
-    decompress: async (input: Uint8Array) => Uint8Array.from(input, value => value - 1),
-    createCompressStream: async () => createPassthroughStream(),
-    createDecompressStream: async () => createPassthroughStream()
-  };
-  const compression = new CompressUtilsCompression(
-    METADATA,
-    async () => module,
-    async () => module,
-    {compressUtils: {mode: 'test'}}
-  );
-
-  expect(new Uint8Array(await compression.compress(INPUT.buffer))).toEqual(
-    new Uint8Array([2, 3, 4])
-  );
-  expect(new Uint8Array(await compression.decompress(INPUT.buffer))).toEqual(
-    new Uint8Array([0, 1, 2])
-  );
-  const compressedBatches = await collect(compression.compressBatches([INPUT.buffer]));
-  const decompressedBatches = await collect(compression.decompressBatches([INPUT.buffer]));
-  expect(compressedBatches.map(batch => Array.from(new Uint8Array(batch)))).toEqual([[1, 2, 3]]);
-  expect(decompressedBatches.map(batch => Array.from(new Uint8Array(batch)))).toEqual([[1, 2, 3]]);
-  expect(compression.options.compressUtils).toEqual({mode: 'test'});
-});
 
 test('compress-utils streaming transform destroys streams after failures', async () => {
   let destroyed = false;
@@ -141,13 +114,8 @@ test('compress-utils preload shares initialization, retries failures, and forwar
 });
 
 test.each(
-  (['directional', 'combined'] as const).flatMap(binding =>
-    (['cancel', 'overflow', 'finish-overflow', 'input-error'] as const).map(mode => ({
-      binding,
-      mode
-    }))
-  )
-)('Incremental $binding decompression releases resources on $mode', async ({binding, mode}) => {
+  ['cancel', 'overflow', 'finish-overflow', 'input-error'] as const
+)('Incremental decompression releases resources on %s', async mode => {
   let destroyed = 0;
   let inputClosed = false;
   const loadModule = async () => ({
@@ -160,15 +128,7 @@ test.each(
       }
     })
   });
-  const decoder =
-    binding === 'directional'
-      ? new CompressUtilsDecompressor(METADATA, loadModule, {maxOutputByteLength: 3})
-      : new CompressUtilsCompression(
-          METADATA,
-          async () => ({compress: async input => input}),
-          loadModule,
-          {maxOutputByteLength: 3}
-        );
+  const decoder = new CompressUtilsDecompressor(METADATA, loadModule, {maxOutputByteLength: 3});
   /** Keeps source cleanup observable when the consumer stops or decoding fails. */
   async function* input() {
     try {

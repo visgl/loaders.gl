@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
-import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
+import {SnappyCompressor} from '@loaders.gl/compression/snappy-compressor';
 import {ORCLoaderWithParser} from '../../src/orc/orc-loader';
 import {
   createORCSchema,
@@ -225,7 +225,7 @@ test('ORC compression decodes framed raw DEFLATE chunks', async () => {
 test('ORC compression decodes framed Snappy chunks', async () => {
   await preloadORCCompression('SNAPPY');
   const input = new TextEncoder().encode('orc-snappy');
-  const encoder = new SnappyCompression();
+  const encoder = new SnappyCompressor();
   await encoder.preload();
   const compressed = new Uint8Array(encoder.compressSync(input.buffer));
   const header = compressed.length << 1;

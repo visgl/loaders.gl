@@ -69,16 +69,6 @@
       "require": "./dist/ktx2-basis-writer-worker-node.cjs",
       "default": "./dist/ktx2-basis-writer-worker-node.cjs"
     },
-    "./load-image": {
-      "types": "./dist/load-image.d.ts",
-      "import": "./dist/load-image.js",
-      "require": "./dist/load-image.cjs"
-    },
-    "./load-image-cube": {
-      "types": "./dist/load-image-cube.d.ts",
-      "import": "./dist/load-image-cube.js",
-      "require": "./dist/load-image-cube.cjs"
-    },
     "./texture-cube-loader": {
       "types": "./dist/texture-cube-loader.d.ts",
       "import": "./dist/texture-cube-loader.js",
@@ -148,11 +138,6 @@
       "types": "./dist/video-loader-types.d.ts",
       "import": "./dist/video-loader-types.js",
       "require": "./dist/video-loader-types.cjs"
-    },
-    "./load-image-array": {
-      "types": "./dist/load-image-array.d.ts",
-      "import": "./dist/load-image-array.js",
-      "require": "./dist/load-image-array.cjs"
     },
     "./image-writer": {
       "types": "./dist/image-writer.d.ts",

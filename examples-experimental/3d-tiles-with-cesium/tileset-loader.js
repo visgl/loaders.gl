@@ -5,7 +5,8 @@
 /* global Cesium */
 import {Vector3} from '@math.gl/core';
 import {setLoaderOptions} from '@loaders.gl/core';
-import {_getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
+import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles';
+import {createAuthenticatedFetch} from '@loaders.gl/core/loader-utils';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Plane} from '@math.gl/geometry/culling';
 import {loadBatchedModelTile, loadPointTile} from './tile-parsers.js';
@@ -17,22 +18,24 @@ let viewer;
 setLoaderOptions({core: {worker: false}});
 
 export async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken, viewerInstance}) {
-  let fetchOptions = null;
+  let fetchTileset = fetch;
+  let credentials = [];
   viewer = viewerInstance;
   if (ionAssetId && ionAccessToken) {
-    const {url, headers} = await _getIonTilesetMetadata(ionAccessToken, ionAssetId);
-    tilesetUrl = url;
-    fetchOptions = {headers};
+    const endpoint = await resolveCesiumIonTileset(ionAccessToken, ionAssetId);
+    tilesetUrl = endpoint.url;
+    credentials = endpoint.credentials;
+    fetchTileset = createAuthenticatedFetch({credentials});
   }
 
-  const response = await fetch(tilesetUrl, fetchOptions);
+  const response = await fetchTileset(tilesetUrl);
   const tilesetJson = await response.json();
 
   const tileset3d = new Tileset3D(tilesetJson, tilesetUrl, {
     onTileLoad: (tileHeader) => loadTile(tileHeader.uri, tileHeader),
     onTileUnload: (tileHeader) => unloadTile(tileHeader.contentUri),
     onTileError: (tileHeader) => console.error('LoadFailed', tileHeader.uri), // eslint-disable-line
-    fetchOptions,
+    loadOptions: {core: {credentials}},
     throttleRequests: true
   });
 

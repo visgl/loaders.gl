@@ -26,7 +26,6 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | --- | --- |
 | Loader | [`Tiles3DLoader`](../api-reference/tiles-3d-loader.md) |
 | Source | [`Tiles3DSource`](../../api-reference/tiles-3d-source.md) |
-| Loader | [`CesiumIonLoader`](../api-reference/cesium-ion-loader.md) |
 | Writer | [`Tiles3DWriter`](../api-reference/tile-3d-writer.md) |
 | Writer | [`Tiles3DArchiveWriter`](../api-reference/tiles-3d-archive-writer.md) |
 

@@ -6,46 +6,8 @@ import {expect, test} from 'vitest';
 import {brotliDecompressSync} from 'node:zlib';
 import {concatenateArrayBuffers} from '@loaders.gl/core/loader-utils';
 import {BrotliCompressor} from '../src/brotli-compressor';
-import {DeflateCompression} from '../src/lib/deflate-compression';
 
 const INPUT = new TextEncoder().encode('small deterministic compression payload').buffer;
-
-test.each([false, true])('DeflateCompression uses Node zlib with gzip=%s', async gzip => {
-  const compression = new DeflateCompression({
-    deflate: {gzip, useNative: false, useZlib: true}
-  });
-  const compressed = await compression.compress(INPUT);
-  expect(new Uint8Array(await compression.decompress(compressed))).toEqual(new Uint8Array(INPUT));
-
-  const compressedSync = compression.compressSync(INPUT);
-  expect(new Uint8Array(compression.decompressSync(compressedSync))).toEqual(new Uint8Array(INPUT));
-});
-
-test('DeflateCompression reports rejected and failed compatibility processors', async () => {
-  const compression = new DeflateCompression({deflate: {useNative: false}});
-  const rejectingProcessor = {push: () => false};
-  await expect(collect(compression.transformBatches(rejectingProcessor, [INPUT]))).rejects.toThrow(
-    'rejected a batch'
-  );
-
-  const finalRejectingProcessor = {
-    push: (_data: Uint8Array, final?: boolean) => !final
-  };
-  await expect(collect(compression.transformBatches(finalRejectingProcessor, []))).rejects.toThrow(
-    'rejected the final batch'
-  );
-
-  const failingProcessor = {
-    onEnd: undefined as ((status: number) => void) | undefined,
-    push() {
-      this.onEnd?.(1);
-      return true;
-    }
-  };
-  await expect(collect(compression.transformBatches(failingProcessor, [INPUT]))).rejects.toThrow(
-    'failed with status 1'
-  );
-});
 
 test('Brotli WASM stream output interoperates with Node zlib', async () => {
   const compressor = new BrotliCompressor({useNative: false});
