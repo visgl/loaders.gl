@@ -88,7 +88,7 @@ export default defineConfig(async () => {
           replacement: path.resolve(__dirname, './laz-perf-with-wasm.js')
         },
         ...Object.entries(aliases).map(([packageName, replacement]) => ({
-          find: new RegExp(`^${packageName.replaceAll('.', '\\.')}\$`),
+          find: new RegExp(`^${packageName.replaceAll('.', '\\.')}$`),
           replacement
         }))
       ],
