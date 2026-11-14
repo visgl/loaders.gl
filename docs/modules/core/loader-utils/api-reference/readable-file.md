@@ -53,7 +53,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 All implementations satisfy the `ReadableFile` interface exported from `@loaders.gl/core/loader-utils` and support exact `read` operations for incremental processing of large files.
 
 :::info
-Legacy `FileProvider` classes have been removed from the default `@loaders.gl/core/loader-utils` exports. Use the `ReadableFile` implementations above instead.
+Legacy `FileProvider` classes have been removed. Use the `ReadableFile` implementations above instead.
 :::
 
 ## Usage
