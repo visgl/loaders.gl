@@ -216,7 +216,7 @@ test('custom Shapefile fetch callbacks keep sidecar parsing on caller', async ()
     ...workerOptions,
     core: {...workerOptions.core, fetch: customFetch}
   });
-  expect(result.data.numRows).toBeGreaterThan(0);
+  expect(result.numRows).toBeGreaterThan(0);
   expect(mainParse).toHaveBeenCalledOnce();
 });
 
@@ -226,7 +226,9 @@ test('DBF Arrow parser waits for split field descriptors before emitting its hea
   for await (const event of parseDBFArrowBatches(splitBuffer(buffer), {dbf: {batchSize: 1}}, true))
     events.push(event);
   expect(events[0].nRecords).toBeGreaterThan(0);
-  const rows = events.slice(1).flatMap(batch => batch.toArray().map((row: any) => row.toJSON()));
+  const rows = events
+    .slice(1)
+    .flatMap(batch => batch.data.toArray().map((row: any) => row.toJSON()));
   const expected: any = await parse(buffer, DBFLoader, {
     core: {worker: false},
     dbf: {shape: 'rows'}

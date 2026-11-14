@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
+import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {
   makeArrowTableFromBatches,
   convertTableToArrow,
@@ -18,6 +19,17 @@ import {
   serializeArrowWorkerResult,
   deserializeArrowWorkerResult
 } from '@loaders.gl/core/arrow-worker-transport';
+
+test('Native Arrow worker transfers preserve the parser’s input buffers by default', () => {
+  const values = new Int32Array([17, 42]);
+  const table = arrow.tableFromArrays({value: values});
+  const payload = serializeArrowWorkerResult(table, {core: {}});
+  const result = deserializeArrowWorkerResult(
+    structuredClone(payload, {transfer: getTransferList(payload)})
+  );
+  expect(result.getChild('value').toArray()).toEqual(new Int32Array([17, 42]));
+  expect(values).toEqual(new Int32Array([17, 42]));
+});
 
 /** Builds structurally identical batches with independently owned metadata snapshots. */
 function makeBatch(value: number, metadata: Record<string, string>): arrow.RecordBatch {

@@ -77,18 +77,15 @@ export function deserializeNativeArrowWorkerResult(
 
 /** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */
 export function serializeArrowWorkerResult(result: unknown, options?: unknown): unknown {
+  const workerOptions = options as ArrowWorkerOptions | undefined;
+  const bufferCopyMode =
+    workerOptions?.core?.workerTransferBufferCopy ?? workerOptions?.workerTransferBufferCopy;
   if (result instanceof arrow.Table || result instanceof arrow.RecordBatch) {
-    const workerOptions = options as ArrowWorkerOptions | undefined;
-    return serializeNativeArrowWorkerResult(result, {
-      copy: workerOptions?.core?.workerTransferBufferCopy ?? workerOptions?.workerTransferBufferCopy
-    });
+    return serializeNativeArrowWorkerResult(result, {copy: bufferCopyMode ?? 'all'});
   }
   if (!isArrowTableWrapper(result)) {
     return result;
   }
-  const workerOptions = options as ArrowWorkerOptions | undefined;
-  const bufferCopyMode =
-    workerOptions?.core?.workerTransferBufferCopy ?? workerOptions?.workerTransferBufferCopy;
   return {
     ...result,
     arrowBatchMetadata: snapshotBatchMetadata(result.data),

@@ -65,7 +65,7 @@ export default async function lasLoaderBench(bench) {
   const pointCount = table.numRows;
   const benchmarkOptions = {multiplier: pointCount, unit: 'output points', minIterations: 3};
   const laz14BenchmarkOptions = {
-    multiplier: laz14Table.data.numRows,
+    multiplier: laz14Table.numRows,
     unit: 'output points',
     minIterations: 3
   };
@@ -508,7 +508,7 @@ function readNullTerminatedAscii(bytes: Uint8Array, offset: number, length: numb
  * @param lazArrayBuffer Source LAZ fixture bytes
  * @returns Decoded benchmark Arrow table
  */
-async function createBenchmarkArrowTable(lazArrayBuffer: ArrayBuffer): Promise<MeshArrowTable> {
+async function createBenchmarkArrowTable(lazArrayBuffer: ArrayBuffer): Promise<Table> {
   return (await parse(lazArrayBuffer, LAZRsLoader, {
     core: {worker: false},
     las: {shape: 'arrow'}
@@ -520,9 +520,7 @@ async function createBenchmarkArrowTable(lazArrayBuffer: ArrayBuffer): Promise<M
  * @param lazArrayBuffer Source LAZ 1.4 fixture bytes
  * @returns Decoded benchmark Arrow table
  */
-async function createBenchmarkLAZ14ArrowTable(
-  lazArrayBuffer: ArrayBuffer
-): Promise<MeshArrowTable> {
+async function createBenchmarkLAZ14ArrowTable(lazArrayBuffer: ArrayBuffer): Promise<Table> {
   return (await parse(lazArrayBuffer, LAZRsLoader, {
     core: {worker: false},
     las: {shape: 'arrow'}
