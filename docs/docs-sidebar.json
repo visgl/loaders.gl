@@ -1122,7 +1122,6 @@
                 "type": "category",
                 "label": "@loaders.gl/tiles-3d/3d-tiles",
                 "items": [
-                  "modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader",
                   "modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader",
                   {
                     "type": "category",

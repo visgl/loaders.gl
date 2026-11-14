@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {Compression, Compressor, Decompressor} from '../src/lib/compression';
+import {Compressor, Decompressor} from '../src/lib/compression';
 
 /** Minimal compressor used to exercise the shared compression base class. */
 class TestCompressor extends Compressor {
@@ -33,22 +33,6 @@ class TestDecompressor extends Decompressor {
 }
 
 /** Minimal combined transform used to exercise compatibility batch methods. */
-class TestCompression extends Compression {
-  readonly name = 'test compression';
-  readonly extensions = ['test'];
-  readonly contentEncodings = ['test'];
-  readonly isSupported = true;
-
-  /** Returns the input unchanged as the test compression operation. */
-  compressSync(input: ArrayBuffer): ArrayBuffer {
-    return input;
-  }
-
-  /** Returns the input unchanged as the test decompression operation. */
-  decompressSync(input: ArrayBuffer): ArrayBuffer {
-    return input;
-  }
-}
 
 test('shared compressor and decompressor support async and batch APIs', async () => {
   const input = new Uint8Array([1, 2, 3]).buffer;
@@ -71,14 +55,6 @@ test('shared compressor and decompressor support async and batch APIs', async ()
   expect(new Uint8Array(decompressedBatches[0])).toEqual(new Uint8Array([1, 2, 3]));
 });
 
-test('combined compatibility transform supports both operations', async () => {
-  const input = new Uint8Array([4, 5]).buffer;
-  const compression = new TestCompression();
-
-  expect(new Uint8Array(await compression.compress(input))).toEqual(new Uint8Array([4, 5]));
-  expect(new Uint8Array(await compression.decompress(input))).toEqual(new Uint8Array([4, 5]));
-});
-
 test('base classes reject unsupported synchronous operations', () => {
   const compressor = new TestCompressor();
   const decompressor = new TestDecompressor();
@@ -89,8 +65,5 @@ test('base classes reject unsupported synchronous operations', () => {
   );
   expect(() => Decompressor.prototype.decompressSync.call(decompressor, input)).toThrow(
     'test decompressor: sync decompression not supported'
-  );
-  expect(() => Compression.prototype.decompressSync.call(compressor, input)).toThrow(
-    'test compressor: sync decompression not supported'
   );
 });

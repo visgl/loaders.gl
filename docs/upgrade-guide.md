@@ -18,6 +18,20 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Removed compression, texture, and Cesium ion APIs
+
+- Replace combined compression classes with the corresponding `Compressor` and
+  `Decompressor`. Use `compressBatches` or `decompressBatches` for streaming.
+  Preload a synchronous backend before using its sync methods. Use compress-utils
+  for Zstandard encoding in place of the combined zstd-codec binding.
+- Replace `loadImageTexture(url)` with `load(url, ImageLoader)`. For arrays,
+  cubemaps, and mip chains, generate a manifest from your URLs and use the matching
+  texture loader. Manifest loaders return structured textures.
+- Replace `CesiumIonLoader` with `resolveCesiumIonTileset` followed by
+  `Tiles3DLoader`. Pass the returned credentials in `core.credentials` for both
+  the root tileset and child requests.
+
+
 ### Loader aliases and WMS options
 
 Use the canonical loader names in place of the removed worker aliases:
@@ -481,7 +495,7 @@ prefer the default `ZstdDecompressor` if no reference backend is required.
 - Removed deprecated root exports: `Compression`, `DeflateCompression`, `GZipCompression`,
   `NoCompression`, `CompressionMetadata`, and the `*Compression` metadata aliases such as
   `gzipCompression`. Use `Compressor`/`Decompressor` and the direction-specific root classes.
-  Combined implementation subpaths remain available for migration. Root imports no longer
+  Combined implementation subpaths have been removed. Root imports no longer
   statically include the DEFLATE/GZIP JavaScript fallback.
 
   | Deprecated combined import | Preferred root classes |
@@ -494,7 +508,7 @@ prefer the default `ZstdDecompressor` if no reference backend is required.
 - Async Brotli decompression remains available without application changes: it tries native support first and lazily loads the bundled fallback decoder when needed. Applications that call `BrotliCompression.decompressSync()` must first `await compression.preload()` or inject `modules.brotli`.
 - Snappy synchronous methods no longer initialize the optional `snappyjs` dependency implicitly. Call `await compression.preload()` before `compressSync()` or `decompressSync()`, or inject `modules: {snappyjs}`. Async methods preload it automatically.
 - `BrotliCompression`, `ZstdCompression`, and frame-based `LZ4Compression` may load larger codec implementations asynchronously. Prefer their async APIs; synchronous callers must explicitly preload or inject the required codec.
-- `transformBatches()` remains available for compatibility but is deprecated. Use `compressBatches()` or `decompressBatches()` for new code.
+- `transformBatches()` has been removed. Use `compressBatches()` or `decompressBatches()` for new code.
 
 #### ZIP archive API changes
 
@@ -994,7 +1008,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 | Deprecated helper         | Replacement                     |
 | ------------------------- | ------------------------------- |
-| `loadImageTexture()`      | `load(url, TextureLoader)`      |
+| `loadImageTexture()`      | `load(url, ImageLoader)`        |
 | `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
 | `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
 

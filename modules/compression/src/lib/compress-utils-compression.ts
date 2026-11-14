@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Compression, Compressor, Decompressor, type CompressionOptions} from './compression';
+import {Compressor, Decompressor, type CompressionOptions} from './compression';
 
 type CompressUtilsStream = {
   write(input: Uint8Array): Uint8Array;
@@ -185,71 +185,6 @@ export class CompressUtilsDecompressor extends Decompressor {
       return;
     }
     const maximum = getMaximumOutputByteLength(this.options);
-    const stream = await module.createDecompressStream!();
-    yield* transformBatches(stream, inputBatches, maximum);
-  }
-}
-
-/**
- * Base class for a combined compress-utils algorithm binding.
- *
- * @deprecated Import the matching direction-specific compress-utils compressor or decompressor.
- */
-export class CompressUtilsCompression extends Compression {
-  readonly name: string;
-  readonly extensions: string[];
-  readonly contentEncodings: string[];
-  readonly isSupported = true;
-  readonly options: CompressUtilsCompressionOptions;
-
-  private readonly loadCompressModule: () => Promise<CompressUtilsCompressModule>;
-  private readonly loadDecompressModule: () => Promise<CompressUtilsDecompressModule>;
-
-  /** Creates a format-specific compress-utils binding. */
-  constructor(
-    metadata: CompressUtilsMetadata,
-    loadCompressModule: () => Promise<CompressUtilsCompressModule>,
-    loadDecompressModule: () => Promise<CompressUtilsDecompressModule>,
-    options: CompressUtilsCompressionOptions = {}
-  ) {
-    super(options);
-    this.name = metadata.name;
-    this.extensions = metadata.extensions || [];
-    this.contentEncodings = metadata.contentEncodings || [];
-    this.loadCompressModule = loadCompressModule;
-    this.loadDecompressModule = loadDecompressModule;
-    this.options = options;
-  }
-
-  /** Compresses one buffer with the selected compress-utils encoder. */
-  async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    const module = await this.loadCompressModule();
-    const output = await module.compress(new Uint8Array(input), this.options.compressUtils);
-    return copyArrayBuffer(output);
-  }
-
-  /** Decompresses one buffer with the selected compress-utils decoder. */
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    const module = await this.loadDecompressModule();
-    const output = await module.decompress(new Uint8Array(input), this.options.compressUtils);
-    return copyArrayBuffer(output);
-  }
-
-  /** Incrementally compresses input batches with compress-utils. */
-  async *compressBatches(
-    inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-  ): AsyncIterable<ArrayBuffer> {
-    const module = await this.loadCompressModule();
-    const stream = await module.createCompressStream!(this.options.compressUtils);
-    yield* transformBatches(stream, inputBatches);
-  }
-
-  /** Incrementally decompresses input batches with compress-utils. */
-  async *decompressBatches(
-    inputBatches: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-  ): AsyncIterable<ArrayBuffer> {
-    const maximum = getMaximumOutputByteLength(this.options);
-    const module = await this.loadDecompressModule();
     const stream = await module.createDecompressStream!();
     yield* transformBatches(stream, inputBatches, maximum);
   }

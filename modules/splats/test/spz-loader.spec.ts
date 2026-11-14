@@ -1,6 +1,6 @@
 import {beforeAll, expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
+import {ZstdCompressor} from '@loaders.gl/compression/zstd-compressor';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
 import {SPZLoader, parseSPZToGaussianSplats} from '@loaders.gl/splats';
 import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
@@ -186,8 +186,8 @@ async function makeSPZFixture(compressStreams = true, shDegree = 0): Promise<Arr
   if (shDegree) streams.push(new Uint8Array([0, 9, 24, 45, 72][shDegree] * 2).fill(128));
   let compressedStreams = streams;
   if (compressStreams) {
-    const compression = new ZstdCompression({modules});
-    await compression.preload(modules);
+    const compression = new ZstdCompressor();
+    await compression.preload();
     compressedStreams = streams.map(
       stream => new Uint8Array(compression.compressSync(stream.buffer))
     );

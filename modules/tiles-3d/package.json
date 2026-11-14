@@ -98,11 +98,6 @@
       "import": "./dist/3d-tiles/subtree-zod-schema.js",
       "require": "./dist/3d-tiles/subtree-zod-schema.cjs"
     },
-    "./cesium-ion-loader-with-parser": {
-      "types": "./dist/cesium-ion-loader-with-parser.d.ts",
-      "import": "./dist/cesium-ion-loader-with-parser.js",
-      "require": "./dist/cesium-ion-loader-with-parser.cjs"
-    },
     "./3d-tiles/bundled": {
       "types": "./dist/3d-tiles/bundled.d.ts",
       "import": "./dist/3d-tiles/bundled.js"

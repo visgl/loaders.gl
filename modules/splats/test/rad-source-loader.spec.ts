@@ -5,7 +5,7 @@
 import {preloadRADCompression} from '../src/lib/parse-rad-chunk';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {expect, test} from 'vitest';
-import {DeflateCompression} from '@loaders.gl/compression/deflate-compression';
+import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compressor-fflate';
 import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
 import {RADLoader, RADSourceLoader, resolveRADChunkUrl} from '@loaders.gl/splats';
 import type {RADSource} from '@loaders.gl/splats';
@@ -666,7 +666,7 @@ function makeRADChunkPayload(
 ): RADChunkPayload {
   const encodedBytes =
     options.compression === 'gz'
-      ? new Uint8Array(new DeflateCompression().compressSync(bytes.buffer.slice(0)))
+      ? new Uint8Array(new DeflateFflateCompressor().compressSync(bytes.buffer.slice(0)))
       : bytes;
   return {property, encoding, bytes: encodedBytes, ...options};
 }

@@ -34,8 +34,6 @@ export type CesiumIonTilesetMetadata = Record<string, unknown> & {
   url: string;
   /** Resolved asset type. */
   type: string;
-  /** Legacy endpoint headers retained for direct integrations. */
-  headers: HeadersInit;
   /** Exact-origin endpoint credential preferred by loaders.gl integrations. */
   credentials: readonly RequestCredential[];
 };
@@ -47,7 +45,7 @@ export type CesiumIonRequestOptions = {
 };
 
 /** Resolves a Cesium ion asset URL and its endpoint-scoped bearer credential. */
-export async function getIonTilesetMetadata(
+export async function resolveCesiumIonTileset(
   accessToken: string | null | undefined,
   assetId?: number | string | null,
   options: CesiumIonRequestOptions = {}
@@ -59,28 +57,38 @@ export async function getIonTilesetMetadata(
     resolvedAssetId = assets.items.find(item => item.type === '3DTILES')?.id;
   }
 
-  if (resolvedAssetId === undefined || resolvedAssetId === null) {
+  const selectedAssetId = resolvedAssetId;
+  if (selectedAssetId === undefined || selectedAssetId === null) {
     throw new Error('Cesium ion did not return a 3D Tiles asset.');
   }
-  const ionAssetMetadata = await getIonAssetMetadata(accessToken, resolvedAssetId, ionFetch);
+  const ionAssetMetadata = await getIonAssetMetadata(accessToken, selectedAssetId, ionFetch);
   const type = String(ionAssetMetadata.type || '');
   const endpointOptions = ionAssetMetadata.options as {url?: string} | undefined;
   const url = endpointOptions?.url || String(ionAssetMetadata.url || '');
   assert(type === '3DTILES' && url);
 
-  const endpointToken = String(ionAssetMetadata.accessToken || accessToken || '');
+  let endpointToken = String(ionAssetMetadata.accessToken || accessToken || '');
   assert(endpointToken);
   const endpointCredential = createBearerTokenCredential({
     id: `cesium-ion-asset-${resolvedAssetId}`,
     origins: [new URL(url).origin],
-    token: endpointToken
+    token: async ({reason}) => {
+      if (reason !== 'refresh') return endpointToken;
+      const refreshed = await getIonAssetMetadata(accessToken, selectedAssetId, ionFetch);
+      const refreshedURL = (refreshed.options as {url?: string} | undefined)?.url || refreshed.url;
+      if (typeof refreshedURL !== 'string' || new URL(refreshedURL).origin !== new URL(url).origin)
+        throw new Error('Cesium ion changed the tileset endpoint origin');
+      if (typeof refreshed.accessToken !== 'string' || !refreshed.accessToken)
+        throw new Error('Cesium ion did not return a refreshed endpoint token');
+      endpointToken = refreshed.accessToken;
+      return endpointToken;
+    }
   });
 
   return {
     ...ionAssetMetadata,
     type,
     url,
-    headers: {Authorization: `Bearer ${endpointToken}`},
     credentials: [endpointCredential]
   };
 }

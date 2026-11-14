@@ -22,7 +22,8 @@ import type {
   Node3DIndexDocument
 } from '@loaders.gl/tiles-3d/i3s';
 import {load, encode, isBrowser} from '@loaders.gl/core';
-import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Geoid} from '@math.gl/earth';
 import {join} from 'path';
 import {randomUUID} from 'node:crypto';
@@ -47,7 +48,7 @@ import {createGeometryDefinition} from './json-templates/geometry-definitions';
 import {createSharedResources} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {KTX2BasisWriterWorker} from '@loaders.gl/images/ktx2-basis-writer-worker-loader';
-import {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {getAuthenticatedFetch} from '@loaders.gl/core/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/tiles-3d/i3s';
 import {getImageData, ImageWriter} from '@loaders.gl/images';
 import {
@@ -87,8 +88,6 @@ const ION_DEFAULT_TOKEN = process.env?.IonToken;
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';
 const _3D_OBJECT_LAYER_TYPE = '3DObject';
-const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
-const CESIUM_DATASET_PREFIX = 'https://';
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
 const PROGRESS_PHASE1_COUNT = 'phase1-count';
 
@@ -134,7 +133,6 @@ export default class I3SConverter {
   validate: boolean;
   boundingVolumeWarnings?: string[] = [];
   conversionStartTime: [number, number] = [0, 0];
-  refreshTokenTime: [number, number] = [0, 0];
   sourceTileset: Tiles3DTilesetJSONPostprocessed | null = null;
   loadOptions: Tiles3DLoaderOptions = {
     core: {
@@ -152,7 +150,6 @@ export default class I3SConverter {
     modules: {}
   };
   geoidHeightModel: Geoid | null = null;
-  Loader: LoaderWithParser = Tiles3DLoader;
   generateTextures: boolean;
   generateBoundingVolumes: boolean;
   layersHasTexture: boolean;
@@ -245,7 +242,6 @@ export default class I3SConverter {
     this.progresses[PROGRESS_PHASE1_COUNT] = new Progress();
     this.compressList = (this.options.instantNodeWriting && []) || null;
     this.validate = Boolean(validate);
-    this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
     this.generateTextures = Boolean(generateTextures);
     this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
 
@@ -263,24 +259,25 @@ export default class I3SConverter {
     this.nodePages.useWriteFunction(writeFileForSlpk);
 
     try {
-      const preloadOptions = await this._fetchPreloadOptions();
+      const ionAsset = /^https:\/\/assets\.cesium\.com\/(\d+)\/tileset\.json(?:[?#]|$)/.exec(
+        inputUrl
+      );
       let tilesetUrl = inputUrl;
-      if (preloadOptions.url) {
-        tilesetUrl = preloadOptions.url;
+      if (ionAsset) {
+        const endpoint = await resolveCesiumIonTileset(
+          this.options.token || ION_DEFAULT_TOKEN,
+          ionAsset[1],
+          {
+            fetch: getAuthenticatedFetch(this.loadOptions)
+          }
+        );
+        tilesetUrl = endpoint.url;
+        this.loadOptions.core = {
+          ...this.loadOptions.core,
+          credentials: [...(this.loadOptions.core?.credentials || []), ...endpoint.credentials]
+        };
       }
-      if (preloadOptions.headers) {
-        this.loadOptions.core ||= {};
-        const existingFetch = this.loadOptions.core.fetch;
-        if (typeof existingFetch === 'function') {
-          this.loadOptions.core.fetch = (url: string, requestInit?: RequestInit) =>
-            existingFetch(url, {...(requestInit || {}), headers: preloadOptions.headers});
-        } else {
-          const existingRequestInit =
-            existingFetch && typeof existingFetch === 'object' ? existingFetch : {};
-          this.loadOptions.core.fetch = {...existingRequestInit, headers: preloadOptions.headers};
-        }
-      }
-      this.sourceTileset = await loadFromArchive(tilesetUrl, this.Loader, this.loadOptions);
+      this.sourceTileset = await loadFromArchive(tilesetUrl, Tiles3DLoader, this.loadOptions);
 
       const preprocessResult = await this.preprocessConversion();
 
@@ -793,7 +790,6 @@ export default class I3SConverter {
     transformationMatrix: Matrix4
   ): Promise<null | NodeIndexDocument[]> {
     this._checkAddRefinementTypeForTile(sourceTile);
-    await this._updateTilesetOptions();
     if (
       this.conversionDump.restored &&
       sourceTile.id &&
@@ -842,8 +838,6 @@ export default class I3SConverter {
     transformationMatrix: Matrix4
   ): Promise<NodeIndexDocument[]> {
     this._checkAddRefinementTypeForTile(sourceTile);
-
-    await this._updateTilesetOptions();
 
     let tileContent: Tiles3DTileContent | null = null;
     try {
@@ -1559,47 +1553,6 @@ export default class I3SConverter {
     console.log('File(s) size: ', filesSize, ' bytes'); // eslint-disable-line no-undef, no-console
     console.log('Percentage of tiles with "ADD" refinement type:', addRefinementPercentage, '%'); // eslint-disable-line no-undef, no-console
     console.log('------------------------------------------------'); // eslint-disable-line no-undef, no-console
-  }
-
-  /**
-   * Fetch preload options for ION tileset
-   */
-  private async _fetchPreloadOptions(): Promise<any> {
-    if (!this.Loader.preload) {
-      return {};
-    }
-    const options = {
-      'cesium-ion': {accessToken: this.options.token || ION_DEFAULT_TOKEN}
-    };
-    const preloadOptions = await this.Loader.preload(this.options.inputUrl ?? '', options);
-    this.refreshTokenTime = process.hrtime();
-    return {...options, ...preloadOptions};
-  }
-
-  /**
-   * Update options of source tileset
-   */
-  private async _updateTilesetOptions(): Promise<void> {
-    const diff = process.hrtime(this.refreshTokenTime);
-    if (diff[0] < REFRESH_TOKEN_TIMEOUT) {
-      return;
-    }
-    this.refreshTokenTime = process.hrtime();
-
-    const preloadOptions = await this._fetchPreloadOptions();
-    if (preloadOptions.headers) {
-      this.loadOptions.core ||= {};
-      const existingFetch = this.loadOptions.core.fetch;
-      if (typeof existingFetch === 'function') {
-        this.loadOptions.core.fetch = (url: string, requestInit?: RequestInit) =>
-          existingFetch(url, {...(requestInit || {}), headers: preloadOptions.headers});
-      } else {
-        const existingRequestInit =
-          existingFetch && typeof existingFetch === 'object' ? existingFetch : {};
-        this.loadOptions.core.fetch = {...existingRequestInit, headers: preloadOptions.headers};
-      }
-      console.log('Authorization Bearer token has been updated'); // eslint-disable-line no-undef, no-console
-    }
   }
 
   /** Do calculations of all tiles and tiles with "ADD" type of refinement.

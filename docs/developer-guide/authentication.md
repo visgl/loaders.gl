@@ -260,18 +260,17 @@ without replacing an explicit child parameter.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {CesiumIonLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {resolveCesiumIonTileset, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
-const tileset = await load('https://assets.cesium.com/123/tileset.json', CesiumIonLoader, {
-  'cesium-ion': {accessToken: ionAccessToken, assetId: 123}
+const endpoint = await resolveCesiumIonTileset(accessToken, 123);
+const tileset = await load(endpoint.url, Tiles3DLoader, {
+  core: {credentials: endpoint.credentials}
 });
 ```
 
-The Cesium ion loader uses the account token only with `api.cesium.com`, resolves the asset
-endpoint, and installs the returned endpoint token only for that endpoint's exact origin. The
-legacy `cesium-ion.accessToken` option remains the shortest Cesium-specific entry point;
-`createCesiumIonCredential` is useful when the ion REST request shares a larger application
-credential registry.
+The resolver sends the account token only to `api.cesium.com`. The returned credentials
+scope the endpoint token to the resolved origin and refresh it when the server rejects it.
+Pass the credentials to the tileset consumer so child requests can authenticate.
 
 ## I3S and deck.gl layers
 

@@ -990,9 +990,6 @@
       "@loaders.gl/ogc/wmts-capabilities-loader-with-parser": [
         "modules/ogc/src/wmts-capabilities-loader-with-parser.ts"
       ],
-      "@loaders.gl/tiles-3d/cesium-ion-loader-with-parser": [
-        "modules/tiles-3d/src/cesium-ion-loader-with-parser.ts"
-      ],
       "@loaders.gl/scene": [
         "modules/scene/src"
       ],

@@ -86,7 +86,7 @@ export async function openSLPK(url: string): Promise<ZipFileSystem | null> {
 /**
  * Load a resource with load options and .3tz format support
  * @param url - resource URL
- * @param loader - loader to parse data (Tiles3DLoader / CesiumIonLoader)
+ * @param loader - loader to parse data (Tiles3DLoader)
  * @param loadOptions - i3s loader options
  * @returns i3s resource
  */

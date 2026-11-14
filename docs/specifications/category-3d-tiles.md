@@ -73,7 +73,6 @@ the application needs repeated, viewport-driven requests:
 | Need | Entry point | Role |
 | --- | --- | --- |
 | Parse a 3D Tiles resource | [`Tiles3DLoader`](/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader) | Decode a tileset or tile payload |
-| Resolve Cesium ion data | [`CesiumIonLoader`](/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader) | Resolve ion credentials and tileset URLs |
 | Parse I3S resources | [`I3SLoader`](/docs/modules/tiles-3d/i3s/api-reference/i3s-loader) | Decode I3S metadata, nodes, and content |
 | Parse Potree resources | [`PotreeLoader`](/docs/modules/tiles-3d/potree/api-reference/potree-loader) | Decode Potree hierarchy and point data |
 | Traverse a tiled world | [`Tileset3D`](/docs/modules/tiles-3d/api-reference/tileset-3d) | Select, request, cache, and release visible tiles |
