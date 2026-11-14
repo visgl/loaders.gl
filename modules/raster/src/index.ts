@@ -17,8 +17,6 @@ export type {LERCLoaderOptions} from './lerc/lerc-loader-types';
 export {LERCFormat} from './lerc/lerc-format';
 export type {LERCData} from './lerc/lib/parsers/lerc/lerc-types';
 export {TerrainLoader} from './terrain/terrain-loader-types';
-/** @deprecated Use TerrainLoader. */
-export {TerrainLoader as TerrainWorkerLoader} from './terrain/terrain-loader-types';
 export type {TerrainLoaderOptions} from './terrain/terrain-loader-types';
 export {QuantizedMeshLoader} from './terrain/quantized-mesh-loader-types';
 export type {QuantizedMeshLoaderOptions} from './terrain/quantized-mesh-loader-types';

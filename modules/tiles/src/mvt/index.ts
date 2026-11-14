@@ -62,6 +62,3 @@ export type {
   ArrowTableTileSourceLoaderOptions,
   ArrowTableTileSourceInput
 } from './arrow-table-tile-source-types';
-
-// DEPRECATED EXPORTS
-export {MVTWorkerLoader} from './mvt-loader';

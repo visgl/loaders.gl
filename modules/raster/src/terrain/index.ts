@@ -26,7 +26,3 @@ export {QuantizedMeshLoaderWithParser} from './quantized-mesh-loader';
 
 export type {QuantizedMeshWriterOptions} from './quantized-mesh-writer';
 export {QuantizedMeshWriter} from './quantized-mesh-writer';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use TerrainLoader. */
-export {TerrainLoader as TerrainWorkerLoader} from './terrain-loader-types';

@@ -101,8 +101,7 @@ export {
   MVTTileSource,
   TableTileSourceLoader,
   TableVectorTileSource,
-  ArrowTableTileSourceLoader,
-  MVTWorkerLoader
+  ArrowTableTileSourceLoader
 } from '@loaders.gl/tiles/mvt';
 export type {
   TileJSONLoaderOptions,

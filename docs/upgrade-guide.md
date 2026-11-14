@@ -23,7 +23,8 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 Use the canonical loader names in place of the removed worker aliases:
 `NullWorkerLoader` becomes `NullLoader`, and aliases such as `CSVWorkerLoader`,
 `LASWorkerLoader`, and `DracoWorkerLoader` become `CSVLoader`, `LASLoader`,
-and `DracoLoader`. The canonical format loaders retain their existing worker support.
+and `DracoLoader`. Use `MVTLoader` and `TerrainLoader` in place of
+`MVTWorkerLoader` and `TerrainWorkerLoader`. The canonical format loaders retain their existing worker support.
 `NullLoader` returns null on the main thread. Code that used `NullWorkerLoader`
 specifically to exercise worker dispatch can use `{...NullLoader, worker: true}`.
 
