@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {createDataSourceSync, fetchFile, resolvePath} from '@loaders.gl/core';
 import {
   OMEZarrImageSource,
-  OMEZarrSourceLoader,
+  OMEZarrLoader,
   loadZarrConsolidatedMetadata
 } from '@loaders.gl/scientific/zarr';
 const CONTENT_BASE = resolvePath('@loaders.gl/scientific/test/zarr/data');
@@ -17,11 +17,11 @@ const SPATIALDATA_V3_FIXTURE = `${CONTENT_BASE}/spatialdata-v3.zarr`;
 const SPATIALDATA_V3_FIXTURE_URL = pathToFileURL(SPATIALDATA_V3_FIXTURE).href;
 function createOMEZarrSource(
   url: string,
-  options: Parameters<typeof OMEZarrSourceLoader.createDataSourceSync>[1] = {}
+  options: Parameters<typeof OMEZarrLoader.createDataSourceSync>[1] = {}
 ): OMEZarrImageSource {
-  return createDataSourceSync(url, [OMEZarrSourceLoader], options);
+  return createDataSourceSync(url, [OMEZarrLoader], options);
 }
-test('OMEZarrSourceLoader creates a source via createDataSourceSync()', () => {
+test('OMEZarrLoader creates a source via createDataSourceSync()', () => {
   const source = createOMEZarrSource(OME_FIXTURE_URL);
   expect(source instanceof OMEZarrImageSource).toBeTruthy();
 });

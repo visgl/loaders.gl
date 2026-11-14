@@ -8,9 +8,9 @@ import {hydrateArrowTable} from '@math.gl/arrow';
 import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetJSWriter, ParquetLoader, ParquetSourceLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet/index';
+import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetJSWriter, ParquetLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet/index';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
-import {ParquetSource, ParquetSourceLoader as ParquetSourceLoaderWithParser} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 
 import {getSchemaFromParquetReader} from '../../src/parquet/lib/parsers/get-parquet-schema';
 import {decodeParquetSourceWorkerInput} from '../../src/parquet/lib/parquet-source-worker-decoder';
@@ -58,7 +58,7 @@ test('ParquetLoader parses files and creates selective sources through separate 
   const table = await load(blob, ParquetLoader, {core: {worker: false}, parquet: {shape: 'arrow'}});
   expect(table.numRows).toBeGreaterThan(0);
 
-  const otherLoader = {...ParquetSourceLoader, type: 'other'};
+  const otherLoader = {...ParquetLoader, id: 'other'};
   const source = await createDataSource(blob, [otherLoader, ParquetLoader], {
     core: {type: 'parquet'},
     parquet: {verifyPageChecksums: true}
@@ -67,15 +67,14 @@ test('ParquetLoader parses files and creates selective sources through separate 
   try {
     expect((await source.getMetadata()).rowCount).toBe(table.numRows);
     expect((await synchronousSource.getMetadata()).rowCount).toBe(table.numRows);
-    await expect(load(blob, ParquetSourceLoader)).rejects.toThrow('Use createDataSource()');
   } finally {
     await Promise.all([source.close(), synchronousSource.close()]);
   }
 });
 
-test('ParquetSourceLoader#Blob metadata and schema are cached', async () => {
+test('ParquetLoader#Blob metadata and schema are cached', async () => {
   const fixture = await loadFixture();
-  const source = (await createDataSource(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
+  const source = (await createDataSource(new Blob([fixture]), ParquetLoader)) as ParquetSource;
 
   expect(source instanceof ParquetSource).toBeTruthy();
   expect(source.capabilities).toBe(PARQUET_SOURCE_CAPABILITIES);
@@ -111,7 +110,7 @@ test('ParquetSourceLoader#Blob metadata and schema are cached', async () => {
 
 test('ParquetSource#getQueryMetadata exposes panel-ready schema and statistics', async () => {
   const fixture = await loadFixture();
-  const source = (await createDataSource(new Blob([fixture]), ParquetSourceLoader)) as ParquetSource;
+  const source = (await createDataSource(new Blob([fixture]), ParquetLoader)) as ParquetSource;
   const metadata = await source.getQueryMetadata();
 
   expect(metadata.sourceType).toBe('parquet');
@@ -172,9 +171,9 @@ test('ParquetSource#read applies snapshotted source defaults', async () => {
   await source.close();
   });
 
-test('ParquetSourceLoader#decodes optional column-chunk statistics', async () => {
+test('ParquetLoader#decodes optional column-chunk statistics', async () => {
   const fixture = await loadFixture(STATISTICS_FIXTURE_URL);
-  const source = createDataSourceSync(new Blob([fixture]), [ParquetSourceLoaderWithParser], {
+  const source = createDataSourceSync(new Blob([fixture]), [ParquetLoaderWithParser], {
     core: {type: 'parquet'}
   }) as ParquetSource;
   const metadata = await source.getMetadata();
@@ -233,7 +232,7 @@ test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', a
     ParquetJSWriter,
     {worker: false, parquet: {rowGroupSize: 2, bloomFilter: {id: true}}}
   );
-  const source = createDataSourceSync(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+  const source = createDataSourceSync(new Blob([parquetBuffer]), [ParquetLoaderWithParser], {
     core: {type: 'parquet'}
   }) as ParquetSource;
   const metadata = await source.getMetadata();
@@ -267,7 +266,7 @@ test('ParquetJSWriter emits page indexes consumed by selective page planning', a
     ParquetJSWriter,
     {worker: false, parquet: {pageSize: 2, pageIndex: {x: true}}}
   );
-  const source = createDataSourceSync(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+  const source = createDataSourceSync(new Blob([parquetBuffer]), [ParquetLoaderWithParser], {
     core: {type: 'parquet'}
   }) as ParquetSource;
   const metadata = await source.getMetadata();
@@ -430,7 +429,7 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
   }
 
   const fixture = await createSelectiveFixture();
-  const source = (await createDataSource(new Blob([fixture]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([fixture]), ParquetLoader, {
     core: {worker: true, reuseWorkers: false, _workerType: 'test'}
   })) as ParquetSource;
   let mainThreadTicked = false;
@@ -628,7 +627,7 @@ test('ParquetSource#read rethrows range errors and validates selections', async 
   await source.close();
   });
 
-test('ParquetSourceLoader#URL uses bounded, versioned range requests', async () => {
+test('ParquetLoader#URL uses bounded, versioned range requests', async () => {
   const fixture = await loadFixture();
   const requests: RangeRequestRecord[] = [];
   const rangeFetch = createRangeFetch(fixture, {requests});
@@ -651,7 +650,7 @@ test('ParquetSourceLoader#URL uses bounded, versioned range requests', async () 
   await source.close();
   });
 
-test('ParquetSourceLoader#rejects object version changes', async () => {
+test('ParquetLoader#rejects object version changes', async () => {
   const fixture = await loadFixture();
   const rangeFetch = createRangeFetch(fixture, {
     getEtag: requestIndex => (requestIndex === 0 ? '"fixture-v1"' : '"fixture-v2"')
@@ -662,7 +661,7 @@ test('ParquetSourceLoader#rejects object version changes', async () => {
   await source.close();
   });
 
-test('ParquetSourceLoader#abort and close cancel initialization', async () => {
+test('ParquetLoader#abort and close cancel initialization', async () => {
   const callerAbortController = new AbortController();
   const callerFetch = createPendingFetch();
   const callerSource = createRemoteSource(callerFetch.fetch);
@@ -852,7 +851,7 @@ function createRemoteSource(
   rangeFetch: (url: string, options?: RequestInit) => Promise<Response>,
   options: ParquetSourceLoaderOptions = {}
 ): ParquetSource {
-  return createDataSourceSync(REMOTE_URL, [ParquetSourceLoaderWithParser], {
+  return createDataSourceSync(REMOTE_URL, [ParquetLoaderWithParser], {
     ...options,
     core: {
       fetch: rangeFetch,

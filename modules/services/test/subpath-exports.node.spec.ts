@@ -8,13 +8,13 @@ import {expect, test} from 'vitest';
 const requirePackage = createRequire(import.meta.url);
 
 const COMMONJS_EXPORTS = [
-  ['@loaders.gl/ogc/wms', 'WMSSourceLoader'],
+  ['@loaders.gl/ogc/wms', 'WMSLoader'],
   ['@loaders.gl/ogc/wms/unbundled', 'WMSCapabilitiesLoader'],
   ['@loaders.gl/ogc/wms/bundled', 'WMSCapabilitiesLoader'],
   ['@loaders.gl/ogc/gml-loader', 'GMLLoaderWithParser'],
   ['@loaders.gl/ogc/wmts-capabilities-loader-with-parser', 'WMTSCapabilitiesLoaderWithParser'],
-  ['@loaders.gl/ogc/stac', 'STACSourceLoader'],
-  ['@loaders.gl/ogc/stac-source', 'STACSourceLoaderWithParser']
+  ['@loaders.gl/ogc/stac', 'STACLoader'],
+  ['@loaders.gl/ogc/stac-source', 'STACLoaderWithParser']
 ] as const;
 
 test.each(COMMONJS_EXPORTS)('%s supports CommonJS require', (subpath, exportedName) => {

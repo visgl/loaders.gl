@@ -11,9 +11,10 @@ import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loade
 import type {Schema} from '@loaders.gl/core/schema';
 import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv/index';
 import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json/index';
-import {ArrowTableSource, ArrowSourceLoader} from '@loaders.gl/tables/arrow/index';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
-import {ParquetSourceLoader} from '@loaders.gl/tables';
+import {ParquetLoader} from '@loaders.gl/tables';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 
 const rows = [
@@ -226,8 +227,8 @@ test.each(
   const loaders = {
     csv: CSVLoader,
     ndjson: NDJSONLoader,
-    arrow: ArrowSourceLoader,
-    parquet: ParquetSourceLoader
+    arrow: ArrowLoaderWithParser,
+    parquet: ParquetLoader
   };
   const requests: string[] = [];
   const fetch = async (url: string, options?: RequestInit): Promise<Response> => {

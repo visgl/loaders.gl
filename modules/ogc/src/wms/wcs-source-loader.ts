@@ -70,7 +70,7 @@ export type WCSCoverageMetadata = {
 export class WCSCoverageSource extends DataSource<string, WCSSourceOptions> {
   /** Creates a WCS source. */
   constructor(url: string, options: WCSSourceOptions = {}, coreApi?: CoreAPI) {
-    super(url.replace(/\/$/, ''), options, WCSCoverageSourceLoader.defaultOptions, coreApi);
+    super(url.replace(/\/$/, ''), options, WCSCoverageLoader.defaultOptions, coreApi);
   }
 
   /** Fetches and parses the WCS GetCapabilities document. */
@@ -164,7 +164,7 @@ export class WCSCoverageSource extends DataSource<string, WCSSourceOptions> {
 }
 
 /** Source loader for WCS coverage services. */
-export const WCSCoverageSourceLoader = {
+export const WCSCoverageLoader = {
   dataType: null as unknown as WCSCoverageSource,
   batchType: null as never,
   name: 'WCS Coverage',

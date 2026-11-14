@@ -358,10 +358,6 @@
       "types": "./dist/orc/bundled.d.ts",
       "import": "./dist/orc/bundled.js"
     },
-    "./orc-source-loader-types": {
-      "types": "./dist/orc-source-loader-types.d.ts",
-      "import": "./dist/orc-source-loader-types.js"
-    },
     "./orc/unbundled": {
       "types": "./dist/orc/unbundled.d.ts",
       "import": "./dist/orc/unbundled.js"
@@ -402,10 +398,6 @@
     "./parquet/parquet-encoded-page-types": {
       "types": "./dist/parquet/parquet-encoded-page-types.d.ts",
       "import": "./dist/parquet/parquet-encoded-page-types.js"
-    },
-    "./parquet-source-loader-types": {
-      "types": "./dist/parquet-source-loader-types.d.ts",
-      "import": "./dist/parquet-source-loader-types.js"
     },
     "./iceberg-table-source": {
       "types": "./dist/iceberg-table-source.d.ts",
@@ -545,10 +537,6 @@
       "types": "./dist/parquet/index.d.ts",
       "import": "./dist/parquet/index.js",
       "require": "./dist/parquet/index.cjs"
-    },
-    "./lance-source-loader-types": {
-      "types": "./dist/lance-source-loader-types.d.ts",
-      "import": "./dist/lance-source-loader-types.js"
     },
     "./triangulation-worker.js": {
       "import": "./dist/triangulation-worker.js"

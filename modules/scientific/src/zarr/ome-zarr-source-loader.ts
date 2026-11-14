@@ -287,12 +287,12 @@ export abstract class ZarrSource extends DataSource<string, ZarrSourceLoaderOpti
 /**
  * Source factory for OME-Zarr multiscale images and labels.
  */
-export const OMEZarrSourceLoaderWithParser = {
+export const OMEZarrLoaderWithParser = {
   dataType: null as unknown as OMEZarrImageSource,
   /** Runtime source type marker used by `createDataSource()` type inference. */
   dataSource: null as unknown as OMEZarrImageSource,
   batchType: null as never,
-  name: 'OMEZarrSourceLoader',
+  name: 'OMEZarrLoader',
   id: 'omezarr',
   module: 'scientific',
   version: VERSION,

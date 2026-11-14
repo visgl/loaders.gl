@@ -41,14 +41,13 @@ export {LanceFormat} from './lance/lance-format';
 export type {LanceLoaderOptions} from './lance/lance-loader-types';
 export {ORCFormat} from './orc/orc-format';
 export type {ORCLoaderOptions} from './orc/orc-loader-types';
-export {ORCSourceLoader, type ORCSourceLoaderOptions} from './orc/orc-source-loader-types';
+export {type ORCSourceOptions as ORCSourceLoaderOptions} from './orc/orc-source-loader';
 export {ORCWriter, type ORCWriterOptions} from './orc/orc-writer';
 export {ParquetFormat} from './parquet/parquet-format';
 export type {ParquetLoaderOptions} from './parquet/parquet-loader-options';
-export {ParquetSourceLoader} from './parquet/parquet-source-loader-types';
 export {ParquetWriter} from './parquet/parquet-writer';
 export {ParquetJSWriter} from './parquet/parquet-js-writer';
-export {LanceSourceLoader} from './lance/lance-source-loader-types';
+
 export type {LanceSourceLoaderOptions} from './lance/lance-source-loader';
 export type {GeoArrowLoaderOptions} from './arrow/exports/geoarrow-loader';
 export type {ParquetWriterOptions} from './parquet/parquet-writer';

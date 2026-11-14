@@ -5,20 +5,20 @@
 export {loadZarr} from './lib/load-zarr';
 export {default as ZarrPixelSource} from './lib/zarr-pixel-source';
 export {
-  OMEZarrSourceLoaderWithParser as OMEZarrSourceLoader,
+  OMEZarrLoaderWithParser as OMEZarrLoader,
   OMEZarrImageSource,
   loadZarrConsolidatedMetadata
 } from './ome-zarr-source-loader';
 export {
-  GeoZarrSourceLoaderWithParser as GeoZarrSourceLoader,
+  GeoZarrLoaderWithParser as GeoZarrLoader,
   GeoZarrRasterSource
 } from './geo-zarr-source-loader';
 export {
-  ZarrArraySourceLoaderWithParser as ZarrArraySourceLoader,
+  ZarrArrayLoaderWithParser as ZarrArrayLoader,
   ZarrArraySource
 } from './zarr-array-source';
 export {
-  SpatialDataSourceLoaderWithParser as SpatialDataSourceLoader,
+  SpatialDataLoaderWithParser as SpatialDataLoader,
   SpatialDataSource
 } from './spatial-data-source';
 export type {

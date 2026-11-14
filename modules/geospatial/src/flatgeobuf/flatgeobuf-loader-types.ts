@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {FlatGeobufSourceLoaderOptions} from './flatgeobuf-source-loader';
 import type {Table, RecordBatch} from 'apache-arrow';
 import type {GeoJSONTable, ColumnarTable, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
@@ -19,7 +20,7 @@ const FGB_MAGIC_NUMBER = [0x66, 0x67, 0x62, 0x03, 0x66, 0x67, 0x62, 0x01];
 export type FlatGeobufLoaderOptions = LoaderOptions & {
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  flatgeobuf?: {
+  flatgeobuf?: FlatGeobufSourceLoaderOptions['flatgeobuf'] & {
     shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
@@ -39,6 +40,11 @@ async function preload() {
 
 /** Metadata-only FlatGeobuf worker loader. */
 export const FlatGeobufLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.fgb($|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: false,
+  type: 'flatgeobuf',
   ...FlatGeobufFormat,
 
   defaultShape: 'arrow',

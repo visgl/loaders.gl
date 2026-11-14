@@ -11,7 +11,7 @@ import type {MapViewState} from '@deck.gl/core';
 
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import type {RasterBoundingBox, RasterData} from '@loaders.gl/core/loader-utils';
-import {GeoZarrSourceLoader, type GeoZarrSourceMetadata} from '@loaders.gl/scientific/zarr';
+import {GeoZarrLoader, type GeoZarrSourceMetadata} from '@loaders.gl/scientific/zarr';
 
 import {Map} from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
@@ -24,7 +24,7 @@ const DATA_ARRAY = 'ALLSKY_SFC_SW_DWN';
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 const INITIAL_TIME_INDEX = 6;
 const INITIAL_OPACITY = 0.65;
-const GEOZARR_LOADERS = [GeoZarrSourceLoader];
+const GEOZARR_LOADERS = [GeoZarrLoader];
 const GEOZARR_SOURCE_OPTIONS = {
   geozarr: {
     array: DATA_ARRAY,

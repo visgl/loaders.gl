@@ -100,7 +100,7 @@ export class WMTSImageTileSource
 
   /** Creates a WMTS source. */
   constructor(url: string, options: WMTSSourceLoaderOptions = {}, coreApi?: CoreAPI) {
-    super(url, options, WMTSSourceLoader.defaultOptions, coreApi);
+    super(url, options, WMTSLoader.defaultOptions, coreApi);
     validateMetersPerUnit(options.wmts?.metersPerUnit, 'WMTS');
     this._capabilities = options.wmts?.capabilities || null;
     this.getTileData = this.getTileData.bind(this);
@@ -631,7 +631,7 @@ function getRequestParameter(parameters: Record<string, string>, name: string): 
 }
 
 /** Source loader for WMTS image tiles. */
-export const WMTSSourceLoader = {
+export const WMTSLoader = {
   dataType: null as unknown as WMTSImageTileSource,
   batchType: null as never,
   name: 'Web Map Tile Service (OGC WMTS)',

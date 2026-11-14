@@ -1,8 +1,5 @@
 import {afterEach, expect, test, vi} from 'vitest';
-import {
-  ArcGISVectorTileServerSourceLoader,
-  createArcGISCredential
-} from '@loaders.gl/arcgis/bundled';
+import {ArcGISVectorTileServerLoader, createArcGISCredential} from '@loaders.gl/arcgis/bundled';
 
 const VECTOR_TILE_SERVER_URL = 'https://example.com/arcgis/rest/services/World/VectorTileServer';
 
@@ -23,10 +20,7 @@ const SERVICE_METADATA = {
 afterEach(() => vi.unstubAllGlobals());
 
 test('ArcGISVectorTileServerSource exposes tile metadata and resources', async () => {
-  const source = ArcGISVectorTileServerSourceLoader.createDataSourceSync(
-    VECTOR_TILE_SERVER_URL,
-    {}
-  );
+  const source = ArcGISVectorTileServerLoader.createDataSourceSync(VECTOR_TILE_SERVER_URL, {});
   source.fetch = async () => new Response(JSON.stringify(SERVICE_METADATA));
 
   const metadata = await source.getMetadata();
@@ -41,10 +35,7 @@ test('ArcGISVectorTileServerSource exposes tile metadata and resources', async (
 });
 
 test('ArcGISVectorTileServerSource builds standard resource URLs', () => {
-  const source = ArcGISVectorTileServerSourceLoader.createDataSourceSync(
-    VECTOR_TILE_SERVER_URL,
-    {}
-  );
+  const source = ArcGISVectorTileServerLoader.createDataSourceSync(VECTOR_TILE_SERVER_URL, {});
   expect(source.getMetadataURL()).toBe(`${VECTOR_TILE_SERVER_URL}?f=pjson`);
   expect(source.getStyleURL()).toBe(`${VECTOR_TILE_SERVER_URL}/resources/styles/root.json`);
   expect(source.getSpriteURL()).toBe(`${VECTOR_TILE_SERVER_URL}/resources/sprites/sprite`);
@@ -52,7 +43,7 @@ test('ArcGISVectorTileServerSource builds standard resource URLs', () => {
 });
 
 test('ArcGISVectorTileServerSource preserves service query parameters', () => {
-  const source = ArcGISVectorTileServerSourceLoader.createDataSourceSync(
+  const source = ArcGISVectorTileServerLoader.createDataSourceSync(
     `${VECTOR_TILE_SERVER_URL}?token=abc`,
     {}
   );
@@ -63,10 +54,7 @@ test('ArcGISVectorTileServerSource preserves service query parameters', () => {
 });
 
 test('ArcGISVectorTileServerSource fetches raw PBF tiles', async () => {
-  const source = ArcGISVectorTileServerSourceLoader.createDataSourceSync(
-    VECTOR_TILE_SERVER_URL,
-    {}
-  );
+  const source = ArcGISVectorTileServerLoader.createDataSourceSync(VECTOR_TILE_SERVER_URL, {});
   const tileBytes = new Uint8Array([1, 2, 3, 4]);
   source.fetch = async (url, options) => {
     expect(url).toBe(`${VECTOR_TILE_SERVER_URL}/tile/2/5/4.pbf`);
@@ -91,7 +79,7 @@ test('ArcGISVectorTileServerSource applies core credentials to metadata and tile
         : new Response(new Uint8Array([1, 2, 3]));
     })
   );
-  const source = ArcGISVectorTileServerSourceLoader.createDataSourceSync(VECTOR_TILE_SERVER_URL, {
+  const source = ArcGISVectorTileServerLoader.createDataSourceSync(VECTOR_TILE_SERVER_URL, {
     core: {
       credentials: [createArcGISCredential({token: 'secret', origins: ['https://example.com']})]
     }
@@ -109,7 +97,7 @@ test('ArcGISVectorTileServerSource applies core credentials to metadata and tile
 test('ArcGISVectorTileServerSource decodes deck.gl tile data to WGS84', async () => {
   const parseCalls: Array<{options: any}> = [];
   const decodedTile = {shape: 'geojson-table', type: 'FeatureCollection', features: []};
-  const source = ArcGISVectorTileServerSourceLoader.createDataSourceSync(
+  const source = ArcGISVectorTileServerLoader.createDataSourceSync(
     VECTOR_TILE_SERVER_URL,
     {'arcgis-vector-tile-server': {mvt: {shape: 'geojson-table'}}},
     {

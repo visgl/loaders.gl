@@ -1,5 +1,5 @@
 ---
-title: ParquetSourceLoader
+title: Parquet sources
 description: Read remote Parquet selectively through metadata, byte ranges, predicates, and Arrow batches.
 hide_title: true
 page_style: designed
@@ -12,7 +12,7 @@ import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-gra
 <CapabilityHero
   capability="datasets"
   eyebrow="Parquet source"
-  title="ParquetSourceLoader"
+  title="Parquet sources"
   description="Ask a remote table for a bounded result. The source discovers schema and row-group metadata, then reads only the columns and byte ranges needed for a request."
   links={[
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
@@ -101,9 +101,6 @@ import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 
 const source = createDataSourceSync(url, [ParquetLoaderWithParser], {});
 ```
-
-`ParquetSourceLoader` is deprecated. Existing `createDataSource()` and
-`createDataSourceSync()` calls with the legacy exports remain supported.
 
 ## Multi-file datasets
 

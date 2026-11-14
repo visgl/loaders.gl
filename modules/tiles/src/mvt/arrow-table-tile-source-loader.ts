@@ -22,12 +22,12 @@ import {
 import {getGeoArrowNativeGeometry} from '@loaders.gl/core/arrow-geometry/native-geometry';
 import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {TableVectorTileSource, TableTileSourceLoader} from './table-tile-source-loader';
+import {TableVectorTileSource, TableTileLoader} from './table-tile-source-loader';
 import {convertFeaturesToProtoFeature} from './lib/vector-tiler/features/convert-feature';
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
 import {wrapFeatures} from './lib/vector-tiler/features/wrap-features';
 import {createArrowTile} from './lib/vector-tiler/arrow-tile';
-import {ArrowTableTileSourceLoader} from './arrow-table-tile-source-loader-types';
+import {ArrowTableTileLoader} from './arrow-table-tile-source-loader-types';
 import type {
   ArrowTableTileSourceInput,
   ArrowTableTileSourceLoaderOptions
@@ -37,10 +37,10 @@ const {
   preload: _preloadArrowTableTileSourceLoader,
   createDataSourceSync: _createMetadataDataSource,
   ...ArrowTableTileSourceLoaderBase
-} = ArrowTableTileSourceLoader;
+} = ArrowTableTileLoader;
 
 /** Builds vector tiles from an Arrow table without converting its attributes to GeoJSON. */
-export const ArrowTableTileSourceLoaderWithParser = {
+export const ArrowTableTileLoaderWithParser = {
   ...ArrowTableTileSourceLoaderBase,
   /** Creates an Arrow tile source; URLs and blobs require an injected core API and loaders. */
   createDataSourceSync(
@@ -84,12 +84,12 @@ export class ArrowTableVectorTileSource
     options: ArrowTableTileSourceLoaderOptions = {},
     coreApi?: CoreAPI
   ) {
-    super(input, options, ArrowTableTileSourceLoader.defaultOptions, coreApi);
+    super(input, options, ArrowTableTileLoader.defaultOptions, coreApi);
     validateTilingOptions(options);
     this.localCoordinates = (options.table?.coordinates || 'local') === 'local';
     this.tiler = new TableVectorTileSource(
       {shape: 'geojson-table', type: 'FeatureCollection', features: []},
-      {table: {...TableTileSourceLoader.defaultOptions.table, ...options.table, lineMetrics: false}}
+      {table: {...TableTileLoader.defaultOptions.table, ...options.table, lineMetrics: false}}
     );
     this.getTileData = this.getTileData.bind(this);
     this.ready = this.initializeTable(input);
@@ -161,7 +161,7 @@ export class ArrowTableVectorTileSource
     if (typeof loaded === 'string' || loaded instanceof Blob) {
       if (!this.hasCoreApi || !this.options.core.loaders?.length) {
         throw new Error(
-          'ArrowTableTileSourceLoader requires core.loaders and an injected core API for URL/Blob input'
+          'ArrowTableTileLoader requires core.loaders and an injected core API for URL/Blob input'
         );
       }
       const loaders = this.options.core.loaders;
@@ -173,7 +173,7 @@ export class ArrowTableVectorTileSource
     }
     const table = loaded instanceof arrow.Table ? loaded : (loaded as ArrowTable | null)?.data;
     if (!(table instanceof arrow.Table))
-      throw new Error('ArrowTableTileSourceLoader requires an Arrow table');
+      throw new Error('ArrowTableTileLoader requires an Arrow table');
     const field = getGeometryField(table, this.options.table.geometryColumn);
     const encoding = (field.metadata.get('ARROW:extension:name') ||
       `geoarrow.${getGeoMetadata(table.schema.metadata)?.columns[field.name]?.encoding}`) as GeoArrowEncoding;
@@ -218,7 +218,7 @@ function getGeometryField(table: arrow.Table, geometryColumn?: string): arrow.Fi
   const coordinateSystem = extensionMetadata.crs ?? geoMetadata?.columns[field.name]?.crs;
   if (coordinateSystem != null && !isLongitudeLatitudeCRS(coordinateSystem)) {
     throw new Error(
-      'ArrowTableTileSourceLoader requires longitude/latitude WGS84 geometry; reproject before tiling'
+      'ArrowTableTileLoader requires longitude/latitude WGS84 geometry; reproject before tiling'
     );
   }
   const encoding =
@@ -245,7 +245,7 @@ function getGeometryField(table: arrow.Table, geometryColumn?: string): arrow.Fi
 
 /** Rejects invalid index parameters before constructing the shared tiler. */
 function validateTilingOptions(options: ArrowTableTileSourceLoaderOptions): void {
-  const tableOptions = {...TableTileSourceLoader.defaultOptions.table, ...options.table};
+  const tableOptions = {...TableTileLoader.defaultOptions.table, ...options.table};
   for (const name of ['maxZoom', 'indexMaxZoom'] as const) {
     if (
       !Number.isInteger(tableOptions[name]) ||

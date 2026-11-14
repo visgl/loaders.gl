@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| — | WMC documents have no dedicated loader. Use [WMSSourceLoader](../api-reference/wms-source-loader.md) to load each referenced WMS service. |
+| — | WMC documents have no dedicated loader. Use [WMSLoader](../api-reference/wms-source-loader.md) to load each referenced WMS service. |
 
 <DocOrientation
   eyebrow="Implementation boundary"
@@ -37,7 +37,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Document', value: 'Configured layers and service references'},
     {label: 'Parsing', value: '@loaders.gl/documents for legacy documents'},
-    {label: 'Map data', value: 'WMSSourceLoader for referenced services'},
+    {label: 'Map data', value: 'WMSLoader for referenced services'},
     {label: 'Status', value: 'No dedicated WMC loader in v5'}
   ]}
 />
@@ -54,7 +54,7 @@ layers.
 | --- | --- | --- |
 | WMC document parsing | ❌ Not implemented | Parse XML with `@loaders.gl/documents` when maintaining legacy applications |
 | WMC document writing | ❌ Not implemented | Keep application state in a modern JSON configuration |
-| Referenced WMS layers | ✅ Supported separately | Use `WMSSourceLoader` for each referenced service |
+| Referenced WMS layers | ✅ Supported separately | Use `WMSLoader` for each referenced service |
 | Modern context exchange | ❌ Not implemented | OWS Context is documented separately but also has no dedicated loader |
 
 <ReferenceBoundary

@@ -61,7 +61,7 @@ A `CSWService` instance provides type safe methods that make calls to the servic
 Get a normalized array of all the services and resources referenced by this catalog server:
 
 ```typescript
-const cswService = createDataSourceSync(CSW_SERVICE_URL, [CSWSourceLoader]);
+const cswService = createDataSourceSync(CSW_SERVICE_URL, [CSWLoader]);
 const serviceDirectory = await cswService.getServiceDirectory({includeUnknown: true});
 console.log(serviceDirectory);
 ```
@@ -69,7 +69,7 @@ console.log(serviceDirectory);
 Capabilities metadata can be queried:
 
 ```typescript
-const cswService = createDataSourceSync(CSW_SERVICE_URL, [CSWSourceLoader]);
+const cswService = createDataSourceSync(CSW_SERVICE_URL, [CSWLoader]);
 const capabilities = await cswService.getCapabilities({});
 // Check capabilities
 ```

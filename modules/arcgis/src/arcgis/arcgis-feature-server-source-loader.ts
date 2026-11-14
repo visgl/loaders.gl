@@ -33,7 +33,7 @@ import type {
 export {ArcGISFeatureQueryError} from './arcgis-feature-query';
 
 /** Runtime service loader for synchronous construction. */
-export const ArcGISFeatureServerSourceLoaderWithParser = {
+export const ArcGISFeatureServerLoaderWithParser = {
   ...ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISVectorSource,
   batchType: null as never,

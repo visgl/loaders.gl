@@ -4,13 +4,13 @@
 
 import {describe, expect, test} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {SpatialDataSource, SpatialDataSourceLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataSource, SpatialDataLoader} from '@loaders.gl/scientific/zarr';
 
 const FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 
 describe('SpatialDataSource browser integration', () => {
   test('discovers the typed SpatialData catalog through createDataSource', async () => {
-    const source = createDataSourceSync(FIXTURE_URL, [SpatialDataSourceLoader]);
+    const source = createDataSourceSync(FIXTURE_URL, [SpatialDataLoader]);
     const metadata = await source.getMetadata();
 
     expect(source).toBeInstanceOf(SpatialDataSource);
@@ -51,6 +51,6 @@ test('SpatialDataSource retries failed metadata and preserves direct transforms'
   const metadata = await source.getMetadata();
   expect(metadata.images[0].coordinateTransformations).toEqual([{type: 'scale', scale: [1, 1]}]);
   expect(metadata.images[0].axes).toBeUndefined();
-  expect(SpatialDataSourceLoader.testURL('data.zarr/')).toBe(true);
-  expect(SpatialDataSourceLoader.testURL('data.json')).toBe(false);
+  expect(SpatialDataLoader.testURL('data.zarr/')).toBe(true);
+  expect(SpatialDataLoader.testURL('data.json')).toBe(false);
 });

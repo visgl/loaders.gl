@@ -6,7 +6,7 @@ import {describe, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {GZipCompressor} from '@loaders.gl/compression';
 import {PMTiles, type Source} from 'pmtiles';
-import {encodePMTiles, PMTilesWriter, PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {encodePMTiles, PMTilesWriter, PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
 import type {PMTilesEncodeOptions, PMTilesTile} from '@loaders.gl/tiles/pmtiles';
 
 const OPTIONS: PMTilesEncodeOptions = {
@@ -55,7 +55,7 @@ describe('PMTiles packaging', () => {
 
   test('supports the standard encode API, source metadata and raw tile reads', async () => {
     const bytes = await encode([TILE], PMTilesWriter, {pmtiles: OPTIONS});
-    const source = PMTilesSourceLoader.createDataSourceSync(new Blob([bytes]), {});
+    const source = PMTilesLoaderWithParser.createDataSourceSync(new Blob([bytes]), {});
     expect(await source.getMetadata()).toMatchObject({
       formatVersion: 3,
       tileMIMEType: 'application/vnd.mapbox-vector-tile',

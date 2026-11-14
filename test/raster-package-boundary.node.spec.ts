@@ -11,9 +11,10 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
   const imports =
     format === 'esm'
       ? `import {sampleRaster} from '@loaders.gl/core/loader-utils';
-       import {GeoTIFFSourceLoader, discoverGeoTIFF} from '@loaders.gl/raster/geotiff/index';`
+       import {discoverGeoTIFF} from '@loaders.gl/raster/geotiff/index';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';`
       : `const {sampleRaster} = require('@loaders.gl/core/loader-utils');
-       const {GeoTIFFSourceLoader, discoverGeoTIFF} = require('@loaders.gl/raster/geotiff/index');`;
+       const {GeoTIFFLoaderWithParser, discoverGeoTIFF} = require('@loaders.gl/raster/geotiff/index');`;
   const result = spawnSync(
     process.execPath,
     [
@@ -23,7 +24,7 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
     const raster = {data: new Float32Array([4]), width: 1, height: 1, bandCount: 1,
       dtype: 'float32', interleaved: true};
     if (sampleRaster(raster, [0, 0]).values[0] !== 4 ||
-        typeof discoverGeoTIFF !== 'function' || typeof GeoTIFFSourceLoader.createDataSourceSync !== 'function')
+        typeof discoverGeoTIFF !== 'function' || typeof GeoTIFFLoaderWithParser.createDataSourceSync !== 'function')
       throw new Error('Raster package exports failed');`
     ],
     {cwd: process.cwd(), encoding: 'utf8', timeout: 30000}

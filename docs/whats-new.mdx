@@ -214,7 +214,7 @@ v4.5 adds experimental Gaussian splat and TypeScript Parquet support, Chrome Tra
 
 **Highlights**
 
-- **@loaders.gl/splats** - New loaders for raw SPLAT, KSPLAT, SPZ, and Spark RAD Gaussian-splat data. `RADSourceLoader` supports progressive chunk loading for paged RAD scenes.
+- **@loaders.gl/splats** - New loaders for raw SPLAT, KSPLAT, SPZ, and Spark RAD Gaussian-splat data. `RADLoader` supports progressive chunk loading for paged RAD scenes.
 - **@loaders.gl/parquet** - New experimental `ParquetJSLoader` makes the TypeScript Parquet backend available through an explicit loader import.
 - **@loaders.gl/traces** - New `ChromeTraceLoader` parses Chrome Trace Event JSON as normalized JSON or Arrow tables. Streaming helpers support incremental event, Arrow-batch, and file parsing.
 - **@loaders.gl/tiles/mvt** - New [`MapStyleLoader`](/docs/modules/tiles/mvt/api-reference/map-style-loader) parses Mapbox/MapLibre style JSON, resolves relative source and TileJSON URLs, preserves metadata, and supports custom fetch and base URL options.
@@ -231,7 +231,7 @@ Release Date: March 31, 2026
 
 
 
-- **@loaders.gl/tiles/mlt** - New [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/tiles/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
+- **@loaders.gl/tiles/mlt** - New [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader) and [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/tiles/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
 - **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/images/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/images/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/images/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/images/textures/api-reference/radiance-hdr-loader).
 - **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
 - **@loaders.gl/tiles/mvt** - New experimental [`MVTWriter`](/docs/modules/tiles/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
@@ -291,7 +291,7 @@ A minor release that includes:
 
 **@loaders.gl/tiles/mvt**
 
-- [`TableTileSourceLoader`](/docs/modules/tiles/mvt/api-reference/table-tile-source-loader) - Geospatial tables can now be vector tiled dynamically in the browser.
+- [`TableTileLoader`](/docs/modules/tiles/mvt/api-reference/table-tile-source-loader) - Geospatial tables can now be vector tiled dynamically in the browser.
 
 **@loaders.gl/textures**
 
@@ -361,8 +361,8 @@ A minor release that includes:
 
 **@loaders.gl/tiles/pmtiles**
 
-- `PMTilesSourceLoader` - now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
-- `PMTilesSourceLoader` - Now refreshes the already loaded index if the underlying PMTiles file being loaded from is changed.
+- `PMTilesLoader` - now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
+- `PMTilesLoader` - Now refreshes the already loaded index if the underlying PMTiles file being loaded from is changed.
 
 **@loaders.gl/parquet**
 
@@ -436,7 +436,7 @@ A major release that brings:
 
 **@loaders.gl/tiles/pmtiles** - NEW
 
-- New [`PMTilesSourceLoader`](/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader) supports the [PMTiles](/docs/modules/tiles/pmtiles/formats/pmtiles) format.
+- New [`PMTilesLoader`](/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader) supports the [PMTiles](/docs/modules/tiles/pmtiles/formats/pmtiles) format.
 - New [PMTiles example](/examples/tiles/pmtiles).
 
 **@loaders.gl/parquet**

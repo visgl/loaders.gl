@@ -5,7 +5,7 @@
 import {beforeAll, expect, test} from 'vitest';
 import initSqlJs from 'sql.js';
 import type {SqlJsStatic, Database} from 'sql.js';
-import {GeoPackageSource} from '@loaders.gl/geospatial/geopackage/index';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage-loader';
 import {getTileBounds} from '@math.gl/geospatial';
 import {listGeoPackageTileTables} from '../src/geopackage/lib/geopackage-tile-metadata';
 
@@ -60,7 +60,7 @@ test('raster-only GeoPackage source exposes tileTables without requiring feature
   const database = createDatabase();
   const blob = new Blob([new Uint8Array(database.export())]);
   database.close();
-  const source = GeoPackageSource.createDataSourceSync(blob, {
+  const source = GeoPackageLoaderWithParser.createDataSourceSync(blob, {
     geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
   });
   const metadata = await source.getMetadata();
@@ -113,7 +113,7 @@ test('mixed packages keep vector default selection alongside tile-table metadata
   `);
   const blob = new Blob([new Uint8Array(database.export())]);
   database.close();
-  const source = GeoPackageSource.createDataSourceSync(blob, {
+  const source = GeoPackageLoaderWithParser.createDataSourceSync(blob, {
     geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
   });
   const metadata = await source.getMetadata();
@@ -164,7 +164,7 @@ test('extent validation accepts floating-point roundoff in decimal pixel sizes',
 test('encoded tile reads select native levels, preserve sparse holes and enforce byte limits', async () => {
   const database = createDatabase();
   database.run('INSERT INTO regional VALUES (1, 7, 1, 2, ?)', [new Uint8Array([137, 80, 78, 71])]);
-  const source = GeoPackageSource.createDataSourceSync(
+  const source = GeoPackageLoaderWithParser.createDataSourceSync(
     new Blob([new Uint8Array(database.export())]),
     {
       geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}
@@ -208,7 +208,7 @@ test('tile reads quote discovered identifiers and reject malformed payloads', as
     UPDATE gpkg_tile_matrix_set SET table_name = 'regional"tiles' WHERE table_name = 'regional';
     UPDATE gpkg_tile_matrix SET table_name = 'regional"tiles' WHERE table_name = 'regional';
     INSERT INTO "regional""tiles" VALUES (1, 2, 0, 0, 'invalid'), (2, 2, 1, 0, X'');`);
-  const source = GeoPackageSource.createDataSourceSync(
+  const source = GeoPackageLoaderWithParser.createDataSourceSync(
     new Blob([new Uint8Array(database.export())]),
     {
       geopackage: {sqlJsCDN: '/node_modules/sql.js/dist/'}

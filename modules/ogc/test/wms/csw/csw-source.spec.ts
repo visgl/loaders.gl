@@ -5,7 +5,7 @@
 import {describe, expect, test, vi} from 'vitest';
 
 import type {CSWCapabilities, CSWRecords} from '@loaders.gl/ogc/wms';
-import {CSWCatalogSource, CSWSourceLoader} from '@loaders.gl/ogc/wms';
+import {CSWCatalogSource, CSWLoader} from '@loaders.gl/ogc/wms';
 import {CSWCapabilitiesLoaderWithParser} from '../../../src/wms/csw-capabilities-loader-with-parser';
 import {CSWDomainLoaderWithParser} from '../../../src/wms/csw-domain-loader-with-parser';
 import {CSWRecordsLoaderWithParser} from '../../../src/wms/csw-records-loader-with-parser';
@@ -23,8 +23,8 @@ describe('CSWCatalogSource', () => {
     expect(source.capabilities).toMatchObject({search: true, pagination: false});
     await expect(source.getMetadata()).resolves.toBe(capabilities);
     expect(await collect(source.search())).toEqual(records.records);
-    expect(CSWSourceLoader.testURL('https://example.test/csw')).toBe(true);
-    expect(CSWSourceLoader.testURL('https://example.test/wfs')).toBe(false);
+    expect(CSWLoader.testURL('https://example.test/csw')).toBe(true);
+    expect(CSWLoader.testURL('https://example.test/wfs')).toBe(false);
   });
 
   test('accepts successful responses without an error content type', () => {

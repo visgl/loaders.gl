@@ -1,28 +1,28 @@
 import {expect, test} from 'vitest';
-import {fetchFile, isBrowser} from '@loaders.gl/core';
+import {createDataSource, fetchFile, isBrowser} from '@loaders.gl/core';
 import {PMTILESETS} from './data/tilesets';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
-test('PMTilesSourceLoader#urls', async () => {
+import {PMTilesLoader, PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
+test('PMTilesLoaderWithParser#urls', async () => {
   if (!isBrowser) {
-    console.log('PMTilesSourceLoader currently only supported in browser');
+    console.log('PMTilesLoaderWithParser currently only supported in browser');
     return;
   }
   for (const tilesetUrl of PMTILESETS) {
-    const source = PMTilesSourceLoader.createDataSourceSync(tilesetUrl, {url: tilesetUrl});
+    const source = PMTilesLoaderWithParser.createDataSourceSync(tilesetUrl, {url: tilesetUrl});
     expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
     expect(metadata).toBeTruthy();
   }
 });
-test('PMTilesSourceLoader#Blobs', async () => {
+test('PMTilesLoader creates a source from a Blob', async () => {
   if (!isBrowser) {
-    console.log('PMTilesSourceLoader currently only supported in browser');
+    console.log('PMTilesLoaderWithParser currently only supported in browser');
     return;
   }
   for (const tilesetUrl of PMTILESETS) {
     const response = await fetchFile(tilesetUrl);
     const blob = await response.blob();
-    const source = PMTilesSourceLoader.createDataSourceSync(blob, {url: blob});
+    const source = await createDataSource(blob, PMTilesLoader);
     expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
     expect(metadata).toBeTruthy();

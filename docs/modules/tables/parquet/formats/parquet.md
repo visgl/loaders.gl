@@ -33,7 +33,7 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
 | --- | --- |
 | Loader | [`ParquetLoader`](../api-reference/parquet-loader.md) |
 | Writer | [`ParquetWriter`](../api-reference/parquet-writer.md) |
-| Source loader | [`ParquetSourceLoader`](../api-reference/parquet-source-loader.md) |
+| Source loader | [`ParquetLoader`](../api-reference/parquet-source-loader.md) |
 | Source | [`ParquetDatasetSource`](../api-reference/parquet-source-loader.md) |
 
 ## Try a range-aware read
@@ -88,12 +88,12 @@ The support tables use these symbols:
 | ❌ | Not currently supported |
 
 `ParquetLoader` and `ParquetWriter` use the separately maintained `parquet-wasm` implementation;
-their coverage can differ from the TypeScript `ParquetLoader`, `ParquetSourceLoader`, and
+their coverage can differ from the TypeScript `ParquetLoader`, and
 `ParquetJSWriter` described in the matrices below.
 
 ## Scan support
 
-`ParquetSourceLoader` is the selective scan API. It reads and caches the footer, plans physical
+`ParquetLoader` is the selective scan API. It reads and caches the footer, plans physical
 ranges, emits Arrow batches, and explains which layers rejected work.
 
 | Capability | Support | Execution |
@@ -141,7 +141,7 @@ The format has four important storage units:
 | Page | Independently encoded and compressed values within a column chunk | Compression, decoding, page pruning |
 
 This hierarchy is why Parquet is random-access rather than a conventional streaming format.
-`ParquetSourceLoader` first reads and caches the footer, then issues ranges for selected row groups
+`ParquetLoader` first reads and caches the footer, then issues ranges for selected row groups
 and column chunks. `parseInBatches` can yield row-group-sized batches incrementally, but the footer
 must normally be available before useful data ranges can be located.
 
@@ -317,7 +317,7 @@ can make selective reads much cheaper.
 
 | Feature | JS read | JS write | Current behavior |
 | ------- | ------- | -------- | ---------------- |
-| File and schema metadata | ✅ | ✅ | Footer is cached by `ParquetSourceLoader` |
+| File and schema metadata | ✅ | ✅ | Footer is cached by `ParquetLoader` |
 | Row-group and column-chunk offsets | ✅ | ✅ | Drive byte-range projection and row-group selection |
 | Column-chunk min/max/null/distinct statistics | ✅ | ✅ (opt-in) | Drive conservative `ParquetSource` predicate pushdown; `ParquetJSWriter` emits min/max/null-count statistics with `writeStatistics` |
 | Page statistics in page headers | ⚠️ | ✅ (opt-in) | Thrift fields are decoded; `ParquetJSWriter` emits min/max/null-count page statistics with `writeStatistics` |
@@ -327,7 +327,7 @@ can make selective reads much cheaper.
 | Size statistics | ✅ | ✅ (opt-in) | Byte-array sizes and repetition/definition histograms are decoded and exposed; `ParquetJSWriter` emits them with `writeSizeStatistics` |
 | Column order and sorting columns | ✅ (metadata) | ✅ (declaration) | Row-group sort declarations are normalized as `sortingColumns`; `ParquetJSWriter` can emit declarations but does not sort rows or apply semantic pruning |
 
-`ParquetSourceLoader` accepts serializable logical predicates, prunes impossible row groups using
+`ParquetLoader` accepts serializable logical predicates, prunes impossible row groups using
 footer statistics and split-block Bloom filters, and uses column/offset indexes to avoid irrelevant
 data pages for primitive leaves, including nested struct children. Filter-only columns are not
 returned in the projected Arrow schema. Candidate rows are still filtered exactly on the caller

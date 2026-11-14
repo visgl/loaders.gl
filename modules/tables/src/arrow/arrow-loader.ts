@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createArrowSource} from './arrow-source';
 import {
   serializeArrowTableResult,
   deserializeArrowTableResult,
@@ -20,6 +21,7 @@ const {preload: _ArrowLoaderPreload, ...ArrowLoaderMetadataWithoutPreload} = Arr
 
 /** ArrowJS table loader */
 export const ArrowLoaderWithParser = {
+  createDataSourceSync: createArrowSource,
   ...ArrowLoaderMetadataWithoutPreload,
   serializeWorkerResult: serializeArrowTableResult,
   deserializeWorkerResult: deserializeArrowTableResult,

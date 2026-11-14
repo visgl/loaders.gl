@@ -60,7 +60,7 @@ import apacheLogo from '../../../images/logos/apache-logo.png';
   </a>
 </p>
 
-The `@loaders.gl/tables/orc` module reads and writes Apache ORC files. `ORCSourceLoader` adds a portable
+The `@loaders.gl/tables/orc` module reads and writes Apache ORC files. `ORCLoader` adds a portable
 table scan over a URL or `Blob` and returns Arrow data.
 
 ## Installation
@@ -86,11 +86,11 @@ pushdown.
 | Stripe, row-index, or range pruning | ❌ Not implemented | No pushdown claim is made |
 
 ```ts
-import {createDataSourceSync} from '@loaders.gl/core';
-import {ORCSourceLoader} from '@loaders.gl/tables/orc';
+import {createDataSource} from '@loaders.gl/core';
+import {ORCLoader} from '@loaders.gl/tables/orc';
 import {parseSQLPredicate} from '@loaders.gl/core/query';
 
-const source = createDataSourceSync('events.orc', [ORCSourceLoader]);
+const source = await createDataSource('events.orc', [ORCLoader]);
 const metadata = await source.getQueryMetadata();
 
 for await (const batch of source.read({

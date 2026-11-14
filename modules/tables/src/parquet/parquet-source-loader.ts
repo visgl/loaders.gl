@@ -7,7 +7,7 @@ import {streamNativeParquetBatches} from './lib/native-parquet-batches';
 export {getParquetBatchProvenance} from './lib/native-parquet-batches';
 import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/arrow';
 import {IndexedArrowTable} from '@math.gl/arrow';
-import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, ReadableFile} from '@loaders.gl/core/loader-utils';
 import {
   BlobFile,
   DataSource,
@@ -73,7 +73,6 @@ import {
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
-import {ParquetSourceLoader as ParquetSourceLoaderMetadata} from './parquet-source-loader-types';
 import type {
   ParquetEncodedPageBatch,
   ParquetEncodedPageReadOptions,
@@ -236,24 +235,40 @@ type ParquetPhysicalRowGroupPlan = {
   bloomFilterBytesRead: number;
 };
 
-const {
-  preload: _preloadParquetSourceLoader,
-  createDataSourceSync: _createMetadataDataSource,
-  ...ParquetSourceLoaderBase
-} = ParquetSourceLoaderMetadata;
+/** Defaults used by range-backed Parquet sources. */
+const PARQUET_SOURCE_DEFAULT_OPTIONS = {
+  parquet: {
+    rowGroups: undefined!,
+    columns: undefined!,
+    batchSize: undefined!,
+    concurrency: undefined!,
+    rowGroupFilter: undefined!,
+    predicate: undefined!,
+    bbox: undefined!,
+    geometryColumn: undefined!,
+    headers: undefined!,
+    preserveBinary: false,
+    verifyPageChecksums: false,
+    verifyFooterSignature: true,
+    onTelemetry: undefined!,
+    workerUrl: undefined!,
+    wasmUrl: undefined!
+  },
+  rangeRequests: {
+    batchDelayMs: 0,
+    maxGapBytes: 0,
+    rangeExpansionBytes: 0
+  }
+};
 
-/** @deprecated Use ParquetLoaderWithParser from @loaders.gl/tables/parquet-loader. */
-export const ParquetSourceLoaderWithParser = {
-  ...ParquetSourceLoaderBase,
-  createDataSourceSync: (
-    data: string | Blob,
-    options: ParquetSourceLoaderOptions,
-    coreApi?: CoreAPI
-  ): ParquetSource => new ParquetSource(data, options, coreApi)
-} as const satisfies SourceLoader<ParquetSource>;
-
-/** @deprecated Use ParquetLoaderWithParser from @loaders.gl/tables/parquet-loader. */
-export const ParquetSourceLoader = ParquetSourceLoaderWithParser;
+/** Creates a reusable source over a Parquet URL or Blob. */
+export function createParquetSource(
+  data: string | Blob,
+  options: ParquetSourceLoaderOptions,
+  coreApi?: CoreAPI
+): ParquetSource {
+  return new ParquetSource(data, options, coreApi);
+}
 
 /** Reusable Parquet source that caches footer/schema state and selectively reads byte ranges. */
 export class ParquetSource
@@ -283,7 +298,7 @@ export class ParquetSource
   /** Creates a Parquet source backed by strict URL ranges or Blob slices. */
   constructor(data: string | Blob, options: ParquetSourceLoaderOptions, coreApi?: CoreAPI) {
     const wasmUrl = options.parquet?.wasmUrl;
-    super(data, options, ParquetSourceLoaderWithParser.defaultOptions, coreApi);
+    super(data, options, PARQUET_SOURCE_DEFAULT_OPTIONS, coreApi);
     if (wasmUrl !== undefined) {
       this.options.parquet.wasmUrl = wasmUrl;
     }

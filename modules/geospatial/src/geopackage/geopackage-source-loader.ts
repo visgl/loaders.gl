@@ -10,7 +10,6 @@ import type {
   DataSourceOptions,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
-  SourceLoader,
   TableScanReadOptions,
   TableScanSource,
   TableMetadata
@@ -36,13 +35,8 @@ import {
   parseGeoPackageToArrow,
   selectGeoPackageVectorTable
 } from './lib/parse-geopackage';
-import {GeoPackageFormat} from './geopackage-format';
 import {listGeoPackageTileTables} from './lib/geopackage-tile-metadata';
 import type {GeoPackageTileTableMetadata} from './lib/geopackage-tile-metadata';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GeoPackageSourceTableMetadata = {
   /** Query-visible WKB Arrow schema for this feature table. */
@@ -78,44 +72,24 @@ export type GeoPackageSourceOptions = DataSourceOptions &
     gis?: GeoPackageLoaderOptions['gis'];
   };
 
-/**
- * Source factory for GeoPackage datasets that expose table metadata and one-table Arrow reads.
- */
-export const GeoPackageSource = {
-  ...GeoPackageFormat,
-  dataType: null as unknown as GeoPackageDataSource,
-  batchType: null as never,
-  name: 'GeoPackageSource',
-  version: VERSION,
-  type: 'geopackage',
-  fromUrl: true,
-  fromBlob: true,
-
-  options: {
-    geopackage: {
-      sqlJsCDN: DEFAULT_SQLJS_CDN,
-      table: undefined,
-      workerUrl: undefined
-    },
-    gis: {}
+/** Default options for a GeoPackage source. */
+const GEOPACKAGE_SOURCE_DEFAULT_OPTIONS = {
+  geopackage: {
+    sqlJsCDN: DEFAULT_SQLJS_CDN,
+    table: undefined!,
+    workerUrl: undefined!
   },
+  gis: {}
+};
 
-  defaultOptions: {
-    geopackage: {
-      sqlJsCDN: DEFAULT_SQLJS_CDN,
-      table: undefined!,
-      workerUrl: undefined!
-    },
-    gis: {}
-  },
-
-  testURL: (url: string): boolean => /\.gpkg(?:$|[?#])/i.test(url),
-  createDataSourceSync: (
-    data: string | Blob,
-    options: GeoPackageSourceOptions,
-    coreApi?: CoreAPI
-  ): GeoPackageDataSource => new GeoPackageDataSource(data, options, coreApi)
-} as const satisfies SourceLoader<GeoPackageDataSource>;
+/** Opens a reusable GeoPackage source. */
+export function createGeoPackageSource(
+  data: string | Blob,
+  options: GeoPackageSourceOptions,
+  coreApi?: CoreAPI
+): GeoPackageDataSource {
+  return new GeoPackageDataSource(data, options, coreApi);
+}
 
 /**
  * GeoPackage data source that exposes vector table metadata and Arrow table reads.
@@ -128,7 +102,7 @@ export class GeoPackageDataSource
   private metadataPromise: Promise<GeoPackageSourceMetadata> | null = null;
 
   constructor(data: string | Blob, options: GeoPackageSourceOptions, coreApi?: CoreAPI) {
-    super(data, options, GeoPackageSource.defaultOptions, coreApi);
+    super(data, options, GEOPACKAGE_SOURCE_DEFAULT_OPTIONS, coreApi);
   }
 
   /** Returns GeoPackage table metadata and marks the selected default table. */

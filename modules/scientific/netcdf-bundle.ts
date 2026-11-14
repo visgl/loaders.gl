@@ -90,7 +90,7 @@ export {
   NetCDFReader,
   NetCDFFormat,
   NetCDFLoader,
-  NetCDFSourceLoader
+  NetCDFLoaderWithParser
 } from '@loaders.gl/scientific/netcdf';
 export type {
   NetCDF,

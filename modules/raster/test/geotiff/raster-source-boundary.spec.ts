@@ -9,8 +9,9 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {sampleRaster} from '@loaders.gl/core/loader-utils';
-import {GeoTIFFRasterSource, GeoTIFFSourceLoader} from '../../src/geotiff/geotiff-source-loader';
-import {OMETiffImageSource, OMETiffSourceLoader} from '../../src/geotiff/ometiff-source-loader';
+import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source-loader';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';
+import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-source-loader';
 
 /** Creates the minimal viewport shape accepted by raster sources. */
 function createViewport(bounds: RasterBoundingBox, crs = 'EPSG:4326', width = 10, height = 8) {
@@ -46,17 +47,15 @@ function installGeoTIFFState(
 }
 
 test('GeoTIFF source loader recognizes GeoTIFF but not OME-TIFF URLs', () => {
-  expect(GeoTIFFSourceLoader.testURL('image.tif?token=1')).toBe(true);
-  expect(GeoTIFFSourceLoader.testURL('image.geotiff#page')).toBe(true);
-  expect(GeoTIFFSourceLoader.testURL('image.ome.tif')).toBe(false);
-  expect(OMETiffSourceLoader.testURL('image.ome.tiff?token=1')).toBe(true);
-  expect(OMETiffSourceLoader.testURL('image.tiff')).toBe(false);
-  expect(GeoTIFFSourceLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(
+  expect(GeoTIFFLoaderWithParser.testURL('image.tif?token=1')).toBe(true);
+  expect(GeoTIFFLoaderWithParser.testURL('image.geotiff#page')).toBe(true);
+  expect(GeoTIFFLoaderWithParser.testURL('image.ome.tif')).toBe(false);
+  expect(OMETiffLoader.testURL('image.ome.tiff?token=1')).toBe(true);
+  expect(OMETiffLoader.testURL('image.tiff')).toBe(false);
+  expect(GeoTIFFLoaderWithParser.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(
     GeoTIFFRasterSource
   );
-  expect(OMETiffSourceLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(
-    OMETiffImageSource
-  );
+  expect(OMETiffLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(OMETiffImageSource);
 });
 
 test('GeoTIFF raster reads clip bounds and normalize planar and interleaved output', async () => {

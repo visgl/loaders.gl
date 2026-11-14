@@ -64,7 +64,7 @@ encodings, predicate pushdown, and writes are not yet supported.
 
 ## APIs
 
-- [`LanceSourceLoader`](/docs/modules/tables/lance/api-reference/lance-source-loader)
+- [`LanceLoader`](/docs/modules/tables/lance/api-reference/lance-source-loader)
   reads dataset metadata and local or remote Arrow batches.
 - The parser helpers are available from the
   [`@loaders.gl/tables/lance/lance-arrow`](/docs/modules/tables/lance/api-reference/lance-arrow)

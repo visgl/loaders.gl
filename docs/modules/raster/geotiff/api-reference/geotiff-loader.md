@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="Loader or source?"
   title="Load a complete image, or query a remote raster."
-  description="The loader is the simple complete-file path. GeoTIFFSourceLoader adds metadata discovery, range reads, windows, overview selection, and cancellation for cloud-native access."
+  description="The loader is the simple complete-file path. GeoTIFFLoader adds metadata discovery, range reads, windows, overview selection, and cancellation for cloud-native access."
   tone="mint"
   items={[
     {label: 'Loader', value: 'Complete TIFF image and metadata'},
@@ -44,14 +44,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <ReferenceBoundary
   title="GeoTIFF loader details"
-  description="The reference below covers complete-file loading, the returned raster shape, metadata, and the boundary between GeoTIFFLoader and GeoTIFFSourceLoader."
+  description="The reference below covers complete-file loading, the returned raster shape, metadata, and the boundary between GeoTIFFLoader and GeoTIFFLoader."
   tone="mint"
 />
 
 `GeoTIFFLoader` parses a complete GeoTIFF from an `ArrayBuffer` and reads the first image in
 the file. It is the straightforward path for local files or applications that already have
 the complete file in memory. For remote windows, overviews, or band-selective reads, use
-[`GeoTIFFSourceLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader).
+[`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader).
 
 ## Usage
 

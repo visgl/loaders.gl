@@ -7,7 +7,7 @@ import * as arrow from 'apache-arrow';
 import {validateWriter} from 'test/common/conformance';
 import {createDataSourceSync, encodeSync, fetchFile, parse, isBrowser} from '@loaders.gl/core';
 import {
-  COPCSourceLoader,
+  COPCLoader,
   COPCTileSource,
   COPCWriter,
   loadCOPCHierarchyPage,
@@ -342,16 +342,16 @@ test('COPC progressive range prefetch propagates failures and cancellation', asy
 });
 
 test('COPC source metadata identifies only COPC LAZ URLs', () => {
-  expect(COPCSourceLoader.testURL?.('https://example.test/file.COPC.LAZ?key=1')).toBe(true);
-  expect(COPCSourceLoader.testURL?.('file.laz')).toBe(false);
+  expect(COPCLoader.testURL?.('https://example.test/file.COPC.LAZ?key=1')).toBe(true);
+  expect(COPCLoader.testURL?.('file.laz')).toBe(false);
 });
 
 test('COPCWriter#writer conformance', () => {
   validateWriter(COPCWriter, 'COPCWriter');
 });
 
-test('COPCSourceLoader#creates a source through createDataSource', async () => {
-  const dataSource = createDataSourceSync(await createEllipsoidSourceData(), [COPCSourceLoader], {
+test('COPCLoader#creates a source through createDataSource', async () => {
+  const dataSource = createDataSourceSync(await createEllipsoidSourceData(), [COPCLoader], {
     core: {
       type: 'copc'
     },
@@ -361,8 +361,8 @@ test('COPCSourceLoader#creates a source through createDataSource', async () => {
   expect(dataSource).toBeInstanceOf(COPCTileSource);
 });
 
-test('COPCSourceLoader#conclusively reports common scan support', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#conclusively reports common scan support', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   const metadata = await source.getQueryMetadata();
 
   expect(metadata.queryType).toBe('point-cloud');
@@ -370,8 +370,8 @@ test('COPCSourceLoader#conclusively reports common scan support', async () => {
   await source.close();
 });
 
-test('COPCSourceLoader#scans bounded projected Arrow point batches with a global limit', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {
+test('COPCLoader#scans bounded projected Arrow point batches with a global limit', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {
     core: {worker: false}
   });
   const metadata = await source.getQueryMetadata();
@@ -404,8 +404,8 @@ test('COPCSourceLoader#scans bounded projected Arrow point batches with a global
   await source.close();
 });
 
-test('COPCSourceLoader#normalizes boolean predicates and preserves empty projections', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {
+test('COPCLoader#normalizes boolean predicates and preserves empty projections', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {
     core: {worker: false}
   });
   const batches = [];
@@ -424,8 +424,8 @@ test('COPCSourceLoader#normalizes boolean predicates and preserves empty project
   await source.close();
 });
 
-test('COPCSourceLoader#validates scan batch size and cancellation', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#validates scan batch size and cancellation', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   const invalidScan = source.scan({batchSize: 0});
   await expect(invalidScan.next()).rejects.toThrow('batchSize');
 
@@ -436,8 +436,8 @@ test('COPCSourceLoader#validates scan batch size and cancellation', async () => 
   await source.close();
 });
 
-test('COPCSourceLoader#validates progressive decoding options and unavailable nodes', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#validates progressive decoding options and unavailable nodes', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   await expect(source.loadTileContentInBatches({id: '1-1-1-1'}).next()).resolves.toMatchObject({
@@ -470,8 +470,8 @@ test('COPCSourceLoader#validates progressive decoding options and unavailable no
   await source.close();
 });
 
-test('COPCSourceLoader#loads normalized root and child tiles', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#loads normalized root and child tiles', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -487,8 +487,8 @@ test('COPCSourceLoader#loads normalized root and child tiles', async () => {
   expect(Array.isArray(grandChildTiles)).toBe(true);
 });
 
-test('COPCSourceLoader#loads full point content for a tile', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#loads full point content for a tile', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -502,8 +502,8 @@ test('COPCSourceLoader#loads full point content for a tile', async () => {
   expect(content?.cartographicOrigin.length).toBe(3);
 });
 
-test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#loads tile content with TypeScript LAZ decoder', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -513,8 +513,8 @@ test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async ()
   expect(content?.data.data.getChild('POSITION')?.length).toBe(content?.pointCount);
 });
 
-test('COPCSourceLoader#implements the TileSource getTileData contract', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#implements the TileSource getTileData contract', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -529,8 +529,8 @@ test('COPCSourceLoader#implements the TileSource getTileData contract', async ()
   expect((content as any)?.pointCount).toBe(rootTile.pointCount);
 });
 
-test('COPCSourceLoader#applies selected columns to atomic TypeScript decoding', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {
+test('COPCLoader#applies selected columns to atomic TypeScript decoding', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {
     core: {worker: false}
   });
   await source.initialize();
@@ -548,8 +548,8 @@ test('COPCSourceLoader#applies selected columns to atomic TypeScript decoding', 
   expect(content?.data.data.getChild('scanAngle')).toBeFalsy();
 });
 
-test('COPCSourceLoader#float16 converts 16-bit colors for Arrow output', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {
+test('COPCLoader#float16 converts 16-bit colors for Arrow output', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {
     copc: {colorFormat: 'float16'},
     core: {worker: false}
   });
@@ -568,13 +568,13 @@ test('COPCSourceLoader#float16 converts 16-bit colors for Arrow output', async (
   expect(getFloat16Value(values, 0)).toBeLessThanOrEqual(1);
 });
 
-test('COPCSourceLoader#uses the shared TypeScript LAS worker for atomic nodes', async () => {
+test('COPCLoader#uses the shared TypeScript LAS worker for atomic nodes', async () => {
   const blob = await createEllipsoidBlob();
-  const workerSource = createDataSourceSync(blob, [COPCSourceLoader], {
+  const workerSource = createDataSourceSync(blob, [COPCLoader], {
     copc: {decodeConcurrency: 2},
     core: {worker: true, reuseWorkers: false, _workerType: 'test', type: 'copc'}
   });
-  const mainThreadSource = COPCSourceLoader.createDataSourceSync(blob, {core: {worker: false}});
+  const mainThreadSource = COPCLoader.createDataSourceSync(blob, {core: {worker: false}});
   await Promise.all([workerSource.initialize(), mainThreadSource.initialize()]);
   const rootTile = await workerSource.getRootTile();
   const decodeNodeOnWorker = vi.spyOn(workerSource as any, 'decodeNodeOnWorker');
@@ -602,13 +602,13 @@ test('COPCSourceLoader#uses the shared TypeScript LAS worker for atomic nodes', 
 
 test.each([
   6, 7, 8
-] as const)('COPCSourceLoader#worker matches main-thread PDRF %i node decoding', async pointDataRecordFormat => {
+] as const)('COPCLoader#worker matches main-thread PDRF %i node decoding', async pointDataRecordFormat => {
   const blob = createWorkerCOPCBlob(pointDataRecordFormat);
-  const workerSource = createDataSourceSync(blob, [COPCSourceLoader], {
+  const workerSource = createDataSourceSync(blob, [COPCLoader], {
     copc: {decodeConcurrency: 2},
     core: {worker: true, _workerType: 'test', type: 'copc'}
   });
-  const mainThreadSource = COPCSourceLoader.createDataSourceSync(blob, {core: {worker: false}});
+  const mainThreadSource = COPCLoader.createDataSourceSync(blob, {core: {worker: false}});
   await Promise.all([workerSource.initialize(), mainThreadSource.initialize()]);
   const rootTile = await workerSource.getRootTile();
   const decodeNodeOnWorker = vi.spyOn(workerSource as any, 'decodeNodeOnWorker');
@@ -630,7 +630,7 @@ test.each([
   );
 });
 
-test('COPCSourceLoader#bounds complete node fetch and decode concurrency', async () => {
+test('COPCLoader#bounds complete node fetch and decode concurrency', async () => {
   const sourceBytes = new Uint8Array(await (await fetchFile(ELLIPSOID_BROWSER_URL)).arrayBuffer());
   const source = new TestCOPCTileSource(new Blob([sourceBytes]), {
     copc: {decodeConcurrency: 2},
@@ -655,7 +655,7 @@ test('COPCSourceLoader#bounds complete node fetch and decode concurrency', async
   expect(contents.every(content => content?.pointCount === rootTile.pointCount)).toBe(true);
 });
 
-test('COPCSourceLoader#cancels an atomic node queued behind the concurrency bound', async () => {
+test('COPCLoader#cancels an atomic node queued behind the concurrency bound', async () => {
   const sourceBytes = new Uint8Array(await (await fetchFile(ELLIPSOID_BROWSER_URL)).arrayBuffer());
   const source = new TestCOPCTileSource(new Blob([sourceBytes]), {
     copc: {decodeConcurrency: 1},
@@ -691,7 +691,7 @@ test('COPCSourceLoader#cancels an atomic node queued behind the concurrency boun
   await expect(activeLoad).resolves.toMatchObject({pointCount: rootTile.pointCount});
 });
 
-test('COPCSourceLoader#reports native range cancellation as AbortError', async () => {
+test('COPCLoader#reports native range cancellation as AbortError', async () => {
   const abortController = new AbortController();
   abortController.abort();
   await expect(
@@ -703,7 +703,7 @@ test('COPCSourceLoader#reports native range cancellation as AbortError', async (
   ).rejects.toMatchObject({name: 'AbortError'});
 });
 
-test.each([0, 1.5])('COPCSourceLoader#rejects invalid decode concurrency %s', decodeConcurrency => {
+test.each([0, 1.5])('COPCLoader#rejects invalid decode concurrency %s', decodeConcurrency => {
   expect(
     () =>
       new TestCOPCTileSource(new Blob(), {
@@ -712,8 +712,8 @@ test.each([0, 1.5])('COPCSourceLoader#rejects invalid decode concurrency %s', de
   ).toThrow('COPC decodeConcurrency must be a positive integer');
 });
 
-test('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#streams TypeScript tile content as Arrow batches', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -750,8 +750,8 @@ test('COPCSourceLoader#streams TypeScript tile content as Arrow batches', async 
   expect(streamedColors).toEqual(expectedColors);
 });
 
-test('COPCSourceLoader#selects progressive point-data columns', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#selects progressive point-data columns', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -806,8 +806,8 @@ test('COPCSourceLoader#selects progressive point-data columns', async () => {
   expect(firstBatch?.data.data.getChild('edgeOfFlightLine')).toBeTruthy();
 });
 
-test('COPCSourceLoader#streams position-only TypeScript tile batches', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#streams position-only TypeScript tile batches', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -833,8 +833,8 @@ test('COPCSourceLoader#streams position-only TypeScript tile batches', async () 
   expect(streamedPositions).toEqual(expectedPositions);
 });
 
-test('COPCSourceLoader#streams hierarchy pages', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#streams hierarchy pages', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   const batches = [];
   for await (const batch of source.loadHierarchyInBatches({maxPages: 1})) {
     batches.push(batch);
@@ -845,7 +845,7 @@ test('COPCSourceLoader#streams hierarchy pages', async () => {
   expect(batches[0]?.nodes['0-0-0-0']).toBeTruthy();
 });
 
-test('COPCSourceLoader#handles abandoned prefetched range failures', async () => {
+test('COPCLoader#handles abandoned prefetched range failures', async () => {
   const source = new TestCOPCTileSource(await createEllipsoidSourceData(), {});
   await source.initialize();
   let requestCount = 0;
@@ -877,14 +877,14 @@ test('COPCSourceLoader#handles abandoned prefetched range failures', async () =>
   }
 });
 
-test('COPCSourceLoader#does not create children beyond depth 31', async () => {
+test('COPCLoader#does not create children beyond depth 31', async () => {
   const source = new TestCOPCTileSource(await createEllipsoidSourceData(), {});
   await source.initialize();
   expect(source.readChildKeys('31-2147483647-2147483647-2147483647')).toEqual([]);
 });
 
-test('COPCSourceLoader#includes typed Extra Bytes dimensions in its schema', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#includes typed Extra Bytes dimensions in its schema', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
   const metadata = await source.getMetadata();
   const copc = metadata.formatSpecificMetadata;
   copc.header.pointDataRecordLength += 1;
@@ -909,7 +909,7 @@ test('COPCSourceLoader#includes typed Extra Bytes dimensions in its schema', asy
     nullable: false
   });
 });
-test('COPCSourceLoader#scans exact 64-bit Extra Bytes with scalar and vector schemas', async () => {
+test('COPCLoader#scans exact 64-bit Extra Bytes with scalar and vector schemas', async () => {
   const file = encodeSync(
     makeMeshArrowTable({
       POSITION: {value: new Float64Array([1, 2, 3, 4, 5, 6, 7, 8, 9]), size: 3}
@@ -917,7 +917,7 @@ test('COPCSourceLoader#scans exact 64-bit Extra Bytes with scalar and vector sch
     COPCWriter,
     {copc: {pointDataRecordFormat: 6}}
   );
-  const source = COPCSourceLoader.createDataSourceSync(new Blob([file]), {core: {worker: false}});
+  const source = COPCLoader.createDataSourceSync(new Blob([file]), {core: {worker: false}});
   const root = await source.getRootTile();
   const content = await source.loadTileContent(root);
   expect(content).toBeTruthy();
@@ -977,9 +977,9 @@ test('COPCSourceLoader#scans exact 64-bit Extra Bytes with scalar and vector sch
   }
 });
 
-test('COPCSourceLoader#loads tile content from a Blob', async () => {
+test('COPCLoader#loads tile content from a Blob', async () => {
   const blob = await createEllipsoidBlob();
-  const source = COPCSourceLoader.createDataSourceSync(blob, {});
+  const source = COPCLoader.createDataSourceSync(blob, {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -989,8 +989,8 @@ test('COPCSourceLoader#loads tile content from a Blob', async () => {
   expect(content?.data.data.getChild('POSITION')?.length).toBe(content?.pointCount);
 });
 
-test('COPCSourceLoader#derives cartographic view metadata from the dataset', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
+test('COPCLoader#derives cartographic view metadata from the dataset', async () => {
+  const source = COPCLoader.createDataSourceSync(await createEllipsoidSourceData(), {});
 
   const metadata = await source.getMetadata();
   const schema = await source.getSchema();
@@ -1078,7 +1078,7 @@ test('COPCWriter#encodes range-readable octree nodes', async () => {
     copc.header.pointCount
   );
 
-  const source = COPCSourceLoader.createDataSourceSync(blob, {});
+  const source = COPCLoader.createDataSourceSync(blob, {});
   await source.initialize();
   const rootTile = await source.getRootTile();
   const childTiles = await source.getChildren(rootTile);
@@ -1119,7 +1119,7 @@ test('COPCWriter writes range-readable hierarchy pages and GPS bounds', async ()
     copc.info.rootHierarchyPage.pageOffset + copc.info.rootHierarchyPage.pageLength
   ]);
 
-  const boundarySource = COPCSourceLoader.createDataSourceSync(blob, {});
+  const boundarySource = COPCLoader.createDataSourceSync(blob, {});
   await boundarySource.initialize();
   const boundaryPageKey = Object.keys(rootHierarchy.pages)[0];
   expect(boundaryPageKey).toBeTruthy();
@@ -1132,7 +1132,7 @@ test('COPCWriter writes range-readable hierarchy pages and GPS bounds', async ()
   const boundaryNode = await boundarySource.getNode({nodeIndex: boundaryNodeIndex});
   expect(boundaryNode?.pointCount).toBeGreaterThan(0);
 
-  const source = COPCSourceLoader.createDataSourceSync(blob, {});
+  const source = COPCLoader.createDataSourceSync(blob, {});
   await source.initialize();
   const pages = [];
   for await (const page of source.loadHierarchyInBatches()) {

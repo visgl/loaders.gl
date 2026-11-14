@@ -47,7 +47,7 @@ export type WMSSourceLoaderOptions = DataSourceOptions &
     };
   };
 
-export const WMSSourceLoader = {
+export const WMSLoader = {
   dataType: null as unknown as WMSImageSource,
   batchType: null as never,
   name: 'Web Map Service (OGC WMS)',
@@ -235,7 +235,7 @@ export class WMSImageSource
 
   /** Create a WMSImageSource */
   constructor(url: string, options: WMSSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(url, options, WMSSourceLoader.defaultOptions, coreApi);
+    super(url, options, WMSLoader.defaultOptions, coreApi);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WMS URL more likely to make this class just work.

@@ -55,13 +55,13 @@ and common query metadata without returning the managed source object or changin
 Most applications should create runtime sources with `createDataSource()` from `@loaders.gl/core`. `createDataSource()` selects a matching `SourceLoader`, calls that loader's `createDataSource()` factory, and injects the core loading hooks that many `DataSource` subclasses need for follow-up requests.
 
 ```ts
-import {createDataSourceSync} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
 const dataSourceManager = new DataSourceManager();
 
-const tiles = createDataSourceSync('https://example.com/world.pmtiles', [PMTilesSourceLoader], {
+const tiles = await createDataSource('https://example.com/world.pmtiles', [PMTilesLoader], {
   pmtiles: {
     // PMTiles-specific options
   }
@@ -84,7 +84,7 @@ const firstTiles = dataSourceManager.getOrCreate({
   dataSourceId: 'world-tiles',
   data: 'https://example.com/world.pmtiles',
   createDataSource: data =>
-    createDataSourceSync(data as string, [PMTilesSourceLoader], {
+    createDataSource(data as string, [PMTilesLoader], {
       pmtiles: {
         // PMTiles-specific options
       }
@@ -94,7 +94,7 @@ const firstTiles = dataSourceManager.getOrCreate({
 const secondTiles = dataSourceManager.getOrCreate({
   dataSourceId: 'world-tiles',
   data: 'https://example.com/world.pmtiles',
-  createDataSource: data => createDataSourceSync(data as string, [PMTilesSourceLoader])
+  createDataSource: data => createDataSource(data as string, [PMTilesLoader])
 });
 
 // firstTiles and secondTiles reference the same DataSource.
@@ -105,7 +105,7 @@ const secondTiles = dataSourceManager.getOrCreate({
 ```ts
 const tiles = dataSourceManager.getOrCreate({
   data: 'https://example.com/world.pmtiles',
-  createDataSource: data => createDataSourceSync(data as string, [PMTilesSourceLoader])
+  createDataSource: data => createDataSource(data as string, [PMTilesLoader])
 });
 ```
 
@@ -170,7 +170,7 @@ const pendingTiles = dataSourceManager.subscribe({
 
 dataSourceManager.add({
   dataSourceId: 'world-tiles',
-  dataSource: createDataSourceSync('https://example.com/world.pmtiles', [PMTilesSourceLoader])
+  dataSource: await createDataSource('https://example.com/world.pmtiles', [PMTilesLoader])
 });
 ```
 
@@ -181,7 +181,7 @@ Deferred ids are useful when layer configuration is created before data sources 
 Calling `add()` with an existing `dataSourceId` replaces the current `DataSource`, notifies subscribers, and releases the previous instance through its lifecycle method.
 
 ```ts
-const updatedTiles = createDataSourceSync('https://example.com/world-v2.pmtiles', [PMTilesSourceLoader]);
+const updatedTiles = await createDataSource('https://example.com/world-v2.pmtiles', [PMTilesLoader]);
 
 dataSourceManager.add({
   dataSourceId: 'world-tiles',
@@ -262,14 +262,14 @@ A `SourceLoader` is metadata plus a `createDataSource()` method. The manager doe
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
 const dataSourceManager = new DataSourceManager();
 
 const dataSource = createDataSourceSync(
   url,
-  [PMTilesSourceLoader, MVTSourceLoader],
+  [PMTilesLoader, MVTLoader],
   {
     core: {
       type: 'auto'

@@ -93,8 +93,7 @@ test('geospatial does not transitively install table engines or SQL.js', () => {
 });
 
 test.each([
-  ['lance/lance-source-loader-types', 'LanceSourceLoader'],
-  ['lance/lance-source-loader', 'LanceSourceLoader'],
+  ['lance/lance-loader', 'LanceLoaderWithParser'],
   ['json/ndgeojson-loader-types', 'NDGeoJSONLoader']
 ])('published %s declarations retain the %s public type', (entrypoint, exportName) => {
   const declaration = fileSystem.readFileSync(

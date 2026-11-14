@@ -37,6 +37,14 @@
       "import": "./dist/terrain/index.js",
       "require": "./dist/terrain/index.cjs"
     },
+    "./mlt-loader": {
+      "types": "./dist/mlt-loader.d.ts",
+      "import": "./dist/mlt-loader.js"
+    },
+    "./mvt-loader": {
+      "types": "./dist/mvt-loader.d.ts",
+      "import": "./dist/mvt-loader.js"
+    },
     "./mlt": {
       "types": "./dist/mlt/index.d.ts",
       "import": "./dist/mlt/index.js",

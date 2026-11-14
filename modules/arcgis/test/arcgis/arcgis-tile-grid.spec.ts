@@ -6,10 +6,7 @@ import {expect, test, vi} from 'vitest';
 import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {ArcGISMapTileSource} from '../../src/arcgis/arcgis-map-tile-source-loader';
 import {ArcGISImageTileSource} from '../../src/arcgis/arcgis-image-tile-source-loader';
-import {
-  ArcGISMapTileSourceLoader,
-  ArcGISVectorTileServerSourceLoader
-} from '@loaders.gl/arcgis/bundled';
+import {ArcGISMapTileLoader, ArcGISVectorTileServerLoader} from '@loaders.gl/arcgis/bundled';
 import {createArcGISTileGrid} from '../../src/arcgis/arcgis-tile-grid';
 
 const TILE_INFO = {
@@ -24,12 +21,12 @@ const TILE_INFO = {
 };
 
 test('ArcGIS raster and vector sources expose the same partial native grid', async () => {
-  const raster = ArcGISMapTileSourceLoader.createDataSourceSync('https://example.com/MapServer', {
+  const raster = ArcGISMapTileLoader.createDataSourceSync('https://example.com/MapServer', {
     'arcgis-map-server': {
       metadata: {tileInfo: TILE_INFO, fullExtent: {xmin: 0, ymin: 0, xmax: 1, ymax: 1}}
     }
   });
-  const vector = ArcGISVectorTileServerSourceLoader.createDataSourceSync(
+  const vector = ArcGISVectorTileServerLoader.createDataSourceSync(
     'https://example.com/VectorTileServer',
     {}
   );

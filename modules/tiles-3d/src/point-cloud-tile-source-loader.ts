@@ -4,7 +4,7 @@
 
 import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {PointCloudTileSource} from '@loaders.gl/tiles-3d/point-cloud-tile-source';
-import {PointCloudTileSourceLoader} from './point-cloud-tile-source-loader-types';
+import {PointCloudTileLoader} from './point-cloud-tile-source-loader-types';
 import type {
   PointCloudTileSourceInput,
   PointCloudTileSourceOptions
@@ -14,10 +14,10 @@ const {
   preload: _preload,
   createDataSourceSync: _createDataSource,
   ...metadata
-} = PointCloudTileSourceLoader;
+} = PointCloudTileLoader;
 
 /** Parser-bearing source factory for decoded point Mesh/Arrow data. */
-export const PointCloudTileSourceLoaderWithParser = {
+export const PointCloudTileLoaderWithParser = {
   ...metadata,
   /** Creates a native-coordinate source with deferred child indexing. */
   createDataSourceSync(
@@ -26,7 +26,7 @@ export const PointCloudTileSourceLoaderWithParser = {
     coreApi?: CoreAPI
   ): PointCloudTileSource {
     if (typeof input === 'string' || input instanceof Blob)
-      throw new Error('PointCloudTileSourceLoader requires decoded Mesh/Arrow input');
+      throw new Error('PointCloudTileLoader requires decoded Mesh/Arrow input');
     return new PointCloudTileSource(input, options, coreApi);
   }
 } as const satisfies SourceLoader<PointCloudTileSource>;

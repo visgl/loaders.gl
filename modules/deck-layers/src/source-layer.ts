@@ -15,7 +15,6 @@ import type {
   ImageSource,
   Loader,
   RasterSource,
-  SourceLoader,
   TileSourceMetadata,
   VectorSource
 } from '@loaders.gl/core/loader-utils';
@@ -86,11 +85,11 @@ export type SourceLayerProps<DataT = unknown> = Omit<CompositeLayerProps, 'data'
     /** URL/blob input or a fully constructed visual source runtime. */
     data: SourceLayerData;
     /** Parser loaders and SourceLoaders available for automatic resolution. */
-    loaders?: ReadonlyArray<Loader | SourceLoader>;
+    loaders?: ReadonlyArray<Loader>;
     /** Singular loader compatibility prop. */
-    loader?: Loader | SourceLoader | Array<Loader | SourceLoader>;
+    loader?: Loader | Array<Loader>;
     /** @deprecated Put SourceLoaders in `loaders`. */
-    sources?: Readonly<SourceLoader[]>;
+    sources?: Readonly<Loader[]>;
     /** Options forwarded to source construction. */
     sourceOptions?: DataSourceOptions;
     /** Named source layer selection, or automatic first-leaf discovery. */

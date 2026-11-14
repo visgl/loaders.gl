@@ -32,7 +32,7 @@ import apacheLogo from '../../../../images/logos/apache-logo.png';
 | Type | API |
 | --- | --- |
 | Loader | `ORCLoader` |
-| Source loader | `ORCSourceLoader` |
+| Source loader | `ORCLoader` |
 
 <DocLiveExample label="ORC loader example" variant="panel">
   <OrcCloudLiveExample />

@@ -26,7 +26,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Type | API |
 | --- | --- |
 | Loader | `NetCDFLoader` |
-| Source loader | `NetCDFSourceLoader` |
+| Source loader | `NetCDFLoader` |
 
 <DocOrientation
   eyebrow="The array model"

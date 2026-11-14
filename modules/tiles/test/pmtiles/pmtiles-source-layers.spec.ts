@@ -7,11 +7,12 @@ import {PMTiles, type Header} from 'pmtiles';
 import {createDataSourceSync} from '@loaders.gl/core';
 import {createWebMercatorTileGrid, type CoreAPI} from '@loaders.gl/core/loader-utils';
 import {parsePMTilesHeader} from '../../src/pmtiles/lib/parse-pmtiles';
+import {PMTilesLoaderWithParser} from '../../src/pmtiles/pmtiles-loader-with-parser';
+
 import {MLTLoader} from '@loaders.gl/tiles/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/tiles/mvt';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {
-  PMTilesSourceLoader,
   PMTilesTileSource,
   type PMTilesSourceLoaderOptions
 } from '../../src/pmtiles/pmtiles-source-loader';
@@ -87,11 +88,6 @@ test.each([
   );
 });
 
-test('PMTilesSourceLoader#defaults vector tiles to arrow-table output', () => {
-  expect(PMTilesSourceLoader.options.pmtiles.shape).toBe('arrow');
-  expect(PMTilesSourceLoader.defaultOptions.pmtiles.shape).toBeUndefined();
-});
-
 test.each([
   {loadOptions: {mvt: {shape: 'binary-geometry'}}},
   {core: {loadOptions: {mvt: {shape: 'binary-geometry'}}}}
@@ -99,7 +95,7 @@ test.each([
   expect(() =>
     createDataSourceSync(
       'memory://tiles.pmtiles',
-      [PMTilesSourceLoader],
+      [PMTilesLoaderWithParser],
       options as unknown as PMTilesSourceLoaderOptions
     )
   ).toThrow('Use core and root loader namespaces directly');

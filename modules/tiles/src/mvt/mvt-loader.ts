@@ -45,6 +45,11 @@ async function preload() {
 export const MVTLoader = {
   defaultShape: 'arrow',
   supportsNativeArrow: true,
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.(?:mvt|pbf)(?:$|[?#])|\{(?:z|x|y|-y)\}/i.test(url),
+  fromUrl: true,
+  fromBlob: false,
+  type: 'mvt',
   ...MVTFormat,
   dataType: null as any,
   batchType: null as never,

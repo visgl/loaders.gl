@@ -3,10 +3,8 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import type {TiffSourceDecoder, TiffSourceImage} from './lib/tiff/tiff-source-decoder';
-import {openGeoTIFFSourceDecoder} from './lib/tiff/geotiff-source-adapter';
 
 import type {
-  SourceLoader,
   DataSourceOptions,
   TypedArray,
   RasterRegionSource,
@@ -41,11 +39,6 @@ import {
   validateRasterRegion,
   createScanQueryMetadata
 } from '@loaders.gl/core/loader-utils';
-import {GeoTIFFFormat} from './geotiff-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /**
  * Options for creating a GeoTIFF raster source.
@@ -91,43 +84,22 @@ export const GEOTIFF_RASTER_QUERY_CAPABILITIES: RasterQueryCapabilities = Object
 /**
  * Source factory for viewport-driven GeoTIFF datasets.
  */
-export const GeoTIFFSourceLoader = {
-  dataType: null as unknown as GeoTIFFRasterSource,
-  batchType: null as never,
-  ...GeoTIFFFormat,
-  name: 'GeoTIFFSourceLoader',
-  version: VERSION,
-  type: 'geotiff',
-  fromUrl: true,
-  fromBlob: true,
+/** Default options for the GeoTIFF source. */
+const GEOTIFF_SOURCE_DEFAULT_OPTIONS = {
+  geotiff: {
+    headers: undefined!,
+    interleaved: false,
+    resampleMethod: 'nearest'
+  }
+} as const;
 
-  options: {
-    geotiff: {
-      headers: undefined!,
-      interleaved: false,
-      resampleMethod: 'nearest'
-    }
-  },
-
-  defaultOptions: {
-    geotiff: {
-      headers: undefined!,
-      interleaved: false,
-      resampleMethod: 'nearest'
-    }
-  },
-
-  testURL: (url: string): boolean => {
-    if (/\.ome\.tiff?(?:$|[?#])/i.test(url)) {
-      return false;
-    }
-    return /\.(?:geotiff?|tiff?)(?:$|[?#])/i.test(url);
-  },
-  createDataSourceSync: (
-    data: string | Blob,
-    options: GeoTIFFSourceLoaderOptions
-  ): GeoTIFFRasterSource => new GeoTIFFRasterSource(data, options)
-} as const satisfies SourceLoader<GeoTIFFRasterSource>;
+/** Creates a reusable GeoTIFF source. */
+export function createGeoTIFFSource(
+  data: string | Blob,
+  options: GeoTIFFSourceLoaderOptions
+): GeoTIFFRasterSource {
+  return new GeoTIFFRasterSource(data, options);
+}
 
 type GeoTIFFInit = {
   tiff: TiffSourceDecoder;
@@ -169,7 +141,7 @@ export class GeoTIFFRasterSource
 
   /** Creates a viewport-driven raster source backed by a GeoTIFF URL or Blob. */
   constructor(data: string | Blob, options: GeoTIFFSourceLoaderOptions) {
-    super(data, options, GeoTIFFSourceLoader.defaultOptions);
+    super(data, options, GEOTIFF_SOURCE_DEFAULT_OPTIONS);
 
     if (options.geotiff?.rangeSchedulerProps) {
       this.options.geotiff ||= {};
@@ -796,6 +768,7 @@ export class GeoTIFFRasterSource
       });
       // The library's BlockedSource retries interrupted shared blocks without a signal.
       // Adapt its buffer-source protocol directly; loaders.gl owns bounded caching and cancellation.
+      const {openGeoTIFFSourceDecoder} = await import('./lib/tiff/geotiff-source-adapter');
       return await openGeoTIFFSourceDecoder(
         {
           /** Reads independently owned buffers in source request order. */
@@ -812,6 +785,7 @@ export class GeoTIFFRasterSource
       );
     }
 
+    const {openGeoTIFFSourceDecoder} = await import('./lib/tiff/geotiff-source-adapter');
     return await openGeoTIFFSourceDecoder(this.data, signal);
   }
 

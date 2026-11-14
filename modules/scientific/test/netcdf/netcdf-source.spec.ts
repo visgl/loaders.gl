@@ -1,9 +1,7 @@
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {expect, test} from 'vitest';
-import {
-  NetCDFSource,
-  NetCDFSourceLoaderWithParser as NetCDFSourceLoader
-} from '../../src/netcdf/netcdf-source-loader';
+import {NetCDFSource} from '../../src/netcdf/netcdf-source-loader';
+import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
 
 const NETCDF_FIXTURE = '@loaders.gl/scientific/test/netcdf/data/madis-sao.nc';
 
@@ -116,9 +114,9 @@ test('NetCDF source validates cheap query options before loading data', async ()
   await expect(source.getRaster({level: 1})).rejects.toThrow('levels are not supported');
   await expect(source.getRaster({width: 1})).rejects.toThrow('resampling is not supported');
   await expect(source.getRaster({channels: [0]})).rejects.toThrow('named variables');
-  expect(NetCDFSourceLoader.testURL('data/file.nc?download=1')).toBe(true);
-  expect(NetCDFSourceLoader.testURL('data/file.bin')).toBe(false);
-  expect(NetCDFSourceLoader.createDataSourceSync(new Blob(), {})).toBeInstanceOf(NetCDFSource);
+  expect(NetCDFLoaderWithParser.testURL('data/file.nc?download=1')).toBe(true);
+  expect(NetCDFLoaderWithParser.testURL('data/file.bin')).toBe(false);
+  expect(NetCDFLoaderWithParser.createDataSourceSync(new Blob(), {})).toBeInstanceOf(NetCDFSource);
 });
 
 test('NetCDF source materializes every supported numeric type and slice form', async () => {

@@ -9,7 +9,7 @@ import {encodeWKBGeometryValue} from '@loaders.gl/core/arrow-geometry/geometry-f
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   ParquetJSWriter,
-  ParquetSourceLoader,
+  ParquetLoader,
   type ParquetSourceMetadata
 } from '@loaders.gl/tables/parquet/index';
 import type {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
@@ -68,10 +68,10 @@ test('Parquet native geospatial statistics round-trip all dimensions and geometr
   expect(decoded.geospatial_statistics?.geospatial_types).toEqual([1, 1002, 2003, 3007]);
 });
 
-test('ParquetSourceLoader reads the canonical GeoParquet 2.0 interoperability fixture', async () => {
+test('ParquetLoader reads the canonical GeoParquet 2.0 interoperability fixture', async () => {
   const source = (await createDataSource(
     '@loaders.gl/tables/parquet/test/data/geoparquet/example-2.0.parquet',
-    ParquetSourceLoader,
+    ParquetLoader,
     {core: {worker: false}}
   )) as ParquetSource;
   const metadata = await source.getMetadata({formatSpecificMetadata: true});
@@ -132,7 +132,7 @@ test('ParquetJSWriter emits GeoParquet 2.0 logical types and row-group statistic
     parquet: {rowGroupSize: 1},
     worker: false
   });
-  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetLoader, {
     core: {worker: false}
   })) as ParquetSource;
   const metadata = (await source.getMetadata({
@@ -182,7 +182,7 @@ test('ParquetJSWriter emits native Parquet geo types directly from GeoArrow WKB 
     data: [{geometry: encodeWKBGeometryValue({type: 'Point', coordinates: [1, 2]})!}]
   };
   const parquetBuffer = await encode(table, ParquetJSWriter, {worker: false});
-  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetLoader, {
     core: {worker: false}
   })) as ParquetSource;
   const metadata = await source.getMetadata({formatSpecificMetadata: true});
@@ -204,7 +204,7 @@ test('ParquetJSWriter ignores nulls and omits bounds for empty native geometries
     encodeWKBGeometryValue({type: 'LineString', coordinates: []})!
   ]);
   const parquetBuffer = await encode(table, ParquetJSWriter, {worker: false});
-  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetSourceLoader, {
+  const source = (await createDataSource(new Blob([parquetBuffer]), ParquetLoader, {
     core: {worker: false}
   })) as ParquetSource;
   const metadata = await source.getMetadata({formatSpecificMetadata: true});

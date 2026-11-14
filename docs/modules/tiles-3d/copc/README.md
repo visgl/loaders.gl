@@ -70,7 +70,7 @@ npm install @loaders.gl/core @loaders.gl/tiles-3d
 
 | API | Description |
 | --- | --- |
-| [`COPCSourceLoader`](/docs/modules/tiles-3d/copc/api-reference/copc-source-loader) <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> | Loads viewport-selected point data from COPC files through byte ranges. |
+| [`COPCLoader`](/docs/modules/tiles-3d/copc/api-reference/copc-source-loader) <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> | Loads viewport-selected point data from COPC files through byte ranges. |
 | [`COPCWriter`](/docs/modules/tiles-3d/copc/api-reference/copc-writer) | Writes Mesh or Mesh Arrow table point clouds as COPC 1.0 data. |
 
 ## Attribution

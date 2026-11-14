@@ -26,7 +26,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| Source loader | [`CSWSourceLoader`](../api-reference/csw-source-loader.md) |
+| Source loader | [`CSWLoader`](../api-reference/csw-source-loader.md) |
 
 <DocOrientation
   eyebrow="The catalog path"
@@ -49,7 +49,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 
 CSW is an OGC protocol for searching catalogs of geospatial datasets, services, and related
-resources. `CSWSourceLoader` adapts read-only CSW endpoints to the loaders.gl `CatalogSource`
+resources. `CSWLoader` adapts read-only CSW endpoints to the loaders.gl `CatalogSource`
 contract.
 
 ## Feature support
@@ -73,9 +73,9 @@ contract.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {CSWSourceLoader} from '@loaders.gl/ogc/wms';
+import {CSWLoader} from '@loaders.gl/ogc/wms';
 
-const catalog = createDataSourceSync(cswUrl, [CSWSourceLoader]);
+const catalog = createDataSourceSync(cswUrl, [CSWLoader]);
 const metadata = await catalog.getMetadata();
 
 for await (const record of catalog.search()) {

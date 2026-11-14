@@ -16,16 +16,16 @@ export type DeltaSourceLoaderOptions = DeltaSourceOptions;
 
 /** Loads the parser-bearing Delta source implementation on demand. */
 async function preloadDeltaSourceLoader(): Promise<SourceLoader<DeltaTableSource>> {
-  const {DeltaSourceLoaderWithParser} = await import('@loaders.gl/tables/delta-source');
-  return DeltaSourceLoaderWithParser;
+  const {DeltaLoaderWithParser} = await import('@loaders.gl/tables/delta-source');
+  return DeltaLoaderWithParser;
 }
 
 /** Metadata-only Delta source loader; runtime code is available through `preload()`. */
-export const DeltaSourceLoader = {
+export const DeltaLoader = {
   ...DeltaFormat,
   dataType: null as unknown as DeltaTableSource,
   batchType: null as never,
-  name: 'DeltaSourceLoader',
+  name: 'DeltaLoader',
   version: VERSION,
   type: 'delta',
   fromUrl: true,

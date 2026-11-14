@@ -57,9 +57,9 @@ Provide a source loader with a runtime factory and an input it supports:
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
-const source = await createDataSource(url, [PMTilesSourceLoader]);
+const source = await createDataSource(url, [PMTilesLoader]);
 const metadata = await source.getMetadata();
 ```
 
@@ -67,10 +67,10 @@ Automatic selection is performed with best-effort heuristics.
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
-const dataSource = await createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader]);
+const dataSource = await createDataSource(url, [PMTilesLoader, MVTLoader]);
 const metadata = await dataSource.getMetadata();
 ```
 

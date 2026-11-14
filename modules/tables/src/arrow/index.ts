@@ -12,7 +12,7 @@ export {ArrowFormat} from './exports/arrow-format';
 export type {ArrowLoaderOptions} from './exports/arrow-loader';
 
 export {ArrowLoader} from './arrow-loader-types';
-export {ArrowSourceLoader, ArrowTableSource} from './arrow-source';
+export {ArrowTableSource} from './arrow-source';
 
 export {ArrowWriter, type ArrowWriterOptions} from './arrow-writer';
 export type {

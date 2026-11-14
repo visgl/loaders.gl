@@ -1,5 +1,5 @@
 ---
-title: STACSourceLoader
+title: STACLoader
 description: Discover and search static catalogs or STAC APIs before handing selected assets to native loaders.
 hide_title: true
 page_style: designed
@@ -11,8 +11,8 @@ import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discove
 
 <DocPageHeader
   eyebrow="STAC source"
-  title="STACSourceLoader"
-  description="STACSourceLoader handles static catalog traversal and API Item Search, returning metadata and asset links while leaving the selected file to its native format loader."
+  title="STACLoader"
+  description="STACLoader handles static catalog traversal and API Item Search, returning metadata and asset links while leaving the selected file to its native format loader."
   tone="mint"
   meta={['Static catalogs', 'Item Search', 'Asset selection']}
   links={[
@@ -36,22 +36,22 @@ import {DatasetDiscoveryGraphic} from '@site/src/components/docs/dataset-discove
   ]}
 />
 
-The `STACSourceLoader` creates a lightweight source for static STAC catalogs and STAC APIs.
+The `STACLoader` creates a lightweight source for static STAC catalogs and STAC APIs.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {STACSourceLoader} from '@loaders.gl/ogc/stac';
+import {STACLoader} from '@loaders.gl/ogc/stac';
 
-const source = await createDataSource('https://example.com/stac', STACSourceLoader);
+const source = await createDataSource('https://example.com/stac', STACLoader);
 ```
 
 For synchronous `createDataSourceSync()`, import the runtime-bearing subpath:
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {STACSourceLoader} from '@loaders.gl/ogc/stac-source';
+import {STACLoader} from '@loaders.gl/ogc/stac-source';
 
-const source = createDataSourceSync('https://example.com/stac', STACSourceLoader);
+const source = createDataSourceSync('https://example.com/stac', STACLoader);
 ```
 
 <ReferenceBoundary

@@ -52,7 +52,7 @@ OGC network Common Data Form (netCDF) standards suite
   tone="cyan"
 />
 
-`NetCDFSource` and `NetCDFSourceLoader` expose NetCDF classic and 64-bit-offset headers through
+`NetCDFSource` and `NetCDFLoader` expose NetCDF classic and 64-bit-offset headers through
 the shared scan architecture. `getQueryMetadata()` discovers variable names, portable scalar
 types, variable attributes, dimensions, and file size without decoding data arrays. `getRaster()`
 then reads selected numeric variables and applies named dimension slices.
