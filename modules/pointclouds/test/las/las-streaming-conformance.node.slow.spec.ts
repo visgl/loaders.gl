@@ -176,9 +176,9 @@ describe('TypeScript LAZ streaming conformance', () => {
       decodedChunkAllocations: 0
     };
     const options = {
-      batchSize: 127,
+      core: {batchSize: 127},
       las: {
-        shape: 'arrow-table',
+        shape: 'arrow',
         lazStreamingStats: stats
       }
     } as LASLoaderOptions;
@@ -205,10 +205,10 @@ describe('TypeScript LAZ streaming conformance', () => {
         '@loaders.gl/pointclouds/las/test/data/ellipsoid-1.4.laz'
       );
       const pointCount = parseLASHeader(source).pointsCount;
-      const fullOptions: LASLoaderOptions = {batchSize: 25_000, las: {shape: 'arrow-table'}};
+      const fullOptions: LASLoaderOptions = {core: {batchSize: 25_000}, las: {shape: 'arrow'}};
       const renderOptions: LASLoaderOptions = {
-        batchSize: 25_000,
-        las: {shape: 'arrow-table', columns: ['POSITION', 'COLOR_0']}
+        core: {batchSize: 25_000},
+        las: {shape: 'arrow', columns: ['POSITION', 'COLOR_0']}
       };
 
       await consumeArrowBatches(source, renderOptions);

@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import {
   canEncodeWithWorker,
   type WriterWithEncoder,
   type WriterOptions
 } from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable, TypedArray} from '@loaders.gl/core/schema';
-import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertTableToMesh, isNativeArrowTable} from '@loaders.gl/core/schema-utils';
 import {extractLoadLibraryOptions, processOnWorkerInBatches} from '@loaders.gl/core/worker-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuilderMesh, DracoBuildOptions, DracoEncodingResult} from './lib/draco-builder';
@@ -25,6 +26,7 @@ export type DracoWriterInput =
   | DracoMesh
   | Mesh
   | MeshArrowTable
+  | Table
   | DracoBuilderMesh
   | DracoWriterAttributes;
 
@@ -220,7 +222,7 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
 
 /** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */
 function normalizeDracoMesh(data: DracoWriterInput): DracoBuilderMesh {
-  if (isMeshArrowTable(data)) {
+  if (isMeshArrowTable(data) || isNativeArrowTable(data)) {
     return convertTableToMesh(data);
   }
 

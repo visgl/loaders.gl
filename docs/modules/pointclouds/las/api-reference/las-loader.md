@@ -30,7 +30,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="The same point records can become a legacy point-cloud object or typed columns. Column selection keeps optional fields from expanding the result unnecessarily."
   tone="blue"
   items={[
-    {label: 'Default', value: "Mesh Arrow table with shape: 'arrow-table'"},
+    {label: 'Default', value: "Mesh Arrow table with shape: 'arrow'"},
     {label: 'Compatibility', value: "PointCloud object with shape: 'mesh'"},
     {label: 'Fields', value: 'Position, color, returns, time, NIR, waveform, and Extra Bytes'},
     {label: 'Variants', value: 'TypeScript, LASzip-compatible, and COPC decoding paths'}
@@ -93,7 +93,7 @@ selective field decoding, direct typed output, memory copies, and module startup
 
 | Option                   | Type                 | Default    | Description                                                                                                                                                      |
 | ------------------------ | -------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.las.shape`      | `string`             | `arrow-table` | Format of parsed data, e.g: `'mesh'`, `'columnar-table'`, `'arrow-table'`.                                                                                   |
+| `options.las.shape`      | `string`             | `arrow` | Format of parsed data, e.g: `'mesh'`, `'columnar-table'`, `'arrow'`.                                                                                   |
 | `options.las.fp64`       | `number`             | `false`    | If `true`, positions are stored in 64-bit floats instead of 32-bit.                                                                                              |
 | `options.las.colorDepth` | `number` or `string` | `8`        | Whether colors encoded using 8 or 16 bits? Can be set to `'auto'`. Note: LAS specification recommends 16 bits.                                                   |
 | `options.las.columns`    | `string[]`           | all        | Arrow columns to decode: `POSITION`, `intensity`, `classification`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `COLOR_0`, `GPS_TIME`, `NIR`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `WAVEFORM`, and `EXTRA_BYTES`. `POSITION` is always returned; an empty array requests positions only. |
@@ -132,7 +132,7 @@ const controller = new AbortController();
 const batches = await parseInBatches(response, LASLoader, {
   core: {worker: true, batchSize: 10000},
   signal: controller.signal,
-  las: {shape: 'arrow-table'}
+  las: {shape: 'arrow'}
 });
 for await (const batch of batches) {
   consume(batch.data);

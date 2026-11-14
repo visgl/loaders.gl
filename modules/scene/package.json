@@ -278,7 +278,8 @@
     "copy-libs-usd": "mkdir -p dist/usd/libs && cp src/usd/libs/usdc-parser.js src/usd/libs/THREE-LICENSE src/usd/libs/README.md dist/usd/libs/"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "apache-arrow": ">= 17.0.0"
   },
   "dependencies": {
     "@loaders.gl/documents": "5.0.0-beta.8",

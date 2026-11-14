@@ -5,6 +5,10 @@
 import {createMLTSource} from './mlt-source-loader';
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
+import {
+  deserializeMVTWorkerResult,
+  serializeMVTWorkerResult
+} from '../mvt/lib/mvt-worker-transport';
 import {parseMLT} from './lib/parse-mlt';
 import {MLTLoader as MLTWorkerLoaderMetadata} from './mlt-loader';
 import {MLTLoader as MLTLoaderMetadata} from './mlt-loader';
@@ -18,7 +22,7 @@ export type MLTLoaderOptions = LoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mlt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'binary-geometry' | 'arrow-table';
+    shape?: 'geojson-table' | 'binary-geometry' | 'arrow';
     /** `wgs84`: coordinates in longitude/latitude. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
@@ -34,7 +38,7 @@ export type MLTLoaderOptions = LoaderOptions & {
 
 /** Default options for the MLT loader */
 export const MLT_DEFAULT_OPTIONS = {
-  shape: 'arrow-table' as const,
+  shape: 'arrow' as const,
   coordinates: 'local' as const,
   layerProperty: 'layerName' as const
 };
@@ -54,6 +58,8 @@ export const MLTLoaderWithParser = {
   ...MLTLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: MLTLoaderOptions) =>
     parseMLT(arrayBuffer, options),
+  serializeWorkerResult: serializeMVTWorkerResult,
+  deserializeWorkerResult: deserializeMVTWorkerResult,
   parseSync: (arrayBuffer: ArrayBuffer, options?: MLTLoaderOptions) =>
     parseMLT(arrayBuffer, options)
 } as const satisfies LoaderWithParser<any, never, MLTLoaderOptions>;

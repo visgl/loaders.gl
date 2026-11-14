@@ -17,7 +17,7 @@ export type MVTLoaderOptions = LoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mvt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
     /** `wgs84`: coordinates in long, lat (`tileIndex` must be provided. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
@@ -43,6 +43,8 @@ async function preload() {
 
 /** Metadata-only loader for the Mapbox Vector Tile format. */
 export const MVTLoader = {
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
   /** Matches input for source selection. */
   testURL: (url: string): boolean => /\.(?:mvt|pbf)(?:$|[?#])|\{(?:z|x|y|-y)\}/i.test(url),
   fromUrl: true,
@@ -56,7 +58,7 @@ export const MVTLoader = {
   workerSourceNode: 'mvt/workers/mvt-worker-node.ts',
   options: {
     mvt: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       coordinates: 'local',
       layerProperty: 'layerName',
       sourceLayer: false,

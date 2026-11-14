@@ -110,12 +110,12 @@ type MLTPropertyVector = {
  *
  * @param arrayBuffer An MLT tile as an ArrayBuffer
  * @param options
- * @returns GeoJSON table or binary feature collection
+ * @returns Native Arrow table, GeoJSON table, or binary feature collection
  */
 export function parseMLT(
   arrayBuffer: ArrayBuffer,
   options?: MLTLoaderOptions
-): GeoJSONTable | BinaryFeatureCollection | ArrowTable {
+): GeoJSONTable | BinaryFeatureCollection | arrow.Table {
   const mltOptions = checkOptions(options);
 
   const shape = mltOptions.shape;
@@ -135,8 +135,8 @@ export function parseMLT(
       binaryData.byteLength = arrayBuffer.byteLength;
       return binaryData;
     }
-    case 'arrow-table':
-      return parseToArrowTable(arrayBuffer, mltOptions);
+    case 'arrow':
+      return parseToArrowTable(arrayBuffer, mltOptions).data;
     default:
       throw new Error(shape || 'undefined shape');
   }

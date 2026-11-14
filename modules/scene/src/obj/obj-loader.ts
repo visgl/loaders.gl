@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {refineArrowTableBatches} from '@loaders.gl/core/schema-utils';
-import type {OBJLoaderOptions, OBJParsedBatch} from './obj-loader-types';
+import {refineArrowTableBatches, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import type {Table} from 'apache-arrow';
+import type {OBJLoaderOptions, OBJMeshBatch, OBJParsedBatch} from './obj-loader-types';
 
 import {
   concatenateArrayBuffersAsync,
@@ -12,7 +13,7 @@ import {
   makeTableScanBatch,
   type LoaderWithParser
 } from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Mesh, MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
   deserializeArrowWorkerTable,
   serializeArrowWorkerTable
@@ -38,8 +39,10 @@ function convertOBJMesh(mesh: Mesh, options?: OBJLoaderOptions): Mesh | MeshArro
 /**
  * Loader for the OBJ geometry format
  */
-export const OBJLoaderWithParser = {
+export const OBJColumnLoader = {
   ...OBJLoaderMetadataWithoutPreload,
+  dataType: null as unknown as Mesh | MeshArrowTable,
+  batchType: null as unknown as OBJMeshBatch | ArrowTableBatch,
   parse: async (arrayBuffer: ArrayBuffer, options?: OBJLoaderOptions) =>
     convertOBJMesh(parseOBJ(new TextDecoder().decode(arrayBuffer), options), options),
   parseTextSync: (text: string, options?: OBJLoaderOptions) =>
@@ -50,7 +53,11 @@ export const OBJLoaderWithParser = {
   deserializeWorkerResult: deserializeOBJWorkerResult,
   serializeWorkerBatch: serializeArrowWorkerTable,
   deserializeWorkerBatch: deserializeOBJWorkerBatch
-} as const satisfies LoaderWithParser<Mesh | MeshArrowTable, OBJParsedBatch, OBJLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  Mesh | MeshArrowTable,
+  OBJMeshBatch | ArrowTableBatch,
+  OBJLoaderOptions
+>;
 
 /** Returns a numeric batch size when batching has an explicit row count. */
 function getNumericBatchSize(options?: OBJLoaderOptions): number | undefined {
@@ -69,7 +76,7 @@ function* parseOBJPointCloudInBatches(
   text: string,
   options?: OBJLoaderOptions,
   batchSize?: number
-): Iterable<OBJParsedBatch> {
+): Iterable<OBJMeshBatch | ArrowTableBatch> {
   const vertexLines = text.split(/\r?\n/).filter(line => line.trimStart().startsWith('v '));
   yield* makeOBJPointCloudBatches(vertexLines, options, batchSize);
 }
@@ -78,7 +85,7 @@ async function* parseOBJPointCloudLinesInBatches(
   lines: AsyncIterable<string>,
   options?: OBJLoaderOptions,
   batchSize?: number
-): AsyncIterable<OBJParsedBatch> {
+): AsyncIterable<OBJMeshBatch | ArrowTableBatch> {
   const normalizedBatchSize = batchSize || 1000;
   let vertexLines: string[] = [];
 
@@ -102,7 +109,7 @@ function* makeOBJPointCloudBatches(
   vertexLines: string[],
   options?: OBJLoaderOptions,
   batchSize?: number
-): Iterable<OBJParsedBatch> {
+): Iterable<OBJMeshBatch | ArrowTableBatch> {
   const normalizedBatchSize = batchSize || vertexLines.length || 1;
 
   for (let rowIndex = 0; rowIndex < vertexLines.length; rowIndex += normalizedBatchSize) {
@@ -150,7 +157,7 @@ function parseOBJPointCloudMesh(vertexLines: string[]): Mesh {
   };
 }
 
-function makeOBJBatch(mesh: Mesh, options?: OBJLoaderOptions): OBJParsedBatch {
+function makeOBJBatch(mesh: Mesh, options?: OBJLoaderOptions): OBJMeshBatch | ArrowTableBatch {
   const table = convertMeshToTable(mesh, 'arrow-table');
   if (options?.obj?.shape === 'mesh') {
     const convertedMesh = convertTableToMesh(table);
@@ -175,7 +182,10 @@ function deserializeOBJWorkerResult(
 }
 
 /** Restores the OBJ mesh batch envelope after caller-side conversion. */
-function deserializeOBJWorkerBatch(result: unknown, options?: OBJLoaderOptions): OBJParsedBatch {
+function deserializeOBJWorkerBatch(
+  result: unknown,
+  options?: OBJLoaderOptions
+): OBJMeshBatch | ArrowTableBatch {
   const table = deserializeArrowWorkerTable(result);
   if (options?.obj?.shape !== 'mesh') return table;
   const mesh = convertTableToMesh(table);
@@ -188,7 +198,7 @@ async function* parseOBJWithMetadataInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: OBJLoaderOptions
-): AsyncIterable<OBJParsedBatch> {
+): AsyncIterable<OBJMeshBatch | ArrowTableBatch> {
   const batchSize = getNumericBatchSize(options);
   if (options?.obj?.pointCloud) {
     const textIterator = makeTextDecoderIterator(arrayBuffer as AsyncIterable<ArrayBuffer>);
@@ -205,4 +215,39 @@ async function* parseOBJWithMetadataInBatches(
   }
 
   yield* parseOBJPointCloudInBatches(text, options, batchSize);
+}
+
+/** Exposes native Arrow output while retaining the worker's column protocol. */
+export const OBJLoaderWithParser = {
+  ...OBJColumnLoader,
+  dataType: OBJLoaderMetadata.dataType,
+  batchType: OBJLoaderMetadata.batchType,
+  parse: async (input: ArrayBuffer, options?: OBJLoaderOptions) =>
+    unwrapOBJTable(await OBJColumnLoader.parse(input, options)),
+  parseTextSync: (input: string, options?: OBJLoaderOptions) =>
+    unwrapOBJTable(OBJColumnLoader.parseTextSync(input, options)),
+  async *parseInBatches(input, options) {
+    for await (const batch of OBJColumnLoader.parseInBatches(input, options)) {
+      if ('shape' in batch && batch.shape === 'arrow-table') {
+        if (batch.data.batches.length) yield* batch.data.batches;
+        else yield makeArrowMetadataBatch(batch.data.schema);
+      } else yield batch;
+    }
+  },
+  deserializeWorkerResult: (result: unknown, options?: OBJLoaderOptions) =>
+    unwrapOBJTable(OBJColumnLoader.deserializeWorkerResult(result, options)),
+  deserializeWorkerBatch(result: unknown, options?: OBJLoaderOptions) {
+    const batch = OBJColumnLoader.deserializeWorkerBatch(result, options);
+    return 'shape' in batch && batch.shape === 'arrow-table'
+      ? (batch.data.batches[0] ?? makeArrowMetadataBatch(batch.data.schema))
+      : batch;
+  }
+} as const satisfies LoaderWithParser<Mesh | Table, OBJParsedBatch, OBJLoaderOptions>;
+
+/** Returns the Arrow table with its file metadata or the requested mesh. */
+function unwrapOBJTable(result: Mesh | MeshArrowTable): Mesh | Table {
+  if ('shape' in result && result.shape === 'arrow-table') {
+    return result.data;
+  }
+  return result as Mesh;
 }

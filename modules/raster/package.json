@@ -315,6 +315,7 @@
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",
+    "apache-arrow": ">= 17.0.0",
     "geotiff": "^2.1.0",
     "lerc": "^4.2.0"
   },

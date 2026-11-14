@@ -57,7 +57,7 @@ Set `obj.shape: 'mesh'` when a legacy [Mesh](/docs/specifications/category-mesh)
 
 | Shape         | Output             | Use when                           |
 | ------------- | ------------------ | ---------------------------------- |
-| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| `arrow` | `Mesh Arrow table` | You want columnar mesh attributes. |
 | `mesh`        | `Mesh`             | You need the legacy mesh object.   |
 
 ## Usage
@@ -67,14 +67,14 @@ import {OBJLoader} from '@loaders.gl/scene/obj';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, OBJLoader, options);
-const table = await load(url, OBJLoader, {obj: {shape: 'arrow-table'}});
+const table = await load(url, OBJLoader, {obj: {shape: 'arrow'}});
 ```
 
 ## Batched Parsing
 
 `OBJLoader` supports `loadInBatches` and `parseInBatches` for vertex-only OBJ point clouds. By default, the loader scans the OBJ text before batching; if `f` face records or `l` line records are present, it falls back to atomic parsing and yields one batch.
 
-Set `obj.pointCloud: true` when the input is known to be a point cloud and should stream `v` vertex records without waiting for a whole-file geometry scan. With `obj.shape: 'arrow-table'`, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow-table'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
+Set `obj.pointCloud: true` when the input is known to be a point cloud and should stream `v` vertex records without waiting for a whole-file geometry scan. With `obj.shape: 'arrow'`, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';
@@ -82,7 +82,7 @@ import {OBJLoader} from '@loaders.gl/scene/obj';
 
 const batches = await loadInBatches(url, OBJLoader, {
   batchSize: 100_000,
-  obj: {shape: 'arrow-table', pointCloud: true}
+  obj: {shape: 'arrow', pointCloud: true}
 });
 
 for await (const batch of batches) {
@@ -94,7 +94,7 @@ for await (const batch of batches) {
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `obj.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects Mesh or Mesh Arrow table output. |
+| `obj.shape` | `'mesh' \| 'arrow'` | `'arrow'` | Selects Mesh or Mesh Arrow table output. |
 | `obj.pointCloud` | `boolean` | `false` | Streams OBJ `v` records as point-cloud batches. Use only for known point-cloud OBJ inputs. |
 
 Remarks:
@@ -117,7 +117,7 @@ are not sent from the worker. JSON conversion, if needed by an application, happ
 ```typescript
 const batches = await parseInBatches(input, OBJLoader, {
   core: {worker: true, batchSize: 1000},
-  obj: {shape: 'arrow-table', pointCloud: true}
+  obj: {shape: 'arrow', pointCloud: true}
 });
 for await (const batch of batches) {
   consume(batch.data);

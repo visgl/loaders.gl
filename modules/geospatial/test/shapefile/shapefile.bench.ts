@@ -23,7 +23,7 @@ export default async function shapefileLoaderBench(suite) {
   suite.addAsync('ShapefileLoader load arrow-table geoarrow.wkb', rowBenchmarkOptions, async () => {
     await load(arrayBuffer.slice(0), ShapefileLoader, {
       core: {worker: false},
-      shapefile: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow.wkb'}
+      shapefile: {shape: 'arrow', geoarrowEncoding: 'geoarrow.wkb'}
     });
   });
 

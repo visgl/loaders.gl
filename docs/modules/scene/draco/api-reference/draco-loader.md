@@ -57,7 +57,7 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, DracoLoader, options);
 const table = await load(url, DracoLoader, {
   worker: false,
-  draco: {shape: 'arrow-table'}
+  draco: {shape: 'arrow'}
 });
 ```
 
@@ -68,7 +68,7 @@ const table = await load(url, DracoLoader, {
 | Shape         | Output                                                      |
 | ------------- | ----------------------------------------------------------- |
 | `mesh`        | legacy loaders.gl `Mesh` object                             |
-| `arrow-table` | loaders.gl Mesh Arrow table with geometry attribute columns |
+| `arrow` | loaders.gl Mesh Arrow table with geometry attribute columns |
 
 ## Support
 
@@ -97,7 +97,7 @@ Metadata Support:
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `draco.shape` | string | `'arrow-table'` | Output shape: `'arrow-table'` or `'mesh'`. |
+| `draco.shape` | string | `'arrow'` | Output shape: `'arrow'` or `'mesh'`. |
 | `draco.backend` | string | `'wasm'` when WebAssembly is available | Draco decoder backend: `'wasm'`, `'javascript'`, or `'draco3d'`. |
 | `draco.extraAttributes` | object | `{}` | Additional custom attributes to decode. |
 | `draco.attributeNameEntry` | string | N/A | Metadata entry used to map Draco attribute ids to output attribute names. |

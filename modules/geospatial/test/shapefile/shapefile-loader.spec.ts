@@ -77,7 +77,7 @@ test('ShapefileLoader#reprojects points', async () => {
 
 test.each([
   'v3',
-  'arrow-table'
+  'arrow'
 ] as const)('ShapefileLoader#rejects %s reprojection without a .prj sidecar', async shape => {
   const response = await fetchFile(`${SHAPEFILE_DATA_FOLDER}/points.shp`);
   const arrayBuffer = await response.arrayBuffer();

@@ -15,7 +15,7 @@ export type DracoLoaderOptions = StrictLoaderOptions & {
     /** Decoder backend. Defaults to WASM when available and JavaScript otherwise. */
     backend?: DracoDecoderBackend | 'js';
     /** Selects mesh output or Apache Arrow output. */
-    shape?: 'mesh' | 'arrow-table';
+    shape?: 'mesh' | 'arrow';
     /** Selects the full decoder or the smaller glTF-compatible decoder build. */
     decoderProfile?: DracoDecoderProfile;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -28,6 +28,6 @@ export const DRACO_LOADER_DEFAULT_OPTIONS = {
   backend: typeof WebAssembly === 'object' ? 'wasm' : 'javascript',
   extraAttributes: {},
   attributeNameEntry: undefined,
-  shape: 'arrow-table',
+  shape: 'arrow',
   decoderProfile: 'full'
 } as const;

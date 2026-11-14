@@ -64,14 +64,14 @@ const legacy = await load(url, ShapefileLoader, {shapefile: {shape: 'v3'}});
 | --------------- | ----------------------------------------------------------- |
 | `v3`            | legacy Shapefile output object                              |
 | `geojson-table` | loaders.gl GeoJSON table                                    |
-| `arrow-table`   | loaders.gl `ArrowTable` with WKB or typed GeoArrow geometry |
+| `arrow`   | Apache Arrow `Table` with WKB or typed GeoArrow geometry |
 
 ## Options
 
 | Option                     | Type    | Default          | Description                                                                                                                                                                                                                                                                |
 | -------------------------- | ------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| shapefile.shape            | String  | `'arrow-table'`  | Output shape: `'arrow-table'`, `'v3'`, or `'geojson-table'`.                                                                                                                                                                                                              |
-| shapefile.geoarrowEncoding | String  | `'geoarrow.wkb'` | Arrow geometry encoding when `shapefile.shape` is `'arrow-table'`: `'geoarrow.wkb'` or `'geoarrow'`. `'geoarrow'` infers a geometry-specific GeoArrow encoding from the SHP header.                                                                                        |
+| shapefile.shape            | String  | `'arrow'`  | Output shape: `'arrow'`, `'v3'`, or `'geojson-table'`.                                                                                                                                                                                                              |
+| shapefile.geoarrowEncoding | String  | `'geoarrow.wkb'` | Arrow geometry encoding when `shapefile.shape` is `'arrow'`: `'geoarrow.wkb'` or `'geoarrow'`. `'geoarrow'` infers a geometry-specific GeoArrow encoding from the SHP header.                                                                                        |
 | shp.\_maxDimensions        | Integer | `4`              | Shapefiles can hold up to 4 dimensions (XYZM). By default all dimensions are parsed; when set to `2` only the X and Y dimensions are parsed. Note that for some Shapefiles, the third dimension is M, not Z. `header.type` in the output designates the stored dimensions. |
 | gis.reproject              | boolean | `false`          | Opt-in coordinate transformation; missing source CRS or unsupported transformations throw `CRSReprojectionError`. |
 | gis.targetCrs              | `CRSDefinition` | `'WGS84'` when reprojection is enabled | Output CRS for transformed coordinates. |

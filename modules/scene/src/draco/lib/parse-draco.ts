@@ -4,7 +4,7 @@
 
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
 import type {DracoMesh} from './draco-types';
 import DracoParser from './draco-parser';
@@ -33,7 +33,7 @@ export async function parseDraco(
   options: DracoLoaderOptions | undefined,
   loadDecoderModule: LoadDracoDecoderModule,
   context?: LoaderContext
-): Promise<DracoMesh | ArrowTable> {
+): Promise<DracoMesh | Table> {
   const reportProgress = context?.reportProgress || options?.onProgress;
   reportProgress?.({phase: 'decode', completed: 0, total: 1, unit: 'tasks'});
   const {draco} = await loadDecoderModule();
@@ -42,8 +42,8 @@ export async function parseDraco(
   try {
     const mesh = dracoParser.parseSync(arrayBuffer, options?.draco);
     reportProgress?.({phase: 'decode', completed: 1, total: 1, unit: 'tasks'});
-    if (options?.draco?.shape === 'arrow-table') {
-      return convertMeshToTable(mesh, 'arrow-table');
+    if (options?.draco?.shape === 'arrow') {
+      return convertMeshToTable(mesh, 'arrow-table').data;
     }
     return mesh;
   } finally {

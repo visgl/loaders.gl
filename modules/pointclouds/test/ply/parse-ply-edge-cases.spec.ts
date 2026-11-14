@@ -339,7 +339,7 @@ describe('PLY parser edge cases', () => {
     bytes.set(body, headerBytes.length);
 
     const batches = await collectPLYBatches(bytes, {
-      shape: 'arrow-table',
+      shape: 'arrow',
       pointCloud: true,
       batchSize: 2
     });
@@ -366,7 +366,7 @@ describe('PLY parser edge cases', () => {
     const options = {};
     const arrowBatches = await collectPLYBatches(bytes, {
       ...options,
-      shape: 'arrow-table',
+      shape: 'arrow',
       batchSize: 2
     });
     expect(arrowBatches.map((batch: any) => batch.data.numRows)).toEqual([2, 1]);
@@ -406,12 +406,12 @@ describe('PLY parser edge cases', () => {
     const bytes = new Uint8Array(headerBytes.length + body.length);
     bytes.set(headerBytes);
     bytes.set(body, headerBytes.length);
-    const batches = await collectPLYBatches(bytes, {shape: 'arrow-table', batchSize: 1});
+    const batches = await collectPLYBatches(bytes, {shape: 'arrow', batchSize: 1});
     expect(batches.map((batch: any) => batch.data.numRows)).toEqual([1, 1]);
 
     await expect(
       collectPLYBatches(new TextEncoder().encode('ply\nformat ascii 1.0\n'), {
-        shape: 'arrow-table'
+        shape: 'arrow'
       })
     ).rejects.toThrow('Incomplete PLY header');
     await expect(
@@ -419,7 +419,7 @@ describe('PLY parser edge cases', () => {
         new TextEncoder().encode(
           'ply\nformat ascii 1.0\nelement face 1\nproperty list uchar int indices\nend_header\n3 0 1 2\n'
         ),
-        {shape: 'arrow-table'}
+        {shape: 'arrow'}
       )
     ).rejects.toThrow('requires one vertex element');
   });

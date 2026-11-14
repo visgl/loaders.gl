@@ -26,10 +26,10 @@ test('DracoLoader#parse(mainthread, shape: arrow-table)', async () => {
   }
   const table = await load(BUNNY_DRC_URL, DracoLoader, {
     core: {worker: false},
-    draco: {shape: 'arrow-table'}
+    draco: {shape: 'arrow'}
   });
   // validateMeshCategoryData(t, data);
-  const {data} = table;
+  const data = table;
   validateDracoMeshArrowTable(table);
   expect(data.numRows, 'number of rows is correct').toBe(104502 / 3);
   const positions = data.getChild('POSITION')!;
@@ -42,7 +42,7 @@ test('DracoLoader#parse(mainthread) defaults to Arrow table', async () => {
   }
   const table = await load(BUNNY_DRC_URL, DracoLoader, {core: {worker: false}});
   validateDracoMeshArrowTable(table);
-  expect(table.data.getChild('POSITION'), 'POSITION attribute was found').toBeTruthy();
+  expect(table.getChild('POSITION'), 'POSITION attribute was found').toBeTruthy();
 });
 test('DracoLoader#draco3d npm package with shape: arrow-table', async () => {
   if (skipBrowserDracoWasmTest()) {
@@ -50,12 +50,12 @@ test('DracoLoader#draco3d npm package with shape: arrow-table', async () => {
   }
   const table = await load(BUNNY_DRC_URL, DracoLoader, {
     core: {worker: false},
-    draco: {shape: 'arrow-table'},
+    draco: {shape: 'arrow'},
     modules: {
       draco3d
     }
   });
-  const {data} = table;
+  const data = table;
   // validateMeshCategoryData(t, data);
   validateDracoMeshArrowTable(table);
   expect(data.getChild('POSITION'), 'POSITION attribute was found').toBeTruthy();
@@ -66,10 +66,10 @@ test('DracoLoader#parse custom attributes(mainthread, shape: arrow-table)', asyn
   }
   let table = await load(CESIUM_TILE_URL, DracoLoader, {
     core: {worker: false},
-    draco: {shape: 'arrow-table'}
+    draco: {shape: 'arrow'}
   });
   validateDracoMeshArrowTable(table);
-  const {data} = table;
+  const data = table;
   expect(
     data.getChild('CUSTOM_ATTRIBUTE_2')?.data[0].length,
     'Custom (Intensity) attribute was found'
@@ -81,7 +81,7 @@ test('DracoLoader#parse custom attributes(mainthread, shape: arrow-table)', asyn
   table = await load(CESIUM_TILE_URL, DracoLoader, {
     core: {worker: false},
     draco: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       extraAttributes: {
         Intensity: 2,
         Classification: 3
@@ -89,11 +89,9 @@ test('DracoLoader#parse custom attributes(mainthread, shape: arrow-table)', asyn
     }
   });
   validateDracoMeshArrowTable(table);
-  expect(table.data.getChild('Intensity')?.data[0].length, 'Intensity attribute was found').toBe(
-    173210
-  );
+  expect(table.getChild('Intensity')?.data[0].length, 'Intensity attribute was found').toBe(173210);
   expect(
-    table.data.getChild('Classification')?.data[0].length,
+    table.getChild('Classification')?.data[0].length,
     'Classification attribute was found'
   ).toBe(173210);
 });
@@ -111,10 +109,10 @@ function skipBrowserDracoWasmTest() {
  * Validates a Draco Arrow mesh table against the shared Mesh or IndexedMesh Arrow schema.
  */
 function validateDracoMeshArrowTable(table) {
-  const expectedSchema = table.data.getChild('indices') ? indexedMeshArrowSchema : meshArrowSchema;
+  const expectedSchema = table.getChild('indices') ? indexedMeshArrowSchema : meshArrowSchema;
   expect(
     () =>
-      validateArrowTableSchema(table.data, expectedSchema, {
+      validateArrowTableSchema(table, expectedSchema, {
         schemaName: 'DracoLoader Mesh table'
       }),
     'Draco Arrow table matches the expected mesh Arrow schema'

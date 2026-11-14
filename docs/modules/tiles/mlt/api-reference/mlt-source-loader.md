@@ -73,7 +73,7 @@ For shared loading controls and parser configuration, see
 | `mlt.extension`   | `string`                                  | `.mlt`            | Tile URL extension.                                                |
 | `mlt.metadataUrl` | `string \| null`                          | `null`            | Optional metadata URL override (`tile.json` by default is not assumed). |
 | `mlt.coordinates` | `'wgs84' \| 'local'`                      | `wgs84`           | Coordinates output from parsed tiles.                              |
-| `mlt.shape`       | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `arrow-table` | Returned geometry shape. |
+| `mlt.shape`       | `'geojson-table' \| 'binary-geometry' \| 'arrow'` | `arrow` | Returned geometry shape. |
 | `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference. |
 | `mlt.layers`      | `string[]`                                | `N/A`             | Optional layer filter before decoding geometry.                    |
 

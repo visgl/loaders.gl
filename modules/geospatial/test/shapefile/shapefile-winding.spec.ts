@@ -7,7 +7,8 @@ import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {GeoArrowTableConverter} from '@loaders.gl/core/geoarrow';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import type {ArrowTable, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 import {convert} from '@loaders.gl/core/schema-utils';
 import {ShapefileLoader, SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
 
@@ -37,9 +38,9 @@ test.each(
 )('ShapefileLoader emits right-hand-rule typed GeoArrow rings for %s', async fixtureName => {
   const table = (await load(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.shp`, ShapefileLoader, {
     core: {worker: false},
-    shapefile: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
-  })) as ArrowTable;
-  const geojsonTable = convert(table.data, 'geojson-table', GeoArrowTableConverter) as GeoJSONTable;
+    shapefile: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
+  })) as Table;
+  const geojsonTable = convert(table, 'geojson-table', GeoArrowTableConverter) as GeoJSONTable;
 
   expect(geojsonTable.features.length).toBeGreaterThan(0);
   for (const feature of geojsonTable.features) {

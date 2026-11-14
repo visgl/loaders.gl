@@ -77,7 +77,7 @@ function writeScalar(
 
 async function collectBatches(chunks: Uint8Array[], options: Record<string, unknown> = {}) {
   const batches = [];
-  for await (const batch of parsePLYInBatches(chunks, {shape: 'arrow-table', ...options})) {
+  for await (const batch of parsePLYInBatches(chunks, {shape: 'arrow', ...options})) {
     batches.push(batch);
   }
   return batches;

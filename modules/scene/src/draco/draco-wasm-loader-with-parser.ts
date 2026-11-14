@@ -4,7 +4,7 @@
 
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {extractLoadLibraryOptions} from '@loaders.gl/core/worker-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {DracoMesh} from './lib/draco-types';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import {parseDraco} from './lib/parse-draco';
@@ -28,4 +28,4 @@ export const DracoWASMLoaderWithParser = {
         ),
       context
     )
-} as const satisfies LoaderWithParser<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
+} as const satisfies LoaderWithParser<DracoMesh | Table, never, DracoLoaderOptions>;

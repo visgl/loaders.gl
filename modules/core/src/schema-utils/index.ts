@@ -175,3 +175,5 @@ export {
   makeArrowTableFromBatches
 } from './lib/arrow/arrow-metadata';
 export {refineArrowTableBatches} from './lib/arrow/arrow-metadata';
+
+export {isNativeArrowRecordBatch, isNativeArrowTable} from '../lib/loader-utils/native-arrow';

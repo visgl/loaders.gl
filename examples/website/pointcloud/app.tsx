@@ -1,3 +1,4 @@
+import {Table, type RecordBatch} from 'apache-arrow';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -437,19 +438,15 @@ async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrow
     urls.map((url) =>
       load(url, loader as any, {
         core: {worker: false},
-        las: {shape: 'arrow-table'},
-        obj: {shape: 'arrow-table'},
-        pcd: {shape: 'arrow-table'},
-        ply: {shape: 'arrow-table', pointCloud: true}
+        las: {shape: 'arrow'},
+        obj: {shape: 'arrow'},
+        pcd: {shape: 'arrow'},
+        ply: {shape: 'arrow', pointCloud: true}
       })
     )
   );
 
-  if (pointClouds.length === 1) {
-    return pointClouds[0] as Mesh | MeshArrowTable;
-  }
-
-  return combineMeshArrowTables(pointClouds as MeshArrowTable[]);
+  return combineMeshArrowTables(pointClouds.map(data => ({shape: 'arrow-table', data}) as MeshArrowTable));
 }
 
 /**
@@ -471,8 +468,8 @@ async function loadPointCloudExampleInBatches(
 
   const pointCloudBatches = (await loadInBatches(urls[0], PLYLoader, {
     core: {worker: false},
-    ply: {shape: 'arrow-table', pointCloud: true}
-  })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
+    ply: {shape: 'arrow', pointCloud: true}
+  })) as AsyncIterable<RecordBatch>;
 
   return trackPointCloudBatches(pointCloudBatches, callbacks);
 }
@@ -481,7 +478,7 @@ async function loadPointCloudExampleInBatches(
  * Normalizes point cloud loader output to Arrow table batches while reporting streaming progress.
  */
 async function* trackPointCloudBatches(
-  pointCloudBatches: AsyncIterable<ArrowTableBatch | MeshArrowTable>,
+  pointCloudBatches: AsyncIterable<RecordBatch>,
   callbacks: {
     onBatch: (arrowTableBatch: ArrowTableBatch, pointCount: number) => void;
     onComplete: () => void;
@@ -513,19 +510,12 @@ async function* trackPointCloudBatches(
 /**
  * Converts current PLY streaming output to the loaders.gl Arrow table batch wrapper.
  */
-function normalizeArrowTableBatch(
-  pointCloudBatch: ArrowTableBatch | MeshArrowTable
-): ArrowTableBatch {
-  if ('batchType' in pointCloudBatch && pointCloudBatch.batchType === 'data') {
-    return pointCloudBatch;
-  }
-
+function normalizeArrowTableBatch(batch: RecordBatch): ArrowTableBatch {
   return {
     shape: 'arrow-table',
     batchType: 'data',
-    schema: pointCloudBatch.schema,
-    data: pointCloudBatch.data,
-    length: pointCloudBatch.data.numRows
+    data: new Table(batch.schema, [batch]),
+    length: batch.numRows
   };
 }
 

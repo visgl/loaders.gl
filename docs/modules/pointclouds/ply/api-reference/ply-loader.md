@@ -55,7 +55,7 @@ Set `ply.shape: 'mesh'` to return the legacy [Mesh](/docs/specifications/categor
 | Shape         | Output             | Use when                           |
 | ------------- | ------------------ | ---------------------------------- |
 | `mesh`        | `Mesh`             | You want the legacy mesh object.   |
-| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| `arrow` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 ## Usage
 
@@ -64,19 +64,19 @@ import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, PLYLoader, options);
-const table = await load(url, PLYLoader, {ply: {shape: 'arrow-table'}});
+const table = await load(url, PLYLoader, {ply: {shape: 'arrow'}});
 ```
 
 ## Batched Parsing
 
-`PLYLoader` supports `loadInBatches` and `parseInBatches`. When `ply.shape: 'arrow-table'` is set, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow-table'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
+`PLYLoader` supports `loadInBatches` and `parseInBatches`. When `ply.shape: 'arrow'` is set, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
 const batches = await loadInBatches(url, PLYLoader, {
-  ply: {shape: 'arrow-table'}
+  ply: {shape: 'arrow'}
 });
 
 for await (const batch of batches) {
@@ -88,7 +88,7 @@ for await (const batch of batches) {
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `ply.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table or legacy Mesh output. |
+| `ply.shape` | `'mesh' \| 'arrow'` | `'arrow'` | Selects Mesh Arrow table or legacy Mesh output. |
 
 
 ## Worker batches
@@ -104,7 +104,7 @@ are not sent from the worker. JSON conversion, if needed by an application, happ
 ```typescript
 const batches = await parseInBatches(input, PLYLoader, {
   core: {worker: true, batchSize: 1000},
-  ply: {shape: 'arrow-table', pointCloud: true}
+  ply: {shape: 'arrow', pointCloud: true}
 });
 for await (const batch of batches) {
   consume(batch.data);

@@ -15,7 +15,7 @@ export type MLTLoaderOptions = LoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mlt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'binary-geometry' | 'arrow-table';
+    shape?: 'geojson-table' | 'binary-geometry' | 'arrow';
     /** `wgs84`: coordinates in longitude/latitude. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
@@ -31,7 +31,7 @@ export type MLTLoaderOptions = LoaderOptions & {
 
 /** Default options for the MLT loader */
 export const MLT_DEFAULT_OPTIONS = {
-  shape: 'arrow-table' as const,
+  shape: 'arrow' as const,
   coordinates: 'local' as const,
   layerProperty: 'layerName' as const
 };
@@ -44,6 +44,8 @@ async function preload() {
 
 /** Metadata-only worker loader for the MapLibre Tile (MLT) format. */
 export const MLTLoader = {
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
   /** Matches input for source selection. */
   testURL: (url: string): boolean =>
     url.endsWith('.mlt') || url.endsWith('/plain') || /\{(?:z|x|y|-y)\}/.test(url),

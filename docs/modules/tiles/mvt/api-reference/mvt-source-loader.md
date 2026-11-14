@@ -77,7 +77,7 @@ For shared loading controls and parser configuration, see
 | Option                    | Type      | Default | Description                                                                                                                          |
 | ------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `mvt.ignoreTextResponses` | `boolean` | `false` | If enabled, reports successful responses with text, JSON, or XML MIME types through `core.onError` and returns `null` for those tiles. |
-| `mvt.shape` | `string` | `'arrow-table'` | Output shape for fetched vector tiles. Set `'geojson-table'` for object-row features. |
+| `mvt.shape` | `string` | `'arrow'` | Output shape for fetched vector tiles. Set `'geojson-table'` for object-row features. |
 
 ## Empty Tiles and Error Responses
 

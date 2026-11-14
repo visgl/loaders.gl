@@ -12,13 +12,13 @@ props, lifecycle tests, and no example-specific imports.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
 new SourceLayer({
   id: 'basemap',
   data: 'https://example.com/basemap.pmtiles',
-  loaders: [PMTilesSourceLoader, MVTLoader]
+  loaders: [PMTilesLoader, MVTLoader]
 });
 ```
 
@@ -59,7 +59,7 @@ new SourceLayer({
 new SourceLayer({data: wfsUrl, loaders: [WFSLoader]});
 
 // Typed GeoTIFF raster with automatic RGB/single-band colorization
-new SourceLayer({data: geotiffUrl, loaders: [GeoTIFFSourceLoader]});
+new SourceLayer({data: geotiffUrl, loaders: [GeoTIFFLoader]});
 
 // COPC or Potree point-cloud hierarchy
 new SourceLayer({

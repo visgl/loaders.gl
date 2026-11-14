@@ -50,7 +50,7 @@ export type ParsePLYOptions = {
   propertyNameMapping?: Record<string, string>;
   /** Treat PLY data as a point cloud by reading only the leading vertex element. */
   pointCloud?: boolean;
-  shape?: 'mesh' | 'arrow-table';
+  shape?: 'mesh' | 'arrow';
   /** Color storage format. Defaults to uint8norm for backwards compatibility. */
   colorFormat?: 'uint8norm' | 'float16' | 'float32';
 };

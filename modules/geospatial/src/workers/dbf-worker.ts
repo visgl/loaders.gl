@@ -4,16 +4,16 @@
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 import type {DBFLoaderOptions} from '../shapefile/dbf-loader-types';
-import {DBFLoaderWithParser} from '../shapefile/dbf-loader';
+import {DBFColumnLoader} from '../shapefile/dbf-loader';
 import {parseDBFArrowBatches} from '../shapefile/lib/parsers/parse-dbf-to-arrow';
 
 createLoaderWorker({
-  ...DBFLoaderWithParser,
+  ...DBFColumnLoader,
   /** Decodes attributes directly into Arrow buffers for every requested output shape. */
   parse(input, options) {
-    return DBFLoaderWithParser.parse!(input, {
+    return DBFColumnLoader.parse!(input, {
       ...options,
-      dbf: {...options?.dbf, shape: 'arrow-table'}
+      dbf: {...options?.dbf, shape: 'arrow'}
     });
   },
   /** Preserves legacy header events while returning only column buffers for row data. */
@@ -21,7 +21,7 @@ createLoaderWorker({
     return parseDBFArrowBatches(
       input,
       options,
-      (options as DBFLoaderOptions)?.dbf?.shape !== 'arrow-table'
+      (options as DBFLoaderOptions)?.dbf?.shape !== 'arrow'
     );
   }
 });

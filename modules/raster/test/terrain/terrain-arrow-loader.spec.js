@@ -53,17 +53,17 @@ test('TerrainLoader#parse terrarium martini with shape: arrow-table', async () =
       meshMaxError: 10.0,
       bounds: [83, 329.5, 83.125, 329.625],
       tesselator: 'martini',
-      shape: 'arrow-table'
+      shape: 'arrow'
     }
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, indexedMeshArrowSchema, {
     schemaName: 'TerrainLoader IndexedMesh table'
   });
   expect(getArrowTableRowCount(table), 'table has one row per vertex').toBeGreaterThan(0);
-  expect(table.data.getChild('POSITION'), 'POSITION column was found').toBeTruthy();
-  expect(table.data.getChild('TEXCOORD_0'), 'TEXCOORD_0 column was found').toBeTruthy();
-  const indicesColumn = table.data.getChild('indices');
+  expect(table.getChild('POSITION'), 'POSITION column was found').toBeTruthy();
+  expect(table.getChild('TEXCOORD_0'), 'TEXCOORD_0 column was found').toBeTruthy();
+  const indicesColumn = table.getChild('indices');
   expect(indicesColumn, 'indices column was found').toBeTruthy();
   const indices = indicesColumn.get(0);
   expect(indices.length).toBeGreaterThan(0);
@@ -81,43 +81,38 @@ test('TerrainLoader#parse defaults to Arrow table', async () => {
       tesselator: 'martini'
     }
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, indexedMeshArrowSchema, {
     schemaName: 'TerrainLoader IndexedMesh table'
   });
 });
 test('QuantizedMeshLoader#parse tile-with-extensions with shape: arrow-table', async () => {
   const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
     core: {worker: false},
-    'quantized-mesh': {shape: 'arrow-table'}
+    'quantized-mesh': {shape: 'arrow'}
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, indexedMeshArrowSchema, {
     schemaName: 'QuantizedMeshLoader IndexedMesh table'
   });
   expect(getArrowTableRowCount(table), 'table has one row per vertex').toBe(627);
-  expect(table.data.getChild('POSITION'), 'POSITION column was found').toBeTruthy();
-  expect(table.data.getChild('TEXCOORD_0'), 'TEXCOORD_0 column was found').toBeTruthy();
-  const indicesColumn = table.data.getChild('indices');
+  expect(table.getChild('POSITION'), 'POSITION column was found').toBeTruthy();
+  expect(table.getChild('TEXCOORD_0'), 'TEXCOORD_0 column was found').toBeTruthy();
+  const indicesColumn = table.getChild('indices');
   expect(indicesColumn, 'indices column was found').toBeTruthy();
   expect(indicesColumn.get(0).length, 'indices were found in row 0').toBe(1175 * 3);
   expect(indicesColumn.get(1), 'indices are null after row 0').toBe(null);
 });
 test('QuantizedMeshLoader#parse defaults to Arrow table', async () => {
   const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {core: {worker: false}});
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, indexedMeshArrowSchema, {
     schemaName: 'QuantizedMeshLoader IndexedMesh table'
   });
   expect(getArrowTableRowCount(table), 'table has one row per vertex').toBe(627);
 });
 function getArrowTableRowCount(table) {
   const positionColumn =
-    typeof table.data.getChild === 'function' ? table.data.getChild('POSITION') : undefined;
-  return (
-    table.data.numRows ??
-    table.data.length ??
-    positionColumn?.length ??
-    positionColumn?.data?.[0]?.length
-  );
+    typeof table.getChild === 'function' ? table.getChild('POSITION') : undefined;
+  return table.numRows ?? positionColumn?.length ?? positionColumn?.data?.[0]?.length;
 }

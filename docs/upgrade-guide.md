@@ -614,14 +614,14 @@ Update the old top-level `*Source` imports explicitly. Some deprecated aliases r
 // Before
 createDataSource(url, [PMTilesLoader], {
   core: {loadOptions: {core: {worker: false}, mvt: {layerProperty: 'layer'}}},
-  pmtiles: {shape: 'arrow-table'}
+  pmtiles: {shape: 'arrow'}
 });
 
 // v5
 createDataSource(url, [PMTilesLoader], {
   core: {worker: false},
   mvt: {layerProperty: 'layer'},
-  pmtiles: {shape: 'arrow-table'}
+  pmtiles: {shape: 'arrow'}
 });
 ```
 
@@ -749,19 +749,19 @@ Redundant Arrow-specific loader and writer variants have been removed where the 
 
 | Removed API | Replacement |
 | --- | --- |
-| `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow-table'` |
+| `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow'` |
 | `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow'` |
 | `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow'` |
 | `GPXArrowLoader` | `GPXLoader` with `gpx.shape: 'arrow'` |
 | `TCXArrowLoader` | `TCXLoader` with `tcx.shape: 'arrow'` |
-| `DracoArrowLoader` | `DracoLoader` with `draco.shape: 'arrow-table'` |
-| `TerrainArrowLoader` | `TerrainLoader` with `terrain.shape: 'arrow-table'` |
-| `QuantizedMeshArrowLoader` | `QuantizedMeshLoader` with `quantized-mesh.shape: 'arrow-table'` |
+| `DracoArrowLoader` | `DracoLoader` with `draco.shape: 'arrow'` |
+| `TerrainArrowLoader` | `TerrainLoader` with `terrain.shape: 'arrow'` |
+| `QuantizedMeshArrowLoader` | `QuantizedMeshLoader` with `quantized-mesh.shape: 'arrow'` |
 | `GeoPackageArrowLoader(tableName?)` | `GeoPackageLoader` with `geopackage.shape: 'arrow'` and optional `geopackage.table` |
 | `ParquetArrowLoader` | `ParquetLoader` with `parquet.shape: 'arrow'` |
 | `ParquetArrowWorkerLoader` | `ParquetLoader` with `parquet.shape: 'arrow'` |
 | `ParquetArrowWriter` | `ParquetWriter` |
-| `ShapefileArrowLoader` | `ShapefileLoader` with `shapefile.shape: 'arrow-table'` |
+| `ShapefileArrowLoader` | `ShapefileLoader` with `shapefile.shape: 'arrow'` |
 
 For example:
 
@@ -819,6 +819,13 @@ GeoPackage, FlatGeobuf, GML, Parquet, GeoParquet, and the SPLAT, KSPLAT, and SPZ
 use `shape: 'arrow'` for native Arrow output. Use `table.numRows` and `table.getChild(name)`
 directly. Batching APIs emit Arrow `RecordBatch` values. Chrome Trace uses the same option
 name and continues to return its native trace table and batches.
+
+Mesh and point-cloud loaders (LAS/LAZ, PLY, PCD, OBJ, Draco, terrain, quantized mesh,
+and Potree BIN), Shapefile/SHP/DBF, and MVT/MLT/PMTiles now select native Arrow with
+`shape: 'arrow'`. Full parses and Arrow tile reads return Apache Arrow `Table` values.
+Streaming Arrow parsers emit `RecordBatch` values. LAS, PLY, PCD, and Shapefile
+store file information as JSON in the Arrow schema under `loaders.gl.<format>.header`.
+Mesh topology, bounds, and attribute metadata remain available through the Arrow schema.
 
 #### Federated and format-specific scans yield native Arrow batches
 
@@ -900,7 +907,7 @@ native Arrow Table at `graph.tables[index].table`. Existing code that reads
 
 - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/tiles/mlt`.
 - The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
-   for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
+   for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow` instead.
 
 #### Mesh output and Draco backends
 

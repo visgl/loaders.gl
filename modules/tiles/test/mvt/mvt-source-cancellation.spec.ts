@@ -31,7 +31,7 @@ test('MVTTileSource#getVectorTile forwards requested layers to the decoder', asy
   const coreApi = {
     async parse(_data: unknown, _loaders: unknown, options: MVTLoaderOptions) {
       receivedOptions = options;
-      return {shape: 'arrow-table'};
+      return {shape: 'arrow'};
     }
   } as unknown as CoreAPI;
   const source = new MVTTileSource(
@@ -41,7 +41,7 @@ test('MVTTileSource#getVectorTile forwards requested layers to the decoder', asy
         layerProperty: 'sourceLayer',
         layers: ['fallback'],
         metadataUrl: null,
-        shape: 'arrow-table'
+        shape: 'arrow'
       },
       core: {fetch: async () => new Response(new Uint8Array([1]))}
     },
@@ -50,7 +50,7 @@ test('MVTTileSource#getVectorTile forwards requested layers to the decoder', asy
 
   await source.getVectorTile({x: 2, y: 1, z: 3, layers: 'roads'});
   expect(receivedOptions?.mvt).toMatchObject({
-    shape: 'arrow-table',
+    shape: 'arrow',
     coordinates: 'wgs84',
     tileIndex: {x: 2, y: 1, z: 3},
     layerProperty: 'sourceLayer',

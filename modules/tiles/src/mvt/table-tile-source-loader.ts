@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 // Based on https://github.com/mapbox/geojson-vt under compatible ISC license
 
+import type {Table as NativeArrowTable} from 'apache-arrow';
+
 import type {
   SourceLoader,
   CoreAPI,
@@ -18,13 +20,7 @@ import {
   getSourceLoaderOptions,
   log
 } from '@loaders.gl/core/loader-utils';
-import type {
-  Schema,
-  GeoJSONTable,
-  Feature,
-  BinaryFeatureCollection,
-  ArrowTable
-} from '@loaders.gl/core/schema';
+import type {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
 import {deduceTableSchema} from '@loaders.gl/core/schema-utils';
@@ -67,7 +63,7 @@ export type TableTileSourceLoaderOptions = DataSourceOptions & {
     /** whether to calculate line metrics */
     lineMetrics?: boolean;
     /** Shape of returned vector tile data. */
-    shape?: 'geojson-table' | 'arrow-table';
+    shape?: 'geojson-table' | 'arrow';
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
@@ -208,16 +204,18 @@ export class TableVectorTileSource
    * @param tileIndex z, x, y of tile
    * @returns
    */
-  async getVectorTile(tileIndex: GetTileParameters): Promise<GeoJSONTable | ArrowTable | null> {
+  async getVectorTile(
+    tileIndex: GetTileParameters
+  ): Promise<GeoJSONTable | NativeArrowTable | null> {
     await this.ready;
     const table = this.getTileSync(tileIndex);
     log.info(2, 'getVectorTile', tileIndex, table)();
-    return this.tableOptions.shape === 'arrow-table' && table
+    return this.tableOptions.shape === 'arrow' && table
       ? convertFeaturesToWKBArrowTable(table.features, {
           encodingPreference:
             (this.options as TableTileSourceLoaderOptions).geoarrow?.encodingPreference ||
             this.tableOptions.geoarrow?.encodingPreference
-        })
+        }).data
       : table;
   }
 

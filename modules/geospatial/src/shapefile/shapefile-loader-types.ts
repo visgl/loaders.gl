@@ -7,13 +7,8 @@ import type {
   StrictLoaderOptions,
   Loader
 } from '@loaders.gl/core/loader-utils';
-import type {
-  Batch,
-  GeoArrowEncodingPreference,
-  GeoJSONTable,
-  ArrowTable,
-  ArrowTableBatch
-} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {Batch, GeoArrowEncodingPreference, GeoJSONTable} from '@loaders.gl/core/schema';
 import type {SHPLoaderOptions} from './shp-loader-types';
 import type {ShapefileOutput} from './lib/parsers/parse-shapefile';
 import type {DBFLoaderOptions} from './dbf-loader-types';
@@ -32,7 +27,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
     shapefile?: {
       /** Overrides the browser worker bundle URL. */
       workerUrl?: string;
-      shape?: 'geojson-table' | 'arrow-table' | 'v3';
+      shape?: 'geojson-table' | 'arrow' | 'v3';
       geoarrowEncoding?: SHPGeoArrowEncoding;
       /** Preferred encoding for Arrow geometry output. */
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
@@ -50,15 +45,17 @@ async function preloadShapefileLoader() {
 
 /** Metadata-only Shapefile loader. */
 export const ShapefileLoader = {
-  dataType: null as unknown as ShapefileOutput | GeoJSONTable | ArrowTable,
-  batchType: null as unknown as ShapefileOutput | Batch | ArrowTableBatch,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as ShapefileOutput | GeoJSONTable | Table,
+  batchType: null as unknown as ShapefileOutput | Batch | RecordBatch,
   ...ShapefileFormat,
   version: VERSION,
   worker: true,
   workerInBatches: true,
   options: {
     shapefile: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     shp: {
       _maxDimensions: 4
@@ -66,7 +63,7 @@ export const ShapefileLoader = {
   },
   preload: preloadShapefileLoader
 } as const satisfies Loader<
-  ShapefileOutput | GeoJSONTable | ArrowTable,
-  ShapefileOutput | Batch | ArrowTableBatch,
+  ShapefileOutput | GeoJSONTable | Table,
+  ShapefileOutput | Batch | RecordBatch,
   ShapefileLoaderOptions
 >;
