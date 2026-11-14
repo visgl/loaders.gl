@@ -4,6 +4,8 @@
 
 import {Table, RecordBatch} from 'apache-arrow';
 import {
+  deserializeArrowWorkerTable,
+  serializeArrowWorkerTable,
   deserializeNativeArrowWorkerResult,
   serializeNativeArrowWorkerResult
 } from '@loaders.gl/core/arrow-worker-transport';
@@ -13,10 +15,6 @@ import {
   type BinaryJSONResult
 } from './json-binary-transport';
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import {
-  serializeArrowTableResult,
-  deserializeArrowTableBatch
-} from '../../arrow/lib/arrow-worker-transport';
 import {normalizeJSONArrowSchema, type JSONArrowSchema} from './parsers/convert-row-table-to-arrow';
 
 /** Converts Arrow Schema instances to portable schemas without changing caller-owned options. */
@@ -40,7 +38,7 @@ export function serializeJSONWorkerBatch(batch: unknown): unknown {
     return serializeNativeArrowWorkerResult(batch);
   }
   return (batch as {shape?: string})?.shape === 'arrow-table'
-    ? serializeArrowTableResult(batch)
+    ? serializeArrowWorkerTable(batch)
     : serializeBinaryJSON(batch);
 }
 
@@ -53,5 +51,5 @@ export function deserializeJSONWorkerResult(result: unknown) {
   if (transport === 'arrow-record-batch' || transport === 'arrow-table-columns') {
     return deserializeNativeArrowWorkerResult(result);
   }
-  return deserializeArrowTableBatch(result);
+  return deserializeArrowWorkerTable(result);
 }

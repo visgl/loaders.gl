@@ -4,7 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 import {readRangeResponse} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 
 import {parseLanceColumnMetadata, parseLanceFileMetadata} from './lance-file';
 import {
@@ -49,7 +48,7 @@ export type LanceRemoteCoordinateRead = Readonly<{
 export function parseLanceFileToArrow(
   arrayBuffer: ArrayBuffer | ArrayBufferView,
   options: LanceArrowReadOptions
-): ArrowTable {
+): arrow.Table {
   if (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 0)) {
     throw new Error(`Invalid Lance row limit ${options.limit}`);
   }
@@ -76,7 +75,7 @@ export function parseLanceFileToArrow(
     columns[columnName] =
       options.limit === undefined ? decodedColumn : decodedColumn.slice(0, options.limit);
   }
-  return {shape: 'arrow-table', data: arrow.tableFromArrays(columns)};
+  return arrow.tableFromArrays(columns);
 }
 
 type LanceFetchFunction = (url: string, options?: RequestInit) => Promise<Response>;
@@ -99,7 +98,7 @@ export async function readLanceRemoteCoordinatesToArrow(
   limit?: number,
   offset = 0,
   fetchFunction: LanceFetchFunction = fetch
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   if (!Number.isSafeInteger(offset) || offset < 0)
     throw new Error(`Invalid Lance coordinate offset ${offset}`);
   if (limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0))
@@ -190,7 +189,7 @@ export async function readLanceRemoteCoordinatesToArrow(
     values[column.xName] = mergeChunks(xChunks);
     values[column.yName] = mergeChunks(yChunks);
   }
-  return {shape: 'arrow-table', data: arrow.tableFromArrays(values)};
+  return arrow.tableFromArrays(values);
 }
 
 /** Reads selected flat primitive columns from a remote Lance file with HTTP ranges. */
@@ -201,7 +200,7 @@ export async function readLanceRemoteFileToArrow(
   limit?: number,
   offset = 0,
   fetchFunction: LanceFetchFunction = fetch
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   if (!Number.isSafeInteger(offset) || offset < 0) {
     throw new Error(`Invalid Lance remote row offset ${offset}`);
   }
@@ -285,5 +284,5 @@ export async function readLanceRemoteFileToArrow(
     }
     values[column.name] = merged;
   }
-  return {shape: 'arrow-table', data: arrow.tableFromArrays(values)};
+  return arrow.tableFromArrays(values);
 }

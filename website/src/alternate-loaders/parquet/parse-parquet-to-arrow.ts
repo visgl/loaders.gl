@@ -3,9 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // eslint-disable
-import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
 
 import type * as parquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
 import * as arrow from 'apache-arrow';
@@ -22,7 +20,7 @@ type ParquetWasmReaderOptions = parquetWasm.ReaderOptions & {wasmUrl?: string};
 export async function parseParquetFileToArrow(
   file: ReadableFile,
   options?: ParquetWasmReaderOptions
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   const wasmUrl = options?.wasmUrl;
   const readerOptions = getReaderOptions(options);
 
@@ -34,10 +32,7 @@ export async function parseParquetFileToArrow(
     const ipcStream = wasmTable.intoIPCStream();
     const arrowTable = arrow.tableFromIPC(ipcStream);
     return normalizeArrowTableGeoMetadata(
-      {
-        shape: 'arrow-table',
-        data: arrowTable
-      },
+      arrowTable,
       getParquetFileMetadataMap(parquetFile.metadata())
     );
   } finally {
@@ -48,7 +43,7 @@ export async function parseParquetFileToArrow(
 export async function* parseParquetFileToArrowInBatches(
   file: ReadableFile,
   options?: ParquetWasmReaderOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.Table> {
   const wasmUrl = options?.wasmUrl;
   const readerOptions = getReaderOptions(options);
 
@@ -59,21 +54,11 @@ export async function* parseParquetFileToArrowInBatches(
     const stream = await parquetFile.stream(readerOptions);
     const schemaMetadata = getParquetFileMetadataMap(parquetFile.metadata());
 
-    let schema: Schema | undefined;
     for await (const wasmRecordBatch of makeStreamIterator<parquetWasm.RecordBatch>(stream)) {
-      const normalizedArrowTable = normalizeArrowTableGeoMetadata(
-        {
-          shape: 'arrow-table',
-          data: arrow.tableFromIPC(wasmRecordBatch.intoIPCStream())
-        },
+      yield normalizeArrowTableGeoMetadata(
+        arrow.tableFromIPC(wasmRecordBatch.intoIPCStream()),
         schemaMetadata
       );
-      schema ||= normalizedArrowTable.schema;
-      yield makeTableScanBatch({
-        shape: 'arrow-table',
-        schema,
-        data: normalizedArrowTable.data
-      });
     }
   } finally {
     parquetFile.free();

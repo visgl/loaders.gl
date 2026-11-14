@@ -4,8 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 import {concatenateAvroTables, createAvroTable} from './create-avro-table';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
-import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {decompressAvro} from '../../avro-compression';
 
@@ -80,24 +78,21 @@ export type AvroOCF = {
 /** Parsed Avro OCF header, including the first block byte offset. */
 export type AvroOCFHeader = Omit<AvroOCF, 'blocks'> & {dataOffset: number};
 
-/** Parses an Apache Avro Object Container File into an object-row table. */
+/** Parses an Apache Avro Object Container File into an Apache Arrow table. */
 export async function parseAvro(
   arrayBuffer: ArrayBuffer,
   options?: AvroParseOptions
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   const bytes = new Uint8Array(arrayBuffer);
   if (options?.encoding === 'raw' || options?.encoding === 'single-object' || !hasMagic(bytes))
     return parseExternalAvroDatum(bytes, options);
   const data: Record<string, unknown>[] = [];
   for await (const value of readAvroRows(arrayBuffer, options)) data.push(value);
-  return {
-    shape: 'arrow-table',
-    data: createAvroTable(
-      data,
-      (options?.readerSchema || parseAvroOCFHeader(arrayBuffer).schema) as AvroSchema,
-      options?.longType
-    )
-  };
+  return createAvroTable(
+    data,
+    (options?.readerSchema || parseAvroOCFHeader(arrayBuffer).schema) as AvroSchema,
+    options?.longType
+  );
 }
 
 /** Inspects an Avro Object Container File without decompressing record blocks. */
@@ -148,13 +143,13 @@ export async function* parseAvroInBatches(
   arrayBuffer: ArrayBuffer,
   batchSize = 10_000,
   options?: AvroParseOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.Table> {
   if (!Number.isInteger(batchSize) || batchSize <= 0)
     throw new Error('Avro batchSize must be positive');
   const bytes = new Uint8Array(arrayBuffer);
   if (options?.encoding === 'raw' || options?.encoding === 'single-object' || !hasMagic(bytes)) {
     const table = await parseAvro(arrayBuffer, options);
-    yield makeTableScanBatch(table);
+    yield table;
     return;
   }
   const schema = (options?.readerSchema || parseAvroOCFHeader(arrayBuffer).schema) as AvroSchema;
@@ -173,20 +168,17 @@ export async function* parseAvroInBatches(
 export async function parseAvroFromUrl(
   url: string,
   options?: AvroParseOptions & {batchSize?: number}
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   const tables: arrow.Table[] = [];
-  for await (const batch of parseAvroInBatchesFromUrl(url, options)) tables.push(batch.data);
-  return {
-    shape: 'arrow-table',
-    data: concatenateAvroTables(tables)
-  };
+  for await (const batch of parseAvroInBatchesFromUrl(url, options)) tables.push(batch);
+  return concatenateAvroTables(tables);
 }
 
 /** Streams Arrow batches from a URL-backed Avro OCF using block-sized range reads. */
 export async function* parseAvroInBatchesFromUrl(
   url: string,
   options?: AvroParseOptions & {batchSize?: number}
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.Table> {
   if (options?.encoding && options.encoding !== 'auto' && options.encoding !== 'ocf')
     throw new Error('URL-backed Avro loading currently supports OCF input only');
   const batchSize = options?.batchSize ?? 10_000;
@@ -265,20 +257,17 @@ export async function* parseAvroInBatchesFromUrl(
 export async function parseAvroFromFile(
   file: ReadableFile,
   options?: AvroParseOptions & {batchSize?: number}
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   const tables: arrow.Table[] = [];
-  for await (const batch of parseAvroInBatchesFromFile(file, options)) tables.push(batch.data);
-  return {
-    shape: 'arrow-table',
-    data: concatenateAvroTables(tables)
-  };
+  for await (const batch of parseAvroInBatchesFromFile(file, options)) tables.push(batch);
+  return concatenateAvroTables(tables);
 }
 
 /** Streams Arrow batches from a random-access Avro OCF file. */
 export async function* parseAvroInBatchesFromFile(
   file: ReadableFile,
   options?: AvroParseOptions & {batchSize?: number}
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.Table> {
   const rangeChunkSize = options?.rangeChunkSize ?? 1024 * 1024;
   if (!Number.isInteger(rangeChunkSize) || rangeChunkSize < 1024)
     throw new Error('Avro rangeChunkSize must be at least 1024 bytes');
@@ -413,7 +402,7 @@ function validateAvroCodec(codec: string): void {
 }
 
 /** Parses a raw Avro datum or single-object encoded datum using an external schema. */
-function parseExternalAvroDatum(bytes: Uint8Array, options?: AvroParseOptions): ArrowTable {
+function parseExternalAvroDatum(bytes: Uint8Array, options?: AvroParseOptions): arrow.Table {
   const schema = options?.schema as AvroSchema | undefined;
   if (!schema) throw new Error('Avro raw and single-object encodings require avro.schema');
   const encoding =
@@ -444,14 +433,11 @@ function parseExternalAvroDatum(bytes: Uint8Array, options?: AvroParseOptions): 
   const resolved = options?.readerSchema
     ? resolveReaderRecord(value, schema, options.readerSchema as AvroSchema)
     : value;
-  return {
-    shape: 'arrow-table',
-    data: createAvroTable(
-      [resolved],
-      (options?.readerSchema || schema) as AvroSchema,
-      options?.longType
-    )
-  };
+  return createAvroTable(
+    [resolved],
+    (options?.readerSchema || schema) as AvroSchema,
+    options?.longType
+  );
 }
 
 /** Computes Avro's 64-bit Rabin fingerprint for a schema's parsing canonical form. */
@@ -563,13 +549,13 @@ async function* readAvroRows(
   }
 }
 
-/** Wraps object rows in the loaders.gl Arrow batch shape. */
+/** Builds one Arrow table chunk from decoded Avro rows. */
 function createAvroBatch(
   data: Record<string, unknown>[],
   schema: AvroSchema,
   longType?: 'number' | 'bigint'
-): ArrowTableBatch {
-  return makeTableScanBatch({shape: 'arrow-table', data: createAvroTable(data, schema, longType)});
+): arrow.Table {
+  return createAvroTable(data, schema, longType);
 }
 
 /** Decodes UTF-8 metadata values. */

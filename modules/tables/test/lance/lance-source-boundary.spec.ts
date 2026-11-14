@@ -23,7 +23,7 @@ vi.mock('../../src/lance/lance-arrow', () => ({
 
 import {LanceLoaderWithParser} from '@loaders.gl/tables/lance-loader';
 
-const MOCK_TABLE = {shape: 'arrow-table', data: tableFromArrays({value: new Int32Array([1, 2])})};
+const MOCK_TABLE = tableFromArrays({value: new Int32Array([1, 2])});
 const MOCK_FILE_METADATA = {majorVersion: 2, minorVersion: 0, fileSizeBytes: 64};
 
 beforeEach(() => {
@@ -44,7 +44,7 @@ test('LanceSource reads direct Blob data files and returns native Arrow batches'
     columnNames: ['value'],
     limit: 2
   });
-  expect(batches).toEqual(MOCK_TABLE.data.batches);
+  expect(batches).toEqual(MOCK_TABLE.batches);
   await expect(source.getFileMetadata()).resolves.toBe(MOCK_FILE_METADATA);
 });
 

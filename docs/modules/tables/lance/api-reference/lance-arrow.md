@@ -49,5 +49,5 @@ file. `readLanceRemoteFileToArrow()` supports selected fixed-width primitive
 columns. `readLanceRemoteCoordinatesToArrow()` supports two-dimensional
 fixed-size float columns such as PushT's `observation_state`.
 
-Both APIs are Work In Progress and currently require physical column indexes,
+Both helpers return native Apache Arrow tables. The APIs are Work In Progress and currently require physical column indexes,
 explicit names, and known Lance encodings.

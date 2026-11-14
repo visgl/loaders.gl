@@ -41,8 +41,7 @@ test('Arrow converter detects wrappers and rejects unsupported conversion routes
   expect(ArrowConverter.detectInputShape(table)).toBe('arrow');
   expect(ArrowConverter.detectInputShape(null)).toBe(null);
   expect(ArrowConverter.detectInputShape({shape: 'arrow-table', data: table})).toBe(null);
-  expect(ArrowConverter.canConvert('arrow', 'arrow-table')).toBe(false);
-  expect(ArrowConverter.canConvert('arrow-table', 'arrow')).toBe(true);
+  expect(ArrowConverter.canConvert('columnar-table', 'arrow')).toBe(true);
   expect(ArrowConverter.canConvert('arrow', 'arrow')).toBe(false);
   expect(ArrowConverter.canConvert('array-row-table', 'object-row-table')).toBe(false);
   expect(() => ArrowConverter.convert(table, 'invalid' as never)).toThrow(

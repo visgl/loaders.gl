@@ -6,7 +6,6 @@
 import type {Table} from 'apache-arrow';
 import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
 import type {
-  ArrowTable,
   DataType,
   Feature,
   Field,
@@ -97,7 +96,7 @@ export async function parseGeoPackage(
 ): Promise<GeoJSONTable | Table> {
   const shape = options?.geopackage?.shape || 'arrow';
   if (shape === 'arrow') {
-    return (await parseGeoPackageToArrow(arrayBuffer, options)).data;
+    return parseGeoPackageToArrow(arrayBuffer, options);
   }
 
   const database = await loadGeoPackageDatabase(
@@ -125,7 +124,7 @@ export async function parseGeoPackage(
 export async function parseGeoPackageToArrow(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<ArrowTable> {
+): Promise<Table> {
   const database = await loadGeoPackageDatabase(
     arrayBuffer,
     options?.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
@@ -144,7 +143,7 @@ export async function parseGeoPackageToArrow(
     });
     return convertFeaturesToGeoArrowTable(geoJSONTable.features, {
       encodingPreference: preference
-    });
+    }).data;
   }
 
   return getGeoPackageArrowTable(database, selectedTable, projections, {
@@ -283,7 +282,7 @@ export function getGeoPackageArrowTable(
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
   options: {reproject: boolean; targetCrs: ReadonlyCRSDefinition}
-): ArrowTable {
+): Table {
   const queryResult = database.exec(`SELECT * FROM \`${vectorTable.name}\`;`)[0];
   const columns = queryResult?.columns || [];
   const values = queryResult?.values || [];
@@ -302,11 +301,7 @@ export function getGeoPackageArrowTable(
     );
   }
 
-  return {
-    shape: 'arrow-table',
-    schema: structuredClone(tableBuilder.schema),
-    data: tableBuilder.finishTable()
-  };
+  return tableBuilder.finishTable();
 }
 
 /** Find all projections defined in GeoPackage. */

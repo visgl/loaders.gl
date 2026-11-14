@@ -465,7 +465,7 @@ function getCSVLoaderBenchmarks(
       header: true as const,
       delimiter: scenario.delimiter,
       dynamicTyping,
-      shape: 'arrow-table' as const
+      shape: 'arrow' as const
     }
   };
   // const csvOptions = {

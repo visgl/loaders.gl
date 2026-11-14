@@ -6,17 +6,9 @@ import * as arrow from 'apache-arrow';
 import {projectionEngine} from '@math.gl/geospatial/projection';
 import type {Projection} from '@math.gl/geospatial/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  Feature,
-  Field,
-  Schema,
-  Table
-} from '@loaders.gl/core/schema';
+import type {Feature, Field, Schema, Table} from '@loaders.gl/core/schema';
 import {
   filterColumnarRowIndices,
-  makeTableScanBatch,
   planTableQuery,
   CRSReprojectionError,
   type CRSReprojectionOptions,
@@ -34,7 +26,11 @@ import {makeWKBGeometryDataFromArray} from '@loaders.gl/core/arrow-geometry/wkb-
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {WKBBuilder} from '@loaders.gl/core/arrow-geometry';
-import {convertSchemaToArrow, queryArrowTable} from '@loaders.gl/core/schema-utils';
+import {
+  convertArrowToTable,
+  convertSchemaToArrow,
+  queryArrowTable
+} from '@loaders.gl/core/schema-utils';
 import {
   decodeFlatGeobufGeometry,
   FlatGeobufColumnType,
@@ -74,7 +70,7 @@ export function parseFlatGeobuf(
   const arrowTable = parseFlatGeobufToArrowTable(arrayBuffer, options);
   switch (options.shape) {
     case 'arrow':
-      return arrowTable.data;
+      return arrowTable;
     case 'geojson-table':
       return makeGeoJsonTable(arrayBuffer, options);
     case 'binary-geometry':
@@ -82,16 +78,7 @@ export function parseFlatGeobuf(
         makeGeoJsonTable(arrayBuffer, options).features
       );
     case 'columnar-table':
-      return {
-        shape: 'columnar-table',
-        schema: arrowTable.schema,
-        data: Object.fromEntries(
-          (arrowTable.schema?.fields || []).map(field => [
-            field.name,
-            arrowTable.data.getChild(field.name)?.toArray()
-          ])
-        )
-      } as Table;
+      return convertArrowToTable(arrowTable, 'columnar-table');
     default:
       throw new Error(`Unsupported FlatGeobuf output shape ${options.shape}`);
   }
@@ -101,12 +88,12 @@ export function parseFlatGeobuf(
 export function parseFlatGeobufToArrowTable(
   arrayBuffer: ArrayBuffer,
   options: ParseFlatGeobufOptions = {}
-): ArrowTable {
+): arrow.Table {
   const preference = options.geoarrow?.encodingPreference;
   if (preference && preference !== 'geoarrow.wkb') {
     return convertFeaturesToGeoArrowTable(makeGeoJsonTable(arrayBuffer, options).features, {
       encodingPreference: preference
-    });
+    }).data;
   }
   const header = readFlatGeobufHeader(arrayBuffer);
   const projection = getProjection(header, options.reproject, options.targetCrs || 'WGS84');
@@ -149,11 +136,7 @@ export function parseFlatGeobufToArrowTable(
     undefined,
     [...propertyData, geometryData]
   );
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, [new arrow.RecordBatch(arrowSchema, structData)])
-  };
+  return new arrow.Table(arrowSchema, [new arrow.RecordBatch(arrowSchema, structData)]);
 }
 
 /** Executes a portable projection, residual predicate, and limit over FlatGeobuf features. */
@@ -165,18 +148,17 @@ export function queryFlatGeobufArrowTable(
   const sourceTable = parseFlatGeobufToArrowTable(arrayBuffer, {
     boundingBox: options.boundingBox
   });
-  const sourceColumnNames = sourceTable.data.schema.fields.map(field => field.name);
+  const sourceColumnNames = sourceTable.schema.fields.map(field => field.name);
   const plan = planTableQuery(sourceColumnNames, options);
   const scanStep = plan.find(step => step.kind === 'scan');
   const projectStep = plan.find(step => step.kind === 'project');
   if (!scanStep || scanStep.kind !== 'scan' || !projectStep || projectStep.kind !== 'project') {
     throw new Error('FlatGeobuf query planner produced an invalid plan.');
   }
-  if (!sourceTable.schema) throw new Error('FlatGeobuf query source is missing a schema.');
   const predicateStep = plan.find(step => step.kind === 'filter');
   const limitStep = plan.find(step => step.kind === 'limit');
   return queryArrowTable(
-    sourceTable.data,
+    sourceTable,
     {
       predicate: predicateStep?.kind === 'filter' ? predicateStep.predicate : undefined,
       columns: projectStep.columns,
@@ -186,14 +168,14 @@ export function queryFlatGeobufArrowTable(
   );
 }
 
-/** Loads FlatGeobuf as small Arrow batches; each batch is a stable-schema table. */
+/** Loads FlatGeobuf as native Arrow record batches. */
 export async function* parseFlatGeobufInBatches(
   stream: ReadableStream,
   options: ParseFlatGeobufOptions
-): AsyncGenerator<ArrowTableBatch> {
+): AsyncGenerator<arrow.RecordBatch> {
   const arrayBuffer = await new Response(stream).arrayBuffer();
   const table = parseFlatGeobufToArrowTable(arrayBuffer, options);
-  yield makeTableScanBatch(table);
+  yield* table.batches;
 }
 
 /** Creates the public Arrow schema from FlatGeobuf header metadata. */

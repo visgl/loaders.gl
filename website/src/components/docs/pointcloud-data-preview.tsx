@@ -6,7 +6,7 @@ import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {OBJLoader} from '@loaders.gl/scene/obj';
 import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {EXAMPLES, type Example} from 'examples/website/pointcloud/examples';
 import {
@@ -388,9 +388,9 @@ async function loadPreviewPointCloud(
   return (convertTableToMesh(combinedPointCloud) as unknown) as Mesh;
 }
 
-function combineMeshArrowTables([first, ...rest]: Table[]): MeshArrowTable {
+function combineMeshArrowTables([first, ...rest]: Table[]): Table {
   if (!first) throw new Error('A point cloud table is required.');
-  return {shape: 'arrow-table', data: first.concat(...rest)} as MeshArrowTable;
+  return first.concat(...rest);
 }
 
 function getExampleUrls(example: Example): string[] {

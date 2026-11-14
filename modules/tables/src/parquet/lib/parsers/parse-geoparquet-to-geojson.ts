@@ -2,13 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import type {
-  GeoJSONTable,
-  GeoJSONTableBatch,
-  ArrowTableBatch,
-  ObjectRowTable
-} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, GeoJSONTableBatch, ObjectRowTable} from '@loaders.gl/core/schema';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/wkb-table';
 import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 
@@ -20,7 +16,7 @@ export async function parseGeoParquetFile(
   options?: ParquetLoaderOptions
 ): Promise<GeoJSONTable> {
   const arrowTable = await parseParquetArrowTable(file, options || {});
-  const objectRowTable = convertArrowToTable(arrowTable.data, 'object-row-table') as ObjectRowTable;
+  const objectRowTable = convertArrowToTable(arrowTable, 'object-row-table') as ObjectRowTable;
   return convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema!);
 }
 
@@ -35,15 +31,15 @@ export async function* parseGeoParquetFileInBatches(
   }
 }
 
-function convertGeoParquetArrowBatch(batch: ArrowTableBatch): GeoJSONTableBatch {
-  const objectRowTable = convertArrowToTable(batch.data, 'object-row-table') as ObjectRowTable;
+function convertGeoParquetArrowBatch(batch: Table): GeoJSONTableBatch {
+  const objectRowTable = convertArrowToTable(batch, 'object-row-table') as ObjectRowTable;
   const geojsonTable = convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema!);
   return {
-    batchType: batch.batchType,
+    batchType: 'data',
     shape: geojsonTable.shape,
     type: geojsonTable.type,
     schema: geojsonTable.schema,
     features: geojsonTable.features,
-    length: batch.length
+    length: batch.numRows
   };
 }

@@ -19,6 +19,6 @@ export const ORCLoaderWithParser = {
   ...ORCLoaderMetadataWithoutPreload,
   async parse(arrayBuffer: ArrayBuffer, options?: ORCLoaderOptions) {
     await preloadORCCompression(readORCPostScript(arrayBuffer).compression, options?.modules);
-    return parseORCToArrow(arrayBuffer).data;
+    return parseORCToArrow(arrayBuffer);
   }
 } as const satisfies LoaderWithParser<Table, RecordBatch, ORCLoaderOptions>;

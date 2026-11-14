@@ -4,7 +4,7 @@
 
 import type {RecordBatch, Table} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import {isNativeArrowTable} from '../lib/loader-utils/native-arrow';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {
   GetFeaturesParameters,
@@ -61,7 +61,7 @@ export abstract class AddressedVectorTableScanSource {
   /** Spatial extent of the bound physical selection. */
   readonly spatial?: ScanSpatialMetadata;
 
-  private tablePromise: Promise<ArrowTable> | null = null;
+  private tablePromise: Promise<Table> | null = null;
 
   /** Creates a table-scan view over one immutable physical selection. */
   protected constructor(
@@ -79,12 +79,12 @@ export abstract class AddressedVectorTableScanSource {
   }
 
   /** Loads the physically addressed data as one Arrow table. */
-  protected abstract loadTable(signal?: AbortSignal): Promise<ArrowTable | null>;
+  protected abstract loadTable(signal?: AbortSignal): Promise<Table | null>;
 
   /** Discovers the addressed result schema and portable residual-query capabilities. */
   async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
     const table = await this.getTable(options.signal);
-    const schema = table.schema || convertArrowToSchema(table.data.schema);
+    const schema = convertArrowToSchema(table.schema);
     return createScanQueryMetadata({
       sourceType: this.sourceType,
       queryType: 'table',
@@ -99,20 +99,20 @@ export abstract class AddressedVectorTableScanSource {
       },
       columnRoles: inferVectorColumnRoles(schema.fields.map(field => field.name)),
       spatial: this.spatial,
-      statistics: {rowCount: table.data.numRows}
+      statistics: {rowCount: table.numRows}
     });
   }
 
   /** Applies the portable Arrow query to the addressed feature table. */
   async query(options: ArrowQueryOptions = {}): Promise<Table> {
     const table = await this.getTable(options.signal);
-    return queryArrowTable(table.data, options);
+    return queryArrowTable(table, options);
   }
 
   /** Explains the residual Arrow plan after resolving the addressed feature table. */
   async explain(options: ArrowQueryOptions = {}): Promise<TableQueryExplain<SQLPredicate>> {
     const table = await this.getTable(options.signal);
-    return explainArrowTableQuery(table.data, options);
+    return explainArrowTableQuery(table, options);
   }
 
   /** Emits the portable query result as one bounded Arrow batch. */
@@ -128,18 +128,13 @@ export abstract class AddressedVectorTableScanSource {
   }
 
   /** Resolves and caches the addressed table while allowing failed loads to be retried. */
-  private async getTable(signal?: AbortSignal): Promise<ArrowTable> {
+  private async getTable(signal?: AbortSignal): Promise<Table> {
     throwIfAborted(signal);
     if (!this.tablePromise) {
       this.tablePromise = this.loadTable()
         .then(table => {
           if (!table) {
             throw new Error('The addressed vector selection did not return a feature table.');
-          }
-          if (table.shape !== 'arrow-table') {
-            throw new Error(
-              'The addressed vector selection must return an Arrow table. Configure the source with shape "arrow".'
-            );
           }
           return table;
         })
@@ -183,12 +178,12 @@ export class VectorTileTableScanSource extends AddressedVectorTableScanSource {
   }
 
   /** Loads the bound vector tile using the source's requested Arrow output shape. */
-  protected loadTable(signal?: AbortSignal): Promise<ArrowTable | null> {
-    return this.source
-      .getVectorTile({...this.tile, signal})
-      .then(tile =>
-        tile && 'numRows' in tile ? {shape: 'arrow-table', data: tile} : (tile as ArrowTable | null)
-      );
+  protected async loadTable(signal?: AbortSignal): Promise<Table | null> {
+    const tile = await this.source.getVectorTile({...this.tile, signal});
+    if (tile === null || isNativeArrowTable(tile)) return tile;
+    throw new Error(
+      'The addressed vector selection must return an Arrow table. Configure the source with shape "arrow".'
+    );
   }
 }
 
@@ -232,9 +227,9 @@ export class VectorFeatureTableScanSource extends AddressedVectorTableScanSource
   }
 
   /** Loads the bound service request through the source's Arrow feature output. */
-  protected async loadTable(signal?: AbortSignal): Promise<ArrowTable | null> {
+  protected async loadTable(signal?: AbortSignal): Promise<Table | null> {
     const data = await this.source.getFeatures({...this.request, format: 'arrow', signal});
-    return data && !('shape' in data) ? {shape: 'arrow-table', data} : null;
+    return isNativeArrowTable(data) ? data : null;
   }
 }
 
