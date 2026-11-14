@@ -6,8 +6,7 @@ import {ArcGISAuthentication} from '../authentication';
 import {ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
 import type {ArcGISImageTileSourceLoaderOptions} from '../arcgis-source-types';
 
-import type {ImageType} from '@loaders.gl/images';
-import {LegacyImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
   GetTileDataParameters,
@@ -75,7 +74,7 @@ export class ArcGISImageTileSource
   async getTile(
     parameters: GetTileParameters,
     signal?: AbortSignal
-  ): Promise<ImageType | LERCData | null> {
+  ): Promise<ImageBitmap | LERCData | null> {
     signal ||= parameters.signal;
     const response = await this.fetch(this.getTileURL(parameters), signal ? {signal} : undefined);
     if (!response.ok) {
@@ -83,16 +82,16 @@ export class ArcGISImageTileSource
         `ArcGIS ImageServer tile request failed: ${response.status} ${response.statusText}`
       );
     }
-    const loader = this._getResponseFormat() === 'lerc' ? LERCLoader : LegacyImageLoader;
+    const loader = this._getResponseFormat() === 'lerc' ? LERCLoader : ImageLoader;
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
       loader,
       this.loadOptions
-    )) as ImageType;
+    )) as ImageBitmap | LERCData;
   }
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
-  async getTileData(parameters: GetTileDataParameters): Promise<ImageType | LERCData | null> {
+  async getTileData(parameters: GetTileDataParameters): Promise<ImageBitmap | LERCData | null> {
     return this.getTile(
       {...parameters.index, tileMatrix: parameters.tileMatrix, signal: parameters.signal},
       parameters.signal

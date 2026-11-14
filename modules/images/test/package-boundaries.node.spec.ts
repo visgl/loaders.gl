@@ -21,7 +21,7 @@ test.each([
     const metadata = ${format === 'esm' ? "await import('@loaders.gl/images')" : "require('@loaders.gl/images')"};
     const packageVersion = require('./modules/images/package.json').version;
     const parser = ${format === 'esm' ? "await import('@loaders.gl/images/image-loader')" : "require('@loaders.gl/images/image-loader')"};
-    for (const name of ['ImageLoader', 'LegacyImageLoader', 'BasisLoader', 'TextureLoader', 'VideoLoader']) {
+    for (const name of ['ImageLoader', 'BasisLoader', 'TextureLoader', 'VideoLoader']) {
       assert.equal(metadata[name].module, 'images');
       assert.equal(metadata[name].version, packageVersion);
       assert.equal(metadata[name].parse, undefined);

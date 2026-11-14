@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {isBrowser} from '@loaders.gl/core';
 import {expect, test} from 'vitest';
-import {load} from '@loaders.gl/core';
+import {fetchFile, load} from '@loaders.gl/core';
 import {
-  LegacyImageLoader,
   ImageLoader,
   ImageType,
   // PARSED IMAGE API
@@ -21,15 +21,22 @@ const IMAGE_TYPES: ImageT[] = ['auto', 'image', 'imagebitmap', 'data'];
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
 let imagesPromise: Promise<ImageType[]> | null = null;
 async function loadImages(): Promise<ImageType[]> {
-  imagesPromise =
-    imagesPromise ||
-    Promise.all([
-      load(IMAGE_URL, ImageLoader),
-      ...IMAGE_TYPES.filter(type => type !== 'imagebitmap' && isImageTypeSupported(type)).map(
-        type => load(IMAGE_URL, LegacyImageLoader, {image: {type}})
-      )
-    ]);
-  return await imagesPromise;
+  imagesPromise ??= (async () => {
+    const bitmap = await load(IMAGE_URL, ImageLoader);
+    const images: ImageType[] = [bitmap, getImageData(bitmap)];
+    if (isBrowser && typeof Image !== 'undefined') {
+      const element = new Image();
+      element.src = URL.createObjectURL(await (await fetchFile(IMAGE_URL)).blob());
+      try {
+        await element.decode();
+        images.push(element);
+      } finally {
+        URL.revokeObjectURL(element.src);
+      }
+    }
+    return images;
+  })();
+  return imagesPromise;
 }
 test('Image Category#Parsed Image API imports', () => {
   expect(getDefaultImageType, 'getDefaultImageType() is defined').toBeTruthy();

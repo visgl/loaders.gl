@@ -119,8 +119,14 @@ source subpath when using synchronous `createDataSource()`.
 - Replace dependencies on the removed `@loaders.gl/textures` and `@loaders.gl/video`
   packages with `@loaders.gl/images`; no compatibility packages are published.
 - `ImageBitmapLoader` is now `ImageLoader` and always returns an `ImageBitmap`.
-  The older environment-dependent loader is `LegacyImageLoader`, with
-  `LegacyImageLoaderOptions`. `ImageLoaderOptions` describes the bitmap loader.
+- `LegacyImageLoader`, `LegacyImageLoaderOptions`, and their subpaths have been
+  removed. ArcGIS and WMTS image responses use `ImageLoader`. Remove `image.decode`
+  and the `auto`, `image`, and `data` values for `image.type`. Use
+  `getImageData(bitmap)` for raw pixels. ArcGIS LERC responses still return raster data.
+- Replace `WMSSource` with `WMSSourceLoader`. Replace `createImageSource` with
+  `createDataSourceSync(url, [WMSSourceLoader], options)` or use `createDataSource`
+  for asynchronous creation. `ImageSource` is a type. To recognize an existing
+  image source at runtime, check for callable `getMetadata` and `getImage` methods.
 - Import metadata loaders from `@loaders.gl/images`. For direct implementations,
   import `*WithParser` exports from direct subpaths such as
   `@loaders.gl/images/basis-loader` or `@loaders.gl/images/image-loader`.

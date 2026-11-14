@@ -52,7 +52,7 @@ test('normalizeLoader', () => {
     },
     {
       title: 'loader with options',
-      input: [images.LegacyImageLoader, {image: {imageOrientation: 'flipY'}}],
+      input: [images.ImageLoader, {image: {imageOrientation: 'flipY'}}],
       options: {image: {imageOrientation: 'flipY'}}
     }
   ];
@@ -72,7 +72,7 @@ test('normalizeLoader', () => {
   expect(
     () =>
       normalizeLoader({
-        ...images.LegacyImageLoader,
+        ...images.ImageLoader,
         // @ts-ignore
         extensions: 'jpg'
       }),

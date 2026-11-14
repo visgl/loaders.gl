@@ -492,22 +492,6 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     return capabilities;
   }
 
-  /** Get a map image *
-  async getMap(
-    wfsParameters: WFSGetMapParameters,
-    vendorParameters?: Record<string, unknown>
-  ): Promise<ImageType> {
-    const url = this.getMapURL(wfsParameters, vendorParameters);
-    const response = await this.fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    this._checkResponse(response, arrayBuffer);
-    try {
-      return await LegacyImageLoader.parse(arrayBuffer, this.loadOptions);
-    } catch {
-      throw this._parseError(arrayBuffer);
-    }
-  }
-
   /** Get Feature Info for a coordinate *
   async getFeatureInfo(
     wfsParameters: WFSGetFeatureInfoParameters,
@@ -543,23 +527,6 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     this._checkResponse(response, arrayBuffer);
     return await WFSLayerDescriptionLoader.parse(arrayBuffer, this.loadOptions);
   }
-
-  /** Get an image with a semantic legend *
-  async getLegendGraphic(
-    wfsParameters: WFSGetLegendGraphicParameters,
-    vendorParameters?: Record<string, unknown>
-  ): Promise<ImageType> {
-    const url = this.getLegendGraphicURL(wfsParameters, vendorParameters);
-    const response = await this.fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    this._checkResponse(response, arrayBuffer);
-    try {
-      return await LegacyImageLoader.parse(arrayBuffer, this.loadOptions);
-    } catch {
-      throw this._parseError(arrayBuffer);
-    }
-  }
-  */
 
   // Typed URL creators
   // For applications that want full control of fetching and parsing

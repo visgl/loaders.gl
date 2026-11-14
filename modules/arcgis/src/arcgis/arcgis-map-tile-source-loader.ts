@@ -10,8 +10,7 @@ import type {
   ArcGISMapTileParameters
 } from '../arcgis-source-types';
 
-import type {ImageType} from '@loaders.gl/images';
-import {LegacyImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
   GetTileDataParameters,
@@ -82,7 +81,7 @@ export class ArcGISMapTileSource
   }
 
   /** Fetches and decodes one cached ArcGIS tile. */
-  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
+  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageBitmap | null> {
     const options = this.options['arcgis-map-server'] || {};
     const mode = options.mode || 'auto';
     const metadata = mode === 'auto' ? await this._getMetadata() : null;
@@ -98,13 +97,13 @@ export class ArcGISMapTileSource
     }
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
-      LegacyImageLoader,
+      ImageLoader,
       this.loadOptions
-    )) as ImageType;
+    )) as ImageBitmap;
   }
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
-  async getTileData(parameters: GetTileDataParameters): Promise<ImageType | null> {
+  async getTileData(parameters: GetTileDataParameters): Promise<ImageBitmap | null> {
     return this.getTile(
       {...parameters.index, tileMatrix: parameters.tileMatrix, signal: parameters.signal},
       parameters.signal

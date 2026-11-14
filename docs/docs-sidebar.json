@@ -717,7 +717,6 @@
                       "modules/images/textures/api-reference/compressed-texture-loader",
                       "modules/images/textures/api-reference/crunch-loader",
                       "modules/images/api-reference/image-loader",
-                      "modules/images/api-reference/legacy-image-loader",
                       "modules/images/video/api-reference/video-loader"
                     ],
                     "link": {
