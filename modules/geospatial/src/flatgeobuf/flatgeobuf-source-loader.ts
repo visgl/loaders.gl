@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
+import type {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -21,7 +23,6 @@ import {
   createScanQueryMetadata,
   DataSource,
   explainTableQuery,
-  makeTableScanBatch
 } from '@loaders.gl/core/loader-utils';
 import {createSpatialReference, type SpatialReference} from '@math.gl/geospatial/crs';
 import {FlatGeobufFormat} from './flatgeobuf-format';
@@ -211,9 +212,10 @@ export class FlatGeobufVectorSource
   }
 
   /** Streams one stable-schema Arrow batch for a portable FlatGeobuf query. */
-  async *read(options: FlatGeobufReadOptions = {}): AsyncIterable<ArrowTableBatch> {
+  async *read(options: FlatGeobufReadOptions = {}): AsyncIterable<RecordBatch> {
     const table = await this.query(options);
-    yield makeTableScanBatch(table);
+    if (table.data.batches.length) yield* table.data.batches;
+    else yield makeArrowMetadataBatch(table.data.schema);
   }
 
   protected getHeaderInfo(): Promise<HeaderInfo> {

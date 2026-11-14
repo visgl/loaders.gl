@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
-import {DataSource as BaseDataSource, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch} from '@loaders.gl/core/schema';
+import {DataSource as BaseDataSource} from '@loaders.gl/core/loader-utils';
 
 import {LanceSourceLoader as LanceSourceLoaderMetadata} from './lance-source-loader-types';
 import {parseLanceFileMetadata, type LanceFileMetadata} from './lance-file';
@@ -82,7 +83,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
   }
 
   /** Reads record batches once the Lance decoder is available. */
-  async *readBatches(): AsyncIterable<ArrowTableBatch> {
+  async *readBatches(): AsyncIterable<RecordBatch> {
     const lanceOptions = this.options.lance;
     if (!lanceOptions?.columnTypes) {
       throw new LanceDecoderUnavailableError();
@@ -100,7 +101,8 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
             columnNames: lanceOptions.columnNames,
             limit: lanceOptions.limit
           });
-    yield makeTableScanBatch(table);
+    if (table.data.batches.length) yield* table.data.batches;
+    else yield makeArrowMetadataBatch(table.data.schema);
   }
 
   /** Reads the first remote data file through HTTP range requests. */

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {tableFromArrays} from 'apache-arrow';
 import {beforeEach, expect, test, vi} from 'vitest';
 
 const lanceMocks = vi.hoisted(() => ({
@@ -22,7 +23,7 @@ vi.mock('../../src/lance/lance-arrow', () => ({
 
 import {LanceSourceLoader} from '../../src/lance/lance-source-loader';
 
-const MOCK_TABLE = {shape: 'arrow-table', data: {numRows: 2}};
+const MOCK_TABLE = {shape: 'arrow-table', data: tableFromArrays({value: new Int32Array([1, 2])})};
 const MOCK_FILE_METADATA = {majorVersion: 2, minorVersion: 0, fileSizeBytes: 64};
 
 beforeEach(() => {
@@ -31,7 +32,7 @@ beforeEach(() => {
   lanceMocks.readRemoteFileToArrow.mockReset().mockResolvedValue(MOCK_TABLE);
 });
 
-test('LanceSource reads direct Blob data files and wraps decoded Arrow batches', async () => {
+test('LanceSource reads direct Blob data files and returns native Arrow batches', async () => {
   const source = LanceSourceLoader.createDataSourceSync(new Blob([new Uint8Array([1, 2, 3])]), {
     lance: {columnTypes: ['int32'], columnNames: ['value'], limit: 2}
   });
@@ -43,7 +44,7 @@ test('LanceSource reads direct Blob data files and wraps decoded Arrow batches',
     columnNames: ['value'],
     limit: 2
   });
-  expect(batches).toEqual([{...MOCK_TABLE, batchType: 'data', length: 2}]);
+  expect(batches).toEqual(MOCK_TABLE.data.batches);
   await expect(source.getFileMetadata()).resolves.toBe(MOCK_FILE_METADATA);
 });
 

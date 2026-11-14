@@ -14,7 +14,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import {filterArrowTable} from '@loaders.gl/core/query/arrow-execution';
 import type {ArrowTableBatch, Field, Schema} from '@loaders.gl/core/schema';
-import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
+import {convertSchemaToArrow, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {DuckDBSQLDataSource} from './duckdb-sql-source';
 import type {SQLTableInfo} from './sql-types';
 import {getQualifiedTableName, quoteSqlIdentifier} from './sql-utils';
@@ -190,7 +190,11 @@ export function makeDuckDBTableQuerySource(
     return {
       schema: outputSchema,
       /** Executes the planned SQL when the consumer starts reading. */
-      read: (options?: {signal?: AbortSignal}) => readStatement(sql, outputSchema, options?.signal)
+      async *read(options?: {signal?: AbortSignal}) {
+        for await (const {data} of readStatement(sql, outputSchema, options?.signal)) {
+          yield* data.batches.length ? data.batches : [makeArrowMetadataBatch(data.schema)];
+        }
+      }
     };
   }
 
@@ -216,7 +220,7 @@ export function makeDuckDBTableQuerySource(
         yield* accepted.read({signal});
         return;
       }
-      yield* executeTableScanBatches(
+      for await (const batch of executeTableScanBatches(
         readSignal => readStatement(`SELECT * FROM ${tableName}${order}`, schema, readSignal),
         options,
         {
@@ -229,7 +233,10 @@ export function makeDuckDBTableQuerySource(
             });
           }
         }
-      );
+      )) {
+        const {data} = batch as ArrowTableBatch;
+        yield* data.batches.length ? data.batches : [makeArrowMetadataBatch(data.schema)];
+      }
     }
   };
 }

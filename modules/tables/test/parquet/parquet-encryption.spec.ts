@@ -134,8 +134,8 @@ test('ParquetSource decrypts encrypted pages in a worker', async () => {
   }
   await source.close();
 
-  expect(batches.reduce((count, batch) => count + batch.rowCount, 0)).toBe(50);
-  expect(batches[0]?.data.getChild('double_field')?.toArray().length).toBeGreaterThan(0);
+  expect(batches.reduce((count, batch) => count + JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowCount, 0)).toBe(50);
+  expect(batches[0]?.getChild('double_field')?.toArray().length).toBeGreaterThan(0);
 });
 
 test('worker key lookup uses the encrypted column ordinal', async () => {

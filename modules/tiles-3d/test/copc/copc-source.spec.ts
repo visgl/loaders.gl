@@ -286,9 +286,9 @@ test('COPC scans every PDRF 8 field and preserves projected tile origins', async
     const batches = [];
     for await (const batch of source.scan({columns, batchSize: 2, maximumLevel: 0}))
       batches.push(batch);
-    expect(batches.reduce((count, batch) => count + batch.length, 0)).toBe(40);
-    expect(batches[0].data.getChild('Red')?.get(0)).toBe(0);
-    expect(batches[0].data.getChild('Infrared')?.get(1)).toBe(101);
+    expect(batches.reduce((count, batch) => count + batch.numRows, 0)).toBe(40);
+    expect(batches[0].getChild('Red')?.get(0)).toBe(0);
+    expect(batches[0].getChild('Infrared')?.get(1)).toBe(101);
     const tile = await source.getRootTile();
     const content = await source.loadTileContent(tile);
     expect(content!.coordinateSystem).toBe('lnglat-offsets');
@@ -393,12 +393,12 @@ test('COPCSourceLoader#scans bounded projected Arrow point batches with a global
     batches.push(batch);
   }
 
-  expect(batches.reduce((length, batch) => length + batch.length, 0)).toBe(25);
-  expect(batches.every(batch => batch.length <= 10)).toBe(true);
+  expect(batches.reduce((length, batch) => length + batch.numRows, 0)).toBe(25);
+  expect(batches.every(batch => batch.numRows <= 10)).toBe(true);
   expect(batches[0].schema.fields.map(field => field.name)).toEqual(['X', 'Y', 'Z', 'Intensity']);
   for (const batch of batches) {
     for (const columnName of ['X', 'Y', 'Z', 'Intensity']) {
-      expect(batch.data.getChild(columnName)).toBeTruthy();
+      expect(batch.getChild(columnName)).toBeTruthy();
     }
   }
   await source.close();
@@ -419,8 +419,8 @@ test('COPCSourceLoader#normalizes boolean predicates and preserves empty project
     batches.push(batch);
   }
 
-  expect(batches.map(batch => batch.length)).toEqual([2]);
-  expect(batches[0].data.numCols).toBe(0);
+  expect(batches.map(batch => batch.numRows)).toEqual([2]);
+  expect(batches[0].numCols).toBe(0);
   await source.close();
 });
 
@@ -963,11 +963,11 @@ test('COPCSourceLoader#scans exact 64-bit Extra Bytes with scalar and vector sch
     });
     let scannedPointCount = 0;
     for await (const batch of source.scan({maximumLevel: 0, limit: 3})) {
-      scannedPointCount += batch.length;
-      expect(batch.data.getChild('EXTRA_BYTES_unsigned')!.toArray()).toEqual(unsigned);
-      expect(batch.data.getChild('EXTRA_BYTES_signed')!.toArray()).toEqual(signed);
+      scannedPointCount += batch.numRows;
+      expect(batch.getChild('EXTRA_BYTES_unsigned')!.toArray()).toEqual(unsigned);
+      expect(batch.getChild('EXTRA_BYTES_signed')!.toArray()).toEqual(signed);
       expect(
-        Array.from(batch.data.getChild('EXTRA_BYTES_vector')!, row => [...row.toArray()]).flat()
+        Array.from(batch.getChild('EXTRA_BYTES_vector')!, row => [...row.toArray()]).flat()
       ).toEqual([...vector]);
     }
     expect(scannedPointCount).toBe(3);
