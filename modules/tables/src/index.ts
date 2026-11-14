@@ -25,9 +25,7 @@ export {ORCLoader} from './orc/orc-loader-types';
 export {ParquetLoader} from './parquet/parquet-loader-types';
 export {GeoParquetLoader} from './parquet/geoparquet-loader-types';
 export {ArrowFormat} from './arrow/exports/arrow-format';
-export type {ArrowLoaderOptions} from './arrow/exports/arrow-loader';
-export {ArrowWorkerLoader} from './arrow/exports/arrow-loader';
-export {GeoArrowWorkerLoader} from './arrow/exports/geoarrow-loader';
+export type {ArrowLoaderOptions} from './arrow/arrow-loader-types';
 export {ArrowWriter, type ArrowWriterOptions} from './arrow/arrow-writer';
 export {JSONFormat, GeoJSONFormat, NDJSONFormat, NDGeoJSONFormat} from './json/json-format';
 export type {JSONLoaderOptions} from './json/json-loader-types';
@@ -49,6 +47,6 @@ export {ParquetWriter} from './parquet/parquet-writer';
 export {ParquetJSWriter} from './parquet/parquet-js-writer';
 
 export type {LanceSourceLoaderOptions} from './lance/lance-source-loader';
-export type {GeoArrowLoaderOptions} from './arrow/exports/geoarrow-loader';
+export type {GeoArrowLoaderOptions} from './arrow/geoarrow-loader-types';
 export type {ParquetWriterOptions} from './parquet/parquet-writer';
 export type {ParquetJSWriterOptions} from './parquet/parquet-js-writer';

@@ -47,7 +47,6 @@ export type ResolveSourceOptions = {
   data: unknown;
   loader?: Loader | Array<Loader>;
   loaders?: ReadonlyArray<Loader>;
-  sources?: Readonly<Loader[]>;
   sourceOptions?: DataSourceOptions;
 };
 
@@ -65,10 +64,7 @@ export async function resolveVisualSource(
   const parserLoaders = suppliedLoaders.filter(
     (loader): loader is Loader => !supportsSourceCreation(loader)
   );
-  const sourceLoaders = deduplicateByIdentity([
-    ...(options.sources || []),
-    ...suppliedLoaders.filter(supportsSourceCreation)
-  ]);
+  const sourceLoaders = suppliedLoaders.filter(supportsSourceCreation);
   const directSourceType = classifyVisualSource(options.data);
 
   if (directSourceType) {

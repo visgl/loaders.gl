@@ -82,7 +82,6 @@ class instances, import their runtime values from `apache-arrow` or `@loaders.gl
 | Loader / Writer | Description |
 | --------------- | ----------- |
 | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader) | Loads Apache Arrow IPC files and streams as loaders.gl tables. |
-| [`ArrowWorkerLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader) | Deprecated alias for `ArrowLoader`. |
 | [`GeoArrowLoader`](/docs/modules/tables/arrow/api-reference/geoarrow-loader) | Loads Arrow data and interprets GeoArrow geometry columns. |
 | [`ArrowWriter`](/docs/modules/tables/arrow/api-reference/arrow-writer) | Writes arrays as Apache Arrow IPC data. |
 

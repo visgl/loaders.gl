@@ -9,8 +9,8 @@ import {writeWKB} from '@math.gl/arrow/wkb';
 import {ArrowConverter, convertArrow} from '../../src/arrow/arrow-converter/arrow-converter';
 import {GeoArrowWriter} from '../../src/arrow/geoarrow-writer';
 import {VECTOR_TYPES} from '../../src/arrow/lib/types';
-import {ArrowWorkerLoader} from '../../src/arrow/exports/arrow-loader';
-import {GeoArrowWorkerLoader} from '../../src/arrow/exports/geoarrow-loader';
+import {ArrowLoader} from '../../src/arrow/arrow-loader-types';
+import {GeoArrowLoader} from '../../src/arrow/geoarrow-loader-types';
 import {parseArrowInBatches, parseArrowSync} from '../../src/arrow/lib/parsers/parse-arrow';
 import {
   parseGeoArrowInBatches,
@@ -90,8 +90,8 @@ test('loader result hooks preserve non-Arrow values and accept legacy copy optio
 });
 
 test('metadata preload resolves the parser-bearing Arrow and GeoArrow loaders', async () => {
-  const arrowLoader = await ArrowWorkerLoader.preload();
-  const geoArrowLoader = await GeoArrowWorkerLoader.preload();
+  const arrowLoader = await ArrowLoader.preload();
+  const geoArrowLoader = await GeoArrowLoader.preload();
   expect(arrowLoader.parseSync).toBeTypeOf('function');
   expect(geoArrowLoader.parseSync).toBeTypeOf('function');
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({value: [7]}));
@@ -104,7 +104,7 @@ test('metadata preload resolves the parser-bearing Arrow and GeoArrow loaders', 
 });
 
 test('Arrow parser entry points return native Arrow for the arrow shape', async () => {
-  const loader = await ArrowWorkerLoader.preload();
+  const loader = await ArrowLoader.preload();
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({value: [7]}));
   const options = {arrow: {shape: 'arrow' as const}};
   expect(loader.parseSync(bytes.buffer, options)).toBeInstanceOf(arrow.Table);

@@ -371,7 +371,7 @@ describe('RasterSourceLayer lifecycle', () => {
       .mockReturnValue(rasterSet as any);
     const layer = createRasterLayer({
       data: 'memory.raster',
-      sources: [sourceLoader],
+      loaders: [sourceLoader],
       ...callbacks
     });
     layer.context = {viewport: createViewport([-10, -5, 20, 15])};

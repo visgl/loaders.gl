@@ -9,7 +9,7 @@ import {
   serializeArrowWorkerTable,
   deserializeArrowWorkerTable
 } from '@loaders.gl/core/arrow-worker-transport';
-import type {ArrowLoaderOptions} from '../exports/arrow-loader';
+import type {ArrowLoaderOptions} from '../arrow-loader-types';
 
 /** Owns all Arrow column buffers, including dictionaries retained by successive parser batches. */
 export const serializeArrowTableResult = serializeArrowWorkerTable;

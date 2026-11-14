@@ -9,7 +9,7 @@ import {
   deserializeArrowTableResult
 } from '../../src/arrow/lib/arrow-worker-transport';
 import {GeoArrowLoaderWithParser} from '../../src/arrow/geoarrow-loader';
-import type {ArrowLoaderOptions} from '../../src/arrow/exports/arrow-loader';
+import type {ArrowLoaderOptions} from '../../src/arrow/arrow-loader-types';
 
 test.each([
   [undefined, 'columnar-table'],
