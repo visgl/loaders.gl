@@ -26,6 +26,8 @@ export const ParquetLoader = {
   ...PARQUET_LOADER_BASE,
   worker: PARQUET_WORKER_URL,
   workerInBatches: true,
+  fromUrl: true,
+  fromBlob: true,
   preload: preloadParquetLoader
 } as const satisfies Loader<
   ObjectRowTable | Table,

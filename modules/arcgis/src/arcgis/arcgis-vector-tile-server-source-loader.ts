@@ -189,7 +189,7 @@ export class ArcGISVectorTileServerSource
 }
 
 /** Runtime service loader for synchronous construction. */
-export const ArcGISVectorTileServerSourceLoaderWithParser = {
+export const ArcGISVectorTileServerLoaderWithParser = {
   ...ARCGIS_VECTOR_TILE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISVectorTileServerSource,
   batchType: null as never,

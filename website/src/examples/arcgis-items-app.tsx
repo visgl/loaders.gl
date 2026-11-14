@@ -4,7 +4,7 @@ import {GeoJsonLayer} from '@deck.gl/layers';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {ArcGISIdentityManager} from '@esri/arcgis-rest-request';
 import {createDataSource, load} from '@loaders.gl/core';
-import {ARCGIS_LOADERS, ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS, ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import type {SourceLayerProps} from '@loaders.gl/deck-layers';
 import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
@@ -285,7 +285,7 @@ export default function ArcGISItemsApp(): React.ReactElement {
         );
         return;
       }
-      const source = await createDataSource(selected.url, ArcGISFeatureServerSourceLoader, {
+      const source = await createDataSource(selected.url, ArcGISFeatureServerLoader, {
         core: {fetch: transport}
       });
       const result = await source.queryFeatures({

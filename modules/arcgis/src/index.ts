@@ -10,20 +10,20 @@ export type {
   ArcGISServiceSelection
 } from './arcgis/arcgis-capability-graph';
 
-export {ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader-types';
+export {ArcGISFeatureServerLoader} from './arcgis/arcgis-feature-server-source-loader-types';
 export type {ArcGISVectorSource} from './arcgis/arcgis-feature-server-source-loader';
-export {ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader-types';
+export {ArcGISImageServerLoader} from './arcgis/arcgis-image-server-source-loader-types';
 export type {ArcGISImageSource} from './arcgis/arcgis-image-server-source-loader';
-export {ArcGISImageTileSourceLoader} from './arcgis/arcgis-image-tile-source-loader-types';
+export {ArcGISImageTileLoader} from './arcgis/arcgis-image-tile-source-loader-types';
 export type {ArcGISImageTileSource} from './arcgis/arcgis-image-tile-source-loader';
-export {ArcGISMapTileSourceLoader} from './arcgis/arcgis-map-tile-source-loader-types';
+export {ArcGISMapTileLoader} from './arcgis/arcgis-map-tile-source-loader-types';
 export type {ArcGISMapTileSource} from './arcgis/arcgis-map-tile-source-loader';
-export {ArcGISSceneServerSourceLoader} from './arcgis/arcgis-scene-server-source-loader-types';
+export {ArcGISSceneServerLoader} from './arcgis/arcgis-scene-server-source-loader-types';
 export type {
   ArcGISSceneServerSource,
   ArcGISSceneServerQueryError
 } from './arcgis/arcgis-scene-server-source-loader';
-export {ArcGISVectorTileServerSourceLoader} from './arcgis/arcgis-vector-tile-server-source-loader-types';
+export {ArcGISVectorTileServerLoader} from './arcgis/arcgis-vector-tile-server-source-loader-types';
 export type {ArcGISVectorTileServerSource} from './arcgis/arcgis-vector-tile-server-source-loader';
 export type {
   ArcGISFeatureServiceQueryOptions,

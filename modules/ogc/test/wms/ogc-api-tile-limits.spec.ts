@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {OGCAPITilesSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
 import type {OGCTileMatrixLimits, OGCTileMatrixSet} from '@loaders.gl/ogc/wms';
 
 const API_URL = 'https://example.com/api';
@@ -26,7 +26,7 @@ function createSource(limits: unknown = LIMITS) {
     tileMatrixSetId: 'regional',
     tileMatrixSetLimits: limits
   };
-  const source = OGCAPITilesSourceLoader.createDataSourceSync(API_URL, {
+  const source = OGCAPITilesLoader.createDataSourceSync(API_URL, {
     'ogc-api': {tileTemplate: `${TILESET_URL}/{tileMatrix}/{tileRow}/{tileCol}`}
   });
   const fetch: typeof source.fetch = async url => {
@@ -148,7 +148,7 @@ test('configured coverage works without geometry when discovery is disabled', as
 });
 
 test('availability rejects invalid advertised dimensions without requiring geometry', () => {
-  const source = OGCAPITilesSourceLoader.createDataSourceSync(API_URL, {
+  const source = OGCAPITilesLoader.createDataSourceSync(API_URL, {
     'ogc-api': {
       tileTemplate: `${TILESET_URL}/{tileMatrix}/{tileRow}/{tileCol}`,
       tileMatrixSet: {
@@ -164,7 +164,7 @@ test.each([
   {matrixWidth: 4},
   {matrixHeight: 3}
 ])('rejects incomplete matrix dimensions before requesting tile content: %j', async dimensions => {
-  const source = OGCAPITilesSourceLoader.createDataSourceSync(API_URL, {
+  const source = OGCAPITilesLoader.createDataSourceSync(API_URL, {
     'ogc-api': {
       tileTemplate: `${TILESET_URL}/{tileMatrix}/{tileRow}/{tileCol}`,
       tileMatrixSet: {tileMatrices: [{id: 'coarse', ...dimensions}]}
@@ -185,7 +185,7 @@ test.each([
 });
 
 test('OGC canonical URLs and availability agree for a covered coalesced alias', async () => {
-  const source = OGCAPITilesSourceLoader.createDataSourceSync(API_URL, {
+  const source = OGCAPITilesLoader.createDataSourceSync(API_URL, {
     'ogc-api': {
       tileTemplate: `${API_URL}/{tileMatrix}/{tileRow}/{tileCol}`,
       tileMatrixSet: {

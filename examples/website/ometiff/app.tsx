@@ -11,11 +11,11 @@ import DeckGL from '@deck.gl/react';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import type {RasterData} from '@loaders.gl/core/loader-utils';
 import type {OMETiffSourceLoaderMetadata} from '@loaders.gl/raster/ometiff-source-loader';
-import {OMETiffSourceLoader} from '@loaders.gl/raster/ometiff-source-loader';
+import {OMETiffLoader} from '@loaders.gl/raster/ometiff-source-loader';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 const DATA_URL = '/multi-channel.ome.tif';
-const OMETIFF_LOADERS = [OMETiffSourceLoader];
+const OMETIFF_LOADERS = [OMETiffLoader];
 const OMETIFF_SOURCE_OPTIONS = {core: {type: 'ometiff'}};
 
 type AppProps = {

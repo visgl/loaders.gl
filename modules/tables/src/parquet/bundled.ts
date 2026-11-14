@@ -7,7 +7,6 @@ export type {GeoParquetLoaderOptions} from './geoparquet-loader-types';
 export {ParquetLoaderWithParser as ParquetLoader} from '../parquet-loader';
 export {GeoParquetLoaderWithParser as GeoParquetLoader} from './geoparquet-loader';
 export {
-  ParquetSourceLoader,
   ParquetSource,
   getParquetBatchProvenance,
   type ParquetDeferredPageFilter,

@@ -12,15 +12,11 @@ import {
   parse,
   resolvePath
 } from '@loaders.gl/core';
-import {
-  MVTSourceLoader,
-  MVTTileSource,
-  TableTileSourceLoader,
-  TableVectorTileSource
-} from '@loaders.gl/tiles/mvt';
-import {PMTilesSourceLoader, PMTilesTileSource} from '@loaders.gl/tiles/pmtiles';
-import {WMSSourceLoader, WMSImageSource} from '@loaders.gl/ogc/wms';
-import {OMEZarrSourceLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
+import {MVTTileSource, TableTileLoader, TableVectorTileSource} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
+import {PMTilesLoader, PMTilesTileSource} from '@loaders.gl/tiles/pmtiles';
+import {WMSLoader, WMSImageSource} from '@loaders.gl/ogc/wms';
+import {OMEZarrLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 
 const GEOJSON_TABLE: GeoJSONTable = {
@@ -49,10 +45,10 @@ test('source entrypoints share flat loading controls and parser namespaces', asy
   };
   const selected = createDataSourceSync(
     'https://example.com/service',
-    [MVTSourceLoader, WMSSourceLoader],
+    [MVTLoaderWithParser, WMSLoader],
     options
   );
-  const loaded = await createDataSource('https://example.com/service', WMSSourceLoader, options);
+  const loaded = await createDataSource('https://example.com/service', WMSLoader, options);
   for (const source of [selected, loaded]) {
     expect(source).toBeInstanceOf(WMSImageSource);
     expect(source.loadOptions.wms).toEqual(options.wms);
@@ -68,61 +64,61 @@ async function createPmtilesFixtureBlob(): Promise<Blob> {
   return await response.blob();
 }
 
-test('createDataSource#createDataSource returns WMSImageSource for WMSSourceLoader', () => {
-  const source = createDataSourceSync('https://example.com/service=wms', [WMSSourceLoader], {});
+test('createDataSource#createDataSource returns WMSImageSource for WMSLoader', () => {
+  const source = createDataSourceSync('https://example.com/service=wms', [WMSLoader], {});
   expect(source).toBeInstanceOf(WMSImageSource);
 });
 
-test('load#load returns WMSImageSource for WMSSourceLoader', async () => {
-  const source = await createDataSource('https://example.com/service=wms', WMSSourceLoader);
+test('load#load returns WMSImageSource for WMSLoader', async () => {
+  const source = await createDataSource('https://example.com/service=wms', WMSLoader);
   expect(source).toBeInstanceOf(WMSImageSource);
 });
 
-test('load#load returns MVTTileSource for MVTSourceLoader', async () => {
-  const source = await createDataSource('https://example.com/tiles', MVTSourceLoader);
+test('load#load returns MVTTileSource for MVTLoaderWithParser', async () => {
+  const source = await createDataSource('https://example.com/tiles', MVTLoaderWithParser);
   expect(source).toBeInstanceOf(MVTTileSource);
 });
 
-test('createDataSource#createDataSource returns MVTTileSource for MVTSourceLoader', () => {
-  const source = createDataSourceSync('https://example.com/tiles', [MVTSourceLoader], {});
+test('createDataSource#createDataSource returns MVTTileSource for MVTLoaderWithParser', () => {
+  const source = createDataSourceSync('https://example.com/tiles', [MVTLoaderWithParser], {});
   expect(source).toBeInstanceOf(MVTTileSource);
 });
 
-test('load#load returns PMTilesTileSource for PMTilesSourceLoader', async () => {
-  const source = await createDataSource(await createPmtilesFixtureBlob(), PMTilesSourceLoader);
+test('load#load returns PMTilesTileSource for PMTilesLoader', async () => {
+  const source = await createDataSource(await createPmtilesFixtureBlob(), PMTilesLoader);
   expect(source).toBeInstanceOf(PMTilesTileSource);
 });
 
-test('load#load returns TableVectorTileSource for TableTileSourceLoader', async () => {
-  const source = await createDataSource(GEOJSON_TABLE, TableTileSourceLoader);
+test('load#load returns TableVectorTileSource for TableTileLoader', async () => {
+  const source = await createDataSource(GEOJSON_TABLE, TableTileLoader);
   expect(source).toBeInstanceOf(TableVectorTileSource);
 });
 
-test('load#load returns OMEZarrImageSource for OMEZarrSourceLoader', async () => {
-  const source = await createDataSource(OME_ZARR_FIXTURE_URL, OMEZarrSourceLoader);
+test('load#load returns OMEZarrImageSource for OMEZarrLoader', async () => {
+  const source = await createDataSource(OME_ZARR_FIXTURE_URL, OMEZarrLoader);
   expect(source).toBeInstanceOf(OMEZarrImageSource);
 });
 
-test('createDataSource#createDataSource returns OMEZarrImageSource for OMEZarrSourceLoader', () => {
-  const source = createDataSourceSync(OME_ZARR_FIXTURE_URL, [OMEZarrSourceLoader], {});
+test('createDataSource#createDataSource returns OMEZarrImageSource for OMEZarrLoader', () => {
+  const source = createDataSourceSync(OME_ZARR_FIXTURE_URL, [OMEZarrLoader], {});
   expect(source).toBeInstanceOf(OMEZarrImageSource);
 });
 
 test('parse#parse rejects SourceLoader candidates', async () => {
-  await expect(parse('https://example.com/service=wms', [WMSSourceLoader])).rejects.toThrow(
+  await expect(parse('https://example.com/service=wms', [WMSLoader])).rejects.toThrow(
     'Use createDataSource()'
   );
 });
 
 test('selectSource#selectSource selects an explicit source type', () => {
-  expect(selectSource('https://example.com/service=wms', [WMSSourceLoader], {type: 'wms'})).toBe(
-    WMSSourceLoader
+  expect(selectSource('https://example.com/service=wms', [WMSLoader], {type: 'wms'})).toBe(
+    WMSLoader
   );
 });
 
 test('selectSource#selectSource returns null for an unknown type with nothrow', () => {
   expect(
-    selectSource('https://example.com/service=wms', [WMSSourceLoader], {
+    selectSource('https://example.com/service=wms', [WMSLoader], {
       type: 'unknown',
       nothrow: true
     })
@@ -175,7 +171,7 @@ test('load rejects source-only loaders without constructing a source', async () 
   const url = 'https://example.test/data.factory-test';
 
   await expect(load(url, loader)).rejects.toThrow('Use createDataSource()');
-  await expect(load('https://example.test/service?service=wms', WMSSourceLoader)).rejects.toThrow(
+  await expect(load('https://example.test/service?service=wms', WMSLoader)).rejects.toThrow(
     'Use createDataSource()'
   );
   expect(factory).not.toHaveBeenCalled();

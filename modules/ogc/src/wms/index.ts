@@ -83,10 +83,13 @@ export type {
   CSWRecord,
   CSWSourceLoaderOptions
 } from './csw-source-loader';
-export {CSWCatalogSource, CSWSourceLoader} from './csw-source-loader';
-export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
+export {CSWCatalogSource, CSWLoader} from './csw-source-loader';
+export {WMSLoader, WMSImageSource} from './wms-source-loader';
 export type {WMTSSourceLoaderOptions, WMTSGetFeatureInfoParameters} from './wmts-source-loader';
-export {WMTSSourceLoader, WMTSImageTileSource} from './wmts-source-loader';
+export {
+  WMTSLoader,
+  WMTSImageTileSource
+} from './wmts-source-loader';
 export type {
   OGCTileMatrixSet,
   OGCTileMatrix,
@@ -103,7 +106,7 @@ export {
   getServiceCRSAxisOrder
 } from './crs-utils';
 export type {FeaturePaginationOptions} from './feature-pagination';
-export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
+export {WFSLoader, WFSVectorSource} from './wfs-source-loader';
 export type {WFSVersion, WFSGetFeatureParameters, WFSourceOptions} from './wfs-source-loader';
 export type {WFSFeatureType} from './lib/parsers/wfs/parse-wfs-capabilities';
 export type {
@@ -116,14 +119,14 @@ export type {
 } from './ogc-api-source-loader';
 export {
   OGCAPIFeaturesSource,
-  OGCAPIFeaturesSourceLoader,
+  OGCAPIFeaturesLoader,
   OGCAPITilesSource,
-  OGCAPITilesSourceLoader
+  OGCAPITilesLoader
 } from './ogc-api-source-loader';
 export type {OGCAPIEDRQueryParameters, OGCAPIEDRSourceOptions} from './ogc-api-edr-source-loader';
 export {
   OGCAPIEDRSource,
-  OGCAPIEDRSourceLoader
+  OGCAPIEDRLoader
 } from './ogc-api-edr-source-loader';
 export type {
   OGCAPICoveragesQueryParameters,
@@ -131,7 +134,7 @@ export type {
 } from './ogc-api-coverages-source-loader';
 export {
   OGCAPICoveragesSource,
-  OGCAPICoveragesSourceLoader
+  OGCAPICoveragesLoader
 } from './ogc-api-coverages-source-loader';
 export type {
   WCSCoverage,
@@ -139,7 +142,10 @@ export type {
   WCSGetCoverageParameters,
   WCSSourceOptions
 } from './wcs-source-loader';
-export {WCSCoverageSource, WCSCoverageSourceLoader} from './wcs-source-loader';
+export {
+  WCSCoverageSource,
+  WCSCoverageLoader
+} from './wcs-source-loader';
 
 export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';
 export {

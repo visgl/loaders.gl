@@ -4,6 +4,6 @@
 
 export {LanceLoader} from './lance-loader-types';
 export type {LanceLoaderOptions} from './lance-loader-types';
-export {LanceSourceLoader, LanceSource} from './lance-source-loader';
+export {LanceSource} from './lance-source-loader';
 export type {LanceSourceLoaderOptions, LanceSourceMetadata} from './lance-source-loader';
 export {LanceDecoderUnavailableError} from './lance-errors';

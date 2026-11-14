@@ -50,10 +50,10 @@ every optional OGC API building block.
 
 | API | Source loader | Discovery | Data path | Output | Scope |
 | --- | --- | --- | --- | --- | --- |
-| OGC API Features | `OGCAPIFeaturesSourceLoader` | Landing page and collections | Collection items with bbox and CRS | GeoJSON, binary, Arrow | Minimal read client |
-| OGC API Tiles | `OGCAPITilesSourceLoader` | Landing-page tile link and tileset tile matrix set | Explicit tile template | Raw tile bytes | Minimal template client |
-| OGC API Coverages | `OGCAPICoveragesSourceLoader` | Landing page and collections | Collection coverage with subsets | JSON object or binary bytes | Minimal read client |
-| OGC API EDR | `OGCAPIEDRSourceLoader` | Landing page and collections | Six spatiotemporal query shapes | JSON object or binary bytes | Focused query client |
+| OGC API Features | `OGCAPIFeaturesLoader` | Landing page and collections | Collection items with bbox and CRS | GeoJSON, binary, Arrow | Minimal read client |
+| OGC API Tiles | `OGCAPITilesLoader` | Landing-page tile link and tileset tile matrix set | Explicit tile template | Raw tile bytes | Minimal template client |
+| OGC API Coverages | `OGCAPICoveragesLoader` | Landing page and collections | Collection coverage with subsets | JSON object or binary bytes | Minimal read client |
+| OGC API EDR | `OGCAPIEDRLoader` | Landing page and collections | Six spatiotemporal query shapes | JSON object or binary bytes | Focused query client |
 
 All four sources support standard loaders.gl fetch options for headers, credentials, proxies,
 cancellation, and custom transports.
@@ -132,11 +132,11 @@ materialized rather than a network-streamed feature parser. These rules follow
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPIFeaturesSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIFeaturesLoader} from '@loaders.gl/ogc/wms';
 
 const source = createDataSourceSync(
   'https://demo.ldproxy.net/daraa',
-  [OGCAPIFeaturesSourceLoader],
+  [OGCAPIFeaturesLoader],
   {'ogc-api': {collectionId: 'VegetationSrf'}}
 );
 
@@ -166,9 +166,9 @@ const features = await source.getFeatures({
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPITilesSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync(landingPageUrl, [OGCAPITilesSourceLoader], {
+const source = createDataSourceSync(landingPageUrl, [OGCAPITilesLoader], {
   'ogc-api': {
     tileTemplate: 'https://example.com/tiles/{tileMatrix}/{tileRow}/{tileCol}.png'
   }
@@ -269,7 +269,7 @@ set `discoverTileMatrixSet: false`: `{tileMatrix}` is then the `tileMatrix` para
 `z`, as before discovery existed. Templates that use only `{z}`, `{x}` and `{y}` never discover.
 
 ```ts
-const source = createDataSourceSync('https://example.com/ogcapi', [OGCAPITilesSourceLoader], {
+const source = createDataSourceSync('https://example.com/ogcapi', [OGCAPITilesLoader], {
   'ogc-api': {
     tileTemplate:
       'https://example.com/ogcapi/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt'
@@ -307,9 +307,9 @@ const tileBytes = await source.getTile({z: 3, x: 4, y: 5, tileMatrix: 'UTM18N:3'
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPICoveragesSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPICoveragesLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync(landingPageUrl, [OGCAPICoveragesSourceLoader], {
+const source = createDataSourceSync(landingPageUrl, [OGCAPICoveragesLoader], {
   'ogc-api-coverages': {collectionId: 'temperature'}
 });
 
@@ -343,9 +343,9 @@ level, and parameter.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPIEDRSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIEDRLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync(edrUrl, [OGCAPIEDRSourceLoader], {
+const source = createDataSourceSync(edrUrl, [OGCAPIEDRLoader], {
   'ogc-api-edr': {collectionId: 'weather'}
 });
 

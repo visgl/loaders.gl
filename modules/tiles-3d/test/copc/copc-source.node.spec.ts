@@ -3,13 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import '@loaders.gl/core/polyfills';
-import {COPCSourceLoader} from '@loaders.gl/tiles-3d/copc';
+import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
 import {expect, test, vi} from 'vitest';
 
 const COPC_FILE_PATH = 'modules/tiles-3d/test/copc/data/ellipsoid.copc.laz';
 
-test('COPCSourceLoader reads local files through the native range reader', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(COPC_FILE_PATH, {});
+test('COPCLoader reads local files through the native range reader', async () => {
+  const source = COPCLoader.createDataSourceSync(COPC_FILE_PATH, {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -20,8 +20,8 @@ test('COPCSourceLoader reads local files through the native range reader', async
   expect(content?.data.data.getChild('POSITION')?.length).toBe(rootTile.pointCount);
 });
 
-test('COPCSourceLoader closes its local file handle exactly once', async () => {
-  const source = COPCSourceLoader.createDataSourceSync(COPC_FILE_PATH, {});
+test('COPCLoader closes its local file handle exactly once', async () => {
+  const source = COPCLoader.createDataSourceSync(COPC_FILE_PATH, {});
   await source.initialize();
   const readableFile = source['_readableFile'];
   const close = vi.spyOn(readableFile, 'close');

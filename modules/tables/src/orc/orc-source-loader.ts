@@ -9,7 +9,6 @@ import type {
   DataSourceOptions,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
-  SourceLoader,
   TableQueryOptions
 } from '@loaders.gl/core/loader-utils';
 import {
@@ -27,11 +26,6 @@ import {
 } from './lib/parsers/parse-orc';
 import {parseORCToArrow} from './lib/parsers/parse-orc-to-arrow';
 import {preloadORCCompression} from './lib/parsers/orc-compression';
-import {ORCFormat} from './orc-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Options for an ORC source backed by a URL, Blob, or complete ArrayBuffer. */
 export type ORCSourceOptions = DataSourceOptions;
@@ -133,21 +127,10 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
 }
 
 /** Parser-bearing ORC source loader exposed through the explicit source subpath. */
-export const ORCSourceLoaderWithParser = {
-  dataType: null as unknown as ORCSource,
-  batchType: null as never,
-  ...ORCFormat,
-  name: 'ORCSourceLoader',
-  version: VERSION,
-  type: 'orc-source',
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.orc(?:$|[?#])/i.test(url),
-  createDataSourceSync: (data: string | Blob, options: ORCSourceOptions): ORCSource =>
-    new ORCSource(data, options)
-} as const satisfies SourceLoader<ORCSource>;
+/** Creates a reusable ORC source. */
+export function createORCSource(data: string | Blob, options: ORCSourceOptions): ORCSource {
+  return new ORCSource(data, options);
+}
 
 /** Converts an ORC struct footer type into a loaders.gl schema without reading stripes. */
 export function createORCSchema(

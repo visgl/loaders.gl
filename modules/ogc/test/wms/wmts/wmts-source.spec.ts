@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import type {CoreAPI} from '@loaders.gl/core/loader-utils';
-import {WMTSSourceLoader, WMTSImageTileSource} from '@loaders.gl/ogc/wms';
+import {WMTSLoader, WMTSImageTileSource} from '@loaders.gl/ogc/wms';
 import {WMTSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
 import {getTileBounds} from '@math.gl/geospatial';
 
@@ -24,7 +24,7 @@ test('WMTSImageTileSource#getTileURL preserves endpoint parameters', () => {
 });
 
 test('WMTSImageTileSource#getTileURL expands REST templates', () => {
-  const source = WMTSSourceLoader.createDataSourceSync(
+  const source = WMTSLoader.createDataSourceSync(
     'https://example.com/{TileMatrix}/{TileRow}/{TileCol}.png',
     {
       wmts: {urlTemplate: 'https://tiles.example/{TileMatrix}/{TileRow}/{TileCol}.png'}

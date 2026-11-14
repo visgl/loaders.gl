@@ -11,7 +11,6 @@ import type {
   SourceLoader
 } from '@loaders.gl/core/loader-utils';
 import {
-  isSourceLoader,
   resolveAuthenticationOptions,
   resolveLoaderAuthenticationOptions
 } from '@loaders.gl/core/loader-utils';
@@ -157,7 +156,7 @@ function getCandidates(loaders: Loader | readonly Loader[], options: DataSourceO
   const candidates = Array.isArray(loaders) ? [...loaders] : [loaders as Loader];
   const type = options.core?.type || options.type;
   return candidates.length > 1 && type && type !== 'auto'
-    ? candidates.filter(loader => (isSourceLoader(loader) ? loader.type : loader.id) === type)
+    ? candidates.filter(loader => (loader.type ?? loader.id) === type)
     : candidates;
 }
 

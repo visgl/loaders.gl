@@ -5,7 +5,7 @@ import {expect, test} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
 import {
   ZarrArraySource,
-  ZarrArraySourceLoader,
+  ZarrArrayLoader,
   type ZarrArraySourceLoaderOptions
 } from '@loaders.gl/scientific/zarr';
 const FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
@@ -14,7 +14,7 @@ test('ZarrArraySource reads array metadata and integer selections', async () => 
     zarr: {path: 'images/example-image'},
     zarrArray: {path: '0', dimensions: ['t', 'c', 'z', 'y', 'x']}
   };
-  const source = createDataSourceSync(FIXTURE_URL, [ZarrArraySourceLoader], options);
+  const source = createDataSourceSync(FIXTURE_URL, [ZarrArrayLoader], options);
   expect(source instanceof ZarrArraySource).toBeTruthy();
   const metadata = await source.getMetadata();
   expect(metadata.shape).toEqual([1, 3, 1, 167, 439]);
@@ -42,14 +42,14 @@ test('ZarrArraySource reads array metadata and integer selections', async () => 
   expect(namedWindow.shape).toEqual([3, 3]);
 });
 test('ZarrArraySource validates selection rank and dimension labels', async () => {
-  const source = createDataSourceSync(FIXTURE_URL, [ZarrArraySourceLoader], {
+  const source = createDataSourceSync(FIXTURE_URL, [ZarrArrayLoader], {
     zarr: {path: 'images/example-image'},
     zarrArray: {path: '0', dimensions: ['t']}
   });
   await expect(source.getMetadata()).rejects.toThrow(/dimensions must have length 5/);
 });
 test('ZarrArraySource rejects unknown named dimensions', async () => {
-  const source = createDataSourceSync(FIXTURE_URL, [ZarrArraySourceLoader], {
+  const source = createDataSourceSync(FIXTURE_URL, [ZarrArrayLoader], {
     zarr: {path: 'images/example-image'},
     zarrArray: {path: '0'}
   });
@@ -81,6 +81,6 @@ test('ZarrArraySource defaults selectors and isolates cached data', async () => 
   const sliced = await source.getArray({selection: [0, 0, 0, {}, {stop: 2}]});
   expect(sliced.shape[1]).toBe(2);
   await expect(source.getArray({selection: [0, 0, 0, 0, 0]})).rejects.toThrow(/Failed to read/);
-  expect(ZarrArraySourceLoader.testURL('file.zarr?x=1')).toBe(true);
-  expect(ZarrArraySourceLoader.testURL('file.json')).toBe(false);
+  expect(ZarrArrayLoader.testURL('file.zarr?x=1')).toBe(true);
+  expect(ZarrArrayLoader.testURL('file.json')).toBe(false);
 });

@@ -47,16 +47,15 @@ export type {MVTWriterOptions} from './lib/encode-mvt';
 
 // MVTSourceLoader
 
-export {MVTSourceLoader} from './mvt-source-loader';
 export {MVTTileSource} from './mvt-source-loader';
 export type {MVTSourceLoaderOptions} from './mvt-source-loader';
 
-// TableTileSourceLoader (dynamically tiles a table)
+// TableTileLoader (dynamically tiles a table)
 
-export {TableTileSourceLoader, TableVectorTileSource} from './table-tile-source-loader';
+export {TableTileLoader, TableVectorTileSource} from './table-tile-source-loader';
 export type {TableTileSourceLoaderOptions} from './table-tile-source-loader';
 
-export {ArrowTableTileSourceLoader} from './arrow-table-tile-source-loader-types';
+export {ArrowTableTileLoader} from './arrow-table-tile-source-loader-types';
 export type {ArrowTableVectorTileSource} from './arrow-table-tile-source-loader';
 export type {
   ArrowTableTileSourceLoaderOptions,

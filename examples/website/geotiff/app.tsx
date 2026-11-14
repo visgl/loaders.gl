@@ -7,7 +7,7 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {MapController, type MapViewState} from '@deck.gl/core';
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff-source-loader';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';
 import type {
   RangeRequestEvent,
   RangeStats,
@@ -73,7 +73,7 @@ export default function App(props: AppProps = {}) {
       new SourceLayer({
         id: 'geotiff-source',
         data: DATA_URL,
-        loaders: [GeoTIFFSourceLoader],
+        loaders: [GeoTIFFLoaderWithParser],
         sourceOptions: {
           geotiff: {
             rangeSchedulerProps: {

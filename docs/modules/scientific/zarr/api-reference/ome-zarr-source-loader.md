@@ -1,5 +1,5 @@
 ---
-title: OMEZarrSourceLoader
+title: OMEZarrLoader
 description: Open OME-Zarr v2 and v3 image pyramids and read selected multiscale raster regions.
 hide_title: true
 page_style: designed
@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="zarr"
   eyebrow="Zarr API / bioimaging"
   title="Read an image pyramid at the level and channels you need."
-  description="OMEZarrSourceLoader discovers OME image metadata, resolves multiscale arrays, and reads selected raster windows from local or remote stores without flattening the entire pyramid first."
+  description="OMEZarrLoader discovers OME image metadata, resolves multiscale arrays, and reads selected raster windows from local or remote stores without flattening the entire pyramid first."
   tone="orange"
   meta={['OME-Zarr v2 / v3', 'Multiscale images', 'Chunked raster reads']}
   links={[
@@ -46,15 +46,15 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
 </p>
 
-`OMEZarrSourceLoader` creates a non-geospatial source for OME-Zarr v2 and v3 image pyramids.
+`OMEZarrLoader` creates a non-geospatial source for OME-Zarr v2 and v3 image pyramids.
 
 ## Usage
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OMEZarrSourceLoader} from '@loaders.gl/scientific/zarr';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSourceSync('https://example.com/spatialdata.zarr', [OMEZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/spatialdata.zarr', [OMEZarrLoader], {
   zarr: {
     path: 'images/example-image',
     requireConsolidatedMetadata: true
@@ -133,4 +133,4 @@ tables, points, shapes, or coordinate systems into loaders.gl data sources.
 OME spatial axes and physical units alone do not establish a geographic CRS. The OME source
 retains native level and channel/time/depth metadata rather than inventing a `TileMatrixSet`.
 Explicitly georeferenced generic Zarr multiscales are supported by
-[GeoZarrSourceLoader](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader).
+[GeoZarrLoader](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader).

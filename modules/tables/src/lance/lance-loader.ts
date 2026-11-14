@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createLanceSource} from './lance-source-loader';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, RecordBatch} from 'apache-arrow';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
@@ -15,6 +16,7 @@ const {preload: _preload, ...LanceLoaderMetadataWithoutPreload} = LanceLoaderMet
 
 /** Parser-bearing read-only Lance loader for flat primitive data files. */
 export const LanceLoaderWithParser = {
+  createDataSourceSync: createLanceSource,
   ...LanceLoaderMetadataWithoutPreload,
   parse(_arrayBuffer: ArrayBuffer, _options?: LanceLoaderOptions): Promise<Table> {
     const lanceOptions = _options?.lance;
@@ -37,9 +39,9 @@ export const LanceLoaderWithParser = {
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options?: LanceLoaderOptions
-  ) {
+  ): AsyncIterable<RecordBatch> {
     const arrayBuffer = await concatenateArrayBuffersAsync(_iterator);
-    const table = await LanceLoaderWithParser.parse(arrayBuffer, options);
+    const table: Table = await LanceLoaderWithParser.parse(arrayBuffer, options);
     yield* table.batches;
   }
 } as const satisfies LoaderWithParser<Table, RecordBatch, LanceLoaderOptions>;

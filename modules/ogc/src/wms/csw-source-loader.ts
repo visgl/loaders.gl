@@ -84,7 +84,7 @@ export type CSWCatalogQuery = {
   vendorParameters?: Record<string, unknown>;
 };
 
-export const CSWSourceLoader = {
+export const CSWLoader = {
   dataType: null as unknown as CSWCatalogSource,
   batchType: null as never,
   name: 'CSW',
@@ -140,7 +140,7 @@ export class CSWCatalogSource
 
   /** Create a CSWCatalogSource */
   constructor(url: string, options: CSWSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(url, options, CSWSourceLoader.defaultOptions, coreApi);
+    super(url, options, CSWLoader.defaultOptions, coreApi);
   }
 
   async getMetadata(): Promise<CSWCapabilities> {

@@ -42,7 +42,7 @@ export type OGCAPIEDRQueryParameters = {
 export class OGCAPIEDRSource extends DataSource<string, OGCAPIEDRSourceOptions> {
   /** Creates an EDR source. */
   constructor(url: string, options: OGCAPIEDRSourceOptions = {}, coreApi?: CoreAPI) {
-    super(url.replace(/\/$/, ''), options, OGCAPIEDRSourceLoader.defaultOptions, coreApi);
+    super(url.replace(/\/$/, ''), options, OGCAPIEDRLoader.defaultOptions, coreApi);
   }
 
   /** Returns the EDR landing page. */
@@ -98,7 +98,7 @@ export class OGCAPIEDRSource extends DataSource<string, OGCAPIEDRSourceOptions> 
 }
 
 /** Source loader for OGC API EDR services. */
-export const OGCAPIEDRSourceLoader = {
+export const OGCAPIEDRLoader = {
   dataType: null as unknown as OGCAPIEDRSource,
   batchType: null as never,
   name: 'OGC API EDR',

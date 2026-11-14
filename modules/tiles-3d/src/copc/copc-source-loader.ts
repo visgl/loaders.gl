@@ -264,7 +264,7 @@ export type COPCTileContent = {
 /**
  * Creates point cloud tile source for COPC urls or blobs
  */
-export const COPCSourceLoader = {
+export const COPCLoader = {
   ...COPCFormat,
   dataType: null as unknown as COPCTileSource,
   batchType: null as never,
@@ -334,7 +334,7 @@ export class COPCTileSource
   protected readonly _nodeDecodeSemaphore: AsyncSemaphore;
 
   constructor(data: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(data, options, COPCSourceLoader.defaultOptions, coreApi);
+    super(data, options, COPCLoader.defaultOptions, coreApi);
     this._readableFile = createCOPCReadableFile(data, this.url, this.fetch);
     const readRange = createCachedCOPCRangeReader(this._readableFile);
     this._readRange = async (begin, end, signal) => {

@@ -26,7 +26,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Type | API |
 | --- | --- |
 | Loader | [`MLTLoader`](../api-reference/mlt-loader.md) |
-| Source loader | [`MLTSourceLoader`](../api-reference/mlt-source-loader.md) |
+| Source loader | [`MLTLoader`](../api-reference/mlt-source-loader.md) |
 | Writer | [`MLTWriter`](../api-reference/mlt-writer.md) |
 
 <TileDocsTabs active="mlt" />
@@ -47,7 +47,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 - _[MapLibre Tile format](https://github.com/maplibre/mlt)_
 - _[@loaders.gl/tiles/mlt](/docs/modules/tiles/mlt)_
 - _[MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-loader)_
-- _[MLTSourceLoader](/docs/modules/tiles/mlt/api-reference/mlt-source-loader)_
+- _[MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-source-loader)_
 - _[MLT example](/examples/tiles/mlt)_
 
 A MapLibre Tile (MLT) file is a binary geospatial tile format used by vector tile services and tooling.

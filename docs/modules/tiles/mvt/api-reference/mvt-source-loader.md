@@ -1,5 +1,5 @@
 ---
-title: MVTSourceLoader
+title: MVTLoader
 description: Load vector tiles dynamically from tiled services and cloud hierarchies.
 hide_title: true
 page_style: designed
@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="MVT module · source API"
-  title="MVTSourceLoader"
+  title="MVTLoader"
   description="Resolve TileJSON or tile templates, then fetch individual Mapbox Vector Tiles as an application requests them."
   tone="blue"
   meta={['From v4.0', 'Tile source', 'Cloud-friendly']}
@@ -24,7 +24,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="What it does"
   title="Keep the service metadata separate from tile requests."
-  description="MVTSourceLoader handles the source boundary: load the service description, resolve tile URLs, apply credentials, and return tiles as they are requested."
+  description="MVTLoader handles the source boundary: load the service description, resolve tile URLs, apply credentials, and return tiles as they are requested."
   tone="blue"
   items={[
     {label: 'Source', value: 'TileJSON or a tiled service URL'},
@@ -35,12 +35,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="MVTSourceLoader reference"
+  title="MVTLoader reference"
   description="The sections below document source creation, authentication, options, empty tiles, and service error behavior."
   tone="blue"
 />
 
-The `MVTSourceLoader` dynamically loads tiles, typically from big pre-tiled hierarchies on cloud storage.
+The `MVTLoader` dynamically loads tiles, typically from big pre-tiled hierarchies on cloud storage.
 
 | Source         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
@@ -52,14 +52,14 @@ The `MVTSourceLoader` dynamically loads tiles, typically from big pre-tiled hier
 ## Usage
 
 ```typescript
-import {createDataSourceSync} from '@loaders.gl/core';
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {createDataSource} from '@loaders.gl/core';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
-const source = createDataSourceSync(url, [MVTSourceLoader]);
+const source = await createDataSource(url, [MVTLoader]);
 const tile = await source.getTile(...);
 ```
 
-Vector tiles returned by `MVTSourceLoader` are Arrow tables by default, matching `MVTLoader`'s
+Vector tiles returned by `MVTLoader` are Arrow tables by default, matching `MVTLoader`'s
 columnar path. Set `mvt.shape: 'geojson-table'` explicitly when object-row GeoJSON output is needed.
 
 ## Authentication
@@ -92,12 +92,12 @@ Tile services do not use one universal response for an empty or unavailable tile
 | [pg_tileserv](https://github.com/CrunchyData/pg_tileserv/blob/master/main.go)                                               | Returns `200` with the MVT MIME type and writes the encoded result; an empty result can therefore be a zero-byte binary response.         |
 | [Tegola](https://github.com/go-spatial/tegola/blob/master/server/handle_map_layer_zxy.go)                                  | Returns `200` with MVT bytes for a valid tile and `404` for requests outside the map bounds or without a layer at the requested zoom.     |
 
-`MVTSourceLoader` preserves these normal cases. A `204` or zero-byte successful response is returned as an empty `ArrayBuffer`, while a non-2xx response is reported through `core.onError` and returned as `null`.
+`MVTLoader` preserves these normal cases. A `204` or zero-byte successful response is returned as an empty `ArrayBuffer`, while a non-2xx response is reported through `core.onError` and returned as `null`.
 
 Some proxies, authentication gateways, and custom tile services return an HTML, JSON, or XML error document with a successful HTTP status. Enable the defensive MIME-type check for those services:
 
 ```typescript
-const source = createDataSourceSync(url, [MVTSourceLoader], {
+const source = await createDataSource(url, [MVTLoader], {
   mvt: {
     ignoreTextResponses: true
   },

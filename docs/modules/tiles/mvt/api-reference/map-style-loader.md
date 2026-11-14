@@ -229,5 +229,5 @@ manually.
 ## Related APIs
 
 - [`TileJSONLoader`](/docs/modules/tiles/mvt/api-reference/tilejson-loader)
-- [`MVTSourceLoader`](/docs/modules/tiles/mvt/api-reference/mvt-source-loader)
+- [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-source-loader)
 - [`Map Styles`](/docs/modules/tiles/mvt/formats/map-style)

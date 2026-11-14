@@ -46,6 +46,12 @@ async function preload() {
 export const MLTLoader = {
   defaultShape: 'arrow',
   supportsNativeArrow: true,
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean =>
+    url.endsWith('.mlt') || url.endsWith('/plain') || /\{(?:z|x|y|-y)\}/.test(url),
+  fromUrl: true,
+  fromBlob: false,
+  type: 'mlt',
   ...MLTFormat,
   dataType: null as any,
   batchType: null as never,

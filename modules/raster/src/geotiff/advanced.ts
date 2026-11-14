@@ -5,7 +5,7 @@
 export {GeoTIFFLoader} from './geotiff-loader-types';
 export {GeoTIFFFormat, OMETiffFormat} from './geotiff-format';
 export type {GeoTIFFSourceLoaderOptions} from './geotiff-source-loader';
-export {GeoTIFFSourceLoader, GeoTIFFRasterSource} from './geotiff-source-loader';
+export {GeoTIFFRasterSource} from './geotiff-source-loader';
 export type {
   GetOMETiffParameters,
   OMETiffChannelMetadata,
@@ -13,7 +13,10 @@ export type {
   OMETiffSourceLoaderMetadata,
   OMETiffSourceLoaderOptions
 } from './ometiff-source-loader';
-export {OMETiffSourceLoader, OMETiffImageSource} from './ometiff-source-loader';
+export {
+  OMETiffLoader,
+  OMETiffImageSource
+} from './ometiff-source-loader';
 
 export {loadGeoTiff} from './lib/load-geotiff';
 export {TiffPixelSource} from './lib/tiff-pixel-source';
@@ -27,3 +30,5 @@ export type {
 } from './geotiff-raster-types';
 export {discoverGeoTIFF, isTIFFHeader} from './discover-geotiff';
 export type {DiscoverGeoTIFFOptions} from './discover-geotiff';
+
+export {GeoTIFFLoaderWithParser} from './geotiff-loader';

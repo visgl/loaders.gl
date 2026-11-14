@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {createDataSource, selectLoader} from '@loaders.gl/core';
-import type {DataSourceOptions, Loader, SourceLoader} from '@loaders.gl/core/loader-utils';
-import {isSourceLoader} from '@loaders.gl/core/loader-utils';
+import type {DataSourceOptions, Loader} from '@loaders.gl/core/loader-utils';
+import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
 import {isTileset3DSource} from '@loaders.gl/tiles-3d';
 
 /** Visual source families supported by {@link SourceLayer}. */
@@ -23,7 +23,7 @@ export type SourceLayerLoadInfo = {
   /** Classified renderer family. */
   sourceType: VisualSourceType;
   /** Source loader selected for runtime construction, when applicable. */
-  sourceLoader?: SourceLoader;
+  sourceLoader?: Loader;
 };
 
 /** Normalized navigation hints discovered from source metadata. */
@@ -45,9 +45,9 @@ export type SourceLayerViewState = {
 /** Inputs accepted by the shared asynchronous source resolver. */
 export type ResolveSourceOptions = {
   data: unknown;
-  loader?: Loader | SourceLoader | Array<Loader | SourceLoader>;
-  loaders?: ReadonlyArray<Loader | SourceLoader>;
-  sources?: Readonly<SourceLoader[]>;
+  loader?: Loader | Array<Loader>;
+  loaders?: ReadonlyArray<Loader>;
+  sources?: Readonly<Loader[]>;
   sourceOptions?: DataSourceOptions;
 };
 
@@ -63,11 +63,11 @@ export async function resolveVisualSource(
 ): Promise<ResolvedVisualSource> {
   const suppliedLoaders = normalizeLoaders(options.loader, options.loaders);
   const parserLoaders = suppliedLoaders.filter(
-    (loader): loader is Loader => !isSourceLoader(loader)
+    (loader): loader is Loader => !supportsSourceCreation(loader)
   );
   const sourceLoaders = deduplicateByIdentity([
     ...(options.sources || []),
-    ...suppliedLoaders.filter((loader): loader is SourceLoader => isSourceLoader(loader))
+    ...suppliedLoaders.filter(supportsSourceCreation)
   ]);
   const directSourceType = classifyVisualSource(options.data);
 
@@ -92,7 +92,7 @@ export async function resolveVisualSource(
   const requestedSourceType = getRequestedSourceType(options.sourceOptions);
   if (!selectedSourceLoader && requestedSourceType !== 'auto') {
     const availableTypes =
-      sourceLoaders.map(sourceLoader => sourceLoader.type).join(', ') || 'none';
+      sourceLoaders.map(sourceLoader => sourceLoader.type ?? sourceLoader.id).join(', ') || 'none';
     throw new Error(
       `SourceLayer could not find a SourceLoader with type "${requestedSourceType}". Available source types: ${availableTypes}.`
     );
@@ -298,9 +298,9 @@ export async function finalizeOwnedSource(source: unknown): Promise<void> {
 }
 
 function normalizeLoaders(
-  loader?: Loader | SourceLoader | Array<Loader | SourceLoader>,
-  loaders?: ReadonlyArray<Loader | SourceLoader>
-): Array<Loader | SourceLoader> {
+  loader?: Loader | Array<Loader>,
+  loaders?: ReadonlyArray<Loader>
+): Array<Loader> {
   return deduplicateByIdentity([
     ...(Array.isArray(loader) ? loader : loader ? [loader] : []),
     ...(loaders || [])
@@ -309,16 +309,19 @@ function normalizeLoaders(
 
 async function selectSourceLoader(
   data: string | Blob,
-  sourceLoaders: SourceLoader[],
+  sourceLoaders: Loader[],
   sourceOptions?: DataSourceOptions
-): Promise<SourceLoader | null> {
+): Promise<Loader | null> {
   if (!sourceLoaders.length) {
     return null;
   }
 
   const sourceType = getRequestedSourceType(sourceOptions);
   if (sourceType !== 'auto') {
-    return sourceLoaders.find(sourceLoader => sourceLoader.type === sourceType) || null;
+    return (
+      sourceLoaders.find(sourceLoader => (sourceLoader.type ?? sourceLoader.id) === sourceType) ||
+      null
+    );
   }
   if (sourceLoaders.length === 1) {
     return sourceLoaders[0];
@@ -331,7 +334,7 @@ async function selectSourceLoader(
       ignoreRegisteredLoaders: true,
       nothrow: true
     }
-  })) as SourceLoader | null;
+  })) as Loader | null;
 }
 
 function getRequestedSourceType(sourceOptions?: DataSourceOptions): string {
@@ -382,7 +385,7 @@ function hasMethods(value: unknown, methodNames: string[]): boolean {
   );
 }
 
-function createUnsupportedSourceError(value: unknown, sourceLoader?: SourceLoader): Error {
+function createUnsupportedSourceError(value: unknown, sourceLoader?: Loader): Error {
   const methods =
     value && typeof value === 'object'
       ? Object.getOwnPropertyNames(Object.getPrototypeOf(value) || {})
@@ -391,7 +394,9 @@ function createUnsupportedSourceError(value: unknown, sourceLoader?: SourceLoade
           .filter((name, index, names) => names.indexOf(name) === index)
           .sort()
       : [];
-  const loaderLabel = sourceLoader ? ` from source loader "${sourceLoader.type}"` : '';
+  const loaderLabel = sourceLoader
+    ? ` from source loader "${sourceLoader.type ?? sourceLoader.id}"`
+    : '';
   const capabilityLabel = methods.length ? ` Detected methods: ${methods.join(', ')}.` : '';
   return new Error(
     `SourceLayer resolved an unsupported runtime${loaderLabel}.${capabilityLabel} Supported visual sources expose image, vector, raster, 2D tile, point-cloud tileset, or 3D tileset contracts.`

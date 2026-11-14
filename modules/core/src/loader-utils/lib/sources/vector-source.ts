@@ -33,7 +33,7 @@ export interface VectorSource {
 /**
  * Normalized capabilities of an Image service
  * @example
- *  The WMSSourceLoader will normalize the response to the WMS `GetCapabilities`
+ *  The WMSLoader will normalize the response to the WMS `GetCapabilities`
  *  data structure extracted from WMS XML response into an VectorSourceMetadata.
  */
 export type VectorSourceMetadata = {

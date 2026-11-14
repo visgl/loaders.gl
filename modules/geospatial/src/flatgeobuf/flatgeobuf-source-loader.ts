@@ -12,7 +12,6 @@ import type {
   ScanColumnRole,
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
-  SourceLoader,
   TableQueryExplain,
   VectorSource,
   VectorSourceData,
@@ -25,7 +24,6 @@ import {
   explainTableQuery,
 } from '@loaders.gl/core/loader-utils';
 import {createSpatialReference, type SpatialReference} from '@math.gl/geospatial/crs';
-import {FlatGeobufFormat} from './flatgeobuf-format';
 import {
   makeArrowSchema,
   parseFlatGeobuf,
@@ -38,10 +36,6 @@ import {
   type FlatGeobufHeader
 } from './lib/flatgeobuf-reader';
 import {FLATGEOBUF_TABLE_QUERY_CAPABILITIES} from './flatgeobuf-table-query-capabilities';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 type FlatGeobufResponseFormat = 'geojson' | 'binary' | 'arrow';
 
@@ -83,23 +77,13 @@ type HeaderInfo = {
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
 /** Incrementally loads indexed FlatGeobuf data sources. */
-export const FlatGeobufSourceLoader = {
-  dataType: null as unknown as FlatGeobufVectorSource,
-  batchType: null as never,
-  ...FlatGeobufFormat,
-  version: VERSION,
-  type: 'flatgeobuf',
-  fromUrl: true,
-  fromBlob: false,
-  options: {flatgeobuf: {format: 'arrow'}},
-  defaultOptions: {flatgeobuf: {format: 'arrow'}},
-  testURL: (url: string): boolean => /\.fgb($|[?#])/i.test(url),
-  createDataSourceSync: (
-    url: string,
-    options: FlatGeobufSourceLoaderOptions,
-    coreApi?: CoreAPI
-  ): FlatGeobufVectorSource => new FlatGeobufVectorSource(url, options, coreApi)
-} as const satisfies SourceLoader<FlatGeobufVectorSource>;
+/** Default options for the FlatGeobuf source. */
+const FLATGEOBUF_SOURCE_DEFAULT_OPTIONS = {flatgeobuf: {format: 'arrow'}} as const;
+
+/** Creates a reusable FlatGeobuf source. */
+export function createFlatGeobufSource(data: string, options: FlatGeobufSourceLoaderOptions, coreApi?: CoreAPI): FlatGeobufVectorSource {
+  return new FlatGeobufVectorSource(data, options, coreApi);
+}
 
 /** Runtime vector source backed by FlatGeobuf HTTP data. */
 export class FlatGeobufVectorSource
@@ -113,7 +97,7 @@ export class FlatGeobufVectorSource
 
   /** Creates a vector source from a FlatGeobuf URL. */
   constructor(data: string, options: FlatGeobufSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(data, options, FlatGeobufSourceLoader.defaultOptions, coreApi);
+    super(data, options, FLATGEOBUF_SOURCE_DEFAULT_OPTIONS, coreApi);
   }
 
   /** Returns the property schema declared by the dataset header. */

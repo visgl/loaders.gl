@@ -1,8 +1,8 @@
 import {expect, test} from 'vitest';
 import {NetCDFSource} from '../../src/netcdf/netcdf-source-loader';
-import {NetCDFSourceLoader} from '../../src/netcdf/netcdf-source-loader-types';
+import {NetCDFLoader} from '@loaders.gl/scientific/netcdf';
 
 test('NetCDF root source loader preloads the explicit implementation', async () => {
-  const implementation = await NetCDFSourceLoader.preload();
+  const implementation = await NetCDFLoader.preload();
   expect(implementation.createDataSourceSync(new Blob())).toBeInstanceOf(NetCDFSource);
 });

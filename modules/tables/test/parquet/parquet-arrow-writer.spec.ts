@@ -18,16 +18,12 @@ test('ParquetWriter#writer objects', () => {
     expect(ParquetJSWriter, 'ParquetJSWriter').toBeTruthy();
 });
 test('ParquetSource#public exports', () => {
-    expect(parquet.ParquetSourceLoader, 'root exports lightweight ParquetSourceLoader metadata').toBeTruthy();
     expect('ParquetSource' in parquet, 'root does not export runtime ParquetSource').toBeFalsy();
     expect(parquet.PARQUET_SOURCE_CAPABILITIES, 'root exports source capabilities').toBeTruthy();
-    expect(parquetSource.ParquetSourceLoader, 'source subpath exports runtime loader').toBeTruthy();
     expect(parquetSource.ParquetSource, 'source subpath exports runtime source').toBeTruthy();
     expect(parquetSource.PARQUET_SOURCE_CAPABILITIES, 'source subpath exports capabilities').toBeTruthy();
-    expect(bundledParquet.ParquetSourceLoader, 'bundled entry point exports ParquetSourceLoader').toBeTruthy();
     expect(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource').toBeTruthy();
     expect(bundledParquet.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities').toBeTruthy();
-    expect(unbundledParquet.ParquetSourceLoader, 'unbundled entry point exports ParquetSourceLoader').toBeTruthy();
     expect(unbundledParquet.ParquetSource, 'unbundled entry point exports ParquetSource').toBeTruthy();
     expect(unbundledParquet.PARQUET_SOURCE_CAPABILITIES, 'unbundled exports source capabilities').toBeTruthy();
 });

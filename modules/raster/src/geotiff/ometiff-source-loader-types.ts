@@ -8,11 +8,11 @@ import {OMETiffFormat} from './geotiff-format';
 import {GeoTIFFLoader} from './geotiff-loader-types';
 
 /** Metadata-only OMETiff source loader. */
-export const OMETiffSourceLoader = {
+export const OMETiffLoader = {
   dataType: null as unknown as OMETiffImageSource,
   batchType: null as never,
   ...OMETiffFormat,
-  name: 'OMETiffSourceLoader',
+  name: 'OMETiffLoader',
   version: GeoTIFFLoader.version,
   type: 'ometiff',
   fromUrl: true,
@@ -36,15 +36,14 @@ export const OMETiffSourceLoader = {
 
   testURL: (url: string): boolean => /\.ome\.tiff?(?:$|[?#])/i.test(url),
   /** Loads the implementation for asynchronous source construction. */
-  preload: async () =>
-    (await import('@loaders.gl/raster/ometiff-source-loader')).OMETiffSourceLoader,
+  preload: async () => (await import('@loaders.gl/raster/ometiff-source-loader')).OMETiffLoader,
   /** Synchronous construction requires the source implementation subpath. */
   createDataSourceSync(
     _data: string | Blob,
     _options: OMETiffSourceLoaderOptions
   ): OMETiffImageSource {
     throw new Error(
-      'OMETiffSourceLoader requires async createDataSource() or its source implementation subpath'
+      'OMETiffLoader requires async createDataSource() or its source implementation subpath'
     );
   }
 } as const satisfies SourceLoader<OMETiffImageSource>;

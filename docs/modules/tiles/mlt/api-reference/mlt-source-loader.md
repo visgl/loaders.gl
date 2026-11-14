@@ -1,5 +1,5 @@
 ---
-title: MLTSourceLoader
+title: MLTLoader
 description: Read MapLibre Tile data from URL-addressed tile services.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="MLT source loader"
   title="Fetch compact vector tiles through a source."
-  description="`MLTSourceLoader` connects URL-addressed MapLibre Tile services to the loaders.gl source API. It resolves tile URLs, decodes MLT payloads, and returns Arrow tables with GeoArrow geometry by default."
+  description="`MLTLoader` connects URL-addressed MapLibre Tile services to the loaders.gl source API. It resolves tile URLs, decodes MLT payloads, and returns Arrow tables with GeoArrow geometry by default."
   tone="blue"
   meta={['MapLibre Tile', 'URL tile services', 'Arrow and GeoArrow by default']}
   links={[
@@ -38,7 +38,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 </p>
 
-The `MLTSourceLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL based tile services.
+The `MLTLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL based tile services.
 
 | Source         | Characteristic                                 |
 | -------------- | ---------------------------------------------- |
@@ -56,10 +56,10 @@ The `MLTSourceLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL bas
 />
 
 ```typescript
-import {createDataSourceSync} from '@loaders.gl/core';
-import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
+import {createDataSource} from '@loaders.gl/core';
+import {MLTLoader} from '@loaders.gl/tiles/mlt';
 
-const source = createDataSourceSync('https://example.com/tiles', [MLTSourceLoader]);
+const source = await createDataSource('https://example.com/tiles', [MLTLoader]);
 const arrowTable = await source.getTile({x: 0, y: 0, z: 0});
 ```
 
@@ -84,4 +84,4 @@ For shared loading controls and parser configuration, see
 
 ## Attribution
 
-`MLTSourceLoader` fetches URL-addressed MLT tiles and parses them via [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader), which uses the [@maplibre/mlt](https://github.com/maplibre/mlt) decoder implementation.
+`MLTLoader` fetches URL-addressed MLT tiles and parses them via [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader), which uses the [@maplibre/mlt](https://github.com/maplibre/mlt) decoder implementation.

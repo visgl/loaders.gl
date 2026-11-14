@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {DeltaSourceLoaderWithParser, DeltaTableSource} from '../../src/parquet/delta-source';
+import {DeltaLoaderWithParser, DeltaTableSource} from '../../src/parquet/delta-source';
 
 test('DeltaTableSource selects active files from commit actions', async () => {
   const log = [
@@ -103,11 +103,11 @@ test('DeltaTableSource rejects unsupported reader protocols and column mapping',
   await expect(columnMappingSource.getScanFragments()).rejects.toThrow('column mapping mode');
 });
 
-test('DeltaSourceLoader identifies commit-log URLs', () => {
+test('DeltaLoader identifies commit-log URLs', () => {
   expect(
-    DeltaSourceLoaderWithParser.testURL(
+    DeltaLoaderWithParser.testURL(
       'https://example.com/table/_delta_log/00000000000000000001.json'
     )
   ).toBe(true);
-  expect(DeltaSourceLoaderWithParser.testURL('https://example.com/data.json')).toBe(false);
+  expect(DeltaLoaderWithParser.testURL('https://example.com/data.json')).toBe(false);
 });

@@ -8,9 +8,10 @@ import {createRoot} from 'react-dom/client';
 import {load} from '@loaders.gl/core';
 import type {RangeRequestEvent, RangeStats} from '@loaders.gl/core/loader-utils';
 import {createRangeStats, getRangeStats} from '@loaders.gl/core/loader-utils';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
-import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
-import {MVTSourceLoader, ArrowTableTileSourceLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
+import {PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
+import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt-loader';
+import {ArrowTableTileLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 
 import DeckGL from '@deck.gl/react';
@@ -37,10 +38,10 @@ maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', impor
 
 /** Stable loader identities prevent metadata updates from restarting source resolution. */
 const TILE_LOADERS = [
-  PMTilesSourceLoader,
-  ArrowTableTileSourceLoader,
-  MVTSourceLoader,
-  MLTSourceLoader,
+  PMTilesLoaderWithParser,
+  ArrowTableTileLoader,
+  MVTLoaderWithParser,
+  MLTLoaderWithParser,
   GeoJSONLoader
 ] as const;
 

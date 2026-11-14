@@ -65,7 +65,7 @@ npm install @loaders.gl/core
 | Loader / Source | Description |
 | --------------- | ----------- |
 | [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader) | Loads FlatGeobuf files as geospatial tables. |
-| [`FlatGeobufSourceLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader) <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> | Streams features and spatially filtered data from FlatGeobuf sources. |
+| [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader) <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> | Streams features and spatially filtered data from FlatGeobuf sources. |
 
 ## Attribution
 

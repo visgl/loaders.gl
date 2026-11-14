@@ -25,7 +25,7 @@ shift pixel registration. Consumers decide how to interpret these values.
 
 For display imagery, use [`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-loader).
 For remote windows and overview selection, use
-[`GeoTIFFSourceLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader).
+[`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader).
 This loader downloads the complete file and decodes complete selected images into memory.
 
 ## Returned data

@@ -57,16 +57,16 @@ features, coverages, environmental observations, and catalogs.
 
 | Service or format | Primary source or loader | Data category | Status | Best use |
 | --- | --- | --- | --- | --- |
-| [WMS](/docs/modules/ogc/wms/formats/wms) | `WMSSourceLoader` | Rendered image | ✅ Supported | Dynamic maps, feature information, legends |
-| [WMTS](/docs/modules/ogc/wms/formats/wmts) | `WMTSSourceLoader` | Image tiles | ✅ Supported | Capability-driven tiled imagery |
-| [WFS](/docs/modules/ogc/wms/formats/wfs) | `WFSSourceLoader` | Vector features | ✅ Supported | GeoJSON or streaming GML feature queries |
-| [WCS](/docs/modules/ogc/wms/formats/wcs) | `WCSCoverageSourceLoader` | Analytical raster | ⚠️ Focused | Binary coverages and decoded LERC |
-| [CSW](/docs/modules/ogc/wms/formats/csw) | `CSWSourceLoader` | Catalog records | ⚠️ Focused | Read-only catalog search and service references |
+| [WMS](/docs/modules/ogc/wms/formats/wms) | `WMSLoader` | Rendered image | ✅ Supported | Dynamic maps, feature information, legends |
+| [WMTS](/docs/modules/ogc/wms/formats/wmts) | `WMTSLoader` | Image tiles | ✅ Supported | Capability-driven tiled imagery |
+| [WFS](/docs/modules/ogc/wms/formats/wfs) | `WFSLoader` | Vector features | ✅ Supported | GeoJSON or streaming GML feature queries |
+| [WCS](/docs/modules/ogc/wms/formats/wcs) | `WCSCoverageLoader` | Analytical raster | ⚠️ Focused | Binary coverages and decoded LERC |
+| [CSW](/docs/modules/ogc/wms/formats/csw) | `CSWLoader` | Catalog records | ⚠️ Focused | Read-only catalog search and service references |
 | [GML](/docs/modules/ogc/wms/formats/gml) | `GMLLoader` | Vector format | ⚠️ Supported subset | High-volume WFS feature ingestion |
-| [OGC API Features](/docs/modules/ogc/wms/services/ogc-api#ogc-api-features) | `OGCAPIFeaturesSourceLoader` | Vector features | ⚠️ Minimal | Common collections/items read path |
-| [OGC API Tiles](/docs/modules/ogc/wms/services/ogc-api#ogc-api-tiles) | `OGCAPITilesSourceLoader` | Tile bytes | ⚠️ Minimal | Known tile templates |
-| [OGC API Coverages](/docs/modules/ogc/wms/services/ogc-api#ogc-api-coverages) | `OGCAPICoveragesSourceLoader` | Coverage data | ⚠️ Minimal | Common collection coverage endpoint |
-| [OGC API EDR](/docs/modules/ogc/wms/services/ogc-api#ogc-api-edr) | `OGCAPIEDRSourceLoader` | Environmental observations | ⚠️ Focused | Position, area, cube, and path queries |
+| [OGC API Features](/docs/modules/ogc/wms/services/ogc-api#ogc-api-features) | `OGCAPIFeaturesLoader` | Vector features | ⚠️ Minimal | Common collections/items read path |
+| [OGC API Tiles](/docs/modules/ogc/wms/services/ogc-api#ogc-api-tiles) | `OGCAPITilesLoader` | Tile bytes | ⚠️ Minimal | Known tile templates |
+| [OGC API Coverages](/docs/modules/ogc/wms/services/ogc-api#ogc-api-coverages) | `OGCAPICoveragesLoader` | Coverage data | ⚠️ Minimal | Common collection coverage endpoint |
+| [OGC API EDR](/docs/modules/ogc/wms/services/ogc-api#ogc-api-edr) | `OGCAPIEDRLoader` | Environmental observations | ⚠️ Focused | Position, area, cube, and path queries |
 | [WMC](/docs/modules/ogc/wms/formats/wmc) | None | Map context | ❌ Not implemented | Documented to clarify scope |
 | [OWS Context](/docs/modules/ogc/wms/formats/ows-context) | None | Service context | ❌ Not implemented | Documented to clarify scope |
 
@@ -90,9 +90,9 @@ Every service source can be created through the loaders.gl core API:
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync(wmsUrl, [WMSSourceLoader], {
+const source = createDataSourceSync(wmsUrl, [WMSLoader], {
   wms: {wmsParameters: {layers: ['workspace:roads']}}
 });
 
@@ -123,12 +123,12 @@ Visual service sources work through one generic `SourceLayer`:
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 
 const layer = new SourceLayer({
   id: 'satellite',
   data: wmtsUrl,
-  loaders: [WMTSSourceLoader],
+  loaders: [WMTSLoader],
   sourceOptions: {wmts: {layer: layerId, tileMatrixSet: matrixSetId}}
 });
 ```

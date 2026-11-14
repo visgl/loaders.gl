@@ -11,14 +11,14 @@ import type {
   SourceLoader
 } from '@loaders.gl/core/loader-utils';
 import {createAuthenticatedFetch, redactCredentialURL} from '@loaders.gl/core/loader-utils';
-import {CSWSourceLoader} from './csw-source-loader';
-import {WMSSourceLoader} from './wms-source-loader';
-import {WMTSSourceLoader} from './wmts-source-loader';
-import {WFSSourceLoader} from './wfs-source-loader';
-import {OGCAPIEDRSourceLoader} from './ogc-api-edr-source-loader';
-import {OGCAPICoveragesSourceLoader} from './ogc-api-coverages-source-loader';
-import {OGCAPIFeaturesSourceLoader, OGCAPITilesSourceLoader} from './ogc-api-source-loader';
-import {WCSCoverageSourceLoader} from './wcs-source-loader';
+import {CSWLoader} from './csw-source-loader';
+import {WMSLoader} from './wms-source-loader';
+import {WMTSLoader} from './wmts-source-loader';
+import {WFSLoader} from './wfs-source-loader';
+import {OGCAPIEDRLoader} from './ogc-api-edr-source-loader';
+import {OGCAPICoveragesLoader} from './ogc-api-coverages-source-loader';
+import {OGCAPIFeaturesLoader, OGCAPITilesLoader} from './ogc-api-source-loader';
+import {WCSCoverageLoader} from './wcs-source-loader';
 
 /** A source loader that can be selected by the universal service runtime. */
 export type ServiceSourceLoader = SourceLoader;
@@ -81,15 +81,15 @@ export class ServiceRequestError extends Error {
 
 /** Default source set spanning the OGC service families implemented by WMS. */
 export const DEFAULT_SERVICE_LOADERS: readonly ServiceSourceLoader[] = [
-  WMTSSourceLoader,
-  WMSSourceLoader,
-  WFSSourceLoader,
-  WCSCoverageSourceLoader,
-  OGCAPITilesSourceLoader,
-  OGCAPICoveragesSourceLoader,
-  OGCAPIEDRSourceLoader,
-  OGCAPIFeaturesSourceLoader,
-  CSWSourceLoader
+  WMTSLoader,
+  WMSLoader,
+  WFSLoader,
+  WCSCoverageLoader,
+  OGCAPITilesLoader,
+  OGCAPICoveragesLoader,
+  OGCAPIEDRLoader,
+  OGCAPIFeaturesLoader,
+  CSWLoader
 ];
 
 type CachedSource = {source: DataSource<unknown, DataSourceOptions>; expires: number};

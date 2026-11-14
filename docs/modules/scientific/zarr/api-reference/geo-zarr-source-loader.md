@@ -1,5 +1,5 @@
 ---
-title: GeoZarrSourceLoader
+title: GeoZarrLoader
 description: Query GeoZarr arrays as geospatial rasters while preserving dimensions, chunks, and CRS metadata.
 hide_title: true
 page_style: designed
@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="zarr"
   eyebrow="GeoZarr source"
   title="Ask a multidimensional array for a spatial slice."
-  description="GeoZarrSourceLoader maps GeoZarr and CF/xarray metadata to raster requests, selecting variables, dimensions, levels, and chunks without discarding the array’s native meaning."
+  description="GeoZarrLoader maps GeoZarr and CF/xarray metadata to raster requests, selecting variables, dimensions, levels, and chunks without discarding the array’s native meaning."
   tone="pink"
   meta={['Zarr v2 and v3', 'GeoZarr and CF', 'Chunk-selected raster']}
   links={[
@@ -39,7 +39,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-`GeoZarrSourceLoader` opens a numeric Zarr data variable as a viewport-driven geospatial raster
+`GeoZarrLoader` opens a numeric Zarr data variable as a viewport-driven geospatial raster
 source. It supports Zarr v2 and v3 stores through Zarrita.
 
 The source recognizes two interoperable metadata patterns:
@@ -69,9 +69,9 @@ The source recognizes two interoperable metadata patterns:
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {GeoZarrSourceLoader} from '@loaders.gl/scientific/zarr';
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSourceSync('https://example.com/reanalysis.zarr', [GeoZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/reanalysis.zarr', [GeoZarrLoader], {
   zarr: {
     path: null,
     requireConsolidatedMetadata: true

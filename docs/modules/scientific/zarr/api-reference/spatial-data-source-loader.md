@@ -1,4 +1,4 @@
-# SpatialDataSourceLoader
+# SpatialDataLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -6,16 +6,16 @@
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-`SpatialDataSourceLoader` opens a SpatialData Zarr root and discovers its named images, labels,
+`SpatialDataLoader` opens a SpatialData Zarr root and discovers its named images, labels,
 points, shapes, and tables without reading element payloads.
 
 ## Usage
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {SpatialDataSourceLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSourceSync('https://example.com/dataset.zarr', [SpatialDataSourceLoader]);
+const source = createDataSourceSync('https://example.com/dataset.zarr', [SpatialDataLoader]);
 const metadata = await source.getMetadata();
 
 const imageSource = await source.createRasterSource('image', metadata.images[0].name);

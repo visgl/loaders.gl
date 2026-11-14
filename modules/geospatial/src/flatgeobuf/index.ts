@@ -13,8 +13,4 @@ export type {
   FlatGeobufSourceExplain,
   FlatGeobufSourceLoaderOptions
 } from './flatgeobuf-source-loader';
-export {
-  FlatGeobufSourceLoader,
-  FlatGeobufSourceLoader as _FlatGeobufSourceLoader,
-  FlatGeobufVectorSource
-} from './flatgeobuf-source-loader';
+export {FlatGeobufVectorSource} from './flatgeobuf-source-loader';

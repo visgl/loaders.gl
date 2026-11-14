@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {
   OMEZarrImageSource,
-  OMEZarrSourceLoaderWithParser as OMEZarrSourceLoader
+  OMEZarrLoaderWithParser as OMEZarrLoader
 } from '../../src/zarr/ome-zarr-source-loader';
 
 const NUMERIC_TYPES = [
@@ -171,13 +171,13 @@ test('OME-Zarr resolves legacy axes, transformations, names and automatic pyrami
   }
   expect((await source.getQueryMetadata()).capabilities.levelOfDetail).toBe('pushdown');
   expect(Object.isFrozen(source.getRasterQueryCapabilities())).toBe(true);
-  expect(OMEZarrSourceLoader.testURL('image.ZARR/0?key=1')).toBe(true);
-  expect(OMEZarrSourceLoader.testURL('image.zarrish')).toBe(false);
+  expect(OMEZarrLoader.testURL('image.ZARR/0?key=1')).toBe(true);
+  expect(OMEZarrLoader.testURL('image.zarrish')).toBe(false);
 });
 
 test('OME-Zarr honors default channels and validates fractional and negative selections', async () => {
   const {fetcher} = createFixture();
-  const source = OMEZarrSourceLoader.createDataSourceSync('https://example.test/image.zarr', {
+  const source = OMEZarrLoader.createDataSourceSync('https://example.test/image.zarr', {
     zarr: {requireConsolidatedMetadata: false},
     omezarr: {defaultChannels: [2], interleaved: true},
     core: {fetch: fetcher}

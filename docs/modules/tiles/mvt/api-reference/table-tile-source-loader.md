@@ -1,5 +1,5 @@
 ---
-title: TableTileSourceLoader
+title: TableTileLoader
 description: Build vector tiles on demand from a large in-browser table.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="MVT module · source API"
-  title="TableTileSourceLoader"
+  title="TableTileLoader"
   description="Create simplified vector tiles from a table with geometry, so a browser can render a larger in-memory dataset without drawing every feature on every frame."
   tone="blue"
   meta={['From v5.0', 'Table to tiles', 'On-demand simplification']}
@@ -38,17 +38,17 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="TableTileSourceLoader reference"
+  title="TableTileLoader reference"
   description="The sections below cover use cases, installation, source creation, and output format."
   tone="blue"
 />
 
-The `TableTileSourceLoader` slices a GeoJSON table into small vector tiles on the fly. This can
+The `TableTileLoader` slices a GeoJSON table into small vector tiles on the fly. This can
 enable rendering and interaction with a larger in-browser dataset without requiring the data to be
 pre-tiled or served from a tile server.
 
 For Arrow input and consistent Arrow tile output, use the separate
-[`ArrowTableTileSourceLoader`](./arrow-table-tile-source-loader). This source's GeoJSON behavior
+[`ArrowTableTileLoader`](./arrow-table-tile-source-loader). This source's GeoJSON behavior
 is unchanged.
 
 | Source         | Characteristic                                       |
@@ -70,7 +70,7 @@ Features:
   (shapes are simplified and tiny polygons and line segments are filtered out).
 
 {/*
-There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to test out **TableTileSourceLoader** on different data. Just drag any GeoJSON on the page, watching the console.
+There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to test out **TableTileLoader** on different data. Just drag any GeoJSON on the page, watching the console.
 */}
 
 ### Install
@@ -89,11 +89,11 @@ Or just import via a browser script tag:
 
 ```typescript
 import {createDataSourceSync} from '@loaders.gl/core';
-import {TableTileSourceLoader} from '@loaders.gl/tiles/mvt';
+import {TableTileLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/tables/json';
 
 // Build an initial index of tiles.
-const tileSource = createDataSourceSync(url, [TableTileSourceLoader], {
+const tileSource = createDataSourceSync(url, [TableTileLoader], {
   core: {
     loaders: [GeoJSONLoader]
   }
@@ -132,9 +132,9 @@ although the defaults are sensible and work well for most use cases.
 
 ```typescript
 import {createDataSourceSync} from '@loaders.gl/core';
-import {TableTileSourceLoader} from '@loaders.gl/tiles/mvt';
+import {TableTileLoader} from '@loaders.gl/tiles/mvt';
 
-const tileSource = createDataSourceSync(parsedGeojson, [TableTileSourceLoader], {
+const tileSource = createDataSourceSync(parsedGeojson, [TableTileLoader], {
   table: {
     coordinates: 'local',
     maxZoom: 14,
@@ -153,7 +153,7 @@ Remarks:
 - `generateId` and `promoteId` options cannot both be specified at the same time.
 - `generateId` and `promoteId` options ignore existing `id` values on the feature objects.
 - By default, tiles at zoom levels above `indexMaxZoom` are generated on the fly, but you can pre-generate all possible tiles for `data` by setting `indexMaxZoom` and `maxZoom` to the same value, setting `maxPointsPerTile` to `0`.
-- `TableTileSourceLoader` only generates tiles zoom levels up to 24.
+- `TableTileLoader` only generates tiles zoom levels up to 24.
 
 ## Source creation
 
@@ -161,7 +161,7 @@ Create a source directly from an already parsed GeoJSON table when the applicati
 core's source auto-selection:
 
 ```typescript
-const tileSource = TableTileSourceLoader.createDataSourceSync(parsedGeojson, {
+const tileSource = TableTileLoader.createDataSourceSync(parsedGeojson, {
   table: {coordinates: 'local'}
 });
 

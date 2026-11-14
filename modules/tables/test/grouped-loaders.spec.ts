@@ -114,20 +114,6 @@ test('grouped JSON metadata supports synchronous and asynchronous entrypoints', 
   expect(parseSync(input, JSONLoaderWithParser)).toEqual({value: 7});
 });
 
-test('grouped Lance source metadata defers synchronous source construction', async () => {
-  const {LanceSourceLoader} = await import('@loaders.gl/tables');
-  const {LanceSourceLoader: implementation} = await import(
-    '@loaders.gl/tables/lance-source-loader'
-  );
-  expect(() => LanceSourceLoader.createDataSourceSync(new Blob(), {})).toThrow(
-    'requires async createDataSource()'
-  );
-  expect(await LanceSourceLoader.preload()).toBe(implementation);
-  expect(LanceSourceLoader.options).toEqual(implementation.options);
-  expect(LanceSourceLoader.testURL('dataset.lance/')).toBe(true);
-  expect(LanceSourceLoader.testURL('dataset.csv')).toBe(false);
-});
-
 test('format GeoJSON metadata keeps transport hooks outside grouped metadata', async () => {
   const {GeoJSONLoader: format} = await import('@loaders.gl/tables/json');
   expect(format).toMatchObject(GeoJSONLoader);
@@ -137,12 +123,18 @@ test('format GeoJSON metadata keeps transport hooks outside grouped metadata', a
 });
 
 test('core asynchronously constructs grouped Lance and ORC sources from metadata', async () => {
-  const {LanceSourceLoader, ORCSourceLoader} = await import('@loaders.gl/tables');
   const {LanceSource} = await import('@loaders.gl/tables/lance-source-loader');
   const {ORCSource} = await import('@loaders.gl/tables/orc-source-loader');
-  expect(await createDataSource(new Blob(), LanceSourceLoader)).toBeInstanceOf(LanceSource);
-  expect(await createDataSource(new Blob(), ORCSourceLoader)).toBeInstanceOf(ORCSource);
-  expect(() => ORCSourceLoader.createDataSourceSync(new Blob(), {})).toThrow(
-    'requires async createDataSource()'
-  );
+  expect(await createDataSource(new Blob(), LanceLoader)).toBeInstanceOf(LanceSource);
+  expect(await createDataSource(new Blob(), ORCLoader)).toBeInstanceOf(ORCSource);
+});
+
+test.each([
+  ArrowLoader,
+  LanceLoader,
+  ORCLoader
+])('$name exposes a source factory through its parser implementation', async loader => {
+  const implementation = await loader.preload();
+  expect(implementation.createDataSourceSync).toBeTypeOf('function');
+  expect(implementation.parse).toBeTypeOf('function');
 });
