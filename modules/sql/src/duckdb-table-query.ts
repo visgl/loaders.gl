@@ -108,20 +108,14 @@ export function makeDuckDBTableQuerySource(
         field.type
       )
     );
-    yield makeTableScanBatch({
-      shape: 'arrow-table',
-      schema: outputSchema,
-      data: new Table(arrowSchema, [
-        new RecordBatch(
-          arrowSchema,
-          makeData({
-            type: new Struct(arrowSchema.fields),
-            length: rows.length,
-            children: vectors.map(vector => vector.data[0])
-          })
-        )
-      ])
-    });
+    yield new RecordBatch(
+      arrowSchema,
+      makeData({
+        type: new Struct(arrowSchema.fields),
+        length: rows.length,
+        children: vectors.map(vector => vector.data[0])
+      })
+    );
   }
 
   /** Compiles the exact subset without evaluating data or changing the connection. */
@@ -191,9 +185,7 @@ export function makeDuckDBTableQuerySource(
       schema: outputSchema,
       /** Executes the planned SQL when the consumer starts reading. */
       async *read(options?: {signal?: AbortSignal}) {
-        for await (const {data} of readStatement(sql, outputSchema, options?.signal)) {
-          yield* data.batches.length ? data.batches : [makeArrowMetadataBatch(data.schema)];
-        }
+        yield* readStatement(sql, outputSchema, options?.signal);
       }
     };
   }
@@ -221,7 +213,19 @@ export function makeDuckDBTableQuerySource(
         return;
       }
       for await (const batch of executeTableScanBatches(
-        readSignal => readStatement(`SELECT * FROM ${tableName}${order}`, schema, readSignal),
+        async function* (readSignal) {
+          for await (const batch of readStatement(
+            `SELECT * FROM ${tableName}${order}`,
+            schema,
+            readSignal
+          )) {
+            yield makeTableScanBatch({
+              shape: 'arrow-table',
+              schema,
+              data: new Table(batch.schema, [batch])
+            });
+          }
+        },
         options,
         {
           filter: (batch, predicate, filterSignal) => {
