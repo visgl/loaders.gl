@@ -20,13 +20,12 @@ test('GPXLoader#removed Arrow loader exports', () => {
   expect('GPXArrowLoader' in bundledKml, 'bundled does not export GPXArrowLoader').toBeFalsy();
   expect('GPXArrowLoader' in unbundledKml, 'unbundled does not export GPXArrowLoader').toBeFalsy();
 });
-test('GPXLoader#parse with shape: arrow-table', async () => {
-  const arrowTable = await load(`${GPX_URL}.gpx`, GPXLoader, {gpx: {shape: 'arrow-table'}});
-  const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
-  const roundTripped = convertGeoArrowTableToGeoJSON(arrowTable.data, arrowTable.schema!);
+test('GPXLoader#parse with shape: arrow', async () => {
+  const arrowTable = await load(`${GPX_URL}.gpx`, GPXLoader, {gpx: {shape: 'arrow'}});
+  const geoMetadata = getGeoMetadata(Object.fromEntries(arrowTable.schema.metadata));
+  const roundTripped = convertGeoArrowTableToGeoJSON(arrowTable);
   const response = await fetchFile(`${GPX_URL}.geojson`);
   const expected = await response.json();
-  expect(arrowTable.shape, 'shape is arrow-table').toBe('arrow-table');
   expect(geoMetadata?.primary_column, 'geo metadata primary column is set').toBe('geometry');
   expect(geoMetadata?.columns.geometry.encoding, 'geo metadata uses WKB encoding').toBe('wkb');
   expect(

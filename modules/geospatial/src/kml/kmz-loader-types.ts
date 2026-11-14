@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowTable} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, ObjectRowTable} from '@loaders.gl/core/schema';
 import {KMZFormat} from './kml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -12,7 +13,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMZLoaderOptions = LoaderOptions & {
   kmz?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow';
     includeKMLMetadata?: boolean;
   };
 };
@@ -24,13 +25,15 @@ async function preload() {
 
 /** Metadata-only loader for KMZ archives containing KML documents. */
 export const KMZLoader = {
+  supportsNativeArrow: true,
+  defaultShape: 'arrow',
   dataType: null as unknown as ObjectRowTable | GeoJSONTable | ArrowTable,
   batchType: null as never,
 
   ...KMZFormat,
   version: VERSION,
   options: {
-    kmz: {shape: 'arrow-table', includeKMLMetadata: false},
+    kmz: {shape: 'arrow', includeKMLMetadata: false},
     gis: {}
   },
   preload

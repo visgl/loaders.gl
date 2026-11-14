@@ -32,7 +32,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Default', value: 'GeoJSONTable for application code'},
     {label: 'Rows', value: 'Object-row table for inspection'},
-    {label: 'Columns', value: 'ArrowTable with WKB geometry'},
+    {label: 'Columns', value: 'Arrow Table with WKB geometry'},
     {label: 'Binary', value: 'Binary feature collection for rendering'}
   ]}
 />
@@ -58,20 +58,20 @@ const data = await load(url, TCXLoader, options);
 
 ## Shapes
 
-`TCXLoader` returns loaders.gl `ArrowTable` objects by default. Set `tcx.shape` to select another table representation.
+`TCXLoader` returns Apache Arrow `Table` objects by default. Set `tcx.shape` to select another table representation.
 
 | Shape                | Output                                       |
 | -------------------- | -------------------------------------------- |
 | `geojson-table`      | loaders.gl GeoJSON table                     |
 | `object-row-table`   | loaders.gl row table with GeoJSON features   |
-| `arrow-table`        | loaders.gl `ArrowTable` with WKB geometry    |
+| `arrow`        | Apache Arrow `Table` with WKB geometry    |
 | `binary-geometry`    | loaders.gl binary feature collection         |
 
 ## Options
 
 | Option      | Type   | Default           | Description                            |
 | ----------- | ------ | ----------------- | -------------------------------------- |
-| `tcx.shape` | string | `'arrow-table'` | Selects the returned table shape.      |
+| `tcx.shape` | string | `'arrow'` | Selects the returned table shape.      |
 
 ## Limitations
 

@@ -715,9 +715,9 @@ Redundant Arrow-specific loader and writer variants have been removed where the 
 | --- | --- |
 | `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow-table'` |
 | `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow'` |
-| `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow-table'` |
-| `GPXArrowLoader` | `GPXLoader` with `gpx.shape: 'arrow-table'` |
-| `TCXArrowLoader` | `TCXLoader` with `tcx.shape: 'arrow-table'` |
+| `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow'` |
+| `GPXArrowLoader` | `GPXLoader` with `gpx.shape: 'arrow'` |
+| `TCXArrowLoader` | `TCXLoader` with `tcx.shape: 'arrow'` |
 | `DracoArrowLoader` | `DracoLoader` with `draco.shape: 'arrow-table'` |
 | `TerrainArrowLoader` | `TerrainLoader` with `terrain.shape: 'arrow-table'` |
 | `QuantizedMeshArrowLoader` | `QuantizedMeshLoader` with `quantized-mesh.shape: 'arrow-table'` |
@@ -778,6 +778,12 @@ loader returns an `'arrow-table'` wrapper, pass its `data` property.
 returned value and use `numRows` for batch row counts. Schema and field metadata use
 Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
 JSON batch paths are available through `batch.metadata.get('jsonpath')`.
+
+#### KML, KMZ, GPX, and TCX return native Arrow tables
+
+Use `shape: 'arrow'` for these loaders and read the returned Apache Arrow Table
+directly. Pass it to `convertGeoArrowTableToGeoJSON(table)` to reconstruct features
+using the geometry metadata in the table schema.
 
 #### Graph loaders return native Arrow tables
 

@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowTable} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 // import {GeoJSONTable} from '@loaders.gl/core/schema';
 import type {
   GeoArrowEncodingPreference,
   GeoJSONTable,
-  ObjectRowTable,
-  ArrowTable
+  ObjectRowTable
 } from '@loaders.gl/core/schema';
 import {KMLFormat} from './kml-format';
 
@@ -20,7 +20,7 @@ export type KMLLoaderOptions = LoaderOptions & {
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   kml?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow' | 'raw';
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
@@ -33,13 +33,15 @@ async function preloadKMLLoader() {
 
 /** Metadata-only loader for KML (Keyhole Markup Language). */
 export const KMLLoader = {
+  supportsNativeArrow: true,
+  defaultShape: 'arrow',
   dataType: null as unknown as ObjectRowTable | GeoJSONTable | ArrowTable,
   batchType: null as never,
 
   ...KMLFormat,
   version: VERSION,
   options: {
-    kml: {shape: 'arrow-table'},
+    kml: {shape: 'arrow'},
     gis: {}
   },
   preload: preloadKMLLoader

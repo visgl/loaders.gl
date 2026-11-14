@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
+import {Table} from 'apache-arrow';
+import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {encode, parse} from '@loaders.gl/core';
 import {
   GPXLoader,
@@ -56,10 +58,10 @@ test('KMZ loader and writer conformance', () => {
 });
 
 test('KML-family table loaders default to Arrow tables', () => {
-  expect(KMLLoader.options.kml.shape).toBe('arrow-table');
-  expect(KMZLoader.options.kmz.shape).toBe('arrow-table');
-  expect(GPXLoader.options.gpx.shape).toBe('arrow-table');
-  expect(TCXLoader.options.tcx.shape).toBe('arrow-table');
+  expect(KMLLoader.options.kml.shape).toBe('arrow');
+  expect(KMZLoader.options.kmz.shape).toBe('arrow');
+  expect(GPXLoader.options.gpx.shape).toBe('arrow');
+  expect(TCXLoader.options.tcx.shape).toBe('arrow');
   expect(KMZSourceLoader.defaultOptions.kmz.format).toBe('arrow');
 });
 
@@ -86,6 +88,20 @@ test('KMZ archive reads the primary KML and relative resources', async () => {
     new Uint8Array([1, 2, 3])
   );
   await archive.close();
+});
+
+test('KMZ defaults to native Arrow with geometry metadata', async () => {
+  const kmz = await encode({'doc.kml': SAMPLE_KML}, ZipWriter);
+  const table = await parse(kmz, KMZLoader);
+
+  expect(table).toBeInstanceOf(Table);
+  expect(convertGeoArrowTableToGeoJSON(table).features).toEqual([
+    {
+      type: 'Feature',
+      geometry: {type: 'Point', coordinates: [1, 2, 3]},
+      properties: {name: 'Point A', kind: 'marker'}
+    }
+  ]);
 });
 
 test('KMZ loader preserves the KML compatibility table shape', async () => {
