@@ -394,7 +394,9 @@ function createUnsupportedSourceError(value: unknown, sourceLoader?: Loader): Er
           .filter((name, index, names) => names.indexOf(name) === index)
           .sort()
       : [];
-  const loaderLabel = sourceLoader ? ` from source loader "${sourceLoader.type}"` : '';
+  const loaderLabel = sourceLoader
+    ? ` from source loader "${sourceLoader.type ?? sourceLoader.id}"`
+    : '';
   const capabilityLabel = methods.length ? ` Detected methods: ${methods.join(', ')}.` : '';
   return new Error(
     `SourceLayer resolved an unsupported runtime${loaderLabel}.${capabilityLabel} Supported visual sources expose image, vector, raster, 2D tile, point-cloud tileset, or 3D tileset contracts.`
