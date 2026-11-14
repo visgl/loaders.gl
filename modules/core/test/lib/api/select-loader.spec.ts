@@ -47,12 +47,7 @@ test('selectLoaderSync#urls', async () => {
     'find loader by data url mime type'
   ).toBe(ImageLoader);
   expect(
-    selectLoaderSync(URL_WITH_QUERYSTRING, [
-      ImageLoader,
-      Tiles3DLoader,
-      DracoLoader,
-      LASLoader
-    ]),
+    selectLoaderSync(URL_WITH_QUERYSTRING, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader from URL with query params'
   ).toBe(ImageLoader);
 
@@ -115,12 +110,7 @@ test('selectLoader#urls', async () => {
     'find loader by data url mime type'
   ).toBe(ImageLoader);
   expect(
-    await selectLoader(URL_WITH_QUERYSTRING, [
-      ImageLoader,
-      Tiles3DLoader,
-      DracoLoader,
-      LASLoader
-    ]),
+    await selectLoader(URL_WITH_QUERYSTRING, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader from URL with query params'
   ).toBe(ImageLoader);
 

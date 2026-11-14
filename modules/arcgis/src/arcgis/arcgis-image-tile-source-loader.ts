@@ -83,11 +83,9 @@ export class ArcGISImageTileSource
       );
     }
     const loader = this._getResponseFormat() === 'lerc' ? LERCLoader : ImageLoader;
-    return (await this.coreApi.parse(
-      await response.arrayBuffer(),
-      loader,
-      this.loadOptions
-    )) as ImageBitmap | LERCData;
+    return (await this.coreApi.parse(await response.arrayBuffer(), loader, this.loadOptions)) as
+      | ImageBitmap
+      | LERCData;
   }
 
   /** Fetches a tile using the deck.gl-compatible request shape. */

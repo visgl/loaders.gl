@@ -85,11 +85,7 @@ export class ArcGISImageSource
     const response = await this.fetch(this.exportImageURL(options), signal ? {signal} : undefined);
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
-    return (await this.coreApi.parse(
-      arrayBuffer,
-      ImageLoader,
-      this.loadOptions
-    )) as ImageBitmap;
+    return (await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageBitmap;
   }
 
   /** Requests an analytical LERC raster from the ArcGIS ImageServer endpoint. */
