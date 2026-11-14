@@ -339,3 +339,30 @@ test.each([
     expect(searchParameters.get('crs')).toBe('EPSG:3857');
   }
 });
+
+test.each([
+  {name: 'missing data', data: null},
+  {name: 'GeoJSON output', data: {shape: 'geojson-table', type: 'FeatureCollection', features: []}}
+])('VectorFeatureTableScanSource rejects $name for an Arrow request', async ({data}) => {
+  const source = {
+    async getSchema() {
+      return {fields: []};
+    },
+    async getMetadata() {
+      return {name: 'features', keywords: [], layers: []};
+    },
+    async getFeatures() {
+      return data;
+    }
+  } as VectorSource;
+  const scanSource = new VectorFeatureTableScanSource(source, {
+    request: {
+      layers: 'features',
+      boundingBox: [
+        [0, 0],
+        [1, 1]
+      ]
+    }
+  });
+  await expect(scanSource.query()).rejects.toThrow('did not return a feature table');
+});
