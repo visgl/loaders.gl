@@ -55,6 +55,9 @@ export function serializeNativeArrowWorkerResult(
   options: SplitArrowBuffersOptions = {copy: 'all'}
 ): unknown {
   const batch = result instanceof arrow.RecordBatch;
+  if (!batch && !(result instanceof arrow.Table)) {
+    throw new Error('Workers require Arrow table output');
+  }
   const table = batch ? new arrow.Table(result.schema, [result]) : result;
   return {
     transport: batch ? 'arrow-record-batch' : 'arrow-table-columns',

@@ -259,13 +259,13 @@ test.each([
   const input = await parse(bytes.buffer, PotreeBinLoader, {
     worker: false,
     potree: {
-      shape: shape === 'mesh' ? 'mesh' : 'arrow-table',
+      shape,
       pointAttributes: ['POSITION_CARTESIAN', 'RGB_PACKED', 'CLASSIFICATION'],
       scale: 1,
       positionOrigin: [0, 0, 0]
     }
   });
-  const points = 'shape' in input ? convertTableToMesh(input) : input;
+  const points = 'attributes' in input ? input : convertTableToMesh(input);
   const maxGatheredBytes =
     points.attributes.POSITION.value.byteLength +
     points.attributes.COLOR_0.value.byteLength +

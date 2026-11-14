@@ -27,6 +27,7 @@ import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {Tile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
+import {isArrowTable} from '@math.gl/arrow';
 import {Matrix4, type NumericArray} from '@math.gl/core';
 import {sharedTile2DDeckAdapter} from './shared-tile-2d/deck-tileset-adapter';
 import {SharedTile2DView} from './shared-tile-2d/shared-tile-2d-view';
@@ -846,7 +847,7 @@ function defaultRenderSubLayers<DataT>(
 
 /** Converts Arrow tile payloads only at the deck.gl rendering boundary. */
 function getArrowTileRenderData(data: unknown): unknown {
-  return isArrowTable(data)
+  return isArrowTable(data) || isArrowTableWrapper(data)
     ? convertGeoArrowTableToBinaryFeatureCollection(data, {
         geometryColumn: getGeoMetadata(data.schema?.metadata)?.primary_column
       })
@@ -854,7 +855,7 @@ function getArrowTileRenderData(data: unknown): unknown {
 }
 
 /** Identifies the loaders.gl Arrow table wrapper. */
-function isArrowTable(data: unknown): data is ArrowTable {
+function isArrowTableWrapper(data: unknown): data is ArrowTable {
   return (data as {shape?: string} | null)?.shape === 'arrow-table';
 }
 

@@ -70,7 +70,7 @@ test('Point MVT to Arrow table', async () => {
   });
   expect(geometryTable).toHaveProperty('numRows');
   expect(geometryTable.getChild('geometry')?.length, 'preserves feature rows').toBe(1);
-  expect(geometryTable.schema?.metadata?.geo, 'adds GeoArrow metadata').toBeTruthy();
+  expect(geometryTable.schema.metadata.get('geo'), 'adds GeoArrow metadata').toBeTruthy();
 });
 test('Line MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_LINES_DATA_URL);

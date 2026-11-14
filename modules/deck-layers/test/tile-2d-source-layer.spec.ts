@@ -8,7 +8,6 @@ import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-l
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {ArrowTableTileSourceLoader, MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import {resolveVisualSource} from '../src/source-layer-utils';
 
 test.each([
@@ -40,7 +39,7 @@ test.each([
   >;
   const index = {x: 0, y: 0, z: 0};
   const tile = await source.getTileData({index});
-  expect(tile?.shape).toBe('arrow-table');
+  expect(tile?.numRows).toBe(1);
   const layer = createLayer({id: 'arrow-table-example', data: source, showTileBorders: false});
   expect(layer._resolveData(layer.props)).toBe(source);
   expect(layer.sourceSupportsMVTLayer(source)).toBe(coordinates === 'local');
@@ -62,7 +61,7 @@ test.each([
     const [renderedLayer] = layer.props.renderSubLayers({
       ...layer.props,
       id: 'arrow-table-tile',
-      data: tile as ArrowTable,
+      data: tile,
       _offset: 0,
       tile: {index, bbox: {west: -180, south: -85, east: 180, north: 85}},
       tileSource: source

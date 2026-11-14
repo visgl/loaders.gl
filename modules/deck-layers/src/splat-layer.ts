@@ -38,7 +38,7 @@ export type PublicSplatSortMode = 'none' | 'global' | 'tile';
 
 /** Props for {@link SplatLayer}. */
 export type SplatLayerProps = CompositeLayerProps & {
-  /** Gaussian splat table or loaders.gl Arrow table batches produced by `PLYLoader` with `ply.shape: 'arrow-table'`. */
+  /** Gaussian splat table or a stream of loaders.gl Arrow table batches. */
   data: MeshArrowTable | arrow.Table | AsyncIterable<ArrowTableBatch> | null;
   /** Units used by decoded splat radii. */
   sizeUnits?: Unit;

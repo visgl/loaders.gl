@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table} from 'apache-arrow';
+import {RecordBatch, Table} from 'apache-arrow';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {encode, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
@@ -43,7 +43,7 @@ test.each([
     const positions: number[][] = [];
     for await (const batch of batches) {
       if (shape === 'arrow') {
-        expect(batch.data).toBeInstanceOf(Table);
+        expect(batch).toBeInstanceOf(RecordBatch);
         positions.push(...Array.from(batch.getChild('POSITION'), (row: any) => Array.from(row)));
       } else {
         const values = batch.attributes.POSITION.value;
@@ -62,7 +62,7 @@ test.each([
   const atomic: any = await parse(source.slice(0), LASLoader, {
     core: {worker: true, _workerType: 'test'}
   });
-  expect(atomic.data).toBeInstanceOf(Table);
+  expect(atomic).toBeInstanceOf(Table);
   expect(atomic.numRows).toBe(expected.numRows);
   expect(LAZRsLoaderWithParser.worker).toBe(false);
   expect(LAZPerfLoaderWithParser.worker).toBe(false);

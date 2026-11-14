@@ -265,7 +265,7 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', asy
   const batchRowCounts = [];
   for await (const table of batches) {
     expect(table).toHaveProperty('numRows');
-    expect(table.batchType, 'batch has data batchType').toBe('data');
+    expect(table).toBeInstanceOf(arrow.RecordBatch);
     expect(
       table.schema.metadata.get('loaders_gl.semantic_type'),
       'batch schema identifies Gaussian splat data'
@@ -285,7 +285,7 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk
   });
   const batchRowCounts = [];
   for await (const table of batches) {
-    expect(table.batchType, 'batch has data batchType').toBe('data');
+    expect(table).toBeInstanceOf(arrow.RecordBatch);
     batchRowCounts.push(table.numRows);
   }
   expect(batchRowCounts, 'batches span input chunk boundaries').toEqual([333, 333, 333, 1]);
@@ -298,7 +298,7 @@ test('PLYLoader#parseInBatches(ascii point cloud, arrow-table)', async () => {
   const batchRowCounts = [];
   for await (const table of batches) {
     expect(table).toHaveProperty('numRows');
-    expect(table.batchType, 'batch has data batchType').toBe('data');
+    expect(table).toBeInstanceOf(arrow.RecordBatch);
     expect(table.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
     expect(table.getChild('intensity'), 'batch includes custom scalar column').toBeTruthy();
     batchRowCounts.push(table.numRows);
@@ -315,7 +315,7 @@ test('PLYLoader#parseInBatches(mesh PLY, arrow-table, pointCloud)', async () => 
   const batchRowCounts = [];
   for await (const table of batches) {
     expect(table).toHaveProperty('numRows');
-    expect(table.batchType, 'batch has data batchType').toBe('data');
+    expect(table).toBeInstanceOf(arrow.RecordBatch);
     expect(table.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
     expect(table.getChild('indices'), 'batch skips mesh indices').toBeFalsy();
     batchRowCounts.push(table.numRows);

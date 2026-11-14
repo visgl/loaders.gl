@@ -72,7 +72,7 @@ test('PLY atomic worker uses column transport before caller-side mesh conversion
   );
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow',
+    shape: 'arrow-table',
     data: {transport: 'arrow-js'}
   });
   expect(mesh.loader).toBe('ply');
