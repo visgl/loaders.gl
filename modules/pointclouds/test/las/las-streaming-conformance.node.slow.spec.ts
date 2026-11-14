@@ -188,7 +188,7 @@ describe('TypeScript LAZ streaming conformance', () => {
       splitArrayBufferRandomly(source, 0x4c415a14, 509),
       options
     )) {
-      pointCount += batch.numRows;
+      pointCount += batch.data.numRows;
     }
 
     expect(pointCount).toBe(1024);
