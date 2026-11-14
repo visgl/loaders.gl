@@ -4,8 +4,21 @@
 
 import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {expect, test} from 'vitest';
-import {Table, vectorFromArray, List, Field, Int32, tableFromArrays} from 'apache-arrow';
-import {hydrateArrowTable as hydrateMathArrowTable} from '@math.gl/arrow';
+import {
+  Data,
+  Schema,
+  Struct,
+  Table,
+  vectorFromArray,
+  List,
+  Field,
+  Int32,
+  tableFromArrays
+} from 'apache-arrow';
+import {
+  createRecordBatchWithMetadata,
+  hydrateArrowTable as hydrateMathArrowTable
+} from '@math.gl/arrow';
 import {
   deserializeNativeArrowWorkerResult,
   serializeNativeArrowWorkerResult,
@@ -144,4 +157,21 @@ test.each([
   expect(receivedBatch.schema.metadata.get('stage')).toBe('partial');
   expect(receivedBatch.schema.fields[0].metadata.get('units')).toBe('count');
   expect(receivedBatch.metadata.get('local')).toBe('first');
+});
+
+test('worker round trip preserves zero-column rows and separate batch schemas', () => {
+  const batchSchema = new Schema([], new Map([['stage', 'batch']]));
+  const batch = createRecordBatchWithMetadata(
+    batchSchema,
+    new Data(new Struct([]), 0, 3, 0, undefined, []),
+    new Map([['partition', 'first']])
+  );
+  const table = new Table(new Schema([], new Map([['stage', 'table']])), [batch]);
+  const payload = serializeNativeArrowWorkerResult(table);
+  const restored = deserializeNativeArrowWorkerResult(structuredClone(payload)) as Table;
+  expect(restored.numRows).toBe(3);
+  expect(restored.numCols).toBe(0);
+  expect(restored.schema.metadata.get('stage')).toBe('table');
+  expect(restored.batches[0].schema.metadata.get('stage')).toBe('batch');
+  expect(restored.batches[0].metadata.get('partition')).toBe('first');
 });

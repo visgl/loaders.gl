@@ -4,7 +4,11 @@
 
 import * as arrow from 'apache-arrow';
 import {
+  createRecordBatchWithMetadata,
+  dehydrateArrowRecordBatch,
   dehydrateArrowTable,
+  getRecordBatchMetadata,
+  hydrateArrowRecordBatch,
   hydrateArrowTable,
   type DehydratedArrowTable,
   type SplitArrowBuffersOptions
@@ -12,7 +16,7 @@ import {
 /** Per-batch metadata transferred alongside math.gl's column payload. */
 type BatchMetadata = {
   schema: Uint8Array;
-  metadata: [string, string][];
+  metadata?: [string, string][];
 };
 
 type ArrowWorkerOptions = {
@@ -37,7 +41,7 @@ export function serializeArrowWorkerTable(result: unknown): unknown {
   return {
     ...structuredClone(metadata),
     arrowBatchMetadata: snapshotBatchMetadata(data),
-    data: dehydrateWorkerTable(data, {copy: 'all'})
+    data: dehydrateArrowTable(data, {copy: 'all'})
   };
 }
 
@@ -58,13 +62,14 @@ export function serializeNativeArrowWorkerResult(
   if (!batch && !(result instanceof arrow.Table)) {
     throw new Error('Workers require Arrow table output');
   }
-  const table = batch ? new arrow.Table(result.schema, [result]) : result;
   return {
     transport: batch ? 'arrow-record-batch' : 'arrow-table-columns',
     columns: {
       shape: 'arrow-table',
-      arrowBatchMetadata: snapshotBatchMetadata(table),
-      data: dehydrateWorkerTable(table, options)
+      ...(batch ? {} : {arrowBatchMetadata: snapshotBatchMetadata(result)}),
+      data: batch
+        ? dehydrateArrowRecordBatch(result, options)
+        : dehydrateArrowTable(result, options)
     }
   };
 }
@@ -74,6 +79,13 @@ export function deserializeNativeArrowWorkerResult(
   result: unknown
 ): arrow.Table | arrow.RecordBatch {
   const payload = result as {transport: string; columns: unknown};
+  if (
+    payload?.transport === 'arrow-record-batch' &&
+    isDehydratedArrowTableWrapper(payload.columns) &&
+    !payload.columns.arrowBatchMetadata
+  ) {
+    return hydrateArrowRecordBatch(payload.columns.data);
+  }
   const {data}: {data: arrow.Table} = deserializeArrowWorkerTable(payload?.columns);
   return payload.transport === 'arrow-record-batch' ? data.batches[0] : data;
 }
@@ -92,7 +104,7 @@ export function serializeArrowWorkerResult(result: unknown, options?: unknown): 
   return {
     ...result,
     arrowBatchMetadata: snapshotBatchMetadata(result.data),
-    data: dehydrateWorkerTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
+    data: dehydrateArrowTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
   };
 }
 
@@ -130,25 +142,10 @@ function isDehydratedArrowTableWrapper(value: unknown): value is SerializedArrow
   );
 }
 
-/** Preserves row counts for tables whose batches have no columns. */
-function dehydrateWorkerTable(
-  table: arrow.Table,
-  options?: SplitArrowBuffersOptions
-): DehydratedArrowTable {
-  const payload = dehydrateArrowTable(table, options);
-  if (table.numCols === 0) {
-    for (const [index, batch] of table.batches.entries()) {
-      payload.batches[index].length = batch.numRows;
-    }
-  }
-  return payload;
-}
-
-/** Captures batch schemas and custom metadata before transferring column buffers. */
+/** Captures per-batch schemas before transferring column buffers. */
 function snapshotBatchMetadata(table: arrow.Table): BatchMetadata[] {
   return table.batches.map(batch => ({
-    schema: arrow.tableToIPC(new arrow.Table(batch.schema, [])),
-    metadata: Array.from(batch.metadata)
+    schema: arrow.tableToIPC(new arrow.Table(batch.schema, []))
   }));
 }
 
@@ -158,21 +155,13 @@ function hydrateWorkerTable(result: SerializedArrowWorkerTable): unknown {
   const table = hydrateArrowTable(data);
   const batches = table.batches.map((batch, index) => {
     const snapshot = arrowBatchMetadata?.[index];
-    const restored = snapshot
-      ? new arrow.RecordBatch(
+    return snapshot
+      ? createRecordBatchWithMetadata(
           arrow.tableFromIPC(snapshot.schema).schema,
           batch.data,
-          new Map(snapshot.metadata)
+          snapshot.metadata ? new Map(snapshot.metadata) : getRecordBatchMetadata(batch)
         )
       : batch;
-    // Arrow JS derives the length of a struct from its children, which can be empty.
-    const rowCount = data.batches[index].length;
-    if (restored.numCols === 0 && restored.numRows !== rowCount) {
-      Object.defineProperty(restored, 'data', {
-        value: new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, [])
-      });
-    }
-    return restored;
   });
   return {...envelope, data: new arrow.Table(table.schema, batches)};
 }

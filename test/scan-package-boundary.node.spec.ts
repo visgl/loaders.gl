@@ -10,8 +10,8 @@ import {expect, test} from 'vitest';
 import {preProcessFile} from 'typescript';
 
 const REPOSITORY_ROOT = process.cwd();
-// The eager bundle includes the upstream SQL predicate grammar and its backend adapter.
-const MAXIMUM_EAGER_SCAN_BUNDLE_BYTES = 320 * 1024;
+// The eager bundle includes the upstream SQL predicate grammar and physical Arrow row gatherer.
+const MAXIMUM_EAGER_SCAN_BUNDLE_BYTES = 324 * 1024;
 const MAXIMUM_COMPLETE_SCAN_BUNDLE_BYTES = 390 * 1024;
 const MAXIMUM_PREDICATE_ONLY_BUNDLE_BYTES = 40 * 1024;
 
@@ -128,8 +128,8 @@ function listSourceFiles(directory: string): string[] {
 }
 
 test.each([
-  // The upstream structural parser includes SQL OFFSET and source-located diagnostics.
-  ['parseSQLSelect', 13 * 1024],
+  // The upstream structural parser includes SQL OFFSET, source-located diagnostics and explicit casts.
+  ['parseSQLSelect', 14 * 1024],
   ['parseSQLQuery', 40 * 1024]
 ] as const)('%s imports shake out Arrow and stay within the parser budget', async (parser, maximumBytes) => {
   const result = await build({
