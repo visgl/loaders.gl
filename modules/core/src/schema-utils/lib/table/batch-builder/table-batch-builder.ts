@@ -5,7 +5,7 @@
 import {Table} from 'apache-arrow';
 import type {Schema, TableBatch} from '@loaders.gl/core/schema';
 import {ArrowTableBuilder} from './arrow-table-builder';
-import {convertToColumnarTable} from '../tables/convert-table';
+import {convertArrowToTable} from '../tables/convert-arrow-table';
 import {
   convertToArrayRow,
   convertToObjectRow,
@@ -134,11 +134,8 @@ export class TableBatchBuilder {
     if (this.arrowBuilder) {
       const batch = this.arrowBuilder.flushBatch()!;
       return {
-        ...convertToColumnarTable({
-          shape: 'arrow-table',
-          schema: this.schema,
-          data: new Table(batch)
-        }),
+        ...convertArrowToTable(new Table(batch), 'columnar-table'),
+        schema: structuredClone(this.schema),
         batchType: 'data',
         length: batch.numRows
       };
