@@ -13,7 +13,7 @@ import {
   GeoJSONWriter,
   JSONWriter,
   ORCWriter,
-  ParquetJSLoader,
+  ParquetLoader,
   ParquetJSWriter,
   ParquetWriter
 } from '@loaders.gl/tables';
@@ -46,7 +46,7 @@ test.each([
 test('ParquetJSWriter preserves nulls in native numeric columns', async () => {
   const input = tableFromArrays({value: vectorFromArray([1, null], new Int32())});
   const bytes = await encode(input, ParquetJSWriter);
-  const result = await parse(bytes, ParquetJSLoader, {core: {worker: false}});
+  const result = await parse(bytes, ParquetLoader, {core: {worker: false}});
   expect(result.getChild('value')?.get(0)).toBe(1);
   expect(result.getChild('value')?.get(1)).toBeNull();
 });
