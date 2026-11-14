@@ -4,8 +4,9 @@
 
 import {expect, test} from 'vitest';
 import * as schema from '@loaders.gl/core/schema';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 
-test('schema package keeps mesh helpers in schema-utils', () => {
+test('schema exposes the mesh bounds compatibility export for deck.gl', () => {
   expect('getMeshSize' in schema).toBe(false);
-  expect('getMeshBoundingBox' in schema).toBe(false);
+  expect(schema.getMeshBoundingBox).toBe(getMeshBoundingBox);
 });

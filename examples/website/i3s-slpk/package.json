@@ -11,8 +11,8 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^9.4.0",
-    "@deck.gl/react": "^9.4.0",
+    "@deck.gl/core": "10.0.0-alpha.1",
+    "@deck.gl/react": "10.0.0-alpha.1",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/scene": "workspace:*",

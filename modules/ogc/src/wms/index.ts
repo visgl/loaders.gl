@@ -166,7 +166,9 @@ export {DEFAULT_SERVICE_LOADERS, ServiceRequestError, ServiceRuntime} from './se
 export type {ServiceEndpoint, ServiceEndpointPreferences} from './capability-graph';
 export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
 
-export type {ImageSource} from '@loaders.gl/core/loader-utils';
+export {ImageSource} from './lib/deprecated/image-source-compatibility';
+/** @deprecated Compatibility alias for deck.gl 10.0.0-alpha.1. Use WMSLoader. */
+export {WMSLoader as WMSSource} from './wms-loader';
 export type {ImageType} from '@loaders.gl/images';
 
 export {ManagedVectorSource} from './managed-vector-source';

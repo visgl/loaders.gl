@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {expect, test, vi} from 'vitest';
 import {ImageSourceLayer, type ImageSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ImageSet} from '@loaders.gl/tiles';
@@ -311,10 +310,10 @@ test('ImageSourceLayer renders accepted images in geographic and Cartesian coord
   };
   const geographic = layer.renderLayers();
   expect(geographic.props.bounds).toEqual([1, 2, 3, 4]);
-  expect(geographic.props._imageCoordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT);
+  expect(geographic.props._imageCoordinateSystem).toBe('lnglat');
 
   layer.state.imageSet.currentRequest.parameters.crs = 'EPSG:3857';
-  expect(layer.renderLayers().props._imageCoordinateSystem).toBe(COORDINATE_SYSTEM.CARTESIAN);
+  expect(layer.renderLayers().props._imageCoordinateSystem).toBe('cartesian');
 });
 
 test('ImageSourceLayer skips incomplete requests and WMS requests without layers', async () => {

@@ -8,7 +8,7 @@ import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {luma, Device} from '@luma.gl/core';
-import {WebGLDevice} from '@luma.gl/webgl';
+import {WebGLDevice} from '@luma.gl/core/webgl';
 import {Model} from '@luma.gl/engine';
 
 import {IMAGES_DATA, TextureFormatsInfo} from './textures-data';

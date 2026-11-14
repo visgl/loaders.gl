@@ -49,6 +49,7 @@ Use the canonical loader names in place of the removed worker aliases:
 `LASWorkerLoader`, and `DracoWorkerLoader` become `CSVLoader`, `LASLoader`,
 and `DracoLoader`. Use `MVTLoader` and `TerrainLoader` in place of
 `MVTWorkerLoader` and `TerrainWorkerLoader`. The canonical format loaders retain their existing worker support.
+The MVT and Terrain format subpaths retain these aliases for deck.gl 10.0.0-alpha.1.
 `NullLoader` returns null on the main thread. Code that used `NullWorkerLoader`
 specifically to exercise worker dispatch can use `{...NullLoader, worker: true}`.
 
@@ -715,7 +716,7 @@ class CustomImageSource
 Import these contracts with `import type`; they are no longer runtime constructor values. Concrete
 source classes and operational methods such as `getMetadata()`, `getImage()`, `getRaster()`, and
 `getFeatures()` are unchanged. `@loaders.gl/ogc/wms` temporarily retains a deprecated structural
-`ImageSource` runtime guard for deck.gl 9.x compatibility; it is not a constructor or base class.
+`ImageSource` runtime guard and a `WMSSource` alias for deck.gl 10.0.0-alpha.1 compatibility.
 
 #### ArcGIS single-response feature queries
 

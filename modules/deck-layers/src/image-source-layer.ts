@@ -11,7 +11,6 @@ import {
   type LayerContext,
   type UpdateParameters,
   type Viewport,
-  COORDINATE_SYSTEM,
   _deepEqual as deepEqual
 } from '@deck.gl/core';
 import {BitmapLayer} from '@deck.gl/layers';
@@ -283,8 +282,7 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
 
     return new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),
-      _imageCoordinateSystem:
-        crs === 'EPSG:4326' ? COORDINATE_SYSTEM.LNGLAT : COORDINATE_SYSTEM.CARTESIAN,
+      _imageCoordinateSystem: crs === 'EPSG:4326' ? 'lnglat' : 'cartesian',
       bounds,
       image
     }) as unknown as Layer;

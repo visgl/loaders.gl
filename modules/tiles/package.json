@@ -160,7 +160,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@deck.gl/core": "^9.4.0",
+    "@deck.gl/core": "10.0.0-alpha.1",
     "@types/pbf": "^3.0.2"
   },
   "peerDependencies": {

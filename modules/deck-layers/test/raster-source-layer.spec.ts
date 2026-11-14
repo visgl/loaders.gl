@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {describe, expect, test, vi} from 'vitest';
 import type {RasterData, RasterSourceMetadata} from '@loaders.gl/core/loader-utils';
 import {RasterSet} from '@loaders.gl/tiles';
@@ -141,7 +140,7 @@ describe('raster viewport and placement', () => {
       [1000, 500]
     ]);
     expect(renderResult.bounds).toEqual([0, 500, 1000, 0]);
-    expect(renderResult.coordinateSystem).toBe(COORDINATE_SYSTEM.CARTESIAN);
+    expect(renderResult.coordinateSystem).toBe('cartesian');
   });
 
   test('requires a custom request projection for unsupported CRS values', () => {
@@ -174,7 +173,7 @@ describe('raster viewport and placement', () => {
 
     expect(result.bounds?.[2]).toBeCloseTo(1, 5);
     expect(result.bounds?.[3]).toBeCloseTo(1, 5);
-    expect(result.coordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT);
+    expect(result.coordinateSystem).toBe('lnglat');
   });
 
   test('custom colorization inherits inferred geographic placement', () => {
@@ -189,7 +188,7 @@ describe('raster viewport and placement', () => {
 
     expect(result.image).toBe(customImage);
     expect(result.bounds).toEqual([-10, -5, 20, 15]);
-    expect(result.coordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT);
+    expect(result.coordinateSystem).toBe('lnglat');
   });
 
   test('uses metadata no-data values when a response omits the repeated field', () => {
@@ -229,11 +228,11 @@ describe('RasterSourceLayer lifecycle', () => {
     layer.state.renderResult = {
       image: {data: new Uint8ClampedArray(4), width: 1, height: 1},
       bounds: [-10, -5, 20, 15],
-      coordinateSystem: COORDINATE_SYSTEM.LNGLAT
+      coordinateSystem: 'lnglat'
     };
     const bitmapLayer = layer.renderLayers();
     expect(bitmapLayer.props.bounds).toEqual([-10, -5, 20, 15]);
-    expect(bitmapLayer.props.coordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT);
+    expect(bitmapLayer.props.coordinateSystem).toBe('lnglat');
   });
 
   test('requests default and custom raster bands from viewport metadata', () => {
@@ -485,10 +484,10 @@ test('raster placement retains affine shear and refuses to infer geographic proj
     () => ({
       image: colorizeRasterData(projected),
       bounds: [0, 0, 1, 1],
-      coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
+      coordinateSystem: 'cartesian'
     })
   );
-  expect(custom.coordinateSystem).toBe(COORDINATE_SYSTEM.CARTESIAN);
+  expect(custom.coordinateSystem).toBe('cartesian');
 });
 
 test('raster placement uses an affine when neither source nor payload supplies a bbox', () => {
@@ -500,5 +499,5 @@ test('raster placement uses an affine when neither source nor payload supplies a
   const parameters = {viewport: createRasterViewport(createViewport([0, 0, 1, 1]), metadata)};
   const result = createDefaultRasterRenderResult(raster, parameters, metadata);
   expect(result.bounds).toEqual([10, 18, 12, 20]);
-  expect(result.coordinateSystem).toBe(COORDINATE_SYSTEM.CARTESIAN);
+  expect(result.coordinateSystem).toBe('cartesian');
 });

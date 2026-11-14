@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {LayerExtension, project, type Layer, type Viewport} from '@deck.gl/core';
-import type {ShaderModule} from '@luma.gl/shadertools';
+import type {ShaderModule} from '@luma.gl/shaders';
 
 /** Names of the fold shapes offered by the example. */
 export type TileFoldShape = 'fold' | 'box' | 'bowl' | 'tube';

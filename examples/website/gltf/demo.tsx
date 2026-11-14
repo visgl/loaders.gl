@@ -4,9 +4,9 @@
 
 import React, {useCallback, useEffect, useId, useState} from 'react';
 import DeckGL from '@deck.gl/react';
-import {COORDINATE_SYSTEM, OrbitView} from '@deck.gl/core';
+import {OrbitView} from '@deck.gl/core';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
-import type {GLTFScenegraphs} from '@luma.gl/gltf';
+import type {GLTFScenegraphs} from '@luma.gl/engine/gltf';
 import {load} from '@loaders.gl/core';
 import {GLTFLoader, type GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {GLTF1_MODELS} from './components/gltf1-models';
@@ -122,7 +122,7 @@ export default function GLTFDemo(): React.ReactElement {
           data: [{position: [0, 0, 0]}],
           scenegraph: model,
           getScene,
-          coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+          coordinateSystem: 'cartesian',
           getPosition: [0, 0, 0],
           onFirstDraw: () => setRenderedModelUrl(modelUrl),
           _lighting: 'pbr',

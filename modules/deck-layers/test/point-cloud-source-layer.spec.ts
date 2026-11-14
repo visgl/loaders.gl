@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {describe, expect, test, vi} from 'vitest';
 import {PointCloudSourceLayer} from '@loaders.gl/deck-layers';
 import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d';
@@ -104,7 +103,7 @@ describe('PointCloudSourceLayer', () => {
         data: {shape: 'mesh', attributes: {}, indices: null, mode: 0},
         pointCount: 1,
         cartographicOrigin: [0, 0, 0],
-        coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+        coordinateSystem: 'meter-offsets' as const,
         constantRGBA: [10, 20, 30, 255]
       }
     };
@@ -186,7 +185,7 @@ describe('PointCloudSourceLayer', () => {
         data: {shape: 'mesh', attributes: {}, indices: null, mode: 0},
         pointCount: 1,
         cartographicOrigin: [0, 0, 0],
-        coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
+        coordinateSystem: 'cartesian' as const
       }
     };
     const emptyTile = {id: 'empty', selected: true, content: null};

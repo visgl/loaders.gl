@@ -7,13 +7,12 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {
-  COORDINATE_SYSTEM,
   FirstPersonView,
   type FirstPersonViewState,
   OrbitView,
   type OrbitViewState
 } from '@deck.gl/core';
-import {webgpuAdapter} from '@luma.gl/webgpu';
+import {webgpuAdapter} from '@luma.gl/core/webgpu';
 import {loadInBatches} from '@loaders.gl/core';
 import {SplatLayer} from '@loaders.gl/deck-layers';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
@@ -196,7 +195,7 @@ export default function GaussianSplatsApp() {
         ? [
             new SplatLayer({
               id: 'gaussian-splats-webgpu',
-              coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+              coordinateSystem: 'cartesian',
               data: state.data as any,
               pickable: false,
               opacity: SPLAT_LAYER_OPACITY,

@@ -7,7 +7,7 @@ import {createRoot} from 'react-dom/client';
 import {Map} from 'react-map-gl/maplibre';
 import DeckGL from '@deck.gl/react';
 
-import {MapController, COORDINATE_SYSTEM} from '@deck.gl/core';
+import {MapController} from '@deck.gl/core';
 import {ScenegraphLayer} from '@deck.gl/mesh-layers';
 
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
@@ -71,7 +71,7 @@ export default class App extends PureComponent {
             scenegraph: GLTF_DEFAULT_MODEL,
             modelMatrix: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
             _composeModelMatrix: true,
-            coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+            coordinateSystem: 'meter-offsets',
             coordinateOrigin: MODEL_ORIGIN,
             sizeScale: 1000,
             _pbr: true,
