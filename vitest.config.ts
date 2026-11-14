@@ -99,6 +99,7 @@ const vitestConfiguration = getVitestConfig({
         'apache-arrow',
         'apache-arrow/type',
         'brotli/decompress',
+        '@math.gl/geospatial/terrain > cdt2d',
         'copc',
         'crypto-js',
         'd3-dsv',
