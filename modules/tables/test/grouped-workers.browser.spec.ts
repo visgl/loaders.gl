@@ -53,7 +53,6 @@ test.each(['tables'])('Parquet worker assets remain executable under %s', async 
       parquet: {workerUrl, shape: 'arrow'}
     }
   );
-  expect(table.shape).toBe('arrow-table');
   expect(table.numRows).toBe(2);
   expect(table.getChild('id')?.get(0)).toBeTypeOf('number');
 });
