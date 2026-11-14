@@ -8,6 +8,7 @@ import {ArrowLoaderOptions} from '../../arrow-loader-types';
 import {
   convertArrowTable,
   convertArrowToTable,
+  convertArrowToSchema,
   updateArrowTableSchema
 } from '@loaders.gl/core/schema-utils';
 import {
@@ -34,7 +35,9 @@ export function parseArrowSync(
   const shape = options?.shape || 'arrow-table';
   const arrowTable = parseArrowTable(arrayBuffer);
   if (shape === 'arrow') return arrowTable;
-  if (shape === 'arrow-table' || shape === 'geojson-table') {
+  if (shape === 'arrow-table')
+    return {shape, schema: convertArrowToSchema(arrowTable.schema), data: arrowTable};
+  if (shape === 'geojson-table') {
     return convertArrowToTable(arrowTable, shape);
   }
   return convertArrowTable({shape: 'arrow-table', data: arrowTable}, shape);

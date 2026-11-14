@@ -6,7 +6,7 @@ import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-
 import type {Table, RecordBatch} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
   formatLASMeshColors,
   getLASShape,
@@ -76,9 +76,8 @@ function convertLASMesh(
     options?.las?.colorFormat === undefined || options.las.colorFormat === 'uint8norm'
       ? table
       : {
-          ...convertMeshToTable(
-            formatLASMeshColors(convertTableToMesh(table) as LASMesh, options.las.colorFormat),
-            'arrow-table'
+          ...convertMeshToArrowTableWrapper(
+            formatLASMeshColors(convertTableToMesh(table) as LASMesh, options.las.colorFormat)
           ),
           loader: table.loader,
           loaderData: table.loaderData,

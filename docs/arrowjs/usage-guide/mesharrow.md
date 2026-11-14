@@ -115,7 +115,7 @@ const triangle = makeMeshArrowTable(
 );
 ```
 
-Use `convertMeshToTable(mesh, 'arrow-table')` when starting from a legacy loaders.gl `Mesh`. See the [Mesh and PointCloud category](/docs/specifications/category-mesh) for the loader and writer matrix.
+Use `convertMeshToTable(mesh, 'arrow')` when starting from a legacy loaders.gl `Mesh`. See the [Mesh and PointCloud category](/docs/specifications/category-mesh) for the loader and writer matrix.
 
 ### Project a glTF scene
 

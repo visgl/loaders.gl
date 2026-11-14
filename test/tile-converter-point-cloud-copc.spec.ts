@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {openCOPC, loadCOPCHierarchyPage, loadCOPCNodeData} from '@loaders.gl/tiles-3d/copc';
 import {decodeLAZChunk} from '@loaders.gl/core/loader-utils';
-import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper} from '@loaders.gl/core/schema-utils';
 import type {Mesh} from '@loaders.gl/core/schema';
 import {convertTileset} from '../apps/tile-converter/src/v5/conversion-api';
 import {mapPointCloudAttributes} from '../apps/tile-converter/src/v5/point-cloud-attributes';
@@ -138,7 +138,7 @@ test('COPC adapter accepts Arrow and selects PDRF 6 without color or 8 with NIR'
   const input = createInput(),
     options = createOptions();
   await expect(
-    encodePointCloudCOPC(convertMeshToTable(input, 'arrow-table'), options)
+    encodePointCloudCOPC(convertMeshToArrowTableWrapper(input), options)
   ).resolves.toHaveProperty('pointCount', 2);
   const noColor = {
     ...options,

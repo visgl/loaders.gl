@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper} from '@loaders.gl/core/schema-utils';
 import {encodePotreeDataset, PotreeWriter} from '@loaders.gl/tiles-3d/potree';
 import {PotreeNodesSource} from '../../src/potree/lib/potree-node-source';
 import {parsePotreeBin} from '../../src/potree/parsers/parse-potree-bin';
@@ -152,7 +152,7 @@ test('writer accepts Arrow, strided positions, empty roots and RGBA without muta
   expect(Array.from(mesh.attributes.COLOR_0.value)).toEqual([257, 514, 771, 1028]);
   expect(Array.from(input.attributes.POSITION.value)).toEqual([99, 1, 2, 3, 88]);
   await expect(
-    encodePotreeDataset(convertMeshToTable(createPoints(), 'arrow-table'))
+    encodePotreeDataset(convertMeshToArrowTableWrapper(createPoints()))
   ).resolves.toHaveProperty('metadataPath', 'metadata.json');
   const empty = await encodePotreeDataset(createPoints([]));
   expect(empty.files.get('octree.bin')!.length).toBe(0);

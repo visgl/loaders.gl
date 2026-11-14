@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {PLYLoader, PLYWriter} from '@loaders.gl/pointclouds/ply';
 import {encode, parse} from '@loaders.gl/core';
-import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 const attributes = {
   POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3},
   NORMAL: {value: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]), size: 3},
@@ -29,7 +29,7 @@ test('PLYWriter#encode plain and Arrow mesh data', async () => {
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
   expect(data.indices.value.length, 'indices roundtripped').toBe(3);
-  const arrowTable = convertMeshToTable(mesh, 'arrow-table');
+  const arrowTable = convertMeshToArrowTableWrapper(mesh);
   const arrowArrayBuffer = await encode(arrowTable, PLYWriter);
   const arrowData = await parse(arrowArrayBuffer, PLYLoader, {
     core: {worker: false},

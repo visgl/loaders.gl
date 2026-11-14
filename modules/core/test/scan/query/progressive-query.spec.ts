@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {queryProgressive, queryInBatches} from '@loaders.gl/core/scan';
-import {convertArrowToSchema, convertArrowToTable} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {TableScanSource} from '@loaders.gl/core/loader-utils';
@@ -20,7 +20,8 @@ function makeSource(): ArrowTable {
     country: arrow.vectorFromArray(['US', 'SE'], new arrow.Utf8()),
     temperature: arrow.vectorFromArray([30, 50], new arrow.Float64())
   });
-  return convertArrowToTable(first.concat(second), 'arrow-table');
+  const data = first.concat(second);
+  return {shape: 'arrow-table', data, schema: convertArrowToSchema(data.schema)};
 }
 
 test('progressive GROUP BY yields complete replacement tables and a final snapshot', async () => {

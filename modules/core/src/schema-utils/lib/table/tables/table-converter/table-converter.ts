@@ -4,24 +4,27 @@
 
 import type {Converter} from '../../../converters/converters';
 import type {Table} from '@loaders.gl/core/schema';
+import type * as arrow from 'apache-arrow';
+import {isNativeArrowTable} from '../../../../../lib/loader-utils/native-arrow';
 import {convertTables} from './convert-tables';
 
 /**
  * Shapes supported by the loaders.gl table converter.
  */
-export type TableShape = 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow-table';
+export type TableShape = 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow';
 
 /**
  * Leaf converter for loaders.gl table wrapper shapes.
  */
-export const TableConverter: Converter<TableShape> = {
+export const TableConverter: Converter<TableShape | 'arrow-table'> = {
   id: 'table',
-  from: ['object-row-table', 'array-row-table', 'columnar-table', 'arrow-table'],
-  to: ['object-row-table', 'array-row-table', 'columnar-table', 'arrow-table'],
+  from: ['object-row-table', 'array-row-table', 'columnar-table', 'arrow-table', 'arrow'],
+  to: ['object-row-table', 'array-row-table', 'columnar-table', 'arrow'],
   canConvert(sourceShape, targetShape) {
     return sourceShape !== targetShape;
   },
   detectInputShape(input) {
+    if (isNativeArrowTable(input)) return 'arrow';
     if (
       typeof input === 'object' &&
       input !== null &&
@@ -29,20 +32,20 @@ export const TableConverter: Converter<TableShape> = {
       typeof input.shape === 'string' &&
       ['object-row-table', 'array-row-table', 'columnar-table', 'arrow-table'].includes(input.shape)
     ) {
-      return input.shape as TableShape;
+      return input.shape as TableShape | 'arrow-table';
     }
     return null;
   },
   convert(input, targetShape) {
     switch (targetShape) {
       case 'object-row-table':
-        return convertTables(input as Table, 'object-row-table');
+        return convertTables(input as Table | arrow.Table, 'object-row-table');
       case 'array-row-table':
-        return convertTables(input as Table, 'array-row-table');
+        return convertTables(input as Table | arrow.Table, 'array-row-table');
       case 'columnar-table':
-        return convertTables(input as Table, 'columnar-table');
-      case 'arrow-table':
-        return convertTables(input as Table, 'arrow-table');
+        return convertTables(input as Table | arrow.Table, 'columnar-table');
+      case 'arrow':
+        return convertTables(input as Table | arrow.Table, 'arrow');
       default:
         throw new Error(`Unsupported table conversion target: ${targetShape}`);
     }

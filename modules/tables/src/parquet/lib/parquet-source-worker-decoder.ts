@@ -108,13 +108,13 @@ export async function decodeParquetSourceWorkerInput(
         schema: input.projectedSchema,
         data: batchColumns
       },
-      'arrow-table'
+      'arrow'
     );
     batches.push({
       rowGroupRowOffset,
       rowCount,
       rowGroupRowIndices: batchRowIndices,
-      arrowTable: dehydrateArrowTable(arrowTable.data)
+      arrowTable: dehydrateArrowTable(arrowTable)
     });
   }
   const arrowConversionDurationMs = getCurrentTime() - conversionStartTime;

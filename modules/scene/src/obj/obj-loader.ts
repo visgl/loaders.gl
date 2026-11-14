@@ -19,7 +19,7 @@ import {
   serializeArrowWorkerTable
 } from '@loaders.gl/core/arrow-worker-transport';
 import {
-  convertMeshToTable,
+  convertMeshToArrowTableWrapper,
   convertTableToMesh,
   getMeshBoundingBox
 } from '@loaders.gl/core/schema-utils';
@@ -30,7 +30,7 @@ import {OBJLoader as OBJLoaderMetadata} from './obj-loader-types';
 const {preload: _OBJLoaderPreload, ...OBJLoaderMetadataWithoutPreload} = OBJLoaderMetadata;
 
 function convertOBJMesh(mesh: Mesh, options?: OBJLoaderOptions): Mesh | MeshArrowTable {
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   return options?.obj?.shape === 'mesh' ? convertTableToMesh(table) : table;
 }
 
@@ -158,7 +158,7 @@ function parseOBJPointCloudMesh(vertexLines: string[]): Mesh {
 }
 
 function makeOBJBatch(mesh: Mesh, options?: OBJLoaderOptions): OBJMeshBatch | ArrowTableBatch {
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   if (options?.obj?.shape === 'mesh') {
     const convertedMesh = convertTableToMesh(table);
     return {

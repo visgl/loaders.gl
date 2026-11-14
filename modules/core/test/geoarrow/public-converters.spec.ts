@@ -4,7 +4,12 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {convert, convertTable, convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {
+  convert,
+  convertTable,
+  convertArrowToSchema,
+  TableConverter
+} from '@loaders.gl/core/schema-utils';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 import {
   GEOARROW_CONVERTERS,
@@ -35,7 +40,7 @@ test.each([
   'array-row-table',
   'columnar-table',
   'geojson-table',
-  'arrow-table'
+  'arrow'
 ] as const)('the combined bundle distinguishes a %s wrapper from binary features', shape => {
   const features: Feature[] = [
     {type: 'Feature', geometry: {type: 'Point', coordinates: [1, 2]}, properties: {name: 'point'}}
@@ -45,12 +50,25 @@ test.each([
   const table =
     shape === 'geojson-table'
       ? {shape, type: 'FeatureCollection' as const, features, schema: {fields: [], metadata: {}}}
-      : convertTable(sourceTable, shape);
+      : shape === 'arrow'
+        ? convertTable(sourceTable, 'arrow')
+        : convertTable(sourceTable, shape);
   const converted = convert(table, 'geoarrow', GEOARROW_CONVERTERS) as arrow.Table;
   expect(converted).toBeInstanceOf(arrow.Table);
   expect(converted.numRows).toBe(1);
-  const restored = convert(converted, 'geojson-table', GEOARROW_CONVERTERS) as GeoJSONTable;
+  const converters = [TableConverter, ...GEOARROW_CONVERTERS];
+  expect(convert(converted, 'arrow', converters)).toBe(converted);
+
+  const restored = convert(converted, 'geojson-table', converters) as GeoJSONTable;
   expect(restored.features).toEqual(features);
+});
+
+test('plain Arrow reaches GeoArrow conversion without rebuilding columns', () => {
+  const table = arrow.tableFromArrays({identifier: new BigInt64Array([9007199254740993n])});
+  const converters = [TableConverter, ...GEOARROW_CONVERTERS];
+  expect(convert(table, 'geoarrow', converters)).toBe(table);
+  const features = convert(table, 'geojson-table', converters) as GeoJSONTable;
+  expect(features.features[0].properties.identifier).toBe(9007199254740993n);
 });
 
 test.each([

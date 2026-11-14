@@ -22,9 +22,7 @@ const schema = {...convertArrowToSchema(data.schema), metadata: {source: 'fixtur
 const table = {shape: 'arrow-table' as const, data, schema, source: 'custom'};
 
 test('Arrow wrapper conversion retains identity and caller schema', () => {
-  expect(convertArrowTable(table, 'arrow-table')).toBe(table);
   const withoutSchema = {shape: 'arrow-table' as const, data};
-  expect(convertArrowTable(withoutSchema, 'arrow-table')).toBe(withoutSchema);
   for (const shape of ['object-row-table', 'array-row-table', 'columnar-table'] as const) {
     const converted = convertArrowTable(table, shape);
     expect(converted.schema).toBe(schema);
@@ -65,7 +63,6 @@ test('Arrow batch conversion retains progress and metadata for every layout', ()
     schemaType: 'explicit' as const,
     metadata: {source: 'batch'}
   };
-  expect(convertArrowTableBatch(batch, 'arrow-table')).toBe(batch);
   for (const shape of ['object-row-table', 'array-row-table', 'columnar-table'] as const) {
     const converted = convertArrowTableBatch(batch, shape);
     expect(converted).toMatchObject({

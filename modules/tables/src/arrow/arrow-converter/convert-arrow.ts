@@ -8,16 +8,19 @@ import type {
   ArrayRowTable,
   ObjectRowTable,
   ColumnarTable,
-  ArrowTable,
   GeoJSONTable
 } from '@loaders.gl/core/schema';
-import {convertArrowToTable, convertTableToArrow} from '@loaders.gl/core/schema-utils';
+import {
+  convertArrowToTable,
+  convertTableToArrow,
+  isNativeArrowTable
+} from '@loaders.gl/core/schema-utils';
 import type {ArrowConvertFromOptions, ArrowConvertToOptions} from './arrow-converter';
 
 /**
  * Converts between Apache Arrow tables and loaders.gl table shapes.
  */
-export function convertArrow(input: arrow.Table, shape: 'arrow-table'): ArrowTable;
+export function convertArrow(input: arrow.Table, shape: 'arrow'): arrow.Table;
 export function convertArrow(input: arrow.Table, shape: 'array-row-table'): ArrayRowTable;
 export function convertArrow(input: arrow.Table, shape: 'object-row-table'): ObjectRowTable;
 export function convertArrow(input: arrow.Table, shape: 'columnar-table'): ColumnarTable;
@@ -29,13 +32,7 @@ export function convertArrow(
 ): arrow.Table;
 export function convertArrow(
   input: arrow.Table | Table,
-  shape:
-    | 'arrow'
-    | 'object-row-table'
-    | 'array-row-table'
-    | 'columnar-table'
-    | 'arrow-table'
-    | 'geojson-table',
+  shape: 'arrow' | 'object-row-table' | 'array-row-table' | 'columnar-table' | 'geojson-table',
   options?: ArrowConvertFromOptions | ArrowConvertToOptions
 ): Table | arrow.Table {
   if (isApacheArrowTable(input)) {
@@ -54,5 +51,5 @@ export function convertArrow(
  * Checks whether a value is an Apache Arrow table instance rather than a loaders.gl table wrapper.
  */
 export function isApacheArrowTable(input: arrow.Table | Table): input is arrow.Table {
-  return typeof input === 'object' && input !== null && !('shape' in input);
+  return isNativeArrowTable(input);
 }

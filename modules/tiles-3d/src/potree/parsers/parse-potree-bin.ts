@@ -6,7 +6,7 @@ import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
 import type {Mesh, MeshAttributes} from '@loaders.gl/core/schema';
 import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseVersion} from '../utils/parse-version';
 import type {PotreeAttribute} from '../types/potree-metadata';
 
@@ -228,7 +228,7 @@ export function parsePotreeBin(
   };
 
   const formattedMesh = formatPotreeMeshColors(mesh, resolvedOptions.colorFormat);
-  const table = convertMeshToTable(formattedMesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(formattedMesh);
   if (options?.potree?.shape === 'arrow') {
     return table.data;
   }
