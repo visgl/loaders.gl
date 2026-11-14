@@ -39,9 +39,9 @@ export const LanceLoaderWithParser = {
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options?: LanceLoaderOptions
-  ) {
+  ): AsyncIterable<RecordBatch> {
     const arrayBuffer = await concatenateArrayBuffersAsync(_iterator);
-    const table = await LanceLoaderWithParser.parse(arrayBuffer, options);
+    const table: Table = await LanceLoaderWithParser.parse(arrayBuffer, options);
     yield* table.batches;
   }
 } as const satisfies LoaderWithParser<Table, RecordBatch, LanceLoaderOptions>;
