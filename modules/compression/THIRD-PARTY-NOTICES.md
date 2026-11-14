@@ -1,6 +1,6 @@
 # @loaders.gl/compression: sources and credits
 
-Arjun Barrett's [fflate](https://github.com/101arrowz/fflate) 0.7.4 supplies retained DEFLATE/GZIP/ZLIB code: [full MIT license](./src/lib/fflate/LICENSE). Pierre Curto's LZ4 implementation is adapted in [lz4-compression.ts](./src/lib/lz4-compression.ts), including its full MIT notice.
+Arjun Barrett's [fflate](https://github.com/101arrowz/fflate) 0.7.4 supplies retained DEFLATE/GZIP/ZLIB code: [full MIT license](./src/lib/fflate/LICENSE).
 
 Optional codec entry points use separately installed compress-utils, Brotli, fzstd, hysnappy, lz4js, pako, snappyjs and zstd-codec. Those implementations retain their own licenses. The package metadata identifies the supported dependency ranges; an adapter is not a claim to authorship of a codec.
 
