@@ -42,7 +42,7 @@ test('FederatedTableScanSource has matching Node and browser execution semantics
     predicate: parseSQLPredicate('score >= 20'),
     columns: ['id']
   })) {
-    rows.push(...batch.data.toArray().map(row => row?.toJSON()));
+    rows.push(...batch.toArray().map(row => row?.toJSON()));
   }
   expect(rows).toEqual([{id: 2}]);
 });

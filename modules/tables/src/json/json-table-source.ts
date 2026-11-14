@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   createScanQueryMetadata,
   DataSource,
@@ -16,7 +18,7 @@ import type {
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {JSONTableLoaderOptions} from './json-table-loader-types';
 
@@ -28,7 +30,7 @@ export type JSONTableSourceOptions = DataSourceOptions & {
 /** Reads a JSON row array from a URL or Blob and scans the decoded Arrow table. */
 export class JSONTableSource
   extends DataSource<string | Blob, JSONTableSourceOptions>
-  implements TableScanSource<TableBatch>
+  implements TableScanSource<RecordBatch>
 {
   private table: ArrowTable | undefined;
   private revision = 0;
@@ -67,9 +69,9 @@ export class JSONTableSource
   }
 
   /** Applies scan options to the decoded table and yields the result batch. */
-  async *read(options: TableScanReadOptions = {}): AsyncIterable<TableBatch> {
+  async *read(options: TableScanReadOptions = {}): AsyncIterable<RecordBatch> {
     const source = this;
-    yield* executeTableScanBatches(
+    for await (const batch of executeTableScanBatches(
       async function* (signal, onByteLength) {
         yield makeTableScanBatch(await source.loadTable(signal, onByteLength));
       },
@@ -85,7 +87,11 @@ export class JSONTableSource
           return {...arrowBatch, data, length: data.numRows};
         }
       }
-    );
+    )) {
+      const {data} = batch as ArrowTableBatch;
+      if (data.batches.length) yield* data.batches;
+      else yield makeArrowMetadataBatch(data.schema);
+    }
   }
 
   /** Loads the document once for sequential metadata and scan requests. */

@@ -266,8 +266,8 @@ test('Lance source emits an Arrow batch for a flat Lance file', async () => {
   for await (const batch of source.readBatches()) batches.push(batch);
 
   expect(batches).toHaveLength(1);
-  expect(batches[0].shape).toBe('arrow-table');
-  expect(Array.from(batches[0].data.getChild('id').toArray())).toEqual([10, 20, 30]);
+  expect(batches[0]).toHaveProperty('numRows');
+  expect(Array.from(batches[0].getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
 test('Lance loader emits Arrow batches from an input iterator', async () => {

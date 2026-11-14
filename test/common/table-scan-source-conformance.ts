@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
 import {describe, expect, test} from 'vitest';
 
 import type {
@@ -16,7 +17,7 @@ import {parseSQLPredicate, type SQLPredicate} from '@loaders.gl/core/scan';
 /** One independently disposable source used by the portable scan conformance kit. */
 export type TableScanConformanceFixture = Readonly<{
   /** Source under test. */
-  source: TableScanSource<TableBatch, SQLPredicate>;
+  source: TableScanSource<TableBatch | RecordBatch, SQLPredicate>;
   /** Releases source-owned resources after one case. */
   close?: () => void | Promise<void>;
 }>;
@@ -131,13 +132,13 @@ async function withFixture(
 
 /** Materializes only the bounded rows produced by one conformance query. */
 async function collectRows(
-  source: TableScanSource<TableBatch, SQLPredicate>,
+  source: TableScanSource<TableBatch | RecordBatch, SQLPredicate>,
   options: TableScanReadOptions<SQLPredicate>
 ): Promise<Record<string, unknown>[]> {
   const rows: Record<string, unknown>[] = [];
   for await (const batch of source.read(options)) {
-    const arrowBatch = convertBatch(batch, 'arrow-table');
-    rows.push(...arrowBatch.data.toArray().map(row => row.toJSON()));
+    const arrowData = 'numRows' in batch ? batch : convertBatch(batch, 'arrow-table').data;
+    rows.push(...arrowData.toArray().map(row => row.toJSON()));
   }
   return rows;
 }

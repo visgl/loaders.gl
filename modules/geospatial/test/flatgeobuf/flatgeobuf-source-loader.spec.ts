@@ -230,8 +230,7 @@ test('FlatGeobufVectorSource#read emits one bounded Arrow batch', async () => {
   for await (const batch of source.read({limit: 1})) batches.push(batch);
 
   expect(batches).toHaveLength(1);
-  expect(batches[0]?.shape).toBe('arrow-table');
-  expect(batches[0]?.data.numRows).toBe(1);
+  expect(batches[0]?.numRows).toBe(1);
 });
 
 test('FlatGeobufSourceLoader recognizes URL query and fragment suffixes', () => {

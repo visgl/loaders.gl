@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
+import {streamNativeParquetBatches} from './lib/native-parquet-batches';
 import type {
   CoreAPI,
   ScanQueryMetadata,
@@ -83,7 +85,7 @@ export type IcebergScanOptions = ParquetDatasetReadOptions & {
  */
 export class IcebergTableSource
   extends BaseDataSource<string, IcebergSourceOptions>
-  implements TableScanSource<ParquetDatasetBatch, ParquetPredicate>
+  implements TableScanSource<RecordBatch, ParquetPredicate>
 {
   private metadataPromise: Promise<IcebergTableMetadata> | null = null;
   private readonly closeController = new AbortController();
@@ -243,12 +245,19 @@ export class IcebergTableSource
   }
 
   /** Common table-scan entry point for the selected Iceberg snapshot. */
-  read(options: IcebergScanOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+  read(options: IcebergScanOptions = {}): AsyncIterable<RecordBatch> {
     return this.scan(options);
   }
 
   /** Reads the current snapshot as Arrow batches through the existing Parquet dataset source. */
-  async *scan(options: IcebergScanOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+  scan(options: IcebergScanOptions = {}): AsyncIterable<RecordBatch> {
+    return streamNativeParquetBatches(this.readWithProvenance(options));
+  }
+
+  /** Applies snapshot deletes before exposing Arrow batches. */
+  private async *readWithProvenance(
+    options: IcebergScanOptions
+  ): AsyncIterable<ParquetDatasetBatch> {
     this.assertOpen();
     const metadata = await this.getMetadata(options.signal);
     const plan = await this.getScanPlan(options.signal, options.snapshotId, options.snapshotRef);
@@ -271,7 +280,7 @@ export class IcebergTableSource
     let readError: unknown;
     let rowsReturned = 0;
     try {
-      for await (const batch of parquetSource.read(readOptions)) {
+      for await (const batch of parquetSource.readWithProvenance(readOptions)) {
         const filteredBatch = options.applyDeletes
           ? applyIcebergDeletes(batch, positionDeletes, equalityDeletes, options.columns)
           : batch;

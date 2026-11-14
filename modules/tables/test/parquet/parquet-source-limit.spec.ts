@@ -45,13 +45,13 @@ test('ParquetSource applies a post-filter limit and aligns provenance', async ()
     })
   );
 
-  expect(batches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual(['two']);
-  expect(batches.reduce((rowCount, batch) => rowCount + batch.length, 0)).toBe(1);
+  expect(batches.flatMap(batch => [...batch.getChild('value')!.toArray()])).toEqual(['two']);
+  expect(batches.reduce((rowCount, batch) => rowCount + batch.numRows, 0)).toBe(1);
   expect(
     batches.every(
       batch =>
-        batch.rowCount === batch.length &&
-        (!batch.rowIndices || batch.rowIndices.length === batch.length)
+        JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowCount === batch.numRows &&
+        (!JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowIndices || JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowIndices.length === batch.numRows)
     )
   ).toBe(true);
   expect(source.getTelemetry().rowsEmitted).toBe(1);

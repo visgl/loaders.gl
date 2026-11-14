@@ -79,7 +79,8 @@ export type {ScanQuery} from './scan-query';
 
 export {
   FEDERATED_TABLE_QUERY_CAPABILITIES,
-  FederatedTableScanSource
+  FederatedTableScanSource,
+  getFederatedTableBatchProvenance
 } from './federated-table-scan-source';
 export type {
   FederatedTableBatch,

@@ -61,7 +61,7 @@ const source = LanceSourceLoader.createDataSourceSync(datasetURL, {
 
 const metadata = await source.getMetadata();
 for await (const batch of source.readBatches()) {
-  console.log(batch.data);
+  console.log(batch);
 }
 ```
 

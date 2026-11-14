@@ -82,7 +82,7 @@ try {
     concurrency: 2,
     signal: abortController.signal
   })) {
-    console.log(schema, metadata.rowCount, batch.rowOffset, batch.data);
+    console.log(schema, metadata.rowCount, JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowOffset, batch);
   }
 } finally {
   await source.close();
@@ -149,7 +149,8 @@ for await (const batch of dataset.read({
   columns: ['id', 'names', 'categories', 'geometry'],
   predicate: {op: '=', args: [{property: 'confidence'}, 1]}
 })) {
-  console.log(batch.datasetFileId, batch.datasetPartitions, batch.data);
+  const provenance = JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!);
+  console.log(provenance.datasetFileId, provenance.datasetPartitions, batch);
 }
 ```
 
@@ -203,13 +204,14 @@ Returns cached plain JavaScript metadata copied from the Parquet footer:
 Pass `{formatSpecificMetadata: true}` to include the decoded Parquet Thrift footer. Both metadata and
 schema objects are reused for the lifetime of the source.
 
-### `read(options?): AsyncIterable<ParquetSourceBatch>`
+### `read(options?): AsyncIterable<RecordBatch>`
 
-Returns Arrow table batches. `rowGroups` controls which row groups are fetched and their output
+Returns native Apache Arrow RecordBatches. `rowGroups` controls which row groups are fetched and their output
 order. `columns` prevents unselected column chunks from being requested or decoded. Both selections
 are validated against the cached footer before row data is read.
 
-Every batch includes provenance as top-level properties and in `batch.metadata`:
+Read provenance with `getParquetBatchProvenance(batch)` from
+`@loaders.gl/tables/parquet-source-loader`. It restores BigInt and byte arrays in catalog metadata:
 
 | Property | Description |
 | --- | --- |
@@ -288,7 +290,7 @@ column-index, and offset-index ranges, but it does not decode data pages.
 `read(options)`, allowing `ParquetSource` and `ParquetDatasetSource` to use the same vocabulary as
 other common-scan backends.
 
-### `executeScanPlan(plan, options?): AsyncIterable<ParquetSourceBatch>`
+### `executeScanPlan(plan, options?): AsyncIterable<RecordBatch>`
 
 Executes a plan returned by `getScanPlan()` while retaining its selected row-group indexes. This is
 useful when an application wants to inspect or cache a plan before starting data transfer. Optional
@@ -334,7 +336,7 @@ for await (const batch of source.read({
   bbox: [-71.12, 42.32, -70.98, 42.42],
   columns: ['id', 'geometry']
 })) {
-  console.log(batch.rowIndices, batch.data);
+  console.log(JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowIndices, batch);
 }
 ```
 

@@ -10,6 +10,7 @@ export {ParquetJSLoader} from './parquet-js-loader-types';
 export {
   ParquetSourceLoader,
   ParquetSource,
+  getParquetBatchProvenance,
   type ParquetSourceLoaderOptions,
   type ParquetSourceReadOptions,
   type ParquetSourceMetadata,

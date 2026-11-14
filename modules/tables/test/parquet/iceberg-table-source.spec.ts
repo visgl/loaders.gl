@@ -1,3 +1,4 @@
+import {getParquetBatchProvenance} from '@loaders.gl/tables/parquet-source-loader';
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';
@@ -163,7 +164,7 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
   ];
   const close = vi.fn();
   source.createParquetDataset = () => ({
-    async *read(options: any) {
+    async *readWithProvenance(options: any) {
       options.onQueryComplete({status: 'completed', rowsReturned: 4, sourceType: 'parquet'});
       yield {
         shape: 'arrow-table',
@@ -194,7 +195,7 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
         sourceUrl: 'table/data.parquet',
         datasetPartitions: {region: 'west'},
         datasetFileMetadata: {iceberg: {dataSequenceNumber: 3}},
-        metadata: {rowCount: 4}
+        metadata: {rowCount: 4, datasetFileMetadata: {iceberg: {partition: [9007199254740993n], lowerBounds: [new Uint8Array([128, 255])]}}}
       };
     },
     close
@@ -210,9 +211,13 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
   }
 
   expect(batches).toHaveLength(1);
-  expect(Array.from(batches[0].data.getChild('id')?.toArray() || [])).toEqual([2]);
-  expect(batches[0].rowIndices).toEqual([1]);
-  expect(batches[0].rowGroupRowIndices).toEqual([11]);
+  expect(Array.from(batches[0].getChild('id')?.toArray() || [])).toEqual([2]);
+  expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowIndices).toEqual([1]);
+  expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowIndices).toEqual([11]);
+  expect(getParquetBatchProvenance(arrow.tableFromArrays({id: [1]}).batches[0])).toBeUndefined();
+  expect(getParquetBatchProvenance(batches[0])?.datasetFileMetadata).toEqual({
+    iceberg: {partition: [9007199254740993n], lowerBounds: [new Uint8Array([128, 255])]}
+  });
   expect(telemetry).toHaveBeenCalledWith(expect.objectContaining({status: 'completed', rowsReturned: 1}));
   expect(close).toHaveBeenCalledOnce();
 });
@@ -536,7 +541,7 @@ test.each([
     source.getMetadata = async () => ({'format-version': 2, location: 'table'});
     source.getScanPlan = async () => ({dataFiles: [{data: 'data.parquet'}], deleteFiles: []});
     source.createParquetDataset = () => ({
-      async *read(options: any) {
+      async *readWithProvenance(options: any) {
         options.onQueryComplete({status: 'completed', rowsReturned: 0, sourceType: 'parquet'});
         throw new Error('delegated failure');
       },

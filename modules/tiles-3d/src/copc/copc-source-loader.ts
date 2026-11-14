@@ -3,13 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
-import type {
-  Schema,
-  Field,
-  MeshArrowTable,
-  ArrowTableBatch,
-  MeshAttribute
-} from '@loaders.gl/core/schema';
+import type {Schema, Field, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
 import {
   ArrowTableBuilder,
   convertTableToMesh,
@@ -305,7 +299,7 @@ export const COPCSourceLoader = {
  */
 export class COPCTileSource
   extends DataSource<string | Blob, COPCSourceLoaderOptions>
-  implements TileSource, PointCloudScanSource<ArrowTableBatch>
+  implements TileSource, PointCloudScanSource<import('apache-arrow').RecordBatch>
 {
   /** Common point-cloud scan capabilities exposed by COPC. */
   readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
@@ -414,7 +408,9 @@ export class COPCTileSource
    * Hierarchy bounds, levels, spacing, and requested decoder attributes are pushed down. Exact
    * point bounds and portable attribute predicates are evaluated before the global point limit.
    */
-  async *scan(options: PointCloudScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  async *scan(
+    options: PointCloudScanReadOptions = {}
+  ): AsyncIterableIterator<import('apache-arrow').RecordBatch> {
     const {copc} = await this._initPromise;
     const schema = getCOPCHeaderSchema(copc);
     const sourceColumnNames = schema.fields.map(field => field.name);
@@ -467,7 +463,7 @@ export class COPCTileSource
           builder.addArrayRow(outputColumnNames.map(columnName => columns[columnName][rowIndex]));
         }
         const batch = builder.finishBatch();
-        if (batch) yield batch;
+        if (batch) yield* batch.data.batches;
         remainingPointCount -= matchingRowIndices.length;
         if (remainingPointCount === 0) return;
       }

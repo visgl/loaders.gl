@@ -10,7 +10,6 @@ import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   ParquetJSWriter,
   ParquetSourceLoader,
-  type ParquetSourceBatch,
   type ParquetSourceMetadata
 } from '@loaders.gl/tables/parquet/index';
 import type {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
@@ -159,7 +158,7 @@ test('ParquetJSWriter emits GeoParquet 2.0 logical types and row-group statistic
   });
 
   const batches = await collectBatches(source.read({bbox: [-11, 1, 21, 31]}));
-  expect(batches.map(batch => batch.rowGroupIndex)).toEqual([0, 1]);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex)).toEqual([0, 1]);
   expect(source.getTelemetry().rowGroupsPrunedByStatistics).toBe(0);
 });
 
@@ -242,9 +241,9 @@ test('ParquetJSWriter rejects malformed GeoArrow WKB semantics', async () => {
 
 /** Collects a selective Parquet source stream for integration assertions. */
 async function collectBatches(
-  batches: AsyncIterable<ParquetSourceBatch>
-): Promise<ParquetSourceBatch[]> {
-  const result: ParquetSourceBatch[] = [];
+  batches: AsyncIterable<import('apache-arrow').RecordBatch>
+): Promise<import('apache-arrow').RecordBatch[]> {
+  const result: import('apache-arrow').RecordBatch[] = [];
   for await (const batch of batches) result.push(batch);
   return result;
 }

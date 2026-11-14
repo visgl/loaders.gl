@@ -226,7 +226,7 @@ test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
     })) {
       batches.push(batch);
     }
-    expect(batches.flatMap(batch => batch.data.getChild('label')?.toArray() || [])).toEqual(['two']);
+    expect(batches.flatMap(batch => batch.getChild('label')?.toArray() || [])).toEqual(['two']);
     await source.close();
   }
 );
