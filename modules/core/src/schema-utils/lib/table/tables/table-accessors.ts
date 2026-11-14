@@ -36,7 +36,7 @@ export function isTable(table: any): table is Table | NativeArrowTable {
  * Returns the length of the table (i.e. the number of rows)
  */
 export function getTableLength(table: Table | NativeArrowTable): number {
-  if (isNativeArrowTable(table)) return table.numRows;
+  if (!('shape' in table)) return table.numRows;
   switch (table.shape) {
     case 'array-row-table':
     case 'object-row-table':
@@ -63,7 +63,7 @@ export function getTableLength(table: Table | NativeArrowTable): number {
  * @throws Fails to deduce number of columns if the table has no schema and is empty
  */
 export function getTableNumCols(table: Table | NativeArrowTable): number {
-  if (isNativeArrowTable(table)) return table.numCols;
+  if (!('shape' in table)) return table.numCols;
   if (table.schema) {
     return table.schema.fields.length;
   }
@@ -93,7 +93,7 @@ export function getTableCell(
   rowIndex: number,
   columnName: string
 ): unknown {
-  if (isNativeArrowTable(table)) return table.getChild(columnName)?.get(rowIndex);
+  if (!('shape' in table)) return table.getChild(columnName)?.get(rowIndex);
   switch (table.shape) {
     case 'array-row-table':
       const columnIndex = getTableColumnIndex(table, columnName);
@@ -123,7 +123,7 @@ export function getTableCellAt(
   rowIndex: number,
   columnIndex: number
 ): unknown {
-  if (isNativeArrowTable(table)) return table.getChildAt(columnIndex)?.get(rowIndex);
+  if (!('shape' in table)) return table.getChildAt(columnIndex)?.get(rowIndex);
   switch (table.shape) {
     case 'array-row-table':
       return table.data[rowIndex][columnIndex];
@@ -153,7 +153,7 @@ export function getTableCellAt(
 export function getTableRowShape(
   table: Table | NativeArrowTable
 ): 'array-row-table' | 'object-row-table' {
-  if (isNativeArrowTable(table)) throw new Error('Not a row table');
+  if (!('shape' in table)) throw new Error('Not a row table');
   switch (table.shape) {
     case 'array-row-table':
     case 'object-row-table':
@@ -199,7 +199,7 @@ export function getTableRowAsObject(
   target?: {[columnName: string]: unknown},
   copy?: 'copy'
 ): {[columnName: string]: unknown} {
-  if (isNativeArrowTable(table)) {
+  if (!('shape' in table)) {
     const objectRow = target || {};
     const row = table.get(rowIndex);
     for (const field of table.schema.fields) objectRow[field.name] = row?.[field.name];
@@ -268,7 +268,7 @@ export function getTableRowAsArray(
   target?: unknown[],
   copy?: 'copy'
 ): unknown[] {
-  if (isNativeArrowTable(table)) {
+  if (!('shape' in table)) {
     const arrayRow = target || [];
     const row = table.get(rowIndex);
     table.schema.fields.forEach((field, columnIndex) => {
@@ -341,7 +341,7 @@ export function makeArrayRowTable(table: Table | NativeArrowTable): ArrayRowTabl
   }
   return {
     shape: 'array-row-table',
-    schema: isNativeArrowTable(table) ? convertArrowToSchema(table.schema) : table.schema,
+    schema: 'shape' in table ? table.schema : convertArrowToSchema(table.schema),
     data
   };
 }
@@ -358,7 +358,7 @@ export function makeObjectRowTable(table: Table | NativeArrowTable): ObjectRowTa
   }
   return {
     shape: 'object-row-table',
-    schema: isNativeArrowTable(table) ? convertArrowToSchema(table.schema) : table.schema,
+    schema: 'shape' in table ? table.schema : convertArrowToSchema(table.schema),
     data
   };
 }
@@ -375,7 +375,7 @@ export function makeColumnarTable(table: Table | NativeArrowTable): ObjectRowTab
   }
   return {
     shape: 'object-row-table',
-    schema: isNativeArrowTable(table) ? convertArrowToSchema(table.schema) : table.schema,
+    schema: 'shape' in table ? table.schema : convertArrowToSchema(table.schema),
     data
   };
 }
