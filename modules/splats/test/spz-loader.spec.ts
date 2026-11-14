@@ -69,13 +69,17 @@ test('SPZ reverses the explicit LUF-to-RUB conversion', async () => {
   expect(Array.from(splats.positions)).toEqual([-1, 2, 3]);
 });
 test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async () => {
-  const data = await makeSPZFixture();
+  const data = await makeSPZFixture(true, 0, Uint8Array.of(0x80, 0xff));
   const formats: string[] = [];
   const restoreDecompressionStream = installMockDecompressionStream(formats, false);
   try {
     const table = await parse(data, SPZLoader, {modules});
     expect(table.schema.metadata.get('topology'), 'returns point-list topology').toBe('point-list');
     expect(table.numRows, 'parses row count').toBe(2);
+    expect(
+      JSON.parse(table.schema.metadata.get('loaders_gl.gaussian_splats.loader_data')!)
+    ).toMatchObject({version: 4, antialiased: true, extensionByteLength: 2});
+    expect(table.schema.metadata.get('loaders_gl.gaussian_splats.extension_bytes')).toBe('gP8=');
     expect(
       table.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),
       'adds source format metadata'
@@ -174,7 +178,11 @@ test('SPZLoader rejects malformed legacy gzip headers', async () => {
  * @param shDegree Spherical harmonic degree encoded in an optional sixth stream.
  * @returns SPZ fixture data.
  */
-async function makeSPZFixture(compressStreams = true, shDegree = 0): Promise<ArrayBuffer> {
+async function makeSPZFixture(
+  compressStreams = true,
+  shDegree = 0,
+  extensions = new Uint8Array()
+): Promise<ArrayBuffer> {
   const streams = [
     makePositionStream(),
     new Uint8Array([128, 64]),
@@ -192,9 +200,10 @@ async function makeSPZFixture(compressStreams = true, shDegree = 0): Promise<Arr
     );
   }
   const headerByteLength = 32;
+  const tocByteOffset = headerByteLength + extensions.length;
   const tocByteLength = compressedStreams.length * 16;
   const byteLength =
-    headerByteLength +
+    tocByteOffset +
     tocByteLength +
     compressedStreams.reduce((length, stream) => length + stream.byteLength, 0);
   const data = new ArrayBuffer(byteLength);
@@ -205,12 +214,13 @@ async function makeSPZFixture(compressStreams = true, shDegree = 0): Promise<Arr
   dataView.setUint32(8, 2, true);
   dataView.setUint8(12, shDegree);
   dataView.setUint8(13, 12);
-  dataView.setUint8(14, 0);
+  dataView.setUint8(14, extensions.length ? 0x3 : 0);
   dataView.setUint8(15, compressedStreams.length);
-  dataView.setUint32(16, headerByteLength, true);
-  let compressedOffset = headerByteLength + tocByteLength;
+  dataView.setUint32(16, tocByteOffset, true);
+  bytes.set(extensions, headerByteLength);
+  let compressedOffset = tocByteOffset + tocByteLength;
   for (let streamIndex = 0; streamIndex < compressedStreams.length; streamIndex++) {
-    const tocOffset = headerByteLength + streamIndex * 16;
+    const tocOffset = tocByteOffset + streamIndex * 16;
     dataView.setBigUint64(tocOffset, BigInt(compressedStreams[streamIndex].byteLength), true);
     dataView.setBigUint64(tocOffset + 8, BigInt(streams[streamIndex].byteLength), true);
     bytes.set(compressedStreams[streamIndex], compressedOffset);

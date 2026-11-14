@@ -7,6 +7,11 @@ test('SPLATLoader parses raw Gaussian splats', async () => {
   const table = await parse(data, SPLATLoader);
   expect(table.schema.metadata.get('topology'), 'returns point-list topology').toBe('point-list');
   expect(table.numRows, 'parses row count').toBe(2);
+  expect(JSON.parse(table.schema.metadata.get('loaders_gl.gaussian_splats.loader_data')!)).toEqual({
+    format: 'splat',
+    splatCount: 2,
+    rowByteLength: 32
+  });
   expect(
     table.schema.metadata.get('loaders_gl.semantic_type'),
     'adds Gaussian splat semantic metadata'

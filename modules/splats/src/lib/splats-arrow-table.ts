@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
 import type {Field, MeshArrowTable, Schema} from '@loaders.gl/core/schema';
 import type {GaussianSplats} from '../types';
 import {convertColorByteToSphericalHarmonicDc} from './splat-utils';
@@ -73,6 +74,16 @@ export function makeGaussianSplatsArrowTable(splats: GaussianSplats): MeshArrowT
     ['topology', 'point-list'],
     ['mode', '0']
   ]);
+  if (splats.format !== 'rad' && splats.loaderData) {
+    const {extensionBytes, ...header} = splats.loaderData;
+    metadata.set('loaders_gl.gaussian_splats.loader_data', JSON.stringify(header));
+    if (extensionBytes instanceof Uint8Array) {
+      metadata.set(
+        'loaders_gl.gaussian_splats.extension_bytes',
+        encodeArrayBufferToBase64(extensionBytes.slice().buffer)
+      );
+    }
+  }
   const arrowSchema = new arrow.Schema(fields, metadata);
   const schema: Schema = {
     fields: schemaFields,

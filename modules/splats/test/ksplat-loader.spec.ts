@@ -12,6 +12,9 @@ test('KSPLATLoader parses uncompressed GaussianSplats3D buffers', async () => {
   const table = await parse(data, KSPLATLoader);
   expect(table.numRows, 'parses row count').toBe(2);
   expect(
+    JSON.parse(table.schema.metadata.get('loaders_gl.gaussian_splats.loader_data')!)
+  ).toMatchObject({format: 'ksplat', sections: [{splatCount: 2}]});
+  expect(
     table.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),
     'adds source format metadata'
   ).toBe('ksplat');

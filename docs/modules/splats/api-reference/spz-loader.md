@@ -111,7 +111,7 @@ The loader returns a native Apache Arrow `Table` with the existing Gaussian spla
 
 Schema metadata includes `loaders_gl.semantic_type = gaussian-splats` and `loaders_gl.gaussian_splats.source_format = spz`.
 
-`loaderData` includes the SPZ header fields, `antialiased`, `extensionByteLength`, and `extensionBytes` when plaintext extension records are present.
+Arrow schema metadata stores the SPZ header, `antialiased`, and `extensionByteLength` as JSON under `loaders_gl.gaussian_splats.loader_data`. When plaintext extension records are present, `loaders_gl.gaussian_splats.extension_bytes` contains their base64 encoding.
 
 ## Options
 
