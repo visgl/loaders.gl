@@ -22,17 +22,17 @@ test('DuckDB exchanges IPC with Arrow 21 for queries and uploads', async () => {
       TIMESTAMP '2020-01-01 00:00:00' AS instant,
       '\\x01\\x02'::BLOB AS bytes,
       [1, 2] AS nested`);
-    expect(result.data).toBeInstanceOf(arrow.Table);
-    expect(result.data.getChild('large_integer')?.get(0)).toBe(9007199254740993n);
-    expect(result.data.getChild('missing')?.get(0)).toBeNull();
-    expect(result.data.getChild('instant')?.get(0)).toBe(Date.UTC(2020, 0, 1));
-    expect(Array.from(result.data.getChild('bytes')!.get(0))).toEqual([1, 2]);
-    expect(Array.from(result.data.getChild('nested')!.get(0))).toEqual([1, 2]);
+    expect(result).toBeInstanceOf(arrow.Table);
+    expect(result.getChild('large_integer')?.get(0)).toBe(9007199254740993n);
+    expect(result.getChild('missing')?.get(0)).toBeNull();
+    expect(result.getChild('instant')?.get(0)).toBe(Date.UTC(2020, 0, 1));
+    expect(Array.from(result.getChild('bytes')!.get(0))).toEqual([1, 2]);
+    expect(Array.from(result.getChild('nested')!.get(0))).toEqual([1, 2]);
     const empty = await source.queryArrow('SELECT 1::INTEGER AS value WHERE false');
-    expect(empty.data.numRows).toBe(0);
-    expect(empty.data.schema.fields[0].name).toBe('value');
+    expect(empty.numRows).toBe(0);
+    expect(empty.schema.fields[0].name).toBe('value');
     await source.insertArrowTable(result, {tableName: 'uploaded'});
-    const bytes = arrow.tableToIPC(result.data, 'stream');
+    const bytes = arrow.tableToIPC(result, 'stream');
     const byteLength = bytes.byteLength;
     await source.insertArrowIPC(bytes, {tableName: 'uploaded', create: false});
     expect(bytes.byteLength).toBe(byteLength);
@@ -40,12 +40,12 @@ test('DuckDB exchanges IPC with Arrow 21 for queries and uploads', async () => {
     const uploaded = await source.queryArrow('SELECT * FROM uploaded WHERE large_integer = ?', {
       parameters: ['9007199254740993']
     });
-    expect(uploaded.data).toBeInstanceOf(arrow.Table);
-    expect(uploaded.data.numRows).toBe(3);
-    expect(uploaded.data.schema.fields.map(field => field.name)).toEqual(
-      result.data.schema.fields.map(field => field.name)
+    expect(uploaded).toBeInstanceOf(arrow.Table);
+    expect(uploaded.numRows).toBe(3);
+    expect(uploaded.schema.fields.map(field => field.name)).toEqual(
+      result.schema.fields.map(field => field.name)
     );
-    expect(uploaded.data.getChild('large_integer')?.get(1)).toBe(9007199254740993n);
+    expect(uploaded.getChild('large_integer')?.get(1)).toBe(9007199254740993n);
     await expect(
       source.queryArrow('SELECT * FROM absent_table WHERE value = ?', {
         parameters: [1]

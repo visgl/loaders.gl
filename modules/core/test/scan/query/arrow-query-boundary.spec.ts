@@ -4,8 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import type {ArrowTable} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {parseSQLPredicate, queryArrowTable} from '@loaders.gl/core/scan';
 
 test('queryArrowTable covers null truth tables and scalar comparison families', () => {
@@ -75,21 +73,16 @@ test('queryArrowTable compares Date and binary predicate values', () => {
       new arrow.Binary()
     )
   });
-  const binary: ArrowTable = {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(binaryData.schema),
-    data: binaryData
-  };
   expect(
     toRows(
-      queryArrowTable(binary, {
+      queryArrowTable(binaryData, {
         predicate: {op: '<', args: [{property: 'value'}, new Uint8Array([1, 3])]} as any
       })
     )
   ).toHaveLength(1);
   expect(
     toRows(
-      queryArrowTable(binary, {
+      queryArrowTable(binaryData, {
         predicate: {op: '>', args: [{property: 'value'}, new Uint8Array([1])]} as any
       })
     )
@@ -151,11 +144,10 @@ test('queryArrowTable join skips null keys and applies child queries', () => {
   expect(toRows(result)).toEqual([{value: 'a', 'lookup.label': 'one'}]);
 });
 
-function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
-  const data = arrow.tableFromArrays(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+function makeArrowTable(columns: Record<string, readonly unknown[]>): arrow.Table {
+  return arrow.tableFromArrays(columns);
 }
 
-function toRows(table: ArrowTable): Record<string, unknown>[] {
-  return table.data.toArray().map(row => row?.toJSON() ?? {});
+function toRows(table: arrow.Table): Record<string, unknown>[] {
+  return table.toArray().map(row => row?.toJSON() ?? {});
 }

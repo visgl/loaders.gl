@@ -9,8 +9,7 @@ import {encode} from '@loaders.gl/core';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 import {ParquetDatasetSource} from '@loaders.gl/tables/parquet-dataset-source';
 import {queryArrowTable} from '@loaders.gl/core/scan/arrow-query';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 test('Arrow and Parquet execute one portable projection, predicate, and limit consistently', async () => {
   const rows = [
@@ -28,11 +27,6 @@ test('Arrow and Parquet execute one portable projection, predicate, and limit co
     name: rows.map(row => row.name),
     score: rows.map(row => row.score)
   });
-  const arrowTable: ArrowTable = {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(arrowData.schema),
-    data: arrowData
-  };
 
   const parquetSource = new ParquetDatasetSource(
     [
@@ -47,8 +41,8 @@ test('Arrow and Parquet execute one portable projection, predicate, and limit co
   }
 
   expect(
-    queryArrowTable(arrowTable, query)
-      .data.toArray()
+    queryArrowTable(arrowData, query)
+      .toArray()
       .map(row => row.toJSON())
   ).toEqual(parquetRows);
   expect(parquetRows).toEqual([{name: 'three'}, {name: 'four'}]);

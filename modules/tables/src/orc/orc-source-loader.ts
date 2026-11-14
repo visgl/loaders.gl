@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {RecordBatch} from 'apache-arrow';
+import type {RecordBatch, Table} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
-import type {ArrowTable, DataType, Field, Schema} from '@loaders.gl/core/schema';
+import type {DataType, Field, Schema} from '@loaders.gl/core/schema';
 import type {
   DataSourceOptions,
   ScanQueryMetadata,
@@ -82,7 +82,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
   }
 
   /** Executes a portable query after decoding the ORC file into an Arrow table. */
-  async query(options: ORCQueryOptions = {}): Promise<ArrowTable> {
+  async query(options: ORCQueryOptions = {}): Promise<Table> {
     throwIfAborted(options.signal);
     const arrayBuffer = await this.getArrayBuffer(options.signal);
     await preloadORCCompression(readORCPostScript(arrayBuffer).compression);
@@ -93,8 +93,8 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
         : file.footer.types[0]?.fieldNames || [],
       options
     );
-    const table = parseORCToArrow(arrayBuffer);
-    const availableColumns = table.data.schema.fields.map(field => field.name);
+    const {data: table} = parseORCToArrow(arrayBuffer);
+    const availableColumns = table.schema.fields.map(field => field.name);
     validateTableQueryOptions(availableColumns, options);
     return queryArrowTable(table, options, (predicate, columns, rowCount) =>
       filterColumnarRowIndices(predicate as never, columns as never, rowCount)
@@ -103,8 +103,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
 
   /** Executes a query as one bounded Arrow batch. */
   async *read(options: ORCQueryOptions = {}): AsyncIterableIterator<RecordBatch> {
-    const table = await this.query(options);
-    const {data} = table;
+    const data = await this.query(options);
     if (data.batches.length) yield* data.batches;
     else yield makeArrowMetadataBatch(data.schema);
   }

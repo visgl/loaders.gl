@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {tableFromIPC, tableToIPC} from 'apache-arrow';
+import {tableFromIPC, tableToIPC, type Table} from 'apache-arrow';
 import type {AsyncDuckDBConnection} from '@duckdb/duckdb-wasm';
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {
   SourceLoader,
   CoreAPI,
@@ -112,8 +112,8 @@ export class DuckDBSQLDataSource extends SQLDataSource {
   }
 
   /** Uploads an Arrow table through IPC. Supported by the browser DuckDB-Wasm adapter. */
-  async insertArrowTable(table: ArrowTable, options: SQLArrowInsertOptions): Promise<void> {
-    await this.insertArrowIPC(tableToIPC(table.data, 'stream'), options);
+  async insertArrowTable(table: Table, options: SQLArrowInsertOptions): Promise<void> {
+    await this.insertArrowIPC(tableToIPC(table, 'stream'), options);
   }
 
   /** Uploads a complete Arrow IPC stream to a browser DuckDB-Wasm table. */
@@ -413,7 +413,7 @@ async function createDuckDBBrowserAdapter(context: SQLAdapterFactoryContext): Pr
     },
     async executeArrow(sqlText: string, options: SQLQueryOptions = {}) {
       const result = await executeDuckDBBrowserQuery(connection, sqlText, options.parameters);
-      return convertArrowToTable(tableFromIPC(result), 'arrow-table');
+      return tableFromIPC(result);
     }
   };
 }

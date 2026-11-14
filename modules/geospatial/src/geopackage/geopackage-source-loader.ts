@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {RecordBatch} from 'apache-arrow';
+import type {RecordBatch, Table} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {
   GetTileParameters,
@@ -22,8 +22,8 @@ import {
   filterColumnarRowIndices,
   validateTableQueryOptions
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
-import {convertArrowToSchema, queryArrowTable} from '@loaders.gl/core/schema-utils';
+import type {Schema} from '@loaders.gl/core/schema';
+import {queryArrowTable} from '@loaders.gl/core/schema-utils';
 import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
 
 import type {GeoPackageLoaderOptions} from './geopackage-loader-types';
@@ -270,13 +270,13 @@ export class GeoPackageDataSource
   }
 
   /** Loads one GeoPackage vector table as an Arrow table. */
-  async getTable(tableName?: string): Promise<ArrowTable> {
+  async getTable(tableName?: string): Promise<Table> {
     const arrayBuffer = await this.getArrayBuffer();
-    return parseGeoPackageToArrow(arrayBuffer, this.getLoaderOptions(tableName));
+    return (await parseGeoPackageToArrow(arrayBuffer, this.getLoaderOptions(tableName))).data;
   }
 
   /** Executes projection, residual predicates, and a global limit on the selected feature table. */
-  async query(options: TableScanReadOptions = {}): Promise<ArrowTable> {
+  async query(options: TableScanReadOptions = {}): Promise<Table> {
     throwIfAborted(options.signal);
     const table = await this.getTable();
     throwIfAborted(options.signal);
@@ -285,8 +285,7 @@ export class GeoPackageDataSource
 
   /** Executes a common table scan as one bounded Arrow batch. */
   async *read(options: TableScanReadOptions = {}): AsyncIterableIterator<RecordBatch> {
-    const table = await this.query(options);
-    const {data} = table;
+    const data = await this.query(options);
     if (data.batches.length) yield* data.batches;
     else yield makeArrowMetadataBatch(data.schema);
   }
@@ -377,13 +376,12 @@ export class GeoPackageDataSource
 }
 
 /** Applies the portable table query to a materialized GeoPackage feature table. */
-function queryGeoPackageTable(table: ArrowTable, options: TableScanReadOptions): ArrowTable {
-  const availableColumns = table.data.schema.fields.map(field => field.name);
+function queryGeoPackageTable(table: Table, options: TableScanReadOptions): Table {
+  const availableColumns = table.schema.fields.map(field => field.name);
   validateTableQueryOptions(availableColumns, options);
-  const queriedTable = queryArrowTable(table, options, (predicate, columns, rowCount) =>
+  return queryArrowTable(table, options, (predicate, columns, rowCount) =>
     filterColumnarRowIndices(predicate as never, columns as never, rowCount)
   );
-  return {...queriedTable, schema: convertArrowToSchema(queriedTable.data.schema)};
 }
 
 function throwIfAborted(signal?: AbortSignal): void {

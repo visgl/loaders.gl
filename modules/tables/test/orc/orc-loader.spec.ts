@@ -33,11 +33,11 @@ test('ORCSource exposes footer metadata and shared projection/limit reads', asyn
   expect(metadata.statistics?.rowCount).toBe(4);
 
   const result = await source.query({columns: ['name'], limit: 1});
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
-  expect(result.data.getChild('name')?.toArray()).toEqual(['a']);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['name']);
+  expect(result.getChild('name')?.toArray()).toEqual(['a']);
 
   const defaultQuery = await source.query({limit: 2});
-  expect(defaultQuery.data.numRows).toBe(2);
+  expect(defaultQuery.numRows).toBe(2);
   const batches = source.read({limit: 1});
   const batch = await batches[Symbol.asyncIterator]().next();
   expect(batch.value?.numRows).toBe(1);
@@ -87,7 +87,7 @@ test('ORCSource applies residual predicates with three-valued semantics', async 
   const result = await source.query({
     predicate: {op: '=', args: [{property: 'name'}, 'a']}
   });
-  expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'a']);
+  expect(result.getChild('name')?.toArray()).toEqual(['a', 'a']);
 });
 
 test('ORCSource validates query limits before decoding rows', async () => {

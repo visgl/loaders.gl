@@ -28,18 +28,15 @@ test.runIf(isBrowser)(
 
 test('GeoPackage source executes projection, residual predicates, and limits', async () => {
   const source = new GeoPackageDataSource(new Blob([]), {geopackage: {}});
-  source.getTable = async () => ({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]})
-  });
+  source.getTable = async () => arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]});
 
   const result = await source.query({
     predicate: {op: '=', args: [{property: 'name'}, 'a']},
     columns: ['value'],
     limit: 1
   });
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['value']);
-  expect(Array.from(result.data.getChild('value')?.toArray() || [])).toEqual([1]);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['value']);
+  expect(Array.from(result.getChild('value')?.toArray() || [])).toEqual([1]);
 
   const batch = await source.read({limit: 2})[Symbol.asyncIterator]().next();
   expect(batch.value?.numRows).toBe(2);
@@ -65,7 +62,7 @@ test.runIf(isBrowser)(
         }
       ]
     });
-    source.getTable = async () => ({shape: 'arrow-table', data: tableData}) as never;
+    source.getTable = async () => tableData;
 
     const metadata = await source.getQueryMetadata();
     expect(metadata.name).toBe('fallback');
@@ -99,7 +96,7 @@ test.runIf(isBrowser)(
         }
       ]
     });
-    source.getTable = async () => ({shape: 'arrow-table', data: tableData}) as never;
+    source.getTable = async () => tableData;
 
     const metadata = await source.getQueryMetadata();
     expect(metadata.name).toBe('identified');
