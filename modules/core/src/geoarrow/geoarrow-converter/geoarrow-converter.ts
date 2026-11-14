@@ -47,12 +47,14 @@ export const GeoArrowTableConverter: Converter<
   GeoArrowConvertFromOptions | GeoArrowConvertToOptions
 > = {
   id: 'geoarrow-table',
+  inputShapePriority: 1,
   from: [
     'geoarrow',
     'object-row-table',
     'array-row-table',
     'columnar-table',
     'geojson-table',
+    'arrow',
     'arrow-table'
   ],
   to: [

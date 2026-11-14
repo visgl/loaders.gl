@@ -25,7 +25,7 @@ export function convertGeoArrow(input: arrow.Table, shape: 'object-row-table'): 
 export function convertGeoArrow(input: arrow.Table, shape: 'columnar-table'): ColumnarTable;
 export function convertGeoArrow(input: arrow.Table, shape: 'geojson-table'): GeoJSONTable;
 export function convertGeoArrow(
-  input: Table,
+  input: Table | arrow.Table,
   shape: 'geoarrow',
   options?: GeoArrowConvertFromOptions
 ): arrow.Table;

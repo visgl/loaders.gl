@@ -4,7 +4,12 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {convert, convertTable, convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {
+  convert,
+  convertTable,
+  convertArrowToSchema,
+  TableConverter
+} from '@loaders.gl/core/schema-utils';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 import {
   GEOARROW_CONVERTERS,
@@ -51,9 +56,17 @@ test.each([
   const converted = convert(table, 'geoarrow', GEOARROW_CONVERTERS) as arrow.Table;
   expect(converted).toBeInstanceOf(arrow.Table);
   expect(converted.numRows).toBe(1);
-  expect(convert(converted, 'arrow', GEOARROW_CONVERTERS)).toBe(converted);
-  const restored = convert(converted, 'geojson-table', GEOARROW_CONVERTERS) as GeoJSONTable;
+  const converters = [TableConverter, ...GEOARROW_CONVERTERS];
+  expect(convert(converted, 'arrow', converters)).toBe(converted);
+
+  const restored = convert(converted, 'geojson-table', converters) as GeoJSONTable;
   expect(restored.features).toEqual(features);
+});
+
+test('plain Arrow reaches GeoArrow conversion without rebuilding columns', () => {
+  const table = arrow.tableFromArrays({identifier: new BigInt64Array([9007199254740993n])});
+  const converters = [TableConverter, ...GEOARROW_CONVERTERS];
+  expect(convert(table, 'geoarrow', converters)).toBe(table);
 });
 
 test.each([
