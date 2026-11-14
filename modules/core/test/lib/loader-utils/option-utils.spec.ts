@@ -100,7 +100,7 @@ test('normalizeOptions covers loader validation, null logging, and fixed base UR
 
   const normalized = normalizeOptions(
     {
-      core: {baseUrl: 'fixed/'},
+      core: {baseUrl: 'fixed/', log: null},
       batch: 2,
       unrelated: {allowed: true},
       example: {removed: true, workerUrl: 'worker.js', unknown: true}

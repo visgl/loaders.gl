@@ -24,7 +24,7 @@ function testLogger(log, logName) {
   expect(() => log.error('message')(), `${logName}.error()`).not.toThrow();
 }
 
-test('operation loggers capture diagnostics and scoped null suppresses a legacy logger', () => {
+test('operation loggers capture diagnostics and scoped null suppresses logging', () => {
   const log = new MemoryLog();
   getLoaderLog({core: {log}}).warn('operation warning')();
   getLoaderLog({core: {log: null}}).warn('suppressed warning')();

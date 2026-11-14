@@ -236,3 +236,26 @@ test('selectLoader#explicit loaders take priority over registered loaders', asyn
     registry.splice(registry.indexOf(registeredLoader), 1);
   }
 });
+
+test('loader selection ignores empty HTTP responses even with a MIME override', async () => {
+  const response = new Response(null, {status: 204});
+  const options = {core: {mimeType: 'image/png'}};
+  expect(selectLoaderSync(response, [ImageLoader], options)).toBeNull();
+  await expect(selectLoader(response, [ImageLoader], options)).resolves.toBeNull();
+});
+
+test('source selection honors an explicit type under core', async () => {
+  const source = {
+    ...JSONTableLoader,
+    type: 'test-source',
+    fromUrl: true,
+    testURL: () => false,
+    createDataSourceSync: () => {
+      throw new Error('selection must not create the source');
+    }
+  };
+  const options = {core: {type: 'test-source', ignoreRegisteredLoaders: true}};
+  await expect(
+    selectLoader('opaque-resource', [JSONTableLoader, source], options, undefined, 'source')
+  ).resolves.toBe(source);
+});
