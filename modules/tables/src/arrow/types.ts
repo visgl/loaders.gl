@@ -8,7 +8,6 @@ export type {
   ArrowFormat,
   ArrowLoaderOptions,
   ArrowLoader,
-  ArrowSourceLoader,
   ArrowTableSource,
   ArrowWriter,
   ArrowWriterOptions,

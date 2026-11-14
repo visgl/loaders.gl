@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {RADFormat} from './splats-format';
 import {
   parseRADChunkHeader,
   tryParseRADHeader,
@@ -24,10 +23,6 @@ import type {GaussianSplats} from './types';
 
 const DEFAULT_RAD_HEADER_BYTE_LENGTHS = [64 * 1024, 256 * 1024, 1024 * 1024];
 const DEFAULT_RAD_MAX_CONCURRENT_CHUNK_REQUESTS = 4;
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Options for creating a Spark RAD source. */
 export type RADSourceLoaderOptions = DataSourceOptions & {
@@ -61,40 +56,19 @@ export type RADChunkTableIteratorOptions = RADChunkRequestOptions & {
   pruneLoadedLoDParents?: boolean;
 };
 
-/** Source factory for Spark `.rad` paged LoD Gaussian splat containers. */
-export const RADSourceLoader = {
-  dataType: null as unknown as RADSource,
-  batchType: null as never,
-  ...RADFormat,
-  name: 'RADSourceLoader',
-  version: VERSION,
-  type: 'rad',
-  fromUrl: true,
-  fromBlob: true,
+/** Default request options for a RAD source. */
+const RAD_SOURCE_DEFAULT_OPTIONS = {
+  rad: {headers: undefined!, withCredentials: false, headerByteLengths: undefined!}
+};
 
-  options: {
-    rad: {
-      headers: undefined!,
-      withCredentials: false,
-      headerByteLengths: undefined!
-    }
-  },
-
-  defaultOptions: {
-    rad: {
-      headers: undefined!,
-      withCredentials: false,
-      headerByteLengths: undefined!
-    }
-  },
-
-  testURL: (url: string): boolean => /\.rad(?:$|[?#])/i.test(url),
-  createDataSourceSync: (
-    data: string | Blob,
-    options: RADSourceLoaderOptions,
-    coreApi?: CoreAPI
-  ): RADSource => new RADSource(data, options, coreApi)
-} as const satisfies SourceLoader<RADSource>;
+/** Opens a RAD source over a URL or Blob. */
+export function createRADSource(
+  data: string | Blob,
+  options: RADSourceLoaderOptions,
+  coreApi?: CoreAPI
+): RADSource {
+  return new RADSource(data, options, coreApi);
+}
 
 /** Runtime source for RAD metadata and chunk-byte access. */
 export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions> {
@@ -107,7 +81,7 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
   private _chunkMetadataPromises: Map<number, Promise<RADChunkMetadata>> = new Map();
 
   constructor(data: string | Blob, options: RADSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(data, options, RADSourceLoader.defaultOptions, coreApi);
+    super(data, options, RAD_SOURCE_DEFAULT_OPTIONS, coreApi);
     this.metadata = this.getMetadata();
   }
 

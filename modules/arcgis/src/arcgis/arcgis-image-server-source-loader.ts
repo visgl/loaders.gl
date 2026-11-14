@@ -23,7 +23,7 @@ import {LERCLoader} from '@loaders.gl/raster';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 
 /** Runtime service loader for synchronous construction. */
-export const ArcGISImageServerSourceLoaderWithParser = {
+export const ArcGISImageServerLoaderWithParser = {
   ...ARCGIS_IMAGE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISImageSource,
   batchType: null as never,

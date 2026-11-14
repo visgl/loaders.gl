@@ -29,7 +29,7 @@ import {ClientExample} from '@site/src/components';
 
 | Type | API |
 | --- | --- |
-| Source loader | [`WMSSourceLoader`](../api-reference/wms-source-loader.md) |
+| Source loader | [`WMSLoader`](../api-reference/wms-source-loader.md) |
 | Loader | [`WMSCapabilitiesLoader`](../api-reference/wms-capabilities-loader.md) |
 | Loader | [`WMSFeatureInfoLoader`](../api-reference/wms-feature-info-loader.md) |
 
@@ -83,15 +83,15 @@ WMS (Web Map Service) is a protocol for serving geo-referenced **map images** ov
 | CRS normalization and axis order | ✅ Supported | Handles the WMS 1.3.0 `EPSG:4326` axis-order change |
 | Server-side styling | ✅ Pass through | Named styles and vendor parameters are sent to the service |
 | Authentication | ✅ Supported | Standard fetch headers, credentials, proxies, and URL parameters |
-| deck.gl rendering | ✅ First class | Pass `WMSSourceLoader` to `SourceLayer` |
+| deck.gl rendering | ✅ First class | Pass `WMSLoader` to `SourceLayer` |
 
 ## Quick start
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync(wmsUrl, [WMSSourceLoader], {
+const source = createDataSourceSync(wmsUrl, [WMSLoader], {
   wms: {
     wmsParameters: {
       version: '1.3.0',

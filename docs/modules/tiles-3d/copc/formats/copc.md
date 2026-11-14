@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| Source loader | [`COPCSourceLoader`](../api-reference/copc-source-loader.md) |
+| Source loader | [`COPCLoader`](../api-reference/copc-source-loader.md) |
 | Writer | [`COPCWriter`](../api-reference/copc-writer.md) |
 
 <CopcDocsTabs active="format" />
@@ -153,7 +153,7 @@ Within a node, layered LAZ stores fields in independent compressed ranges. Posit
 | Point-data range | Contains one independently decodable LAZ chunk for a point-bearing node. |
 | Hierarchy EVLRs | May hold root or child hierarchy pages outside the regular VLR area. |
 
-Each point-bearing hierarchy entry contains `pointDataOffset`, `pointDataLength`, and `pointCount`. `COPCSourceLoader` requests the half-open range `pointDataOffset..pointDataOffset + pointDataLength` and passes the arriving bytes to the TypeScript LAZ decoder.
+Each point-bearing hierarchy entry contains `pointDataOffset`, `pointDataLength`, and `pointCount`. `COPCLoader` requests the half-open range `pointDataOffset..pointDataOffset + pointDataLength` and passes the arriving bytes to the TypeScript LAZ decoder.
 
 ## Implementation
 

@@ -3,7 +3,7 @@ import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
 import {I3SSource} from '@loaders.gl/tiles-3d';
 import {
   ArcGISSceneServerSource,
-  ArcGISSceneServerSourceLoader,
+  ArcGISSceneServerLoader,
   aggregateArcGISSceneFeatures
 } from '@loaders.gl/arcgis/bundled';
 import {expect, test, vi} from 'vitest';
@@ -149,9 +149,9 @@ test('ArcGISSceneServerSource selects I3SSource for Point layers', async () => {
   expect(await source.getTilesetSource()).toBeInstanceOf(I3SSource);
 });
 
-test('ArcGISSceneServerSourceLoader detects SceneServer URLs', () => {
-  expect(ArcGISSceneServerSourceLoader.testURL(`${SCENE_SERVER_URL}/layers/0`)).toBe(true);
-  expect(ArcGISSceneServerSourceLoader.testURL('https://example.com/FeatureServer/0')).toBe(false);
+test('ArcGISSceneServerLoader detects SceneServer URLs', () => {
+  expect(ArcGISSceneServerLoader.testURL(`${SCENE_SERVER_URL}/layers/0`)).toBe(true);
+  expect(ArcGISSceneServerLoader.testURL('https://example.com/FeatureServer/0')).toBe(false);
 });
 
 test('ArcGISSceneServerSource normalizes a trailing slash before query parameters', () => {

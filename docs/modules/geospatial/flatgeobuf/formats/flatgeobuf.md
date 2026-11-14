@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Type | API |
 | --- | --- |
 | Loader | [`FlatGeobufLoader`](../api-reference/flatgeobuf-loader.md) |
-| Source loader | [`FlatGeobufSourceLoader`](../api-reference/flatgeobuf-source-loader.md) |
+| Source loader | [`FlatGeobufLoader`](../api-reference/flatgeobuf-source-loader.md) |
 
 <FlatGeobufDocsTabs active="overview" />
 

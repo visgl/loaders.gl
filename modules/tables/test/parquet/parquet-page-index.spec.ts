@@ -1,3 +1,4 @@
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -9,7 +10,7 @@ import type {ParquetBatch, ParquetSourceMetadata} from '@loaders.gl/tables/parqu
 import type {ParquetSourceLoaderOptions} from '@loaders.gl/tables/parquet/index';
 import {
   ParquetSource,
-  ParquetSourceLoader
+
 } from '@loaders.gl/tables/parquet-source-loader';
 import * as arrow from 'apache-arrow';
 
@@ -364,7 +365,7 @@ function createRemoteSource(
       }
     });
   };
-  return createDataSourceSync(REMOTE_URL, [ParquetSourceLoader], {
+  return createDataSourceSync(REMOTE_URL, [ParquetLoaderWithParser], {
     ...options,
     core: {
       fetch: rangeFetch,

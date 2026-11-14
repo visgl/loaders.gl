@@ -4,26 +4,22 @@
 
 import {describe, expect, test, vi} from 'vitest';
 
-import {STACSource, STACSourceLoaderWithParser} from '../../src/stac/stac-source';
-import {STACSourceLoader} from '../../src/stac/stac-source-loader-types';
+import {STACSource, STACLoaderWithParser} from '../../src/stac/stac-source';
+import {STACLoader} from '../../src/stac/stac-source-loader-types';
 import type {STACItem} from '../../src/stac/stac-types';
 
 const ROOT_URL = 'https://example.test/catalog.json';
 
 describe('STACSource metadata loader', () => {
   test('exposes lightweight metadata and preloads the runtime source', async () => {
-    expect(STACSourceLoader.fromUrl).toBe(true);
-    expect(STACSourceLoader.fromBlob).toBe(false);
-    expect(STACSourceLoader.testURL(ROOT_URL)).toBe(true);
-    expect(STACSourceLoaderWithParser.createDataSourceSync).toBeTypeOf('function');
-    expect(STACSourceLoaderWithParser.createDataSourceSync(ROOT_URL, {})).toBeInstanceOf(
-      STACSource
-    );
-    await expect(STACSourceLoader.preload()).resolves.toBe(STACSourceLoaderWithParser);
-    expect(() => STACSourceLoader.createDataSourceSync(ROOT_URL, {})).toThrow(/createDataSource/);
-    expect(() => STACSourceLoaderWithParser.createDataSourceSync(new Blob(), {})).toThrow(
-      /catalog URL/
-    );
+    expect(STACLoader.fromUrl).toBe(true);
+    expect(STACLoader.fromBlob).toBe(false);
+    expect(STACLoader.testURL(ROOT_URL)).toBe(true);
+    expect(STACLoaderWithParser.createDataSourceSync).toBeTypeOf('function');
+    expect(STACLoaderWithParser.createDataSourceSync(ROOT_URL, {})).toBeInstanceOf(STACSource);
+    await expect(STACLoader.preload()).resolves.toBe(STACLoaderWithParser);
+    expect(() => STACLoader.createDataSourceSync(ROOT_URL, {})).toThrow(/createDataSource/);
+    expect(() => STACLoaderWithParser.createDataSourceSync(new Blob(), {})).toThrow(/catalog URL/);
   });
 });
 

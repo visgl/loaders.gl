@@ -6,7 +6,6 @@ import type {Table as NativeArrowTable} from 'apache-arrow';
 
 import type {
   CoreAPI,
-  SourceLoader,
   VectorTileSource,
   GetTileParameters,
   GetTileDataParameters
@@ -19,7 +18,6 @@ import type {
 } from '@loaders.gl/core/schema';
 import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import type {MLTLoaderOptions} from './mlt-loader';
-import {MLTFormat} from './mlt-format';
 
 export type MLTSourceLoaderOptions = DataSourceOptions &
   MLTLoaderOptions & {
@@ -39,47 +37,25 @@ export type MLTSourceLoaderOptions = DataSourceOptions &
     };
   };
 
-/**
- * Source factory for MapLibre Tile (`.mlt`) tiles
- */
-export const MLTSourceLoader = {
-  dataType: null as unknown as MLTTileSource,
-  batchType: null as never,
-  ...MLTFormat,
-  name: 'MLTTileSource',
-  version: '0.0.0',
-  type: 'mlt',
-  fromUrl: true,
-  fromBlob: false,
+/** Default options for the MLT source. */
+const MLT_SOURCE_DEFAULT_OPTIONS = {
+  mlt: {
+    extension: '.mlt',
+    metadataUrl: null,
+    coordinates: 'wgs84',
+    shape: 'arrow',
+    layers: undefined!
+  }
+} as const;
 
-  options: {
-    mlt: {
-      extension: '.mlt',
-      metadataUrl: null,
-      coordinates: 'wgs84',
-      shape: 'arrow',
-      layers: undefined!
-    }
-  },
-
-  defaultOptions: {
-    mlt: {
-      extension: '.mlt',
-      metadataUrl: null,
-      coordinates: 'wgs84',
-      shape: 'arrow',
-      layers: undefined!
-    }
-  },
-
-  testURL: (url: string): boolean =>
-    url.endsWith('.mlt') || url.endsWith('/plain') || isURLTemplate(url),
-  createDataSourceSync: (
-    url: string,
-    options: MLTSourceLoaderOptions,
-    coreApi?: CoreAPI
-  ): MLTTileSource => new MLTTileSource(url, options, coreApi)
-} as const satisfies SourceLoader<MLTTileSource>;
+/** Creates a reusable MLT source. */
+export function createMLTSource(
+  data: string,
+  options: MLTSourceLoaderOptions,
+  coreApi?: CoreAPI
+): MLTTileSource {
+  return new MLTTileSource(data, options, coreApi);
+}
 
 /**
  * Vector tile source for MapLibre Tile files served by `z/x/y` tile services.
@@ -95,7 +71,7 @@ export class MLTTileSource
   mimeType = 'application/vnd.maplibre-tile';
 
   constructor(url: string, options: MLTSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(url, options, MLTSourceLoader.defaultOptions, coreApi);
+    super(url, options, MLT_SOURCE_DEFAULT_OPTIONS, coreApi);
     this.metadataUrl = this.options.mlt?.metadataUrl || null;
     this.extension = this.options.mlt?.extension || '.mlt';
 

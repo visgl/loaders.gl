@@ -166,7 +166,7 @@ ArcGIS presets live in `@loaders.gl/arcgis/authentication`; other provider prese
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 
 const credentials = [
@@ -176,7 +176,7 @@ const credentials = [
   })
 ];
 
-const source = await createDataSource(featureServerUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(featureServerUrl, ArcGISFeatureServerLoader, {
   core: {credentials}
 });
 const features = await source.getFeatures({layers: ['0']});
@@ -228,11 +228,11 @@ the service is reached through a proxy or another provider host.
 ### Mapbox tiles
 
 ```ts
-import {createDataSourceSync} from '@loaders.gl/core';
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {createDataSource} from '@loaders.gl/core';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {createMapboxCredential} from '@loaders.gl/services';
 
-const source = createDataSourceSync(tileJSONUrl, [MVTSourceLoader], {
+const source = await createDataSource(tileJSONUrl, [MVTLoader], {
   core: {
     credentials: [createMapboxCredential({accessToken: mapboxToken})]
   }

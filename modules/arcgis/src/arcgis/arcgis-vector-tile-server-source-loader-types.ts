@@ -7,18 +7,18 @@ import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISVectorTileServerSource} from './arcgis-vector-tile-server-source-loader';
 import type {ArcGISVectorTileServerSourceLoaderOptions} from '../arcgis-source-types';
 
-/** Loads the ArcGISVectorTileServerSourceLoader implementation on first asynchronous use. */
+/** Loads the ArcGISVectorTileServerLoader implementation on first asynchronous use. */
 async function preloadArcGISVectorTileServerSourceLoader(): Promise<
   SourceLoader<ArcGISVectorTileServerSource>
 > {
-  const {ArcGISVectorTileServerSourceLoaderWithParser} = await import(
+  const {ArcGISVectorTileServerLoaderWithParser} = await import(
     '@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader'
   );
-  return ArcGISVectorTileServerSourceLoaderWithParser;
+  return ArcGISVectorTileServerLoaderWithParser;
 }
 
 /** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
-export const ArcGISVectorTileServerSourceLoader = {
+export const ArcGISVectorTileServerLoader = {
   ...ARCGIS_VECTOR_TILE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISVectorTileServerSource,
   batchType: null as never,
@@ -30,7 +30,7 @@ export const ArcGISVectorTileServerSourceLoader = {
     _coreApi?: CoreAPI
   ): ArcGISVectorTileServerSource {
     throw new Error(
-      'ArcGISVectorTileServerSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISVectorTileServerLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISVectorTileServerSource>;

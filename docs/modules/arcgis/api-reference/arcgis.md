@@ -73,12 +73,12 @@ The package root exports lightweight loaders for async `createDataSource()` and 
 
 | Source class | Source loader | Documentation |
 | --- | --- | --- |
-| `ArcGISVectorSource` | `ArcGISFeatureServerSourceLoader` | [FeatureServer](../arcgis-feature-server) |
-| `ArcGISImageSource` | `ArcGISImageServerSourceLoader` | [ImageServer](../arcgis-image-server) |
-| `ArcGISImageTileSource` | `ArcGISImageTileSourceLoader` | [ImageServer tiles](../arcgis-image-server#image-tiles) |
-| `ArcGISMapTileSource` | `ArcGISMapTileSourceLoader` | [MapServer](../arcgis-map-server) |
-| `ArcGISVectorTileServerSource` | `ArcGISVectorTileServerSourceLoader` | [VectorTileServer](../arcgis-vector-tile-server) |
-| `ArcGISSceneServerSource` | `ArcGISSceneServerSourceLoader` | [SceneServer](../arcgis-scene-server) |
+| `ArcGISVectorSource` | `ArcGISFeatureServerLoader` | [FeatureServer](../arcgis-feature-server) |
+| `ArcGISImageSource` | `ArcGISImageServerLoader` | [ImageServer](../arcgis-image-server) |
+| `ArcGISImageTileSource` | `ArcGISImageTileLoader` | [ImageServer tiles](../arcgis-image-server#image-tiles) |
+| `ArcGISMapTileSource` | `ArcGISMapTileLoader` | [MapServer](../arcgis-map-server) |
+| `ArcGISVectorTileServerSource` | `ArcGISVectorTileServerLoader` | [VectorTileServer](../arcgis-vector-tile-server) |
+| `ArcGISSceneServerSource` | `ArcGISSceneServerLoader` | [SceneServer](../arcgis-scene-server) |
 
 ## Discovery exports
 

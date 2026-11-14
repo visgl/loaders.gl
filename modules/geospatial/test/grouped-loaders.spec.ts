@@ -80,8 +80,6 @@ test('grouped source entry points preserve format source APIs', async () => {
     import('@loaders.gl/geospatial/geopackage-source-loader'),
     import('@loaders.gl/geospatial/geopackage')
   ]);
-  expect(flatgeobuf.FlatGeobufSourceLoader).toBe(formatFlatgeobuf.FlatGeobufSourceLoader);
   expect(flatgeobuf.FlatGeobufVectorSource).toBe(formatFlatgeobuf.FlatGeobufVectorSource);
-  expect(geopackage.GeoPackageSource).toBe(formatGeopackage.GeoPackageSource);
   expect(geopackage.GeoPackageDataSource).toBe(formatGeopackage.GeoPackageDataSource);
 });

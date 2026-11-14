@@ -5,7 +5,6 @@
 import type {GeoArrowEncodingPreference, Schema} from '@loaders.gl/core/schema';
 import type {
   CoreAPI,
-  SourceLoader,
   VectorTile,
   VectorTileSource,
   GetTileParameters,
@@ -24,7 +23,6 @@ import {
 import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
 import {MLTLoader, MLTLoaderOptions} from '@loaders.gl/tiles/mlt';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/tiles/mvt';
-import {PMTilesFormat} from './pmtiles-format';
 
 import * as pmtiles from 'pmtiles';
 const {PMTiles} = pmtiles;
@@ -33,8 +31,6 @@ import type {PMTilesMetadata} from './lib/parse-pmtiles';
 import {parsePMTilesHeader} from './lib/parse-pmtiles';
 import {BlobSource} from './lib/blob-source';
 import {RangeRequestSource} from './lib/range-request-source';
-
-const VERSION = '1.0.0';
 
 /** Range request options for PMTiles URL sources. */
 export type PMTilesRangeRequestOptions = RangeRequestSchedulerProps & {
@@ -62,35 +58,14 @@ export type PMTilesSourceLoaderOptions = DataSourceOptions &
     rangeRequests?: PMTilesRangeRequestOptions;
   };
 
-/**
- * Creates vector tile data sources for PMTiles urls or blobs
- */
-export const PMTilesSourceLoader = {
-  dataType: null as unknown as PMTilesTileSource,
-  batchType: null as never,
-  ...PMTilesFormat,
-  version: VERSION,
-  type: 'pmtiles',
-  fromUrl: true,
-  fromBlob: true,
-
-  options: {
-    pmtiles: {
-      shape: 'arrow'
-    }
-  },
-
-  defaultOptions: {
-    pmtiles: {}
-  },
-
-  testURL: (url: string) => url.endsWith('.pmtiles'),
-  createDataSourceSync: (
-    url: string | Blob,
-    options: PMTilesSourceLoaderOptions,
-    coreApi?: CoreAPI
-  ) => new PMTilesTileSource(url, options, coreApi)
-} as const satisfies SourceLoader<PMTilesTileSource>;
+/** Creates a reusable PMTiles source over a URL or Blob. */
+export function createPMTilesSource(
+  data: string | Blob,
+  options: PMTilesSourceLoaderOptions,
+  coreApi?: CoreAPI
+): PMTilesTileSource {
+  return new PMTilesTileSource(data, options, coreApi);
+}
 
 /**
  * A PMTiles data source
@@ -107,7 +82,7 @@ export class PMTilesTileSource
   private tileBatchTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(data: string | Blob, options: PMTilesSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(data, options, PMTilesSourceLoader.defaultOptions, coreApi);
+    super(data, options, {pmtiles: {}}, coreApi);
     const rangeRequestOptions = options.rangeRequests;
     const urlOrBlob =
       typeof data === 'string'

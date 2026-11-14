@@ -1,5 +1,5 @@
 ---
-title: WMSSourceLoader
+title: WMSLoader
 description: Discover WMS capabilities and request georeferenced map images through a typed source.
 hide_title: true
 page_style: designed
@@ -12,7 +12,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="wms"
   eyebrow="WMS source"
   title="Treat a map service as a queryable image source."
-  description="WMSSourceLoader discovers service capabilities, validates request parameters, and returns typed map images or feature information through the common source interface."
+  description="WMSLoader discovers service capabilities, validates request parameters, and returns typed map images or feature information through the common source interface."
   tone="mint"
   meta={['Capabilities', 'GetMap', 'ImageService']}
   links={[
@@ -39,11 +39,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 </p>
 
 
-The `WMSSourceLoader` class helps applications interact with a WMS service (discover its capabilities, request map images and information about geospatial features, etc).
+The `WMSLoader` class helps applications interact with a WMS service (discover its capabilities, request map images and information about geospatial features, etc).
 
-The `WMSSourceLoader` provides a type safe API that forms valid WMS URLs and issues requests, handles WMS version differences and edge cases under the hood and parses results and errors into strongly typed JavaScript objects.
+The `WMSLoader` provides a type safe API that forms valid WMS URLs and issues requests, handles WMS version differences and edge cases under the hood and parses results and errors into strongly typed JavaScript objects.
 
-The `WMSSourceLoader` implements the `ImageService` interface, allowing WMS services to be used as one interchangeable source of asynchronously generated map image data.
+The `WMSLoader` implements the `ImageService` interface, allowing WMS services to be used as one interchangeable source of asynchronously generated map image data.
 
 <ReferenceBoundary
   title="WMS source methods"
@@ -53,10 +53,10 @@ The `WMSSourceLoader` implements the `ImageService` interface, allowing WMS serv
 
 ## Usage
 
-A `WMSSourceLoader` instance provides type safe methods to send requests to a WMS service and parse the responses:
+A `WMSLoader` instance provides type safe methods to send requests to a WMS service and parse the responses:
 
 ```typescript
-const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSSourceLoader], {
+const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSLoader], {
   wmsParameters: {layers: ['oms']}
 });
 const mapImage = await wmsService.getMap({
@@ -70,7 +70,7 @@ const mapImage = await wmsService.getMap({
 Capabilities metadata can be queried:
 
 ```typescript
-const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSSourceLoader]);
+const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSLoader]);
 const capabilities = await wmsService.getCapabilities({});
 // Check capabilities
 ```
@@ -79,7 +79,7 @@ The WMS version as well as other default WMS parameters can be specified in the 
 
 ```typescript
 // Specify the older 1.1.1 version (1.3.0 is the default)
-const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSSourceLoader], {
+const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSLoader], {
   wms: {wmsParameters: {version: '1.1.1', layers: ['oms']}}
 });
 const getMap = await wmsService.getMap({
@@ -92,10 +92,10 @@ const getMap = await wmsService.getMap({
 For shared loading controls and parser configuration, see
 [Source options](/docs/developer-guide/using-sources#options).
 
-For special use cases, is possible to use the `WMSSourceLoader` to just generate URLs, so that the application issue its own requests and parse responses.
+For special use cases, is possible to use the `WMSLoader` to just generate URLs, so that the application issue its own requests and parse responses.
 
 ```typescript
-const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSSourceLoader]);
+const wmsService = createDataSourceSync(WMS_SERVICE_URL, [WMSLoader]);
 const getMapUrl = await wmsService.getMapURL({
   width: 800,
   height: 600,
@@ -222,7 +222,7 @@ export type WMSGetLegendGraphicParameters = {};
 
 ## Limitations
 
-The `WMSSourceLoader` only supports WMS URL parameters generation and HTTP GET requests against a WMS server. The OGC WMS standard also allows WMS services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported.
+The `WMSLoader` only supports WMS URL parameters generation and HTTP GET requests against a WMS server. The OGC WMS standard also allows WMS services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported.
 
 `getImage` accepts canonical x/y bounds and forwards its AbortSignal to GetMap.
 `getMap`, `getFeatureInfo`, and `getFeatureInfoText` also accept an optional third

@@ -20,7 +20,6 @@ import {
   LANCE_SOURCE_CAPABILITIES,
   type LanceSourceCapabilities
 } from '../../src/lance/lance-source-capabilities';
-import {LanceSourceLoader} from '../../src/lance/lance-source-loader';
 import {
   readLanceRemoteCoordinatesToArrow,
   readLanceRemoteFileToArrow
@@ -86,9 +85,9 @@ const COORDINATE_FILE_FIXTURE = createCoordinateFileFixture();
 test('Lance scaffold exposes read-only metadata', () => {
   expect(LanceFormat.format).toBe('lance');
   expect(LanceLoader.id).toBe('lance');
-  expect(LanceSourceLoader.type).toBe('lance');
-  expect(LanceSourceLoader.fromUrl).toBe(true);
-  expect(LanceSourceLoader.fromBlob).toBe(true);
+  expect(LanceLoaderWithParser.type).toBe('lance');
+  expect(LanceLoaderWithParser.fromUrl).toBe(true);
+  expect(LanceLoaderWithParser.fromBlob).toBe(true);
 });
 
 test('Lance scaffold advertises deferred capabilities', () => {
@@ -126,7 +125,7 @@ test('Lance MVP decodes length-prefixed manifest sections', () => {
 });
 
 test('Lance MVP caches Blob manifest metadata', async () => {
-  const source = LanceSourceLoader.createDataSourceSync(new Blob([MANIFEST_FIXTURE]), {});
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([MANIFEST_FIXTURE]), {});
   const firstMetadata = await source.getMetadata();
   const secondMetadata = await source.getMetadata();
 
@@ -259,7 +258,7 @@ test('Lance loader returns an Arrow table for a flat Lance file', async () => {
 });
 
 test('Lance source emits an Arrow batch for a flat Lance file', async () => {
-  const source = LanceSourceLoader.createDataSourceSync(new Blob([FLAT_FILE_FIXTURE]), {
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([FLAT_FILE_FIXTURE]), {
     lance: {columnTypes: ['int32'], columnNames: ['id']}
   });
   const batches = [];
@@ -284,7 +283,7 @@ test('Lance loader emits Arrow batches from an input iterator', async () => {
 });
 
 test('Lance source reads file metadata directly from a Blob', async () => {
-  const source = LanceSourceLoader.createDataSourceSync(new Blob([FILE_FIXTURE]), {});
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([FILE_FIXTURE]), {});
   const metadata = await source.getFileMetadata();
 
   expect(metadata.majorVersion).toBe(2);
@@ -292,10 +291,11 @@ test('Lance source reads file metadata directly from a Blob', async () => {
 });
 
 test('Lance source loader identifies dataset and data-file URLs', async () => {
-  expect(LanceSourceLoader.testURL('https://example.com/table.lance')).toBe(true);
-  expect(LanceSourceLoader.testURL('https://example.com/table.lance/data/part.lance')).toBe(true);
-  expect(LanceSourceLoader.testURL('https://example.com/table.parquet')).toBe(false);
-  await expect(LanceSourceLoader.preload()).resolves.toBe(LanceSourceLoader);
+  expect(LanceLoaderWithParser.testURL('https://example.com/table.lance')).toBe(true);
+  expect(LanceLoaderWithParser.testURL('https://example.com/table.lance/data/part.lance')).toBe(
+    true
+  );
+  expect(LanceLoaderWithParser.testURL('https://example.com/table.parquet')).toBe(false);
 });
 
 test('Lance scaffold uses an explicit decoder error', async () => {

@@ -161,7 +161,7 @@ _Supersedes the unpublished beta.3 release tag._
 
 ### v5.0.0-alpha.7
 
-- feat(mvt): add ArrowTableTileSourceLoader for Arrow input and GeoArrow WKB tiles with zero-copy attribute selection
+- feat(mvt): add ArrowTableTileLoader for Arrow input and GeoArrow WKB tiles with zero-copy attribute selection
 
 - feat(arrow): make NDGeoJSON, Chrome Trace, and GML loaders Arrow-primary while retaining explicit legacy output shapes
 
@@ -489,7 +489,7 @@ See `4.3-release` branch for additional CHANGELOGS
 ### v4.3.0-alpha.3
 
 - fix(i3s): slpk full path on Windows (#3011)
-- feat(mvt): TableTileSourceLoader refactor, improved typing (#2990)
+- feat(mvt): TableTileLoader refactor, improved typing (#2990)
 - chore: Cleanup of Source parameters (#3015)
 - fix(csv): move d3-dsv from devDependencies to dependencies (#3009)
 - fix(loader-utils): add missing dependency for @probe.gl/log (#3008)
@@ -510,7 +510,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - chore: update yarn and docusaurus deps (#2994)
 - example: TileSourceLayer can now render MVTLayer (#2992)
 - feat(parquet): Adopt new parquet-wasm File reader API. (#2987)
-- feat(mvt): TableTileSourceLoader uses probe.gl Stats and Log (#2989)
+- feat(mvt): TableTileLoader uses probe.gl Stats and Log (#2989)
 - feat(mvt): Add WGS84 support to GeoJSONTileSource (#2977)
 - fix(zip): zip optimization for range requests (#2983)
 - chore: Bump ocular-dev-tools@alpha.31 (#2988)
@@ -527,7 +527,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - chore(mvt): loader and source cleanup (#2975)
 - feat(parquet): support 'limit' option (#2973)
 - chore(mvt): Deduplicate vector tile code (#2974)
-- feat(mvt): TableTileSourceLoader (#2969)
+- feat(mvt): TableTileLoader (#2969)
 - chore(mvt): refactor for clarity (#2971)
 - docs: v4.2 release notes (#2963)
 
@@ -862,7 +862,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - feat(gltf): added support of arrays to ext-feature-metadata (#2663)
 - feat(mvt): Add TileJSONLoader (#2666)
 - feat(pmtiles): Create PMTileSource from Blob (#2668)
-- feat(wms): Separate WMSSourceLoader and WMSService (#2667)
+- feat(wms): Separate WMSLoader and WMSService (#2667)
 - fix: remove unused ts directive (#2665)
 - Move master to 4.0-beta tags (#2661)
 - feat(pmtools): Add vector tile support (#2664)

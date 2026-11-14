@@ -33,6 +33,11 @@ async function preload() {
 
 /** Metadata-only ArrowJS table loader. */
 export const ArrowLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.(?:arrow|feather|ipc)(?:$|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: true,
+  type: 'arrow',
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   dataType: null as unknown as Table | NativeArrowTable,

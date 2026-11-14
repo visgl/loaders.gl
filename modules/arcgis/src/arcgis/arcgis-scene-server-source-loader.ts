@@ -192,7 +192,7 @@ export class ArcGISSceneServerSource extends DataSource<string, ArcGISSceneServe
 }
 
 /** Runtime service loader for synchronous construction. */
-export const ArcGISSceneServerSourceLoaderWithParser = {
+export const ArcGISSceneServerLoaderWithParser = {
   ...ARCGIS_SCENE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISSceneServerSource,
   batchType: null as never,

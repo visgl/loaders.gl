@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| Source loader | `WMTSSourceLoader` |
+| Source loader | `WMTSLoader` |
 | Loader | [`WMTSCapabilitiesLoader`](../api-reference/wmts-capability-loader.md) |
 
 <DocLiveExample label="WMTS tile service example" height="440px">
@@ -50,7 +50,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-WMTS serves map imagery on discrete, advertised tile matrix sets. `WMTSSourceLoader` implements a
+WMTS serves map imagery on discrete, advertised tile matrix sets. `WMTSLoader` implements a
 loaders.gl `TileSource` and negotiates the layer, style, format, and grid from capabilities.
 
 <ReferenceBoundary
@@ -110,9 +110,9 @@ metadata constraints explicit; **Not implemented** marks features that need addi
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
   wmts: {
     layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
     tileMatrixSet: 'GoogleMapsCompatible_Level9',
@@ -148,7 +148,7 @@ rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
 ```ts
 import {getTileBounds} from '@math.gl/geospatial';
 
-const source = createDataSourceSync(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
   // A UTM matrix set: one CRS unit is one meter.
   wmts: {layer: 'orthophoto', tileMatrixSet: 'utm18n', metersPerUnit: 1}
 });
@@ -168,12 +168,12 @@ legacy rule is kept for compatibility.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 
 const layer = new SourceLayer({
   id: 'satellite-imagery',
   data: wmtsUrl,
-  loaders: [WMTSSourceLoader],
+  loaders: [WMTSLoader],
   sourceOptions: {
     wmts: {layer: layerId, tileMatrixSet: matrixSetId}
   }
@@ -187,7 +187,7 @@ const layer = new SourceLayer({
 ## Configure from capabilities
 
 ```ts
-const source = createDataSourceSync(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
   wmts: {
     capabilitiesUrl,
     layer: 'imagery',

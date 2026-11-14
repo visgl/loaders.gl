@@ -4,6 +4,7 @@
 
 import type {TypedArray, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
+import type {GeoTIFFSourceLoaderOptions} from './geotiff-source-loader';
 import {GeoTIFFFormat} from './geotiff-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -23,9 +24,7 @@ type GeoTIFFData = {
 
 /** GeoTIFF load options */
 export type GeoTIFFLoaderOptions = LoaderOptions & {
-  geotiff?: {
-    enableAlpha: boolean;
-  };
+  geotiff?: GeoTIFFSourceLoaderOptions['geotiff'] & {enableAlpha?: boolean};
 };
 
 /** Preloads the parser-bearing GeoTIFF loader implementation. */
@@ -36,6 +35,16 @@ async function preload() {
 
 /** Metadata-only GeoTIFF loader. */
 export const GeoTIFFLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => {
+    if (/\.ome\.tiff?(?:$|[?#])/i.test(url)) {
+      return false;
+    }
+    return /\.(?:geotiff?|tiff?)(?:$|[?#])/i.test(url);
+  },
+  fromUrl: true,
+  fromBlob: true,
+  type: 'geotiff',
   dataType: null as unknown as GeoTIFFData,
   batchType: null as never,
 

@@ -87,7 +87,7 @@ export type GeoZarrSourceMetadata = RasterSourceMetadata & {
   registration: 'pixel' | 'node';
 };
 
-/** Options for {@link GeoZarrSourceLoader}. */
+/** Options for {@link GeoZarrLoader}. */
 export type GeoZarrSourceLoaderOptions = ZarrSourceLoaderOptions & {
   /** GeoZarr and CF data-variable options. */
   geozarr?: {
@@ -136,12 +136,12 @@ type PixelWindow = {
 };
 
 /** Source factory for GeoZarr and regular CF/xarray Zarr raster arrays. */
-export const GeoZarrSourceLoaderWithParser = {
+export const GeoZarrLoaderWithParser = {
   dataType: null as unknown as GeoZarrRasterSource,
   /** Runtime source type marker used by `createDataSource()` type inference. */
   dataSource: null as unknown as GeoZarrRasterSource,
   batchType: null as never,
-  name: 'GeoZarrSourceLoader',
+  name: 'GeoZarrLoader',
   id: 'geozarr',
   module: 'scientific',
   version: VERSION,

@@ -48,7 +48,7 @@ Support for reading and packaging tiled data in [PMTiles](/docs/modules/tiles/pm
 
 | API | Description |
 | ------ | ----------- |
-| [`PMTilesSourceLoader`](/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader) | Loads tiled data from PMTiles archives. |
+| [`PMTilesLoader`](/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader) | Loads tiled data from PMTiles archives. |
 | [`PMTilesWriter`](/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer) / `encodePMTiles` | Packages existing MVT, MLT and raster tile payloads into bounded PMTiles v3 archives. From v5.0. |
 | [`encodeGeoArrowPMTiles`](/docs/modules/tiles/pmtiles/api-reference/geoarrow-pmtiles) | Reuses the GeoArrow tiler and MVT/MLT writers for bounded selected-tile authoring. From v5.0. |
 | [`encodeRasterPMTiles`](/docs/modules/tiles/pmtiles/api-reference/raster-pmtiles) | Exports selected byte-imagery regions as PNG tiles, reusing numeric raster sources and the shared sampler. From v5.0. |

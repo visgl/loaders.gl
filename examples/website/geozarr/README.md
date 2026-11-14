@@ -4,7 +4,7 @@ Explore GeoZarr raster sources with deck.gl.
 
 Supported formats: GeoZarr, Zarr.
 
-Interactive `SourceLayer` + `GeoZarrSourceLoader` demo that:
+Interactive `SourceLayer` + `GeoZarrLoader` demo that:
 
 - reads NASA POWER's public one-degree monthly climatology Zarr store directly from S3;
 - selects one month or the annual mean from the non-spatial `time` dimension;

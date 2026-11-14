@@ -89,14 +89,14 @@ export type {
 export {
   loadZarr,
   ZarrPixelSource,
-  OMEZarrSourceLoader,
+  OMEZarrLoader,
   OMEZarrImageSource,
   loadZarrConsolidatedMetadata,
-  GeoZarrSourceLoader,
+  GeoZarrLoader,
   GeoZarrRasterSource,
-  ZarrArraySourceLoader,
+  ZarrArrayLoader,
   ZarrArraySource,
-  SpatialDataSourceLoader,
+  SpatialDataLoader,
   SpatialDataSource
 } from '@loaders.gl/scientific/zarr';
 export type {

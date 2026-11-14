@@ -96,7 +96,6 @@ export {
   SPZLoader,
   RADLoader,
   RADSource,
-  RADSourceLoader,
   resolveRADChunkUrl
 } from '@loaders.gl/splats';
 export type {

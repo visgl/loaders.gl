@@ -44,13 +44,13 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
   tone="yellow"
 />
 
-`GeoPackageSource` is available from `@loaders.gl/geospatial/geopackage`. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
+Use `GeoPackageLoader` to open a reusable GeoPackage source. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
 
 ```typescript
 import {createDataSourceSync} from '@loaders.gl/core';
-import {GeoPackageSource} from '@loaders.gl/geospatial/geopackage';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage-loader';
 
-const dataSource = createDataSourceSync(url, [GeoPackageSource], {geopackage: {}});
+const dataSource = createDataSourceSync(url, [GeoPackageLoaderWithParser], {geopackage: {}});
 const metadata = await dataSource.getMetadata();
 const table = await dataSource.getTable(metadata.tables[0]?.name);
 ```

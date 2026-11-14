@@ -7,10 +7,10 @@ import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
 import {fetchFile} from '@loaders.gl/core';
 import {
   GeoTIFFRasterSource,
-  GeoTIFFSourceLoader,
   OMETiffImageSource,
-  OMETiffSourceLoader
+  OMETiffLoader
 } from '@loaders.gl/raster/geotiff/index';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';
 import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/core/loader-utils';
 import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
 
@@ -48,10 +48,10 @@ async function readFixtureBytes(url: string): Promise<Uint8Array> {
   return new Uint8Array(await response.arrayBuffer());
 }
 
-test('createDataSource selects GeoTIFFSourceLoader from URL', () => {
+test('createDataSource selects GeoTIFFLoaderWithParser from URL', () => {
   const dataSource = createDataSourceSync(
     'https://example.com/dataset.tif',
-    [GeoTIFFSourceLoader],
+    [GeoTIFFLoaderWithParser],
     {
       geotiff: {}
     }
@@ -60,27 +60,31 @@ test('createDataSource selects GeoTIFFSourceLoader from URL', () => {
   expect(dataSource).toBeInstanceOf(GeoTIFFRasterSource);
 });
 
-test('createDataSource selects GeoTIFFSourceLoader from explicit core.type', () => {
-  const dataSource = createDataSourceSync(new Blob([new Uint8Array([0])]), [GeoTIFFSourceLoader], {
-    core: {type: 'geotiff'},
-    geotiff: {}
-  });
+test('createDataSource selects GeoTIFFLoaderWithParser from explicit core.type', () => {
+  const dataSource = createDataSourceSync(
+    new Blob([new Uint8Array([0])]),
+    [GeoTIFFLoaderWithParser],
+    {
+      core: {type: 'geotiff'},
+      geotiff: {}
+    }
+  );
 
   expect(dataSource).toBeInstanceOf(GeoTIFFRasterSource);
 });
 
-test('createDataSource selects OMETiffSourceLoader from URL ahead of GeoTIFFSourceLoader', () => {
+test('createDataSource selects OMETiffLoader from URL ahead of GeoTIFFLoaderWithParser', () => {
   const dataSource = createDataSourceSync(
     'https://example.com/multi-channel.ome.tif',
-    [GeoTIFFSourceLoader, OMETiffSourceLoader],
+    [GeoTIFFLoaderWithParser, OMETiffLoader],
     {geotiff: {}, ometiff: {}}
   );
 
   expect(dataSource).toBeInstanceOf(OMETiffImageSource);
 });
 
-test('createDataSource selects OMETiffSourceLoader from explicit core.type', () => {
-  const dataSource = createDataSourceSync(new Blob([new Uint8Array([0])]), [OMETiffSourceLoader], {
+test('createDataSource selects OMETiffLoader from explicit core.type', () => {
+  const dataSource = createDataSourceSync(new Blob([new Uint8Array([0])]), [OMETiffLoader], {
     core: {type: 'ometiff'},
     ometiff: {}
   });

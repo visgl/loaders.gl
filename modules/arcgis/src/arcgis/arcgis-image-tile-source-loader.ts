@@ -169,7 +169,7 @@ export class ArcGISImageTileSource
 }
 
 /** Runtime service loader for synchronous construction. */
-export const ArcGISImageTileSourceLoaderWithParser = {
+export const ArcGISImageTileLoaderWithParser = {
   ...ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISImageTileSource,
   batchType: null as never,

@@ -6,7 +6,11 @@ import type {LoaderWithParser, LoaderOptions, ReadableFile} from '@loaders.gl/co
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 
 import {VectorSourceInfo, ImageSourceInfo} from './source-info';
-import {PMTilesTileSource, PMTilesSourceLoaderOptions} from './pmtiles-source-loader';
+import {
+  createPMTilesSource,
+  PMTilesTileSource,
+  PMTilesSourceLoaderOptions
+} from './pmtiles-source-loader';
 import {PMTilesLoader as PMTilesLoaderMetadata} from './pmtiles-loader';
 
 const {preload: _PMTilesLoaderPreload, ...PMTilesLoaderMetadataWithoutPreload} =
@@ -19,9 +23,10 @@ export type PMTilesLoaderOptions = LoaderOptions & {
 /**
  * Loader for PMTiles metadata
  * @note This loader is intended to allow PMTiles to be treated like other file types in top-level loading logic.
- * @note For actual access to the tile data, use the PMTilesSourceLoader class.
+ * @note Use createDataSource() with PMTilesLoader for repeated tile requests.
  */
 export const PMTilesLoaderWithParser = {
+  createDataSourceSync: createPMTilesSource,
   ...PMTilesLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: PMTilesLoaderOptions) =>
     parseFileAsPMTiles(new BlobFile(new Blob([arrayBuffer])), options),

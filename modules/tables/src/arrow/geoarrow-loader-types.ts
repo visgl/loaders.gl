@@ -28,9 +28,17 @@ async function preload() {
   return GeoArrowLoaderWithParser;
 }
 
+const {
+  testURL: _testURL,
+  fromUrl: _fromUrl,
+  fromBlob: _fromBlob,
+  type: _type,
+  ...arrowParserMetadata
+} = ArrowLoader;
+
 /** Metadata-only GeoArrow loader. */
 export const GeoArrowLoader = {
-  ...ArrowLoader,
+  ...arrowParserMetadata,
   batchType: null as unknown as ArrowTableBatch | RecordBatch,
   dataType: null as unknown as ArrowTable | GeoJSONTable | NativeArrowTable,
   format: 'geoarrow',

@@ -36,13 +36,20 @@ export const LANCE_LOADER_OPTIONS = {
 } as const;
 
 /** Preloads the parser-bearing Lance loader implementation. */
-async function preloadLanceLoader() {
+async function preloadLanceLoader(): Promise<
+  typeof import('./lance-loader').LanceLoaderWithParser
+> {
   const {LanceLoaderWithParser} = await import('@loaders.gl/tables/lance-loader');
   return LanceLoaderWithParser;
 }
 
 /** Metadata-only read-only Lance table loader. */
 export const LanceLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /(?:\.lance|\.lance\/)(?:$|[?#/])/i.test(url),
+  fromUrl: true,
+  fromBlob: true,
+  type: 'lance',
   ...LanceFormat,
   dataType: null as unknown as Table,
   batchType: null as unknown as RecordBatch,

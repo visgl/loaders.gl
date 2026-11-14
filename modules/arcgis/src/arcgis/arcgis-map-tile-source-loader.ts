@@ -235,7 +235,7 @@ function getWebMercatorTileBounds(parameters: GetTileParameters): [number, numbe
 }
 
 /** Runtime service loader for synchronous construction. */
-export const ArcGISMapTileSourceLoaderWithParser = {
+export const ArcGISMapTileLoaderWithParser = {
   ...ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISMapTileSource,
   batchType: null as never,

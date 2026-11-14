@@ -23,8 +23,7 @@ import type {
   NumericRasterData,
   RasterSource,
   RasterSourceMetadata,
-  RasterViewport,
-  SourceLoader
+  RasterViewport
 } from '@loaders.gl/core/loader-utils';
 import {sampleRaster, computeRasterStatistics} from '@loaders.gl/core/loader-utils';
 import {RasterSet, type RasterSetRequest} from '@loaders.gl/tiles';
@@ -69,7 +68,7 @@ export type RasterSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders
   /** Raster source runtime, URL, or Blob. */
   data: RasterSource | string | Blob;
   /** Parser loaders and SourceLoaders used to resolve URL/Blob inputs. */
-  loaders?: ReadonlyArray<Loader | SourceLoader>;
+  loaders?: ReadonlyArray<Loader>;
   /** Options forwarded to source construction. */
   sourceOptions?: DataSourceOptions;
   /** Optional metadata already loaded by a parent SourceLayer. */

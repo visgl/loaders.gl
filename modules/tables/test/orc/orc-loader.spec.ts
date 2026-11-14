@@ -7,12 +7,7 @@ import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompressor} from '@loaders.gl/compression/snappy-compressor';
 import {ORCLoaderWithParser} from '../../src/orc/orc-loader';
-import {
-  createORCSchema,
-  getORCDataType,
-  ORCSource,
-  ORCSourceLoaderWithParser
-} from '../../src/orc/orc-source-loader';
+import {createORCSchema, getORCDataType, ORCSource} from '../../src/orc/orc-source-loader';
 import {ORCTypeKind} from '../../src/orc/lib/parsers/parse-orc';
 import {ORCWriter} from '../../src/orc/orc-writer';
 import {encodeORC} from '../../src/orc/lib/encoders/encode-orc';
@@ -44,9 +39,9 @@ test('ORCSource exposes footer metadata and shared projection/limit reads', asyn
 });
 
 test('ORC source loader exposes explicit parser entry points', () => {
-  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
-  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
-  expect(ORCSourceLoaderWithParser.createDataSourceSync(new Blob())).toBeInstanceOf(ORCSource);
+  expect(ORCLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
+  expect(ORCLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
+  expect(ORCLoaderWithParser.createDataSourceSync(new Blob())).toBeInstanceOf(ORCSource);
 });
 
 test('ORC metadata preserves nested map and struct types', () => {

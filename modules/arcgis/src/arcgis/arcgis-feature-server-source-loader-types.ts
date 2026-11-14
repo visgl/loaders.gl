@@ -7,16 +7,16 @@ import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISVectorSource} from './arcgis-feature-server-source-loader';
 import type {ArcGISFeatureServerSourceLoaderOptions} from '../arcgis-source-types';
 
-/** Loads the ArcGISFeatureServerSourceLoader implementation on first asynchronous use. */
+/** Loads the ArcGISFeatureServerLoader implementation on first asynchronous use. */
 async function preloadArcGISFeatureServerSourceLoader(): Promise<SourceLoader<ArcGISVectorSource>> {
-  const {ArcGISFeatureServerSourceLoaderWithParser} = await import(
+  const {ArcGISFeatureServerLoaderWithParser} = await import(
     '@loaders.gl/arcgis/arcgis-feature-server-source-loader'
   );
-  return ArcGISFeatureServerSourceLoaderWithParser;
+  return ArcGISFeatureServerLoaderWithParser;
 }
 
 /** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
-export const ArcGISFeatureServerSourceLoader = {
+export const ArcGISFeatureServerLoader = {
   ...ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISVectorSource,
   batchType: null as never,
@@ -28,7 +28,7 @@ export const ArcGISFeatureServerSourceLoader = {
     _coreApi?: CoreAPI
   ): ArcGISVectorSource {
     throw new Error(
-      'ArcGISFeatureServerSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISFeatureServerLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISVectorSource>;

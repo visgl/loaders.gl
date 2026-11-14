@@ -21,10 +21,9 @@ import type {
   GetImageParameters,
   ImageSource,
   ImageSourceMetadata,
-  Loader,
-  SourceLoader
+  Loader
 } from '@loaders.gl/core/loader-utils';
-import {isSourceLoader} from '@loaders.gl/core/loader-utils';
+import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {
@@ -49,7 +48,7 @@ export type ImageSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders'
   /** Debounce interval applied before viewport image requests are issued. */
   debounceTime?: number;
   /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
-  loaders?: ReadonlyArray<Loader | SourceLoader>;
+  loaders?: ReadonlyArray<Loader>;
   /** Source and parser options forwarded to `createDataSource`. The layer's `loadOptions` prop is not forwarded. */
   sourceOptions?: DataSourceOptions;
   /** Called when metadata resolves successfully. */
@@ -343,8 +342,8 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       return data;
     }
 
-    const sourceLoaders = Array.from(new Set(loaders.filter(isSourceLoader)));
-    const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
+    const sourceLoaders = Array.from(new Set(loaders.filter(supportsSourceCreation)));
+    const parserLoaders = loaders.filter(loader => !supportsSourceCreation(loader));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
       return createDataSourceSync(data, sourceLoaders, {
         ...sourceOptions,

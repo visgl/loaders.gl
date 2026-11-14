@@ -267,7 +267,7 @@ export type ArcGISVectorTileServerSourceLoaderOptions = DataSourceOptions &
     };
   };
 
-/** Shared ArcGISFeatureServerSourceLoader metadata, without runtime or lazy-loading dependencies. */
+/** Shared ArcGISFeatureServerLoader metadata, without runtime or lazy-loading dependencies. */
 export const ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA = {
   name: 'ArcGISFeatureServer',
   id: 'arcgis-feature-server',
@@ -290,7 +290,7 @@ export const ARCGIS_FEATURE_SERVER_SOURCE_LOADER_METADATA = {
     /\/featureserver(?:[/?#]|$)/i.test(url) || /\/mapserver\/\d+(?:[/?#]|$)/i.test(url)
 } as const satisfies ArcGISSourceMetadata;
 
-/** Shared ArcGISImageServerSourceLoader metadata, without runtime or lazy-loading dependencies. */
+/** Shared ArcGISImageServerLoader metadata, without runtime or lazy-loading dependencies. */
 export const ARCGIS_IMAGE_SERVER_SOURCE_LOADER_METADATA = {
   name: 'ArcGISImageServer',
   id: 'arcgis-image-server',
@@ -314,7 +314,7 @@ export const ARCGIS_IMAGE_SERVER_SOURCE_LOADER_METADATA = {
   testURL: (url: string): boolean => url.toLowerCase().includes('imageserver')
 } as const satisfies ArcGISSourceMetadata;
 
-/** Shared ArcGISImageTileSourceLoader metadata, without runtime or lazy-loading dependencies. */
+/** Shared ArcGISImageTileLoader metadata, without runtime or lazy-loading dependencies. */
 export const ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA = {
   name: 'ArcGIS ImageServer tiles',
   id: 'arcgis-image-server-tiles',
@@ -330,7 +330,7 @@ export const ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA = {
   testURL: (url: string): boolean => /imageserver/i.test(url)
 } as const satisfies ArcGISSourceMetadata;
 
-/** Shared ArcGISMapTileSourceLoader metadata, without runtime or lazy-loading dependencies. */
+/** Shared ArcGISMapTileLoader metadata, without runtime or lazy-loading dependencies. */
 export const ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA = {
   name: 'ArcGIS MapServer tiles',
   id: 'arcgis-map-server',
@@ -347,7 +347,7 @@ export const ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA = {
     /mapserver/i.test(url) && !/imageserver|featureserver/i.test(url)
 } as const satisfies ArcGISSourceMetadata;
 
-/** Shared ArcGISSceneServerSourceLoader metadata, without runtime or lazy-loading dependencies. */
+/** Shared ArcGISSceneServerLoader metadata, without runtime or lazy-loading dependencies. */
 export const ARCGIS_SCENE_SERVER_SOURCE_LOADER_METADATA = {
   name: 'ArcGIS SceneServer',
   id: 'arcgis-scene-server',
@@ -363,7 +363,7 @@ export const ARCGIS_SCENE_SERVER_SOURCE_LOADER_METADATA = {
   testURL: (url: string): boolean => /\/SceneServer(?:[\/?#]|$)/i.test(url)
 } as const satisfies ArcGISSourceMetadata;
 
-/** Shared ArcGISVectorTileServerSourceLoader metadata, without runtime or lazy-loading dependencies. */
+/** Shared ArcGISVectorTileServerLoader metadata, without runtime or lazy-loading dependencies. */
 export const ARCGIS_VECTOR_TILE_SERVER_SOURCE_LOADER_METADATA = {
   name: 'ArcGIS VectorTileServer',
   id: 'arcgis-vector-tile-server',

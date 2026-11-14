@@ -11,9 +11,9 @@ yet resolved automatically.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
-const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerLoader);
 const controller = new AbortController();
 const result = await source.queryFeatures({
   query: {where: "CATEGORY = 'Bicycle'", outFields: ['OBJECTID', 'CATEGORY']},

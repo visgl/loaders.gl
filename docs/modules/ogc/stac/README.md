@@ -61,9 +61,9 @@ npm install @loaders.gl/core @loaders.gl/services
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {STACSourceLoader} from '@loaders.gl/ogc/stac';
+import {STACLoader} from '@loaders.gl/ogc/stac';
 
-const source = await createDataSource('https://example.com/catalog.json', STACSourceLoader);
+const source = await createDataSource('https://example.com/catalog.json', STACLoader);
 const {mode, root} = await source.getMetadata();
 
 if (mode === 'api') {
@@ -81,7 +81,7 @@ if (mode === 'api') {
 }
 ```
 
-See [`STACSourceLoader`](/docs/modules/ogc/stac/api-reference/stac-source-loader) for the source API and
+See [`STACLoader`](/docs/modules/ogc/stac/api-reference/stac-source-loader) for the source API and
 [STAC format notes](/docs/modules/ogc/stac/formats/stac) for protocol behavior.
 
 ## Browser access

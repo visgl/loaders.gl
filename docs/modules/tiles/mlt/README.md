@@ -59,7 +59,7 @@ npm install @loaders.gl/core
 | --------------- | ----------- |
 | [`MLTWriter`](/docs/modules/tiles/mlt/api-reference/mlt-writer) | Encodes tile-local GeoArrow WKB and scalar columns as MLT v1. From v5.0. |
 | [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader) | Loads MapLibre Tile vector tiles. |
-| [`MLTSourceLoader`](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) | Loads MapLibre Tile data as a tile source. |
+| [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) | Loads MapLibre Tile data as a tile source. |
 
 ## Examples
 

@@ -19,11 +19,10 @@ import type {
   DataSourceOptions,
   GetTileDataParameters,
   Loader,
-  SourceLoader,
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
-import {isSourceLoader} from '@loaders.gl/core/loader-utils';
+import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {Tile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
@@ -59,7 +58,7 @@ export type Tile2DSourceLayerProps<DataT = unknown> = Omit<
     /** URL/blob input or a fully constructed loaders.gl tile source. */
     data: Tile2DSourceLayerData;
     /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
-    loaders?: ReadonlyArray<Loader | SourceLoader>;
+    loaders?: ReadonlyArray<Loader>;
     /** Options forwarded to `createDataSource` when source loaders are supplied. */
     sourceOptions?: DataSourceOptions;
     /** Optional metadata used by the example overlay and zoom bounds. */
@@ -689,9 +688,9 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     if (isTileSourceRuntime(data)) {
       return data;
     }
-    const sourceLoaders = Array.from(new Set(loaders.filter(isSourceLoader)));
+    const sourceLoaders = Array.from(new Set(loaders.filter(supportsSourceCreation)));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
-      const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
+      const parserLoaders = loaders.filter(loader => !supportsSourceCreation(loader));
       return createDataSourceSync(data, sourceLoaders, {
         ...sourceOptions,
         core: {

@@ -126,11 +126,11 @@ type OMETiffInit = {
 /**
  * Source factory for non-geospatial OME-TIFF plane data.
  */
-export const OMETiffSourceLoader = {
+export const OMETiffLoader = {
   dataType: null as unknown as OMETiffImageSource,
   batchType: null as never,
   ...OMETiffFormat,
-  name: 'OMETiffSourceLoader',
+  name: 'OMETiffLoader',
   version: VERSION,
   type: 'ometiff',
   fromUrl: true,

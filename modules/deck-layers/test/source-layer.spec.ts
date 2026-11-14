@@ -171,14 +171,14 @@ describe('resolveVisualSource', () => {
   });
 
   test('reports capabilities for unsupported runtimes', async () => {
-    const catalogLoader = createSourceLoader(
+    const {type: _type, ...catalogLoader} = createSourceLoader(
       'catalog',
       () => ({getMetadata() {}, search() {}, getCollections() {}}) as any
     );
 
     await expect(
       resolveVisualSource({data: 'https://example.com/catalog', loaders: [catalogLoader]})
-    ).rejects.toThrow(/getCollections.*search.*Supported visual sources/);
+    ).rejects.toThrow(/catalog.*getCollections.*search.*Supported visual sources/);
   });
 });
 

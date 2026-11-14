@@ -16,9 +16,9 @@ ArcGIS ImageServer can return analysis-ready LERC rasters instead of display ima
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageServerLoader} from '@loaders.gl/arcgis';
 
-const source = await createDataSource(url, [ArcGISImageServerSourceLoader], {
+const source = await createDataSource(url, [ArcGISImageServerLoader], {
   core: {type: 'arcgis-image-server'}
 });
 

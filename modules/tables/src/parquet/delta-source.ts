@@ -201,11 +201,11 @@ export class DeltaTableSource
 }
 
 /** Parser-bearing Delta source loader exposed through the explicit source subpath. */
-export const DeltaSourceLoaderWithParser = {
+export const DeltaLoaderWithParser = {
   ...DeltaFormat,
   dataType: null as unknown as DeltaTableSource,
   batchType: null as never,
-  name: 'DeltaSourceLoader',
+  name: 'DeltaLoader',
   version: VERSION,
   type: 'delta',
   fromUrl: true,

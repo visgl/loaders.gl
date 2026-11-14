@@ -64,7 +64,7 @@ npm install @loaders.gl/core @loaders.gl/splats
 | [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) | Loads GaussianSplats3D `.ksplat` files from full buffers. |
 | [`SPZLoader`](/docs/modules/splats/api-reference/spz-loader)       | Loads Niantic Spatial `.spz` files from full buffers.     |
 | [`RADLoader`](/docs/modules/splats/api-reference/rad-source-loader) | Loads Spark `.rad` metadata from full buffers.            |
-| [`RADSourceLoader`](/docs/modules/splats/api-reference/rad-source-loader) | Creates a source for Spark `.rad` metadata and chunks. |
+| [`RADLoader`](/docs/modules/splats/api-reference/rad-source-loader) | Creates a source for Spark `.rad` metadata and chunks. |
 
 ## Formats
 

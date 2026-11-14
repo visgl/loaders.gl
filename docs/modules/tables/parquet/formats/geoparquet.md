@@ -30,7 +30,7 @@ import {ClientExample} from '@site/src/components';
 | Type | API |
 | --- | --- |
 | Loader | [`GeoParquetLoader`](../api-reference/geoparquet-loader.md) |
-| Source loader | [`ParquetSourceLoader`](../api-reference/parquet-source-loader.md) |
+| Source loader | [`ParquetLoader`](../api-reference/parquet-source-loader.md) |
 | Writer | [`ParquetWriter`](../api-reference/parquet-writer.md) |
 
 <DocLiveExample label="GeoParquet table map example" height="420px">
@@ -114,7 +114,7 @@ GeoParquet `crs: null` remains unknown by omitting GeoArrow CRS metadata.
 ## Spatial queries
 
 GeoParquet 1.1 defined an optional `covering.bbox` object whose four values are two-level Parquet
-schema paths such as `['bbox', 'xmin']`. `ParquetSourceLoader` validates that normative shape and
+schema paths such as `['bbox', 'xmin']`. `ParquetLoader` validates that normative shape and
 uses it for spatial row-group statistics, nested page-index pruning, and exact per-row bounding-box
 intersection. The bbox struct is fetched as a hidden filter column when it is not projected.
 

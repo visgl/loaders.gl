@@ -95,12 +95,12 @@ source layer. Begin with [the user guide](/docs/developer-guide/arcgis) for a co
 
 | Service | Source loader | Runtime contract | Primary output | deck.gl | Documentation |
 | --- | --- | --- | --- | --- | --- |
-| ArcGIS FeatureServer | `ArcGISFeatureServerSourceLoader` | `VectorSource` | Complete bounded GeoJSON, binary or Arrow queries; explicit page API | `SourceLayer` | [FeatureServer](/docs/modules/arcgis/arcgis-feature-server) |
-| ArcGIS ImageServer | `ArcGISImageServerSourceLoader` | `ImageSource` | Rendered image or decoded LERC raster | `SourceLayer` for rendered images | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
-| ArcGIS ImageServer tiles | `ArcGISImageTileSourceLoader` | `TileSource` | Image tiles or decoded LERC tiles | `SourceLayer` for image tiles | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
-| ArcGIS MapServer | `ArcGISMapTileSourceLoader` | `TileSource` | Cached or dynamically exported image tiles | `SourceLayer` | [MapServer](/docs/modules/arcgis/arcgis-map-server) |
-| ArcGIS VectorTileServer | `ArcGISVectorTileServerSourceLoader` | `VectorTileSource` | Raw MVT or decoded WGS84 features | `SourceLayer` | [VectorTileServer](/docs/modules/arcgis/arcgis-vector-tile-server) |
-| ArcGIS SceneServer | `ArcGISSceneServerSourceLoader` | `Tileset3DSource` or `PointCloudTilesetSource` | I3S mesh, Point, or Point Cloud tiles | Application-specific 3D renderer | [SceneServer](/docs/modules/arcgis/arcgis-scene-server) |
+| ArcGIS FeatureServer | `ArcGISFeatureServerLoader` | `VectorSource` | Complete bounded GeoJSON, binary or Arrow queries; explicit page API | `SourceLayer` | [FeatureServer](/docs/modules/arcgis/arcgis-feature-server) |
+| ArcGIS ImageServer | `ArcGISImageServerLoader` | `ImageSource` | Rendered image or decoded LERC raster | `SourceLayer` for rendered images | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
+| ArcGIS ImageServer tiles | `ArcGISImageTileLoader` | `TileSource` | Image tiles or decoded LERC tiles | `SourceLayer` for image tiles | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
+| ArcGIS MapServer | `ArcGISMapTileLoader` | `TileSource` | Cached or dynamically exported image tiles | `SourceLayer` | [MapServer](/docs/modules/arcgis/arcgis-map-server) |
+| ArcGIS VectorTileServer | `ArcGISVectorTileServerLoader` | `VectorTileSource` | Raw MVT or decoded WGS84 features | `SourceLayer` | [VectorTileServer](/docs/modules/arcgis/arcgis-vector-tile-server) |
+| ArcGIS SceneServer | `ArcGISSceneServerLoader` | `Tileset3DSource` or `PointCloudTilesetSource` | I3S mesh, Point, or Point Cloud tiles | Application-specific 3D renderer | [SceneServer](/docs/modules/arcgis/arcgis-scene-server) |
 | ArcGIS service directory | Capability graph utilities | Discovery graph | First matching service endpoint | Not directly visual | [Capability discovery](#capability-discovery) |
 
 ## Installation
@@ -135,9 +135,9 @@ Use `load` when the application already knows the service type:
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
-const source = await createDataSource(serviceUrl, [ArcGISFeatureServerSourceLoader]);
+const source = await createDataSource(serviceUrl, [ArcGISFeatureServerLoader]);
 const features = await source.getFeatures({
   layers: ['0'],
   boundingBox: [[-123, 37], [-121, 39]]

@@ -7,16 +7,16 @@ import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISMapTileSource} from './arcgis-map-tile-source-loader';
 import type {ArcGISMapTileSourceLoaderOptions} from '../arcgis-source-types';
 
-/** Loads the ArcGISMapTileSourceLoader implementation on first asynchronous use. */
+/** Loads the ArcGISMapTileLoader implementation on first asynchronous use. */
 async function preloadArcGISMapTileSourceLoader(): Promise<SourceLoader<ArcGISMapTileSource>> {
-  const {ArcGISMapTileSourceLoaderWithParser} = await import(
+  const {ArcGISMapTileLoaderWithParser} = await import(
     '@loaders.gl/arcgis/arcgis-map-tile-source-loader'
   );
-  return ArcGISMapTileSourceLoaderWithParser;
+  return ArcGISMapTileLoaderWithParser;
 }
 
 /** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
-export const ArcGISMapTileSourceLoader = {
+export const ArcGISMapTileLoader = {
   ...ARCGIS_MAP_TILE_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISMapTileSource,
   batchType: null as never,
@@ -28,7 +28,7 @@ export const ArcGISMapTileSourceLoader = {
     _coreApi?: CoreAPI
   ): ArcGISMapTileSource {
     throw new Error(
-      'ArcGISMapTileSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISMapTileLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISMapTileSource>;

@@ -60,7 +60,7 @@ export type WFSVersion = '1.1.0' | '2.0.0';
 /**
  * Read-only WFS source supporting extent queries and GeoJSON/GML responses.
  */
-export const WFSSourceLoader = {
+export const WFSLoader = {
   dataType: null as unknown as WFSVectorSource,
   batchType: null as never,
   name: 'WFS',
@@ -293,7 +293,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 
   /** Create a WFSVectorSource */
   constructor(data: string, options: WFSourceOptions, coreApi?: CoreAPI) {
-    super(data, options, WFSSourceLoader.defaultOptions, coreApi);
+    super(data, options, WFSLoader.defaultOptions, coreApi);
     this.vendorParameters = options.wfs?.vendorParameters;
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters

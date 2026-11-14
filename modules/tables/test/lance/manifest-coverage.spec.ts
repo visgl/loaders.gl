@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {parseLanceManifest} from '../../src/lance/lance-manifest';
-import {LanceSourceLoader} from '../../src/lance/lance-source-loader';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance-loader';
 import {LanceDecoderUnavailableError} from '../../src/lance/lance-errors';
 
 /** Encodes an unsigned integer as protobuf varint bytes. */
@@ -106,17 +106,23 @@ test('LanceSource resolves latest and explicit manifest URLs', async () => {
     return new Response(manifest, {status: 200});
   };
 
-  const latestSource = LanceSourceLoader.createDataSourceSync('https://example.com/table.lance/', {
-    core: {fetch}
-  } as any);
+  const latestSource = LanceLoaderWithParser.createDataSourceSync(
+    'https://example.com/table.lance/',
+    {
+      core: {fetch}
+    } as any
+  );
   expect((await latestSource.getMetadata()).manifestURL).toBe(
     'https://example.com/table.lance/_versions/9.manifest'
   );
 
-  const explicitSource = LanceSourceLoader.createDataSourceSync('https://example.com/table.lance', {
-    lance: {version: 4},
-    core: {fetch}
-  } as any);
+  const explicitSource = LanceLoaderWithParser.createDataSourceSync(
+    'https://example.com/table.lance',
+    {
+      lance: {version: 4},
+      core: {fetch}
+    } as any
+  );
   expect((await explicitSource.getMetadata()).manifestURL).toBe(
     'https://example.com/table.lance/_versions/4.manifest'
   );
@@ -124,7 +130,7 @@ test('LanceSource resolves latest and explicit manifest URLs', async () => {
 
 test('LanceSource reports manifest discovery and HTTP failures', async () => {
   const failingFetch = async () => new Response('missing', {status: 404});
-  const source = LanceSourceLoader.createDataSourceSync('https://example.com/table.lance', {
+  const source = LanceLoaderWithParser.createDataSourceSync('https://example.com/table.lance', {
     core: {fetch: failingFetch}
   } as any);
 
@@ -132,7 +138,7 @@ test('LanceSource reports manifest discovery and HTTP failures', async () => {
     'Unable to discover the latest Lance manifest'
   );
 
-  const invalidHintSource = LanceSourceLoader.createDataSourceSync(
+  const invalidHintSource = LanceLoaderWithParser.createDataSourceSync(
     'https://example.com/table.lance',
     {
       core: {fetch: async () => new Response(JSON.stringify({}), {status: 200})}
@@ -142,7 +148,7 @@ test('LanceSource reports manifest discovery and HTTP failures', async () => {
 });
 
 test('LanceSource reads manifest metadata from a Blob and caches its schema', async () => {
-  const source = LanceSourceLoader.createDataSourceSync(new Blob([createManifest()]), {});
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([createManifest()]), {});
 
   const metadata = await source.getMetadata();
   expect(metadata.manifestURL).toBeUndefined();
@@ -151,7 +157,7 @@ test('LanceSource reads manifest metadata from a Blob and caches its schema', as
 });
 
 test('LanceSource reports unavailable decoding and malformed data files', async () => {
-  const source = LanceSourceLoader.createDataSourceSync(new Blob([createManifest()]), {});
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([createManifest()]), {});
 
   await expect(async () => {
     for await (const _batch of source.readBatches()) {
@@ -159,14 +165,14 @@ test('LanceSource reports unavailable decoding and malformed data files', async 
     }
   }).rejects.toBeInstanceOf(LanceDecoderUnavailableError);
   await expect(source.getFileMetadata()).rejects.toThrow('Invalid Lance file magic');
-  const shortSource = LanceSourceLoader.createDataSourceSync(new Blob([new Uint8Array(8)]), {});
+  const shortSource = LanceLoaderWithParser.createDataSourceSync(new Blob([new Uint8Array(8)]), {});
   await expect(shortSource.getFileMetadata()).rejects.toThrow('smaller than its footer');
 });
 
-test('LanceSourceLoader recognizes dataset and data-file URLs', () => {
-  expect(LanceSourceLoader.testURL('https://example.com/table.lance')).toBe(true);
-  expect(LanceSourceLoader.testURL('https://example.com/table.lance/_versions/4.manifest')).toBe(
-    true
-  );
-  expect(LanceSourceLoader.testURL('https://example.com/table.parquet')).toBe(false);
+test('LanceLoaderWithParser recognizes dataset and data-file URLs', () => {
+  expect(LanceLoaderWithParser.testURL('https://example.com/table.lance')).toBe(true);
+  expect(
+    LanceLoaderWithParser.testURL('https://example.com/table.lance/_versions/4.manifest')
+  ).toBe(true);
+  expect(LanceLoaderWithParser.testURL('https://example.com/table.parquet')).toBe(false);
 });

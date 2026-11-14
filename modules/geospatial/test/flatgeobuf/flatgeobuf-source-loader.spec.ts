@@ -5,10 +5,8 @@
 import {Table as NativeArrowTable} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {createDataSourceSync, fetchFile, resolvePath} from '@loaders.gl/core';
-import {
-  FlatGeobufSourceLoader,
-  FlatGeobufVectorSource
-} from '@loaders.gl/geospatial/flatgeobuf/index';
+import {FlatGeobufVectorSource} from '@loaders.gl/geospatial/flatgeobuf/index';
+import {FlatGeobufLoaderWithParser} from '@loaders.gl/geospatial/flatgeobuf-loader';
 import {convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/core/geoarrow';
 import {convertGeoArrowToTable} from '@loaders.gl/core/geoarrow';
 const FLATGEOBUF_COUNTRIES_DATA_URL = resolvePath(
@@ -23,14 +21,14 @@ const EMPTY_BOUNDING_BOX: [[number, number], [number, number]] = [
   [0, -90],
   [1, -89]
 ];
-test('FlatGeobufSourceLoader#createDataSource selects FlatGeobuf source from URL', async () => {
-  const source = createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
+test('FlatGeobufLoaderWithParser#createDataSource selects FlatGeobuf source from URL', async () => {
+  const source = createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufLoaderWithParser], {
     flatgeobuf: {},
     core: {fetch: await createRangeFetch()}
   });
   expect(source instanceof FlatGeobufVectorSource, 'returns FlatGeobufVectorSource').toBeTruthy();
 });
-test('FlatGeobufSourceLoader#getSchema and getMetadata expose header metadata', async () => {
+test('FlatGeobufLoaderWithParser#getSchema and getMetadata expose header metadata', async () => {
   const source = await createSource();
   const schema = await source.getSchema();
   const metadata = await source.getMetadata();
@@ -90,7 +88,7 @@ test('FlatGeobufVectorSource#getQueryMetadata discovers panel controls from the 
   });
   expect(queryMetadata.statistics?.rowCount, 'discovers feature count').toBe(179);
 });
-test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across formats', async () => {
+test('FlatGeobufLoaderWithParser#getFeatures returns matching feature sets across formats', async () => {
   const source = await createSource();
   const defaultTable = await source.getFeatures({
     layers: 'countries',
@@ -134,7 +132,7 @@ test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across fo
     'Arrow source output round-trips to the same features'
   ).toEqual(getFeatureKeys(geojson.features));
 });
-test('FlatGeobufSourceLoader#getFeatures reprojects Arrow and GeoJSON consistently', async () => {
+test('FlatGeobufLoaderWithParser#getFeatures reprojects Arrow and GeoJSON consistently', async () => {
   const source = await createSource();
   const geojson = await source.getFeatures({
     layers: 'countries',
@@ -154,7 +152,7 @@ test('FlatGeobufSourceLoader#getFeatures reprojects Arrow and GeoJSON consistent
     'reprojected Arrow source output matches GeoJSON source output'
   ).toEqual(getFeatureKeys(geojson.features));
 });
-test('FlatGeobufSourceLoader#getFeatures returns empty valid tables for no-match bboxes', async () => {
+test('FlatGeobufLoaderWithParser#getFeatures returns empty valid tables for no-match bboxes', async () => {
   const source = await createSource();
   const geojson = await source.getFeatures({
     layers: 'countries',
@@ -233,14 +231,16 @@ test('FlatGeobufVectorSource#read emits one bounded Arrow batch', async () => {
   expect(batches[0]?.numRows).toBe(1);
 });
 
-test('FlatGeobufSourceLoader recognizes URL query and fragment suffixes', () => {
-  expect(FlatGeobufSourceLoader.testURL('https://example.com/countries.fgb?download=1')).toBe(true);
-  expect(FlatGeobufSourceLoader.testURL('https://example.com/countries.fgb#map')).toBe(true);
-  expect(FlatGeobufSourceLoader.testURL('https://example.com/countries.geojson')).toBe(false);
+test('FlatGeobufLoaderWithParser recognizes URL query and fragment suffixes', () => {
+  expect(FlatGeobufLoaderWithParser.testURL('https://example.com/countries.fgb?download=1')).toBe(
+    true
+  );
+  expect(FlatGeobufLoaderWithParser.testURL('https://example.com/countries.fgb#map')).toBe(true);
+  expect(FlatGeobufLoaderWithParser.testURL('https://example.com/countries.geojson')).toBe(false);
 });
-test('FlatGeobufSourceLoader#getFeatures respects abort signals', async () => {
+test('FlatGeobufLoaderWithParser#getFeatures respects abort signals', async () => {
   const abortController = new AbortController();
-  const delayedSource = createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
+  const delayedSource = createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufLoaderWithParser], {
     flatgeobuf: {},
     core: {fetch: await createRangeFetch({delayMs: 20})}
   }) as FlatGeobufVectorSource;
@@ -263,7 +263,7 @@ test('FlatGeobufSourceLoader#getFeatures respects abort signals', async () => {
 });
 async function createSource(fetchOverride?: typeof fetch): Promise<FlatGeobufVectorSource> {
   const fetch = fetchOverride || (await createRangeFetch());
-  return createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufSourceLoader], {
+  return createDataSourceSync(REMOTE_FGB_URL, [FlatGeobufLoaderWithParser], {
     flatgeobuf: {},
     core: {fetch}
   }) as FlatGeobufVectorSource;

@@ -1,6 +1,6 @@
 import React, {useEffect, useId, useRef, useState} from 'react';
 import {createDataSource, load} from '@loaders.gl/core';
-import {ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageServerLoader} from '@loaders.gl/arcgis';
 import type {LERCData} from '@loaders.gl/raster';
 
 const SERVICE_URL =
@@ -24,7 +24,7 @@ export default function ArcGISRasterApp(): React.ReactElement {
     setBand(0);
     void (async () => {
       try {
-        const source = await createDataSource(SERVICE_URL, ArcGISImageServerSourceLoader);
+        const source = await createDataSource(SERVICE_URL, ArcGISImageServerLoader);
         const result = await source.exportRaster(
           {
             bbox: [-100, 35, -95, 40],

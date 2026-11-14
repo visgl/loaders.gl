@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
 import {
   GeoZarrRasterSource,
-  GeoZarrSourceLoader,
+  GeoZarrLoader,
   type GeoZarrSourceLoaderOptions
 } from '@loaders.gl/scientific/zarr';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
@@ -32,15 +32,15 @@ function createViewport(
     unprojectPosition: position => [position[0], position[1], position[2] || 0]
   };
 }
-test('GeoZarrSourceLoader creates a source via createDataSourceSync()', () => {
-  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+test('GeoZarrLoader creates a source via createDataSourceSync()', () => {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0'}
   });
   expect(source instanceof GeoZarrRasterSource).toBeTruthy();
 });
 test('GeoZarrRasterSource reads GeoZarr proj and spatial metadata', async () => {
-  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0', defaultSelection: {c: 1}}
   });
@@ -61,7 +61,7 @@ test('GeoZarrRasterSource reads GeoZarr proj and spatial metadata', async () => 
   expect(metadata.tileSize).toEqual({width: 439, height: 167});
 });
 test('GeoZarrRasterSource reads a native spatial window and named dimension selection', async () => {
-  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0'}
   });
@@ -118,7 +118,7 @@ test('GeoZarrRasterSource derives georeferencing from regular CF coordinate arra
   expect(Array.from(raster.data as Uint8Array)).toEqual([12, 13, 15, 16]);
 });
 test('GeoZarrRasterSource validates CRS and named selections', async () => {
-  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0'}
   });

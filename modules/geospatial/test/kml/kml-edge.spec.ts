@@ -7,13 +7,13 @@ import {encode, parse} from '@loaders.gl/core';
 import {ZipWriter} from '@loaders.gl/archives/zip';
 import {
   KMLWriter,
-  KMZSourceLoader,
   KMZVectorSource,
   KMZWriter,
   convertKMLDocumentToFeatureCollection,
   openKMZArchive,
   parseKMLDocument
 } from '@loaders.gl/geospatial/kml/index';
+import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz-loader';
 import {parseGPXTextToFeatureCollection} from '../../src/kml/gpx-loader';
 import {parseTCXTextToFeatureCollection} from '../../src/kml/tcx-loader';
 
@@ -302,7 +302,7 @@ test('KMZ archive and source cover KML fallback selection and output formats', a
     {'doc.kml': '<kml><Document><Placemark><name>Empty</name></Placemark></Document></kml>'},
     ZipWriter
   );
-  const source = KMZSourceLoader.createDataSourceSync(
+  const source = KMZLoaderWithParser.createDataSourceSync(
     new Blob([sourceArchive], {type: 'application/vnd.google-earth.kmz'}),
     {kmz: {format: 'geojson'}}
   );
@@ -316,10 +316,10 @@ test('KMZ archive and source cover KML fallback selection and output formats', a
     'does not yet support binary'
   );
   await source.close();
-  expect(KMZSourceLoader.testURL('map.kmz')).toBe(true);
-  expect(KMZSourceLoader.testURL('map.kml')).toBe(false);
+  expect(KMZLoaderWithParser.testURL('map.kmz')).toBe(true);
+  expect(KMZLoaderWithParser.testURL('map.kml')).toBe(false);
   expect(
-    KMZSourceLoader.testData(new Blob([], {type: 'application/vnd.google-earth.kmz+zip'}))
+    KMZLoaderWithParser.testData(new Blob([], {type: 'application/vnd.google-earth.kmz+zip'}))
   ).toBe(true);
-  expect(KMZSourceLoader.testData(new Blob([], {type: 'application/zip'}))).toBe(false);
+  expect(KMZLoaderWithParser.testData(new Blob([], {type: 'application/zip'}))).toBe(false);
 });

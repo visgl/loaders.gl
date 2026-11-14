@@ -8,7 +8,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
 import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
-import {GeoZarrRasterSource, GeoZarrSourceLoader} from '@loaders.gl/scientific/zarr';
+import {GeoZarrRasterSource, GeoZarrLoader} from '@loaders.gl/scientific/zarr';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 
 // OME-NGFF v0.4 datasets list level groups with scale-only transforms; each level group holds
@@ -18,7 +18,7 @@ const FIXTURE_URL = pathToFileURL(
 ).href;
 
 function createSource(array: string, url = FIXTURE_URL): GeoZarrRasterSource {
-  return createDataSourceSync(url, [GeoZarrSourceLoader], {
+  return createDataSourceSync(url, [GeoZarrLoader], {
     geozarr: {array}
   }) as GeoZarrRasterSource;
 }
@@ -185,7 +185,7 @@ test.skipIf(process.getuid?.() === 0)(
       await writeFile(join(store, 'zarr.json'), JSON.stringify(root));
       await chmod(join(store, '1', 'spatial_ref', 'zarr.json'), 0o000);
 
-      const source = createDataSourceSync(pathToFileURL(store).href, [GeoZarrSourceLoader], {
+      const source = createDataSourceSync(pathToFileURL(store).href, [GeoZarrLoader], {
         zarr: {requireConsolidatedMetadata: false},
         geozarr: {array: '1/values'}
       }) as GeoZarrRasterSource;

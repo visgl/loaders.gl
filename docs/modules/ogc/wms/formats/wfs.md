@@ -29,7 +29,7 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 | Type | API |
 | --- | --- |
-| Source loader | `WFSSourceLoader` |
+| Source loader | `WFSLoader` |
 
 <DocOrientation
   eyebrow="The WFS request path"
@@ -53,7 +53,7 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 </p>
 
 
-WFS serves vector features and properties over HTTP. `WFSSourceLoader` provides a read-only
+WFS serves vector features and properties over HTTP. `WFSLoader` provides a read-only
 `VectorSource` with GeoJSON and streaming GML ingestion.
 
 <ReferenceBoundary
@@ -178,9 +178,9 @@ most useful for normalizing and refining an already-bounded result.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSLoader], {
   wfs: {wfsParameters: {version: '2.0.0'}}
 });
 
@@ -199,7 +199,7 @@ Request GML explicitly when a service does not provide GeoJSON or when a large r
 processed incrementally:
 
 ```ts
-const source = createDataSourceSync(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSLoader], {
   wfs: {wfsParameters: {outputFormat: 'application/vnd.ogc.gml'}}
 });
 
@@ -250,12 +250,12 @@ the desired output CRS from the server.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms';
 
 const layer = new SourceLayer({
   id: 'wfs-roads',
   data: wfsUrl,
-  loaders: [WFSSourceLoader],
+  loaders: [WFSLoader],
   layers: ['workspace:roads'],
   pickable: true
 });

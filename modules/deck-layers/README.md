@@ -12,13 +12,13 @@ props, lifecycle tests, and no example-specific imports.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
 new SourceLayer({
   id: 'basemap',
   data: 'https://example.com/basemap.pmtiles',
-  loaders: [PMTilesSourceLoader, MVTLoader]
+  loaders: [PMTilesLoader, MVTLoader]
 });
 ```
 
@@ -40,7 +40,7 @@ always take precedence.
 ```ts
 new SourceLayer({
   data: 'https://example.com/geoserver/wms',
-  loaders: [WMSSourceLoader],
+  loaders: [WMSLoader],
   onSourceLoad: ({sourceType}) => console.log(sourceType),
   onMetadataLoad: metadata => console.log(metadata),
   onViewStateLoad: hint => setViewState(current => ({...current, ...hint})),
@@ -55,15 +55,15 @@ new SourceLayer({
 
 ```ts
 // WFS vector features
-new SourceLayer({data: wfsUrl, loaders: [WFSSourceLoader]});
+new SourceLayer({data: wfsUrl, loaders: [WFSLoader]});
 
 // Typed GeoTIFF raster with automatic RGB/single-band colorization
-new SourceLayer({data: geotiffUrl, loaders: [GeoTIFFSourceLoader]});
+new SourceLayer({data: geotiffUrl, loaders: [GeoTIFFLoader]});
 
 // COPC or Potree point-cloud hierarchy
 new SourceLayer({
   data: pointCloudUrl,
-  loaders: [COPCSourceLoader, PotreeLoader]
+  loaders: [COPCLoader, PotreeLoader]
 });
 
 // Parser-backed 3D Tiles, I3S, 3TZ, or SLPK

@@ -18,14 +18,14 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 async function preloadArrowTableTileSourceLoader(): Promise<
   SourceLoader<ArrowTableVectorTileSource>
 > {
-  const {ArrowTableTileSourceLoaderWithParser} = await import(
+  const {ArrowTableTileLoaderWithParser} = await import(
     '@loaders.gl/tiles/arrow-table-tile-source-loader'
   );
-  return ArrowTableTileSourceLoaderWithParser;
+  return ArrowTableTileLoaderWithParser;
 }
 
 /** Lightweight Arrow tiler metadata; use async createDataSource() or the explicit runtime subpath. */
-export const ArrowTableTileSourceLoader = {
+export const ArrowTableTileLoader = {
   dataType: null as unknown as ArrowTableVectorTileSource,
   batchType: null as never,
   name: 'ArrowTableTiler',
@@ -49,7 +49,7 @@ export const ArrowTableTileSourceLoader = {
     _coreApi?: CoreAPI
   ): ArrowTableVectorTileSource {
     throw new Error(
-      'ArrowTableTileSourceLoader requires async createDataSource() or an explicit @loaders.gl/tiles/arrow-table-tile-source-loader import'
+      'ArrowTableTileLoader requires async createDataSource() or an explicit @loaders.gl/tiles/arrow-table-tile-source-loader import'
     );
   }
 } as const satisfies SourceLoader<ArrowTableVectorTileSource>;

@@ -119,7 +119,7 @@ export class OGCAPIFeaturesSource
 {
   /** Creates an OGC API Features source. */
   constructor(url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) {
-    super(url.replace(/\/$/, ''), options, OGCAPIFeaturesSourceLoader.defaultOptions, coreApi);
+    super(url.replace(/\/$/, ''), options, OGCAPIFeaturesLoader.defaultOptions, coreApi);
   }
 
   /** Returns the landing page metadata. */
@@ -265,7 +265,7 @@ export class OGCAPIFeaturesSource
 }
 
 /** Source loader for minimal OGC API Features support. */
-export const OGCAPIFeaturesSourceLoader = {
+export const OGCAPIFeaturesLoader = {
   dataType: null as unknown as OGCAPIFeaturesSource,
   batchType: null as never,
   name: 'OGC API Features',
@@ -307,7 +307,7 @@ export class OGCAPITilesSource
 
   /** Creates an OGC API Tiles source. */
   constructor(url: string, options: OGCAPISourceOptions = {}, coreApi?: CoreAPI) {
-    super(url.replace(/\/$/, ''), options, OGCAPITilesSourceLoader.defaultOptions, coreApi);
+    super(url.replace(/\/$/, ''), options, OGCAPITilesLoader.defaultOptions, coreApi);
     validateMetersPerUnit(options['ogc-api']?.metersPerUnit, 'OGC API Tiles');
   }
 
@@ -577,7 +577,7 @@ export class OGCAPITilesSource
 }
 
 /** Source loader for minimal OGC API Tiles support. */
-export const OGCAPITilesSourceLoader = {
+export const OGCAPITilesLoader = {
   dataType: null as unknown as OGCAPITilesSource,
   batchType: null as never,
   name: 'OGC API Tiles',

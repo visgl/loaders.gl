@@ -19,22 +19,22 @@ npm install @loaders.gl/scientific/zarr@beta @loaders.gl/core@beta
 ## Exports
 
 - `loadZarr()` and `ZarrPixelSource` for the existing pixel-pyramid API
-- `OMEZarrSourceLoader` / `OMEZarrImageSource` for `createDataSource()` and `load()`
-- `GeoZarrSourceLoader` / `GeoZarrRasterSource` for georeferenced Zarr data variables
+- `OMEZarrLoader` / `OMEZarrImageSource` for `createDataSource()` and `load()`
+- `GeoZarrLoader` / `GeoZarrRasterSource` for georeferenced Zarr data variables
 - `loadZarrConsolidatedMetadata()` for probing consolidated Zarr roots
-- `SpatialDataSourceLoader` / `SpatialDataSource` for typed SpatialData element discovery
+- `SpatialDataLoader` / `SpatialDataSource` for typed SpatialData element discovery
 
 ## GeoZarr SourceLoader
 
-`GeoZarrSourceLoader` opens one gridded data variable as a viewport-driven raster source. It reads
+`GeoZarrLoader` opens one gridded data variable as a viewport-driven raster source. It reads
 the current GeoZarr `proj:` and `spatial:` attributes and falls back to regular one-dimensional CF
 coordinate variables used by xarray climate and weather stores.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {GeoZarrSourceLoader} from '@loaders.gl/scientific/zarr';
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSourceSync('https://example.com/weather.zarr', [GeoZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/weather.zarr', [GeoZarrLoader], {
   geozarr: {
     array: 'air_temperature',
     defaultSelection: {time: 0, pressure: 10}
@@ -56,7 +56,7 @@ climatology data directly from a public Zarr store and renders it on an interact
 
 ## OME-Zarr SourceLoader
 
-`OMEZarrSourceLoader` is the first source-loader abstraction in this module. It is image-first:
+`OMEZarrLoader` is the first source-loader abstraction in this module. It is image-first:
 
 - it opens OME-Zarr image or label groups
 - it normalizes multiscale metadata
@@ -65,9 +65,9 @@ climatology data directly from a public Zarr store and renders it on an interact
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OMEZarrSourceLoader} from '@loaders.gl/scientific/zarr';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr';
 
-const source = createDataSourceSync('https://example.com/image.zarr', [OMEZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/image.zarr', [OMEZarrLoader], {
   omezarr: {}
 });
 
@@ -77,15 +77,15 @@ const raster = await source.getRaster({channels: [0, 1, 2]});
 
 ## Example: SpatialData-style root browsing
 
-`SpatialDataSourceLoader` discovers typed elements and opens Zarr-backed images, labels, and AnnData
+`SpatialDataLoader` discovers typed elements and opens Zarr-backed images, labels, and AnnData
 arrays directly.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {SpatialDataSourceLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataLoader} from '@loaders.gl/scientific/zarr';
 
 const rootUrl = 'https://example.com/spatialdata.zarr';
-const spatialDataSource = createDataSourceSync(rootUrl, [SpatialDataSourceLoader]);
+const spatialDataSource = createDataSourceSync(rootUrl, [SpatialDataLoader]);
 const spatialDataMetadata = await spatialDataSource.getMetadata();
 const imageSource = await spatialDataSource.createRasterSource(
   'image',
@@ -94,5 +94,5 @@ const imageSource = await spatialDataSource.createRasterSource(
 const imageMetadata = await imageSource.getMetadata();
 ```
 
-See the [`OMEZarrSourceLoader` API reference](https://loaders.gl/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader)
+See the [`OMEZarrLoader` API reference](https://loaders.gl/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader)
 for source options, raster output layout, and current scope.

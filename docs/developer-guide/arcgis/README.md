@@ -52,12 +52,12 @@ In your application's TypeScript entry point:
 import {Deck} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
 const serviceUrl =
   'https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0';
 
-const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader);
 const features = await source.getFeatures({
   layers: ['0'],
   format: 'geojson',
@@ -126,9 +126,9 @@ For synchronous construction, import the same loader name from `/bundled`:
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis/bundled';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/bundled';
 
-const source = createDataSourceSync(serviceUrl, [ArcGISFeatureServerSourceLoader], {});
+const source = createDataSourceSync(serviceUrl, [ArcGISFeatureServerLoader], {});
 ```
 
 Source construction is synchronous in this example; network methods remain asynchronous.
@@ -144,7 +144,7 @@ applications already using runtime source classes.
 | `@loaders.gl/arcgis/authentication` | `ArcGISAuthentication` and `createArcGISCredential` |
 | `@loaders.gl/arcgis/discovery` | `getArcGISServices`, `discoverArcGISCapabilities` and `selectArcGISService` |
 | `@loaders.gl/arcgis/scene-aggregation` | `aggregateArcGISSceneFeatures` |
-| `@loaders.gl/arcgis/arcgis-feature-server-source-loader` | One explicit implementation: `ArcGISFeatureServerSourceLoaderWithParser` and `ArcGISVectorSource` |
+| `@loaders.gl/arcgis/arcgis-feature-server-source-loader` | One explicit implementation: `ArcGISFeatureServerLoaderWithParser` and `ArcGISVectorSource` |
 
 Each service loader has an equivalent implementation subpath. Named ESM imports from `/bundled`
 can still be tree-shaken; importing its entire registry intentionally includes all six clients.

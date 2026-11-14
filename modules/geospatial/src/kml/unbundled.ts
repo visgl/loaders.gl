@@ -12,7 +12,7 @@ export type {KMZLoaderOptions} from './kmz-loader-types';
 export {KMZLoader} from './kmz-loader-types';
 
 export type {KMZSourceOptions} from './kmz-source';
-export {KMZSourceLoader, KMZVectorSource} from './kmz-source';
+export {KMZVectorSource} from './kmz-source';
 
 export type {KMLWriterData, KMLWriterOptions, KMZWriterOptions} from './kml-writer';
 export {KMLWriter, KMZWriter, encodeKMLText} from './kml-writer';

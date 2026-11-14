@@ -85,7 +85,7 @@ export type {
   SourceLoader
 } from '@loaders.gl/core';
 export {
-  PMTilesSourceLoader,
+  PMTilesLoader,
   PMTilesFormat,
   PMTilesTileSource,
   _PMTilesLoader

@@ -4,10 +4,9 @@
 
 import type {RecordBatch} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
-import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {DataSource as BaseDataSource} from '@loaders.gl/core/loader-utils';
 
-import {LanceSourceLoader as LanceSourceLoaderMetadata} from './lance-source-loader-types';
 import {parseLanceFileMetadata, type LanceFileMetadata} from './lance-file';
 import {LanceDecoderUnavailableError} from './lance-errors';
 import {parseLanceManifest, type LanceManifest} from './lance-manifest';
@@ -200,20 +199,11 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
   }
 }
 
-const {preload: _preload, ...LanceSourceLoaderMetadataWithoutPreload} = LanceSourceLoaderMetadata;
-
-/** Parser-bearing Lance source loader, retaining synchronous source construction. */
-export const LanceSourceLoader = {
-  ...LanceSourceLoaderMetadataWithoutPreload,
-  /** Returns this already-loaded source implementation. */
-  preload: async (): Promise<SourceLoader<LanceSource, LanceSourceLoaderOptions>> =>
-    LanceSourceLoader,
-  /** Constructs a reusable Lance dataset source. */
-  createDataSourceSync(
-    data: string | Blob,
-    options: LanceSourceLoaderOptions,
-    coreApi?: CoreAPI
-  ): LanceSource {
-    return new LanceSource(data, options, coreApi);
-  }
-} as const satisfies SourceLoader<LanceSource, LanceSourceLoaderOptions>;
+/** Creates a reusable Lance source. */
+export function createLanceSource(
+  data: string | Blob,
+  options: LanceSourceLoaderOptions,
+  coreApi?: CoreAPI
+): LanceSource {
+  return new LanceSource(data, options, coreApi);
+}

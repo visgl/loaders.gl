@@ -5,13 +5,13 @@
 export {NetCDFFormat} from './netcdf/netcdf-format';
 export {NetCDFLoader} from './netcdf/netcdf-loader';
 export type {NetCDF, NetCDFLoaderOptions} from './netcdf/netcdf-loader';
-export {NetCDFSourceLoader} from './netcdf/netcdf-source-loader-types';
+
 export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf/netcdf-source-loader';
 export {
-  OMEZarrSourceLoader,
-  GeoZarrSourceLoader,
-  ZarrArraySourceLoader,
-  SpatialDataSourceLoader
+  OMEZarrLoader,
+  GeoZarrLoader,
+  ZarrArrayLoader,
+  SpatialDataLoader
 } from './zarr/zarr-loader-types';
 export type {
   GetZarrArrayParameters,

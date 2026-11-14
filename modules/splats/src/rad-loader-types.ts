@@ -23,5 +23,7 @@ export const RADLoader = {
   ...RADFormat,
   version: VERSION,
   options: {},
+  fromUrl: true,
+  fromBlob: true,
   preload
 } as const satisfies Loader<RADMetadata, never, LoaderOptions>;

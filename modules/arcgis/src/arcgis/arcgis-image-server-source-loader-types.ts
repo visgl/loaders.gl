@@ -7,16 +7,16 @@ import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISImageSource} from './arcgis-image-server-source-loader';
 import type {ArcGISImageSourceLoaderProps} from '../arcgis-source-types';
 
-/** Loads the ArcGISImageServerSourceLoader implementation on first asynchronous use. */
+/** Loads the ArcGISImageServerLoader implementation on first asynchronous use. */
 async function preloadArcGISImageServerSourceLoader(): Promise<SourceLoader<ArcGISImageSource>> {
-  const {ArcGISImageServerSourceLoaderWithParser} = await import(
+  const {ArcGISImageServerLoaderWithParser} = await import(
     '@loaders.gl/arcgis/arcgis-image-server-source-loader'
   );
-  return ArcGISImageServerSourceLoaderWithParser;
+  return ArcGISImageServerLoaderWithParser;
 }
 
 /** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
-export const ArcGISImageServerSourceLoader = {
+export const ArcGISImageServerLoader = {
   ...ARCGIS_IMAGE_SERVER_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISImageSource,
   batchType: null as never,
@@ -28,7 +28,7 @@ export const ArcGISImageServerSourceLoader = {
     _coreApi?: CoreAPI
   ): ArcGISImageSource {
     throw new Error(
-      'ArcGISImageServerSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISImageServerLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISImageSource>;

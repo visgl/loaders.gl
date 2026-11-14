@@ -28,6 +28,11 @@ async function preloadORCLoader() {
 
 /** Metadata-only loader for Apache ORC files. */
 export const ORCLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.orc(?:$|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: true,
+  type: 'orc',
   ...ORCFormat,
   version: VERSION,
   dataType: null as unknown as Table,
