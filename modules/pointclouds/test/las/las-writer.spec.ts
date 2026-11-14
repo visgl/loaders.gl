@@ -32,7 +32,7 @@ test('LASWriter#encode plain and Arrow mesh data', async () => {
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
-  const arrowTable = convertMeshToTable(mesh, 'arrow-table');
+  const arrowTable = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
   const arrowArrayBuffer = await encode(arrowTable, LASWriter);
   const arrowData = await parse(arrowArrayBuffer, LASLoader, {
     las: {shape: 'mesh'},

@@ -5879,6 +5879,7 @@ __metadata:
     lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+    apache-arrow: ">= 17.0.0"
     geotiff: ^2.1.0
     lerc: ^4.2.0
   peerDependenciesMeta:
@@ -5902,6 +5903,7 @@ __metadata:
     zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+    apache-arrow: ">= 17.0.0"
   dependenciesMeta:
     draco3d:
       optional: true
@@ -6122,6 +6124,7 @@ __metadata:
     zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+    apache-arrow: ">= 17.0.0"
   languageName: unknown
   linkType: soft
 

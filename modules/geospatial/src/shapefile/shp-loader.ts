@@ -90,7 +90,7 @@ function getSHPShape(options?: SHPLoaderOptions): NonNullable<SHPLoaderOptions['
 
 /** Exposes native Arrow output after parsing or worker hydration. */
 export const SHPLoaderWithParser = {
-  ...SHPColumnLoader,
+  ...SHPLoaderMetadataWithoutPreload,
   serializeWorkerResult: serializeShapefileWorkerResult,
   serializeWorkerBatch: serializeShapefileWorkerBatch,
   dataType: null as unknown as SHPResult | Table,

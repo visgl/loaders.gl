@@ -76,7 +76,7 @@ function makeTable(
 }
 
 /** Decodes output geometries for behavior assertions only. */
-function readGeometries(table: ArrowTable | null): Geometry[] {
+function readGeometries(table: arrow.Table | null): Geometry[] {
   const column = table!.getChild('geometry')!;
   return Array.from(
     {length: column.length},

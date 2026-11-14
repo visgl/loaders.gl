@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table} from 'apache-arrow';
 import {
   canEncodeWithWorker,
   type WriterWithEncoder,
@@ -25,6 +26,7 @@ export type DracoWriterInput =
   | DracoMesh
   | Mesh
   | MeshArrowTable
+  | Table
   | DracoBuilderMesh
   | DracoWriterAttributes;
 
@@ -220,7 +222,7 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
 
 /** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */
 function normalizeDracoMesh(data: DracoWriterInput): DracoBuilderMesh {
-  if (isMeshArrowTable(data)) {
+  if (data instanceof Table || isMeshArrowTable(data)) {
     return convertTableToMesh(data);
   }
 

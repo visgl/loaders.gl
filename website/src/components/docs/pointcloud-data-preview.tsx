@@ -368,7 +368,7 @@ async function loadPreviewPointCloud(
       pcd: {shape: 'arrow'},
       ply: {shape: 'arrow', pointCloud: true}
     });
-    return convertTableToMesh({shape: 'arrow-table', data: pointCloud as Table});
+    return convertTableToMesh(pointCloud as Table);
   }
 
   const pointClouds = await Promise.all(
