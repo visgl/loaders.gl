@@ -3,7 +3,7 @@ import {validateLoader, validateMeshCategoryData} from 'test/common/conformance'
 import {validateArrowTableSchema} from '@math.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {canParseWithWorker} from '@loaders.gl/core/loader-utils';
-import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pointclouds/pcd';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
 import {setLoaderOptions, fetchFile, parse, load, parseInBatches} from '@loaders.gl/core';
 const PCD_ASCII_URL = '@loaders.gl/pointclouds/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pointclouds/pcd/test/data/Zaghetto.pcd';
@@ -52,7 +52,6 @@ function createBinaryArrayBufferWithCountedField(): ArrayBuffer {
 }
 test('PCDLoader#loader conformance', () => {
   validateLoader(PCDLoader, 'PCDLoader');
-  validateLoader(PCDWorkerLoader, 'PCDWorkerLoader');
 });
 test('PCDLoader#parse(text)', async () => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
@@ -182,12 +181,12 @@ test('PCDLoader#parseInBatches(binary with counted fields, arrow-table)', async 
   expect(batchRowCounts, 'emits requested binary PCD Arrow batches').toEqual([1, 1]);
   expect(positions, 'positions read correctly across batches').toEqual([1, 2, 3, 4, 5, 6]);
 });
-test('PCDWorkerLoader#parse(binary)', async () => {
+test('PCDLoader#parse(binary)', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(PCD_BINARY_URL, PCDWorkerLoader, {pcd: {shape: 'mesh'}});
+  const data = await load(PCD_BINARY_URL, PCDLoader, {pcd: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.indices, 'indices were not preset').toBeFalsy();

@@ -9,7 +9,6 @@ import {
   fetchFile,
   registerLoaders,
   NullLoader,
-  NullWorkerLoader,
   isBrowser,
   resolvePath
 } from '@loaders.gl/core';
@@ -124,11 +123,14 @@ test('load#load retrieve Response', async () => {
 });
 
 test.runIf(isBrowser)('load#load retrieve Response from worker - BROWSER ONLY', async () => {
-  const result = await load(JSON_URL, NullWorkerLoader, {
-    _workerType: 'test',
-    reuseWorkers: false
-  });
-  expect(result, 'null passed through by NullWorkerLoader').toBe(null);
+  const result = await load(
+    JSON_URL,
+    {...NullLoader, worker: true},
+    {
+      core: {_workerType: 'test'}
+    }
+  );
+  expect(result, 'null passed through by the null worker').toBe(null);
 });
 
 test.runIf(isBrowser)('load#Blob(text) - BROWSER ONLY', async () => {

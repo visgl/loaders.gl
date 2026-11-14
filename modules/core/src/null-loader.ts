@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {LoaderContext} from '@loaders.gl/core/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -12,25 +12,6 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type NullLoaderOptions = LoaderOptions & {
   null?: {};
 };
-
-/**
- * Loads any data and returns null (or optionally passes through data unparsed)
- */
-export const NullWorkerLoader = {
-  dataType: null,
-  batchType: null as never,
-  name: 'Null loader',
-  id: 'null',
-  module: 'core',
-  version: VERSION,
-  worker: true,
-  mimeTypes: ['application/x.empty'],
-  extensions: ['null'],
-  tests: [() => false],
-  options: {
-    null: {}
-  }
-} as const satisfies Loader<null, never, NullLoaderOptions>;
 
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)

@@ -39,8 +39,6 @@ export const GeoJSONLoader = {
   serializeWorkerResult: serializeGeoJSONWorkerResult,
   deserializeWorkerResult: deserializeGeoJSONWorkerResult
 } as const;
-/** @deprecated Use GeoJSONLoader. */
-export const GeoJSONWorkerLoader = GeoJSONLoader;
 
 export type {GeoJSONWriterOptions} from './geojson-writer';
 export {GeoJSONWriter} from './geojson-writer';

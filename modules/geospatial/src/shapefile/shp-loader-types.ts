@@ -56,6 +56,3 @@ export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
   },
   preload: preloadSHPLoader
 } as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, SHPLoaderOptions>;
-
-/** @deprecated Use SHPLoader. */
-export const SHPWorkerLoader = SHPLoader;

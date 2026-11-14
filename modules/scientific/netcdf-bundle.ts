@@ -38,8 +38,7 @@ export {
   NullLoader,
   _fetchProgress,
   _BrowserFileSystem,
-  _unregisterLoaders,
-  NullWorkerLoader
+  _unregisterLoaders
 } from '@loaders.gl/core';
 export {
   setPathPrefix,

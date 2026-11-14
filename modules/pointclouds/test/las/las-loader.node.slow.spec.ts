@@ -14,7 +14,7 @@ import {
   validateMeshCategoryData,
   validateTableCategoryData
 } from 'test/common/conformance';
-import {LASLoader, LASWorkerLoader} from '@loaders.gl/pointclouds/las';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
 import * as las from '@loaders.gl/pointclouds/las';
 import * as bundledLas from '@loaders.gl/pointclouds/las/bundled';
 import * as unbundledLas from '@loaders.gl/pointclouds/las/unbundled';
@@ -86,7 +86,6 @@ setLoaderOptions({
 
 test('LASLoader#loader conformance', () => {
   validateLoader(LASLoader, 'LASLoader');
-  validateLoader(LASWorkerLoader, 'LASWorkerLoader');
   validateLoader(LAZPerfLoader, 'LAZPerfLoader');
   validateLoader(LASCOPCLoader, 'LASCOPCLoader');
   validateLoader(LAZRsLoader, 'LAZRsLoader');
@@ -1522,12 +1521,12 @@ test('LASWorker#parse(binary) extra bytes', async () => {
     LAS_EXTRABYTES_POINT_COUNT * 3
   );
 });
-test('LASWorkerLoader#load(worker)', async () => {
+test('LASLoader#load(worker)', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(LAS_BINARY_URL, LASWorkerLoader, {las: {shape: 'mesh'}});
+  const data = await load(LAS_BINARY_URL, LASLoader, {las: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(
     LAS_POINT_COUNT * 3

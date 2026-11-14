@@ -3,7 +3,7 @@ import {validateLoader, validateMeshCategoryData} from 'test/common/conformance'
 import {validateArrowTableSchema} from '@math.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {canParseWithWorker} from '@loaders.gl/core/loader-utils';
-import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/scene/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 import {setLoaderOptions, load, parseInBatches} from '@loaders.gl/core';
 import {equals} from '@math.gl/core';
 const OBJ_ASCII_URL = '@loaders.gl/scene/obj/test/data/bunny.obj';
@@ -15,7 +15,6 @@ setLoaderOptions({
 });
 test('OBJLoader#loader objects', () => {
   validateLoader(OBJLoader, 'OBJLoader');
-  validateLoader(OBJWorkerLoader, 'OBJWorkerLoader');
   expect(OBJLoader.testText('v 1 2 3')).toBe(true);
   expect(OBJLoader.testText('# comment')).toBe(false);
 });
@@ -167,12 +166,12 @@ test('OBJLoader#parseText - object with vertex colors', async () => {
     'vertex 2 color parsed as float rgb'
   ).toBeTruthy();
 });
-test('OBJWorkerLoader#parse(text)', async () => {
+test('OBJLoader#parse(text)', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader, {obj: {shape: 'mesh'}});
+  const data = await load(OBJ_ASCII_URL, OBJLoader, {obj: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(14904 * 3);

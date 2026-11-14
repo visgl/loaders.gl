@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export {CSVFormat} from './csv/csv-format';
-export {CSVLoader, CSVLoader as CSVWorkerLoader} from './csv/csv-loader-types';
+export {CSVLoader} from './csv/csv-loader-types';
 export type {CSVLoaderOptions} from './csv/csv-loader-options';
 export {CSVWriter} from './csv/csv-writer';
 export type {CSVWriterOptions} from './csv/csv-writer';
@@ -36,7 +36,6 @@ export type {JSONTableLoaderOptions} from './json/json-table-loader-types';
 export type {NDJSONLoaderOptions} from './json/ndjson-loader-types';
 export type {GeoJSONLoaderOptions} from './json/geojson-loader-types';
 export type {NDGeoJSONLoaderOptions} from './json/ndgeojson-loader-types';
-export {GeoJSONWorkerLoader} from './json/geojson-loader-types';
 export {JSONWriter, type JSONWriterOptions} from './json/json-writer';
 export {GeoJSONWriter, type GeoJSONWriterOptions} from './json/geojson-writer';
 export {LanceFormat} from './lance/lance-format';

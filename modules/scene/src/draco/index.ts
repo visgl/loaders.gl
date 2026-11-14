@@ -40,7 +40,3 @@ export {DracoWriterWorker, DracoWriter} from './draco-writer';
 
 export type {DracoLoaderOptions} from './draco-loader-types';
 export {DracoLoader} from './draco-loader-types';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use DracoLoader. */
-export {DracoWorkerLoader} from './draco-loader-types';

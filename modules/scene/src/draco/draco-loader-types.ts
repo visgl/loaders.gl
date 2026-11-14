@@ -66,9 +66,6 @@ export const DracoLoader = {
   preload
 } as const satisfies Loader<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
 
-/** @deprecated Use DracoLoader. */
-export const DracoWorkerLoader = DracoLoader;
-
 /** Resolves the Draco decoder backend from loader options. */
 function getDracoBackend(options?: DracoLoaderOptions): DracoDecoderBackend {
   if (options?.draco?.backend) {

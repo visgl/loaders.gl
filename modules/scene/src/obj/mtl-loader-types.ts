@@ -41,6 +41,3 @@ export const MTLLoader = {
   },
   preload
 } as const satisfies Loader<MTLMaterial[], never, LoaderOptions>;
-
-/** @deprecated Use MTLLoader. */
-export const MTLWorkerLoader = MTLLoader;

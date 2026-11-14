@@ -48,6 +48,3 @@ export const PCDLoader = {
   },
   preload
 } as const satisfies Loader<PCDMesh | MeshArrowTable, PCDMesh | ArrowTableBatch, PCDLoaderOptions>;
-
-/** @deprecated Use PCDLoader. */
-export const PCDWorkerLoader = PCDLoader;

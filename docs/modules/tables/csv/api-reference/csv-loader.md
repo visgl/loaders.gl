@@ -152,5 +152,3 @@ to open a URL or Blob for table queries. Use `load()` to parse the input into a 
 | `csv.delimitersToGuess`     | `string[]`                                                                                 | `[',', '\t', '\|', ';']`      | Delimiters to try when no delimiter is specified.                                                                            |
 
 ## Remarks
-
-`CSVWorkerLoader` is a deprecated alias for `CSVLoader`.

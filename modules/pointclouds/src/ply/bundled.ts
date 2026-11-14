@@ -3,7 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 export type {PLYLoaderOptions} from './ply-loader-types';
-export {
-  PLYLoaderWithParser as PLYWorkerLoader,
-  PLYLoaderWithParser as PLYLoader
-} from './ply-loader';
+export {PLYLoaderWithParser as PLYLoader} from './ply-loader';

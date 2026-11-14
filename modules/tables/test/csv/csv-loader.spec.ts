@@ -9,15 +9,9 @@ import {
   preloadSync,
   isAsyncIterable
 } from '@loaders.gl/core';
-import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/tables/csv/index';
-import {
-  CSVLoader as BundledCSVLoader,
-  CSVWorkerLoader as BundledCSVWorkerLoader
-} from '@loaders.gl/tables/csv/bundled';
-import {
-  CSVLoader as UnbundledCSVLoader,
-  CSVWorkerLoader as UnbundledCSVWorkerLoader
-} from '@loaders.gl/tables/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader as BundledCSVLoader} from '@loaders.gl/tables/csv/bundled';
+import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv/unbundled';
 import * as csv from '@loaders.gl/tables/csv/index';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {getTableLength} from '@loaders.gl/core/schema-utils';
@@ -35,26 +29,22 @@ const TSV_BRAZIL = '@loaders.gl/tables/csv/test/data/tsv/brazil.tsv';
 test('CSVLoader#loader conformance', () => {
   validateLoader(CSVLoader, 'CSVLoader');
 });
-test('CSV root loaders expose metadata loaders and deprecated WorkerLoader aliases', () => {
+test('CSV root loaders expose metadata loaders', () => {
   expect(typeof CSVLoader.preload, 'CSVLoader exposes preload').toBe('function');
   expect('parse' in CSVLoader, 'CSVLoader does not expose parse').toBeFalsy();
   expect('parseInBatches' in CSVLoader, 'CSVLoader does not expose parseInBatches').toBeFalsy();
-  expect(CSVWorkerLoader, 'CSVWorkerLoader aliases CSVLoader').toBe(CSVLoader);
   expect(
     'CSVLoaderWithParser' in csv,
     'root package does not export CSVLoaderWithParser'
   ).toBeFalsy();
 });
-test('CSV bundled loaders expose parser methods and deprecated WorkerLoader aliases', () => {
+test('CSV bundled loaders expose parser methods', () => {
   expect(typeof BundledCSVLoader.parse, 'bundled CSVLoader exposes parse').toBe('function');
   expect(typeof BundledCSVLoader.parseInBatches, 'bundled CSVLoader exposes parseInBatches').toBe(
     'function'
   );
-  expect(BundledCSVWorkerLoader, 'bundled CSVWorkerLoader aliases CSVLoader').toBe(
-    BundledCSVLoader
-  );
 });
-test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader aliases', async () => {
+test('CSV unbundled metadata loaders expose preload', async () => {
   expect(preloadSync(UnbundledCSVLoader), 'unbundled CSVLoader is not preloaded initially').toBe(
     null
   );
@@ -68,9 +58,6 @@ test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader 
     'parseInBatches' in UnbundledCSVLoader,
     'unbundled CSVLoader does not expose parseInBatches'
   ).toBeFalsy();
-  expect(UnbundledCSVWorkerLoader, 'unbundled CSVWorkerLoader aliases CSVLoader').toBe(
-    UnbundledCSVLoader
-  );
   const parsedTable = await parse('city,population\nParis,2148000', UnbundledCSVLoader, {
     csv: {header: true, shape: 'object-row-table'}
   });

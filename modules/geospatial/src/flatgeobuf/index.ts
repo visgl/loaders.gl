@@ -18,7 +18,3 @@ export {
   FlatGeobufSourceLoader as _FlatGeobufSourceLoader,
   FlatGeobufVectorSource
 } from './flatgeobuf-source-loader';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use FlatGeobufLoader. */
-export {FlatGeobufWorkerLoader} from './flatgeobuf-loader-types';

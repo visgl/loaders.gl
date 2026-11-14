@@ -22,6 +22,3 @@ export const LASLoader = {
   workerInBatches: true,
   preload
 } as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;
-
-/** @deprecated Use LASLoader. */
-export const LASWorkerLoader = LASLoader;

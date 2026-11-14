@@ -21,8 +21,6 @@ export {TerrainLoader} from './terrain/terrain-loader-types';
 export {TerrainLoader as TerrainWorkerLoader} from './terrain/terrain-loader-types';
 export type {TerrainLoaderOptions} from './terrain/terrain-loader-types';
 export {QuantizedMeshLoader} from './terrain/quantized-mesh-loader-types';
-/** @deprecated Use QuantizedMeshLoader. */
-export {QuantizedMeshLoader as QuantizedMeshWorkerLoader} from './terrain/quantized-mesh-loader-types';
 export type {QuantizedMeshLoaderOptions} from './terrain/quantized-mesh-loader-types';
 export {TerrainFormat, QuantizedMeshFormat} from './terrain/terrain-format';
 export {QuantizedMeshWriter} from './terrain/quantized-mesh-writer';

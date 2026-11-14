@@ -3,7 +3,7 @@
 // loaders.gl
 
 export {NetCDFFormat} from './netcdf/netcdf-format';
-export {NetCDFLoader, NetCDFWorkerLoader} from './netcdf/netcdf-loader';
+export {NetCDFLoader} from './netcdf/netcdf-loader';
 export type {NetCDF, NetCDFLoaderOptions} from './netcdf/netcdf-loader';
 export {NetCDFSourceLoader} from './netcdf/netcdf-source-loader-types';
 export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf/netcdf-source-loader';
@@ -61,7 +61,7 @@ export type {
   ScientificSourceCapabilities
 } from './scientific-array';
 
-export {NPYLoader, NPYWorkerLoader} from './npy-loader-types';
+export {NPYLoader} from './npy-loader-types';
 export type {NPYLoaderOptions} from './npy-loader-types';
 export type {NPYTile} from './lib/parsers/parse-npy';
 export {NPYFormat} from './npy-format';

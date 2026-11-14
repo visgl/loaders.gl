@@ -32,8 +32,6 @@ import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 export type WMSSourceLoaderOptions = DataSourceOptions &
   WMSLoaderOptions &
   ImageLoaderOptions & {
-    /** @deprecated Use wms.vendorParameters. */
-    vendorParameters?: Record<string, unknown>;
     wms?: {
       /** Maximum decoded GetMap pixels; defaults to 16 million. */
       maxPixels?: number;
@@ -261,7 +259,7 @@ export class WMSImageSource
       ...options.wms?.wmsParameters
     };
 
-    this.vendorParameters = options.wms?.vendorParameters || options.vendorParameters || {};
+    this.vendorParameters = options.wms?.vendorParameters || {};
   }
 
   // ImageSource implementation

@@ -10,7 +10,3 @@ export type {CSVWriterOptions} from './csv-writer';
 export {CSVWriter} from './csv-writer';
 export {CSVTableSource} from './csv-source';
 export type {CSVSourceOptions} from './csv-source';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use CSVLoader. */
-export {CSVLoader as CSVWorkerLoader} from './csv-loader-types';

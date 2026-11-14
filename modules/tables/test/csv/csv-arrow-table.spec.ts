@@ -13,15 +13,9 @@ import {
   isIterator,
   isAsyncIterable
 } from '@loaders.gl/core';
-import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/tables/csv/index';
-import {
-  CSVLoader as BundledCSVLoader,
-  CSVWorkerLoader as BundledCSVWorkerLoader
-} from '@loaders.gl/tables/csv/bundled';
-import {
-  CSVLoader as UnbundledCSVLoader,
-  CSVWorkerLoader as UnbundledCSVWorkerLoader
-} from '@loaders.gl/tables/csv/unbundled';
+import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader as BundledCSVLoader} from '@loaders.gl/tables/csv/bundled';
+import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv/unbundled';
 import * as csv from '@loaders.gl/tables/csv/index';
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
@@ -44,7 +38,6 @@ test('CSVLoader#root export includes metadata loader', () => {
   expect(typeof CSVLoader.preload).toBe('function');
   expect('parse' in CSVLoader).toBe(false);
   expect('parseInBatches' in CSVLoader).toBe(false);
-  expect(CSVWorkerLoader).toBe(CSVLoader);
   expect('CSVLoaderWithParser' in csv).toBe(false);
   expect('CSVArrowLoader' in csv).toBe(false);
   expect('CSVArrowWriter' in csv).toBe(false);
@@ -53,7 +46,6 @@ test('CSVLoader#root export includes metadata loader', () => {
 test('CSVLoader#bundled export includes parser methods', () => {
   expect(typeof BundledCSVLoader.parse).toBe('function');
   expect(typeof BundledCSVLoader.parseInBatches).toBe('function');
-  expect(BundledCSVWorkerLoader).toBe(BundledCSVLoader);
 });
 
 test('CSVLoader direct parser methods honor the Arrow default', async () => {
@@ -82,7 +74,6 @@ test('CSVLoader direct parser methods honor the Arrow default', async () => {
 
 test('CSVLoader#unbundled export preloads parser implementation', async () => {
   expect(preloadSync(UnbundledCSVLoader)).toBe(null);
-  expect(UnbundledCSVWorkerLoader).toBe(UnbundledCSVLoader);
   expect(typeof UnbundledCSVLoader.preload).toBe('function');
   expect('parse' in UnbundledCSVLoader).toBe(false);
   expect('parseSync' in UnbundledCSVLoader).toBe(false);

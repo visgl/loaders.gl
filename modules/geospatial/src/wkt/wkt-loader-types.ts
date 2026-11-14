@@ -45,6 +45,3 @@ export const WKTLoader = {
   },
   preload
 } as const satisfies Loader<Geometry, never, WKTLoaderOptions>;
-
-/** @deprecated Use WKTLoader. */
-export const WKTWorkerLoader = WKTLoader;

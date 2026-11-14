@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-import {NPYLoader, NPYWorkerLoader} from '@loaders.gl/scientific';
+import {NPYLoader} from '@loaders.gl/scientific';
 import {setLoaderOptions, load, fetchFile} from '@loaders.gl/core';
 import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy-loader';
 const NPY_UINT8_URL = '@loaders.gl/scientific/test/npy/data/uint8.npy';
@@ -13,7 +13,6 @@ setLoaderOptions({
 });
 test('NPYLoader#loader objects', async () => {
   validateLoader(NPYLoader, 'NPYLoader');
-  validateLoader(NPYWorkerLoader, 'NPYWorkerLoader');
 });
 test('NPYLoader#parse', async () => {
   const {data, header} = await load(NPY_UINT8_URL, NPYLoader, {core: {worker: false}});
@@ -23,8 +22,8 @@ test('NPYLoader#parse', async () => {
   expect(data, 'data matches').toEqual(expectedData);
   expect(header, 'header matches').toEqual(expectedHeader);
 });
-test('NPYWorkerLoader#parse', async () => {
-  const {data, header} = await load(NPY_UINT8_URL, NPYWorkerLoader);
+test('NPYLoader#parse', async () => {
+  const {data, header} = await load(NPY_UINT8_URL, NPYLoader);
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase
   const expectedHeader = {descr: '|u1', fortran_order: false, shape: [4]};

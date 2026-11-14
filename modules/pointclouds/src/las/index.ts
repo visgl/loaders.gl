@@ -63,8 +63,4 @@ export type {
   LAZChunkMetadata
 } from '@loaders.gl/core/loader-utils';
 
-// DEPRECATED EXPORTS
-/** @deprecated Use LASLoader. */
-export {LASWorkerLoader} from './las-loader-types';
-
 export type {LASCompatibilityLayout} from './lib/las-compatibility';
