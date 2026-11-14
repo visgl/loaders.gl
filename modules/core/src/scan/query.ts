@@ -34,13 +34,45 @@ import {
 } from '@loaders.gl/core/schema-utils';
 import {projectArrowTable, filterArrowTable} from './arrow-execution';
 import {filterArrowRows} from './arrow-execution/filter-arrow-table';
-import {createCatalogQuerySource} from './catalog-query-source';
 import type {SQLCatalogQuery} from './sql-catalog';
-import {resolveQuerySource} from './resolve-query-source';
 import type {DataSource} from '@loaders.gl/core/loader-utils';
 
 /** Logical table or metadata request. */
-export type Query = TableQuery | SQLQuery;
+export type Query = TableQuery | SQLQuery | TypedTableQuery;
+
+/** Numeric output types accepted by typed SELECT items. */
+export type TypedColumnType =
+  | 'float64'
+  | 'float32'
+  | 'float16'
+  | 'int64'
+  | 'uint64'
+  | 'int32'
+  | 'uint32'
+  | 'int16'
+  | 'uint16'
+  | 'int8'
+  | 'uint8';
+
+/** Structured SELECT item that casts a named source column to a numeric width. */
+export type TypedColumnSelection = Readonly<{
+  /** Source column to cast. */
+  column: string;
+  /** Physical output type. */
+  cast: TypedColumnType;
+  /** Output name, defaulting to the source column name. */
+  as?: string;
+}>;
+
+/** Structured query with optional typed projection items. */
+export type TypedTableQuery = Omit<TableQuery, 'select'> &
+  Readonly<{
+    /** Ordered output columns and casts. */
+    select?: readonly (
+      | import('@loaders.gl/core/loader-utils').TableSelection
+      | TypedColumnSelection
+    )[];
+  }>;
 
 /** Injected SQL parser; core validates and executes the returned logical query. */
 export type SQLQueryParser = (sql: string) => Query | Promise<Query>;
@@ -157,19 +189,27 @@ async function* queryAppendBatches(
     } else parsedQuery = tableQuery;
     if (!parsedQuery || typeof parsedQuery !== 'object' || Array.isArray(parsedQuery))
       throw new Error('Table query must be an object.');
+    const normalizedQuery = await normalizeTypedQuery(parsedQuery);
     const castPredicate =
-      'command' in parsedQuery ? false : validatePredicateOperands(parsedQuery.where);
+      'command' in normalizedQuery ? false : validatePredicateOperands(normalizedQuery.where);
     let logicalQuery: TableQuery | Exclude<SQLQuery, SQLCatalogQuery>;
     let source: unknown;
     if ('command' in parsedQuery) {
       logicalQuery = {};
-      source = createCatalogQuerySource(parsedQuery, options.sources);
+      source = (await import('./catalog-query-source')).createCatalogQuerySource(
+        parsedQuery,
+        options.sources
+      );
     } else {
-      logicalQuery = parsedQuery;
+      logicalQuery = normalizedQuery as Exclude<SQLQuery, SQLCatalogQuery>;
       source =
         logicalQuery.from === undefined
           ? options.source
-          : await resolveQuerySource(logicalQuery.from, options.sources, options.signal);
+          : await (await import('./resolve-query-source')).resolveQuerySource(
+              logicalQuery.from,
+              options.sources,
+              options.signal
+            );
     }
     if (logicalQuery.from === undefined && typeof source === 'string') {
       const opened = await (await import('./query-open-source')).openQuerySource(options);
@@ -432,6 +472,18 @@ async function* queryAppendBatches(
       );
     }
   }
+}
+
+/** Lowers structured casts to the same AST consumed by SQL and Arrow. */
+async function normalizeTypedQuery(query: Query): Promise<SQLQuery | TableQuery> {
+  if (
+    'command' in query ||
+    !Array.isArray(query.select) ||
+    !query.select.some(item => item && typeof item === 'object' && 'cast' in item)
+  ) {
+    return query as SQLQuery | TableQuery;
+  }
+  return (await import('./arrow-execution/expressions')).normalizeTypedProjection(query);
 }
 
 /** Emits original Arrow RecordBatches without copying their buffers. */
