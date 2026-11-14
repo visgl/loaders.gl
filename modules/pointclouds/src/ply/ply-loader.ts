@@ -16,7 +16,7 @@ import {
 } from '@loaders.gl/core/arrow-worker-transport';
 import type {PLYHeader, PLYMesh} from './lib/ply-types';
 import {
-  convertMeshToTable,
+  convertMeshToArrowTableWrapper,
   convertTableToMesh,
   deduceMeshSchema
 } from '@loaders.gl/core/schema-utils';
@@ -31,7 +31,7 @@ import {PLYLoader as PLYLoaderMetadata} from './ply-loader-types';
 const {preload: _PLYLoaderPreload, ...PLYLoaderMetadataWithoutPreload} = PLYLoaderMetadata;
 
 function convertPLYMesh(mesh: PLYMesh, options?: PLYLoaderOptions): PLYMesh | MeshArrowTable {
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   return convertPLYTable(table, options, mesh.loaderData);
 }
 
@@ -109,7 +109,7 @@ function convertPLYTable(
   );
   return options?.ply?.shape === 'arrow'
     ? {
-        ...convertMeshToTable(formattedMesh, 'arrow-table'),
+        ...convertMeshToArrowTableWrapper(formattedMesh),
         loader: 'ply' as const,
         loaderData
       }

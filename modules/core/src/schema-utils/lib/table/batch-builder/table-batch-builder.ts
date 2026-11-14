@@ -14,7 +14,7 @@ import {
 
 // TODO define interface instead
 type TableBatchBuilderOptions = {
-  shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
+  shape?: 'array-row-table' | 'object-row-table' | 'columnar-table';
   batchSize?: number | 'auto';
 };
 
@@ -48,7 +48,7 @@ export class TableBatchBuilder {
 
   /** @deprecated Use addArrayRow or addObjectRow */
   addRow(row: any[] | {[columnName: string]: any}): void {
-    if (this.options.shape === 'arrow-table' || this.options.shape === 'columnar-table') {
+    if (this.options.shape === 'columnar-table') {
       this.arrowBuilder ??= new ArrowTableBuilder(this.schema);
       if (Array.isArray(row)) {
         this.arrowBuilder.addArrayRow(row);
@@ -132,9 +132,7 @@ export class TableBatchBuilder {
   private takeBatch(): TableBatch {
     if (this.arrowBuilder) {
       const batch = this.arrowBuilder.flushBatch()!;
-      return this.options.shape === 'columnar-table'
-        ? {...batch, ...convertToColumnarTable(batch)}
-        : batch;
+      return {...batch, ...convertToColumnarTable(batch)};
     }
     const rows = this.rows;
     this.rows = [];

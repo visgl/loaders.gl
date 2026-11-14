@@ -5,7 +5,7 @@
 import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {VERSION} from './lib/utils/version';
 import {QuantizedMeshFormat} from './terrain-format';
 
@@ -97,7 +97,7 @@ function normalizeMeshArrowTable(data: Mesh | MeshArrowTable | Table): MeshArrow
   if (!('attributes' in data)) {
     return data;
   }
-  return convertMeshToTable(data as Mesh, 'arrow-table');
+  return convertMeshToArrowTableWrapper(data as Mesh);
 }
 
 /** Return a required mesh attribute or throw a format-specific error. */

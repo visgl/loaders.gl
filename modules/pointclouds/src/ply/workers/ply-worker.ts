@@ -4,7 +4,7 @@
 
 import {createLoaderWorker, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper} from '@loaders.gl/core/schema-utils';
 import type {PLYMesh} from '../lib/ply-types';
 import type {PLYLoaderOptions} from '../ply-loader-types';
 import {PLYColumnLoader} from '../ply-loader';
@@ -30,7 +30,7 @@ createLoaderWorker({
       } else {
         const mesh = batch as PLYMesh;
         yield makeTableScanBatch({
-          ...convertMeshToTable(mesh, 'arrow-table'),
+          ...convertMeshToArrowTableWrapper(mesh),
           loader: mesh.loader,
           loaderData: mesh.loaderData
         } as MeshArrowTable);

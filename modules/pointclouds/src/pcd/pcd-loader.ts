@@ -16,7 +16,7 @@ import {
   deserializeArrowWorkerTable,
   serializeArrowWorkerTable
 } from '@loaders.gl/core/arrow-worker-transport';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import type {PCDMesh} from './lib/pcd-types';
 import {parsePCD, parsePCDHeader} from './lib/parse-pcd';
 import {PCDLoader as PCDLoaderMetadata} from './pcd-loader-types';
@@ -26,7 +26,7 @@ const {preload: _PCDLoaderPreload, ...PCDLoaderMetadataWithoutPreload} = PCDLoad
 type PCDParsedBatch = PCDMesh | ArrowTableBatch;
 
 function convertPCDMesh(mesh: PCDMesh, options?: PCDLoaderOptions): PCDMesh | MeshArrowTable {
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   return options?.pcd?.shape === 'mesh'
     ? convertPCDTableToMesh(table, mesh)
     : {...table, loader: mesh.loader, loaderData: mesh.loaderData};
@@ -101,7 +101,7 @@ function* parsePCDBinaryInBatches(
 }
 
 function makePCDBatch(mesh: PCDMesh, options?: PCDLoaderOptions): PCDParsedBatch {
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   if (options?.pcd?.shape === 'mesh') {
     return convertPCDTableToMesh(table, mesh);
   }

@@ -10,7 +10,7 @@ import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-util
 import {parseFromContext} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
 import type {Mesh} from '@loaders.gl/core/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {ImageLoader, getImageData} from '@loaders.gl/images';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
 import {
@@ -68,7 +68,7 @@ export async function parseTerrain(
     ...options?.terrain
   } as TerrainOptions;
   const mesh = makeTerrainMeshFromImage(terrainImage, terrainOptions);
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   if (options?.terrain?.shape === 'arrow') {
     return table.data;
   }
