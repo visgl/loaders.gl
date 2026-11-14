@@ -370,3 +370,33 @@ test.each([
   });
   await expect(scanSource.query()).rejects.toThrow('did not return a feature table');
 });
+
+test('addressed scans retain schema when a query returns no physical batches', async () => {
+  const data = new arrow.Table(new arrow.Schema([new arrow.Field('id', new arrow.Int32())]));
+  const source = new VectorFeatureTableScanSource(
+    {
+      async getSchema() {
+        return convertArrowToSchema(data.schema);
+      },
+      async getMetadata() {
+        return {keywords: [], layers: []};
+      },
+      async getFeatures() {
+        return data;
+      }
+    },
+    {
+      request: {
+        layers: 'features',
+        boundingBox: [
+          [0, 0],
+          [1, 1]
+        ]
+      }
+    }
+  );
+  source.query = async () => ({shape: 'arrow-table', data});
+  const {value} = await source.read().next();
+  expect(value.numRows).toBe(0);
+  expect(value.schema.names).toEqual(['id']);
+});
