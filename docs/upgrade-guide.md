@@ -779,6 +779,13 @@ returned value and use `numRows` for batch row counts. Schema and field metadata
 Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
 JSON batch paths are available through `batch.metadata.get('jsonpath')`.
 
+#### Physical Arrow scans yield RecordBatches
+
+`queryArrowTableInBatches()` now accepts and yields native Arrow `RecordBatch`
+objects. The in-memory Arrow, GeoPackage, ORC, and addressed vector sources also
+yield native batches from `read()` (and `scan()` on addressed vector sources).
+Use `batch.numRows` and read columns directly from the batch.
+
 #### Query APIs return native Arrow
 
 `query()` returns an Apache Arrow `Table`, `queryInBatches()` yields native

@@ -40,7 +40,7 @@ test('ORCSource exposes footer metadata and shared projection/limit reads', asyn
   expect(defaultQuery.data.numRows).toBe(2);
   const batches = source.read({limit: 1});
   const batch = await batches[Symbol.asyncIterator]().next();
-  expect(batch.value?.length).toBe(1);
+  expect(batch.value?.numRows).toBe(1);
 });
 
 test('ORC source loader exposes explicit parser entry points', () => {

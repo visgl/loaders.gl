@@ -42,7 +42,7 @@ test('GeoPackage source executes projection, residual predicates, and limits', a
   expect(Array.from(result.data.getChild('value')?.toArray() || [])).toEqual([1]);
 
   const batch = await source.read({limit: 2})[Symbol.asyncIterator]().next();
-  expect(batch.value?.length).toBe(2);
+  expect(batch.value?.numRows).toBe(2);
   await expect(source.query({limit: -1})).rejects.toThrow('non-negative safe integer');
 });
 

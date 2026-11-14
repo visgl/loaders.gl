@@ -4,27 +4,18 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {filterArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {queryArrowTableInBatches} from '../../../src/scan/query-arrow-table-in-batches';
-import type {ArrowTableBatch} from '@loaders.gl/core/schema';
 
-/** Creates a deterministic batch for streaming and identity checks. */
-function makeBatch(values: (number | null)[]): ArrowTableBatch {
-  const data = new arrow.Table({value: arrow.vectorFromArray(values, new arrow.Int32())});
-  return {
-    shape: 'arrow-table',
-    data,
-    schema: convertArrowToSchema(data.schema),
-    batchType: 'data',
-    length: data.numRows
-  } as ArrowTableBatch;
+/** Creates a deterministic Arrow table for streaming and identity checks. */
+function makeTable(values: (number | null)[]): arrow.Table {
+  return new arrow.Table({value: arrow.vectorFromArray(values, new arrow.Int32())});
 }
 
 const predicate = {op: '>' as const, args: [{property: 'value'}, 1] as const};
 
 test('Arrow filter uses all-pass, all-reject, contiguous and scattered paths', () => {
-  const source = makeBatch([1, 2, 3, null, 4]).data;
+  const source = makeTable([1, 2, 3, null, 4]);
   const all = filterArrowTable(source, {op: 'isNull', args: [{property: 'value'}]});
   expect(all.numRows).toBe(1);
   const passing = filterArrowTable(source, {
@@ -55,11 +46,11 @@ test('stream query has global limits, aliases, pull backpressure and exact-bound
   async function* inputs() {
     try {
       pulls++;
-      yield makeBatch([0, 2]);
+      yield* makeTable([0, 2]).batches;
       pulls++;
-      yield makeBatch([3, 4]);
+      yield* makeTable([3, 4]).batches;
       pulls++;
-      yield makeBatch([5]);
+      yield* makeTable([5]).batches;
     } finally {
       closed = true;
     }
@@ -72,9 +63,9 @@ test('stream query has global limits, aliases, pull backpressure and exact-bound
   expect(pulls).toBe(0);
   const first = await iterator.next();
   expect(pulls).toBe(1);
-  expect(first.value!.data.toArray().map(row => row.number)).toEqual([2]);
+  expect(first.value!.toArray().map(row => row.number)).toEqual([2]);
   const second = await iterator.next();
-  expect(second.value!.length).toBe(2);
+  expect(second.value!.numRows).toBe(2);
   expect(pulls).toBe(2);
   expect((await iterator.next()).done).toBe(true);
   expect(pulls).toBe(2);
@@ -85,8 +76,8 @@ test('stream cancellation and consumer return close upstream without another pul
   let closed = 0;
   async function* inputs() {
     try {
-      yield makeBatch([2, 3]);
-      yield makeBatch([4]);
+      yield* makeTable([2, 3]).batches;
+      yield* makeTable([4]).batches;
     } finally {
       closed++;
     }
@@ -104,8 +95,8 @@ test('stream cancellation and consumer return close upstream without another pul
 });
 
 test('record-batch filtering keeps a global limit and original schema and metadata', () => {
-  const first = makeBatch([2, 0, 3]).data;
-  const second = makeBatch([4, 5, 6]).data;
+  const first = makeTable([2, 0, 3]);
+  const second = makeTable([4, 5, 6]);
   const source = first.concat(second);
   source.batches[0].metadata.set('part', 'first');
   source.batches[1].metadata.set('part', 'second');
@@ -124,7 +115,7 @@ test('zero limits avoid input work, empty results preserve schema, and reader er
   async function* inputs() {
     try {
       pulls++;
-      yield makeBatch([0, null]);
+      yield* makeTable([0, null]).batches;
       throw new Error('reader failed');
     } finally {
       closed = true;
@@ -136,7 +127,7 @@ test('zero limits avoid input work, empty results preserve schema, and reader er
   expect(pulls).toBe(0);
   const iterator = queryArrowTableInBatches(inputs(), {predicate})[Symbol.asyncIterator]();
   const empty = await iterator.next();
-  expect(empty.value!.length).toBe(0);
+  expect(empty.value!.numRows).toBe(0);
   expect(empty.value!.schema!.fields[0].name).toBe('value');
   await expect(iterator.next()).rejects.toThrow('reader failed');
   expect(closed).toBe(true);
@@ -181,7 +172,7 @@ test('missing nested properties use SQL null semantics in the shared Arrow kerne
 
 test('empty relational lists are absent while real relational operators are rejected', async () => {
   async function* inputs() {
-    yield makeBatch([1, 2]);
+    yield* makeTable([1, 2]).batches;
   }
   const rows: number[] = [];
   for await (const batch of queryArrowTableInBatches(inputs(), {
@@ -191,10 +182,23 @@ test('empty relational lists are absent while real relational operators are reje
     aggregates: [],
     union: []
   }))
-    rows.push(...batch.data.toArray().map(row => row.value));
+    rows.push(...batch.toArray().map(row => row.value));
   expect(rows).toEqual([1, 2]);
   const iterator = queryArrowTableInBatches(inputs(), {orderBy: [{column: 'value'}]})[
     Symbol.asyncIterator
   ]();
   await expect(iterator.next()).rejects.toThrow('support only');
+});
+
+test('native streaming slices an unfiltered batch with its metadata intact', async () => {
+  const batch = makeTable([1, 2, 3]).batches[0];
+  batch.metadata.set('partition', 'first');
+  async function* inputs() {
+    yield batch;
+  }
+  const results = [];
+  for await (const result of queryArrowTableInBatches(inputs(), {limit: 2})) results.push(result);
+  expect(results).toHaveLength(1);
+  expect(results[0].numRows).toBe(2);
+  expect(results[0].metadata.get('partition')).toBe('first');
 });

@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/core/schema';
+import type {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import type {ArrowTable, DataType, Field, Schema} from '@loaders.gl/core/schema';
 import type {
   DataSourceOptions,
   ScanQueryMetadata,
@@ -14,7 +16,6 @@ import {
   createScanQueryMetadata,
   DataSource,
   filterColumnarRowIndices,
-  makeTableScanBatch,
   validateTableQueryOptions
 } from '@loaders.gl/core/loader-utils';
 import {queryArrowTable} from '@loaders.gl/core/schema-utils';
@@ -101,9 +102,11 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
   }
 
   /** Executes a query as one bounded Arrow batch. */
-  async *read(options: ORCQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  async *read(options: ORCQueryOptions = {}): AsyncIterableIterator<RecordBatch> {
     const table = await this.query(options);
-    yield makeTableScanBatch(table);
+    const {data} = table;
+    if (data.batches.length) yield* data.batches;
+    else yield makeArrowMetadataBatch(data.schema);
   }
 
   /** Returns the complete ORC bytes, fetching the source only once. */

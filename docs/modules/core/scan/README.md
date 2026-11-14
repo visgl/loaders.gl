@@ -274,7 +274,7 @@ Arrow slice views. Predicates may still materialize new buffers for matching row
 
 ### Streaming linear Arrow queries
 
-`queryArrowTableInBatches(batches, options)` consumes an asynchronous Arrow batch stream
+`queryArrowTableInBatches(batches, options)` consumes and yields native Arrow RecordBatches
 without collecting its output. It accepts predicates, ordered projection, aliases, a global
 limit, and cancellation. Sorting, aggregates, expressions, unions, and joins remain on the
 existing materializing paths.

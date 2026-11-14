@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {
   GetTileParameters,
   CoreAPI,
@@ -18,10 +20,9 @@ import {
   createScanQueryMetadata,
   DataSource,
   filterColumnarRowIndices,
-  makeTableScanBatch,
   validateTableQueryOptions
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
+import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
 import {convertArrowToSchema, queryArrowTable} from '@loaders.gl/core/schema-utils';
 import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
 
@@ -121,7 +122,7 @@ export const GeoPackageSource = {
  */
 export class GeoPackageDataSource
   extends DataSource<string | Blob, GeoPackageSourceOptions>
-  implements TableScanSource<ArrowTableBatch>
+  implements TableScanSource<RecordBatch>
 {
   private arrayBufferPromise: Promise<ArrayBuffer> | null = null;
   private metadataPromise: Promise<GeoPackageSourceMetadata> | null = null;
@@ -283,9 +284,11 @@ export class GeoPackageDataSource
   }
 
   /** Executes a common table scan as one bounded Arrow batch. */
-  async *read(options: TableScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  async *read(options: TableScanReadOptions = {}): AsyncIterableIterator<RecordBatch> {
     const table = await this.query(options);
-    yield makeTableScanBatch(table);
+    const {data} = table;
+    if (data.batches.length) yield* data.batches;
+    else yield makeArrowMetadataBatch(data.schema);
   }
 
   private async loadMetadata(): Promise<GeoPackageSourceMetadata> {

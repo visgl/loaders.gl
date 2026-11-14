@@ -70,8 +70,12 @@ test('VectorTileTableScanSource binds tile addressing outside the portable query
   })) {
     batches.push(batch);
   }
-  expect(batches.map(batch => batch.length)).toEqual([1]);
-  expect(Array.from(batches[0].data.getChild('id')?.toArray() || [])).toEqual([2]);
+  expect(batches.map(batch => batch.numRows)).toEqual([1]);
+  expect(Array.from(batches[0].getChild('id')?.toArray() || [])).toEqual([2]);
+  const empty = await scanSource.read({columns: ['id'], limit: 0}).next();
+  expect(empty.value?.numRows).toBe(0);
+  expect(empty.value?.schema.names).toEqual(['id']);
+
   expect(requestedTiles).toHaveLength(1);
   expect(requestedTiles[0]).toMatchObject({x: 2, y: 1, z: 2, layers: ['roads']});
   expect(Object.isFrozen(scanSource.tile.layers)).toBe(true);
@@ -325,8 +329,8 @@ test.each([
   const scannedBatches = [];
   for await (const batch of scanSource.scan(queryOptions)) scannedBatches.push(batch);
   expect(scannedBatches).toHaveLength(1);
-  expect(scannedBatches[0].length).toBe(1);
-  expect(scannedBatches[0].data.getChild('name')?.get(0)).toBe('road.2');
+  expect(scannedBatches[0].numRows).toBe(1);
+  expect(scannedBatches[0].getChild('name')?.get(0)).toBe('road.2');
   expect(requestedUrls).toHaveLength(1);
   const searchParameters = new URL(requestedUrls[0]).searchParams;
   if (sourceType === 'wfs') {

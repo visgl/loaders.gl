@@ -2,18 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
-import {executeTableScanBatches} from '@loaders.gl/core/loader-utils';
-import {queryArrowTable, type ArrowQueryOptions} from './query-arrow-table';
+import * as arrow from 'apache-arrow';
+import {validateTableQueryLimit} from '@loaders.gl/core/loader-utils';
+import {filterArrowTable, projectArrowTable} from './arrow-execution';
+import type {ArrowQueryOptions} from './query-arrow-table';
 
 /**
  * Runs linear Arrow queries over a demand-driven stream with one global row limit.
  * Returning from the consumer closes the input iterator; no output batches are collected here.
  */
 export async function* queryArrowTableInBatches(
-  batches: AsyncIterable<ArrowTableBatch>,
+  batches: AsyncIterable<arrow.RecordBatch>,
   options: ArrowQueryOptions = {}
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.RecordBatch> {
   if (
     options.expressions?.length ||
     options.orderBy?.length ||
@@ -22,37 +23,33 @@ export async function* queryArrowTableInBatches(
     options.union?.length ||
     options.join
   ) {
-    throw new Error(
-      'Streaming Arrow queries support only predicates, projection, aliases, and limits.'
-    );
+    throw new Error('Streaming Arrow queries support only filter, projection, and limit.');
   }
   if (options.select !== undefined && options.columns !== undefined) {
     throw new Error('Arrow select cannot be combined with columns.');
   }
-  const outputs = executeTableScanBatches(
-    () => batches,
-    {
-      predicate: options.predicate,
-      limit: options.limit,
-      signal: options.signal
-    },
-    {
-      filter: batch => applyQuery(batch, {predicate: options.predicate, signal: options.signal}),
-      project: batch =>
-        applyQuery(batch, {
-          select: options.select,
-          columns: options.columns,
-          signal: options.signal
-        })
+  validateTableQueryLimit(options.limit);
+  let remaining = options.limit;
+  options.signal?.throwIfAborted();
+  if (remaining === 0) return;
+  for await (const batch of batches) {
+    options.signal?.throwIfAborted();
+    let table = new arrow.Table(batch.schema, [batch]);
+    if (options.predicate) {
+      table = filterArrowTable(table, options.predicate, {
+        limit: remaining,
+        signal: options.signal
+      });
+    } else if (remaining !== undefined && remaining < table.numRows) {
+      table = new arrow.Table(batch.schema, [batch.slice(0, remaining)]);
     }
-  );
-  for await (const batch of outputs) yield batch as ArrowTableBatch;
-}
-
-/** Applies a shared in-memory kernel while retaining the streaming batch envelope. */
-function applyQuery(batch: TableBatch, options: ArrowQueryOptions): ArrowTableBatch {
-  if (batch.shape !== 'arrow-table')
-    throw new Error('Streaming Arrow query requires Arrow batches.');
-  const result = queryArrowTable(batch, options);
-  return {...batch, ...result, length: result.data.numRows} as ArrowTableBatch;
+    const selections = options.select ?? options.columns;
+    if (selections) table = projectArrowTable(table, selections);
+    if (table.batches.length) yield* table.batches;
+    else yield new arrow.RecordBatch(table.schema, undefined, new Map(batch.metadata));
+    if (remaining !== undefined) {
+      remaining -= table.numRows;
+      if (remaining === 0) return;
+    }
+  }
 }

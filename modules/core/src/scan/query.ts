@@ -103,7 +103,7 @@ export async function* queryInBatches(
       !('aggregates' in tableQuery) ||
       !Array.isArray(tableQuery.aggregates)
     ) {
-      throw new Error('Snapshot query output currently requires a structured aggregate query.');
+      throw new Error('Snapshots require a structured aggregate query.');
     }
     for await (const snapshot of queryProgressive(tableQuery, options)) {
       yield* snapshot.table.batches;
@@ -111,10 +111,10 @@ export async function* queryInBatches(
     return;
   }
   if (options.queryOutput !== undefined && options.queryOutput !== 'batches') {
-    throw new Error('Unsupported queryOutput; expected batches or snapshots.');
+    throw new Error('Unsupported queryOutput.');
   }
   if (typeof tableQuery === 'object' && tableQuery && 'aggregates' in tableQuery) {
-    throw new Error('Aggregate queries require queryOutput: snapshots.');
+    throw new Error('Aggregates require snapshots.');
   }
   for await (const batch of queryAppendBatches(tableQuery as Query | string, options)) {
     if (batch.data.batches.length) yield* batch.data.batches;
@@ -151,8 +151,7 @@ async function* queryAppendBatches(
     if (typeof tableQuery === 'string') {
       const parser = await options.sqlParser;
       options.signal?.throwIfAborted();
-      if (typeof parser !== 'function')
-        throw new Error('SQL queries require a sqlParser function or promise.');
+      if (typeof parser !== 'function') throw new Error('SQL queries require sqlParser.');
       parsedQuery = await parser(tableQuery);
       options.signal?.throwIfAborted();
     } else parsedQuery = tableQuery;
@@ -185,7 +184,7 @@ async function* queryAppendBatches(
     }
     options.signal?.throwIfAborted();
     if (!source || typeof source !== 'object')
-      throw new Error('Query source must be an Arrow table or table scan source.');
+      throw new Error('Expected an Arrow table or table scan source.');
     const inMemory =
       'batches' in source
         ? (source as arrow.Table)
@@ -199,7 +198,7 @@ async function* queryAppendBatches(
         !('getQueryMetadata' in source) ||
         typeof source.getQueryMetadata !== 'function')
     ) {
-      throw new Error('Query source must be an Arrow table or table scan source.');
+      throw new Error('Expected an Arrow table or table scan source.');
     }
     const metadata = inMemory
       ? undefined
@@ -442,8 +441,12 @@ async function* memoryBatches(data: arrow.Table): AsyncIterable<ArrowTableBatch>
 
 /** Converts supported native table batches to Arrow while preserving their declared schema. */
 function normalizeBatch(value: unknown, fallbackSchema: Schema): ArrowTableBatch {
-  if (!value || typeof value !== 'object' || !('shape' in value))
-    throw new Error('Query source returned an unsupported batch.');
+  if (!value || typeof value !== 'object') throw new Error('Unsupported query batch.');
+  if ('numRows' in value) {
+    const batch = value as arrow.RecordBatch;
+    return wrapBatch(new arrow.Table(batch.schema, [batch]));
+  }
+  if (!('shape' in value)) throw new Error('Unsupported query batch.');
   const input = value as TableBatch;
   const batch = {...input, schema: input.schema ?? fallbackSchema} as TableBatch;
   if (

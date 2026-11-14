@@ -168,7 +168,7 @@ test('unknown, duplicate and non-table sources fail without using the fallback',
 
 test('missing FROM requires a normal source even when a registry was provided', async () => {
   await expect(query({}, {sources: [new NamedTableSource('cities')]})).rejects.toThrow(
-    'Query source must'
+    'Expected an Arrow table'
   );
 });
 

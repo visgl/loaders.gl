@@ -62,8 +62,8 @@ test('ArrowTableSource exposes shared metadata and bounded scan batches', async 
     batches.push(batch);
   }
   expect(batches).toHaveLength(1);
-  expect(batches[0].length).toBe(1);
-  expect(batches[0].data.schema.fields.map(field => field.name)).toEqual(['value']);
+  expect(batches[0].numRows).toBe(1);
+  expect(batches[0].schema.fields.map(field => field.name)).toEqual(['value']);
 });
 
 test('ArrowTableSource assigns coordinate, time, and attribute roles', async () => {
