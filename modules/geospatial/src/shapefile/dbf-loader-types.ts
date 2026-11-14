@@ -36,6 +36,7 @@ export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
   version: VERSION,
   worker: true,
   workerInBatches: true,
+  supportsNativeArrow: true,
   category: 'table',
   extensions: ['dbf'],
   mimeTypes: ['application/x-dbf'],

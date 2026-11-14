@@ -45,6 +45,7 @@ export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
   version: VERSION,
   worker: true,
   workerInBatches: true,
+  supportsNativeArrow: true,
   options: {
     shp: {
       _maxDimensions: 4,

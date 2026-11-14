@@ -183,7 +183,7 @@ describe('parseMLT', () => {
     expect(result.numRows).toBe(6);
     expect(result.getChild('kind')?.get(0)).toBe('feature-0');
     expect(result.getChild('geometry')?.length).toBe(6);
-    expect(result.schema.metadata?.geo).toContain('geometry');
+    expect(result.schema.metadata.get('geo')).toContain('geometry');
   });
 
   test('honors native GeoArrow output preferences without GeoJSON conversion', () => {
