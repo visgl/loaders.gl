@@ -2,7 +2,7 @@ import React, {useEffect, useId, useRef, useState} from 'react';
 import ArcGISMap from '../../../examples/website/shared/arcgis-map';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {createDataSource, load} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 import type {ArcGISFeatureQueryProgress} from '@loaders.gl/arcgis';
 import type {Feature} from '@loaders.gl/core/schema';
 
@@ -32,7 +32,7 @@ export default function ArcGISFeatureQueryApp(): React.ReactElement {
     setLoading(true);
     setStatus('Loading layer metadata and count…');
     try {
-      const source = await createDataSource(SERVICE_URL, ArcGISFeatureServerSourceLoader);
+      const source = await createDataSource(SERVICE_URL, ArcGISFeatureServerLoader);
       const collected: Feature[] = [];
       for await (const page of source.queryFeaturePages({
         query: {where: filter},

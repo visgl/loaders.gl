@@ -38,9 +38,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 The `@loaders.gl/tiles/mvt` module handles the [Mapbox Vector Tile](/docs/modules/tiles/mvt/formats/mvt) format, a protobuf-encoded format that defines geospatial geometries.
 
-The module also provides `TableTileSourceLoader` for generating dynamic tiles from an in-memory GeoJSON table.
+The module also provides `TableTileLoader` for generating dynamic tiles from an in-memory GeoJSON table.
 
-For Arrow input, `ArrowTableTileSourceLoader` generates GeoArrow WKB tiles while preserving typed
+For Arrow input, `ArrowTableTileLoader` generates GeoArrow WKB tiles while preserving typed
 attribute columns without a GeoJSON property round-trip.
 
 <ReferenceBoundary
@@ -65,8 +65,8 @@ npm install @loaders.gl/core
 | [`TileJSONLoader`](/docs/modules/tiles/mvt/api-reference/tilejson-loader) | Parses TileJSON metadata and tilestats. |
 | [`MVTWriter`](/docs/modules/tiles/mvt/api-reference/mvt-writer) | Writes Mapbox Vector Tile data. |
 | [`MVTSourceLoader`](/docs/modules/tiles/mvt/api-reference/mvt-source-loader) | Dynamically loads tiles from pre-tiled MVT hierarchies. |
-| [`TableTileSourceLoader`](/docs/modules/tiles/mvt/api-reference/table-tile-source-loader) | Generates vector tiles from geospatial tables on the fly. |
-| [`ArrowTableTileSourceLoader`](/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader) | Generates Arrow vector tiles from in-memory Arrow tables. |
+| [`TableTileLoader`](/docs/modules/tiles/mvt/api-reference/table-tile-source-loader) | Generates vector tiles from geospatial tables on the fly. |
+| [`ArrowTableTileLoader`](/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader) | Generates Arrow vector tiles from in-memory Arrow tables. |
 
 ## Formats
 

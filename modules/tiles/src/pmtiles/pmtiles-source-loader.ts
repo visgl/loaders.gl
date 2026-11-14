@@ -65,6 +65,7 @@ export type PMTilesSourceLoaderOptions = DataSourceOptions &
 /**
  * Creates vector tile data sources for PMTiles urls or blobs
  */
+/** @deprecated Use createDataSource() with PMTilesLoader. */
 export const PMTilesSourceLoader = {
   dataType: null as unknown as PMTilesTileSource,
   batchType: null as never,

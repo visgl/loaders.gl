@@ -13,7 +13,7 @@ import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv/index';
 import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json/index';
 import {ArrowTableSource, ArrowSourceLoader} from '@loaders.gl/tables/arrow/index';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
-import {ParquetSourceLoader} from '@loaders.gl/tables';
+import {ParquetLoader} from '@loaders.gl/tables';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 
 const rows = [
@@ -227,7 +227,7 @@ test.each(
     csv: CSVLoader,
     ndjson: NDJSONLoader,
     arrow: ArrowSourceLoader,
-    parquet: ParquetSourceLoader
+    parquet: ParquetLoader
   };
   const requests: string[] = [];
   const fetch = async (url: string, options?: RequestInit): Promise<Response> => {

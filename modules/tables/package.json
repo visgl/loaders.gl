@@ -403,10 +403,6 @@
       "types": "./dist/parquet/parquet-encoded-page-types.d.ts",
       "import": "./dist/parquet/parquet-encoded-page-types.js"
     },
-    "./parquet-source-loader-types": {
-      "types": "./dist/parquet-source-loader-types.d.ts",
-      "import": "./dist/parquet-source-loader-types.js"
-    },
     "./iceberg-table-source": {
       "types": "./dist/iceberg-table-source.d.ts",
       "import": "./dist/iceberg-table-source.js"

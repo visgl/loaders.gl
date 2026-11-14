@@ -10,7 +10,6 @@ export type {ParquetLoaderOptions} from './parquet-loader-options';
 export {ParquetLoader} from './parquet-loader-types';
 export {GeoParquetLoader} from './geoparquet-loader-types';
 
-export {ParquetSourceLoader} from './parquet-source-loader-types';
 export type {
   ParquetDeferredPageFilter,
   ParquetEncodedColumnChunk,

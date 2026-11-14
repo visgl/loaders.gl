@@ -59,6 +59,23 @@ loaders.gl provides `SourceLoader` exports for multi-step data loading. **Source
 | **archive files**           | Read individual assets from a (very large) multi-asset archive files.           |
 | **dynamic data generation** | Generate data (tiles, images etc) dynamically based on application requests.    |
 
+## Format loaders with source support
+
+Use the same format loader for parsing and source creation. For example, `load(url, PMTilesLoader)`
+reads archive metadata, and `createDataSource(url, PMTilesLoader)` opens an archive for repeated tile
+requests. The same pattern applies to Arrow IPC, FlatGeobuf, GeoPackage, GeoTIFF, KMZ, Lance, MLT,
+MVT, NetCDF, ORC, Parquet, and RAD.
+
+```ts
+import {createDataSource, load} from '@loaders.gl/core';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
+
+const metadata = await load(url, PMTilesLoader);
+const source = await createDataSource(url, PMTilesLoader);
+```
+
+The former format-specific source loader exports are available for existing callers.
+
 ## SourceLoader
 
 A `SourceLoader` provides general information about the supported resource format, and the capability to create a `DataSource` for that format.
@@ -73,8 +90,8 @@ This means that applications written against that interface can now support the 
 
 | Source Interface   | Data access model                         | Examples                                                    |
 | ------------------ | ----------------------------------------- | ----------------------------------------------------------- |
-| `ImageSource`      | Loads image covering a region             | `WMSSourceLoader`, `ArcGISImageServerSourceLoader`         |
-| `RasterSource`     | Loads typed raster samples for a viewport | `GeoTIFFSourceLoader`, `OMETiffSourceLoader`                |
+| `ImageSource`      | Loads image covering a region             | `WMSLoader`, `ArcGISImageServerLoader`         |
+| `RasterSource`     | Loads typed raster samples for a viewport | `GeoTIFFSourceLoader`, `OMETiffLoader`                |
 | `VectorSource`     | Load "features" in a region               | WFS (N/A), ArcGIS FeatureServer                             |
 | `TableScanSource` | Streams ordered table batches             | CSV, Arrow IPC, Parquet                                     |
 | `TableSourceCollection` | Resolves tables by name                | GeoPackage                                                 |
@@ -145,7 +162,7 @@ callers that need another view should use the corresponding specialized source c
 
 While most `SourceLoader` implementations provide an interface for interacting with a specific web service or cloud archive file format (e.g. `PMTilesSourceLoader`), it is also possible to create adapters:
 
-- that provide a `SourceLoader` interface to local data (`ArrowTableTileSourceLoader`)
+- that provide a `SourceLoader` interface to local data (`ArrowTableTileLoader`)
 - that adapt one type of source to another (e.g. `ImageTileSource` calling an `ImageSource` to generate each tile).
 
 ## Source auto-selection
@@ -169,7 +186,7 @@ Use it when a source needs to:
 - select named non-spatial dimensions such as time or vertical level
 - preserve band count, dtype, bounds, and CRS metadata for styling or texture upload
 
-`GeoTIFFSourceLoader` and `GeoZarrSourceLoader` are built-in `RasterSource` implementations. Both
+`GeoTIFFSourceLoader` and `GeoZarrLoader` are built-in `RasterSource` implementations. Both
 accept a `RasterViewport` and return `RasterData`. GeoTIFF requests can select numeric bands, while
 GeoZarr requests can use the common `selection` map for named dimensions declared by the source.
 
@@ -247,18 +264,18 @@ Additional parsers can be provided through `sourceOptions.core.loaders` or the l
 
 ## Example
 
-An advanced source loader is `ArrowTableTileSourceLoader`, which dynamically generates clipped,
+An advanced source loader is `ArrowTableTileLoader`, which dynamically generates clipped,
 simplified GeoArrow WKB tiles from an Arrow table. GeoJSONLoader returns Arrow by default in 5.0.
-These are Arrow tables, not encoded MVT bytes; the separate `TableTileSourceLoader` retains its
+These are Arrow tables, not encoded MVT bytes; the separate `TableTileLoader` retains its
 GeoJSON interface.
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
+import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/tables/json';
 
 // build an initial index of tiles.
-const tileSource = await createDataSource(url, ArrowTableTileSourceLoader, {
+const tileSource = await createDataSource(url, ArrowTableTileLoader, {
   core: {
     loaders: [GeoJSONLoader]
   },

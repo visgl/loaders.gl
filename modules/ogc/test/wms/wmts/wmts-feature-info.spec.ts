@@ -4,7 +4,7 @@
 
 import {beforeAll, expect, test, vi} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WMTSImageTileSource, WMTSSourceLoader, WMTSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
+import {WMTSImageTileSource, WMTSLoader, WMTSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
 import type {WMTSCapabilities, WMTSGetFeatureInfoParameters} from '@loaders.gl/ogc/wms';
 
 const CAPABILITIES_XML = `<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -211,7 +211,7 @@ test('WMTS explicit configuration supports legacy metadata without guessing info
 });
 
 test('WMTS public source loader discovers capabilities once and returns native JSON with cancellation', async () => {
-  const source = createDataSourceSync('https://example.com/wmts', [WMTSSourceLoader], {
+  const source = createDataSourceSync('https://example.com/wmts', [WMTSLoader], {
     wmts: {capabilitiesUrl: 'https://example.com/capabilities'}
   });
   const controller = new AbortController();

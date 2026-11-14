@@ -62,6 +62,7 @@ export type RADChunkTableIteratorOptions = RADChunkRequestOptions & {
 };
 
 /** Source factory for Spark `.rad` paged LoD Gaussian splat containers. */
+/** @deprecated Use createDataSource() with RADLoader. */
 export const RADSourceLoader = {
   dataType: null as unknown as RADSource,
   batchType: null as never,

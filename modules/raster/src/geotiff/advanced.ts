@@ -13,7 +13,10 @@ export type {
   OMETiffSourceLoaderMetadata,
   OMETiffSourceLoaderOptions
 } from './ometiff-source-loader';
-export {OMETiffSourceLoader, OMETiffImageSource} from './ometiff-source-loader';
+export {
+  OMETiffLoader,
+  OMETiffImageSource
+} from './ometiff-source-loader';
 
 export {loadGeoTiff} from './lib/load-geotiff';
 export {TiffPixelSource} from './lib/tiff-pixel-source';

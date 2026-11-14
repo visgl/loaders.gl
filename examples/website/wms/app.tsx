@@ -11,9 +11,9 @@ import ArcGISMap, {type ArcGISMapViewState} from '../shared/arcgis-map';
 
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {
-  WFSSourceLoader,
-  WMSSourceLoader,
-  WMTSSourceLoader
+  WFSLoader,
+  WMSLoader,
+  WMTSLoader
 } from '@loaders.gl/ogc/wms';
 import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 
@@ -56,9 +56,9 @@ type AppProps = {
 };
 
 const SOURCE_FACTORIES = [
-  WMSSourceLoader,
-  WFSSourceLoader,
-  WMTSSourceLoader,
+  WMSLoader,
+  WFSLoader,
+  WMTSLoader,
   ...ARCGIS_LOADERS
 ];
 
@@ -432,7 +432,7 @@ export default function App(props: AppProps = {}) {
 
 function createImageSource(example: Example) {
   const {url, format, layers, tileSize, tileFormat} = example;
-  return new WMSSourceLoader({
+  return new WMSLoader({
     url,
     format,
     layers,

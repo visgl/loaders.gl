@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
+import {MVTSourceLoader} from './mvt-source-loader';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 // import type {MVTOptions} from './lib/types';
@@ -38,6 +39,7 @@ export type MVTLoaderOptions = LoaderOptions & {
  * Loader for the Mapbox Vector Tile format
  */
 export const MVTLoaderWithParser = {
+  createDataSourceSync: MVTSourceLoader.createDataSourceSync,
   ...MVTLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer, options?: MVTLoaderOptions) => parseMVT(arrayBuffer, options),
   parseSync: parseMVT,

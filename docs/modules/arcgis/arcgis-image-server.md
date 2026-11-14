@@ -83,9 +83,9 @@ LERC requests. Configure it in `core.credentials`; explicit URL tokens take prec
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageServerLoader} from '@loaders.gl/arcgis';
 
-const source = await createDataSource(imageServerUrl, [ArcGISImageServerSourceLoader]);
+const source = await createDataSource(imageServerUrl, [ArcGISImageServerLoader]);
 
 const metadata = await source.getMetadata();
 const image = await source.getImage({
@@ -118,12 +118,12 @@ request.
 
 ## Image tiles
 
-`ArcGISImageTileSourceLoader` requests one `/exportImage` response per Web Mercator tile:
+`ArcGISImageTileLoader` requests one `/exportImage` response per Web Mercator tile:
 
 ```ts
-import {ArcGISImageTileSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageTileLoader} from '@loaders.gl/arcgis';
 
-const tileSource = await createDataSource(imageServerUrl, [ArcGISImageTileSourceLoader], {
+const tileSource = await createDataSource(imageServerUrl, [ArcGISImageTileLoader], {
   'arcgis-image-server-tiles': {
     tileSize: 512,
     format: 'png32',

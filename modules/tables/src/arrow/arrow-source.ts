@@ -164,6 +164,7 @@ async function* readStreamChunks(
 }
 
 /** Metadata-only Arrow IPC source loader. */
+/** @deprecated Use createDataSource() with ArrowLoader. */
 export const ArrowSourceLoader = {
   ...ArrowFormat,
   name: 'ArrowSourceLoader',

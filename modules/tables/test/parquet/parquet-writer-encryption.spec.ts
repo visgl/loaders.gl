@@ -6,7 +6,7 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/
 import {createDataSourceSync, encode, load} from '@loaders.gl/core';
 import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
-import {ParquetSourceLoader as ParquetSourceLoaderWithParser} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -209,7 +209,7 @@ test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
 
     expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});
 
-    const source = (await createDataSourceSync(new Blob([parquetBuffer]), [ParquetSourceLoaderWithParser], {
+    const source = (await createDataSourceSync(new Blob([parquetBuffer]), [ParquetLoaderWithParser], {
       core: {type: 'parquet', worker: false},
       parquet: {keyRetriever: () => KEY}
     })) as ParquetSource;

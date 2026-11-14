@@ -58,6 +58,7 @@ export type MVTSourceLoaderOptions = DataSourceOptions &
   };
 
 /** Creates an MVTTileSource */
+/** @deprecated Use createDataSource() with MVTLoader. */
 export const MVTSourceLoader = {
   dataType: null as unknown as MVTTileSource,
   batchType: null as never,

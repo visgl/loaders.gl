@@ -138,13 +138,13 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
     }
 
     if (this.sourceSupportsMVTLayer()) {
-      // TODO - Currently only TileSource that supports CRS override is TableTileSourceLoader
+      // TODO - Currently only TileSource that supports CRS override is TableTileLoader
       tileSource.options.table = tileSource.options.table || {};
       tileSource.options.table.coordinates = 'local';
       return this.renderMVTLayer();
     }
 
-    // TODO - Currently only TileSource that supports CRS override is TableTileSourceLoader
+    // TODO - Currently only TileSource that supports CRS override is TableTileLoader
     tileSource.options.table = tileSource.options.table || {};
     tileSource.options.table.coordinates = 'wgs84';
     return this.renderTileLayer();

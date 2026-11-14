@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {KMZSourceLoader} from './kmz-source';
 import type {Table as ArrowTable} from 'apache-arrow';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {GeoJSONTable, ObjectRowTable} from '@loaders.gl/core/schema';
@@ -17,6 +18,7 @@ const {preload: _KMZLoaderPreload, ...KMZLoaderMetadataWithoutPreload} = KMZLoad
 
 /** Parser-bearing loader for KMZ archives containing KML documents. */
 export const KMZLoaderWithParser = {
+  createDataSourceSync: KMZSourceLoader.createDataSourceSync,
   ...KMZLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer, options?: KMZLoaderOptions) =>
     parseKMZArrayBuffer(arrayBuffer, options)

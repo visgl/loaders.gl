@@ -10,6 +10,7 @@ import {LanceFormat} from './lance-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Metadata-only entrypoint for loading a Lance dataset source asynchronously. */
+/** @deprecated Use createDataSource() with LanceLoader. */
 export const LanceSourceLoader = {
   ...LanceFormat,
   dataType: null as unknown as LanceSource,

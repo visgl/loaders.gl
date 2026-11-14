@@ -10,10 +10,10 @@ exporting or republishing the data.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
 // Copy your layer's REST URL from its ArcGIS item page or Services Directory.
-const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerLoader);
 const features = await source.getFeatures({format: 'geojson'});
 ```
 

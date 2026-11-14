@@ -240,6 +240,7 @@ export class NetCDFSource extends DataSource<string | Blob, NetCDFSourceOptions>
 }
 
 /** Parser-bearing source loader for NetCDF metadata scans. */
+/** @deprecated Use createDataSource() with NetCDFLoader. */
 export const NetCDFSourceLoaderWithParser = {
   dataType: null as unknown as NetCDFSource,
   batchType: null as never,

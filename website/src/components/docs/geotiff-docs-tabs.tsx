@@ -44,7 +44,7 @@ const GEOTIFF_DOCS_TABS: GeoTiffDocsTab[] = [
   },
   {
     id: 'ometiffsource',
-    label: 'OMETiffSourceLoader',
+    label: 'OMETiffLoader',
     href: '/docs/modules/raster/geotiff/api-reference/ometiff-source-loader'
   }
 ];

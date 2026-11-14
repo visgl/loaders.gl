@@ -115,11 +115,11 @@ test.each([
   ['tables', 'ndjson-source', 'NDJSONTableSource'],
   ['tables', 'lance-source-loader', 'LanceSource'],
   ['tables', 'orc-source-loader', 'ORCSourceLoaderWithParser'],
-  ['tables', 'parquet-source-loader', 'ParquetSourceLoaderWithParser'],
+  ['tables', 'parquet-loader', 'ParquetLoaderWithParser'],
   ['tables', 'parquet-dataset-source', 'ParquetDatasetSource'],
   ['tables', 'iceberg-table-source', 'IcebergTableSource'],
   ['tables', 'parquet/iceberg-rest-catalog', 'IcebergRestCatalog'],
-  ['tables', 'delta-source', 'DeltaSourceLoaderWithParser']
+  ['tables', 'delta-source', 'DeltaLoaderWithParser']
 ])(
   'published %s/%s exposes %s after forwarding removal',
   (group, subpath, exportName) => {

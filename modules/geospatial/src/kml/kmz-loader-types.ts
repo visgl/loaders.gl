@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {KMZSourceOptions} from './kmz-source';
 import type {Table as ArrowTable} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoJSONTable, ObjectRowTable} from '@loaders.gl/core/schema';
@@ -12,7 +13,7 @@ import {KMZFormat} from './kml-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMZLoaderOptions = LoaderOptions & {
-  kmz?: {
+  kmz?: KMZSourceOptions['kmz'] & {
     shape?: 'object-row-table' | 'geojson-table' | 'arrow';
     includeKMLMetadata?: boolean;
   };

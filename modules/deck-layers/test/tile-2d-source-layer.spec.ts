@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
-import {ArrowTableTileSourceLoader, MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {ArrowTableTileLoader, MVTSourceLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import {resolveVisualSource} from '../src/source-layer-utils';
@@ -31,13 +31,11 @@ test.each([
       ],
       {type: 'application/geo+json'}
     ),
-    loaders: [MVTSourceLoader, ArrowTableTileSourceLoader, GeoJSONLoader],
+    loaders: [MVTSourceLoader, ArrowTableTileLoader, GeoJSONLoader],
     sourceOptions: {table: {coordinates}, core: {worker: false, type: 'table'}}
   });
   expect(resolved.sourceType).toBe('tile-2d');
-  const source = resolved.source as ReturnType<
-    typeof ArrowTableTileSourceLoader.createDataSourceSync
-  >;
+  const source = resolved.source as ReturnType<typeof ArrowTableTileLoader.createDataSourceSync>;
   const index = {x: 0, y: 0, z: 0};
   const tile = await source.getTileData({index});
   expect(tile?.shape).toBe('arrow-table');

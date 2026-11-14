@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {MLTSourceLoader} from './mlt-source-loader';
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {parseMLT} from './lib/parse-mlt';
@@ -49,6 +50,7 @@ export const MLTWorkerLoaderWithParser = {
  * Loader for the MapLibre Tile (MLT) format
  */
 export const MLTLoaderWithParser = {
+  createDataSourceSync: MLTSourceLoader.createDataSourceSync,
   ...MLTLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: MLTLoaderOptions) =>
     parseMLT(arrayBuffer, options),

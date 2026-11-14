@@ -99,9 +99,9 @@ export {
   MVTWriter,
   MVTSourceLoader,
   MVTTileSource,
-  TableTileSourceLoader,
+  TableTileLoader,
   TableVectorTileSource,
-  ArrowTableTileSourceLoader
+  ArrowTableTileLoader
 } from '@loaders.gl/tiles/mvt';
 export type {
   TileJSONLoaderOptions,

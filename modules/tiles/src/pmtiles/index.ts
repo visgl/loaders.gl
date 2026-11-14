@@ -9,7 +9,7 @@ export type {PMTilesMetadata} from './lib/parse-pmtiles';
 export type {PMTilesRangeRequestOptions, PMTilesSourceLoaderOptions} from './pmtiles-source-loader';
 export {PMTilesTileSource} from './pmtiles-source-loader';
 
-export {PMTilesLoader as _PMTilesLoader} from './pmtiles-loader';
+export {PMTilesLoader, PMTilesLoader as _PMTilesLoader} from './pmtiles-loader';
 export type {PMTilesLoaderOptions} from './pmtiles-loader';
 
 export {PMTilesWriter} from './pmtiles-writer';

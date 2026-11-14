@@ -10,7 +10,7 @@ It demonstrates:
 
 - `PointCloudTileset` from `@loaders.gl/tiles`
 - `PotreeLoader` from `@loaders.gl/tiles-3d/potree`
-- `COPCSourceLoader` from `@loaders.gl/tiles-3d/copc`
+- `COPCLoader` from `@loaders.gl/tiles-3d/copc`
 - a small deck.gl layer that renders normalized point-tile content
 
 ### Usage

@@ -137,8 +137,8 @@ source subpath when using synchronous `createDataSource()`.
   removed. ArcGIS and WMTS image responses use `ImageLoader`. Remove `image.decode`
   and the `auto`, `image`, and `data` values for `image.type`. Use
   `getImageData(bitmap)` for raw pixels. ArcGIS LERC responses still return raster data.
-- Replace `WMSSource` with `WMSSourceLoader`. Replace `createImageSource` with
-  `createDataSourceSync(url, [WMSSourceLoader], options)` or use `createDataSource`
+- Replace `WMSSource` with `WMSLoader`. Replace `createImageSource` with
+  `createDataSourceSync(url, [WMSLoader], options)` or use `createDataSource`
   for asynchronous creation. `ImageSource` is a type. To recognize an existing
   image source at runtime, check for callable `getMetadata` and `getImage` methods.
 - Import metadata loaders from `@loaders.gl/images`. For direct implementations,
@@ -162,7 +162,7 @@ source subpath when using synchronous `createDataSource()`.
 NetCDF and Zarr now share the public `@loaders.gl/scientific` package. Replace dependencies on `@loaders.gl/netcdf` or the previously private `@loaders.gl/zarr` package with `@loaders.gl/scientific`. Metadata loaders are exported from the package root; import implementation APIs from a format subpath:
 
 ```ts
-import {NetCDFLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
+import {NetCDFLoader, OMEZarrLoader} from '@loaders.gl/scientific';
 import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
 import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
 ```
@@ -577,28 +577,28 @@ If you are upgrading from the 4.4 release line, migrate top-level source factori
 | v4.4 | v5.0 |
 | --- | --- |
 | `Source` | `SourceLoader` |
-| `WMSSource` | `WMSSourceLoader` |
-| `WFSSource` | `WFSSourceLoader` |
+| `WMSSource` | `WMSLoader` |
+| `WFSSource` | `WFSLoader` |
 | `MVTSource` | `MVTSourceLoader` |
 | `MLTSource` | `MLTSourceLoader` |
 | `PMTilesSource` | `PMTilesSourceLoader` |
-| `COPCSource` | `COPCSourceLoader` |
+| `COPCSource` | `COPCLoader` |
 | `PotreeSource` | `PotreeLoader` |
 | `PotreeSourceLoader` | `PotreeLoader` |
 | `CSVSourceLoader` | `CSVLoader` |
 | `JSONTableSourceLoader` | `JSONTableLoader` |
 | `NDJSONSourceLoader` | `NDJSONLoader` |
-| `TableTileSource` | `TableTileSourceLoader` |
+| `TableTileSource` | `TableTileLoader` |
 | `FlatGeobufSource` | `FlatGeobufSourceLoader` |
 | `GeoTIFFSource` | `GeoTIFFSourceLoader` |
-| `OMETiffSource` | `OMETiffSourceLoader` |
+| `OMETiffSource` | `OMETiffLoader` |
 
 Concrete runtime classes are unchanged. For example:
 
-- `WMSSourceLoader` still creates `WMSImageSource`
+- `WMSLoader` still creates `WMSImageSource`
 - `MVTSourceLoader` still creates `MVTTileSource`
 - `PMTilesSourceLoader` still creates `PMTilesTileSource`
-- `TableTileSourceLoader` still creates `TableVectorTileSource`
+- `TableTileLoader` still creates `TableVectorTileSource`
 
 Update the old top-level `*Source` imports explicitly. Some deprecated aliases remain for deck.gl compatibility; they are not the v5 application API.
 
@@ -663,9 +663,9 @@ Now, in v5:
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms';
 
-const source = await createDataSource(url, WMSSourceLoader, options);
+const source = await createDataSource(url, WMSLoader, options);
 ```
 
 #### Source capability interfaces
@@ -926,7 +926,7 @@ The representation remains subject to prerelease API review.
 
 `LASLoader` no longer supports `options.las.backend`. It now uses the pure TypeScript implementation. Use the [alternate loader imports](#alternate-loader-imports) when a compatibility backend is required.
 
-`COPCSourceLoader` no longer supports `options.copc.decoder`. COPC headers, hierarchy pages, node ranges, and PDRF 6-8 LAZ chunks are now read by the native TypeScript implementation.
+`COPCLoader` no longer supports `options.copc.decoder`. COPC headers, hierarchy pages, node ranges, and PDRF 6-8 LAZ chunks are now read by the native TypeScript implementation.
 
 #### CRS types and coordinate options
 

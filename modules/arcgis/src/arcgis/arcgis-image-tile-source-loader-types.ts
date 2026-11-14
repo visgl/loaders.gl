@@ -7,16 +7,16 @@ import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {ArcGISImageTileSource} from './arcgis-image-tile-source-loader';
 import type {ArcGISImageTileSourceLoaderOptions} from '../arcgis-source-types';
 
-/** Loads the ArcGISImageTileSourceLoader implementation on first asynchronous use. */
+/** Loads the ArcGISImageTileLoader implementation on first asynchronous use. */
 async function preloadArcGISImageTileSourceLoader(): Promise<SourceLoader<ArcGISImageTileSource>> {
-  const {ArcGISImageTileSourceLoaderWithParser} = await import(
+  const {ArcGISImageTileLoaderWithParser} = await import(
     '@loaders.gl/arcgis/arcgis-image-tile-source-loader'
   );
-  return ArcGISImageTileSourceLoaderWithParser;
+  return ArcGISImageTileLoaderWithParser;
 }
 
 /** Lightweight service descriptor; use createDataSource() or the synchronous /bundled entrypoint. */
-export const ArcGISImageTileSourceLoader = {
+export const ArcGISImageTileLoader = {
   ...ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA,
   dataType: null as unknown as ArcGISImageTileSource,
   batchType: null as never,
@@ -28,7 +28,7 @@ export const ArcGISImageTileSourceLoader = {
     _coreApi?: CoreAPI
   ): ArcGISImageTileSource {
     throw new Error(
-      'ArcGISImageTileSourceLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
+      'ArcGISImageTileLoader requires async createDataSource() or an @loaders.gl/arcgis/bundled import'
     );
   }
 } as const satisfies SourceLoader<ArcGISImageTileSource>;

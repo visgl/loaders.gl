@@ -9,7 +9,7 @@ import {
   GeoTIFFRasterSource,
   GeoTIFFSourceLoader,
   OMETiffImageSource,
-  OMETiffSourceLoader
+  OMETiffLoader
 } from '@loaders.gl/raster/geotiff/index';
 import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/core/loader-utils';
 import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
@@ -69,18 +69,18 @@ test('createDataSource selects GeoTIFFSourceLoader from explicit core.type', () 
   expect(dataSource).toBeInstanceOf(GeoTIFFRasterSource);
 });
 
-test('createDataSource selects OMETiffSourceLoader from URL ahead of GeoTIFFSourceLoader', () => {
+test('createDataSource selects OMETiffLoader from URL ahead of GeoTIFFSourceLoader', () => {
   const dataSource = createDataSourceSync(
     'https://example.com/multi-channel.ome.tif',
-    [GeoTIFFSourceLoader, OMETiffSourceLoader],
+    [GeoTIFFSourceLoader, OMETiffLoader],
     {geotiff: {}, ometiff: {}}
   );
 
   expect(dataSource).toBeInstanceOf(OMETiffImageSource);
 });
 
-test('createDataSource selects OMETiffSourceLoader from explicit core.type', () => {
-  const dataSource = createDataSourceSync(new Blob([new Uint8Array([0])]), [OMETiffSourceLoader], {
+test('createDataSource selects OMETiffLoader from explicit core.type', () => {
+  const dataSource = createDataSourceSync(new Blob([new Uint8Array([0])]), [OMETiffLoader], {
     core: {type: 'ometiff'},
     ometiff: {}
   });

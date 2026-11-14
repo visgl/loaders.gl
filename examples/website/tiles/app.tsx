@@ -10,7 +10,7 @@ import type {RangeRequestEvent, RangeStats} from '@loaders.gl/core/loader-utils'
 import {createRangeStats, getRangeStats} from '@loaders.gl/core/loader-utils';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
 import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
-import {MVTSourceLoader, ArrowTableTileSourceLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
+import {MVTSourceLoader, ArrowTableTileLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 
 import DeckGL from '@deck.gl/react';
@@ -38,7 +38,7 @@ maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', impor
 /** Stable loader identities prevent metadata updates from restarting source resolution. */
 const TILE_LOADERS = [
   PMTilesSourceLoader,
-  ArrowTableTileSourceLoader,
+  ArrowTableTileLoader,
   MVTSourceLoader,
   MLTSourceLoader,
   GeoJSONLoader

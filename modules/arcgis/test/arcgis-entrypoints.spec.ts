@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {createDataSource, createDataSourceSync, preload} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader, ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader, ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis';
 import {ArcGISAuthentication, createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 import {
   ARCGIS_LOADERS as BUNDLED_ARCGIS_LOADERS,
@@ -16,7 +16,7 @@ describe('ArcGIS public entrypoints', () => {
   test('the package root loads the FeatureServer implementation for queries', async () => {
     const source = await createDataSource(
       'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
-      [ArcGISFeatureServerSourceLoader],
+      [ArcGISFeatureServerLoader],
       {
         core: {
           fetch: async url => {

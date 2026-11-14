@@ -203,6 +203,7 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
 const {preload: _preload, ...LanceSourceLoaderMetadataWithoutPreload} = LanceSourceLoaderMetadata;
 
 /** Parser-bearing Lance source loader, retaining synchronous source construction. */
+/** @deprecated Use createDataSource() with LanceLoader. */
 export const LanceSourceLoader = {
   ...LanceSourceLoaderMetadataWithoutPreload,
   /** Returns this already-loaded source implementation. */

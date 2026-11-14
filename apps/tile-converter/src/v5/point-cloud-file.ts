@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {createDataSource} from '@loaders.gl/core';
-import {COPCSourceLoader} from '@loaders.gl/tiles-3d/copc';
+import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
 import type {COPCTileSource, COPCSourceLoaderOptions} from '@loaders.gl/tiles-3d/copc';
 import {PotreeLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import type {
@@ -118,7 +118,7 @@ export async function openPointCloudFile(
   if (input.size > options.maxFileBytes) throw new RangeError('Point file input budget exceeded');
   options.signal?.throwIfAborted();
   if (options.format === 'copc') {
-    const source = COPCSourceLoader.createDataSourceSync(input, options.sourceOptions || {});
+    const source = COPCLoader.createDataSourceSync(input, options.sourceOptions || {});
     try {
       await source.metadata;
       options.signal?.throwIfAborted();

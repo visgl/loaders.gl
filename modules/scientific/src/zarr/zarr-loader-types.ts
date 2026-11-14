@@ -13,10 +13,10 @@ import type {ZarrArraySource, ZarrArraySourceLoaderOptions} from './zarr-array-s
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Metadata-only OME-Zarr loader. */
-export const OMEZarrSourceLoader = {
+export const OMEZarrLoader = {
   dataType: null as unknown as OMEZarrImageSource,
   batchType: null as never,
-  name: 'OMEZarrSourceLoader',
+  name: 'OMEZarrLoader',
   id: 'omezarr',
   module: 'scientific',
   version: VERSION,
@@ -36,23 +36,23 @@ export const OMEZarrSourceLoader = {
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
     (await import('@loaders.gl/scientific/zarr/ome-zarr-source-loader'))
-      .OMEZarrSourceLoaderWithParser,
+      .OMEZarrLoaderWithParser,
   createDataSourceSync(
     _data: string,
     _options: ZarrSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): OMEZarrImageSource {
     throw new Error(
-      'OMEZarrSourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/ome-zarr-source-loader import'
+      'OMEZarrLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/ome-zarr-source-loader import'
     );
   }
 } as const satisfies SourceLoader<OMEZarrImageSource>;
 
 /** Metadata-only GeoZarr loader. */
-export const GeoZarrSourceLoader = {
+export const GeoZarrLoader = {
   dataType: null as unknown as GeoZarrRasterSource,
   batchType: null as never,
-  name: 'GeoZarrSourceLoader',
+  name: 'GeoZarrLoader',
   id: 'geozarr',
   module: 'scientific',
   version: VERSION,
@@ -84,23 +84,23 @@ export const GeoZarrSourceLoader = {
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
     (await import('@loaders.gl/scientific/zarr/geo-zarr-source-loader'))
-      .GeoZarrSourceLoaderWithParser,
+      .GeoZarrLoaderWithParser,
   createDataSourceSync(
     _data: string,
     _options: GeoZarrSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): GeoZarrRasterSource {
     throw new Error(
-      'GeoZarrSourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/geo-zarr-source-loader import'
+      'GeoZarrLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/geo-zarr-source-loader import'
     );
   }
 } as const satisfies SourceLoader<GeoZarrRasterSource>;
 
 /** Metadata-only direct Zarr array loader. */
-export const ZarrArraySourceLoader = {
+export const ZarrArrayLoader = {
   dataType: null as unknown as ZarrArraySource,
   batchType: null as never,
-  name: 'ZarrArraySourceLoader',
+  name: 'ZarrArrayLoader',
   id: 'zarr-array',
   module: 'scientific',
   version: VERSION,
@@ -119,23 +119,23 @@ export const ZarrArraySourceLoader = {
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/zarr-array-source')).ZarrArraySourceLoaderWithParser,
+    (await import('@loaders.gl/scientific/zarr/zarr-array-source')).ZarrArrayLoaderWithParser,
   createDataSourceSync(
     _data: string,
     _options: ZarrArraySourceLoaderOptions,
     _coreApi?: CoreAPI
   ): ZarrArraySource {
     throw new Error(
-      'ZarrArraySourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/zarr-array-source import'
+      'ZarrArrayLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/zarr-array-source import'
     );
   }
 } as const satisfies SourceLoader<ZarrArraySource>;
 
 /** Metadata-only SpatialData loader. */
-export const SpatialDataSourceLoader = {
+export const SpatialDataLoader = {
   dataType: null as unknown as SpatialDataSource,
   batchType: null as never,
-  name: 'SpatialDataSourceLoader',
+  name: 'SpatialDataLoader',
   id: 'spatial-data',
   module: 'scientific',
   version: VERSION,
@@ -153,14 +153,14 @@ export const SpatialDataSourceLoader = {
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
     (await import('@loaders.gl/scientific/zarr/spatial-data-source'))
-      .SpatialDataSourceLoaderWithParser,
+      .SpatialDataLoaderWithParser,
   createDataSourceSync(
     _data: string,
     _options: SpatialDataSourceLoaderOptions,
     _coreApi?: CoreAPI
   ): SpatialDataSource {
     throw new Error(
-      'SpatialDataSourceLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/spatial-data-source import'
+      'SpatialDataLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/spatial-data-source import'
     );
   }
 } as const satisfies SourceLoader<SpatialDataSource>;

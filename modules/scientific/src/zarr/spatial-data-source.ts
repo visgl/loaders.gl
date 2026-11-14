@@ -5,7 +5,7 @@
 import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {
   OMEZarrImageSource,
-  OMEZarrSourceLoaderWithParser,
+  OMEZarrLoaderWithParser,
   type ZarrSourceLoader,
   type ZarrSourceLoaderOptions,
   ZarrSource
@@ -65,21 +65,21 @@ export type SpatialDataSourceMetadata = Readonly<{
   attributes: Readonly<Record<string, unknown>>;
 }>;
 
-/** Options for {@link SpatialDataSourceLoader}. */
+/** Options for {@link SpatialDataLoader}. */
 export type SpatialDataSourceLoaderOptions = ZarrSourceLoaderOptions;
 
 /** Runtime source returned for a Zarr-backed SpatialData raster or table array. */
 export type SpatialDataZarrElementSource = OMEZarrImageSource | ZarrArraySource;
 
 /** Source loader for SpatialData containers stored as Zarr. */
-export const SpatialDataSourceLoaderWithParser = {
+export const SpatialDataLoaderWithParser = {
   dataType: null as unknown as SpatialDataSource,
   dataSource: null as unknown as SpatialDataSource,
   batchType: null as never,
-  name: 'SpatialDataSourceLoader',
+  name: 'SpatialDataLoader',
   id: 'spatial-data',
   module: 'scientific',
-  version: OMEZarrSourceLoaderWithParser.version,
+  version: OMEZarrLoaderWithParser.version,
   extensions: ['zarr'],
   mimeTypes: [],
   type: 'spatial-data',

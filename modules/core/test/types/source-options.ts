@@ -5,7 +5,7 @@
 import {createDataSource, createDataSourceSync} from '@loaders.gl/core';
 import {MVTSourceLoader, MVTTileSource} from '@loaders.gl/tiles/mvt';
 import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
-import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms';
 import type {DataSourceOptions, SourcePropsType} from '@loaders.gl/core/loader-utils';
 
 // Compile only: node node_modules/typescript/bin/tsc --project modules/core/test/types/tsconfig.json
@@ -35,7 +35,7 @@ createDataSourceSync('memory://tiles', [MVTSourceLoader], {core: {unknownSetting
 // @ts-expect-error Known parser fields retain their declared types.
 createDataSourceSync('memory://tiles', [MVTSourceLoader], {mvt: {layers: 123}});
 // @ts-expect-error Multiple source candidates must not hide invalid known parser options.
-createDataSourceSync('memory://tiles', [MVTSourceLoader, WMSSourceLoader], {mvt: {layers: 123}});
+createDataSourceSync('memory://tiles', [MVTSourceLoader, WMSLoader], {mvt: {layers: 123}});
 // @ts-expect-error The nested wrapper was removed.
 createDataSourceSync('memory://tiles', [MVTSourceLoader], {core: {loadOptions: {}}});
 // @ts-expect-error A generic loadOptions bag is not the replacement API.
@@ -49,4 +49,4 @@ void createDataSource('memory://tiles', MVTSourceLoader, {core: {loadOptions: {}
 // @ts-expect-error Known parser options are checked through load as well.
 void createDataSource('memory://tiles', MVTSourceLoader, {mvt: {layers: 123}});
 // @ts-expect-error Source arrays use the same checked contract.
-void createDataSource('memory://tiles', [MVTSourceLoader, WMSSourceLoader], {mvt: {layers: 123}});
+void createDataSource('memory://tiles', [MVTSourceLoader, WMSLoader], {mvt: {layers: 123}});

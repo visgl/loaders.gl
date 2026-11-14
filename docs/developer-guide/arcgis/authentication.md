@@ -41,10 +41,10 @@ to sensitive organizational content.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 
-const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {
   core: {
     credentials: [new ArcGISAuthentication({
       origins: ['https://services.example.com'],
@@ -63,7 +63,7 @@ The descriptors also register `ArcGISAuthentication`, so declarative credentials
 `load()` and `SourceLayer`:
 
 ```ts
-const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {
   core: {credentials: [{type: 'arcgis', origins: ['https://services.example.com'], token: accessToken}]}
 });
 ```
@@ -82,7 +82,7 @@ const authentication = new ArcGISAuthentication({
   }
 });
 
-const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {
   core: {credentials: [authentication]}
 });
 ```
@@ -108,7 +108,7 @@ URLs, screenshots, application logs or source files.
 ## Use an existing Enterprise transport
 
 ```ts
-const source = await createDataSource(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {
   core: {fetch: enterpriseFetch}
 });
 ```
@@ -163,7 +163,7 @@ const authentication = new ArcGISAuthentication({
 });
 const transport = authentication.createFetch();
 // resolveArcGISItem(itemId, {fetch: transport})
-// load(layerUrl, ArcGISFeatureServerSourceLoader, {core: {fetch: transport}})
+// load(layerUrl, ArcGISFeatureServerLoader, {core: {fetch: transport}})
 ```
 
 Reuse this transport across discovery, metadata and service requests. `createFetch()` creates a

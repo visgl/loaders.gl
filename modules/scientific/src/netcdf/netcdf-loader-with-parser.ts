@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {NetCDFSourceLoaderWithParser} from './netcdf-source-loader';
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {NetCDFHeader} from './netcdfjs/netcdf-types';
 import {NetCDFReader} from './netcdfjs/netcdf-reader';
@@ -35,6 +36,7 @@ export const NetCDFWorkerLoaderWithParser = {
  * Loader for the NetCDF format
  */
 export const NetCDFLoaderWithParser = {
+  createDataSourceSync: NetCDFSourceLoaderWithParser.createDataSourceSync,
   ...NetCDFLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer, options) => parseNetCDF(arrayBuffer, options)
 } as const satisfies LoaderWithParser<NetCDF, never, NetCDFLoaderOptions>;

@@ -4,6 +4,7 @@
 
 export {NetCDFReader} from './netcdfjs/netcdf-reader';
 export {NetCDFFormat} from './netcdf-format';
+export {NetCDFLoader} from './netcdf-loader';
 export type {NetCDF, NetCDFLoaderOptions} from './netcdf-loader';
 export {NetCDFLoaderWithParser, NetCDFWorkerLoaderWithParser} from './netcdf-loader-with-parser';
 export {

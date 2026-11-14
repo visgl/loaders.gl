@@ -28,7 +28,7 @@ beforeAll(async () => {
   [lazyRegistry, bundledRegistry, bundledFeature, credentials] = await Promise.all([
     bundleImport('@loaders.gl/arcgis', 'ARCGIS_LOADERS'),
     bundleImport('@loaders.gl/arcgis/bundled', 'ARCGIS_LOADERS'),
-    bundleImport('@loaders.gl/arcgis/bundled', 'ArcGISFeatureServerSourceLoader'),
+    bundleImport('@loaders.gl/arcgis/bundled', 'ArcGISFeatureServerLoader'),
     bundleImport('@loaders.gl/arcgis/authentication', 'ArcGISAuthentication')
   ]);
 });
@@ -100,7 +100,7 @@ test('built package exports resolve in Node without source aliases', () => {
     }
     const commonJs = createRequire(import.meta.url)('@loaders.gl/arcgis');
     assert.equal(commonJs.ARCGIS_LOADERS.length, 6);
-    assert.equal(typeof commonJs.ArcGISFeatureServerSourceLoader.preload, 'function');
+    assert.equal(typeof commonJs.ArcGISFeatureServerLoader.preload, 'function');
     console.log('published entrypoints passed');
   `
     ],

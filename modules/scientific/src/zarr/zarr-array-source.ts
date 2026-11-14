@@ -61,7 +61,7 @@ export type ZarrArrayData = {
   shape: number[];
 };
 
-/** Options for {@link ZarrArraySourceLoader}. */
+/** Options for {@link ZarrArrayLoader}. */
 export type ZarrArraySourceLoaderOptions = ZarrSourceLoaderOptions & {
   /** Array path and optional dimension labels. */
   zarrArray?: {
@@ -73,11 +73,11 @@ export type ZarrArraySourceLoaderOptions = ZarrSourceLoaderOptions & {
 };
 
 /** Source loader for direct, non-geospatial Zarr array access. */
-export const ZarrArraySourceLoaderWithParser = {
+export const ZarrArrayLoaderWithParser = {
   dataType: null as unknown as ZarrArraySource,
   dataSource: null as unknown as ZarrArraySource,
   batchType: null as never,
-  name: 'ZarrArraySourceLoader',
+  name: 'ZarrArrayLoader',
   id: 'zarr-array',
   module: 'scientific',
   version: 'latest',

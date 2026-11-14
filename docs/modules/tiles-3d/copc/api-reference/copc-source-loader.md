@@ -1,5 +1,5 @@
 ---
-title: COPCSourceLoader
+title: COPCLoader
 description: Build a range-readable point-cloud source from a COPC dataset.
 hide_title: true
 page_style: designed
@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   format="copc"
   eyebrow="COPC source"
-  title="COPCSourceLoader"
+  title="COPCLoader"
   description="Turn one cloud object into a selectable point source. Discover metadata, select nodes, range-read LAZ chunks, and emit normalized point tiles or Arrow batches."
   tone="violet"
   meta={['COPC 1.0', 'Range requests', 'PointCloudTileset']}
@@ -44,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-`COPCSourceLoader` creates a point-cloud tile source for Cloud Optimized Point Cloud (`.copc.laz`) datasets.
+`COPCLoader` creates a point-cloud tile source for Cloud Optimized Point Cloud (`.copc.laz`) datasets.
 
 <ReferenceBoundary
   title="Source construction and loading"
@@ -56,10 +56,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import {createDataSourceSync} from '@loaders.gl/core';
-import {COPCSourceLoader} from '@loaders.gl/tiles-3d/copc';
+import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
-const dataSource = createDataSourceSync(url, [COPCSourceLoader], {
+const dataSource = createDataSourceSync(url, [COPCLoader], {
   copc: {}
 });
 
@@ -110,7 +110,7 @@ For shared loading controls and parser configuration, see
 
 ## Low-Level Range APIs
 
-The package exports the native parsing primitives used by `COPCSourceLoader`:
+The package exports the native parsing primitives used by `COPCLoader`:
 
 | API | Description |
 | --- | --- |

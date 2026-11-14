@@ -10,7 +10,7 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 
-import {STACSourceLoader as STACSourceLoaderMetadata} from './stac-source-loader-types';
+import {STACLoader as STACSourceLoaderMetadata} from './stac-source-loader-types';
 import type {STACSourceLoaderOptions} from './stac-source-loader-types';
 import type {
   STACAssetSelection,
@@ -38,7 +38,7 @@ const {
 } = STACSourceLoaderMetadata;
 
 /** Runtime source factory for static STAC catalogs and STAC APIs. */
-export const STACSourceLoaderWithParser = {
+export const STACLoaderWithParser = {
   ...STACSourceLoaderBase,
   createDataSourceSync(
     data: string | Blob,
@@ -53,7 +53,7 @@ export const STACSourceLoaderWithParser = {
 } as const satisfies SourceLoader<STACSource>;
 
 /** Runtime STAC source loader exposed by the explicit package subpath. */
-export {STACSourceLoaderWithParser as STACSourceLoader};
+export {STACLoaderWithParser as STACLoader};
 
 type STACRequest = {
   url: string;
@@ -97,7 +97,7 @@ export class STACSource
 
   /** Creates a source for a static STAC root or STAC API landing page. */
   constructor(url: string, options: STACSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(url, options, STACSourceLoaderWithParser.defaultOptions, coreApi);
+    super(url, options, STACLoaderWithParser.defaultOptions, coreApi);
   }
 
   /** Returns the cached root Catalog or Collection. */

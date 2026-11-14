@@ -1,11 +1,11 @@
 import {ArcGISVectorSource} from '@loaders.gl/arcgis/bundled';
 import {
-  ArcGISFeatureServerSourceLoader,
-  ArcGISImageServerSourceLoader,
-  ArcGISImageTileSourceLoader,
-  ArcGISMapTileSourceLoader,
-  ArcGISSceneServerSourceLoader,
-  ArcGISVectorTileServerSourceLoader,
+  ArcGISFeatureServerLoader,
+  ArcGISImageServerLoader,
+  ArcGISImageTileLoader,
+  ArcGISMapTileLoader,
+  ArcGISSceneServerLoader,
+  ArcGISVectorTileServerLoader,
   ARCGIS_LOADERS,
   getArcGISLoader
 } from '@loaders.gl/arcgis';
@@ -19,37 +19,37 @@ import {describe, expect, test} from 'vitest';
 
 describe('@loaders.gl/arcgis', () => {
   test('exports the initial ArcGIS source family', () => {
-    expect(ArcGISFeatureServerSourceLoader.id).toBe('arcgis-feature-server');
-    expect(ArcGISImageServerSourceLoader.id).toBe('arcgis-image-server');
-    expect(ArcGISMapTileSourceLoader.id).toBe('arcgis-map-server');
-    expect(ArcGISImageTileSourceLoader.id).toBe('arcgis-image-server-tiles');
-    expect(ArcGISVectorTileServerSourceLoader.id).toBe('arcgis-vector-tile-server');
-    expect(ArcGISSceneServerSourceLoader.id).toBe('arcgis-scene-server');
+    expect(ArcGISFeatureServerLoader.id).toBe('arcgis-feature-server');
+    expect(ArcGISImageServerLoader.id).toBe('arcgis-image-server');
+    expect(ArcGISMapTileLoader.id).toBe('arcgis-map-server');
+    expect(ArcGISImageTileLoader.id).toBe('arcgis-image-server-tiles');
+    expect(ArcGISVectorTileServerLoader.id).toBe('arcgis-vector-tile-server');
+    expect(ArcGISSceneServerLoader.id).toBe('arcgis-scene-server');
   });
 
   test('identifies ArcGIS-owned loaders', () => {
-    expect(ArcGISFeatureServerSourceLoader.module).toBe('arcgis');
-    expect(ArcGISImageServerSourceLoader.module).toBe('arcgis');
-    expect(ArcGISMapTileSourceLoader.module).toBe('arcgis');
-    expect(ArcGISImageTileSourceLoader.module).toBe('arcgis');
-    expect(ArcGISVectorTileServerSourceLoader.module).toBe('arcgis');
+    expect(ArcGISFeatureServerLoader.module).toBe('arcgis');
+    expect(ArcGISImageServerLoader.module).toBe('arcgis');
+    expect(ArcGISMapTileLoader.module).toBe('arcgis');
+    expect(ArcGISImageTileLoader.module).toBe('arcgis');
+    expect(ArcGISVectorTileServerLoader.module).toBe('arcgis');
   });
 
   test('finds service loaders by id or type', () => {
-    expect(getArcGISLoader('ArcGIS-Feature-Server')).toBe(ArcGISFeatureServerSourceLoader);
-    expect(getArcGISLoader('arcgis-vector-tile-server')).toBe(ArcGISVectorTileServerSourceLoader);
-    expect(getArcGISLoader('arcgis-scene-server')).toBe(ArcGISSceneServerSourceLoader);
+    expect(getArcGISLoader('ArcGIS-Feature-Server')).toBe(ArcGISFeatureServerLoader);
+    expect(getArcGISLoader('arcgis-vector-tile-server')).toBe(ArcGISVectorTileServerLoader);
+    expect(getArcGISLoader('arcgis-scene-server')).toBe(ArcGISSceneServerLoader);
     expect(getArcGISLoader('unknown-service')).toBeUndefined();
   });
 
   test('exports one registry for core and deck.gl integration', () => {
     expect(ARCGIS_LOADERS).toEqual([
-      ArcGISFeatureServerSourceLoader,
-      ArcGISImageServerSourceLoader,
-      ArcGISImageTileSourceLoader,
-      ArcGISMapTileSourceLoader,
-      ArcGISVectorTileServerSourceLoader,
-      ArcGISSceneServerSourceLoader
+      ArcGISFeatureServerLoader,
+      ArcGISImageServerLoader,
+      ArcGISImageTileLoader,
+      ArcGISMapTileLoader,
+      ArcGISVectorTileServerLoader,
+      ArcGISSceneServerLoader
     ]);
   });
 

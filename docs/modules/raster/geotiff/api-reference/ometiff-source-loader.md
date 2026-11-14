@@ -1,5 +1,5 @@
 ---
-title: OMETiffSourceLoader
+title: OMETiffLoader
 description: Discover OME-TIFF image metadata and read selected channels, dimensions, and pyramid levels as raster data.
 hide_title: true
 page_style: designed
@@ -13,7 +13,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   format="geotiff"
   eyebrow="GeoTIFF API / bioimaging"
   title="Read an OME-TIFF pyramid as selected raster data."
-  description="OMETiffSourceLoader discovers OME image metadata and reads chosen channels, dimensions, and pyramid levels from a multi-image TIFF without forcing the application to decode every plane."
+  description="OMETiffLoader discovers OME image metadata and reads chosen channels, dimensions, and pyramid levels from a multi-image TIFF without forcing the application to decode every plane."
   tone="orange"
   meta={['OME-TIFF', 'Multichannel images', 'Pyramid-aware reads']}
   links={[
@@ -39,7 +39,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="OMETiffSourceLoader reference"
+  title="OMETiffLoader reference"
   description="The detailed reference covers source creation, metadata, raster parameters, image selection, and the relationship to the underlying GeoTIFF loader."
   tone="orange"
 />
@@ -49,15 +49,15 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
 </p>
 
-`OMETiffSourceLoader` creates a non-geospatial source for OME-TIFF image pyramids.
+`OMETiffLoader` creates a non-geospatial source for OME-TIFF image pyramids.
 
 ## Usage
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OMETiffSourceLoader} from '@loaders.gl/raster/ometiff-source-loader';
+import {OMETiffLoader} from '@loaders.gl/raster/ometiff-source-loader';
 
-const source = createDataSourceSync('multi-channel.ome.tif', [OMETiffSourceLoader], {
+const source = createDataSourceSync('multi-channel.ome.tif', [OMETiffLoader], {
   core: {type: 'ometiff'},
   ometiff: {}
 });

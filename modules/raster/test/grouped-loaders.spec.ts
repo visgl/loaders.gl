@@ -11,7 +11,7 @@ import {
   TerrainLoader,
   QuantizedMeshLoader,
   GeoTIFFSourceLoader,
-  OMETiffSourceLoader
+  OMETiffLoader
 } from '@loaders.gl/raster';
 import {GeoTIFFLoaderWithParser, GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff';
 import {LERCLoaderWithParser} from '@loaders.gl/raster/lerc';
@@ -34,8 +34,8 @@ test.each([
 test('raster source metadata defers constructors and keeps TIFF selection distinct', async () => {
   expect(GeoTIFFSourceLoader.testURL('https://example.com/a.tif')).toBe(true);
   expect(GeoTIFFSourceLoader.testURL('https://example.com/a.ome.tif')).toBe(false);
-  expect(OMETiffSourceLoader.testURL('https://example.com/a.ome.tif')).toBe(true);
-  for (const metadata of [GeoTIFFSourceLoader, OMETiffSourceLoader]) {
+  expect(OMETiffLoader.testURL('https://example.com/a.ome.tif')).toBe(true);
+  for (const metadata of [GeoTIFFSourceLoader, OMETiffLoader]) {
     expect(() => metadata.createDataSourceSync(new Blob([]), {})).toThrow(
       'requires async createDataSource()'
     );

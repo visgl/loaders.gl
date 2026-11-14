@@ -45,7 +45,6 @@ export {ORCSourceLoader, type ORCSourceLoaderOptions} from './orc/orc-source-loa
 export {ORCWriter, type ORCWriterOptions} from './orc/orc-writer';
 export {ParquetFormat} from './parquet/parquet-format';
 export type {ParquetLoaderOptions} from './parquet/parquet-loader-options';
-export {ParquetSourceLoader} from './parquet/parquet-source-loader-types';
 export {ParquetWriter} from './parquet/parquet-writer';
 export {ParquetJSWriter} from './parquet/parquet-js-writer';
 export {LanceSourceLoader} from './lance/lance-source-loader-types';

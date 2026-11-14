@@ -7,7 +7,7 @@ import {createDataSource, fetchFile, load} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {
   ParquetReader,
-  ParquetSourceLoader,
+  ParquetLoader,
   createParquetModuleAad,
   verifyParquetFooterSignature
 } from '@loaders.gl/tables/parquet/index';
@@ -121,7 +121,7 @@ test('ParquetJSLoader does not retrieve keys for unprojected encrypted columns',
 
 test('ParquetSource decrypts encrypted pages in a worker', async () => {
   const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
-  const source = (await createDataSource(url, ParquetSourceLoader, {
+  const source = (await createDataSource(url, ParquetLoader, {
     core: {worker: true, reuseWorkers: false, _workerType: 'test'},
     parquet: {
       columns: ['double_field'],

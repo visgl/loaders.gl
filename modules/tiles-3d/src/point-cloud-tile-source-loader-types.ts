@@ -15,16 +15,16 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Loads the optional authoring runtime through an explicit package subpath. */
 async function preloadPointCloudTileSource(): Promise<
-  typeof import('./point-cloud-tile-source-loader').PointCloudTileSourceLoaderWithParser
+  typeof import('./point-cloud-tile-source-loader').PointCloudTileLoaderWithParser
 > {
-  const {PointCloudTileSourceLoaderWithParser} = await import(
+  const {PointCloudTileLoaderWithParser} = await import(
     '@loaders.gl/tiles-3d/point-cloud-tile-source-loader'
   );
-  return PointCloudTileSourceLoaderWithParser;
+  return PointCloudTileLoaderWithParser;
 }
 
 /** Metadata-only loader for creating an additive point source from decoded Mesh/Arrow input. */
-export const PointCloudTileSourceLoader = {
+export const PointCloudTileLoader = {
   dataType: null as unknown as PointCloudTileSource,
   batchType: null as never,
   name: 'PointCloudTiler',
@@ -47,7 +47,7 @@ export const PointCloudTileSourceLoader = {
     _coreApi?: CoreAPI
   ): PointCloudTileSource {
     throw new Error(
-      'PointCloudTileSourceLoader requires preload() or @loaders.gl/tiles-3d/point-cloud-tile-source-loader'
+      'PointCloudTileLoader requires preload() or @loaders.gl/tiles-3d/point-cloud-tile-source-loader'
     );
   }
 } as const satisfies SourceLoader<PointCloudTileSource>;

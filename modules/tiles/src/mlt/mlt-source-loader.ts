@@ -41,6 +41,7 @@ export type MLTSourceLoaderOptions = DataSourceOptions &
 /**
  * Source factory for MapLibre Tile (`.mlt`) tiles
  */
+/** @deprecated Use createDataSource() with MLTLoader. */
 export const MLTSourceLoader = {
   dataType: null as unknown as MLTTileSource,
   batchType: null as never,

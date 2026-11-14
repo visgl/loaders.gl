@@ -9,9 +9,9 @@ picking for hover/click feedback, a vector source for remote extent requests, an
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSLoader], {
   wfs: {wfsParameters: {version: '2.0.0', crs: 'EPSG:3857'}}
 });
 const controller = new AbortController();

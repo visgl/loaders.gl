@@ -19,6 +19,7 @@ async function preloadNetCDFSourceLoader(): Promise<SourceLoader<NetCDFSource>> 
 }
 
 /** Metadata-only NetCDF source loader kept lightweight for package-root imports. */
+/** @deprecated Use createDataSource() with NetCDFLoader. */
 export const NetCDFSourceLoader = {
   ...NetCDFFormat,
   module: 'scientific',

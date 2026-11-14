@@ -33,6 +33,7 @@ export type KMZSourceOptions = DataSourceOptions & {
 };
 
 /** Source loader for KMZ archives containing one primary KML document. */
+/** @deprecated Use createDataSource() with KMZLoader. */
 export const KMZSourceLoader = {
   dataType: null as unknown as KMZVectorSource,
   batchType: null as never,

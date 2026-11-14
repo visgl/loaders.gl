@@ -74,7 +74,7 @@ export type TableTileSourceLoaderOptions = DataSourceOptions & {
 };
 
 /** Options to configure tiling */
-export const TableTileSourceLoader = {
+export const TableTileLoader = {
   dataType: null as unknown as TableVectorTileSource,
   batchType: null as never,
   name: 'TableTiler',
@@ -179,7 +179,7 @@ export class TableVectorTileSource
   metadata: Promise<unknown>;
 
   constructor(table: GeoJSONTable | Promise<GeoJSONTable>, options: TableTileSourceLoaderOptions) {
-    super(table, options, TableTileSourceLoader.defaultOptions);
+    super(table, options, TableTileLoader.defaultOptions);
     this.tableOptions = getRequiredOptions(this.options).table;
     this.localCoordinates = this.tableOptions.coordinates === 'local';
     this.getTileData = this.getTileData.bind(this);
@@ -530,13 +530,13 @@ async function loadTable(
   const loaders = options?.core?.loaders;
   if (!coreApi?.load) {
     throw new Error(
-      'TableTileSourceLoader requires an injected CoreAPI to load tables from URL or Blob inputs.'
+      'TableTileLoader requires an injected CoreAPI to load tables from URL or Blob inputs.'
     );
   }
 
   if (!loaders?.length) {
     throw new Error(
-      'TableTileSourceLoader requires `options.core.loaders` when creating a source from URL or Blob inputs.'
+      'TableTileLoader requires `options.core.loaders` when creating a source from URL or Blob inputs.'
     );
   }
 
@@ -551,7 +551,7 @@ async function loadTable(
   const table = await coreApi.load(url, loaders.length === 1 ? loaders[0] : loaders, loadOptions);
   if (!isGeoJSONTable(table)) {
     throw new Error(
-      'TableTileSourceLoader requires the configured parser loaders to return a GeoJSONTable.'
+      'TableTileLoader requires the configured parser loaders to return a GeoJSONTable.'
     );
   }
 

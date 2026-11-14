@@ -1,22 +1,22 @@
 ---
-title: ArrowTableTileSourceLoader
+title: ArrowTableTileLoader
 ---
 
 import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
 
 <TileDocsTabs active="arrow-table-tile-source-loader" />
 
-# ArrowTableTileSourceLoader
+# ArrowTableTileLoader
 
-`ArrowTableTileSourceLoader` generates clipped, simplified vector tiles from an in-memory Arrow
-table. It is a separate alternative to [`TableTileSourceLoader`](./table-tile-source-loader):
+`ArrowTableTileLoader` generates clipped, simplified vector tiles from an in-memory Arrow
+table. It is a separate alternative to [`TableTileLoader`](./table-tile-source-loader):
 input and output stay in Arrow, and attributes do not pass through GeoJSON objects.
 
 ```typescript
-import {ArrowTableTileSourceLoaderWithParser} from '@loaders.gl/tiles/arrow-table-tile-source-loader';
+import {ArrowTableTileLoaderWithParser} from '@loaders.gl/tiles/arrow-table-tile-source-loader';
 
 // table is a loaders.gl ArrowTable or an Apache Arrow Table (or a promise of either).
-const source = ArrowTableTileSourceLoaderWithParser.createDataSourceSync(table, {
+const source = ArrowTableTileLoaderWithParser.createDataSourceSync(table, {
   table: {coordinates: 'wgs84'}
 });
 const tile = await source.getVectorTile({z: 5, x: 10, y: 12});
@@ -31,9 +31,9 @@ does not select a parser or override its output options. Configure the parser to
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
 import {GeoJSONLoader} from '@loaders.gl/tables/json';
-import {ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
+import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
 
-const source = await createDataSource('/features.geojson', ArrowTableTileSourceLoader, {
+const source = await createDataSource('/features.geojson', ArrowTableTileLoader, {
   core: {loaders: [GeoJSONLoader]}, // Arrow-primary in loaders.gl 5
   table: {coordinates: 'wgs84'}
 });
@@ -42,7 +42,7 @@ const tile = await source.getTile({z: 0, x: 0, y: 0});
 
 Source selection must be explicit: this source has no file extension or URL autodetection.
 The package-root export is lightweight metadata: async `load` preloads its implementation.
-Synchronous `createDataSource` calls require `ArrowTableTileSourceLoaderWithParser` from the explicit
+Synchronous `createDataSource` calls require `ArrowTableTileLoaderWithParser` from the explicit
 `@loaders.gl/tiles/arrow-table-tile-source-loader` subpath. That subpath also exports the
 `ArrowTableVectorTileSource` class. Direct construction requires an injected core API for URLs/blobs;
 in-memory tables do not require `@loaders.gl/core`.

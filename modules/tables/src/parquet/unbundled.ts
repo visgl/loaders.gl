@@ -7,7 +7,6 @@ export type {GeoParquetLoaderOptions} from './geoparquet-loader-types';
 export {ParquetLoader} from './parquet-loader-types';
 export {GeoParquetLoader} from './geoparquet-loader-types';
 export {
-  ParquetSourceLoader,
   ParquetSource,
   getParquetBatchProvenance,
   type ParquetSourceLoaderOptions,

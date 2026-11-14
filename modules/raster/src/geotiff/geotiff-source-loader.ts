@@ -91,6 +91,7 @@ export const GEOTIFF_RASTER_QUERY_CAPABILITIES: RasterQueryCapabilities = Object
 /**
  * Source factory for viewport-driven GeoTIFF datasets.
  */
+/** @deprecated Use createDataSource() with GeoTIFFLoader. */
 export const GeoTIFFSourceLoader = {
   dataType: null as unknown as GeoTIFFRasterSource,
   batchType: null as never,

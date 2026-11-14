@@ -21,6 +21,7 @@ async function preloadORCSourceLoader() {
 }
 
 /** Metadata-only ORC source loader; parser code is loaded through `preload()`. */
+/** @deprecated Use createDataSource() with ORCLoader. */
 export const ORCSourceLoader = {
   /** Runtime source type returned by async createDataSource(). */
   dataType: null as unknown as ORCSource,

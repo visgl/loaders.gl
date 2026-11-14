@@ -146,3 +146,13 @@ test('core asynchronously constructs grouped Lance and ORC sources from metadata
     'requires async createDataSource()'
   );
 });
+
+test.each([
+  ArrowLoader,
+  LanceLoader,
+  ORCLoader
+])('$name exposes a source factory through its parser implementation', async loader => {
+  const implementation = await loader.preload();
+  expect(implementation.createDataSourceSync).toBeTypeOf('function');
+  expect(implementation.parse).toBeTypeOf('function');
+});

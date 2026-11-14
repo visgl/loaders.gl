@@ -8,6 +8,7 @@ import {GeoTIFFFormat} from './geotiff-format';
 import {GeoTIFFLoader} from './geotiff-loader-types';
 
 /** Metadata-only GeoTIFF source loader. */
+/** @deprecated Use createDataSource() with GeoTIFFLoader. */
 export const GeoTIFFSourceLoader = {
   dataType: null as unknown as GeoTIFFRasterSource,
   batchType: null as never,

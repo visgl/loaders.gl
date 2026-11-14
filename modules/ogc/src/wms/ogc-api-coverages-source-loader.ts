@@ -34,7 +34,7 @@ export type OGCAPICoveragesQueryParameters = {
 export class OGCAPICoveragesSource extends DataSource<string, OGCAPICoveragesSourceOptions> {
   /** Creates an OGC API Coverages source. */
   constructor(url: string, options: OGCAPICoveragesSourceOptions = {}, coreApi?: CoreAPI) {
-    super(url.replace(/\/$/, ''), options, OGCAPICoveragesSourceLoader.defaultOptions, coreApi);
+    super(url.replace(/\/$/, ''), options, OGCAPICoveragesLoader.defaultOptions, coreApi);
   }
 
   /** Returns the OGC API landing page. */
@@ -88,7 +88,7 @@ export class OGCAPICoveragesSource extends DataSource<string, OGCAPICoveragesSou
 }
 
 /** Source loader for minimal OGC API Coverages support. */
-export const OGCAPICoveragesSourceLoader = {
+export const OGCAPICoveragesLoader = {
   dataType: null as unknown as OGCAPICoveragesSource,
   batchType: null as never,
   name: 'OGC API Coverages',

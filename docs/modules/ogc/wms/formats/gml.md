@@ -70,7 +70,7 @@ collections.
 | Streaming | ✅ Supported | `parseInBatches` emits collections as feature members arrive |
 | Schema-aware scalar properties | ✅ Supported | Supply string, boolean, integer, number, date, and date-time hints |
 | GeoJSON output | ✅ Supported | Default geospatial representation |
-| Binary and Arrow output | ✅ Through WFS | `WFSSourceLoader` converts parsed GML to standard vector outputs |
+| Binary and Arrow output | ✅ Through WFS | `WFSLoader` converts parsed GML to standard vector outputs |
 | Arbitrary GML application schemas | ⚠️ Best effort | Unknown XML properties are preserved instead of guessed |
 | Topologies, solids, and every ISO geometry primitive | ❌ Not supported | Outside the practical WFS feature subset |
 
@@ -126,7 +126,7 @@ This avoids silently turning identifiers, codes, or zero-padded values into numb
 
 ## GML and WFS
 
-Most applications should use [`WFSSourceLoader`](./wfs) rather than invoke `GMLLoader` directly.
+Most applications should use [`WFSLoader`](./wfs) rather than invoke `GMLLoader` directly.
 The WFS source negotiates the response format, applies paging and CRS request rules, streams GML,
 and converts the result to GeoJSON, binary, or Arrow output.
 

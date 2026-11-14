@@ -16,7 +16,7 @@ making core depend on format implementations.
 
 ```ts
 import {query} from '@loaders.gl/core/query';
-import {ParquetSourceLoader} from '@loaders.gl/tables';
+import {ParquetLoader} from '@loaders.gl/tables';
 
 const result = await query(
   {
@@ -24,7 +24,7 @@ const result = await query(
     where: {op: '>', args: [{property: 'population'}, 100000]},
     limit: 20
   },
-  {source: 'https://example.com/cities.parquet', loaders: ParquetSourceLoader}
+  {source: 'https://example.com/cities.parquet', loaders: ParquetLoader}
 );
 
 console.log(result.numRows);
@@ -34,7 +34,7 @@ console.log(result.getChild('people'));
 The result is an Apache Arrow `Table`.
 You can also pass an already loaded loaders.gl Arrow table or an existing table scan source as
 `source`. Those inputs do not need `loaders`. Parser-only loaders such as `ParquetLoader` are not
-source loaders; use `ParquetSourceLoader` for URL queries.
+source loaders; use `ParquetLoader` for URL queries.
 
 Keep logical operations in the first argument. Put `source`, `loaders`, `signal`, completion
 observers, and ordinary request/format options in the second:
@@ -42,7 +42,7 @@ observers, and ordinary request/format options in the second:
 ```ts
 const options = {
   source: 'https://example.com/cities.parquet',
-  loaders: ParquetSourceLoader,
+  loaders: ParquetLoader,
   core: {fetch: authenticatedFetch},
   parquet: {batchSize: 1024}
 };
@@ -83,7 +83,7 @@ import {queryInBatches} from '@loaders.gl/core/query';
 
 for await (const batch of queryInBatches(
   {select: ['name'], where: {op: '>', args: [{property: 'population'}, 100000]}},
-  {source: 'https://example.com/cities.parquet', loaders: ParquetSourceLoader}
+  {source: 'https://example.com/cities.parquet', loaders: ParquetLoader}
 )) {
   await consume(batch);
 }
@@ -141,7 +141,7 @@ referenced by `from`:
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 
-const cities = await createDataSource('cities.parquet', ParquetSourceLoader, {
+const cities = await createDataSource('cities.parquet', ParquetLoader, {
   core: {name: 'cities'}
 });
 
@@ -274,7 +274,7 @@ once per public query, including source-opening failures, cancellation, limits, 
 const controller = new AbortController();
 const result = await query({select: ['name']}, {
   source: 'https://example.com/cities.parquet',
-  loaders: ParquetSourceLoader,
+  loaders: ParquetLoader,
   signal: controller.signal,
   onQueryComplete: summary => console.log(summary.status, summary.rowsReturned)
 });

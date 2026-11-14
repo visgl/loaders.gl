@@ -3,12 +3,12 @@ import {createDataSourceSync} from '@loaders.gl/core';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 import {
   GeoZarrRasterSource,
-  GeoZarrSourceLoader,
+  GeoZarrLoader,
   type GeoZarrSourceLoaderOptions
 } from '@loaders.gl/scientific/zarr';
 const SPATIALDATA_V3_FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
-test('GeoZarrSourceLoader supports browser-relative store metadata', async () => {
-  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+test('GeoZarrLoader supports browser-relative store metadata', async () => {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0'}
   });

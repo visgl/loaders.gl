@@ -8,7 +8,7 @@ import {expect, test} from 'vitest';
 test('Arrow tile source root import does not eagerly bundle the tiler implementation', async () => {
   const result = await build({
     stdin: {
-      contents: "export {ArrowTableTileSourceLoader} from './modules/tiles/src/mvt/index.ts';",
+      contents: "export {ArrowTableTileLoader} from './modules/tiles/src/mvt/index.ts';",
       resolveDir: process.cwd(),
       sourcefile: 'arrow-table-tile-source-boundary.ts'
     },

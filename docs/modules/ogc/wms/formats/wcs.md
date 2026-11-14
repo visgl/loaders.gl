@@ -27,7 +27,7 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 | Type | API |
 | --- | --- |
-| Source loader | `WCSCoverageSourceLoader` |
+| Source loader | `WCSCoverageLoader` |
 
 <DocOrientation
   eyebrow="The WCS request path"
@@ -46,7 +46,7 @@ import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
 
 
 WCS provides analytical geospatial coverages rather than server-rendered map images.
-`WCSCoverageSourceLoader` supports focused discovery and read-only coverage retrieval.
+`WCSCoverageLoader` supports focused discovery and read-only coverage retrieval.
 
 <ReferenceBoundary
   title="Coverage request and decoding details"
@@ -76,9 +76,9 @@ WCS provides analytical geospatial coverages rather than server-rendered map ima
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WCSCoverageSourceLoader} from '@loaders.gl/ogc/wms';
+import {WCSCoverageLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSourceSync('https://example.com/wcs', [WCSCoverageSourceLoader], {
+const source = createDataSourceSync('https://example.com/wcs', [WCSCoverageLoader], {
   wcs: {
     version: '2.0.1',
     coverageId: 'elevation',

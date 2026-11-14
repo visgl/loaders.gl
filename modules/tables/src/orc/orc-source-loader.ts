@@ -133,6 +133,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
 }
 
 /** Parser-bearing ORC source loader exposed through the explicit source subpath. */
+/** @deprecated Use createDataSource() with ORCLoader. */
 export const ORCSourceLoaderWithParser = {
   dataType: null as unknown as ORCSource,
   batchType: null as never,

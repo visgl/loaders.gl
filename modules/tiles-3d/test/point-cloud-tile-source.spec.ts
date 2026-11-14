@@ -5,11 +5,11 @@
 import {expect, test} from 'vitest';
 import type {Mesh} from '@loaders.gl/core/schema';
 import {
-  PointCloudTileSourceLoader,
+  PointCloudTileLoader,
   PointCloudTileset,
   createTilesetSpatialReference
 } from '@loaders.gl/tiles-3d';
-import {PointCloudTileSourceLoaderWithParser} from '../src/point-cloud-tile-source-loader';
+import {PointCloudTileLoaderWithParser} from '../src/point-cloud-tile-source-loader';
 import {PointCloudTileSource} from '../src/point-cloud-tile-source';
 
 /** Minimal native-coordinate point data with a scalar attribute. */
@@ -31,7 +31,7 @@ function createInput(count = 4): Mesh {
 
 test('dynamic point source satisfies the native PointCloudTileset source contract', async () => {
   const spatialReference = createTilesetSpatialReference({sourceCrs: 'EPSG:4978'});
-  const source = PointCloudTileSourceLoaderWithParser.createDataSourceSync(createInput(), {
+  const source = PointCloudTileLoaderWithParser.createDataSourceSync(createInput(), {
     pointCloudTiler: {nodePointLimit: 1, spatialReference}
   });
   try {
@@ -82,9 +82,9 @@ test('empty source has no content and input defaults do not imply a CRS', async 
 });
 
 test('metadata preloads the explicit runtime and rejects direct construction', async () => {
-  expect(PointCloudTileSourceLoader.testURL()).toBe(false);
-  expect(() => PointCloudTileSourceLoader.createDataSourceSync(createInput())).toThrow('preload');
-  const runtime = await PointCloudTileSourceLoader.preload();
+  expect(PointCloudTileLoader.testURL()).toBe(false);
+  expect(() => PointCloudTileLoader.createDataSourceSync(createInput())).toThrow('preload');
+  const runtime = await PointCloudTileLoader.preload();
   expect(runtime.createDataSourceSync).toBeTypeOf('function');
   for (const input of ['https://example.invalid/points.las', new Blob()])
     expect(() => runtime.createDataSourceSync(input, {})).toThrow('decoded Mesh/Arrow');

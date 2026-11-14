@@ -11,7 +11,7 @@ npm install @loaders.gl/core @loaders.gl/scientific
 The package root exports lightweight loader metadata. Async loaders can preload their parser when needed. Import format implementations explicitly when you need a parser or source class directly:
 
 ```ts
-import {NPYLoader, NetCDFLoader, NetCDFSourceLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
+import {NPYLoader, NetCDFLoader, NetCDFSourceLoader, OMEZarrLoader} from '@loaders.gl/scientific';
 import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy-loader';
 import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
 import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';

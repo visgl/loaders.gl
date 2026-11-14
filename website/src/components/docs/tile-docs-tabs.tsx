@@ -38,7 +38,7 @@ const TILE_DOCS_TABS: TileDocsTab[] = [
   },
   {
     id: 'table-tile-source-loader',
-    label: 'TableTileSourceLoader',
+    label: 'TableTileLoader',
     href: '/docs/modules/tiles/mvt/api-reference/table-tile-source-loader'
   },
   {id: 'mlt', label: 'MLT', href: '/docs/modules/tiles/mlt/formats/mlt'}

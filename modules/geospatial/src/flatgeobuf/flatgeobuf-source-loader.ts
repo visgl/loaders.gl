@@ -83,6 +83,7 @@ type HeaderInfo = {
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
 /** Incrementally loads indexed FlatGeobuf data sources. */
+/** @deprecated Use createDataSource() with FlatGeobufLoader. */
 export const FlatGeobufSourceLoader = {
   dataType: null as unknown as FlatGeobufVectorSource,
   batchType: null as never,
