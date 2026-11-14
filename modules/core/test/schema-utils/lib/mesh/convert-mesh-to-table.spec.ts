@@ -15,20 +15,23 @@ import {
   setFloat16Value
 } from '@loaders.gl/core/schema';
 import {
+  convertMeshToArrowTableWrapper,
   convertMeshToTable,
   convertTableToMesh,
   deduceMeshSchema
 } from '@loaders.gl/core/schema-utils';
 import {validateArrowTableSchema} from '@math.gl/arrow';
-test('convertMeshToTable preserves empty vector and scalar attribute schemas', () => {
+test('convertMeshToArrowTableWrapper preserves empty vector and scalar attribute schemas', () => {
   const attributes = {
     POSITION: {value: new Float32Array(0), size: 3},
     intensity: {value: new Uint16Array(0), size: 1}
   };
-  const table = convertMeshToTable(
-    {attributes, schema: deduceMeshSchema(attributes), topology: 'point-list', mode: 0},
-    'arrow-table'
-  );
+  const table = convertMeshToArrowTableWrapper({
+    attributes,
+    schema: deduceMeshSchema(attributes),
+    topology: 'point-list',
+    mode: 0
+  });
   expect(table.data.numRows).toBe(0);
   expect(table.data.schema.fields.map(field => field.name)).toEqual(['POSITION', 'intensity']);
   expect(table.data.getChild('POSITION')!.type).toBeInstanceOf(arrow.FixedSizeList);
@@ -37,10 +40,12 @@ test('convertMeshToTable preserves empty vector and scalar attribute schemas', (
 test('convertTableToMesh accepts native Arrow tables from a different constructor', () => {
   const positions = new Float32Array([1, 2, 3]);
   const attributes = {POSITION: {value: positions, size: 3}};
-  const {data} = convertMeshToTable(
-    {attributes, schema: deduceMeshSchema(attributes), topology: 'point-list', mode: 0},
-    'arrow-table'
-  );
+  const {data} = convertMeshToArrowTableWrapper({
+    attributes,
+    schema: deduceMeshSchema(attributes),
+    topology: 'point-list',
+    mode: 0
+  });
   const foreignTable = {
     schema: data.schema,
     batches: data.batches,
@@ -81,7 +86,7 @@ test('indexedMeshArrowSchema', () => {
   ).toBeTruthy();
 });
 
-test('convertMeshToTable#preserves logical Float16 colors', () => {
+test('convertMeshToArrowTableWrapper#preserves logical Float16 colors', () => {
   const colors = createFloat16Array(9);
   setFloat16Value(colors, 0, 0);
   setFloat16Value(colors, 1, 0.5);
@@ -100,7 +105,7 @@ test('convertMeshToTable#preserves logical Float16 colors', () => {
     }
   } as Mesh;
 
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   const colorField = table.data.schema.fields.find(field => field.name === 'COLOR_0');
   expect(colorField!.type instanceof arrow.FixedSizeList).toBeTruthy();
   expect(colorField!.type.children[0].type instanceof arrow.Float16).toBeTruthy();
@@ -119,7 +124,7 @@ test('Float16 fallback stores binary16 words', () => {
   expect(getFloat16Value(words, 1)).toBeCloseTo(0.5, 3);
 });
 
-test('convertMeshToTable#preserves Float32 colors', () => {
+test('convertMeshToArrowTableWrapper#preserves Float32 colors', () => {
   const colors = new Float32Array([0, 0.5, 1, 1, 0.25, 0.75]);
   const attributes = {
     POSITION: {value: new Float32Array([0, 0, 0, 1, 1, 1]), size: 3},
@@ -132,7 +137,7 @@ test('convertMeshToTable#preserves Float32 colors', () => {
     mode: 0
   };
 
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   const colorField = table.data.schema.fields.find(field => field.name === 'COLOR_0');
   expect((colorField!.type as arrow.FixedSizeList).children[0].type).toBeInstanceOf(arrow.Float32);
 
@@ -150,10 +155,13 @@ test('createFloat16Array selects native or fallback storage', () => {
     expect(values).toBeInstanceOf(Uint16Array);
   }
 });
-test('convertMeshToTable#unindexed mesh Arrow table round trip', () => {
+test('convertMeshToArrowTableWrapper#unindexed mesh Arrow table round trip', () => {
   const mesh = makeMesh();
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
+  const native = convertMeshToTable(mesh, 'arrow');
+  expect(native).toBeInstanceOf(arrow.Table);
+  expect(native.numRows).toBe(table.data.numRows);
   validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'Mesh Arrow table'});
   expect(
     table.data.schema.fields.map(field => field.name),
@@ -188,9 +196,9 @@ test.each([
   Uint8Array,
   Uint16Array,
   Uint32Array
-])('convertMeshToTable#indexed mesh Arrow table round trip from %s', IndexArray => {
+])('convertMeshToArrowTableWrapper#indexed mesh Arrow table round trip from %s', IndexArray => {
   const mesh = makeMesh(new IndexArray([0, 1, 2]));
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
     schemaName: 'IndexedMesh Arrow table'
   });
@@ -214,10 +222,10 @@ test.each([
   ]);
 });
 
-test('convertMeshToTable#preserves unsigned 32-bit index values and buffer views', () => {
+test('convertMeshToArrowTableWrapper#preserves unsigned 32-bit index values and buffer views', () => {
   // Exercise storage boundaries without allocating billions of vertex positions.
   const indices = new Uint32Array([99, 0, 0x7fffffff, 0x80000000, 0xfffffffe, 99]).subarray(1, 5);
-  const table = convertMeshToTable(makeMesh(indices), 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(makeMesh(indices));
   const values = convertTableToMesh(table).indices!.value;
   expect(values).toBeInstanceOf(Uint32Array);
   expect(Array.from(values)).toEqual([0, 0x7fffffff, 0x80000000, 0xfffffffe]);
@@ -242,7 +250,7 @@ test('convertTableToMesh#honors FixedSizeList chunk offsets', () => {
     topology: 'point-list',
     mode: 0
   };
-  const table = convertMeshToTable(mesh, 'arrow-table');
+  const table = convertMeshToArrowTableWrapper(mesh);
   const positionColumn = table.data.getChild('POSITION') as arrow.Vector<arrow.FixedSizeList>;
   const positionData = positionColumn.data[0];
   const offsetPositionData = new arrow.Data<arrow.FixedSizeList>(
@@ -285,7 +293,7 @@ test('convertTableToMesh#restores quantized position metadata and logical bounds
       ]
     }
   };
-  const roundTripMesh = convertTableToMesh(convertMeshToTable(mesh, 'arrow-table'));
+  const roundTripMesh = convertTableToMesh(convertMeshToArrowTableWrapper(mesh));
   expect(roundTripMesh.attributes.POSITION.transform).toEqual(mesh.attributes.POSITION.transform);
   expect(roundTripMesh.header?.boundingBox).toEqual(mesh.header?.boundingBox);
 });

@@ -8,7 +8,7 @@ import {
   type MeshArrowPointCloudLayerProps
 } from '../src/mesh-arrow-point-cloud-layer';
 import type {ArrowTableBatch, Mesh} from '@loaders.gl/core/schema';
-import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper} from '@loaders.gl/core/schema-utils';
 type ControlledAsyncIterable<T> = AsyncIterable<T> & {
   push: (value: T) => void;
   close: () => void;
@@ -39,7 +39,7 @@ function createPointCloudMesh(positions: number[]): Mesh {
 }
 /** Creates a loaders.gl Arrow table batch from point positions. */
 function createArrowTableBatch(positions: number[]): ArrowTableBatch {
-  const meshArrowTable = convertMeshToTable(createPointCloudMesh(positions), 'arrow-table');
+  const meshArrowTable = convertMeshToArrowTableWrapper(createPointCloudMesh(positions));
   return {
     shape: 'arrow-table',
     batchType: 'data',
@@ -97,17 +97,14 @@ async function waitForAsyncIterator(): Promise<void> {
   await Promise.resolve();
 }
 test('MeshArrowPointCloudLayer renders a static Mesh Arrow table', () => {
-  const meshArrowTable = convertMeshToTable(
-    createPointCloudMesh([0, 0, 0, 1, 2, 3]),
-    'arrow-table'
-  );
+  const meshArrowTable = convertMeshToArrowTableWrapper(createPointCloudMesh([0, 0, 0, 1, 2, 3]));
   const layer = createLayer({data: meshArrowTable});
   const [sublayer] = asLayerArray(layer.renderLayers());
   expect(sublayer.constructor.layerName, 'creates a PointCloudLayer').toBe('PointCloudLayer');
   expect((sublayer.props.data as any).length, 'passes one rendered object per point').toBe(2);
 });
 test('MeshArrowPointCloudLayer applies defaultPointColor without table colors', () => {
-  const meshArrowTable = convertMeshToTable(createPointCloudMesh([0, 0, 0]), 'arrow-table');
+  const meshArrowTable = convertMeshToArrowTableWrapper(createPointCloudMesh([0, 0, 0]));
   const layer = createLayer({
     data: meshArrowTable,
     defaultPointColor: [1, 2, 3]

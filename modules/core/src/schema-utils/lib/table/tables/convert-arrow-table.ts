@@ -9,20 +9,17 @@ import type {
   ColumnarTable,
   ObjectRowTable,
   GeoJSONTable,
-  ArrowTable,
   Feature
 } from '@loaders.gl/core/schema';
 
 import {convertTable} from './convert-table';
-import {convertArrowToSchema} from '../../schema/convert-arrow-schema';
+import {deduceTableSchema} from '../../schema/deduce-table-schema';
+import {convertArrowToSchema, convertSchemaToArrow} from '../../schema/convert-arrow-schema';
 import {makeWrappedTableRecordBatchIterator} from '../batches/make-arrow-batch-iterator';
 
 /**
- * * Convert a loaders.gl Table to an Apache Arrow Table
- * @param mesh
- * @param metadata
- * @param batchSize
- * @returns
+ * Converts a loaders.gl table to native Arrow and preserves the schema on empty input.
+ * Native Arrow inputs and legacy wrapped Arrow columns are reused.
  */
 export function convertTableToArrow(
   table: Table | arrow.Table,
@@ -40,31 +37,39 @@ export function convertTableToArrow(
     // fall through
 
     default:
-      const arrowBatchIterator = makeWrappedTableRecordBatchIterator(table, options);
-      return new arrow.Table(arrowBatchIterator);
+      const schema = table.schema ?? deduceTableSchema(table);
+      return new arrow.Table(convertSchemaToArrow(schema), [
+        ...makeWrappedTableRecordBatchIterator({...table, schema}, options)
+      ]);
   }
 }
+
+/** Loader table layouts produced when converting from Arrow. */
+type NonArrowTable = Exclude<Table, {shape: 'arrow-table'}>;
+type NonArrowTableShape = NonArrowTable['shape'];
 
 /**
  * Convert an Apache Arrow table to a loaders.gl Table
  * @note Currently does not convert schema
  */
-export function convertArrowToTable(arrow: arrow.Table, shape: 'arrow-table'): ArrowTable;
+export function convertArrowToTable(arrow: arrow.Table, shape: 'arrow'): arrow.Table;
 export function convertArrowToTable(arrow: arrow.Table, shape: 'columnar-table'): ColumnarTable;
 export function convertArrowToTable(arrow: arrow.Table, shape: 'object-row-table'): ObjectRowTable;
 export function convertArrowToTable(arrow: arrow.Table, shape: 'array-row-table'): ArrayRowTable;
 export function convertArrowToTable(arrow: arrow.Table, shape: 'geojson-table'): GeoJSONTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: 'columnar-table'): ColumnarTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: Table['shape']): Table;
+export function convertArrowToTable(arrow: arrow.Table, shape: NonArrowTableShape): NonArrowTable;
 
 /**
  * Convert an Apache Arrow table to a loaders.gl Table
  * @note Currently does not convert schema
  */
-export function convertArrowToTable(arrowTable: arrow.Table, shape: Table['shape']): Table {
+export function convertArrowToTable(
+  arrowTable: arrow.Table,
+  shape: NonArrowTableShape | 'arrow'
+): NonArrowTable | arrow.Table {
   switch (shape) {
-    case 'arrow-table':
-      return convertArrowToArrowTable(arrowTable);
+    case 'arrow':
+      return arrowTable;
     case 'array-row-table':
       return convertArrowToArrayRowTable(arrowTable);
     case 'object-row-table':
@@ -78,26 +83,12 @@ export function convertArrowToTable(arrowTable: arrow.Table, shape: Table['shape
   }
 }
 
-/**
- * Wrap an apache arrow table in a loaders.gl table wrapper.
- * From this additional conversions are available.
- * @param arrowTable
- * @returns
- */
-function convertArrowToArrowTable(arrowTable: arrow.Table): ArrowTable {
-  return {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(arrowTable.schema),
-    data: arrowTable
-  };
-}
-
-function convertArrowToArrayRowTable(arrowTable: arrow.Table): Table {
+function convertArrowToArrayRowTable(arrowTable: arrow.Table): ArrayRowTable {
   const columnarTable = convertArrowToColumnarTable(arrowTable);
   return convertTable(columnarTable, 'array-row-table');
 }
 
-function convertArrowToObjectRowTable(arrowTable: arrow.Table): Table {
+function convertArrowToObjectRowTable(arrowTable: arrow.Table): ObjectRowTable {
   const columnarTable = convertArrowToColumnarTable(arrowTable);
   return convertTable(columnarTable, 'object-row-table');
 }
@@ -165,12 +156,12 @@ function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
 //   };
 // }
 
-// function convertArrowToArrayRowTable(arrowTable: arrow.Table): Table {
+// function convertArrowToArrayRowTable(arrowTable: arrow.Table): ArrayRowTable {
 //   const columnarTable = convertArrowToColumnarTable(arrowTable);
 //   return convertTable(columnarTable, 'array-row-table');
 // }
 
-// function convertArrowToObjectRowTable(arrowTable: arrow.Table): Table {
+// function convertArrowToObjectRowTable(arrowTable: arrow.Table): ObjectRowTable {
 //   const columnarTable = convertArrowToColumnarTable(arrowTable);
 //   return convertTable(columnarTable, 'object-row-table');
 // }

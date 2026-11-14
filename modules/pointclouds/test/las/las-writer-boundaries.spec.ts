@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import type {Mesh, MeshAttribute, MeshArrowTable} from '@loaders.gl/core/schema';
-import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {LASWriter, type LASWriterOptions} from '../../src/las/las-writer';
 
 /** Creates a minimal point mesh with optional attribute and metadata overrides. */
@@ -51,7 +51,7 @@ test('LAS writer encodes an empty point mesh with finite zero bounds', async () 
 test('LAS writer merges mixed mesh and Arrow batches and computes bounds over all points', async () => {
   const firstMesh = createMesh();
   const lastMesh = createMesh({POSITION: {value: new Float64Array([-2, 40, 5]), size: 3}});
-  const buffers = await encodeBatches([firstMesh, convertMeshToTable(lastMesh, 'arrow-table')]);
+  const buffers = await encodeBatches([firstMesh, convertMeshToArrowTableWrapper(lastMesh)]);
   expect(buffers).toHaveLength(1);
   const header = new DataView(buffers[0]);
   expect(header.byteLength).toBe(267);

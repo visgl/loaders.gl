@@ -45,10 +45,12 @@ export type GeoArrowConvertFromOptions = {
  * generic Arrow conversion, preserving any existing schema metadata on the source table.
  */
 export function convertTableToGeoArrow(
-  table: Table,
+  table: Table | arrow.Table,
   options?: GeoArrowConvertFromOptions
 ): arrow.Table {
   const encoding = resolveGeoArrowEncoding(options);
+
+  if (!('shape' in table)) return convertArrowTableToGeoArrow(table, encoding, options);
 
   switch (table.shape) {
     case 'arrow-table':

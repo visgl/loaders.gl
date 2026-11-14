@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {DataSource, readRangeResponse, type CoreAPI} from '@loaders.gl/core/loader-utils';
-import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper} from '@loaders.gl/core/schema-utils';
 import type {PotreeSourceLoaderOptions} from './potree-source-options';
 import type {Potree2HierarchyNode, Potree2Metadata} from './potree2-types';
 import {
@@ -154,7 +154,7 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
     const header = this.createHeader(node);
     mesh.header!.boundingBox = header.boundingVolume.cartographicBounds;
     return {
-      data: convertMeshToTable(mesh, 'arrow-table'),
+      data: convertMeshToArrowTableWrapper(mesh),
       pointCount: node.pointCount,
       coordinateSystem: 'cartesian' as const,
       cartographicOrigin: [0, 0, 0],

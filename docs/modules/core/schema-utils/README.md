@@ -44,13 +44,13 @@ for `PointCloudTiler` ownership, coordinate and memory-limit contracts.
 ## Arrow wrapper conversion
 
 `convertArrowTable(table, shape)` and `convertArrowTableBatch(batch, shape)` convert
-Arrow-backed wrappers to `arrow-table`, `columnar-table`, `object-row-table`, or
+Arrow-backed wrappers to `columnar-table`, `object-row-table`, or
 `array-row-table`. Import them from `@loaders.gl/core/schema-utils`.
 
 These helpers retain the wrapper's schema and additional metadata. If no schema
 is supplied, conversions to other layouts infer it from Arrow. Batch conversion
 also retains length, batch type, and progress fields without buffering batches.
-Requesting `arrow-table` returns the original wrapper unchanged. Value conversion
+Read native Arrow output from the input wrapper’s `data` property. Value conversion
 uses the existing Arrow conversion semantics; geometry reconstruction is separate.
 
 ## Arrow worker transport

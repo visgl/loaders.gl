@@ -70,22 +70,18 @@ for await (const recordBatch of batches) {
 
 Set `core.shape` to select an output shape across loaders. Set the loader's
 own `shape` option to override it for that loader. For example, both calls
-below return a loaders.gl table wrapper:
+below return a native Apache Arrow table:
 
 ```typescript
-await load('data.csv', CSVLoader, {core: {shape: 'arrow-table'}});
-await load('data.csv', CSVLoader, {csv: {shape: 'arrow-table'}});
+await load('data.csv', CSVLoader, {core: {shape: 'arrow'}});
+await load('data.csv', CSVLoader, {csv: {shape: 'arrow'}});
 ```
 
 Native output preserves Arrow schemas, field metadata, dictionaries, and column
-buffers. Streaming yields every RecordBatch in each internal table, in order,
-and closing the iterator closes the upstream iterator. An empty table with no
-record batches yields none. Arrow schema and field metadata are available
-through each batch's schema. To receive loaders.gl metadata events, use
-`core.metadata: true` with `shape: 'arrow-table'`.
-
-Parser methods and worker transport use loaders.gl table and batch objects.
-The core APIs expose the Arrow objects after parsing and worker hydration.
+buffers. Read table-wide metadata from `batch.schema.metadata` and batch-local
+metadata from `batch.metadata`. A loader can emit a zero-row final RecordBatch
+to refine the schema metadata at EOF. Use `makeArrowTableFromBatches` to collect
+the stream and merge schema metadata in emission order.
 
 ## Writing native Arrow data
 

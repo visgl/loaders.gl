@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {OBJLoader, OBJWriter} from '@loaders.gl/scene/obj';
 import {encode, parse} from '@loaders.gl/core';
-import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 const attributes = {
   POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3},
   NORMAL: {value: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]), size: 3},
@@ -27,7 +27,7 @@ test('OBJWriter#encode plain and Arrow mesh data', async () => {
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
-  const arrowTable = convertMeshToTable(mesh, 'arrow-table');
+  const arrowTable = convertMeshToArrowTableWrapper(mesh);
   const arrowArrayBuffer = await encode(arrowTable, OBJWriter);
   const arrowData = await parse(arrowArrayBuffer, OBJLoader, {
     core: {worker: false},
