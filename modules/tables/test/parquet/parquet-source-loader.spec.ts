@@ -925,7 +925,7 @@ test('Parquet source pages skip footer-counted row groups and retain row provena
     const second = await query({select: ['x'], offset: 4, limit: 1}, {source});
     expect(first.map(batch => [batch.rowGroupIndex, batch.rowOffset, batch.length]))
       .toEqual([[1, 3, 1]]);
-    expect(second.data.getChild('x')?.get(0)).toBe(4);
+    expect(second.getChild('x')?.get(0)).toBe(4);
     expect(source.getTelemetry().rowGroupsDecoded).toBe(2);
     const filtered = await collectParquetBatches(source.read({
       predicate: {op: '>=', args: [{property: 'x'}, 0]}, offset: 3, limit: 1

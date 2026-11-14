@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {RecordBatch} from 'apache-arrow';
 import {expect, expectTypeOf, test, vi} from 'vitest';
 import {query, queryInBatches} from '@loaders.gl/core/scan';
 import {createSQLCatalog, parseSQLQuery, parseSQLSelect} from '../../../src/scan/query';
 import type {SQLCatalog, SQLCatalogQuery} from '../../../src/scan/query';
 import {DataSource, createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {DataSourceOptions, TableMetadata} from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 
 const schema: Schema = {
   fields: [
@@ -107,8 +108,8 @@ test('SHOW SOURCES is Arrow output and performs no metadata I/O', async () => {
     sqlParser: Promise.resolve(parseSQLQuery),
     onQueryComplete: complete
   });
-  expect(result.shape).toBe('arrow-table');
-  expect(result.data.toArray().map(row => row.toJSON())).toEqual([
+  expect(result).toHaveProperty('numRows');
+  expect(result.toArray().map(row => row.toJSON())).toEqual([
     {source_name: 'cities'},
     {source_name: 'warehouse'}
   ]);
@@ -130,7 +131,7 @@ test('SHOW TABLES selects one source and returns usable quoted references', asyn
     {command: 'showTables', from: source.name},
     {sources: [source, unused]}
   );
-  expect(result.data.toArray().map(row => row.toJSON())).toEqual([
+  expect(result.toArray().map(row => row.toJSON())).toEqual([
     {
       source_name: 'ware"house',
       table_name: 'city.names',
@@ -171,7 +172,7 @@ test('DESCRIBE returns ordered fields, logical Arrow types, nullability and meta
     sources: [source],
     sqlParser: parseSQLQuery
   });
-  expect(result.data.toArray().map(row => row.toJSON())).toEqual([
+  expect(result.toArray().map(row => row.toJSON())).toEqual([
     {
       source_name: 'warehouse',
       table_name: 'cities',
@@ -198,7 +199,7 @@ test('DESCRIBE returns ordered fields, logical Arrow types, nullability and meta
 test('single-table sources appear with literal references and support DESCRIBE', async () => {
   const source = new MetadataSource('city.names');
   const tables = await query({command: 'showTables'}, {sources: [source]});
-  expect(tables.data.getChild('table_reference')?.get(0)).toBe('"city.names"');
+  expect(tables.getChild('table_reference')?.get(0)).toBe('"city.names"');
   expect(await createSQLCatalog([source]).getSchema('city.names')).toMatchObject(schema);
   expect(source.read).not.toHaveBeenCalled();
 });
@@ -208,25 +209,25 @@ test.each([
   [{command: 'showTables'}, ['source_name', 'table_name', 'table_reference', 'queryable']]
 ] as const)('empty %j retains its Arrow schema in both APIs', async (request, columns) => {
   const result = await query(request, {sources: []});
-  const streamed: ArrowTableBatch[] = [];
+  const streamed: RecordBatch[] = [];
   for await (const batch of queryInBatches(request, {sources: []})) streamed.push(batch);
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(columns);
+  expect(result.numRows).toBe(0);
+  expect(result.schema.fields.map(field => field.name)).toEqual(columns);
   expect(streamed).toHaveLength(1);
-  expect(streamed[0].data.schema).toEqual(result.data.schema);
+  expect(streamed[0].schema).toEqual(result.schema);
 });
 
 test('empty table lists and zero-column schemas retain output fields', async () => {
   const source = new MetadataCollection();
   source.getTablesMetadata.mockResolvedValue([]);
   source.getTableMetadata.mockResolvedValue({name: 'empty', schema: {fields: [], metadata: {}}});
-  expect((await query({command: 'showTables'}, {sources: [source]})).data.numRows).toBe(0);
+  expect((await query({command: 'showTables'}, {sources: [source]})).numRows).toBe(0);
   const described = await query(
     {command: 'describe', from: {source: 'warehouse', table: 'empty'}},
     {sources: [source]}
   );
-  expect(described.data.numRows).toBe(0);
-  expect(described.data.schema.fields.map(field => field.name)).toContain('is_nullable');
+  expect(described.numRows).toBe(0);
+  expect(described.schema.fields.map(field => field.name)).toContain('is_nullable');
 });
 
 test('consumer return stops discovery before later sources and completes once', async () => {
@@ -280,8 +281,7 @@ test('discovery errors preserve the failure and throwing observers cannot change
   ).rejects.toThrow('discovery failed');
   expect(complete).toHaveBeenCalledTimes(1);
   expect(
-    (await query({command: 'showSources'}, {sources: [source], onQueryComplete: complete})).data
-      .numRows
+    (await query({command: 'showSources'}, {sources: [source], onQueryComplete: complete})).numRows
   ).toBe(1);
 });
 
@@ -357,10 +357,10 @@ test('streamed and collected table listings agree across sources in registration
   const collected = await query(request, {sources});
   const rows: Record<string, unknown>[] = [];
   for await (const batch of queryInBatches(request, {sources})) {
-    expect(batch.shape).toBe('arrow-table');
-    rows.push(...batch.data.toArray().map(row => row.toJSON()));
+    expect(batch).toBeInstanceOf(RecordBatch);
+    rows.push(...[...batch].map(row => row.toJSON()));
   }
-  expect(rows).toEqual(collected.data.toArray().map(row => row.toJSON()));
+  expect(rows).toEqual(collected.toArray().map(row => row.toJSON()));
   expect(rows.map(row => row.source_name)).toEqual(['first', 'second']);
 });
 
@@ -376,5 +376,5 @@ test('DESCRIBE requires a named table for hybrid collection and default-table so
     {command: 'describe', from: {source: 'warehouse', table: 'cities'}},
     {sources: [source]}
   );
-  expect(result.data.getChild('table_name')?.toArray()).toEqual(['cities', 'cities']);
+  expect(result.getChild('table_name')?.toArray()).toEqual(['cities', 'cities']);
 });

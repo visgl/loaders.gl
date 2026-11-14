@@ -30,7 +30,7 @@ test('collected and streamed queries agree and report one completion', async () 
   const source = makeTable();
   const onQueryComplete = vi.fn();
   const result = await query(logical, {source, onQueryComplete});
-  expect(result.data.toArray().map(row => row.toJSON())).toEqual([{label: 'b'}]);
+  expect(result.toArray().map(row => row.toJSON())).toEqual([{label: 'b'}]);
   expect(onQueryComplete).toHaveBeenCalledTimes(1);
   expect(onQueryComplete.mock.calls[0][0]).toMatchObject({
     status: 'early-terminated',
@@ -38,10 +38,10 @@ test('collected and streamed queries agree and report one completion', async () 
   });
   const rows: unknown[] = [];
   for await (const batch of queryInBatches(logical, {source}))
-    rows.push(...batch.data.toArray().map(row => row.toJSON()));
+    rows.push(...[...batch].map(row => row.toJSON()));
   expect(rows).toEqual([{label: 'b'}]);
   const projected = await query({select: [{column: 'name', as: 'label'}]}, {source});
-  expect(projected.data.getChild('label')!.data[0].values.buffer).toBe(
+  expect(projected.getChild('label')!.data[0].values.buffer).toBe(
     source.data.getChild('name')!.data[0].values.buffer
   );
 });
@@ -63,15 +63,15 @@ test('empty and zero-limit results preserve aliased schemas without reading sour
     read
   };
   const result = await query({select: [{column: 'name', as: 'label'}], limit: 0}, {source});
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['label']);
+  expect(result.numRows).toBe(0);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['label']);
   expect(read).not.toHaveBeenCalled();
   const rejected = await query(
     {select: ['name'], where: {op: '>', args: [{property: 'value'}, 100]}},
     {source: table}
   );
-  expect(rejected.data.numRows).toBe(0);
-  expect(rejected.data.schema.fields[0].name).toBe('name');
+  expect(rejected.numRows).toBe(0);
+  expect(rejected.schema.fields[0].name).toBe('name');
 });
 
 test.each([
@@ -111,14 +111,14 @@ test.each([
     }
   };
   const result = await query(logical, {source});
-  expect(result.data.toArray().map(row => row.label)).toEqual(['b']);
+  expect(result.toArray().map(row => row.label)).toEqual(['b']);
   expect(received!.columns).toEqual(['name', 'value']);
   expect(received!.onQueryComplete).toBeUndefined();
   expect(received!.predicate).toEqual(support === 'residual' ? undefined : logical.where);
   expect(received!.limit).toBe(support === 'residual' ? undefined : 1);
 
   const page = await query({...logical, offset: 1}, {source});
-  expect(page.data.toArray().map(row => row.label)).toEqual(['c']);
+  expect(page.toArray().map(row => row.label)).toEqual(['c']);
   expect(received!.limit).toBe(support === 'residual' ? undefined : 2);
 });
 
@@ -161,8 +161,8 @@ test('computed SQL aligns projected source fields and keeps the limit above loca
     source,
     sqlParser: parseSQLQuery
   });
-  expect(result.data.getChild('name')!.toArray()).toEqual(['b']);
-  expect(Array.from(result.data.getChild('score')!.toArray())).toEqual([20]);
+  expect(result.getChild('name')!.toArray()).toEqual(['b']);
+  expect(Array.from(result.getChild('score')!.toArray())).toEqual([20]);
   expect(read).toHaveBeenCalledWith(expect.objectContaining({columns: ['name', 'value']}));
   const [options] = read.mock.calls[0]!;
   expect(options?.limit).toBeUndefined();
@@ -209,7 +209,7 @@ test('row batches normalize to Arrow and failures/cancellation complete once', a
   const throwing = vi.fn(() => {
     throw new Error('observer');
   });
-  expect((await query({}, {source: table, onQueryComplete: throwing})).data.numRows).toBe(3);
+  expect((await query({}, {source: table, onQueryComplete: throwing})).numRows).toBe(3);
 });
 
 test('consumer return closes the source and emits one terminal summary', async () => {
@@ -315,8 +315,8 @@ test.each([
     }
   };
   const result = await query(logical, {source});
-  expect(result.data.toArray().map(row => row.toJSON())).toEqual([{label: 'b'}]);
-  expect(result.data.schema.fields[0].type.toString()).toBe('Utf8');
+  expect(result.toArray().map(row => row.toJSON())).toEqual([{label: 'b'}]);
+  expect(result.schema.fields[0].type.toString()).toBe('Utf8');
 });
 
 test('equivalent Arrow float constructors compare as the same logical output type', async () => {
@@ -338,8 +338,8 @@ test('equivalent Arrow float constructors compare as the same logical output typ
     }
   };
   const result = await query({select: [{column: 'value', as: 'number'}]}, {source});
-  expect(result.data.toArray().map(row => row.number)).toEqual([1, 2]);
-  expect(result.data.getChild('number')!.data[0].values.buffer).toBe(
+  expect(result.toArray().map(row => row.number)).toEqual([1, 2]);
+  expect(result.getChild('number')!.data[0].values.buffer).toBe(
     data.getChild('value')!.data[0].values.buffer
   );
 });
@@ -395,16 +395,32 @@ test('stream pagination skips filtered batches and slices only the boundary batc
     {source, onQueryComplete: complete}
   ))
     batches.push(batch);
-  expect(batches.map(batch => batch.data.getChild('value')!.toArray())).toEqual([
+  expect(batches.map(batch => batch.getChild('value')!.toArray())).toEqual([
     new Int32Array([3]),
     new Int32Array([2])
   ]);
-  expect(batches[0].data.getChild('value')!.data[0].values.buffer).toBe(
+  expect(batches[0].getChild('value')!.data[0].values.buffer).toBe(
     table.getChild('value')!.data[0].values.buffer
   );
   expect(complete).toHaveBeenCalledWith(expect.objectContaining({batchesRead: 3, rowsReturned: 2}));
-  expect((await query({offset: 100}, {source})).data.numRows).toBe(0);
+  expect((await query({offset: 100}, {source})).numRows).toBe(0);
   await expect(query({offset: -1}, {source})).rejects.toThrow(
     'offset must be a non-negative safe integer'
   );
+});
+
+test('native Arrow queries retain the projected schema on empty streams', async () => {
+  const source = arrow.tableFromArrays({value: new Int32Array([1, 2])});
+  source.schema.metadata.set('source', 'native');
+  const request = {select: [{column: 'value', as: 'number'}], limit: 0};
+  const table = await query(request, {source});
+  expect(table).toBeInstanceOf(arrow.Table);
+  expect(table.numRows).toBe(0);
+  expect(table.schema.names).toEqual(['number']);
+  expect(table.schema.metadata.get('source')).toBe('native');
+  const batches = [];
+  for await (const batch of queryInBatches(request, {source})) batches.push(batch);
+  expect(batches).toHaveLength(1);
+  expect(batches[0]).toBeInstanceOf(arrow.RecordBatch);
+  expect(batches[0].schema).toEqual(table.schema);
 });

@@ -43,7 +43,7 @@ test('progressive GROUP BY yields complete replacement tables and a final snapsh
   const results = snapshots.map(snapshot => ({
     final: snapshot.final,
     rowsProcessed: snapshot.rowsProcessed,
-    rows: snapshot.table.data.toArray().map(row => row.toJSON())
+    rows: snapshot.table.toArray().map(row => row.toJSON())
   }));
   expect(results.slice(0, 2)).toEqual([
     {
@@ -83,7 +83,7 @@ test('global aggregates update without storing rows and honor WHERE', async () =
   expect(snapshots).toHaveLength(2);
   expect(snapshots[0].final).toBe(false);
   expect(snapshots[0].rowsProcessed).toBe(3);
-  expect(snapshots[0].table.data.toArray()[0].toJSON()).toEqual({count: 3, avg: 100 / 3});
+  expect(snapshots[0].table.toArray()[0].toJSON()).toEqual({count: 3, avg: 100 / 3});
   expect(snapshots[1].final).toBe(true);
 });
 
@@ -143,7 +143,7 @@ test('empty global input emits a final zero count, not a provisional result', as
     snapshots.push(snapshot);
   expect(snapshots).toHaveLength(1);
   expect(snapshots[0].final).toBe(true);
-  expect(snapshots[0].table.data.toArray()[0].toJSON()).toEqual({count: 0, sum: null});
+  expect(snapshots[0].table.toArray()[0].toJSON()).toEqual({count: 0, sum: null});
 });
 
 test('invalid progressive requests reject before reading', async () => {

@@ -27,11 +27,11 @@ const result = await query(
   {source: 'https://example.com/cities.parquet', loaders: ParquetSourceLoader}
 );
 
-console.log(result.data.numRows);
-console.log(result.data.getChild('people'));
+console.log(result.numRows);
+console.log(result.getChild('people'));
 ```
 
-The result is a loaders.gl `ArrowTable` wrapper; `result.data` is an Apache Arrow `Table`.
+The result is an Apache Arrow `Table`.
 You can also pass an already loaded loaders.gl Arrow table or an existing table scan source as
 `source`. Those inputs do not need `loaders`. Parser-only loaders such as `ParquetLoader` are not
 source loaders; use `ParquetSourceLoader` for URL queries.
@@ -85,7 +85,7 @@ for await (const batch of queryInBatches(
   {select: ['name'], where: {op: '>', args: [{property: 'population'}, 100000]}},
   {source: 'https://example.com/cities.parquet', loaders: ParquetSourceLoader}
 )) {
-  await consume(batch.data);
+  await consume(batch);
 }
 ```
 
@@ -130,9 +130,7 @@ The iterator always emits a final snapshot, including for empty inputs, and clos
 early return. Use `emitEveryBatches` to control how often it rebuilds the output.
 
 For pure Arrow `RecordBatch` streams, set `queryOutput: 'snapshots'` on
-`queryInBatches(aggregateQuery, options)` and replace the prior result on every yield. Set
-`queryOutput: 'batches'` with a regular query to append new rows. Without `queryOutput`,
-`queryInBatches()` yields loaders.gl batch envelopes. Use `queryProgressive()` for explicit
+`queryInBatches(aggregateQuery, options)` and replace the prior result on every yield. Regular queries yield append-only Arrow `RecordBatch` objects by default. Use `queryProgressive()` for explicit
 `rowsProcessed` and `final` metadata.
 
 ## Reuse and name sources

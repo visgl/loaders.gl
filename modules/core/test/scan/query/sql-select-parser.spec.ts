@@ -109,13 +109,13 @@ test('quoted WHERE identifiers execute through the injected parser and both resu
   const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
   const sql = `SELECT "field.name" AS label WHERE "not" > 0 AND "field.name" = 'LIMIT 2' LIMIT 1`;
   const result = await query(sql, {source, sqlParser: Promise.resolve(parseSQLQuery)});
-  expect(result.data.toArray().map(row => row.label)).toEqual(['LIMIT 2']);
+  expect(result.toArray().map(row => row.label)).toEqual(['LIMIT 2']);
   const rows: unknown[] = [];
   for await (const batch of queryInBatches(sql, {source, sqlParser: parseSQLQuery}))
-    rows.push(...batch.data.toArray().map(row => row.label));
+    rows.push(...[...batch].map(row => row.label));
   expect(rows).toEqual(['LIMIT 2']);
   expect(
-    (await query('SELECT * LIMIT 0', {source, sqlParser: parseSQLSelect})).data.schema.names
+    (await query('SELECT * LIMIT 0', {source, sqlParser: parseSQLSelect})).schema.names
   ).toEqual(['not', 'field.name']);
 });
 
@@ -126,6 +126,6 @@ test('SQL OFFSET skips filtered rows before LIMIT', async () => {
     source,
     sqlParser: parseSQLQuery
   });
-  expect(result.data.getChild('value')?.get(0)).toBe(2);
-  expect(result.data.numRows).toBe(1);
+  expect(result.getChild('value')?.get(0)).toBe(2);
+  expect(result.numRows).toBe(1);
 });

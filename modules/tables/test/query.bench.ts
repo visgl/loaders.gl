@@ -68,11 +68,11 @@ export default async function queryBench(suite) {
     await source.getQueryMetadata();
     for (const [name, request] of Object.entries(scenarios)) {
       group.addAsync(`${format} ${name} collect`, benchmarkOptions, async () => {
-        return (await query(request, {source})).data.numRows;
+        return (await query(request, {source})).numRows;
       });
       group.addAsync(`${format} ${name} stream`, benchmarkOptions, async () => {
         let count = 0;
-        for await (const batch of queryInBatches(request, {source})) count += batch.data.numRows;
+        for await (const batch of queryInBatches(request, {source})) count += batch.numRows;
         return count;
       });
     }

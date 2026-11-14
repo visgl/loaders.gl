@@ -45,7 +45,7 @@ test('GeoPackageSource exposes URL matching and executes residual queries', asyn
     limit: 1
   });
 
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['value']);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['value']);
   expect(Array.from(result.data.getChild('value')?.toArray() || [])).toEqual([1]);
 });
 test('GeoPackageSource#getMetadata returns tables and default selection', async () => {
@@ -130,8 +130,8 @@ test('qualified FROM selects a loaded GeoPackage table without changing its defa
     {from: {source: 'warehouse', table: 'FEATURESriversds'}, limit: 1},
     {sources: [source]}
   );
-  expect(result.data.numRows).toBe(1);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(
+  expect(result.numRows).toBe(1);
+  expect(result.schema.fields.map(field => field.name)).toEqual(
     metadata.tables
       .find(table => table.name === 'FEATURESriversds')!
       .schema.fields.map(field => field.name)
@@ -151,7 +151,7 @@ test('GeoPackage metadata commands discover named schemas without opening featur
     throw new Error('must not open features');
   });
   const tables = await query({command: 'showTables', from: 'warehouse'}, {sources: [source]});
-  expect(tables.data.getChild('table_name')?.toArray()).toEqual(
+  expect(tables.getChild('table_name')?.toArray()).toEqual(
     metadata.tables.map(table => table.name)
   );
   await expect(
@@ -162,7 +162,7 @@ test('GeoPackage metadata commands discover named schemas without opening featur
     {command: 'describe', from: {source: 'warehouse', table: selected.name}},
     {sources: [source]}
   );
-  expect(result.data.getChild('column_name')?.toArray()).toEqual(
+  expect(result.getChild('column_name')?.toArray()).toEqual(
     selected.schema.fields.map(field => field.name)
   );
   expect(open).not.toHaveBeenCalled();
