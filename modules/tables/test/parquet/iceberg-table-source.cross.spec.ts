@@ -8,7 +8,7 @@ import * as arrow from 'apache-arrow';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
 import {encode} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {FederatedTableScanSource} from '@loaders.gl/core/scan';
+import {FederatedTableScanSource, getFederatedTableBatchProvenance} from '@loaders.gl/core/scan';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';
 import {AvroWriter} from '@loaders.gl/tables/avro/index';
 import {ParquetJSWriter} from '../../src/parquet/parquet-js-writer';
@@ -447,9 +447,9 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
     }))
       batches.push(batch);
     expect(batches).toHaveLength(1);
-    expect([...batches[0].data.getChild('id')!.toArray()]).toEqual([1, 3]);
-    expect([...batches[0].data.getChild('value')!.toArray()]).toEqual(['one', 'three']);
-    expect(batches[0].rowIndices).toEqual([0, 2]);
+    expect([...batches[0].getChild('id')!.toArray()]).toEqual([1, 3]);
+    expect([...batches[0].getChild('value')!.toArray()]).toEqual(['one', 'three']);
+    expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowIndices).toEqual([0, 2]);
     expect(telemetry).toMatchObject({status: 'completed', rowsReturned: 2});
 
     const liveTable = new arrow.Table({
@@ -474,10 +474,10 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
     });
     const historyBatches = [];
     for await (const batch of history.read({limit: 4})) historyBatches.push(batch);
-    expect(historyBatches.flatMap(batch => [...batch.data.getChild('id')!.toArray()])).toEqual([
+    expect(historyBatches.flatMap(batch => [...batch.getChild('id')!.toArray()])).toEqual([
       1, 2, 3, 4
     ]);
-    expect(historyBatches.map(batch => batch.sourceId)).toEqual(['snapshot', 'live']);
+    expect(historyBatches.map(batch => getFederatedTableBatchProvenance(batch).sourceId)).toEqual(['snapshot', 'live']);
     expect((await history.explain()).sources.map(entry => entry.sourceType)).toEqual([
       'iceberg',
       'arrow'

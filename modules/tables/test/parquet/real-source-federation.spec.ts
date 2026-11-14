@@ -16,7 +16,7 @@ import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/core/scan';
 
-import {FederatedTableScanSource} from '@loaders.gl/core/scan';
+import {getFederatedTableBatchProvenance, FederatedTableScanSource} from '@loaders.gl/core/scan';
 
 const OUTPUT_SCHEMA: Schema = {
   fields: [
@@ -107,8 +107,8 @@ test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () =>
       telemetry = value;
     }
   })) {
-    provenance.push(batch.sourceId);
-    rows.push(...batch.data.toArray().map(row => row.toJSON()));
+    provenance.push(getFederatedTableBatchProvenance(batch).sourceId);
+    rows.push(...batch.toArray().map(row => row.toJSON()));
   }
 
   expect(rows).toEqual([
@@ -176,7 +176,7 @@ test('federates an actual Delta snapshot with another table source', async () =>
 
   const rows: Record<string, unknown>[] = [];
   for await (const batch of source.read()) {
-    rows.push(...batch.data.toArray().map(row => row.toJSON()));
+    rows.push(...batch.toArray().map(row => row.toJSON()));
   }
   expect(rows).toEqual([
     {id: 9, label: 'india', format: 'delta'},

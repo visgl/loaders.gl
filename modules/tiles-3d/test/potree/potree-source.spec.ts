@@ -91,13 +91,13 @@ test('PotreeLoader#scans ordered Arrow point batches with a global limit', async
     batches.push(batch);
   }
 
-  expect(batches.map(batch => batch.length)).toEqual([10, 10, 5]);
+  expect(batches.map(batch => batch.numRows)).toEqual([10, 10, 5]);
   expect(batches[0].schema.fields.map(field => field.name)).toEqual([
     'POSITION_CARTESIAN',
     'COLOR_PACKED'
   ]);
-  expect(batches[0].data.getChild('POSITION_CARTESIAN')).toBeTruthy();
-  expect(batches[0].data.getChild('COLOR_PACKED')).toBeTruthy();
+  expect(batches[0].getChild('POSITION_CARTESIAN')).toBeTruthy();
+  expect(batches[0].getChild('COLOR_PACKED')).toBeTruthy();
 });
 
 test('PotreeLoader#preserves rows in an empty projection', async () => {
@@ -108,8 +108,8 @@ test('PotreeLoader#preserves rows in an empty projection', async () => {
     batches.push(batch);
   }
 
-  expect(batches.map(batch => batch.length)).toEqual([2]);
-  expect(batches[0].data.numCols).toBe(0);
+  expect(batches.map(batch => batch.numRows)).toEqual([2]);
+  expect(batches[0].numCols).toBe(0);
 });
 
 test('PotreeLoader#does not advertise unsupported datasets as executable', async () => {

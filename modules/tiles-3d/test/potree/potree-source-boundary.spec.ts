@@ -244,7 +244,7 @@ test('Potree scan filters source bounds and streams scalar and vector columns in
     batches.push(batch);
   }
   expect(batches).toHaveLength(2);
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('INTENSITY')))).toEqual([10, 20]);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('INTENSITY')))).toEqual([10, 20]);
 
   await expect(async () => {
     for await (const _batch of source.scan({batchSize: 0})) {
@@ -488,9 +488,9 @@ test('Potree scans LAS scalar coordinates from projected offsets and skips unava
   }))
     batches.push(batch);
   expect(batches).toHaveLength(1);
-  expect(Array.from(batches[0].data.getChild('X')!)).toEqual([3]);
-  expect(Array.from(batches[0].data.getChild('Y')!)).toEqual([3]);
-  expect(Array.from(batches[0].data.getChild('Z')!)).toEqual([3]);
+  expect(Array.from(batches[0].getChild('X')!)).toEqual([3]);
+  expect(Array.from(batches[0].getChild('Y')!)).toEqual([3]);
+  expect(Array.from(batches[0].getChild('Z')!)).toEqual([3]);
   expect(source.loadNodeContent.mock.calls.map(([name]: [string]) => name)).toEqual(['', '0']);
 });
 
@@ -525,8 +525,8 @@ test('Potree scans skip meshes without decoded positions', async () => {
   const batches = [];
   for await (const batch of source.scan({columns: ['INTENSITY']})) batches.push(batch);
   expect(batches).toHaveLength(1);
-  expect(batches[0].data.numRows).toBe(1);
-  expect(batches[0].data.getChild('INTENSITY')!.get(0)).toBe(10);
+  expect(batches[0].numRows).toBe(1);
+  expect(batches[0].getChild('INTENSITY')!.get(0)).toBe(10);
 });
 
 test('Potree child-bound warnings are deduplicated and leave source bounds intact', () => {

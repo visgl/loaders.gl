@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
+import {streamNativeParquetBatches} from './lib/native-parquet-batches';
 import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/arrow';
 import {IndexedArrowTable} from '@math.gl/arrow';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/core/loader-utils';
@@ -255,7 +257,7 @@ export {ParquetSourceLoaderWithParser as ParquetSourceLoader};
 /** Reusable Parquet source that caches footer/schema state and selectively reads byte ranges. */
 export class ParquetSource
   extends DataSource<string | Blob, ParquetSourceLoaderOptions>
-  implements TableScanSource<ParquetSourceBatch, ParquetPredicate>
+  implements TableScanSource<RecordBatch, ParquetPredicate>
 {
   /** Common projection, predicate, limit, streaming, and cancellation capabilities. */
   readonly tableQueryCapabilities = {
@@ -376,7 +378,7 @@ export class ParquetSource
   async *executeScanPlan(
     plan: ParquetSourceExplain,
     options: ParquetSourceReadOptions = {}
-  ): AsyncIterable<ParquetSourceBatch> {
+  ): AsyncIterable<RecordBatch> {
     if (plan.source !== 'parquet') {
       throw new Error('ParquetSource can only execute Parquet scan plans');
     }
@@ -395,7 +397,7 @@ export class ParquetSource
   }
 
   /** Common scan-architecture alias for selective Parquet reads. */
-  scan(options: ParquetSourceReadOptions = {}): AsyncIterable<ParquetSourceBatch> {
+  scan(options: ParquetSourceReadOptions = {}): AsyncIterable<RecordBatch> {
     return this.read(options);
   }
 
@@ -485,7 +487,14 @@ export class ParquetSource
   }
 
   /** Selectively fetches row groups and columns as ordered Arrow batches with source provenance. */
-  async *read(options: ParquetSourceReadOptions = {}): AsyncIterable<ParquetSourceBatch> {
+  read(options: ParquetSourceReadOptions = {}): AsyncIterable<RecordBatch> {
+    return streamNativeParquetBatches(this.readWithProvenance(options));
+  }
+
+  /** Reads decoded batches for dataset composition and row provenance processing. @internal */
+  async *readWithProvenance(
+    options: ParquetSourceReadOptions = {}
+  ): AsyncIterable<ParquetSourceBatch> {
     const startedAt = Date.now();
     const telemetryBefore = this.getTelemetry();
     const readOptions = this.getReadOptions(options);

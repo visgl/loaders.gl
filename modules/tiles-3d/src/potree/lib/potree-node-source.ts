@@ -26,14 +26,7 @@ import {
   type PointCloudQueryCapabilities
 } from '@loaders.gl/core/loader-utils';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
-import type {
-  ArrowTableBatch,
-  DataType,
-  Field,
-  Mesh,
-  MeshArrowTable,
-  Schema
-} from '@loaders.gl/core/schema';
+import type {DataType, Field, Mesh, MeshArrowTable, Schema} from '@loaders.gl/core/schema';
 import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/core/schema-utils';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {
@@ -76,7 +69,7 @@ export interface PotreeNodeMesh extends LASMesh {
  */
 export class PotreeNodesSource
   extends DataSource<string, PotreeSourceLoaderOptions>
-  implements PointCloudScanSource<ArrowTableBatch>
+  implements PointCloudScanSource<import('apache-arrow').RecordBatch>
 {
   /** Common point-cloud scan capabilities exposed by Potree metadata and hierarchy nodes. */
   readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
@@ -246,7 +239,9 @@ export class PotreeNodesSource
    * Node bounds, hierarchy levels, and target spacing avoid unrelated node reads. Attribute
    * predicates and exact point bounds are evaluated residually after each selected node decode.
    */
-  async *scan(options: PointCloudScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  async *scan(
+    options: PointCloudScanReadOptions = {}
+  ): AsyncIterableIterator<import('apache-arrow').RecordBatch> {
     await this.initPromise;
     if (this.modernSource || !this.isSupported()) {
       throw new Error('This Potree version or point-attribute layout is not supported.');
@@ -311,7 +306,7 @@ export class PotreeNodesSource
           builder.addArrayRow(outputColumnNames.map(columnName => columns[columnName][rowIndex]));
         }
         const batch = builder.finishBatch();
-        if (batch) yield batch;
+        if (batch) yield* batch.data.batches;
         remainingPointCount -= batchRowIndices.length;
         if (remainingPointCount === 0) return;
       }

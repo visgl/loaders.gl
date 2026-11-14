@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
+import {streamNativeParquetBatches} from './lib/native-parquet-batches';
 import {
   executeScanTasks,
   emitQueryComplete,
@@ -227,7 +229,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
   async *executeScanPlan(
     plan: ParquetDatasetExplain,
     options: ParquetDatasetReadOptions = {}
-  ): AsyncIterable<ParquetDatasetBatch> {
+  ): AsyncIterable<RecordBatch> {
     if (plan.source !== 'parquet-dataset') {
       throw new Error('ParquetDatasetSource can only execute dataset scan plans');
     }
@@ -259,7 +261,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
         const outputBatch = sliceParquetBatch(batch, Math.min(batch.length, remainingRows));
         this.telemetry.batchesEmitted++;
         this.telemetry.rowsEmitted += outputBatch.length;
-        yield outputBatch;
+        yield* streamNativeParquetBatches([outputBatch]);
         remainingRows -= outputBatch.length;
         if (remainingRows === 0) return;
       }
@@ -271,7 +273,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
   }
 
   /** Common scan-architecture alias for ordered multi-file reads. */
-  scan(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+  scan(options: ParquetDatasetReadOptions = {}): AsyncIterable<RecordBatch> {
     return this.read(options);
   }
 
@@ -281,7 +283,14 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
    * Files are decoded concurrently. Each later file is limited to one buffered batch until all
    * earlier files have been yielded, bounding memory while retaining stable provider order.
    */
-  async *read(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+  read(options: ParquetDatasetReadOptions = {}): AsyncIterable<RecordBatch> {
+    return streamNativeParquetBatches(this.readWithProvenance(options));
+  }
+
+  /** Reads decoded batches for dataset composition and row provenance processing. @internal */
+  async *readWithProvenance(
+    options: ParquetDatasetReadOptions = {}
+  ): AsyncIterable<ParquetDatasetBatch> {
     this.assertOpen();
     validateTableQueryLimit(options.limit);
     const startedAt = Date.now();
@@ -446,7 +455,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
       if (this.options.parquetDataset?.validateSchema !== false) {
         await this.validateFileSchema(source, indexedFile, signal);
       }
-      for await (const batch of source.read({
+      for await (const batch of source.readWithProvenance({
         columns: options.columns,
         batchSize: options.batchSize,
         concurrency: options.concurrency,

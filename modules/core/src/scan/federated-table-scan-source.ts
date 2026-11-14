@@ -22,14 +22,7 @@ import {
   type TableScanReadOptions,
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  DataType,
-  Field,
-  Schema,
-  TableBatch
-} from '@loaders.gl/core/schema';
+import type {ArrowTable, DataType, Field, Schema, TableBatch} from '@loaders.gl/core/schema';
 import {
   convertArrowToSchema,
   convertBatch,
@@ -78,15 +71,14 @@ export type FederatedTableBatchProvenance = Readonly<{
 }>;
 
 /** Arrow batch emitted by an ordered federated scan. */
-export type FederatedTableBatch = ArrowTableBatch<FederatedTableBatchProvenance> &
-  Readonly<{
-    /** Manager id of the source that emitted this batch. */
-    sourceId: string;
-    /** Zero-based source position in append order. */
-    sourceIndex: number;
-    /** Zero-based data-batch position within the source. */
-    sourceBatchIndex: number;
-  }>;
+export type FederatedTableBatch = arrow.RecordBatch;
+
+/** Reads provenance from a federated batch's metadata. */
+export function getFederatedTableBatchProvenance(
+  batch: FederatedTableBatch
+): FederatedTableBatchProvenance {
+  return JSON.parse(batch.metadata.get('loaders.gl.federation')!);
+}
 
 /** Per-source diagnostics included in a federated explanation. */
 export type FederatedTableSourceExplain = Readonly<{
@@ -199,7 +191,7 @@ export class FederatedTableScanSource
   /** Creates an ordered federated source backed by one shared DataSourceManager. */
   constructor(dataSourceManager: DataSourceManager, options: FederatedTableScanSourceOptions) {
     if (!options.sources.length) {
-      throw new Error('Federated table scans require at least one source.');
+      throw new Error('Federated scans require at least one source.');
     }
     if (
       options.schemaPolicy &&
@@ -385,21 +377,15 @@ export class FederatedTableScanSource
               sourceId: resolvedSource.entry.dataSourceId,
               sourceIndex: resolvedSource.sourceIndex,
               sourceBatchIndex: currentSourceBatchIndex,
-              sourceMetadata: batch.metadata
+              sourceMetadata: 'shape' in input ? batch.metadata : Object.fromEntries(input.metadata)
             });
             telemetry.rowsReturned += resultLength;
             sourceRowsReturned += resultLength;
-            yield {
-              batchType: 'data',
-              shape: 'arrow-table',
-              schema: convertArrowToSchema(result.data.schema),
-              data: result.data,
-              length: resultLength,
-              metadata: provenance,
-              sourceId: provenance.sourceId,
-              sourceIndex: provenance.sourceIndex,
-              sourceBatchIndex: provenance.sourceBatchIndex
-            };
+            for (const recordBatch of result.data.batches) {
+              const metadata = new Map('shape' in input ? recordBatch.metadata : input.metadata);
+              metadata.set('loaders.gl.federation', JSON.stringify(provenance));
+              yield new arrow.RecordBatch(recordBatch.schema, recordBatch.data, metadata);
+            }
             remaining -= resultLength;
           }
           sourceCompleted = true;

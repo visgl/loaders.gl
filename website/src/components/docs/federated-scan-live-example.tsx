@@ -139,8 +139,8 @@ export function FederatedScanLiveExample(): JSX.Element {
             telemetry = value;
           }
         })) {
-          provenance.push(batch.sourceId);
-          rows.push(...batch.data.toArray().map(row => row.toJSON()));
+          provenance.push(scanModule.getFederatedTableBatchProvenance(batch).sourceId);
+          rows.push(...batch.toArray().map(row => row.toJSON()));
         }
         if (active) setResults({explanation, telemetry, provenance, rows});
       } catch (error) {

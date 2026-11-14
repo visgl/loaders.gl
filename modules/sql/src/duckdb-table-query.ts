@@ -190,7 +190,10 @@ export function makeDuckDBTableQuerySource(
     return {
       schema: outputSchema,
       /** Executes the planned SQL when the consumer starts reading. */
-      read: (options?: {signal?: AbortSignal}) => readStatement(sql, outputSchema, options?.signal)
+      async *read(options?: {signal?: AbortSignal}) {
+        for await (const batch of readStatement(sql, outputSchema, options?.signal))
+          yield* batch.data.batches;
+      }
     };
   }
 
@@ -216,7 +219,7 @@ export function makeDuckDBTableQuerySource(
         yield* accepted.read({signal});
         return;
       }
-      yield* executeTableScanBatches(
+      for await (const batch of executeTableScanBatches(
         readSignal => readStatement(`SELECT * FROM ${tableName}${order}`, schema, readSignal),
         options,
         {
@@ -229,7 +232,8 @@ export function makeDuckDBTableQuerySource(
             });
           }
         }
-      );
+      ))
+        yield* (batch as ArrowTableBatch).data.batches;
     }
   };
 }

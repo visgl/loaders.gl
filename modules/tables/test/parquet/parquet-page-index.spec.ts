@@ -111,7 +111,7 @@ describe('Parquet page-index pruning', () => {
     expect(getBatchValues(batches, 'category')).toEqual(
       Array.from({length: SELECTED_ROW_END - SELECTED_ROW_START}, () => 'group-6')
     );
-    expect(batches[0].rowGroupRowIndices).toEqual(
+    expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowIndices).toEqual(
       Array.from(
         {length: SELECTED_ROW_END - SELECTED_ROW_START},
         (_, index) => SELECTED_ROW_START + index
@@ -180,7 +180,7 @@ describe('Parquet page-index pruning', () => {
       ...Array.from({length: 12}, (_, index) => ROW_COUNT - 12 + index)
     ];
     expect(getBatchValues(batches, 'id')).toEqual(expected);
-    expect(batches.flatMap(batch => batch.rowGroupRowIndices || [])).toEqual(expected);
+    expect(batches.flatMap(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowIndices || [])).toEqual(expected);
     expect(source.getTelemetry().predicateRowsTested).toBeLessThan(ROW_COUNT / 2);
     await source.close();
   });
@@ -262,7 +262,7 @@ describe('Parquet page-index pruning', () => {
         (_, index) => SELECTED_ROW_START + index
       )
     );
-    expect(batches[0].data.getChild('bbox')).toBeNull();
+    expect(batches[0].getChild('bbox')).toBeNull();
     expect(source.getTelemetry().rowsPrunedByPageIndex).toBeGreaterThan(0);
     expect(source.getTelemetry().predicateRowsTested).toBeLessThan(ROW_COUNT);
     await source.close();
@@ -395,5 +395,5 @@ async function collectBatches(batches: AsyncIterable<ParquetBatch>): Promise<Par
 
 /** Materializes one Arrow column across all emitted batches. */
 function getBatchValues(batches: readonly ParquetBatch[], column: string): unknown[] {
-  return batches.flatMap(batch => Array.from(batch.data.getChild(column)?.toArray() || []));
+  return batches.flatMap(batch => Array.from(batch.getChild(column)?.toArray() || []));
 }

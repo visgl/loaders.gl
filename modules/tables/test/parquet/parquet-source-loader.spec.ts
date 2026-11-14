@@ -146,7 +146,7 @@ test('ParquetSource#read applies snapshotted source defaults', async () => {
   });
   const batches = firstBatch.value ? [firstBatch.value, ...remainingBatches] : remainingBatches;
 
-  expect(batches.map(batch => batch.rowGroupIndex)).toEqual([1, 1]);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex)).toEqual([1, 1]);
   expect(batches.every(batch => batch.schema?.fields[0]?.name === 'x')).toBeTruthy();
   await source.close();
   });
@@ -268,7 +268,7 @@ test('ParquetJSWriter emits page indexes consumed by selective page planning', a
   const batches = await collectParquetBatches(
     source.read({columns: ['payload'], predicate: {op: '>=', args: [{property: 'x'}, 100]}})
   );
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('payload')?.toArray() || []))).toEqual(['hundred', 'hundred-one']);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('payload')?.toArray() || []))).toEqual(['hundred', 'hundred-one']);
   await source.close();
   });
 
@@ -284,20 +284,20 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
 
   expect(metadata.rowGroups.map(rowGroup => rowGroup.rowOffset)).toEqual([0, 2, 4]);
   expect(batches.length).toBe(2);
-  expect(batches.map(batch => batch.rowGroupIndex)).toEqual([1, 1]);
-  expect(batches.map(batch => batch.rowOffset)).toEqual([2, 3]);
-  expect(batches.map(batch => batch.rowGroupRowOffset)).toEqual([0, 1]);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex)).toEqual([1, 1]);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowOffset)).toEqual([2, 3]);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowOffset)).toEqual([0, 1]);
   expect(batches.every(
       batch =>
         batch.source === REMOTE_URL &&
-        batch.sourceId === REMOTE_URL &&
-        batch.sourceUrl === REMOTE_URL
+        JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).sourceId === REMOTE_URL &&
+        JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).sourceUrl === REMOTE_URL
     )).toBeTruthy();
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || []))).toEqual([2, 3]);
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || []))).toEqual(['source-2', 'source-3']);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('x')?.toArray() || []))).toEqual([2, 3]);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('source_id')?.toArray() || []))).toEqual(['source-2', 'source-3']);
   expect(batches[0].schema?.fields.map(field => field.name)).toEqual(['x', 'source_id']);
-  expect(batches[0].data.getChild('ignored_payload')).toBeFalsy();
-  expect(Object.isFrozen(batches[0].metadata)).toBeTruthy();
+  expect(batches[0].getChild('ignored_payload')).toBeFalsy();
+  expect(batches[0].metadata.has('loaders.gl.parquetProvenance')).toBe(true);
 
   const selectedRanges = getColumnRanges(metadata, 1, ['x', 'source_id']);
   const dataRequests = requests.slice(metadataRequestCount);
@@ -367,8 +367,8 @@ test('ParquetSource#executeScanPlan reuses selected row groups', async () => {
     predicate: {op: '=', args: [{property: 'x'}, 2]}
   });
   const batches = await collectParquetBatches(source.executeScanPlan(plan));
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
-  expect(batches.every(batch => batch.rowGroupIndex === 1)).toBeTruthy();
+  expect(batches.flatMap(batch => Array.from(batch.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
+  expect(batches.every(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex === 1)).toBeTruthy();
   await source.close();
   });
 
@@ -389,7 +389,7 @@ test('ParquetSource#read late-materializes projected columns after predicate mat
   const projectedRanges = getColumnRanges(metadata, 1, ['source_id']);
   const ignoredRanges = getColumnRanges(metadata, 1, ['ignored_payload']);
 
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
   expect(batches[0]?.schema?.fields.map(field => field.name)).toEqual(['source_id']);
   expect(dataRequests.some(request =>
       predicateRanges.some(range => request.start >= range.start && request.end <= range.end)
@@ -425,8 +425,8 @@ test('ParquetSource#worker transfers selected rows as hydrated Arrow buffers', a
   const batches = await batchesPromise;
 
   expect(mainThreadTicked).toBeTruthy();
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || []))).toEqual([2, 3]);
-  expect(batches.map(batch => batch.rowOffset)).toEqual([2, 3]);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('x')?.toArray() || []))).toEqual([2, 3]);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowOffset)).toEqual([2, 3]);
   await source.close();
   });
 
@@ -453,7 +453,7 @@ test('ParquetSource#worker late-materializes projected columns after filtering',
     getColumnRanges(metadata, rowGroup.index, ['ignored_payload'])
   );
 
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('source_id')?.toArray() || []))).toEqual(['source-2']);
   expect(batches[0]?.schema?.fields.map(field => field.name)).toEqual(['source_id']);
   expect(dataRequests.some(request =>
       ignoredRanges.some(range => request.start >= range.start && request.end <= range.end)
@@ -532,7 +532,7 @@ test('ParquetSource#read cancels outstanding ranges when iteration ends early', 
     [Symbol.asyncIterator]();
   const firstBatch = await iterator.next();
   await blockedRequestStarted;
-  expect(firstBatch.value?.rowGroupIndex).toBe(0);
+  expect(JSON.parse(firstBatch.value?.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex).toBe(0);
   await iterator.return?.();
   expect(blockedRequestAborted).toBeTruthy();
   expect(source.getTelemetry().cancellationCount).toBe(1);
@@ -564,7 +564,7 @@ test('ParquetSource#prunes row groups and reports exact cumulative telemetry', a
   const prunedRanges = getColumnRanges(metadata, 1, ['x']);
   const dataRequests = requests.slice(metadataRequestCount);
 
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('x')?.toArray() || []))).toEqual([0, 1, 4, 5]);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('x')?.toArray() || []))).toEqual([0, 1, 4, 5]);
   expect(dataRequests.every(request =>
       prunedRanges.every(range => request.end < range.start || request.start > range.end)
     )).toBeTruthy();
@@ -923,14 +923,14 @@ test('Parquet source pages skip footer-counted row groups and retain row provena
     const first = await collectParquetBatches(source.read({offset: 3, limit: 1, concurrency: 3}));
     const {query} = await import('@loaders.gl/core/query');
     const second = await query({select: ['x'], offset: 4, limit: 1}, {source});
-    expect(first.map(batch => [batch.rowGroupIndex, batch.rowOffset, batch.length]))
+    expect(first.map(batch => [JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex, JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowOffset, batch.numRows]))
       .toEqual([[1, 3, 1]]);
     expect(second.getChild('x')?.get(0)).toBe(4);
     expect(source.getTelemetry().rowGroupsDecoded).toBe(2);
     const filtered = await collectParquetBatches(source.read({
       predicate: {op: '>=', args: [{property: 'x'}, 0]}, offset: 3, limit: 1
     }));
-    expect(filtered.map(batch => batch.rowOffset)).toEqual([3]);
+    expect(filtered.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowOffset)).toEqual([3]);
   } finally {
     await source.close();
   }
@@ -945,9 +945,9 @@ test('Parquet scan plans preserve the source offset and allow per-read overrides
     expect((await source.getScanPlan({limit: 1})).offset).toBe(3);
     const plan = await source.getScanPlan({offset: 4, limit: 1});
     const replay = await collectParquetBatches(source.executeScanPlan(plan));
-    expect(replay.map(batch => batch.rowOffset)).toEqual([4]);
+    expect(replay.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowOffset)).toEqual([4]);
     const override = await collectParquetBatches(source.executeScanPlan(plan, {offset: 0}));
-    expect(override.map(batch => batch.rowOffset)).toEqual([0]);
+    expect(override.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowOffset)).toEqual([0]);
   } finally {
     await source.close();
   }

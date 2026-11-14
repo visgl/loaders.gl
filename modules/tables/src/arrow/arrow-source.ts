@@ -1,3 +1,5 @@
+import type {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   createScanQueryMetadata,
   executeTableScanBatches,
@@ -30,7 +32,7 @@ const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({
 /** Streams Arrow IPC record batches through the common table scan contract. */
 export class ArrowTableSource
   extends DataSource<string | Blob, DataSourceOptions>
-  implements TableScanSource<TableBatch>
+  implements TableScanSource<RecordBatch>
 {
   private metadataPromise: Promise<ScanQueryMetadata> | null = null;
 
@@ -56,12 +58,16 @@ export class ArrowTableSource
   }
 
   /** Streams Arrow record batches in source order with an optional global limit. */
-  async *read(options: TableScanReadOptions = {}): AsyncIterable<TableBatch> {
-    yield* executeTableScanBatches(
+  async *read(options: TableScanReadOptions = {}): AsyncIterable<RecordBatch> {
+    for await (const batch of executeTableScanBatches(
       (signal, onByteLength) => this.parseBatches(signal, onByteLength),
       options,
       {filter: filterArrowBatch, project: projectArrowBatch}
-    );
+    )) {
+      const {data} = batch as ArrowTableBatch;
+      if (data.batches.length) yield* data.batches;
+      else yield makeArrowMetadataBatch(data.schema);
+    }
   }
 
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {

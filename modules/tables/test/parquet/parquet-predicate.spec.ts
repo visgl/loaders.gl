@@ -10,7 +10,6 @@ import {
   ParquetJSWriter,
   type ParquetPredicate,
   ParquetSourceLoader,
-  type ParquetSourceBatch,
   type ParquetRowGroupMetadata
 } from '@loaders.gl/tables/parquet/index';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
@@ -240,15 +239,15 @@ test('ParquetSource applies exact predicates without returning hidden filter col
     })
   );
 
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('payload')?.toArray() || []))).toEqual([
+  expect(batches.flatMap(batch => Array.from(batch.getChild('payload')?.toArray() || []))).toEqual([
     'row-4',
     'row-6',
     'row-8'
   ]);
-  expect(batches.every(batch => !batch.data.getChild('id'))).toBe(true);
-  expect(batches.every(batch => !batch.data.getChild('category'))).toBe(true);
-  expect(batches.map(batch => batch.rowGroupRowIndices)).toEqual([[0, 2], [0]]);
-  expect(batches.map(batch => batch.rowIndices)).toEqual([[4, 6], [8]]);
+  expect(batches.every(batch => !batch.getChild('id'))).toBe(true);
+  expect(batches.every(batch => !batch.getChild('category'))).toBe(true);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowIndices)).toEqual([[0, 2], [0]]);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowIndices)).toEqual([[4, 6], [8]]);
   expect(source.getTelemetry()).toMatchObject({
     predicateRowsTested: 12,
     predicateRowsMatched: 3,
@@ -273,12 +272,12 @@ test('ParquetSource transfers serializable predicates through worker decoding', 
     })
   );
 
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('payload')?.toArray() || []))).toEqual([
+  expect(batches.flatMap(batch => Array.from(batch.getChild('payload')?.toArray() || []))).toEqual([
     'row-1',
     'row-5',
     'row-9'
   ]);
-  expect(batches.map(batch => batch.rowIndices)).toEqual([[1], [5], [9]]);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowIndices)).toEqual([[1], [5], [9]]);
   expect(source.getTelemetry()).toMatchObject({
     predicateRowsTested: 12,
     predicateRowsMatched: 3,
@@ -351,9 +350,9 @@ async function createPredicateFixture(): Promise<ArrayBuffer> {
 
 /** Collects a Parquet source stream for focused assertions. */
 async function collectBatches(
-  batches: AsyncIterable<ParquetSourceBatch>
-): Promise<ParquetSourceBatch[]> {
-  const result: ParquetSourceBatch[] = [];
+  batches: AsyncIterable<import('apache-arrow').RecordBatch>
+): Promise<import('apache-arrow').RecordBatch[]> {
+  const result: import('apache-arrow').RecordBatch[] = [];
   for await (const batch of batches) {
     result.push(batch);
   }
