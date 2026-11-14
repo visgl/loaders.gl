@@ -12,6 +12,7 @@ import {
   Int64,
   Struct,
   Utf8,
+  Table as ArrowTable,
   tableFromIPC,
   tableToIPC
 } from 'apache-arrow';
@@ -38,10 +39,8 @@ const DOCUMENT = `<graphml>
 function getArrowGraph(output: unknown): GraphTables {
   const graph = output as GraphTables;
   expect(graph.shape).toBe('tables');
-  expect(graph.tables.map(entry => [entry.name, entry.table.shape])).toEqual([
-    ['nodes', 'arrow-table'],
-    ['edges', 'arrow-table']
-  ]);
+  expect(graph.tables.map(entry => entry.name)).toEqual(['nodes', 'edges']);
+  for (const {table} of graph.tables) expect(table).toBeInstanceOf(ArrowTable);
   return graph;
 }
 
@@ -50,8 +49,8 @@ describe('Graph tables', () => {
     const graph = getArrowGraph(await parse(DOCUMENT, GraphMLLoader));
     const nodes = graph.tables[0].table;
     const edges = graph.tables[1].table;
-    expect(nodes.data.getChild('id')!.toArray()).toEqual(['001', 'b']);
-    const attributes = nodes.data.getChild('attributes')!;
+    expect(nodes.getChild('id')!.toArray()).toEqual(['001', 'b']);
+    const attributes = nodes.getChild('attributes')!;
     expect(attributes.get(0).toJSON()).toMatchObject({
       count: 5,
       large: 9007199254740993n,
@@ -59,7 +58,7 @@ describe('Graph tables', () => {
       id: 'application ID'
     });
     expect(attributes.get(1).toJSON()).toMatchObject({count: 5, large: null, flag: false});
-    expect(edges.data.get(0)!.toJSON()).toMatchObject({
+    expect(edges.get(0)!.toJSON()).toMatchObject({
       sourceId: '001',
       targetId: 'b',
       directed: true
@@ -70,7 +69,7 @@ describe('Graph tables', () => {
     expect(fields.find(field => field.name === 'large')!.type).toBeInstanceOf(Int64);
     expect(fields.find(field => field.name === 'flag')!.type).toBeInstanceOf(Bool);
     expect(
-      (edges.data.getChild('attributes')!.type as Struct).children.find(
+      (edges.getChild('attributes')!.type as Struct).children.find(
         field => field.name === 'weight'
       )!.type
     ).toBeInstanceOf(Float32);
@@ -81,11 +80,11 @@ describe('Graph tables', () => {
       parseSync(binary, GraphMLLoaderWithParser),
       await GraphMLLoaderWithParser.parse(binary)
     ]) {
-      expect(getArrowGraph(output).tables[0].table.data.getChild('attributes')!.get(0).large).toBe(
+      expect(getArrowGraph(output).tables[0].table.getChild('attributes')!.get(0).large).toBe(
         9007199254740993n
       );
     }
-    const restored = tableFromIPC(tableToIPC(nodes.data));
+    const restored = tableFromIPC(tableToIPC(nodes));
     expect(restored.getChild('attributes')!.get(0).large).toBe(9007199254740993n);
   });
 
@@ -97,13 +96,13 @@ describe('Graph tables', () => {
       )
     );
     for (const {table} of graph.tables) {
-      expect(table.data.numRows).toBe(0);
-      expect((table.data.getChild('attributes')!.type as Struct).children[0].type).toBeInstanceOf(
+      expect(table.numRows).toBe(0);
+      expect((table.getChild('attributes')!.type as Struct).children[0].type).toBeInstanceOf(
         Float64
       );
     }
     const dot = getArrowGraph(parseSync('graph {}', DOTLoaderWithParser));
-    expect(dot.tables[1].table.data.schema.fields.map(field => field.name)).toEqual([
+    expect(dot.tables[1].table.schema.fields.map(field => field.name)).toEqual([
       'id',
       'sourceId',
       'targetId',
@@ -125,10 +124,10 @@ describe('Graph tables', () => {
       directed: true,
       subgraphs: [{id: 'cluster'}]
     });
-    expect(graph.tables[1].table.data.numRows).toBe(1);
-    expect(graph.tables[1].table.data.getChild('id')!.get(0)).toBe('updated');
-    expect(graph.tables[0].table.data.getChild('label')!.get(0)).toBe(' A ');
-    const attributes = graph.tables[0].table.data.getChild('attributes')!.get(0);
+    expect(graph.tables[1].table.numRows).toBe(1);
+    expect(graph.tables[1].table.getChild('id')!.get(0)).toBe('updated');
+    expect(graph.tables[0].table.getChild('label')!.get(0)).toBe(' A ');
+    const attributes = graph.tables[0].table.getChild('attributes')!.get(0);
     expect(attributes.weight).toBe(2);
     expect(attributes.subgraphs.get(0).id).toBe('cluster');
   });
@@ -140,11 +139,11 @@ describe('Graph tables', () => {
       await DOTLoaderWithParser.parse(binary)
     ]) {
       const graph = getArrowGraph(output);
-      const nodes = graph.tables[0].table.data;
+      const nodes = graph.tables[0].table;
       expect(nodes.numRows).toBe(2);
       expect(nodes.getChild('attributes')!.length).toBe(2);
       expect(nodes.getChild('attributes')!.get(0).toJSON()).toEqual({});
-      expect(graph.tables[1].table.data.getChild('id')!.get(0)).toBe('3');
+      expect(graph.tables[1].table.getChild('id')!.get(0)).toBe('3');
     }
   });
 
@@ -153,7 +152,11 @@ describe('Graph tables', () => {
       graphml: {shape: 'object-row-table'}
     });
     expect(graph.shape).toBe('tables');
-    if (graph.shape !== 'tables' || graph.tables[0].table.shape !== 'object-row-table')
+    if (
+      graph.shape !== 'tables' ||
+      !('shape' in graph.tables[0].table) ||
+      graph.tables[0].table.shape !== 'object-row-table'
+    )
       throw new Error('Expected object rows');
     expect(graph.tables[0].table.data[0]).toMatchObject({
       id: '001',
@@ -174,10 +177,10 @@ describe('Graph tables', () => {
           {id: 'b', attributes: {mixed: 'quoted', flag: false, nested: {two: 'second'}, list: []}}
         ],
         [],
-        'arrow-table'
+        'arrow'
       )
     );
-    const attributes = graph.tables[0].table.data.getChild('attributes')!;
+    const attributes = graph.tables[0].table.getChild('attributes')!;
     expect(
       (attributes.type as Struct).children.find(field => field.name === 'mixed')!.type
     ).toBeInstanceOf(Utf8);
@@ -190,7 +193,7 @@ describe('Graph tables', () => {
         GraphMLLoaderWithParser
       )
     );
-    expect(invalid.tables[0].table.data.getChild('attributes')!.get(0).toJSON()).toMatchObject({
+    expect(invalid.tables[0].table.getChild('attributes')!.get(0).toJSON()).toMatchObject({
       value: 'invalid',
       large: '9223372036854775808'
     });

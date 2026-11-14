@@ -130,7 +130,7 @@ export function parseSync(
     nativeArrowOptions || strictOptions,
     context
   );
-  return nativeArrowOptions ? unwrapArrowTable(result) : result;
+  return nativeArrowOptions ? unwrapArrowTable(result, loader.supportsNativeArrow) : result;
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator

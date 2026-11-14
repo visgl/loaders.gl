@@ -9,9 +9,9 @@ import {parseGraphML} from './lib/parse-graphml';
 export const GraphMLLoaderWithParser = {
   ...GraphMLLoader,
   parse: async (data: ArrayBuffer, options?: GraphMLLoaderOptions) =>
-    parseGraphML(data, options?.graphml?.shape ?? 'arrow-table'),
+    parseGraphML(data, options?.graphml?.shape ?? 'arrow'),
   parseSync: (data: ArrayBuffer, options?: GraphMLLoaderOptions) =>
-    parseGraphML(data, options?.graphml?.shape ?? 'arrow-table'),
+    parseGraphML(data, options?.graphml?.shape ?? 'arrow'),
   parseTextSync: (data: string, options?: GraphMLLoaderOptions) =>
-    parseGraphML(data, options?.graphml?.shape ?? 'arrow-table')
+    parseGraphML(data, options?.graphml?.shape ?? 'arrow')
 };

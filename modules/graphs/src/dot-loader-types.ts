@@ -34,8 +34,9 @@ export const DOTLoader = {
   mimeTypes: ['text/vnd.graphviz', 'text/x-graphviz', 'application/vnd.graphviz'],
   text: true,
   worker: false,
+  supportsNativeArrow: true,
   dataType: null as unknown as DOTOutput,
   batchType: null as never,
-  options: {dot: {shape: 'arrow-table'}},
+  options: {dot: {shape: 'arrow'}},
   preload
 } as const satisfies Loader<DOTOutput, never, DOTLoaderOptions>;

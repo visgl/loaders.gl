@@ -52,14 +52,14 @@ export function getNativeArrowOptions(
   };
 }
 
-/** Returns the hydrated native table without copying its columns. */
-export function unwrapArrowTable(result: unknown): arrow.Table {
-  if (isNativeArrowTable(result)) return result;
+/** Unwraps legacy tables and passes through results from native parsers. */
+export function unwrapArrowTable(result: unknown): arrow.Table;
+export function unwrapArrowTable(result: unknown, nativeParser: boolean | undefined): unknown;
+export function unwrapArrowTable(result: unknown, nativeParser?: boolean): unknown {
   const table = result as {shape?: string; data?: arrow.Table} | null;
-  if (table?.shape !== 'arrow-table' || !table.data || !Array.isArray(table.data.batches)) {
-    throw new Error('shape: "arrow" requires a loader that supports "arrow-table" output');
-  }
-  return table.data;
+  if (table?.shape === 'arrow-table' && Array.isArray(table.data?.batches)) return table.data;
+  if (nativeParser || isNativeArrowTable(result)) return result;
+  throw new Error('shape: "arrow" requires a loader that supports "arrow-table" output');
 }
 
 /** Yields every record batch, preserving order and iterator cancellation. */

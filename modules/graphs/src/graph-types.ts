@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ObjectRowTable, Tables} from '@loaders.gl/core/schema';
+import type {Table as ArrowTable} from 'apache-arrow';
+import type {ObjectRowTable, Tables} from '@loaders.gl/core/schema';
 
 /** A graph node with its original identifier and application attributes. */
 export type GraphNode = {
@@ -35,7 +36,7 @@ export type GraphData = {
 };
 
 /** Standard table representations supported by graph loaders. */
-export type GraphShape = 'arrow-table' | 'object-row-table' | 'plain-graph-data';
+export type GraphShape = 'arrow' | 'object-row-table' | 'plain-graph-data';
 
 /** Named node and edge tables in document order. */
 export type GraphTables<TableType = ArrowTable> = Tables<TableType> & {

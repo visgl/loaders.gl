@@ -779,6 +779,12 @@ returned value and use `numRows` for batch row counts. Schema and field metadata
 Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
 JSON batch paths are available through `batch.metadata.get('jsonpath')`.
 
+#### Graph loaders return native Arrow tables
+
+DOT, GEXF, and GraphML use `shape: 'arrow'` for the default output. Read the
+native Arrow Table at `graph.tables[index].table`. Existing code that reads
+`graph.tables[index].table.data` should remove the final `.data` access.
+
 #### NDGeoJSON, trace, and GML output defaults
 
 - `NDGeoJSONLoader` now returns native Arrow tables by default. Set `geojson.shape: 'object-row-table'`

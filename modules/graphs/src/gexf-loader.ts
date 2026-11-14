@@ -9,9 +9,9 @@ import {parseGEXF} from './lib/parse-gexf';
 export const GEXFLoaderWithParser = {
   ...GEXFLoader,
   parse: async (data: ArrayBuffer, options?: GEXFLoaderOptions) =>
-    parseGEXF(data, options?.gexf?.shape ?? 'arrow-table'),
+    parseGEXF(data, options?.gexf?.shape ?? 'arrow'),
   parseSync: (data: ArrayBuffer, options?: GEXFLoaderOptions) =>
-    parseGEXF(data, options?.gexf?.shape ?? 'arrow-table'),
+    parseGEXF(data, options?.gexf?.shape ?? 'arrow'),
   parseTextSync: (data: string, options?: GEXFLoaderOptions) =>
-    parseGEXF(data, options?.gexf?.shape ?? 'arrow-table')
+    parseGEXF(data, options?.gexf?.shape ?? 'arrow')
 };

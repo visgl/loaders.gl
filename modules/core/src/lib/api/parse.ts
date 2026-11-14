@@ -155,7 +155,7 @@ export async function parse(
   );
 
   const result = await parseWithLoader(loader, data, nativeArrowOptions || strictOptions, context);
-  return nativeArrowOptions ? unwrapArrowTable(result) : result;
+  return nativeArrowOptions ? unwrapArrowTable(result, loader.supportsNativeArrow) : result;
 }
 
 // TODO - should accept loader.parseAsyncIterator and concatenate.
