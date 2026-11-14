@@ -67,6 +67,8 @@ test('plain Arrow reaches GeoArrow conversion without rebuilding columns', () =>
   const table = arrow.tableFromArrays({identifier: new BigInt64Array([9007199254740993n])});
   const converters = [TableConverter, ...GEOARROW_CONVERTERS];
   expect(convert(table, 'geoarrow', converters)).toBe(table);
+  const features = convert(table, 'geojson-table', converters) as GeoJSONTable;
+  expect(features.features[0].properties.identifier).toBe(9007199254740993n);
 });
 
 test.each([

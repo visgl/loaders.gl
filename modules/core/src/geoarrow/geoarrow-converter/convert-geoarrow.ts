@@ -10,7 +10,11 @@ import type {
   ColumnarTable,
   GeoJSONTable
 } from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {
+  convertArrowToSchema,
+  convertArrowToTable,
+  isNativeArrowTable
+} from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowToTable} from '../lib/table-converters/convert-geoarrow-table';
 import {convertTableToGeoArrow} from '../convert-table-to-geoarrow';
 import {getGeometryColumnsFromSchema} from '../metadata/geoarrow-metadata';
@@ -40,11 +44,13 @@ export function convertGeoArrow(
     | 'arrow',
   options?: GeoArrowConvertFromOptions | GeoArrowConvertToOptions
 ): Table | arrow.Table {
-  if (isGeoArrowApacheTable(input)) {
-    if (shape === 'geoarrow' || shape === 'arrow') {
-      return input;
+  if (isNativeArrowTable(input)) {
+    if (shape === 'arrow') return input;
+    if (shape === 'geojson-table' && !isGeoArrowApacheTable(input)) {
+      return convertArrowToTable(input, 'geojson-table');
     }
-    return convertGeoArrowToTable(input, shape);
+    if (shape !== 'geoarrow') return convertGeoArrowToTable(input, shape);
+    if (isGeoArrowApacheTable(input)) return input;
   }
   if (shape !== 'geoarrow') {
     throw new Error(`Unsupported GeoArrow conversion target: ${shape}`);
