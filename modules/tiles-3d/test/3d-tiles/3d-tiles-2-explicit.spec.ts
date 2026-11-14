@@ -96,7 +96,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
 
     const rootTileset = await load(parentUrl, Tiles3DLoader, {core: {worker: false, fetch}});
     expect(requestedUrls).toEqual([parentUrl]);
-    const source = new Tiles3DSource({...rootTileset, coreApi}, {worker: false, fetch});
+    const source = new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false, fetch}});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
     const result = await tileset.root!.loadContent();
@@ -226,7 +226,9 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     });
     expect(rootTileset.root.content._resource.files[1].data).toBeInstanceOf(ArrayBuffer);
 
-    const tileset = new Tileset3D(new Tiles3DSource({...rootTileset, coreApi}, {worker: false}));
+    const tileset = new Tileset3D(
+      new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}})
+    );
     await tileset.tilesetInitializationPromise;
     await tileset.root!.loadContent();
 
@@ -307,7 +309,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       core: {worker: false}
     });
     const rootRuntime = new Tileset3D(
-      new Tiles3DSource({...rootTileset, coreApi}, {worker: false})
+      new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}})
     );
     await rootRuntime.tilesetInitializationPromise;
     const nestedTileset = (await rootRuntime.root!.loadContent()).nestedTileset!;
@@ -318,7 +320,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     });
 
     const nestedRuntime = new Tileset3D(
-      new Tiles3DSource({...nestedTileset, coreApi}, {worker: false})
+      new Tiles3DSource({...nestedTileset, coreApi}, {core: {worker: false}})
     );
     await nestedRuntime.tilesetInitializationPromise;
     await nestedRuntime.root!.loadContent();
@@ -350,7 +352,9 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     const rootTileset = await parse(encodeJson(tilesetJson), Tiles3DLoader, {
       core: {worker: false}
     });
-    const tileset = new Tileset3D(new Tiles3DSource({...rootTileset, coreApi}, {worker: false}));
+    const tileset = new Tileset3D(
+      new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}})
+    );
     await tileset.tilesetInitializationPromise;
     await tileset.root!.loadContent();
 
@@ -856,7 +860,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(rootTileset.root.implicitSubtree.descriptor.contentHeader._vectorContent).toEqual({
       clip: true
     });
-    const source = new Tiles3DSource({...rootTileset, coreApi}, {worker: false, fetch});
+    const source = new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false, fetch}});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
     const rootHeader = {...rootTileset.root, children: []};
@@ -942,7 +946,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     const rootTileset = await parse(encodeGlb(packagedTileset, binary), Tiles3DLoader, {
       core: {worker: false}
     });
-    const source = new Tiles3DSource({...rootTileset, coreApi}, {worker: false});
+    const source = new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
 
@@ -1039,7 +1043,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       core: {worker: false}
     });
     const rootRuntime = new Tileset3D(
-      new Tiles3DSource({...rootTileset, coreApi}, {worker: false})
+      new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}})
     );
     await rootRuntime.tilesetInitializationPromise;
     const result = await rootRuntime.root!.loadContent();
@@ -1048,7 +1052,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(nestedTileset.root.implicitSubtree.subtreeUrl).toBe(
       'gltf-package://0/0/nested/subtrees/0/0/0.gltf'
     );
-    const nestedSource = new Tiles3DSource({...nestedTileset, coreApi}, {worker: false});
+    const nestedSource = new Tiles3DSource({...nestedTileset, coreApi}, {core: {worker: false}});
     const nestedRuntime = new Tileset3D(nestedSource);
     await nestedRuntime.tilesetInitializationPromise;
     await nestedSource.loadTileChildren(nestedRuntime.root!, {} as never);

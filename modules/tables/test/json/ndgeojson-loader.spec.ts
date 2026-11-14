@@ -95,7 +95,7 @@ test('NDGeoJSON uses a stable geometry union for optimized streams', async () =>
   ];
   const batches = [];
   for await (const batch of NDGeoJSONLoaderWithParser.parseInBatches(chunks, {
-    batchSize: 1,
+    core: {batchSize: 1},
     geoarrow: {encodingPreference: 'optimized'}
   }))
     batches.push(batch as RecordBatch);
@@ -113,14 +113,14 @@ test('NDGeoJSON rejects invalid records, batch sizes, and incompatible later sch
   expect(() => parseSync('{}', NDGeoJSONLoaderWithParser)).toThrow(/Feature on line 1/);
   expect(() => parseSync('\n{', NDGeoJSONLoaderWithParser)).toThrow(/JSON on line 2/);
   await expect(async () => {
-    for await (const batch of NDGeoJSONLoaderWithParser.parseInBatches([], {batchSize: 0}))
+    for await (const batch of NDGeoJSONLoaderWithParser.parseInBatches([], {core: {batchSize: 0}}))
       void batch;
   }).rejects.toThrow(/positive integer/);
   const drift = [features[0], {...features[0], properties: {name: 3, height: 12}}];
   await expect(async () => {
     for await (const batch of NDGeoJSONLoaderWithParser.parseInBatches(
       [new TextEncoder().encode(drift.map(feature => JSON.stringify(feature)).join('\n'))],
-      {batchSize: 1}
+      {core: {batchSize: 1}}
     ))
       void batch;
   }).rejects.toThrow();

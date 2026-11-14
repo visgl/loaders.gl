@@ -1141,7 +1141,7 @@ function* parseLAZChunkedIterator(
   if (header.pointsFormatId <= 5 || laszip.variableChunks) {
     yield* decodeLAZFileFromCompleteBytes(new Uint8Array(arrayBuffer), header, laszip, {
       ...options,
-      batchSize
+      core: {...options.core, batchSize}
     });
     return;
   }

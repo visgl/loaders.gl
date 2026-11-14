@@ -99,7 +99,7 @@ describe('I3S Point profile', () => {
       },
       33554435,
       {
-        fetch: async () => new Response(decodeBase64(fixture.testResources.attributeBase64))
+        core: {fetch: async () => new Response(decodeBase64(fixture.testResources.attributeBase64))}
       }
     );
     expect(attributes).toEqual({FID: '33554435'});

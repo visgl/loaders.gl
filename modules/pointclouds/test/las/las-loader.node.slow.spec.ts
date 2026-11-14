@@ -340,7 +340,7 @@ for (const fixture of [
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     const batches: Uint8Array[] = [];
     for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(lazArrayBuffer, 257), {
-      batchSize: 127
+      core: {batchSize: 127}
     })) {
       batches.push(new Uint8Array(batch.arrayBuffer));
     }
@@ -656,7 +656,7 @@ for (const fixture of [
       }
     }
     for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(lazArrayBuffer, 257), {
-      batchSize: 127
+      core: {batchSize: 127}
     })) {
       expect(batch.header.pointsFormatId, `${label} header preserves point format`).toBe(
         fixture.pointDataRecordFormat
@@ -933,7 +933,9 @@ test('decodeLAZFileInBatches rejects a truncated chunk table', async () => {
   const response = await fetchFile(PDRF_7_V4_LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const truncated = arrayBuffer.slice(0, arrayBuffer.byteLength - 16);
-  const batches = decodeLAZFileInBatches(splitArrayBuffer(truncated, 257), {batchSize: 25000});
+  const batches = decodeLAZFileInBatches(splitArrayBuffer(truncated, 257), {
+    core: {batchSize: 25000}
+  });
   await expect(
     (async () => {
       for await (const _batch of batches) {
@@ -1067,7 +1069,7 @@ test('TypeScriptLAZ#decodeLAZFileInBatches accepts split PDRF 3 files', async ()
   const arrayBuffer = await response.arrayBuffer();
   const batches: Uint8Array[] = [];
   for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(arrayBuffer, 257), {
-    batchSize: 250
+    core: {batchSize: 250}
   })) {
     batches.push(new Uint8Array(batch.arrayBuffer));
     expect(batch.header.pointsFormatId, 'batch header preserves point format 3').toBe(3);

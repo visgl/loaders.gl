@@ -270,7 +270,7 @@ for (const config of STREAMING_LOADER_CONFIGS) {
       GEOJSON_PATH,
       JSONLoader,
       getStreamingLoaderOptions(config, {
-        batchSize: 10
+        core: {batchSize: 10}
       })
     );
     expect(
@@ -307,7 +307,7 @@ test('JSONLoader#parseInBatches(complete rows with nested arrays)', async () => 
   const iterator = BundledJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(JSON.stringify(rows), 128),
     {
-      batchSize: 1
+      core: {batchSize: 1}
     }
   );
   expect(iterator, 'parseInBatches returned iterator').toBeTruthy();
@@ -404,7 +404,7 @@ test('GeoJSONLoader#parseInBatches(arrow applies early legacy GeoJSON CRS)', asy
       }),
       20
     ),
-    {batchSize: 1, geojson: {shape: 'arrow'}}
+    {core: {batchSize: 1}, geojson: {shape: 'arrow'}}
   );
   let dataBatchCount = 0;
   for await (const batch of iterator) {
@@ -435,7 +435,7 @@ test('GeoJSONLoader#parseInBatches(arrow refines late legacy GeoJSON CRS)', asyn
       }),
       20
     ),
-    {batchSize: 1, geojson: {shape: 'arrow'}}
+    {core: {batchSize: 1}, geojson: {shape: 'arrow'}}
   );
   let dataBatchCount = 0;
   for await (const batch of iterator) {
@@ -471,7 +471,7 @@ test('GeoJSONLoader#parseInBatches(arrow freezes inferred schema)', async () => 
       }),
       20
     ),
-    {batchSize: 1, geojson: {shape: 'arrow'}}
+    {core: {batchSize: 1}, geojson: {shape: 'arrow'}}
   );
   await expect(async () => {
     for await (const _batch of iterator) {
@@ -511,7 +511,7 @@ test('GeoJSONLoader#parseInBatches(arrow keeps optimized union schema stable)', 
       20
     ),
     {
-      batchSize: 1,
+      core: {batchSize: 1},
       geojson: {shape: 'arrow'},
       geoarrow: {encodingPreference: 'optimized'}
     }
@@ -558,8 +558,7 @@ test('JSONTableLoader#parseInBatches(arrow preserves metadata batches)', async (
   const iterator = BundledJSONTableLoader.parseInBatches?.(
     makeChunkedTextIterator(NESTED_JSON_TEXT, 13),
     {
-      metadata: true,
-      batchSize: 2,
+      core: {metadata: true, batchSize: 2},
       json: {
         shape: 'arrow',
         jsonpaths: ['$.features']
@@ -893,7 +892,7 @@ test('JSONTableLoader#parseInBatches(arrow with supplied schema)', async () => {
   const iterator = BundledJSONTableLoader.parseInBatches?.(
     makeChunkedTextIterator('{"items":[{"id":1},{"id":2}]}', 100),
     {
-      batchSize: 1,
+      core: {batchSize: 1},
       json: {shape: 'arrow', jsonpaths: ['$.items'], schema}
     }
   );
@@ -919,7 +918,7 @@ test('JSONTableLoader#parseInBatches(fast arrow preserves raw Utf8 JSON fields)'
   const jsonText =
     '{"items":[{"id":1,"metadata": { "nested" : [1, {"escaped":"\\u2603"}] }, "tags": [ "alpha" , {"value":2} ], "label":"line\\nbreak"},{"id":2,"metadata":null,"label":"plain"}]}';
   const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 3), {
-    batchSize: 1,
+    core: {batchSize: 1},
     json: {
       backend: 'fast',
       shape: 'arrow',
@@ -962,7 +961,7 @@ test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsin
     'sync parsing still rejects object values for Utf8 schema fields'
   ).toThrow(/expected string/);
   const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 8), {
-    batchSize: 1,
+    core: {batchSize: 1},
     json: {shape: 'arrow', jsonpaths: ['$.items'], schema}
   });
   await expect(async () => {
@@ -975,7 +974,7 @@ test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsin
 test('NDJSONLoader#parseInBatches(arrow freezes inferred schema)', async () => {
   const iterator = BundledNDJSONLoader.parseInBatches?.(
     makeChunkedTextIterator('{"id":1}\n{"id":2,"extra":true}\n', 9),
-    {batchSize: 1, ndjson: {shape: 'arrow'}}
+    {core: {batchSize: 1}, ndjson: {shape: 'arrow'}}
   );
   await await expect(async () => {
     for await (const _batch of iterator) {
@@ -1002,7 +1001,7 @@ test('NDJSONLoader#parseInBatches(arrow treats GeoJSON features as generic rows)
     properties: {name: 'B'}
   })}\n`;
   const iterator = BundledNDJSONLoader.parseInBatches?.(makeChunkedTextIterator(ndjsonText, 40), {
-    batchSize: 1,
+    core: {batchSize: 1},
     ndjson: {shape: 'arrow'}
   });
   let rowCount = 0;
