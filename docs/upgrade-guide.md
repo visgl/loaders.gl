@@ -378,12 +378,11 @@ are available through implementation subpaths instead of root exports:
 import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las-copc-loader';
 import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/lazperf-loader';
 import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/laz-rs-loader';
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet-js-loader';
 import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
 ```
 
 These replace the root exports `LASCOPCLoader`, `LAZPerfLoader`, `LAZRsLoader`,
-`ParquetJSLoader`, and `_FastJSONLoader`. Implementation subpaths load the parser
+and `_FastJSONLoader`. Implementation subpaths load the parser
 eagerly and support direct parsing. Primary metadata loaders continue to preload
 their implementations for asynchronous core APIs.
 
@@ -391,6 +390,10 @@ The explicit `@loaders.gl/tables/arrow/types` facade exposes Apache Arrow names 
 in the supported minimum release, Arrow 17. Import version-specific names such
 as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type
 guards directly from your installed `apache-arrow` package.
+
+The alternate ParquetJS and WASM readers now live in the website benchmark code. Replace
+imports from `@loaders.gl/tables/parquet-js-loader` or `@loaders.gl/tables/parquet-wasm-loader`
+with `ParquetLoader` from `@loaders.gl/tables/parquet`.
 
 ### Worker task runtime
 

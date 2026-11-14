@@ -8,7 +8,8 @@ import {hydrateArrowTable} from '@math.gl/arrow';
 import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetJSWriter, ParquetSourceLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet/index';
+import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetJSWriter, ParquetLoader, ParquetSourceLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet/index';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 import {ParquetSource, ParquetSourceLoader as ParquetSourceLoaderWithParser} from '@loaders.gl/tables/parquet-source-loader';
 
 import {getSchemaFromParquetReader} from '../../src/parquet/lib/parsers/get-parquet-schema';
@@ -51,6 +52,26 @@ type RangeFetchOptions = {
   /** Optional response override used by cancellation and error tests. */
   intercept?: RangeRequestInterceptor;
 };
+
+test('ParquetLoader parses files and creates selective sources through separate APIs', async () => {
+  const blob = new Blob([await loadFixture()]);
+  const table = await load(blob, ParquetLoader, {core: {worker: false}, parquet: {shape: 'arrow'}});
+  expect(table.numRows).toBeGreaterThan(0);
+
+  const otherLoader = {...ParquetSourceLoader, type: 'other'};
+  const source = await createDataSource(blob, [otherLoader, ParquetLoader], {
+    core: {type: 'parquet'},
+    parquet: {verifyPageChecksums: true}
+  });
+  const synchronousSource = createDataSourceSync(blob, ParquetLoaderWithParser);
+  try {
+    expect((await source.getMetadata()).rowCount).toBe(table.numRows);
+    expect((await synchronousSource.getMetadata()).rowCount).toBe(table.numRows);
+    await expect(load(blob, ParquetSourceLoader)).rejects.toThrow('Use createDataSource()');
+  } finally {
+    await Promise.all([source.close(), synchronousSource.close()]);
+  }
+});
 
 test('ParquetSourceLoader#Blob metadata and schema are cached', async () => {
   const fixture = await loadFixture();

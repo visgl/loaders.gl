@@ -8,7 +8,7 @@ import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {ParquetEncoder, ParquetEnvelopeWriter} from '../../src/parquet/parquetjs/encoder/parquet-encoder';
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 import {ParquetSchema} from '../../src/parquet/parquetjs/schema/schema';
-import {ParquetJSLoaderWithParser} from '../../src/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {BSONObjectId, createBSONValue, parseBSONSync} from '@loaders.gl/documents/bson-codec';
 
 test.each([false, true])('Parquet BSON read/write and Arrow byte preservation, Data Page V2=%s', async useDataPageV2 => {

@@ -4,9 +4,8 @@
 
 export type {ParquetLoaderOptions} from './parquet-loader-types';
 export type {GeoParquetLoaderOptions} from './geoparquet-loader-types';
-export {ParquetLoaderWithParser as ParquetLoader} from './parquet-loader';
+export {ParquetLoaderWithParser as ParquetLoader} from '../parquet-loader';
 export {GeoParquetLoaderWithParser as GeoParquetLoader} from './geoparquet-loader';
-export {ParquetJSLoaderWithParser as ParquetJSLoader} from './parquet-js-loader';
 export {
   ParquetSourceLoader,
   ParquetSource,

@@ -46,15 +46,6 @@ export type ParquetLoaderOptions = LoaderOptions & {
   };
 };
 
-/** Public options for the experimental parquetjs-backed `ParquetJSLoader`. */
-export type ParquetJSLoaderOptions = LoaderOptions & {
-  parquet?: {
-    shape?: 'arrow' | 'arrow-table' | 'object-row-table';
-  } & {
-    [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
-  };
-};
-
 /** Shared default option bag for the public Parquet loaders. */
 export const PARQUET_LOADER_DEFAULT_OPTIONS = {
   columns: undefined,

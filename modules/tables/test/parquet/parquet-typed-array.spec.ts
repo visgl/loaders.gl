@@ -250,7 +250,9 @@ test('ParquetReader and ParquetJSLoader parse without global Buffer', async () =
     const snappyBytes = await readTestBytes('apache/good/alltypes_plain.snappy.parquet');
     const originalBuffer = (globalThis as MutableGlobalThis).Buffer;
     await withoutGlobalBuffer(async () => {
-        const [{ ParquetJSLoader }] = await Promise.all([import('../../src/parquet/bundled')]);
+        const {ParquetJSLoaderWithParser: ParquetJSLoader} = await import(
+            '../../../../website/src/alternate-loaders/parquet/parquet-js-loader'
+        );
         const reader = new ParquetReader(new BlobFile(toExactArrayBuffer(fruitsBytes)));
         const metadata = await reader.getSchemaMetadata();
         expect(metadata, 'reader metadata parsed').toEqual({ myuid: '420', fnord: 'dronf' });

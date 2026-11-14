@@ -16,19 +16,31 @@ import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema
 import {
   parseParquetFileToArrow,
   parseParquetFileToArrowInBatches
-} from './lib/parsers/parse-parquet-to-arrow';
-import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
+} from './parse-parquet-to-arrow';
+import {loadWasm} from '../../../../modules/tables/src/parquet/lib/utils/load-wasm';
+import {tableFromIPC} from 'apache-arrow';
+import {normalizeParquetOptions} from '../../../../modules/tables/src/parquet/lib/utils/normalize-parquet-options';
 import {
   deserializeParquetWorkerResult,
   serializeParquetWorkerResult
-} from './lib/parquet-worker-transport';
-import {ParquetLoader as ParquetLoaderMetadata} from './parquet-loader-types';
-import type {ParquetLoaderOptions} from './parquet-loader-options';
+} from '../../../../modules/tables/src/parquet/lib/parquet-worker-transport';
+import {ParquetLoader as ParquetLoaderMetadata} from '../../../../modules/tables/src/parquet/parquet-loader-types';
+import type {ParquetLoaderOptions} from '../../../../modules/tables/src/parquet/parquet-loader-options';
 
-export type {ParquetLoaderOptions} from './parquet-loader-options';
+export type {ParquetLoaderOptions} from '../../../../modules/tables/src/parquet/parquet-loader-options';
 
 const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
   ParquetLoaderMetadata;
+
+/** Decodes complete in-memory fixture bytes through parquet-wasm's atomic reader. */
+export async function decodeParquetWasmFixture(
+  arrayBuffer: ArrayBuffer,
+  columns?: string[]
+): Promise<ArrowTable> {
+  const wasm = await loadWasm();
+  const table = wasm.readParquet(new Uint8Array(arrayBuffer), {columns});
+  return {shape: 'arrow-table', data: tableFromIPC(table.intoIPCStream())};
+}
 
 /** WASM-backed Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetWasmLoaderWithParser = {

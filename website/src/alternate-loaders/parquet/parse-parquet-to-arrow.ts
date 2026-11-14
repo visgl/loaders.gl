@@ -13,9 +13,9 @@ import * as arrow from 'apache-arrow';
 import {
   normalizeArrowTableGeoMetadata,
   getParquetFileMetadataMap
-} from '../geo/geospatial-metadata';
-import {loadWasm} from '../utils/load-wasm';
-import {makeStreamIterator} from '../utils/make-stream-iterator';
+} from '../../../../modules/tables/src/parquet/lib/geo/geospatial-metadata';
+import {loadWasm} from '../../../../modules/tables/src/parquet/lib/utils/load-wasm';
+import {makeStreamIterator} from '../../../../modules/tables/src/parquet/lib/utils/make-stream-iterator';
 
 type ParquetWasmReaderOptions = parquetWasm.ReaderOptions & {wasmUrl?: string};
 

@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     {label: 'Default', value: "Native Apache Arrow Table"},
     {label: 'Rows', value: "Object-row tables with parquet.shape: 'object-row-table'"},
     {label: 'Streaming', value: 'Batches for incremental processing and lower peak memory'},
-    {label: 'Selective path', value: 'Use ParquetSourceLoader for footer and range-aware reads'}
+    {label: 'Selective path', value: 'Use createDataSource() for footer and range-aware reads'}
   ]}
 />
 
@@ -45,9 +45,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-Streaming loader for Apache Parquet encoded files. `ParquetLoader` is the primary TypeScript-backed loader
-and `ParquetJSLoader` is the experimental TypeScript loader variant. Both return Arrow tables by
-default and support explicit shape selection through `parquet.shape`.
+`ParquetLoader` reads Apache Parquet files and returns native Arrow tables by default. Use
+`parquet.shape` to select the output shape.
 
 Please refer to the `parquet` format page for information on
 which [Parquet format features](/docs/modules/tables/parquet/formats/parquet) are supported.
@@ -58,24 +57,24 @@ which [Parquet format features](/docs/modules/tables/parquet/formats/parquet) ar
   tone="mint"
 />
 
+Use `createDataSource(url, ParquetLoader)` for reusable metadata and selective range reads.
+See the [Parquet source API](./parquet-source-loader) for query options.
+
 ## Usage
 
 Load a Parquet file as object rows when a row-oriented result is required.
 
 ```typescript
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
 import {load} from '@loaders.gl/core';
 
 const loaderOptions = {parquet: {batchSize: 10_000, shape: 'object-row-table'}};
-const wasmRows = await load(url, ParquetLoader, loaderOptions);
-const typeScriptRows = await load(url, ParquetJSLoader, loaderOptions);
+const rows = await load(url, ParquetLoader, loaderOptions);
 ```
 
 Applications normally import metadata loaders from the package root. Code that needs a
 parser-bearing loader directly can import `ParquetLoaderWithParser` from
-`@loaders.gl/tables/parquet-loader` or `ParquetJSLoaderWithParser` from
-`@loaders.gl/tables/parquet-js-loader`.
+`@loaders.gl/tables/parquet-loader`.
 
 Load a Parquet file as Arrow using the primary loader.
 
@@ -97,7 +96,7 @@ const arrowTable = await load(url, ParquetLoader, {
 
 ## Shapes
 
-Both `ParquetLoader` and `ParquetJSLoader` return native Apache Arrow `Table` objects by default. Set `parquet.shape: 'object-row-table'` when row objects are required.
+`ParquetLoader` returns native Apache Arrow `Table` objects by default. Set `parquet.shape: 'object-row-table'` when row objects are required.
 
 | Shape              | Output                                           |
 | ------------------ | ------------------------------------------------ |
@@ -157,7 +156,7 @@ Parquet input chunks are currently collected into a complete file inside the wor
 This reduces parsing work on the caller but does not provide incremental input decoding or bounded
 whole-file memory. For random-access/range reads, use `ParquetSource` and its source-worker options.
 Calls with `parquet.keyRetriever` run on the caller to preserve the encryption callback. The explicit
-WASM backend, `ParquetJSLoader`, and `GeoParquetLoader` are not enabled by this capability.
+This capability is specific to `ParquetLoader`.
 
 ## Geospatial Metadata
 
@@ -201,13 +200,13 @@ for example `UTF8` values are returned as JavaScript strings and `JSON` values a
 returned as parsed JavaScript values.
 
 Unshredded Parquet `VARIANT` groups are decoded into JavaScript primitives, arrays, and
-objects for object-row results from the TypeScript `ParquetJSLoader` variant. Arrow results
+objects for object-row results from `ParquetLoader`. Arrow results
 and the explicit WASM reader retain the canonical `metadata` and `value` binary child
 fields so applications can choose when to decode or project them. Shredded Variant values
 are currently exposed as their typed child columns and are not yet reconstructed into one
 JavaScript value.
 
-`ParquetJSLoader` reads the Parquet 2.13 `LogicalType` annotation before using the legacy
+`ParquetLoader` reads the Parquet 2.13 `LogicalType` annotation before using the legacy
 `ConvertedType` fallback. Arrow output preserves exact signed and unsigned integer widths,
 date/time/timestamp units through nanoseconds, Decimal128/256 precision and scale, UUID fixed-size
 binary width, and FLOAT16 values. Parameterized logical metadata such as field IDs, UTC adjustment,
@@ -230,40 +229,14 @@ Supports table category options such as `batchType` and `batchSize`.
 | `parquet.signal` | `AbortSignal` | `undefined` | Cancels worker-backed parsing by terminating its active worker. |
 | `parquet.workerUrl` | `string` | package-local asset | Overrides the packaged worker URL. |
 | `parquet.wasmUrl` | `string` | package-local asset | Overrides the `parquet-wasm` binary URL for the explicit WASM reader. |
-| `parquet.keyRetriever` | `ParquetKeyRetriever` | `undefined` | Resolves keys for modular-encrypted files when using `ParquetJSLoader`. |
+| `parquet.keyRetriever` | `ParquetKeyRetriever` | `undefined` | Resolves keys for modular-encrypted files. |
 | `parquet.aadPrefix` | `Uint8Array` | `undefined` | Supplies the AAD prefix for encrypted files that omit it from their crypto metadata. |
 | `parquet.int96AsTimestamp` | `boolean` | `false` for object rows, `true` for TypeScript Arrow output | Decodes legacy INT96 physical values as signed epoch-nanosecond timestamps. |
 | `parquet.verifyFooterSignature` | `boolean` | `true` | Verifies plaintext-footer signatures on modular-encrypted files when a `keyRetriever` is supplied. |
 
-## Loader Variants
+## Arrow decoding
 
-- Use `ParquetLoader` for the primary TypeScript-backed loader. It supports object-row and Arrow output
-  and can use the package's prebuilt worker.
-- Use `ParquetJSLoader` for the experimental TypeScript implementation. It supports object-row and
-  Arrow output plus the common row options listed above, including `columns`, `limit`, `offset`,
-  `batchSize`, and `preserveBinary`. It can also read AES-GCM and AES-GCM-CTR encrypted column
-  metadata, page indexes, Bloom filters, and page modules when `keyRetriever` is supplied. Plaintext
-  footer signatures are verified by default.
-
-For the optional WASM reader, import `ParquetWasmLoaderWithParser` from `@loaders.gl/tables/parquet-wasm-loader` and install `parquet-wasm`. The implementation is selected by the loader import. There is no runtime backend option.
-The [JavaScript and WebAssembly performance](/docs/developer-guide/concepts/javascript-and-wasm-performance)
-concept guide explains why selective I/O, direct Arrow construction, memory copies, and startup cost
-can matter more than the language used for a decoder's inner loop.
-
-```typescript
-import {load} from '@loaders.gl/core';
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
-
-const table = await load(url, ParquetJSLoader, {
-  parquet: {
-    columns: ['id', 'name'],
-    limit: 100,
-    shape: 'arrow-table'
-  }
-});
-```
-
-For `shape: 'arrow-table'`, `ParquetJSLoader` materializes flat selected columns directly into Apache
+For `shape: 'arrow-table'`, `ParquetLoader` materializes flat selected columns directly into Apache
 Arrow batches and preserves compatible GeoParquet metadata on the Arrow schema. Flat `UTF8`,
 `BYTE_ARRAY`, and `FIXED_LEN_BYTE_ARRAY` columns are assembled directly into Arrow offset, validity,
 and value buffers without converting their bytes through JavaScript strings or copying every value
@@ -280,12 +253,13 @@ The primary `ParquetLoader` can decode on a worker when workers are enabled. The
 
 The package publishes `parquet-worker.js` and `parquet_wasm_bg.wasm` beside its JavaScript output. The metadata loader resolves the worker with a module-relative `new URL(..., import.meta.url)`, while the worker resolves the WASM file beside itself. This lets compatible bundlers copy and fingerprint both assets without an implicit CDN request. Use `parquet.workerUrl` or `parquet.wasmUrl` when an application serves assets from a custom location.
 
-Set `core.worker: false` to decode on the calling thread. `ParquetJSLoader` always parses on the calling thread and does not add another prebuilt worker to the package. Node worker threads for `ParquetLoader` remain opt-in through `core._nodeWorkers`.
+Set `core.worker: false` to decode on the calling thread. Node worker threads for `ParquetLoader` remain opt-in through `core._nodeWorkers`.
 
 ## Live Benchmarks
 
 Live Arrow decode throughput on representative, checked-in Parquet fixtures. Exact external package
-versions appear in the table headers.
+versions appear in the table headers. The comparison includes the published `ParquetLoader`, the
+website’s alternate ParquetJS and WASM readers, and hyparquet.
 
 <BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
   {() => {

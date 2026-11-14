@@ -24,7 +24,7 @@ test('Parquet LZO accepts raw pages and Hadoop blocks with multiple chunks', asy
   await expect(deflate('LZO', new Uint8Array(0))).rejects.toThrow(/decode-only/);
 });
 
-import {ParquetJSLoaderWithParser} from '../../src/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {PageHeader, DataPageHeader, FileMetaData, SchemaElement, ColumnMetaData, ColumnChunk, RowGroup, PageType, Encoding, Type, FieldRepetitionType, CompressionCodec} from '../../src/parquet/parquetjs/parquet-thrift';
 import {serializeThrift} from '../../src/parquet/parquetjs/utils/read-utils';
 

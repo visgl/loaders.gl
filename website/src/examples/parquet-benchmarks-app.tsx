@@ -21,7 +21,7 @@ type BenchmarkResultRow = {
 type BenchmarkStatus = 'loading' | 'running' | 'complete' | 'failed';
 type BenchmarkCellOutcome = 'failed' | 'incorrect';
 
-type ParquetBenchmarkImplementationId = 'typescript' | 'wasm' | 'hyparquet';
+type ParquetBenchmarkImplementationId = 'typescript' | 'parquetjs' | 'wasm' | 'hyparquet';
 type ParquetBenchmarkShape = 'arrow-table' | 'object-row-table';
 
 type ParquetBenchmarkScenario = {
@@ -82,13 +82,14 @@ type ParquetBenchmarkImplementationHeader = {
 const PARQUET_WASM_VERSION = '0.7.2';
 
 /** Exact hyparquet package version pinned by the website benchmark. */
-const HYPARQUET_VERSION = '1.28.2';
+const HYPARQUET_VERSION = '1.29.0';
 
 const PARQUET_BENCHMARK_IMPLEMENTATION_LABELS: Record<
   ParquetBenchmarkImplementationId,
   string
 > = {
   typescript: 'ParquetLoader',
+  parquetjs: 'ParquetJS (alternate)',
   wasm: `parquet-wasm v${PARQUET_WASM_VERSION}`,
   hyparquet: `hyparquet v${HYPARQUET_VERSION}`
 };
@@ -98,12 +99,14 @@ const PARQUET_BENCHMARK_IMPLEMENTATION_HEADERS: Record<
   ParquetBenchmarkImplementationHeader
 > = {
   typescript: {name: 'ParquetLoader'},
+  parquetjs: {name: 'ParquetJS (alternate)'},
   wasm: {name: 'parquet-wasm', version: `v${PARQUET_WASM_VERSION}`},
   hyparquet: {name: 'hyparquet', version: `v${HYPARQUET_VERSION}`}
 };
 
 const PARQUET_BENCHMARK_IMPLEMENTATION_IDS: ParquetBenchmarkImplementationId[] = [
   'typescript',
+  'parquetjs',
   'wasm',
   'hyparquet'
 ];
@@ -419,95 +422,95 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
       arrayBuffer: fruitsArrayBuffer,
       columns: ['name', 'quantity', 'price', 'date', 'day', 'finger'],
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'PLAIN single-column projection · 40K rows × 1 col → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['quantity'],
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'PLAIN mixed projection · 40K rows × 8 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['name', 'quantity', 'price', 'date', 'day', 'finger', 'stock', 'colour'],
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'PLAIN full table · 40K rows × 10 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'RLE_DICTIONARY mixed table · 20K rows × 5 cols → Arrow Utf8',
       arrayBuffer: dictionaryArrayBuffer,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'PLAIN nested/repeated · 40K rows × 2 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['stock', 'colour'],
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'DELTA_BINARY_PACKED wide integers · 200 rows × 66 cols → Arrow',
       arrayBuffer: deltaBinaryPackedArrayBuffer,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'DELTA_BYTE_ARRAY strings · 1K rows × 9 cols → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'DELTA_BYTE_ARRAY projection · 1K rows × 2 cols → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
       columns: ['c_customer_id', 'c_email_address'],
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'DELTA_BYTE_ARRAY control · 1K rows × 9 cols → object rows',
       arrayBuffer: deltaByteArrayBuffer,
       shape: 'object-row-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'RLE_DICTIONARY + GZIP · 20K rows × 5 cols → Arrow',
       arrayBuffer: compressedDictionaryFixtures.gzip,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'RLE_DICTIONARY + ZSTD · 20K rows × 5 cols → Arrow',
       arrayBuffer: compressedDictionaryFixtures.zstd,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'LZ4_RAW · 10K rows × 1 col → Arrow',
       arrayBuffer: lz4ArrayBuffer,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'LZ4 legacy framing · 10K rows × 1 col → Arrow',
       arrayBuffer: legacyLz4ArrayBuffer,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'GeoParquet SNAPPY · 1K rows × 4 cols → Arrow',
       arrayBuffer: geoParquetArrayBuffer,
       shape: 'arrow-table',
-      implementationIds: ['typescript', 'wasm', 'hyparquet']
+      implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     }
   ];
 }
@@ -561,26 +564,30 @@ async function createParquetBenchmarkImplementations(): Promise<
 > {
   const [
     loadersGlTypeScript,
+    parquetjs,
+    loadersGlWasm,
     loadersGlWasmRuntime,
     loadersGlSchemaUtils,
     arrowJs,
     hyparquet,
     hyparquetCompressors
   ] = await Promise.all([
-    import('../../../modules/tables/src/parquet/parquet-js-loader'),
+    import('@loaders.gl/tables/parquet-loader'),
+    import('../alternate-loaders/parquet/parquet-js-loader'),
+    import('../alternate-loaders/parquet/parquet-wasm-loader'),
     import('../../../modules/tables/src/parquet/lib/utils/load-wasm'),
     import('@loaders.gl/core/schema-utils'),
     import('apache-arrow'),
     import('hyparquet'),
     import('hyparquet-compressors')
   ]);
-  const parquetWasm = await loadersGlWasmRuntime.loadWasm();
+  await loadersGlWasmRuntime.loadWasm();
   return [
     {
       id: 'typescript',
       name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.typescript,
       decode: async scenario => {
-        const table = (await loadersGlTypeScript.ParquetJSLoaderWithParser.parse(
+        const table = (await loadersGlTypeScript.ParquetLoaderWithParser.parse(
           scenario.arrayBuffer,
           {
             core: {worker: false},
@@ -591,18 +598,26 @@ async function createParquetBenchmarkImplementations(): Promise<
       }
     },
     {
+      id: 'parquetjs',
+      name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.parquetjs,
+      decode: async scenario => {
+        const table = await parquetjs.ParquetJSLoaderWithParser.parse(scenario.arrayBuffer, {
+          parquet: {columns: scenario.columns, shape: scenario.shape}
+        });
+        return getBenchmarkTableRowCount(table);
+      }
+    },
+    {
       id: 'wasm',
       name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.wasm,
       decode: async scenario => {
-        const wasmTable = parquetWasm.readParquet(new Uint8Array(scenario.arrayBuffer), {
-          columns: scenario.columns
-        });
+        const table = await loadersGlWasm.decodeParquetWasmFixture(
+          scenario.arrayBuffer,
+          scenario.columns
+        );
         const arrowTable: ArrowTable = {
-          shape: 'arrow-table',
-          data: expandArrowDictionaryColumns(
-            arrowJs.tableFromIPC(wasmTable.intoIPCStream()),
-            arrowJs
-          )
+          ...table,
+          data: expandArrowDictionaryColumns(table.data, arrowJs)
         };
         if (scenario.shape === 'arrow-table') {
           return arrowTable.data.numRows;

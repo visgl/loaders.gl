@@ -126,17 +126,25 @@ export async function load(
       core: {...resolvedOptions?.core, nothrow: true}
     });
 
-    if (selectedLoader && typeof url === 'string') {
-      const loaderImplementation = await getLoaderImplementation(
-        selectedLoader,
-        resolvedOptions,
-        url
+    const loaderImplementation =
+      selectedLoader && (typeof url === 'string' || selectedLoader.createDataSourceSync)
+        ? await getLoaderImplementation(
+            selectedLoader,
+            resolvedOptions,
+            typeof url === 'string' ? url : undefined
+          )
+        : null;
+    if (
+      selectedLoader &&
+      loaderImplementation?.createDataSourceSync &&
+      !isLoaderWithParser(loaderImplementation)
+    ) {
+      throw new Error(
+        `${selectedLoader.id} creates sources. Use createDataSource() instead of load().`
       );
-      if (loaderImplementation.createDataSourceSync && !isLoaderWithParser(loaderImplementation)) {
-        throw new Error(
-          `${selectedLoader.id} creates sources. Use createDataSource() instead of load().`
-        );
-      }
+    }
+
+    if (selectedLoader && loaderImplementation && typeof url === 'string') {
       resolvedOptions = await resolveLoaderAuthenticationOptions(
         selectedLoader.getAuthentications ? selectedLoader : loaderImplementation,
         url,

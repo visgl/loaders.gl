@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoader} from '../../src/parquet/parquet-js-loader-types';
+import {ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader-types';
 import { expect, test } from "vitest";
 import { validateLoader } from 'test/common/conformance';
 import * as arrow from 'apache-arrow';
 import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
-import { ParquetJSLoaderWithParser } from '@loaders.gl/tables/parquet-js-loader';
+import { ParquetJSLoaderWithParser } from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import { ParquetLoaderWithParser } from '@loaders.gl/tables/parquet-loader';
 import {load, preload, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import { SUPPORTED_FILES, UNSUPPORTED_FILES, ENCRYPTED_FILES, BAD_FILES } from './data/files';
