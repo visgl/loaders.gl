@@ -242,7 +242,7 @@ const {
   ...ParquetSourceLoaderBase
 } = ParquetSourceLoaderMetadata;
 
-/** Runtime source factory for reusable, range-backed Parquet access. */
+/** @deprecated Use ParquetLoaderWithParser from @loaders.gl/tables/parquet-loader. */
 export const ParquetSourceLoaderWithParser = {
   ...ParquetSourceLoaderBase,
   createDataSourceSync: (
@@ -252,8 +252,8 @@ export const ParquetSourceLoaderWithParser = {
   ): ParquetSource => new ParquetSource(data, options, coreApi)
 } as const satisfies SourceLoader<ParquetSource>;
 
-/** Runtime Parquet source loader exposed by the explicit package subpath. */
-export {ParquetSourceLoaderWithParser as ParquetSourceLoader};
+/** @deprecated Use ParquetLoaderWithParser from @loaders.gl/tables/parquet-loader. */
+export const ParquetSourceLoader = ParquetSourceLoaderWithParser;
 
 /** Reusable Parquet source that caches footer/schema state and selectively reads byte ranges. */
 export class ParquetSource

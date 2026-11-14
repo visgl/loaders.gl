@@ -187,7 +187,7 @@ read/write encoding matrix.
 
 `ParquetJSWriter` can encrypt the footer and, optionally, selected column chunks with the same
 footer key. Column encryption covers column metadata, dictionary/data page headers and bodies,
-page indexes, and Bloom-filter modules. The existing `ParquetJSLoader` and `ParquetSourceLoader`
+page indexes, and Bloom-filter modules. The existing `ParquetLoader` and `ParquetSourceLoader`
 can read these files, including selective range reads and worker decoding. Keys stay in the caller's
 `keyRetriever`; they are not serialized into the writer options.
 

@@ -6,11 +6,11 @@ import {default as log} from 'probe.gl/log';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable, ObjectRowTableBatch, Schema} from '@loaders.gl/core/schema';
 
-import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
-import type {ParquetRow} from '../../parquetjs/schema/declare';
-import {ParquetReader, type ParquetIterationProps} from '../../parquetjs/parser/parquet-reader';
-import {getSchemaFromParquetReader} from './get-parquet-schema';
-import {preloadCompressions} from '../../parquetjs/compression';
+import type {ParquetLoaderOptions} from '../../../../modules/tables/src/parquet/parquet-loader-options';
+import type {ParquetRow} from '../../../../modules/tables/src/parquet/parquetjs/schema/declare';
+import {ParquetReader, type ParquetIterationProps} from '../../../../modules/tables/src/parquet/parquetjs/parser/parquet-reader';
+import {getSchemaFromParquetReader} from '../../../../modules/tables/src/parquet/lib/parsers/get-parquet-schema';
+import {preloadCompressions} from '../../../../modules/tables/src/parquet/parquetjs/compression';
 
 /**
  *  * Parse a parquet file using parquetjs
@@ -20,7 +20,7 @@ import {preloadCompressions} from '../../parquetjs/compression';
  */
 export async function parseParquetFile(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): Promise<ObjectRowTable> {
   await preloadCompressions(options);
 
@@ -82,7 +82,7 @@ export async function parseParquetFile(
  */
 export async function* parseParquetFileInBatches(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
   await preloadCompressions(options);
 
@@ -149,7 +149,7 @@ export async function* parseParquetFileInBatches(
 }
 
 function getParquetIterationProps(
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): ParquetIterationProps | undefined {
   const columnList = options?.parquet?.columns;
   if (

@@ -16,7 +16,7 @@ import {NDJSONLoader} from '../src/json/ndjson-loader-types';
 import {GeoJSONLoader} from '../src/json/geojson-loader-types';
 import {NDGeoJSONLoader} from '../src/json/ndgeojson-loader-types';
 import {ParquetLoader} from '../src/parquet/parquet-loader-types';
-import {ParquetJSLoader} from '../src/parquet/parquet-js-loader-types';
+import {ParquetJSLoader} from '../../../website/src/alternate-loaders/parquet/parquet-js-loader-types';
 import {GeoParquetLoader} from '../src/parquet/geoparquet-loader-types';
 import {AvroLoader} from '../src/avro/avro-loader-types';
 import {ORCLoader} from '../src/orc/orc-loader-types';

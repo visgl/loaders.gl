@@ -46,16 +46,12 @@ import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson-loader';
 import {NDGeoJSONLoader} from '@loaders.gl/tables';
 import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/ndgeojson-loader';
 
-import {ParquetJSLoader} from '@loaders.gl/tables';
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet-js-loader';
-
 import {GeoParquetLoader} from '@loaders.gl/tables';
 import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/geoparquet-loader';
 
 test.each(
   [
     [GeoParquetLoader, GeoParquetLoaderWithParser],
-    [ParquetJSLoader, ParquetJSLoaderWithParser],
     [NDGeoJSONLoader, NDGeoJSONLoaderWithParser],
     [GeoJSONLoader, GeoJSONLoaderWithParser],
     [NDJSONLoader, NDJSONLoaderWithParser],

@@ -24,7 +24,20 @@ type SourceOptions<Loaders extends readonly Loader[]> = SourceLoader extends Loa
   ? DataSourceOptions
   : Loaders extends readonly SourceLoader[]
     ? SourceArrayOptionsType<[...Loaders]>
-    : LoaderOptionsType<Loaders[number]> & DataSourceOptions;
+    : LoaderSourceOptions<Loaders[number]> & DataSourceOptions;
+
+/** Reads construction options from the source factory, independently of parser options. */
+type LoaderSourceOptions<LoaderT extends Loader> = LoaderT extends {
+  createDataSourceSync: (data: never, options: infer Options, ...args: never[]) => unknown;
+}
+  ? unknown extends Options
+    ? LoaderOptionsType<LoaderT>
+    : NonNullable<Options>
+  : LoaderT extends {preload: (...args: never[]) => infer Implementation}
+    ? Awaited<Implementation> extends Loader
+      ? LoaderSourceOptions<Awaited<Implementation>>
+      : LoaderOptionsType<LoaderT>
+    : LoaderOptionsType<LoaderT>;
 
 type SourceResult<LoaderT> = LoaderT extends {
   createDataSourceSync: (...args: any[]) => infer Source;
@@ -144,7 +157,7 @@ function getCandidates(loaders: Loader | readonly Loader[], options: DataSourceO
   const candidates = Array.isArray(loaders) ? [...loaders] : [loaders as Loader];
   const type = options.core?.type || options.type;
   return candidates.length > 1 && type && type !== 'auto'
-    ? candidates.filter(loader => isSourceLoader(loader) && loader.type === type)
+    ? candidates.filter(loader => (isSourceLoader(loader) ? loader.type : loader.id) === type)
     : candidates;
 }
 

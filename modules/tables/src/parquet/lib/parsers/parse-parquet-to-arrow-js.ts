@@ -16,7 +16,7 @@ import type {
 } from '@loaders.gl/core/schema';
 import {deserializeArrowType} from '@loaders.gl/core/schema-utils';
 
-import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
+import type {ParquetLoaderOptions} from '../../parquet-loader-options';
 import {preloadCompressions} from '../../parquetjs/compression';
 import {ParquetReader, type ParquetIterationProps} from '../../parquetjs/parser/parquet-reader';
 import type {
@@ -104,7 +104,7 @@ class ParquetArrowSchema extends arrow.Schema {
  */
 export async function parseParquetFileToArrowWithJs(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): Promise<ArrowTable> {
   if (
     !options?.parquet?.offset &&
@@ -131,7 +131,7 @@ export async function parseParquetFileToArrowWithJs(
 /** Parses complete row groups directly, bypassing batch slicing and wrapper reconstruction. */
 async function parseCompleteParquetFileToArrowWithJs(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): Promise<ArrowTable> {
   await preloadCompressions(options);
   const reader = new ParquetReader(file, {
@@ -179,7 +179,7 @@ async function parseCompleteParquetFileToArrowWithJs(
 /** Reads the projected loaders.gl schema when row selection produces no Arrow record batches. */
 async function readProjectedSchema(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): Promise<Schema> {
   const reader = new ParquetReader(file, {
     signal: options?.parquet?.signal,
@@ -201,7 +201,7 @@ async function readProjectedSchema(
  */
 export async function* parseParquetFileToArrowInBatchesWithJs(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   await preloadCompressions(options);
 
@@ -1243,7 +1243,7 @@ function sliceColumn(column: ArrayLike<unknown>, start: number, end: number): Ar
 
 /** Creates row-group projection properties from public loader options. */
 function getParquetIterationProps(
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): ParquetIterationProps | undefined {
   const columnList = options?.parquet?.columns;
   if (

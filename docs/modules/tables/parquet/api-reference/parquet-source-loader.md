@@ -40,7 +40,7 @@ import {ParquetLayoutGraphic} from '@site/src/components/docs/parquet-layout-gra
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-`ParquetSourceLoader` creates a reusable `ParquetSource` for metadata, schema, and selective Arrow
+`createDataSource()` with `ParquetLoader` creates a reusable `ParquetSource` for metadata, schema, and selective Arrow
 batch access without downloading an entire remote Parquet object. The source uses bounded HTTP byte
 ranges, decodes the footer once, and shares the resulting metadata and schema cache across calls and
 reads.
@@ -55,12 +55,12 @@ reads.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ParquetSourceLoader} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 
 const abortController = new AbortController();
 const source = await createDataSource(
   'https://example.com/trips.parquet',
-  ParquetSourceLoader,
+  ParquetLoader,
   {parquet: {headers: {Authorization: 'Bearer token'}}}
 );
 
@@ -90,17 +90,20 @@ try {
 ```
 
 Both URL and `Blob` inputs are supported. The root loader is metadata-only; async `createDataSource()` imports its
-runtime implementation from the package's `parquet-source-loader` subpath. File access begins when
+runtime implementation from the package's `parquet-loader` subpath. File access begins when
 `getSchema()`, `getMetadata()`, `getScanPlan()`, or `read()` is first called.
 
 Applications that need synchronous `createDataSourceSync()` can import the runtime loader explicitly:
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {ParquetSourceLoader} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 
-const source = createDataSourceSync(url, [ParquetSourceLoader], {});
+const source = createDataSourceSync(url, [ParquetLoaderWithParser], {});
 ```
+
+`ParquetSourceLoader` is deprecated. Existing `createDataSource()` and
+`createDataSourceSync()` calls with the legacy exports remain supported.
 
 ## Multi-file datasets
 
@@ -386,7 +389,7 @@ receives snapshots after range requests, cache hits, pruning, decoding, Arrow co
 cancellation, and failures. Exceptions thrown by the callback do not interrupt a read.
 
 ```typescript
-const source = createDataSourceSync(url, [ParquetSourceLoader], {
+const source = createDataSourceSync(url, [ParquetLoaderWithParser], {
   parquet: {
     onTelemetry: event => console.log(event.type, event.telemetry)
   }

@@ -10,8 +10,8 @@ import type {
   ObjectRowTableBatch
 } from '@loaders.gl/core/schema';
 
-import {ParquetFormat} from './parquet-format';
-import type {ParquetJSLoaderOptions} from './parquet-loader-options';
+import {ParquetFormat} from '../../../../modules/tables/src/parquet/parquet-format';
+import type {ParquetLoaderOptions} from '../../../../modules/tables/src/parquet/parquet-loader-options';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -27,7 +27,7 @@ const DEFAULT_PARQUET_JS_OPTIONS = {
 
 /** Preloads the parser-bearing TypeScript Parquet loader implementation. */
 async function preloadParquetJSLoader() {
-  const {ParquetJSLoaderWithParser} = await import('@loaders.gl/tables/parquet-js-loader');
+  const {ParquetJSLoaderWithParser} = await import('./parquet-js-loader');
   return ParquetJSLoaderWithParser;
 }
 
@@ -50,5 +50,5 @@ export const ParquetJSLoader = {
 } as const satisfies Loader<
   ObjectRowTable | ArrowTable,
   ObjectRowTableBatch | ArrowTableBatch,
-  ParquetJSLoaderOptions
+  ParquetLoaderOptions
 >;

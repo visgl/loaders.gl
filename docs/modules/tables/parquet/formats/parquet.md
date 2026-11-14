@@ -88,7 +88,7 @@ The support tables use these symbols:
 | ❌ | Not currently supported |
 
 `ParquetLoader` and `ParquetWriter` use the separately maintained `parquet-wasm` implementation;
-their coverage can differ from the TypeScript `ParquetJSLoader`, `ParquetSourceLoader`, and
+their coverage can differ from the TypeScript `ParquetLoader`, `ParquetSourceLoader`, and
 `ParquetJSWriter` described in the matrices below.
 
 ## Scan support

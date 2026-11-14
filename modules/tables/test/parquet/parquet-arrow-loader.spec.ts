@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import { expect, test } from "vitest";
 // import {validateLoader} from 'test/common/conformance';
 import {load, loadInBatches, encode, fetchFile, setLoaderOptions, isBrowser} from '@loaders.gl/core';
@@ -10,7 +11,7 @@ import { getGeometryColumnsFromSchema } from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import { GeoParquetLoader, ParquetJSWriter, ParquetLoader, ParquetWriter } from '@loaders.gl/tables/parquet/index';
-import { ParquetLoader as BundledParquetLoader, ParquetJSLoader } from '@loaders.gl/tables/parquet/bundled';
+import { ParquetLoader as BundledParquetLoader } from '@loaders.gl/tables/parquet/bundled';
 import * as arrow from 'apache-arrow';
 import { WASM_SUPPORTED_FILES } from './data/files';
 const PARQUET_DIR = '@loaders.gl/tables/parquet/test/data';

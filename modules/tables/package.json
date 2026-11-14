@@ -375,10 +375,6 @@
       "types": "./dist/orc/orc-format.d.ts",
       "import": "./dist/orc/orc-format.js"
     },
-    "./parquet-js-loader": {
-      "types": "./dist/parquet-js-loader.d.ts",
-      "import": "./dist/parquet-js-loader.js"
-    },
     "./parquet/parquet-loader-options": {
       "types": "./dist/parquet/parquet-loader-options.d.ts",
       "import": "./dist/parquet/parquet-loader-options.js"
@@ -444,17 +440,9 @@
       "types": "./dist/delta-source-loader-types.d.ts",
       "import": "./dist/delta-source-loader-types.js"
     },
-    "./parquet-js-loader-types": {
-      "types": "./dist/parquet-js-loader-types.d.ts",
-      "import": "./dist/parquet-js-loader-types.js"
-    },
     "./parquet-source-types": {
       "types": "./dist/parquet-source-types.d.ts",
       "import": "./dist/parquet-source-types.js"
-    },
-    "./parquet-wasm-loader": {
-      "types": "./dist/parquet-wasm-loader.d.ts",
-      "import": "./dist/parquet-wasm-loader.js"
     },
     "./parquet/delta-types": {
       "types": "./dist/parquet/delta-types.d.ts",

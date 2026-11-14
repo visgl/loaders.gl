@@ -20,6 +20,7 @@ async function preloadParquetSourceLoader(): Promise<SourceLoader<ParquetSource>
 
 /**
  * Lightweight Parquet source metadata.
+ * @deprecated Use createDataSource() with ParquetLoader.
  *
  * Use with the async `load()` API, which preloads the implementation, or import the runtime source
  * loader from `@loaders.gl/tables/parquet-source-loader` for synchronous `createDataSource()`.
