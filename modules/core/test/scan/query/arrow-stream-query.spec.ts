@@ -40,6 +40,26 @@ test('Arrow filter uses all-pass, all-reject, contiguous and scattered paths', (
   expect(() => filterArrowTable(source, predicate, {signal: AbortSignal.abort()})).toThrow();
 });
 
+test('sparse Arrow filters preserve dictionary encoding and batch metadata', () => {
+  const dictionary = arrow.vectorFromArray(
+    ['first', 'skip', 'last'],
+    new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32())
+  );
+  const source = new arrow.Table({
+    value: arrow.vectorFromArray([2, 0, 3], new arrow.Int32()),
+    label: dictionary
+  });
+  const metadata = new Map([['source', 'fixture']]);
+  const batch = new arrow.RecordBatch(source.schema, source.batches[0].data, metadata);
+  const result = filterArrowTable(new arrow.Table(source.schema, [batch]), predicate);
+
+  expect(result.batches[0].metadata).toEqual(metadata);
+  expect(result.getChild('label')?.data[0].dictionary?.toArray()).toEqual(
+    dictionary.data[0].dictionary?.toArray()
+  );
+  expect(Array.from(result.getChild('label')!)).toEqual(['first', 'last']);
+});
+
 test('stream query has global limits, aliases, pull backpressure and exact-boundary cleanup', async () => {
   let pulls = 0;
   let closed = false;

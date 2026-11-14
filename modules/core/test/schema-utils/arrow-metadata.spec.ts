@@ -93,9 +93,9 @@ test.each([
   expect(restored.batches[0].schema.fields[0].metadata.get('stage')).toBe('batch');
   expect(restored.batches[0].metadata.get('local')).toBe('1');
   delete payload.arrowBatchMetadata;
-  const legacy = deserializeArrowWorkerResult(payload).data;
-  expect(legacy.batches[0].schema.metadata.get('stage')).toBe('table');
-  expect(legacy.batches[0].metadata.size).toBe(0);
+  const withoutSchemaSnapshot = deserializeArrowWorkerResult(payload).data;
+  expect(withoutSchemaSnapshot.batches[0].schema.metadata.get('stage')).toBe('table');
+  expect(withoutSchemaSnapshot.batches[0].metadata.get('local')).toBe('1');
 });
 
 test('Arrow wrappers collect cumulative bounds and retain local bounds', async () => {

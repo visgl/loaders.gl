@@ -268,11 +268,12 @@ combined with `columns` or relational operators in this linear execution path.
 `explainArrowTableQuery()` reports the aliased output names and physical source columns.
 
 The shared `projectArrowTable(arrowTable, selections)` helper is available through
-`@loaders.gl/core/query/arrow-execution`. Projection creates schema and batch wrappers while
+`@loaders.gl/core/scan/arrow-execution`. Projection creates schema and batch wrappers while
 reusing data buffers, including nested children and dictionaries. It preserves field
 names/types/nullability/metadata, schema metadata, RecordBatch metadata and boundaries,
 and row order; selected aliases replace only field names. Projection-only limits retain
-Arrow slice views. Predicates may still materialize new buffers for matching rows.
+Arrow slice views. Sparse residual filters use math.gl's Arrow row gatherer to copy
+physical buffers without decoding nested or dictionary-encoded columns.
 
 ### Streaming linear Arrow queries
 
@@ -282,7 +283,7 @@ limit, and cancellation. Sorting, aggregates, expressions, unions, and joins rem
 existing materializing paths.
 
 The in-memory executor and Arrow IPC source now share `filterArrowTable()` from
-`@loaders.gl/core/query/arrow-execution`. Predicate evaluation reads Arrow vectors directly and
+`@loaders.gl/core/scan/arrow-execution`. Predicate evaluation reads Arrow vectors directly and
 operates independently on each RecordBatch. All-pass batches reuse their data; all-reject
 results retain the schema; contiguous results are slices; scattered results gather values.
 Memory for predicate indices is bounded by one input batch. Slices may retain the original
