@@ -6,6 +6,14 @@
 
 ## v5.0
 
+### v5.0.0-beta.10
+
+- Upgrade to math.gl 5.0.0-beta.10 and reuse its Arrow worker transport and sparse row selection helpers.
+- Return native Apache Arrow tables and record batches across loaders, scan sources, queries, and shared conversion APIs. Preserve per-batch metadata and row counts in worker transport.
+- Build typed Arrow projections from CSV and NDJSON, push supported queries into DuckDB, and skip Parquet row groups outside the requested page.
+- Consolidate parser and source descriptors under Loader names and remove redundant entry points and option aliases. See the upgrade guide for API changes.
+- Align example dependencies with deck.gl 10.0.0-alpha.1 and share one build across release tests and npm publishing.
+
 ### v5.0.0-beta.8
 
 - Upgrade math.gl to beta.8 and adopt its standalone expressions package and Arrow inspection utilities.
