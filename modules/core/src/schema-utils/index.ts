@@ -176,4 +176,4 @@ export {
 } from './lib/arrow/arrow-metadata';
 export {refineArrowTableBatches} from './lib/arrow/arrow-metadata';
 
-export {isNativeArrowRecordBatch} from '../lib/loader-utils/native-arrow';
+export {isNativeArrowRecordBatch, isNativeArrowTable} from '../lib/loader-utils/native-arrow';
