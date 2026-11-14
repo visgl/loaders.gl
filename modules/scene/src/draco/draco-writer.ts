@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table} from 'apache-arrow';
+import {isArrowTable} from '@math.gl/arrow';
 import {
   canEncodeWithWorker,
   type WriterWithEncoder,
@@ -222,7 +223,7 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
 
 /** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */
 function normalizeDracoMesh(data: DracoWriterInput): DracoBuilderMesh {
-  if (isMeshArrowTable(data) || 'batches' in data) {
+  if (isMeshArrowTable(data) || isArrowTable(data)) {
     return convertTableToMesh(data);
   }
 

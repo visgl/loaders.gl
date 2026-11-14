@@ -440,7 +440,9 @@ async function getNextArrowBatch(iterator: AsyncIterator<any>): Promise<ArrowTab
       const recordBatch = result.value;
       const schema = convertArrowToSchema(recordBatch.schema);
       const batch =
-        recordBatch instanceof arrow.RecordBatch ? recordBatch : importDBFRecordBatch(recordBatch);
+        Object.getPrototypeOf(recordBatch) === arrow.RecordBatch.prototype
+          ? recordBatch
+          : importDBFRecordBatch(recordBatch, schema);
       const data = new arrow.Table(batch.schema, [batch]);
       return makeTableScanBatch({
         shape: 'arrow-table',
@@ -453,8 +455,11 @@ async function getNextArrowBatch(iterator: AsyncIterator<any>): Promise<ArrowTab
 }
 
 /** Rebuilds primitive DBF columns with local Arrow classes while reusing their buffers. */
-function importDBFRecordBatch(batch: arrow.RecordBatch): arrow.RecordBatch {
-  const schema = convertSchemaToArrow(convertArrowToSchema(batch.schema));
+function importDBFRecordBatch(
+  batch: arrow.RecordBatch,
+  tableSchema: TableSchema
+): arrow.RecordBatch {
+  const schema = convertSchemaToArrow(tableSchema);
   const children = batch.data.children.map(
     (column, index) =>
       new arrow.Data(

@@ -6,6 +6,8 @@ import {afterEach, expect, test, vi} from 'vitest';
 import {Table, RecordBatch, tableFromArrays} from 'apache-arrow';
 import {fetchFile, load, loadInBatches, parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
+import {parseShapefileToArrowInBatches} from '../../src/shapefile/shapefile-arrow-loader';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {DBFLoader, SHPLoader, ShapefileLoader} from '../../src/shapefile/index';
 import {
   serializeShapefileWorkerResult,
@@ -234,4 +236,41 @@ test('DBF Arrow parser waits for split field descriptors before emitting its hea
     dbf: {shape: 'rows'}
   });
   expect(rows).toEqual(expected);
+});
+
+test('streamed Shapefile joins DBF record batches from another Arrow instance', async () => {
+  const source = await (await fetchFile(`${fixtureRoot}/points.shp`)).arrayBuffer();
+  const geometry = await parse(source, SHPLoader, {core: {worker: false}, shp: {shape: 'wkb'}});
+  const dbf = await (await fetchFile(`${fixtureRoot}/points.dbf`)).arrayBuffer();
+  const dbfParser = await DBFLoader.preload();
+  const dbfTable = await dbfParser.parse(dbf, {dbf: {shape: 'arrow'}});
+  const recordBatch = dbfTable.batches[0] as RecordBatch;
+  const foreignDBFBatch = {
+    [Symbol.for('apache-arrow/RecordBatch')]: true,
+    schema: {...recordBatch.schema},
+    data: {
+      children: recordBatch.data.children.map(column => ({
+        offset: column.offset,
+        length: column.length,
+        nullCount: column.nullCount,
+        buffers: column.buffers,
+        variadicBuffers: column.variadicBuffers
+      }))
+    },
+    numRows: recordBatch.numRows,
+    metadata: recordBatch.metadata
+  };
+  const context = {
+    url: 'points.shp',
+    fetch: async (url: string) => new Response(null, {status: url.endsWith('.dbf') ? 200 : 404}),
+    async _parseInBatches(_input, loader) {
+      return loader.id === 'dbf' ? [foreignDBFBatch] : [geometry.header, geometry.geometries];
+    }
+  } as LoaderContext;
+  const output = [];
+  for await (const result of parseShapefileToArrowInBatches([], {}, context)) {
+    output.push(...result.data.toArray().map(row => row.toJSON()));
+  }
+  const property = recordBatch.schema.fields[0].name;
+  expect(output.map(row => row[property])).toEqual(Array.from(recordBatch.getChild(property)!));
 });
