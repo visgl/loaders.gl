@@ -39,10 +39,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-loaders.gl provides `SourceLoader` exports for multi-step data loading. **SourceLoaders** are different from parser **loaders**:
-
-- loaders are designed for one complete result or a stream of parsed batches;
-- a `SourceLoader` owns the metadata, resource discovery, and repeated requests required by a dataset or service.
+Loaders can open a reusable data source for metadata, selective reads, and repeated requests.
+Use `createDataSource()` to open a source through the loader for the format or service.
 
 <ReferenceBoundary
   title="Source interfaces and implementations"
@@ -50,7 +48,7 @@ loaders.gl provides `SourceLoader` exports for multi-step data loading. **Source
   tone="orange"
 />
 
-**SourceLoaders** encapsulate the following data access models:
+Data sources support the following data access models:
 
 | Data Access Model           | Description                                                                     |
 | --------------------------- | ------------------------------------------------------------------------------- |
@@ -74,9 +72,9 @@ const metadata = await load(url, PMTilesLoader);
 const source = await createDataSource(url, PMTilesLoader);
 ```
 
-## SourceLoader
+## Source creation
 
-A `SourceLoader` provides general information about the supported resource format, and the capability to create a `DataSource` for that format.
+A loader provides general information about the supported resource format, and the capability to create a `DataSource` for that format.
 
 ## DataSource
 

@@ -10,8 +10,7 @@ import type {
   RasterQueryCapabilities,
   RasterQueryOptions,
   ScanQueryMetadata,
-  ScanQueryMetadataOptions,
-  SourceLoader
+  ScanQueryMetadataOptions
 } from '@loaders.gl/core/loader-utils';
 import {
   createScanQueryMetadata,
