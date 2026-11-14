@@ -54,7 +54,11 @@ export function convertFeaturesToWKBArrowTable(
     });
   }
 
-  return arrowTableBuilder.finishTable();
+  return {
+    shape: 'arrow-table',
+    schema: structuredClone(arrowTableBuilder.schema),
+    data: arrowTableBuilder.finishTable()
+  };
 }
 
 /**

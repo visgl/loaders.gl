@@ -63,7 +63,7 @@ test.each([
   const payload = serializeArrowWorkerResult(input, {
     core: {workerTransferBufferCopy: copy}
   }) as any;
-  expect(payload.category).toBe('test');
+  expect(payload.metadata.category).toBe('test');
   expect(Array.from(hydrateArrowTable(payload.data).getChild('value')!)).toEqual([9]);
   const restored = deserializeArrowWorkerResult(structuredClone(payload));
   expect(restored.shape).toBe('arrow-table');

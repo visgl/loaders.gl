@@ -302,7 +302,11 @@ export function getGeoPackageArrowTable(
     );
   }
 
-  return tableBuilder.finishTable();
+  return {
+    shape: 'arrow-table',
+    schema: structuredClone(tableBuilder.schema),
+    data: tableBuilder.finishTable()
+  };
 }
 
 /** Find all projections defined in GeoPackage. */

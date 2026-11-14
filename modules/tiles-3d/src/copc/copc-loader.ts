@@ -463,7 +463,7 @@ export class COPCTileSource
           builder.addArrayRow(outputColumnNames.map(columnName => columns[columnName][rowIndex]));
         }
         const batch = builder.finishBatch();
-        if (batch) yield* batch.data.batches;
+        if (batch) yield batch;
         remainingPointCount -= matchingRowIndices.length;
         if (remainingPointCount === 0) return;
       }

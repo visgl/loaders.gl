@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table} from 'apache-arrow';
 import type {Schema, TableBatch} from '@loaders.gl/core/schema';
 import {ArrowTableBuilder} from './arrow-table-builder';
 import {convertToColumnarTable} from '../tables/convert-table';
@@ -132,7 +133,15 @@ export class TableBatchBuilder {
   private takeBatch(): TableBatch {
     if (this.arrowBuilder) {
       const batch = this.arrowBuilder.flushBatch()!;
-      return {...batch, ...convertToColumnarTable(batch)};
+      return {
+        ...convertToColumnarTable({
+          shape: 'arrow-table',
+          schema: this.schema,
+          data: new Table(batch)
+        }),
+        batchType: 'data',
+        length: batch.numRows
+      };
     }
     const rows = this.rows;
     this.rows = [];

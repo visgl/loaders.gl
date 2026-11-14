@@ -303,7 +303,11 @@ export function convertRowTableToArrowTable(
       throw new Error('invalid row table shape');
   }
 
-  return arrowTableBuilder.finishTable();
+  return {
+    shape: 'arrow-table',
+    schema: structuredClone(arrowTableBuilder.schema),
+    data: arrowTableBuilder.finishTable()
+  };
 }
 
 /** Validates that all observed row values are compatible with the supplied Arrow schema. */

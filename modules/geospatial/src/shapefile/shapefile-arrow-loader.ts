@@ -499,5 +499,5 @@ function takeRowsFromQueue(queue: arrow.Table[], rowCount: number): arrow.Table 
 /** Creates an explicit empty Arrow batch so zero-row shapefiles still expose schema in batch mode. */
 function makeEmptyArrowBatch(schema: TableSchema): ArrowTableBatch {
   const table = new ArrowTableBuilder(schema).finishTable();
-  return makeTableScanBatch({...table, schema});
+  return makeTableScanBatch({shape: 'arrow-table', data: table, schema});
 }

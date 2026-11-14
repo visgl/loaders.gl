@@ -16,9 +16,9 @@ test('ArrowTableBuilder keeps buffered and emitted rows intact across flushes', 
   builder.addObjectRow({value: 200});
   builder.addObjectRow({});
   const second = builder.flushBatch()!;
-  expect(Array.from(first.data.getChild('value')!)).toEqual(
+  expect(Array.from(first.getChild('value')!)).toEqual(
     Array.from({length: 150}, (_, index) => index)
   );
-  expect(Array.from(second.data.getChild('value')!)).toEqual([200, null]);
+  expect(Array.from(second.getChild('value')!)).toEqual([200, null]);
   expect(builder.flushBatch()).toBeNull();
 });

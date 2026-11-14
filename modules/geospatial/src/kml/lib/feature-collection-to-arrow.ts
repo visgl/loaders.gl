@@ -43,7 +43,7 @@ export function convertFeatureCollectionToArrowTable(
     );
   }
 
-  return arrowTableBuilder.finishTable().data;
+  return arrowTableBuilder.finishTable();
 }
 
 /**

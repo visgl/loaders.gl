@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table, RecordBatch} from 'apache-arrow';
-import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {Table, RecordBatch} from 'apache-arrow';
+import {convertArrowToSchema, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   parseDBF as parseDBFToObjectRows,
   parseDBFInBatches as parseDBFToObjectRowsInBatches
@@ -47,8 +47,8 @@ export const DBFWorkerLoaderWithParser = {
 /** DBF file loader */
 export const DBFColumnLoader = {
   ...DBFLoaderMetadataWithoutPreload,
-  dataType: null as unknown as DBFRowsOutput | DBFTableOutput | ObjectRowTable | ArrowTable,
-  batchType: null as unknown as DBFHeader | DBFRowsOutput | DBFTableOutput | ArrowTableBatch,
+  dataType: null as unknown as DBFRowsOutput | DBFTableOutput | ObjectRowTable | Table,
+  batchType: null as unknown as DBFHeader | DBFRowsOutput | DBFTableOutput | RecordBatch,
   parse: async (arrayBuffer, options) =>
     getDBFShape(options) === 'arrow'
       ? parseDBFToArrow(arrayBuffer, options)
@@ -76,8 +76,8 @@ export const DBFColumnLoader = {
   serializeWorkerBatch: serializeShapefileWorkerBatch,
   deserializeWorkerBatch: deserializeDBFWorkerBatch
 } as const satisfies LoaderWithParser<
-  DBFRowsOutput | DBFTableOutput | ObjectRowTable | ArrowTable,
-  DBFHeader | DBFRowsOutput | DBFTableOutput | ArrowTableBatch,
+  DBFRowsOutput | DBFTableOutput | ObjectRowTable | Table,
+  DBFHeader | DBFRowsOutput | DBFTableOutput | RecordBatch,
   DBFLoaderOptions
 >;
 
@@ -86,67 +86,27 @@ function getDBFShape(options?: DBFLoaderOptions): NonNullable<DBFLoaderOptions['
 }
 
 /** Converts hydrated Arrow scalars to the requested legacy row output on the caller. */
-function deserializeDBFWorkerResult(result: unknown, options?: DBFLoaderOptions): any {
-  const table = deserializeShapefileWorkerResult<ArrowTable>(result);
+function deserializeDBFWorkerResult(result: unknown, options?: DBFLoaderOptions) {
+  const value = deserializeShapefileWorkerResult<Table | ArrowTable>(result);
+  const table = 'shape' in value ? value.data : value;
   const shape = getDBFShape(options);
   if (shape === 'arrow') return table;
-  const rows = table.data.toArray().map(row => row.toJSON());
+  const rows = table.toArray().map(row => row.toJSON());
   if (shape === 'rows') return rows;
-  if (shape === 'table') return {schema: table.schema, rows};
-  return {shape: 'object-row-table', schema: table.schema, data: rows};
+  const schema = convertArrowToSchema(table.schema);
+  if (shape === 'table') return {schema, rows};
+  return {shape: 'object-row-table' as const, schema, data: rows};
 }
 
-/** Keeps the legacy initial header and row-array batch contract on the caller. */
-function deserializeDBFWorkerBatch(result: unknown, options?: DBFLoaderOptions): any {
-  if (getDBFShape(options) === 'arrow') return deserializeShapefileWorkerResult(result);
-  const table = deserializeShapefileWorkerResult<any>(result);
-  return table.shape === 'arrow-table' ? table.data.toArray().map(row => row.toJSON()) : table;
+/** Keeps legacy header events and materializes row arrays only on the caller. */
+function deserializeDBFWorkerBatch(result: unknown, options?: DBFLoaderOptions) {
+  const value = deserializeShapefileWorkerResult<DBFHeader | RecordBatch | ArrowTable>(result);
+  const batch =
+    'shape' in value ? (value.data.batches[0] ?? makeArrowMetadataBatch(value.data.schema)) : value;
+  return batch instanceof RecordBatch && getDBFShape(options) !== 'arrow'
+    ? batch.toArray().map(row => row.toJSON())
+    : batch;
 }
 
-/** Exposes native Arrow output after parsing or worker hydration. */
-export const DBFLoaderWithParser = {
-  ...DBFColumnLoader,
-  dataType: null as unknown as DBFRowsOutput | DBFTableOutput | ObjectRowTable | Table,
-  batchType: null as unknown as DBFHeader | DBFRowsOutput | DBFTableOutput | RecordBatch,
-  async parse(input, options) {
-    return unwrapDBFTable(await DBFColumnLoader.parse(input, options));
-  },
-  parseSync(input, options) {
-    return unwrapDBFTable(DBFColumnLoader.parseSync(input, options));
-  },
-  async *parseInBatches(input, options) {
-    for await (const batch of DBFColumnLoader.parseInBatches(input, options)) {
-      if (isDBFArrowTable(batch)) {
-        const table = unwrapDBFTable(batch);
-        if (table.batches.length) yield* table.batches;
-        else yield makeArrowMetadataBatch(table.schema);
-      } else yield batch;
-    }
-  },
-  deserializeWorkerResult(result, options) {
-    return unwrapDBFTable(deserializeDBFWorkerResult(result, options));
-  },
-  deserializeWorkerBatch(result, options) {
-    const batch = deserializeDBFWorkerBatch(result, options);
-    if (!isDBFArrowTable(batch)) return batch;
-    const table = unwrapDBFTable(batch);
-    return table.batches[0] ?? makeArrowMetadataBatch(table.schema);
-  }
-} as const satisfies LoaderWithParser<
-  DBFRowsOutput | DBFTableOutput | ObjectRowTable | Table,
-  DBFHeader | DBFRowsOutput | DBFTableOutput | RecordBatch,
-  DBFLoaderOptions
->;
-
-/** Identifies Arrow output from the private column parser. */
-function isDBFArrowTable(result: unknown): result is ArrowTable {
-  return (result as {shape?: string} | null)?.shape === 'arrow-table';
-}
-
-/** Unwraps Arrow columns and passes through legacy results. */
-function unwrapDBFTable(result: ArrowTable): Table;
-function unwrapDBFTable<T>(result: T): Exclude<T, ArrowTable> | Table;
-function unwrapDBFTable(result: unknown): unknown {
-  if (!isDBFArrowTable(result)) return result;
-  return result.data;
-}
+/** Exposes native Arrow tables and batches. */
+export const DBFLoaderWithParser = DBFColumnLoader;

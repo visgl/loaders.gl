@@ -101,8 +101,8 @@ test.each([
     );
   else expect(atomic).toEqual(expected);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
   const rows: any[] = [];
   let headers = 0;
@@ -175,7 +175,10 @@ test.each([
   );
   expect(mainBatches).not.toHaveBeenCalled();
   for (const [payload] of deserialize.mock.calls)
-    expect(payload).toMatchObject({shape: 'arrow-table', data: {transport: 'arrow-js'}});
+    expect(payload).toMatchObject({
+      transport: 'arrow-column-envelope',
+      data: {transport: 'arrow-js'}
+    });
 });
 
 test('Shapefile transport rejects raw rows and owns binary geometry buffers', () => {
@@ -228,9 +231,7 @@ test('DBF Arrow parser waits for split field descriptors before emitting its hea
   for await (const event of parseDBFArrowBatches(splitBuffer(buffer), {dbf: {batchSize: 1}}, true))
     events.push(event);
   expect(events[0].nRecords).toBeGreaterThan(0);
-  const rows = events
-    .slice(1)
-    .flatMap(batch => batch.data.toArray().map((row: any) => row.toJSON()));
+  const rows = events.slice(1).flatMap(batch => batch.toArray().map((row: any) => row.toJSON()));
   const expected: any = await parse(buffer, DBFLoader, {
     core: {worker: false},
     dbf: {shape: 'rows'}

@@ -186,7 +186,11 @@ export function convertFeaturesToGeoArrowTable(
     arrowTableBuilder.addObjectRow(row);
   }
 
-  return arrowTableBuilder.finishTable();
+  return {
+    shape: 'arrow-table',
+    schema: structuredClone(arrowTableBuilder.schema),
+    data: arrowTableBuilder.finishTable()
+  };
 }
 
 /** Converts GeoJSON features into a native or dense-union GeoArrow table. */
@@ -266,7 +270,7 @@ function convertFeaturesToNativeGeoArrowTable(
   for (const row of propertyRows) {
     propertyTableBuilder.addObjectRow(row);
   }
-  const propertyTable = propertyTableBuilder.finishTable().data;
+  const propertyTable = propertyTableBuilder.finishTable();
   const propertyBatch = propertyTable.batches[0];
   const children = nextFields.map((field, fieldIndex) =>
     fieldIndex < schema.fields.length

@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Field, ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {Schema, Field} from '@loaders.gl/core/schema';
 import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
@@ -86,7 +87,7 @@ class DBFParser {
  * @param options
  * @returns DBFTable or rows
  */
-export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFLoaderOptions = {}): ArrowTable {
+export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFLoaderOptions = {}): Table {
   const dbfParser = new DBFParser({
     ...options,
     dbf: {
@@ -111,8 +112,8 @@ export function parseDBFInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: DBFLoaderOptions
-): AsyncIterable<ArrowTableBatch> {
-  return parseDBFArrowBatches(iterator, options) as AsyncIterable<ArrowTableBatch>;
+): AsyncIterable<RecordBatch> {
+  return parseDBFArrowBatches(iterator, options) as AsyncIterable<RecordBatch>;
 }
 
 /** Streams the DBF header and Arrow batches for caller-side legacy row conversion. */
@@ -122,7 +123,7 @@ export async function* parseDBFArrowBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: DBFLoaderOptions = {},
   includeHeader = false
-): AsyncIterable<ArrowTableBatch | DBFHeader> {
+): AsyncIterable<RecordBatch | DBFHeader> {
   const batchSize = options.dbf?.batchSize || Number.POSITIVE_INFINITY;
 
   const parser = new DBFParser(options);

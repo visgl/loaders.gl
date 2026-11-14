@@ -708,7 +708,7 @@ function createArrowTable() {
     name: 'arrow',
     geometry: new Uint8Array(convertGeometryToWKB({type: 'Point', coordinates: [1, 2]}))
   });
-  return builder.finishTable();
+  return {shape: 'arrow-table', schema: builder.schema, data: builder.finishTable()};
 }
 
 test('VectorSet retries the same extent after failure and aborts requests when replacing its source', async () => {

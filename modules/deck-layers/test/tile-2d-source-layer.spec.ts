@@ -514,5 +514,5 @@ function createArrowTile() {
     name: 'arrow tile',
     geometry: new Uint8Array(convertGeometryToWKB({type: 'Point', coordinates: [1, 2]}))
   });
-  return builder.finishTable();
+  return {shape: 'arrow-table', schema: builder.schema, data: builder.finishTable()};
 }

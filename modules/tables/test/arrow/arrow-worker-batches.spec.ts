@@ -56,7 +56,7 @@ test('Arrow atomic worker returns columns before caller-side row conversion', as
   );
   expect(deserialize).toHaveBeenCalledOnce();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
+    transport: 'arrow-column-envelope',
     data: {transport: 'arrow-js'}
   });
   expect(result).toMatchObject({shape: 'object-row-table', data: [{id: 1}, {id: 2}]});
@@ -96,7 +96,7 @@ test('GeoArrow atomic feature conversion happens after transferring extension me
   );
   expect(deserialize).toHaveBeenCalledOnce();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
+    transport: 'arrow-column-envelope',
     data: {transport: 'arrow-js'}
   });
   expect(result).toMatchObject({
