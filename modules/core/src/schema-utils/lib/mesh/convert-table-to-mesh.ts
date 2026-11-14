@@ -7,6 +7,7 @@ import type {Mesh, MeshAttribute, ColumnarTable, ArrowTable, Schema} from '@load
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListSize} from '../arrow-utils/arrow-fixed-size-list-utils';
 import {serializeArrowSchema} from '../schema/convert-arrow-schema';
+import {isNativeArrowTable} from '../../../lib/loader-utils/native-arrow';
 import {getMeshBoundingBox} from './mesh-utils';
 
 /**
@@ -14,7 +15,8 @@ import {getMeshBoundingBox} from './mesh-utils';
  * @param table Table to convert.
  * @returns Mesh reconstructed from the table.
  */
-export function convertTableToMesh(table: ColumnarTable | ArrowTable): Mesh {
+export function convertTableToMesh(table: ColumnarTable | ArrowTable | arrow.Table): Mesh {
+  if (isNativeArrowTable(table)) return convertArrowTableToMesh(table);
   switch (table.shape) {
     // case 'columnar-table':
     //   return convertColumnarTableToMesh(table);
@@ -27,11 +29,11 @@ export function convertTableToMesh(table: ColumnarTable | ArrowTable): Mesh {
 
 /**
  * Convert an Apache Arrow mesh table to a loaders.gl Mesh.
- * @param table Arrow table wrapper to convert.
+ * @param table Native Arrow table or legacy table wrapper.
  * @returns Mesh reconstructed from the Arrow table.
  */
-export function convertArrowTableToMesh(table: ArrowTable): Mesh {
-  const arrowTable = table.data;
+export function convertArrowTableToMesh(table: ArrowTable | arrow.Table): Mesh {
+  const arrowTable = isNativeArrowTable(table) ? table : table.data;
 
   const schema = serializeArrowSchema(arrowTable.schema);
   // Legacy mesh batches describe their own vertices, not the cumulative stream extent.

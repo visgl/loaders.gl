@@ -483,7 +483,6 @@ function getLoaderOptions(
   tableFormat: TableFormat,
   parquetLoaderName: ParquetLoaderName
 ): LoaderOptions {
-  const tableShape = tableFormat === 'geoarrow' ? 'arrow-table' : 'geojson-table';
   const nativeTableShape = tableFormat === 'geoarrow' ? 'arrow' : 'geojson-table';
   const geoArrowTableShape = 'arrow-table';
 
@@ -503,7 +502,7 @@ function getLoaderOptions(
     },
     shapefile: {
       ...LOADER_OPTIONS.shapefile,
-      shape: tableShape,
+      shape: nativeTableShape,
       geoarrowEncoding: tableFormat === 'geoarrow' ? 'geoarrow' : 'geoarrow.wkb'
     },
     kml: {
@@ -582,7 +581,7 @@ function getLoaderDisplayName(
       return 'FlatGeobufLoader';
     case 'Shapefile':
       return tableFormat === 'geoarrow'
-        ? "ShapefileLoader (shape: 'arrow-table', typed GeoArrow)"
+        ? "ShapefileLoader (shape: 'arrow', typed GeoArrow)"
         : 'ShapefileLoader';
     case 'KML':
       return 'KMLLoader';

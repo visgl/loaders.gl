@@ -17,7 +17,7 @@ source.getSchema();
 createDataSourceSync('memory://tiles', [MVTSourceLoader]);
 createDataSourceSync('memory://tiles', [MVTSourceLoader, PMTilesSourceLoader] as const, {
   core: {type: 'pmtiles', worker: false},
-  pmtiles: {shape: 'arrow-table'},
+  pmtiles: {shape: 'arrow'},
   mvt: {layerProperty: 'layer'},
   mlt: {layers: ['roads']}
 });

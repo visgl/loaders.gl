@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh, MeshArrowTable, MeshAttribute, TypedArray} from '@loaders.gl/core/schema';
+import type {
+  Mesh,
+  MeshArrowTable,
+  MeshArrowTableData,
+  MeshAttribute,
+  TypedArray
+} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from './convert-table-to-mesh';
 
 /** A native-coordinate cube, with minimum and maximum XYZ corners. */
@@ -89,7 +95,10 @@ export class PointCloudTiler {
   private pointByteLength = 0;
 
   /** Starts indexing one decoded point dataset with explicit allocation limits. */
-  constructor(input: Mesh | MeshArrowTable, options: PointCloudTilerOptions = {}) {
+  constructor(
+    input: Mesh | MeshArrowTable | MeshArrowTableData,
+    options: PointCloudTilerOptions = {}
+  ) {
     this.options = {
       nodePointLimit: options.nodePointLimit ?? 50_000,
       maximumDepth: options.maximumDepth ?? 16,
@@ -241,9 +250,10 @@ export class PointCloudTiler {
   }
 
   /** Validates the decoded profile and creates a root cube from finite native coordinates. */
-  private async initialize(input: Mesh | MeshArrowTable): Promise<void> {
+  private async initialize(input: Mesh | MeshArrowTable | MeshArrowTableData): Promise<void> {
     this.signal.throwIfAborted();
-    if ('shape' in input) {
+    if (!('attributes' in input)) {
+      const table = 'shape' in input ? input.data : input;
       const buffers = new Set<ArrayBufferLike>();
       let arrowBytes = 0;
       /** Counts retained Arrow buffers and rejects null child values before conversion. */
@@ -260,15 +270,15 @@ export class PointCloudTiler {
         if (data.dictionary)
           for (const dictionaryData of data.dictionary.data) checkData(dictionaryData);
       };
-      for (const batch of input.data.batches) checkData(batch.data);
+      for (const batch of table.batches) checkData(batch.data);
       if (arrowBytes > this.options.maxInputBytes)
         throw new Error('PointCloudTiler: input byte budget exceeded');
-      for (const column of input.data.schema.fields) {
-        if (input.data.getChild(column.name)?.nullCount)
+      for (const column of table.schema.fields) {
+        if (table.getChild(column.name)?.nullCount)
           throw new Error('PointCloudTiler: null point attributes require an explicit mapping');
       }
     }
-    const mesh = 'shape' in input ? convertTableToMesh(input) : input;
+    const mesh = 'attributes' in input ? input : convertTableToMesh(input);
     if (mesh.topology !== 'point-list' || mesh.indices)
       throw new Error('PointCloudTiler: unindexed point-list input required');
     const position = mesh.attributes.POSITION;

@@ -113,15 +113,15 @@ export default function App(props: AppProps = {}) {
       currentExample
         ? {
             tilejson: {maxValues: 10},
-            pmtiles: {shape: 'arrow-table'},
+            pmtiles: {shape: 'arrow'},
             rangeRequests: {
               batchDelayMs: 50,
               stats: rangeStatsObjectRef.current,
               onEvent: onTileRangeRequest
             },
             table: {coordinates: 'wgs84'},
-            mvt: {shape: 'arrow-table', metadataUrl: currentExample.metadataUrl},
-            mlt: {shape: 'arrow-table'},
+            mvt: {shape: 'arrow', metadataUrl: currentExample.metadataUrl},
+            mlt: {shape: 'arrow'},
             core: {
               worker: false,
               type: currentExample.sourceType,

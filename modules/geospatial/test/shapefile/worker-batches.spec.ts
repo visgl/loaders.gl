@@ -3,9 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table, tableFromArrays} from 'apache-arrow';
+import {Table, RecordBatch, tableFromArrays} from 'apache-arrow';
 import {fetchFile, load, loadInBatches, parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
+import {parseShapefileToArrowInBatches} from '../../src/shapefile/shapefile-arrow-loader';
+import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {DBFLoader, SHPLoader, ShapefileLoader} from '../../src/shapefile/index';
 import {
   serializeShapefileWorkerResult,
@@ -26,7 +28,7 @@ function splitBuffer(buffer: ArrayBuffer): ArrayBuffer[] {
 }
 
 test.each([
-  'arrow-table',
+  'arrow',
   'wkb'
 ] as const)('SHP worker batches preserve %s output across split headers and records', async shape => {
   const buffer = await (await fetchFile(`${fixtureRoot}/points.shp`)).arrayBuffer();
@@ -51,14 +53,14 @@ test.each([
   });
   const geometries: any[] = [];
   for await (const batch of batches) {
-    if (shape === 'arrow-table') {
-      expect(batch.data).toBeInstanceOf(Table);
-      geometries.push(...batch.data.getChild('geometry'));
+    if (shape === 'arrow') {
+      expect(batch).toBeInstanceOf(RecordBatch);
+      geometries.push(...batch.getChild('geometry'));
     } else if (Array.isArray(batch)) geometries.push(...batch);
     else expect(batch).toEqual(expected.header);
   }
   expect(geometries).toEqual(
-    shape === 'wkb' ? expected.geometries : Array.from(expected.data.getChild('geometry'))
+    shape === 'wkb' ? expected.geometries : Array.from(expected.getChild('geometry'))
   );
   expect(mainBatches).not.toHaveBeenCalled();
   for (const [payload] of deserialize.mock.calls)
@@ -67,11 +69,11 @@ test.each([
     );
   const atomic: any = await parse(buffer.slice(0), SHPLoader, {...workerOptions, shp: {shape}});
   if (shape === 'wkb') expect(atomic).toEqual(expected);
-  else expect(atomic.data.numRows).toBe(expected.data.numRows);
+  else expect(atomic.numRows).toBe(expected.numRows);
 });
 
 test.each([
-  'arrow-table',
+  'arrow',
   'rows',
   'table',
   'object-row-table'
@@ -93,9 +95,9 @@ test.each([
     dbf: {shape}
   });
   const atomic: any = await parse(buffer.slice(0), loader, {...workerOptions, dbf: {shape}});
-  if (shape === 'arrow-table')
-    expect(atomic.data.toArray().map((row: any) => row.toJSON())).toEqual(
-      expected.data.toArray().map((row: any) => row.toJSON())
+  if (shape === 'arrow')
+    expect(atomic.toArray().map((row: any) => row.toJSON())).toEqual(
+      expected.toArray().map((row: any) => row.toJSON())
     );
   else expect(atomic).toEqual(expected);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
@@ -108,7 +110,7 @@ test.each([
     ...workerOptions,
     dbf: {shape, batchSize: 1}
   })) {
-    if (shape === 'arrow-table') rows.push(...batch.data.toArray().map((row: any) => row.toJSON()));
+    if (shape === 'arrow') rows.push(...batch.toArray().map((row: any) => row.toJSON()));
     else if (Array.isArray(batch)) rows.push(...batch);
     else {
       expect(batch.nRecords).toBeGreaterThan(0);
@@ -116,20 +118,20 @@ test.each([
     }
   }
   const expectedRows =
-    shape === 'arrow-table'
-      ? expected.data.toArray().map((row: any) => row.toJSON())
+    shape === 'arrow'
+      ? expected.toArray().map((row: any) => row.toJSON())
       : shape === 'rows'
         ? expected
         : shape === 'table'
           ? expected.rows
           : expected.data;
   expect(rows).toEqual(expectedRows);
-  expect(headers).toBe(shape === 'arrow-table' ? 0 : 1);
+  expect(headers).toBe(shape === 'arrow' ? 0 : 1);
   expect(mainBatches).not.toHaveBeenCalled();
 });
 
 test.each([
-  'arrow-table',
+  'arrow',
   'geojson-table',
   'v3'
 ] as const)('Shapefile worker joins sidecars and converts %s on caller', async shape => {
@@ -150,9 +152,9 @@ test.each([
     })
   };
   const actual: any = await load(url, loader, {...workerOptions, shapefile: {shape}});
-  if (shape === 'arrow-table')
-    expect(actual.data.toArray().map((row: any) => row.toJSON())).toEqual(
-      expected.data.toArray().map((row: any) => row.toJSON())
+  if (shape === 'arrow')
+    expect(actual.toArray().map((row: any) => row.toJSON())).toEqual(
+      expected.toArray().map((row: any) => row.toJSON())
     );
   else expect(actual).toEqual(expected);
   const rows: any[] = [];
@@ -161,14 +163,12 @@ test.each([
     shapefile: {shape, batchSize: 1}
   })) {
     rows.push(
-      ...(shape === 'arrow-table'
-        ? batch.data.toArray().map((row: any) => row.toJSON())
-        : batch.data)
+      ...(shape === 'arrow' ? batch.toArray().map((row: any) => row.toJSON()) : batch.data)
     );
   }
   expect(rows).toEqual(
-    shape === 'arrow-table'
-      ? expected.data.toArray().map((row: any) => row.toJSON())
+    shape === 'arrow'
+      ? expected.toArray().map((row: any) => row.toJSON())
       : shape === 'v3'
         ? expected.data
         : expected.features
@@ -218,7 +218,7 @@ test('custom Shapefile fetch callbacks keep sidecar parsing on caller', async ()
     ...workerOptions,
     core: {...workerOptions.core, fetch: customFetch}
   });
-  expect(result.data.numRows).toBeGreaterThan(0);
+  expect(result.numRows).toBeGreaterThan(0);
   expect(mainParse).toHaveBeenCalledOnce();
 });
 
@@ -236,4 +236,41 @@ test('DBF Arrow parser waits for split field descriptors before emitting its hea
     dbf: {shape: 'rows'}
   });
   expect(rows).toEqual(expected);
+});
+
+test('streamed Shapefile joins DBF record batches from another Arrow instance', async () => {
+  const source = await (await fetchFile(`${fixtureRoot}/points.shp`)).arrayBuffer();
+  const geometry = await parse(source, SHPLoader, {core: {worker: false}, shp: {shape: 'wkb'}});
+  const dbf = await (await fetchFile(`${fixtureRoot}/points.dbf`)).arrayBuffer();
+  const dbfParser = await DBFLoader.preload();
+  const dbfTable = await dbfParser.parse(dbf, {dbf: {shape: 'arrow'}});
+  const recordBatch = dbfTable.batches[0] as RecordBatch;
+  const foreignDBFBatch = {
+    [Symbol.for('apache-arrow/RecordBatch')]: true,
+    schema: {...recordBatch.schema},
+    data: {
+      children: recordBatch.data.children.map(column => ({
+        offset: column.offset,
+        length: column.length,
+        nullCount: column.nullCount,
+        buffers: column.buffers,
+        variadicBuffers: column.variadicBuffers
+      }))
+    },
+    numRows: recordBatch.numRows,
+    metadata: recordBatch.metadata
+  };
+  const context = {
+    url: 'points.shp',
+    fetch: async (url: string) => new Response(null, {status: url.endsWith('.dbf') ? 200 : 404}),
+    async _parseInBatches(_input, loader) {
+      return loader.id === 'dbf' ? [foreignDBFBatch] : [geometry.header, geometry.geometries];
+    }
+  } as LoaderContext;
+  const output = [];
+  for await (const result of parseShapefileToArrowInBatches([], {}, context)) {
+    output.push(...result.data.toArray().map(row => row.toJSON()));
+  }
+  const property = recordBatch.schema.fields[0].name;
+  expect(output.map(row => row[property])).toEqual(Array.from(recordBatch.getChild(property)!));
 });

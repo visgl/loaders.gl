@@ -8,7 +8,8 @@ import {
 } from '@loaders.gl/core/arrow-worker-transport';
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseFromContext} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {ImageLoader, getImageData} from '@loaders.gl/images';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
@@ -30,7 +31,7 @@ export const TerrainLoaderWithParser = {
   /** Image decoder requested by terrain workers through the nested parse bridge. */
   subloaders: {ImageLoader},
   parse: parseTerrain
-} as const satisfies LoaderWithParser<Mesh | MeshArrowTable, never, TerrainLoaderOptions>;
+} as const satisfies LoaderWithParser<Mesh | Table, never, TerrainLoaderOptions>;
 
 /**
  * Parse a height-map terrain image as a mesh.
@@ -43,7 +44,7 @@ export async function parseTerrain(
   arrayBuffer: ArrayBuffer,
   options?: TerrainLoaderOptions,
   context?: LoaderContext
-): Promise<Mesh | MeshArrowTable> {
+): Promise<Mesh | Table> {
   const loadImageOptions = {
     ...options,
     core: {...options?.core, mimeType: 'application/x.image'}
@@ -68,8 +69,8 @@ export async function parseTerrain(
   } as TerrainOptions;
   const mesh = makeTerrainMeshFromImage(terrainImage, terrainOptions);
   const table = convertMeshToTable(mesh, 'arrow-table');
-  if (options?.terrain?.shape === 'arrow-table') {
-    return table;
+  if (options?.terrain?.shape === 'arrow') {
+    return table.data;
   }
   return {
     ...convertTableToMesh(table),

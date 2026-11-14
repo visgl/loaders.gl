@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
@@ -27,18 +28,22 @@ export type QuantizedMeshWriterOptions = WriterOptions & {
 export const QuantizedMeshWriter = {
   ...QuantizedMeshFormat,
   version: VERSION,
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  dataType: null as unknown as Mesh | MeshArrowTable | Table,
   batchType: null as never,
   options: {
     'quantized-mesh': {}
   },
   encode: async (data, options) => encodeQuantizedMeshSync(data, options),
   encodeSync: encodeQuantizedMeshSync
-} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable, never, QuantizedMeshWriterOptions>;
+} as const satisfies WriterWithEncoder<
+  Mesh | MeshArrowTable | Table,
+  never,
+  QuantizedMeshWriterOptions
+>;
 
 /** Encode mesh category data as quantized mesh terrain bytes. */
 function encodeQuantizedMeshSync(
-  data: Mesh | MeshArrowTable,
+  data: Mesh | MeshArrowTable | Table,
   options: QuantizedMeshWriterOptions = {}
 ): ArrayBuffer {
   const mesh = convertTableToMesh(normalizeMeshArrowTable(data));
@@ -88,8 +93,8 @@ function encodeQuantizedMeshSync(
 }
 
 /** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
-function normalizeMeshArrowTable(data: Mesh | MeshArrowTable): MeshArrowTable {
-  if ('shape' in data && data.shape === 'arrow-table') {
+function normalizeMeshArrowTable(data: Mesh | MeshArrowTable | Table): MeshArrowTable | Table {
+  if (!('attributes' in data)) {
     return data;
   }
   return convertMeshToTable(data as Mesh, 'arrow-table');

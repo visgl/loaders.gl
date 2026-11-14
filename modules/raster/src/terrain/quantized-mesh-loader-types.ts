@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {VERSION} from './lib/utils/version';
 import {QuantizedMeshFormat} from './terrain-format';
 
@@ -12,7 +13,7 @@ export type QuantizedMeshLoaderOptions = LoaderOptions & {
   /** QuantizedMeshLoader options */
   'quantized-mesh'?: {
     /** Selects mesh output or Apache Arrow output. */
-    shape?: 'mesh' | 'arrow-table';
+    shape?: 'mesh' | 'arrow';
     bounds?: [number, number, number, number];
     skirtHeight?: number | null;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -24,7 +25,9 @@ export type QuantizedMeshLoaderOptions = LoaderOptions & {
  * Worker loader for quantized meshes
  */
 export const QuantizedMeshLoader = {
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as Mesh | Table,
   batchType: null as never,
 
   ...QuantizedMeshFormat,
@@ -35,9 +38,9 @@ export const QuantizedMeshLoader = {
     (await import('@loaders.gl/raster/quantized-mesh-loader')).QuantizedMeshLoaderWithParser,
   options: {
     'quantized-mesh': {
-      shape: 'arrow-table',
+      shape: 'arrow',
       bounds: [0, 0, 1, 1],
       skirtHeight: null
     }
   }
-} as const satisfies Loader<Mesh | MeshArrowTable, never, QuantizedMeshLoaderOptions>;
+} as const satisfies Loader<Mesh | Table, never, QuantizedMeshLoaderOptions>;

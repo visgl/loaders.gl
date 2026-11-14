@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 // PLY Loader
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {PLYFormat} from './ply-format';
@@ -17,7 +17,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
     /** Output shape. Defaults to a Mesh Arrow table. */
-    shape?: 'mesh' | 'arrow-table';
+    shape?: 'mesh' | 'arrow';
     /** Color storage format. Defaults to uint8norm for backwards compatibility. */
     colorFormat?: 'uint8norm' | 'float16' | 'float32';
     /** Treat PLY data as a point cloud by reading only the leading vertex element. */
@@ -41,8 +41,10 @@ async function preload() {
  * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
  */
 export const PLYLoader = {
-  dataType: null as unknown as PLYMesh | MeshArrowTable,
-  batchType: null as unknown as PLYMesh | ArrowTableBatch,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as PLYMesh | Table,
+  batchType: null as unknown as PLYMesh | RecordBatch,
 
   ...PLYFormat,
   // shapes: ['mesh', 'gltf', 'columnar-table'],
@@ -52,7 +54,7 @@ export const PLYLoader = {
   workerInBatches: true,
   serializeWorkerResult: serializeArrowWorkerTable,
   options: {
-    ply: {shape: 'arrow-table', colorFormat: 'uint8norm'}
+    ply: {shape: 'arrow', colorFormat: 'uint8norm'}
   },
   preload
-} as const satisfies Loader<PLYMesh | MeshArrowTable, PLYMesh | ArrowTableBatch, LoaderOptions>;
+} as const satisfies Loader<PLYMesh | Table, PLYMesh | RecordBatch, LoaderOptions>;

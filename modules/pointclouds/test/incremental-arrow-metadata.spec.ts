@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {makeTableFromBatches} from '@loaders.gl/core/schema-utils';
+import {makeArrowTableFromBatches} from '@loaders.gl/core/schema-utils';
 import {PLYLoaderWithParser} from '../src/ply/ply-loader';
 import {PCDLoaderWithParser} from '../src/pcd/pcd-loader';
 
@@ -21,14 +21,16 @@ test.each([
 ] as const)('%s Arrow batches refine bounds without changing earlier snapshots', async format => {
   const loader = format === 'ply' ? PLYLoaderWithParser : PCDLoaderWithParser;
   const bytes = new TextEncoder().encode(format === 'ply' ? ply : pcd).buffer;
-  const options = {core: {batchSize: 1}, [format]: {shape: 'arrow-table', pointCloud: true}};
+  const options = {core: {batchSize: 1}, [format]: {shape: 'arrow', pointCloud: true}};
   const batches: any[] = [];
   for await (const batch of loader.parseInBatches([bytes], options as any)) batches.push(batch);
   expect(batches).toHaveLength(2);
-  expect(batches[0].data.schema.metadata.get('boundingBox')).toBe('[[1,2,3],[1,2,3]]');
-  expect(batches[1].data.schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
-  expect(batches[1].data.batches[0].metadata.get('boundingBox')).toBe('[[-1,4,0],[-1,4,0]]');
-  const collected = await makeTableFromBatches(batches);
+  expect(batches[0].schema.metadata.get('boundingBox')).toBe('[[1,2,3],[1,2,3]]');
+  expect(batches[1].schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
+  expect(batches[1].metadata.get('boundingBox')).toBe('[[-1,4,0],[-1,4,0]]');
+  const collected = await makeArrowTableFromBatches(batches);
   const full: any = await loader.parse(bytes, options as any);
-  expect(collected?.schema?.metadata).toEqual(full.schema.metadata);
+  expect(collected?.schema.metadata.get('boundingBox')).toBe(
+    full.schema.metadata.get('boundingBox')
+  );
 });

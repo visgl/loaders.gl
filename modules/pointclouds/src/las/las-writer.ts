@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import {
   encodeLASzipVLR,
   encodeLAZChunk,
@@ -86,7 +87,7 @@ export type LASWriterOptions = WriterOptions & {
  */
 export const LASWriter = {
   ...LASFormat,
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  dataType: null as unknown as Mesh | MeshArrowTable | Table,
   batchType: null as never,
   version: VERSION,
   extensions: ['las', 'laz'],
@@ -96,16 +97,19 @@ export const LASWriter = {
   encode: async (data, options) => encodeLASSync(data, options),
   encodeSync: encodeLASSync,
   encodeInBatches: async function* (dataIterator, options) {
-    const batches: (Mesh | MeshArrowTable)[] = [];
-    for await (const batch of dataIterator as AsyncIterable<Mesh | MeshArrowTable>) {
+    const batches: (Mesh | MeshArrowTable | Table)[] = [];
+    for await (const batch of dataIterator as AsyncIterable<Mesh | MeshArrowTable | Table>) {
       batches.push(batch);
     }
     yield encodeLASSync(mergeMeshBatches(batches), options);
   }
-} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable, never, LASWriterOptions>;
+} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable | Table, never, LASWriterOptions>;
 
 /** Encode mesh category data as LAS or LAZ bytes. */
-function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = {}): ArrayBuffer {
+function encodeLASSync(
+  data: Mesh | MeshArrowTable | Table,
+  options: LASWriterOptions = {}
+): ArrayBuffer {
   const format = options.las?.format || 'las';
   const colorDepth = options.las?.colorDepth;
   if (colorDepth !== undefined && colorDepth !== 'auto' && colorDepth !== 8 && colorDepth !== 16)
@@ -652,22 +656,22 @@ function validateLAZOptions(
 }
 
 /** Return mesh data as a Mesh, converting MeshArrowTable input first. */
-function normalizeMesh(data: Mesh | MeshArrowTable): Mesh {
-  if ('shape' in data && data.shape === 'arrow-table') {
+function normalizeMesh(data: Mesh | MeshArrowTable | Table): Mesh {
+  if (!('attributes' in data)) {
     return convertTableToMesh(data);
   }
   return data as Mesh;
 }
 
 /** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
-function normalizeMeshArrowTable(data: Mesh | MeshArrowTable): MeshArrowTable {
-  return 'shape' in data && data.shape === 'arrow-table'
-    ? data
-    : convertMeshToTable(data as Mesh, 'arrow-table');
+function normalizeMeshArrowTable(data: Mesh | MeshArrowTable | Table): MeshArrowTable | Table {
+  return !('attributes' in data) ? data : convertMeshToTable(data as Mesh, 'arrow-table');
 }
 
 /** Merge buffered mesh batches for `encodeInBatches`. */
-function mergeMeshBatches(batches: (Mesh | MeshArrowTable)[]): Mesh | MeshArrowTable {
+function mergeMeshBatches(
+  batches: (Mesh | MeshArrowTable | Table)[]
+): Mesh | MeshArrowTable | Table {
   if (batches.length === 0) {
     throw new Error('LASWriter: at least one input batch is required');
   }

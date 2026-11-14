@@ -4,7 +4,7 @@
 
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {extractLoadLibraryOptions} from '@loaders.gl/core/worker-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {DracoMesh} from './lib/draco-types';
 import {parseDraco} from './lib/parse-draco';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
@@ -21,14 +21,14 @@ export type {DracoLoaderOptions} from './draco-loader-options';
 export const DracoLoaderWithParser = {
   ...DracoLoaderMetadataWithoutPreload,
   parse
-} as const satisfies LoaderWithParser<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
+} as const satisfies LoaderWithParser<DracoMesh | Table, never, DracoLoaderOptions>;
 
 /** Decodes compressed geometry through the selected Draco runtime. */
 async function parse(
   arrayBuffer: ArrayBuffer,
   options?: DracoLoaderOptions,
   context?: LoaderContext
-): Promise<DracoMesh | ArrowTable> {
+): Promise<DracoMesh | Table> {
   return await parseDraco(
     arrayBuffer,
     options,

@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {refineArrowTableBatches} from '@loaders.gl/core/schema-utils';
+import {refineArrowTableBatches, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {PCDLoaderOptions} from './pcd-loader-types';
 
 import {
@@ -34,8 +35,10 @@ function convertPCDMesh(mesh: PCDMesh, options?: PCDLoaderOptions): PCDMesh | Me
 /**
  * Loader for PCD - Point Cloud Data
  */
-export const PCDLoaderWithParser = {
+export const PCDColumnLoader = {
   ...PCDLoaderMetadataWithoutPreload,
+  dataType: null as unknown as PCDMesh | MeshArrowTable,
+  batchType: null as unknown as PCDMesh | ArrowTableBatch,
   parse: async (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer, options), options),
   parseSync: (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer, options), options),
   parseInBatches: (input, options) =>
@@ -181,4 +184,64 @@ async function* parsePCDWithMetadataInBatches(
   }
 
   yield makePCDBatch(parsePCD(data, options), options);
+}
+
+/** Exposes native Arrow output while retaining the worker's column protocol. */
+export const PCDLoaderWithParser = {
+  ...PCDColumnLoader,
+  dataType: PCDLoaderMetadata.dataType,
+  batchType: PCDLoaderMetadata.batchType,
+  parse: async (input: ArrayBuffer, options?: PCDLoaderOptions) =>
+    unwrapPCDTable(await PCDColumnLoader.parse(input, options)),
+  parseSync: (input: ArrayBuffer, options?: PCDLoaderOptions) =>
+    unwrapPCDTable(PCDColumnLoader.parseSync(input, options)),
+  async *parseInBatches(input, options) {
+    for await (const batch of PCDColumnLoader.parseInBatches(input, options)) {
+      if (isColumnBatch(batch)) {
+        batch.data.schema.metadata.set(
+          'loaders.gl.pcd.header',
+          JSON.stringify((batch as ArrowTableBatch & {loaderData?: unknown}).loaderData)
+        );
+        for (const recordBatch of batch.data.batches) {
+          recordBatch.schema.metadata.set(
+            'loaders.gl.pcd.header',
+            batch.data.schema.metadata.get('loaders.gl.pcd.header')!
+          );
+        }
+        if (batch.data.batches.length) yield* batch.data.batches;
+        else yield makeArrowMetadataBatch(batch.data.schema);
+      } else yield batch;
+    }
+  },
+  deserializeWorkerResult: (result: unknown, options?: PCDLoaderOptions) =>
+    unwrapPCDTable(PCDColumnLoader.deserializeWorkerResult(result, options)),
+  deserializeWorkerBatch(result: unknown, options?: PCDLoaderOptions) {
+    const batch = PCDColumnLoader.deserializeWorkerBatch(result, options);
+    if (isColumnBatch(batch)) {
+      const recordBatch = batch.data.batches[0] ?? makeArrowMetadataBatch(batch.data.schema);
+      recordBatch.schema.metadata.set(
+        'loaders.gl.pcd.header',
+        JSON.stringify((batch as ArrowTableBatch & {loaderData?: unknown}).loaderData)
+      );
+      return recordBatch;
+    }
+    return batch;
+  }
+} as const satisfies LoaderWithParser<PCDMesh | Table, PCDMesh | RecordBatch, PCDLoaderOptions>;
+
+/** Returns the Arrow table with its file metadata or the requested mesh. */
+function unwrapPCDTable(result: PCDMesh | MeshArrowTable): PCDMesh | Table {
+  if ('shape' in result && result.shape === 'arrow-table') {
+    result.data.schema.metadata.set(
+      'loaders.gl.pcd.header',
+      JSON.stringify((result as MeshArrowTable & {loaderData?: unknown}).loaderData)
+    );
+    return result.data;
+  }
+  return result as PCDMesh;
+}
+
+/** Identifies the private Arrow batch envelope. */
+function isColumnBatch(batch: PCDMesh | ArrowTableBatch): batch is ArrowTableBatch {
+  return 'shape' in batch && batch.shape === 'arrow-table';
 }

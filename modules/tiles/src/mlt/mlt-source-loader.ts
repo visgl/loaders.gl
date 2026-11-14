@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as NativeArrowTable} from 'apache-arrow';
+
 import type {
   CoreAPI,
   SourceLoader,
@@ -10,7 +12,6 @@ import type {
   GetTileDataParameters
 } from '@loaders.gl/core/loader-utils';
 import type {
-  ArrowTable,
   BinaryFeatureCollection,
   Feature,
   Schema,
@@ -32,7 +33,7 @@ export type MLTSourceLoaderOptions = DataSourceOptions &
       /** Coordinates for parsed tile geometries. */
       coordinates?: 'wgs84' | 'local';
       /** Shape of returned data. */
-      shape?: 'geojson-table' | 'binary-geometry' | 'arrow-table';
+      shape?: 'geojson-table' | 'binary-geometry' | 'arrow';
       /** Optional layer filter. */
       layers?: string[];
     };
@@ -56,7 +57,7 @@ export const MLTSourceLoader = {
       extension: '.mlt',
       metadataUrl: null,
       coordinates: 'wgs84',
-      shape: 'arrow-table',
+      shape: 'arrow',
       layers: undefined!
     }
   },
@@ -66,7 +67,7 @@ export const MLTSourceLoader = {
       extension: '.mlt',
       metadataUrl: null,
       coordinates: 'wgs84',
-      shape: 'arrow-table',
+      shape: 'arrow',
       layers: undefined!
     }
   },
@@ -166,14 +167,14 @@ export class MLTTileSource
 
   async getTileData(
     parameters: GetTileDataParameters
-  ): Promise<Feature[] | BinaryFeatureCollection | ArrowTable | null> {
+  ): Promise<Feature[] | BinaryFeatureCollection | NativeArrowTable | null> {
     const {index} = parameters;
     return this.getVectorTile({x: index.x, y: index.y, z: index.z, layers: []});
   }
 
   async getVectorTile(
     tileParameters: GetTileParameters
-  ): Promise<Feature[] | BinaryFeatureCollection | ArrowTable | null> {
+  ): Promise<Feature[] | BinaryFeatureCollection | NativeArrowTable | null> {
     const tileData = await this.getTile(tileParameters);
     return tileData ? this._parseTile(tileData, tileParameters) : null;
   }
@@ -181,10 +182,10 @@ export class MLTTileSource
   protected async _parseTile(
     arrayBuffer: ArrayBuffer,
     tileParameters: GetTileParameters
-  ): Promise<Feature[] | BinaryFeatureCollection | ArrowTable | null> {
+  ): Promise<Feature[] | BinaryFeatureCollection | NativeArrowTable | null> {
     const options: MLTSourceLoaderOptions = this.options;
     const coordinates = options.mlt?.coordinates || 'wgs84';
-    const shape = options.mlt?.shape || 'arrow-table';
+    const shape = options.mlt?.shape || 'arrow';
     const tileIndex =
       coordinates === 'wgs84'
         ? {x: tileParameters.x, y: tileParameters.y, z: tileParameters.z}
@@ -208,8 +209,8 @@ export class MLTTileSource
       return (parsed as {features: Feature[]}).features || null;
     }
 
-    if (shape === 'binary-geometry' || shape === 'arrow-table') {
-      return parsed as BinaryFeatureCollection | ArrowTable;
+    if (shape === 'binary-geometry' || shape === 'arrow') {
+      return parsed as BinaryFeatureCollection | NativeArrowTable;
     }
     return (parsed as {features: Feature[]}).features || null;
   }

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table} from 'apache-arrow';
+import {Table, RecordBatch} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
@@ -27,7 +27,7 @@ const source = [
 afterEach(() => destroyWorkerTasks());
 
 test.each([
-  'arrow-table',
+  'arrow',
   'mesh'
 ] as const)('PCD worker batches transfer column transport before %s conversion', async shape => {
   const parser = await PCDLoader.preload();
@@ -47,9 +47,9 @@ test.each([
   );
   const positions: number[] = [];
   for await (const batch of batches) {
-    if (shape === 'arrow-table') {
-      expect(batch.data).toBeInstanceOf(Table);
-      for (const position of batch.data.getChild('POSITION')!) positions.push(...position);
+    if (shape === 'arrow') {
+      expect(batch).toBeInstanceOf(RecordBatch);
+      for (const position of batch.getChild('POSITION')!) positions.push(...position);
     } else {
       const mesh = batch;
       positions.push(...mesh.attributes.POSITION.value);
@@ -93,13 +93,13 @@ test('PCD binary worker batches preserve records split across input chunks', asy
   const split = header.length + 13;
   const batches = await parseInBatches([bytes.slice(0, split), bytes.slice(split)], PCDLoader, {
     core: {worker: true, _workerType: 'test', batchSize: 2},
-    pcd: {shape: 'arrow-table'}
+    pcd: {shape: 'arrow'}
   });
   const lengths: number[] = [];
   const positions: number[] = [];
   for await (const batch of batches) {
-    lengths.push(batch.length);
-    for (const position of batch.data.getChild('POSITION')!) positions.push(...position);
+    lengths.push(batch.numRows);
+    for (const position of batch.getChild('POSITION')!) positions.push(...position);
   }
   expect(lengths).toEqual([2, 1]);
   expect(positions).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
@@ -119,11 +119,11 @@ test('Worker hydration rejects decoded mesh payloads', async () => {
 test('PCD column transport hydration defaults to Arrow when caller options are omitted', async () => {
   const parser = await PCDLoader.preload();
   const table = await parser.parse(new TextEncoder().encode(source).buffer, {
-    pcd: {shape: 'arrow-table'}
+    pcd: {shape: 'arrow'}
   });
-  const payload = parser.serializeWorkerResult(table);
-  expect(parser.deserializeWorkerResult(payload).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerResult(payload, {}).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerBatch(payload).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerBatch(payload, {}).data).toBeInstanceOf(Table);
+  const payload = parser.serializeWorkerResult({shape: 'arrow-table', data: table});
+  expect(parser.deserializeWorkerResult(payload)).toBeInstanceOf(Table);
+  expect(parser.deserializeWorkerResult(payload, {})).toBeInstanceOf(Table);
+  expect(parser.deserializeWorkerBatch(payload)).toBeInstanceOf(RecordBatch);
+  expect(parser.deserializeWorkerBatch(payload, {})).toBeInstanceOf(RecordBatch);
 });

@@ -124,7 +124,7 @@ const geoJSONfeatures = await load(url, MVTLoader, {mvt: {shape: 'geojson-table'
  * {
  *   mvt: {
  *     coordinates: 'local',
- *     shape: 'arrow-table'
+ *     shape: 'arrow'
  *   }
  * }
  */
@@ -134,7 +134,7 @@ const geoJSONfeatures = await load(url, MVTLoader, {mvt: {shape: 'geojson-table'
 
 | Option            | Type                                                | Default           | Description                                                                                                                                             |
 | ----------------- | --------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| mvt.shape         | `'geojson-table' \| 'columnar-table' \| 'binary-geometry' \| 'arrow-table'` | `arrow-table`   | Returned tile shape. Use `geojson-table` for feature objects or `binary-geometry` for binary geometry output.                                                                                  |
+| mvt.shape         | `'geojson-table' \| 'columnar-table' \| 'binary-geometry' \| 'arrow'` | `arrow`   | Returned tile shape. Use `geojson-table` for feature objects or `binary-geometry` for binary geometry output.                                                                                  |
 | mvt.coordinates   | `'local' \| 'wgs84'`                                | `local`           | `wgs84`: returns coordinates in longitude, latitude using the provided tile index. `local` returns local `0-1` coordinates relative to the tile origin. |
 | mvt.tileIndex     | `{x: number, y: number, z: number}`                 | N/A               | When the `wgs84` coordinates option, the index of the tile being loaded (`x`, `y`, `z`) must be supplied.                                               |
 | mvt.layerProperty | `string \| null`                                    | `'layerName'`     | When non-`null`, the layer name of each feature is added to `feature.properties[layerProperty]`. If `null`, a layer name property will not be added.    |

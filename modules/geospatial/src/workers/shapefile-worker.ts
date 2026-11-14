@@ -8,7 +8,7 @@ import {
   type LoaderContext,
   type LoaderWithParser
 } from '@loaders.gl/core/loader-utils';
-import {ShapefileLoaderWithParser} from '../shapefile/shapefile-loader';
+import {ShapefileColumnLoader} from '../shapefile/shapefile-loader';
 
 /** Installs local subloader parsing so streamed sidecars and geometry stay in this worker. */
 function createShapefileContext(context?: LoaderContext, options?: any): LoaderContext {
@@ -51,13 +51,13 @@ async function* readResponse(response: Response): AsyncIterable<Uint8Array> {
 
 /** Uses WKB columns for legacy output so feature construction runs only on the caller. */
 function getArrowOptions(options: any): any {
-  if ((options?.shapefile?.shape || 'arrow-table') === 'arrow-table') return options;
+  if ((options?.shapefile?.shape || 'arrow') === 'arrow') return options;
   return {
     ...options,
     geoarrow: {encodingPreference: 'geoarrow.wkb'},
     shapefile: {
       ...options?.shapefile,
-      shape: 'arrow-table',
+      shape: 'arrow',
       geoarrowEncoding: 'geoarrow.wkb',
       geoarrow: {encodingPreference: 'geoarrow.wkb'}
     }
@@ -65,10 +65,10 @@ function getArrowOptions(options: any): any {
 }
 
 createLoaderWorker({
-  ...ShapefileLoaderWithParser,
+  ...ShapefileColumnLoader,
   /** Parses geometries and sidecar attributes into owned transferable columns. */
   parse(input, options, context) {
-    return ShapefileLoaderWithParser.parse(
+    return ShapefileColumnLoader.parse(
       input,
       getArrowOptions(options),
       createShapefileContext(context, options)
@@ -76,7 +76,7 @@ createLoaderWorker({
   },
   /** Joins streamed geometry and attribute batches without delegating their rows to the caller. */
   parseInBatches(input, options, context) {
-    return ShapefileLoaderWithParser.parseInBatches(
+    return ShapefileColumnLoader.parseInBatches(
       input,
       getArrowOptions(options),
       createShapefileContext(context, options)

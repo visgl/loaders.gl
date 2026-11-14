@@ -31,7 +31,7 @@ export default async function shpLoaderBench(suite) {
     async () =>
       await parse(arrayBuffer.slice(0), SHPLoader, {
         core: {worker: false},
-        shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow.wkb'}
+        shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow.wkb'}
       })
   );
 
@@ -41,7 +41,7 @@ export default async function shpLoaderBench(suite) {
     async () =>
       await parse(arrayBuffer.slice(0), SHPLoader, {
         core: {worker: false},
-        shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+        shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
       })
   );
 
@@ -51,9 +51,9 @@ export default async function shpLoaderBench(suite) {
     async () => {
       const table = await parse(arrayBuffer.slice(0), SHPLoader, {
         core: {worker: false},
-        shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+        shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
       });
-      convertGeometryColumnToBinaryFeatureCollection(table.data, {geometryColumn: 'geometry'});
+      convertGeometryColumnToBinaryFeatureCollection(table, {geometryColumn: 'geometry'});
     }
   );
 
@@ -70,7 +70,7 @@ export default async function shpLoaderBench(suite) {
   suite.addAsync('parseInBatches geoarrow.wkb', coordinateBenchmarkOptions, async () => {
     const batches = await parseInBatches(arrayBuffer, SHPLoader, {
       core: {worker: false},
-      shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow.wkb'}
+      shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow.wkb'}
     });
     for await (const _batch of batches) {
       _batch;

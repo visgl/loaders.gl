@@ -38,7 +38,7 @@ test('Arrow tile source metadata preloads the runtime through createDataSource()
     {core: {worker: false, loaders: [GeoJSONLoader]}}
   );
   expect(source).toBeInstanceOf(ArrowTableVectorTileSource);
-  expect((await source.getTile(ROOT_TILE))?.data.numRows).toBe(1);
+  expect((await source.getTile(ROOT_TILE))?.numRows).toBe(1);
 });
 
 test('Arrow tile source rejects indexing beyond maxZoom', () => {
@@ -55,7 +55,7 @@ test.each([0, 1])('Arrow tile source enforces maxZoom with indexMaxZoom=%s', asy
     table: {maxZoom: 1, indexMaxZoom, maxPointsPerTile: 0}
   });
   expect(await source.getMetadata()).toMatchObject({maxZoom: 1});
-  expect((await source.getTile({x: 0, y: 0, z: 1}))?.data.numRows).toBe(1);
+  expect((await source.getTile({x: 0, y: 0, z: 1}))?.numRows).toBe(1);
   expect(source.getTileSync({x: 1, y: 1, z: 2})).toBeNull();
   expect(await source.getTile({x: 1, y: 1, z: 2})).toBeNull();
 });
@@ -76,8 +76,8 @@ function makeTable(
 }
 
 /** Decodes output geometries for behavior assertions only. */
-function readGeometries(table: ArrowTable | null): Geometry[] {
-  const column = table!.data.getChild('geometry')!;
+function readGeometries(table: arrow.Table | null): Geometry[] {
+  const column = table!.getChild('geometry')!;
   return Array.from(
     {length: column.length},
     (_, rowIndex) => GeometryConverter.convert(column.get(rowIndex), 'geojson-geometry') as Geometry
@@ -100,10 +100,10 @@ test.each([
     await source.getVectorTile(ROOT_TILE),
     await source.getTileData({index: ROOT_TILE})
   ]) {
-    expect(tile?.shape).toBe('arrow-table');
-    expect(tile?.data.numRows).toBe(1);
+    expect(tile).toHaveProperty('numRows');
+    expect(tile?.numRows).toBe(1);
     expect(
-      tile?.data.schema.fields
+      tile?.schema.fields
         .find(field => field.name === 'geometry')
         ?.metadata.get('ARROW:extension:name')
     ).toBe('geoarrow.wkb');
@@ -158,18 +158,16 @@ test('Arrow tile source preserves typed, nullable attributes and metadata across
   const input = table.slice(0, 1).concat(table.slice(1)).slice(1);
   const source = new ArrowTableVectorTileSource(input);
   const tile = (await source.getTile(ROOT_TILE))!;
-  expect(tile.data.getChild('identifier')?.toArray()).toEqual(
-    input.getChild('identifier')?.toArray()
-  );
-  expect(tile.data.getChild('identifier')?.get(0)).toBeNull();
-  expect(tile.data.getChild('identifier')?.get(1)).toBe(9007199254740995n);
-  expect([...tile.data.getChild('category')!]).toEqual(['beta', 'alpha']);
-  expect(tile.data.getChild('nested')?.get(1).toJSON()).toEqual({value: 3});
-  expect(tile.data.getChild('values')?.get(0)).toBeNull();
-  expect([...tile.data.getChild('values')?.get(1)]).toEqual([3]);
-  expect(tile.data.schema.metadata.get('owner')).toBe('test');
-  expect(tile.data.schema.fields[1].metadata.get('label')).toBe('identifier');
-  expect(tile.data.schema.fields[2].type).toEqual(input.schema.fields[2].type);
+  expect(tile.getChild('identifier')?.toArray()).toEqual(input.getChild('identifier')?.toArray());
+  expect(tile.getChild('identifier')?.get(0)).toBeNull();
+  expect(tile.getChild('identifier')?.get(1)).toBe(9007199254740995n);
+  expect([...tile.getChild('category')!]).toEqual(['beta', 'alpha']);
+  expect(tile.getChild('nested')?.get(1).toJSON()).toEqual({value: 3});
+  expect(tile.getChild('values')?.get(0)).toBeNull();
+  expect([...tile.getChild('values')?.get(1)]).toEqual([3]);
+  expect(tile.schema.metadata.get('owner')).toBe('test');
+  expect(tile.schema.fields[1].metadata.get('label')).toBe('identifier');
+  expect(tile.schema.fields[2].type).toEqual(input.schema.fields[2].type);
 });
 
 test('Arrow tile source preserves polygon holes and separate polygons without mutating cached tiles', async () => {
@@ -209,7 +207,7 @@ test('Arrow tile source preserves polygon holes and separate polygons without mu
   expect(readGeometries(await source.getTile({x: 1, y: 0, z: 0}))).toEqual(first);
   expect(input.data.getChild('geometry')!.get(0)).toEqual(before);
   expect(
-    getGeoMetadata((await source.getTile(ROOT_TILE))!.data.schema.metadata)?.columns.geometry.crs
+    getGeoMetadata((await source.getTile(ROOT_TILE))!.schema.metadata)?.columns.geometry.crs
   ).toBeUndefined();
 });
 
@@ -272,7 +270,7 @@ test.each([
     table: {buffer: 0, tolerance: 0, indexMaxZoom: 0}
   });
   const tile = (await source.getTile({x: 0, y: 0, z: 1}))!;
-  expect([...tile.data.getChild('identifier')!]).toEqual([0, 1, 2, 3, 3]);
+  expect([...tile.getChild('identifier')!]).toEqual([0, 1, 2, 3, 3]);
   expect(readGeometries(tile).map(geometry => geometry.type)).toEqual([
     'Point',
     'MultiLineString',
@@ -306,7 +304,7 @@ test('Arrow tile source supports WKT and GeoParquet-only geometry metadata', asy
     });
     const tile = (await new ArrowTableVectorTileSource(input).getTile(ROOT_TILE))!;
     expect(readGeometries(tile)).toEqual([{type: 'Point', coordinates: [0.5, 0.5]}]);
-    expect(getGeoMetadata(tile.data.schema.metadata)?.columns.geometry).toEqual({
+    expect(getGeoMetadata(tile.schema.metadata)?.columns.geometry).toEqual({
       encoding: 'wkb',
       geometry_types: [],
       crs: null
@@ -324,14 +322,14 @@ test('Arrow tile source loads URLs and blobs through injected core and works thr
       {core: {worker: false, loaders: [GeoJSONLoader]}},
       coreApi
     );
-    expect((await source.getTile(ROOT_TILE))?.data.numRows).toBe(1);
+    expect((await source.getTile(ROOT_TILE))?.numRows).toBe(1);
     expect(load).toHaveBeenLastCalledWith(input, GeoJSONLoader, {
       core: {worker: false},
       table: {coordinates: 'local'}
     });
   }
   const source = createDataSourceSync(table, [ArrowTableTileSourceLoader], {});
-  expect((await source.getVectorTile(ROOT_TILE))?.shape).toBe('arrow-table');
+  expect(await source.getVectorTile(ROOT_TILE)).toHaveProperty('numRows');
   const blobSource = createDataSourceSync(
     new Blob(
       [
@@ -345,7 +343,7 @@ test('Arrow tile source loads URLs and blobs through injected core and works thr
     [ArrowTableTileSourceLoader],
     {core: {worker: false, loaders: [GeoJSONLoader]}}
   );
-  expect((await blobSource.getTile(ROOT_TILE))?.data.numRows).toBe(1);
+  expect((await blobSource.getTile(ROOT_TILE))?.numRows).toBe(1);
 });
 
 test('Arrow tile source selects a named geometry column and retains other geometries unchanged', async () => {
@@ -366,9 +364,9 @@ test('Arrow tile source selects a named geometry column and retains other geomet
   await expect(new ArrowTableVectorTileSource(input).ready).rejects.toThrow('geometryColumn');
   const source = new ArrowTableVectorTileSource(input, {table: {geometryColumn: 'selected'}});
   const tile = (await source.getTile(ROOT_TILE))!;
-  expect(tile.data.getChild('original')!.get(0)).toEqual(geometry.get(0));
-  expect(tile.data.getChild('selected')!.get(0)).not.toEqual(geometry.get(0));
-  expect(getGeoMetadata(tile.data.schema.metadata)?.primary_column).toBe('selected');
+  expect(tile.getChild('original')!.get(0)).toEqual(geometry.get(0));
+  expect(tile.getChild('selected')!.get(0)).not.toEqual(geometry.get(0));
+  expect(getGeoMetadata(tile.schema.metadata)?.primary_column).toBe('selected');
 });
 
 test('Arrow tile source writes a geometry-only multipoint table', async () => {
@@ -456,14 +454,12 @@ test('Arrow consumer clips the requested native level rather than the index zoom
     {table: {maxZoom: 3, indexMaxZoom: 3, coordinates: 'wgs84'}}
   );
   const northwest = await source.getTileData({index: {z: 0, x: 0, y: 0}, tileMatrix: '1'});
-  expect(northwest?.data.numRows).toBe(1);
+  expect(northwest?.numRows).toBe(1);
   const geometry = readGeometries(northwest)[0] as {type: string; coordinates: number[]};
   expect(geometry.type).toBe('Point');
   expect(geometry.coordinates[0]).toBeCloseTo(-90, 2);
   expect(geometry.coordinates[1]).toBeCloseTo(40, 1);
-  expect(
-    (await source.getTileData({index: {z: 1, x: 0, y: 0}, tileMatrix: '0'}))?.data.numRows
-  ).toBe(2);
+  expect((await source.getTileData({index: {z: 1, x: 0, y: 0}, tileMatrix: '0'}))?.numRows).toBe(2);
   await expect(source.getTileData({index: {z: 0, x: 0, y: 0}, tileMatrix: '02'})).rejects.toThrow(
     /Unknown/
   );

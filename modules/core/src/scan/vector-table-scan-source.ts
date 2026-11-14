@@ -138,7 +138,7 @@ export abstract class AddressedVectorTableScanSource {
           }
           if (table.shape !== 'arrow-table') {
             throw new Error(
-              'The addressed vector selection must return an Arrow table. Configure the source with shape "arrow-table".'
+              'The addressed vector selection must return an Arrow table. Configure the source with shape "arrow".'
             );
           }
           return table;
@@ -155,7 +155,7 @@ export abstract class AddressedVectorTableScanSource {
 /**
  * Portable table-query view over one explicitly addressed vector tile.
  *
- * MVT and vector PMTiles sources participate when configured to return `shape: 'arrow-table'`.
+ * MVT and vector PMTiles sources participate when configured to return `shape: 'arrow'`.
  * Tile coordinates and layer selection remain source parameters rather than relational operators.
  */
 export class VectorTileTableScanSource extends AddressedVectorTableScanSource {
@@ -184,7 +184,11 @@ export class VectorTileTableScanSource extends AddressedVectorTableScanSource {
 
   /** Loads the bound vector tile using the source's requested Arrow output shape. */
   protected loadTable(signal?: AbortSignal): Promise<ArrowTable | null> {
-    return this.source.getVectorTile({...this.tile, signal}) as Promise<ArrowTable | null>;
+    return this.source
+      .getVectorTile({...this.tile, signal})
+      .then(tile =>
+        tile && 'numRows' in tile ? {shape: 'arrow-table', data: tile} : (tile as ArrowTable | null)
+      );
   }
 }
 

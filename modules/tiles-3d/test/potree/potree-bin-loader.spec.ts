@@ -16,13 +16,13 @@ test('PotreeBinLoader#parse defaults to Arrow table', async () => {
       ]
     }
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, meshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, meshArrowSchema, {
     schemaName: 'PotreeBinLoader Mesh table'
   });
-  expect(table.data.numRows, 'table has point rows').toBe(2);
-  expect(table.data.getChild('POSITION'), 'table includes POSITION column').toBeTruthy();
-  expect(table.data.getChild('COLOR_0'), 'table includes COLOR_0 column').toBeTruthy();
+  expect(table.numRows, 'table has point rows').toBe(2);
+  expect(table.getChild('POSITION'), 'table includes POSITION column').toBeTruthy();
+  expect(table.getChild('COLOR_0'), 'table includes COLOR_0 column').toBeTruthy();
 });
 function makePotreeBinTile(): ArrayBuffer {
   const pointByteSize = 15;

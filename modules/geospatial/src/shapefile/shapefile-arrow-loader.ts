@@ -10,6 +10,7 @@ import {
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
+import {convertArrowToSchema, isNativeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -96,20 +97,21 @@ export async function parseShapefileToArrow(
     ? await context.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
     : null;
   if (dbfResponse?.ok) {
-    propertyTable = (await parseFromContext(
+    const propertyData = (await parseFromContext(
       dbfResponse as any,
       DBFLoaderWithParser,
       {
         ...options,
         dbf: {
           ...options?.dbf,
-          shape: 'arrow-table' as const,
+          shape: 'arrow' as const,
           encoding: cpg || 'latin1'
         }
       },
       context!
-    )) as ArrowTable;
-    propertySchema = propertyTable.schema || null;
+    )) as arrow.Table;
+    propertySchema = convertArrowToSchema(propertyData.schema);
+    propertyTable = {shape: 'arrow-table', data: propertyData, schema: propertySchema};
   }
 
   const schema = buildOutputSchema(propertySchema, header, geometryTable.schema);
@@ -173,7 +175,7 @@ export async function* parseShapefileToArrowInBatches(
       ...childOptions,
       dbf: {
         ...options?.dbf,
-        shape: 'arrow-table' as const,
+        shape: 'arrow' as const,
         batchSize,
         encoding: cpg || 'latin1'
       }
@@ -427,16 +429,56 @@ async function getNextNonMetadataValue(iterator: AsyncIterator<any>): Promise<an
   }
 }
 
+/** Reads both native and legacy DBF column batches. */
 async function getNextArrowBatch(iterator: AsyncIterator<any>): Promise<ArrowTableBatch | null> {
   while (true) {
     const result = await iterator.next();
     if (result.done) {
       return null;
     }
-    if (result.value?.shape === 'arrow-table') {
-      return result.value;
+    if (isNativeArrowRecordBatch(result.value)) {
+      const recordBatch = result.value;
+      const schema = convertArrowToSchema(recordBatch.schema);
+      const batch =
+        Object.getPrototypeOf(recordBatch) === arrow.RecordBatch.prototype
+          ? recordBatch
+          : importDBFRecordBatch(recordBatch, schema);
+      const data = new arrow.Table(batch.schema, [batch]);
+      return makeTableScanBatch({
+        shape: 'arrow-table',
+        schema,
+        data
+      });
     }
+    if (result.value?.shape === 'arrow-table') return result.value;
   }
+}
+
+/** Rebuilds primitive DBF columns with local Arrow classes while reusing their buffers. */
+function importDBFRecordBatch(
+  batch: arrow.RecordBatch,
+  tableSchema: TableSchema
+): arrow.RecordBatch {
+  const schema = convertSchemaToArrow(tableSchema);
+  const children = batch.data.children.map(
+    (column, index) =>
+      new arrow.Data(
+        schema.fields[index].type,
+        column.offset,
+        column.length,
+        column.nullCount,
+        column.buffers,
+        undefined,
+        undefined,
+        column.variadicBuffers
+      )
+  );
+  const data = arrow.makeData({
+    type: new arrow.Struct(schema.fields),
+    length: batch.numRows,
+    children
+  });
+  return new arrow.RecordBatch(schema, data, new Map(batch.metadata));
 }
 
 function getQueuedRowCount(queue: arrow.Table[]): number {

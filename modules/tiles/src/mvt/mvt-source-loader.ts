@@ -51,7 +51,7 @@ export type MVTSourceLoaderOptions = DataSourceOptions &
       /** Additional attribution, adds to any attribution loaded from tileset metadata */
       attributions?: string[];
       /** Shape of returned vector tile data. */
-      shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+      shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
       /** Ignore successful HTTP tile responses with text, JSON or XML MIME types, report an error, and return null. */
       ignoreTextResponses?: boolean;
     };
@@ -69,13 +69,13 @@ export const MVTSourceLoader = {
 
   options: {
     mvt: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     }
   },
 
   defaultOptions: {
     mvt: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     }
   },
 
@@ -316,7 +316,7 @@ export class MVTTileSource
       ...this.loadOptions,
       mvt: {
         ...inheritedMVTOptions,
-        shape: this.options.mvt?.shape || inheritedMVTOptions?.shape || 'arrow-table',
+        shape: this.options.mvt?.shape || inheritedMVTOptions?.shape || 'arrow',
         coordinates: 'wgs84',
         tileIndex: {x: resolved.x, y: resolved.y, z: resolved.z},
         layers: selectedLayers

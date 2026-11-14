@@ -60,7 +60,7 @@ in-memory tables do not require `@loaders.gl/core`.
 - Tiling is two-dimensional and uses Web Mercator clipping/simplification. Z/M ordinates are
   discarded. Null geometries are omitted; GeometryCollections are expanded and repeat the
   corresponding attribute row. Polygon holes are retained.
-- Every nonempty tile is a loaders.gl `ArrowTable` with the selected geometry column replaced by
+- Every nonempty tile is a Apache Arrow `Table` with the selected geometry column replaced by
   `geoarrow.wkb`. All other columns, including additional geometry columns, are selected unchanged
   from the source. Their types and field metadata are preserved, as is unrelated schema metadata.
 - Attribute columns are zero-copy views of selected source-row runs. Treat input and returned

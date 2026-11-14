@@ -3,7 +3,8 @@
 // Copyright vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Mesh} from '@loaders.gl/core/schema';
 import type {PotreeBinLoaderOptions} from './parsers/parse-potree-bin';
 
 import {PotreeBinFormat} from './potree-format';
@@ -17,7 +18,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * */
 export const PotreeBinLoader = {
   ...PotreeBinFormat,
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as Mesh | Table,
   batchType: null as never,
 
   name: 'potree Binary Point Attributes',
@@ -31,6 +34,6 @@ export const PotreeBinLoader = {
   /** Loads the parser-bearing potree binary attribute loader implementation. */
   preload: async () => (await import('./potree-bin-loader-with-parser')).PotreeBinLoaderWithParser,
   binary: true,
-  options: {potree: {shape: 'arrow-table', colorFormat: 'uint8norm'}}
+  options: {potree: {shape: 'arrow', colorFormat: 'uint8norm'}}
   // @ts-ignore
-} as const satisfies Loader<Mesh | MeshArrowTable, never, PotreeBinLoaderOptions>;
+} as const satisfies Loader<Mesh | Table, never, PotreeBinLoaderOptions>;

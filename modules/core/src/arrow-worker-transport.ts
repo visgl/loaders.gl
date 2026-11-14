@@ -50,14 +50,22 @@ export function deserializeArrowWorkerTable(result: unknown): any {
 }
 
 /** Serializes a native Arrow table or batch with owned column buffers for worker transport. */
-export function serializeNativeArrowWorkerResult(result: arrow.Table | arrow.RecordBatch): unknown {
+export function serializeNativeArrowWorkerResult(
+  result: arrow.Table | arrow.RecordBatch,
+  options: SplitArrowBuffersOptions = {copy: 'all'}
+): unknown {
   const batch = result instanceof arrow.RecordBatch;
+  if (!batch && !(result instanceof arrow.Table)) {
+    throw new Error('Workers require Arrow table output');
+  }
+  const table = batch ? new arrow.Table(result.schema, [result]) : result;
   return {
     transport: batch ? 'arrow-record-batch' : 'arrow-table-columns',
-    columns: serializeArrowWorkerTable({
+    columns: {
       shape: 'arrow-table',
-      data: batch ? new arrow.Table(result.schema, [result]) : result
-    })
+      arrowBatchMetadata: snapshotBatchMetadata(table),
+      data: dehydrateWorkerTable(table, options)
+    }
   };
 }
 
@@ -72,12 +80,15 @@ export function deserializeNativeArrowWorkerResult(
 
 /** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */
 export function serializeArrowWorkerResult(result: unknown, options?: unknown): unknown {
-  if (!isArrowTableWrapper(result)) {
-    return result;
-  }
   const workerOptions = options as ArrowWorkerOptions | undefined;
   const bufferCopyMode =
     workerOptions?.core?.workerTransferBufferCopy ?? workerOptions?.workerTransferBufferCopy;
+  if (result instanceof arrow.Table || result instanceof arrow.RecordBatch) {
+    return serializeNativeArrowWorkerResult(result, {copy: bufferCopyMode ?? 'all'});
+  }
+  if (!isArrowTableWrapper(result)) {
+    return result;
+  }
   return {
     ...result,
     arrowBatchMetadata: snapshotBatchMetadata(result.data),
@@ -87,6 +98,10 @@ export function serializeArrowWorkerResult(result: unknown, options?: unknown): 
 
 /** Rehydrates any loaders.gl Arrow table wrapper returned from worker postMessage transport. */
 export function deserializeArrowWorkerResult(result: unknown): any {
+  const transport = (result as {transport?: string} | null)?.transport;
+  if (transport === 'arrow-table-columns' || transport === 'arrow-record-batch') {
+    return deserializeNativeArrowWorkerResult(result);
+  }
   if (!isDehydratedArrowTableWrapper(result)) {
     return result;
   }

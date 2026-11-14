@@ -14,9 +14,9 @@ beforeAll(async () => {
 
 describe('parseSHPToArrow', () => {
   test('creates WKB and typed GeoArrow tables from SHP data', () => {
-    const wkbTable = parseSHPToArrow(pointsBuffer, {shp: {shape: 'arrow-table'}});
+    const wkbTable = parseSHPToArrow(pointsBuffer, {shp: {shape: 'arrow'}});
     const typedTable = parseSHPToArrow(pointsBuffer, {
-      shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+      shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
     });
 
     expect(wkbTable.data.numRows).toBeGreaterThan(0);
@@ -30,7 +30,7 @@ describe('parseSHPToArrow', () => {
   test('streams WKB Arrow batches and emits an empty terminal schema', async () => {
     const batches = [];
     for await (const batch of parseSHPToArrowInBatches([pointsBuffer], {
-      shp: {shape: 'arrow-table'}
+      shp: {shape: 'arrow'}
     })) {
       batches.push(batch);
     }
@@ -38,7 +38,7 @@ describe('parseSHPToArrow', () => {
     expect(batches.reduce((count, batch) => count + batch.length, 0)).toBeGreaterThan(0);
 
     const emptyBatches = [];
-    for await (const batch of parseSHPToArrowInBatches([], {shp: {shape: 'arrow-table'}})) {
+    for await (const batch of parseSHPToArrowInBatches([], {shp: {shape: 'arrow'}})) {
       emptyBatches.push(batch);
     }
     expect(emptyBatches).toHaveLength(1);
@@ -49,7 +49,7 @@ describe('parseSHPToArrow', () => {
     /** Consumes the streaming parser to expose its unsupported-mode error. */
     const consume = async (): Promise<void> => {
       for await (const _batch of parseSHPToArrowInBatches([pointsBuffer], {
-        shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+        shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
       })) {
         // Iteration triggers validation before any batch is emitted.
       }

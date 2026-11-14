@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table, RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
@@ -28,7 +30,7 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
-    shape?: 'arrow-table' | 'wkb';
+    shape?: 'arrow' | 'wkb';
     geoarrowEncoding?: SHPGeoArrowEncoding;
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -44,18 +46,20 @@ export const SHPWorkerLoaderWithParser = {
 } as const satisfies Loader<any, any, SHPLoaderOptions>;
 
 /** SHP file loader */
-export const SHPLoaderWithParser: LoaderWithParser<
+export const SHPColumnLoader: LoaderWithParser<
   SHPResult | ArrowTable,
   SHPHeader | (Uint8Array | null)[] | ArrowTableBatch,
   SHPLoaderOptions
 > = {
   ...SHPLoaderMetadataWithoutPreload,
+  dataType: null as unknown as SHPResult | ArrowTable,
+  batchType: null as unknown as SHPHeader | (Uint8Array | null)[] | ArrowTableBatch,
   parse: async (arrayBuffer, options?) =>
-    getSHPShape(options) === 'arrow-table'
+    getSHPShape(options) === 'arrow'
       ? parseSHPToArrow(arrayBuffer, options)
       : parseSHP(arrayBuffer, options),
   parseSync: (arrayBuffer, options?) =>
-    getSHPShape(options) === 'arrow-table'
+    getSHPShape(options) === 'arrow'
       ? parseSHPToArrow(arrayBuffer, options)
       : parseSHP(arrayBuffer, options),
   parseInBatches: (
@@ -69,7 +73,7 @@ export const SHPLoaderWithParser: LoaderWithParser<
         ? {...options, shp: {...options.shp, batchSize: options.core.batchSize}}
         : options;
     return (
-      getSHPShape(batchOptions) === 'arrow-table'
+      getSHPShape(batchOptions) === 'arrow'
         ? parseSHPToArrowInBatches(arrayBufferIterator, batchOptions)
         : parseSHPInBatches(arrayBufferIterator, batchOptions)
     ) as AsyncIterable<SHPHeader | (Uint8Array | null)[] | ArrowTableBatch>;
@@ -81,5 +85,57 @@ export const SHPLoaderWithParser: LoaderWithParser<
 };
 
 function getSHPShape(options?: SHPLoaderOptions): NonNullable<SHPLoaderOptions['shp']>['shape'] {
-  return options?.shp?.shape || 'arrow-table';
+  return options?.shp?.shape || 'arrow';
+}
+
+/** Exposes native Arrow output after parsing or worker hydration. */
+export const SHPLoaderWithParser = {
+  ...SHPLoaderMetadataWithoutPreload,
+  serializeWorkerResult: serializeShapefileWorkerResult,
+  serializeWorkerBatch: serializeShapefileWorkerBatch,
+  dataType: null as unknown as SHPResult | Table,
+  batchType: null as unknown as SHPHeader | (Uint8Array | null)[] | RecordBatch,
+  async parse(input, options, context) {
+    return unwrapSHPTable(await SHPColumnLoader.parse!(input, options, context));
+  },
+  parseSync(input, options, context) {
+    return unwrapSHPTable(SHPColumnLoader.parseSync!(input, options, context));
+  },
+  async *parseInBatches(input, options, context) {
+    for await (const batch of SHPColumnLoader.parseInBatches!(input, options, context)) {
+      if (isSHPArrowTable(batch)) {
+        const table = unwrapSHPTable(batch);
+        if (table.batches.length) yield* table.batches;
+        else yield makeArrowMetadataBatch(table.schema);
+      } else yield batch;
+    }
+  },
+  deserializeWorkerResult(result) {
+    return unwrapSHPTable(deserializeShapefileWorkerResult(result));
+  },
+  deserializeWorkerBatch(result) {
+    const batch = deserializeShapefileWorkerBatch<SHPHeader | (Uint8Array | null)[] | ArrowTable>(
+      result
+    );
+    if (!isSHPArrowTable(batch)) return batch;
+    const table = unwrapSHPTable(batch);
+    return table.batches[0] ?? makeArrowMetadataBatch(table.schema);
+  }
+} as const satisfies LoaderWithParser<
+  SHPResult | Table,
+  SHPHeader | (Uint8Array | null)[] | RecordBatch,
+  SHPLoaderOptions
+>;
+
+/** Identifies Arrow output from the private column parser. */
+function isSHPArrowTable(result: unknown): result is ArrowTable {
+  return (result as {shape?: string} | null)?.shape === 'arrow-table';
+}
+
+/** Unwraps Arrow columns and passes through legacy results. */
+function unwrapSHPTable(result: ArrowTable): Table;
+function unwrapSHPTable<T>(result: T): Exclude<T, ArrowTable> | Table;
+function unwrapSHPTable(result: unknown): unknown {
+  if (!isSHPArrowTable(result)) return result;
+  return result.data;
 }

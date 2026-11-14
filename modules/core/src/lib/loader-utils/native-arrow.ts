@@ -100,7 +100,7 @@ export function isNativeArrowTable(value: unknown): value is arrow.Table {
 }
 
 /** Identifies native record batches across Arrow package instances. */
-function isNativeArrowRecordBatch(value: unknown): value is arrow.RecordBatch {
+export function isNativeArrowRecordBatch(value: unknown): value is arrow.RecordBatch {
   return Boolean(
     value &&
       typeof value === 'object' &&

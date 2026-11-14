@@ -18,7 +18,10 @@ import {
   VectorTileTableScanSource
 } from '../../src/scan/vector-table-scan-source';
 
-test('VectorTileTableScanSource binds tile addressing outside the portable query', async () => {
+test.each([
+  'native Arrow',
+  'wrapped Arrow'
+] as const)('VectorTileTableScanSource reads %s tiles and keeps addressing outside the query', async shape => {
   const sourceTable = makeArrowTable({id: [1, 2, 3], value: [10, 20, 30]});
   const requestedTiles: GetTileParameters[] = [];
   const tileLayers = ['roads'];
@@ -37,7 +40,7 @@ test('VectorTileTableScanSource binds tile addressing outside the portable query
     },
     async getVectorTile(parameters: GetTileParameters) {
       requestedTiles.push(parameters);
-      return sourceTable;
+      return shape === 'native Arrow' ? sourceTable.data : sourceTable;
     }
   } satisfies VectorTileSource;
   const scanSource = new VectorTileTableScanSource(source, {
@@ -173,8 +176,8 @@ test('addressed vector scans propagate cancellation and reject non-Arrow output'
   await expect(emptySource.getQueryMetadata()).rejects.toThrow('did not return a feature table');
 
   const invalidSource = new VectorTileTableScanSource(source, {tile: {x: 0, y: 0, z: 0}});
-  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow-table"');
-  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow-table"');
+  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow"');
+  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow"');
   expect(requestCount).toBe(2);
 });
 

@@ -107,18 +107,18 @@ export class ArrowTableVectorTileSource
   }
 
   /** Returns a clipped Arrow table, or null when the tile contains no geometry. */
-  async getVectorTile(tileIndex: GetTileParameters): Promise<ArrowTable | null> {
+  async getVectorTile(tileIndex: GetTileParameters): Promise<arrow.Table | null> {
     await this.ready;
     return this.getTileSync(tileIndex);
   }
 
   /** Alias for getVectorTile, with the same Arrow output contract. */
-  async getTile(tileIndex: GetTileParameters): Promise<ArrowTable | null> {
+  async getTile(tileIndex: GetTileParameters): Promise<arrow.Table | null> {
     return this.getVectorTile(tileIndex);
   }
 
   /** Rendering-facing tile accessor, also returning an Arrow table. */
-  async getTileData(parameters: GetTileDataParameters): Promise<ArrowTable | null> {
+  async getTileData(parameters: GetTileDataParameters): Promise<arrow.Table | null> {
     return this.getVectorTile({
       ...parameters.index,
       tileMatrix: parameters.tileMatrix,
@@ -127,7 +127,7 @@ export class ArrowTableVectorTileSource
   }
 
   /** Returns a tile synchronously after ready resolves; never mutates cached coordinates. */
-  getTileSync(tileIndex: GetTileParameters): ArrowTable | null {
+  getTileSync(tileIndex: GetTileParameters): arrow.Table | null {
     if (!this.table || !this.tileSchema)
       throw new Error('Await ArrowTableVectorTileSource.ready before requesting tiles');
     tileIndex = resolveTableTileParameters(tileIndex, this.tiler.tableOptions.maxZoom);
@@ -148,7 +148,7 @@ export class ArrowTableVectorTileSource
           tile,
           this.tiler.tableOptions.extent,
           this.localCoordinates
-        )
+        ).data
       : null;
   }
 

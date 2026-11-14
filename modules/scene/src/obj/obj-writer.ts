@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
@@ -22,7 +23,7 @@ export type OBJWriterOptions = WriterOptions & {
  */
 export const OBJWriter = {
   ...OBJFormat,
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  dataType: null as unknown as Mesh | MeshArrowTable | Table,
   batchType: null as never,
   version: VERSION,
   options: {
@@ -32,16 +33,19 @@ export const OBJWriter = {
   encode: async (data, options) => encodeOBJSync(data, options),
   encodeSync: encodeOBJSync,
   encodeTextSync: encodeOBJ
-} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable, never, OBJWriterOptions>;
+} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable | Table, never, OBJWriterOptions>;
 
 /** Encode mesh category data as OBJ bytes. */
-function encodeOBJSync(data: Mesh | MeshArrowTable, options?: OBJWriterOptions): ArrayBuffer {
+function encodeOBJSync(
+  data: Mesh | MeshArrowTable | Table,
+  options?: OBJWriterOptions
+): ArrayBuffer {
   const text = encodeOBJ(data, options);
   return new TextEncoder().encode(text).buffer;
 }
 
 /** Encode mesh category data as OBJ text. */
-function encodeOBJ(data: Mesh | MeshArrowTable, options?: OBJWriterOptions): string {
+function encodeOBJ(data: Mesh | MeshArrowTable | Table, options?: OBJWriterOptions): string {
   const mesh = convertTableToMesh(normalizeMeshArrowTable(data));
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
   const normalAttribute = mesh.attributes.NORMAL;
@@ -118,8 +122,8 @@ function encodeOBJ(data: Mesh | MeshArrowTable, options?: OBJWriterOptions): str
 }
 
 /** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
-function normalizeMeshArrowTable(data: Mesh | MeshArrowTable): MeshArrowTable {
-  if ('shape' in data && data.shape === 'arrow-table') {
+function normalizeMeshArrowTable(data: Mesh | MeshArrowTable | Table): MeshArrowTable | Table {
+  if (!('attributes' in data)) {
     return data;
   }
   return convertMeshToTable(data as Mesh, 'arrow-table');

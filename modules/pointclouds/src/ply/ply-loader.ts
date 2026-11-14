@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {refineArrowTableBatches} from '@loaders.gl/core/schema-utils';
+import {refineArrowTableBatches, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {PLYLoaderOptions} from './ply-loader-types';
 
 // PLY Loader
@@ -59,8 +60,10 @@ function parsePLYData(
 /**
  * Loader for PLY - Polygon File Format
  */
-export const PLYLoaderWithParser = {
+export const PLYColumnLoader = {
   ...PLYLoaderMetadataWithoutPreload,
+  dataType: null as unknown as PLYMesh | MeshArrowTable,
+  batchType: null as unknown as PLYMesh | ArrowTableBatch,
   parse: async (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
   parseTextSync: (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
   parseSync: (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
@@ -87,7 +90,7 @@ function convertPLYTable(
 ): PLYMesh | MeshArrowTable {
   const loaderData = header || table.loaderData || {comments: [], elements: []};
   const result =
-    options?.ply?.shape === 'arrow-table'
+    options?.ply?.shape === 'arrow'
       ? {...table, loader: 'ply' as const, loaderData}
       : {
           ...(convertTableToMesh(table) as PLYMesh),
@@ -104,7 +107,7 @@ function convertPLYTable(
     (isMeshArrowTable(resultData) ? convertTableToMesh(resultData) : resultData) as PLYMesh,
     colorFormat
   );
-  return options?.ply?.shape === 'arrow-table'
+  return options?.ply?.shape === 'arrow'
     ? {
         ...convertMeshToTable(formattedMesh, 'arrow-table'),
         loader: 'ply' as const,
@@ -187,4 +190,66 @@ async function* parsePLYWithMetadataInBatches(
       : convertPLYMesh(meshOrTable, options);
     yield isMeshArrowTable(convertedData) ? makeTableScanBatch(convertedData) : convertedData;
   }
+}
+
+/** Exposes native Arrow output while retaining the worker's column protocol. */
+export const PLYLoaderWithParser = {
+  ...PLYColumnLoader,
+  dataType: PLYLoaderMetadata.dataType,
+  batchType: PLYLoaderMetadata.batchType,
+  parse: async (input: ArrayBuffer, options?: PLYLoaderOptions) =>
+    unwrapPLYTable(await PLYColumnLoader.parse(input, options)),
+  parseTextSync: (input: string, options?: PLYLoaderOptions) =>
+    unwrapPLYTable(PLYColumnLoader.parseTextSync(input, options)),
+  parseSync: (input: ArrayBuffer, options?: PLYLoaderOptions) =>
+    unwrapPLYTable(PLYColumnLoader.parseSync(input, options)),
+  async *parseInBatches(input, options) {
+    for await (const batch of PLYColumnLoader.parseInBatches(input, options)) {
+      if (isColumnBatch(batch)) {
+        batch.data.schema.metadata.set(
+          'loaders.gl.ply.header',
+          JSON.stringify((batch as ArrowTableBatch & {loaderData?: unknown}).loaderData)
+        );
+        for (const recordBatch of batch.data.batches) {
+          recordBatch.schema.metadata.set(
+            'loaders.gl.ply.header',
+            batch.data.schema.metadata.get('loaders.gl.ply.header')!
+          );
+        }
+        if (batch.data.batches.length) yield* batch.data.batches;
+        else yield makeArrowMetadataBatch(batch.data.schema);
+      } else yield batch;
+    }
+  },
+  deserializeWorkerResult: (result: unknown, options?: PLYLoaderOptions) =>
+    unwrapPLYTable(PLYColumnLoader.deserializeWorkerResult(result, options)),
+  deserializeWorkerBatch(result: unknown, options?: PLYLoaderOptions) {
+    const batch = PLYColumnLoader.deserializeWorkerBatch(result, options);
+    if (isColumnBatch(batch)) {
+      const recordBatch = batch.data.batches[0] ?? makeArrowMetadataBatch(batch.data.schema);
+      recordBatch.schema.metadata.set(
+        'loaders.gl.ply.header',
+        JSON.stringify((batch as ArrowTableBatch & {loaderData?: unknown}).loaderData)
+      );
+      return recordBatch;
+    }
+    return batch;
+  }
+} as const satisfies LoaderWithParser<PLYMesh | Table, PLYMesh | RecordBatch, PLYLoaderOptions>;
+
+/** Returns the Arrow table with its file metadata or the requested mesh. */
+function unwrapPLYTable(result: PLYMesh | MeshArrowTable): PLYMesh | Table {
+  if ('shape' in result && result.shape === 'arrow-table') {
+    result.data.schema.metadata.set(
+      'loaders.gl.ply.header',
+      JSON.stringify((result as MeshArrowTable & {loaderData?: unknown}).loaderData)
+    );
+    return result.data;
+  }
+  return result as PLYMesh;
+}
+
+/** Identifies the private Arrow batch envelope. */
+function isColumnBatch(batch: PLYMesh | ArrowTableBatch): batch is ArrowTableBatch {
+  return 'shape' in batch && batch.shape === 'arrow-table';
 }

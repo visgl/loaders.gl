@@ -70,8 +70,7 @@ For loaders with shape selection, `options.core.shape` sets the default return s
 | Shape | Loaders | Notes |
 | --- | --- | --- |
 | `geojson-table` | `GeoJSONLoader`, [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader), [`GeoPackageLoader`](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader), [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader), `ShapefileLoader`, [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | Shared feature-table target. Loader-specific overrides stay under each loader id, e.g. `options.mvt.shape`. |
-| `arrow` | `GeoJSONLoader`, `FlatGeobufLoader`, `GeoPackageLoader`, `GMLLoader`, `GPXLoader`, `KMLLoader`, `TCXLoader` | Native Apache Arrow tables with geometry metadata. |
-| `arrow-table` | `ShapefileLoader`, `SHPLoader`, `DBFLoader`, `MVTLoader`, `MVTSourceLoader` | Wrapped GeoArrow-compatible tables. |
+| `arrow` | `GeoJSONLoader`, `FlatGeobufLoader`, `GeoPackageLoader`, `GMLLoader`, `GPXLoader`, `KMLLoader`, `TCXLoader`, `ShapefileLoader`, `SHPLoader`, `DBFLoader`, `MVTLoader`, `MLTLoader`, `MVTSourceLoader` | Native Apache Arrow tables. Geometry metadata is available for spatial output. |
 | `binary-feature-collection` | `GeoJSONLoader` | Deck.gl-style binary feature collection output selected with `options.geojson.shape`. |
 | `object-row-table` | [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | Feature rows as plain objects. |
 | `columnar-table` | [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader), [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader) | Column-major geospatial output. |
