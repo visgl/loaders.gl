@@ -15,7 +15,7 @@ const {preload: _CSWCapabilitiesLoaderPreload, ...CSWCapabilitiesLoaderMetadataW
 export type {CSWCapabilities};
 
 /** CSW loader options */
-export type CSWLoaderOptions = XMLLoaderOptions & {
+export type CSWCapabilitiesLoaderOptions = XMLLoaderOptions & {
   csw?: {};
 };
 
@@ -24,7 +24,8 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
  */
 export const CSWCapabilitiesLoaderWithParser = {
   ...CSWCapabilitiesLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer, options?: CSWLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: CSWCapabilitiesLoaderOptions) =>
     parseCSWCapabilities(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: CSWLoaderOptions) => parseCSWCapabilities(text, options)
-} as const satisfies LoaderWithParser<CSWCapabilities, never, CSWLoaderOptions>;
+  parseTextSync: (text: string, options?: CSWCapabilitiesLoaderOptions) =>
+    parseCSWCapabilities(text, options)
+} as const satisfies LoaderWithParser<CSWCapabilities, never, CSWCapabilitiesLoaderOptions>;

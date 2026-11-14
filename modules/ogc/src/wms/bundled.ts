@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {CSWLoaderOptions, CSWCapabilities} from './csw-capabilities-loader-with-parser';
+export type {
+  CSWCapabilitiesLoaderOptions,
+  CSWCapabilities
+} from './csw-capabilities-loader-with-parser';
 export {CSWCapabilitiesLoaderWithParser as CSWCapabilitiesLoader} from './csw-capabilities-loader-with-parser';
 export type {CSWDomain} from './csw-domain-loader-with-parser';
 export {CSWDomainLoaderWithParser as CSWDomainLoader} from './csw-domain-loader-with-parser';
@@ -10,13 +13,13 @@ export type {CSWRecords} from './csw-records-loader-with-parser';
 export {CSWRecordsLoaderWithParser as CSWRecordsLoader} from './csw-records-loader-with-parser';
 
 export {WMSErrorLoaderWithParser as WMSErrorLoader} from './wms-error-loader-with-parser';
-export type {WMTSLoaderOptions} from './wmts-capabilities-loader';
+export type {WMTSCapabilitiesLoaderOptions} from './wmts-capabilities-loader';
 export type {WMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
 export {WMTSCapabilitiesLoaderWithParser as WMTSCapabilitiesLoader} from './wmts-capabilities-loader-with-parser';
 export type {WMSCapabilitiesLoaderOptions} from './wms-capabilities-loader-with-parser';
 export {WMSCapabilitiesLoaderWithParser as WMSCapabilitiesLoader} from './wms-capabilities-loader-with-parser';
 
-export type {WFSLoaderOptions as _WFSLoaderOptions} from './wfs-capabilities-loader-with-parser';
+export type {WFSCapabilitiesLoaderOptions as _WFSLoaderOptions} from './wfs-capabilities-loader-with-parser';
 export type {WFSCapabilities as _WFSCapabilities} from './wfs-capabilities-loader-with-parser';
 export {WFSCapabilitiesLoaderWithParser as WFSCapabilitiesLoader} from './wfs-capabilities-loader-with-parser';
 export {WFSCapabilitiesLoaderWithParser as _WFSCapabilitiesLoader} from './wfs-capabilities-loader-with-parser';

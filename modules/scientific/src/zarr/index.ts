@@ -8,35 +8,35 @@ export {
   OMEZarrLoaderWithParser as OMEZarrLoader,
   OMEZarrImageSource,
   loadZarrConsolidatedMetadata
-} from './ome-zarr-source-loader';
+} from './ome-zarr-loader';
 export {
   GeoZarrLoaderWithParser as GeoZarrLoader,
   GeoZarrRasterSource
-} from './geo-zarr-source-loader';
+} from './geo-zarr-loader';
 export {
   ZarrArrayLoaderWithParser as ZarrArrayLoader,
   ZarrArraySource
-} from './zarr-array-source';
+} from './zarr-array-loader';
 export {
   SpatialDataLoaderWithParser as SpatialDataLoader,
   SpatialDataSource
-} from './spatial-data-source';
+} from './spatial-data-loader';
 export type {
   GetZarrArrayParameters,
   ZarrArrayData,
   ZarrArraySelection,
   ZarrArraySlice,
-  ZarrArraySourceLoaderOptions,
+  ZarrArrayLoaderOptions,
   ZarrArraySourceMetadata
-} from './zarr-array-source';
+} from './zarr-array-loader';
 export type {
   SpatialDataElementFormat,
   SpatialDataElementKind,
   SpatialDataElementMetadata,
-  SpatialDataSourceLoaderOptions,
+  SpatialDataLoaderOptions,
   SpatialDataSourceMetadata,
   SpatialDataZarrElementSource
-} from './spatial-data-source';
+} from './spatial-data-loader';
 export type {
   GetOMEZarrParameters,
   LoadConsolidatedMetadataOptions,
@@ -47,14 +47,14 @@ export type {
   ZarrConsolidatedFormat,
   ZarrConsolidatedMetadata,
   ZarrMetadataPath,
-  ZarrSourceLoader,
-  ZarrSourceLoaderOptions
-} from './ome-zarr-source-loader';
+  ZarrLoader,
+  ZarrLoaderOptions
+} from './ome-zarr-loader';
 export type {
   GeoZarrLevelMetadata,
   GeoZarrAffineTransform,
   GeoZarrSelectionDimension,
-  GeoZarrSourceLoaderOptions,
+  GeoZarrLoaderOptions,
   GeoZarrSourceMetadata,
   GetGeoZarrParameters
-} from './geo-zarr-source-loader';
+} from './geo-zarr-loader';

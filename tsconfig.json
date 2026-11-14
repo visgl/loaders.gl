@@ -120,23 +120,23 @@
       "@loaders.gl/arcgis/bundled": [
         "modules/arcgis/src/bundled"
       ],
-      "@loaders.gl/arcgis/arcgis-feature-server-source-loader": [
-        "modules/arcgis/src/arcgis/arcgis-feature-server-source-loader"
+      "@loaders.gl/arcgis/arcgis-feature-server-loader": [
+        "modules/arcgis/src/arcgis/arcgis-feature-server-loader"
       ],
-      "@loaders.gl/arcgis/arcgis-image-server-source-loader": [
-        "modules/arcgis/src/arcgis/arcgis-image-server-source-loader"
+      "@loaders.gl/arcgis/arcgis-image-server-loader": [
+        "modules/arcgis/src/arcgis/arcgis-image-server-loader"
       ],
-      "@loaders.gl/arcgis/arcgis-image-tile-source-loader": [
-        "modules/arcgis/src/arcgis/arcgis-image-tile-source-loader"
+      "@loaders.gl/arcgis/arcgis-image-tile-loader": [
+        "modules/arcgis/src/arcgis/arcgis-image-tile-loader"
       ],
-      "@loaders.gl/arcgis/arcgis-map-tile-source-loader": [
-        "modules/arcgis/src/arcgis/arcgis-map-tile-source-loader"
+      "@loaders.gl/arcgis/arcgis-map-tile-loader": [
+        "modules/arcgis/src/arcgis/arcgis-map-tile-loader"
       ],
-      "@loaders.gl/arcgis/arcgis-scene-server-source-loader": [
-        "modules/arcgis/src/arcgis/arcgis-scene-server-source-loader"
+      "@loaders.gl/arcgis/arcgis-scene-server-loader": [
+        "modules/arcgis/src/arcgis/arcgis-scene-server-loader"
       ],
-      "@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader": [
-        "modules/arcgis/src/arcgis/arcgis-vector-tile-server-source-loader"
+      "@loaders.gl/arcgis/arcgis-vector-tile-server-loader": [
+        "modules/arcgis/src/arcgis/arcgis-vector-tile-server-loader"
       ],
       "@loaders.gl/core/constants": [
         "modules/core/src/constants"
@@ -270,8 +270,8 @@
       "@loaders.gl/tiles/mvt": [
         "modules/tiles/src/mvt"
       ],
-      "@loaders.gl/tiles/arrow-table-tile-source-loader": [
-        "modules/tiles/src/mvt/arrow-table-tile-source-loader.ts"
+      "@loaders.gl/tiles/arrow-table-tile-loader": [
+        "modules/tiles/src/mvt/arrow-table-tile-loader.ts"
       ],
       "@loaders.gl/tiles/mvt-geojson-loader": [
         "modules/tiles/src/mvt/mvt-geojson-loader.ts"
@@ -348,8 +348,8 @@
       "@loaders.gl/tiles-3d/point-cloud-tile-source": [
         "modules/tiles-3d/src/point-cloud-tile-source.ts"
       ],
-      "@loaders.gl/tiles-3d/point-cloud-tile-source-loader": [
-        "modules/tiles-3d/src/point-cloud-tile-source-loader.ts"
+      "@loaders.gl/tiles-3d/point-cloud-tile-loader": [
+        "modules/tiles-3d/src/point-cloud-tile-loader.ts"
       ],
       "@loaders.gl/tiles": [
         "modules/tiles/src"

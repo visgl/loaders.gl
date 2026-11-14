@@ -9,7 +9,7 @@ import {WMSErrorLoader as WMSErrorLoaderMetadata} from './wms-error-loader';
 const {preload: _WMSErrorLoaderPreload, ...WMSErrorLoaderMetadataWithoutPreload} =
   WMSErrorLoaderMetadata;
 
-export type WMSLoaderOptions = LoaderOptions & {
+export type WMSErrorLoaderOptions = LoaderOptions & {
   wms?: {
     /** By default the error loader will throw an error with the parsed error message */
     throwOnError?: boolean;
@@ -23,15 +23,16 @@ export type WMSLoaderOptions = LoaderOptions & {
  */
 export const WMSErrorLoaderWithParser = {
   ...WMSErrorLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions): Promise<string> =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: WMSErrorLoaderOptions): Promise<string> =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions): string =>
+  parseSync: (arrayBuffer: ArrayBuffer, options?: WMSErrorLoaderOptions): string =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSLoaderOptions): string => parseTextSync(text, options)
-} as const satisfies LoaderWithParser<string, never, WMSLoaderOptions>;
+  parseTextSync: (text: string, options?: WMSErrorLoaderOptions): string =>
+    parseTextSync(text, options)
+} as const satisfies LoaderWithParser<string, never, WMSErrorLoaderOptions>;
 
-function parseTextSync(text: string, options?: WMSLoaderOptions): string {
-  const wmsOptions: WMSLoaderOptions['wms'] = {
+function parseTextSync(text: string, options?: WMSErrorLoaderOptions): string {
+  const wmsOptions: WMSErrorLoaderOptions['wms'] = {
     ...WMSErrorLoaderWithParser.options.wms,
     ...options?.wms
   };

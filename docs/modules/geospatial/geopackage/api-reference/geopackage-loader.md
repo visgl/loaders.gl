@@ -59,6 +59,10 @@ The `GeoPackageLoader` parses GeoPackage vector tables into loaders.gl geometry 
 The `GeoPackageLoader` requires applications to install the optional peer dependency `sql.js` (`npm install sql.js`). It uses the [`sql.js`](https://github.com/sql-js/sql.js) npm module which has caused issues with certain JavaScript bundlers. It is recommended that you do your own tests before using the `GeoPackageLoader` in your project.
 :::
 
+| Property | Value |
+| --- | --- |
+| Data source | `GeoPackageDataSource` |
+
 ## Installation
 
 Install `sql.js` to use this API. It is an optional peer of `@loaders.gl/geospatial`.

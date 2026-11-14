@@ -14,7 +14,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 // export type {WMTSCapabilities};
 
-export type WMTSLoaderOptions = XMLLoaderOptions & {
+export type WMTSCapabilitiesLoaderOptions = XMLLoaderOptions & {
   wmts?: {};
 };
 
@@ -42,7 +42,7 @@ export const WMTSCapabilitiesLoader = {
   },
   /** Loads the parser-bearing WMTS capabilities loader implementation. */
   preload: async () => (await import('./wmts-capabilities-loader-with-parser')).WMTSCapabilitiesLoaderWithParser
-} as const satisfies Loader<WMTSCapabilities, never, WMTSLoaderOptions>;
+} as const satisfies Loader<WMTSCapabilities, never, WMTSCapabilitiesLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

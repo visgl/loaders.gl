@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {log as loaderLog} from '@loaders.gl/core/loader-utils';
-import type {PotreeSourceLoaderOptions} from '../potree-source-options';
+import type {PotreeLoaderOptions} from '../potree-source-options';
 import type {PotreeDatasetMetadata} from '../potree-loader-types';
 import type {Potree2Source} from '../potree2-source';
 import type {
@@ -68,7 +68,7 @@ export interface PotreeNodeMesh extends LASMesh {
  * @note Point cloud nodes tile source
  */
 export class PotreeNodesSource
-  extends DataSource<string, PotreeSourceLoaderOptions>
+  extends DataSource<string, PotreeLoaderOptions>
   implements PointCloudScanSource<import('apache-arrow').RecordBatch>
 {
   /** Common point-cloud scan capabilities exposed by Potree metadata and hierarchy nodes. */
@@ -119,7 +119,7 @@ export class PotreeNodesSource
    *              - if Blob - single file data
    * @param options - data source properties
    */
-  constructor(data: string, options: PotreeSourceLoaderOptions, coreApi?: CoreAPI) {
+  constructor(data: string, options: PotreeLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, undefined, coreApi);
     this.makeBaseUrl(this.data);
 
@@ -990,8 +990,7 @@ export class PotreeNodesSource
         las: {
           shape: 'mesh',
           colorDepth: 'auto',
-          colorFormat:
-            (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
+          colorFormat: (this.loadOptions as PotreeLoaderOptions).potree?.colorFormat || 'uint8norm'
         }
       };
       if (this.loadOptions.core) {
@@ -1015,8 +1014,7 @@ export class PotreeNodesSource
         scale: this.metadata.scale,
         positionOrigin,
         nodeBoundingBox: tileBoundingBox,
-        colorFormat:
-          (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
+        colorFormat: (this.loadOptions as PotreeLoaderOptions).potree?.colorFormat || 'uint8norm'
       }
     };
   }

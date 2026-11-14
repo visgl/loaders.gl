@@ -53,7 +53,7 @@ Use `load()` to fetch and parse data.
 
 ## Usage
 
-Provide a source loader with a runtime factory and an input it supports:
+Pass a loader with a source factory and an input it supports:
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
@@ -83,7 +83,7 @@ createDataSource(data: unknown, loaders: Loader | Loader[], options?: DataSource
 createDataSourceSync(data: unknown, loaders: Loader | Loader[], options?: DataSourceOptions): DataSource
 ```
 
-Creates a runtime `DataSource` either using the provided source loader or source loaders.
+Creates a runtime `DataSource` using the selected loader.
 
 - `data`: The resource that the selected source will use. Supported inputs depend on the source.
 - `loaders`: A loader or array of loaders with source factories. A one-element array uses that loader
@@ -99,4 +99,4 @@ Returns:
 
 See [Source options](/docs/developer-guide/using-sources#options) for the shared options convention,
 loading controls, parser options, precedence, and TypeScript behavior. Source-specific settings
-are documented on each source loader’s reference page.
+are documented on each loader’s reference page.

@@ -1,0 +1,215 @@
+---
+title: GeoZarrLoader
+description: Query GeoZarr arrays as geospatial rasters while preserving dimensions, chunks, and CRS metadata.
+hide_title: true
+page_style: designed
+---
+
+import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
+import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+
+<DocPageHeader
+  format="zarr"
+  eyebrow="GeoZarr source"
+  title="Ask a multidimensional array for a spatial slice."
+  description="GeoZarrLoader maps GeoZarr and CF/xarray metadata to raster requests, selecting variables, dimensions, levels, and chunks without discarding the array’s native meaning."
+  tone="pink"
+  meta={['Zarr v2 and v3', 'GeoZarr and CF', 'Chunk-selected raster']}
+  links={[
+    {label: 'Zarr format', to: '/docs/modules/scientific/zarr/formats/zarr'},
+    {label: 'Zarr module', to: '/docs/modules/scientific/zarr'}
+  ]}
+/>
+
+<DocOrientation
+  eyebrow="The multidimensional request"
+  title="Select the variable, dimensions, and window."
+  description="The source discovers array and coordinate metadata, derives a spatial transform when possible, and reads the chunks that cover the requested view and named slices."
+  tone="pink"
+  items={[
+    {label: 'Discover', value: 'Variables, dimensions, CRS, and transforms'},
+    {label: 'Select', value: 'Array path, time, level, channel, or slice'},
+    {label: 'Read', value: 'Only chunks intersecting the request'},
+    {label: 'Return', value: 'Typed raster data with dimension metadata'}
+  ]}
+/>
+
+<p className="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
+</p>
+
+`GeoZarrLoader` opens a numeric Zarr data variable as a viewport-driven geospatial raster
+source. It supports Zarr v2 and v3 stores through Zarrita.
+
+The source recognizes two interoperable metadata patterns:
+
+- GeoZarr `proj:code` / `proj:wkt2`, `spatial:dimensions`, `spatial:transform`, `spatial:bbox`, and
+  `spatial:registration` attributes.
+- Regular one-dimensional CF/xarray longitude/latitude or x/y coordinate variables. The source
+  derives an affine transform when those coordinates are evenly spaced and reads CRS WKT from a CF
+  `grid_mapping` variable when present. GDAL and rioxarray write a GDAL `GeoTransform` attribute
+  on the grid-mapping variable. The source uses this attribute before the coordinate variables, and
+  it reads no coordinate chunks for it. The source looks for coordinate and grid-mapping variables
+  in the group of the data array first. Then it looks in each parent group. This is the CF search
+  by proximity. The source uses a `GeoTransform` only when the grid-mapping variable is in the
+  group of the data array. A grid-mapping variable in a parent group can apply to more than one
+  multiscale level, so the source uses it only for the CRS. If a coordinate or grid-mapping
+  variable does not exist, the source continues the search or uses no georeference. If the
+  variable exists but the source cannot read it, the source gives an error. It does not use a
+  variable from a parent group in its place.
+
+<ReferenceBoundary
+  title="GeoZarr source usage"
+  description="The sections below cover metadata conventions, source construction, viewport requests, selections, and chunk access."
+  tone="pink"
+/>
+
+| Property | Value |
+| --- | --- |
+| Data source | `GeoZarrRasterSource` |
+
+## Usage
+
+```ts
+import {createDataSourceSync} from '@loaders.gl/core';
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr';
+
+const source = createDataSourceSync('https://example.com/reanalysis.zarr', [GeoZarrLoader], {
+  zarr: {
+    path: null,
+    requireConsolidatedMetadata: true
+  },
+  geozarr: {
+    array: 'air_temperature',
+    defaultSelection: {time: 0, level: 0}
+  }
+});
+
+const metadata = await source.getMetadata();
+const raster = await source.getRaster({
+  viewport,
+  selection: {time: 24, level: 3}
+});
+```
+
+## Source options
+
+### `zarr`
+
+- `path?: string | null` selects the group that contains the data and coordinate variables.
+- `metadataPath?: 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json'` controls consolidated
+  metadata discovery.
+- `requireConsolidatedMetadata?: boolean` requires a consolidated metadata document before the
+  group is opened. Defaults to `true`; set it to `false` for unconsolidated stores.
+
+### `geozarr`
+
+- `array: string` selects the numeric data variable relative to `zarr.path`.
+- `spatialDimensions?: [y: string, x: string]` overrides GeoZarr metadata and common CF dimension
+  names.
+- `transform?: [a, b, c, d, e, f]` supplies Rasterio/Affine coefficients when the store does not
+  provide a transform or regular coordinate variables.
+- `coordinateReferenceSystem?: string` supplies an authority identifier or WKT when the store does
+  not provide one.
+- `defaultSelection?: Record<string, number>` supplies default indices for non-spatial dimensions.
+
+## API
+
+### `getMetadata(): Promise<GeoZarrSourceMetadata>`
+
+Returns normalized raster metadata plus:
+
+- `array` and ordered `dimensions`
+- logical `[y, x]` `spatialDimensions`
+- `selectionDimensions`, including each dimension's size and default index
+- a pixel-corner `transform`
+- GeoZarr `registration`
+
+`boundingBox`, `crs`, `dtype`, `noData`, and native chunk dimensions use the common loaders.gl
+`RasterSourceMetadata` shape.
+
+### `getRaster(parameters: GetGeoZarrParameters): Promise<RasterData>`
+
+Reads the native-resolution array window intersecting `parameters.viewport`.
+
+- `selection?: RasterSelection` selects named non-spatial indices through the common
+  `GetRasterParameters` contract.
+- `signal?: AbortSignal` cancels metadata and chunk requests.
+- `resampleMethod?: 'nearest'` is accepted for API compatibility. Bilinear resampling is not yet
+  implemented.
+
+The returned raster contains one typed-array band, exact source-coordinate bounds for the selected
+pixel window, and the normalized CRS.
+
+See the [GeoZarr deck.gl example](/examples/geospatial/geo-zarr) for a complete browser workflow
+that selects monthly NASA POWER climatology data, colorizes the returned typed raster, and displays
+it with deck.gl's `BitmapLayer`.
+
+## Current scope
+
+This first version is intentionally limited to regular, axis-aligned 2D grids with optional named
+non-spatial dimensions. It does not yet support reprojection, rotated affine window reads,
+curvilinear 2D longitude/latitude coordinates, staggered grids, unstructured meshes, or multiscale
+GeoZarr layouts.
+
+The GeoZarr conventions are still pre-stable. The source therefore retains original group and array
+attributes in `metadata` and treats unknown optional fields as ignorable.
+
+## Spatial multiscale chunk grids
+
+`getMetadata().tileGrid` describes the selected array's spatial storage chunks. Generic
+[Zarr multiscales v0.1](https://github.com/zarr-conventions/multiscales/blob/v0.1/README.md)
+`multiscales.layout` entries can describe direct arrays or groups containing the same variable
+path. `levels` preserves each asset ID, array path, dimensions, non-spatial selections, and
+resolved native metadata. Array dimensions determine logical X/Y independently of physical order.
+
+OME-NGFF `multiscales[].datasets[]` can also give the levels. Version 0.4 puts them at the group
+root, and version 0.5 puts them under `ome`. The source reads these levels only when the root
+group, the selected array or the group of the selected level declares a CRS. The CRS must come
+from `proj:*` metadata or from a CF `grid_mapping`.
+
+The source georeferences each OME-NGFF level with the GeoZarr or CF metadata of that level, as
+above. The OME transforms do not georeference a level, because the OME frame can be different from
+the CRS frame. The source uses the OME `scale` transforms only for a check:
+
+- The source multiplies the scales in the specified order: the dataset scale first, then the
+  multiscale scale.
+- For each level, the cell-size ratio to the selected level must equal the OME scale ratio.
+- If a level fails the check, the source removes the metadata of that level. Then the source does
+  not publish a complete grid.
+
+The source ignores `identity` and `translation` transforms. It rejects all other transform types.
+
+A complete `tileMatrixSet` requires a common string CRS and explicit, finite, rightward,
+axis-aligned affine geometry for every level. CRS coordinates determine resolution units.
+Each level must declare its own absolute `spatial:transform`, on its array, level group, or
+layout entry; relative-only transformation graphs are not evaluated. Unsupported levels remain
+advertised without complete grid geometry. Unsafe or duplicate asset paths reject discovery.
+Node registration shifts to pixel corners; south-up arrays use bottom-left origins.
+
+Chunk matrices include padded edge chunks. Valid raster extent remains in each level's
+`metadata.boundingBox`. A storage chunk may include multiple time/channel/depth samples: it is
+not a decoded display tile or a standalone 2D payload. `getRaster()` continues to read the
+configured `geozarr.array` and named selection; it does not automatically select an overview.
+To read another advertised level, create a source with that level's `array` path. Sibling grid
+discovery reuses the validated parent group/store and consolidated preflight, and reads
+metadata only without decoding coordinate or sample chunks. Non-CRS `proj:*` fields retain
+the inherited CRS; an explicit nearer CRS declaration replaces inherited alternatives.
+
+OME-Zarr microscopy coordinates stay native OME metadata. If the selected array declares no CRS,
+the source does not read an OME `multiscales` array as spatial levels. OME transforms never give a
+geographic CRS or a georeference. Use the OME source for
+its existing image/selection APIs. See [Tile matrices](/docs/developer-guide/tile-matrices).
+
+Explicit `proj:epsg` integer identifiers normalize to `EPSG:<code>`. `proj:projjson` definitions
+are retained as structured `metadata.crs` values, without semantic rewriting or identifier-only
+reduction. A structured CRS therefore keeps native metadata but omits complete `TileMatrixSet`
+geometry, whose current CRS contract is a string. An inherited string CRS never substitutes
+for a different explicit child declaration.
+
+When a scope declares both a string CRS and PROJJSON, native raster requests use the string CRS;
+the full PROJJSON remains in the raw attributes. PROJJSON-only sources retain structured metadata
+and support native windows without a viewport CRS. A string viewport CRS is not assumed equivalent
+to a structured definition; supply an explicit `geozarr.coordinateReferenceSystem` string when that
+identity is known. No CRS equivalence or reprojection is inferred from a PROJJSON identifier.

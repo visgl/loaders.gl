@@ -5,7 +5,7 @@
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {PotreeMetadata} from './types/potree-metadata';
 import type {Potree2Metadata} from './potree2-types';
-import type {PotreeSourceLoaderOptions} from './potree-source-options';
+import type {PotreeLoaderOptions} from './potree-source-options';
 import type {PotreeNodesSource} from './lib/potree-node-source';
 
 /** Metadata for either supported Potree wire layout. */
@@ -58,14 +58,9 @@ export const PotreeLoader = {
   preload,
   createDataSourceSync(
     _url: string,
-    _options: PotreeSourceLoaderOptions,
+    _options: PotreeLoaderOptions,
     _coreApi?: CoreAPI
   ): PotreeNodesSource {
     throw new Error('Call preload(PotreeLoader) before creating a source synchronously.');
   }
-} as const satisfies Loader<
-  PotreeDatasetMetadata,
-  never,
-  PotreeSourceLoaderOptions,
-  PotreeNodesSource
->;
+} as const satisfies Loader<PotreeDatasetMetadata, never, PotreeLoaderOptions, PotreeNodesSource>;

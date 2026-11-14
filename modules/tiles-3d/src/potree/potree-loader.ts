@@ -7,7 +7,7 @@ import {
   PotreeLoader as PotreeLoaderMetadata,
   type PotreeDatasetMetadata
 } from './potree-loader-types';
-import type {PotreeSourceLoaderOptions} from './potree-source-options';
+import type {PotreeLoaderOptions} from './potree-source-options';
 import {PotreeNodesSource} from './lib/potree-node-source';
 import {PotreeMetadataSchema} from './types/potree-metadata';
 
@@ -20,12 +20,12 @@ export const PotreeLoaderWithParser = {
   ...PotreeLoaderMetadataWithoutPreload,
   parse: async (data: ArrayBuffer) => parsePotreeMetadata(new TextDecoder().decode(data)),
   parseTextSync: parsePotreeMetadata,
-  createDataSourceSync: (url: string, options: PotreeSourceLoaderOptions, coreApi?: CoreAPI) =>
+  createDataSourceSync: (url: string, options: PotreeLoaderOptions, coreApi?: CoreAPI) =>
     new PotreeNodesSource(url, options, coreApi)
 } as const satisfies LoaderWithParser<
   PotreeDatasetMetadata,
   never,
-  PotreeSourceLoaderOptions,
+  PotreeLoaderOptions,
   PotreeNodesSource
 >;
 

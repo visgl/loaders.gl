@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {STACSource} from '@loaders.gl/ogc/stac-source';
+import {STACSource} from '@loaders.gl/ogc/stac-loader';
 import type {
   STACCatalog,
   STACCollection,

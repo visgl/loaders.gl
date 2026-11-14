@@ -153,7 +153,7 @@
         "modules/raster/src/index.ts",
         "modules/raster/src/quantized-mesh.ts",
         "modules/raster/src/geotiff/geotiff-loader-types.ts",
-        "modules/raster/src/geotiff/ometiff-source-loader-types.ts"
+        "modules/raster/src/geotiff/ometiff-loader-types.ts"
       ],
       "ownershipReason": "New source metadata and dispatch entry points use the new-package default; each moved implementation retains its original independent browser and merged format gates.",
       "browser": {

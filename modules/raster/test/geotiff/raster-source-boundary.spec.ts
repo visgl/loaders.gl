@@ -11,7 +11,7 @@ import {expect, test, vi} from 'vitest';
 import {sampleRaster} from '@loaders.gl/core/loader-utils';
 import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source-loader';
 import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';
-import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-source-loader';
+import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-loader';
 
 /** Creates the minimal viewport shape accepted by raster sources. */
 function createViewport(bounds: RasterBoundingBox, crs = 'EPSG:4326', width = 10, height = 8) {

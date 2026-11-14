@@ -11,7 +11,7 @@ import {ArrowTableTileLoader as ArrowTableTileSourceLoaderMetadata} from '@loade
 import {
   ArrowTableTileLoaderWithParser as ArrowTableTileLoader,
   ArrowTableVectorTileSource
-} from '@loaders.gl/tiles/arrow-table-tile-source-loader';
+} from '@loaders.gl/tiles/arrow-table-tile-loader';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {GeometryConverter} from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';

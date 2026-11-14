@@ -3,7 +3,7 @@ import {createDataSourceSync} from '@loaders.gl/core';
 import {
   OMEZarrImageSource,
   OMEZarrLoader,
-  type ZarrSourceLoaderOptions
+  type ZarrLoaderOptions
 } from '@loaders.gl/scientific/zarr';
 const SPATIALDATA_V3_FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 test('OMEZarrLoader supports browser-relative store URLs', async () => {
@@ -99,7 +99,7 @@ test('OMEZarrImageSource retries initialization after malformed metadata', async
 /** Creates an OME-Zarr source backed by a small in-memory Zarr v3 store. */
 function createInMemoryOMEZarrSource(): OMEZarrImageSource {
   const baseUrl = 'https://example.com/browser-ome.zarr';
-  const options: ZarrSourceLoaderOptions = {
+  const options: ZarrLoaderOptions = {
     zarr: {requireConsolidatedMetadata: false},
     core: {fetch: createOMEZarrFetcher(baseUrl)}
   };

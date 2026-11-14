@@ -63,10 +63,10 @@
       "import": "./dist/mvt/index.js",
       "require": "./dist/mvt/index.cjs"
     },
-    "./arrow-table-tile-source-loader": {
-      "types": "./dist/arrow-table-tile-source-loader.d.ts",
-      "import": "./dist/arrow-table-tile-source-loader.js",
-      "require": "./dist/arrow-table-tile-source-loader.cjs"
+    "./arrow-table-tile-loader": {
+      "types": "./dist/arrow-table-tile-loader.d.ts",
+      "import": "./dist/arrow-table-tile-loader.js",
+      "require": "./dist/arrow-table-tile-loader.cjs"
     },
     "./mvt/tilejson-zod-schema": {
       "types": "./dist/mvt/tilejson-zod-schema.d.ts",

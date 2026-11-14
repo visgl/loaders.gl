@@ -970,8 +970,8 @@
                   "modules/tiles/mvt/api-reference/tilejson-loader",
                   "modules/tiles/mvt/api-reference/mvt-writer",
                   "modules/tiles/mvt/api-reference/mvt-source-loader",
-                  "modules/tiles/mvt/api-reference/table-tile-source-loader",
-                  "modules/tiles/mvt/api-reference/arrow-table-tile-source-loader"
+                  "modules/tiles/mvt/api-reference/table-tile-loader",
+                  "modules/tiles/mvt/api-reference/arrow-table-tile-loader"
                 ],
                 "link": {
                   "type": "doc",
@@ -1146,7 +1146,7 @@
                 "type": "category",
                 "label": "@loaders.gl/tiles-3d/copc",
                 "items": [
-                  "modules/tiles-3d/copc/api-reference/copc-source-loader"
+                  "modules/tiles-3d/copc/api-reference/copc-loader"
                 ],
                 "link": {
                   "type": "doc",
@@ -1229,7 +1229,7 @@
                     "label": "Sources",
                     "items": [
                       "modules/raster/geotiff/api-reference/geotiff-source-loader",
-                      "modules/raster/geotiff/api-reference/ometiff-source-loader"
+                      "modules/raster/geotiff/api-reference/ometiff-loader"
                     ],
                     "link": {
                       "type": "generated-index",
@@ -1346,8 +1346,8 @@
                 "type": "category",
                 "label": "@loaders.gl/scientific/zarr",
                 "items": [
-                  "modules/scientific/zarr/api-reference/geo-zarr-source-loader",
-                  "modules/scientific/zarr/api-reference/ome-zarr-source-loader"
+                  "modules/scientific/zarr/api-reference/geo-zarr-loader",
+                  "modules/scientific/zarr/api-reference/ome-zarr-loader"
                 ],
                 "link": {
                   "type": "doc",
@@ -1731,7 +1731,7 @@
                 "type": "category",
                 "label": "@loaders.gl/ogc/stac",
                 "items": [
-                  "modules/ogc/stac/api-reference/stac-source-loader"
+                  "modules/ogc/stac/api-reference/stac-loader"
                 ],
                 "link": {
                   "type": "doc",
@@ -1742,8 +1742,8 @@
                 "type": "category",
                 "label": "@loaders.gl/ogc/wms",
                 "items": [
-                  "modules/ogc/wms/api-reference/csw-source-loader",
-                  "modules/ogc/wms/api-reference/wms-source-loader",
+                  "modules/ogc/wms/api-reference/csw-loader",
+                  "modules/ogc/wms/api-reference/wms-loader",
                   {
                     "type": "category",
                     "label": "Services",

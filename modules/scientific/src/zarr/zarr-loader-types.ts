@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
-import type {GeoZarrRasterSource, GeoZarrSourceLoaderOptions} from './geo-zarr-source-loader';
-import type {OMEZarrImageSource, ZarrSourceLoaderOptions} from './ome-zarr-source-loader';
-import type {SpatialDataSource, SpatialDataSourceLoaderOptions} from './spatial-data-source';
-import type {ZarrArraySource, ZarrArraySourceLoaderOptions} from './zarr-array-source';
+import type {GeoZarrRasterSource, GeoZarrLoaderOptions} from './geo-zarr-loader';
+import type {OMEZarrImageSource, ZarrLoaderOptions} from './ome-zarr-loader';
+import type {SpatialDataSource, SpatialDataLoaderOptions} from './spatial-data-loader';
+import type {ZarrArraySource, ZarrArrayLoaderOptions} from './zarr-array-loader';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -28,22 +28,22 @@ export const OMEZarrLoader = {
   options: {
     zarr: {metadataPath: 'auto', path: null, labels: undefined!, requireConsolidatedMetadata: true},
     omezarr: {interleaved: false, defaultChannels: undefined!}
-  } as ZarrSourceLoaderOptions,
+  } as ZarrLoaderOptions,
   defaultOptions: {
     zarr: {metadataPath: 'auto', path: null, labels: undefined!, requireConsolidatedMetadata: true},
     omezarr: {interleaved: false, defaultChannels: undefined!}
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/ome-zarr-source-loader'))
+    (await import('@loaders.gl/scientific/zarr/ome-zarr-loader'))
       .OMEZarrLoaderWithParser,
   createDataSourceSync(
     _data: string,
-    _options: ZarrSourceLoaderOptions,
+    _options: ZarrLoaderOptions,
     _coreApi?: CoreAPI
   ): OMEZarrImageSource {
     throw new Error(
-      'OMEZarrLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/ome-zarr-source-loader import'
+      'OMEZarrLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/ome-zarr-loader import'
     );
   }
 } as const satisfies SourceLoader<OMEZarrImageSource>;
@@ -70,7 +70,7 @@ export const GeoZarrLoader = {
       coordinateReferenceSystem: undefined!,
       defaultSelection: undefined!
     }
-  } as GeoZarrSourceLoaderOptions,
+  } as GeoZarrLoaderOptions,
   defaultOptions: {
     zarr: {metadataPath: 'auto', path: null, labels: undefined!, requireConsolidatedMetadata: true},
     geozarr: {
@@ -83,15 +83,15 @@ export const GeoZarrLoader = {
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/geo-zarr-source-loader'))
+    (await import('@loaders.gl/scientific/zarr/geo-zarr-loader'))
       .GeoZarrLoaderWithParser,
   createDataSourceSync(
     _data: string,
-    _options: GeoZarrSourceLoaderOptions,
+    _options: GeoZarrLoaderOptions,
     _coreApi?: CoreAPI
   ): GeoZarrRasterSource {
     throw new Error(
-      'GeoZarrLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/geo-zarr-source-loader import'
+      'GeoZarrLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/geo-zarr-loader import'
     );
   }
 } as const satisfies SourceLoader<GeoZarrRasterSource>;
@@ -112,21 +112,21 @@ export const ZarrArrayLoader = {
   options: {
     zarr: {metadataPath: 'auto', path: null, labels: undefined!, requireConsolidatedMetadata: true},
     zarrArray: {path: undefined!, dimensions: undefined!}
-  } as ZarrArraySourceLoaderOptions,
+  } as ZarrArrayLoaderOptions,
   defaultOptions: {
     zarr: {metadataPath: 'auto', path: null, labels: undefined!, requireConsolidatedMetadata: true},
     zarrArray: {path: undefined!, dimensions: undefined!}
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/zarr-array-source')).ZarrArrayLoaderWithParser,
+    (await import('@loaders.gl/scientific/zarr/zarr-array-loader')).ZarrArrayLoaderWithParser,
   createDataSourceSync(
     _data: string,
-    _options: ZarrArraySourceLoaderOptions,
+    _options: ZarrArrayLoaderOptions,
     _coreApi?: CoreAPI
   ): ZarrArraySource {
     throw new Error(
-      'ZarrArrayLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/zarr-array-source import'
+      'ZarrArrayLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/zarr-array-loader import'
     );
   }
 } as const satisfies SourceLoader<ZarrArraySource>;
@@ -146,21 +146,21 @@ export const SpatialDataLoader = {
   fromBlob: false,
   options: {
     zarr: {metadataPath: 'auto', path: null, labels: undefined!, requireConsolidatedMetadata: true}
-  } as SpatialDataSourceLoaderOptions,
+  } as SpatialDataLoaderOptions,
   defaultOptions: {
     zarr: {metadataPath: 'auto', path: null, labels: undefined!, requireConsolidatedMetadata: true}
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/spatial-data-source'))
+    (await import('@loaders.gl/scientific/zarr/spatial-data-loader'))
       .SpatialDataLoaderWithParser,
   createDataSourceSync(
     _data: string,
-    _options: SpatialDataSourceLoaderOptions,
+    _options: SpatialDataLoaderOptions,
     _coreApi?: CoreAPI
   ): SpatialDataSource {
     throw new Error(
-      'SpatialDataLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/spatial-data-source import'
+      'SpatialDataLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/spatial-data-loader import'
     );
   }
 } as const satisfies SourceLoader<SpatialDataSource>;

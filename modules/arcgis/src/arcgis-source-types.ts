@@ -58,7 +58,7 @@ export type ArcGISFeatureServiceQueryOptions = {
 };
 
 /** Options for the ArcGIS FeatureServer source. */
-export type ArcGISFeatureServerSourceLoaderOptions = DataSourceOptions & {
+export type ArcGISFeatureServerLoaderOptions = DataSourceOptions & {
   'arcgis-feature-server'?: {
     /** Default ArcGIS query request parameters. */
     queryParameters?: Partial<ArcGISFeatureServiceQueryOptions>;
@@ -66,7 +66,7 @@ export type ArcGISFeatureServerSourceLoaderOptions = DataSourceOptions & {
 };
 
 /** Options for the ArcGIS ImageServer source. */
-export type ArcGISImageSourceLoaderProps = DataSourceOptions &
+export type ArcGISImageServerLoaderOptions = DataSourceOptions &
   ImageLoaderOptions & {
     'arcgis-image-server'?: {
       /** Default ArcGIS exportImage request parameters. */
@@ -111,7 +111,7 @@ export type ArcGISExportImageParameters = {
 };
 
 /** Options for the ArcGIS ImageServer tile source. */
-export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions &
+export type ArcGISImageTileLoaderOptions = DataSourceOptions &
   ImageLoaderOptions & {
     'arcgis-image-server-tiles'?: {
       /** Tile size used for exportImage requests. */
@@ -126,7 +126,7 @@ export type ArcGISImageTileSourceLoaderOptions = DataSourceOptions &
   };
 
 /** Options for an ArcGIS cached MapServer tile source. */
-export type ArcGISMapTileSourceLoaderOptions = DataSourceOptions &
+export type ArcGISMapTileLoaderOptions = DataSourceOptions &
   ImageLoaderOptions & {
     'arcgis-map-server'?: {
       /** Select cached tiles, dynamic export tiles, or automatic metadata-based selection. */
@@ -220,7 +220,7 @@ export type ArcGISSceneQueryResult = {
 };
 
 /** Options for an ArcGIS SceneServer source. */
-export type ArcGISSceneServerSourceOptions = DataSourceOptions & {
+export type ArcGISSceneServerLoaderOptions = DataSourceOptions & {
   'arcgis-scene-server'?: {
     /** Layer identifier used when the input URL ends at `/SceneServer`. */
     layerId?: number | string;
@@ -259,7 +259,7 @@ export type ArcGISVectorTileServiceMetadata = {
 };
 
 /** Options for the ArcGIS VectorTileServer source. */
-export type ArcGISVectorTileServerSourceLoaderOptions = DataSourceOptions &
+export type ArcGISVectorTileServerLoaderOptions = DataSourceOptions &
   MVTLoaderOptions & {
     'arcgis-vector-tile-server'?: {
       /** Optional MVT parser options. */

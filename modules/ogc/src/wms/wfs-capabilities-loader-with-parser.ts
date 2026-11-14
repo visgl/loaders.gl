@@ -12,7 +12,7 @@ const {preload: _WFSCapabilitiesLoaderPreload, ...WFSCapabilitiesLoaderMetadataW
 
 export type {WFSCapabilities};
 
-export type WFSLoaderOptions = LoaderOptions & {
+export type WFSCapabilitiesLoaderOptions = LoaderOptions & {
   wfs?: {};
 };
 
@@ -22,9 +22,10 @@ export type WFSLoaderOptions = LoaderOptions & {
  */
 export const WFSCapabilitiesLoaderWithParser = {
   ...WFSCapabilitiesLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer, options?: WFSLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: WFSCapabilitiesLoaderOptions) =>
     parseWFSCapabilities(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WFSLoaderOptions) => parseWFSCapabilities(text, options)
-} as const satisfies LoaderWithParser<WFSCapabilities, never, WFSLoaderOptions>;
+  parseTextSync: (text: string, options?: WFSCapabilitiesLoaderOptions) =>
+    parseWFSCapabilities(text, options)
+} as const satisfies LoaderWithParser<WFSCapabilities, never, WFSCapabilitiesLoaderOptions>;
 
 export const _typecheckWFSCapabilitiesLoader: LoaderWithParser = WFSCapabilitiesLoaderWithParser;

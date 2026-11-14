@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| Source loader | [`COPCLoader`](../api-reference/copc-source-loader.md) |
+| Source loader | [`COPCLoader`](../api-reference/copc-loader.md) |
 | Writer | [`COPCWriter`](../api-reference/copc-writer.md) |
 
 <CopcDocsTabs active="format" />

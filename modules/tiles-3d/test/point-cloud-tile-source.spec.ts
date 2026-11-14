@@ -9,7 +9,7 @@ import {
   PointCloudTileset,
   createTilesetSpatialReference
 } from '@loaders.gl/tiles-3d';
-import {PointCloudTileLoaderWithParser} from '../src/point-cloud-tile-source-loader';
+import {PointCloudTileLoaderWithParser} from '../src/point-cloud-tile-loader';
 import {PointCloudTileSource} from '../src/point-cloud-tile-source';
 
 /** Minimal native-coordinate point data with a scalar attribute. */

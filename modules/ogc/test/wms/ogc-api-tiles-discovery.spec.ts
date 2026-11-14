@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {OGCAPISourceOptions, OGCTileMatrixSet} from '@loaders.gl/ogc/wms';
+import type {OGCAPILoaderOptions, OGCTileMatrixSet} from '@loaders.gl/ogc/wms';
 import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
 import DATASET_TILESET from './data/ogc-api-tiles/tileset-dataset.json';
 import COLLECTION_TILESET from './data/ogc-api-tiles/tileset-collection.json';
@@ -31,7 +31,7 @@ const NAMED_LEVELS: OGCTileMatrixSet = {
 type Route = unknown;
 
 /** Creates a source whose fetch answers from `routes` and records each request. */
-function createSource(routes: Record<string, Route>, options: OGCAPISourceOptions['ogc-api']) {
+function createSource(routes: Record<string, Route>, options: OGCAPILoaderOptions['ogc-api']) {
   const requestedUrls: string[] = [];
   const errors: Error[] = [];
   const source = OGCAPITilesLoader.createDataSourceSync(LANDING_PAGE_URL, {

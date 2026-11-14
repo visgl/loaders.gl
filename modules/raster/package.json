@@ -137,9 +137,9 @@
       "types": "./dist/geotiff/loaders.d.ts",
       "import": "./dist/geotiff/loaders.js"
     },
-    "./ometiff-source-loader": {
-      "types": "./dist/ometiff-source-loader.d.ts",
-      "import": "./dist/ometiff-source-loader.js"
+    "./ometiff-loader": {
+      "types": "./dist/ometiff-loader.d.ts",
+      "import": "./dist/ometiff-loader.js"
     },
     "./geotiff/types": {
       "types": "./dist/geotiff/types.d.ts",
@@ -287,9 +287,9 @@
       "import": "./dist/quantized-mesh-worker.js"
     },
     "./lerc/lerc-wasm.wasm": "./dist/lerc/libs/lerc/lerc-wasm.wasm",
-    "./ometiff-source-loader-types": {
-      "types": "./dist/ometiff-source-loader-types.d.ts",
-      "import": "./dist/ometiff-source-loader-types.js"
+    "./ometiff-loader-types": {
+      "types": "./dist/ometiff-loader-types.d.ts",
+      "import": "./dist/ometiff-loader-types.js"
     }
   },
   "sideEffects": false,

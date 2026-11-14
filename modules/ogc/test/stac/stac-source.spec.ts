@@ -4,8 +4,8 @@
 
 import {describe, expect, test, vi} from 'vitest';
 
-import {STACSource, STACLoaderWithParser} from '../../src/stac/stac-source';
-import {STACLoader} from '../../src/stac/stac-source-loader-types';
+import {STACSource, STACLoaderWithParser} from '../../src/stac/stac-loader';
+import {STACLoader} from '../../src/stac/stac-loader-types';
 import type {STACItem} from '../../src/stac/stac-types';
 
 const ROOT_URL = 'https://example.test/catalog.json';

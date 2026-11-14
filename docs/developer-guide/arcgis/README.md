@@ -144,7 +144,7 @@ applications already using runtime source classes.
 | `@loaders.gl/arcgis/authentication` | `ArcGISAuthentication` and `createArcGISCredential` |
 | `@loaders.gl/arcgis/discovery` | `getArcGISServices`, `discoverArcGISCapabilities` and `selectArcGISService` |
 | `@loaders.gl/arcgis/scene-aggregation` | `aggregateArcGISSceneFeatures` |
-| `@loaders.gl/arcgis/arcgis-feature-server-source-loader` | One explicit implementation: `ArcGISFeatureServerLoaderWithParser` and `ArcGISVectorSource` |
+| `@loaders.gl/arcgis/arcgis-feature-server-loader` | One explicit implementation: `ArcGISFeatureServerLoaderWithParser` and `ArcGISVectorSource` |
 
 Each service loader has an equivalent implementation subpath. Named ESM imports from `/bundled`
 can still be tree-shaken; importing its entire registry intentionally includes all six clients.

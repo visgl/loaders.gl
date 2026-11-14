@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {GeoZarrRasterSource} from '../../src/zarr/geo-zarr-source-loader';
+import {GeoZarrRasterSource} from '../../src/zarr/geo-zarr-loader';
 
 test('GeoZarrRasterSource exposes scan metadata for variables and slices', async () => {
   const source = new GeoZarrRasterSource('data.zarr', {});

@@ -52,12 +52,12 @@ export type {MVTSourceLoaderOptions} from './mvt-source-loader';
 
 // TableTileLoader (dynamically tiles a table)
 
-export {TableTileLoader, TableVectorTileSource} from './table-tile-source-loader';
-export type {TableTileSourceLoaderOptions} from './table-tile-source-loader';
+export {TableTileLoader, TableVectorTileSource} from './table-tile-loader';
+export type {TableTileLoaderOptions} from './table-tile-loader';
 
-export {ArrowTableTileLoader} from './arrow-table-tile-source-loader-types';
-export type {ArrowTableVectorTileSource} from './arrow-table-tile-source-loader';
+export {ArrowTableTileLoader} from './arrow-table-tile-loader-types';
+export type {ArrowTableVectorTileSource} from './arrow-table-tile-loader';
 export type {
-  ArrowTableTileSourceLoaderOptions,
+  ArrowTableTileLoaderOptions,
   ArrowTableTileSourceInput
 } from './arrow-table-tile-source-types';

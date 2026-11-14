@@ -58,6 +58,10 @@ ArcGIS VectorTileServer endpoints publish Mapbox Vector Tile (MVT) data together
 tile grid, style document, and sprite resources. `ArcGISVectorTileServerLoader` implements the
 loaders.gl `VectorTileSource` contract.
 
+| Property | Value |
+| --- | --- |
+| Data source | `ArcGISVectorTileServerSource` |
+
 ## Feature support
 
 | Capability | Support | API and behavior |

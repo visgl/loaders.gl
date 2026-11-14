@@ -122,8 +122,8 @@ export type {
   MVTGeoJSONTable,
   MVTWriterOptions,
   MVTSourceLoaderOptions,
-  TableTileSourceLoaderOptions,
+  TableTileLoaderOptions,
   ArrowTableVectorTileSource,
-  ArrowTableTileSourceLoaderOptions,
+  ArrowTableTileLoaderOptions,
   ArrowTableTileSourceInput
 } from '@loaders.gl/tiles/mvt';

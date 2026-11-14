@@ -57,6 +57,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ArcGIS ImageServer endpoints expose rendered imagery and analytical raster data. loaders.gl offers
 an `ImageSource` for viewport exports and a `TileSource` for tiled visualization or analysis.
 
+| Property | Value |
+| --- | --- |
+| Data source | `ArcGISImageSource`, `ArcGISImageTileSource` |
+
 ## Feature support
 
 | Capability | Image source | Tile source | API and behavior |

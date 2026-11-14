@@ -8,7 +8,7 @@ import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
 import {
   GeoZarrRasterSource,
   GeoZarrLoader,
-  type GeoZarrSourceLoaderOptions
+  type GeoZarrLoaderOptions
 } from '@loaders.gl/scientific/zarr';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 const CONTENT_BASE = resolvePath('@loaders.gl/scientific/test/zarr/data');
@@ -89,7 +89,7 @@ test('GeoZarrRasterSource reads a native spatial window and named dimension sele
 test('GeoZarrRasterSource derives georeferencing from regular CF coordinate arrays', async () => {
   const baseUrl = 'https://example.com/cf.zarr';
   const fetcher = createCFZarrFetcher(baseUrl);
-  const options: GeoZarrSourceLoaderOptions = {
+  const options: GeoZarrLoaderOptions = {
     zarr: {requireConsolidatedMetadata: false},
     geozarr: {array: 'temperature', defaultSelection: {time: 1}},
     core: {fetch: fetcher as typeof fetch}
