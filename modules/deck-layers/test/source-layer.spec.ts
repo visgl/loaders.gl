@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import {AnyLayer, SourceLayer, type SourceLayerProps} from '@loaders.gl/deck-layers';
+import {SourceLayer, type SourceLayerProps} from '@loaders.gl/deck-layers';
 import type {Loader, SourceLoader} from '@loaders.gl/core/loader-utils';
 import {
   classifyVisualSource,
@@ -100,14 +100,13 @@ describe('resolveVisualSource', () => {
     expect(capturedOptions.core.loaders).toEqual([TEST_PARSER_LOADER]);
   });
 
-  test('combines compatibility sources with loaders and deduplicates by identity', async () => {
+  test('deduplicates source loaders by identity', async () => {
     const createDataSource = vi.fn(() => createTileSource() as any);
     const sourceLoader = createSourceLoader('tile', createDataSource);
 
     const result = await resolveVisualSource({
       data: 'https://example.com/tiles.tile',
-      sources: [sourceLoader],
-      loaders: [sourceLoader]
+      loaders: [sourceLoader, sourceLoader]
     });
 
     expect(result.sourceLoader).toBe(sourceLoader);
@@ -486,11 +485,5 @@ describe('SourceLayer lifecycle and dispatch', () => {
 
     expect(firstSource.finalize).toHaveBeenCalledOnce();
     expect(layer.state.resolvedSource).toBeNull();
-  });
-
-  test('AnyLayer is a compatibility alias with its historical debug name', () => {
-    const layer = new AnyLayer({id: 'compatibility', data: createTileSource() as any});
-    expect(layer).toBeInstanceOf(SourceLayer);
-    expect(AnyLayer.layerName).toBe('AnyLayer');
   });
 });

@@ -14,7 +14,7 @@ import type {
   GeoJSONTableBatch
 } from '@loaders.gl/core/schema';
 import {parseGeoArrowSync, parseGeoArrowInBatches} from './lib/parsers/parse-geoarrow';
-import type {GeoArrowLoaderOptions} from './exports/geoarrow-loader';
+import type {GeoArrowLoaderOptions} from './geoarrow-loader-types';
 import {GeoArrowLoader as GeoArrowLoaderMetadata} from './geoarrow-loader-types';
 
 const {preload: _GeoArrowLoaderPreload, ...GeoArrowLoaderMetadataWithoutPreload} =

@@ -988,9 +988,15 @@ view 0. An explicit `bufferView: 0` continues to read the first buffer view.
 
 #### Removed compatibility aliases
 
-- `getMeshSize` is no longer exported from `@loaders.gl/core/schema`; import it from
-   `@loaders.gl/core/schema-utils`. The `getMeshBoundingBox` root export is deprecated and retained
-   temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/core/schema-utils`.
+- Replace `AnyLayer` and `AnyLayerProps` with `SourceLayer` and `SourceLayerProps`.
+  Move the layer's `sources` entries into `loaders`. If you previously supplied both props,
+  put the former `sources` entries first to preserve source selection order.
+- Replace `ArrowWorkerLoader` and `GeoArrowWorkerLoader` with `ArrowLoader` and `GeoArrowLoader`.
+  For metadata-only imports, use `@loaders.gl/tables` or `@loaders.gl/tables/arrow`.
+
+- Import `getMeshSize` and `getMeshBoundingBox` from `@loaders.gl/core/schema-utils`.
+  The `@loaders.gl/core/schema` exports have been removed. The canonical bounding-box helper can
+  return `null` when positions are missing or empty.
 - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
    longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
    `@math.gl/geospatial/crs`.

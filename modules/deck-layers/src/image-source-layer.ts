@@ -48,8 +48,6 @@ export type ImageSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders'
   srs?: 'EPSG:4326' | 'EPSG:3857' | 'auto';
   /** Debounce interval applied before viewport image requests are issued. */
   debounceTime?: number;
-  /** Source factories used to auto-create image sources from URL/blob inputs. */
-  sources?: Readonly<SourceLoader[]>;
   /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
   loaders?: ReadonlyArray<Loader | SourceLoader>;
   /** Source and parser options forwarded to `createDataSource`. The layer's `loadOptions` prop is not forwarded. */
@@ -85,7 +83,6 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
   srs: 'auto',
   debounceTime: 200,
   layers: 'auto',
-  sources: {type: 'array', compare: false, value: []},
   loaders: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   onMetadataLoad: {type: 'function', value: () => {}},
@@ -165,8 +162,7 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
     const dataChanged =
       changeFlags.dataChanged ||
       (changeFlags.propsChanged &&
-        (props.sources !== oldProps.sources ||
-          props.loaders !== oldProps.loaders ||
+        (props.loaders !== oldProps.loaders ||
           props.sourceOptions !== oldProps.sourceOptions ||
           props.serviceType !== oldProps.serviceType));
 
@@ -341,15 +337,13 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
 
   /** Resolves URL/blob inputs to concrete image sources. */
   _resolveData(props: ImageSourceLayerProps): ImageSource | null {
-    const {data, sources, sourceOptions, loaders = []} = props;
+    const {data, sourceOptions, loaders = []} = props;
 
     if (this._isImageSource(data)) {
       return data;
     }
 
-    const sourceLoaders = Array.from(
-      new Set([...(sources || []), ...loaders.filter(isSourceLoader)])
-    );
+    const sourceLoaders = Array.from(new Set(loaders.filter(isSourceLoader)));
     const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
       return createDataSourceSync(data, sourceLoaders, {
@@ -363,11 +357,15 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
     }
 
     if (data instanceof Blob) {
-      throw new Error('ImageSourceLayer requires `sources` to resolve Blob inputs');
+      throw new Error(
+        'ImageSourceLayer requires a SourceLoader in `loaders` to resolve Blob inputs'
+      );
     }
 
     if (typeof data === 'string') {
-      throw new Error('ImageSourceLayer requires `sources` to resolve string inputs');
+      throw new Error(
+        'ImageSourceLayer requires a SourceLoader in `loaders` to resolve string inputs'
+      );
     }
 
     return null;

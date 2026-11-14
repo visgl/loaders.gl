@@ -102,11 +102,11 @@ const ARROW_TILE = createArrowTile();
 function createLayer(props: Tile2DSourceLayerProps = {id: 'test', data: TEST_TILE_SOURCE as any}) {
   return new Tile2DSourceLayer(props as any) as any;
 }
-test('Tile2DSourceLayer#resolves URL inputs with sources', () => {
+test('Tile2DSourceLayer#resolves URL inputs with source loaders', () => {
   const layer = createLayer({
     id: 'test',
     data: 'https://example.com/tiles',
-    sources: [TEST_SOURCE_FACTORY as any]
+    loaders: [TEST_SOURCE_FACTORY as any]
   });
   const resolvedData = layer._resolveData(layer.props);
   expect(resolvedData).toBe(TEST_TILE_SOURCE);
@@ -440,7 +440,7 @@ test('Tile2DSourceLayer finalizes owned sources and rejects incompatible source 
   const layer = createLayer({
     id: 'owned-tile-source',
     data: 'memory.test',
-    sources: [sourceLoader as any]
+    loaders: [sourceLoader as any]
   });
   layer.context = {device: createDevice()} as any;
   layer.initializeState();

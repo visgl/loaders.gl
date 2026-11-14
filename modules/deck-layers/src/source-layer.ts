@@ -56,30 +56,22 @@ export type SourceLayerData =
 /** Props for {@link SourceLayer}. */
 export type SourceLayerProps<DataT = unknown> = Omit<CompositeLayerProps, 'data' | 'loaders'> &
   Partial<
-    Omit<
-      ImageSourceLayerProps,
-      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'layers' | 'onMetadataLoad'
-    >
+    Omit<ImageSourceLayerProps, 'data' | 'loaders' | 'sourceOptions' | 'layers' | 'onMetadataLoad'>
   > &
-  Partial<
-    Omit<VectorSourceLayerProps, 'data' | 'loaders' | 'sources' | 'sourceOptions' | 'layers'>
-  > &
+  Partial<Omit<VectorSourceLayerProps, 'data' | 'loaders' | 'sourceOptions' | 'layers'>> &
   Partial<
     Omit<
       RasterSourceLayerProps,
-      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'metadata' | 'onMetadataLoad'
+      'data' | 'loaders' | 'sourceOptions' | 'metadata' | 'onMetadataLoad'
     >
   > &
   Partial<
-    Omit<
-      Tile2DSourceLayerProps<DataT>,
-      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'onTileError'
-    >
+    Omit<Tile2DSourceLayerProps<DataT>, 'data' | 'loaders' | 'sourceOptions' | 'onTileError'>
   > &
   Partial<
     Omit<
       PointCloudSourceLayerProps,
-      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'metadata' | 'onSourceError'
+      'data' | 'loaders' | 'sourceOptions' | 'metadata' | 'onSourceError'
     >
   > &
   Partial<Omit<Tile3DLayerProps<DataT>, 'data' | 'loader' | 'loaders' | 'onTileError'>> & {
@@ -89,8 +81,6 @@ export type SourceLayerProps<DataT = unknown> = Omit<CompositeLayerProps, 'data'
     loaders?: ReadonlyArray<Loader | SourceLoader>;
     /** Singular loader compatibility prop. */
     loader?: Loader | SourceLoader | Array<Loader | SourceLoader>;
-    /** @deprecated Put SourceLoaders in `loaders`. */
-    sources?: Readonly<SourceLoader[]>;
     /** Options forwarded to source construction. */
     sourceOptions?: DataSourceOptions;
     /** Named source layer selection, or automatic first-leaf discovery. */
@@ -123,7 +113,6 @@ const defaultProps: DefaultProps<SourceLayerProps> = {
   id: 'source-layer',
   data: '',
   loaders: {type: 'array', compare: false, value: []},
-  sources: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   layers: 'auto',
   onSourceLoad: {type: 'function', value: () => {}},
@@ -188,7 +177,6 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
       changeFlags.dataChanged ||
       props.loader !== oldProps.loader ||
       props.loaders !== oldProps.loaders ||
-      props.sources !== oldProps.sources ||
       props.sourceOptions !== oldProps.sourceOptions ||
       props.layers !== oldProps.layers
     ) {
@@ -208,7 +196,6 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
       data,
       loader,
       loaders,
-      sources,
       sourceOptions,
       layers,
       onSourceLoad,

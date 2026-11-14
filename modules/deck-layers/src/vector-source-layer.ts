@@ -43,8 +43,6 @@ export type VectorSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders
   data: VectorSource | string | Blob;
   /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
   loaders?: ReadonlyArray<Loader | SourceLoader>;
-  /** @deprecated Put SourceLoaders in `loaders`. */
-  sources?: Readonly<SourceLoader[]>;
   /** Options forwarded to source construction. */
   sourceOptions?: DataSourceOptions;
   /** Named source layers forwarded to `VectorSource#getFeatures`. */
@@ -84,7 +82,6 @@ const defaultProps: DefaultProps<VectorSourceLayerProps> = {
   id: 'vector-source-layer',
   data: null as never,
   loaders: {type: 'array', compare: false, value: []},
-  sources: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   layers: 'auto',
   crs: 'EPSG:4326',
@@ -167,7 +164,6 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
     const dataChanged =
       changeFlags.dataChanged ||
       props.loaders !== oldProps.loaders ||
-      props.sources !== oldProps.sources ||
       props.sourceOptions !== oldProps.sourceOptions;
 
     if (dataChanged) {
@@ -363,9 +359,7 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
       return props.data;
     }
     const loaders = props.loaders || [];
-    const sourceLoaders = Array.from(
-      new Set([...(props.sources || []), ...loaders.filter(isSourceLoader)])
-    );
+    const sourceLoaders = Array.from(new Set(loaders.filter(isSourceLoader)));
     if (!sourceLoaders.length) {
       throw new Error('VectorSourceLayer requires a SourceLoader for URL or Blob inputs.');
     }

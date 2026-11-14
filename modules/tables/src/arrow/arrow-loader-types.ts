@@ -2,14 +2,28 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/core/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
+import {ARROW_WORKER_URL} from './arrow-worker-url';
+import {ArrowFormat} from './exports/arrow-format';
 
-import type {ArrowLoaderOptions} from './exports/arrow-loader';
-import {ArrowWorkerLoader} from './exports/arrow-loader';
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** Preloads the parser-bearing Arrow loader implementation. */
+/** ArrowLoader options */
+export type ArrowLoaderOptions = LoaderOptions & {
+  /** ArrowLoader options */
+  arrow?: {
+    /** Shape of returned data */
+    shape?: 'arrow' | 'columnar-table' | 'array-row-table' | 'object-row-table';
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+};
+
+/** ArrowJS table loader */
 async function preload() {
   const {ArrowLoaderWithParser} = await import('@loaders.gl/tables/arrow-loader');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
@@ -19,7 +33,23 @@ async function preload() {
 
 /** Metadata-only ArrowJS table loader. */
 export const ArrowLoader = {
-  ...ArrowWorkerLoader,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as Table | NativeArrowTable,
+  batchType: null as unknown as ArrowTableBatch | RecordBatch,
+
+  ...ArrowFormat,
+  version: VERSION,
+  worker: ARROW_WORKER_URL,
+  workerNode: 'arrow-worker-node.cjs',
+  workerSourceNode: 'arrow/workers/arrow-worker.ts',
+  workerFile: 'arrow-worker.js',
+  workerInBatches: true,
+  options: {
+    arrow: {
+      shape: 'columnar-table'
+    }
+  },
   preload
 } as const satisfies Loader<
   Table | NativeArrowTable,

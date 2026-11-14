@@ -58,11 +58,9 @@ export type Tile2DSourceLayerProps<DataT = unknown> = Omit<
   Partial<Omit<TileLayerProps, 'data' | 'loaders' | 'renderSubLayers'>> & {
     /** URL/blob input or a fully constructed loaders.gl tile source. */
     data: Tile2DSourceLayerData;
-    /** Source factories used to auto-create tile sources from URL/blob inputs. */
-    sources?: Readonly<SourceLoader[]>;
     /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
     loaders?: ReadonlyArray<Loader | SourceLoader>;
-    /** Options forwarded to `createDataSource` when `sources` are supplied. */
+    /** Options forwarded to `createDataSource` when source loaders are supplied. */
     sourceOptions?: DataSourceOptions;
     /** Optional metadata used by the example overlay and zoom bounds. */
     metadata?: TileSourceMetadata | null;
@@ -194,7 +192,6 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   static defaultProps = {
     ...TileLayer.defaultProps,
     data: '',
-    sources: {type: 'array', compare: false, value: []},
     loaders: {type: 'array', compare: false, value: []},
     sourceOptions: {type: 'object', compare: false, value: {}},
     tileSize: 256,
@@ -282,7 +279,6 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
 
     const dataChanged =
       changeFlags.dataChanged ||
-      props.sources !== oldProps.sources ||
       props.loaders !== oldProps.loaders ||
       props.sourceOptions !== oldProps.sourceOptions;
 
@@ -689,13 +685,11 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
 
   /** Resolves the `data` prop to a concrete loaders.gl tile source. */
   _resolveData(props: Tile2DSourceLayerProps<DataT>): TileSourceRuntime | null {
-    const {data, sources, sourceOptions = {}, loaders = []} = props;
+    const {data, sourceOptions = {}, loaders = []} = props;
     if (isTileSourceRuntime(data)) {
       return data;
     }
-    const sourceLoaders = Array.from(
-      new Set([...(sources || []), ...loaders.filter(isSourceLoader)])
-    );
+    const sourceLoaders = Array.from(new Set(loaders.filter(isSourceLoader)));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
       const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
       return createDataSourceSync(data, sourceLoaders, {
@@ -706,7 +700,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
         }
       }) as unknown as TileSourceRuntime;
     }
-    throw new Error('Tile2DSourceLayer requires `sources` for URL/blob inputs.');
+    throw new Error('Tile2DSourceLayer requires a SourceLoader in `loaders` for URL/blob inputs.');
   }
 
   /** Copies a tileset option only when the layer prop was explicitly set. */

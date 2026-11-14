@@ -13,7 +13,7 @@ import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {parseArrowSync, parseArrowInBatches} from './lib/parsers/parse-arrow';
 
-import type {ArrowLoaderOptions} from './exports/arrow-loader';
+import type {ArrowLoaderOptions} from './arrow-loader-types';
 import {ArrowLoader as ArrowLoaderMetadata} from './arrow-loader-types';
 
 const {preload: _ArrowLoaderPreload, ...ArrowLoaderMetadataWithoutPreload} = ArrowLoaderMetadata;

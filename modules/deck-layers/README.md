@@ -29,7 +29,6 @@ selection. There is no global loader registry or protocol probing.
 
 The resolved runtime is dispatched to `ImageSourceLayer`, `VectorSourceLayer`,
 `RasterSourceLayer`, `Tile2DSourceLayer`, `PointCloudSourceLayer`, or `Tile3DSourceLayer`.
-`AnyLayer` remains as a deprecated compatibility alias.
 
 ### Discovery
 
@@ -79,9 +78,9 @@ import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 new SourceLayer({data: arcgisUrl, loaders: ARCGIS_LOADERS});
 ```
 
-Use `sourceOptions.core.type` when a URL is ambiguous. The deprecated `sources` prop is merged with
-source loaders in `loaders` and deduplicated by identity. The singular `loader` prop and
-preconstructed runtime sources remain supported.
+Use `sourceOptions.core.type` when a URL is ambiguous. Put source loaders and any parser loaders
+in `loaders`. The singular `loader` prop also accepts a loader, and `data` accepts preconstructed
+runtime sources.
 
 ## RasterSourceLayer
 

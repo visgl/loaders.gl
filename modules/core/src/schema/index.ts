@@ -92,8 +92,6 @@ export type {
   MeshTopology
 } from './categories/category-mesh';
 export {meshArrowSchema, indexedMeshArrowSchema} from './categories/category-mesh';
-/** @deprecated Import `getMeshBoundingBox` from `@loaders.gl/core/schema-utils`. */
-export {getMeshBoundingBox} from './deprecated/mesh-utils';
 // TEXTURES
 export type {
   TextureMetadata,
