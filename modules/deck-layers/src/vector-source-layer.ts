@@ -409,8 +409,6 @@ function isGeoJSONTable(data: VectorSourceData): data is GeoJSONTable {
   return (data as GeoJSONTable).shape === 'geojson-table';
 }
 
-function isArrowTable(
-  data: VectorSourceData
-): data is Extract<VectorSourceData, {shape: 'arrow-table'}> {
-  return (data as {shape?: string}).shape === 'arrow-table';
+function isArrowTable(data: VectorSourceData): data is Exclude<VectorSourceData, {shape: string}> {
+  return !('shape' in data);
 }

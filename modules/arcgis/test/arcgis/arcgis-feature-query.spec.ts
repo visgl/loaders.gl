@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table as NativeArrowTable} from 'apache-arrow';
 import {describe, expect, test, vi} from 'vitest';
 import {ArcGISVectorSource, ArcGISFeatureQueryError} from '@loaders.gl/arcgis/bundled';
 import {ArcGISFeatureServerSourceLoader, ARCGIS_LOADERS} from '@loaders.gl/arcgis';
@@ -408,8 +409,8 @@ describe('records, endpoints, errors and coordinate references', () => {
       properties: {OBJECTID: 1, nullable: null, date: 1700000000000}
     });
     const table = await source.getFeatures({format: 'arrow'} as never);
-    expect(table.shape).toBe('arrow-table');
-    expect((table as any).data.numRows).toBe(5);
+    expect(table).toBeInstanceOf(NativeArrowTable);
+    expect((table as NativeArrowTable).numRows).toBe(5);
     await expect(source.getFeatures({format: 'binary'} as never)).rejects.toThrow(
       'null geometries'
     );
@@ -421,13 +422,14 @@ describe('records, endpoints, errors and coordinate references', () => {
     'arrow'
   ] as const)('complete spatial results convert to %s', async format => {
     const result = await createService().source.getFeatures({format} as never);
-    expect(result.shape).toBe(
-      format === 'geojson'
-        ? 'geojson-table'
-        : format === 'arrow'
-          ? 'arrow-table'
-          : 'binary-feature-collection'
-    );
+    if (format === 'arrow') {
+      expect(result).toBeInstanceOf(NativeArrowTable);
+    } else {
+      expect(result).toHaveProperty(
+        'shape',
+        format === 'geojson' ? 'geojson-table' : 'binary-feature-collection'
+      );
+    }
   });
 
   test('the registry selects queryable MapServer layers without changing MapServer roots', async () => {

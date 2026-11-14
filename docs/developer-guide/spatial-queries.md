@@ -142,8 +142,8 @@ needed.
 ```ts
 import {GeoArrowSpatialIndex, getGeoArrowFieldInfo} from '@loaders.gl/core/geoarrow';
 
-// `result` is an ArrowTable from WFS getFeatures() or the scan adapter query().
-const table = result.data;
+// `table` is the native Arrow Table from WFS getFeatures({format: 'arrow'}).
+// For a scan adapter query result, use its `data` field.
 const field = table.schema.fields.find(candidate => candidate.name === 'geometry');
 const encoding = field && getGeoArrowFieldInfo(field)?.encoding;
 if (!encoding) throw new Error('Missing GeoArrow geometry encoding');

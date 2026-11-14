@@ -141,8 +141,8 @@ test('KMZ vector source exposes metadata, resources, and spatial filtering', asy
       [2, 3]
     ]
   });
-  expect(features.shape).toBe('arrow-table');
-  if (features.shape === 'arrow-table') expect(features.data.numRows).toBe(1);
+  expect(features).toBeInstanceOf(Table);
+  expect((features as Table).numRows).toBe(1);
   expect(new TextDecoder().decode(await source.getResource('images/map.png'))).toBe('image');
   await source.close();
 });

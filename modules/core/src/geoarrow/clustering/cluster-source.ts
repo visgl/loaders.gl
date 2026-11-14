@@ -229,15 +229,12 @@ export class ClusterSource extends DataSource<ClusterSourceData, {}> implements 
     const table = builder.finishTable();
     const preference = parameters.geoarrow?.encodingPreference;
     if (preference && preference !== 'geoarrow.wkb') {
-      return {
-        shape: 'arrow-table',
-        data: convertGeoArrowGeometry(
-          table.data,
-          preference === 'optimized' ? 'geoarrow.point' : 'geoarrow.geometry'
-        )
-      };
+      return convertGeoArrowGeometry(
+        table.data,
+        preference === 'optimized' ? 'geoarrow.point' : 'geoarrow.geometry'
+      );
     }
-    return table;
+    return table.data;
   }
 
   /** Retrieves a member's original geometry and properties; Arrow rows are materialized on demand. */

@@ -5,6 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {VectorSourceLayer, type VectorSourceLayerProps} from '@loaders.gl/deck-layers';
+import {VectorFeatureTableScanSource} from '@loaders.gl/core/scan';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {VectorSet} from '../src/vector-source-layer/vector-set';
 function createDeferredPromise<T>() {
@@ -357,7 +358,7 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
         return {metadata: {}, fields: []};
       },
       async getFeatures() {
-        return ARROW_TABLE as any;
+        return ARROW_TABLE.data;
       }
     } as any,
     layers: ['roads'],
@@ -366,20 +367,36 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
     debounceTime: 0
   });
   await vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
-  expect(vectorSet.data, 'VectorSet keeps Arrow tables').toBe(ARROW_TABLE);
+  expect(vectorSet.data, 'VectorSet keeps Arrow tables').toBe(ARROW_TABLE.data);
+  const source = {
+    async getMetadata() {
+      return {name: 'roads', keywords: [], layers: [{name: 'roads'}]};
+    },
+    async getSchema() {
+      return ARROW_TABLE.schema!;
+    },
+    async getFeatures() {
+      return ARROW_TABLE.data;
+    }
+  };
+  const scanSource = new VectorFeatureTableScanSource(source, {
+    request: {
+      layers: 'roads',
+      boundingBox: [
+        [0, 1],
+        [2, 3]
+      ]
+    }
+  });
+  const scanned = await scanSource.query();
+  expect(scanned.data.numRows).toBe(ARROW_TABLE.data.numRows);
+  expect(scanned.data.schema.fields.find(field => field.name === 'geometry')?.metadata).toEqual(
+    ARROW_TABLE.data.schema.fields.find(field => field.name === 'geometry')?.metadata
+  );
+
   const layer = createLayer({
     id: 'vector-layer-arrow',
-    data: {
-      async getMetadata() {
-        return {name: 'roads', keywords: [], layers: [{name: 'roads'}]};
-      },
-      async getSchema() {
-        return ARROW_TABLE.schema;
-      },
-      async getFeatures() {
-        return ARROW_TABLE as any;
-      }
-    } as any,
+    data: source,
     layers: ['roads'],
     format: 'arrow',
     debounceTime: 0,

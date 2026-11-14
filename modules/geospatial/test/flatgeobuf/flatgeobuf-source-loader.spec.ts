@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table as NativeArrowTable} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {createDataSourceSync, fetchFile, resolvePath} from '@loaders.gl/core';
 import {
@@ -105,12 +106,12 @@ test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across fo
     boundingBox: NARROW_BOUNDING_BOX,
     format: 'binary'
   });
-  const arrow = await source.getFeatures({
+  const arrow = (await source.getFeatures({
     layers: 'countries',
     boundingBox: NARROW_BOUNDING_BOX,
     format: 'arrow'
-  });
-  expect(defaultTable.shape, 'returns Arrow tables by default').toBe('arrow-table');
+  })) as NativeArrowTable;
+  expect(defaultTable).toBeInstanceOf(NativeArrowTable);
   expect(geojson.shape, 'returns GeoJSON tables').toBe('geojson-table');
   expect(geojson.features.length > 0, 'returns matching features').toBeTruthy();
   expect(geojson.features.length < 179, 'uses indexed subset instead of full dataset').toBeTruthy();
@@ -119,15 +120,15 @@ test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across fo
     getFeatureKeys(binaryGeojson as any),
     'binary source output round-trips to the same features'
   ).toEqual(getFeatureKeys(geojson.features));
-  expect(arrow.shape, 'returns Arrow tables').toBe('arrow-table');
+  expect(arrow).toBeInstanceOf(NativeArrowTable);
   const geometryField = arrow.schema.fields[arrow.schema.fields.length - 1];
   expect(geometryField?.name, 'Arrow schema appends geometry').toBe('geometry');
   expect(
-    geometryField?.metadata?.['ARROW:extension:name'],
+    geometryField?.metadata.get('ARROW:extension:name'),
     'Arrow geometry uses compact GeoArrow WKB encoding'
   ).toBe('geoarrow.wkb');
-  expect(arrow.schema.metadata?.geo, 'Arrow schema includes geo metadata').toBeTruthy();
-  const arrowGeojson = convertGeoArrowToTable(arrow.data, 'geojson-table');
+  expect(arrow.schema.metadata.get('geo'), 'Arrow schema includes geo metadata').toBeTruthy();
+  const arrowGeojson = convertGeoArrowToTable(arrow, 'geojson-table');
   expect(
     getFeatureKeys(arrowGeojson.features),
     'Arrow source output round-trips to the same features'
@@ -141,13 +142,13 @@ test('FlatGeobufSourceLoader#getFeatures reprojects Arrow and GeoJSON consistent
     format: 'geojson',
     crs: 'EPSG:3857'
   });
-  const arrow = await source.getFeatures({
+  const arrow = (await source.getFeatures({
     layers: 'countries',
     boundingBox: NARROW_BOUNDING_BOX,
     format: 'arrow',
     crs: 'EPSG:3857'
-  });
-  const arrowGeojson = convertGeoArrowToTable(arrow.data, 'geojson-table');
+  })) as NativeArrowTable;
+  const arrowGeojson = convertGeoArrowToTable(arrow, 'geojson-table');
   expect(
     getFeatureKeys(arrowGeojson.features),
     'reprojected Arrow source output matches GeoJSON source output'
@@ -165,17 +166,23 @@ test('FlatGeobufSourceLoader#getFeatures returns empty valid tables for no-match
     boundingBox: EMPTY_BOUNDING_BOX,
     format: 'binary'
   });
-  const arrow = await source.getFeatures({
+  const arrow = (await source.getFeatures({
     layers: 'countries',
     boundingBox: EMPTY_BOUNDING_BOX,
     format: 'arrow'
-  });
+  })) as NativeArrowTable;
   expect(geojson.features.length, 'empty GeoJSON response is valid').toBe(0);
   expect(
     (convertBinaryFeatureCollectionToGeojson(binary) as any).length,
     'empty binary response is valid'
   ).toBe(0);
-  expect(arrow.data.numRows, 'empty Arrow response preserves schema').toBe(0);
+  expect(arrow.numRows).toBe(0);
+  expect(arrow.schema.metadata.has('crs')).toBe(true);
+  expect(
+    arrow.schema.fields
+      .find(field => field.name === 'geometry')
+      ?.metadata.get('ARROW:extension:name')
+  ).toBe('geoarrow.wkb');
 });
 test('FlatGeobufVectorSource#query combines bbox pruning with portable projection and limit', async () => {
   const source = await createSource();

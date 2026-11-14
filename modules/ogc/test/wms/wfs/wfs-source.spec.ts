@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table as NativeArrowTable} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
 const WFS_URL = 'https://example.com/geoserver/wfs';
@@ -95,9 +96,12 @@ test('WFSSourceLoader#getFeatures returns Arrow by default', async () => {
     layers: ['roads'],
     crs: 'EPSG:4326'
   });
-  expect(table.shape, 'returns Arrow tables by default').toBe('arrow-table');
-  expect(table.data.numRows, 'preserves feature rows').toBe(1);
-  expect(table.schema?.metadata?.geo, 'adds GeoArrow metadata').toBeTruthy();
+  expect(table).toBeInstanceOf(NativeArrowTable);
+  expect((table as NativeArrowTable).numRows, 'preserves feature rows').toBe(1);
+  expect(
+    (table as NativeArrowTable).schema.metadata.get('geo'),
+    'adds GeoArrow metadata'
+  ).toBeTruthy();
 });
 test('WFSSourceLoader#getFeatures supports explicit GeoJSON', async () => {
   const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
@@ -141,8 +145,8 @@ test('WFSSourceLoader#getFeatures parses GML feature responses', async () => {
     layers: ['roads'],
     crs: 'EPSG:4326'
   });
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data.numRows).toBe(1);
+  expect(table).toBeInstanceOf(NativeArrowTable);
+  expect((table as NativeArrowTable).numRows).toBe(1);
 });
 test('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', async () => {
   const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {});
@@ -174,7 +178,7 @@ test('WFSSourceLoader#getFeaturesInBatches streams GML into Arrow batches', asyn
     batches.push(batch);
   }
   expect(batches).toHaveLength(2);
-  expect(batches[0].data.numRows).toBe(1);
+  expect((batches[0] as NativeArrowTable).numRows).toBe(1);
 });
 test('WFSSourceLoader#getFeaturesInBatches forwards GML property types', async () => {
   const source = WFSSourceLoader.createDataSourceSync(WFS_URL, {
