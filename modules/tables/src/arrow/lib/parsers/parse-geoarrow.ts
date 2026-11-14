@@ -10,7 +10,7 @@ import type {
   ArrowTableBatch
 } from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
-import type {GeoArrowLoaderOptions} from '../../exports/geoarrow-loader';
+import type {GeoArrowLoaderOptions} from '../../geoarrow-loader-types';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
 
 // Parses arrow to a columnar table

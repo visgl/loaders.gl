@@ -457,7 +457,6 @@ test('VectorSourceLayer exhausts option, viewport, and reuse update branches', a
   const stableProps = {
     ...layer.props,
     loaders: layer.props.loaders,
-    sources: layer.props.sources,
     sourceOptions: layer.props.sourceOptions
   };
 
@@ -521,7 +520,6 @@ test('VectorSourceLayer covers option defaults, direct source validation, and ta
     data: TEST_VECTOR_SOURCE as any,
     layers: undefined as any,
     loaders: undefined as any,
-    sources: undefined as any,
     sourceOptions: undefined as any
   });
   layer.initializeState();
@@ -644,7 +642,7 @@ test('VectorSourceLayer reports incompatible sources and finalizes owned URL sou
   const layer = createLayer({
     id: 'owned-vector-source',
     data: 'memory.vector',
-    sources: [sourceLoader] as any,
+    loaders: [sourceLoader] as any,
     layers: []
   });
   layer.initializeState();

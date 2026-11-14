@@ -25,7 +25,6 @@ import {
   ARROW_STRUCT,
   ARROW_BIOGRID_NODES
 } from './data/arrow/test-cases';
-const ArrowWorkerLoader = ArrowLoader;
 setLoaderOptions({core: {_workerType: 'test'}});
 test('ArrowLoader#loader conformance', () => {
   validateLoader(ArrowLoader, 'ArrowLoader');
@@ -159,7 +158,7 @@ test('ArrowLoader#parse (WORKER)', async () => {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await parse(fetchFile(ARROW_SIMPLE), ArrowWorkerLoader);
+  const data = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader);
   expect(data, 'Data returned').toBeTruthy();
 });
 test('ArrowLoader#parseInBatches(async input)', async () => {
