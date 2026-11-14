@@ -25,7 +25,7 @@ const SHAPEFILE_JS_TEST_FILES = [
 test('DBFLoader#parse arrow-table', async () => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     const encoding = testFileName === 'latin1-property' ? 'latin1' : 'utf8';
-    const options = {worker: false, dbf: {encoding, shape: 'arrow' as const}};
+    const options = {core: {worker: false}, dbf: {encoding, shape: 'arrow' as const}};
     let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const {features} = await response.json();
     response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
