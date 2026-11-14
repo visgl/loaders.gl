@@ -54,7 +54,7 @@ test.each([
   const json = createImplicitTileset({[String(name)]: value});
   await expect(
     parse(new TextEncoder().encode(JSON.stringify(json)).buffer, Tiles3DLoader, {
-      worker: false,
+      core: {worker: false},
       '3d-tiles': {loadGLTF: false}
     })
   ).rejects.toThrow(String(message));
@@ -67,7 +67,7 @@ test.each([
   const json = createImplicitTileset({}, node);
   await expect(
     parse(new TextEncoder().encode(JSON.stringify(json)).buffer, Tiles3DLoader, {
-      worker: false,
+      core: {worker: false},
       '3d-tiles': {loadGLTF: false}
     })
   ).rejects.toThrow('must not define children or externalAsset');
@@ -77,7 +77,7 @@ test('draft implicit tiling rejects spherical bounding volumes', async () => {
   const json = {...createImplicitTileset(), shapes: [{type: 'sphere', sphere: {radius: 1}}]};
   await expect(
     parse(new TextEncoder().encode(JSON.stringify(json)).buffer, Tiles3DLoader, {
-      worker: false,
+      core: {worker: false},
       '3d-tiles': {loadGLTF: false}
     })
   ).rejects.toThrow('cannot use a sphere');

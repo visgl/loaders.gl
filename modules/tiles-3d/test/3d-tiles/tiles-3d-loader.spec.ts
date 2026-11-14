@@ -67,7 +67,7 @@ test('Tiles3DLoader#Tileset file', async () => {
   expect(tileset.root.type).toBe('scenegraph');
 });
 test('Tiles3DLoader#detects extensionless tileset JSON from structure', async () => {
-  const tileset = await parse(encodeTilesetJson(), Tiles3DLoader, {worker: false});
+  const tileset = await parse(encodeTilesetJson(), Tiles3DLoader, {core: {worker: false}});
   expect(tileset.shape).toBe('tileset3d');
   expect(tileset.asset.version).toBe('1.1');
   expect(tileset.root.lodMetricValue).toBe(0);
@@ -91,7 +91,7 @@ test('Tiles3DLoader#exposes normalized CRS semantics', async () => {
       }
     }),
     Tiles3DLoader,
-    {worker: false}
+    {core: {worker: false}}
   );
 
   expect(tileset.spatialMetadata).toMatchObject({
@@ -109,7 +109,7 @@ test('Tiles3DLoader#detects JSON glTF tile content from structure', async () => 
     gltfJson.byteOffset + gltfJson.byteLength
   ) as ArrayBuffer;
   const tile = await parse(gltfArrayBuffer, Tiles3DLoader, {
-    worker: false,
+    core: {worker: false},
     '3d-tiles': {loadGLTF: false}
   });
   expect(tile.type, 'routes JSON glTF through the shared glTF content parser').toBe('glTF');
@@ -148,7 +148,7 @@ test('Tiles3DLoader#does not decode render-content extensions when glTF loading 
   ) as ArrayBuffer;
 
   const tile = await parse(gltfArrayBuffer, Tiles3DLoader, {
-    worker: false,
+    core: {worker: false},
     '3d-tiles': {loadGLTF: false}
   });
 
@@ -164,7 +164,7 @@ test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', asyn
     gltfJson.byteOffset + gltfJson.byteLength
   ) as ArrayBuffer;
   const tile = await parse(gltfArrayBuffer, Tiles3DLoader, {
-    worker: false,
+    core: {worker: false},
     '3d-tiles': {loadGLTF: true}
   });
   expect(tile.type).toBe('glTF');
@@ -173,13 +173,13 @@ test('Tiles3DLoader#reuses preprocessed JSON glTF when parsing is enabled', asyn
 test('Tiles3DLoader#reports explicit content-mode mismatches', async () => {
   await await expect(
     parse(encodeTilesetJson(), Tiles3DLoader, {
-      worker: false,
+      core: {worker: false},
       '3d-tiles': {isTileset: false}
     })
   ).rejects.toThrow(/Expected 3D tile render content; detected external tileset JSON/);
   await await expect(
     parse(new TextEncoder().encode(JSON.stringify({asset: {version: '2.0'}})), Tiles3DLoader, {
-      worker: false,
+      core: {worker: false},
       '3d-tiles': {isTileset: true}
     })
   ).rejects.toThrow(/Expected 3D Tiles tileset JSON; detected gltf/);
@@ -212,7 +212,7 @@ test('Tiles3DLoader#accepts supported required extensions', async () => {
       }
     }),
     Tiles3DLoader,
-    {worker: false, '3d-tiles': {isTileset: true}}
+    {core: {worker: false}, '3d-tiles': {isTileset: true}}
   );
   expect(tileset.extensionsRequired, 'preserves the required extensions').toEqual(
     extensionsRequired
@@ -235,7 +235,7 @@ test('Tiles3DLoader#normalizes explicit S2 bounding volumes', async () => {
       }
     }),
     Tiles3DLoader,
-    {worker: false, '3d-tiles': {isTileset: true}}
+    {core: {worker: false}, '3d-tiles': {isTileset: true}}
   );
   expect(tileset.root.boundingVolume.box.length, 'normalizes the tile traversal volume').toBe(12);
   expect(
@@ -255,7 +255,7 @@ test('Tiles3DLoader#allows unknown extensionsUsed entries', async () => {
   const tileset = await parse(
     encodeTilesetJson({extensionsUsed: ['VENDOR_optional_extension']}),
     Tiles3DLoader,
-    {worker: false, '3d-tiles': {isTileset: true}}
+    {core: {worker: false}, '3d-tiles': {isTileset: true}}
   );
   expect(tileset.extensionsUsed, 'optional unknown extensions do not prevent loading').toEqual([
     'VENDOR_optional_extension'
@@ -264,7 +264,7 @@ test('Tiles3DLoader#allows unknown extensionsUsed entries', async () => {
 test('Tiles3DLoader#rejects unsupported required extensions', async () => {
   await await expect(
     parse(encodeTilesetJson({extensionsRequired: ['VENDOR_required_extension']}), Tiles3DLoader, {
-      worker: false,
+      core: {worker: false},
       '3d-tiles': {isTileset: true}
     }),
     'names an unsupported required extension'
@@ -275,7 +275,7 @@ test('Tiles3DLoader#rejects unsupported required extensions', async () => {
         extensionsRequired: ['VENDOR_first', '3DTILES_multiple_contents', 'VENDOR_first']
       }),
       Tiles3DLoader,
-      {worker: false, '3d-tiles': {isTileset: true}}
+      {core: {worker: false}, '3d-tiles': {isTileset: true}}
     ),
     'reports every unsupported extension once in declaration order'
   ).rejects.toThrow(
@@ -285,10 +285,7 @@ test('Tiles3DLoader#rejects unsupported required extensions', async () => {
 test('Tiles3DLoader#rejects unknown binary tile types', async () => {
   const unknownTile = new TextEncoder().encode('nope').buffer as ArrayBuffer;
   await await expect(
-    parse(unknownTile, Tiles3DLoader, {
-      worker: false,
-      '3d-tiles': {isTileset: false}
-    }),
+    parse(unknownTile, Tiles3DLoader, {core: {worker: false}, '3d-tiles': {isTileset: false}}),
     'reports an unsupported resource-boundary payload'
   ).rejects.toThrow(/Invalid 3D Tiles content: expected supported binary magic or JSON object/);
 });
@@ -314,12 +311,14 @@ test('Tiles3DLoader#validates required extensions before implicit subtree fetchi
       }),
       Tiles3DLoader,
       {
-        worker: false,
-        '3d-tiles': {isTileset: true},
-        fetch: async () => {
-          fetchCallCount++;
-          throw new Error('subtree fetch should not run');
-        }
+        core: {
+          worker: false,
+          fetch: async () => {
+            fetchCallCount++;
+            throw new Error('subtree fetch should not run');
+          }
+        },
+        '3d-tiles': {isTileset: true}
       }
     ),
     'rejects before normalization starts'
@@ -346,12 +345,14 @@ test('Tiles3DLoader#finishes supported implicit parsing without subtree fetching
     }),
     Tiles3DLoader,
     {
-      worker: false,
-      '3d-tiles': {isTileset: true},
-      fetch: async () => {
-        fetchCallCount++;
-        throw new Error('initial tileset parsing must not fetch subtree availability');
-      }
+      core: {
+        worker: false,
+        fetch: async () => {
+          fetchCallCount++;
+          throw new Error('initial tileset parsing must not fetch subtree availability');
+        }
+      },
+      '3d-tiles': {isTileset: true}
     }
   );
   expect(fetchCallCount).toBe(0);
@@ -360,7 +361,7 @@ test('Tiles3DLoader#finishes supported implicit parsing without subtree fetching
 });
 test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async () => {
   const response = await fetchFile(TILE_B3DM_WITH_DRACO_URL);
-  const tile = await parse(response, [Tiles3DLoader, DracoLoader], {worker: false});
+  const tile = await parse(response, [Tiles3DLoader, DracoLoader], {core: {worker: false}});
   expect(tile).toBeTruthy();
   // @ts-expect-error type Tiles3DLoader
   expect(tile.gltf).toBeTruthy();
@@ -418,9 +419,9 @@ test('Tiles3DLoader#loads json from base64 URL', async () => {
   expect(tilesetHeader.type).toBe('TILES3D');
 });
 test('Tiles3DLoader#Tile GLTF content extension', async () => {
-  const tileset = await load(GLTF_CONTENT_TILESET_URL, Tiles3DLoader, {worker: false});
+  const tileset = await load(GLTF_CONTENT_TILESET_URL, Tiles3DLoader, {core: {worker: false}});
   const glbTileContent = await load(tileset.root.children[0].contentUrl, Tiles3DLoader, {
-    worker: false
+    core: {worker: false}
   });
   expect(glbTileContent.type).toBe('glTF');
   expect(glbTileContent.gltf).toBeTruthy();

@@ -129,8 +129,7 @@ function parseChromeTraceTextSync(
 function resolveChromeTraceLoaderShape(
   options: ChromeTraceLoaderOptions | undefined
 ): 'json' | 'arrow' {
-  // The explicit legacy option must override the namespaced loader default injected by core.
-  const shape = options?.shape ?? options?.chromeTrace?.shape;
+  const shape = options?.chromeTrace?.shape ?? options?.core?.shape;
   return shape === 'json' ? 'json' : 'arrow';
 }
 
@@ -142,8 +141,7 @@ function resolveChromeTraceLoaderBatchSize(
 ): number | undefined {
   return typeof options?.core?.batchSize === 'number'
     ? options.core.batchSize
-    : (options?.chromeTrace?.batchSize ??
-        (typeof options?.batchSize === 'number' ? options.batchSize : undefined));
+    : options?.chromeTrace?.batchSize;
 }
 
 /**

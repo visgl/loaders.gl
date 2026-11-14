@@ -6,7 +6,6 @@ import {expect, test} from 'vitest';
 import {
   getGlobalLoaderState,
   getGlobalLoaderOptions,
-  normalizeLoaderOptions,
   normalizeOptions,
   setGlobalOptions,
   applySearchParamsToUrl
@@ -32,32 +31,6 @@ const TEST_CASES = [
     }
   },
   {
-    loader: LASLoader,
-    options: {las: {skip: 2}, worker: false},
-    assert: options => {
-      expect(options.las.skip).toBe(2);
-      expect(options.core.worker).toBe(false);
-      expect(options.worker).toBe(undefined);
-    }
-  },
-  {
-    loader: LASLoader,
-    options: {las: {skip: 5}, core: {worker: true}, worker: false},
-    assert: options => {
-      expect(options.core.worker).toBe(true);
-      expect(options.worker).toBe(undefined);
-    }
-  },
-  {
-    loader: ArrowLoader,
-    options: {shape: 'object-row-table'},
-    assert: options => {
-      expect(options.core.shape).toBe('object-row-table');
-      expect(options.arrow.shape).toBe('object-row-table');
-      expect(options.shape).toBe(undefined);
-    }
-  },
-  {
     loader: ArrowLoader,
     options: {core: {shape: 'object-row-table'}},
     assert: options => {
@@ -75,7 +48,7 @@ const TEST_CASES = [
   },
   {
     loader: LASLoader,
-    options: {fetch: () => Promise.resolve(null)},
+    options: {core: {fetch: async () => new Response()}},
     assert: options => {
       expect(typeof options.core.fetch).toBe('function');
       expect(options.fetch).toBe(undefined);
@@ -97,10 +70,10 @@ test('normalizeOptions#normalizeOptions', () => {
     testCase.assert(options, testCase.url);
   }
 });
-test('normalizeOptions#movesGlobalCoreOptions', () => {
+test('normalizeOptions#mergesGlobalCoreOptions', () => {
   const originalGlobalOptions = getGlobalLoaderOptions();
   const originalClone = {...originalGlobalOptions, core: {...originalGlobalOptions.core}};
-  setGlobalOptions({worker: false});
+  setGlobalOptions({core: {worker: false}});
   const normalized = normalizeOptions({}, LASLoader, undefined, undefined);
   expect(normalized.core.worker, 'global worker option is present under core').toBe(false);
   expect(
@@ -108,26 +81,6 @@ test('normalizeOptions#movesGlobalCoreOptions', () => {
     'deprecated top-level alias is removed after normalization'
   ).toBe(undefined);
   setGlobalOptions(originalClone);
-});
-
-test('normalizeLoaderOptions clones nested core options and migrates legacy aliases', () => {
-  const input = {
-    baseUri: 'legacy/',
-    worker: false,
-    _worker: 'module',
-    core: {baseUrl: 'explicit/', worker: true}
-  } as any;
-  const normalized = normalizeLoaderOptions(input);
-
-  expect(normalized.core).toMatchObject({
-    baseUrl: 'explicit/',
-    worker: true,
-    _workerType: 'module'
-  });
-  expect(normalized).not.toHaveProperty('worker');
-  expect(normalized).not.toHaveProperty('_worker');
-  expect(normalized.core).not.toBe(input.core);
-  expect(input.core).toEqual({baseUrl: 'explicit/', worker: true});
 });
 
 test('normalizeOptions covers loader validation, null logging, and fixed base URLs', () => {
@@ -139,8 +92,7 @@ test('normalizeOptions covers loader validation, null logging, and fixed base UR
     extensions: ['example'],
     mimeTypes: [],
     options: {
-      core: {log: null},
-      batchSize: 10,
+      core: {log: null, batchSize: 10},
       example: {shape: 'default', known: true}
     },
     deprecatedOptions: {example: {removed: 'example.known'}}

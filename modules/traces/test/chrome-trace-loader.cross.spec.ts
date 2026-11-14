@@ -12,7 +12,7 @@ import {ChromeTraceLoader} from '../src';
 import type {ChromeTraceFileSchema} from '../src';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 /**
  * Builds a compact Chrome trace fixture that exercises Arrow encoding edge cases.

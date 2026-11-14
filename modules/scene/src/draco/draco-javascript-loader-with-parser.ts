@@ -20,7 +20,11 @@ export const DracoJavaScriptLoaderWithParser = {
     await parseDraco(
       arrayBuffer,
       options,
-      async () => await loadDracoDecoderModule(extractLoadLibraryOptions(options), 'js'),
+      async () =>
+        await loadDracoDecoderModule(
+          extractLoadLibraryOptions({core: options?.core, modules: options?.modules}),
+          'js'
+        ),
       context
     )
 } as const satisfies LoaderWithParser<DracoMesh | ArrowTable, never, DracoLoaderOptions>;

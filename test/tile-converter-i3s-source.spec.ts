@@ -143,7 +143,7 @@ test('I3S source converts original projected geometry through GLB with target-ce
   const parsed = await parse(
     await files.find(file => file.resourceId.endsWith('.glb'))!.blob.arrayBuffer(),
     GLTFLoader,
-    {worker: false}
+    {core: {worker: false}}
   );
   const scenegraph = new GLTFScenegraph(parsed);
   const primitive = scenegraph.json.meshes![0].primitives[0];

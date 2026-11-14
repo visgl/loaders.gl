@@ -9,7 +9,7 @@ import {GLTFLoader, _getMemoryUsageGLTF} from '@loaders.gl/scene/gltf';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 const GLB_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/143.glb';
 test('3D Tiles#getMemoryUsageGLTF', async () => {
-  const gltfWithBuffers = await load(GLB_URL, GLTFLoader, {worker: false});
+  const gltfWithBuffers = await load(GLB_URL, GLTFLoader, {core: {worker: false}});
   const data = gltfWithBuffers;
   expect(data, 'GLTFLoader returned parsed data').toBeTruthy();
   // Raw estimates count decoded Draco arrays rather than the compressed source buffer view.

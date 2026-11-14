@@ -436,7 +436,7 @@ async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrow
   const pointClouds = await Promise.all(
     urls.map((url) =>
       load(url, loader as any, {
-        worker: false,
+        core: {worker: false},
         las: {shape: 'arrow-table'},
         obj: {shape: 'arrow-table'},
         pcd: {shape: 'arrow-table'},
@@ -470,7 +470,7 @@ async function loadPointCloudExampleInBatches(
   }
 
   const pointCloudBatches = (await loadInBatches(urls[0], PLYLoader, {
-    worker: false,
+    core: {worker: false},
     ply: {shape: 'arrow-table', pointCloud: true}
   })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
 

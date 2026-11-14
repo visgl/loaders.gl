@@ -208,18 +208,6 @@ export function getSourceLoaderOptions(options: DataSourceOptions): StrictLoader
     }
   }
 
-  const topLevelBaseUri = typeof loadOptions.baseUri === 'string' ? loadOptions.baseUri : undefined;
-  const topLevelBaseUrl = typeof loadOptions.baseUrl === 'string' ? loadOptions.baseUrl : undefined;
-
-  if (topLevelBaseUri !== undefined || topLevelBaseUrl !== undefined) {
-    loadOptions.core ||= {};
-    if (loadOptions.core.baseUrl === undefined) {
-      loadOptions.core.baseUrl = topLevelBaseUrl ?? topLevelBaseUri;
-    }
-    delete loadOptions.baseUri;
-    delete loadOptions.baseUrl;
-  }
-
   return loadOptions as StrictLoaderOptions;
 }
 

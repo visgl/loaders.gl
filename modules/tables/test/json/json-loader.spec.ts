@@ -367,7 +367,7 @@ for (const config of STREAMING_LOADER_CONFIGS) {
 }
 test('GeoJSONLoader#loadInBatches(arrow streams GeoArrow WKB)', async () => {
   const iterator = await loadInBatches(GEOJSON_PATH, GeoJSONLoader, {
-    batchSize: 10,
+    core: {batchSize: 10},
     geojson: {shape: 'arrow'}
   });
   let rowCount = 0;
@@ -1354,6 +1354,6 @@ test('JSON table recovery uses the operation logger and respects explicit suppre
   expect(log.messages.map(message => message.message)).toEqual([
     'JSONLoader: extra Arrow field column2; dropping value'
   ]);
-  await parse(input, JSONTableLoader, {json, log, core: {worker: false, log: null}});
+  await parse(input, JSONTableLoader, {json, core: {worker: false, log: null, log}});
   expect(log.messages).toHaveLength(1);
 });

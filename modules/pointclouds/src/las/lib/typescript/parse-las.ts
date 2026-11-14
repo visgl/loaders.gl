@@ -2143,7 +2143,7 @@ function detectTwoByteColors(
 }
 
 function getBatchSize(options: LASLoaderOptions): number {
-  const batchSize = options.core?.batchSize ?? options.batchSize;
+  const batchSize = options.core?.batchSize;
   return typeof batchSize === 'number' ? batchSize : DEFAULT_BATCH_SIZE;
 }
 

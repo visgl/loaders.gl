@@ -19,7 +19,7 @@ import {
 import type {ChromeTraceEventSchema, ChromeTraceFileSchema, TraceStreamChunk} from '../src';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 /**
  * Builds one minimal metadata event.

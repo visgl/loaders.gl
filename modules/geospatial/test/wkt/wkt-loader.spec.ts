@@ -8,9 +8,7 @@ const GEOMETRYCOLLECTION_WKT_URL =
   '@loaders.gl/geospatial/wkt/test/data/wkt/geometrycollection.wkt';
 const GEOMETRYCOLLECTION_GEOJSON_URL =
   '@loaders.gl/geospatial/wkt/test/data/wkt/geometrycollection.geojson';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('WKTLoader#loader objects', async () => {
   validateLoader(WKTLoader, 'WKTLoader');
 });

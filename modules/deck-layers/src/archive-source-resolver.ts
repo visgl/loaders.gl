@@ -179,10 +179,7 @@ async function parseArchiveResource<DataT>(
   return await parse(
     data,
     loader,
-    {
-      ...loadOptions,
-      fetch: archiveFetch
-    },
+    {...loadOptions, core: {...loadOptions.core, fetch: archiveFetch}},
     {
       url: resourceUrl,
       fetch: archiveFetch,

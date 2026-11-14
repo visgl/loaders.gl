@@ -52,7 +52,10 @@ test('NDGeoJSON preserves explicit object rows, blank lines, and record separato
   for await (const batch of await parseInBatches([''], NDGeoJSONLoader)) emptyBatches.push(batch);
   expect(emptyBatches.map(batch => batch.numRows)).toEqual([0]);
   expect(emptyBatches[0].schema.fields.some(field => field.name === 'geometry')).toBe(true);
-  const batches = await parseInBatches([sequence], NDGeoJSONLoader, {...options, batchSize: 1});
+  const batches = await parseInBatches([sequence], NDGeoJSONLoader, {
+    core: {batchSize: 1},
+    ...options
+  });
   const rows = [];
   for await (const batch of batches) rows.push(...(batch as ObjectRowTable).data);
   expect(rows).toEqual(features);

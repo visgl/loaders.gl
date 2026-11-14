@@ -26,7 +26,6 @@ import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-ar
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 import {
   applySearchParamsToUrl,
-  normalizeLoaderOptions,
   normalizeOptions,
   getGlobalLoaderOptions
 } from '../loader-utils/option-utils';
@@ -186,8 +185,7 @@ export async function load(
   }
 
   if (typeof url === 'string') {
-    const normalizedOptions = normalizeLoaderOptions(resolvedOptions || {});
-    if (!normalizedOptions.core?.baseUrl) {
+    if (!resolvedOptions?.core?.baseUrl) {
       resolvedOptions = {
         ...resolvedOptions,
         core: {

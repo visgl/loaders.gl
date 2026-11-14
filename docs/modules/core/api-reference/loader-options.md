@@ -67,11 +67,6 @@ Options interpreted by the core API and shared across loaders live under `option
 | `options.core.CDN` (🚧 experimental) | `string`               | -          | Overrides the CDN base URL used for worker and runtime script loading. Supply a URL string; local-library behavior is configured separately with `core.useLocalLibraries`.                                                           |
 | `options.core.shape`                 | `string`               | per-loader | Shared default return shape for loaders that support shape selection. For example, `options.core.shape = 'object-row-table'` applies to row-table loaders unless a loader-specific option like `options.csv.shape` overrides it. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
 
-Deprecated top-level parser aliases such as `options.fetch`, `options.worker`, and `options.shape`
-are still accepted by the current implementation, but new code should use `options.core`.
-This does not restore the removed source `loadOptions` wrappers. Final v5 disposition of these
-parser aliases remains an open decision in [the release tracker](https://github.com/visgl/loaders.gl/issues/3316).
-
 ### Logging
 
 Pass a [probe.gl](https://vis.gl/probe.gl) logger as `core.log` to capture operation diagnostics on

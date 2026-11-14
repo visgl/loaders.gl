@@ -38,9 +38,7 @@ const TEST_FULL_EXTENT = {
   zmin: 0,
   zmax: 20
 };
-setLoaderOptions({
-  _worker: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async () => {
   const converter = new I3SConverter();
   const tilesetJson = await converter.convert({

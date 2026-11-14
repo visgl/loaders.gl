@@ -22,7 +22,7 @@ test('parseInBatches', async () => {
   }
   expect(metadata, 'metadata batch was generated').toBeFalsy();
   // @ts-ignore
-  batches = await parseInBatches([1, 2], NoOpLoader, {metadata: true});
+  batches = await parseInBatches([1, 2], NoOpLoader, {core: {metadata: true}});
   const values: unknown[] = [];
   metadata = false;
   for await (const batch of batches) {

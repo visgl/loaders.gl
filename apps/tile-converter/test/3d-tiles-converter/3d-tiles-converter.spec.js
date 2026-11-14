@@ -9,9 +9,7 @@ const TILESET_URL =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0';
 const SLPK_URL = './modules/tiles-3d/test/i3s/data/DA12_subset.slpk';
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
-setLoaderOptions({
-  _worker: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 // The test is flaky
 // test('tile-converter(3d-tiles)#converts i3s to 3d-tiles tileset', async (t) => {
 //   if (!isBrowser) {
