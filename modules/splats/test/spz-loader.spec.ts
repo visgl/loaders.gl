@@ -74,7 +74,7 @@ test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async () => {
   const restoreDecompressionStream = installMockDecompressionStream(formats, false);
   try {
     const table = await parse(data, SPZLoader, {modules});
-    expect(table.topology, 'returns point-list topology').toBe('point-list');
+    expect(table.schema.metadata.get('topology'), 'returns point-list topology').toBe('point-list');
     expect(table.numRows, 'parses row count').toBe(2);
     expect(
       table.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),

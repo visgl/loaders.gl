@@ -6,6 +6,7 @@ import {ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet
 import { expect, test } from "vitest";
 import { validateLoader } from 'test/common/conformance';
 import * as arrow from 'apache-arrow';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
 import { ParquetJSLoaderWithParser } from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import { ParquetLoaderWithParser } from '@loaders.gl/tables/parquet-loader';
@@ -314,7 +315,7 @@ test('ParquetJSLoader#load nested_lists file as an Arrow table', async () => {
             };
         };
         expect(table.numRows).toBe(3);
-        expect(table.schema.fields.some(field => arrow.DataType.isList(field.type)), 'schema contains Arrow lists').toBeTruthy();
+        expect(JSON.stringify(convertArrowToSchema(table.schema)).includes('"type":"list"'), 'schema contains Arrow lists').toBeTruthy();
         expect(firstRow.a.list.length, 'outer repeated group is preserved').toBe(2);
         expect(firstRow.a.list[0].element.list.length, 'nested repeated group is preserved').toBe(2);
     }
@@ -397,7 +398,7 @@ test('ParquetJSLoader#load repeated_no_annotation file as an Arrow table', async
             };
         };
         expect(table.numRows).toBe(6);
-        expect(table.schema.fields.some(field => arrow.DataType.isList(field.type)), 'schema contains Arrow lists').toBeTruthy();
+        expect(JSON.stringify(convertArrowToSchema(table.schema)).includes('"type":"list"'), 'schema contains Arrow lists').toBeTruthy();
         expect(lastRow.phoneNumbers.phone.length, 'all repeated structs are retained').toBe(3);
         expect(lastRow.phoneNumbers.phone[2].kind, 'repeated struct values are retained').toBe('mobile');
     }

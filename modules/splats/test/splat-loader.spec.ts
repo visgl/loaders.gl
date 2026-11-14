@@ -5,7 +5,7 @@ import {SPLATLoaderWithParser} from '@loaders.gl/splats/splat-loader';
 test('SPLATLoader parses raw Gaussian splats', async () => {
   const data = makeSPLATFixture();
   const table = await parse(data, SPLATLoader);
-  expect(table.topology, 'returns point-list topology').toBe('point-list');
+  expect(table.schema.metadata.get('topology'), 'returns point-list topology').toBe('point-list');
   expect(table.numRows, 'parses row count').toBe(2);
   expect(
     table.schema.metadata.get('loaders_gl.semantic_type'),

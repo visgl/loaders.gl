@@ -99,7 +99,7 @@ must not be deferred as ordinary minor-release features.
   - `CSVLoader` - Supports Apache Arrow table output through `csv.shape: 'arrow'`.
 
 - **`@loaders.gl/tables/parquet`**
-  - `ParquetLoader` can return Apache Arrow tables with `parquet.shape: 'arrow-table'` and leverages the high-performance `parquet-wasm` library.
+  - `ParquetLoader` returns native Apache Arrow tables with `parquet.shape: 'arrow'`.
   - `ParquetJSLoader` is the explicit TypeScript/main-thread alternative; `ParquetJSONLoader` is removed.
 
 - **`@loaders.gl/core/schema-utils`**
