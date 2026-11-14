@@ -240,7 +240,9 @@
       "require": "./dist/scan/arrow-query-worker.cjs"
     },
     "./scan/arrow-query-worker-entry.js": {
-      "import": "./dist/scan/arrow-query-worker-entry.js"
+      "types": "./dist/scan/arrow-query-worker-entry.d.ts",
+      "import": "./dist/scan/arrow-query-worker-entry.js",
+      "require": "./dist/scan/arrow-query-worker-entry.cjs"
     },
     "./scan/arrow-query": {
       "types": "./dist/scan/arrow-query.d.ts",
