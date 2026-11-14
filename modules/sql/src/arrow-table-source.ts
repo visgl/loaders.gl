@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {
   DataSourceOptions,
   ScanQueryMetadata,
@@ -10,11 +12,10 @@ import type {
 import {
   createScanQueryMetadata,
   DataSource,
-  makeTableScanBatch,
   type ScanColumnRole
 } from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,
@@ -65,9 +66,11 @@ export class ArrowTableSource extends DataSource<ArrowTable, ArrowTableSourceOpt
   }
 
   /** Executes a query as one bounded Arrow batch. */
-  async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<RecordBatch> {
     const result = this.query(options);
-    yield makeTableScanBatch(result);
+    const {data} = result;
+    if (data.batches.length) yield* data.batches;
+    else yield makeArrowMetadataBatch(data.schema);
   }
 }
 

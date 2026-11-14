@@ -300,7 +300,7 @@ export type TableScanSource<
   ): boolean;
   /** Explains the logical plan and physical support without decoding result rows. */
   explain?(options?: TableScanReadOptions<PredicateT>): Promise<TableQueryExplain<PredicateT>>;
-  /** Reads the query result as ordered batches without changing the logical query semantics. */
+  /** Reads ordered batches. Native Arrow sources may yield RecordBatch objects directly. */
   read(options?: TableScanReadOptions<PredicateT>): AsyncIterable<BatchT>;
 };
 

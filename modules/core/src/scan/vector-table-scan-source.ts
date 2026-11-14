@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import type {ArrowTable} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {
   GetFeaturesParameters,
@@ -14,7 +16,7 @@ import type {
   VectorSource,
   VectorTileSource
 } from '@loaders.gl/core/loader-utils';
-import {createScanQueryMetadata, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
+import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 import {explainArrowTableQuery, queryArrowTable, type ArrowQueryOptions} from './query-arrow-table';
 import {type SQLPredicate} from './sql-predicate-types';
@@ -114,13 +116,15 @@ export abstract class AddressedVectorTableScanSource {
   }
 
   /** Emits the portable query result as one bounded Arrow batch. */
-  async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<RecordBatch> {
     const result = await this.query(options);
-    yield makeTableScanBatch(result);
+    const {data} = result;
+    if (data.batches.length) yield* data.batches;
+    else yield makeArrowMetadataBatch(data.schema);
   }
 
   /** Scans the addressed query result through the same batch contract as `read()`. */
-  scan(options: ArrowQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  scan(options: ArrowQueryOptions = {}): AsyncIterableIterator<RecordBatch> {
     return this.read(options);
   }
 

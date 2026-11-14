@@ -6,6 +6,7 @@ import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
   emitQueryComplete,
+  makeTableScanBatch,
   explainTableQuery,
   getColumnarPredicateColumns,
   planTableQuery,
@@ -123,7 +124,8 @@ export const FEDERATED_TABLE_QUERY_CAPABILITIES: TableQueryCapabilities = Object
   cancellation: true
 });
 
-type ManagedTableScanSource = ManageableDataSource & TableScanSource<TableBatch, SQLPredicate>;
+type ManagedTableScanSource = ManageableDataSource &
+  TableScanSource<TableBatch | arrow.RecordBatch, SQLPredicate>;
 
 type MappedSourceField = Readonly<{
   sourceName: string;
@@ -326,7 +328,14 @@ export class FederatedTableScanSource
         telemetry.sourcesRead++;
         let sourceBatchIndex = 0;
         try {
-          for await (const batch of resolvedSource.source.read(sourceReadOptions)) {
+          for await (const input of resolvedSource.source.read(sourceReadOptions)) {
+            const batch =
+              'shape' in input
+                ? input
+                : makeTableScanBatch({
+                    shape: 'arrow-table',
+                    data: new arrow.Table(input.schema, [input])
+                  });
             throwIfAborted(options.signal);
             if (remaining <= 0) {
               telemetry.earlyTerminationReason = 'limit';

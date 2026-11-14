@@ -254,7 +254,7 @@ test('unsupported inputs and changed output types fail with one completion summa
       {},
       {source: 'https://example.invalid' as unknown as ArrowTable, onQueryComplete: complete}
     )
-  ).rejects.toThrow('Query source must');
+  ).rejects.toThrow('explicit URL-capable source loaders');
   expect(complete).toHaveBeenCalledTimes(1);
   const table = makeTable();
   const drift: TableScanSource = {

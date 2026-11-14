@@ -18,7 +18,7 @@ import {
 import type {ArrowTable, ArrowTableBatch, DataType, Schema} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {queryArrowTable, type SQLPredicate} from '@loaders.gl/core/scan';
-import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {FederatedTableScanSource, parseSQLPredicate, query} from '@loaders.gl/core/scan';
 
 const TEST_CAPABILITIES = Object.freeze({
   predicate: 'residual' as const,
@@ -56,6 +56,26 @@ describe('FederatedTableScanSource', () => {
     });
     expect(await collectBatches(source.read({limit: 0}))).toEqual([]);
     expect(physicalSource.readCount).toBe(0);
+  });
+
+  test('reads native Arrow batches through federation and public queries', async () => {
+    const data = arrow.tableFromArrays({id: new Int32Array([1, 2])});
+    const physical = new TestTableScanSource('native', [
+      {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data}
+    ]);
+    const source = Object.assign(physical, {
+      async *read() {
+        yield* data.batches;
+      }
+    });
+    const manager = new DataSourceManager();
+    manager.add({dataSourceId: 'native', dataSource: source});
+    const federated = new FederatedTableScanSource(manager, {
+      sources: [{dataSourceId: 'native'}]
+    });
+    expect((await query({}, {source})).getChild('id')?.toArray()).toEqual(new Int32Array([1, 2]));
+    const batches = await collectBatches(federated.read());
+    expect(batches[0].data.getChild('id')?.toArray()).toEqual(new Int32Array([1, 2]));
   });
 
   test('resolves manager sources and appends ordered batches with global provenance', async () => {
