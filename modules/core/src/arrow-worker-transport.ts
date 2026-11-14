@@ -5,7 +5,9 @@
 import * as arrow from 'apache-arrow';
 import {
   dehydrateArrowTable,
+  dehydrateArrowRecordBatch,
   hydrateArrowTable,
+  hydrateArrowRecordBatch,
   type DehydratedArrowTable,
   type SplitArrowBuffersOptions
 } from '@math.gl/arrow';
@@ -73,10 +75,11 @@ export function serializeNativeArrowWorkerResult(
   if (!batch && !(result instanceof arrow.Table)) {
     throw new Error('Workers require Arrow table output');
   }
-  const table = batch ? new arrow.Table(result.schema, [result]) : result;
   return {
     transport: batch ? 'arrow-record-batch' : 'arrow-table-columns',
-    columns: serializeWorkerColumns(table, options)
+    columns: batch
+      ? {data: dehydrateArrowRecordBatch(result, options)}
+      : serializeWorkerColumns(result, options)
   };
 }
 
@@ -90,6 +93,9 @@ export function deserializeNativeArrowWorkerResult(
     !hasArrowWorkerColumns(payload.columns)
   ) {
     throw new Error('Workers require Arrow column transport');
+  }
+  if (payload.transport === 'arrow-record-batch' && !payload.columns.arrowBatchMetadata) {
+    return hydrateArrowRecordBatch(payload.columns.data);
   }
   const data = hydrateWorkerTable(payload.columns);
   return payload.transport === 'arrow-record-batch' ? data.batches[0] : data;

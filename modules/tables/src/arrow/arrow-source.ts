@@ -1,8 +1,9 @@
-import type {RecordBatch} from 'apache-arrow';
+import {Table, type RecordBatch} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   createScanQueryMetadata,
   executeTableScanBatches,
+  makeTableScanBatch,
   explainTableQuery
 } from '@loaders.gl/core/loader-utils';
 import type {
