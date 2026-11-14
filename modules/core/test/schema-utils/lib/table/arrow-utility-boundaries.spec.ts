@@ -23,7 +23,7 @@ test('Arrow utility adapters cover row selection and every table shape', () => {
   expect(selected.getChild('value')?.get(0)).toBe(3);
   expect(() => selectArrowTableRows(data, [0], ['missing'])).toThrow(/could not read column/);
 
-  expect(convertArrowToTable(data, 'arrow-table').shape).toBe('arrow-table');
+  expect(convertArrowToTable(data, 'arrow')).toBe(data);
   expect(convertArrowToTable(data, 'columnar-table').data.value).toBeInstanceOf(Float64Array);
   expect(convertArrowToTable(data, 'array-row-table').data).toHaveLength(3);
   expect(convertArrowToTable(data, 'object-row-table').data[0]).toMatchObject({name: 'a'});

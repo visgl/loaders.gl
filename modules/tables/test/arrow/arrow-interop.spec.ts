@@ -26,8 +26,7 @@ import {
 test.each([
   'object-row-table',
   'array-row-table',
-  'columnar-table',
-  'arrow-table'
+  'columnar-table'
 ] as const)('Arrow converter materializes %s and restores an upstream table', shape => {
   const table = arrow.tableFromArrays({value: new Int32Array([7, 9])});
   const converted = ArrowConverter.convert(table, shape);
@@ -42,7 +41,7 @@ test('Arrow converter detects wrappers and rejects unsupported conversion routes
   expect(ArrowConverter.detectInputShape(table)).toBe('arrow');
   expect(ArrowConverter.detectInputShape(null)).toBe(null);
   expect(ArrowConverter.detectInputShape({shape: 'arrow-table', data: table})).toBe(null);
-  expect(ArrowConverter.canConvert('arrow', 'arrow-table')).toBe(true);
+  expect(ArrowConverter.canConvert('arrow', 'arrow-table')).toBe(false);
   expect(ArrowConverter.canConvert('arrow-table', 'arrow')).toBe(true);
   expect(ArrowConverter.canConvert('arrow', 'arrow')).toBe(false);
   expect(ArrowConverter.canConvert('array-row-table', 'object-row-table')).toBe(false);

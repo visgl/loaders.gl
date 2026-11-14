@@ -6,7 +6,7 @@ import type {ArrowTable, ArrowTableBatch, Table, TableBatch} from '@loaders.gl/c
 import {convertArrowToTable} from './convert-arrow-table';
 
 /** Table layouts supported by the Arrow wrapper adapters. */
-type ArrowTableShape = Exclude<Table['shape'], 'geojson-table'>;
+type ArrowTableShape = Exclude<Table['shape'], 'geojson-table' | 'arrow-table'>;
 
 /** A converted layout retaining the input wrapper's additional properties. */
 type ConvertedArrowTable<Input, Shape extends ArrowTableShape> = Omit<
@@ -17,8 +17,7 @@ type ConvertedArrowTable<Input, Shape extends ArrowTableShape> = Omit<
 
 /**
  * Converts an Arrow wrapper while preserving its schema and additional metadata.
- * Returns the original wrapper for Arrow output. Other layouts use the existing
- * Arrow conversion semantics, inferring a schema only when the wrapper omits it.
+ * Infers a schema when the wrapper omits it. Use the native Arrow table directly for Arrow output.
  * @param table Arrow table wrapper.
  * @param shape Requested table layout.
  * @returns Converted table with the input wrapper's metadata.
@@ -28,9 +27,6 @@ export function convertArrowTable<Input extends ArrowTable, Shape extends ArrowT
   shape: Shape
 ): ConvertedArrowTable<Input, Shape>;
 export function convertArrowTable(table: ArrowTable, shape: ArrowTableShape): Table {
-  if (shape === table.shape) {
-    return table;
-  }
   const converted = convertArrowToTable(table.data, shape);
   return {
     ...table,
@@ -41,7 +37,7 @@ export function convertArrowTable(table: ArrowTable, shape: ArrowTableShape): Ta
 
 /**
  * Converts an Arrow batch while retaining length, batch type, progress and metadata.
- * Returns the original batch for Arrow output. Does not combine or buffer batches.
+ * Does not combine or buffer batches.
  * @param batch Arrow table batch.
  * @param shape Requested table layout.
  * @returns Converted batch with the input batch's metadata.

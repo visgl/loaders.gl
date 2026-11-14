@@ -21,7 +21,9 @@ export function deserializeArrowTableResult(
 ): Table | NativeArrowTable {
   const table = deserializeArrowTableBatch(result);
   const shape = options?.arrow?.shape;
-  return shape === 'arrow' ? table.data : convertArrowTable(table, shape || 'columnar-table');
+  if (shape === 'arrow') return table.data;
+  if (shape === 'arrow-table') return table;
+  return convertArrowTable(table, shape || 'columnar-table');
 }
 
 /** Hydrates column buffers while preserving batch metadata. */

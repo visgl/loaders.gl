@@ -17,7 +17,7 @@ const convertGeoArrowUnchecked = convertGeoArrow as (
     | 'array-row-table'
     | 'columnar-table'
     | 'geojson-table'
-    | 'arrow-table',
+    | 'arrow',
   options?: unknown
 ) => unknown;
 
@@ -42,7 +42,8 @@ export const GeoArrowTableConverter: Converter<
   | 'array-row-table'
   | 'columnar-table'
   | 'geojson-table'
-  | 'arrow-table',
+  | 'arrow-table'
+  | 'arrow',
   GeoArrowConvertFromOptions | GeoArrowConvertToOptions
 > = {
   id: 'geoarrow-table',
@@ -60,12 +61,12 @@ export const GeoArrowTableConverter: Converter<
     'array-row-table',
     'columnar-table',
     'geojson-table',
-    'arrow-table'
+    'arrow'
   ],
   canConvert(sourceShape, targetShape) {
     const sourceIsGeoArrow = sourceShape === 'geoarrow';
     const targetIsGeoArrow = targetShape === 'geoarrow';
-    return sourceIsGeoArrow !== targetIsGeoArrow;
+    return targetShape !== 'arrow-table' && sourceIsGeoArrow !== targetIsGeoArrow;
   },
   detectInputShape(input) {
     return isGeoArrowApacheTable(input as any) ? 'geoarrow' : null;
@@ -82,8 +83,8 @@ export const GeoArrowTableConverter: Converter<
         return convertGeoArrowUnchecked(input, 'columnar-table', options);
       case 'geojson-table':
         return convertGeoArrowUnchecked(input, 'geojson-table', options);
-      case 'arrow-table':
-        return convertGeoArrowUnchecked(input, 'arrow-table', options);
+      case 'arrow':
+        return convertGeoArrowUnchecked(input, 'arrow', options);
       default:
         throw new Error(`Unsupported GeoArrow conversion target: ${targetShape}`);
     }

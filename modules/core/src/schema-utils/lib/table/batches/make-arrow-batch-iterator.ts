@@ -3,31 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Table} from '@loaders.gl/core/schema';
 
 import {convertSchemaToArrow} from '../../schema/convert-arrow-schema';
 import {getTableLength, getTableNumCols, getTableCellAt} from '../tables/table-accessors';
-
-/**
- * Returns an iterator that yields a single table as a sequence of ArrowTable batches.
- * @note All batches will have the same shape and schema as the original table.
- */
-export function* makeArrowTableBatchIterator(
-  table: Table,
-  options?: {batchSize?: number}
-): IterableIterator<ArrowTableBatch> {
-  for (const batch of makeWrappedTableRecordBatchIterator(table, options)) {
-    const arrowTable = new arrow.Table([batch]);
-    yield {
-      ...batch,
-      shape: 'arrow-table',
-      schema: table.schema,
-      batchType: 'data',
-      length: arrowTable.numRows,
-      data: arrowTable
-    };
-  }
-}
 
 /** Streams native Arrow batches, splitting existing batches without rebuilding columns. */
 function* sliceNativeArrowBatches(
@@ -68,8 +47,8 @@ export function* makeWrappedTableRecordBatchIterator(
   table: Table,
   options?: {batchSize?: number}
 ): IterableIterator<arrow.RecordBatch> {
-  if (table.shape === 'arrow-table' && options?.batchSize === undefined) {
-    yield* table.data.batches;
+  if (table.shape === 'arrow-table') {
+    yield* sliceNativeArrowBatches(table.data, options?.batchSize);
     return;
   }
   const arrowSchema = convertSchemaToArrow(table.schema!);

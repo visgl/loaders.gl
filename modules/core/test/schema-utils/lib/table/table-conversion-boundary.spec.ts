@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import * as arrow from 'apache-arrow';
+import {convert, makeTableFromData, TableConverter} from '@loaders.gl/core/schema-utils';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 import {
@@ -59,9 +61,17 @@ test('table converters cover every supported shape and identity path', () => {
     id: new Int32Array([1, 2]),
     name: ['one', null]
   });
-  const arrowTable = convertTable(objectTable, 'arrow-table');
-  expect(arrowTable.shape).toBe('arrow-table');
-  expect(arrowTable.data.numRows).toBe(2);
+  const arrowTable = convertTable(objectTable, 'arrow');
+  expect(arrowTable).toBeInstanceOf(arrow.Table);
+  expect(arrowTable.numRows).toBe(2);
+  expect(convertTable(arrowTable, 'arrow')).toBe(arrowTable);
+  expect(makeTableFromData(arrowTable)).toBe(arrowTable);
+  expect(convert(arrowTable, 'array-row-table', TableConverter)).toMatchObject(arrayTable);
+  expect(convert(objectTable, 'arrow', TableConverter)).toBeInstanceOf(arrow.Table);
+  expect(() => convert(objectTable, 'arrow-table', TableConverter)).toThrow('No conversion path');
+  const empty = convertTable({...objectTable, data: []}, 'arrow');
+  expect(empty.numRows).toBe(0);
+  expect(empty.schema.names).toEqual(['id', 'name']);
   expect(() => convertTable(objectTable, 'invalid' as never)).toThrow('invalid');
 });
 
@@ -87,12 +97,7 @@ test('batch conversion preserves metadata across all target shapes', async () =>
     bytesUsed: 42
   };
 
-  for (const shape of [
-    'object-row-table',
-    'array-row-table',
-    'columnar-table',
-    'arrow-table'
-  ] as const) {
+  for (const shape of ['object-row-table', 'array-row-table', 'columnar-table'] as const) {
     const converted = convertBatch(batch, shape);
     expect(converted.shape).toBe(shape);
     expect(converted.bytesUsed).toBe(42);
@@ -104,6 +109,31 @@ test('batch conversion preserves metadata across all target shapes', async () =>
     expect(collected).toHaveLength(1);
     expect(collected[0].shape).toBe(shape);
   }
+
+  const native = convertBatch(batch, 'arrow');
+  expect(native).toBeInstanceOf(arrow.RecordBatch);
+  expect(convertBatch(native, 'arrow')).toBe(native);
+  const table = new arrow.Table(native.schema, [native, native]);
+  const wrapper = {
+    shape: 'arrow-table' as const,
+    batchType: 'data' as const,
+    data: table,
+    length: 4
+  };
+  expect(() => convertBatch(wrapper, 'arrow')).toThrow('convertBatches');
+  expect(await Array.fromAsync(convertBatches([native, wrapper], 'arrow'))).toEqual([
+    native,
+    native,
+    native
+  ]);
+  const empty = convertBatch({...batch, data: [], length: 0}, 'arrow');
+  expect(empty.numRows).toBe(0);
+  expect(empty.schema.names).toEqual(['id', 'name']);
+  empty.schema.metadata.set('stage', 'final');
+  const collected = await makeTableFromBatches(convertBatches([native, empty], 'arrow'));
+  expect(collected?.numRows).toBe(2);
+  expect(collected?.schema.metadata.get('stage')).toBe('final');
+  expect(native.schema.metadata.has('stage')).toBe(false);
 
   expect(() => convertBatch(batch, 'invalid' as never)).toThrow('invalid');
   const invalidIterator = convertBatches([batch], 'invalid' as never);

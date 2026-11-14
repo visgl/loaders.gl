@@ -1829,13 +1829,13 @@ function createParquetBatch(
   rowCount: number,
   rowGroupRowIndices?: readonly number[]
 ): ParquetBatch {
-  const arrowTable = convertTable({shape: 'columnar-table', schema, data: columns}, 'arrow-table');
+  const arrowTable = convertTable({shape: 'columnar-table', schema, data: columns}, 'arrow');
   return createParquetBatchFromArrow(
     metadata,
     schema,
     rowGroupIndex,
     rowGroupRowOffset,
-    arrowTable.data,
+    arrowTable,
     rowCount,
     rowGroupRowIndices
   );

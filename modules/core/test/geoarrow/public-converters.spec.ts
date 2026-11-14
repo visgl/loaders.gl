@@ -35,7 +35,7 @@ test.each([
   'array-row-table',
   'columnar-table',
   'geojson-table',
-  'arrow-table'
+  'arrow'
 ] as const)('the combined bundle distinguishes a %s wrapper from binary features', shape => {
   const features: Feature[] = [
     {type: 'Feature', geometry: {type: 'Point', coordinates: [1, 2]}, properties: {name: 'point'}}
@@ -45,10 +45,13 @@ test.each([
   const table =
     shape === 'geojson-table'
       ? {shape, type: 'FeatureCollection' as const, features, schema: {fields: [], metadata: {}}}
-      : convertTable(sourceTable, shape);
+      : shape === 'arrow'
+        ? convertTable(sourceTable, 'arrow')
+        : convertTable(sourceTable, shape);
   const converted = convert(table, 'geoarrow', GEOARROW_CONVERTERS) as arrow.Table;
   expect(converted).toBeInstanceOf(arrow.Table);
   expect(converted.numRows).toBe(1);
+  expect(convert(converted, 'arrow', GEOARROW_CONVERTERS)).toBe(converted);
   const restored = convert(converted, 'geojson-table', GEOARROW_CONVERTERS) as GeoJSONTable;
   expect(restored.features).toEqual(features);
 });

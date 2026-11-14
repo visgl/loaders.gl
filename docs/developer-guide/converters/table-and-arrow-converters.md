@@ -47,12 +47,12 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 | --- | --- |
 | Package | `@loaders.gl/core/schema-utils` |
 | `id` | `'table'` |
-| `from` | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'` |
-| `to` | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'` |
-| Detection | Reads `input.shape` on loaders.gl table wrappers |
-| Typical use | Normalize one loaders.gl wrapper into another |
+| `from` | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow'`, legacy `'arrow-table'` |
+| `to` | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow'` |
+| Detection | Recognizes native tables and reads `input.shape` on loaders.gl table wrappers |
+| Typical use | Convert between native Arrow and loaders.gl row or column tables |
 
-`TableConverter` is the wrapper-to-wrapper bridge. It does not deal with raw Apache Arrow `Table` instances.
+`TableConverter` can convert native Arrow directly to row or column tables and back.
 
 ## ArrowConverter
 
@@ -61,7 +61,7 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 | Package | `@loaders.gl/tables/arrow` |
 | `id` | `'arrow'` |
 | `from` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
-| `to` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
+| `to` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
 | Detection | Treats raw Apache Arrow `Table` instances as `'arrow'` |
 | Typical use | Bridge raw Arrow tables into loaders.gl wrappers, or write wrappers back to Arrow |
 
@@ -80,10 +80,8 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 
 ```ts
 import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
-import {ArrowConverter} from '@loaders.gl/tables/arrow';
-
-const objectRows = convert(arrowTable, 'object-row-table', [ArrowConverter, TableConverter]);
-const rawArrow = convert(objectRows, 'arrow', [TableConverter, ArrowConverter]);
+const objectRows = convert(arrowTable, 'object-row-table', TableConverter);
+const rawArrow = convert(objectRows, 'arrow', TableConverter);
 ```
 
 ## When To Stop At Arrow

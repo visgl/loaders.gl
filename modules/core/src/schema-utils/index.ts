@@ -54,10 +54,7 @@ export {
   makeTableBatchIterator,
   makeBatchFromTable
 } from './lib/table/batches/make-table-batch-iterator';
-export {
-  makeArrowTableBatchIterator,
-  makeArrowRecordBatchIterator
-} from './lib/table/batches/make-arrow-batch-iterator';
+export {makeArrowRecordBatchIterator} from './lib/table/batches/make-arrow-batch-iterator';
 export {
   selectArrowTableRows,
   queryArrowTable,

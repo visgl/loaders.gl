@@ -8,7 +8,6 @@ import type {
   ArrayRowTable,
   ObjectRowTable,
   ColumnarTable,
-  ArrowTable,
   GeoJSONTable
 } from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
@@ -20,7 +19,7 @@ import type {GeoArrowConvertFromOptions, GeoArrowConvertToOptions} from './geoar
 /**
  * Converts between GeoArrow Arrow tables and loaders.gl table shapes.
  */
-export function convertGeoArrow(input: arrow.Table, shape: 'arrow-table'): ArrowTable;
+export function convertGeoArrow(input: arrow.Table, shape: 'arrow'): arrow.Table;
 export function convertGeoArrow(input: arrow.Table, shape: 'array-row-table'): ArrayRowTable;
 export function convertGeoArrow(input: arrow.Table, shape: 'object-row-table'): ObjectRowTable;
 export function convertGeoArrow(input: arrow.Table, shape: 'columnar-table'): ColumnarTable;
@@ -38,11 +37,11 @@ export function convertGeoArrow(
     | 'array-row-table'
     | 'columnar-table'
     | 'geojson-table'
-    | 'arrow-table',
+    | 'arrow',
   options?: GeoArrowConvertFromOptions | GeoArrowConvertToOptions
 ): Table | arrow.Table {
   if (isGeoArrowApacheTable(input)) {
-    if (shape === 'geoarrow') {
+    if (shape === 'geoarrow' || shape === 'arrow') {
       return input;
     }
     return convertGeoArrowToTable(input, shape);

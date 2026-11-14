@@ -2,13 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  Table,
-  ArrayRowTable,
-  ObjectRowTable,
-  ColumnarTable,
-  ArrowTable
-} from '@loaders.gl/core/schema';
+import type {Table, ArrayRowTable, ObjectRowTable, ColumnarTable} from '@loaders.gl/core/schema';
 import {
   getTableCell,
   getTableLength,
@@ -17,12 +11,13 @@ import {
 } from './table-accessors';
 import {deduceTableSchema} from '../../schema/deduce-table-schema';
 import {makeColumnFromField} from './table-column';
-import {convertTableToArrow} from './convert-arrow-table';
+import type * as arrow from 'apache-arrow';
+import {convertArrowToTable, convertTableToArrow} from './convert-arrow-table';
 
-export function convertTable(table: Table, shape: 'object-row-table'): ObjectRowTable;
-export function convertTable(table: Table, shape: 'array-row-table'): ArrayRowTable;
-export function convertTable(table: Table, shape: 'columnar-table'): ColumnarTable;
-export function convertTable(table: Table, shape: 'arrow-table'): ArrowTable;
+export function convertTable(table: Table | arrow.Table, shape: 'object-row-table'): ObjectRowTable;
+export function convertTable(table: Table | arrow.Table, shape: 'array-row-table'): ArrayRowTable;
+export function convertTable(table: Table | arrow.Table, shape: 'columnar-table'): ColumnarTable;
+export function convertTable(table: Table | arrow.Table, shape: 'arrow'): arrow.Table;
 
 /**
  * Convert a table to a different shape
@@ -31,9 +26,11 @@ export function convertTable(table: Table, shape: 'arrow-table'): ArrowTable;
  * @returns
  */
 export function convertTable(
-  table: Table,
-  shape: 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow-table'
+  table: Table | arrow.Table,
+  shape: 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow'
 ) {
+  if (shape === 'arrow') return convertTableToArrow(table);
+  if (!('shape' in table)) return convertArrowToTable(table, shape);
   switch (shape) {
     case 'object-row-table':
       return convertToObjectRowTable(table);
@@ -41,8 +38,6 @@ export function convertTable(
       return convertToArrayRowTable(table);
     case 'columnar-table':
       return convertToColumnarTable(table);
-    case 'arrow-table':
-      return convertToArrowTable(table);
     default:
       throw new Error(shape);
   }
@@ -109,44 +104,3 @@ export function convertToObjectRowTable(table: Table): ObjectRowTable {
     data
   };
 }
-
-/**
- * Convert a table to apache arrow format
- * @note this depends on the `@loaders.gl/tables/arrow module being imported
- */
-export function convertToArrowTable(table: Table): ArrowTable {
-  const schema = table.schema || deduceTableSchema(table);
-  const arrowTable = convertTableToArrow({...table, schema});
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: arrowTable
-  };
-}
-
-/**
- *
- * @note - should be part of schema module
- *
-export function convertColumnarToRowFormatTable(columnarTable: ColumnarTable): ObjectRowTable {
-  const tableKeys = Object.keys(columnarTable);
-  const tableRowsCount = columnarTable[tableKeys[0]].length;
-
-  const rowFormatTable: {}[] = [];
-
-  for (let index = 0; index < tableRowsCount; index++) {
-    const tableItem = {};
-    for (let keyIndex = 0; keyIndex < tableKeys.length; keyIndex++) {
-      const fieldName = tableKeys[keyIndex];
-      tableItem[fieldName] = columnarTable[fieldName][index];
-    }
-    rowFormatTable.push(tableItem);
-  }
-
-  return {
-    shape: 'object-row-table',
-    schema: columnarTable.schema,
-    data: rowFormatTable
-  };
-}
-*/
