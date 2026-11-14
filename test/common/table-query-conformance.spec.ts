@@ -43,7 +43,7 @@ test('Arrow and Parquet execute one portable projection, predicate, and limit co
   );
   const parquetRows: Array<Record<string, unknown>> = [];
   for await (const batch of parquetSource.read(query)) {
-    parquetRows.push(...batch.data.toArray().map(row => row.toJSON()));
+    parquetRows.push(...batch.toArray().map(row => row.toJSON()));
   }
 
   expect(
