@@ -9,8 +9,6 @@ import type {
   MeshAttribute,
   MeshArrowTable,
   MeshTable,
-  ArrowTable,
-  ColumnarTable,
   Schema
 } from '@loaders.gl/core/schema';
 import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/core/schema';
@@ -57,7 +55,7 @@ export type MeshArrowTableOptions = {
 /** Convert a mesh to a columnar table. */
 export function convertMeshToTable(mesh: Mesh, shape: 'columnar-table'): MeshTable;
 /** Convert a mesh to an Apache Arrow table. */
-export function convertMeshToTable(mesh: Mesh, shape: 'arrow-table'): MeshArrowTable;
+export function convertMeshToTable(mesh: Mesh, shape: 'arrow'): arrow.Table;
 
 /**
  * Convert a mesh to a specific table shape.
@@ -67,13 +65,13 @@ export function convertMeshToTable(mesh: Mesh, shape: 'arrow-table'): MeshArrowT
  */
 export function convertMeshToTable(
   mesh: Mesh,
-  shape: 'columnar-table' | 'arrow-table'
-): Mesh | ColumnarTable | ArrowTable | MeshArrowTable {
+  shape: 'columnar-table' | 'arrow'
+): MeshTable | arrow.Table {
   switch (shape) {
     case 'columnar-table':
       return convertMeshToColumnarTable(mesh);
-    case 'arrow-table':
-      return convertMeshToArrowTable(mesh);
+    case 'arrow':
+      return convertMeshToArrowTableWrapper(mesh).data;
     default:
       throw new Error(shape);
   }
@@ -102,12 +100,12 @@ export function convertMeshToColumnarTable(mesh: Mesh): MeshTable {
 }
 
 /**
- * Convert a loaders.gl Mesh to an Apache Arrow table.
+ * Convert a loaders.gl Mesh to a legacy Arrow mesh wrapper for existing mesh consumers.
  * @param mesh Mesh to convert.
  * @param batchSize Reserved for future chunked Arrow conversion.
  * @returns Mesh data as an Apache Arrow table wrapper.
  */
-export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): MeshArrowTable {
+export function convertMeshToArrowTableWrapper(mesh: Mesh, batchSize?: number): MeshArrowTable {
   return makeMeshArrowTable(mesh.attributes, {
     schema: mesh.schema,
     topology: mesh.topology,

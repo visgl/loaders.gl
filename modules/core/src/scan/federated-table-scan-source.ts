@@ -25,7 +25,7 @@ import {
 import type {DataType, Field, Schema, TableBatch} from '@loaders.gl/core/schema';
 import {
   convertArrowToSchema,
-  convertBatch,
+  convertTableToArrow,
   convertSchemaToArrow
 } from '@loaders.gl/core/schema-utils';
 import {queryArrowTable} from './query-arrow-table';
@@ -340,17 +340,16 @@ export class FederatedTableScanSource
             sourceBatchesDecoded++;
             sourceRowsRead += batch.length;
             if (batch.length <= 0) continue;
-            const physicalTable = convertBatch(
-              batch.schema ? batch : {...batch, schema: resolvedSource.metadata.schema},
-              'arrow-table'
+            const physicalTable = convertTableToArrow(
+              batch.schema ? batch : {...batch, schema: resolvedSource.metadata.schema}
             );
-            const sourceResult = queryArrowTable(physicalTable.data, {
+            const sourceResult = queryArrowTable(physicalTable, {
               predicate: sourceResidualPredicate,
               limit: Number.isFinite(sourceRemaining) ? sourceRemaining : undefined,
               signal: options.signal
             });
             if (sourceResidualPredicate) {
-              sourceRowsTested += physicalTable.data.numRows;
+              sourceRowsTested += physicalTable.numRows;
               sourceRowsRetained += sourceResult.numRows;
             }
             sourceRemaining -= sourceResult.numRows;

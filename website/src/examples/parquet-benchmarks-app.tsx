@@ -647,8 +647,8 @@ async function createParquetBenchmarkImplementations(): Promise<
           compressors: hyparquetCompressors.compressors
         });
         const columnarTable = loadersGlSchemaUtils.makeTableFromData(columns);
-        const arrowTable = loadersGlSchemaUtils.convertTable(columnarTable, 'arrow-table');
-        return arrowTable.data.numRows;
+        const arrowTable = loadersGlSchemaUtils.convertTable(columnarTable, 'arrow');
+        return arrowTable.numRows;
       }
     }
   ];

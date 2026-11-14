@@ -8,10 +8,13 @@ import type {
   ArrayRowTable,
   ObjectRowTable,
   ColumnarTable,
-  ArrowTable,
   GeoJSONTable
 } from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {
+  convertArrowToSchema,
+  convertArrowToTable,
+  isNativeArrowTable
+} from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowToTable} from '../lib/table-converters/convert-geoarrow-table';
 import {convertTableToGeoArrow} from '../convert-table-to-geoarrow';
 import {getGeometryColumnsFromSchema} from '../metadata/geoarrow-metadata';
@@ -20,13 +23,13 @@ import type {GeoArrowConvertFromOptions, GeoArrowConvertToOptions} from './geoar
 /**
  * Converts between GeoArrow Arrow tables and loaders.gl table shapes.
  */
-export function convertGeoArrow(input: arrow.Table, shape: 'arrow-table'): ArrowTable;
+export function convertGeoArrow(input: arrow.Table, shape: 'arrow'): arrow.Table;
 export function convertGeoArrow(input: arrow.Table, shape: 'array-row-table'): ArrayRowTable;
 export function convertGeoArrow(input: arrow.Table, shape: 'object-row-table'): ObjectRowTable;
 export function convertGeoArrow(input: arrow.Table, shape: 'columnar-table'): ColumnarTable;
 export function convertGeoArrow(input: arrow.Table, shape: 'geojson-table'): GeoJSONTable;
 export function convertGeoArrow(
-  input: Table,
+  input: Table | arrow.Table,
   shape: 'geoarrow',
   options?: GeoArrowConvertFromOptions
 ): arrow.Table;
@@ -38,14 +41,16 @@ export function convertGeoArrow(
     | 'array-row-table'
     | 'columnar-table'
     | 'geojson-table'
-    | 'arrow-table',
+    | 'arrow',
   options?: GeoArrowConvertFromOptions | GeoArrowConvertToOptions
 ): Table | arrow.Table {
-  if (isGeoArrowApacheTable(input)) {
-    if (shape === 'geoarrow') {
-      return input;
+  if (isNativeArrowTable(input)) {
+    if (shape === 'arrow') return input;
+    if (shape === 'geojson-table' && !isGeoArrowApacheTable(input)) {
+      return convertArrowToTable(input, 'geojson-table');
     }
-    return convertGeoArrowToTable(input, shape);
+    if (shape !== 'geoarrow') return convertGeoArrowToTable(input, shape);
+    if (isGeoArrowApacheTable(input)) return input;
   }
   if (shape !== 'geoarrow') {
     throw new Error(`Unsupported GeoArrow conversion target: ${shape}`);

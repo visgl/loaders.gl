@@ -11,7 +11,7 @@ import type {
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/core/schema';
-import {convertBatch} from '@loaders.gl/core/schema-utils';
+import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
 import {parseSQLPredicate, type SQLPredicate} from '@loaders.gl/core/scan';
 
 /** One independently disposable source used by the portable scan conformance kit. */
@@ -137,7 +137,7 @@ async function collectRows(
 ): Promise<Record<string, unknown>[]> {
   const rows: Record<string, unknown>[] = [];
   for await (const batch of source.read(options)) {
-    const arrowData = 'numRows' in batch ? batch : convertBatch(batch, 'arrow-table').data;
+    const arrowData = 'numRows' in batch ? batch : convertTableToArrow(batch);
     rows.push(...arrowData.toArray().map(row => row.toJSON()));
   }
   return rows;

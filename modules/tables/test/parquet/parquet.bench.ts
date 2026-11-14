@@ -502,8 +502,8 @@ async function decodeWithHyparquet(scenario: ParquetBenchmarkScenario): Promise<
     compressors
   });
   const columnarTable = makeTableFromData(columns);
-  const arrowTable = convertTable(columnarTable, 'arrow-table');
-  return arrowTable.data.numRows;
+  const arrowTable = convertTable(columnarTable, 'arrow');
+  return arrowTable.numRows;
 }
 
 /** Copies one hyparquet output chunk into a contiguous top-level column. */

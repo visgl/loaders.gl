@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {QuantizedMeshLoader, QuantizedMeshWriter} from '@loaders.gl/raster/terrain/index';
 import {encode, parse} from '@loaders.gl/core';
-import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 const attributes = {
   POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 1]), size: 3}
 };
@@ -25,7 +25,7 @@ test('QuantizedMeshWriter#encode plain and Arrow mesh data', async () => {
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
   expect(data.indices.value.length, 'indices roundtripped').toBe(3);
   expect(data.indices.value).toBeInstanceOf(Uint32Array);
-  const arrowTable = convertMeshToTable(mesh, 'arrow-table');
+  const arrowTable = convertMeshToArrowTableWrapper(mesh);
   const arrowArrayBuffer = await encode(arrowTable, QuantizedMeshWriter, options);
   const arrowData = await parse(arrowArrayBuffer, QuantizedMeshLoader, options);
   validateMeshCategoryData(arrowData);

@@ -54,10 +54,7 @@ export {
   makeTableBatchIterator,
   makeBatchFromTable
 } from './lib/table/batches/make-table-batch-iterator';
-export {
-  makeArrowTableBatchIterator,
-  makeArrowRecordBatchIterator
-} from './lib/table/batches/make-arrow-batch-iterator';
+export {makeArrowRecordBatchIterator} from './lib/table/batches/make-arrow-batch-iterator';
 export {
   selectArrowTableRows,
   queryArrowTable,
@@ -99,7 +96,11 @@ export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 // MESH CATEGORY
 
 export {getMeshSize, getMeshBoundingBox} from './lib/mesh/mesh-utils';
-export {convertMeshToTable, makeMeshArrowTable} from './lib/mesh/convert-mesh-to-table';
+export {
+  convertMeshToTable,
+  convertMeshToArrowTableWrapper,
+  makeMeshArrowTable
+} from './lib/mesh/convert-mesh-to-table';
 export type {MeshArrowTableOptions} from './lib/mesh/convert-mesh-to-table';
 export {convertTableToMesh} from './lib/mesh/convert-table-to-mesh';
 export {

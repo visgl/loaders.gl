@@ -2,14 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import * as arrow from 'apache-arrow';
-import type {
-  Table,
-  ArrayRowTable,
-  ObjectRowTable,
-  ColumnarTable,
-  ArrowTable
-} from '@loaders.gl/core/schema';
+import type * as arrow from 'apache-arrow';
+import type {Table, ArrayRowTable, ObjectRowTable, ColumnarTable} from '@loaders.gl/core/schema';
+import {isNativeArrowTable} from '../../../../lib/loader-utils/native-arrow';
 import {deduceTableSchema} from '../../schema/deduce-table-schema';
 
 /**
@@ -19,9 +14,10 @@ import {deduceTableSchema} from '../../schema/deduce-table-schema';
 export function makeTableFromData(data: unknown[][]): ArrayRowTable;
 export function makeTableFromData(data: {[column: string]: unknown}[]): ObjectRowTable;
 export function makeTableFromData(data: {[column: string]: ArrayLike<unknown>}): ColumnarTable;
-export function makeTableFromData(data: arrow.Table): ArrowTable;
+export function makeTableFromData(data: arrow.Table): arrow.Table;
 
-export function makeTableFromData(data: unknown): Table {
+export function makeTableFromData(data: unknown): Table | arrow.Table {
+  if (isNativeArrowTable(data)) return data;
   let table: Table;
   switch (getTableShapeFromData(data)) {
     case 'array-row-table':
@@ -33,9 +29,6 @@ export function makeTableFromData(data: unknown): Table {
     case 'columnar-table':
       table = {shape: 'columnar-table', data: data as {[column: string]: ArrayLike<unknown>}};
       break;
-    case 'arrow-table':
-      table = {shape: 'arrow-table', data: data as arrow.Table};
-      break;
     default:
       throw new Error('table');
   }
@@ -45,10 +38,6 @@ export function makeTableFromData(data: unknown): Table {
 
 /** Helper function to get shape of data */
 function getTableShapeFromData(data) {
-  if (data instanceof arrow.Table) {
-    return 'arrow-table';
-  }
-
   if (Array.isArray(data)) {
     if (data.length === 0) {
       throw new Error('cannot deduce type of empty table');
@@ -72,56 +61,3 @@ function getTableShapeFromData(data) {
 
   throw new Error('invalid table');
 }
-
-/** Convert any table into object row format *
-export function makeColumnarTable(table: Table): ColumnarTable {
-  if (table.shape === 'columnar-table') {
-    return table;
-  }
-  const length = getTableLength(table);
-  const data = new Array<{[key: string]: unknown}>(length);
-  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
-    data[rowIndex] = getTableRowAsObject(table, rowIndex);
-  }
-  return {
-    shape: 'columnar-table',
-    schema: table.schema,
-    data
-  };
-}
-
-
-/** Convert any table into array row format *
-export function makeArrayRowTable(table: TableLike): ArrayRowTable {
-  if (table.shape === 'array-row-table') {
-    return table;
-  }
-  const length = getTableLength(table);
-  const data = new Array<unknown[]>(length);
-  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
-    data[rowIndex] = getTableRowAsArray(table, rowIndex);
-  }
-  return {
-    shape: 'array-row-table',
-    schema: table.schema,
-    data
-  };
-}
-
-/** Convert any table into object row format *
-export function makeObjectRowTable(table: Table): ObjectRowTable {
-  if (table.shape === 'object-row-table') {
-    return table;
-  }
-  const length = getTableLength(table);
-  const data = new Array<{[key: string]: unknown}>(length);
-  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
-    data[rowIndex] = getTableRowAsObject(table, rowIndex);
-  }
-  return {
-    shape: 'object-row-table',
-    schema: table.schema,
-    data
-  };
-}
-*/

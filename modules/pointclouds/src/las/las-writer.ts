@@ -12,7 +12,7 @@ import {
   type WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {LASFormat} from './las-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -665,7 +665,7 @@ function normalizeMesh(data: Mesh | MeshArrowTable | Table): Mesh {
 
 /** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
 function normalizeMeshArrowTable(data: Mesh | MeshArrowTable | Table): MeshArrowTable | Table {
-  return !('attributes' in data) ? data : convertMeshToTable(data as Mesh, 'arrow-table');
+  return !('attributes' in data) ? data : convertMeshToArrowTableWrapper(data as Mesh);
 }
 
 /** Merge buffered mesh batches for `encodeInBatches`. */
