@@ -234,6 +234,14 @@
       "import": "./dist/scan/index.js",
       "require": "./dist/scan/index.cjs"
     },
+    "./scan/arrow-query-worker": {
+      "types": "./dist/scan/arrow-query-worker.d.ts",
+      "import": "./dist/scan/arrow-query-worker.js",
+      "require": "./dist/scan/arrow-query-worker.cjs"
+    },
+    "./scan/arrow-query-worker-entry.js": {
+      "import": "./dist/scan/arrow-query-worker-entry.js"
+    },
     "./scan/arrow-query": {
       "types": "./dist/scan/arrow-query.d.ts",
       "import": "./dist/scan/arrow-query.js",
