@@ -210,7 +210,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@deck.gl/core": "^9.4.0",
+    "@deck.gl/core": "10.0.0-alpha.1",
     "@math.gl/dggs": "5.0.0-beta.10",
     "copc": "0.0.8"
   },

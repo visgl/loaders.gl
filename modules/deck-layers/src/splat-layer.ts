@@ -22,7 +22,7 @@ import {
 } from '@deck.gl/core';
 import type {BufferLayout} from '@luma.gl/core';
 import {Geometry, Model} from '@luma.gl/engine';
-import type {ShaderModule} from '@luma.gl/shadertools';
+import type {ShaderModule} from '@luma.gl/shaders';
 import type {ArrowTableBatch, MeshArrowTable, TypedArray} from '@loaders.gl/core/schema';
 import {CullingVolume, Plane} from '@math.gl/geometry/culling';
 import {SplatEngine, type SplatSortMode} from './splat/splat-engine';

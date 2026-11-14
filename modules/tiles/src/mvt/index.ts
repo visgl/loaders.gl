@@ -35,6 +35,8 @@ export {
 
 export {MVTFormat} from './mvt-format';
 export {MVTLoader} from './mvt-loader';
+/** @deprecated Compatibility alias for deck.gl 10.0.0-alpha.1. Use MVTLoader. */
+export {MVTLoader as MVTWorkerLoader} from './mvt-loader';
 export type {MVTLoaderOptions} from './mvt-loader';
 export {MVTGeoJSONLoader} from './mvt-geojson-loader-types';
 export type {MVTGeoJSONLoaderOptions} from './mvt-geojson-loader-types';

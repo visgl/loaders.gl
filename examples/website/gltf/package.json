@@ -14,16 +14,14 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^9.4.0",
-    "@deck.gl/mesh-layers": "^9.4.0",
-    "@deck.gl/react": "^9.4.0",
+    "@deck.gl/core": "10.0.0-alpha.1",
+    "@deck.gl/mesh-layers": "10.0.0-alpha.1",
+    "@deck.gl/react": "10.0.0-alpha.1",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/scene": "workspace:*",
-    "@luma.gl/constants": "^9.4.0",
-    "@luma.gl/core": "^9.4.0",
-    "@luma.gl/engine": "^9.4.0",
-    "@luma.gl/gltf": "^9.4.0",
-    "@luma.gl/shadertools": "^9.4.0",
+    "@luma.gl/core": "10.0.0-alpha.14",
+    "@luma.gl/engine": "10.0.0-alpha.14",
+    "@luma.gl/shaders": "10.0.0-alpha.14",
     "@math.gl/core": "5.0.0-beta.10",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"

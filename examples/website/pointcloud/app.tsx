@@ -8,7 +8,6 @@ import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
 import {
-  COORDINATE_SYSTEM,
   FirstPersonView,
   type FirstPersonViewState,
   LinearInterpolator,
@@ -613,7 +612,7 @@ function createArrowPointCloudLayer(
 
   return new MeshArrowPointCloudLayer({
     id: `point-cloud-layer-${selectedExampleName ?? 'example'}`,
-    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    coordinateSystem: 'cartesian',
     data: pointData,
     pickable: true,
     autoHighlight: true,
@@ -632,7 +631,7 @@ function createSplatLayer(
 ): SplatLayer {
   return new SplatLayer({
     id: `splat-layer-${selectedExampleName ?? 'example'}`,
-    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    coordinateSystem: 'cartesian',
     data: pointData,
     pickable: true,
     opacity: 0.75,
@@ -652,7 +651,7 @@ function createPointCloudLayer(
 ): PointCloudLayer<DeckPoint> {
   return new PointCloudLayer<DeckPoint>({
     id: `point-cloud-layer-${selectedExampleName ?? 'example'}`,
-    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    coordinateSystem: 'cartesian',
     data: pointData,
     pickable: true,
     autoHighlight: true,

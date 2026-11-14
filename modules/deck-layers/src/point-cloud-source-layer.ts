@@ -10,7 +10,6 @@ import type {
   UpdateParameters,
   Viewport
 } from '@deck.gl/core';
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
 import type {DataSourceOptions, Loader} from '@loaders.gl/core/loader-utils';
 import type {
@@ -291,7 +290,7 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
       constantRGBA,
       cartographicOrigin,
       modelMatrix,
-      coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS
+      coordinateSystem = 'meter-offsets'
     } = tile.content;
     const data = oldLayer?.props.data || tile.content.data;
     if (!data) {
@@ -304,8 +303,7 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
       tile,
       data,
       coordinateSystem,
-      coordinateOrigin:
-        coordinateSystem === COORDINATE_SYSTEM.CARTESIAN ? undefined : cartographicOrigin,
+      coordinateOrigin: coordinateSystem === 'cartesian' ? undefined : cartographicOrigin,
       modelMatrix,
       defaultPointColor: (constantRGBA || this.props.getPointColor) as [number, number, number],
       pointCloudLayerProps: {
@@ -319,7 +317,5 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
 
 function getTileBoundingBoxCoordinateSystem(tiles: PointCloudTile[]): CoordinateSystem {
   const tileWithContent = tiles.find(tile => tile.content?.coordinateSystem !== undefined);
-  return tileWithContent?.content?.coordinateSystem === COORDINATE_SYSTEM.CARTESIAN
-    ? COORDINATE_SYSTEM.CARTESIAN
-    : COORDINATE_SYSTEM.LNGLAT;
+  return tileWithContent?.content?.coordinateSystem === 'cartesian' ? 'cartesian' : 'lnglat';
 }

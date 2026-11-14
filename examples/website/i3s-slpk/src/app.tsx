@@ -13,12 +13,10 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import Map from 'react-map-gl/maplibre';
 
 import {ControlPanel} from './components/control-panel';
-import {I3SMeshExtension} from './i3s-mesh-extension';
 import * as maplibregl from 'maplibre-gl';
 
 maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
 
-const I3S_MESH_EXTENSION = new I3SMeshExtension();
 
 const MAP_CONTROLLER = {
   type: MapController,
@@ -122,9 +120,6 @@ export default function App() {
         new SourceLayer<unknown>({
           id: `tile-archive-${selectionNumber}`,
           data: source,
-          _subLayerProps: {
-            'tile-3d': {_subLayerProps: {mesh: {extensions: [I3S_MESH_EXTENSION]}}}
-          },
           onTilesetLoad: tileset => {
             if (currentSource.current === source) handleTilesetLoad(tileset);
           },

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {loadPBREnvironment} from '@luma.gl/gltf';
+import {loadPBREnvironment} from '@luma.gl/engine/gltf';
 
 const GLTF_ENV_BASE_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/luma.gl/examples/gltf/';

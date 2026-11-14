@@ -3,7 +3,6 @@
 
 const {resolve} = require('path');
 const {readdirSync, readFileSync, existsSync} = require('node:fs');
-const {createRequire} = require('node:module');
 const {version} = require('../modules/core/package.json');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
@@ -38,13 +37,6 @@ function getFlatEntrypointAliases() {
 
   return aliases;
 }
-
-const legacyMathCoreEntry = require.resolve('@math.gl/core', {
-  paths: [resolve('../node_modules/@deck.gl/core')]
-});
-const legacyMathPolygonEntry = require.resolve('@math.gl/polygon', {
-  paths: [resolve('../node_modules/@deck.gl/layers')]
-});
 
 const isWebsiteDev = process.env.LOADERS_GL_WEBSITE_DEV === 'true';
 
@@ -117,33 +109,6 @@ function createBundlerPlugin() {
             const normalizedContext = resource.context?.replace(/\\/g, '/');
             if (normalizedContext?.includes('/modules/core/src/worker-utils')) {
               resource.request = resolve('./src/shims/loadersgl-worker-version.js');
-            }
-          }),
-          new bundler.NormalModuleReplacementPlugin(/^@loaders\.gl\/gltf$/, resource => {
-            if (resource.context?.replace(/\\/g, '/').includes('/node_modules/')) {
-              const publishedEntry = createRequire(resolve(resource.context, '__resolve__.js')).resolve('@loaders.gl/gltf');
-              if (publishedEntry.replace(/\\/g, '/').includes('/node_modules/')) {
-                resource.request = publishedEntry.replace(/\.cjs$/, '.js');
-              }
-            }
-          }),
-          new bundler.NormalModuleReplacementPlugin(/^@math\.gl\/core$/, resource => {
-            const normalizedContext = resource.context?.replace(/\\/g, '/');
-            if (
-              normalizedContext?.includes('/node_modules/@deck.gl/') ||
-              normalizedContext?.includes('/node_modules/@luma.gl/') ||
-              normalizedContext?.includes('/node_modules/@math.gl/culling/') ||
-              normalizedContext?.includes('/node_modules/@math.gl/polygon/')
-            ) {
-              // deck.gl/luma.gl and their standalone math.gl leaf dependencies require 4.x.
-              resource.request = legacyMathCoreEntry;
-            }
-          }),
-          new bundler.NormalModuleReplacementPlugin(/^@math\.gl\/polygon$/, resource => {
-            const normalizedContext = resource.context?.replace(/\\/g, '/');
-            if (normalizedContext?.includes('/node_modules/@deck.gl/')) {
-              // Published deck.gl layers still require the math.gl 4.x WINDING export.
-              resource.request = legacyMathPolygonEntry;
             }
           }),
           new bundler.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {

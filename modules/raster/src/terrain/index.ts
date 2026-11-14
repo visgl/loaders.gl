@@ -18,6 +18,8 @@ export type {QuantizedMeshLoaderOptions} from './quantized-mesh-loader-types';
 
 export {TerrainFormat, QuantizedMeshFormat} from './terrain-format';
 export {TerrainLoader} from './terrain-loader-types';
+/** @deprecated Compatibility alias for deck.gl 10.0.0-alpha.1. Use TerrainLoader. */
+export {TerrainLoader as TerrainWorkerLoader} from './terrain-loader-types';
 
 export {parseTerrain} from './terrain-loader';
 export {TerrainLoaderWithParser} from './terrain-loader';

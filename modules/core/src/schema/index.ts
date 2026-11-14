@@ -165,3 +165,6 @@ export type {
   ArrowBinaryFeatureCollection,
   BinaryFeatureCollectionLike
 } from './categories/category-gis';
+
+/** @deprecated Compatibility export for deck.gl 10.0.0-alpha.1. Use schema-utils. */
+export {getMeshBoundingBox} from '../schema-utils/lib/mesh/get-mesh-bounding-box';

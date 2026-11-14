@@ -7,7 +7,6 @@ import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
 import {
-  COORDINATE_SYSTEM,
   FirstPersonView,
   type FirstPersonViewState,
   LinearInterpolator,
@@ -119,7 +118,7 @@ export default function App(props: AppProps = {}) {
     state.pointData &&
       new PointCloudLayer({
         id: `point-cloud-layer-${state.selectedExampleName ?? 'arrow-example'}`,
-        coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+        coordinateSystem: 'cartesian',
         data: state.pointData,
         getNormal: [0, 1, 0],
         getColor: [200, 200, 255],

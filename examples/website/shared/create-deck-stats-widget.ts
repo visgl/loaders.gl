@@ -11,7 +11,7 @@ import {
 import '@deck.gl/widgets/stylesheet.css';
 
 /**
- * Creates a stable deck.gl 9.3 stats widget for website examples.
+ * Creates a deck.gl stats widget for website examples.
  */
 export function createDeckStatsWidget(
   id: string,

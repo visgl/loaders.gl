@@ -86,8 +86,7 @@ The loader returns a flattened array called `sublayers` that contains renderable
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
-import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 function renderLayer() {
   const tile3dLayers = sublayers.map((layer) => {

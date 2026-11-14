@@ -10,13 +10,13 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^9.4.0",
-    "@deck.gl/mesh-layers": "^9.4.0",
-    "@deck.gl/react": "^9.4.0",
-    "@deck.gl/widgets": "^9.4.1",
+    "@deck.gl/core": "10.0.0-alpha.1",
+    "@deck.gl/mesh-layers": "10.0.0-alpha.1",
+    "@deck.gl/react": "10.0.0-alpha.1",
+    "@deck.gl/widgets": "10.0.0-alpha.1",
     "@loaders.gl/core": "5.0.0-beta.8",
     "@loaders.gl/scene": "5.0.0-beta.8",
-    "@luma.gl/gltf": "^9.4.0",
+    "@luma.gl/engine": "10.0.0-alpha.14",
     "maplibre-gl": "^6.16.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",

@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {
-  COORDINATE_SYSTEM,
   CompositeLayer,
   type CompositeLayerProps,
   type CoordinateSystem,
@@ -415,7 +414,7 @@ export function createDefaultRasterRenderResult(
     return {
       image: colorizeRasterData(rasterWithMetadataNoData),
       bounds: [0, metadata.height, metadata.width, 0],
-      coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
+      coordinateSystem: 'cartesian'
     };
   }
   const rasterBounds = raster.boundingBox || parameters.viewport.bounds || metadata.boundingBox;
@@ -423,7 +422,7 @@ export function createDefaultRasterRenderResult(
     return {
       image: colorizeRasterData(rasterWithMetadataNoData),
       bounds: [0, raster.height, raster.width, 0],
-      coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
+      coordinateSystem: 'cartesian'
     };
   }
   const rasterCoordinateReferenceSystem = getCoordinateReferenceSystemIdentifier(
@@ -446,9 +445,7 @@ export function createDefaultRasterRenderResult(
   return {
     image: colorizeRasterData(rasterWithMetadataNoData),
     bounds,
-    coordinateSystem: rasterCoordinateReferenceSystem
-      ? COORDINATE_SYSTEM.LNGLAT
-      : COORDINATE_SYSTEM.CARTESIAN
+    coordinateSystem: rasterCoordinateReferenceSystem ? 'lnglat' : 'cartesian'
   };
 }
 
