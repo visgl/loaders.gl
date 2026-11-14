@@ -69,7 +69,7 @@ test('selectLoaderSync#urls', async () => {
   ).toBe(ImageLoader);
   expect(
     selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      fallbackMimeType: 'application/x.image'
+      fallbackMimeType: 'application/x.imagebitmap'
     }),
     'options.fallbackMimeType can resolve loader using provided `application/x.<loaderId>` mimeType'
   ).toBe(ImageLoader);
@@ -81,7 +81,7 @@ test('selectLoaderSync#urls', async () => {
   ).toBe(ImageLoader);
   expect(
     selectLoaderSync('data.las', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      mimeType: 'application/x.image'
+      mimeType: 'application/x.imagebitmap'
     }),
     'options.mimeType can override loader using provided `application/x.<loaderId>` mimeType'
   ).toBe(ImageLoader);
