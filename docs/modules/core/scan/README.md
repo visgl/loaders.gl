@@ -105,6 +105,41 @@ ownership are backend-specific and are not implied by `queryAsync()`.
 The query is immutable and follows `filter -> project -> limit` semantics. Predicate columns do not
 need to appear in the result projection, and a limit counts only rows that survive filtering.
 
+## Run Arrow queries in a worker
+
+Use `queryArrowTableInWorker(table, options, {worker})` for a single query. To send a source table
+once and run multiple queries, open a session with `createArrowQueryWorker()`. Both APIs accept the
+same query options as `queryArrowTable()`, including parsed SQL predicates.
+
+```ts
+import {createArrowQueryWorker, parseSQLPredicate} from '@loaders.gl/core/scan';
+
+const session = await createArrowQueryWorker(table, {
+  worker: {
+    url: new URL(import.meta.resolve('@loaders.gl/core/scan/arrow-query-worker-entry.js'))
+  }
+});
+try {
+  const result = await session.query({
+    predicate: parseSQLPredicate("status = 'active'"),
+    columns: ['id']
+  });
+  const source = await session.takeTable();
+} finally {
+  await session.close();
+}
+```
+
+The example uses Node's module resolution. In a browser build, supply a `worker.create` factory
+returning a fresh module worker. Point it to a local worker module that imports
+`@loaders.gl/core/scan/arrow-query-worker-entry.js`.
+
+The default copies the input buffers. Set `inputOwnership: 'transfer'` to move them and relinquish
+every source alias, including slices and shared dictionary buffers. `getTable()` returns a copy of
+the source and keeps the session open. `takeTable()` transfers the source buffers back and closes the
+session. Query results have independent buffers, so a projection or slice cannot detach the worker's
+source table. Each session processes requests in order.
+
 ## Discover source controls
 
 Scan-aware sources expose metadata before execution. This is the contract used by the shared

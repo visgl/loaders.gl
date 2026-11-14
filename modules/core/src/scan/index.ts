@@ -164,3 +164,10 @@ export type {
   TableQueryCapabilities,
   QueryPushdownCapabilityHints
 } from '@loaders.gl/core/loader-utils';
+
+export {
+  createArrowQueryWorker,
+  queryArrowTableInWorker,
+  type ArrowQueryWorkerOptions,
+  type ArrowQueryWorkerSession
+} from './arrow-query-worker';
