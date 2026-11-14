@@ -52,10 +52,10 @@ The `MVTLoader` dynamically loads tiles, typically from big pre-tiled hierarchie
 ## Usage
 
 ```typescript
-import {createDataSourceSync} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
-const source = createDataSourceSync(url, [MVTLoader]);
+const source = await createDataSource(url, [MVTLoader]);
 const tile = await source.getTile(...);
 ```
 
@@ -97,7 +97,7 @@ Tile services do not use one universal response for an empty or unavailable tile
 Some proxies, authentication gateways, and custom tile services return an HTML, JSON, or XML error document with a successful HTTP status. Enable the defensive MIME-type check for those services:
 
 ```typescript
-const source = createDataSourceSync(url, [MVTLoader], {
+const source = await createDataSource(url, [MVTLoader], {
   mvt: {
     ignoreTextResponses: true
   },

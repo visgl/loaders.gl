@@ -48,9 +48,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 fragments, data-file metadata, and read-only Arrow batches.
 
 ```ts
+import {createDataSource} from '@loaders.gl/core';
 import {LanceLoader} from '@loaders.gl/tables/lance';
 
-const source = LanceLoader.createDataSourceSync(datasetURL, {
+const source = await createDataSource(datasetURL, LanceLoader, {
   lance: {
     version: 3,
     columnTypes: ['double', 'int64'],

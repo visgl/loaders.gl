@@ -56,10 +56,10 @@ The `MLTLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL based til
 />
 
 ```typescript
-import {createDataSourceSync} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {MLTLoader} from '@loaders.gl/tiles/mlt';
 
-const source = createDataSourceSync('https://example.com/tiles', [MLTLoader]);
+const source = await createDataSource('https://example.com/tiles', [MLTLoader]);
 const arrowTable = await source.getTile({x: 0, y: 0, z: 0});
 ```
 

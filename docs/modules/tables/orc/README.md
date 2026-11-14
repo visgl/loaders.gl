@@ -86,11 +86,11 @@ pushdown.
 | Stripe, row-index, or range pruning | ❌ Not implemented | No pushdown claim is made |
 
 ```ts
-import {createDataSourceSync} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {ORCLoader} from '@loaders.gl/tables/orc';
 import {parseSQLPredicate} from '@loaders.gl/core/query';
 
-const source = createDataSourceSync('events.orc', [ORCLoader]);
+const source = await createDataSource('events.orc', [ORCLoader]);
 const metadata = await source.getQueryMetadata();
 
 for await (const batch of source.read({

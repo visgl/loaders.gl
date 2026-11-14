@@ -228,11 +228,11 @@ the service is reached through a proxy or another provider host.
 ### Mapbox tiles
 
 ```ts
-import {createDataSourceSync} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {createMapboxCredential} from '@loaders.gl/services';
 
-const source = createDataSourceSync(tileJSONUrl, [MVTLoader], {
+const source = await createDataSource(tileJSONUrl, [MVTLoader], {
   core: {
     credentials: [createMapboxCredential({accessToken: mapboxToken})]
   }
