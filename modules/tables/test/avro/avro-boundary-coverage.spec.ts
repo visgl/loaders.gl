@@ -676,7 +676,7 @@ describe('Avro boundary coverage', () => {
     );
     await expect(
       parseAvro(bytes.buffer, {schema, encoding: 'single-object', validateFingerprint: false})
-    ).resolves.toMatchObject({shape: 'arrow-table'});
+    ).resolves.toMatchObject({numRows: 1});
   });
 
   test('validates raw and single-object envelopes', async () => {
@@ -760,7 +760,7 @@ describe('Avro boundary coverage', () => {
           ]
         }
       })
-    ).resolves.toMatchObject({shape: 'arrow-table'});
+    ).resolves.toMatchObject({numRows: 1});
   });
 
   test('validates writer framing and root schema options', async () => {
