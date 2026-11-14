@@ -108,8 +108,11 @@ function createFeatures() {
     fields: [{name: 'feature_id', type: 'uint64', nullable: false}]
   });
   builder.addObjectRow({feature_id: 7n});
+  const data = builder.finishTable();
   return {
-    batches: [builder.finishBatch()!],
+    batches: [
+      {shape: 'arrow-table' as const, batchType: 'data' as const, length: data.numRows, data}
+    ],
     triangleFeatureIndices: new Uint32Array([0]),
     featureIdField: 'feature_id'
   };

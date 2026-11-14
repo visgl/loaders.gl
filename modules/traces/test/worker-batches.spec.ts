@@ -66,8 +66,8 @@ test('Chrome trace worker returns columns before caller JSON reconstruction', as
   expect(result).toEqual(chromeTrace);
   expect(mainParse).not.toHaveBeenCalled();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    transport: 'arrow-column-envelope',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
 });
 
