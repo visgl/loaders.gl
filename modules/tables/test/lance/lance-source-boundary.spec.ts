@@ -44,7 +44,7 @@ test('LanceSource reads direct Blob data files and returns native Arrow batches'
     columnNames: ['value'],
     limit: 2
   });
-  expect(batches).toEqual(MOCK_TABLE.data.batches);
+  expect(batches).toEqual(MOCK_TABLE.batches);
   await expect(source.getFileMetadata()).resolves.toBe(MOCK_FILE_METADATA);
 });
 
