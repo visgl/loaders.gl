@@ -21,7 +21,7 @@ const FLATGEOBUF_DOCS_TABS: FlatGeobufDocsTab[] = [
   {id: 'loader', label: 'FlatGeobufLoader', href: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader'},
   {
     id: 'source',
-    label: 'FlatGeobufSourceLoader',
+    label: 'FlatGeobufLoaderWithParser',
     href: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader'
   }
 ];

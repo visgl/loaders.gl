@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GeoPackageSource} from './geopackage-source-loader';
+import {createGeoPackageSource} from './geopackage-source-loader';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
 import type {GeoJSONTable} from '@loaders.gl/core/schema';
@@ -18,7 +18,7 @@ export type {GeoPackageLoaderOptions} from './geopackage-loader-types';
 
 /** Parser-bearing loader for GeoPackage files. */
 export const GeoPackageLoaderWithParser = {
-  createDataSourceSync: GeoPackageSource.createDataSourceSync,
+  createDataSourceSync: createGeoPackageSource,
   ...GeoPackageLoaderMetadataWithoutPreload,
   parse: parseGeoPackage
 } as const satisfies LoaderWithParser<GeoJSONTable | Table, never, GeoPackageLoaderOptions>;

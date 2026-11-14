@@ -74,8 +74,6 @@ const metadata = await load(url, PMTilesLoader);
 const source = await createDataSource(url, PMTilesLoader);
 ```
 
-The former format-specific source loader exports are available for existing callers.
-
 ## SourceLoader
 
 A `SourceLoader` provides general information about the supported resource format, and the capability to create a `DataSource` for that format.
@@ -91,12 +89,12 @@ This means that applications written against that interface can now support the 
 | Source Interface   | Data access model                         | Examples                                                    |
 | ------------------ | ----------------------------------------- | ----------------------------------------------------------- |
 | `ImageSource`      | Loads image covering a region             | `WMSLoader`, `ArcGISImageServerLoader`         |
-| `RasterSource`     | Loads typed raster samples for a viewport | `GeoTIFFSourceLoader`, `OMETiffLoader`                |
+| `RasterSource`     | Loads typed raster samples for a viewport | `GeoTIFFLoader`, `OMETiffLoader`                |
 | `VectorSource`     | Load "features" in a region               | WFS (N/A), ArcGIS FeatureServer                             |
 | `TableScanSource` | Streams ordered table batches             | CSV, Arrow IPC, Parquet                                     |
 | `TableSourceCollection` | Resolves tables by name                | GeoPackage                                                 |
 | `ImageTileSource`  | Load image covering a specific tile index | WMTS (N/A)                                                  |
-| `VectorTileSource` | Load "features" in a specific tile index  | Mapbox Vector Tiles, `PMTilesSourceLoader`                  |
+| `VectorTileSource` | Load "features" in a specific tile index  | Mapbox Vector Tiles, `PMTilesLoader`                  |
 
 ## Querying named tables
 
@@ -160,7 +158,7 @@ callers that need another view should use the corresponding specialized source c
 
 ## Adapter Sources
 
-While most `SourceLoader` implementations provide an interface for interacting with a specific web service or cloud archive file format (e.g. `PMTilesSourceLoader`), it is also possible to create adapters:
+While most `SourceLoader` implementations provide an interface for interacting with a specific web service or cloud archive file format (e.g. `PMTilesLoader`), it is also possible to create adapters:
 
 - that provide a `SourceLoader` interface to local data (`ArrowTableTileLoader`)
 - that adapt one type of source to another (e.g. `ImageTileSource` calling an `ImageSource` to generate each tile).
@@ -186,7 +184,7 @@ Use it when a source needs to:
 - select named non-spatial dimensions such as time or vertical level
 - preserve band count, dtype, bounds, and CRS metadata for styling or texture upload
 
-`GeoTIFFSourceLoader` and `GeoZarrLoader` are built-in `RasterSource` implementations. Both
+`GeoTIFFLoader` and `GeoZarrLoader` are built-in `RasterSource` implementations. Both
 accept a `RasterViewport` and return `RasterData`. GeoTIFF requests can select numeric bands, while
 GeoZarr requests can use the common `selection` map for named dimensions declared by the source.
 
@@ -206,9 +204,9 @@ For a single source and parser, use the same namespace for both:
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
-const source = createDataSourceSync(url, [MVTSourceLoader], {
+const source = createDataSourceSync(url, [MVTLoader], {
   core: {worker: false},
   mvt: {
     metadataUrl: null, // Source setting
@@ -220,9 +218,9 @@ const source = createDataSourceSync(url, [MVTSourceLoader], {
 For multiple candidate sources or multiple internal parsers, add their namespaces side by side:
 
 ```typescript
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
-const source = createDataSourceSync(url, [PMTilesSourceLoader, MVTSourceLoader], {
+const source = createDataSourceSync(url, [PMTilesLoader, MVTLoader], {
   core: {worker: false, fetch: {headers: {Authorization: 'Bearer …'}}},
   pmtiles: {shape: 'arrow-table'},
   mvt: {layerProperty: 'sourceLayer', layers: ['roads']},

@@ -12,13 +12,9 @@ import {
   parse,
   resolvePath
 } from '@loaders.gl/core';
-import {
-  MVTSourceLoader,
-  MVTTileSource,
-  TableTileLoader,
-  TableVectorTileSource
-} from '@loaders.gl/tiles/mvt';
-import {PMTilesSourceLoader, PMTilesTileSource} from '@loaders.gl/tiles/pmtiles';
+import {MVTTileSource, TableTileLoader, TableVectorTileSource} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt';
+import {PMTilesLoader, PMTilesTileSource} from '@loaders.gl/tiles/pmtiles';
 import {WMSLoader, WMSImageSource} from '@loaders.gl/ogc/wms';
 import {OMEZarrLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
@@ -49,7 +45,7 @@ test('source entrypoints share flat loading controls and parser namespaces', asy
   };
   const selected = createDataSourceSync(
     'https://example.com/service',
-    [MVTSourceLoader, WMSLoader],
+    [MVTLoaderWithParser, WMSLoader],
     options
   );
   const loaded = await createDataSource('https://example.com/service', WMSLoader, options);
@@ -78,18 +74,18 @@ test('load#load returns WMSImageSource for WMSLoader', async () => {
   expect(source).toBeInstanceOf(WMSImageSource);
 });
 
-test('load#load returns MVTTileSource for MVTSourceLoader', async () => {
-  const source = await createDataSource('https://example.com/tiles', MVTSourceLoader);
+test('load#load returns MVTTileSource for MVTLoaderWithParser', async () => {
+  const source = await createDataSource('https://example.com/tiles', MVTLoaderWithParser);
   expect(source).toBeInstanceOf(MVTTileSource);
 });
 
-test('createDataSource#createDataSource returns MVTTileSource for MVTSourceLoader', () => {
-  const source = createDataSourceSync('https://example.com/tiles', [MVTSourceLoader], {});
+test('createDataSource#createDataSource returns MVTTileSource for MVTLoaderWithParser', () => {
+  const source = createDataSourceSync('https://example.com/tiles', [MVTLoaderWithParser], {});
   expect(source).toBeInstanceOf(MVTTileSource);
 });
 
-test('load#load returns PMTilesTileSource for PMTilesSourceLoader', async () => {
-  const source = await createDataSource(await createPmtilesFixtureBlob(), PMTilesSourceLoader);
+test('load#load returns PMTilesTileSource for PMTilesLoader', async () => {
+  const source = await createDataSource(await createPmtilesFixtureBlob(), PMTilesLoader);
   expect(source).toBeInstanceOf(PMTilesTileSource);
 });
 

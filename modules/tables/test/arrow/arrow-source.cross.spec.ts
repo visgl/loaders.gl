@@ -1,7 +1,8 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {parseSQLPredicate} from '@loaders.gl/core/scan';
-import {ArrowSourceLoader, ArrowTableSource} from '../../src/arrow/arrow-source';
+import {ArrowTableSource} from '../../src/arrow/arrow-source';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
 
 test('ArrowTableSource discovers schema and applies projection and limit', async () => {
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({name: ['a', 'b'], value: [1, 2]}));
@@ -80,10 +81,12 @@ test('ArrowTableSource forwards cancellation and reports empty input', async () 
   ).rejects.toThrow();
 });
 
-test('ArrowSourceLoader exposes URL matching and construction', () => {
-  expect(ArrowSourceLoader.testURL('data.arrow')).toBe(true);
-  expect(ArrowSourceLoader.testURL('data.csv')).toBe(false);
-  expect(ArrowSourceLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(ArrowTableSource);
+test('ArrowLoaderWithParser exposes URL matching and construction', () => {
+  expect(ArrowLoaderWithParser.testURL('data.arrow')).toBe(true);
+  expect(ArrowLoaderWithParser.testURL('data.csv')).toBe(false);
+  expect(ArrowLoaderWithParser.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(
+    ArrowTableSource
+  );
 });
 
 test('ArrowTableSource rejects a source with no discoverable batch', async () => {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {RADSourceLoader} from './rad-source-loader';
+import {createRADSource} from './rad-source-loader';
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseRADHeader} from './lib/parse-rad';
 import type {RADMetadata} from './lib/parse-rad';
@@ -20,7 +20,7 @@ const {preload: _RADLoaderPreload, ...RADLoaderMetadataWithoutPreload} = RADLoad
 
 /** Parser-bearing loader for Spark `.rad` paged LoD Gaussian splat container metadata. */
 export const RADLoaderWithParser = {
-  createDataSourceSync: RADSourceLoader.createDataSourceSync,
+  createDataSourceSync: createRADSource,
   ...RADLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer) => parseRADHeader(arrayBuffer),
   parseSync: (arrayBuffer: ArrayBuffer) => parseRADHeader(arrayBuffer)

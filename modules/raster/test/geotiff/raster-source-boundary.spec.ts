@@ -9,7 +9,8 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {sampleRaster} from '@loaders.gl/core/loader-utils';
-import {GeoTIFFRasterSource, GeoTIFFSourceLoader} from '../../src/geotiff/geotiff-source-loader';
+import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source-loader';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';
 import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-source-loader';
 
 /** Creates the minimal viewport shape accepted by raster sources. */
@@ -46,12 +47,12 @@ function installGeoTIFFState(
 }
 
 test('GeoTIFF source loader recognizes GeoTIFF but not OME-TIFF URLs', () => {
-  expect(GeoTIFFSourceLoader.testURL('image.tif?token=1')).toBe(true);
-  expect(GeoTIFFSourceLoader.testURL('image.geotiff#page')).toBe(true);
-  expect(GeoTIFFSourceLoader.testURL('image.ome.tif')).toBe(false);
+  expect(GeoTIFFLoaderWithParser.testURL('image.tif?token=1')).toBe(true);
+  expect(GeoTIFFLoaderWithParser.testURL('image.geotiff#page')).toBe(true);
+  expect(GeoTIFFLoaderWithParser.testURL('image.ome.tif')).toBe(false);
   expect(OMETiffLoader.testURL('image.ome.tiff?token=1')).toBe(true);
   expect(OMETiffLoader.testURL('image.tiff')).toBe(false);
-  expect(GeoTIFFSourceLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(
+  expect(GeoTIFFLoaderWithParser.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(
     GeoTIFFRasterSource
   );
   expect(OMETiffLoader.createDataSourceSync(new Blob([]), {})).toBeInstanceOf(OMETiffImageSource);

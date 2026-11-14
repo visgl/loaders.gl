@@ -229,10 +229,10 @@ the service is reached through a proxy or another provider host.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {createMapboxCredential} from '@loaders.gl/services';
 
-const source = createDataSourceSync(tileJSONUrl, [MVTSourceLoader], {
+const source = createDataSourceSync(tileJSONUrl, [MVTLoader], {
   core: {
     credentials: [createMapboxCredential({accessToken: mapboxToken})]
   }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LanceSourceLoader} from './lance-source-loader';
+import {createLanceSource} from './lance-source-loader';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, RecordBatch} from 'apache-arrow';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
@@ -16,7 +16,7 @@ const {preload: _preload, ...LanceLoaderMetadataWithoutPreload} = LanceLoaderMet
 
 /** Parser-bearing read-only Lance loader for flat primitive data files. */
 export const LanceLoaderWithParser = {
-  createDataSourceSync: LanceSourceLoader.createDataSourceSync,
+  createDataSourceSync: createLanceSource,
   ...LanceLoaderMetadataWithoutPreload,
   parse(_arrayBuffer: ArrayBuffer, _options?: LanceLoaderOptions): Promise<Table> {
     const lanceOptions = _options?.lance;

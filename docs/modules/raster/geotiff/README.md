@@ -86,12 +86,12 @@ and preserve GeoTIFF/COG range access, overview selection, band selection, and t
 | ---------------- | ----------- |
 | [`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-loader) | Loads georeferenced GeoTIFF images. |
 | [`GeoTIFFRasterLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader) | Loads original typed numeric bands and per-image / per-band metadata for geoid grids and scientific rasters. |
-| [`GeoTIFFSourceLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader) | Provides viewport-driven access to geospatial raster data. |
+| [`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader) | Provides viewport-driven access to geospatial raster data. |
 | [`OMETiffLoader`](/docs/modules/raster/geotiff/api-reference/ometiff-source-loader) | Provides typed non-geospatial OME-TIFF planes selected by level, time, z, and channel. |
 
 ## Additional APIs
 
-- [`GeoTIFFSourceLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader) returns `RasterData`
+- [`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader) returns `RasterData`
   payloads for viewport requests.
 - [`OMETiffLoader`](/docs/modules/raster/geotiff/api-reference/ometiff-source-loader) returns typed OME-TIFF
   planes for non-geospatial image pyramids.

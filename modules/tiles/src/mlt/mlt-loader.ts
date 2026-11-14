@@ -44,6 +44,12 @@ async function preload() {
 
 /** Metadata-only worker loader for the MapLibre Tile (MLT) format. */
 export const MLTLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean =>
+    url.endsWith('.mlt') || url.endsWith('/plain') || /\{(?:z|x|y|-y)\}/.test(url),
+  fromUrl: true,
+  fromBlob: false,
+  type: 'mlt',
   ...MLTFormat,
   dataType: null as any,
   batchType: null as never,

@@ -9,7 +9,6 @@ import type {
   CoreAPI,
   DataSourceOptions,
   ScanQueryMetadata,
-  SourceLoader,
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
@@ -17,7 +16,6 @@ import type {ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {projectArrowTable, filterArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import {ArrowFormat} from './exports/arrow-format';
 
 const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
@@ -164,19 +162,11 @@ async function* readStreamChunks(
 }
 
 /** Metadata-only Arrow IPC source loader. */
-/** @deprecated Use createDataSource() with ArrowLoader. */
-export const ArrowSourceLoader = {
-  ...ArrowFormat,
-  name: 'ArrowSourceLoader',
-  type: 'arrow-source',
-  version: '1.0.0',
-  dataType: null as unknown as ArrowTableSource,
-  batchType: null as never,
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.(?:arrow|feather|ipc)(?:$|[?#])/i.test(url),
-  createDataSourceSync: (data: string | Blob, options: DataSourceOptions, coreApi?: CoreAPI) =>
-    new ArrowTableSource(data, options, coreApi)
-} as const satisfies SourceLoader<ArrowTableSource>;
+/** Creates a reusable Arrow source. */
+export function createArrowSource(
+  data: string | Blob,
+  options: DataSourceOptions,
+  coreApi?: CoreAPI
+): ArrowTableSource {
+  return new ArrowTableSource(data, options, coreApi);
+}

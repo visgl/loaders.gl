@@ -42,6 +42,10 @@ async function preload() {
 
 /** Metadata-only loader for GeoPackage files. */
 export const GeoPackageLoader = {
+  /** Matches a GeoPackage URL for source selection. */
+  testURL: (url: string): boolean => /\.gpkg(?:$|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: true,
   ...GeoPackageFormat,
 
   dataType: null as unknown as GeoJSONTable | Table,

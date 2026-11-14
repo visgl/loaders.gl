@@ -16,7 +16,7 @@ export type {KMZArchive} from './kmz-archive';
 export {openKMZArchive, resolveKMZResourcePath} from './kmz-archive';
 
 export type {KMZSourceOptions} from './kmz-source';
-export {KMZSourceLoader, KMZVectorSource} from './kmz-source';
+export {KMZVectorSource} from './kmz-source';
 
 export type {KMLWriterData, KMLWriterOptions, KMZWriterOptions} from './kml-writer';
 export {KMLWriter, KMZWriter, encodeKMLText} from './kml-writer';

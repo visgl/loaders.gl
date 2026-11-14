@@ -97,7 +97,7 @@ export {
   MVTLoader,
   MVTGeoJSONLoader,
   MVTWriter,
-  MVTSourceLoader,
+  MVTLoaderWithParser,
   MVTTileSource,
   TableTileLoader,
   TableVectorTileSource,

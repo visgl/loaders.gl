@@ -1,5 +1,5 @@
 ---
-title: FlatGeobufSourceLoader
+title: FlatGeobufLoader
 description: Query indexed FlatGeobuf datasets with HTTP ranges.
 hide_title: true
 page_style: designed
@@ -14,7 +14,7 @@ import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graph
   format="flatgeobuf"
   eyebrow="FlatGeobuf source loader"
   title="Query an indexed vector file from the browser."
-  description="`FlatGeobufSourceLoader` uses the FlatGeobuf spatial index and HTTP range requests to return only the features needed for a query. It can expose GeoJSON-style, binary, or Arrow table results."
+  description="`FlatGeobufLoader` uses the FlatGeobuf spatial index and HTTP range requests to return only the features needed for a query. It can expose GeoJSON-style, binary, or Arrow table results."
   tone="cyan"
   meta={['FlatGeobuf', 'Spatial index', 'HTTP range requests']}
   links={[
@@ -52,15 +52,15 @@ import {RangeRequestGraphic} from '@site/src/components/docs/range-request-graph
   tone="cyan"
 />
 
-The `FlatGeobufSourceLoader` creates an indexed vector source for remote `.fgb` datasets and serves viewport-sized feature subsets through HTTP range requests.
+The `FlatGeobufLoader` creates an indexed vector source for remote `.fgb` datasets and serves viewport-sized feature subsets through HTTP range requests.
 
 ## Usage
 
 ```typescript
 import {createDataSourceSync} from '@loaders.gl/core';
-import {FlatGeobufSourceLoader} from '@loaders.gl/geospatial/flatgeobuf';
+import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
 
-const source = createDataSourceSync(url, [FlatGeobufSourceLoader]);
+const source = createDataSourceSync(url, [FlatGeobufLoader]);
 
 const arrowTable = await source.getFeatures({
   layers: 'dataset',
@@ -89,6 +89,6 @@ const arrowTable = await source.getFeatures({
 
 ## Notes
 
-- `FlatGeobufSourceLoader` is optimized for remote URL access and expects byte-range fetches.
+- `FlatGeobufLoader` is optimized for remote URL access and expects byte-range fetches.
 - Bounding box requests use the FlatGeobuf spatial index when present and return empty valid tables when nothing matches.
 - Source-level reprojection matches `FlatGeobufLoader` behavior.

@@ -9,8 +9,7 @@ import {
   log,
   isBlob,
   ensureArrayBuffer,
-  isArrayBufferLike,
-  isSourceLoader
+  isArrayBufferLike
 } from '@loaders.gl/core/loader-utils';
 import {TypedArray} from '@loaders.gl/core/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
@@ -185,9 +184,7 @@ function selectLoaderInternal(
 
   // A declared source URL test is authoritative during automatic source selection.
   const fallbackLoaders =
-    operation === 'source' && testUrl
-      ? loaders.filter(candidate => !isSourceLoader(candidate))
-      : loaders;
+    operation === 'source' && testUrl ? loaders.filter(candidate => !candidate.testURL) : loaders;
   loader = loader || findLoaderByUrl(fallbackLoaders, testUrl);
   reason = reason || (loader ? `matched url ${testUrl}` : '');
 
@@ -282,7 +279,7 @@ function findLoaderByExtension(loaders: Loader[], extension: string): Loader | n
 
 function findSourceLoaderByType(loaders: Loader[], type: string): Loader | null {
   for (const loader of loaders) {
-    if (isSourceLoader(loader) && loader.type === type) {
+    if ((loader.type ?? loader.id) === type) {
       return loader;
     }
   }
@@ -295,7 +292,7 @@ function findSourceLoaderByTestURL(loaders: Loader[], url?: string): Loader | nu
   }
 
   for (const loader of loaders) {
-    if (isSourceLoader(loader) && loader.testURL(url)) {
+    if (loader.testURL?.(url)) {
       return loader;
     }
   }
@@ -304,7 +301,7 @@ function findSourceLoaderByTestURL(loaders: Loader[], url?: string): Loader | nu
 
 function findSourceLoaderByTestData(loaders: Loader[], data: Blob): Loader | null {
   for (const loader of loaders) {
-    if (isSourceLoader(loader)) {
+    if (loader.testData) {
       if (loader.testData?.(data)) {
         return loader;
       }

@@ -1,5 +1,5 @@
 ---
-title: PMTilesSourceLoader
+title: PMTilesLoader
 description: Read tiles from a PMTiles archive with batched range requests.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="PMTiles source loader"
   title="Read archive tiles without downloading the archive."
-  description="`PMTilesSourceLoader` turns a PMTiles archive into a tile source. For remote archives it reads the header and directory with byte ranges, queues nearby tile requests, and coalesces compatible ranges before fetching."
+  description="`PMTilesLoader` turns a PMTiles archive into a tile source. For remote archives it reads the header and directory with byte ranges, queues nearby tile requests, and coalesces compatible ranges before fetching."
   tone="violet"
   meta={['PMTiles v2 and v3', 'HTTP range requests', 'Tile source']}
   links={[
@@ -40,7 +40,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/range_requests-experimental-yellow.svg?style=flat-square" alt="range requests experimental" />
 </p>
 
-The `PMTilesSourceLoader` reads individual tiles from a PMTiles archive file.
+The `PMTilesLoader` reads individual tiles from a PMTiles archive file.
 For remote URL archives, tile requests are queued briefly and nearby HTTP byte ranges are
 coalesced before the archive bytes are fetched.
 
@@ -61,9 +61,9 @@ coalesced before the archive bytes are fetched.
 
 ```typescript
 import {createDataSourceSync} from '@loaders.gl/core';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
-const source = createDataSourceSync(url, [PMTilesSourceLoader]);
+const source = createDataSourceSync(url, [PMTilesLoader]);
 const tile = await source.getTile(...);
 ```
 

@@ -26,6 +26,15 @@ async function preload() {
 
 /** Metadata-only loader for KMZ archives containing KML documents. */
 export const KMZLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.kmz($|[?#])/i.test(url),
+  testData: (data: Blob): boolean =>
+    ['application/vnd.google-earth.kmz', 'application/vnd.google-earth.kmz+zip'].includes(
+      data.type.toLowerCase()
+    ),
+  fromUrl: true,
+  fromBlob: true,
+  type: 'kmz',
   supportsNativeArrow: true,
   defaultShape: 'arrow',
   dataType: null as unknown as ObjectRowTable | GeoJSONTable | ArrowTable,

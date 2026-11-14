@@ -77,8 +77,8 @@ Catalog discovery and asset decoding are intentionally separate:
 
 1. Open a catalog with `STACLoader`.
 2. Select an Item and a suitable data asset.
-3. Open that asset with a format source such as `ParquetLoader`, `GeoTIFFSourceLoader`, or
-   `PMTilesSourceLoader`.
+3. Open that asset with a format source such as `ParquetLoader`, `GeoTIFFLoader`, or
+   `PMTilesLoader`.
 
 This keeps the STAC module small and lets each format source retain its own range planning,
 predicate pushdown, worker, and caching behavior.

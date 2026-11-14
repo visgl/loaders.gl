@@ -26,7 +26,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Type | API |
 | --- | --- |
 | Loader | [`MVTLoader`](../api-reference/mvt-loader.md) |
-| Source loader | [`MVTSourceLoader`](../api-reference/mvt-source-loader.md) |
+| Source loader | [`MVTLoader`](../api-reference/mvt-source-loader.md) |
 | Writer | [`MVTWriter`](../api-reference/mvt-writer.md) |
 
 <TileDocsTabs active="mvt" />

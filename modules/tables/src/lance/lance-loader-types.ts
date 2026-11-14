@@ -43,6 +43,11 @@ async function preloadLanceLoader() {
 
 /** Metadata-only read-only Lance table loader. */
 export const LanceLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /(?:\.lance|\.lance\/)(?:$|[?#/])/i.test(url),
+  fromUrl: true,
+  fromBlob: true,
+  type: 'lance',
   ...LanceFormat,
   dataType: null as unknown as Table,
   batchType: null as unknown as RecordBatch,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {PMTilesSourceLoader} from './pmtiles-source-loader';
+export {PMTilesLoaderWithParser} from './pmtiles-loader-with-parser';
 export {PMTilesFormat} from './pmtiles-format';
 
 export type {PMTilesMetadata} from './lib/parse-pmtiles';

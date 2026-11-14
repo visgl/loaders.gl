@@ -1,5 +1,5 @@
 ---
-title: LanceSourceLoader
+title: LanceLoader
 description: Open a Lance dataset, inspect its manifest and fragments, and read supported columns as Arrow batches.
 hide_title: true
 page_style: designed
@@ -11,7 +11,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Lance API / source"
   title="Treat a Lance dataset as a readable source."
-  description="LanceSourceLoader makes dataset metadata, fragments, data-file descriptions, and selected Arrow batches available through one source lifecycle. It supports local and remote datasets while keeping unsupported encodings visible."
+  description="LanceLoader makes dataset metadata, fragments, data-file descriptions, and selected Arrow batches available through one source lifecycle. It supports local and remote datasets while keeping unsupported encodings visible."
   tone="mint"
   meta={['Manifest and fragments', 'Arrow batches', 'Read-only source']}
   links={[
@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 <ReferenceBoundary
-  title="LanceSourceLoader reference"
+  title="LanceLoader reference"
   description="The detailed reference covers creation, source metadata, read options, batch iteration, remote access, and the current Work In Progress boundary."
   tone="mint"
 />
@@ -44,13 +44,13 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
 </p>
 
-`LanceSourceLoader` opens a Lance dataset URL and exposes its manifest schema,
+`LanceLoader` opens a Lance dataset URL and exposes its manifest schema,
 fragments, data-file metadata, and read-only Arrow batches.
 
 ```ts
-import {LanceSourceLoader} from '@loaders.gl/tables/lance';
+import {LanceLoader} from '@loaders.gl/tables/lance';
 
-const source = LanceSourceLoader.createDataSourceSync(datasetURL, {
+const source = LanceLoader.createDataSourceSync(datasetURL, {
   lance: {
     version: 3,
     columnTypes: ['double', 'int64'],

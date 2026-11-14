@@ -68,7 +68,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   </a>
   <a className="docs-api-card" href="/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader">
     <span className="docs-api-card__kind">Source</span>
-    <strong>FlatGeobufSourceLoader</strong>
+    <strong>FlatGeobufLoader</strong>
     <span>Creates an indexed vector source for remote FlatGeobuf datasets.</span>
     <span className="docs-api-card__meta">Output: VectorSource</span>
     <span className="docs-api-card__meta">APIs: createDataSource, getFeatures</span>
@@ -77,7 +77,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## Spatial Indexes
 
-FlatGeobuf files can include a packed spatial index for range-request access. `FlatGeobufSourceLoader` uses that index when present to fetch viewport-sized feature subsets from remote files.
+FlatGeobuf files can include a packed spatial index for range-request access. `FlatGeobufLoader` uses that index when present to fetch viewport-sized feature subsets from remote files.
 
 ## Arrow
 

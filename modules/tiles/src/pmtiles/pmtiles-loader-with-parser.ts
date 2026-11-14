@@ -7,7 +7,7 @@ import {BlobFile} from '@loaders.gl/core/loader-utils';
 
 import {VectorSourceInfo, ImageSourceInfo} from './source-info';
 import {
-  PMTilesSourceLoader,
+  createPMTilesSource,
   PMTilesTileSource,
   PMTilesSourceLoaderOptions
 } from './pmtiles-source-loader';
@@ -26,7 +26,7 @@ export type PMTilesLoaderOptions = LoaderOptions & {
  * @note Use createDataSource() with PMTilesLoader for repeated tile requests.
  */
 export const PMTilesLoaderWithParser = {
-  createDataSourceSync: PMTilesSourceLoader.createDataSourceSync,
+  createDataSourceSync: createPMTilesSource,
   ...PMTilesLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: PMTilesLoaderOptions) =>
     parseFileAsPMTiles(new BlobFile(new Blob([arrayBuffer])), options),

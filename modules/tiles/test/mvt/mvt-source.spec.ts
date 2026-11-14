@@ -5,33 +5,34 @@
 import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {TILESETS} from './data/tilesets';
-import {MVTSourceLoader, MVTTileSource} from '@loaders.gl/tiles/mvt';
+import {MVTTileSource} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt';
 import {isURLTemplate, getURLFromTemplate} from '../../src/mvt/mvt-source-loader';
-test('MVTSourceLoader#urls', async () => {
+test('MVTLoaderWithParser#urls', async () => {
   if (!isBrowser) {
-    console.log('MVTSourceLoader currently only supported in browser');
+    console.log('MVTLoaderWithParser currently only supported in browser');
     return;
   }
   for (const tilesetUrl of TILESETS) {
-    const source = new MVTSourceLoader({url: tilesetUrl});
+    const source = new MVTLoaderWithParser({url: tilesetUrl});
     expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
     expect(metadata).toBeTruthy();
   }
 });
-test('MVTSourceLoader defaults vector tiles to Arrow tables', () => {
+test('MVTLoaderWithParser defaults vector tiles to Arrow tables', () => {
   const source = new MVTTileSource('https://example.com/{z}/{x}/{y}.mvt', {
     mvt: {metadataUrl: null}
   });
   expect(source.options.mvt?.shape).toBe('arrow-table');
 });
-test('MVTSourceLoader#Blobs', async () => {
+test('MVTLoaderWithParser#Blobs', async () => {
   if (!isBrowser) {
-    console.log('MVTSourceLoader currently only supported in browser');
+    console.log('MVTLoaderWithParser currently only supported in browser');
     return;
   }
   for (const tilesetUrl of TILESETS) {
-    const source = new MVTSourceLoader({url: tilesetUrl});
+    const source = new MVTLoaderWithParser({url: tilesetUrl});
     expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
     expect(metadata).toBeTruthy();

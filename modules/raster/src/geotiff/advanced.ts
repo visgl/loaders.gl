@@ -5,7 +5,7 @@
 export {GeoTIFFLoader} from './geotiff-loader-types';
 export {GeoTIFFFormat, OMETiffFormat} from './geotiff-format';
 export type {GeoTIFFSourceLoaderOptions} from './geotiff-source-loader';
-export {GeoTIFFSourceLoader, GeoTIFFRasterSource} from './geotiff-source-loader';
+export {GeoTIFFRasterSource} from './geotiff-source-loader';
 export type {
   GetOMETiffParameters,
   OMETiffChannelMetadata,

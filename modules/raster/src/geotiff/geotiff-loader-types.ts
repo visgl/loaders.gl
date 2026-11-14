@@ -35,6 +35,16 @@ async function preload() {
 
 /** Metadata-only GeoTIFF loader. */
 export const GeoTIFFLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => {
+    if (/\.ome\.tiff?(?:$|[?#])/i.test(url)) {
+      return false;
+    }
+    return /\.(?:geotiff?|tiff?)(?:$|[?#])/i.test(url);
+  },
+  fromUrl: true,
+  fromBlob: true,
+  type: 'geotiff',
   dataType: null as unknown as GeoTIFFData,
   batchType: null as never,
 

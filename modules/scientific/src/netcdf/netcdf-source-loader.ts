@@ -18,13 +18,8 @@ import {
   DataSource,
   validateRasterQueryOptions
 } from '@loaders.gl/core/loader-utils';
-import {NetCDFFormat} from './netcdf-format';
 import {NetCDFReader} from './netcdfjs/netcdf-reader';
 import type {NetCDFHeader, NetCDFVariable} from './netcdfjs/netcdf-types';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Options for a NetCDF source. */
 export type NetCDFSourceOptions = DataSourceOptions;
@@ -240,23 +235,13 @@ export class NetCDFSource extends DataSource<string | Blob, NetCDFSourceOptions>
 }
 
 /** Parser-bearing source loader for NetCDF metadata scans. */
-/** @deprecated Use createDataSource() with NetCDFLoader. */
-export const NetCDFSourceLoaderWithParser = {
-  dataType: null as unknown as NetCDFSource,
-  batchType: null as never,
-  ...NetCDFFormat,
-  module: 'scientific',
-  name: 'NetCDFSourceLoader',
-  version: VERSION,
-  type: 'netcdf-source',
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.(?:cdf|nc)(?:$|[?#])/i.test(url),
-  createDataSourceSync: (data: string | Blob, options: NetCDFSourceOptions): NetCDFSource =>
-    new NetCDFSource(data, options)
-} as const satisfies SourceLoader<NetCDFSource>;
+/** Creates a reusable NetCDF source. */
+export function createNetCDFSource(
+  data: string | Blob,
+  options: NetCDFSourceOptions
+): NetCDFSource {
+  return new NetCDFSource(data, options);
+}
 
 /** Maps NetCDF primitive names to portable schema data types. */
 function getNetCDFDataType(type: string): DataType {

@@ -40,6 +40,11 @@ async function preload() {
 
 /** Metadata-only FlatGeobuf worker loader. */
 export const FlatGeobufLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.fgb($|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: false,
+  type: 'flatgeobuf',
   ...FlatGeobufFormat,
 
   defaultShape: 'arrow',

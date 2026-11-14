@@ -177,6 +177,16 @@ export type Loader<
   LoaderOptionsT = StrictLoaderOptions,
   SourceT = unknown
 > = Format & {
+  /** Type identifier used when explicitly selecting a source. */
+  type?: string;
+  /** Whether a source can open a URL. */
+  fromUrl?: boolean;
+  /** Whether a source can open a Blob. */
+  fromBlob?: boolean;
+  /** Matches a URL when selecting a source. */
+  testURL?: (url: string) => boolean;
+  /** Matches a Blob when selecting a source. */
+  testData?: (data: Blob) => boolean;
   /** Constructs a source synchronously from an available implementation. */
   createDataSourceSync?: (
     data: any,

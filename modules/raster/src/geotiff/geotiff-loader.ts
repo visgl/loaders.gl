@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GeoTIFFSourceLoader} from './geotiff-source-loader';
+import {createGeoTIFFSource} from './geotiff-source-loader';
 import type {TypedArray, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 import type {GeoTIFFLoaderOptions} from './geotiff-loader-types';
@@ -25,7 +25,7 @@ type GeoTIFFData = {
 
 /** GeoTIFF loader */
 export const GeoTIFFLoaderWithParser = {
-  createDataSourceSync: GeoTIFFSourceLoader.createDataSourceSync,
+  createDataSourceSync: createGeoTIFFSource,
   ...GeoTIFFLoaderMetadataWithoutPreload,
   parse: parseGeoTIFF
 } as const satisfies LoaderWithParser<GeoTIFFData, never, GeoTIFFLoaderOptions>;

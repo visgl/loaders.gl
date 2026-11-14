@@ -7,7 +7,6 @@ import type {
   CoreAPI,
   DataSourceOptions,
   GetFeaturesParameters,
-  SourceLoader,
   VectorSource,
   VectorSourceData,
   VectorSourceLayer,
@@ -18,13 +17,8 @@ import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
 } from './lib/feature-collection-to-arrow';
-import {KMZFormat} from './kml-format';
 import {openKMZArchive, type KMZArchive} from './kmz-archive';
 import type {KMLFolder} from './kml-parser';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMZSourceOptions = DataSourceOptions & {
   kmz?: {
@@ -33,25 +27,17 @@ export type KMZSourceOptions = DataSourceOptions & {
 };
 
 /** Source loader for KMZ archives containing one primary KML document. */
-/** @deprecated Use createDataSource() with KMZLoader. */
-export const KMZSourceLoader = {
-  dataType: null as unknown as KMZVectorSource,
-  batchType: null as never,
-  ...KMZFormat,
-  version: VERSION,
-  type: 'kmz',
-  fromUrl: true,
-  fromBlob: true,
-  options: {kmz: {format: 'arrow'}},
-  defaultOptions: {kmz: {format: 'arrow'}},
-  testURL: (url: string): boolean => /\.kmz($|[?#])/i.test(url),
-  testData: (data: Blob): boolean =>
-    ['application/vnd.google-earth.kmz', 'application/vnd.google-earth.kmz+zip'].includes(
-      data.type.toLowerCase()
-    ),
-  createDataSourceSync: (data: string | Blob, options: KMZSourceOptions, coreApi?: CoreAPI) =>
-    new KMZVectorSource(data, options, coreApi)
-} as const satisfies SourceLoader<KMZVectorSource>;
+/** Default options for the KMZ source. */
+const KMZ_SOURCE_DEFAULT_OPTIONS = {kmz: {format: 'arrow'}} as const;
+
+/** Creates a reusable KMZ source. */
+export function createKMZSource(
+  data: string | Blob,
+  options: KMZSourceOptions,
+  coreApi?: CoreAPI
+): KMZVectorSource {
+  return new KMZVectorSource(data, options, coreApi);
+}
 
 /** Lazy vector source backed by a KMZ archive. */
 export class KMZVectorSource
@@ -62,7 +48,7 @@ export class KMZVectorSource
 
   /** Creates a source from a KMZ URL, Blob, or File. */
   constructor(data: string | Blob, options: KMZSourceOptions, coreApi?: CoreAPI) {
-    super(data, options, KMZSourceLoader.defaultOptions, coreApi);
+    super(data, options, KMZ_SOURCE_DEFAULT_OPTIONS, coreApi);
     this.archivePromise = openKMZArchive(data, this.fetch);
   }
 

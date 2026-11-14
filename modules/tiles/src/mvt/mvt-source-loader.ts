@@ -4,7 +4,6 @@
 
 import type {
   CoreAPI,
-  SourceLoader,
   ImageType,
   DataSourceOptions,
   ImageTileSource,
@@ -23,7 +22,6 @@ import {
   waitForPromiseWithSignal
 } from '@loaders.gl/core/loader-utils';
 import {ImageLoader, type ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
-import {MVTFormat} from './mvt-format';
 import {MVTLoader, type MVTLoaderOptions} from './mvt-loader';
 import {TileJSONLoader, type TileJSONLoaderOptions} from './tilejson-loader';
 import type {TileJSON} from './lib/parse-tilejson';
@@ -58,37 +56,21 @@ export type MVTSourceLoaderOptions = DataSourceOptions &
   };
 
 /** Creates an MVTTileSource */
-/** @deprecated Use createDataSource() with MVTLoader. */
-export const MVTSourceLoader = {
-  dataType: null as unknown as MVTTileSource,
-  batchType: null as never,
-  ...MVTFormat,
-  version: '0.0.0',
-  type: 'mvt',
-  fromUrl: true,
-  fromBlob: false,
-
-  options: {
-    mvt: {
-      shape: 'arrow-table'
-    }
-  },
-
-  defaultOptions: {
-    mvt: {
-      shape: 'arrow-table'
-    }
-  },
-
-  testURL: (url: string): boolean => true,
-  createDataSourceSync(
-    url: string,
-    options: MVTSourceLoaderOptions,
-    coreApi?: CoreAPI
-  ): MVTTileSource {
-    return new MVTTileSource(url, options, coreApi);
+/** Default options for the MVT source. */
+const MVT_SOURCE_DEFAULT_OPTIONS = {
+  mvt: {
+    shape: 'arrow-table'
   }
-} as const satisfies SourceLoader<MVTTileSource>;
+} as const;
+
+/** Creates a reusable MVT source. */
+export function createMVTSource(
+  data: string,
+  options: MVTSourceLoaderOptions,
+  coreApi?: CoreAPI
+): MVTTileSource {
+  return new MVTTileSource(data, options, coreApi);
+}
 
 /**
  * MVT data source for Mapbox Vector Tiles v1.
@@ -110,7 +92,7 @@ export class MVTTileSource
   mimeType: string | null = null;
 
   constructor(url: string, options: MVTSourceLoaderOptions, coreApi?: CoreAPI) {
-    super(url, options, MVTSourceLoader.defaultOptions, coreApi);
+    super(url, options, MVT_SOURCE_DEFAULT_OPTIONS, coreApi);
     this.metadataUrl =
       options.mvt?.metadataUrl === null
         ? null

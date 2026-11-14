@@ -47,7 +47,6 @@ export type {MVTWriterOptions} from './lib/encode-mvt';
 
 // MVTSourceLoader
 
-export {MVTSourceLoader} from './mvt-source-loader';
 export {MVTTileSource} from './mvt-source-loader';
 export type {MVTSourceLoaderOptions} from './mvt-source-loader';
 
@@ -62,3 +61,5 @@ export type {
   ArrowTableTileSourceLoaderOptions,
   ArrowTableTileSourceInput
 } from './arrow-table-tile-source-types';
+
+export {MVTLoaderWithParser} from './mvt-loader-with-parser';

@@ -41,9 +41,9 @@ test('NetCDF parser subpaths expose their CommonJS implementations', () => {
     process.execPath,
     [
       '-e',
-      "const {NetCDFSourceLoader} = require('@loaders.gl/scientific/netcdf'); const {NetCDFSourceLoaderWithParser} = require('@loaders.gl/scientific/netcdf/netcdf-source-loader'); console.log(JSON.stringify({sourceLoader: typeof NetCDFSourceLoader.createDataSourceSync, implementation: typeof NetCDFSourceLoaderWithParser.createDataSourceSync}));"
+      "const {NetCDFLoaderWithParser} = require('@loaders.gl/scientific/netcdf'); console.log(JSON.stringify({parser: typeof NetCDFLoaderWithParser.parse, implementation: typeof NetCDFLoaderWithParser.createDataSourceSync}));"
     ],
     {encoding: 'utf8'}
   );
-  expect(JSON.parse(output)).toEqual({sourceLoader: 'function', implementation: 'function'});
+  expect(JSON.parse(output)).toEqual({parser: 'function', implementation: 'function'});
 });

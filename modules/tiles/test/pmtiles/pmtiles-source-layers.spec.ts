@@ -11,7 +11,7 @@ import {MLTLoader} from '@loaders.gl/tiles/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/tiles/mvt';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {
-  PMTilesSourceLoader,
+  PMTilesLoaderWithParser,
   PMTilesTileSource,
   type PMTilesSourceLoaderOptions
 } from '../../src/pmtiles/pmtiles-source-loader';
@@ -87,11 +87,6 @@ test.each([
   );
 });
 
-test('PMTilesSourceLoader#defaults vector tiles to arrow-table output', () => {
-  expect(PMTilesSourceLoader.options.pmtiles.shape).toBe('arrow-table');
-  expect(PMTilesSourceLoader.defaultOptions.pmtiles.shape).toBeUndefined();
-});
-
 test.each([
   {loadOptions: {mvt: {shape: 'binary-geometry'}}},
   {core: {loadOptions: {mvt: {shape: 'binary-geometry'}}}}
@@ -99,7 +94,7 @@ test.each([
   expect(() =>
     createDataSourceSync(
       'memory://tiles.pmtiles',
-      [PMTilesSourceLoader],
+      [PMTilesLoaderWithParser],
       options as unknown as PMTilesSourceLoaderOptions
     )
   ).toThrow('Use core and root loader namespaces directly');

@@ -87,7 +87,7 @@ export type {
 export {
   MLTFormat,
   MLTLoader,
-  MLTSourceLoader
+  MLTLoaderWithParser
 } from '@loaders.gl/tiles/mlt';
 export type {
   MLTLoaderOptions,

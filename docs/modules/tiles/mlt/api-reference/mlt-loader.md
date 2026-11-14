@@ -138,7 +138,7 @@ To preserve the legacy GeoJSON default, set `mlt.shape: 'geojson-table'` explici
 ## Additional examples
 
 - [loaders.gl MLT website example](/examples/tiles/mlt).
-- [MLTSourceLoader](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) for URL tile sets.
+- [MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) for URL tile sets.
 
 ## Attribution
 

@@ -21,7 +21,7 @@ vi.mock('../../src/lance/lance-arrow', () => ({
   readLanceRemoteFileToArrow: lanceMocks.readRemoteFileToArrow
 }));
 
-import {LanceSourceLoader} from '../../src/lance/lance-source-loader';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance-loader';
 
 const MOCK_TABLE = {shape: 'arrow-table', data: tableFromArrays({value: new Int32Array([1, 2])})};
 const MOCK_FILE_METADATA = {majorVersion: 2, minorVersion: 0, fileSizeBytes: 64};
@@ -33,7 +33,7 @@ beforeEach(() => {
 });
 
 test('LanceSource reads direct Blob data files and returns native Arrow batches', async () => {
-  const source = LanceSourceLoader.createDataSourceSync(new Blob([new Uint8Array([1, 2, 3])]), {
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([new Uint8Array([1, 2, 3])]), {
     lance: {columnTypes: ['int32'], columnNames: ['value'], limit: 2}
   });
 
@@ -50,7 +50,7 @@ test('LanceSource reads direct Blob data files and returns native Arrow batches'
 
 test('LanceSource uses ranged remote reads when manifest file sizes are available', async () => {
   const fetch = vi.fn();
-  const source = LanceSourceLoader.createDataSourceSync('https://example.com/dataset', {
+  const source = LanceLoaderWithParser.createDataSourceSync('https://example.com/dataset', {
     lance: {columnTypes: ['float32', 'int64'], columnNames: ['x'], limit: 5},
     core: {fetch}
   } as any) as any;
@@ -77,7 +77,7 @@ test('LanceSource uses ranged remote reads when manifest file sizes are availabl
 
 test('LanceSource falls back to whole-file reads when manifests omit file sizes', async () => {
   const fetch = vi.fn(async () => new Response(new Uint8Array([4, 5, 6])));
-  const source = LanceSourceLoader.createDataSourceSync('https://example.com/dataset/', {
+  const source = LanceLoaderWithParser.createDataSourceSync('https://example.com/dataset/', {
     lance: {columnTypes: ['uint8']},
     core: {fetch}
   } as any) as any;
@@ -97,14 +97,14 @@ test('LanceSource falls back to whole-file reads when manifests omit file sizes'
 });
 
 test('LanceSource validates manifest data files and reports HTTP failures', async () => {
-  const source = LanceSourceLoader.createDataSourceSync('https://example.com/dataset', {
+  const source = LanceLoaderWithParser.createDataSourceSync('https://example.com/dataset', {
     lance: {columnTypes: ['int32']}
   }) as any;
   source.getMetadata = vi.fn(async () => ({fields: [], fragments: []}));
   await expect(source.getFileMetadata()).rejects.toThrow('does not contain a data file');
   await expect(collect(source.readBatches())).rejects.toThrow('does not contain a data file');
 
-  const directFile = LanceSourceLoader.createDataSourceSync(
+  const directFile = LanceLoaderWithParser.createDataSourceSync(
     'https://example.com/dataset/data/part.lance?version=1',
     {}
   ) as any;

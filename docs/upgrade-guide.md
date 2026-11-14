@@ -579,9 +579,9 @@ If you are upgrading from the 4.4 release line, migrate top-level source factori
 | `Source` | `SourceLoader` |
 | `WMSSource` | `WMSLoader` |
 | `WFSSource` | `WFSLoader` |
-| `MVTSource` | `MVTSourceLoader` |
-| `MLTSource` | `MLTSourceLoader` |
-| `PMTilesSource` | `PMTilesSourceLoader` |
+| `MVTSource` | `MVTLoader` |
+| `MLTSource` | `MLTLoader` |
+| `PMTilesSource` | `PMTilesLoader` |
 | `COPCSource` | `COPCLoader` |
 | `PotreeSource` | `PotreeLoader` |
 | `PotreeSourceLoader` | `PotreeLoader` |
@@ -589,15 +589,15 @@ If you are upgrading from the 4.4 release line, migrate top-level source factori
 | `JSONTableSourceLoader` | `JSONTableLoader` |
 | `NDJSONSourceLoader` | `NDJSONLoader` |
 | `TableTileSource` | `TableTileLoader` |
-| `FlatGeobufSource` | `FlatGeobufSourceLoader` |
-| `GeoTIFFSource` | `GeoTIFFSourceLoader` |
+| `FlatGeobufSource` | `FlatGeobufLoader` |
+| `GeoTIFFSource` | `GeoTIFFLoader` |
 | `OMETiffSource` | `OMETiffLoader` |
 
 Concrete runtime classes are unchanged. For example:
 
 - `WMSLoader` still creates `WMSImageSource`
-- `MVTSourceLoader` still creates `MVTTileSource`
-- `PMTilesSourceLoader` still creates `PMTilesTileSource`
+- `MVTLoader` still creates `MVTTileSource`
+- `PMTilesLoader` still creates `PMTilesTileSource`
 - `TableTileLoader` still creates `TableVectorTileSource`
 
 Update the old top-level `*Source` imports explicitly. Some deprecated aliases remain for deck.gl compatibility; they are not the v5 application API.
@@ -612,13 +612,13 @@ Update the old top-level `*Source` imports explicitly. Some deprecated aliases r
 
 ```typescript
 // Before
-createDataSource(url, [PMTilesSourceLoader], {
+createDataSource(url, [PMTilesLoader], {
   core: {loadOptions: {core: {worker: false}, mvt: {layerProperty: 'layer'}}},
   pmtiles: {shape: 'arrow-table'}
 });
 
 // v5
-createDataSource(url, [PMTilesSourceLoader], {
+createDataSource(url, [PMTilesLoader], {
   core: {worker: false},
   mvt: {layerProperty: 'layer'},
   pmtiles: {shape: 'arrow-table'}
@@ -886,13 +886,13 @@ native Arrow Table at `graph.tables[index].table`. Existing code that reads
 
 #### MLT output defaults
 
-- `MLTLoader` and `MLTSourceLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
+- `MLTLoader` and `MLTLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
    default. Applications that expect the previous GeoJSON table default must set
    `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
 
 #### MVT source output defaults
 
-- `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
+- `MVTLoader` now returns tiles in the Arrow-table shape by default, matching the source's
    columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
 - The top-level `gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
 

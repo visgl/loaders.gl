@@ -10,7 +10,6 @@ import {
   GPXLoader,
   KMLLoader,
   KMZLoader,
-  KMZSourceLoader,
   KMZVectorSource,
   KMZWriter,
   KMLWriter,
@@ -19,9 +18,9 @@ import {
   parseKMLDocument,
   resolveKMZResourcePath
 } from '@loaders.gl/geospatial/kml/index';
+import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz-loader';
 import {ZipWriter, ZipFileSystem} from '@loaders.gl/archives/zip';
 import {validateLoader, validateWriter} from 'test/common/conformance';
-import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz-loader';
 
 const SAMPLE_KML = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -62,7 +61,6 @@ test('KML-family table loaders default to Arrow tables', () => {
   expect(KMZLoader.options.kmz.shape).toBe('arrow');
   expect(GPXLoader.options.gpx.shape).toBe('arrow');
   expect(TCXLoader.options.tcx.shape).toBe('arrow');
-  expect(KMZSourceLoader.defaultOptions.kmz.format).toBe('arrow');
 });
 
 test('KMZ parser is available through its package subpath', () => {
@@ -118,7 +116,7 @@ test('KMZ loader preserves the KML compatibility table shape', async () => {
 
 test('KMZ vector source exposes metadata, resources, and spatial filtering', async () => {
   const kmz = await encode({'doc.kml': SAMPLE_KML, 'images/map.png': 'image'}, ZipWriter);
-  const source = KMZSourceLoader.createDataSourceSync(
+  const source = KMZLoaderWithParser.createDataSourceSync(
     new Blob([kmz], {type: 'application/vnd.google-earth.kmz'}),
     {}
   );

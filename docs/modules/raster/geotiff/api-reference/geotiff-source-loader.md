@@ -1,5 +1,5 @@
 ---
-title: GeoTIFFSourceLoader
+title: GeoTIFFLoader
 description: Query GeoTIFF and Cloud Optimized GeoTIFF rasters by viewport, window, overview, and band.
 hide_title: true
 page_style: designed
@@ -15,8 +15,8 @@ import {ClientExample} from '@site/src/components';
 <DocPageHeader
   format="geotiff"
   eyebrow="Cloud raster source"
-  title="GeoTIFFSourceLoader"
-  description="GeoTIFFSourceLoader discovers raster metadata, selects an overview and band set, and reads only the ranges needed for a viewport or bounded request."
+  title="GeoTIFFLoader"
+  description="GeoTIFFLoader discovers raster metadata, selects an overview and band set, and reads only the ranges needed for a viewport or bounded request."
   tone="mint"
   meta={['GeoTIFF and COG', 'Viewport-driven', 'HTTP ranges']}
   links={[
@@ -51,7 +51,7 @@ import {ClientExample} from '@site/src/components';
   <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
 </p>
 
-`GeoTIFFSourceLoader` creates a viewport-driven raster source for GeoTIFF and Cloud Optimized GeoTIFF
+`GeoTIFFLoader` creates a viewport-driven raster source for GeoTIFF and Cloud Optimized GeoTIFF
 (COG) datasets.
 
 It accepts 2D viewport requests, loads the nearest source data for that view, and returns typed
@@ -67,9 +67,9 @@ CPU-side raster payloads that can be uploaded to textures or colorized client-si
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff-source-loader';
+import {GeoTIFFLoader} from '@loaders.gl/raster/geotiff-source-loader';
 
-const source = createDataSourceSync('example.tif', [GeoTIFFSourceLoader], {
+const source = createDataSourceSync('example.tif', [GeoTIFFLoader], {
   core: {type: 'geotiff'},
   geotiff: {
     interleaved: false,
@@ -142,7 +142,7 @@ The returned `RasterData` contains:
 ## Notes
 
 - GeoTIFF overview selection compares both source pixel resolutions with the requested region; `geotiff.js` decodes the selected image window.
-- For remote COGs, `GeoTIFFSourceLoader` can share a `RangeRequestScheduler` with other sources to
+- For remote COGs, `GeoTIFFLoader` can share a `RangeRequestScheduler` with other sources to
   coalesce overlapping byte-range requests.
 
 ## Explicit numeric region reads
