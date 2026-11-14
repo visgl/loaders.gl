@@ -3,44 +3,28 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Table} from '@loaders.gl/core/schema';
 import {ArrowLoaderOptions} from '../../arrow-loader-types';
-import {
-  convertArrowTable,
-  convertArrowToTable,
-  convertArrowToSchema,
-  updateArrowTableSchema
-} from '@loaders.gl/core/schema-utils';
-import {
-  makeTableScanBatch,
-  paceBatchIterator,
-  toArrayBufferIterator
-} from '@loaders.gl/core/loader-utils';
+import {convertArrowToTable, updateArrowTableSchema} from '@loaders.gl/core/schema-utils';
+import {paceBatchIterator, toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {registerArrowCompressionCodecs, preloadArrowCompressionDecoders} from './arrow-compression';
 
 const UNSAFE_BIGINT_ERROR_REGEXP = /^(-?\d+) is not safe to convert to a number\.$/;
 const UNSUPPORTED_COMPRESSION_ERROR_REGEXP = /Record batch compression not implemented/i;
 
-/** Parses Arrow IPC into the requested native or loaders.gl representation. */
-export function parseArrowSync(arrayBuffer: ArrayBuffer, options: {shape: 'arrow'}): arrow.Table;
-export function parseArrowSync(arrayBuffer: ArrayBuffer, options?: {shape?: Table['shape']}): Table;
+/** Parses Arrow IPC into native Arrow or the requested row or column layout. */
+export function parseArrowSync(arrayBuffer: ArrayBuffer, options?: {shape?: 'arrow'}): arrow.Table;
 export function parseArrowSync(
   arrayBuffer: ArrayBuffer,
-  options?: {shape?: 'arrow' | Table['shape']}
-): arrow.Table | Table;
+  options?: {shape?: 'arrow' | Exclude<Table['shape'], 'arrow-table'>}
+): arrow.Table | Exclude<Table, {shape: 'arrow-table'}>;
 export function parseArrowSync(
   arrayBuffer: ArrayBuffer,
-  options?: {shape?: 'arrow' | Table['shape']}
-): arrow.Table | Table {
-  const shape = options?.shape || 'arrow-table';
-  const arrowTable = parseArrowTable(arrayBuffer);
-  if (shape === 'arrow') return arrowTable;
-  if (shape === 'arrow-table')
-    return {shape, schema: convertArrowToSchema(arrowTable.schema), data: arrowTable};
-  if (shape === 'geojson-table') {
-    return convertArrowToTable(arrowTable, shape);
-  }
-  return convertArrowTable({shape: 'arrow-table', data: arrowTable}, shape);
+  options?: {shape?: 'arrow' | Exclude<Table['shape'], 'arrow-table'>}
+): arrow.Table | Exclude<Table, {shape: 'arrow-table'}> {
+  const table = parseArrowTable(arrayBuffer);
+  const shape = options?.shape;
+  return !shape || shape === 'arrow' ? table : convertArrowToTable(table, shape);
 }
 
 /** Parses an Arrow IPC table, normalizing dictionary ids unsupported by Arrow JS. */
@@ -125,75 +109,30 @@ function hasBytesAtOffset(bytes: Uint8Array, pattern: Uint8Array, offset: number
   return true;
 }
 
-/** Streams IPC batches in the requested Arrow representation. */
+/** Streams native IPC record batches with the reader's declared schema. */
 export function parseArrowInBatches(
-  iterator:
-    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-    | Iterable<ArrayBufferLike | ArrayBufferView>,
-  options?: ArrowLoaderOptions & {
-    arrow?: {shape?: Exclude<NonNullable<ArrowLoaderOptions['arrow']>['shape'], 'arrow'>};
-  }
-): AsyncIterable<ArrowTableBatch>;
-export function parseArrowInBatches(
-  iterator:
+  input:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: ArrowLoaderOptions
-): AsyncIterable<ArrowTableBatch | arrow.RecordBatch>;
-export function parseArrowInBatches(
-  asyncIterator:
-    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-    | Iterable<ArrayBufferLike | ArrayBufferView>,
-  options?: ArrowLoaderOptions
-): AsyncIterable<ArrowTableBatch | arrow.RecordBatch> {
+): AsyncIterable<arrow.RecordBatch> {
   registerArrowCompressionCodecs();
-  // Creates the appropriate arrow.RecordBatchReader subclasses from the input
-  // This will also close the underlying source in case of early termination or errors
 
-  // As an optimization, return a non-async iterator
-  /*
-  if (isIterable(readers)) {
-    function* makeArrowIterator() {
-      for (const reader of readers) {
-        for (const batch of reader) {
-          yield processBatch(batch, reader);
-        }
-        break; // only processing one stream of batches
-      }
-    }
-    const arrowIterator = makeArrowIterator();
-  }
-  */
-
-  async function* makeArrowAsyncIterator(): AsyncIterable<ArrowTableBatch | arrow.RecordBatch> {
+  async function* readBatches(): AsyncIterable<arrow.RecordBatch> {
     await preloadArrowCompressionDecoders();
     // @ts-ignore
-    const readers = arrow.RecordBatchReader.readAll(toArrayBufferIterator(asyncIterator));
+    const readers = arrow.RecordBatchReader.readAll(toArrayBufferIterator(input));
     for await (const reader of readers) {
-      for await (const recordBatch of reader) {
-        const table = updateArrowTableSchema(new arrow.Table([recordBatch]), reader.schema);
-        if (options?.arrow?.shape === 'arrow') {
-          yield* table.batches;
-        } else {
-          yield makeTableScanBatch({shape: 'arrow-table', data: table});
-        }
+      for await (const batch of reader) {
+        yield* updateArrowTableSchema(new arrow.Table([batch]), reader.schema).batches;
       }
-      break; // only processing one stream of batches
+      break;
     }
   }
 
-  return paceBatchIterator(makeArrowAsyncIterator(), {
+  return paceBatchIterator(readBatches(), {
     batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
-    getRowCount: batch => (arrow.RecordBatch.isRecordBatch(batch) ? batch.numRows : batch.length),
+    getRowCount: batch => batch.numRows,
     signal: options?.signal
   });
 }
-
-// function processBatch(batch: RecordBatch): ArrowTableBatch {
-//   const values = {};
-//   batch.schema.fields.forEach(({name}, index) => {
-//     values[name] = batch.getChildAt(index)?.toArray();
-//   });
-//   return {
-//   };
-// }

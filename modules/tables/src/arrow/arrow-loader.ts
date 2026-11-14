@@ -6,7 +6,7 @@ import {createArrowSource} from './arrow-source';
 import {
   serializeArrowTableResult,
   deserializeArrowTableResult,
-  deserializeArrowTableBatch
+  deserializeIPCWorkerBatch
 } from './lib/arrow-worker-transport';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
@@ -26,7 +26,7 @@ export const ArrowLoaderWithParser = {
   serializeWorkerResult: serializeArrowTableResult,
   deserializeWorkerResult: deserializeArrowTableResult,
   serializeWorkerBatch: serializeArrowTableResult,
-  deserializeWorkerBatch: deserializeArrowTableBatch,
+  deserializeWorkerBatch: deserializeIPCWorkerBatch,
   parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) => {
     await preloadArrowCompressionDecoders();
     return parseArrowSync(arraybuffer, options?.arrow);

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
+import {Table} from 'apache-arrow';
 import type {ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/core/schema';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
@@ -119,7 +120,13 @@ export function convertFeatureAttributesToArrowBatches(
     }
     const batch = tableBuilder.finishBatch();
     if (batch) {
-      batches.push(batch);
+      batches.push({
+        shape: 'arrow-table',
+        batchType: 'data',
+        length: batch.numRows,
+        schema,
+        data: new Table(batch)
+      });
     }
   }
   return batches;
