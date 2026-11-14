@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
-import {serializeArrowTableResult, deserializeArrowTableBatch} from './lib/arrow-worker-transport';
+import {
+  serializeArrowTableResult,
+  deserializeIPCWorkerBatch,
+  deserializeIPCWorkerTable
+} from './lib/arrow-worker-transport';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
@@ -29,17 +34,13 @@ export const GeoArrowLoaderWithParser = {
   serializeWorkerResult: serializeArrowTableResult,
   /** Converts geometry on the caller after restoring Arrow extension metadata. */
   deserializeWorkerResult(result: unknown, options?: GeoArrowLoaderOptions) {
-    const table = deserializeArrowTableBatch(result);
-    if (options?.arrow?.shape === 'geojson-table' && !table.schema) {
-      throw new Error('Arrow table is missing its schema');
-    }
-    if (options?.arrow?.shape === 'arrow') return table.data;
+    const table = deserializeIPCWorkerTable(result);
     return options?.arrow?.shape === 'geojson-table'
-      ? convertGeoArrowTableToGeoJSON(table.data, table.schema!)
+      ? convertGeoArrowTableToGeoJSON(table, convertArrowToSchema(table.schema))
       : table;
   },
   serializeWorkerBatch: serializeArrowTableResult,
-  deserializeWorkerBatch: deserializeArrowTableBatch,
+  deserializeWorkerBatch: deserializeIPCWorkerBatch,
   parse: async (arraybuffer: ArrayBuffer, options?: GeoArrowLoaderOptions) => {
     await preloadArrowCompressionDecoders();
     return parseGeoArrowSync(arraybuffer, options?.arrow);

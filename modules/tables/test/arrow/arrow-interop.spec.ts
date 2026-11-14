@@ -63,7 +63,7 @@ test.each([
   const payload = serializeArrowWorkerResult(input, {
     core: {workerTransferBufferCopy: copy}
   }) as any;
-  expect(payload.category).toBe('test');
+  expect(payload.metadata.category).toBe('test');
   expect(Array.from(hydrateArrowTable(payload.data).getChild('value')!)).toEqual([9]);
   const restored = deserializeArrowWorkerResult(structuredClone(payload));
   expect(restored.shape).toBe('arrow-table');
@@ -133,17 +133,14 @@ test('GeoArrow writer encodes numeric and date columns through sync and async en
 test('Arrow batch adapters preserve rows across Arrow and GeoArrow entry points', async () => {
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({value: new Int32Array([7, 9])}));
   const batches = [];
-  for await (const batch of parseArrowInBatches([bytes], {
-    arrow: {shape: 'arrow-table'}
-  }))
-    batches.push(batch);
-  expect(batches.map(batch => batch.length)).toEqual([2]);
-  expect(Array.from(batches[0].data.getChild('value')!)).toEqual([7, 9]);
+  for await (const batch of parseArrowInBatches([bytes])) batches.push(batch);
+  expect(batches.map(batch => batch.numRows)).toEqual([2]);
+  expect(Array.from(batches[0].getChild('value')!)).toEqual([7, 9]);
   const geoBatches = [];
   for await (const batch of parseGeoArrowInBatches([bytes])) geoBatches.push(batch);
-  expect(geoBatches[0].length).toBe(2);
-  expect(parseArrowSync(bytes.buffer).shape).toBe('arrow-table');
-  expect(parseGeoArrowSync(bytes.buffer).shape).toBe('arrow-table');
+  expect(geoBatches[0].numRows).toBe(2);
+  expect(parseArrowSync(bytes.buffer)).toBeInstanceOf(arrow.Table);
+  expect(parseGeoArrowSync(bytes.buffer)).toBeInstanceOf(arrow.Table);
   expect(() => parseArrowSync(new Uint8Array(8).fill(127).buffer)).toThrow();
 });
 

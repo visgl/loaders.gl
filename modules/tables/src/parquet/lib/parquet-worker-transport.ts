@@ -9,7 +9,7 @@ import {
 } from '@loaders.gl/core/arrow-worker-transport';
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import type {ParquetLoaderOptions} from '../parquet-loader-options';
-import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema-utils';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 
 /** Transfers owned Arrow column buffers for an atomic Parquet result. */
 export function serializeParquetWorkerResult(table: unknown): unknown {
@@ -24,7 +24,7 @@ export function deserializeParquetWorkerResult(
 ): Table | ObjectRowTable {
   const table = deserializeNativeArrowWorkerResult(result) as Table;
   return options?.parquet?.shape === 'object-row-table'
-    ? convertArrowTable({shape: 'arrow-table', data: table}, 'object-row-table')
+    ? convertArrowToTable(table, 'object-row-table')
     : table;
 }
 
@@ -49,13 +49,9 @@ export function deserializeParquetWorkerBatch(result: unknown): RecordBatch | Ob
 
 /** Converts one native batch to the object-row output contract. */
 export function convertParquetBatchToRows(batch: RecordBatch): ObjectRowTableBatch {
-  return convertArrowTableBatch(
-    {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: batch.numRows,
-      data: new Table(batch.schema, [batch])
-    },
-    'object-row-table'
-  );
+  return {
+    ...convertArrowToTable(new Table(batch.schema, [batch]), 'object-row-table'),
+    batchType: 'data',
+    length: batch.numRows
+  };
 }

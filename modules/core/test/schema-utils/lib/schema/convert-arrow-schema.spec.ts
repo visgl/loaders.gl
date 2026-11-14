@@ -115,9 +115,9 @@ test('ArrowTableBuilder#view types round-trip through IPC', () => {
   });
 
   const table = builder.finishTable();
-  const roundTripTable = arrow.tableFromIPC(arrow.tableToIPC(table.data));
+  const roundTripTable = arrow.tableFromIPC(arrow.tableToIPC(table));
   expect(
-    table.schema.fields.map(field => field.type),
+    table.schema.fields.map(field => serializeArrowType(field.type)),
     'reports the effective view schema'
   ).toEqual(['utf8-view', 'binary-view']);
   expect(roundTripTable.schema.fields[0].type.constructor.name).toBe('Utf8View');
@@ -135,9 +135,8 @@ test('ArrowTableBuilder#finishBatch preserves rows in a zero-column projection',
 
   const batch = builder.finishBatch();
 
-  expect(batch?.length).toBe(2);
-  expect(batch?.data.numRows).toBe(2);
-  expect(batch?.data.numCols).toBe(0);
+  expect(batch?.numRows).toBe(2);
+  expect(batch?.numCols).toBe(0);
 });
 
 test.each(

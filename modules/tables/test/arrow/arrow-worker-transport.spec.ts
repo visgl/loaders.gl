@@ -51,16 +51,11 @@ test.each([
   expect(() => serializeArrowTableResult(result)).toThrow('Arrow table output');
 });
 
-test('GeoArrow hydration requires wrapper schema only when materializing features', () => {
-  const serialized = serializeArrowTableResult({
-    shape: 'arrow-table',
-    data: tableFromArrays({id: new Int32Array([1])})
-  });
-  expect(GeoArrowLoaderWithParser.deserializeWorkerResult(serialized).data).toBeInstanceOf(Table);
-  expect(GeoArrowLoaderWithParser.deserializeWorkerResult(serialized, {}).data).toBeInstanceOf(
-    Table
-  );
+test('GeoArrow hydration reads the native Arrow schema', () => {
+  const table = tableFromArrays({id: new Int32Array([1])});
+  const serialized = serializeArrowTableResult(table);
+  expect(GeoArrowLoaderWithParser.deserializeWorkerResult(serialized)).toBeInstanceOf(Table);
   expect(() =>
     GeoArrowLoaderWithParser.deserializeWorkerResult(serialized, {arrow: {shape: 'geojson-table'}})
-  ).toThrow('Arrow table is missing its schema');
+  ).toThrow('No GeoArrow geometry column found');
 });

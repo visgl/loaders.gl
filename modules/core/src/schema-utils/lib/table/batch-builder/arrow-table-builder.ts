@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {snapshotArrowSchema} from '../../arrow/arrow-metadata';
-import type {Schema, ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {
   convertArrowToSchema,
@@ -52,57 +52,28 @@ export class ArrowTableBuilder {
     this.length++;
   }
 
-  /** Makes sure that a first batch with schema is sent even if no rows */
-  firstBatch(): ArrowTableBatch | null {
-    if (this.length > 0) return null;
-    const arrowRecordBatch = this._getArrowRecordBatch();
-    return {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowRecordBatch.numRows,
-      schema: structuredClone(this.schema),
-      data: new arrow.Table(arrowRecordBatch)
-    };
+  /** Emits the declared schema before any rows are buffered. */
+  firstBatch(): arrow.RecordBatch | null {
+    return this.length === 0 ? this._getArrowRecordBatch() : null;
   }
 
-  /** Flush the current batch if conditions are right */
-  flushBatch(): ArrowTableBatch | null {
-    if (this.length === 0) return null;
-    const arrowRecordBatch = this._getArrowRecordBatch();
-    return {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowRecordBatch.numRows,
-      schema: structuredClone(this.schema),
-      data: new arrow.Table(arrowRecordBatch)
-    };
+  /** Flushes the buffered rows as a native record batch. */
+  flushBatch(): arrow.RecordBatch | null {
+    return this.length === 0 ? null : this._getArrowRecordBatch();
   }
 
-  /** Get a last batch if any data is left */
-  finishBatch(): ArrowTableBatch | null {
-    const arrowRecordBatch = this._getArrowRecordBatch();
+  /** Finishes the builders and returns the final native batch when it has rows or fields. */
+  finishBatch(): arrow.RecordBatch | null {
+    const batch = this._getArrowRecordBatch();
     this.arrowBuilders.forEach(builder => builder.finish());
-    if (arrowRecordBatch.numCols === 0 && arrowRecordBatch.numRows === 0) {
-      return null;
-    }
-    return {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowRecordBatch.numRows,
-      schema: structuredClone(this.schema),
-      data: new arrow.Table(arrowRecordBatch)
-    };
+    return batch.numCols || batch.numRows ? batch : null;
   }
 
-  /** Return a table with all the accumulated data */
-  finishTable(): ArrowTable {
-    const arrowRecordBatch = this._getArrowRecordBatch();
+  /** Finishes the builders and returns a native Arrow table. */
+  finishTable(): arrow.Table {
+    const batch = this._getArrowRecordBatch();
     this.arrowBuilders.forEach(builder => builder.finish());
-    return {
-      shape: 'arrow-table',
-      schema: structuredClone(this.schema),
-      data: new arrow.Table(arrowRecordBatch)
-    };
+    return new arrow.Table(batch);
   }
 
   /** Extract a record batch flushing the currently accumulated data in the builders */

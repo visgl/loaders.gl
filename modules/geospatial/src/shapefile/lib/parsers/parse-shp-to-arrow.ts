@@ -180,5 +180,5 @@ function makeEmptyArrowBatch(schema: ArrowTable['schema']): ArrowTableBatch {
     throw new Error('SHP Arrow batch requires a schema');
   }
   const table = new ArrowTableBuilder(schema).finishTable();
-  return makeTableScanBatch({...table, schema});
+  return makeTableScanBatch({shape: 'arrow-table', data: table, schema});
 }

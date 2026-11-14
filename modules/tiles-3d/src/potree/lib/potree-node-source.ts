@@ -306,7 +306,7 @@ export class PotreeNodesSource
           builder.addArrayRow(outputColumnNames.map(columnName => columns[columnName][rowIndex]));
         }
         const batch = builder.finishBatch();
-        if (batch) yield* batch.data.batches;
+        if (batch) yield batch;
         remainingPointCount -= batchRowIndices.length;
         if (remainingPointCount === 0) return;
       }

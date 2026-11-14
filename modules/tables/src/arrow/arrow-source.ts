@@ -1,8 +1,9 @@
-import type {RecordBatch} from 'apache-arrow';
+import {Table, type RecordBatch} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   createScanQueryMetadata,
   executeTableScanBatches,
+  makeTableScanBatch,
   explainTableQuery
 } from '@loaders.gl/core/loader-utils';
 import type {
@@ -94,7 +95,9 @@ export class ArrowTableSource
         ? readStreamChunks(this.data.stream(), signal, onByteLength)
         : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
     const {parseArrowInBatches} = await import('./lib/parsers/parse-arrow');
-    yield* parseArrowInBatches(chunks);
+    for await (const batch of parseArrowInBatches(chunks)) {
+      yield makeTableScanBatch({shape: 'arrow-table', data: new Table(batch)});
+    }
   }
 }
 

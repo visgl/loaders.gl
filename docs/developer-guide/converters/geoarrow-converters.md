@@ -50,8 +50,8 @@ GeoArrow conversions split into two jobs:
 | --- | --- |
 | Package | `@loaders.gl/core/geoarrow` |
 | `id` | `'geoarrow-table'` |
-| `from` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
-| `to` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
+| `from` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
+| `to` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
 | Detection | Arrow tables whose schema carries GeoArrow metadata |
 | Typical use | Move a GeoArrow table into or out of wrappers without changing geometry encoding |
 

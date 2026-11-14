@@ -264,7 +264,11 @@ export function convertCSVRowTableToArrowTable(
       arrowTableBuilder.addArrayRow(row as unknown[]);
     }
   }
-  return arrowTableBuilder.finishTable();
+  return {
+    shape: 'arrow-table',
+    schema: structuredClone(arrowTableBuilder.schema),
+    data: arrowTableBuilder.finishTable()
+  };
 }
 
 /** Converts CSV row batches to Arrow batches while preserving the CSV-derived schema. */

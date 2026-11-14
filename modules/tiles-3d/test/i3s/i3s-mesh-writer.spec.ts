@@ -66,8 +66,11 @@ function createFeatures(schema?: Schema, rows?: Record<string, unknown>[]): I3SM
     {feature_id: 18446744073709551615n, label: 'München 🏠', count: -1, height: 0}
   ])
     builder.addObjectRow(row);
+  const data = builder.finishTable();
   return {
-    batches: [builder.finishBatch()!],
+    batches: [
+      {shape: 'arrow-table', batchType: 'data', length: data.numRows, schema: selectedSchema, data}
+    ],
     triangleFeatureIndices: new Uint32Array([1, 0]),
     featureIdField: 'feature_id',
     integer64Encoding: 'decimal-string'

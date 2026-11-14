@@ -83,7 +83,7 @@ const objectRows = convert(arrowTable, 'object-row-table', [ArrowConverter, Tabl
 
 the dispatcher can choose:
 
-`'arrow' -> 'arrow-table' -> 'object-row-table'`
+`'arrow' -> 'object-row-table'`
 
 If you leave out one of those converters, there is no path and the call fails.
 

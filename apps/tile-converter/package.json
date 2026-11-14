@@ -96,6 +96,7 @@
     "@math.gl/geometry": "5.0.0-beta.10",
     "@math.gl/geospatial": "5.0.0-beta.10",
     "ajv": "^8.12.0",
+    "apache-arrow": ">= 17.0.0",
     "cors": "^2.8.5",
     "debug": "~4.3.4",
     "express": "~4.22.3",

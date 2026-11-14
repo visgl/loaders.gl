@@ -810,19 +810,12 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 
 Code that reads `result.data` from a table returned by a loader in
 `@loaders.gl/tables` can use the returned Apache Arrow `Table` directly.
-Batch APIs yield Apache Arrow `RecordBatch` objects. Loaders that still support wrappers
-accept `core.shape: 'arrow-table'`. `CSVLoader`, `JSONTableLoader`, `GeoJSONLoader`, `NDJSONLoader`, and `NDGeoJSONLoader` use `'arrow'`
-for all Arrow output. A loader-specific shape option,
+Batch APIs yield Apache Arrow `RecordBatch` objects. A loader-specific shape option,
 such as `csv.shape`, takes precedence over `core.shape`.
 
 See [native Apache Arrow output](./modules/core/schema/table-guide.md#native-apache-arrow-output)
-for batch metadata and examples. Pass the native Arrow table to writers. If a
-loader returns an `'arrow-table'` wrapper, pass its `data` property.
-
-`CSVLoader`, `JSONTableLoader`, and `GeoJSONLoader` use `'arrow'` for Arrow output. Replace
-`'arrow-table'` shape options with `'arrow'`. Atomic parsing returns an Apache Arrow
-`Table` and batch parsing yields `RecordBatch` objects. Access columns directly on the
-returned value and use `numRows` for batch row counts. Schema and field metadata use
+for batch metadata and examples. Pass the native Arrow table to writers. Access columns directly
+on the returned value and use `numRows` for batch row counts. Schema and field metadata use
 Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
 JSON batch paths are available through `batch.metadata.get('jsonpath')`.
 
@@ -1467,9 +1460,7 @@ Import Arrow transport, indexed/mapped tables, column renaming, and schema valid
 Loader worker result hooks live in `@loaders.gl/core/arrow-worker-transport`.
 
 The upstream column-buffer payload uses schema-only IPC bytes and direct Arrow data nodes
-for batches. It has no loaders.gl `shape` discriminator. Loader result envelopes retain
-`shape: 'arrow-table'`. Regenerate payloads with the matching upstream serializer rather
-than reading former loaders.gl schema objects or `batch.data` wrappers. Transport types
+for batches. Loader worker messages carry those columns alongside any format-specific metadata. Regenerate payloads with the matching upstream serializer. Transport types
 come from math.gl; `DehydratedArrowVector` and `DehydratedArrowRecordBatch` aliases are removed.
 
 Task imports move from `@math.gl/core/tasks` to `@math.gl/tasks`. The task API forwarding

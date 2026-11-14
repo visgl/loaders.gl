@@ -234,7 +234,7 @@ function makeWKBArrowTable(
   for (const propertyRow of propertyRows) {
     propertyBuilder.addObjectRow(propertyRow);
   }
-  const propertyData = propertyBuilder.finishTable().data;
+  const propertyData = propertyBuilder.finishTable();
   const propertyBatch = propertyData.batches[0];
   const geometryData = makeWKBGeometryDataFromWriters(geometryWriters);
   const arrowSchema = convertSchemaToArrow(schema);
@@ -276,7 +276,7 @@ function makeNativeArrowTable(
   for (const propertyRow of propertyRows) {
     propertyTableBuilder.addObjectRow(propertyRow);
   }
-  const propertyBatch = propertyTableBuilder.finishTable().data.batches[0];
+  const propertyBatch = propertyTableBuilder.finishTable().batches[0];
   const propertyArrowSchema = convertSchemaToArrow(propertySchema);
   const geometryTypes = [
     ...new Set(geometries.map(geometry => geometryTypeToGeoJSONType(geometry.type)))

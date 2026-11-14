@@ -36,6 +36,8 @@ test('Column worker transport owns dictionary and mesh index buffers across batc
     batchType: 'data',
     length: 1
   }) as any;
+  expect(payload).not.toHaveProperty('shape');
+  expect(payload.transport).toBe('arrow-column-envelope');
   const received = structuredClone(payload, {
     transfer: getTransferList(payload)
   });
@@ -145,6 +147,8 @@ test.each([
   batch.metadata.set('local', 'first');
   const input = batchOutput ? batch : table;
   const payload = serializeNativeArrowWorkerResult(input);
+  expect(payload).toMatchObject({columns: {data: {transport: 'arrow-js'}}});
+  expect(payload).not.toHaveProperty('columns.shape');
   const received = deserializeNativeArrowWorkerResult(
     structuredClone(payload, {
       transfer: getTransferList(payload)

@@ -163,12 +163,22 @@ export async function parseRawArrowCSVText(
   Papa.parse(csvText, config);
 
   if (arrowTableBuilder) {
-    return (arrowTableBuilder as ArrowTableBuilder).finishTable();
+    const builder = arrowTableBuilder as ArrowTableBuilder;
+    return {
+      shape: 'arrow-table',
+      schema: structuredClone(builder.schema),
+      data: builder.finishTable()
+    };
   }
 
   if (headerRow) {
     const headerSchema = createUtf8Schema(headerRow);
-    return new ArrowTableBuilder(headerSchema, {viewTypes: csvOptions.viewTypes}).finishTable();
+    const builder = new ArrowTableBuilder(headerSchema, {viewTypes: csvOptions.viewTypes});
+    return {
+      shape: 'arrow-table',
+      schema: structuredClone(builder.schema),
+      data: builder.finishTable()
+    };
   }
 
   return {
@@ -362,7 +372,11 @@ export function parseRawArrowCSVInBatches(
         const batch = arrowTableBuilder?.flushBatch();
         if (batch) {
           asyncQueue.enqueue({
-            ...batch,
+            shape: 'arrow-table',
+            batchType: 'data',
+            schema: structuredClone(arrowTableBuilder!.schema),
+            length: batch.numRows,
+            data: new arrow.Table(batch),
             count: emittedBatchCount,
             bytesUsed: results.meta.cursor
           });
@@ -377,7 +391,11 @@ export function parseRawArrowCSVInBatches(
         const batch = rowCountInCurrentBatch > 0 ? arrowTableBuilder?.finishBatch() : null;
         if (batch) {
           asyncQueue.enqueue({
-            ...batch,
+            shape: 'arrow-table',
+            batchType: 'data',
+            schema: structuredClone(arrowTableBuilder!.schema),
+            length: batch.numRows,
+            data: new arrow.Table(batch),
             count: emittedBatchCount,
             bytesUsed: results.meta.cursor
           });

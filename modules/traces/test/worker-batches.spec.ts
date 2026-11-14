@@ -66,8 +66,8 @@ test('Chrome trace worker returns columns before caller JSON reconstruction', as
   expect(result).toEqual(chromeTrace);
   expect(mainParse).not.toHaveBeenCalled();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
 });
 
@@ -163,7 +163,9 @@ test.each([
   expect(mainBatches).not.toHaveBeenCalled();
   expect(deserialize).toHaveBeenCalled();
   for (const [payload] of deserialize.mock.calls)
-    expect(payload).toMatchObject({columns: {shape: 'arrow-table', data: {transport: 'arrow-js'}}});
+    expect(payload).toMatchObject({
+      columns: {transport: 'arrow-record-batch', columns: {data: {transport: 'arrow-js'}}}
+    });
 });
 
 test('trace transport rejects decoded objects and IPC payloads', () => {

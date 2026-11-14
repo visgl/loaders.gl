@@ -85,8 +85,7 @@ the stream and merge schema metadata in emission order.
 
 ## Writing native Arrow data
 
-Table writers take the Apache Arrow `Table` directly. If you have a loaders.gl
-`'arrow-table'` result, pass its `data` property to the writer. For example, load a
+Table writers take the Apache Arrow `Table` directly. For example, load a
 CSV file and encode the resulting table as Arrow IPC:
 
 ```typescript

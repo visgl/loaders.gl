@@ -87,4 +87,4 @@ A Shapefile dataset is normally a set of sidecar files. `.shp` stores geometry, 
 
 ## Arrow
 
-Set `shapefile.shape: 'arrow-table'` to return an Arrow table with DBF property columns and a WKB `geometry` column.
+Set `shapefile.shape: 'arrow'` to return an Arrow table with DBF property columns and a WKB `geometry` column.

@@ -230,11 +230,11 @@ export class ClusterSource extends DataSource<ClusterSourceData, {}> implements 
     const preference = parameters.geoarrow?.encodingPreference;
     if (preference && preference !== 'geoarrow.wkb') {
       return convertGeoArrowGeometry(
-        table.data,
+        table,
         preference === 'optimized' ? 'geoarrow.point' : 'geoarrow.geometry'
       );
     }
-    return table.data;
+    return table;
   }
 
   /** Retrieves a member's original geometry and properties; Arrow rows are materialized on demand. */
