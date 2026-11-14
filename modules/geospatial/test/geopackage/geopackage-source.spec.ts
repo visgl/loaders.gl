@@ -5,10 +5,7 @@ import {createDataSourceSync, fetchFile, load, setLoaderOptions} from '@loaders.
 import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geospatial/geopackage/index';
 import {GeoPackageLoader as BundledGeoPackageLoader} from '@loaders.gl/geospatial/geopackage/bundled';
 const GPKG_RIVERS_MULTI = '@loaders.gl/geospatial/geopackage/test/data/rivers_multi.gpkg';
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
-});
+setLoaderOptions({core: {_workerType: 'test', worker: false}});
 test('GeoPackageSource#testURL recognizes GeoPackage URLs', () => {
   expect(GeoPackageSource.testURL('data.gpkg')).toBe(true);
   expect(GeoPackageSource.testURL('data.gpkg?download=1')).toBe(true);

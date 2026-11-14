@@ -26,9 +26,7 @@ import {
   ARROW_BIOGRID_NODES
 } from './data/arrow/test-cases';
 const ArrowWorkerLoader = ArrowLoader;
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('ArrowLoader#loader conformance', () => {
   validateLoader(ArrowLoader, 'ArrowLoader');
 });

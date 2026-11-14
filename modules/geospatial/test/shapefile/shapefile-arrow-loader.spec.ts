@@ -10,10 +10,7 @@ import {setLoaderOptions, fetchFile, load, loadInBatches} from '@loaders.gl/core
 import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/wkb-table';
 import {convertGeoArrowVectorCellToGeoJSON, getGeoMetadata} from '@loaders.gl/core/geoarrow';
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
-});
+setLoaderOptions({core: {_workerType: 'test', worker: false}});
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const TEST_FILES = [
   'points',

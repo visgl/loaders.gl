@@ -32,7 +32,7 @@ test('selectLoaderSync#urls', async () => {
   expect(() => selectLoaderSync(null), 'selectedLoader throws if no loader found').toThrow();
   expect(
     // @ts-ignore
-    selectLoaderSync('.', null, {nothrow: true}),
+    selectLoaderSync('.', null, {core: {nothrow: true}}),
     'selectedLoader({nothrow: true}) returns null instead of throwing'
   ).toBe(null);
   expect(
@@ -63,25 +63,25 @@ test('selectLoaderSync#urls', async () => {
   ).toThrow();
   expect(
     selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      fallbackMimeType: 'image/png'
+      core: {fallbackMimeType: 'image/png'}
     }),
     'options.fallbackMimeType can resolve loader using provided mimeType'
   ).toBe(ImageLoader);
   expect(
     selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      fallbackMimeType: 'application/x.imagebitmap'
+      core: {fallbackMimeType: 'application/x.imagebitmap'}
     }),
     'options.fallbackMimeType can resolve loader using provided `application/x.<loaderId>` mimeType'
   ).toBe(ImageLoader);
   expect(
     selectLoaderSync('data.las', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      mimeType: 'image/png'
+      core: {mimeType: 'image/png'}
     }),
     'options.mimeType can override loader using provided mimeType'
   ).toBe(ImageLoader);
   expect(
     selectLoaderSync('data.las', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      mimeType: 'application/x.imagebitmap'
+      core: {mimeType: 'application/x.imagebitmap'}
     }),
     'options.mimeType can override loader using provided `application/x.<loaderId>` mimeType'
   ).toBe(ImageLoader);
@@ -95,7 +95,7 @@ test('selectLoader#urls', async () => {
   ).rejects.toBeDefined();
   expect(
     // @ts-ignore
-    await selectLoader('.', null, {nothrow: true}),
+    await selectLoader('.', null, {core: {nothrow: true}}),
     'selectedLoader({nothrow: true}) returns null instead of throwing'
   ).toBe(null);
   expect(
@@ -185,7 +185,7 @@ test.runIf(isBrowser)('selectLoader#Blob data sniffing', async () => {
   let loader = await selectLoader(blob, [Tiles3DLoader, DracoLoader, LASLoader]);
   expect(loader, 'selectLoader find loader by Blob content sniffing').toBe(DracoLoader);
 
-  loader = selectLoaderSync(blob, [Tiles3DLoader, DracoLoader, LASLoader], {nothrow: true});
+  loader = selectLoaderSync(blob, [Tiles3DLoader, DracoLoader, LASLoader], {core: {nothrow: true}});
   expect(loader, 'selectLoaderSync does not find loader by Blob content sniffing').toBe(null);
 });
 
@@ -235,4 +235,27 @@ test('selectLoader#explicit loaders take priority over registered loaders', asyn
   } finally {
     registry.splice(registry.indexOf(registeredLoader), 1);
   }
+});
+
+test('loader selection ignores empty HTTP responses even with a MIME override', async () => {
+  const response = new Response(null, {status: 204});
+  const options = {core: {mimeType: 'image/png'}};
+  expect(selectLoaderSync(response, [ImageLoader], options)).toBeNull();
+  await expect(selectLoader(response, [ImageLoader], options)).resolves.toBeNull();
+});
+
+test('source selection honors an explicit type under core', async () => {
+  const source = {
+    ...JSONTableLoader,
+    type: 'test-source',
+    fromUrl: true,
+    testURL: () => false,
+    createDataSourceSync: () => {
+      throw new Error('selection must not create the source');
+    }
+  };
+  const options = {core: {type: 'test-source', ignoreRegisteredLoaders: true}};
+  await expect(
+    selectLoader('opaque-resource', [JSONTableLoader, source], options, undefined, 'source')
+  ).resolves.toBe(source);
 });

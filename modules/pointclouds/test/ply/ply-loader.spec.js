@@ -63,9 +63,7 @@ property uchar blue
 end_header
 0 0 0 255 128 0
 `;
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 function validateTextPLY(data) {
   expect(data.indices.value.length, 'Indices found').toBe(36);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(72);
@@ -259,7 +257,7 @@ test('PLYLoader#parse(gaussian splat binary fixture)', async () => {
 test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', async () => {
   const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), PLYLoader, {
-    batchSize: 400,
+    core: {batchSize: 400},
     ply: {shape: 'arrow'}
   });
   const batchRowCounts = [];
@@ -280,7 +278,7 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk
   const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const batches = await parseInBatches(makeChunkIterator(arrayBuffer, 777), PLYLoader, {
-    batchSize: 333,
+    core: {batchSize: 333},
     ply: {shape: 'arrow'}
   });
   const batchRowCounts = [];
@@ -292,7 +290,7 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk
 });
 test('PLYLoader#parseInBatches(ascii point cloud, arrow-table)', async () => {
   const batches = await parseInBatches(makeTextIterator(ASCII_POINT_CLOUD_PLY), PLYLoader, {
-    batchSize: 2,
+    core: {batchSize: 2},
     ply: {shape: 'arrow'}
   });
   const batchRowCounts = [];
@@ -309,7 +307,7 @@ test('PLYLoader#parseInBatches(mesh PLY, arrow-table, pointCloud)', async () => 
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const sourceText = await response.text();
   const batches = await parseInBatches(makeTextIterator(sourceText), PLYLoader, {
-    batchSize: 10,
+    core: {batchSize: 10},
     ply: {shape: 'arrow', pointCloud: true}
   });
   const batchRowCounts = [];
@@ -326,7 +324,7 @@ test('PLYLoader#parseInBatches(mesh PLY, arrow-table)', async () => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const sourceText = await response.text();
   const batches = await parseInBatches(makeTextIterator(sourceText), PLYLoader, {
-    batchSize: 10,
+    core: {batchSize: 10},
     ply: {shape: 'arrow'}
   });
   try {
@@ -357,7 +355,7 @@ test('PLYLoader#parseInBatches(binary vertex list properties, arrow-table)', asy
     'binary list values are preserved'
   ).toEqual([0, 2]);
   const batches = await parseInBatches(makeChunkIterator(arrayBuffer, 11), PLYLoader, {
-    batchSize: 2,
+    core: {batchSize: 2},
     ply: {shape: 'arrow'}
   });
   const batchRowCounts = [];

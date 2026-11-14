@@ -331,7 +331,7 @@ test('core load routes URL-backed Avro files through random-access parsing', asy
   globalThis.fetch = fetchFunction;
   try {
     const result = await load('https://example.test/data.avro', AvroLoader, {
-      fetch: fetchFunction
+      core: {fetch: fetchFunction}
     });
     expect(result).toBeInstanceOf(arrow.Table);
     expect(result.getChild('id')?.get(0)).toBe(9);

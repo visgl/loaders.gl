@@ -9,9 +9,7 @@ import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/core/schema';
 import draco3d from 'draco3d';
 const BUNNY_DRC_URL = '@loaders.gl/scene/draco/test/data/bunny.drc';
 const CESIUM_TILE_URL = '@loaders.gl/scene/draco/test/data/cesium-tile.drc';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('DracoLoader#loader conformance', () => {
   validateLoader(DracoLoader, 'DracoLoader');
 });
@@ -27,7 +25,7 @@ test('DracoLoader#parse(mainthread, shape: arrow-table)', async () => {
     return;
   }
   const table = await load(BUNNY_DRC_URL, DracoLoader, {
-    worker: false,
+    core: {worker: false},
     draco: {shape: 'arrow'}
   });
   // validateMeshCategoryData(t, data);
@@ -42,7 +40,7 @@ test('DracoLoader#parse(mainthread) defaults to Arrow table', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;
   }
-  const table = await load(BUNNY_DRC_URL, DracoLoader, {worker: false});
+  const table = await load(BUNNY_DRC_URL, DracoLoader, {core: {worker: false}});
   validateDracoMeshArrowTable(table);
   expect(table.getChild('POSITION'), 'POSITION attribute was found').toBeTruthy();
 });
@@ -51,7 +49,7 @@ test('DracoLoader#draco3d npm package with shape: arrow-table', async () => {
     return;
   }
   const table = await load(BUNNY_DRC_URL, DracoLoader, {
-    worker: false,
+    core: {worker: false},
     draco: {shape: 'arrow'},
     modules: {
       draco3d
@@ -67,7 +65,7 @@ test('DracoLoader#parse custom attributes(mainthread, shape: arrow-table)', asyn
     return;
   }
   let table = await load(CESIUM_TILE_URL, DracoLoader, {
-    worker: false,
+    core: {worker: false},
     draco: {shape: 'arrow'}
   });
   validateDracoMeshArrowTable(table);
@@ -81,7 +79,7 @@ test('DracoLoader#parse custom attributes(mainthread, shape: arrow-table)', asyn
     'Custom (Classification) attribute was found'
   ).toBe(173210);
   table = await load(CESIUM_TILE_URL, DracoLoader, {
-    worker: false,
+    core: {worker: false},
     draco: {
       shape: 'arrow',
       extraAttributes: {

@@ -51,17 +51,20 @@ test.each([
   const expected = convertTableToMesh(parseLAS(file)).attributes;
   expect(convertTableToMesh(parseLAS(incomplete, options)).attributes).toEqual(expected);
   const streamedPositions: number[] = [];
-  for await (const batch of parseLASInBatches(splitInput(incomplete), {...options, batchSize: 3})) {
+  for await (const batch of parseLASInBatches(splitInput(incomplete), {
+    ...options,
+    core: {batchSize: 3}
+  })) {
     streamedPositions.push(...convertTableToMesh(batch).attributes.POSITION.value);
   }
   expect(streamedPositions).toEqual([...expected.POSITION.value]);
   const expectedRaw: number[] = [];
   const actualRaw: number[] = [];
-  for await (const batch of decodeLAZFileInBatches(splitInput(file), {batchSize: 3}))
+  for await (const batch of decodeLAZFileInBatches(splitInput(file), {core: {batchSize: 3}}))
     expectedRaw.push(...new Uint8Array(batch.arrayBuffer));
   for await (const batch of decodeLAZFileInBatches(splitInput(incomplete), {
     ...options,
-    batchSize: 3
+    core: {batchSize: 3}
   }))
     actualRaw.push(...new Uint8Array(batch.arrayBuffer));
   expect(actualRaw).toEqual(expectedRaw);

@@ -24,9 +24,4 @@ test('MVT worker transport round-trips Arrow tables and preserves other results'
     shape: 'object-row-table'
   });
   expect(deserializeMVTWorkerResult('unchanged')).toBe('unchanged');
-
-  const topLevelCopy = serializeMVTWorkerResult(table, {
-    workerTransferBufferCopy: 'transfer'
-  } as any) as any;
-  expect(topLevelCopy.columns.data.transport).toBe('arrow-js');
 });

@@ -39,8 +39,9 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
 };
 
 export const REMOVED_LOADER_OPTIONS = {
-  // deprecated top-level alias
+  // Removed top-level aliases
   baseUri: 'core.baseUrl',
+  baseUrl: 'core.baseUrl',
   fetch: 'core.fetch',
   mimeType: 'core.mimeType',
   fallbackMimeType: 'core.fallbackMimeType',
@@ -51,10 +52,12 @@ export const REMOVED_LOADER_OPTIONS = {
 
   CDN: 'core.CDN',
   worker: 'core.worker',
+  workerThreshold: 'core.workerThreshold',
+  workerTransferBufferCopy: 'core.workerTransferBufferCopy',
   maxConcurrency: 'core.maxConcurrency',
   maxMobileConcurrency: 'core.maxMobileConcurrency',
   reuseWorkers: 'core.reuseWorkers',
-  _nodeWorkers: 'core.nodeWorkers',
+  _nodeWorkers: 'core._nodeWorkers',
   _workerType: 'core._workerType',
   _worker: 'core._workerType',
 

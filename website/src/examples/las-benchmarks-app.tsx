@@ -408,8 +408,7 @@ async function consumeStreamingParse(
   columns: typeof COMPETITIVE_COLUMNS | typeof RENDER_COLUMNS | undefined
 ): Promise<void> {
   const batches = await parseInBatches(lazChunks, LASLoader, {
-    batchSize: BATCH_SIZE,
-    core: {worker: false},
+    core: {worker: false, batchSize: BATCH_SIZE},
     las: {shape: 'arrow', columns}
   });
   for await (const _batch of batches) {

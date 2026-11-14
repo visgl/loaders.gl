@@ -3,33 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {
-  getGlobalLoaderOptions,
-  normalizeLoaderOptions,
-  setGlobalOptions
-} from '@loaders.gl/core/lib/loader-utils/option-utils';
-test('coreOptions#deprecatedTopLevelMovesIntoCore', () => {
-  const originalGlobalOptions = getGlobalLoaderOptions();
-  const originalClone = {...originalGlobalOptions, core: {...originalGlobalOptions.core}};
-  const normalizedOptions = normalizeLoaderOptions({
-    worker: false,
-    _nodeWorkers: true,
-    _workerType: 'test',
-    _worker: 'should-not-override',
-    batchSize: 7,
-    metadata: true
-  });
-  expect(normalizedOptions.core.worker).toBe(false);
-  expect(normalizedOptions.core._nodeWorkers).toBe(true);
-  expect(normalizedOptions.core._workerType).toBe('test');
-  expect((normalizedOptions as any)._worker).toBe(undefined);
-  expect(normalizedOptions.core.batchSize).toBe(7);
-  expect(normalizedOptions.core.metadata).toBe(true);
-  expect((normalizedOptions as any).worker).toBe(undefined);
-  expect((normalizedOptions as any).batchSize).toBe(undefined);
-  setGlobalOptions({core: {worker: true}, worker: false});
-  const globalOptions = getGlobalLoaderOptions();
-  expect(globalOptions.core.worker).toBe(true);
-  expect((globalOptions as any).worker).toBe(undefined);
-  setGlobalOptions(originalClone);
+import {normalizeOptions} from '@loaders.gl/core/lib/loader-utils/option-utils';
+import {NullLoader} from '@loaders.gl/core';
+
+test('top-level parser options do not configure core options', () => {
+  // Untyped callers can still supply the old property names.
+  const legacyOptions = {worker: false, batchSize: 7, metadata: true};
+  const options = normalizeOptions(legacyOptions as never, NullLoader);
+
+  expect(options.core).toMatchObject({worker: true, batchSize: 'auto', metadata: false});
 });

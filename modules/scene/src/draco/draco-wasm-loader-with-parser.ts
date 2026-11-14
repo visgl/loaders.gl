@@ -22,7 +22,7 @@ export const DracoWASMLoaderWithParser = {
       options,
       async () =>
         await loadDracoDecoderModule(
-          extractLoadLibraryOptions(options),
+          extractLoadLibraryOptions({core: options?.core, modules: options?.modules}),
           'wasm',
           options?.draco?.decoderProfile
         ),

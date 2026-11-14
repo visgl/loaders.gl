@@ -99,8 +99,7 @@ export default async function lasLoaderBench(bench) {
     benchmarkOptions,
     async () => {
       const batches = await parseInBatches(lazChunks, LASLoader, {
-        batchSize: BATCH_SIZE,
-        core: {worker: false},
+        core: {worker: false, batchSize: BATCH_SIZE},
         las: {shape: 'arrow'}
       });
       for await (const _batch of batches) {
@@ -138,8 +137,7 @@ export default async function lasLoaderBench(bench) {
     laz14BenchmarkOptions,
     async () => {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
-        batchSize: BATCH_SIZE,
-        core: {worker: false},
+        core: {worker: false, batchSize: BATCH_SIZE},
         las: {shape: 'arrow', columns: COMPETITIVE_COLUMNS}
       });
       for await (const _batch of batches) {
@@ -166,8 +164,7 @@ export default async function lasLoaderBench(bench) {
     laz14BenchmarkOptions,
     async () => {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
-        batchSize: BATCH_SIZE,
-        core: {worker: false},
+        core: {worker: false, batchSize: BATCH_SIZE},
         las: {shape: 'arrow'}
       });
       for await (const _batch of batches) {
@@ -194,8 +191,7 @@ export default async function lasLoaderBench(bench) {
     laz14BenchmarkOptions,
     async () => {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
-        batchSize: BATCH_SIZE,
-        core: {worker: false},
+        core: {worker: false, batchSize: BATCH_SIZE},
         las: {shape: 'arrow', columns: RENDER_COLUMNS}
       });
       for await (const _batch of batches) {
@@ -345,8 +341,7 @@ async function collectTypeScriptLAZStreamingStats(chunks: ArrayBuffer[]): Promis
     decodedChunkAllocations: 0
   };
   const batches = await parseInBatches(chunks, LASLoader, {
-    batchSize: BATCH_SIZE,
-    core: {worker: false},
+    core: {worker: false, batchSize: BATCH_SIZE},
     las: {
       shape: 'arrow',
       lazStreamingStats

@@ -13,8 +13,6 @@ import type {ChromeTraceFileSchema, ChromeTraceValidationOptions} from './chrome
 /** Chrome trace loader options. */
 export type ChromeTraceLoaderOptions = LoaderOptions &
   ChromeTraceValidationOptions & {
-    /** Selects the returned data shape for whole-file parsing. */
-    shape?: 'json' | 'arrow';
     /** Chrome trace loader-specific options. */
     chromeTrace?: {
       /** Overrides the shared browser worker bundle URL. */

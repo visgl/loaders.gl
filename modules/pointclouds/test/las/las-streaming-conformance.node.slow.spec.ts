@@ -117,7 +117,7 @@ describe('TypeScript LAZ streaming conformance', () => {
       await expect(async () => {
         for await (const batch of decodeLAZFileInBatches(
           splitArrayBufferRandomly(malformedInput.input, 0x4c415a14, 31),
-          {batchSize: 127}
+          {core: {batchSize: 127}}
         )) {
           yieldedPointCount += batch.header.pointsCount;
         }
@@ -242,7 +242,7 @@ function getLASPointData(arrayBuffer: ArrayBuffer, pointDataRecordLength: number
 async function collectRawPointData(chunks: AsyncIterable<ArrayBufferView>): Promise<Uint8Array> {
   const batches: Uint8Array[] = [];
   let byteLength = 0;
-  for await (const batch of decodeLAZFileInBatches(chunks, {batchSize: 127})) {
+  for await (const batch of decodeLAZFileInBatches(chunks, {core: {batchSize: 127}})) {
     const bytes = new Uint8Array(batch.arrayBuffer);
     batches.push(bytes);
     byteLength += bytes.byteLength;

@@ -182,7 +182,7 @@ async function* parsePLYWithMetadataInBatches(
 ) {
   const plyOptions = {
     ...options?.ply,
-    batchSize: options?.core?.batchSize ?? options?.batchSize
+    batchSize: options?.core?.batchSize
   };
   for await (const meshOrTable of parsePLYInBatches(arrayBuffer, plyOptions)) {
     const convertedData = isMeshArrowTable(meshOrTable)

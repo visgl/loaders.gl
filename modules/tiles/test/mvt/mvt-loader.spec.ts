@@ -35,9 +35,7 @@ const decodedPolygonsGeometry = await loadJSON(
 const decodedPointsGeoJSON = await loadJSON('./data/mvt-results/decoded_mvt_points.json');
 const decodedLinesGeoJSON = await loadJSON('./data/mvt-results/decoded_mvt_lines.json');
 const decodedPolygonsGeoJSON = await loadJSON('./data/mvt-results/decoded_mvt_polygons.json');
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('Point MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
@@ -122,7 +120,7 @@ test('MVTLoader#Parse Point MVT', async () => {
         }
       }
     };
-    loaderOptions.worker = false;
+    loaderOptions.core = {worker: false};
     const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
     let expected = binary
       ? decodedPointsGeoJSON

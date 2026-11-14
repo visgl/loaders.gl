@@ -633,11 +633,11 @@ Move those settings into `sourceOptions`, using the flat shape above. This match
 `Tile2DSourceLayer` and avoids two competing source-options entry points. The deck.gl property
 itself and the separate `Tileset3D.loadOptions` API are not removed by this change.
 
-- Deprecated top-level parser option aliases such as `fetch`, `worker`, and `shape` are still
-  accepted by the current implementation. Migrate them to `core.fetch`, `core.worker`, and
-  `core.shape`. These aliases are distinct from the removed source `loadOptions` wrappers above;
-  their final v5 removal or retention decision is tracked in
-  [the v5 release tracker](https://github.com/visgl/loaders.gl/issues/3316).
+- Top-level parser option aliases have been removed. Move shared settings under `core`,
+  including `fetch`, `worker`, `shape`, and `batchSize`. Rename `baseUri` to
+  `core.baseUrl`. For example, use
+  `load(url, Loader, {core: {worker: false, batchSize: 1000}})`. Format-specific
+  options still use their format namespace.
 - `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
 - Use `await createDataSource(url, loader, options)` to construct a source.
   `load()` returns parsed data and rejects source-only loaders.

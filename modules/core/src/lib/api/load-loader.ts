@@ -121,7 +121,7 @@ async function resolveLoaderImplementation(
 
 /** Gets the dynamic implementation specifier for the test worker fallback path. */
 function getLoaderImplementationSpecifier(loader: Loader, options?: LoaderOptions): string {
-  const workerType = options?._workerType || options?.core?._workerType;
+  const workerType = options?.core?._workerType;
   if (workerType === 'test') {
     const sourcePath = `modules/${loader.module}/src/${loader.id}-loader.ts`;
     if (typeof window !== 'undefined') {

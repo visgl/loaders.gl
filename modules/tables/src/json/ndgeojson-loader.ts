@@ -88,7 +88,7 @@ async function* parseInBatches(
     | Iterable<string | ArrayBufferLike | ArrayBufferView>,
   options?: NDGeoJSONLoaderOptions
 ): AsyncIterable<RecordBatch | TableBatch> {
-  const configuredBatchSize = options?.core?.batchSize ?? options?.batchSize;
+  const configuredBatchSize = options?.core?.batchSize;
   const batchSize =
     configuredBatchSize === undefined || configuredBatchSize === 'auto'
       ? 1000

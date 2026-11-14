@@ -35,8 +35,7 @@ test('ShapefileLoader#loads browser File objects', async () => {
   const files = await getFixtureFiles(fixtureName);
   const fileSystem = new BrowserFileSystem(files);
   const table = await load(`${fixtureName}.shp`, ShapefileLoader, {
-    core: {worker: false},
-    fetch: fileSystem.fetch,
+    core: {worker: false, fetch: fileSystem.fetch},
     shapefile: {shape: 'v3'}
   });
 

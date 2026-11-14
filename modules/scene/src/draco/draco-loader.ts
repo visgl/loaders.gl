@@ -34,7 +34,7 @@ async function parse(
     options,
     async () =>
       await loadDracoDecoderModule(
-        extractLoadLibraryOptions(options),
+        extractLoadLibraryOptions({core: options?.core, modules: options?.modules}),
         options?.draco?.backend === 'javascript' || options?.draco?.backend === 'js'
           ? 'js'
           : 'wasm',

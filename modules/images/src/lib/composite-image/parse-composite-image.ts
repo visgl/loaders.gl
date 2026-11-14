@@ -448,7 +448,7 @@ function getCompositeImageFetch(
   options: TextureLoaderOptions,
   context?: LoaderContext
 ): typeof fetch {
-  const fetchOption = options.fetch ?? options.core?.fetch;
+  const fetchOption = options.core?.fetch;
 
   if (context?.fetch) {
     return context.fetch as typeof fetch;

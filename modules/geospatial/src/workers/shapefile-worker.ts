@@ -17,10 +17,7 @@ function createShapefileContext(context?: LoaderContext, options?: any): LoaderC
     fetch: createAuthenticatedFetch({
       fetch: (url, init) => fetch(url as RequestInfo, init),
       credentials: options?.core?.credentials || [],
-      fetchOptions:
-        typeof (options?.core?.fetch ?? options?.fetch) === 'object'
-          ? (options?.core?.fetch ?? options?.fetch)
-          : undefined
+      fetchOptions: typeof options?.core?.fetch === 'object' ? options?.core?.fetch : undefined
     }),
     _parse: async (input: any, loader: LoaderWithParser, options: any) =>
       loader.parse!(

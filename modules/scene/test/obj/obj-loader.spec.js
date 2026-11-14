@@ -10,9 +10,7 @@ const OBJ_ASCII_URL = '@loaders.gl/scene/obj/test/data/bunny.obj';
 const OBJ_NORMALS_URL = '@loaders.gl/scene/obj/test/data/cube.obj';
 const OBJ_MULTI_PART_URL = '@loaders.gl/scene/obj/test/data/magnolia.obj';
 const OBJ_VERTEX_COLOR_URL = '@loaders.gl/scene/obj/test/data/cube-vertex-colors.obj';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('OBJLoader#loader objects', () => {
   validateLoader(OBJLoader, 'OBJLoader');
   expect(OBJLoader.testText('v 1 2 3')).toBe(true);
@@ -49,8 +47,7 @@ test('OBJLoader#parseInBatches(vertex-only point cloud, arrow-table)', async () 
     [new TextEncoder().encode(['v 0 0 0', 'v 1 1 1', 'v 2 2 2', 'v 3 3 3', ''].join('\n')).buffer],
     OBJLoader,
     {
-      core: {worker: false},
-      batchSize: 2,
+      core: {worker: false, batchSize: 2},
       obj: {shape: 'arrow'}
     }
   );
@@ -71,8 +68,7 @@ test('OBJLoader#parseInBatches(pointCloud flag streams vertices without geometry
     ],
     OBJLoader,
     {
-      core: {worker: false},
-      batchSize: 2,
+      core: {worker: false, batchSize: 2},
       obj: {shape: 'arrow', pointCloud: true}
     }
   );
@@ -88,8 +84,7 @@ test('OBJLoader#parseInBatches(faces, arrow-table) falls back to atomic parse', 
     [new TextEncoder().encode(['v 0 0 0', 'v 1 0 0', 'v 0 1 0', 'f 1 2 3', ''].join('\n')).buffer],
     OBJLoader,
     {
-      core: {worker: false},
-      batchSize: 1,
+      core: {worker: false, batchSize: 1},
       obj: {shape: 'arrow'}
     }
   );

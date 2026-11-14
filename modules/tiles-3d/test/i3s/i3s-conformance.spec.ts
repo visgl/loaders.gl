@@ -364,7 +364,7 @@ describe('I3S conformance fixtures', () => {
       },
       8,
       {
-        fetch: async url => new Response(responses[String(url).split('?')[0]])
+        core: {fetch: async url => new Response(responses[String(url).split('?')[0]])}
       }
     );
 

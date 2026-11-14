@@ -294,7 +294,7 @@ const DEFAULT_PROPS: Props = {
   loadTiles: true,
   updateTransforms: true,
   viewportTraversersMap: null,
-  loadOptions: {fetch: {}},
+  loadOptions: {core: {fetch: {}}},
   attributions: [],
   basePath: '',
   i3s: {},

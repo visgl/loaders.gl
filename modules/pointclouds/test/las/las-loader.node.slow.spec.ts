@@ -80,9 +80,7 @@ const LAZ_1_4_PARITY_VARIANTS = [
   {name: 'COPC', loader: LASCOPCLoader},
   {name: 'laz-rs', loader: LAZRsLoader}
 ] as const;
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 
 test('LASLoader#loader conformance', () => {
   validateLoader(LASLoader, 'LASLoader');
@@ -135,9 +133,8 @@ test('LASLoader#parse(binary)', async () => {
 test('LASLoader#parseInBatches(mesh)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
-    batchSize: 25000,
     las: {shape: 'mesh'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 25000}
   });
   const batchVertexCounts: number[] = [];
   let totalVertexCount = 0;
@@ -165,9 +162,8 @@ test('LASLoader#parseInBatches(mesh)', async () => {
 test('LASLoader#parseInBatches(arrow-table)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
-    batchSize: 30000,
     las: {shape: 'arrow'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 30000}
   });
   const batchRowCounts: number[] = [];
   for await (const table of batches as AsyncIterable<any>) {
@@ -185,9 +181,8 @@ test('LASLoader#parseInBatches(arrow-table)', async () => {
 test('LASLoader#parseInBatches(fp64)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
-    batchSize: 25000,
     las: {shape: 'mesh', fp64: true},
-    core: {worker: false}
+    core: {worker: false, batchSize: 25000}
   });
   for await (const batch of batches as AsyncIterable<any>) {
     expect(
@@ -207,9 +202,8 @@ test('LAS loader variants parseInBatches', async () => {
   ]) {
     const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
     const batches = await parseInBatches(makeIterator(response), loader, {
-      batchSize: 250,
       las: {shape: 'mesh'},
-      core: {worker: false}
+      core: {worker: false, batchSize: 250}
     });
     let totalVertexCount = 0;
     for await (const batch of batches as AsyncIterable<any>) {
@@ -270,8 +264,7 @@ test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 matches laz-rs variant', asy
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
-    batchSize: 250,
-    core: {worker: false},
+    core: {worker: false, batchSize: 250},
     las: {shape: 'mesh', lazStreamingStats: streamingStats} as LASLoaderOptions['las'] & {
       lazStreamingStats: typeof streamingStats;
     }
@@ -303,11 +296,7 @@ test('LASLoader#parseInBatches emits legacy LAZ rows before input ends', async (
       consumedByteLength += byteLength;
     }),
     LASLoader,
-    {
-      batchSize: 250,
-      las: {shape: 'mesh'},
-      core: {worker: false}
-    }
+    {las: {shape: 'mesh'}, core: {worker: false, batchSize: 250}}
   );
   let batchCount = 0;
   let pointCount = 0;
@@ -346,7 +335,7 @@ for (const fixture of [
     const lazArrayBuffer = await (await fetchFile(fixture.lazUrl)).arrayBuffer();
     const batches: Uint8Array[] = [];
     for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(lazArrayBuffer, 257), {
-      batchSize: 127
+      core: {batchSize: 127}
     })) {
       batches.push(new Uint8Array(batch.arrayBuffer));
     }
@@ -386,9 +375,8 @@ for (const fixture of [
       core: {worker: false}
     });
     const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
-      batchSize: 127,
       las: {shape: 'mesh'},
-      core: {worker: false}
+      core: {worker: false, batchSize: 127}
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
     expect(actual.loaderData.versionAsString, `${label} fixture is LAS 1.3`).toBe('1.3');
@@ -442,9 +430,8 @@ test('LASLoader#parseInBatches matches COPC variant', async () => {
   });
   const response = await fetchFile(LAS_1_4_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
-    batchSize: 2,
     las: {shape: 'mesh'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 2}
   });
   const positions: number[] = [];
   const intensities: number[] = [];
@@ -496,9 +483,8 @@ test('LASLoader#parse LAZ 1.4 matches other loader variants', async () => {
 test('LASLoader#parseInBatches LAZ 1.4 fixture', async () => {
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
-    batchSize: 25000,
     las: {shape: 'mesh'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 25000}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
@@ -522,9 +508,8 @@ test('LASLoader#parseInBatches split LAZ 1.4 matches other loader variants', asy
   const response = await fetchFile(LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
-    batchSize: 25000,
     las: {shape: 'mesh'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 25000}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
   for (const {name, loader} of LAZ_1_4_PARITY_VARIANTS) {
@@ -552,9 +537,8 @@ test('LASLoader#parseInBatches LAZ 1.4 accepts split file chunks', async () => {
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
-    batchSize: 25000,
     las: {shape: 'mesh'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 25000}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
   compareCollectedMeshAttributes(
@@ -667,7 +651,7 @@ for (const fixture of [
       }
     }
     for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(lazArrayBuffer, 257), {
-      batchSize: 127
+      core: {batchSize: 127}
     })) {
       expect(batch.header.pointsFormatId, `${label} header preserves point format`).toBe(
         fixture.pointDataRecordFormat
@@ -721,9 +705,8 @@ for (const fixture of [
       core: {worker: false}
     });
     const batches = await parseInBatches(splitArrayBuffer(lazArrayBuffer, 257), LASLoader, {
-      batchSize: 127,
       las: {shape: 'mesh'},
-      core: {worker: false}
+      core: {worker: false, batchSize: 127}
     });
     const streamed = await collectMeshAttributes(batches as AsyncIterable<any>);
     expect(actual.loaderData.versionAsString, `${label} fixture is LAS ${fixture.version}`).toBe(
@@ -926,9 +909,8 @@ test('LASLoader#parseInBatches split variable-chunk LAZ 1.4 matches COPC', async
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
-    batchSize: 25000,
     las: {shape: 'mesh'},
-    core: {worker: false}
+    core: {worker: false, batchSize: 25000}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
   compareCollectedMeshAttributes(
@@ -946,7 +928,9 @@ test('decodeLAZFileInBatches rejects a truncated chunk table', async () => {
   const response = await fetchFile(PDRF_7_V4_LAZ_1_4_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const truncated = arrayBuffer.slice(0, arrayBuffer.byteLength - 16);
-  const batches = decodeLAZFileInBatches(splitArrayBuffer(truncated, 257), {batchSize: 25000});
+  const batches = decodeLAZFileInBatches(splitArrayBuffer(truncated, 257), {
+    core: {batchSize: 25000}
+  });
   await expect(
     (async () => {
       for await (const _batch of batches) {
@@ -1080,7 +1064,7 @@ test('TypeScriptLAZ#decodeLAZFileInBatches accepts split PDRF 3 files', async ()
   const arrayBuffer = await response.arrayBuffer();
   const batches: Uint8Array[] = [];
   for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(arrayBuffer, 257), {
-    batchSize: 250
+    core: {batchSize: 250}
   })) {
     batches.push(new Uint8Array(batch.arrayBuffer));
     expect(batch.header.pointsFormatId, 'batch header preserves point format 3').toBe(3);

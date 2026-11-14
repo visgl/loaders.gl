@@ -15,7 +15,7 @@ beforeAll(async () => {
   const response = await fetchFile(WITH_FEATURE_ID);
   const mvtArrayBuffer = await response.arrayBuffer();
   const geojsonTable = await parse(mvtArrayBuffer, MVTLoader, {
-    worker: false,
+    core: {worker: false},
     mvt: {shape: 'geojson-table'}
   });
 
@@ -34,11 +34,11 @@ test('MVTLoader preserves feature IDs as top-level GeoJSON members', () => {
 test('MVTLoader preserves feature IDs in the default Arrow output', async () => {
   const response = await fetchFile(WITH_FEATURE_ID);
   const mvtArrayBuffer = await response.arrayBuffer();
-  const arrowTable = await parse(mvtArrayBuffer, MVTLoader, {worker: false});
+  const arrowTable = await parse(mvtArrayBuffer, MVTLoader, {core: {worker: false}});
   const expectedResponse = await fetchFile(WITH_FEATURE_ID);
   const expectedArrayBuffer = await expectedResponse.arrayBuffer();
   const expectedTable = await parse(expectedArrayBuffer, MVTLoader, {
-    worker: false,
+    core: {worker: false},
     mvt: {shape: 'geojson-table'}
   });
 

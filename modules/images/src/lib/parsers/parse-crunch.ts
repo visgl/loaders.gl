@@ -50,7 +50,9 @@ let dst: number;
  * @returns Promise of Array of the texture levels
  */
 export async function parseCrunch(data, options: any): Promise<TextureLevel[]> {
-  const crunchModule = await loadCrunchModule(extractLoadLibraryOptions(options));
+  const crunchModule = await loadCrunchModule(
+    extractLoadLibraryOptions({core: options?.core, modules: options?.modules})
+  );
 
   // Copy the contents of the arrayBuffer into emscriptens heap.
   const srcSize = data.byteLength;

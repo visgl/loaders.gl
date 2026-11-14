@@ -20,10 +20,10 @@ export function getFetchFunction(
   const globalOptions = getGlobalLoaderOptions();
 
   const loaderOptions = options || globalOptions;
-  const fetchOption = loaderOptions.fetch ?? loaderOptions.core?.fetch;
+  const fetchOption = loaderOptions.core?.fetch;
   let fetchFunction: FetchLike;
 
-  // options.fetch can be a function
+  // options.core.fetch can be a function
   if (typeof fetchOption === 'function') {
     fetchFunction = fetchOption as FetchLike;
   } else if (isObject(fetchOption)) {

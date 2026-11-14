@@ -13,7 +13,7 @@ import type {MVTLoaderOptions} from '../mvt-loader';
 export function serializeMVTWorkerResult(result: unknown, options?: MVTLoaderOptions): unknown {
   return result instanceof Table
     ? serializeNativeArrowWorkerResult(result, {
-        copy: options?.core?.workerTransferBufferCopy ?? options?.workerTransferBufferCopy
+        copy: options?.core?.workerTransferBufferCopy ?? 'all'
       })
     : result;
 }

@@ -15,9 +15,7 @@ const KTX_URL = '@loaders.gl/images/test/textures/data/test_etc1s.ktx2';
 const KTX2_URL = '@loaders.gl/images/test/textures/data/kodim23.ktx2';
 const DDS_URL = '@loaders.gl/images/test/textures/data/shannon-dxt5.dds';
 const PVR_URL = '@loaders.gl/images/test/textures/data/shannon-etc1.pvr';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('CompressedTextureLoader#imports', () => {
   expect(CompressedTextureLoader, 'CompressedTextureLoader defined').toBeTruthy();
 });

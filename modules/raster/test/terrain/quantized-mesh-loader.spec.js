@@ -7,9 +7,7 @@ const TILE_WITH_EXTENSIONS_URL =
 // Counts encoded in the fixture, before optional skirt geometry is added.
 const EXPECTED_TILE_VERTEX_COUNT = 627;
 const EXPECTED_TILE_TRIANGLE_COUNT = 1175;
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('QuantizedMeshLoader#loader objects', async () => {
   validateLoader(QuantizedMeshLoader, 'QuantizedMeshLoader');
 });
