@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import type {FlatGeobufReadOptions} from '@loaders.gl/geospatial/flatgeobuf';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {FlatGeobufVectorSource} from '@loaders.gl/geospatial/flatgeobuf';
 import type {ScanQueryMetadata} from '@loaders.gl/core/query';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
 type FlatGeobufDemoState = Readonly<{
   metadata?: ScanQueryMetadata;
-  table?: ArrowTable;
+  table?: Table;
   error?: string;
   loading: boolean;
 }>;
@@ -75,20 +75,20 @@ export function FlatGeobufScanLiveExample(): JSX.Element {
   );
 }
 
-function FlatGeobufPreview({table}: {table: ArrowTable}): JSX.Element {
+function FlatGeobufPreview({table}: {table: Table}): JSX.Element {
   const columns = table.schema.fields.map(field => field.name);
-  const rowCount = Math.min(table.data.numRows, 5);
+  const rowCount = Math.min(table.numRows, 5);
   return (
     <div style={{overflowX: 'auto'}}>
       <p>
-        <strong>Arrow result:</strong> {table.data.numRows} rows · {columns.length} columns
+        <strong>Arrow result:</strong> {table.numRows} rows · {columns.length} columns
       </p>
       <table>
         <thead><tr>{columns.map(column => <th key={column}>{column}</th>)}</tr></thead>
         <tbody>
           {Array.from({length: rowCount}, (_, rowIndex) => (
             <tr key={rowIndex}>
-              {columns.map(column => <td key={column}>{formatCell(table.data.getChild(column)?.get(rowIndex))}</td>)}
+              {columns.map(column => <td key={column}>{formatCell(table.getChild(column)?.get(rowIndex))}</td>)}
             </tr>
           ))}
         </tbody>

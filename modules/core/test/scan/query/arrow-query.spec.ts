@@ -4,8 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import type {ArrowTable} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 
 import {
   ARROW_TABLE_QUERY_CAPABILITIES,
@@ -119,7 +117,7 @@ test('queryArrowTable filters, projects, and limits Arrow data', () => {
     limit: 1
   });
 
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['carrier', 'fare']);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['carrier', 'fare']);
   expect(toRows(result)).toEqual([{carrier: 'CC', fare: 180}]);
 });
 
@@ -180,8 +178,8 @@ test('queryArrowTable retains zero-copy Arrow views for projection and limit wit
 
   const result = queryArrowTable(table, {columns: ['second'], limit: 2});
 
-  expect(result.data.numRows).toBe(2);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['second']);
+  expect(result.numRows).toBe(2);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['second']);
   expect(toRows(result)).toEqual([{second: 'a'}, {second: 'b'}]);
 });
 
@@ -234,8 +232,8 @@ test('queryArrowTable preserves output schema for empty relational results', () 
     limit: 0
   });
 
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['value', 'total']);
+  expect(result.numRows).toBe(0);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['value', 'total']);
 });
 
 test('queryArrowTable groups bigint keys and rejects incomplete aggregates', () => {
@@ -318,10 +316,10 @@ test('queryArrowTable validates join projections and preserves empty child field
     columns: ['id', 'lookup.value'],
     limit: 0
   });
-  expect(emptyResult.data.numRows).toBe(0);
+  expect(emptyResult.numRows).toBe(0);
   expect(
-    emptyResult.data.schema.fields.find(field => field.name === 'lookup.value')?.type.toString()
-  ).toBe(childTable.data.schema.fields.find(field => field.name === 'value')?.type.toString());
+    emptyResult.schema.fields.find(field => field.name === 'lookup.value')?.type.toString()
+  ).toBe(childTable.schema.fields.find(field => field.name === 'value')?.type.toString());
 });
 
 test.each([
@@ -526,8 +524,8 @@ test('queryArrowTable covers empty-result schemas for computed values', () => {
     columns: ['flag', 'constant', 'text', 'copy', 'sum'],
     limit: 0
   });
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.fields.map(field => field.type.toString())).toEqual([
+  expect(result.numRows).toBe(0);
+  expect(result.schema.fields.map(field => field.type.toString())).toEqual([
     'Bool',
     'Float64',
     'Utf8',
@@ -543,7 +541,7 @@ test('queryArrowTable covers empty-result schemas for computed values', () => {
     columns: ['count', 'knownTotal'],
     limit: 0
   });
-  expect(aggregateResult.data.schema.fields.map(field => field.type.toString())).toEqual([
+  expect(aggregateResult.schema.fields.map(field => field.type.toString())).toEqual([
     'Int32',
     'Float64'
   ]);
@@ -621,13 +619,12 @@ test('queryArrowTable validates all join projection boundaries', () => {
   ).toThrow(/child projection does not include/);
 });
 
-/** Wraps simple test columns in the loaders.gl Arrow table shape. */
-function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
-  const data = arrow.tableFromArrays(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+/** Builds an Arrow table from test columns. */
+function makeArrowTable(columns: Record<string, readonly unknown[]>): arrow.Table {
+  return arrow.tableFromArrays(columns);
 }
 
 /** Converts Arrow rows to plain objects for readable assertions. */
-function toRows(table: ArrowTable): Record<string, unknown>[] {
-  return table.data.toArray().map(row => row?.toJSON() ?? {});
+function toRows(table: arrow.Table): Record<string, unknown>[] {
+  return table.toArray().map(row => row?.toJSON() ?? {});
 }

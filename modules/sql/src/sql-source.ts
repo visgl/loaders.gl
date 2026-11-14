@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Schema} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {CoreAPI, RequiredOptions, TableMetadata} from '@loaders.gl/core/loader-utils';
 
@@ -158,8 +159,8 @@ export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
     return await adapter.executeRows(compiledQuery.sql, compiledQuery.options);
   }
 
-  /** Executes a SQL query and returns a loaders.gl Arrow table. */
-  async queryArrow(query: SQLQuery, options: SQLQueryOptions = {}): Promise<ArrowTable> {
+  /** Executes a SQL query and returns a native Arrow table. */
+  async queryArrow(query: SQLQuery, options: SQLQueryOptions = {}): Promise<Table> {
     const adapter = await this.getAdapter();
     const compiledQuery = this.compileQuery(query, options);
     if (adapter.executeArrow) {

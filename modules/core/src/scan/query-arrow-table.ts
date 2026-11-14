@@ -3,8 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {projectArrowTable, filterArrowTable} from './arrow-execution';
 import {
   compareArrowQueryNumbers as compareNumbers,
@@ -63,19 +61,19 @@ export type ArrowQueryOptions = TableQueryOptions &
     /** Optional equi-join against a table supplied in `tables`. */
     join?: Readonly<{child: ArrowChildQuery; left: string; right: string}>;
     /** Named in-memory child tables used by union and join operators. */
-    tables?: Readonly<Record<string, ArrowTable>>;
+    tables?: Readonly<Record<string, arrow.Table>>;
   }>;
 
 /** Explains an Arrow table query without materializing or scanning table rows. */
 export function explainArrowTableQuery(
-  sourceTable: ArrowTable,
+  sourceTable: arrow.Table,
   options: ArrowQueryOptions = {}
 ): import('./table-query').TableQueryExplain {
   if (options.select !== undefined) {
     if (options.columns !== undefined || hasRelationalOperators(options) || options.join) {
       throw new Error('Arrow select cannot be combined with columns or relational operators.');
     }
-    const projected = projectArrowTable(sourceTable.data, options.select);
+    const projected = projectArrowTable(sourceTable, options.select);
     const columns = [
       ...new Set(
         options.select.map(selection =>
@@ -100,7 +98,7 @@ export function explainArrowTableQuery(
     validateSQLPredicate(options.predicate);
   }
   return explainColumnarTableQuery(
-    sourceTable.data.schema.fields.map(field => field.name),
+    sourceTable.schema.fields.map(field => field.name),
     options,
     ARROW_TABLE_QUERY_CAPABILITIES
   );
@@ -115,16 +113,16 @@ export function explainArrowTableQuery(
  * replace this implementation with vectorized selection handling without changing this API.
  */
 export function queryArrowTable(
-  sourceTable: ArrowTable,
+  sourceTable: arrow.Table,
   options: ArrowQueryOptions = {}
-): ArrowTable {
+): arrow.Table {
   throwIfAborted(options.signal);
   if (options.select !== undefined) {
     if (options.columns !== undefined || hasRelationalOperators(options) || options.join) {
       throw new Error('Arrow select cannot be combined with columns or relational operators.');
     }
     // Validate aliases before evaluating any predicate, then apply them after filtering.
-    projectArrowTable(sourceTable.data, options.select);
+    projectArrowTable(sourceTable, options.select);
     const columns = [
       ...new Set(
         options.select.map(selection =>
@@ -134,7 +132,7 @@ export function queryArrowTable(
     ];
     const {select, ...remainingOptions} = options;
     const result = queryArrowTable(sourceTable, {...remainingOptions, columns});
-    return wrapArrowTable(projectArrowTable(result.data, select));
+    return projectArrowTable(result, select);
   }
 
   if (options.join) {
@@ -152,7 +150,7 @@ export function queryArrowTable(
     return queryArrowTableRelational(sourceTable, options);
   }
 
-  const sourceData = sourceTable.data;
+  const sourceData = sourceTable;
   const plan = planTableQuery(
     sourceData.schema.fields.map(field => field.name),
     options
@@ -162,21 +160,19 @@ export function queryArrowTable(
   const limit = getLimitStep(plan)?.limit ?? Number.POSITIVE_INFINITY;
   if (!predicate) {
     const projectedData = projectArrowTable(scannedData, getProjectStep(plan).columns);
-    return wrapArrowTable(
-      projectedData.numRows === 0 ? projectedData : projectedData.slice(0, limit)
-    );
+    return projectedData.numRows === 0 ? projectedData : projectedData.slice(0, limit);
   }
 
   const filteredData = filterArrowTable(scannedData, predicate, {limit, signal: options.signal});
-  return wrapArrowTable(projectArrowTable(filteredData, getProjectStep(plan).columns));
+  return projectArrowTable(filteredData, getProjectStep(plan).columns);
 }
 
 /** Executes the relational subset that can be evaluated against one in-memory Arrow table. */
 function queryArrowTableRelational(
-  sourceTable: ArrowTable,
+  sourceTable: arrow.Table,
   options: ArrowQueryOptions
-): ArrowTable {
-  const sourceData = sourceTable.data;
+): arrow.Table {
+  const sourceData = sourceTable;
   const sourceColumnNames = sourceData.schema.fields.map(field => field.name);
   // The shared planner is predicate-generic; this executor supplies the narrower SQL AST.
   const relationalPlan = planRelationalQuery(sourceColumnNames, options as never);
@@ -184,13 +180,13 @@ function queryArrowTableRelational(
   if (!scanStep || scanStep.kind !== 'scan') {
     throw new Error('Arrow relational query plan is missing a scan step.');
   }
-  const scannedTable = wrapArrowTable(sourceData.select([...scanStep.columns]));
+  const scannedTable = sourceData.select([...scanStep.columns]);
   const filteredTable = queryArrowTable(scannedTable, {
     predicate: options.predicate,
     columns: scanStep.columns,
     signal: options.signal
   });
-  let rows = arrowTableToRows(filteredTable.data);
+  let rows = arrowTableToRows(filteredTable);
 
   for (const child of options.union || []) {
     const childTable = options.tables?.[child.source];
@@ -200,7 +196,7 @@ function queryArrowTableRelational(
       columns: getUnionChildColumns(sourceColumnNames, options),
       signal: options.signal
     });
-    rows = rows.concat(arrowTableToRows(childResult.data));
+    rows = rows.concat(arrowTableToRows(childResult));
   }
 
   for (const expression of options.expressions || []) {
@@ -303,7 +299,7 @@ function hasRelationalOperatorsExceptJoin(options: ArrowQueryOptions): boolean {
 }
 
 /** Executes a bounded nested-loop equi-join for small in-memory Arrow proof-of-concept tables. */
-function queryArrowJoin(sourceTable: ArrowTable, options: ArrowQueryOptions): ArrowTable {
+function queryArrowJoin(sourceTable: arrow.Table, options: ArrowQueryOptions): arrow.Table {
   const join = options.join;
   if (!join) throw new Error('Arrow join query is missing a join definition.');
   const childTable = options.tables?.[join.child.source];
@@ -317,12 +313,12 @@ function queryArrowJoin(sourceTable: ArrowTable, options: ArrowQueryOptions): Ar
     ...(join.child.query || {}),
     signal: options.signal
   });
-  const leftRows = arrowTableToRows(leftResult.data);
-  const rightRows = arrowTableToRows(rightResult.data);
+  const leftRows = arrowTableToRows(leftResult);
+  const rightRows = arrowTableToRows(rightResult);
   const rightPrefix = `${join.child.source}.`;
   const defaultOutputColumns = [
-    ...sourceTable.data.schema.fields.map(field => field.name),
-    ...rightResult.data.schema.fields.map(field => `${rightPrefix}${field.name}`)
+    ...sourceTable.schema.fields.map(field => field.name),
+    ...rightResult.schema.fields.map(field => `${rightPrefix}${field.name}`)
   ];
   const rows: Record<string, unknown>[] = [];
   for (const leftRow of leftRows) {
@@ -351,11 +347,11 @@ function queryArrowJoin(sourceTable: ArrowTable, options: ArrowQueryOptions): Ar
   return limitedRows.length
     ? convertRowsToArrowTable(limitedRows)
     : createEmptyRelationalResult(
-        sourceTable.data,
+        sourceTable,
         outputColumns,
         options,
         new Map(
-          rightResult.data.schema.fields.map(field => [
+          rightResult.schema.fields.map(field => [
             `${rightPrefix}${field.name}`,
             new arrow.Field(
               `${rightPrefix}${field.name}`,
@@ -369,13 +365,13 @@ function queryArrowJoin(sourceTable: ArrowTable, options: ArrowQueryOptions): Ar
 }
 
 /** Validates root and child projections before dispatching to the join executor. */
-function validateArrowJoinQuery(sourceTable: ArrowTable, options: ArrowQueryOptions): void {
+function validateArrowJoinQuery(sourceTable: arrow.Table, options: ArrowQueryOptions): void {
   const join = options.join;
   if (!join) return;
-  const sourceColumnNames = sourceTable.data.schema.fields.map(field => field.name);
+  const sourceColumnNames = sourceTable.schema.fields.map(field => field.name);
   const childTable = options.tables?.[join.child.source];
   if (!childTable) throw new Error(`Arrow join source not found: ${join.child.source}`);
-  const childColumnNames = childTable.data.schema.fields.map(field => field.name);
+  const childColumnNames = childTable.schema.fields.map(field => field.name);
   if (!sourceColumnNames.includes(join.left)) {
     throw new Error(`Arrow join column not found: ${join.left}`);
   }
@@ -540,7 +536,7 @@ function createEmptyRelationalResult(
   outputColumns: readonly string[],
   options: ArrowQueryOptions,
   additionalFields?: ReadonlyMap<string, arrow.Field>
-): ArrowTable {
+): arrow.Table {
   const sourceFields = new Map(sourceData.schema.fields.map(field => [field.name, field]));
   const expressions = new Map(
     (options.expressions || []).map(expression => [expression.name, expression])
@@ -563,7 +559,7 @@ function createEmptyRelationalResult(
   });
   const columns: Record<string, arrow.Vector> = {};
   for (const field of fields) columns[field.name] = arrow.vectorFromArray([], field.type);
-  return wrapArrowTable(new arrow.Table(new arrow.Schema(fields), columns));
+  return new arrow.Table(new arrow.Schema(fields), columns);
 }
 
 /** Infers the Arrow type for an expression in an empty relational result. */
@@ -657,13 +653,4 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
     error.name = 'AbortError';
     throw error;
   }
-}
-
-/** Wraps an Arrow table with the loaders.gl Arrow-table shape and converted schema. */
-function wrapArrowTable(data: arrow.Table): ArrowTable {
-  return {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(data.schema),
-    data
-  };
 }

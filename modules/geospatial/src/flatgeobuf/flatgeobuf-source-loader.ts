@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {RecordBatch} from 'apache-arrow';
+import type {RecordBatch, Table} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -204,7 +204,7 @@ export class FlatGeobufVectorSource
   }
 
   /** Executes a spatially pruned FlatGeobuf query and returns an Arrow table. */
-  async query(options: FlatGeobufReadOptions = {}): Promise<ArrowTable> {
+  async query(options: FlatGeobufReadOptions = {}): Promise<Table> {
     assertNotAborted(options.signal);
     const info = await this.getHeaderInfo();
     assertNotAborted(options.signal);
@@ -214,8 +214,8 @@ export class FlatGeobufVectorSource
   /** Streams one stable-schema Arrow batch for a portable FlatGeobuf query. */
   async *read(options: FlatGeobufReadOptions = {}): AsyncIterable<RecordBatch> {
     const table = await this.query(options);
-    if (table.data.batches.length) yield* table.data.batches;
-    else yield makeArrowMetadataBatch(table.data.schema);
+    if (table.batches.length) yield* table.batches;
+    else yield makeArrowMetadataBatch(table.schema);
   }
 
   protected getHeaderInfo(): Promise<HeaderInfo> {

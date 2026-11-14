@@ -389,8 +389,8 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
     }
   });
   const scanned = await scanSource.query();
-  expect(scanned.data.numRows).toBe(ARROW_TABLE.data.numRows);
-  expect(scanned.data.schema.fields.find(field => field.name === 'geometry')?.metadata).toEqual(
+  expect(scanned.numRows).toBe(ARROW_TABLE.data.numRows);
+  expect(scanned.schema.fields.find(field => field.name === 'geometry')?.metadata).toEqual(
     ARROW_TABLE.data.schema.fields.find(field => field.name === 'geometry')?.metadata
   );
 

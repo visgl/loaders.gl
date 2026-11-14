@@ -22,7 +22,7 @@ import {
   type TableScanReadOptions,
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, DataType, Field, Schema, TableBatch} from '@loaders.gl/core/schema';
+import type {DataType, Field, Schema, TableBatch} from '@loaders.gl/core/schema';
 import {
   convertArrowToSchema,
   convertBatch,
@@ -344,18 +344,18 @@ export class FederatedTableScanSource
               batch.schema ? batch : {...batch, schema: resolvedSource.metadata.schema},
               'arrow-table'
             );
-            const sourceResult = queryArrowTable(physicalTable, {
+            const sourceResult = queryArrowTable(physicalTable.data, {
               predicate: sourceResidualPredicate,
               limit: Number.isFinite(sourceRemaining) ? sourceRemaining : undefined,
               signal: options.signal
             });
             if (sourceResidualPredicate) {
               sourceRowsTested += physicalTable.data.numRows;
-              sourceRowsRetained += sourceResult.data.numRows;
+              sourceRowsRetained += sourceResult.numRows;
             }
-            sourceRemaining -= sourceResult.data.numRows;
+            sourceRemaining -= sourceResult.numRows;
             const currentSourceBatchIndex = sourceBatchIndex++;
-            if (!sourceResult.data.numRows) continue;
+            if (!sourceResult.numRows) continue;
             const canonicalTable = createCanonicalArrowTable(
               plan.schema,
               resolvedSource,
@@ -368,10 +368,10 @@ export class FederatedTableScanSource
               signal: options.signal
             });
             if (options.predicate) {
-              telemetry.rowsTested += canonicalTable.data.numRows;
-              telemetry.rowsRetained += result.data.numRows;
+              telemetry.rowsTested += canonicalTable.numRows;
+              telemetry.rowsRetained += result.numRows;
             }
-            const resultLength = result.data.numRows;
+            const resultLength = result.numRows;
             if (!resultLength) continue;
             const provenance: FederatedTableBatchProvenance = Object.freeze({
               sourceId: resolvedSource.entry.dataSourceId,
@@ -381,7 +381,7 @@ export class FederatedTableScanSource
             });
             telemetry.rowsReturned += resultLength;
             sourceRowsReturned += resultLength;
-            for (const recordBatch of result.data.batches) {
+            for (const recordBatch of result.batches) {
               const metadata = new Map(
                 resultLength === batch.length && !('shape' in input) ? input.metadata : undefined
               );
@@ -696,13 +696,13 @@ function getSourceResidualPredicate(source: ResolvedFederatedSource): SQLPredica
 function createCanonicalArrowTable(
   schema: Schema,
   source: ResolvedFederatedSource,
-  physicalTable: ArrowTable
-): ArrowTable {
+  physicalTable: arrow.Table
+): arrow.Table {
   const arrowSchema = convertSchemaToArrow(schema);
   const columns: Record<string, arrow.Vector> = {};
   for (const field of arrowSchema.fields) {
     const sourceName = source.sourceNameByOutputName.get(field.name);
-    const vector = sourceName ? physicalTable.data.getChild(sourceName) : null;
+    const vector = sourceName ? physicalTable.getChild(sourceName) : null;
     const mappedField = source.fields.find(sourceField => sourceField.outputName === field.name);
     columns[field.name] = vector
       ? mappedField &&
@@ -713,15 +713,11 @@ function createCanonicalArrowTable(
         ? arrow.vectorFromArray(Array.from(vector), field.type)
         : vector
       : arrow.vectorFromArray(
-          Array.from({length: physicalTable.data.numRows}, () => null),
+          Array.from({length: physicalTable.numRows}, () => null),
           field.type
         );
   }
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, columns)
-  };
+  return new arrow.Table(arrowSchema, columns);
 }
 
 /** Creates one portable per-source telemetry record and preserves source-specific counters. */

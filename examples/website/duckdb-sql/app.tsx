@@ -14,8 +14,7 @@ import {Map} from 'react-map-gl/maplibre'
 import * as maplibregl from 'maplibre-gl'
 import {tableFromJSON} from 'apache-arrow'
 
-import type {ArrowTable} from '@loaders.gl/core/schema'
-import {convertArrowToTable} from '@loaders.gl/core/schema-utils'
+import type {Table} from 'apache-arrow'
 import {bindSQLPredicate, parseSQLPredicate, queryArrowTable} from '@loaders.gl/core/query';
 import {compileSQLTableQuery, DuckDBSQLDataSource} from '@loaders.gl/sql'
 import type {SQLTableQuery} from '@loaders.gl/sql'
@@ -90,7 +89,7 @@ const SAMPLE_ROWS: GeospatialRow[] = [
   {id: 10, name: 'Alamo Square', category: 'park', longitude: -122.4346, latitude: 37.7764, visitors: 700000}
 ]
 
-const ARROW_TABLE: ArrowTable = convertArrowToTable(tableFromJSON(SAMPLE_ROWS), 'arrow-table')
+const ARROW_TABLE = tableFromJSON(SAMPLE_ROWS)
 const INITIAL_QUERY_STATE = buildQueryState(
   arrowTableToRows(
     queryArrowTable(ARROW_TABLE, {
@@ -349,8 +348,8 @@ function escapeSQLString(value: string): string {
 }
 
 /** Converts an Arrow result to the rows consumed by the map. */
-function arrowTableToRows(table: ArrowTable): GeospatialRow[] {
-  return table.data.toArray().map(row => row?.toJSON() as GeospatialRow)
+function arrowTableToRows(table: Table): GeospatialRow[] {
+  return table.toArray().map(row => row?.toJSON() as GeospatialRow)
 }
 
 /** Convert query results into GeoJSON features. */

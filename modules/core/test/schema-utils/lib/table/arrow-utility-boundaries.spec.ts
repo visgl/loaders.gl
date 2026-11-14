@@ -18,11 +18,10 @@ import {
 
 test('Arrow utility adapters cover row selection and every table shape', () => {
   const data = arrow.tableFromArrays({name: ['a', 'b', 'c'], value: [1, 2, 3]});
-  const wrapped = {shape: 'arrow-table', data} as const;
-  const selected = selectArrowTableRows(wrapped, [2, 0], ['value'], 1);
-  expect(selected.data.numRows).toBe(1);
-  expect(selected.data.getChild('value')?.get(0)).toBe(3);
-  expect(() => selectArrowTableRows(wrapped, [0], ['missing'])).toThrow(/could not read column/);
+  const selected = selectArrowTableRows(data, [2, 0], ['value'], 1);
+  expect(selected.numRows).toBe(1);
+  expect(selected.getChild('value')?.get(0)).toBe(3);
+  expect(() => selectArrowTableRows(data, [0], ['missing'])).toThrow(/could not read column/);
 
   expect(convertArrowToTable(data, 'arrow-table').shape).toBe('arrow-table');
   expect(convertArrowToTable(data, 'columnar-table').data.value).toBeInstanceOf(Float64Array);

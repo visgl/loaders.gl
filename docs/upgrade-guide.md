@@ -1424,3 +1424,21 @@ come from math.gl; `DehydratedArrowVector` and `DehydratedArrowRecordBatch` alia
 
 Task imports move from `@math.gl/core/tasks` to `@math.gl/tasks`. The task API forwarding
 exports from `core/worker-utils` are removed; loader processing APIs remain there.
+
+#### Materialized scan queries use Apache Arrow tables
+
+The scan engine, its custom backends, and the `queryArrowTable()` helpers now
+accept and return Apache Arrow `Table` objects. Pass a native table to
+`explainArrowTableQuery()`, to the in-memory SQL package `ArrowTableSource`
+constructor, and in `ArrowQueryOptions.tables` for joins and unions.
+
+Addressed vector, FlatGeobuf, GeoPackage, and ORC source queries now return
+Apache Arrow `Table` objects. GeoPackage `getTable()` returns the same native
+type. The schema-utils `selectArrowTableRows()` also takes and returns a native
+table. Use `result.numRows`, `result.getChild(name)`, and `result.schema`
+directly. When starting with a legacy wrapper, pass its `data` to the query
+APIs.
+
+SQL data sources and custom SQL adapters now return native tables from
+`queryArrow()` and `executeArrow()`. Pass a native table to
+`DuckDBSQLDataSource.insertArrowTable()`.

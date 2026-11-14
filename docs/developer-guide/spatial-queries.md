@@ -113,9 +113,9 @@ const query = {
 
 const metadata = await scanSource.getQueryMetadata();
 const explanation = await scanSource.explain(query);
-const result = await scanSource.query(query); // ArrowTable
+const result = await scanSource.query(query); // Apache Arrow Table
 for await (const batch of scanSource.scan(query)) {
-  // ArrowTableBatch; read(query) exposes the same batch interface.
+  // Apache Arrow RecordBatch
   console.log(batch.length, batch.data);
 }
 ```

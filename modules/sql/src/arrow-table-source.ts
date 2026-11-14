@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {RecordBatch} from 'apache-arrow';
+import type {RecordBatch, Table} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {
   DataSourceOptions,
@@ -15,7 +15,6 @@ import {
   type ScanColumnRole
 } from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,
@@ -34,16 +33,16 @@ export type ArrowTableSourceOptions = DataSourceOptions;
  * practice, and query execution delegates to the existing Arrow executor without ingesting data
  * into DuckDB or another intermediate representation.
  */
-export class ArrowTableSource extends DataSource<ArrowTable, ArrowTableSourceOptions> {
+export class ArrowTableSource extends DataSource<Table, ArrowTableSourceOptions> {
   /** Creates a source over an existing Arrow table without copying its vectors. */
-  constructor(data: ArrowTable, options: ArrowTableSourceOptions = {}) {
+  constructor(data: Table, options: ArrowTableSourceOptions = {}) {
     super(data, options);
   }
 
   /** Discovers query-visible fields and capabilities without evaluating any rows. */
   async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
     throwIfAborted(options.signal);
-    const schema = convertArrowToSchema(this.data.data.schema);
+    const schema = convertArrowToSchema(this.data.schema);
     return createScanQueryMetadata({
       sourceType: 'arrow-table',
       queryType: 'table',
@@ -51,12 +50,12 @@ export class ArrowTableSource extends DataSource<ArrowTable, ArrowTableSourceOpt
       schema,
       capabilities: {table: ARROW_TABLE_QUERY_CAPABILITIES},
       columnRoles: getArrowColumnRoles(schema.fields.map(field => field.name)),
-      statistics: {rowCount: this.data.data.numRows}
+      statistics: {rowCount: this.data.numRows}
     });
   }
 
   /** Executes a portable query and returns an Arrow table result. */
-  query(options: ArrowQueryOptions = {}): ArrowTable {
+  query(options: ArrowQueryOptions = {}): Table {
     return queryArrowTable(this.data, options);
   }
 
@@ -67,8 +66,7 @@ export class ArrowTableSource extends DataSource<ArrowTable, ArrowTableSourceOpt
 
   /** Executes a query as one bounded Arrow batch. */
   async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<RecordBatch> {
-    const result = this.query(options);
-    const {data} = result;
+    const data = this.query(options);
     if (data.batches.length) yield* data.batches;
     else yield makeArrowMetadataBatch(data.schema);
   }

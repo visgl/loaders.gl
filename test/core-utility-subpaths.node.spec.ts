@@ -81,7 +81,9 @@ test('CommonJS scan entrypoints share backend registrations and public function 
   const engine = require('@loaders.gl/core/scan/scan-engine');
   expect(scan.registerScanBackend).toBe(engine.registerScanBackend);
   expect(scan.createScanEngine).toBe(engine.createScanEngine);
-  const query = () => ({shape: 'arrow-table'});
+  const {tableFromArrays} = require('apache-arrow');
+  const table = tableFromArrays({id: [1]});
+  const query = () => table;
   const explain = () => ({backend: 'test-shared-registry'});
   engine.registerScanBackend('test-shared-registry', () => ({
     name: 'test-shared-registry',
@@ -90,7 +92,7 @@ test('CommonJS scan entrypoints share backend registrations and public function 
   }));
   const registeredEngine = await scan.createScanEngine({backend: 'test-shared-registry'});
   expect(registeredEngine.name).toBe('test-shared-registry');
-  expect(registeredEngine.query()).toEqual({shape: 'arrow-table'});
+  expect(registeredEngine.query(table)).toBe(table);
   const geometry = require('@loaders.gl/core/arrow-geometry');
   const geoarrow = require('@loaders.gl/core/geoarrow');
   expect(geoarrow.GeoArrowBuilder).toBe(geometry.GeoArrowBuilder);

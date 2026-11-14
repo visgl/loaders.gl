@@ -28,8 +28,8 @@ test('DuckDBSQLSource executes queries and exposes metadata', async () => {
   });
   expect(plannedRows, 'compiles and executes a portable table query').toEqual([{value: 2}]);
   const arrowTable = await dataSource.queryArrow('SELECT * FROM numbers ORDER BY value');
-  expect(arrowTable.data.numRows, 'returns Arrow table rows').toBe(2);
-  expect(arrowTable.data.get(0)?.toJSON()?.value, 'returns Arrow table data').toBe(1);
+  expect(arrowTable.numRows, 'returns Arrow table rows').toBe(2);
+  expect(arrowTable.get(0)?.toJSON()?.value, 'returns Arrow table data').toBe(1);
   const tables = await dataSource.listTables();
   expect(
     tables.some(table => table.tableName === 'numbers'),
