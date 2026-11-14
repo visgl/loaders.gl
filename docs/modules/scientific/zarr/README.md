@@ -66,12 +66,12 @@ npm install @loaders.gl/core @loaders.gl/scientific
 
 ## APIs
 
-- [`OMEZarrLoader`](/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader) opens OME-Zarr
+- [`OMEZarrLoader`](/docs/modules/scientific/zarr/api-reference/ome-zarr-loader) opens OME-Zarr
   v2 and v3 image groups through `createDataSource()` or `load()`.
-- [`GeoZarrLoader`](/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader) opens one
+- [`GeoZarrLoader`](/docs/modules/scientific/zarr/api-reference/geo-zarr-loader) opens one
   georeferenced Zarr data variable and reads native spatial windows with named time, vertical, or
   band selections.
-- [`SpatialDataLoader`](/docs/modules/scientific/zarr/api-reference/spatial-data-source-loader) discovers named images, labels, points, shapes, and tables from a
+- [`SpatialDataLoader`](/docs/modules/scientific/zarr/api-reference/spatial-data-loader) discovers named images, labels, points, shapes, and tables from a
   SpatialData root. It opens Zarr-backed raster and AnnData array elements directly and reports
   interoperable Parquet-dataset and GeoParquet URLs for points and shapes.
 - `loadZarrConsolidatedMetadata()` probes `.zmetadata`, `zmetadata`, and `zarr.json` documents and

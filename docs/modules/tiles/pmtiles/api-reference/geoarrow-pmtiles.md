@@ -14,7 +14,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   tone="violet"
   meta={['From v5.0', 'Columnar attributes', 'Browser and Node.js']}
   links={[
-    {label: 'Arrow tiler', to: '/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader'},
+    {label: 'Arrow tiler', to: '/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader'},
     {label: 'MVT writer', to: '/docs/modules/tiles/mvt/api-reference/mvt-writer'},
     {label: 'PMTiles writer', to: '/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer'}
   ]}
@@ -78,7 +78,7 @@ const archive = await encodeGeoArrowPMTiles(geoArrowTable, {
 | `maxInputRows` | `100000` | Input row limit checked before indexing |
 | `pmtiles` | Writer defaults | Archive output/metadata budgets, bounds, center, auxiliary JSON metadata, internal compression and AbortSignal |
 
-See [tiler options](/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader#options) and
+See [tiler options](/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader#options) and
 [archive options](/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer#options) for details.
 When lowering `table.maxZoom` below 5, also lower `table.indexMaxZoom`.
 

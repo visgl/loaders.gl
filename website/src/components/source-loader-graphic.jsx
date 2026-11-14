@@ -142,8 +142,8 @@ const sourceDocumentationLinks = {
   ArcGISImageTileLoader: '/docs/modules/arcgis/arcgis-image-server#image-tiles',
   ArcGISMapTileLoader: '/docs/modules/arcgis/arcgis-map-server',
   ArcGISVectorTileServerLoader: '/docs/modules/arcgis/arcgis-vector-tile-server',
-  COPCLoader: '/docs/modules/tiles-3d/copc/api-reference/copc-source-loader',
-  CSWLoader: '/docs/modules/ogc/wms/api-reference/csw-source-loader',
+  COPCLoader: '/docs/modules/tiles-3d/copc/api-reference/copc-loader',
+  CSWLoader: '/docs/modules/ogc/wms/api-reference/csw-loader',
   DuckDBSQLSource: '/docs/modules/sql/api-reference/sql-source',
   FlatGeobufLoader: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader',
   GeoPackageLoader: '/docs/modules/geospatial/geopackage/api-reference/geopackage-source',
@@ -151,14 +151,14 @@ const sourceDocumentationLinks = {
   I3SSource: '/docs/modules/tiles-3d/api-reference/i3s-source',
   MLTLoader: '/docs/modules/tiles/mlt/api-reference/mlt-source-loader',
   MVTLoader: '/docs/modules/tiles/mvt/api-reference/mvt-source-loader',
-  OMETiffLoader: '/docs/modules/raster/geotiff/api-reference/ometiff-source-loader',
+  OMETiffLoader: '/docs/modules/raster/geotiff/api-reference/ometiff-loader',
   PMTilesLoader: '/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader',
   PotreeLoader: '/docs/modules/tiles-3d/potree/api-reference/potree-source-loader',
   SnowflakeSQLSource: '/docs/modules/sql/api-reference/sql-source',
-  ArrowTableTileLoader: '/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader',
+  ArrowTableTileLoader: '/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader',
   Tiles3DSource: '/docs/modules/tiles-3d/api-reference/tiles-3d-source',
   WFSLoader: '/docs/modules/ogc/wms/formats/wfs',
-  WMSLoader: '/docs/modules/ogc/wms/api-reference/wms-source-loader',
+  WMSLoader: '/docs/modules/ogc/wms/api-reference/wms-loader',
   WMTSLoader: '/docs/modules/ogc/wms/formats/wmts'
 };
 
@@ -490,7 +490,7 @@ export default function SourceLoaderGraphic({standalone = false}) {
             ))}
           </TabList>
           <SourceBox>
-            <SourceInstruction>SourceLoaders</SourceInstruction>
+            <SourceInstruction>Loaders</SourceInstruction>
             <SourceGrid>
               {selectedSourceTab.sourceLoaders.map((sourceLoader) => (
                 <LinkedCompactNode

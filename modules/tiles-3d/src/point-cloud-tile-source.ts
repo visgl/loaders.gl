@@ -15,7 +15,7 @@ import type {
 } from './point-cloud/types';
 import type {
   PointCloudTileSourceInput,
-  PointCloudTileSourceOptions
+  PointCloudTileLoaderOptions
 } from './point-cloud-tile-source-types';
 
 /**
@@ -24,8 +24,8 @@ import type {
  * Geometry stays in memory; output tiles are gathered on request and are not cached by this source.
  */
 export class PointCloudTileSource
-  extends DataSource<null, PointCloudTileSourceOptions>
-  implements PointCloudTilesetSource<null, PointCloudTileSourceOptions>
+  extends DataSource<null, PointCloudTileLoaderOptions>
+  implements PointCloudTilesetSource<null, PointCloudTileLoaderOptions>
 {
   /** Resolves after the root is indexed. */
   readonly ready: Promise<void>;
@@ -37,7 +37,7 @@ export class PointCloudTileSource
   /** Creates a source from decoded points, without fetching or reprojecting input. */
   constructor(
     input: PointCloudTileSourceInput,
-    options: PointCloudTileSourceOptions = {},
+    options: PointCloudTileLoaderOptions = {},
     coreApi?: CoreAPI
   ) {
     super(null, options, {pointCloudTiler: {}}, coreApi);

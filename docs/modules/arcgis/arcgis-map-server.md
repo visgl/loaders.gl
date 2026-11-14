@@ -57,6 +57,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or both.
 `ArcGISMapTileLoader` presents either mode through one loaders.gl `TileSource`.
 
+| Property | Value |
+| --- | --- |
+| Data source | `ArcGISMapTileSource` |
+
 ## Feature support
 
 | Capability | Support | API and behavior |

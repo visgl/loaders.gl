@@ -14,7 +14,7 @@ const COMMONJS_EXPORTS = [
   ['@loaders.gl/ogc/gml-loader', 'GMLLoaderWithParser'],
   ['@loaders.gl/ogc/wmts-capabilities-loader-with-parser', 'WMTSCapabilitiesLoaderWithParser'],
   ['@loaders.gl/ogc/stac', 'STACLoader'],
-  ['@loaders.gl/ogc/stac-source', 'STACLoaderWithParser']
+  ['@loaders.gl/ogc/stac-loader', 'STACLoaderWithParser']
 ] as const;
 
 test.each(COMMONJS_EXPORTS)('%s supports CommonJS require', (subpath, exportedName) => {

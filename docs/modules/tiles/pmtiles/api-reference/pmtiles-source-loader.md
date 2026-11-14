@@ -50,6 +50,7 @@ coalesced before the archive bytes are fetched.
 | File Type      | Binary Archive                                   |
 | File Format    | [PMTiles](/docs/modules/tiles/pmtiles/formats/pmtiles) |
 | Data Format    | Metadata                                         |
+| Data source | `PMTilesTileSource` |
 
 ## Usage
 

@@ -3,13 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 export type {
-  COPCSourceLoaderOptions,
+  COPCLoaderOptions,
   COPCHierarchyBatch,
   COPCHierarchyBatchOptions,
   COPCTileContent,
   COPCTileContentBatchOptions,
   COPCTileContentLoadOptions
-} from './copc-source-loader';
+} from './copc-loader';
 export type {COPCWriterOptions} from './copc-writer';
 export {COPCFormat} from './copc-format';
 export {
@@ -35,6 +35,6 @@ export type {
   COPCRangeReader,
   COPCVariableLengthRecord
 } from './lib/copc-reader';
-export {COPCLoader} from './copc-source-loader';
-export {COPCTileSource} from './copc-source-loader';
+export {COPCLoader} from './copc-loader';
+export {COPCTileSource} from './copc-loader';
 export {COPCWriter} from './copc-writer';

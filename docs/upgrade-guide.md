@@ -18,6 +18,16 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Source-only loader imports
+
+Use `-loader` subpaths for source-only loaders. For example,
+`@loaders.gl/arcgis/arcgis-feature-server-source-loader` is now
+`@loaders.gl/arcgis/arcgis-feature-server-loader`, and
+`@loaders.gl/ogc/stac-source` is now `@loaders.gl/ogc/stac-loader`.
+Options follow the loader name, such as `ArcGISFeatureServerLoaderOptions`,
+`STACLoaderOptions`, and `WMTSLoaderOptions`. Use
+`WMTSCapabilitiesLoaderOptions` for the XML capabilities parser.
+
 ### Removed compression, texture, and Cesium ion APIs
 
 - Replace combined compression classes with the corresponding `Compressor` and
@@ -199,7 +209,7 @@ The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in 
 `@loaders.gl/ogc` for OGC service protocols and STAC catalogs. Replace imports from
 `@loaders.gl/wms` with `@loaders.gl/ogc/wms`, and imports from `@loaders.gl/stac` with
 `@loaders.gl/ogc/stac`. Parser-bearing implementations remain on named subpaths, such as
-`@loaders.gl/ogc/gml-loader` and `@loaders.gl/ogc/stac-source`.
+`@loaders.gl/ogc/gml-loader` and `@loaders.gl/ogc/stac-loader`.
 
 `@loaders.gl/services` now contains provider authentication presets for Mapbox, Google Maps,
 and Cesium ion. ArcGIS remains in `@loaders.gl/arcgis`. OGC loader IDs and option namespaces
@@ -238,9 +248,9 @@ segment from implementation imports:
 | `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
 | `@loaders.gl/ogc/wms/wmts-capabilities-loader-with-parser` | `@loaders.gl/ogc/wmts-capabilities-loader-with-parser` |
 | `@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser` | `@loaders.gl/tiles-3d/cesium-ion-loader-with-parser` |
-| `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-source` |
+| `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-loader` |
 | `@loaders.gl/archives/zip/zip-loader` | `@loaders.gl/archives/zip-loader` |
-| `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` | `@loaders.gl/tiles/arrow-table-tile-source-loader` |
+| `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` | `@loaders.gl/tiles/arrow-table-tile-loader` |
 | `@loaders.gl/tiles-3d/i3s/i3s-mesh-writer` | `@loaders.gl/tiles-3d/i3s-mesh-writer` |
 | `@loaders.gl/core/scan/vector-table-scan-source` | `@loaders.gl/core/vector-table-scan-source` |
 

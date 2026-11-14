@@ -6,11 +6,11 @@ import {createDataSourceSync} from '@loaders.gl/core';
 import {
   ZarrArraySource,
   ZarrArrayLoader,
-  type ZarrArraySourceLoaderOptions
+  type ZarrArrayLoaderOptions
 } from '@loaders.gl/scientific/zarr';
 const FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 test('ZarrArraySource reads array metadata and integer selections', async () => {
-  const options: ZarrArraySourceLoaderOptions = {
+  const options: ZarrArrayLoaderOptions = {
     zarr: {path: 'images/example-image'},
     zarrArray: {path: '0', dimensions: ['t', 'c', 'z', 'y', 'x']}
   };

@@ -29,7 +29,7 @@ import {ClientExample} from '@site/src/components';
 
 | Type | API |
 | --- | --- |
-| Source loader | [`WMSLoader`](../api-reference/wms-source-loader.md) |
+| Source loader | [`WMSLoader`](../api-reference/wms-loader.md) |
 | Loader | [`WMSCapabilitiesLoader`](../api-reference/wms-capabilities-loader.md) |
 | Loader | [`WMSFeatureInfoLoader`](../api-reference/wms-feature-info-loader.md) |
 

@@ -53,6 +53,10 @@ Loader for the [FlatGeobuf](/docs/modules/geospatial/flatgeobuf/formats/flatgeob
   tone="cyan"
 />
 
+| Property | Value |
+| --- | --- |
+| Data source | `FlatGeobufVectorSource` |
+
 ## Usage
 
 ```typescript

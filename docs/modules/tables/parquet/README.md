@@ -58,7 +58,7 @@ Experimental loader and writer for the Apache Parquet format.
 - `ParquetLoader` uses the TypeScript reader and compress-utils codecs. `ParquetWriter` retains its WASM encoder. Use `parquet.shape: 'object-row-table'` when row objects are required.
 - [`ParquetLoader`](/docs/modules/tables/parquet/api-reference/parquet-source-loader) provides reusable, selective Arrow reads with cached schema and footer metadata. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 - [`ParquetDatasetSource`](/docs/modules/tables/parquet/api-reference/parquet-source-loader#multi-file-datasets) coordinates catalog-backed, multi-file Parquet reads with file pruning and bounded concurrency. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
-- The [live benchmarks](./api-reference/parquet-loader#live-benchmarks) compare the published loader with alternate ParquetJS and WASM readers. `ParquetJSWriter` provides the TypeScript writer.
+- The [live benchmarks](/docs/modules/tables/parquet/api-reference/parquet-loader#live-benchmarks) compare the published loader with alternate ParquetJS and WASM readers. `ParquetJSWriter` provides the TypeScript writer.
 - `ParquetLoader` returns an Arrow table by default and `ParquetWriter` accepts loaders.gl Arrow tables.
 - Iceberg, Delta Lake, and Hudi table-format sources are available from
   `@loaders.gl/tables/iceberg`, `@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`.

@@ -128,8 +128,8 @@ export {
   LOD_METRIC_TYPE
 } from './constants';
 
-export {PointCloudTileLoader} from './point-cloud-tile-source-loader-types';
+export {PointCloudTileLoader} from './point-cloud-tile-loader-types';
 export type {
   PointCloudTileSourceInput,
-  PointCloudTileSourceOptions
+  PointCloudTileLoaderOptions
 } from './point-cloud-tile-source-types';

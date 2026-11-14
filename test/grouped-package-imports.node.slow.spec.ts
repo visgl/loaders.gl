@@ -119,7 +119,7 @@ test.each([
   ['tables', 'parquet-dataset-source', 'ParquetDatasetSource'],
   ['tables', 'iceberg-table-source', 'IcebergTableSource'],
   ['tables', 'parquet/iceberg-rest-catalog', 'IcebergRestCatalog'],
-  ['tables', 'delta-source', 'DeltaLoaderWithParser']
+  ['tables', 'delta-loader', 'DeltaLoaderWithParser']
 ])(
   'published %s/%s exposes %s after forwarding removal',
   (group, subpath, exportName) => {

@@ -68,6 +68,10 @@ for await (const batch of source.read({
 }
 ```
 
+| Property | Value |
+| --- | --- |
+| Data source | `DeltaTableSource` |
+
 ## Scan support
 
 | Capability | Support | Notes |

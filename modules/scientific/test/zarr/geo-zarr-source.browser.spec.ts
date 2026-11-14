@@ -4,7 +4,7 @@ import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-ut
 import {
   GeoZarrRasterSource,
   GeoZarrLoader,
-  type GeoZarrSourceLoaderOptions
+  type GeoZarrLoaderOptions
 } from '@loaders.gl/scientific/zarr';
 const SPATIALDATA_V3_FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 test('GeoZarrLoader supports browser-relative store metadata', async () => {
@@ -70,7 +70,7 @@ test('GeoZarrRasterSource validates browser viewport and dimension selections', 
 /** Creates a GeoZarr source backed by a small in-memory CF/xarray-style Zarr v3 store. */
 function createInMemoryGeoZarrSource(): GeoZarrRasterSource {
   const baseUrl = 'https://example.com/browser-cf.zarr';
-  const options: GeoZarrSourceLoaderOptions = {
+  const options: GeoZarrLoaderOptions = {
     zarr: {requireConsolidatedMetadata: false},
     geozarr: {array: 'temperature', defaultSelection: {time: 1}},
     core: {fetch: createCFZarrFetcher(baseUrl)}

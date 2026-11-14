@@ -44,6 +44,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 OGC network Common Data Form (netCDF) standards suite
 
+| Property | Value |
+| --- | --- |
+| Data source | `NetCDFSource` |
+
 ## Scan support
 
 <ReferenceBoundary

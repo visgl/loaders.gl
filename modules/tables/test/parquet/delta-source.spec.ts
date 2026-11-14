@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {DeltaLoaderWithParser, DeltaTableSource} from '../../src/parquet/delta-source';
+import {DeltaLoaderWithParser, DeltaTableSource} from '../../src/parquet/delta-loader';
 
 test('DeltaTableSource selects active files from commit actions', async () => {
   const log = [

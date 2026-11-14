@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| — | WMC documents have no dedicated loader. Use [WMSLoader](../api-reference/wms-source-loader.md) to load each referenced WMS service. |
+| — | WMC documents have no dedicated loader. Use [WMSLoader](../api-reference/wms-loader.md) to load each referenced WMS service. |
 
 <DocOrientation
   eyebrow="Implementation boundary"

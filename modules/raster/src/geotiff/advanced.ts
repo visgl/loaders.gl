@@ -11,12 +11,12 @@ export type {
   OMETiffChannelMetadata,
   OMETiffLevelMetadata,
   OMETiffSourceLoaderMetadata,
-  OMETiffSourceLoaderOptions
-} from './ometiff-source-loader';
+  OMETiffLoaderOptions
+} from './ometiff-loader';
 export {
   OMETiffLoader,
   OMETiffImageSource
-} from './ometiff-source-loader';
+} from './ometiff-loader';
 
 export {loadGeoTiff} from './lib/load-geotiff';
 export {TiffPixelSource} from './lib/tiff-pixel-source';

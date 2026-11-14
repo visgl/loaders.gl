@@ -47,9 +47,7 @@ test('published root defers service implementations and their heavy dependencies
 
 test('named synchronous imports tree-shake unrelated ArcGIS clients', () => {
   expect(
-    bundledFeature.initialInputs.some(input =>
-      input.endsWith('arcgis-feature-server-source-loader.js')
-    )
+    bundledFeature.initialInputs.some(input => input.endsWith('arcgis-feature-server-loader.js'))
   ).toBe(true);
   expect(
     bundledFeature.initialInputs.some(input =>
@@ -59,9 +57,7 @@ test('named synchronous imports tree-shake unrelated ArcGIS clients', () => {
     )
   ).toBe(false);
   expect(
-    bundledRegistry.initialInputs.some(input =>
-      input.endsWith('arcgis-scene-server-source-loader.js')
-    )
+    bundledRegistry.initialInputs.some(input => input.endsWith('arcgis-scene-server-loader.js'))
   ).toBe(true);
 });
 

@@ -87,7 +87,7 @@ const arrayBuffer = await encode(geojson, MVTWriter, {
 geometry column. Attributes are read directly from Arrow vectors at the protobuf boundary, including
 sliced and multi-batch tables and dictionaries. It does not construct GeoJSON property rows.
 
-Use the [Arrow tiler](./arrow-table-tile-source-loader) for geographic, native GeoArrow or WKT input.
+Use the [Arrow tiler](./arrow-table-tile-loader) for geographic, native GeoArrow or WKT input.
 Its normalized local WKB tiles can be encoded directly:
 
 ```typescript

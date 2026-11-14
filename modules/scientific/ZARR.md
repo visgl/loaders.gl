@@ -94,5 +94,5 @@ const imageSource = await spatialDataSource.createRasterSource(
 const imageMetadata = await imageSource.getMetadata();
 ```
 
-See the [`OMEZarrLoader` API reference](https://loaders.gl/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader)
+See the [`OMEZarrLoader` API reference](https://loaders.gl/docs/modules/scientific/zarr/api-reference/ome-zarr-loader)
 for source options, raster output layout, and current scope.

@@ -18,17 +18,17 @@ export type {
   ZarrArrayData,
   ZarrArraySelection,
   ZarrArraySlice,
-  ZarrArraySourceLoaderOptions,
+  ZarrArrayLoaderOptions,
   ZarrArraySourceMetadata
-} from './zarr/zarr-array-source';
+} from './zarr/zarr-array-loader';
 export type {
   SpatialDataElementFormat,
   SpatialDataElementKind,
   SpatialDataElementMetadata,
-  SpatialDataSourceLoaderOptions,
+  SpatialDataLoaderOptions,
   SpatialDataSourceMetadata,
   SpatialDataZarrElementSource
-} from './zarr/spatial-data-source';
+} from './zarr/spatial-data-loader';
 export type {
   GetOMEZarrParameters,
   LoadConsolidatedMetadataOptions,
@@ -39,17 +39,17 @@ export type {
   ZarrConsolidatedFormat,
   ZarrConsolidatedMetadata,
   ZarrMetadataPath,
-  ZarrSourceLoader,
-  ZarrSourceLoaderOptions
-} from './zarr/ome-zarr-source-loader';
+  ZarrLoader,
+  ZarrLoaderOptions
+} from './zarr/ome-zarr-loader';
 export type {
   GeoZarrLevelMetadata,
   GeoZarrAffineTransform,
   GeoZarrSelectionDimension,
-  GeoZarrSourceLoaderOptions,
+  GeoZarrLoaderOptions,
   GeoZarrSourceMetadata,
   GetGeoZarrParameters
-} from './zarr/geo-zarr-source-loader';
+} from './zarr/geo-zarr-loader';
 
 export type {
   ScientificArraySource,

@@ -4,14 +4,14 @@
 
 import {createDataSource} from '@loaders.gl/core';
 import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
-import type {COPCTileSource, COPCSourceLoaderOptions} from '@loaders.gl/tiles-3d/copc';
+import type {COPCTileSource, COPCLoaderOptions} from '@loaders.gl/tiles-3d/copc';
 import {PotreeLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import type {
   PotreeDataset,
   PotreeNodesSource,
   PotreeWriterNode,
   PotreeWriterOptions,
-  PotreeSourceLoaderOptions
+  PotreeLoaderOptions
 } from '@loaders.gl/tiles-3d/potree';
 import type {Mesh, MeshArrowTable, MeshGeometry} from '@loaders.gl/core/schema';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
@@ -29,7 +29,7 @@ export type OpenPointCloudFileOptions = {
       /** COPC is a native single LAZ file. */
       readonly format: 'copc';
       /** Existing COPC source coordinate and decoder controls. */
-      readonly sourceOptions?: COPCSourceLoaderOptions;
+      readonly sourceOptions?: COPCLoaderOptions;
     }
   | {
       /** A loaders.gl STORE ZIP convention, not a native Potree archive standard. */
@@ -41,7 +41,7 @@ export type OpenPointCloudFileOptions = {
       /** Explicit metadata path when it is not at the ZIP root. */
       readonly metadataPath?: string;
       /** Existing Potree parser controls; the bundle owns its isolated fetch transport. */
-      readonly sourceOptions?: PotreeSourceLoaderOptions;
+      readonly sourceOptions?: PotreeLoaderOptions;
     }
 );
 

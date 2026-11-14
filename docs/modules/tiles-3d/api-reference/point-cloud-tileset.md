@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['COPC and Potree', 'Octree traversal', 'Point budgets']}
   links={[
     {label: 'Tiles module', to: '/docs/modules/tiles'},
-    {label: 'COPC source', to: '/docs/modules/tiles-3d/copc/api-reference/copc-source-loader'},
+    {label: 'COPC source', to: '/docs/modules/tiles-3d/copc/api-reference/copc-loader'},
     {label: 'Potree source', to: '/docs/modules/tiles-3d/potree/api-reference/potree-source-loader'}
   ]}
 />
