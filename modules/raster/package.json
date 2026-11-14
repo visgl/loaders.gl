@@ -315,7 +315,7 @@
   "dependencies": {
     "@loaders.gl/documents": "5.0.0-beta.8",
     "@loaders.gl/images": "5.0.0-beta.8",
-    "@math.gl/geospatial": "5.0.0-beta.8"
+    "@math.gl/geospatial": "5.0.0-beta.9"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",

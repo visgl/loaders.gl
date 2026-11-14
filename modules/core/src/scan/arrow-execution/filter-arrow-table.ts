@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {takeArrowTableRows} from '@math.gl/arrow';
 import {
   getColumnarPredicateColumns,
   validateColumnarPredicate,
@@ -82,19 +83,7 @@ export function filterArrowRows(
       batches.push(batch.slice(indices[0], indices[indices.length - 1] + 1));
       continue;
     }
-    const vectors = Object.fromEntries(
-      source.schema.fields.map(field => {
-        const vector = data.getChild(field.name)!;
-        return [
-          field.name,
-          arrow.vectorFromArray(
-            indices.map(index => vector.get(index)),
-            field.type
-          )
-        ];
-      })
-    );
-    const gathered = new arrow.Table(source.schema, vectors);
+    const gathered = takeArrowTableRows(data, Int32Array.from(indices));
     batches.push(
       ...gathered.batches.map(
         output => new arrow.RecordBatch(source.schema, output.data, batch.metadata)

@@ -37,7 +37,7 @@ export function serializeArrowWorkerTable(result: unknown): unknown {
   return {
     ...structuredClone(metadata),
     arrowBatchMetadata: snapshotBatchMetadata(data),
-    data: dehydrateWorkerTable(data, {copy: 'all'})
+    data: dehydrateArrowTable(data, {copy: 'all'})
   };
 }
 
@@ -81,7 +81,7 @@ export function serializeArrowWorkerResult(result: unknown, options?: unknown): 
   return {
     ...result,
     arrowBatchMetadata: snapshotBatchMetadata(result.data),
-    data: dehydrateWorkerTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
+    data: dehydrateArrowTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
   };
 }
 
@@ -113,20 +113,6 @@ function isDehydratedArrowTableWrapper(value: unknown): value is SerializedArrow
       table.data.transport === 'arrow-js' &&
       Array.isArray(table.data.batches)
   );
-}
-
-/** Preserves row counts for tables whose batches have no columns. */
-function dehydrateWorkerTable(
-  table: arrow.Table,
-  options?: SplitArrowBuffersOptions
-): DehydratedArrowTable {
-  const payload = dehydrateArrowTable(table, options);
-  if (table.numCols === 0) {
-    for (const [index, batch] of table.batches.entries()) {
-      payload.batches[index].length = batch.numRows;
-    }
-  }
-  return payload;
 }
 
 /** Captures batch schemas and custom metadata before transferring column buffers. */
