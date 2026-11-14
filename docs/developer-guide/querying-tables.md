@@ -312,3 +312,39 @@ An injected `sqlParser` returns a portable logical query. Use `parseSQLQuery` fr
 and catalog commands. Math.gl compiles expressions against each source schema. Loaders.gl requests
 the referenced columns and evaluates computed filters before applying LIMIT. Sources can still
 push down portable column predicates. Unsupported expressions fail with a terminal query error.
+
+### Typed SELECT output
+
+Use CAST to set the physical type of a result column. The type is fixed even
+when the result contains no rows or the selected values are all null.
+
+```sql
+SELECT CAST(longitude AS FLOAT64) AS longitude,
+       CAST(temperature AS FLOAT32) AS temperature,
+       CAST(confidence AS FLOAT16) AS confidence
+FROM readings
+```
+
+`DOUBLE PRECISION` and `REAL` are aliases for `FLOAT64` and `FLOAT32`.
+Integer targets are `INT8`, `UINT8`, `INT16`, `UINT16`, `INT32`, `UINT32`,
+`INT64`, and `UINT64`. The 64-bit integer columns use JavaScript bigint values.
+Out-of-range casts raise an error.
+
+The structured form uses the same cast plan. The output name defaults to the
+source column name.
+
+```ts
+const result = await query({
+  select: [
+    {column: 'longitude', cast: 'float64'},
+    {column: 'temperature', cast: 'float32'},
+    {column: 'confidence', cast: 'float16'}
+  ]
+}, {source});
+```
+
+CSV and NDJSON can write simple float casts on decoded float columns directly
+into their output Arrow buffers. Other casts and queries with filters use the
+portable Arrow evaluator. Casts run after filtering and the row window. The
+loader's input schema still controls how it decodes the original values.
+`FLOAT16` expressions require a runtime with native `Float16Array` support.

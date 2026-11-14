@@ -94,7 +94,7 @@ for (const format of formats) {
     try {
       const metadata = await source.getQueryMetadata();
       expect(metadata.capabilities.table?.projection).toBe(
-        format === 'parquet' ? 'pushdown' : 'residual'
+        format === 'parquet' ? 'pushdown' : format === 'arrow' ? 'residual' : 'pushdown+residual'
       );
       const request: TableQuery = {
         select: ['label', {column: 'id', as: 'rowId'}],
@@ -378,4 +378,75 @@ test('NDJSON source accepts declared schema alongside Arrow-only parser controls
     }
   });
   expect((await query({}, {source})).toArray().map(row => row.value)).toEqual([null, 3]);
+});
+
+test.each([
+  'csv',
+  'ndjson'
+] as const)('%s writes typed SELECT results with Arrow cast parity', async format => {
+  const inputSchema: Schema = {
+    fields: [{name: 'value', type: 'float64', nullable: true}],
+    metadata: {}
+  };
+  const values = [70000, 1 + 2 ** -11, 1.00000003, null, -0.00000004];
+  const source =
+    format === 'csv'
+      ? new CSVTableSource(
+          new Blob(['value\n', ...values.map(value => (value === null ? '""\n' : `${value}\n`))]),
+          {core: {batchSize: 2}, csv: {schema: inputSchema}}
+        )
+      : new NDJSONTableSource(new Blob(values.map(value => `${JSON.stringify({value})}\n`)), {
+          core: {batchSize: 2},
+          ndjson: {schema: inputSchema}
+        });
+  const {parseSQLQuery} = await import('@loaders.gl/core/query/query');
+  const statement =
+    'SELECT CAST(value AS FLOAT64) AS wide, CAST(value AS FLOAT32) AS single, CAST(value AS FLOAT16) AS half LIMIT 4 OFFSET 1';
+  const options = {source, sqlParser: parseSQLQuery};
+  const planner = vi.spyOn(source, 'planQueryPushdown');
+  const actual = await query(statement, options);
+  expect(await planner.mock.results[0].value).not.toBeNull();
+  expect(actual.schema.fields.map(field => field.type)).toEqual([
+    new arrow.Float64(),
+    new arrow.Float32(),
+    new arrow.Float16()
+  ]);
+  expect(actual.batches.length).toBeGreaterThan(1);
+  const structured = await query(
+    {
+      select: [
+        {column: 'value', cast: 'float64', as: 'wide'},
+        {column: 'value', cast: 'float32', as: 'single'},
+        {column: 'value', cast: 'float16', as: 'half'}
+      ],
+      offset: 1,
+      limit: 4
+    },
+    {source}
+  );
+  planner.mockResolvedValue(null);
+  const fallback = await query(statement, options);
+  for (const field of actual.schema.fields) {
+    expect([...actual.getChild(field.name)!]).toEqual([...fallback.getChild(field.name)!]);
+    expect([...structured.getChild(field.name)!]).toEqual([...fallback.getChild(field.name)!]);
+  }
+  planner.mockRestore();
+  const empty = await query(statement.replace('LIMIT 4', 'LIMIT 0'), options);
+  expect(empty.numRows).toBe(0);
+  expect(empty.schema.fields.map(field => field.type)).toEqual(
+    actual.schema.fields.map(field => field.type)
+  );
+  const filtered = await query(
+    'SELECT CAST(value AS FLOAT16) AS half WHERE value < 2 LIMIT 1',
+    options
+  );
+  expect(filtered.getChild('half')?.get(0)).toBe(1);
+  await expect(query('SELECT CAST(value AS FLOAT16)', options)).rejects.toThrow(/overflow/);
+});
+
+test('structured integer projections preserve exact 64-bit values through the Arrow fallback', async () => {
+  const source = new NDJSONTableSource(new Blob(['{"value":"18446744073709551615"}\n']));
+  const result = await query({select: [{column: 'value', cast: 'uint64'}]}, {source});
+  expect(result.schema.fields[0].type).toEqual(new arrow.Uint64());
+  expect(result.getChildAt(0)?.get(0)).toBe(18446744073709551615n);
 });
