@@ -1,3 +1,4 @@
+import {getParquetBatchProvenance} from '@loaders.gl/tables/parquet-source-loader';
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';
@@ -194,7 +195,7 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
         sourceUrl: 'table/data.parquet',
         datasetPartitions: {region: 'west'},
         datasetFileMetadata: {iceberg: {dataSequenceNumber: 3}},
-        metadata: {rowCount: 4}
+        metadata: {rowCount: 4, datasetFileMetadata: {iceberg: {partition: [9007199254740993n], lowerBounds: [new Uint8Array([128, 255])]}}}
       };
     },
     close
@@ -213,6 +214,10 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
   expect(Array.from(batches[0].getChild('id')?.toArray() || [])).toEqual([2]);
   expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowIndices).toEqual([1]);
   expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowIndices).toEqual([11]);
+  expect(getParquetBatchProvenance(arrow.tableFromArrays({id: [1]}).batches[0])).toBeUndefined();
+  expect(getParquetBatchProvenance(batches[0])?.datasetFileMetadata).toEqual({
+    iceberg: {partition: [9007199254740993n], lowerBounds: [new Uint8Array([128, 255])]}
+  });
   expect(telemetry).toHaveBeenCalledWith(expect.objectContaining({status: 'completed', rowsReturned: 1}));
   expect(close).toHaveBeenCalledOnce();
 });

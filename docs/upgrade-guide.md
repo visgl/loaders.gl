@@ -805,7 +805,8 @@ with `getFederatedTableBatchProvenance(batch)` from `@loaders.gl/core/scan`.
 When federation removes rows, original physical metadata is available through
 `sourceMetadata` and describes the input batch.
 Parquet, dataset, and lakehouse readers store file and row provenance as JSON
-under `batch.metadata.get('loaders.gl.parquetProvenance')`.
+in Arrow batch metadata. Read it with `getParquetBatchProvenance(batch)` from
+`@loaders.gl/tables/parquet-source-loader`, which restores BigInt and binary values.
 
 Arrow IPC, JSONTable, FlatGeobuf, Lance, DuckDB, COPC, and Potree physical readers also
 yield native batches. Use `batch.numRows` and access Arrow columns directly.

@@ -4,6 +4,7 @@
 
 import type {RecordBatch} from 'apache-arrow';
 import {streamNativeParquetBatches} from './lib/native-parquet-batches';
+export {getParquetBatchProvenance} from './lib/native-parquet-batches';
 import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/arrow';
 import {IndexedArrowTable} from '@math.gl/arrow';
 import type {CoreAPI, ReadableFile, SourceLoader} from '@loaders.gl/core/loader-utils';

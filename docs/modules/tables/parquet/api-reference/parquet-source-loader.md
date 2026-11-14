@@ -210,7 +210,8 @@ Returns native Apache Arrow RecordBatches. `rowGroups` controls which row groups
 order. `columns` prevents unselected column chunks from being requested or decoded. Both selections
 are validated against the cached footer before row data is read.
 
-Read provenance with `JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!)`:
+Read provenance with `getParquetBatchProvenance(batch)` from
+`@loaders.gl/tables/parquet-source-loader`. It restores BigInt and byte arrays in catalog metadata:
 
 | Property | Description |
 | --- | --- |
