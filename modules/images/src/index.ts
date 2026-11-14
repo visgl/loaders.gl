@@ -4,12 +4,10 @@
 
 // TYPES
 export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
-export type {LegacyImageLoaderOptions} from './legacy-image-loader-types';
 export type {ImageLoaderOptions} from './image-loader-types';
 
 // LOADERS AND WRITERS
 export {ImageFormat, ImageBitmapFormat} from './image-format';
-export {LegacyImageLoader} from './legacy-image-loader-types';
 export {ImageLoader} from './image-loader-types';
 export {ImageWriter} from './image-writer';
 

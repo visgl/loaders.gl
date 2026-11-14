@@ -133,8 +133,7 @@ read encoded tile payloads by table and matrix ID. [Scientific formats](./module
 bring NetCDF and Zarr together, including OME-Zarr bioimaging sources.
 
 [Images](./modules/images/README.md) now includes compressed textures, HDR, texture manifests,
-and browser video loading. `ImageLoader` returns `ImageBitmap`; `LegacyImageLoader` retains
-older output modes. Node image decoding and encoding use an optional, lazy-loaded Sharp backend,
+and browser video loading. `ImageLoader` returns `ImageBitmap`. Node image decoding and encoding use an optional, lazy-loaded Sharp backend,
 including WebP and AVIF support. See the
 [image migration guide](./upgrade-guide.md#image-texture-and-video-consolidation) for renamed
 loaders, flat implementation imports, and explicit codec installation.

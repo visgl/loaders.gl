@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ImageType, LegacyImageLoaderOptions} from '@loaders.gl/images';
-import {LegacyImageLoader} from '@loaders.gl/images';
+import type {ImageLoaderOptions} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
   DataSourceOptions,
@@ -40,7 +40,7 @@ import {
 
 /** Options for a WMTS tile source. */
 export type WMTSSourceLoaderOptions = DataSourceOptions &
-  LegacyImageLoaderOptions & {
+  ImageLoaderOptions & {
     wmts?: {
       /** WMTS layer identifier. */
       layer?: string;
@@ -144,7 +144,7 @@ export class WMTSImageTileSource
   }
 
   /** Fetches and decodes one tile; returns null outside advertised coverage without a tile fetch. */
-  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageType | null> {
+  async getTile(parameters: GetTileParameters, signal?: AbortSignal): Promise<ImageBitmap | null> {
     validateTileIndices(parameters);
     await this._loadCapabilities();
     if (!this.isTileAvailable(parameters)) return null;
@@ -158,13 +158,13 @@ export class WMTSImageTileSource
     }
     return (await this.coreApi.parse(
       await response.arrayBuffer(),
-      LegacyImageLoader,
+      ImageLoader,
       this.loadOptions
-    )) as ImageType;
+    )) as ImageBitmap;
   }
 
   /** Fetches a tile using the deck.gl-compatible request shape. */
-  async getTileData(parameters: GetTileDataParameters): Promise<ImageType | null> {
+  async getTileData(parameters: GetTileDataParameters): Promise<ImageBitmap | null> {
     return this.getTile(
       {...parameters.index, tileMatrix: parameters.tileMatrix, signal: parameters.signal},
       parameters.signal

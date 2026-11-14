@@ -109,11 +109,6 @@
       "import": "./dist/texture-manifest-schema.js",
       "require": "./dist/texture-manifest-schema.cjs"
     },
-    "./legacy-image-loader": {
-      "types": "./dist/legacy-image-loader.d.ts",
-      "import": "./dist/legacy-image-loader.js",
-      "require": "./dist/legacy-image-loader.cjs"
-    },
     "./compressed-texture-loader": {
       "types": "./dist/compressed-texture-loader.d.ts",
       "import": "./dist/compressed-texture-loader.js",
@@ -233,11 +228,6 @@
       "types": "./dist/ktx2-basis-writer.d.ts",
       "import": "./dist/ktx2-basis-writer.js",
       "require": "./dist/ktx2-basis-writer.cjs"
-    },
-    "./legacy-image-loader-types": {
-      "types": "./dist/legacy-image-loader-types.d.ts",
-      "import": "./dist/legacy-image-loader-types.js",
-      "require": "./dist/legacy-image-loader-types.cjs"
     },
     "./texture-loader-types": {
       "types": "./dist/texture-loader-types.d.ts",

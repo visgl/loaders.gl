@@ -9,8 +9,7 @@ import type {
   ArcGISExportImageParameters
 } from '../arcgis-source-types';
 
-import type {ImageType} from '@loaders.gl/images';
-import {LegacyImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
   SourceLoader,
@@ -57,7 +56,7 @@ export class ArcGISImageSource
   }
 
   /** Requests an image from generic ImageSource parameters. */
-  async getImage(parameters: GetImageParameters): Promise<ImageType> {
+  async getImage(parameters: GetImageParameters): Promise<ImageBitmap> {
     const {boundingBox, width, height, crs, format, signal} = parameters;
     const spatialReference = normalizeArcGISSpatialReference(crs) || '4326';
     const imageParameters: ArcGISExportImageParameters = {
@@ -82,15 +81,11 @@ export class ArcGISImageSource
   async exportImage(
     options: ArcGISExportImageParameters,
     signal?: AbortSignal
-  ): Promise<ImageType> {
+  ): Promise<ImageBitmap> {
     const response = await this.fetch(this.exportImageURL(options), signal ? {signal} : undefined);
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
-    return (await this.coreApi.parse(
-      arrayBuffer,
-      LegacyImageLoader,
-      this.loadOptions
-    )) as ImageType;
+    return (await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageBitmap;
   }
 
   /** Requests an analytical LERC raster from the ArcGIS ImageServer endpoint. */

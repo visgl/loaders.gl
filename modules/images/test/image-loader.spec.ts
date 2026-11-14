@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {LegacyImageLoader, ImageLoader, getImageType, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageType, getImageData} from '@loaders.gl/images';
 import {load, isBrowser} from '@loaders.gl/core';
 import {parseImageBitmapBlob} from '../src/lib/parsers/parse-image-bitmap';
 import {getBlob, isSVG} from '../src/lib/parsers/svg-utils';
@@ -36,7 +36,6 @@ test('direct SVG Blob parsing rejects SVG URLs', () => {
 });
 
 test('image loaders#imports', () => {
-  expect(LegacyImageLoader, 'LegacyImageLoader defined').toBeTruthy();
   expect(ImageLoader, 'ImageLoader defined').toBeTruthy();
 });
 
@@ -206,27 +205,4 @@ test('ImageLoader#imagebitmap options', async () => {
   });
 
   expect(image.width, 'Custom resizeWidth').toBe(isBrowser ? 240 : image.width);
-});
-
-test('LegacyImageLoader#load({type: \'data\'}) preserves compatibility output', async () => {
-  const image = await load(IMAGE_URL, LegacyImageLoader, {
-    image: {type: 'data'}
-  });
-  expect(getImageType(image), 'compatibility loader returns data').toBe('data');
-
-  const imageData = getImageData(image);
-  expect(imageData.width, 'compatibility data width is correct').toBe(480);
-  expect(imageData.height, 'compatibility data height is correct').toBe(320);
-});
-
-test('LegacyImageLoader#load({type: \'imagebitmap\'}) preserves bitmap mode', async () => {
-  const image = await load(IMAGE_URL, LegacyImageLoader, {
-    image: {type: 'imagebitmap'}
-  });
-  expect(getImageType(image), 'compatibility loader still supports bitmap mode').toBe('imagebitmap');
-});
-
-test('LegacyImageLoader#load({type: \'auto\'}) preserves compatibility behavior', async () => {
-  const image = await load(IMAGE_URL, LegacyImageLoader);
-  expect(['imagebitmap', 'image', 'data'].includes(getImageType(image)), 'auto returns supported type').toBeTruthy();
 });

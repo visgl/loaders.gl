@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
 import {Table as NativeArrowTable} from 'apache-arrow';
+import {ImageLoader} from '@loaders.gl/images';
 import {LERCLoader} from '@loaders.gl/raster';
 import {
   ArcGISFeatureServerSourceLoader,
@@ -171,6 +172,25 @@ test('ArcGISImageTileSource parses the effective response format', () => {
   expect(source.mimeType).toBe('image/png');
   source.updateParameters({format: 'png32'});
   expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('format')).toBe('png32');
+});
+test.each([
+  ['lerc', LERCLoader],
+  ['png32', ImageLoader]
+] as const)('ArcGIS ImageServer tiles select the decoder for %s', async (format, expectedLoader) => {
+  let parsedLoader;
+  const source = new ArcGISImageTileSource(
+    IMAGE_SERVER_URL,
+    {'arcgis-image-server-tiles': {format}},
+    {
+      parse: async (_data, loader) => {
+        parsedLoader = loader;
+        return null;
+      }
+    } as never
+  );
+  source.fetch = async () => new Response(Uint8Array.of(1));
+  await source.getTile({x: 0, y: 0, z: 0});
+  expect(parsedLoader).toBe(expectedLoader);
 });
 test('ArcGISImageSource#metadataURL', () => {
   const source = ArcGISImageServerSourceLoader.createDataSourceSync(IMAGE_SERVER_URL, {});

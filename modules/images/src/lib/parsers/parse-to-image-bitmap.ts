@@ -29,7 +29,7 @@ export async function parseToImageBitmap(
   // Cannot parse SVG directly to ImageBitmap, parse to Image first
   if (isSVG(url)) {
     // Note: this only works on main thread
-    imageBitmapSource = await parseToImage(arrayBuffer, options, url);
+    imageBitmapSource = await parseToImage(arrayBuffer, url);
   } else {
     // Create blob from the array buffer
     imageBitmapSource = getBlob(arrayBuffer, url);

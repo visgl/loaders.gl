@@ -38,6 +38,7 @@ test('WMTS valid tiles still decode through the public source loader and forward
     return new Response(bytes, {headers: {'content-type': 'image/png'}});
   });
   const image = await source.getTile({x: 2, y: 1, z: 1, signal: controller.signal});
+  expect(image).toBeInstanceOf(ImageBitmap);
   expect(image).toMatchObject({width: 2, height: 2});
   expect(source.fetch).toHaveBeenCalledTimes(1);
 });

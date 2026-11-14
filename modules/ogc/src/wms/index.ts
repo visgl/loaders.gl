@@ -159,13 +159,8 @@ export {DEFAULT_SERVICE_LOADERS, ServiceRequestError, ServiceRuntime} from './se
 export type {ServiceEndpoint, ServiceEndpointPreferences} from './capability-graph';
 export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
 
-export {ImageSource} from './lib/deprecated/image-source-compatibility';
+export type {ImageSource} from '@loaders.gl/core/loader-utils';
 export type {ImageType} from '@loaders.gl/images';
-export {createImageSource} from './lib/deprecated/create-image-source';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use `WMSSourceLoader`. Kept for deck.gl compatibility. */
-export {WMSSourceLoader as WMSSource} from './wms-source-loader';
 
 export {ManagedVectorSource} from './managed-vector-source';
 export type {ManagedVectorSourceOptions} from './managed-vector-source';
