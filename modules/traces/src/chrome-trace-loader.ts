@@ -55,8 +55,8 @@ export const ChromeTraceLoaderWithParser = {
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options?: ChromeTraceLoaderOptions
   ) {
-    if (resolveChromeTraceLoaderShape(options) !== 'arrow-table') {
-      throw new Error('ChromeTraceLoader.parseInBatches currently requires shape: "arrow-table".');
+    if (resolveChromeTraceLoaderShape(options) !== 'arrow') {
+      throw new Error('ChromeTraceLoader.parseInBatches currently requires shape: "arrow".');
     }
 
     yield* paceBatchIterator(
@@ -114,7 +114,7 @@ function parseChromeTraceTextSync(
   text: string,
   options?: ChromeTraceLoaderOptions
 ): ChromeTraceFileSchema | ChromeTraceEventArrowTable {
-  if (resolveChromeTraceLoaderShape(options) === 'arrow-table') {
+  if (resolveChromeTraceLoaderShape(options) === 'arrow') {
     return parseChromeTraceToArrowTable(text, {
       maxLength: options?.maxLength
     });
@@ -128,10 +128,10 @@ function parseChromeTraceTextSync(
  */
 function resolveChromeTraceLoaderShape(
   options: ChromeTraceLoaderOptions | undefined
-): 'json' | 'arrow-table' {
+): 'json' | 'arrow' {
   // The explicit legacy option must override the namespaced loader default injected by core.
   const shape = options?.shape ?? options?.chromeTrace?.shape;
-  return shape === 'json' ? 'json' : 'arrow-table';
+  return shape === 'json' ? 'json' : 'arrow';
 }
 
 /**
@@ -163,7 +163,7 @@ function deserializeChromeTraceWorkerResult(
   options?: ChromeTraceLoaderOptions
 ): ChromeTraceFileSchema | ChromeTraceEventArrowTable {
   const table = deserializeTraceWorkerResult(result) as ChromeTraceEventArrowTable;
-  if (resolveChromeTraceLoaderShape(options) === 'arrow-table') return table;
+  if (resolveChromeTraceLoaderShape(options) === 'arrow') return table;
   return {
     ...JSON.parse(table.schema.metadata.get('chromeTrace.containerJson') || '{}'),
     traceEvents: decodeChromeTraceArrowSource(table),

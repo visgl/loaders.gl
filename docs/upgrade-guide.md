@@ -757,9 +757,9 @@ Redundant Arrow-specific loader and writer variants have been removed where the 
 | `DracoArrowLoader` | `DracoLoader` with `draco.shape: 'arrow-table'` |
 | `TerrainArrowLoader` | `TerrainLoader` with `terrain.shape: 'arrow-table'` |
 | `QuantizedMeshArrowLoader` | `QuantizedMeshLoader` with `quantized-mesh.shape: 'arrow-table'` |
-| `GeoPackageArrowLoader(tableName?)` | `GeoPackageLoader` with `geopackage.shape: 'arrow-table'` and optional `geopackage.table` |
-| `ParquetArrowLoader` | `ParquetLoader` with `parquet.shape: 'arrow-table'` |
-| `ParquetArrowWorkerLoader` | `ParquetLoader` with `parquet.shape: 'arrow-table'` |
+| `GeoPackageArrowLoader(tableName?)` | `GeoPackageLoader` with `geopackage.shape: 'arrow'` and optional `geopackage.table` |
+| `ParquetArrowLoader` | `ParquetLoader` with `parquet.shape: 'arrow'` |
+| `ParquetArrowWorkerLoader` | `ParquetLoader` with `parquet.shape: 'arrow'` |
 | `ParquetArrowWriter` | `ParquetWriter` |
 | `ShapefileArrowLoader` | `ShapefileLoader` with `shapefile.shape: 'arrow-table'` |
 
@@ -770,7 +770,7 @@ import {load, encode} from '@loaders.gl/core';
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 
 const parquetArrowTable = await load(parquetUrl, ParquetLoader, {
-  parquet: {shape: 'arrow-table'}
+  parquet: {shape: 'arrow'}
 });
 
 const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
@@ -814,6 +814,11 @@ loader returns an `'arrow-table'` wrapper, pass its `data` property.
 returned value and use `numRows` for batch row counts. Schema and field metadata use
 Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
 JSON batch paths are available through `batch.metadata.get('jsonpath')`.
+
+GeoPackage, FlatGeobuf, GML, Parquet, GeoParquet, and the SPLAT, KSPLAT, and SPZ loaders now
+use `shape: 'arrow'` for native Arrow output. Use `table.numRows` and `table.getChild(name)`
+directly. Batching APIs emit Arrow `RecordBatch` values. Chrome Trace uses the same option
+name and continues to return its native trace table and batches.
 
 #### Federated and format-specific scans yield native Arrow batches
 

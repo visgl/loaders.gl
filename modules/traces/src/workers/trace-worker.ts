@@ -20,8 +20,8 @@ export function selectTraceWorkerLoader(options: Record<string, any>): LoaderWit
         parse(input, parserOptions) {
           return ChromeTraceLoaderWithParser.parse(input, {
             ...parserOptions,
-            shape: 'arrow-table',
-            chromeTrace: {...parserOptions?.chromeTrace, shape: 'arrow-table'}
+            shape: 'arrow',
+            chromeTrace: {...parserOptions?.chromeTrace, shape: 'arrow'}
           });
         }
       };

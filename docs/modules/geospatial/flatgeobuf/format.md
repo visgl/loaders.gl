@@ -81,4 +81,4 @@ FlatGeobuf files can include a packed spatial index for range-request access. `F
 
 ## Arrow
 
-Set `flatgeobuf.shape: 'arrow-table'` to preserve FlatGeobuf property columns in an Arrow table and append a WKB `geometry` column with geospatial metadata.
+Set `flatgeobuf.shape: 'arrow'` to preserve FlatGeobuf property columns in an Arrow table and append a WKB `geometry` column with geospatial metadata.

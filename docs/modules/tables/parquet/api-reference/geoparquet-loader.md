@@ -69,7 +69,7 @@ const rowTable = await load(url, GeoParquetLoader, {
 | Shape              | Output                                          |
 | ------------------ | ----------------------------------------------- |
 | `object-row-table` | loaders.gl object-row table                    |
-| `arrow-table`      | loaders.gl `ArrowTable` with geospatial metadata |
+| `arrow`      | Apache Arrow `Table` with geospatial metadata |
 
 ## Geospatial Metadata
 

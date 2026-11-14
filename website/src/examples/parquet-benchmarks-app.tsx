@@ -591,10 +591,10 @@ async function createParquetBenchmarkImplementations(): Promise<
           scenario.arrayBuffer,
           {
             core: {worker: false},
-            parquet: {columns: scenario.columns, shape: scenario.shape}
+            parquet: {columns: scenario.columns, shape: scenario.shape === 'arrow-table' ? 'arrow' : scenario.shape}
           }
-        )) as ArrowTable | ObjectRowTable;
-        return getBenchmarkTableRowCount(table);
+        )) as import('apache-arrow').Table | ObjectRowTable;
+        return 'numRows' in table ? table.numRows : table.data.length;
       }
     },
     {
@@ -602,9 +602,9 @@ async function createParquetBenchmarkImplementations(): Promise<
       name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.parquetjs,
       decode: async scenario => {
         const table = await parquetjs.ParquetJSLoaderWithParser.parse(scenario.arrayBuffer, {
-          parquet: {columns: scenario.columns, shape: scenario.shape}
+          parquet: {columns: scenario.columns, shape: scenario.shape === 'arrow-table' ? 'arrow' : scenario.shape}
         });
-        return getBenchmarkTableRowCount(table);
+        return 'numRows' in table ? table.numRows : table.data.length;
       }
     },
     {
@@ -676,10 +676,7 @@ function expandArrowDictionaryColumns(
   return hasDictionaryColumn ? arrowJs.tableFromArrays(columns) : table;
 }
 
-/** Returns the materialized row count for either benchmark table shape. */
-function getBenchmarkTableRowCount(table: ArrowTable | ObjectRowTable): number {
-  return table.shape === 'arrow-table' ? table.data.numRows : table.data.length;
-}
+
 
 /** Copies one hyparquet output chunk into a contiguous top-level column. */
 function appendHyparquetColumnChunk(

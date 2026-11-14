@@ -2,14 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table, RecordBatch} from 'apache-arrow';
+import {unwrapParquetBatches} from '../../../../modules/tables/src/parquet/lib/native-parquet-batches';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {BlobFile, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
-import type {
-  ObjectRowTable,
-  ObjectRowTableBatch,
-  ArrowTable,
-  ArrowTableBatch
-} from '@loaders.gl/core/schema';
+import type {ArrowTable, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 
 import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema-utils';
@@ -73,8 +70,8 @@ export const ParquetWasmLoaderWithParser = {
   serializeWorkerResult: serializeParquetWorkerResult,
   deserializeWorkerResult: deserializeParquetWorkerResult
 } as const satisfies LoaderWithParser<
-  ObjectRowTable | ArrowTable,
-  ObjectRowTableBatch | ArrowTableBatch,
+  ObjectRowTable | Table,
+  ObjectRowTableBatch | RecordBatch,
   ParquetLoaderOptions
 >;
 
@@ -87,11 +84,11 @@ export const ParquetWasmLoaderWithParser = {
 async function parseParquetTable(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions
-): Promise<ObjectRowTable | ArrowTable> {
+): Promise<ObjectRowTable | Table> {
   const parquetOptions = getParquetOptions(options);
 
-  if (parquetOptions.parquet?.shape === 'arrow-table') {
-    return await parseParquetFileToArrow(file, parquetOptions.parquet);
+  if (parquetOptions.parquet?.shape === 'arrow') {
+    return (await parseParquetFileToArrow(file, parquetOptions.parquet)).data;
   }
 
   const arrowTable = await parseParquetFileToArrow(file, parquetOptions.parquet);
@@ -107,11 +104,11 @@ async function parseParquetTable(
 async function* parseParquetTableInBatches(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions
-): AsyncIterable<ObjectRowTableBatch | ArrowTableBatch> {
+): AsyncIterable<ObjectRowTableBatch | RecordBatch> {
   const parquetOptions = getParquetOptions(options);
 
-  if (parquetOptions.parquet?.shape === 'arrow-table') {
-    yield* parseParquetFileToArrowInBatches(file, parquetOptions.parquet);
+  if (parquetOptions.parquet?.shape === 'arrow') {
+    yield* unwrapParquetBatches(parseParquetFileToArrowInBatches(file, parquetOptions.parquet));
     return;
   }
 

@@ -18,11 +18,11 @@ beforeAll(async () => {
 test('Explicit Parquet WASM reader preserves file parsing shapes and row selection', async () => {
   const file = new ArrayBufferFile(fixture);
   const arrowTable = await ParquetWasmLoaderWithParser.parseFile(file, {
-    parquet: {shape: 'arrow-table'}
+    parquet: {shape: 'arrow'}
   });
-  expect(arrowTable.shape).toBe('arrow-table');
-  if (arrowTable.shape === 'arrow-table') {
-    expect(arrowTable.data.numRows).toBe(2);
+  expect(arrowTable).toHaveProperty('numRows');
+  if ('numRows' in arrowTable) {
+    expect(arrowTable.numRows).toBe(2);
   }
   const virtualFile = {
     ...file,
@@ -46,9 +46,9 @@ test('Explicit Parquet WASM reader preserves file and fragmented-input batch API
   expect(rows).toEqual([{id: 1}, {id: 2}]);
   const batches = [];
   for await (const batch of ParquetWasmLoaderWithParser.parseInBatches([fixture.slice(0, 8), fixture.slice(8)], {
-    parquet: {shape: 'arrow-table', batchSize: 1}
+    parquet: {shape: 'arrow', batchSize: 1}
   })) {
-    if (batch.shape === 'arrow-table') batches.push(batch.data.numRows);
+    if ('numRows' in batch) batches.push(batch.numRows);
   }
   expect(batches).toEqual([1, 1]);
 });

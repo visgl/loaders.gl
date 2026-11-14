@@ -2,12 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoJSONTable,
-  BinaryFeatureCollection
-} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {GeoJSONTable, ColumnarTable, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {FlatGeobufFormat} from './flatgeobuf-format';
@@ -24,7 +20,7 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   flatgeobuf?: {
-    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
     boundingBox?: [[number, number], [number, number]];
@@ -45,15 +41,17 @@ async function preload() {
 export const FlatGeobufLoader = {
   ...FlatGeobufFormat,
 
-  dataType: null as any,
-  batchType: null as any,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as GeoJSONTable | ColumnarTable | Table | BinaryFeatureCollection,
+  batchType: null as unknown as RecordBatch,
   version: VERSION,
   worker: true,
   binary: true,
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],
   options: {
     flatgeobuf: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     gis: {
       reproject: false
@@ -61,7 +59,7 @@ export const FlatGeobufLoader = {
   },
   preload
 } as const satisfies Loader<
-  GeoJSONTable | ArrowTable | BinaryFeatureCollection,
-  ArrowTableBatch | any,
+  GeoJSONTable | ColumnarTable | Table | BinaryFeatureCollection,
+  RecordBatch,
   FlatGeobufLoaderOptions
 >;

@@ -74,35 +74,34 @@ test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async () => {
   const restoreDecompressionStream = installMockDecompressionStream(formats, false);
   try {
     const table = await parse(data, SPZLoader, {modules});
-    expect(table.shape, 'returns MeshArrowTable').toBe('arrow-table');
     expect(table.topology, 'returns point-list topology').toBe('point-list');
-    expect(table.data.numRows, 'parses row count').toBe(2);
+    expect(table.numRows, 'parses row count').toBe(2);
     expect(
-      table.data.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),
+      table.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),
       'adds source format metadata'
     ).toBe('spz');
     expect(
-      Array.from(table.data.getChild('POSITION')?.get(0)?.toArray() || []),
+      Array.from(table.getChild('POSITION')?.get(0)?.toArray() || []),
       'parses position'
     ).toEqual([1, 2, -3]);
     expect(
-      Math.abs(Number(table.data.getChild('scale_1')?.get(0)) - 1) < 1e-6,
+      Math.abs(Number(table.getChild('scale_1')?.get(0)) - 1) < 1e-6,
       'decodes scale'
     ).toBeTruthy();
     expect(
-      Math.abs(Number(table.data.getChild('opacity')?.get(1)) - 64 / 255) < 1e-6,
+      Math.abs(Number(table.getChild('opacity')?.get(1)) - 64 / 255) < 1e-6,
       'decodes linear opacity'
     ).toBeTruthy();
     expect(
-      Math.abs(Number(table.data.getChild('f_dc_0')?.get(0)) - (140 / 255 - 0.5) / 0.15) < 1e-6,
+      Math.abs(Number(table.getChild('f_dc_0')?.get(0)) - (140 / 255 - 0.5) / 0.15) < 1e-6,
       'decodes SPZ DC coefficient'
     ).toBeTruthy();
     expect(
-      Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6,
+      Math.abs(Number(table.getChild('rot_0')?.get(0)) - 1) < 1e-6,
       'decodes rotation'
     ).toBeTruthy();
     const directTable = await SPZLoaderWithParser.parse(data, {modules});
-    expect(directTable.data.numRows, 'parser subpath supports async parse').toBe(2);
+    expect(directTable.numRows, 'parser subpath supports async parse').toBe(2);
     expect(
       formats.length,
       'default decoder probes native support before WASM fallback'
@@ -118,7 +117,7 @@ test('SPZLoader uses native zstd without a codec module', async () => {
   const restoreZstd = removeRegisteredModule('zstd-codec');
   try {
     const table = await SPZLoaderWithParser.parse(data);
-    expect(table.data.numRows, 'native zstd path parses SPZ data').toBe(2);
+    expect(table.numRows, 'native zstd path parses SPZ data').toBe(2);
     expect(formats, 'one capability probe and all SPZ streams use native zstd').toEqual([
       'zstd',
       'zstd',

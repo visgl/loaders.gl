@@ -17,8 +17,8 @@ function createProtocol(bytes: number[]): Uint8ArrayCompactProtocol {
 }
 
 test('normalizeParquetOptions preserves bags and maps scan pushdown exactly', () => {
-  expect(normalizeParquetOptions(undefined, {shape: 'arrow-table', limit: 10})).toEqual({
-    parquet: {shape: 'arrow-table', limit: 10}
+  expect(normalizeParquetOptions(undefined, {shape: 'arrow', limit: 10})).toEqual({
+    parquet: {shape: 'arrow', limit: 10}
   });
   expect(
     normalizeParquetOptions(
@@ -27,7 +27,7 @@ test('normalizeParquetOptions preserves bags and maps scan pushdown exactly', ()
         _scan: {columns: ['name', 'value'] as const, limit: 0},
         marker: true
       },
-      {shape: 'arrow-table', limit: 10}
+      {shape: 'arrow', limit: 10}
     )
   ).toEqual({
     parquet: {shape: 'object-row-table', limit: 0, columns: ['name', 'value']},

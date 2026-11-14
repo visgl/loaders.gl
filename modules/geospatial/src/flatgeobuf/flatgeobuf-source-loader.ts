@@ -191,7 +191,7 @@ export class FlatGeobufVectorSource
     const result = parseFlatGeobuf(info.arrayBuffer, {
       shape:
         format === 'arrow'
-          ? 'arrow-table'
+          ? 'arrow'
           : format === 'binary'
             ? 'binary-geometry'
             : 'geojson-table',
@@ -200,7 +200,7 @@ export class FlatGeobufVectorSource
       reproject: Boolean(parameters.crs),
       geoarrow: parameters.geoarrow
     });
-    return format === 'arrow' ? result.data : result;
+    return result;
   }
 
   /** Executes a spatially pruned FlatGeobuf query and returns an Arrow table. */

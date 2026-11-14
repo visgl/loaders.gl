@@ -39,7 +39,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-`SPZLoader` parses Niantic Spatial `.spz` Gaussian splat files and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+`SPZLoader` parses Niantic Spatial `.spz` Gaussian splat files and returns a native Apache Arrow `Table`.
 
 <ReferenceBoundary
   title="Compression and output details"
@@ -53,7 +53,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Extensions   | `.spz`                                     |
 | Worker       | ❌ No                                         |
 | Input type   | `ArrayBuffer`                              |
-| Output shape | `arrow-table`                              |
+| Output shape | `arrow`                              |
 
 ## Usage
 
@@ -100,7 +100,7 @@ Legacy SPZ versions 1 through 3 use a gzip-compressed single-stream layout and a
 
 ## Output
 
-The loader returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with the existing Gaussian splat columns:
+The loader returns a native Apache Arrow `Table` with the existing Gaussian splat columns:
 
 - `POSITION`
 - `f_dc_0`, `f_dc_1`, `f_dc_2`
@@ -117,5 +117,5 @@ Schema metadata includes `loaders_gl.semantic_type = gaussian-splats` and `loade
 
 | Option         | Type            | Default         | Description                              |
 | -------------- | --------------- | --------------- | ---------------------------------------- |
-| `splats.shape` | `'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table output. V1 only supports `arrow-table`. |
+| `splats.shape` | `'arrow'` | `'arrow'` | Returns a native Arrow table. |
 | `modules`      | `object`        | `{}`            | Include `{'zstd-codec': ZstdCodec}` for broad SPZ version 4 runtime compatibility. |

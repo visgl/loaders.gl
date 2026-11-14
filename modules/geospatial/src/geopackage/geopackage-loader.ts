@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {GeoJSONTable, ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {GeoJSONTable} from '@loaders.gl/core/schema';
 import {parseGeoPackage} from './lib/parse-geopackage';
 import {GeoPackageLoader as GeoPackageLoaderMetadata} from './geopackage-loader-types';
 
@@ -18,4 +19,4 @@ export type {GeoPackageLoaderOptions} from './geopackage-loader-types';
 export const GeoPackageLoaderWithParser = {
   ...GeoPackageLoaderMetadataWithoutPreload,
   parse: parseGeoPackage
-} as const satisfies LoaderWithParser<GeoJSONTable | ArrowTable, never, GeoPackageLoaderOptions>;
+} as const satisfies LoaderWithParser<GeoJSONTable | Table, never, GeoPackageLoaderOptions>;

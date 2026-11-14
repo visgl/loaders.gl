@@ -43,16 +43,16 @@ test('ParquetJSLoader#load defaults to Arrow table output', async () => {
     const table = await load(url, ParquetJSLoader, { core: { worker: false } });
     expect(table.numRows).toBe(2);
 });
-test('ParquetJSLoader#load supports arrow-table shape', async () => {
+test('ParquetJSLoader#load supports arrow shape', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/alltypes_dictionary.parquet';
     const table = await load(url, ParquetJSLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
+        parquet: { shape: 'arrow' }
     });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        expect(table.data.numRows).toBe(2);
-        const identifierField = table.data.schema.fields.find(field => field.name === 'id');
+    expect(table).toHaveProperty('numRows');
+    if ('numRows' in table) {
+        expect(table.numRows).toBe(2);
+        const identifierField = table.schema.fields.find(field => field.name === 'id');
         expect(Object.fromEntries(identifierField?.metadata || []), 'preserves serialized Parquet field metadata in the Arrow schema').toEqual({
             type: 'INT32',
             optional: 'true',
@@ -66,21 +66,21 @@ test('ParquetJSLoader#loads the dictionary benchmark fixture', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/benchmark-dictionary.parquet';
     const table = await load(url, ParquetJSLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
+        parquet: { shape: 'arrow' }
     });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        expect(table.data.numRows, 'loads every row across all row groups').toBe(20000);
-        expect(table.data.schema.fields.map((field) => field.name), 'preserves the benchmark schema').toEqual(['category', 'region', 'nullableLabel', 'quantity', 'price']);
-        expect(table.data.getChild('category')?.get(0), 'decodes dictionary strings').toBe('alpha');
-        expect(table.data.getChild('nullableLabel')?.get(0), 'decodes nullable dictionary data').toBe(null);
-        expect(table.data.getChild('quantity')?.get(19999), 'decodes nullable numeric data').toBe(999);
+    expect(table).toHaveProperty('numRows');
+    if ('numRows' in table) {
+        expect(table.numRows, 'loads every row across all row groups').toBe(20000);
+        expect(table.schema.fields.map((field) => field.name), 'preserves the benchmark schema').toEqual(['category', 'region', 'nullableLabel', 'quantity', 'price']);
+        expect(table.getChild('category')?.get(0), 'decodes dictionary strings').toBe('alpha');
+        expect(table.getChild('nullableLabel')?.get(0), 'decodes nullable dictionary data').toBe(null);
+        expect(table.getChild('quantity')?.get(19999), 'decodes nullable numeric data').toBe(999);
     }
 });
-test('ParquetJSLoader#arrow-table preserves ranged dictionary values', async () => {
+test('ParquetJSLoader#arrow preserves ranged dictionary values', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/benchmark-dictionary.parquet';
     const parquetOptions = {
-        shape: 'arrow-table' as const,
+        shape: 'arrow' as const,
         columns: ['category', 'nullableLabel', 'quantity', 'price'],
         offset: 4094,
         limit: 5
@@ -93,20 +93,20 @@ test('ParquetJSLoader#arrow-table preserves ranged dictionary values', async () 
         core: { worker: false },
         parquet: { ...parquetOptions, shape: 'object-row-table' }
     });
-    expect(arrowTable.shape).toBe('arrow-table');
+    expect(arrowTable).toHaveProperty('numRows');
     expect(objectRowTable.shape).toBe('object-row-table');
-    if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
-        expect(arrowTable.data.batches.map(batch => batch.numRows), 'retains row-group boundaries').toEqual([2, 3]);
+    if ('numRows' in arrowTable && objectRowTable.shape === 'object-row-table') {
+        expect(arrowTable.batches.map(batch => batch.numRows), 'retains row-group boundaries').toEqual([2, 3]);
         for (const columnName of parquetOptions.columns) {
-            expect(Array.from(arrowTable.data.getChild(columnName) || []), `${columnName} values and nulls match object-row decoding`).toEqual(objectRowTable.data.map(row => row[columnName] ?? null));
+            expect(Array.from(arrowTable.getChild(columnName) || []), `${columnName} values and nulls match object-row decoding`).toEqual(objectRowTable.data.map(row => row[columnName] ?? null));
         }
     }
 });
-test('ParquetJSLoader#arrow-table preserves ranged physical integer values', async () => {
+test('ParquetJSLoader#arrow preserves ranged physical integer values', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/delta_binary_packed.parquet';
     const columns = ['bitwidth0', 'bitwidth32', 'bitwidth64', 'int_value'];
     const parquetOptions = {
-        shape: 'arrow-table' as const,
+        shape: 'arrow' as const,
         columns,
         offset: 3,
         limit: 5
@@ -119,33 +119,32 @@ test('ParquetJSLoader#arrow-table preserves ranged physical integer values', asy
         core: { worker: false },
         parquet: { ...parquetOptions, shape: 'object-row-table' }
     });
-    expect(arrowTable.shape).toBe('arrow-table');
+    expect(arrowTable).toHaveProperty('numRows');
     expect(objectRowTable.shape).toBe('object-row-table');
-    if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
+    if ('numRows' in arrowTable && objectRowTable.shape === 'object-row-table') {
         for (const columnName of columns) {
-            expect(Array.from(arrowTable.data.getChild(columnName) || []), `${columnName} values and nulls match object-row decoding`).toEqual(objectRowTable.data.map(row => row[columnName] ?? null));
+            expect(Array.from(arrowTable.getChild(columnName) || []), `${columnName} values and nulls match object-row decoding`).toEqual(objectRowTable.data.map(row => row[columnName] ?? null));
         }
     }
 });
-test('ParquetJSLoader#load arrow-table preserves schema for empty results', async () => {
+test('ParquetJSLoader#load arrow preserves schema for empty results', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/alltypes_dictionary.parquet';
     const table = await load(url, ParquetJSLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table', limit: 0 }
+        parquet: { shape: 'arrow', limit: 0 }
     });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        expect(table.data.numRows).toBe(0);
-        expect(table.schema.fields.length > 0, 'loaders.gl schema retains the file fields').toBeTruthy();
-        expect(table.data.schema.fields.map((field) => field.name), 'Arrow schema retains the same file fields').toEqual(table.schema.fields.map((field) => field.name));
+    expect(table).toHaveProperty('numRows');
+    if ('numRows' in table) {
+        expect(table.numRows).toBe(0);
+        expect(table.schema.fields.length, 'Arrow schema retains the file fields').toBeGreaterThan(0);
     }
 });
-test('ParquetJSLoader#arrow-table applies projection, offset, and limit', async () => {
+test('ParquetJSLoader#arrow applies projection, offset, and limit', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/alltypes_plain.parquet';
     const options = {
         core: { worker: false },
         parquet: {
-            shape: 'arrow-table' as const,
+            shape: 'arrow' as const,
             columns: ['id', 'bool_col'],
             offset: 2,
             limit: 3
@@ -156,49 +155,49 @@ test('ParquetJSLoader#arrow-table applies projection, offset, and limit', async 
         ...options,
         parquet: { ...options.parquet, shape: 'object-row-table' }
     });
-    expect(arrowTable.shape).toBe('arrow-table');
+    expect(arrowTable).toHaveProperty('numRows');
     expect(objectRowTable.shape).toBe('object-row-table');
-    if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
-        expect(arrowTable.data.numRows, 'returns the requested row range').toBe(3);
+    if ('numRows' in arrowTable && objectRowTable.shape === 'object-row-table') {
+        expect(arrowTable.numRows, 'returns the requested row range').toBe(3);
         expect(arrowTable.schema?.fields.map(field => field.name), 'returns only projected columns').toEqual(['id', 'bool_col']);
-        expect(arrowTable.data.getChild('id')?.toArray(), 'direct Arrow values match object-row decoding').toEqual(new Int32Array(objectRowTable.data.map(row => row.id)));
+        expect(arrowTable.getChild('id')?.toArray(), 'direct Arrow values match object-row decoding').toEqual(new Int32Array(objectRowTable.data.map(row => row.id)));
     }
 });
-test('ParquetJSLoader#arrow-table preserves rows for an empty projection', async () => {
+test('ParquetJSLoader#arrow preserves rows for an empty projection', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/alltypes_plain.parquet';
     const table = await load(url, ParquetJSLoader, {
         core: { worker: false },
         parquet: {
-            shape: 'arrow-table',
+            shape: 'arrow',
             columns: ['missing_column'],
             offset: 2,
             limit: 3
         }
     });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        expect(table.data.numRows, 'preserves the selected row count').toBe(3);
-        expect(table.data.numCols, 'returns no projected columns').toBe(0);
-        expect(table.data.toArray().map(record => Object.fromEntries(Object.entries(record))), 'retains empty records for selected rows').toEqual([{}, {}, {}]);
+    expect(table).toHaveProperty('numRows');
+    if ('numRows' in table) {
+        expect(table.numRows, 'preserves the selected row count').toBe(3);
+        expect(table.numCols, 'returns no projected columns').toBe(0);
+        expect(table.toArray().map(record => Object.fromEntries(Object.entries(record))), 'retains empty records for selected rows').toEqual([{}, {}, {}]);
     }
 });
-test('ParquetJSLoader#arrow-table materializes native timestamp logical values', async () => {
+test('ParquetJSLoader#arrow materializes native timestamp logical values', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/fruits.parquet';
     const table = await load(url, ParquetJSLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table', columns: ['date'], limit: 1 }
+        parquet: { shape: 'arrow', columns: ['date'], limit: 1 }
     });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        expect(table.data.numRows).toBe(1);
-        expect(table.data.getChild('date')?.type instanceof arrow.TimestampMicrosecond, 'uses an Arrow TimestampMicrosecond vector').toBeTruthy();
-        expect(table.data.getChild('date')?.get(0), 'returns the timestamp in milliseconds').toBe(1625040045218);
+    expect(table).toHaveProperty('numRows');
+    if ('numRows' in table) {
+        expect(table.numRows).toBe(1);
+        expect(table.getChild('date')?.type instanceof arrow.TimestampMicrosecond, 'uses an Arrow TimestampMicrosecond vector').toBeTruthy();
+        expect(table.getChild('date')?.get(0), 'returns the timestamp in milliseconds').toBe(1625040045218);
     }
 });
-test('ParquetJSLoader#arrow-table preserves ranged optional DELTA_BYTE_ARRAY Utf8 values', async () => {
+test('ParquetJSLoader#arrow preserves ranged optional DELTA_BYTE_ARRAY Utf8 values', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/delta_byte_array.parquet';
     const columns = ['c_customer_id', 'c_email_address'];
-    const parquetOptions = { shape: 'arrow-table' as const, columns, offset: 3, limit: 5, batchSize: 2 };
+    const parquetOptions = { shape: 'arrow' as const, columns, offset: 3, limit: 5, batchSize: 2 };
     const arrowTable = await load(url, ParquetJSLoader, {
         core: { worker: false },
         parquet: parquetOptions
@@ -207,12 +206,12 @@ test('ParquetJSLoader#arrow-table preserves ranged optional DELTA_BYTE_ARRAY Utf
         core: { worker: false },
         parquet: { ...parquetOptions, shape: 'object-row-table' }
     });
-    expect(arrowTable.shape).toBe('arrow-table');
+    expect(arrowTable).toHaveProperty('numRows');
     expect(objectRowTable.shape).toBe('object-row-table');
-    if (arrowTable.shape === 'arrow-table' && objectRowTable.shape === 'object-row-table') {
-        expect(arrowTable.data.batches.map(batch => batch.numRows), 'retains requested Arrow batches').toEqual([2, 2, 1]);
+    if ('numRows' in arrowTable && objectRowTable.shape === 'object-row-table') {
+        expect(arrowTable.batches.map(batch => batch.numRows), 'retains requested Arrow batches').toEqual([2, 2, 1]);
         for (const columnName of columns) {
-            const vector = arrowTable.data.getChild(columnName);
+            const vector = arrowTable.getChild(columnName);
             expect(vector, `${columnName} Arrow vector is present`).toBeTruthy();
             expect(vector?.toArray(), `${columnName} values and nulls match object-row decoding`).toEqual(objectRowTable.data.map(row => row[columnName] ?? null));
         }
@@ -240,15 +239,15 @@ test('ParquetJSLoader#load binary file as an Arrow table', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/binary.parquet';
     const table = await load(url, ParquetJSLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table', offset: 2, limit: 4, batchSize: 2 }
+        parquet: { shape: 'arrow', offset: 2, limit: 4, batchSize: 2 }
     });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        expect(table.data.numRows).toBe(4);
-        expect(table.data.getChild('foo')?.toArray()).toEqual(BINARY_EXPECTED()
+    expect(table).toHaveProperty('numRows');
+    if ('numRows' in table) {
+        expect(table.numRows).toBe(4);
+        expect(table.getChild('foo')?.toArray()).toEqual(BINARY_EXPECTED()
             .slice(2, 6)
             .map(row => row.foo));
-        expect(table.data.batches.map(batch => batch.numRows), 'retains requested Arrow batches').toEqual([2, 2]);
+        expect(table.batches.map(batch => batch.numRows), 'retains requested Arrow batches').toEqual([2, 2]);
     }
 });
 test('ParquetJSLoader#load binary file', async () => {
@@ -301,11 +300,11 @@ test('ParquetJSLoader#load nested_lists file as an Arrow table', async () => {
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/nested_lists.snappy.parquet';
     const table = await load(url, ParquetJSLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
+        parquet: { shape: 'arrow' }
     });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        const firstRow = JSON.parse(JSON.stringify(table.data.get(0)?.toJSON())) as {
+    expect(table).toHaveProperty('numRows');
+    if ('numRows' in table) {
+        const firstRow = JSON.parse(JSON.stringify(table.get(0)?.toJSON())) as {
             a: {
                 list: Array<{
                     element: {
@@ -314,8 +313,8 @@ test('ParquetJSLoader#load nested_lists file as an Arrow table', async () => {
                 }>;
             };
         };
-        expect(table.data.numRows).toBe(3);
-        expect(JSON.stringify(table.schema).includes('"type":"list"'), 'schema contains Arrow lists').toBeTruthy();
+        expect(table.numRows).toBe(3);
+        expect(table.schema.fields.some(field => arrow.DataType.isList(field.type)), 'schema contains Arrow lists').toBeTruthy();
         expect(firstRow.a.list.length, 'outer repeated group is preserved').toBe(2);
         expect(firstRow.a.list[0].element.list.length, 'nested repeated group is preserved').toBe(2);
     }
@@ -385,11 +384,11 @@ test('ParquetJSLoader#load repeated_no_annotation file as an Arrow table', async
     const url = '@loaders.gl/tables/parquet/test/data/apache/good/repeated_no_annotation.parquet';
     const table = await load(url, ParquetJSLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
+        parquet: { shape: 'arrow' }
     });
-    expect(table.shape).toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
-        const lastRow = JSON.parse(JSON.stringify(table.data.get(5)?.toJSON(), (_key, value) => typeof value === 'bigint' ? value.toString() : value)) as {
+    expect(table).toHaveProperty('numRows');
+    if ('numRows' in table) {
+        const lastRow = JSON.parse(JSON.stringify(table.get(5)?.toJSON(), (_key, value) => typeof value === 'bigint' ? value.toString() : value)) as {
             phoneNumbers: {
                 phone: Array<{
                     number: string;
@@ -397,8 +396,8 @@ test('ParquetJSLoader#load repeated_no_annotation file as an Arrow table', async
                 }>;
             };
         };
-        expect(table.data.numRows).toBe(6);
-        expect(JSON.stringify(table.schema).includes('"type":"list"'), 'schema contains Arrow lists').toBeTruthy();
+        expect(table.numRows).toBe(6);
+        expect(table.schema.fields.some(field => arrow.DataType.isList(field.type)), 'schema contains Arrow lists').toBeTruthy();
         expect(lastRow.phoneNumbers.phone.length, 'all repeated structs are retained').toBe(3);
         expect(lastRow.phoneNumbers.phone[2].kind, 'repeated struct values are retained').toBe('mobile');
     }

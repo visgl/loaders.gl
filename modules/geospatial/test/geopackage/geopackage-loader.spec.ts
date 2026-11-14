@@ -44,8 +44,7 @@ test('GeoPackageLoader#load file as one selected table', async () => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader);
   const response = await fetchFile(GPKG_RIVERS_GEOJSON);
   const json = await response.json();
-  expect(result.shape).toBe('arrow-table');
-  expect(result.data.numRows, 'Correct number of rows received').toBe(1);
+  expect(result.numRows, 'Correct number of rows received').toBe(1);
   expect(result.schema).toBeTruthy();
   expect(result.schema?.fields.length).toBe(5);
 });
@@ -60,7 +59,7 @@ test('GeoPackageLoader#load supports core.shape', async () => {
 });
 test('GeoPackageLoader#loader shape overrides core.shape', async () => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
-    core: {shape: 'arrow-table'},
+    core: {shape: 'arrow'},
     geopackage: {shape: 'geojson-table'}
   });
   expect(result.shape).toBe('geojson-table');

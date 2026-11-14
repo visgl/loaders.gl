@@ -2,15 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table, RecordBatch} from 'apache-arrow';
+import {unwrapParquetBatches} from './lib/native-parquet-batches';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {BlobFile, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoJSONTable,
-  GeoJSONTableBatch
-} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/core/schema';
 
 import {
   parseGeoParquetFile,
@@ -54,8 +51,8 @@ export const GeoParquetLoaderWithParser = {
     yield* parseGeoParquetTableInBatches(new BlobFile(arrayBuffer), getParquetOptions(options));
   }
 } as const satisfies LoaderWithParser<
-  GeoJSONTable | ArrowTable,
-  GeoJSONTableBatch | ArrowTableBatch,
+  GeoJSONTable | Table,
+  GeoJSONTableBatch | RecordBatch,
   GeoParquetLoaderOptions
 >;
 
@@ -68,9 +65,9 @@ export const GeoParquetLoaderWithParser = {
 async function parseGeoParquetTable(
   file: BlobFile | ReadableFile,
   options: GeoParquetLoaderOptions
-): Promise<GeoJSONTable | ArrowTable> {
-  if (options.parquet?.shape === 'arrow-table') {
-    return await parseParquetArrowTable(file, options);
+): Promise<GeoJSONTable | Table> {
+  if (options.parquet?.shape === 'arrow') {
+    return (await parseParquetArrowTable(file, options)).data;
   }
 
   return await parseGeoParquetFile(file, options);
@@ -85,9 +82,9 @@ async function parseGeoParquetTable(
 async function* parseGeoParquetTableInBatches(
   file: BlobFile | ReadableFile,
   options: GeoParquetLoaderOptions
-): AsyncIterable<GeoJSONTableBatch | ArrowTableBatch> {
-  if (options.parquet?.shape === 'arrow-table') {
-    yield* parseParquetArrowTableInBatches(file, options);
+): AsyncIterable<GeoJSONTableBatch | RecordBatch> {
+  if (options.parquet?.shape === 'arrow') {
+    yield* unwrapParquetBatches(parseParquetArrowTableInBatches(file, options));
     return;
   }
 

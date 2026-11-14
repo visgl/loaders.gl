@@ -50,7 +50,7 @@ import {
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
 export type ParseFlatGeobufOptions = CRSReprojectionOptions & {
-  shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+  shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
   boundingBox?: [[number, number], [number, number]];
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: import('@loaders.gl/core/schema').GeoArrowEncodingPreference};
@@ -73,8 +73,8 @@ export function parseFlatGeobuf(
 ): Table | any {
   const arrowTable = parseFlatGeobufToArrowTable(arrayBuffer, options);
   switch (options.shape) {
-    case 'arrow-table':
-      return arrowTable;
+    case 'arrow':
+      return arrowTable.data;
     case 'geojson-table':
       return makeGeoJsonTable(arrayBuffer, options);
     case 'binary-geometry':

@@ -43,13 +43,13 @@ test('ParquetLoader preserves an empty row-group selection and cancellation', as
 
 test.each(['nonnullable', 'nullable'])('ParquetLoader decodes legacy %s nested lists to Arrow', async name => {
   const table = await load(`@loaders.gl/tables/parquet/test/data/apache/good/${name}.impala.parquet`, ParquetLoader, {
-    core: {worker: false}, parquet: {shape: 'arrow-table'}
+    core: {worker: false}, parquet: {shape: 'arrow'}
   });
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape === 'arrow-table') {
-    expect(table.data.numRows).toBeGreaterThan(0);
-    expect(table.data.toArray().length).toBe(table.data.numRows);
-    const nested = JSON.parse(JSON.stringify(table.data.getChild(name === 'nonnullable' ? 'nested_Struct' : 'nested_struct')?.get(0)));
+  expect(table).toHaveProperty('numRows');
+  if ('numRows' in table) {
+    expect(table.numRows).toBeGreaterThan(0);
+    expect(table.toArray().length).toBe(table.numRows);
+    const nested = JSON.parse(JSON.stringify(table.getChild(name === 'nonnullable' ? 'nested_Struct' : 'nested_struct')?.get(0)));
     expect(nested[name === 'nonnullable' ? 'B' : 'b']).toEqual(name === 'nonnullable' ? [-1] : [1]);
     if (name === 'nonnullable') {
       expect(nested.G.map).toEqual([]);

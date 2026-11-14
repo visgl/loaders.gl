@@ -7,7 +7,8 @@ import {GML_V3_TESTS} from '@loaders.gl/ogc/wms/test/data/gml/v3/tests';
 // import {validateLoader} from 'test/common/conformance';
 import {GMLLoader} from '@loaders.gl/ogc/wms';
 import {GMLLoader as GMLParserLoader} from '@loaders.gl/ogc/wms/bundled';
-import type {ArrowTable, ArrowTableBatch, GeoJSON} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {GeoJSON} from '@loaders.gl/core/schema';
 import {parse} from '@loaders.gl/core';
 const VALID_TEST = {
   'v3/envelope.xml': true,
@@ -138,24 +139,20 @@ test('GMLLoader preserves interior rings with alternate GML prefixes', () => {
 test('GMLLoader defaults to a one-row Arrow table for a bare geometry', async () => {
   const xml =
     '<gml:Point xmlns:gml="http://www.opengis.net/gml"><gml:pos>1 2</gml:pos></gml:Point>';
-  const table = (await parse(xml, GMLLoader)) as ArrowTable;
+  const table = (await parse(xml, GMLLoader)) as Table;
   expect(GMLLoader).not.toHaveProperty('parse');
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data.numRows).toBe(1);
-  expect(table.data.getChild('geometry')!.get(0)).toBeInstanceOf(Uint8Array);
-  const geometryField = table.data.schema.fields.find(field => field.name === 'geometry')!;
+  expect(table.numRows).toBe(1);
+  expect(table.getChild('geometry')!.get(0)).toBeInstanceOf(Uint8Array);
+  const geometryField = table.schema.fields.find(field => field.name === 'geometry')!;
   expect(geometryField.metadata.get('ARROW:extension:name')).toBe('geoarrow.wkb');
   expect(JSON.parse(geometryField.metadata.get('ARROW:extension:metadata')!)).toEqual({crs: null});
-  expect(JSON.parse(table.data.schema.metadata.get('geo')!).columns.geometry.crs).toBeNull();
-  expect(
-    JSON.parse(table.data.schema.metadata.get('geo')!).columns.geometry.geometry_types
-  ).toEqual(['Point']);
-  expect(table.schema!.metadata!.geo).toBe(table.data.schema.metadata.get('geo'));
-  const binary = (await GMLParserLoader.parse(new TextEncoder().encode(xml).buffer)) as ArrowTable;
-  expect(binary.data.numRows).toBe(1);
-  expect(
-    (GMLParserLoader.parseTextSync('<gml:FeatureCollection/>') as ArrowTable).data.numRows
-  ).toBe(0);
+  expect(JSON.parse(table.schema.metadata.get('geo')!).columns.geometry.crs).toBeNull();
+  expect(JSON.parse(table.schema.metadata.get('geo')!).columns.geometry.geometry_types).toEqual([
+    'Point'
+  ]);
+  const binary = (await GMLParserLoader.parse(new TextEncoder().encode(xml).buffer)) as Table;
+  expect(binary.numRows).toBe(1);
+  expect((GMLParserLoader.parseTextSync('<gml:FeatureCollection/>') as Table).numRows).toBe(0);
 });
 
 test('GML Arrow tables preserve feature IDs, scalar properties, and null geometries', () => {
@@ -163,12 +160,12 @@ test('GML Arrow tables preserve feature IDs, scalar properties, and null geometr
     '<gml:FeatureCollection><gml:featureMember><app:place gml:id="one"><app:name>One</app:name><app:height>12</app:height><app:open>true</app:open></app:place></gml:featureMember></gml:FeatureCollection>';
   const table = GMLParserLoader.parseTextSync(xml, {
     gml: {propertyTypes: {height: 'number', open: 'boolean'}}
-  }) as ArrowTable;
-  expect(table.data.getChild('id')!.get(0)).toBe('one');
-  expect(table.data.getChild('name')!.get(0)).toBe('One');
-  expect(table.data.getChild('height')!.get(0)).toBe(12);
-  expect(table.data.getChild('open')!.get(0)).toBe(true);
-  expect(table.data.getChild('geometry')!.get(0)).toBeNull();
+  }) as Table;
+  expect(table.getChild('id')!.get(0)).toBe('one');
+  expect(table.getChild('name')!.get(0)).toBe('One');
+  expect(table.getChild('height')!.get(0)).toBe(12);
+  expect(table.getChild('open')!.get(0)).toBe(true);
+  expect(table.getChild('geometry')!.get(0)).toBeNull();
 });
 
 test('GML streams Arrow batches at feature boundaries', async () => {
@@ -180,11 +177,10 @@ test('GML streams Arrow batches at feature boundaries', async () => {
   const chunks = Array.from(bytes, byte => Uint8Array.of(byte));
   const batches = [];
   for await (const batch of GMLParserLoader.parseInBatches(chunks, {gml: {batchSize: 1}}))
-    batches.push(batch as ArrowTableBatch);
-  expect(batches.map(batch => batch.length)).toEqual([1, 1]);
-  expect(batches[0].batchType).toBe('data');
-  expect(batches[1].data.getChild('name')!.get(0)).toBe('Zürich');
-  expect(batches[1].data.getChild('id')!.get(0)).toBe('one');
+    batches.push(batch as RecordBatch);
+  expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
+  expect(batches[1].getChild('name')!.get(0)).toBe('Zürich');
+  expect(batches[1].getChild('id')!.get(0)).toBe('one');
 });
 
 test.each([

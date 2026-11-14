@@ -81,4 +81,4 @@ GeoPackage stores geospatial data in a SQLite database with OGC-defined metadata
 
 ## Arrow
 
-Set `geopackage.shape: 'arrow-table'` and specify `geopackage.table` to load one vector table as an Arrow table with a WKB `geometry` column.
+Set `geopackage.shape: 'arrow'` and specify `geopackage.table` to load one vector table as an Arrow table with a WKB `geometry` column.

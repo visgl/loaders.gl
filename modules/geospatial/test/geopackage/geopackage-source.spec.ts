@@ -87,9 +87,9 @@ test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async ()
   }) as GeoPackageDataSource;
   const sourceTable = await dataSource.getTable('FEATURESriversds');
   const loaderTable = await load(fixtureArrayBuffer, BundledGeoPackageLoader, {
-    geopackage: {shape: 'arrow-table', table: 'FEATURESriversds'}
+    geopackage: {shape: 'arrow', table: 'FEATURESriversds'}
   });
-  expect(getRows(sourceTable), 'source matches loader output').toEqual(getRows(loaderTable.data));
+  expect(getRows(sourceTable), 'source matches loader output').toEqual(getRows(loaderTable));
 });
 test('GeoPackageSource#getTable uses the default selection heuristic', async () => {
   const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageSource], {

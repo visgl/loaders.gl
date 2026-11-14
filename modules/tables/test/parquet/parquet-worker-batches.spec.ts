@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
-import {Table} from 'apache-arrow';
+import {Table, RecordBatch} from 'apache-arrow';
 import {encode, load, loadInBatches, parse, parseFile, parseInBatches} from '@loaders.gl/core';
-import type {ArrowTableBatch, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
+import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ParquetLoader, ParquetJSWriter} from '@loaders.gl/tables/parquet';
@@ -57,14 +57,14 @@ function createObservedLoader() {
 }
 
 /** Collects output without hiding the concrete Arrow instances returned by worker transport. */
-async function collectBatches(batches: AsyncIterable<ArrowTableBatch | ObjectRowTableBatch>) {
-  const results: Array<ArrowTableBatch | ObjectRowTableBatch> = [];
+async function collectBatches(batches: AsyncIterable<RecordBatch | ObjectRowTableBatch>) {
+  const results: Array<RecordBatch | ObjectRowTableBatch> = [];
   for await (const batch of batches) results.push(batch);
   return results;
 }
 
 test.each([
-  {shape: 'arrow-table', worker: true},
+  {shape: 'arrow', worker: true},
   {shape: 'object-row-table', worker: true},
   {shape: 'object-row-table', worker: false}
 ] as const)('Parquet $shape batches preserve selection, schema, data, and progress (worker: $worker)', async ({shape, worker}) => {
@@ -87,24 +87,26 @@ test.each([
     expect(mainParser).not.toHaveBeenCalled();
     expect(deserializeWorkerBatch).toHaveBeenCalledTimes(3);
     for (const [wireBatch] of deserializeWorkerBatch.mock.calls) {
-      expect(wireBatch).toMatchObject({shape: 'arrow-table', data: {transport: 'arrow-js'}});
-      expect(wireBatch).not.toHaveProperty('resultShape');
+      expect(wireBatch).toMatchObject({
+        payload: {transport: 'arrow-record-batch', columns: {data: {transport: 'arrow-js'}}}
+      });
     }
   } else {
     expect(deserializeWorkerBatch).not.toHaveBeenCalled();
-    expect(mainParser.mock.calls[0][1]?.parquet?.shape).toBe('arrow-table');
+    expect(mainParser.mock.calls[0][1]?.parquet?.shape).toBe('arrow');
   }
-  expect(batches.map(batch => batch.length)).toEqual([1, 1, 1]);
+  expect(batches.map(batch => batch instanceof RecordBatch ? batch.numRows : batch.length)).toEqual([1, 1, 1]);
   const actualRows = [];
   for (const batch of batches) {
-    expect(batch.batchType).toBe('data');
-    expect(batch.shape).toBe(shape);
     expect(batch.schema.fields.map(field => field.name)).toEqual(['id', 'label', 'bytes', 'tags']);
-    expect(batch.schema.metadata?.origin).toBe('worker-batches');
-    if (batch.shape === 'arrow-table') {
-      expect(batch.data).toBeInstanceOf(Table);
-      actualRows.push(...Array.from(batch.data, row => row.toJSON()));
+    if (batch instanceof RecordBatch) {
+      expect(shape).toBe('arrow');
+      expect(batch.schema.metadata.get('origin')).toBe('worker-batches');
+      actualRows.push(...Array.from(batch, row => row.toJSON()));
     } else {
+      expect(batch.batchType).toBe('data');
+      expect(batch.shape).toBe(shape);
+      expect(batch.schema.metadata?.origin).toBe('worker-batches');
       actualRows.push(...batch.data);
     }
   }
@@ -132,10 +134,10 @@ test('cancelling paused Parquet worker batches rejects and restores pool capacit
   const replacement = await collectBatches(
     await parseInBatches(input.slice(0), loader, {
       core: {worker: true, maxConcurrency: 1},
-      parquet: {shape: 'arrow-table', batchSize: 2}
+      parquet: {shape: 'arrow', batchSize: 2}
     })
   );
-  expect(replacement.reduce((total, batch) => total + batch.length, 0)).toBe(rows.length);
+  expect(replacement.reduce((total, batch) => total + (batch instanceof RecordBatch ? batch.numRows : batch.length), 0)).toBe(rows.length);
   expect(mainParser).not.toHaveBeenCalled();
 });
 
@@ -153,7 +155,7 @@ test('loadInBatches preserves core metadata and releases the worker on early ret
   const replacement = await collectBatches(
     await parseInBatches(input.slice(0), ParquetLoader, {...options, core: {...options.core, metadata: false}})
   );
-  expect(replacement.reduce((total, batch) => total + batch.length, 0)).toBe(rows.length);
+  expect(replacement.reduce((total, batch) => total + (batch instanceof RecordBatch ? batch.numRows : batch.length), 0)).toBe(rows.length);
 });
 
 test('encrypted Parquet batches retain their key callback on the caller', async () => {
@@ -167,12 +169,12 @@ test('encrypted Parquet batches retain their key callback on the caller', async 
   const batches = await collectBatches(
     await parseInBatches(encryptedInput, loader, {
       core: {worker: true},
-      parquet: {shape: 'arrow-table', keyRetriever, batchSize: 2}
+      parquet: {shape: 'arrow', keyRetriever, batchSize: 2}
     })
   );
   expect(mainParser).toHaveBeenCalledOnce();
   expect(keyRetriever).toHaveBeenCalled();
-  expect(batches.reduce((total, batch) => total + batch.length, 0)).toBe(rows.length);
+  expect(batches.reduce((total, batch) => total + (batch instanceof RecordBatch ? batch.numRows : batch.length), 0)).toBe(rows.length);
 });
 
 test.each(
@@ -204,20 +206,20 @@ test.each(
 
   if (api === 'parseFile') {
     expect(parseReadableFile).toHaveBeenCalledOnce();
-    expect(await parseReadableFile.mock.results[0].value).toMatchObject({shape: 'arrow-table'});
+    expect(await parseReadableFile.mock.results[0].value).toBeInstanceOf(Table);
     expect(deserialize).not.toHaveBeenCalled();
   } else if (worker) {
     expect(parseBuffer).not.toHaveBeenCalled();
     expect(deserialize).toHaveBeenCalledOnce();
     expect(deserialize.mock.calls[0][0]).toMatchObject({
-      shape: 'arrow-table',
-      data: {transport: 'arrow-js'}
+      transport: 'arrow-table-columns',
+      columns: {data: {transport: 'arrow-js'}}
     });
-    expect(deserialize.mock.results[0].value).toMatchObject({shape: 'arrow-table'});
+    expect(deserialize.mock.results[0].value).toBeInstanceOf(Table);
   } else {
     expect(deserialize).not.toHaveBeenCalled();
     expect(parseBuffer).toHaveBeenCalledOnce();
-    expect(await parseBuffer.mock.results[0].value).toMatchObject({shape: 'arrow-table'});
+    expect(await parseBuffer.mock.results[0].value).toBeInstanceOf(Table);
   }
   expect(result).toMatchObject({
     shape: 'object-row-table',

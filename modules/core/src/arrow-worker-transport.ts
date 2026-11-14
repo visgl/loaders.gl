@@ -66,7 +66,7 @@ export function deserializeNativeArrowWorkerResult(
   result: unknown
 ): arrow.Table | arrow.RecordBatch {
   const payload = result as {transport: string; columns: unknown};
-  const {data}: {data: arrow.Table} = deserializeArrowWorkerTable(payload.columns);
+  const {data}: {data: arrow.Table} = deserializeArrowWorkerTable(payload?.columns);
   return payload.transport === 'arrow-record-batch' ? data.batches[0] : data;
 }
 
