@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import type {Feature} from '@loaders.gl/core/schema';
 
-import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt';
+import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt-loader';
 import {MLTLoaderWithParser as MLTLoader} from '../../src/mlt/mlt-loader-with-parser';
 import {getURLFromTemplate} from '../../src/mlt/mlt-source-loader';
 

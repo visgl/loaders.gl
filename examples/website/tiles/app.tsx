@@ -9,9 +9,9 @@ import {load} from '@loaders.gl/core';
 import type {RangeRequestEvent, RangeStats} from '@loaders.gl/core/loader-utils';
 import {createRangeStats, getRangeStats} from '@loaders.gl/core/loader-utils';
 import {PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
-import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt';
+import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt-loader';
 import {ArrowTableTileLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
-import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 
 import DeckGL from '@deck.gl/react';

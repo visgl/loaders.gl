@@ -12,5 +12,3 @@ export type {MLTSourceLoaderOptions} from './mlt-source-loader';
 
 export {MLTWriter} from './mlt-writer';
 export type {MLTWriterOptions} from './mlt-writer';
-
-export {MLTLoaderWithParser} from './mlt-loader-with-parser';

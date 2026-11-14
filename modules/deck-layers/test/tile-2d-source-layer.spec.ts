@@ -7,7 +7,7 @@ import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-cod
 import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
-import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import type {ArrowTable} from '@loaders.gl/core/schema';
 import {resolveVisualSource} from '../src/source-layer-utils';

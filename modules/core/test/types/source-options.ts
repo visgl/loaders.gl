@@ -4,7 +4,7 @@
 
 import {createDataSource, createDataSourceSync} from '@loaders.gl/core';
 import {MVTTileSource} from '@loaders.gl/tiles/mvt';
-import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
 import {PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
 import {WMSLoader} from '@loaders.gl/ogc/wms';
 import type {DataSourceOptions, SourcePropsType} from '@loaders.gl/core/loader-utils';

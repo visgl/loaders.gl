@@ -61,5 +61,3 @@ export type {
   ArrowTableTileSourceLoaderOptions,
   ArrowTableTileSourceInput
 } from './arrow-table-tile-source-types';
-
-export {MVTLoaderWithParser} from './mvt-loader-with-parser';

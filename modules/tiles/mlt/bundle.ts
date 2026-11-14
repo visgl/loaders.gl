@@ -86,8 +86,7 @@ export type {
 } from '@loaders.gl/core';
 export {
   MLTFormat,
-  MLTLoader,
-  MLTLoaderWithParser
+  MLTLoader
 } from '@loaders.gl/tiles/mlt';
 export type {
   MLTLoaderOptions,

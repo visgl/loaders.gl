@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import type {TiffSourceDecoder, TiffSourceImage} from './lib/tiff/tiff-source-decoder';
-import {openGeoTIFFSourceDecoder} from './lib/tiff/geotiff-source-adapter';
 
 import type {
   DataSourceOptions,
@@ -769,6 +768,7 @@ export class GeoTIFFRasterSource
       });
       // The library's BlockedSource retries interrupted shared blocks without a signal.
       // Adapt its buffer-source protocol directly; loaders.gl owns bounded caching and cancellation.
+      const {openGeoTIFFSourceDecoder} = await import('./lib/tiff/geotiff-source-adapter');
       return await openGeoTIFFSourceDecoder(
         {
           /** Reads independently owned buffers in source request order. */
@@ -785,6 +785,7 @@ export class GeoTIFFRasterSource
       );
     }
 
+    const {openGeoTIFFSourceDecoder} = await import('./lib/tiff/geotiff-source-adapter');
     return await openGeoTIFFSourceDecoder(this.data, signal);
   }
 

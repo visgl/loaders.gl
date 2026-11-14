@@ -13,7 +13,7 @@ import {
   resolvePath
 } from '@loaders.gl/core';
 import {MVTTileSource, TableTileLoader, TableVectorTileSource} from '@loaders.gl/tiles/mvt';
-import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
 import {PMTilesLoader, PMTilesTileSource} from '@loaders.gl/tiles/pmtiles';
 import {WMSLoader, WMSImageSource} from '@loaders.gl/ogc/wms';
 import {OMEZarrLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';

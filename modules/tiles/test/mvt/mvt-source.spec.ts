@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 import {TILESETS} from './data/tilesets';
 import {MVTTileSource} from '@loaders.gl/tiles/mvt';
-import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
 import {isURLTemplate, getURLFromTemplate} from '../../src/mvt/mvt-source-loader';
 test('MVTLoaderWithParser#urls', async () => {
   if (!isBrowser) {
