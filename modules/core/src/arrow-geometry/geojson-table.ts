@@ -14,18 +14,19 @@ import {convertWKBToGeometry} from './geometry-codecs';
 import {convertWKTToGeometry} from './geometry-codecs';
 import {makeGeoArrowColumnFromArrowVector} from '@math.gl/arrow/geoarrow';
 import {materializeGeoArrowRows} from '@math.gl/arrow/geoarrow-utils';
+import {convertArrowToSchema} from '../schema-utils/lib/schema/convert-arrow-schema';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 
 /**
  * Converts an Arrow table with GeoArrow geometry metadata to a GeoJSON table.
  * Integer properties are serialized as decimal strings to preserve their precision.
  * @param arrowTable Apache Arrow table containing geometry and property columns.
- * @param schema loaders.gl schema associated with the Arrow table.
+ * @param schema Optional schema override. Defaults to the metadata on the Arrow table.
  * @returns A GeoJSON feature collection table.
  */
 export function convertGeoArrowTableToGeoJSON(
   arrowTable: arrow.Table,
-  schema: Schema
+  schema: Schema = convertArrowToSchema(arrowTable.schema)
 ): GeoJSONTable {
   const geoMetadata = getGeoMetadata(schema.metadata);
   const geometryFields = getGeoArrowGeometryFields(arrowTable.schema, schema);

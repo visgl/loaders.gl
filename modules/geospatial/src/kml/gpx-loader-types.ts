@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowTable} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {
   GeoJSONTable,
   ObjectRowTable,
   BinaryFeatureCollection,
-  ArrowTable,
   GeoArrowEncodingPreference
 } from '@loaders.gl/core/schema';
 import {GPXFormat} from './kml-format';
@@ -20,7 +20,7 @@ export type GPXLoaderOptions = LoaderOptions & {
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   gpx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow' | 'binary-geometry' | 'raw';
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
@@ -33,13 +33,15 @@ async function preloadGPXLoader() {
 
 /** Metadata-only loader for GPX (GPS exchange format). */
 export const GPXLoader = {
+  supportsNativeArrow: true,
+  defaultShape: 'arrow',
   dataType: null as unknown as ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   batchType: null as never,
 
   ...GPXFormat,
   version: VERSION,
   options: {
-    gpx: {shape: 'arrow-table'},
+    gpx: {shape: 'arrow'},
     gis: {}
   },
   preload: preloadGPXLoader

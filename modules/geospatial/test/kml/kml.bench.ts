@@ -25,15 +25,11 @@ async function addLoaderBenchmarks(suite, loader, url, optionName, benchmarkPref
   const response = await fetchFile(url);
   const text = await response.text();
 
-  suite.addAsync(
-    `${benchmarkPrefix} load arrow-table geoarrow.wkb`,
-    ROW_BENCHMARK_OPTIONS,
-    async () => {
-      await parse(text, loader, {
-        [optionName]: {shape: 'arrow-table'}
-      });
-    }
-  );
+  suite.addAsync(`${benchmarkPrefix} load arrow geoarrow.wkb`, ROW_BENCHMARK_OPTIONS, async () => {
+    await parse(text, loader, {
+      [optionName]: {shape: 'arrow'}
+    });
+  });
 
   suite.addAsync(`${benchmarkPrefix} load geojson-table`, ROW_BENCHMARK_OPTIONS, async () => {
     await parse(text, loader, {

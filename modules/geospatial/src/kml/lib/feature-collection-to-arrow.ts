@@ -2,14 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  ArrowTable,
-  Feature,
-  Field,
-  Geometry,
-  GeoJsonProperties,
-  Schema
-} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Feature, Field, Geometry, GeoJsonProperties, Schema} from '@loaders.gl/core/schema';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {
@@ -34,9 +28,9 @@ const GEOMETRY_COLUMN_NAME = 'geometry';
 export function convertFeatureCollectionToArrowTable(
   features: Feature[],
   options: {encodingPreference?: GeoArrowEncodingPreference} = {}
-): ArrowTable {
+): Table {
   if (options.encodingPreference && options.encodingPreference !== 'geoarrow.wkb') {
-    return convertFeaturesToGeoArrowTable(features, options);
+    return convertFeaturesToGeoArrowTable(features, options).data;
   }
   const propertyRows = features.map(feature => normalizeProperties(feature.properties));
   const propertySchema = getPropertySchema(propertyRows);
@@ -49,7 +43,7 @@ export function convertFeatureCollectionToArrowTable(
     );
   }
 
-  return arrowTableBuilder.finishTable();
+  return arrowTableBuilder.finishTable().data;
 }
 
 /**

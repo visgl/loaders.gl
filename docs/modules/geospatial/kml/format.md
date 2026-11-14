@@ -62,21 +62,21 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Loader</span>
     <strong>KMLLoader</strong>
     <span>Loads Keyhole Markup Language documents as loaders.gl geometry tables.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ObjectRowTable, ArrowTable</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, ObjectRowTable, Apache Arrow Table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseTextSync</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/geospatial/kml/api-reference/gpx-loader">
     <span className="docs-api-card__kind">Loader</span>
     <strong>GPXLoader</strong>
     <span>Loads GPS Exchange Format tracks, routes, and waypoints as loaders.gl geometry tables.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ObjectRowTable, ArrowTable, BinaryFeatureCollection</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, ObjectRowTable, Apache Arrow Table, BinaryFeatureCollection</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseTextSync</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/geospatial/kml/api-reference/tcx-loader">
     <span className="docs-api-card__kind">Loader</span>
     <strong>TCXLoader</strong>
     <span>Loads Training Center XML activity files as loaders.gl geometry tables.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ObjectRowTable, ArrowTable, BinaryFeatureCollection</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, ObjectRowTable, Apache Arrow Table, BinaryFeatureCollection</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseTextSync</span>
   </a>
 </div>
@@ -87,4 +87,4 @@ KML, GPX, and TCX are XML-based geospatial interchange formats. They are text fi
 
 ## Geospatial Output
 
-The KML module converts these documents into loaders.gl geometry table shapes for application code. The default output is an `ArrowTable`; GeoJSON and object-row tables remain available through the format-specific `shape` option.
+The KML module converts these documents into loaders.gl geometry table shapes for application code. The default output is an Apache Arrow `Table`; GeoJSON and object-row tables remain available through the format-specific `shape` option.

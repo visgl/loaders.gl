@@ -32,7 +32,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Default', value: 'GeoJSONTable for application code'},
     {label: 'Rows', value: 'Object-row table for inspection'},
-    {label: 'Columns', value: 'ArrowTable with WKB geometry'},
+    {label: 'Columns', value: 'Arrow Table with WKB geometry'},
     {label: 'Document', value: 'Styles, folders, links, and views in KML'}
   ]}
 />
@@ -59,19 +59,19 @@ const data = await load(url, KMLLoader, options);
 
 ## Shapes
 
-`KMLLoader` returns loaders.gl `ArrowTable` objects by default. Set `kml.shape` to select another table representation.
+`KMLLoader` returns Apache Arrow `Table` objects by default. Set `kml.shape` to select another table representation.
 
 | Shape                | Output                                       |
 | -------------------- | -------------------------------------------- |
 | `geojson-table`      | loaders.gl GeoJSON table                     |
 | `object-row-table`   | loaders.gl row table with GeoJSON features   |
-| `arrow-table`        | loaders.gl `ArrowTable` with WKB geometry    |
+| `arrow`        | Apache Arrow `Table` with WKB geometry    |
 
 ## Options
 
 | Option      | Type   | Default           | Description                            |
 | ----------- | ------ | ----------------- | -------------------------------------- |
-| `kml.shape` | string | `'arrow-table'` | Selects the returned table shape.      |
+| `kml.shape` | string | `'arrow'` | Selects the returned table shape.      |
 
 ## Limitations
 
