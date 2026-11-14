@@ -88,7 +88,7 @@ const arrowTable = await load(url, ParquetLoader, {
     worker: true
   },
   parquet: {
-    shape: 'arrow-table',
+    shape: 'arrow',
     signal: abortController.signal
   }
 });
@@ -101,7 +101,7 @@ const arrowTable = await load(url, ParquetLoader, {
 | Shape              | Output                                           |
 | ------------------ | ------------------------------------------------ |
 | `object-row-table` | loaders.gl row table with objects                |
-| `arrow-table`      | loaders.gl `ArrowTable` wrapping an Arrow table  |
+| `arrow`      | Apache Arrow `Table`  |
 
 ## Streaming
 
@@ -128,7 +128,7 @@ for await (const batch of batches) {
 
 ### Worker batches
 
-The canonical `ParquetLoader` supports worker batches for both `arrow-table` and
+The canonical `ParquetLoader` supports worker batches for both `arrow` and
 `object-row-table` output. Enable workers with `core.worker: true`, or set
 `core.workerInBatches: false` to keep batch parsing on the caller. Explicit custom worker URLs
 also require `core.workerInBatches: true` to confirm support for the batch protocol.
@@ -137,12 +137,12 @@ also require `core.workerInBatches: true` to confirm support for the batch proto
 const controller = new AbortController();
 const batches = await loadInBatches('data.parquet', ParquetLoader, {
   core: {worker: true},
-  parquet: {shape: 'arrow-table', batchSize: 1024},
+  parquet: {shape: 'arrow', batchSize: 1024},
   signal: controller.signal,
   onProgress: ({phase, completed, unit}) => console.log(phase, completed, unit)
 });
 for await (const batch of batches) {
-  consume(batch.data); // A hydrated Apache Arrow Table on the caller.
+  consume(batch); // A hydrated Apache Arrow RecordBatch on the caller.
 }
 ```
 
@@ -219,7 +219,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.shape` | `'arrow' \| 'arrow-table' \| 'object-row-table'` | `'arrow'` | Selects the returned table shape. |
+| `parquet.shape` | `'arrow' \| 'object-row-table'` | `'arrow'` | Selects the returned table shape. |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
 | `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |
@@ -236,7 +236,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 ## Arrow decoding
 
-For `shape: 'arrow-table'`, `ParquetLoader` materializes flat selected columns directly into Apache
+For `shape: 'arrow'`, `ParquetLoader` materializes flat selected columns directly into Apache
 Arrow batches and preserves compatible GeoParquet metadata on the Arrow schema. Flat `UTF8`,
 `BYTE_ARRAY`, and `FIXED_LEN_BYTE_ARRAY` columns are assembled directly into Arrow offset, validity,
 and value buffers without converting their bytes through JavaScript strings or copying every value

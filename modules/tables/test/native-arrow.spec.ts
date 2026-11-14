@@ -103,28 +103,9 @@ test.each(cases)('$name returns native Tables and all RecordBatches', async ({lo
   }
   expect(values).toEqual(['first', 'second']);
 
-  if (
-    loader === ArrowLoader ||
-    loader === GeoArrowLoader ||
-    loader === ORCLoader ||
-    loader === AvroLoader ||
-    loader === NDJSONLoader ||
-    loader === CSVLoader ||
-    loader === JSONTableLoader
-  ) {
-    await expect(parse(input(), loader, {core: {shape: 'arrow-table'} as any})).rejects.toThrow(
-      'uses shape: "arrow"'
-    );
-    return;
-  }
-  const wrappedOptions = {core: {worker: false, shape: 'arrow-table' as const}};
-  expect(await parse(input(), loader, wrappedOptions)).toMatchObject({shape: 'arrow-table'});
-  let wrappedRows = 0;
-  for await (const batch of await parseInBatches([input()], loader, wrappedOptions)) {
-    expect(batch).toMatchObject({shape: 'arrow-table', batchType: 'data'});
-    wrappedRows += batch.length;
-  }
-  expect(wrappedRows).toBe(2);
+  await expect(parse(input(), loader, {core: {shape: 'arrow-table'} as any})).rejects.toThrow(
+    'uses shape: "arrow"'
+  );
 });
 
 test.each(

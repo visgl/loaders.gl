@@ -36,16 +36,16 @@ test('ParquetLoader#worker keeps the browser responsive and rehydrates Arrow out
     let mainThreadTicked = false;
     const tablePromise = load(arrayBuffer, ParquetLoader, {
         core: { worker: true, reuseWorkers: false },
-        parquet: { shape: 'arrow-table' }
-    }) as Promise<ArrowTable>;
+        parquet: { shape: 'arrow' }
+    }) as Promise<arrow.Table>;
     await new Promise<void>(resolve => setTimeout(() => {
         mainThreadTicked = true;
         resolve();
     }, 0));
     const table = await tablePromise;
     expect(mainThreadTicked, 'the main event loop advances while the worker decodes').toBeTruthy();
-    expect(table.data instanceof arrow.Table, 'rehydrates an Apache Arrow Table on the main thread').toBeTruthy();
-    expect(table.data.getChild('name')?.get(0), 'rehydrated Arrow vectors retain methods').toBe('Fiji');
+    expect(table instanceof arrow.Table, 'rehydrates an Apache Arrow Table on the main thread').toBeTruthy();
+    expect(table.getChild('name')?.get(0), 'rehydrated Arrow vectors retain methods').toBe('Fiji');
 });
 test('ParquetLoader#worker parse is cancellable', async () => {
     if (!isBrowser) {
@@ -57,7 +57,7 @@ test('ParquetLoader#worker parse is cancellable', async () => {
     abortController.abort();
     const tablePromise = load(arrayBuffer, ParquetLoader, {
         core: { worker: true, reuseWorkers: true },
-        parquet: { shape: 'arrow-table', signal: abortController.signal }
+        parquet: { shape: 'arrow', signal: abortController.signal }
     });
     let abortError: unknown;
     try {
@@ -68,12 +68,12 @@ test('ParquetLoader#worker parse is cancellable', async () => {
     }
     expect((abortError as Error | undefined)?.name, 'terminates the active worker parse').toBe('AbortError');
 });
-test('ParquetLoader#load Parquet file as arrow-table', async () => {
+test('ParquetLoader#load Parquet file as arrow', async () => {
     const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
     const table = (await load(url, ParquetLoader, {
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
-    const arrowTable = table.data;
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
+    const arrowTable = table;
     expect(arrowTable.numRows).toBe(5);
     expect(table.schema?.fields.map((f) => f.name)).toEqual([
         'pop_est',
@@ -84,14 +84,14 @@ test('ParquetLoader#load Parquet file as arrow-table', async () => {
         'geometry'
     ]);
 });
-test('ParquetLoader#load supported files as arrow-table', async () => {
+test('ParquetLoader#load supported files as arrow', async () => {
     // t.comment('SUPPORTED FILES');
     for (const { title, path } of WASM_SUPPORTED_FILES) {
         const url = `${PARQUET_DIR}/apache/${path}`;
         const table = (await load(url, ParquetLoader, {
-            parquet: { shape: 'arrow-table' }
-        })) as ArrowTable;
-        const arrowTable = table.data;
+            parquet: { shape: 'arrow' }
+        })) as arrow.Table;
+        const arrowTable = table;
         expect(arrowTable instanceof arrow.Table, `GOOD(${title})`).toBeTruthy();
     }
 });
@@ -101,67 +101,67 @@ test('ParquetLoader#parse applies reader options without passing wasmUrl upstrea
     const arrayBuffer = await response.arrayBuffer();
     const table = (await BundledParquetLoader.parse(arrayBuffer, {
         parquet: {
-            shape: 'arrow-table',
+            shape: 'arrow',
             limit: 2
         }
-    })) as ArrowTable;
-    expect(table.data.numRows, 'applies limit option').toBe(2);
+    })) as arrow.Table;
+    expect(table.numRows, 'applies limit option').toBe(2);
     expect(table.schema?.fields.map((field) => field.name), 'keeps the file schema').toEqual(['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry']);
 });
-test('ParquetJSLoader#arrow-table preserves GeoParquet metadata', async () => {
+test('ParquetJSLoader#arrow preserves GeoParquet metadata', async () => {
     const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
     const table = (await load(url, ParquetJSLoader, {
         parquet: {
-            shape: 'arrow-table',
+            shape: 'arrow',
             limit: 3
         }
-    })) as ArrowTable;
-    expect(table.shape).toBe('arrow-table');
-    expect(table.data.numRows, 'TypeScript implementation converts selected rows to Arrow').toBe(3);
+    })) as arrow.Table;
+    expect(table).toHaveProperty('numRows');
+    expect(table.numRows, 'TypeScript implementation converts selected rows to Arrow').toBe(3);
     expect(getGeometryColumnsFromSchema(table.schema!).geometry?.encoding, 'TypeScript implementation annotates the Arrow geometry field').toBe('geoarrow.wkb');
     expect(getGeoMetadata(table.schema?.metadata)?.columns.geometry.encoding, 'TypeScript implementation preserves GeoParquet schema metadata').toBe('wkb');
-    expect(table.data.schema.fields
+    expect(table.schema.fields
         .find(field => field.name === 'geometry')
         ?.metadata.get('ARROW:extension:name'), 'TypeScript Arrow schema preserves GeoArrow field metadata').toBe('geoarrow.wkb');
-    expect(table.data.schema.metadata.get('geo'), 'TypeScript Arrow schema preserves GeoParquet metadata').toBeTruthy();
-    expect(table.data.schema.fields.find(field => field.name === 'pop_est')?.metadata.has('typeLength'), 'TypeScript Arrow schema omits absent physical metadata').toBeFalsy();
-    for (const batch of table.data.batches) {
-      expect(batch.schema.fields).toEqual(table.data.schema.fields);
-      expect(batch.schema.metadata).toEqual(table.data.schema.metadata);
+    expect(table.schema.metadata.get('geo'), 'TypeScript Arrow schema preserves GeoParquet metadata').toBeTruthy();
+    expect(table.schema.fields.find(field => field.name === 'pop_est')?.metadata.has('typeLength'), 'TypeScript Arrow schema omits absent physical metadata').toBeFalsy();
+    for (const batch of table.batches) {
+      expect(batch.schema.fields).toEqual(table.schema.fields);
+      expect(batch.schema.metadata).toEqual(table.schema.metadata);
     }
-    expect(table.data.schema.assign(table.data.schema.fields), 'TypeScript Arrow schema restores normal public assignment semantics').not.toBe(table.data.schema);
-    expect(table.data.slice(1, 2).numRows, 'TypeScript Arrow table remains sliceable').toBe(1);
+    expect(table.schema.assign(table.schema.fields), 'TypeScript Arrow schema restores normal public assignment semantics').not.toBe(table.schema);
+    expect(table.slice(1, 2).numRows, 'TypeScript Arrow table remains sliceable').toBe(1);
 });
-test('ParquetLoader#load supports arrow-table shape', async () => {
+test('ParquetLoader#load supports arrow shape', async () => {
     const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
     const wrapperTable = (await load(url, ParquetLoader, {
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
-    expect(wrapperTable.shape).toBe('arrow-table');
-    expect(wrapperTable.data.numRows).toBe(5);
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
+    expect(wrapperTable).toHaveProperty('numRows');
+    expect(wrapperTable.numRows).toBe(5);
     expect(wrapperTable.schema?.fields.map(field => field.name)).toEqual(['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry']);
     expect(getGeometryColumnsFromSchema(wrapperTable.schema!).geometry?.encoding, 'main loader arrow shape annotates geometry field').toBe('geoarrow.wkb');
     expect(getGeoMetadata(wrapperTable.schema?.metadata)?.columns.geometry.encoding, 'main loader arrow shape preserves GeoParquet schema metadata').toBe('wkb');
 });
-test('ParquetJSLoader#arrow-table supports loadInBatches', async () => {
+test('ParquetJSLoader#arrow supports loadInBatches', async () => {
     const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
     const iterator = await loadInBatches(url, ParquetJSLoader, {
         parquet: {
-            shape: 'arrow-table',
+            shape: 'arrow',
             limit: 5,
             batchSize: 2
         }
     });
     let rowCount = 0;
     for await (const batch of iterator) {
-        expect(batch.shape).toBe('arrow-table');
-        expect(batch.data instanceof arrow.Table, 'returns Apache Arrow table batches').toBeTruthy();
+        expect(batch).toHaveProperty('numRows');
+        expect(batch instanceof arrow.RecordBatch, 'returns Apache Arrow record batches').toBeTruthy();
         expect(getGeometryColumnsFromSchema(batch.schema).geometry?.encoding, 'batch loaders.gl schema includes GeoArrow field metadata').toBe('geoarrow.wkb');
-        expect(batch.data.schema.fields
+        expect(batch.schema.fields
             .find(field => field.name === 'geometry')
             ?.metadata.get('ARROW:extension:name'), 'batch Arrow schema includes GeoArrow field metadata').toBe('geoarrow.wkb');
-        expect(batch.data.schema.metadata.get('geo'), 'batch Arrow schema preserves GeoParquet metadata').toBeTruthy();
-        rowCount += batch.length;
+        expect(batch.schema.metadata.get('geo'), 'batch Arrow schema preserves GeoParquet metadata').toBeTruthy();
+        rowCount += batch.numRows;
     }
     expect(rowCount, 'returns all requested rows').toBe(5);
 });
@@ -169,7 +169,7 @@ test('ParquetJSLoader#empty projection batches preserve their row counts', async
     const url = `${PARQUET_DIR}/apache/good/alltypes_plain.parquet`;
     const iterator = await loadInBatches(url, ParquetJSLoader, {
         parquet: {
-            shape: 'arrow-table',
+            shape: 'arrow',
             columns: ['missing_column'],
             offset: 2,
             limit: 3,
@@ -178,10 +178,8 @@ test('ParquetJSLoader#empty projection batches preserve their row counts', async
     });
     const batchLengths: number[] = [];
     for await (const batch of iterator) {
-        batchLengths.push(batch.length);
-        expect(batch.data.numRows, 'Arrow rows match the advertised batch length').toBe(batch.length);
-        expect(batch.data.numCols, 'batch contains no projected columns').toBe(0);
-        expect(batch.data.batches.every(recordBatch => recordBatch.schema === batch.data.schema), 'empty projection record batches reuse the containing table schema').toBeTruthy();
+        batchLengths.push(batch.numRows);
+        expect(batch.numCols, 'batch contains no projected columns').toBe(0);
     }
     expect(batchLengths, 'preserves requested batching for empty projections').toEqual([2, 1]);
 });
@@ -192,9 +190,9 @@ test('ParquetWriter#Arrow table round trip', async () => {
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
-    expect(table.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
+    expect(table.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
 });
 test('ParquetJSLoader#returns object rows through parquetjs adapter', async () => {
     const url = `${PARQUET_DIR}/apache/good/alltypes_plain.parquet`;
@@ -249,11 +247,11 @@ test('ParquetJSWriter#encodes plain JS tables through parquetjs adapter', async 
         expect(newTable.data).toEqual(table.data);
     }
 });
-test('ParquetLoader#loadInBatches as arrow-table', async () => {
+test('ParquetLoader#loadInBatches as arrow', async () => {
     const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
     const iterator = await loadInBatches(url, ParquetLoader, {
         parquet: {
-            shape: 'arrow-table',
+            shape: 'arrow',
             batchSize: 2,
             limit: 5
         }
@@ -262,18 +260,18 @@ test('ParquetLoader#loadInBatches as arrow-table', async () => {
     let rowCount = 0;
     for await (const batch of iterator) {
         batchCount++;
-        rowCount += batch.length;
-        expect(batch.data instanceof arrow.Table, 'returns Arrow table batch').toBeTruthy();
+        rowCount += batch.numRows;
+        expect(batch instanceof arrow.RecordBatch, 'returns Arrow record batch').toBeTruthy();
         expect(batch.schema.fields.map((field) => field.name), 'batch schema matches file schema').toEqual(['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry']);
     }
     expect(batchCount > 0, 'returns one or more batches').toBeTruthy();
     expect(rowCount, 'returns all requested rows').toBe(5);
 });
-test('ParquetLoader#loadInBatches supports arrow-table shape', async () => {
+test('ParquetLoader#loadInBatches supports arrow shape', async () => {
     const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
     const iterator = await loadInBatches(url, ParquetLoader, {
         parquet: {
-            shape: 'arrow-table',
+            shape: 'arrow',
             batchSize: 2,
             limit: 5
         }
@@ -281,7 +279,7 @@ test('ParquetLoader#loadInBatches supports arrow-table shape', async () => {
     let batchCount = 0;
     for await (const batch of iterator) {
         batchCount++;
-        expect(batch.shape).toBe('arrow-table');
+        expect(batch).toHaveProperty('numRows');
         expect(getGeometryColumnsFromSchema(batch.schema!).geometry?.encoding, 'batch schema includes GeoArrow field metadata').toBe('geoarrow.wkb');
         expect(getGeoMetadata(batch.schema?.metadata)?.columns.geometry.encoding, 'batch schema preserves GeoParquet metadata').toBe('wkb');
     }
@@ -290,28 +288,28 @@ test('ParquetLoader#loadInBatches supports arrow-table shape', async () => {
 test('ParquetLoader#GeoParquet Arrow output preserves schema and field metadata', async () => {
     const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
     const table = (await load(url, ParquetLoader, {
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
     const geometryColumns = getGeometryColumnsFromSchema(table.schema!);
     const geoMetadata = getGeoMetadata(table.schema?.metadata);
-    const arrowSchema = table.data.schema;
+    const arrowSchema = table.schema;
     expect(geometryColumns.geometry?.encoding, 'geometry field is annotated').toBe('geoarrow.wkb');
     expect(geoMetadata?.columns.geometry, 'schema geo metadata is preserved').toBeTruthy();
     expect(geoMetadata?.columns.geometry.encoding, 'GeoParquet encoding is preserved').toBe('wkb');
     expect(arrowSchema.fields.find(field => field.name === 'geometry')?.metadata.get('ARROW:extension:name'), 'Arrow JS schema contains field metadata').toBe('geoarrow.wkb');
     expect(arrowSchema.metadata.get('geo'), 'Arrow JS schema preserves top-level geo metadata').toBeTruthy();
 });
-test('GeoParquetLoader#supports arrow-table shape', async () => {
+test('GeoParquetLoader#supports arrow shape', async () => {
     const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
     const table = await load(url, GeoParquetLoader, {
         parquet: {
-            shape: 'arrow-table'
+            shape: 'arrow'
         }
     });
-    expect(table.shape, 'returns Arrow output when requested').toBe('arrow-table');
-    if (table.shape === 'arrow-table') {
+    expect(table).toBeInstanceOf(arrow.Table);
+    if ('numRows' in table) {
         expect(getGeometryColumnsFromSchema(table.schema!).geometry?.encoding, 'geometry field is annotated for Arrow output').toBe('geoarrow.wkb');
-        expect(table.data.schema.fields.find(field => field.name === 'geometry')?.metadata.get('ARROW:extension:name'), 'Arrow schema field metadata is preserved').toBe('geoarrow.wkb');
+        expect(table.schema.fields.find(field => field.name === 'geometry')?.metadata.get('ARROW:extension:name'), 'Arrow schema field metadata is preserved').toBe('geoarrow.wkb');
     }
 });
 test('ParquetWriter#synthesizes GeoParquet metadata from GeoArrow WKB fields', async () => {
@@ -321,8 +319,8 @@ test('ParquetWriter#synthesizes GeoParquet metadata from GeoArrow WKB fields', a
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
     const geoMetadata = getGeoMetadata(newTable.schema?.metadata);
     expect(geoMetadata?.primary_column, 'writer synthesizes primary column').toBe('geometry');
     expect(geoMetadata?.columns.geometry.encoding, 'writer synthesizes WKB encoding').toBe('wkb');
@@ -348,8 +346,8 @@ test('ParquetWriter#preserves valid GeoParquet metadata from GeoArrow input', as
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
     const geoMetadata = getGeoMetadata(newTable.schema?.metadata);
     expect(geoMetadata?.columns.geometry.bbox, 'writer preserves valid existing GeoParquet metadata').toEqual([0, 0, 1, 1]);
     expect(geoMetadata?.columns.geometry.geometry_types, 'writer keeps valid geometry types').toEqual(['Point']);
@@ -366,8 +364,8 @@ test('ParquetWriter#replaces invalid GeoParquet metadata from GeoArrow input', a
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
     const geoMetadata = getGeoMetadata(newTable.schema?.metadata);
     expect(geoMetadata?.primary_column, 'writer repairs invalid metadata').toBe('geometry');
     expect(geoMetadata?.columns.geometry.encoding, 'writer synthesizes missing geometry column metadata').toBe('wkb');
@@ -381,8 +379,8 @@ test('ParquetWriter#synthesizes native GeoParquet encoding from GeoArrow input',
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
     const geoMetadata = getGeoMetadata(newTable.schema?.metadata);
     expect(geoMetadata?.columns.geometry.encoding, 'writer synthesizes native GeoParquet encoding').toBe('point');
     expect(geoMetadata?.columns.geometry.geometry_types, 'writer infers native geometry type').toEqual(['Point']);

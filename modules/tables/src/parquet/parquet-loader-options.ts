@@ -40,7 +40,7 @@ type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
 /** Public options for the TypeScript-backed `ParquetLoader` and `GeoParquetLoader`. */
 export type ParquetLoaderOptions = LoaderOptions & {
   parquet?: {
-    shape?: 'arrow' | 'arrow-table' | 'object-row-table';
+    shape?: 'arrow' | 'object-row-table';
   } & {
     [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
   };
@@ -50,5 +50,5 @@ export type ParquetLoaderOptions = LoaderOptions & {
 export const PARQUET_LOADER_DEFAULT_OPTIONS = {
   columns: undefined,
   preserveBinary: false,
-  shape: 'arrow-table'
+  shape: 'arrow'
 } as const;

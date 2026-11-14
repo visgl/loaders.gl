@@ -57,9 +57,8 @@ test('GLTFLoader decodes embedded SPZ using an extra loader and glTF coordinates
   });
   const descriptor = gltf.gaussianSplatPrimitives?.[0];
   const table = descriptor?.decoded as typeof SPZLoader.dataType;
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data.numRows).toBe(1);
-  expect(Array.from(table.data.getChild('POSITION')?.get(0)?.toArray() || [])).toEqual([-1, 0, -0]);
+  expect(table.numRows).toBe(1);
+  expect(Array.from(table.getChild('POSITION')?.get(0)?.toArray() || [])).toEqual([-1, 0, -0]);
   expect(descriptor?.compressedBytes?.length).toBeGreaterThan(0);
 });
 
@@ -74,7 +73,7 @@ test('GLTFLoader decodes a legacy SPZ2 primitive with an explicit color space', 
   });
   const descriptor = gltf.gaussianSplatPrimitives?.[0];
   const table = descriptor?.decoded as typeof SPZLoader.dataType;
-  expect(table.data.numRows).toBe(1);
+  expect(table.numRows).toBe(1);
   expect(descriptor?.extension).toMatchObject({
     kernel: 'ellipse',
     colorSpace: 'srgb_rec709_display'
@@ -122,5 +121,5 @@ test('load propagates the extra SPZ loader through the glTF loader context', asy
     core: {mimeType: 'model/gltf+json'}
   });
   const table = gltf.gaussianSplatPrimitives?.[0].decoded as typeof SPZLoader.dataType;
-  expect(table.data.numRows).toBe(1);
+  expect(table.numRows).toBe(1);
 });

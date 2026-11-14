@@ -85,13 +85,13 @@ test('ParquetJSLoader decrypts encrypted columns into an Arrow table', async () 
   const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
   const table = await load(url, ParquetJSLoader, {
     ...getEncryptedLoaderOptions(),
-    parquet: {...getEncryptedLoaderOptions().parquet, shape: 'arrow-table'}
+    parquet: {...getEncryptedLoaderOptions().parquet, shape: 'arrow'}
   });
 
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape === 'arrow-table') {
-    expect(table.data.numRows).toBe(50);
-    expect(table.data.schema.fields.map(field => field.name).sort()).toEqual([
+  expect(table).toHaveProperty('numRows');
+  if ('numRows' in table) {
+    expect(table.numRows).toBe(50);
+    expect(table.schema.fields.map(field => field.name).sort()).toEqual([
       'double_field',
       'float_field'
     ]);

@@ -29,14 +29,14 @@ test('ParquetJSLoader builds nullable primitive Arrow vectors without losing nul
   const parquet = await encode(input, ParquetJSWriter, {worker: false});
   const table = await load(parquet, ParquetJSLoader, {
     core: {worker: false},
-    parquet: {shape: 'arrow-table'}
+    parquet: {shape: 'arrow'}
   });
 
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape !== 'arrow-table') return;
-  expect(Array.from(table.data.getChild('integer')!)).toEqual([null, 7, -11, null]);
-  expect(Array.from(table.data.getChild('measurement')!)).toEqual([1.25, null, 3.5, null]);
-  expect(Array.from(table.data.getChild('counter')!)).toEqual([
+  expect(table).toHaveProperty('numRows');
+  if (!('numRows' in table)) return;
+  expect(Array.from(table.getChild('integer')!)).toEqual([null, 7, -11, null]);
+  expect(Array.from(table.getChild('measurement')!)).toEqual([1.25, null, 3.5, null]);
+  expect(Array.from(table.getChild('counter')!)).toEqual([
     9_007_199_254_740_993n,
     -2n,
     null,
@@ -49,7 +49,7 @@ test('ParquetJSLoader direct INT64 delta vectors match object decoding across bi
   const [arrowTable, objectTable] = await Promise.all([
     load(url, ParquetJSLoader, {
       core: {worker: false},
-      parquet: {shape: 'arrow-table'}
+      parquet: {shape: 'arrow'}
     }),
     load(url, ParquetJSLoader, {
       core: {worker: false},
@@ -57,12 +57,12 @@ test('ParquetJSLoader direct INT64 delta vectors match object decoding across bi
     })
   ]);
 
-  expect(arrowTable.shape).toBe('arrow-table');
+  expect(arrowTable).toHaveProperty('numRows');
   expect(objectTable.shape).toBe('object-row-table');
-  if (arrowTable.shape !== 'arrow-table' || objectTable.shape !== 'object-row-table') return;
+  if (!('numRows' in arrowTable) || objectTable.shape !== 'object-row-table') return;
 
-  for (const field of arrowTable.data.schema.fields) {
-    expect(Array.from(arrowTable.data.getChild(field.name) || []), field.name).toEqual(
+  for (const field of arrowTable.schema.fields) {
+    expect(Array.from(arrowTable.getChild(field.name) || []), field.name).toEqual(
       objectTable.data.map(row => row[field.name] ?? null)
     );
   }

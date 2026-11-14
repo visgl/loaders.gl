@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  makeTableScanBatch,
   paceBatchIterator,
   type LoaderContext,
   type LoaderWithParser
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, Feature} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {Feature} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
 import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/core/schema';
 import type {GMLFeatureCollection, Geometry} from './lib/parsers/gml/parse-gml';
@@ -28,12 +28,12 @@ export const GMLLoaderWithParser = {
   parseInBatches: (iterator, options?: GMLLoaderOptions, context?: LoaderContext) =>
     paceBatchIterator(parseGMLInRequestedShape(iterator, options), {
       batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
-      getRowCount: batch => ('shape' in batch ? batch.length : batch.features.length),
+      getRowCount: batch => ('numRows' in batch ? batch.numRows : batch.features.length),
       signal: options?.signal ?? context?.signal
     })
 } as const satisfies LoaderWithParser<
-  ArrowTable | Geometry | GMLFeatureCollection | null,
-  ArrowTableBatch | GMLFeatureCollection,
+  Table | Geometry | GMLFeatureCollection | null,
+  RecordBatch | GMLFeatureCollection,
   GMLLoaderOptions
 >;
 
@@ -51,7 +51,7 @@ function parseGMLText(text: string, options?: GMLLoaderOptions) {
 }
 
 /** Keeps GML coordinates unchanged without incorrectly declaring the GeoParquet CRS84 default. */
-function makeGMLArrowTable(features: GMLFeatureCollection['features']): ArrowTable {
+function makeGMLArrowTable(features: GMLFeatureCollection['features']): Table {
   const hasFeatureIds = features.some(feature => feature.id !== undefined);
   for (const feature of features) {
     if (
@@ -64,17 +64,12 @@ function makeGMLArrowTable(features: GMLFeatureCollection['features']): ArrowTab
     }
   }
   // The shared encoder supports null geometry although the GeoJSON Feature type excludes it.
-  const table = convertFeaturesToWKBArrowTable(features as Feature[]);
-  const geoMetadata = getGeoMetadata(table.data.schema.metadata)!;
+  const table = convertFeaturesToWKBArrowTable(features as Feature[]).data;
+  const geoMetadata = getGeoMetadata(table.schema.metadata)!;
   geoMetadata.columns.geometry.crs = null;
-  setGeoMetadata(table.data.schema.metadata, geoMetadata);
-  const geometryField = table.data.schema.fields.find(field => field.name === 'geometry');
+  setGeoMetadata(table.schema.metadata, geoMetadata);
+  const geometryField = table.schema.fields.find(field => field.name === 'geometry');
   geometryField?.metadata.set('ARROW:extension:metadata', JSON.stringify({crs: null}));
-  if (table.schema) {
-    table.schema.metadata = Object.fromEntries(table.data.schema.metadata);
-    const field = table.schema.fields.find(field => field.name === 'geometry');
-    if (field) field.metadata = Object.fromEntries(geometryField!.metadata);
-  }
   return table;
 }
 
@@ -84,13 +79,13 @@ async function* parseGMLInRequestedShape(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: GMLLoaderOptions
-): AsyncIterable<ArrowTableBatch | GMLFeatureCollection> {
+): AsyncIterable<RecordBatch | GMLFeatureCollection> {
   for await (const collection of parseGMLInBatches(iterator, options)) {
     if (options?.gml?.shape === 'geojson') {
       yield collection;
     } else {
       const table = makeGMLArrowTable(collection.features);
-      yield makeTableScanBatch(table);
+      yield* table.batches;
     }
   }
 }

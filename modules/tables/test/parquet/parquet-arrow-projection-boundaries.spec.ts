@@ -50,15 +50,15 @@ beforeAll(async () => {
 
 test.each([1, 2, 3])('Parquet Arrow preserves nulls and narrow types with offset %i', async offset => {
   const table = await parse(fixture, ParquetJSLoader, {
-    worker: false, parquet: {shape: 'arrow-table', offset, batchSize: 1}
+    worker: false, parquet: {shape: 'arrow', offset, batchSize: 1}
   });
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape !== 'arrow-table') throw new Error('Expected Arrow table');
-  expect(table.data.numRows).toBe(4 - offset);
+  expect(table).toHaveProperty('numRows');
+  if (!('numRows' in table)) throw new Error('Expected Arrow table');
+  expect(table.numRows).toBe(4 - offset);
   for (const name of Object.keys(values[0]) as Array<keyof (typeof values)[number]>) {
-    expect(Array.from(table.data.getChild(name)!)).toEqual(values.slice(offset).map(row => row[name]));
+    expect(Array.from(table.getChild(name)!)).toEqual(values.slice(offset).map(row => row[name]));
   }
-  expect(table.data.schema.fields.map(field => field.type.toString())).toEqual([
+  expect(table.schema.fields.map(field => field.type.toString())).toEqual([
     'Int8', 'Int16', 'Uint16', 'Uint32', 'Float32', 'Utf8', 'Binary'
   ]);
 });
@@ -66,9 +66,9 @@ test.each([1, 2, 3])('Parquet Arrow preserves nulls and narrow types with offset
 test('Parquet Arrow preserves empty projected schema in source order beyond the final row', async () => {
   const result = await parse(fixture, ParquetJSLoader, {
     worker: false,
-    parquet: {shape: 'arrow-table', offset: 100, columns: ['text', 'unsigned16']}
+    parquet: {shape: 'arrow', offset: 100, columns: ['text', 'unsigned16']}
   });
-  if (result.shape !== 'arrow-table') throw new Error('Expected Arrow table');
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['unsigned16', 'text']);
+  if (!('numRows' in result)) throw new Error('Expected Arrow table');
+  expect(result.numRows).toBe(0);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['unsigned16', 'text']);
 });

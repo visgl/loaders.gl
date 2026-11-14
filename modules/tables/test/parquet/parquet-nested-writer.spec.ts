@@ -110,7 +110,7 @@ test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {
   await source.close();
   const output = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
-    parquet: {shape: 'arrow-table'}
+    parquet: {shape: 'arrow'}
   });
   const objectOutput = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
@@ -122,14 +122,14 @@ test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {
     expect(objectOutput.data[0].tags).toEqual({list: [{element: 'one'}, {element: 'two'}]});
   }
 
-  expect(output.shape).toBe('arrow-table');
-  if (output.shape !== 'arrow-table') return;
-  expect(output.data.getChild('id')?.toArray()).toEqual(new Int32Array([1, 2]));
-  expect(output.data.getChild('tags')?.get(0)?.toArray()).toEqual(['one', 'two']);
-  expect(output.data.getChild('tags')?.get(1)?.toArray()).toEqual([]);
-  expect(output.data.getChild('nestedTags')?.type).toBeInstanceOf(arrow.List);
-  expect(output.data.getChild('attributes')?.get(0)?.toJSON?.()).toEqual({count: 2});
-  expect(output.data.getChild('tags')?.type).toBeInstanceOf(arrow.List);
-  expect(output.data.getChild('attributes')?.type).toBeInstanceOf(arrow.Map_);
-  expect(output.data.getChild('properties')?.type).toBeInstanceOf(arrow.Struct);
+  expect(output).toHaveProperty('numRows');
+  if (!('numRows' in output)) return;
+  expect(output.getChild('id')?.toArray()).toEqual(new Int32Array([1, 2]));
+  expect(output.getChild('tags')?.get(0)?.toArray()).toEqual(['one', 'two']);
+  expect(output.getChild('tags')?.get(1)?.toArray()).toEqual([]);
+  expect(output.getChild('nestedTags')?.type).toBeInstanceOf(arrow.List);
+  expect(output.getChild('attributes')?.get(0)?.toJSON?.()).toEqual({count: 2});
+  expect(output.getChild('tags')?.type).toBeInstanceOf(arrow.List);
+  expect(output.getChild('attributes')?.type).toBeInstanceOf(arrow.Map_);
+  expect(output.getChild('properties')?.type).toBeInstanceOf(arrow.Struct);
 });

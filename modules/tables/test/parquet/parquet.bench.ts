@@ -13,7 +13,7 @@ import {
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {convertTable, makeTableFromData} from '@loaders.gl/core/schema-utils';
 import {parquetRead, parquetReadObjects, type ColumnData} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';
@@ -40,7 +40,7 @@ type ParquetBenchmarkScenario = {
   /** Optional top-level Parquet columns decoded by every included implementation. */
   columns?: string[];
   /** Table shape materialized by every included implementation. */
-  shape: 'arrow-table' | 'object-row-table';
+  shape: 'arrow' | 'object-row-table';
   /** Implementations included when a backend cannot correctly execute the scenario. */
   implementationIds?: ParquetBenchmarkImplementationId[];
 };
@@ -110,22 +110,22 @@ export async function parquetBench(suite) {
     {
       name: 'Wide nullable mixed 100K × 20 → Arrow',
       arrayBuffer: wideScaleArrayBuffer,
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     {
       name: 'Wide nullable mixed projection 100K × 5 → Arrow',
       arrayBuffer: wideScaleArrayBuffer,
       columns: ['id', 'count_0', 'metric_0', 'category_0', 'label_0'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       // parquet-wasm 0.7.2 fails to materialize this projected mixed schema.
       implementationIds: ['typescript', 'hyparquet']
     },
-    {name: 'GeoParquet → Arrow', arrayBuffer: geoArrayBuffer, shape: 'arrow-table'},
+    {name: 'GeoParquet → Arrow', arrayBuffer: geoArrayBuffer, shape: 'arrow'},
     {
       name: 'PLAIN nullable primitive projection → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['name', 'quantity', 'price', 'date', 'day', 'finger'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
       implementationIds: ['typescript', 'hyparquet']
     },
@@ -133,43 +133,43 @@ export async function parquetBench(suite) {
       name: 'PLAIN nested and repeated projection → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['stock', 'colour'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
       implementationIds: ['typescript', 'hyparquet']
     },
     {
       name: 'RLE_DICTIONARY mixed table → Arrow',
       arrayBuffer: dictionaryArrayBuffer,
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     {
       name: 'DELTA_BINARY_PACKED integer table → Arrow',
       arrayBuffer: deltaBinaryPackedArrayBuffer,
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     {
       name: 'LZ4_RAW full table → Arrow',
       arrayBuffer: lz4ArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
       name: 'Hadoop LZ4 full table → Arrow',
       arrayBuffer: hadoopLz4ArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
       name: 'DELTA_BYTE_ARRAY full table → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
       name: 'DELTA_BYTE_ARRAY projected columns → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
       columns: ['c_customer_id', 'c_email_address'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       // parquet-wasm 0.7.2 currently returns mismatched IPC schema/vector counts for this projection.
       implementationIds: ['typescript', 'hyparquet']
     },
@@ -212,12 +212,12 @@ export async function parquetBench(suite) {
   suite = suite.group('GeoParquetLoader');
 
   suite.addAsync(
-    'load arrow-table geoarrow.wkb',
+    'load arrow geoarrow.wkb',
     {multiplier: 40000, unit: 'rows'},
     async () => {
       await load(geoArrayBuffer.slice(0), GeoParquetLoader, {
         core: {worker: false},
-        parquet: {shape: 'arrow-table'}
+        parquet: {shape: 'arrow'}
       });
     }
   );
@@ -479,8 +479,8 @@ async function decodeWithLoadersGl(
   const table = (await parse(scenario.arrayBuffer, loader, {
     core: {worker: false},
     parquet: {columns: scenario.columns, shape: scenario.shape}
-  })) as ArrowTable | ObjectRowTable;
-  return table.shape === 'arrow-table' ? table.data.numRows : table.data.length;
+  })) as import('apache-arrow').Table | ObjectRowTable;
+  return 'numRows' in table ? table.numRows : table.data.length;
 }
 
 /** Decodes one scenario through the latest pinned hyparquet implementation. */

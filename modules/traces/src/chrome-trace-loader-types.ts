@@ -14,13 +14,13 @@ import type {ChromeTraceFileSchema, ChromeTraceValidationOptions} from './chrome
 export type ChromeTraceLoaderOptions = LoaderOptions &
   ChromeTraceValidationOptions & {
     /** Selects the returned data shape for whole-file parsing. */
-    shape?: 'json' | 'arrow-table';
+    shape?: 'json' | 'arrow';
     /** Chrome trace loader-specific options. */
     chromeTrace?: {
       /** Overrides the shared browser worker bundle URL. */
       workerUrl?: string;
       /** Selects the returned data shape for whole-file parsing. */
-      shape?: 'json' | 'arrow-table';
+      shape?: 'json' | 'arrow';
       /** Maximum number of events emitted in one Arrow record batch. */
       batchSize?: number;
     };
@@ -29,7 +29,7 @@ export type ChromeTraceLoaderOptions = LoaderOptions &
 /** Default Chrome trace loader options. */
 export const CHROME_TRACE_LOADER_OPTIONS = {
   chromeTrace: {
-    shape: 'arrow-table',
+    shape: 'arrow',
     batchSize: 256
   }
 } as const satisfies ChromeTraceLoaderOptions;
@@ -40,6 +40,8 @@ export const ChromeTraceLoader = {
   id: 'chromeTrace',
   module: 'traces',
   worker: true,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
   workerInBatches: true,
   workerFile: 'trace-worker.js',
   version: 'latest',

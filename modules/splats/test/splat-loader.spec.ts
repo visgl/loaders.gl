@@ -5,34 +5,38 @@ import {SPLATLoaderWithParser} from '@loaders.gl/splats/splat-loader';
 test('SPLATLoader parses raw Gaussian splats', async () => {
   const data = makeSPLATFixture();
   const table = await parse(data, SPLATLoader);
-  expect(table.shape, 'returns MeshArrowTable').toBe('arrow-table');
-  expect(table.topology, 'returns point-list topology').toBe('point-list');
-  expect(table.data.numRows, 'parses row count').toBe(2);
+  expect(table.schema.metadata.get('topology'), 'returns point-list topology').toBe('point-list');
+  expect(table.numRows, 'parses row count').toBe(2);
+  expect(JSON.parse(table.schema.metadata.get('loaders_gl.gaussian_splats.loader_data')!)).toEqual({
+    format: 'splat',
+    splatCount: 2,
+    rowByteLength: 32
+  });
   expect(
-    table.data.schema.metadata.get('loaders_gl.semantic_type'),
+    table.schema.metadata.get('loaders_gl.semantic_type'),
     'adds Gaussian splat semantic metadata'
   ).toBe('gaussian-splats');
   expect(
-    Array.from(table.data.getChild('POSITION')?.get(0)?.toArray() || []),
+    Array.from(table.getChild('POSITION')?.get(0)?.toArray() || []),
     'parses position'
   ).toEqual([1, 2, 3]);
-  expect(table.data.getChild('scale_0')?.get(1), 'parses linear scale').toBe(4);
+  expect(table.getChild('scale_0')?.get(1), 'parses linear scale').toBe(4);
   expect(
-    Math.abs(Number(table.data.getChild('opacity')?.get(0)) - 128 / 255) < 1e-6,
+    Math.abs(Number(table.getChild('opacity')?.get(0)) - 128 / 255) < 1e-6,
     'parses linear opacity'
   ).toBeTruthy();
   expect(
-    table.data.schema.fields
+    table.schema.fields
       .find(field => field.name === 'opacity')
       ?.metadata.get('loaders_gl.gaussian_splats.encoding'),
     'marks opacity as linear'
   ).toBe('linear');
   expect(
-    Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6,
+    Math.abs(Number(table.getChild('rot_0')?.get(0)) - 1) < 1e-6,
     'normalizes rotation'
   ).toBeTruthy();
   const syncTable = parseSync(data, SPLATLoaderWithParser);
-  expect(syncTable.data.numRows, 'parser subpath supports parseSync').toBe(2);
+  expect(syncTable.numRows, 'parser subpath supports parseSync').toBe(2);
 });
 test('SPLATLoader rejects invalid byte length', () => {
   expect(

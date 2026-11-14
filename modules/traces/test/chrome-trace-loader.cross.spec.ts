@@ -173,7 +173,7 @@ describe('ChromeTraceLoader', () => {
     const traceFile = createChromeTraceFixture();
     const parsed = await parse(encodeChromeTraceFixture(traceFile), ChromeTraceLoader, {
       chromeTrace: {
-        shape: 'arrow-table'
+        shape: 'arrow'
       }
     });
     const table = parsed as arrow.Table;
@@ -234,7 +234,7 @@ describe('ChromeTraceLoader', () => {
     const traceFile = createChromeTraceFixture();
     const parsed = await parse(encodeChromeTraceFixture(traceFile), ChromeTraceLoader, {
       chromeTrace: {
-        shape: 'arrow-table'
+        shape: 'arrow'
       }
     });
     const table = parsed as arrow.Table;
@@ -266,7 +266,7 @@ describe('ChromeTraceLoader', () => {
       ChromeTraceLoader,
       {
         chromeTrace: {
-          shape: 'arrow-table',
+          shape: 'arrow',
           batchSize: 2
         }
       }
@@ -321,7 +321,7 @@ describe('ChromeTraceLoader', () => {
       ChromeTraceLoader,
       {
         chromeTrace: {
-          shape: 'arrow-table',
+          shape: 'arrow',
           batchSize: 1
         }
       }
@@ -352,7 +352,7 @@ describe('ChromeTraceLoader', () => {
       ChromeTraceLoader,
       {
         chromeTrace: {
-          shape: 'arrow-table',
+          shape: 'arrow',
           batchSize: 32
         }
       }

@@ -56,9 +56,9 @@ test('ParquetWriter#encodes Arrow tables through primary writer', async () => {
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
         core: { worker: false },
-        parquet: { shape: 'arrow-table' }
-    })) as ArrowTable;
-    expect(table.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
+        parquet: { shape: 'arrow' }
+    })) as arrow.Table;
+    expect(table.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
 });
 test('ParquetWriter#encodes plain JS tables through Arrow adapter', async () => {
     const table: ObjectRowTable = {

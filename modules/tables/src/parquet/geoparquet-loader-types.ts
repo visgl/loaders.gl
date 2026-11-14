@@ -3,12 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoJSONTable,
-  GeoJSONTableBatch
-} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/core/schema';
 
 import {ParquetFormat} from './parquet-format';
 import {
@@ -32,10 +28,11 @@ async function preloadGeoParquetLoader() {
 /** Metadata-only GeoParquet table loader. */
 export const GeoParquetLoader = {
   defaultShape: 'arrow',
+  supportsNativeArrow: true,
   ...ParquetFormat,
 
-  dataType: null as unknown as GeoJSONTable | ArrowTable,
-  batchType: null as unknown as GeoJSONTableBatch | ArrowTableBatch,
+  dataType: null as unknown as GeoJSONTable | Table,
+  batchType: null as unknown as GeoJSONTableBatch | RecordBatch,
 
   id: 'parquet',
   module: 'tables',
@@ -49,7 +46,7 @@ export const GeoParquetLoader = {
   },
   preload: preloadGeoParquetLoader
 } as const satisfies Loader<
-  GeoJSONTable | ArrowTable,
-  GeoJSONTableBatch | ArrowTableBatch,
+  GeoJSONTable | Table,
+  GeoJSONTableBatch | RecordBatch,
   GeoParquetLoaderOptions
 >;

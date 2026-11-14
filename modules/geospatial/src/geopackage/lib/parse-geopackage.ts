@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
+import type {Table} from 'apache-arrow';
 import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
 import type {
   ArrowTable,
@@ -93,10 +94,10 @@ const DEFAULT_TABLE_MARKERS = new Set(['default', 'default table', 'main', 'prim
 export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<GeoJSONTable | ArrowTable> {
-  const shape = options?.geopackage?.shape || 'arrow-table';
-  if (shape === 'arrow-table') {
-    return parseGeoPackageToArrow(arrayBuffer, options);
+): Promise<GeoJSONTable | Table> {
+  const shape = options?.geopackage?.shape || 'arrow';
+  if (shape === 'arrow') {
+    return (await parseGeoPackageToArrow(arrayBuffer, options)).data;
   }
 
   const database = await loadGeoPackageDatabase(

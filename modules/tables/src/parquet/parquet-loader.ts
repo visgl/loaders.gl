@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {
   LoaderWithParser,
   LoaderContext,
@@ -12,21 +13,21 @@ import {
   concatenateArrayBuffersAsync,
   paceBatchIterator
 } from '@loaders.gl/core/loader-utils';
-import type {
-  ObjectRowTable,
-  ObjectRowTableBatch,
-  ArrowTable,
-  ArrowTableBatch
-} from '@loaders.gl/core/schema';
+import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 
-import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema-utils';
+import {
+  convertArrowTable,
+  convertArrowTableBatch,
+  makeArrowMetadataBatch
+} from '@loaders.gl/core/schema-utils';
 import {
   parseParquetFileToArrowWithJs,
   parseParquetFileToArrowInBatchesWithJs
 } from './lib/parsers/parse-parquet-to-arrow-js';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {
+  convertParquetBatchToRows,
   deserializeParquetWorkerBatch,
   deserializeParquetWorkerResult,
   serializeParquetWorkerResult
@@ -43,7 +44,7 @@ const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
 function getArrowDecodeOptions(options: StrictLoaderOptions): StrictLoaderOptions | null {
   const parquet = options.parquet as ParquetLoaderOptions['parquet'];
   return parquet?.shape === 'object-row-table'
-    ? {...options, parquet: {...parquet, shape: 'arrow-table'}}
+    ? {...options, parquet: {...parquet, shape: 'arrow'}}
     : null;
 }
 
@@ -58,11 +59,11 @@ export const ParquetLoaderWithParser = {
     }
     return {
       options: decodeOptions,
-      convert(table: ArrowTable | ObjectRowTable) {
-        if (table.shape !== 'arrow-table') {
+      convert(table: Table | ObjectRowTable) {
+        if ('shape' in table) {
           throw new Error('Parquet object-row conversion requires Arrow table output');
         }
-        return convertArrowTable(table, 'object-row-table');
+        return convertArrowTable({shape: 'arrow-table', data: table}, 'object-row-table');
       }
     };
   },
@@ -74,11 +75,11 @@ export const ParquetLoaderWithParser = {
     }
     return {
       options: decodeOptions,
-      convert(batch: ArrowTableBatch | ObjectRowTableBatch) {
-        if (batch.shape !== 'arrow-table') {
+      convert(batch: RecordBatch | ObjectRowTableBatch) {
+        if ('shape' in batch) {
           throw new Error('Parquet object-row conversion requires Arrow batch output');
         }
-        return convertArrowTableBatch(batch, 'object-row-table');
+        return convertParquetBatchToRows(batch);
       }
     };
   },
@@ -91,7 +92,7 @@ export const ParquetLoaderWithParser = {
   parseFileInBatches(file, options?: ParquetLoaderOptions, context?: LoaderContext) {
     return paceBatchIterator(parseParquetTableInBatches(file, options, context), {
       batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
-      getRowCount: batch => batch.length,
+      getRowCount: batch => ('shape' in batch ? batch.length : batch.numRows),
       signal: options?.signal ?? context?.signal ?? options?.parquet?.signal
     });
   },
@@ -109,8 +110,8 @@ export const ParquetLoaderWithParser = {
   deserializeWorkerResult: deserializeParquetWorkerResult,
   deserializeWorkerBatch: deserializeParquetWorkerBatch
 } as const satisfies LoaderWithParser<
-  ObjectRowTable | ArrowTable,
-  ObjectRowTableBatch | ArrowTableBatch,
+  ObjectRowTable | Table,
+  ObjectRowTableBatch | RecordBatch,
   ParquetLoaderOptions
 >;
 
@@ -125,14 +126,14 @@ async function parseParquetTable(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions,
   context?: LoaderContext
-): Promise<ObjectRowTable | ArrowTable> {
+): Promise<ObjectRowTable | Table> {
   const parquetOptions = getParquetOptions({
     ...options,
     signal: options?.signal || context?.signal
   });
 
-  if (parquetOptions.parquet?.shape === 'arrow-table') {
-    return await parseParquetFileToArrowWithJs(file, parquetOptions);
+  if (parquetOptions.parquet?.shape === 'arrow') {
+    return (await parseParquetFileToArrowWithJs(file, parquetOptions)).data;
   }
 
   const arrowTable = await parseParquetFileToArrowWithJs(file, parquetOptions);
@@ -150,7 +151,7 @@ async function* parseParquetTableInBatches(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions,
   context?: LoaderContext
-): AsyncIterable<ObjectRowTableBatch | ArrowTableBatch> {
+): AsyncIterable<ObjectRowTableBatch | RecordBatch> {
   const parquetOptions = getParquetOptions({
     ...options,
     signal: options?.signal || context?.signal
@@ -163,9 +164,12 @@ async function* parseParquetTableInBatches(
     (options?.signal || context?.signal || options?.parquet?.signal)?.throwIfAborted();
     completed += batch.data.numRows;
     reportProgress?.({phase: 'decode', completed, unit: 'rows'});
-    yield parquetOptions.parquet?.shape === 'arrow-table'
-      ? batch
-      : convertArrowTableBatch(batch, 'object-row-table');
+    if (parquetOptions.parquet?.shape === 'arrow') {
+      if (batch.data.batches.length) yield* batch.data.batches;
+      else yield makeArrowMetadataBatch(batch.data.schema);
+    } else {
+      yield convertArrowTableBatch(batch, 'object-row-table');
+    }
   }
 }
 

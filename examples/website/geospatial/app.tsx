@@ -338,7 +338,7 @@ export default function App(props: AppProps = {}) {
     nextParquetLoaderName: ParquetLoaderName
   ) {
     const url = example.data;
-    const loaderOptions = getLoaderOptions(example, nextTableFormat);
+    const loaderOptions = getLoaderOptions(example, nextTableFormat, nextParquetLoaderName);
     const loaders = getLoaders(example, nextTableFormat, nextParquetLoaderName);
     const requestId = ++loadRequestIdRef.current;
     const loadStartTime = performance.now();
@@ -354,7 +354,10 @@ export default function App(props: AppProps = {}) {
     }));
 
     try {
-      const rawTable = (await load(url, loaders as any, loaderOptions)) as Table;
+      const loaded = (await load(url, loaders as any, loaderOptions)) as Table | import('apache-arrow').Table;
+      const rawTable: Table = 'numRows' in loaded
+        ? {shape: 'arrow-table', data: loaded, schema: convertArrowToSchema(loaded.schema)}
+        : loaded;
       if (requestId !== loadRequestIdRef.current) {
         return;
       }
@@ -477,16 +480,18 @@ function getLoaders(
 
 function getLoaderOptions(
   example: Example,
-  tableFormat: TableFormat
+  tableFormat: TableFormat,
+  parquetLoaderName: ParquetLoaderName
 ): LoaderOptions {
   const tableShape = tableFormat === 'geoarrow' ? 'arrow-table' : 'geojson-table';
+  const nativeTableShape = tableFormat === 'geoarrow' ? 'arrow' : 'geojson-table';
   const geoArrowTableShape = 'arrow-table';
 
   return {
     ...LOADER_OPTIONS,
     parquet: {
       ...LOADER_OPTIONS.parquet,
-      shape: tableShape
+      shape: tableFormat === 'geoarrow' ? 'arrow' : parquetLoaderName === 'parquet' ? 'object-row-table' : 'geojson-table'
     },
     arrow: {
       ...LOADER_OPTIONS.arrow,
@@ -494,7 +499,7 @@ function getLoaderOptions(
     },
     geopackage: {
       ...LOADER_OPTIONS.geopackage,
-      shape: tableShape
+      shape: nativeTableShape
     },
     shapefile: {
       ...LOADER_OPTIONS.shapefile,
@@ -503,22 +508,22 @@ function getLoaderOptions(
     },
     kml: {
       ...LOADER_OPTIONS.kml,
-      shape: tableShape
+      shape: nativeTableShape
     },
     gpx: {
       ...LOADER_OPTIONS.gpx,
-      shape: tableShape
+      shape: nativeTableShape
     },
     tcx: {
       ...LOADER_OPTIONS.tcx,
-      shape: tableShape
+      shape: nativeTableShape
     },
     flatgeobuf: {
-      shape: tableShape
+      shape: nativeTableShape
     },
     csv: {
       ...LOADER_OPTIONS.csv,
-      shape: tableFormat === 'geoarrow' ? 'arrow-table' : 'object-row-table'
+      shape: tableFormat === 'geoarrow' ? 'arrow' : 'object-row-table'
     }
   } as unknown as LoaderOptions;
 }
@@ -568,10 +573,10 @@ function getLoaderDisplayName(
     case 'GeoJSON':
       return 'GeoJSONLoader';
     case 'CSV':
-      return tableFormat === 'geoarrow' ? "CSVLoader (shape: 'arrow-table')" : 'CSVLoader';
+      return tableFormat === 'geoarrow' ? "CSVLoader (shape: 'arrow')" : 'CSVLoader';
     case 'GeoPackage':
       return tableFormat === 'geoarrow'
-        ? "GeoPackageLoader (shape: 'arrow-table')"
+        ? "GeoPackageLoader (shape: 'arrow')"
         : 'GeoPackageLoader';
     case 'FlatGeobuf':
       return 'FlatGeobufLoader';

@@ -207,7 +207,7 @@ describe('traces public API edge coverage', () => {
     })) as ChromeTraceFileSchema;
     expect(legacyJson).toEqual(json);
     const arrowTable = (await parse(input, ChromeTraceLoader, {
-      shape: 'arrow-table'
+      shape: 'arrow'
     })) as ChromeTraceEventArrowTable;
 
     expect(json.traceEvents).toHaveLength(1);
@@ -373,7 +373,7 @@ describe('traces public API edge coverage', () => {
         traceEvents: [createSpan('span')]
       }),
       ChromeTraceLoader,
-      {chromeTrace: {shape: 'arrow-table'}}
+      {chromeTrace: {shape: 'arrow'}}
     )) as ChromeTraceEventArrowTable;
 
     const encoded = encodeSync(table, ChromeTraceWriter, {

@@ -114,13 +114,13 @@ and query them through a source API, use [`GeoPackageSource`](/docs/modules/geos
 | Shape              | Output                                      |
 | ------------------ | ------------------------------------------- |
 | `geojson-table`    | loaders.gl `GeoJSONTable` for one table     |
-| `arrow-table`      | loaders.gl `ArrowTable` with WKB geometry   |
+| `arrow`      | Apache Arrow `Table` with WKB geometry   |
 
 ## Options
 
 | Option                | Type   | Default                                             | Description                                                                                                            |
 | --------------------- | ------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `geopackage.shape`    | String | `'arrow-table'`                                     | Output shape: `'arrow-table'` or `'geojson-table'`.                                                                     |
+| `geopackage.shape`    | String | `'arrow'`                                     | Output shape: `'arrow'` or `'geojson-table'`.                                                                     |
 | `geopackage.table`    | String | metadata-selected table                             | Name of the vector table to load.                                                                                      |
 | `geopackage.sqlJsCDN` | String | `'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackage loader is called on a file. |
 | `gis.reproject`       | boolean | `false`                                             | Opt-in coordinate transformation; missing source CRS or unsupported transformations throw `CRSReprojectionError`.       |
@@ -134,7 +134,7 @@ The `GeoPackageLoader` loads one GeoPackage vector table.
 
   Returns a `GeoJSONTable` for the selected table.
 
-- If `geopackage.shape` is `'arrow-table'`:
+- If `geopackage.shape` is `'arrow'`:
 
   Returns an `ArrowTable` for the selected table with a WKB `geometry` column.
 

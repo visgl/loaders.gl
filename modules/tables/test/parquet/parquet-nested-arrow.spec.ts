@@ -17,7 +17,7 @@ test('ParquetJSLoader projects nested and repeated columns directly to Arrow', a
     {
       core: {worker: false},
       parquet: {
-        shape: 'arrow-table',
+        shape: 'arrow',
         columns: ['stock', 'colour'],
         offset: 1,
         limit: 3,
@@ -26,16 +26,16 @@ test('ParquetJSLoader projects nested and repeated columns directly to Arrow', a
     }
   );
 
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape !== 'arrow-table') {
+  expect(table).toHaveProperty('numRows');
+  if (!('numRows' in table)) {
     return;
   }
 
-  expect(table.data.schema.fields.map(field => field.name)).toEqual(['stock', 'colour']);
-  expect(table.data.batches.map(batch => batch.numRows)).toEqual([2, 1]);
-  expect(table.data.getChild('colour')?.get(0)?.toArray()).toEqual(['orange']);
+  expect(table.schema.fields.map(field => field.name)).toEqual(['stock', 'colour']);
+  expect(table.batches.map(batch => batch.numRows)).toEqual([2, 1]);
+  expect(table.getChild('colour')?.get(0)?.toArray()).toEqual(['orange']);
   const stock = JSON.parse(
-    JSON.stringify(table.data.getChild('stock')?.toArray(), (_key, value) =>
+    JSON.stringify(table.getChild('stock')?.toArray(), (_key, value) =>
       typeof value === 'bigint' ? value.toString() : value
     )
   );
@@ -56,22 +56,22 @@ test('ParquetJSLoader retains byte-backed logical columns directly in Arrow', as
     {
       core: {worker: false},
       parquet: {
-        shape: 'arrow-table',
+        shape: 'arrow',
         columns: ['inter', 'meta_json'],
         limit: 4
       }
     }
   );
 
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape !== 'arrow-table') {
+  expect(table).toHaveProperty('numRows');
+  if (!('numRows' in table)) {
     return;
   }
 
-  const interval = table.data.getChild('inter')?.get(0) as Uint8Array;
+  const interval = table.getChild('inter')?.get(0) as Uint8Array;
   expect(Array.from(interval)).toEqual([42, 0, 0, 0, 23, 0, 0, 0, 9, 3, 0, 0]);
 
-  const metadata = table.data.getChild('meta_json');
+  const metadata = table.getChild('meta_json');
   expect(metadata?.get(0)).toBeNull();
   expect(metadata?.get(1)).toBeNull();
   const expectedShipDate = metadata?.get(2) as Uint8Array;
@@ -85,14 +85,14 @@ test('ParquetJSLoader reuses single-page fixed byte payloads as Arrow Binary dat
   const parquet = await response.arrayBuffer();
   const table = await load(parquet, ParquetJSLoader, {
     core: {worker: false},
-    parquet: {shape: 'arrow-table', columns: ['finger', 'inter']}
+    parquet: {shape: 'arrow', columns: ['finger', 'inter']}
   });
 
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape !== 'arrow-table') return;
+  expect(table).toHaveProperty('numRows');
+  if (!('numRows' in table)) return;
 
-  const finger = table.data.getChild('finger');
-  const interval = table.data.getChild('inter');
+  const finger = table.getChild('finger');
+  const interval = table.getChild('inter');
   expect(finger?.data[0].values.buffer).toBe(parquet);
   expect(interval?.data[0].values.buffer).toBe(parquet);
   expect(Array.from(finger?.get(0) as Uint8Array)).toEqual([70, 78, 79, 82, 68]);

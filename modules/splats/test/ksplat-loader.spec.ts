@@ -10,27 +10,29 @@ const COMPRESSED_BYTES_PER_SPLAT = 24;
 test('KSPLATLoader parses uncompressed GaussianSplats3D buffers', async () => {
   const data = makeKSPLATFixture();
   const table = await parse(data, KSPLATLoader);
-  expect(table.shape, 'returns MeshArrowTable').toBe('arrow-table');
-  expect(table.data.numRows, 'parses row count').toBe(2);
+  expect(table.numRows, 'parses row count').toBe(2);
   expect(
-    table.data.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),
+    JSON.parse(table.schema.metadata.get('loaders_gl.gaussian_splats.loader_data')!)
+  ).toMatchObject({format: 'ksplat', sections: [{splatCount: 2}]});
+  expect(
+    table.schema.metadata.get('loaders_gl.gaussian_splats.source_format'),
     'adds source format metadata'
   ).toBe('ksplat');
   expect(
-    Array.from(table.data.getChild('POSITION')?.get(1)?.toArray() || []),
+    Array.from(table.getChild('POSITION')?.get(1)?.toArray() || []),
     'parses position'
   ).toEqual([4, 5, 6]);
-  expect(table.data.getChild('scale_2')?.get(0), 'parses linear scale').toBe(3);
+  expect(table.getChild('scale_2')?.get(0), 'parses linear scale').toBe(3);
   expect(
-    Math.abs(Number(table.data.getChild('opacity')?.get(1)) - 64 / 255) < 1e-6,
+    Math.abs(Number(table.getChild('opacity')?.get(1)) - 64 / 255) < 1e-6,
     'parses color alpha as opacity'
   ).toBeTruthy();
   expect(
-    Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6,
+    Math.abs(Number(table.getChild('rot_0')?.get(0)) - 1) < 1e-6,
     'parses rotation'
   ).toBeTruthy();
   const syncTable = parseSync(data, KSPLATLoaderWithParser);
-  expect(syncTable.data.numRows, 'parser subpath supports parseSync').toBe(2);
+  expect(syncTable.numRows, 'parser subpath supports parseSync').toBe(2);
 });
 test('KSPLATLoader validates header and version', () => {
   expect(
@@ -46,12 +48,12 @@ test('KSPLATLoader validates header and version', () => {
 test('KSPLATLoader decodes compressed bucket-relative centers', () => {
   const table = KSPLATLoaderWithParser.parseSync(makeCompressedKSPLATFixture());
   expect(
-    Array.from(table.data.getChild('POSITION')?.get(0)?.toArray() || []),
+    Array.from(table.getChild('POSITION')?.get(0)?.toArray() || []),
     'decodes uint16 bucket-relative center'
   ).toEqual([10, 20, 30]);
-  expect(table.data.getChild('scale_1')?.get(0), 'decodes half-float scale').toBe(2);
+  expect(table.getChild('scale_1')?.get(0), 'decodes half-float scale').toBe(2);
   expect(
-    Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6,
+    Math.abs(Number(table.getChild('rot_0')?.get(0)) - 1) < 1e-6,
     'decodes rotation'
   ).toBeTruthy();
 });

@@ -50,12 +50,11 @@ test.each(['tables'])('Parquet worker assets remain executable under %s', async 
     ParquetLoader,
     {
       core: {worker: true, reuseWorkers: false},
-      parquet: {workerUrl, shape: 'arrow-table'}
+      parquet: {workerUrl, shape: 'arrow'}
     }
   );
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data.numRows).toBe(2);
-  expect(table.data.getChild('id')?.get(0)).toBeTypeOf('number');
+  expect(table.numRows).toBe(2);
+  expect(table.getChild('id')?.get(0)).toBeTypeOf('number');
 });
 
 test('canonical Parquet WASM export resolves to an emitted binary', async () => {

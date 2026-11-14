@@ -54,7 +54,7 @@ import {load, encode, encodeText} from '@loaders.gl/core';
 import {ChromeTraceLoader, ChromeTraceWriter} from '@loaders.gl/traces';
 
 const table = await load('input.json', ChromeTraceLoader, {
-  chromeTrace: {shape: 'arrow-table'}
+  chromeTrace: {shape: 'arrow'}
 });
 
 const jsonBytes = await encode(table, ChromeTraceWriter);

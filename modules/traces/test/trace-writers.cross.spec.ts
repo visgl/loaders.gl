@@ -52,7 +52,7 @@ describe('trace format writers', () => {
     };
     const input = new TextEncoder().encode(JSON.stringify(source));
     const table = (await parse(input, ChromeTraceLoader, {
-      chromeTrace: {shape: 'arrow-table'}
+      chromeTrace: {shape: 'arrow'}
     })) as ChromeTraceEventArrowTable;
 
     const encoded = encodeSync(table, ChromeTraceWriter);
@@ -76,7 +76,7 @@ describe('trace format writers', () => {
     const batches = await parseInBatches(
       [new TextEncoder().encode(JSON.stringify(source))],
       ChromeTraceLoader,
-      {chromeTrace: {shape: 'arrow-table', batchSize: 1}}
+      {chromeTrace: {shape: 'arrow', batchSize: 1}}
     );
 
     for await (const batch of batches) {

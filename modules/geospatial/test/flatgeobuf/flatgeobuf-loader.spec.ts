@@ -4,6 +4,8 @@
 
 /* eslint-disable camelcase */
 
+import {Binary, Table} from 'apache-arrow';
+import {makeArrowTableFromBatches} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
@@ -67,7 +69,7 @@ test('FlatGeobufLoader#load geojson-table shape', async () => {
   expect(geojsonTable.schema.fields.length).toBe(2);
   expect(geojsonTable.schema.fields.map(field => field.name)).toEqual(['id', 'name']);
 });
-test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async () => {
+test('FlatGeobufLoader#load arrow round-trips to GeoJSON', async () => {
   const arrowTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false}
   });
@@ -75,13 +77,13 @@ test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async () => {
     core: {worker: false},
     flatgeobuf: {shape: 'geojson-table'}
   });
-  expect(arrowTable.shape, 'returns Arrow table shape').toBe('arrow-table');
-  expect(arrowTable.data.numRows, 'preserves row count').toBe(geojsonTable.features.length);
+  expect(arrowTable).toBeInstanceOf(Table);
+  expect(arrowTable.numRows, 'preserves row count').toBe(geojsonTable.features.length);
   expect(arrowTable.schema.fields.length, 'adds a geometry field').toBe(3);
   expect(arrowTable.schema.fields[2].name, 'geometry field appended').toBe('geometry');
-  expect(arrowTable.schema.fields[2].type, 'geometry field is Arrow binary').toBe('binary');
+  expect(arrowTable.schema.fields[2].type, 'geometry field is Arrow binary').toBeInstanceOf(Binary);
   expect(
-    arrowTable.schema.fields[2].metadata?.['ARROW:extension:name'],
+    arrowTable.schema.fields[2].metadata.get('ARROW:extension:name'),
     'geometry field includes GeoArrow WKB metadata'
   ).toBe('geoarrow.wkb');
   const geoMetadata = getGeoMetadata(arrowTable.schema.metadata);
@@ -91,21 +93,18 @@ test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async () => {
     geoMetadata?.columns.geometry.geometry_types,
     'geo metadata captures FlatGeobuf geometry type'
   ).toEqual(['MultiPolygon']);
-  const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
+  const roundTripped = convertGeoArrowToTable(arrowTable, 'geojson-table');
   expect(normalizeFeatures(roundTripped.features), 'Arrow output round-trips to GeoJSON').toEqual(
     normalizeFeatures(geojsonTable.features)
   );
 });
-test('FlatGeobufLoader#load arrow-table worker result is hydrated', async () => {
+test('FlatGeobufLoader#load arrow worker result is hydrated', async () => {
   const arrowTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: true}
   });
-  expect(arrowTable.shape).toBe('arrow-table');
-  if (arrowTable.shape === 'arrow-table') {
-    expect(arrowTable.data.getChild('geometry')).toBeTruthy();
-  }
+  expect(arrowTable.getChild('geometry')).toBeTruthy();
 });
-test('FlatGeobufLoader#load arrow-table reprojects like geojson-table', async () => {
+test('FlatGeobufLoader#load arrow reprojects like geojson-table', async () => {
   const arrowTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false},
     gis: {reproject: true, targetCrs: 'EPSG:3857'}
@@ -115,17 +114,18 @@ test('FlatGeobufLoader#load arrow-table reprojects like geojson-table', async ()
     flatgeobuf: {shape: 'geojson-table'},
     gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
-  const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
+  const roundTripped = convertGeoArrowToTable(arrowTable, 'geojson-table');
   expect(
     normalizeFeatures(roundTripped.features),
     'reprojected Arrow output matches GeoJSON output'
   ).toEqual(normalizeFeatures(geojsonTable.features));
-  expect(arrowTable.schema.metadata?.crs, 'Arrow metadata reports the transformed CRS').toBe(
+  expect(arrowTable.schema.metadata.get('crs'), 'Arrow metadata reports the transformed CRS').toBe(
     'EPSG:3857'
   );
-  expect(arrowTable.schema.metadata?.sourceCrs, 'Arrow metadata retains the source CRS').toContain(
-    'EPSG'
-  );
+  expect(
+    arrowTable.schema.metadata.get('sourceCrs'),
+    'Arrow metadata retains the source CRS'
+  ).toContain('EPSG');
 });
 test('FlatGeobufLoader#loadInBatches', async () => {
   const iterator = await loadInBatches(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
@@ -139,19 +139,13 @@ test('FlatGeobufLoader#loadInBatches', async () => {
   }
   expect(features.length).toBeTruthy();
 });
-test('FlatGeobufLoader#loadInBatches arrow-table yields stable schema', async () => {
+test('FlatGeobufLoader#loadInBatches arrow yields stable schema', async () => {
   const iterator = await loadInBatches(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false}
   });
-  let arrowTable = null;
-  let schema = null;
-  for await (const batch of iterator) {
-    schema ||= batch.schema;
-    expect(batch.schema, 'batch schema remains stable').toEqual(schema);
-    arrowTable = batch;
-  }
-  expect(schema, 'Arrow batches expose schema').toBeTruthy();
-  const roundTripped = convertGeoArrowToTable(arrowTable.data, 'geojson-table');
+  const arrowTable = await makeArrowTableFromBatches(iterator);
+  expect(arrowTable?.schema, 'Arrow batches expose schema').toBeTruthy();
+  const roundTripped = convertGeoArrowToTable(arrowTable!, 'geojson-table');
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false},
     flatgeobuf: {shape: 'geojson-table'}

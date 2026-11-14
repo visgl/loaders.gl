@@ -20,7 +20,7 @@ export default async function geopackageLoaderBench(suite) {
     async () => {
       await load(arrayBuffer.slice(0), GeoPackageLoader, {
         core: {worker: false},
-        geopackage: {shape: 'arrow-table'}
+        geopackage: {shape: 'arrow'}
       });
     }
   );

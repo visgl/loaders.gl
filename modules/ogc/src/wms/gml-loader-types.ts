@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {GMLFeatureCollection, Geometry, ParseGMLOptions} from './lib/parsers/gml/parse-gml';
 
 import {GMLFormat} from './wms-format';
@@ -16,7 +16,7 @@ export type GMLLoaderOptions = LoaderOptions & {
   /** GML parser and output options. */
   gml?: ParseGMLOptions & {
     /** Arrow feature table by default; geojson preserves the legacy geometry/collection. */
-    shape?: 'arrow-table' | 'geojson';
+    shape?: 'arrow' | 'geojson';
     /** Number of feature members emitted in each streaming batch. */
     batchSize?: number;
   };
@@ -31,8 +31,10 @@ async function preload() {
 /** Metadata-only loader for GML geometry responses. */
 export const GMLLoader = {
   ...GMLFormat,
-  dataType: null as unknown as ArrowTable | Geometry | GMLFeatureCollection | null,
-  batchType: null as unknown as ArrowTableBatch | GMLFeatureCollection,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as Table | Geometry | GMLFeatureCollection | null,
+  batchType: null as unknown as RecordBatch | GMLFeatureCollection,
 
   name: 'GML',
   id: 'gml',
@@ -47,12 +49,12 @@ export const GMLLoader = {
   mimeTypes: ['application/vnd.ogc.gml', 'application/xml', 'text/xml'],
   testText: testXMLFile,
   options: {
-    gml: {shape: 'arrow-table'}
+    gml: {shape: 'arrow'}
   },
   preload
 } as const satisfies Loader<
-  ArrowTable | Geometry | GMLFeatureCollection | null,
-  ArrowTableBatch | GMLFeatureCollection,
+  Table | Geometry | GMLFeatureCollection | null,
+  RecordBatch | GMLFeatureCollection,
   GMLLoaderOptions
 >;
 

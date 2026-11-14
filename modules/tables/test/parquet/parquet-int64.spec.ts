@@ -45,13 +45,13 @@ test('ParquetJSLoader preserves physical INT64 values in Arrow Int64 vectors', a
   const parquetBuffer = await createExactInt64Fixture();
   const table = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
-    parquet: {shape: 'arrow-table'}
+    parquet: {shape: 'arrow'}
   });
 
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape === 'arrow-table') {
-    expect(table.data.schema.fields[0].type).toBeInstanceOf(arrow.Int64);
-    expect(Array.from(table.data.getChildAt(0) || [])).toEqual(EXACT_INT64_VALUES);
+  expect(table).toHaveProperty('numRows');
+  if ('numRows' in table) {
+    expect(table.schema.fields[0].type).toBeInstanceOf(arrow.Int64);
+    expect(Array.from(table.getChildAt(0) || [])).toEqual(EXACT_INT64_VALUES);
   }
 });
 

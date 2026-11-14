@@ -5846,6 +5846,7 @@ __metadata:
     lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
+    apache-arrow: ">= 17.0.0"
   languageName: unknown
   linkType: soft
 

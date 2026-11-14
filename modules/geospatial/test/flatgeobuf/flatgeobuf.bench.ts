@@ -20,7 +20,7 @@ export default async function flatgeobufBench(suite) {
     async () => {
       await load(arrayBuffer.slice(0), FlatGeobufLoader, {
         core: {worker: false},
-        flatgeobuf: {shape: 'arrow-table'}
+        flatgeobuf: {shape: 'arrow'}
       });
     }
   );

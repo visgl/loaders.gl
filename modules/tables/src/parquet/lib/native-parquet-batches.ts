@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import type {ArrowTableBatch} from '@loaders.gl/core/schema';
 import type {
   ParquetBatch,
   ParquetBatchProvenance,
@@ -59,5 +61,15 @@ export async function* streamNativeParquetBatches(
       yield new RecordBatch(recordBatch.schema, recordBatch.data, metadata);
       start += length;
     }
+  }
+}
+
+/** Exposes decoded Arrow column batches while retaining an empty table's schema. */
+export async function* unwrapParquetBatches(
+  batches: AsyncIterable<ArrowTableBatch>
+): AsyncIterable<RecordBatch> {
+  for await (const {data} of batches) {
+    if (data.batches.length) yield* data.batches;
+    else yield makeArrowMetadataBatch(data.schema);
   }
 }

@@ -7,8 +7,8 @@ import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 /** Options shared by Gaussian splat loaders. */
 export type SplatsLoaderOptions = LoaderOptions & {
   splats?: {
-    /** Output shape. V1 supports loaders.gl Mesh Arrow tables. */
-    shape?: 'arrow-table';
+    /** Output shape. Returns a native Apache Arrow table. */
+    shape?: 'arrow';
     /** Coordinate frame stored in the source SPZ payload. */
     sourceCoordinateSystem?: SPZCoordinateSystem;
     /** Coordinate frame expected by the caller. Defaults to the source frame. */

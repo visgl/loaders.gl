@@ -3,12 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {
-  ObjectRowTable,
-  ObjectRowTableBatch,
-  ArrowTable,
-  ArrowTableBatch
-} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 
 import {PARQUET_LOADER_BASE} from './parquet-loader-base';
 import type {ParquetLoaderOptions as SharedParquetLoaderOptions} from './parquet-loader-options';
@@ -26,12 +22,13 @@ async function preloadParquetLoader() {
 /** Metadata-only Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoader = {
   defaultShape: 'arrow',
+  supportsNativeArrow: true,
   ...PARQUET_LOADER_BASE,
   worker: PARQUET_WORKER_URL,
   workerInBatches: true,
   preload: preloadParquetLoader
 } as const satisfies Loader<
-  ObjectRowTable | ArrowTable,
-  ObjectRowTableBatch | ArrowTableBatch,
+  ObjectRowTable | Table,
+  ObjectRowTableBatch | RecordBatch,
   ParquetLoaderOptions
 >;
