@@ -50,10 +50,7 @@ beforeEach(() => {
     fields: [{name: 'geometry', type: 'binary', nullable: true}],
     metadata: {}
   });
-  sourceMocks.parseTable.mockResolvedValue({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({value: [1]})
-  });
+  sourceMocks.parseTable.mockResolvedValue(arrow.tableFromArrays({value: [1]}));
 });
 
 test('GeoPackage URL metadata and table reads share bytes and cache discovery', async () => {
@@ -149,7 +146,7 @@ test('GeoPackage query cancellation prevents parsing and rejects cancellation du
   const duringRead = new AbortController();
   sourceMocks.parseTable.mockImplementation(async () => {
     duringRead.abort();
-    return {shape: 'arrow-table', data: arrow.tableFromArrays({value: [1]})};
+    return arrow.tableFromArrays({value: [1]});
   });
   await expect(source.query({signal: duringRead.signal})).rejects.toMatchObject({
     name: 'AbortError'

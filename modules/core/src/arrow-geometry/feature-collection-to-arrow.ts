@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Feature, Field, GeoJsonProperties, Schema} from '@loaders.gl/core/schema';
+import type {Feature, Field, GeoJsonProperties, Schema} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {
   encodeWKBGeometryValue,
@@ -19,7 +20,7 @@ import {
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
 /**
- * Converts GeoJSON features into a loaders.gl Arrow table with a GeoArrow WKB geometry column.
+ * Converts GeoJSON features into an Apache Arrow table with a GeoArrow WKB geometry column.
  *
  * @param features - GeoJSON features.
  * @returns Arrow table preserving feature properties and storing geometry as WKB bytes.
@@ -30,10 +31,10 @@ export function convertFeaturesToWKBArrowTable(
     encodingPreference?: GeoArrowEncodingPreference;
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   } = {}
-): ArrowTable {
+): Table {
   const encodingPreference = resolveGeoArrowEncodingPreference(options);
   if (encodingPreference && encodingPreference !== 'geoarrow.wkb') {
-    return convertFeaturesToGeoArrowTable(features, options);
+    return convertFeaturesToGeoArrowTable(features, options).data;
   }
   const hasFeatureIds = features.some(feature => feature.id !== undefined);
   const propertyRows = features.map(feature => {
@@ -54,11 +55,7 @@ export function convertFeaturesToWKBArrowTable(
     });
   }
 
-  return {
-    shape: 'arrow-table',
-    schema: structuredClone(arrowTableBuilder.schema),
-    data: arrowTableBuilder.finishTable()
-  };
+  return arrowTableBuilder.finishTable();
 }
 
 /**

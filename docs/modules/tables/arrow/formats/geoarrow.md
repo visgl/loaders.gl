@@ -283,8 +283,8 @@ returns and before native allocation, including when the requested target alread
 source. They are useful for service and worker boundaries that accept untrusted geometry; normal
 in-memory conversions remain unlimited unless a caller supplies a budget.
 
-For streaming Arrow batches, `convertGeoArrowBatches()` preserves record-batch boundaries and
-checks cancellation between batches. If a WKB/WKT stream has no trusted `geometry_types` metadata,
+For streaming Arrow data, `convertGeoArrowBatches()` accepts and yields native Arrow
+`RecordBatch` values. It preserves batch-local metadata and checks cancellation between batches. If a WKB/WKT stream has no trusted `geometry_types` metadata,
 `native` conversion selects a stable dense union seeded with all seven geometry families and all
 four dimensions. A later batch can therefore introduce a new family without changing the stream
 schema or forcing an earlier batch through a row-object bridge.

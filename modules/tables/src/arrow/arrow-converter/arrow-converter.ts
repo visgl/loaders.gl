@@ -34,28 +34,16 @@ export type ArrowConvertFromOptions = {
  * Leaf converter for Apache Arrow table interop.
  */
 export const ArrowConverter: Converter<
-  | 'arrow'
-  | 'object-row-table'
-  | 'array-row-table'
-  | 'columnar-table'
-  | 'arrow-table'
-  | 'geojson-table',
+  'arrow' | 'object-row-table' | 'array-row-table' | 'columnar-table' | 'geojson-table',
   ArrowConvertFromOptions | ArrowConvertToOptions
 > = {
   id: 'arrow',
-  from: [
-    'arrow',
-    'object-row-table',
-    'array-row-table',
-    'columnar-table',
-    'arrow-table',
-    'geojson-table'
-  ],
+  from: ['arrow', 'object-row-table', 'array-row-table', 'columnar-table', 'geojson-table'],
   to: ['arrow', 'object-row-table', 'array-row-table', 'columnar-table', 'geojson-table'],
   canConvert(sourceShape, targetShape) {
     const sourceIsArrow = sourceShape === 'arrow';
     const targetIsArrow = targetShape === 'arrow';
-    return targetShape !== 'arrow-table' && sourceIsArrow !== targetIsArrow;
+    return sourceIsArrow !== targetIsArrow;
   },
   detectInputShape(input) {
     return isApacheArrowTable(input as any) ? 'arrow' : null;

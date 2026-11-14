@@ -16,9 +16,9 @@ export type TableShape = 'object-row-table' | 'array-row-table' | 'columnar-tabl
 /**
  * Leaf converter for loaders.gl table wrapper shapes.
  */
-export const TableConverter: Converter<TableShape | 'arrow-table'> = {
+export const TableConverter: Converter<TableShape> = {
   id: 'table',
-  from: ['object-row-table', 'array-row-table', 'columnar-table', 'arrow-table', 'arrow'],
+  from: ['object-row-table', 'array-row-table', 'columnar-table', 'arrow'],
   to: ['object-row-table', 'array-row-table', 'columnar-table', 'arrow'],
   canConvert(sourceShape, targetShape) {
     return sourceShape !== targetShape;
@@ -30,9 +30,9 @@ export const TableConverter: Converter<TableShape | 'arrow-table'> = {
       input !== null &&
       'shape' in input &&
       typeof input.shape === 'string' &&
-      ['object-row-table', 'array-row-table', 'columnar-table', 'arrow-table'].includes(input.shape)
+      ['object-row-table', 'array-row-table', 'columnar-table'].includes(input.shape)
     ) {
-      return input.shape as TableShape | 'arrow-table';
+      return input.shape as TableShape;
     }
     return null;
   },

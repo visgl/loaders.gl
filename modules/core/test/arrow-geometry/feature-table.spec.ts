@@ -96,8 +96,8 @@ test('convertFeaturesToWKBArrowTable#preserves feature IDs and sparse properties
     }
   ]);
 
-  expect(table.data.getChild('id')?.toArray()).toEqual(['first', 'second']);
-  const populationColumn = table.data.getChild('population');
+  expect(table.getChild('id')?.toArray()).toEqual(['first', 'second']);
+  const populationColumn = table.getChild('population');
   expect(populationColumn?.get(0)).toBeNull();
   expect(populationColumn?.get(1)).toBe(42);
 });

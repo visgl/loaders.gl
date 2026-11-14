@@ -14,16 +14,12 @@ import type {ArrowLoaderOptions} from '../../src/arrow/arrow-loader-types';
 test.each([
   [undefined, 'columnar-table'],
   [{}, 'columnar-table'],
-  [{arrow: {shape: 'arrow-table'}}, 'arrow-table'],
   [{arrow: {shape: 'arrow'}}, 'arrow'],
 
   [{arrow: {shape: 'array-row-table'}}, 'array-row-table'],
   [{arrow: {shape: 'object-row-table'}}, 'object-row-table']
 ] as const)('Arrow column hydration honors options %j', (options, shape) => {
-  const serialized = serializeArrowTableResult({
-    shape: 'arrow-table',
-    data: tableFromArrays({id: new Int32Array([1])})
-  });
+  const serialized = serializeArrowTableResult(tableFromArrays({id: new Int32Array([1])}));
   const result = deserializeArrowTableResult(serialized, options as ArrowLoaderOptions | undefined);
   if (result instanceof Table) {
     expect(shape).toBe('arrow');
@@ -31,10 +27,7 @@ test.each([
     return;
   }
   expect(result.shape).toBe(shape);
-  if (result.shape === 'arrow-table') {
-    expect(result.data).toBeInstanceOf(Table);
-    expect(result.data.getChild('id')?.get(0)).toBe(1);
-  } else if (result.shape === 'array-row-table') {
+  if (result.shape === 'array-row-table') {
     expect(result.data).toEqual([[1]]);
   } else if (result.shape === 'object-row-table') {
     expect(result.data).toEqual([{id: 1}]);
@@ -43,11 +36,7 @@ test.each([
   }
 });
 
-test.each([
-  null,
-  {shape: 'arrow-table'},
-  {shape: 'arrow-table', data: {}}
-])('Arrow serialization rejects malformed table %j', result => {
+test.each([null, {}, {numRows: 1}])('Arrow serialization rejects malformed table %j', result => {
   expect(() => serializeArrowTableResult(result)).toThrow('Arrow table output');
 });
 
