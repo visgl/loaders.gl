@@ -26,7 +26,7 @@ describe('I3S Point profile', () => {
     const tileset = await I3SLoaderWithParser.parse(
       new TextEncoder().encode(JSON.stringify(fixture)).buffer,
       {
-        fetch: nodePageFetch,
+        core: {fetch: nodePageFetch},
         i3s: {isTileset: true, useDracoGeometry: true}
       } as any,
       {url: LAYER_URL} as any
