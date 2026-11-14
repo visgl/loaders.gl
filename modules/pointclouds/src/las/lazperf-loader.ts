@@ -4,6 +4,8 @@
 
 // LASER (LAS) FILE FORMAT
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {Table, RecordBatch} from 'apache-arrow';
+import {getLASRecordBatches, toPublicLASResult} from './las-loader';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
@@ -23,23 +25,19 @@ export const LAZPerfLoaderWithParser = {
   ...LAS_LOADER_METADATA,
   name: 'LAS (laz-perf)',
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    convertLASMesh(parseLAS(arrayBuffer, options), options),
+    toPublicLASResult(convertLASMesh(parseLAS(arrayBuffer, options), options)),
   parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    convertLASMesh(parseLAS(arrayBuffer, options), options),
+    toPublicLASResult(convertLASMesh(parseLAS(arrayBuffer, options), options)),
   parseInBatches: async function* (arrayBufferIterator, options?: LASLoaderOptions) {
     yield* convertLASMeshBatches(parseLASInBatches(arrayBufferIterator, options), options);
   }
-} as const satisfies LoaderWithParser<
-  LASMesh | MeshArrowTable,
-  LASMesh | MeshArrowTable,
-  LASLoaderOptions
->;
+} as const satisfies LoaderWithParser<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;
 
 function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
   const formattedMesh = formatLASMeshColors(mesh, options?.las?.colorFormat || 'uint8norm');
   const table = convertMeshToTable(formattedMesh, 'arrow-table') as MeshArrowTable;
-  if (getLASShape(options) === 'arrow-table') {
-    return table;
+  if (getLASShape(options) === 'arrow') {
+    return {...table, loaderData: mesh.loaderData};
   }
   return {
     ...(convertTableToMesh(table) as LASMesh),
@@ -58,8 +56,10 @@ function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | Me
 async function* convertLASMeshBatches(
   meshBatches: AsyncIterable<LASMesh>,
   options?: LASLoaderOptions
-): AsyncIterable<LASMesh | MeshArrowTable> {
+): AsyncIterable<LASMesh | RecordBatch> {
   for await (const mesh of meshBatches) {
-    yield convertLASMesh(mesh, options);
+    const result = convertLASMesh(mesh, options);
+    if ('shape' in result) yield* getLASRecordBatches(result);
+    else yield result;
   }
 }

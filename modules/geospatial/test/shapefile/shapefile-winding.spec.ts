@@ -37,7 +37,7 @@ test.each(
 )('ShapefileLoader emits right-hand-rule typed GeoArrow rings for %s', async fixtureName => {
   const table = (await load(`${SHAPEFILE_DATA_FOLDER}/${fixtureName}.shp`, ShapefileLoader, {
     core: {worker: false},
-    shapefile: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+    shapefile: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
   })) as ArrowTable;
   const geojsonTable = convert(table.data, 'geojson-table', GeoArrowTableConverter) as GeoJSONTable;
 

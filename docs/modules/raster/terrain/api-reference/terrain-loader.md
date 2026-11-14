@@ -45,7 +45,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Shape         | Output             | Use when                           |
 | ------------- | ------------------ | ---------------------------------- |
 | `mesh`        | `Mesh`             | You want the legacy mesh object.   |
-| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| `arrow` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
@@ -67,7 +67,7 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, TerrainLoader, options);
 const table = await load(url, TerrainLoader, {
   worker: false,
-  terrain: {...options.terrain, shape: 'arrow-table'}
+  terrain: {...options.terrain, shape: 'arrow'}
 });
 ```
 
@@ -96,7 +96,7 @@ If you only need elevation samples, use the lightweight
 | `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
 | `terrain.tesselator`       | `string`        | `auto`    | See below                                                                                                                                     |
-| `terrain.shape`            | `string`        | `arrow-table` | Output shape: `'arrow-table'` or `'mesh'`.                                                                                                  |
+| `terrain.shape`            | `string`        | `arrow` | Output shape: `'arrow'` or `'mesh'`.                                                                                                  |
 | `terrain.skirtHeight`      | `number`        | `null`    | If set, create the skirt for the tile with particular height in meters                                                                        |
 
 ### elevationDecoder

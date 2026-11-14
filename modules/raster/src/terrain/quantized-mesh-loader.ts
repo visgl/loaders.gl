@@ -7,7 +7,8 @@ import {
   deserializeArrowWorkerResult
 } from '@loaders.gl/core/arrow-worker-transport';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseQuantizedMesh} from './lib/parse-quantized-mesh';
 import {
@@ -27,16 +28,16 @@ export const QuantizedMeshLoaderWithParser = {
   deserializeWorkerResult: deserializeArrowWorkerResult,
   parseSync: parseQuantizedMeshInRequestedShape,
   parse: async (arrayBuffer, options) => parseQuantizedMeshInRequestedShape(arrayBuffer, options)
-} as const satisfies LoaderWithParser<Mesh | MeshArrowTable, never, QuantizedMeshLoaderOptions>;
+} as const satisfies LoaderWithParser<Mesh | Table, never, QuantizedMeshLoaderOptions>;
 
 function parseQuantizedMeshInRequestedShape(
   arrayBuffer: ArrayBuffer,
   options?: QuantizedMeshLoaderOptions
-): Mesh | MeshArrowTable {
+): Mesh | Table {
   const mesh = parseQuantizedMesh(arrayBuffer, options?.['quantized-mesh']);
   const table = convertMeshToTable(mesh, 'arrow-table');
-  if (options?.['quantized-mesh']?.shape === 'arrow-table') {
-    return table;
+  if (options?.['quantized-mesh']?.shape === 'arrow') {
+    return table.data;
   }
   return {
     ...convertTableToMesh(table),

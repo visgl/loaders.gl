@@ -27,14 +27,14 @@ const SHAPEFILE_JS_TEST_FILES = [
 test('DBFLoader#parse arrow-table', async () => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     const encoding = testFileName === 'latin1-property' ? 'latin1' : 'utf8';
-    const options = {worker: false, dbf: {encoding, shape: 'arrow-table' as const}};
+    const options = {worker: false, dbf: {encoding, shape: 'arrow' as const}};
     let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const {features} = await response.json();
     response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
     const body = await response.arrayBuffer();
     const table = await parse(body, DBFLoader, options);
     for (let i = 0; i < features.length; i++) {
-      const row = table.data.get(i)!.toJSON();
+      const row = table.get(i)!.toJSON();
       expect(row, testFileName).toEqual(features[i].properties);
     }
   }
@@ -46,6 +46,6 @@ test('DBFLoader#defaults to arrow-table output', async () => {
     worker: false,
     dbf: {encoding: 'utf8'}
   });
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data.numRows).toBeGreaterThan(0);
+  expect(table).toHaveProperty('numRows');
+  expect(table.numRows).toBeGreaterThan(0);
 });

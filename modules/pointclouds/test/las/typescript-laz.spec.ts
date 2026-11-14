@@ -522,8 +522,8 @@ test('LASLoader Arrow output stays on the main thread', async () => {
     core: {worker: true, reuseWorkers: false, _workerType: 'test'}
   });
 
-  expect(result.shape).toBe('arrow-table');
-  expect(result.data.getChild('POSITION')).toBeTruthy();
+  expect(result).toHaveProperty('numRows');
+  expect(result.getChild('POSITION')).toBeTruthy();
 });
 
 /** Load one local LAS/LAZ fixture. */

@@ -68,8 +68,8 @@ test('Point MVT to Arrow table', async () => {
   const geometryTable = await parse(mvtArrayBuffer, MVTLoader, {
     mvt: {coordinates: 'local', layerProperty: 'layerName'}
   });
-  expect(geometryTable.shape).toBe('arrow-table');
-  expect(geometryTable.data.getChild('geometry')?.length, 'preserves feature rows').toBe(1);
+  expect(geometryTable).toHaveProperty('numRows');
+  expect(geometryTable.getChild('geometry')?.length, 'preserves feature rows').toBe(1);
   expect(geometryTable.schema?.metadata?.geo, 'adds GeoArrow metadata').toBeTruthy();
 });
 test('Line MVT to local coordinates JSON', async () => {

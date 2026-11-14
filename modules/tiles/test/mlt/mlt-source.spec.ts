@@ -106,7 +106,7 @@ test('MLTTileSource#getTileData returns Arrow by default', async () => {
 
   MLTLoader.parse = (async (arrayBuffer: ArrayBuffer, options?: unknown) => {
     parseOptions.options = options;
-    return {shape: 'arrow-table', data: {numRows: 1}, schema: {fields: []}};
+    return {numRows: 1, schema: {fields: []}};
   }) as unknown as typeof MLTLoader.parse;
 
   const source = MLTSourceLoader.createDataSourceSync('https://example.com/tiles', {});
@@ -117,11 +117,11 @@ test('MLTTileSource#getTileData returns Arrow by default', async () => {
       id: '1/2/3',
       bbox: {west: 0, north: 0, east: 0, south: 0}
     });
-    expect((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape).toBe('arrow-table');
+    expect((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape).toBe('arrow');
     expect((parseOptions.options as {mlt?: {coordinates?: string}})?.mlt?.coordinates).toBe(
       'wgs84'
     );
-    expect((tile as {shape?: string})?.shape).toBe('arrow-table');
+    expect(tile).toHaveProperty('numRows');
   } finally {
     MLTLoader.parse = originalParse;
   }
@@ -163,7 +163,7 @@ test('MLTTileSource#supports Arrow table shape', async () => {
   MLTLoader.parse = (async (_arrayBuffer: ArrayBuffer, options?: unknown) => {
     parsedOptions = options;
     return {
-      shape: 'arrow-table',
+      shape: 'arrow',
       schema: {fields: [], metadata: {geo: '{}'}},
       data: {numRows: 1}
     };
@@ -171,7 +171,7 @@ test('MLTTileSource#supports Arrow table shape', async () => {
 
   const source = MLTSourceLoader.createDataSourceSync('https://example.com/tiles', {
     geoarrow: {encodingPreference: 'optimized'},
-    mlt: {shape: 'arrow-table'}
+    mlt: {shape: 'arrow'}
   });
   source.fetch = async () => new Response(new ArrayBuffer(8));
   try {
@@ -180,7 +180,7 @@ test('MLTTileSource#supports Arrow table shape', async () => {
       id: '1/2/3',
       bbox: {west: 0, north: 0, east: 0, south: 0}
     });
-    expect((tile as {shape?: string})?.shape).toBe('arrow-table');
+    expect(tile).toHaveProperty('numRows');
     expect((parsedOptions as {geoarrow?: {encodingPreference?: string}}).geoarrow).toEqual({
       encodingPreference: 'optimized'
     });

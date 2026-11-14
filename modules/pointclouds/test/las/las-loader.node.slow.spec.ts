@@ -166,19 +166,16 @@ test('LASLoader#parseInBatches(arrow-table)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     batchSize: 30000,
-    las: {shape: 'arrow-table'},
+    las: {shape: 'arrow'},
     core: {worker: false}
   });
   const batchRowCounts: number[] = [];
   for await (const table of batches as AsyncIterable<any>) {
-    expect(table.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(table.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
-    expect(table.data.getChild('intensity'), 'batch includes intensity column').toBeTruthy();
-    expect(
-      table.data.getChild('classification'),
-      'batch includes classification column'
-    ).toBeTruthy();
-    batchRowCounts.push(table.data.numRows);
+    expect(table, 'batch has arrow-table shape').toHaveProperty('numRows');
+    expect(table.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
+    expect(table.getChild('intensity'), 'batch includes intensity column').toBeTruthy();
+    expect(table.getChild('classification'), 'batch includes classification column').toBeTruthy();
+    batchRowCounts.push(table.numRows);
   }
   expect(batchRowCounts, 'emits requested Arrow batches').toEqual([
     ...new Array(26).fill(30000),
@@ -232,14 +229,12 @@ test('LAS loader variants return Arrow tables', async () => {
     {name: 'laz-rs', loader: LAZRsLoader}
   ]) {
     const table = await parse(arrayBuffer.slice(0), loader, {core: {worker: false}});
-    expect(table.shape, `${name} variant returns an Arrow table`).toBe('arrow-table');
-    expect(table.data.numRows, `${name} variant returns every point`).toBe(
-      LAS_EXTRABYTES_POINT_COUNT
-    );
+    expect(table, `${name} variant returns an Arrow table`).toHaveProperty('numRows');
+    expect(table.numRows, `${name} variant returns every point`).toBe(LAS_EXTRABYTES_POINT_COUNT);
   }
   const syncTable = LAZPerfLoaderWithParser.parseSync(arrayBuffer);
-  expect(syncTable.shape, 'laz-perf parseSync returns an Arrow table').toBe('arrow-table');
-  expect(syncTable.data.numRows, 'laz-perf parseSync returns every point').toBe(
+  expect(syncTable, 'laz-perf parseSync returns an Arrow table').toHaveProperty('numRows');
+  expect(syncTable.numRows, 'laz-perf parseSync returns every point').toBe(
     LAS_EXTRABYTES_POINT_COUNT
   );
 });
@@ -1772,9 +1767,9 @@ function createPointFormat0Record(): Uint8Array {
 }
 test('LASLoader#shape="arrow-table"', async () => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
-    las: {shape: 'arrow-table'},
+    las: {shape: 'arrow'},
     core: {worker: false}
   });
-  expect(result.shape, 'returns Arrow table shape').toBe('arrow-table');
-  expect(result.data.getChild('POSITION'), 'returns POSITION column').toBeTruthy();
+  expect(result, 'returns Arrow table shape').toHaveProperty('numRows');
+  expect(result.getChild('POSITION'), 'returns POSITION column').toBeTruthy();
 });

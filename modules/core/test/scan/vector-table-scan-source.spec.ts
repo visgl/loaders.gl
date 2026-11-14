@@ -173,8 +173,8 @@ test('addressed vector scans propagate cancellation and reject non-Arrow output'
   await expect(emptySource.getQueryMetadata()).rejects.toThrow('did not return a feature table');
 
   const invalidSource = new VectorTileTableScanSource(source, {tile: {x: 0, y: 0, z: 0}});
-  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow-table"');
-  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow-table"');
+  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow"');
+  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow"');
   expect(requestCount).toBe(2);
 });
 

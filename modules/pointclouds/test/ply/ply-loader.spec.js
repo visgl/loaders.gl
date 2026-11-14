@@ -81,24 +81,24 @@ test('PLYLoader#parse(textFile, legacy mesh shape)', async () => {
 });
 test('PLYLoader#parse(textFile) defaults to Arrow table', async () => {
   const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader);
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, indexedMeshArrowSchema, {
     schemaName: 'PLYLoader IndexedMesh table'
   });
 });
 test('PLYLoader#parse(shape: arrow-table)', async () => {
   const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, indexedMeshArrowSchema, {
     schemaName: 'PLYLoader IndexedMesh table'
   });
   expect(
-    table.data.schema.fields.map(field => field.name),
+    table.schema.fields.map(field => field.name),
     'indexed schema fields are first'
   ).toEqual(['POSITION', 'indices', 'NORMAL']);
-  const indicesColumn = table.data.getChild('indices');
+  const indicesColumn = table.getChild('indices');
   expect(indicesColumn, 'indices column was found').toBeTruthy();
   expect(indicesColumn.get(0).length, 'indices were found in row 0').toBe(36);
   expect(indicesColumn.get(1), 'indices are null after row 0').toBe(null);
@@ -122,24 +122,21 @@ test('PLYLoader#parse(colorFormat) returns normalized colors', () => {
 
   const float32Table = parseSync(ASCII_COLOR_PLY, PLYLoader, {
     core: {worker: false},
-    ply: {shape: 'arrow-table', colorFormat: 'float32'}
+    ply: {shape: 'arrow', colorFormat: 'float32'}
   });
-  const tableColor = float32Table.data.getChild('COLOR_0').get(0);
+  const tableColor = float32Table.getChild('COLOR_0').get(0);
   expect(Array.from(tableColor)[0]).toBeCloseTo(1);
   expect(Array.from(tableColor)[1]).toBeCloseTo(128 / 255, 6);
   expect(Array.from(tableColor)[2]).toBe(0);
 });
 test('PLYLoader#parse(shape: arrow-table, pointCloud)', async () => {
   const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {
-    ply: {shape: 'arrow-table', pointCloud: true}
+    ply: {shape: 'arrow', pointCloud: true}
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  expect(table.data.numRows, 'table has one row per vertex').toBe(24);
-  expect(table.data.getChild('POSITION'), 'POSITION column was found').toBeTruthy();
-  expect(
-    table.data.getChild('indices'),
-    'indices column is skipped in pointCloud mode'
-  ).toBeFalsy();
+  expect(table).toHaveProperty('numRows');
+  expect(table.numRows, 'table has one row per vertex').toBe(24);
+  expect(table.getChild('POSITION'), 'POSITION column was found').toBeTruthy();
+  expect(table.getChild('indices'), 'indices column is skipped in pointCloud mode').toBeFalsy();
 });
 test('PLYLoader#parse(raw element tables preserve list properties)', async () => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
@@ -182,15 +179,15 @@ test('PLYLoader#parse(ascii)', async () => {
 });
 test('PLYLoader#parse(gaussian splat metadata)', async () => {
   const table = parseSync(GAUSSIAN_SPLAT_PLY, PLYLoader, {
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  expect(table.data.numRows, 'table has one row per splat').toBe(2);
+  expect(table).toHaveProperty('numRows');
+  expect(table.numRows, 'table has one row per splat').toBe(2);
   expect(
-    table.data.schema.metadata.get('loaders_gl.semantic_type'),
+    table.schema.metadata.get('loaders_gl.semantic_type'),
     'schema identifies Gaussian splat data'
   ).toBe('gaussian-splats');
-  const scaleField = table.data.schema.fields.find(field => field.name === 'scale_0');
+  const scaleField = table.schema.fields.find(field => field.name === 'scale_0');
   expect(
     scaleField?.metadata.get('loaders_gl.gaussian_splats.semantic'),
     'scale field has semantic metadata'
@@ -199,44 +196,44 @@ test('PLYLoader#parse(gaussian splat metadata)', async () => {
     scaleField?.metadata.get('loaders_gl.gaussian_splats.encoding'),
     'scale field has encoding metadata'
   ).toBe('log');
-  const opacityField = table.data.schema.fields.find(field => field.name === 'opacity');
+  const opacityField = table.schema.fields.find(field => field.name === 'opacity');
   expect(
     opacityField?.metadata.get('loaders_gl.gaussian_splats.encoding'),
     'opacity field has encoding metadata'
   ).toBe('logit');
-  expect(table.data.getChild('f_dc_0'), 'f_dc_0 column was preserved').toBeTruthy();
-  expect(table.data.getChild('scale_0'), 'scale_0 column was preserved').toBeTruthy();
-  expect(table.data.getChild('rot_0'), 'rot_0 column was preserved').toBeTruthy();
+  expect(table.getChild('f_dc_0'), 'f_dc_0 column was preserved').toBeTruthy();
+  expect(table.getChild('scale_0'), 'scale_0 column was preserved').toBeTruthy();
+  expect(table.getChild('rot_0'), 'rot_0 column was preserved').toBeTruthy();
 });
 test('PLYLoader#parse(gaussian splat binary fixture)', async () => {
   const table = await parse(fetchFile(GAUSSIAN_SPLAT_BINARY_URL), PLYLoader, {
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  expect(table.data.numRows, 'table has one row per fixture splat').toBe(1000);
-  expect(table.data.schema.fields.length, 'schema has expected normalized PLY columns').toBe(58);
+  expect(table).toHaveProperty('numRows');
+  expect(table.numRows, 'table has one row per fixture splat').toBe(1000);
+  expect(table.schema.fields.length, 'schema has expected normalized PLY columns').toBe(58);
   expect(
-    table.data.schema.metadata.get('loaders_gl.semantic_type'),
+    table.schema.metadata.get('loaders_gl.semantic_type'),
     'schema identifies Gaussian splat data'
   ).toBe('gaussian-splats');
-  const plyElements = JSON.parse(table.data.schema.metadata.get('ply_elements'));
+  const plyElements = JSON.parse(table.schema.metadata.get('ply_elements'));
   expect(plyElements[0].name, 'schema preserves PLY vertex element metadata').toBe('vertex');
   expect(plyElements[0].count, 'schema preserves truncated vertex count').toBe(1000);
   expect(plyElements[0].properties.length, 'schema preserves source PLY property count').toBe(62);
-  const positionField = table.data.schema.fields.find(field => field.name === 'POSITION');
+  const positionField = table.schema.fields.find(field => field.name === 'POSITION');
   expect(
     positionField?.type instanceof arrow.FixedSizeList,
     'POSITION is a fixed size list'
   ).toBeTruthy();
   expect(positionField?.type.listSize, 'POSITION is a vec3').toBe(3);
-  expect(table.data.getChild('POSITION'), 'POSITION column was preserved').toBeTruthy();
-  const normalField = table.data.schema.fields.find(field => field.name === 'NORMAL');
+  expect(table.getChild('POSITION'), 'POSITION column was preserved').toBeTruthy();
+  const normalField = table.schema.fields.find(field => field.name === 'NORMAL');
   expect(
     normalField?.type instanceof arrow.FixedSizeList,
     'NORMAL is a fixed size list'
   ).toBeTruthy();
   expect(normalField?.type.listSize, 'NORMAL is a vec3').toBe(3);
-  const scaleField = table.data.schema.fields.find(field => field.name === 'scale_0');
+  const scaleField = table.schema.fields.find(field => field.name === 'scale_0');
   expect(
     scaleField?.metadata.get('loaders_gl.gaussian_splats.semantic'),
     'scale field has semantic metadata'
@@ -245,37 +242,37 @@ test('PLYLoader#parse(gaussian splat binary fixture)', async () => {
     scaleField?.metadata.get('loaders_gl.gaussian_splats.encoding'),
     'scale field has encoding metadata'
   ).toBe('log');
-  const opacityField = table.data.schema.fields.find(field => field.name === 'opacity');
+  const opacityField = table.schema.fields.find(field => field.name === 'opacity');
   expect(
     opacityField?.metadata.get('loaders_gl.gaussian_splats.encoding'),
     'opacity field has encoding metadata'
   ).toBe('logit');
-  const sphericalHarmonicField = table.data.schema.fields.find(field => field.name === 'f_rest_44');
+  const sphericalHarmonicField = table.schema.fields.find(field => field.name === 'f_rest_44');
   expect(
     sphericalHarmonicField?.metadata.get('loaders_gl.gaussian_splats.semantic'),
     'SH rest field has semantic metadata'
   ).toBe('spherical_harmonic_rest');
-  expect(table.data.getChild('f_rest_44'), 'last SH rest coefficient was preserved').toBeTruthy();
-  expect(table.data.getChild('scale_0'), 'scale_0 column was preserved').toBeTruthy();
-  expect(table.data.getChild('rot_3'), 'rot_3 column was preserved').toBeTruthy();
+  expect(table.getChild('f_rest_44'), 'last SH rest coefficient was preserved').toBeTruthy();
+  expect(table.getChild('scale_0'), 'scale_0 column was preserved').toBeTruthy();
+  expect(table.getChild('rot_3'), 'rot_3 column was preserved').toBeTruthy();
 });
 test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', async () => {
   const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), PLYLoader, {
     batchSize: 400,
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
   const batchRowCounts = [];
   for await (const table of batches) {
-    expect(table.shape, 'batch has arrow-table shape').toBe('arrow-table');
+    expect(table).toHaveProperty('numRows');
     expect(table.batchType, 'batch has data batchType').toBe('data');
     expect(
-      table.data.schema.metadata.get('loaders_gl.semantic_type'),
+      table.schema.metadata.get('loaders_gl.semantic_type'),
       'batch schema identifies Gaussian splat data'
     ).toBe('gaussian-splats');
-    expect(table.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
-    expect(table.data.getChild('scale_0'), 'batch includes scale_0 column').toBeTruthy();
-    batchRowCounts.push(table.data.numRows);
+    expect(table.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
+    expect(table.getChild('scale_0'), 'batch includes scale_0 column').toBeTruthy();
+    batchRowCounts.push(table.numRows);
   }
   expect(batchRowCounts, 'binary PLY emits requested Arrow batches').toEqual([400, 400, 200]);
 });
@@ -284,27 +281,27 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk
   const arrayBuffer = await response.arrayBuffer();
   const batches = await parseInBatches(makeChunkIterator(arrayBuffer, 777), PLYLoader, {
     batchSize: 333,
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
   const batchRowCounts = [];
   for await (const table of batches) {
     expect(table.batchType, 'batch has data batchType').toBe('data');
-    batchRowCounts.push(table.data.numRows);
+    batchRowCounts.push(table.numRows);
   }
   expect(batchRowCounts, 'batches span input chunk boundaries').toEqual([333, 333, 333, 1]);
 });
 test('PLYLoader#parseInBatches(ascii point cloud, arrow-table)', async () => {
   const batches = await parseInBatches(makeTextIterator(ASCII_POINT_CLOUD_PLY), PLYLoader, {
     batchSize: 2,
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
   const batchRowCounts = [];
   for await (const table of batches) {
-    expect(table.shape, 'batch has arrow-table shape').toBe('arrow-table');
+    expect(table).toHaveProperty('numRows');
     expect(table.batchType, 'batch has data batchType').toBe('data');
-    expect(table.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
-    expect(table.data.getChild('intensity'), 'batch includes custom scalar column').toBeTruthy();
-    batchRowCounts.push(table.data.numRows);
+    expect(table.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
+    expect(table.getChild('intensity'), 'batch includes custom scalar column').toBeTruthy();
+    batchRowCounts.push(table.numRows);
   }
   expect(batchRowCounts, 'ASCII point cloud emits requested Arrow batches').toEqual([2, 1]);
 });
@@ -313,15 +310,15 @@ test('PLYLoader#parseInBatches(mesh PLY, arrow-table, pointCloud)', async () => 
   const sourceText = await response.text();
   const batches = await parseInBatches(makeTextIterator(sourceText), PLYLoader, {
     batchSize: 10,
-    ply: {shape: 'arrow-table', pointCloud: true}
+    ply: {shape: 'arrow', pointCloud: true}
   });
   const batchRowCounts = [];
   for await (const table of batches) {
-    expect(table.shape, 'batch has arrow-table shape').toBe('arrow-table');
+    expect(table).toHaveProperty('numRows');
     expect(table.batchType, 'batch has data batchType').toBe('data');
-    expect(table.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
-    expect(table.data.getChild('indices'), 'batch skips mesh indices').toBeFalsy();
-    batchRowCounts.push(table.data.numRows);
+    expect(table.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
+    expect(table.getChild('indices'), 'batch skips mesh indices').toBeFalsy();
+    batchRowCounts.push(table.numRows);
   }
   expect(batchRowCounts, 'pointCloud mode streams only vertex rows').toEqual([10, 10, 4]);
 });
@@ -330,12 +327,12 @@ test('PLYLoader#parseInBatches(mesh PLY, arrow-table)', async () => {
   const sourceText = await response.text();
   const batches = await parseInBatches(makeTextIterator(sourceText), PLYLoader, {
     batchSize: 10,
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
   try {
     for await (const table of batches) {
       (() => {
-        throw new Error(`unexpected batch with ${table.data.numRows} rows`);
+        throw new Error(`unexpected batch with ${table.numRows} rows`);
       })();
     }
     (() => {
@@ -361,11 +358,11 @@ test('PLYLoader#parseInBatches(binary vertex list properties, arrow-table)', asy
   ).toEqual([0, 2]);
   const batches = await parseInBatches(makeChunkIterator(arrayBuffer, 11), PLYLoader, {
     batchSize: 2,
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
   const batchRowCounts = [];
   for await (const table of batches) {
-    batchRowCounts.push(table.data.numRows);
+    batchRowCounts.push(table.numRows);
   }
   expect(batchRowCounts, 'binary variable-width vertex PLY emits Arrow batches').toEqual([2, 1]);
 });

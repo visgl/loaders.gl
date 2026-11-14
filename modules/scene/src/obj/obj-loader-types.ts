@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {OBJFormat} from './obj-format';
 import {serializeArrowWorkerTable} from '@loaders.gl/core/arrow-worker-transport';
 
@@ -14,7 +15,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type OBJLoaderOptions = LoaderOptions & {
   obj?: {
     /** Output shape. Defaults to a Mesh Arrow table. */
-    shape?: 'mesh' | 'arrow-table';
+    shape?: 'mesh' | 'arrow';
     /** Treat OBJ vertex records as a point cloud and stream `v` rows in batches. */
     pointCloud?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -35,7 +36,7 @@ export type OBJMeshBatch = {
 };
 
 /** Public OBJ batch output shapes. */
-export type OBJParsedBatch = OBJMeshBatch | ArrowTableBatch;
+export type OBJParsedBatch = OBJMeshBatch | RecordBatch;
 
 /**
  * Preloads the parser-bearing OBJ loader implementation.
@@ -49,9 +50,11 @@ async function preload() {
  * Metadata-only worker loader for the OBJ geometry format
  */
 export const OBJLoader = {
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
   ...OBJFormat,
 
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  dataType: null as unknown as Mesh | Table,
   batchType: null as unknown as OBJParsedBatch,
   version: VERSION,
   worker: true,
@@ -61,10 +64,10 @@ export const OBJLoader = {
   text: true,
   testText: testOBJFile,
   options: {
-    obj: {shape: 'arrow-table'}
+    obj: {shape: 'arrow'}
   },
   preload
-} as const satisfies Loader<Mesh | MeshArrowTable, OBJParsedBatch, OBJLoaderOptions>;
+} as const satisfies Loader<Mesh | Table, OBJParsedBatch, OBJLoaderOptions>;
 
 function testOBJFile(text: string): boolean {
   // TODO - There could be comment line first

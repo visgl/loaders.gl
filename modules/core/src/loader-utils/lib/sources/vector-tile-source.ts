@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import type {
   Schema,
   Feature,
@@ -12,7 +13,7 @@ import type {
 import {TileSource, TileSourceProps, GetTileParameters} from './tile-source';
 import type {GetTileDataParameters} from './tile-source';
 
-export type VectorTile = Feature[] | GeoJSONTable | BinaryFeatureCollection | ArrowTable;
+export type VectorTile = Feature[] | GeoJSONTable | BinaryFeatureCollection | ArrowTable | Table;
 
 export type VectorTileSourceProps = TileSourceProps;
 
@@ -25,5 +26,5 @@ export interface VectorTileSource extends TileSource {
   getVectorTile(parameters: GetTileParameters): Promise<VectorTile | null>;
   getTileData(
     parameters: GetTileDataParameters
-  ): Promise<Feature[] | GeoJSONTable | BinaryFeatureCollection | ArrowTable | null>;
+  ): Promise<Feature[] | GeoJSONTable | BinaryFeatureCollection | ArrowTable | Table | null>;
 }

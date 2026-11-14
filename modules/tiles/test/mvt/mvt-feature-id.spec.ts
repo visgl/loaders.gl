@@ -42,7 +42,7 @@ test('MVTLoader preserves feature IDs in the default Arrow output', async () => 
     mvt: {shape: 'geojson-table'}
   });
 
-  expect(Array.from(arrowTable.data.getChild('id')?.toArray() || [])).toEqual(
+  expect(Array.from(arrowTable.getChild('id')?.toArray() || [])).toEqual(
     expectedTable.features.map(feature => feature.id)
   );
 });

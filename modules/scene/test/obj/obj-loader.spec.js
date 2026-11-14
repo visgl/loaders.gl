@@ -27,27 +27,21 @@ test('OBJLoader#parseText', async () => {
 });
 test('OBJLoader#parseText defaults to Arrow table', async () => {
   const table = await load(OBJ_ASCII_URL, OBJLoader, {core: {worker: false}});
-  expect(table.shape, 'default output has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'OBJLoader default table'});
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, meshArrowSchema, {schemaName: 'OBJLoader default table'});
 });
 test('OBJLoader#Arrow output supports workers', () => {
-  expect(canParseWithWorker(OBJLoader, {core: {worker: true}, obj: {shape: 'arrow-table'}})).toBe(
-    true
-  );
+  expect(canParseWithWorker(OBJLoader, {core: {worker: true}, obj: {shape: 'arrow'}})).toBe(true);
 });
 test('OBJLoader#parseText(shape: arrow-table)', async () => {
   const table = await load(OBJ_ASCII_URL, OBJLoader, {
-    obj: {shape: 'arrow-table'}
+    obj: {shape: 'arrow'}
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, meshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, meshArrowSchema, {
     schemaName: 'OBJLoader Mesh table'
   });
-  const rowCount =
-    table.data.numRows ??
-    table.data.length ??
-    table.data.batches?.[0]?.numRows ??
-    table.data.batches?.[0]?.data?.length;
+  const rowCount = table.numRows ?? table.batches?.[0]?.numRows ?? table.batches?.[0]?.numRows;
   expect(rowCount, 'table has expected vertex count').toBe(14904);
 });
 test('OBJLoader#parseInBatches(vertex-only point cloud, arrow-table)', async () => {
@@ -57,15 +51,14 @@ test('OBJLoader#parseInBatches(vertex-only point cloud, arrow-table)', async () 
     {
       core: {worker: false},
       batchSize: 2,
-      obj: {shape: 'arrow-table'}
+      obj: {shape: 'arrow'}
     }
   );
   const batchRowCounts = [];
   for await (const batch of batches) {
-    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(batch.batchType, 'batch has data batchType').toBe('data');
-    expect(batch.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
-    batchRowCounts.push(batch.length);
+    expect(batch).toHaveProperty('numRows');
+    expect(batch.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
+    batchRowCounts.push(batch.numRows);
   }
   expect(batchRowCounts, 'emits requested OBJ point cloud Arrow batches').toEqual([2, 2]);
 });
@@ -80,14 +73,13 @@ test('OBJLoader#parseInBatches(pointCloud flag streams vertices without geometry
     {
       core: {worker: false},
       batchSize: 2,
-      obj: {shape: 'arrow-table', pointCloud: true}
+      obj: {shape: 'arrow', pointCloud: true}
     }
   );
   const batchRowCounts = [];
   for await (const batch of batches) {
-    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(batch.batchType, 'batch has data batchType').toBe('data');
-    batchRowCounts.push(batch.length);
+    expect(batch).toHaveProperty('numRows');
+    batchRowCounts.push(batch.numRows);
   }
   expect(batchRowCounts, 'pointCloud mode streams vertex rows and ignores faces').toEqual([2, 2]);
 });
@@ -98,14 +90,13 @@ test('OBJLoader#parseInBatches(faces, arrow-table) falls back to atomic parse', 
     {
       core: {worker: false},
       batchSize: 1,
-      obj: {shape: 'arrow-table'}
+      obj: {shape: 'arrow'}
     }
   );
   const batchRowCounts = [];
   for await (const batch of batches) {
-    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(batch.batchType, 'batch has data batchType').toBe('data');
-    batchRowCounts.push(batch.length);
+    expect(batch).toHaveProperty('numRows');
+    batchRowCounts.push(batch.numRows);
   }
   expect(batchRowCounts, 'face geometry emits one atomic Arrow batch').toEqual([3]);
 });
@@ -204,7 +195,7 @@ test.each([
 ])('OBJ empty input produces no batches with pointCloud=%s', async pointCloud => {
   const iterator = await parseInBatches([], OBJLoader, {
     core: {worker: false},
-    obj: {shape: 'arrow-table', pointCloud}
+    obj: {shape: 'arrow', pointCloud}
   });
   const batches = [];
   for await (const batch of iterator) batches.push(batch);

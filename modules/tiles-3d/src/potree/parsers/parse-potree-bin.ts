@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Mesh, MeshAttributes} from '@loaders.gl/core/schema';
 import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseVersion} from '../utils/parse-version';
@@ -13,7 +14,7 @@ import type {PotreeAttribute} from '../types/potree-metadata';
 export type PotreeBinLoaderOptions = LoaderOptions & {
   potree?: {
     /** Selects mesh output or Apache Arrow output. */
-    shape?: 'mesh' | 'arrow-table';
+    shape?: 'mesh' | 'arrow';
     /** Dataset version; <=1.3 uses absolute float32, >=1.4 uses node-relative uint32. */
     version?: string;
     pointAttributes?: PotreeAttribute[];
@@ -42,7 +43,7 @@ export function parsePotreeBin(
   arrayBuffer: ArrayBuffer,
   byteOffset = 0,
   options?: PotreeBinLoaderOptions
-): Mesh | MeshArrowTable {
+): Mesh | Table {
   const resolvedOptions = getResolvedPotreeBinOptions(options);
   const pointByteSize = resolvedOptions.pointAttributes.reduce(
     (totalByteLength, pointAttribute) =>
@@ -228,8 +229,8 @@ export function parsePotreeBin(
 
   const formattedMesh = formatPotreeMeshColors(mesh, resolvedOptions.colorFormat);
   const table = convertMeshToTable(formattedMesh, 'arrow-table');
-  if (options?.potree?.shape === 'arrow-table') {
-    return table;
+  if (options?.potree?.shape === 'arrow') {
+    return table.data;
   }
   return {
     ...convertTableToMesh(table),

@@ -32,7 +32,7 @@ test.each([
       deserializeWorkerBatch: deserialize
     })
   };
-  for (const shape of ['arrow-table', 'mesh'] as const) {
+  for (const shape of ['arrow', 'mesh'] as const) {
     const input = Array.from({length: Math.ceil(source.byteLength / 257)}, (_, index) =>
       source.slice(index * 257, (index + 1) * 257)
     );
@@ -42,11 +42,9 @@ test.each([
     });
     const positions: number[][] = [];
     for await (const batch of batches) {
-      if (shape === 'arrow-table') {
+      if (shape === 'arrow') {
         expect(batch.data).toBeInstanceOf(Table);
-        positions.push(
-          ...Array.from(batch.data.getChild('POSITION'), (row: any) => Array.from(row))
-        );
+        positions.push(...Array.from(batch.getChild('POSITION'), (row: any) => Array.from(row)));
       } else {
         const values = batch.attributes.POSITION.value;
         for (let index = 0; index < values.length; index += 3)
@@ -54,7 +52,7 @@ test.each([
       }
     }
     expect(positions).toEqual(
-      Array.from(expected.data.getChild('POSITION'), (row: any) => Array.from(row))
+      Array.from(expected.getChild('POSITION'), (row: any) => Array.from(row))
     );
   }
   expect(mainBatches).not.toHaveBeenCalled();
@@ -65,7 +63,7 @@ test.each([
     core: {worker: true, _workerType: 'test'}
   });
   expect(atomic.data).toBeInstanceOf(Table);
-  expect(atomic.data.numRows).toBe(expected.data.numRows);
+  expect(atomic.numRows).toBe(expected.numRows);
   expect(LAZRsLoaderWithParser.worker).toBe(false);
   expect(LAZPerfLoaderWithParser.worker).toBe(false);
 });
@@ -96,7 +94,7 @@ test('primary LAS worker yields before EOF and releases a blocked stream on abor
       core: {worker: true, _workerType: 'test', batchSize: 1}
     });
     const iterator = batches[Symbol.asyncIterator]();
-    expect((await iterator.next()).value.data.numRows).toBe(1);
+    expect((await iterator.next()).value.numRows).toBe(1);
     controller.abort(new Error('cancel LAS'));
     await expect(iterator.next()).rejects.toThrow('cancel LAS');
   } finally {
@@ -105,5 +103,5 @@ test('primary LAS worker yields before EOF and releases a blocked stream on abor
   const reused: any = await parse(buffer.slice(0), LASLoader, {
     core: {worker: true, _workerType: 'test'}
   });
-  expect(reused.data.numRows).toBe(2);
+  expect(reused.numRows).toBe(2);
 });

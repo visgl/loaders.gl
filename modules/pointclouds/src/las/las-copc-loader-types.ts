@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import {LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
 import type {LASMesh} from './lib/las-types';
 
@@ -15,4 +15,4 @@ export const LASCOPCLoader = {
     const {LASCOPCLoaderWithParser} = await import('@loaders.gl/pointclouds/las-copc-loader');
     return LASCOPCLoaderWithParser;
   }
-} as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;
+} as const satisfies Loader<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;

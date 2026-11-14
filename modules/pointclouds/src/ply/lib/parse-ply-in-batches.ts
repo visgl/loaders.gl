@@ -61,7 +61,7 @@ export async function* parsePLYInBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: any
 ): AsyncIterable<PLYMesh | MeshArrowTable> {
-  if (options?.shape === 'arrow-table') {
+  if (options?.shape === 'arrow') {
     yield* parseBinaryPLYToArrowInBatches(iterator, options);
     return;
   }

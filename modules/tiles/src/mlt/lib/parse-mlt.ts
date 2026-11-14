@@ -135,8 +135,8 @@ export function parseMLT(
       binaryData.byteLength = arrayBuffer.byteLength;
       return binaryData;
     }
-    case 'arrow-table':
-      return parseToArrowTable(arrayBuffer, mltOptions);
+    case 'arrow':
+      return parseToArrowTable(arrayBuffer, mltOptions).data;
     default:
       throw new Error(shape || 'undefined shape');
   }

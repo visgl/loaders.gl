@@ -101,7 +101,7 @@ configuration. PMTiles can delegate to MVT, MLT, or image parsers. `pmtiles.shap
 | `rangeRequests.maxConcurrentRequests` | `number` | `6`  | Reserved concurrency hint for range-request transports.                     |
 | `rangeRequests.stats`              | `Stats`   | none     | Optional probe.gl Stats object that receives range batching counters.       |
 | `rangeRequests.onEvent`            | `function` | none    | Optional diagnostics callback for queued, batched, completed, failed, and aborted range requests. |
-| `pmtiles.shape`                    | `string`  | `'arrow-table'` | Output shape for vector tiles: `'arrow-table'`, `'geojson-table'`, `'binary-geometry'`, or `'columnar-table'` (MVT only). |
+| `pmtiles.shape`                    | `string`  | `'arrow'` | Output shape for vector tiles: `'arrow'`, `'geojson-table'`, `'binary-geometry'`, or `'columnar-table'` (MVT only). |
 
 ## Notes
 

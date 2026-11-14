@@ -114,7 +114,7 @@ describe('parseMLT', () => {
     const binary = parseMLT(new Uint8Array([1]).buffer, {mlt: {shape: 'binary-geometry'}}) as any;
     expect(binary.byteLength).toBe(1);
 
-    const arrow = parseMLT(new Uint8Array([1]).buffer, {mlt: {shape: 'arrow-table'}}) as any;
+    const arrow = parseMLT(new Uint8Array([1]).buffer, {mlt: {shape: 'arrow'}}) as any;
     expect(arrow.schema).toBeDefined();
   });
 
@@ -176,13 +176,13 @@ describe('parseMLT', () => {
     ] as any);
 
     const result = parseMLT(new Uint8Array([1]).buffer, {
-      mlt: {shape: 'arrow-table', coordinates: 'local'}
+      mlt: {shape: 'arrow', coordinates: 'local'}
     }) as any;
 
     expect(getFeaturesMock).not.toHaveBeenCalled();
-    expect(result.data.numRows).toBe(6);
-    expect(result.data.getChild('kind')?.get(0)).toBe('feature-0');
-    expect(result.data.getChild('geometry')?.length).toBe(6);
+    expect(result.numRows).toBe(6);
+    expect(result.getChild('kind')?.get(0)).toBe('feature-0');
+    expect(result.getChild('geometry')?.length).toBe(6);
     expect(result.schema.metadata?.geo).toContain('geometry');
   });
 
@@ -203,15 +203,13 @@ describe('parseMLT', () => {
 
     const result = parseMLT(new Uint8Array([1]).buffer, {
       geoarrow: {encodingPreference: 'optimized'},
-      mlt: {shape: 'arrow-table', coordinates: 'local'}
+      mlt: {shape: 'arrow', coordinates: 'local'}
     }) as any;
 
     expect(getFeaturesMock).not.toHaveBeenCalled();
-    expect(result.data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
-      'geoarrow.point'
-    );
+    expect(result.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe('geoarrow.point');
     expect(result.schema?.fields.at(-1)?.name).toBe('geometry');
-    expect(result.data.numRows).toBe(2);
+    expect(result.numRows).toBe(2);
   });
 
   test('covers native GeoArrow geometry encodings and optimized selection', () => {
@@ -276,27 +274,27 @@ describe('parseMLT', () => {
 
       return parseMLT(new Uint8Array([1]).buffer, {
         geoarrow: {encodingPreference: encodingPreference as any},
-        mlt: {shape: 'arrow-table', coordinates: 'local'}
+        mlt: {shape: 'arrow', coordinates: 'local'}
       }) as any;
     };
 
     for (const geometryType of [0, 1, 2, 3, 4, 5]) {
       const result = parseNative([geometryType]);
-      expect(result.data.numRows).toBe(1);
-      expect(result.data.getChild('missing')?.get(0)).toBeNull();
-      expect(result.data.getChild('object')?.get(0)).toBe('{"nested":true}');
+      expect(result.numRows).toBe(1);
+      expect(result.getChild('missing')?.get(0)).toBeNull();
+      expect(result.getChild('object')?.get(0)).toBe('{"nested":true}');
     }
 
-    expect(parseNative([0, 3]).data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+    expect(parseNative([0, 3]).schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
       'geoarrow.multipoint'
     );
-    expect(parseNative([1, 4]).data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+    expect(parseNative([1, 4]).schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
       'geoarrow.multilinestring'
     );
-    expect(parseNative([2, 5]).data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+    expect(parseNative([2, 5]).schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
       'geoarrow.multipolygon'
     );
-    expect(parseNative([0, 1]).data.schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
+    expect(parseNative([0, 1]).schema.fields.at(-1).metadata.get('ARROW:extension:name')).toBe(
       'geoarrow.geometry'
     );
   });
@@ -317,14 +315,14 @@ describe('parseMLT', () => {
 
       return parseMLT(new Uint8Array([1]).buffer, {
         geoarrow: {encodingPreference: 'geoarrow.geometry'},
-        mlt: {shape: 'arrow-table', coordinates: 'local'}
+        mlt: {shape: 'arrow', coordinates: 'local'}
       }) as any;
     };
 
     const pointTable = parseGeometryTile(0);
     const polygonTable = parseGeometryTile(2);
     const getUnionChildren = (table: any) =>
-      table.data.getChild('geometry').type.children.map((field: any) => field.name);
+      table.getChild('geometry').type.children.map((field: any) => field.name);
 
     expect(getUnionChildren(pointTable)).toEqual(getUnionChildren(polygonTable));
     expect(getUnionChildren(pointTable)).toEqual([

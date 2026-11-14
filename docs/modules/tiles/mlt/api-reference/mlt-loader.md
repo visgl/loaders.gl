@@ -111,7 +111,7 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 | `shape` option              | Output                    |
 | --------------------------- | ------------------------- |
-| `'arrow-table'` (default)   | Arrow table with GeoArrow geometry |
+| `'arrow'` (default)   | Arrow table with GeoArrow geometry |
 | `'binary-geometry'`         | binary feature collection  |
 | `'geojson-table'`           | `GeoJSONTable`             |
 
@@ -119,7 +119,7 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 | Option              | Type                                       | Default     | Description                                                    |
 | ------------------- | ------------------------------------------ | ----------- | -------------------------------------------------------------- |
-| `mlt.shape`         | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `arrow-table` | Output shape |
+| `mlt.shape`         | `'geojson-table' \| 'binary-geometry' \| 'arrow'` | `arrow` | Output shape |
 | `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference |
 | `mlt.coordinates`   | `'local' \| 'wgs84'`                       | `local`     | Coordinate system for returned geometries                      |
 | `mlt.tileIndex`     | `{x: number, y: number, z: number}`        | N/A         | Required when `coordinates` is `wgs84`                         |
@@ -128,7 +128,7 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 `mlt.tileIndex` is required for WGS84 output.
 
-When `mlt.shape` is `'arrow-table'` (the default), the decoder writes directly from MLT's decoded
+When `mlt.shape` is `'arrow'` (the default), the decoder writes directly from MLT's decoded
 geometry and property columns. It does not materialize an intermediate GeoJSON feature collection. Use
 `geoarrow.encodingPreference` to select WKB, dense-union GeoArrow, or the optimized native
 GeoArrow encoding.

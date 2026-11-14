@@ -35,12 +35,12 @@ describe('SHP dimensional geometry coverage', () => {
   ])('writes compact dimensional fixture %s directly to typed GeoArrow', async fixture => {
     const table = await load(`${DATA_FOLDER}/${fixture}.shp`, SHPLoader, {
       core: {worker: false},
-      shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+      shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
     });
-    expect(table.shape).toBe('arrow-table');
-    expect(table.data.numRows).toBeGreaterThan(0);
+    expect(table).toHaveProperty('numRows');
+    expect(table.numRows).toBeGreaterThan(0);
     expect(
-      table.data.schema.fields.some(field =>
+      table.schema.fields.some(field =>
         field.metadata?.get('ARROW:extension:name')?.startsWith('geoarrow.')
       )
     ).toBe(true);

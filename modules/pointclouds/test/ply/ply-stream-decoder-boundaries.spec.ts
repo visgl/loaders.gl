@@ -109,7 +109,7 @@ test.each([
   }
   for (const split of [header.length - 2, header.length - 1, header.length, header.length + 1]) {
     const batches = (await collectBatches([bytes.subarray(0, split), bytes.subarray(split)], {
-      shape: 'arrow-table',
+      shape: 'arrow',
       batchSize: 1
     })) as MeshArrowTable[];
     expect(batches.map(batch => batch.data.numRows)).toEqual([1, 1]);

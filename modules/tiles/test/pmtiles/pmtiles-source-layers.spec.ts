@@ -60,12 +60,12 @@ test.each([
   vi.spyOn(PMTilesTileSource.prototype, 'getMetadata').mockResolvedValue({tileMIMEType} as Awaited<
     ReturnType<PMTilesTileSource['getMetadata']>
   >);
-  const parse = vi.fn(async () => ({shape: 'arrow-table'}));
+  const parse = vi.fn(async () => ({shape: 'arrow'}));
   const source = new PMTilesTileSource(
     new Blob([]),
     {
       core: {worker: false},
-      pmtiles: {shape: 'arrow-table'},
+      pmtiles: {shape: 'arrow'},
       mvt: {shape: 'geojson-table', layers: ['roads']},
       mlt: {shape: 'geojson-table', layers: ['roads']}
     },
@@ -79,7 +79,7 @@ test.each([
     expect.objectContaining({
       core: {worker: false},
       [namespace]: expect.objectContaining({
-        shape: 'arrow-table',
+        shape: 'arrow',
         layers: ['roads'],
         tileIndex: {x: 0, y: 0, z: 0}
       })
@@ -88,7 +88,7 @@ test.each([
 });
 
 test('PMTilesSourceLoader#defaults vector tiles to arrow-table output', () => {
-  expect(PMTilesSourceLoader.options.pmtiles.shape).toBe('arrow-table');
+  expect(PMTilesSourceLoader.options.pmtiles.shape).toBe('arrow');
   expect(PMTilesSourceLoader.defaultOptions.pmtiles.shape).toBeUndefined();
 });
 
@@ -132,13 +132,13 @@ test('PMTilesTileSource#getVectorTile forwards requested layers to the decoder',
   const receivedLoaders: unknown[] = [];
   const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
     metadata: Promise.resolve({}),
-    options: {pmtiles: {shape: 'arrow-table'}},
+    options: {pmtiles: {shape: 'arrow'}},
     loadOptions: {mvt: {layerProperty: 'sourceLayer', layers: ['fallback']}},
     coreApi: {
       async parse(_data: unknown, loaders: unknown, options: MVTLoaderOptions) {
         receivedLoaders.push(loaders);
         receivedOptions.push(options);
-        return {shape: 'arrow-table'};
+        return {shape: 'arrow'};
       }
     } as unknown as CoreAPI,
     async getTile() {
@@ -150,7 +150,7 @@ test('PMTilesTileSource#getVectorTile forwards requested layers to the decoder',
   await source.getVectorTile({x: 2, y: 1, z: 3, layers: []});
 
   expect(receivedOptions[0].mvt).toMatchObject({
-    shape: 'arrow-table',
+    shape: 'arrow',
     coordinates: 'wgs84',
     tileIndex: {x: 2, y: 1, z: 3},
     layerProperty: 'sourceLayer',
@@ -164,7 +164,7 @@ test('PMTilesTileSource#getVectorTile uses the MLT decoder for MLT archives', as
   let receivedLoader: unknown;
   let receivedOptions: unknown;
   const source = Object.assign(Object.create(PMTilesTileSource.prototype), {
-    options: {pmtiles: {shape: 'arrow-table'}},
+    options: {pmtiles: {shape: 'arrow'}},
     loadOptions: {mlt: {layers: ['fallback']}},
     mimeType: null,
     metadata: Promise.resolve({tileMIMEType: 'application/vnd.maplibre-tile'}),
@@ -172,7 +172,7 @@ test('PMTilesTileSource#getVectorTile uses the MLT decoder for MLT archives', as
       async parse(_data: unknown, loaders: unknown, options: unknown) {
         receivedLoader = loaders;
         receivedOptions = options;
-        return {shape: 'arrow-table'};
+        return {shape: 'arrow'};
       }
     } as unknown as CoreAPI,
     async getTile() {
@@ -185,7 +185,7 @@ test('PMTilesTileSource#getVectorTile uses the MLT decoder for MLT archives', as
   expect(receivedLoader).toBe(MLTLoader);
   expect(receivedOptions).toMatchObject({
     mlt: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       coordinates: 'wgs84',
       tileIndex: {x: 2, y: 1, z: 3},
       layers: ['roads']
@@ -375,7 +375,7 @@ test('PMTiles consumer selects native range and decoder zooms', async () => {
   const range = vi
     .spyOn(PMTiles.prototype, 'getZxy')
     .mockResolvedValue({data: new ArrayBuffer(16)});
-  const parse = vi.fn(async () => ({shape: 'arrow-table'}));
+  const parse = vi.fn(async () => ({shape: 'arrow'}));
   const source = new PMTilesTileSource(new Blob([]), {}, {parse} as unknown as CoreAPI);
   const signal = new AbortController().signal;
   await source.getTileData({index: {z: 0, x: 2, y: 1}, tileMatrix: '3', signal});

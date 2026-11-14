@@ -1,3 +1,4 @@
+import {Table, type RecordBatch} from 'apache-arrow';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -412,8 +413,8 @@ async function* trackGaussianSplatBatches(
     for (const sourceUrl of sourceUrls) {
       const sourceBatches = (await loadInBatches(sourceUrl, PLYLoader, {
         worker: false,
-        ply: {shape: 'arrow-table'}
-      })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
+        ply: {shape: 'arrow'}
+      })) as AsyncIterable<RecordBatch>;
 
       for await (const sourceBatch of sourceBatches) {
         const arrowTableBatch = normalizeArrowTableBatch(sourceBatch);
@@ -432,17 +433,12 @@ async function* trackGaussianSplatBatches(
 /**
  * Normalizes current PLY streaming output to the loaders.gl Arrow table batch wrapper.
  */
-function normalizeArrowTableBatch(sourceBatch: ArrowTableBatch | MeshArrowTable): ArrowTableBatch {
-  if ('batchType' in sourceBatch && sourceBatch.batchType === 'data') {
-    return sourceBatch;
-  }
-
+function normalizeArrowTableBatch(batch: RecordBatch): ArrowTableBatch {
   return {
     shape: 'arrow-table',
     batchType: 'data',
-    schema: sourceBatch.schema,
-    data: sourceBatch.data,
-    length: sourceBatch.data.numRows
+    data: new Table(batch.schema, [batch]),
+    length: batch.numRows
   };
 }
 

@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {convertColorArrayToFloat16, convertColorArrayToFloat32} from '@loaders.gl/core/schema';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import {LASFormat} from './las-format';
 import type {LASMesh} from './lib/las-types';
 
@@ -39,7 +39,7 @@ export type LASColumnName =
 export type LASLoaderOptions = LoaderOptions & {
   las?: {
     /** Output representation. */
-    shape?: 'mesh' | 'columnar-table' | 'arrow-table';
+    shape?: 'mesh' | 'columnar-table' | 'arrow';
     /** Store positions in 64-bit floating point arrays. */
     fp64?: boolean;
     /** Output color depth or automatic source-depth detection. */
@@ -62,19 +62,21 @@ export type LASLoaderOptions = LoaderOptions & {
 };
 
 /** Default output shape for LAS and LAZ loaders. */
-export const DEFAULT_LAS_SHAPE = 'arrow-table' as const;
+export const DEFAULT_LAS_SHAPE = 'arrow' as const;
 
 /** Resolve the LAS output shape, including the Arrow-primary default. */
-export function getLASShape(options?: LASLoaderOptions): 'mesh' | 'columnar-table' | 'arrow-table' {
+export function getLASShape(options?: LASLoaderOptions): 'mesh' | 'columnar-table' | 'arrow' {
   return options?.las?.shape || DEFAULT_LAS_SHAPE;
 }
 
 /** Parser-independent LAS loader metadata shared by each loader variant. */
 export const LAS_LOADER_METADATA = {
   ...LASFormat,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
 
-  dataType: null as unknown as LASMesh | MeshArrowTable,
-  batchType: null as unknown as LASMesh | MeshArrowTable,
+  dataType: null as unknown as LASMesh | Table,
+  batchType: null as unknown as LASMesh | RecordBatch,
 
   version: VERSION,
   worker: false,
@@ -90,7 +92,7 @@ export const LAS_LOADER_METADATA = {
       compatibilityMode: 'auto'
     }
   }
-} as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;
+} as const satisfies Loader<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;
 
 /** Apply the requested normalized color representation to a decoded LAS mesh. */
 export function formatLASMeshColors(

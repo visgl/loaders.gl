@@ -16,7 +16,7 @@ export type MVTLoaderOptions = LoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mvt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
     /** `wgs84`: coordinates in long, lat (`tileIndex` must be provided. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */

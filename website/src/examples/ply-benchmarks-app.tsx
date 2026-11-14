@@ -120,12 +120,12 @@ function addPLYBenchmarksToSuite(bench: Bench, arrayBuffer: ArrayBuffer): void {
   bench.group('PLY Decode - Gaussian Splat Binary Arrow');
   bench.addAsync('PLYLoader arrow-table direct', BENCHMARK_OPTIONS, async () => {
     await parse(arrayBuffer, PLYLoader, {
-      ply: {shape: 'arrow-table'}
+      ply: {shape: 'arrow'}
     });
   });
   bench.addAsync('PLYLoader arrow-table legacy mesh conversion', BENCHMARK_OPTIONS, async () => {
     await parse(arrayBuffer, PLYLoader, {
-      ply: {shape: 'arrow-table', _useLegacyBinaryPointCloudParser: true}
+      ply: {shape: 'arrow', _useLegacyBinaryPointCloudParser: true}
     });
   });
 }

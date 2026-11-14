@@ -10,6 +10,7 @@ import {
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -96,20 +97,21 @@ export async function parseShapefileToArrow(
     ? await context.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
     : null;
   if (dbfResponse?.ok) {
-    propertyTable = (await parseFromContext(
+    const propertyData = (await parseFromContext(
       dbfResponse as any,
       DBFLoaderWithParser,
       {
         ...options,
         dbf: {
           ...options?.dbf,
-          shape: 'arrow-table' as const,
+          shape: 'arrow' as const,
           encoding: cpg || 'latin1'
         }
       },
       context!
-    )) as ArrowTable;
-    propertySchema = propertyTable.schema || null;
+    )) as arrow.Table;
+    propertySchema = convertArrowToSchema(propertyData.schema);
+    propertyTable = {shape: 'arrow-table', data: propertyData, schema: propertySchema};
   }
 
   const schema = buildOutputSchema(propertySchema, header, geometryTable.schema);
@@ -173,7 +175,7 @@ export async function* parseShapefileToArrowInBatches(
       ...childOptions,
       dbf: {
         ...options?.dbf,
-        shape: 'arrow-table' as const,
+        shape: 'arrow' as const,
         batchSize,
         encoding: cpg || 'latin1'
       }
@@ -433,9 +435,15 @@ async function getNextArrowBatch(iterator: AsyncIterator<any>): Promise<ArrowTab
     if (result.done) {
       return null;
     }
-    if (result.value?.shape === 'arrow-table') {
-      return result.value;
+    if (result.value instanceof arrow.RecordBatch) {
+      const data = new arrow.Table(result.value.schema, [result.value]);
+      return makeTableScanBatch({
+        shape: 'arrow-table',
+        schema: convertArrowToSchema(data.schema),
+        data
+      });
     }
+    if (result.value?.shape === 'arrow-table') return result.value;
   }
 }
 

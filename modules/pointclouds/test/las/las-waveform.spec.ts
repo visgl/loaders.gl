@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {ArrayBufferFile, type ReadableFile} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import {LASLoaderWithParser} from '../../src/las/las-loader';
 import {
   decodeLASWaveformSamples,
@@ -239,9 +239,9 @@ test('LASLoader extracts the complete legacy PDRF 4 waveform reference', () => {
   dataView.setUint32(waveformOffset + 9, 16, true);
 
   const table = LASLoaderWithParser.parseSync!(arrayBuffer, {
-    las: {shape: 'arrow-table', columns: ['POSITION', 'WAVEFORM']}
-  }) as MeshArrowTable;
-  const waveform = table.data.getChild('WAVEFORM')?.get(0) as Iterable<number>;
+    las: {shape: 'arrow', columns: ['POSITION', 'WAVEFORM']}
+  }) as Table;
+  const waveform = table.getChild('WAVEFORM')?.get(0) as Iterable<number>;
 
   expect(Array.from(waveform)[0]).toBe(7);
   expect(parseLASWaveformPacketReference(Uint8Array.from(waveform))).toMatchObject({

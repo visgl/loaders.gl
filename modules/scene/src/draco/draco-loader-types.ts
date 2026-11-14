@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {DracoMesh} from './lib/draco-types';
 import {
   deserializeArrowWorkerResult,
@@ -23,7 +23,7 @@ export type {DracoLoaderOptions} from './draco-loader-options';
 async function preload(
   _url: string,
   options?: Record<string, unknown>
-): Promise<LoaderWithParser<DracoMesh | ArrowTable, never, DracoLoaderOptions>> {
+): Promise<LoaderWithParser<DracoMesh | Table, never, DracoLoaderOptions>> {
   const dracoLoaderOptions = options as DracoLoaderOptions | undefined;
   switch (getDracoBackend(dracoLoaderOptions)) {
     case 'wasm': {
@@ -50,7 +50,9 @@ async function preload(
 
 /** Metadata-only worker loader for Draco3D compressed geometries. */
 export const DracoLoader = {
-  dataType: null as unknown as DracoMesh | ArrowTable,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as DracoMesh | Table,
   batchType: null as never,
   ...DracoFormat,
   // shapes: ['mesh'],
@@ -64,7 +66,7 @@ export const DracoLoader = {
     draco: DRACO_LOADER_DEFAULT_OPTIONS
   },
   preload
-} as const satisfies Loader<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
+} as const satisfies Loader<DracoMesh | Table, never, DracoLoaderOptions>;
 
 /** Resolves the Draco decoder backend from loader options. */
 function getDracoBackend(options?: DracoLoaderOptions): DracoDecoderBackend {

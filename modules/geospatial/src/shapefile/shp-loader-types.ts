@@ -3,11 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoArrowEncodingPreference
-} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {SHPFormat} from './shp-format';
 
@@ -23,7 +20,7 @@ export type SHPLoaderOptions = StrictLoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   shp?: {
     _maxDimensions?: number;
-    shape?: 'arrow-table' | 'wkb';
+    shape?: 'arrow' | 'wkb';
     geoarrowEncoding?: SHPGeoArrowEncoding;
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
@@ -51,8 +48,8 @@ export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
   options: {
     shp: {
       _maxDimensions: 4,
-      shape: 'arrow-table'
+      shape: 'arrow'
     }
   },
   preload: preloadSHPLoader
-} as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, SHPLoaderOptions>;
+} as const satisfies Loader<any | Table, any | RecordBatch, SHPLoaderOptions>;

@@ -55,7 +55,7 @@ export type PMTilesSourceLoaderOptions = DataSourceOptions &
       /** Logical XYZ pixel frame, independent of encoded tile dimensions or vector extent. */
       tileSize?: number;
       /** Shape of returned vector tile data. */
-      shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+      shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
       /** Preferred encoding for Arrow geometry output. */
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
     };
@@ -76,7 +76,7 @@ export const PMTilesSourceLoader = {
 
   options: {
     pmtiles: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     }
   },
 
@@ -242,8 +242,7 @@ export class PMTilesTileSource
         ...this.loadOptions,
         mlt: {
           ...inheritedMLTOptions,
-          shape:
-            getMLTShape(this.options.pmtiles?.shape) || inheritedMLTOptions?.shape || 'arrow-table',
+          shape: getMLTShape(this.options.pmtiles?.shape) || inheritedMLTOptions?.shape || 'arrow',
           coordinates: 'wgs84',
           tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
           layers: normalizeTileLayers(tileParams.layers) || inheritedMLTOptions?.layers,
@@ -265,7 +264,7 @@ export class PMTilesTileSource
       ...this.loadOptions,
       mvt: {
         ...inheritedMVTOptions,
-        shape: this.options.pmtiles?.shape || inheritedMVTOptions?.shape || 'arrow-table',
+        shape: this.options.pmtiles?.shape || inheritedMVTOptions?.shape || 'arrow',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         layers: selectedLayers,

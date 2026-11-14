@@ -13,7 +13,7 @@ import {
   getLAZChunkByteLength
 } from '@loaders.gl/core/loader-utils';
 import type {LAZPointDataTarget} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import {parseLASHeader} from '../../src/las/lib/typescript/parse-las';
 
 const LAZ_1_2_BINARY_URL = '@loaders.gl/pointclouds/las/test/data/indoor.laz';
@@ -62,7 +62,7 @@ export default async function lasLoaderBench(bench) {
   const laz14Table = await createBenchmarkLAZ14ArrowTable(laz14ArrayBuffer);
   await assertCompetitiveLoaderVariants(lazArrayBuffer, LAZ_1_2_LOADER_VARIANTS);
   await assertCompetitiveLoaderVariants(laz14ArrayBuffer, LAZ_1_4_LOADER_VARIANTS);
-  const pointCount = table.data.numRows;
+  const pointCount = table.numRows;
   const benchmarkOptions = {multiplier: pointCount, unit: 'output points', minIterations: 3};
   const laz14BenchmarkOptions = {
     multiplier: laz14Table.data.numRows,
@@ -76,7 +76,7 @@ export default async function lasLoaderBench(bench) {
     bench.addAsync(`parse LAZ 1.2 PDRF 3 backend=${name}`, benchmarkOptions, async () => {
       await parse(lazArrayBuffer, loader, {
         core: {worker: false},
-        las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
+        las: {shape: 'arrow', columns: COMPETITIVE_COLUMNS}
       });
     });
   }
@@ -89,7 +89,7 @@ export default async function lasLoaderBench(bench) {
     async () => {
       await parse(lazArrayBuffer, LASLoader, {
         core: {worker: false},
-        las: {shape: 'arrow-table'}
+        las: {shape: 'arrow'}
       });
     }
   );
@@ -101,7 +101,7 @@ export default async function lasLoaderBench(bench) {
       const batches = await parseInBatches(lazChunks, LASLoader, {
         batchSize: BATCH_SIZE,
         core: {worker: false},
-        las: {shape: 'arrow-table'}
+        las: {shape: 'arrow'}
       });
       for await (const _batch of batches) {
         _batch;
@@ -115,7 +115,7 @@ export default async function lasLoaderBench(bench) {
     bench.addAsync(`parse LAZ 1.4 PDRF 7 backend=${name}`, laz14BenchmarkOptions, async () => {
       await parse(laz14ArrayBuffer, loader, {
         core: {worker: false},
-        las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
+        las: {shape: 'arrow', columns: COMPETITIVE_COLUMNS}
       });
     });
   }
@@ -128,7 +128,7 @@ export default async function lasLoaderBench(bench) {
     async () => {
       await parse(laz14ArrayBuffer, LASLoader, {
         core: {worker: false},
-        las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
+        las: {shape: 'arrow', columns: COMPETITIVE_COLUMNS}
       });
     }
   );
@@ -140,7 +140,7 @@ export default async function lasLoaderBench(bench) {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
         batchSize: BATCH_SIZE,
         core: {worker: false},
-        las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
+        las: {shape: 'arrow', columns: COMPETITIVE_COLUMNS}
       });
       for await (const _batch of batches) {
         _batch;
@@ -156,7 +156,7 @@ export default async function lasLoaderBench(bench) {
     async () => {
       await parse(laz14ArrayBuffer, LASLoader, {
         core: {worker: false},
-        las: {shape: 'arrow-table'}
+        las: {shape: 'arrow'}
       });
     }
   );
@@ -168,7 +168,7 @@ export default async function lasLoaderBench(bench) {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
         batchSize: BATCH_SIZE,
         core: {worker: false},
-        las: {shape: 'arrow-table'}
+        las: {shape: 'arrow'}
       });
       for await (const _batch of batches) {
         _batch;
@@ -184,7 +184,7 @@ export default async function lasLoaderBench(bench) {
     async () => {
       await parse(laz14ArrayBuffer, LASLoader, {
         core: {worker: false},
-        las: {shape: 'arrow-table', columns: RENDER_COLUMNS}
+        las: {shape: 'arrow', columns: RENDER_COLUMNS}
       });
     }
   );
@@ -196,7 +196,7 @@ export default async function lasLoaderBench(bench) {
       const batches = await parseInBatches(laz14Chunks, LASLoader, {
         batchSize: BATCH_SIZE,
         core: {worker: false},
-        las: {shape: 'arrow-table', columns: RENDER_COLUMNS}
+        las: {shape: 'arrow', columns: RENDER_COLUMNS}
       });
       for await (const _batch of batches) {
         _batch;
@@ -307,9 +307,9 @@ async function assertCompetitiveLoaderVariants(
   for (const {name, loader} of variants) {
     const table = (await parse(lazArrayBuffer, loader, {
       core: {worker: false},
-      las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
-    })) as MeshArrowTable;
-    const actualFields = table.data.schema.fields.map(
+      las: {shape: 'arrow', columns: COMPETITIVE_COLUMNS}
+    })) as Table;
+    const actualFields = table.schema.fields.map(
       field => [field.name, field.type.toString()] as const
     );
     if (JSON.stringify(actualFields) !== JSON.stringify(COMPETITIVE_ARROW_FIELDS)) {
@@ -318,10 +318,10 @@ async function assertCompetitiveLoaderVariants(
       );
     }
     if (expectedPointCount < 0) {
-      expectedPointCount = table.data.numRows;
-    } else if (table.data.numRows !== expectedPointCount) {
+      expectedPointCount = table.numRows;
+    } else if (table.numRows !== expectedPointCount) {
       throw new Error(
-        `LAS benchmark variant ${name} returned ${table.data.numRows} points; expected ${expectedPointCount}`
+        `LAS benchmark variant ${name} returned ${table.numRows} points; expected ${expectedPointCount}`
       );
     }
   }
@@ -348,7 +348,7 @@ async function collectTypeScriptLAZStreamingStats(chunks: ArrayBuffer[]): Promis
     batchSize: BATCH_SIZE,
     core: {worker: false},
     las: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       lazStreamingStats
     } as LASLoaderOptions['las'] & {
       lazStreamingStats: typeof lazStreamingStats;
@@ -511,8 +511,8 @@ function readNullTerminatedAscii(bytes: Uint8Array, offset: number, length: numb
 async function createBenchmarkArrowTable(lazArrayBuffer: ArrayBuffer): Promise<MeshArrowTable> {
   return (await parse(lazArrayBuffer, LAZRsLoader, {
     core: {worker: false},
-    las: {shape: 'arrow-table'}
-  })) as MeshArrowTable;
+    las: {shape: 'arrow'}
+  })) as Table;
 }
 
 /**
@@ -525,8 +525,8 @@ async function createBenchmarkLAZ14ArrowTable(
 ): Promise<MeshArrowTable> {
   return (await parse(lazArrayBuffer, LAZRsLoader, {
     core: {worker: false},
-    las: {shape: 'arrow-table'}
-  })) as MeshArrowTable;
+    las: {shape: 'arrow'}
+  })) as Table;
 }
 
 /**
@@ -553,7 +553,10 @@ function createBenchmarkArrayBufferChunks(
  * @param version LAS output version
  * @returns LAS bytes
  */
-function encodeBenchmarkLASArrayBuffer(table: MeshArrowTable, version: '1.2' | '1.4'): ArrayBuffer {
+function encodeBenchmarkLASArrayBuffer(
+  table: Table | RecordBatch,
+  version: '1.2' | '1.4'
+): ArrayBuffer {
   return encodeSync(table, LASWriter, {
     las: {
       version,
@@ -575,6 +578,6 @@ function encodeBenchmarkLASArrayBuffer(table: MeshArrowTable, version: '1.2' | '
  * @param name Column name
  * @returns Whether the column is present
  */
-function hasArrowColumn(table: MeshArrowTable, name: string): boolean {
-  return Boolean(table.data.getChild(name));
+function hasArrowColumn(table: Table | RecordBatch, name: string): boolean {
+  return Boolean(table.getChild(name));
 }

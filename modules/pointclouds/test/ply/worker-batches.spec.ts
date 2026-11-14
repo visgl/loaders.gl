@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table} from 'apache-arrow';
+import {Table, RecordBatch} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
@@ -25,7 +25,7 @@ const source = [
 afterEach(() => destroyWorkerTasks());
 
 test.each([
-  'arrow-table',
+  'arrow',
   'mesh'
 ] as const)('PLY worker batches transfer column transport before %s conversion', async shape => {
   const parser = await PLYLoader.preload();
@@ -45,9 +45,9 @@ test.each([
   );
   const positions: number[] = [];
   for await (const batch of batches) {
-    if (shape === 'arrow-table') {
-      expect(batch.data).toBeInstanceOf(Table);
-      for (const position of batch.data.getChild('POSITION')!) positions.push(...position);
+    if (shape === 'arrow') {
+      expect(batch).toBeInstanceOf(RecordBatch);
+      for (const position of batch.getChild('POSITION')!) positions.push(...position);
     } else {
       const mesh = batch;
       positions.push(...mesh.attributes.POSITION.value);
@@ -72,7 +72,7 @@ test('PLY atomic worker uses column transport before caller-side mesh conversion
   );
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
+    shape: 'arrow',
     data: {transport: 'arrow-js'}
   });
   expect(mesh.loader).toBe('ply');
@@ -100,15 +100,19 @@ test('PLY binary worker batches preserve records split across input chunks', asy
   const split = header.length + 13;
   const batches = await parseInBatches([bytes.slice(0, split), bytes.slice(split)], PLYLoader, {
     core: {worker: true, _workerType: 'test', batchSize: 2},
-    ply: {shape: 'arrow-table', pointCloud: true}
+    ply: {shape: 'arrow', pointCloud: true}
   });
   const lengths: number[] = [];
   const positions: number[] = [];
   for await (const batch of batches) {
-    expect(batch.loaderData.format).toBe('binary_little_endian');
-    expect(batch.loaderData.elements[0].count).toBe(3);
-    lengths.push(batch.length);
-    for (const position of batch.data.getChild('POSITION')!) positions.push(...position);
+    expect(JSON.parse(batch.schema.metadata.get('loaders.gl.ply.header')!).format).toBe(
+      'binary_little_endian'
+    );
+    expect(JSON.parse(batch.schema.metadata.get('loaders.gl.ply.header')!).elements[0].count).toBe(
+      3
+    );
+    lengths.push(batch.numRows);
+    for (const position of batch.getChild('POSITION')!) positions.push(...position);
   }
   expect(lengths).toEqual([2, 1]);
   expect(positions).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
@@ -145,13 +149,13 @@ test('PLY worker mesh batches preserve faces and original header descriptors', a
 test('PLY column transport hydration defaults to Arrow when caller options are omitted', async () => {
   const parser = await PLYLoader.preload();
   const table = await parser.parse(new TextEncoder().encode(source).buffer, {
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow'}
   });
-  const payload = parser.serializeWorkerResult(table);
-  expect(parser.deserializeWorkerResult(payload).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerResult(payload, {}).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerBatch(payload).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerBatch(payload, {}).data).toBeInstanceOf(Table);
+  const payload = parser.serializeWorkerResult({shape: 'arrow-table', data: table});
+  expect(parser.deserializeWorkerResult(payload)).toBeInstanceOf(Table);
+  expect(parser.deserializeWorkerResult(payload, {})).toBeInstanceOf(Table);
+  expect(parser.deserializeWorkerBatch(payload)).toBeInstanceOf(RecordBatch);
+  expect(parser.deserializeWorkerBatch(payload, {})).toBeInstanceOf(RecordBatch);
 });
 
 test.each([
@@ -169,11 +173,11 @@ test.each([
     .replace('7 8 9\n', '7 8 9 0 0 255\n');
   const batches = await parseInBatches([new TextEncoder().encode(text)], PLYLoader, {
     core: {worker, _workerType: 'test', batchSize: 2},
-    ply: {shape: 'arrow-table', pointCloud: true, colorFormat: 'float32'}
+    ply: {shape: 'arrow', pointCloud: true, colorFormat: 'float32'}
   });
   let count = 0;
   for await (const batch of batches) {
-    expect(batch.loaderData).toMatchObject({
+    expect(JSON.parse(batch.schema.metadata.get('loaders.gl.ply.header')!)).toMatchObject({
       format: 'ascii',
       comments: ['retained source header'],
       elements: [{name: 'vertex', count: 3}]

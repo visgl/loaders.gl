@@ -10,7 +10,7 @@ import {parse, parseInBatches} from '@loaders.gl/core';
 import {LASLoaderWithParser as LASLoader} from '@loaders.gl/pointclouds/las-loader';
 import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/lazperf-loader';
 import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/laz-rs-loader';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 
 // probe.gl/bench reads this process-wide configuration without guarding its existence.
 globalThis.probe ||= {};
@@ -282,7 +282,7 @@ function addLASBenchmarks(
   bench.addAsync('loaders.gl (TypeScript) - complete parse [pdrf7-render]', benchmarkOptions, async () => {
     await parse(laz14Fixture.arrayBuffer, LASLoader, {
       core: {worker: false},
-      las: {shape: 'arrow-table', columns: RENDER_COLUMNS}
+      las: {shape: 'arrow', columns: RENDER_COLUMNS}
     });
   });
   bench.addAsync(
@@ -300,7 +300,7 @@ function addLASBenchmarks(
     async () => {
       await parse(laz14Fixture.arrayBuffer, LASLoader, {
         core: {worker: false},
-        las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
+        las: {shape: 'arrow', columns: COMPETITIVE_COLUMNS}
       });
     }
   );
@@ -314,7 +314,7 @@ function addLASBenchmarks(
   bench.addAsync('loaders.gl (TypeScript) - complete parse [pdrf7-comprehensive]', benchmarkOptions, async () => {
     await parse(laz14Fixture.arrayBuffer, LASLoader, {
       core: {worker: false},
-      las: {shape: 'arrow-table'}
+      las: {shape: 'arrow'}
     });
   });
   bench.addAsync(
@@ -363,10 +363,10 @@ async function warmLoaderVariants(
     const table = await parseCompetitiveTable(lazArrayBuffer, loader);
     assertCompetitiveArrowLayout(table, name);
     if (pointCount < 0) {
-      pointCount = table.data.numRows;
-    } else if (table.data.numRows !== pointCount) {
+      pointCount = table.numRows;
+    } else if (table.numRows !== pointCount) {
       throw new Error(
-        `LAS benchmark variant ${name} returned ${table.data.numRows} points; expected ${pointCount}`
+        `LAS benchmark variant ${name} returned ${table.numRows} points; expected ${pointCount}`
       );
     }
   }
@@ -377,16 +377,16 @@ async function warmLoaderVariants(
 async function parseCompetitiveTable(
   lazArrayBuffer: ArrayBuffer,
   loader: LoaderVariant['loader']
-): Promise<MeshArrowTable> {
+): Promise<Table> {
   return (await parse(lazArrayBuffer, loader, {
     core: {worker: false},
-    las: {shape: 'arrow-table', columns: COMPETITIVE_COLUMNS}
-  })) as MeshArrowTable;
+    las: {shape: 'arrow', columns: COMPETITIVE_COLUMNS}
+  })) as Table;
 }
 
 /** Fail benchmark initialization when a loader materializes a different Arrow layout. */
-function assertCompetitiveArrowLayout(table: MeshArrowTable, variantName: string): void {
-  const actualFields = table.data.schema.fields.map(
+function assertCompetitiveArrowLayout(table: Table, variantName: string): void {
+  const actualFields = table.schema.fields.map(
     field => [field.name, field.type.toString()] as const
   );
   const expectedLayout = JSON.stringify(COMPETITIVE_ARROW_FIELDS);
@@ -410,7 +410,7 @@ async function consumeStreamingParse(
   const batches = await parseInBatches(lazChunks, LASLoader, {
     batchSize: BATCH_SIZE,
     core: {worker: false},
-    las: {shape: 'arrow-table', columns}
+    las: {shape: 'arrow', columns}
   });
   for await (const _batch of batches) {
     _batch;

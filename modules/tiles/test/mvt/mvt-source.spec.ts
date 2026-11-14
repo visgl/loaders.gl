@@ -23,7 +23,7 @@ test('MVTSourceLoader defaults vector tiles to Arrow tables', () => {
   const source = new MVTTileSource('https://example.com/{z}/{x}/{y}.mvt', {
     mvt: {metadataUrl: null}
   });
-  expect(source.options.mvt?.shape).toBe('arrow-table');
+  expect(source.options.mvt?.shape).toBe('arrow');
 });
 test('MVTSourceLoader#Blobs', async () => {
   if (!isBrowser) {

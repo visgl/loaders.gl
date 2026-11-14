@@ -3,22 +3,22 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {OBJLoaderWithParser} from '../obj-loader';
+import {OBJColumnLoader} from '../obj-loader';
 
 createLoaderWorker({
-  ...OBJLoaderWithParser,
+  ...OBJColumnLoader,
   /** Always returns columnar data; legacy mesh conversion runs on the caller. */
   parse(input, options) {
-    return OBJLoaderWithParser.parse(input, {
+    return OBJColumnLoader.parse(input, {
       ...options,
-      obj: {...options?.obj, shape: 'arrow-table'}
+      obj: {...options?.obj, shape: 'arrow'}
     });
   },
   /** Keeps one columnar parser alive for the entire worker input stream. */
   parseInBatches(input, options) {
-    return OBJLoaderWithParser.parseInBatches(input, {
+    return OBJColumnLoader.parseInBatches(input, {
       ...options,
-      obj: {...options?.obj, shape: 'arrow-table'}
+      obj: {...options?.obj, shape: 'arrow'}
     });
   }
 });
