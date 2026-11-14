@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {tableFromArrays} from 'apache-arrow';
 import type {Feature} from '@loaders.gl/core/schema';
 
 import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
@@ -162,11 +163,7 @@ test('MLTTileSource#supports Arrow table shape', async () => {
   let parsedOptions: unknown;
   MLTLoader.parse = (async (_arrayBuffer: ArrayBuffer, options?: unknown) => {
     parsedOptions = options;
-    return {
-      shape: 'arrow',
-      schema: {fields: [], metadata: {geo: '{}'}},
-      data: {numRows: 1}
-    };
+    return tableFromArrays({value: [1]});
   }) as unknown as typeof MLTLoader.parse;
 
   const source = MLTSourceLoader.createDataSourceSync('https://example.com/tiles', {

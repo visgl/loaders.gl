@@ -17,7 +17,7 @@ test('PotreeBinLoader#parse defaults to Arrow table', async () => {
     }
   });
   expect(table).toHaveProperty('numRows');
-  validateArrowTableSchema(table.data, meshArrowSchema, {
+  validateArrowTableSchema(table, meshArrowSchema, {
     schemaName: 'PotreeBinLoader Mesh table'
   });
   expect(table.numRows, 'table has point rows').toBe(2);
