@@ -7,11 +7,12 @@ import {PMTiles, type Header} from 'pmtiles';
 import {createDataSourceSync} from '@loaders.gl/core';
 import {createWebMercatorTileGrid, type CoreAPI} from '@loaders.gl/core/loader-utils';
 import {parsePMTilesHeader} from '../../src/pmtiles/lib/parse-pmtiles';
+import {PMTilesLoaderWithParser} from '../../src/pmtiles/pmtiles-loader-with-parser';
+
 import {MLTLoader} from '@loaders.gl/tiles/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/tiles/mvt';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {
-  PMTilesLoaderWithParser,
   PMTilesTileSource,
   type PMTilesSourceLoaderOptions
 } from '../../src/pmtiles/pmtiles-source-loader';
