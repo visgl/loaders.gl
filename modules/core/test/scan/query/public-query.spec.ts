@@ -412,6 +412,12 @@ test('stream pagination skips filtered batches and slices only the boundary batc
 test('native Arrow queries retain the projected schema on empty streams', async () => {
   const source = arrow.tableFromArrays({value: new Int32Array([1, 2])});
   source.schema.metadata.set('source', 'native');
+  // Simulate a Table constructed by another copy of Arrow.
+  Object.setPrototypeOf(
+    source,
+    Object.defineProperties({}, Object.getOwnPropertyDescriptors(arrow.Table.prototype))
+  );
+  expect(Object.prototype.isPrototypeOf.call(arrow.Table.prototype, source)).toBe(false);
   const request = {select: [{column: 'value', as: 'number'}], limit: 0};
   const table = await query(request, {source});
   expect(table).toBeInstanceOf(arrow.Table);

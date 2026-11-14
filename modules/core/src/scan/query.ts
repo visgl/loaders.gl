@@ -187,8 +187,8 @@ async function* queryAppendBatches(
     if (!source || typeof source !== 'object')
       throw new Error('Query source must be an Arrow table or table scan source.');
     const inMemory =
-      source instanceof arrow.Table
-        ? source
+      'batches' in source
+        ? (source as arrow.Table)
         : 'shape' in source && source.shape === 'arrow-table'
           ? (source as ArrowTable).data
           : null;
