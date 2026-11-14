@@ -45,7 +45,7 @@ async function loadStatistic(
   statistic: StatisticsInfo,
   options: LoaderOptions & {i3s?: {token?: string | null}}
 ): Promise<StatsInfo | null> {
-  const baseUrl = options.core?.baseUrl || options.baseUri;
+  const baseUrl = options.core?.baseUrl;
   const resolvedUrl = resolveStatisticsUrl(statistic.href, baseUrl);
   const url = getUrlWithSearchParams(
     getUrlWithToken(resolvedUrl, options.i3s?.token || null),

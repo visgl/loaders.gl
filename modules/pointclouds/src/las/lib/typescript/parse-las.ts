@@ -1141,7 +1141,7 @@ function* parseLAZChunkedIterator(
   if (header.pointsFormatId <= 5 || laszip.variableChunks) {
     yield* decodeLAZFileFromCompleteBytes(new Uint8Array(arrayBuffer), header, laszip, {
       ...options,
-      batchSize
+      core: {...options.core, batchSize}
     });
     return;
   }
@@ -2143,7 +2143,7 @@ function detectTwoByteColors(
 }
 
 function getBatchSize(options: LASLoaderOptions): number {
-  const batchSize = options.core?.batchSize ?? options.batchSize;
+  const batchSize = options.core?.batchSize;
   return typeof batchSize === 'number' ? batchSize : DEFAULT_BATCH_SIZE;
 }
 

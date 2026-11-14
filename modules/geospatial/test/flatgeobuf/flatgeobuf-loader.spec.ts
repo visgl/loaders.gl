@@ -54,9 +54,7 @@ const FGB_METADATA = {
     }
   ]
 };
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('FlatGeobufLoader#loader conformance', () => {
   validateLoader(FlatGeobufLoader, 'FlatGeobufLoader');
 });

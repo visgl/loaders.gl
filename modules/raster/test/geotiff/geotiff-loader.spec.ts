@@ -12,3 +12,12 @@ test('GeoTIFF raster query capabilities advertise supported cancellation', async
   expect(source.getRasterQueryCapabilities().bounds).toBe('pushdown');
   expect(source.getRasterQueryCapabilities().cancellation).toBe(true);
 });
+
+test.each([
+  ['raster.GEOTIFF?download=1', true],
+  ['raster.tif#image', true],
+  ['raster.ome.tiff?download=1', false],
+  ['raster.parquet', false]
+])('GeoTIFFLoader source selection for %s', (url, matches) => {
+  expect(GeoTIFFLoader.testURL(url)).toBe(matches);
+});

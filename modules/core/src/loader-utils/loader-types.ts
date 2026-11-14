@@ -108,59 +108,10 @@ export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> &
 /**
  * Core Loader Options
  */
-export type LoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
-  /** Common query request. Format loaders implement the fields they support. */
-  _scan?: QueryOptions;
-  /** Query parameters appended to the initial URL request. */
-  searchParams?: SearchParams;
-  core?: StrictLoaderOptions['core'];
-  modules?: StrictLoaderOptions['modules'];
-
-  // Deprecated top-level aliases for core options
-  /** @deprecated Use options.core.baseUrl */
-  baseUri?: string;
-  /** @deprecated Use options.core.fetch */
-  fetch?: typeof fetch | FetchLike | RequestInit | null;
-  /** @deprecated Use options.core.mimeType */
-  mimeType?: string;
-  /** @deprecated Use options.core.fallbackMimeType */
-  fallbackMimeType?: string;
-  /** @deprecated Use options.core.ignoreRegisteredLoaders */
-  ignoreRegisteredLoaders?: boolean;
-  /** @deprecated Use options.core.nothrow */
-  nothrow?: boolean;
-  /** @deprecated Use options.core.log */
-  log?: Logger | null;
-  /** @deprecated Use options.core.useLocalLibraries */
-  useLocalLibraries?: boolean;
-  /** @deprecated Use options.core.CDN */
-  CDN?: string | null;
-  /** @deprecated Use options.core.worker */
-  worker?: boolean | 'auto';
-  /** @deprecated Use options.core.maxConcurrency */
-  maxConcurrency?: number;
-  /** @deprecated Use options.core.maxMobileConcurrency */
-  maxMobileConcurrency?: number;
-  /** @deprecated Task handles close after each atomic call or stream. */
-  reuseWorkers?: boolean;
-  /** @deprecated Use options.core.workerTransferBufferCopy */
-  workerTransferBufferCopy?: 'none' | 'sliced' | 'all';
-  /** @deprecated Use options.core._nodeWorkers */
-  _nodeWorkers?: boolean;
-  /** @deprecated Use options.core._workerType */
-  _workerType?: string;
-  /** @deprecated Use options.core._workerType */
-  _worker?: string;
-  /** @deprecated Use options.core.shape */
-  shape?: string;
-  /** @deprecated Use options.core.batchSize */
-  batchSize?: number | 'auto';
-  /** @deprecated Use options.core.metadata */
-  metadata?: boolean;
-  /** @deprecated Use options.core.transforms */
-  transforms?: TransformBatches[];
-
-  // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
+export type LoaderOptions = Pick<
+  StrictLoaderOptions,
+  'signal' | 'onProgress' | '_scan' | 'searchParams' | 'core' | 'modules'
+> & {
   [loaderId: string]: unknown;
 };
 

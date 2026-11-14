@@ -114,7 +114,7 @@ test('TypeScript LAZ raw streaming preserves PDRF 4-10 records', async () => {
 
     for await (const batch of decodeLAZFileInBatches(
       splitArrayBuffer(lazArrayBuffer, TEST_INPUT_CHUNK_SIZE),
-      {batchSize: TEST_BATCH_SIZE}
+      {core: {batchSize: TEST_BATCH_SIZE}}
     )) {
       decodedBatches.push(new Uint8Array(batch.arrayBuffer));
     }
@@ -136,7 +136,7 @@ test('TypeScript LAZ complete and split parsing preserve Arrow attributes', asyn
     const complete = collectTableAttributes(parseLAS(lazArrayBuffer));
     const streamed = await collectBatchAttributes(
       parseLASInBatches(splitArrayBuffer(lazArrayBuffer, TEST_INPUT_CHUNK_SIZE), {
-        batchSize: TEST_BATCH_SIZE
+        core: {batchSize: TEST_BATCH_SIZE}
       })
     );
 
@@ -378,7 +378,10 @@ test.each(
   const {compressed} = getFirstLAZChunk(lazArrayBuffer, fixture);
   const pointDataOffset = new DataView(lazArrayBuffer).getUint32(96, true);
   const firstChunkEnd = pointDataOffset + 8 + compressed.byteLength;
-  const options = {batchSize: TEST_BATCH_SIZE, las: {columns: ['POSITION', 'WAVEFORM'] as const}};
+  const options = {
+    core: {batchSize: TEST_BATCH_SIZE},
+    las: {columns: ['POSITION', 'WAVEFORM'] as const}
+  };
   const expected = parseLAS(lasArrayBuffer, options);
   let consumedByteLength = 0;
   const batches = parseLASInBatches(

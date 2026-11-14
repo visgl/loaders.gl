@@ -16,11 +16,11 @@ test('source fetch utilities cover direct, static, and default fetch configurati
   vi.stubGlobal('fetch', globalFetch);
 
   const directFetch = vi.fn(async () => new Response('direct'));
-  await getFetchFunction({fetch: directFetch})('direct-url', {method: 'POST'});
+  await getFetchFunction({core: {fetch: directFetch}})('direct-url', {method: 'POST'});
   expect(directFetch).toHaveBeenCalledWith('direct-url', {method: 'POST'});
 
   await getFetchFunction({
-    fetch: {headers: {'X-Static': 'static', 'X-Override': 'old'}, method: 'POST'}
+    core: {fetch: {headers: {'X-Static': 'static', 'X-Override': 'old'}, method: 'POST'}}
   })('static-url', {headers: {'X-Request': 'request', 'X-Override': 'new'}});
   const [, staticOptions] = globalFetch.mock.calls[0];
   expect(new Headers(staticOptions?.headers).get('X-Static')).toBe('static');
@@ -30,9 +30,12 @@ test('source fetch utilities cover direct, static, and default fetch configurati
   await getFetchFunction()('default-url');
   expect(globalFetch).toHaveBeenLastCalledWith('default-url', undefined);
 
-  const merged = mergeImageSourceLoaderProps({loadOptions: {fetch: directFetch}, marker: true});
+  const merged = mergeImageSourceLoaderProps({
+    loadOptions: {core: {fetch: directFetch}},
+    marker: true
+  });
   expect(merged.marker).toBe(true);
-  await merged.loadOptions.fetch('merged-url');
+  await merged.loadOptions.core.fetch('merged-url');
   expect(directFetch).toHaveBeenLastCalledWith('merged-url');
 });
 

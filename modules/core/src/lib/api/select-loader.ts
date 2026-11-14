@@ -13,7 +13,6 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import {TypedArray} from '@loaders.gl/core/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
-import {normalizeLoaderOptions} from '../loader-utils/option-utils';
 import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
 import {compareMIMETypes} from '../utils/mime-type-utils';
 import {getRegisteredLoaders} from './register-loaders';
@@ -46,9 +45,6 @@ export async function selectLoader(
     return null;
   }
 
-  const normalizedOptions = normalizeLoaderOptions(options || {});
-  normalizedOptions.core ||= {};
-
   if (loaders && !Array.isArray(loaders)) {
     return normalizeLoader(loaders);
   }
@@ -59,23 +55,22 @@ export async function selectLoader(
   async function matchCandidates(candidates: Loader[]): Promise<Loader | null> {
     normalizeLoaders(candidates);
     const loader =
-      (text !== null &&
-        selectLoaderInternal(text, candidates, normalizedOptions, context, operation)) ||
-      selectLoaderInternal(data, candidates, normalizedOptions, context, operation);
+      (text !== null && selectLoaderInternal(text, candidates, options, context, operation)) ||
+      selectLoaderInternal(data, candidates, options, context, operation);
     if (!loader && isBlob(data) && candidates.length) {
       initialBytes ??= await data.slice(0, 10).arrayBuffer();
-      return selectLoaderInternal(initialBytes, candidates, normalizedOptions, context, operation);
+      return selectLoaderInternal(initialBytes, candidates, options, context, operation);
     }
     return loader;
   }
 
   let loader = await matchCandidates(loaders || []);
-  if (!loader && !normalizedOptions.core.ignoreRegisteredLoaders) {
+  if (!loader && !options?.core?.ignoreRegisteredLoaders) {
     loader = await matchCandidates(getRegisteredLoaders());
   }
 
   // no loader available
-  if (!loader && !normalizedOptions.core.nothrow) {
+  if (!loader && !options?.core?.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
 
@@ -113,9 +108,6 @@ export function selectLoaderSync(
     return null;
   }
 
-  const normalizedOptions = normalizeLoaderOptions(options || {});
-  normalizedOptions.core ||= {};
-
   // eslint-disable-next-line complexity
   // if only a single loader was provided (not as array), force its use
   // TODO - Should this behavior be kept and documented?
@@ -126,19 +118,13 @@ export function selectLoaderSync(
 
   const candidates = loaders || [];
   normalizeLoaders(candidates);
-  let loader = selectLoaderInternal(data, candidates, normalizedOptions, context, operation);
-  if (!loader && !normalizedOptions.core.ignoreRegisteredLoaders) {
-    loader = selectLoaderInternal(
-      data,
-      getRegisteredLoaders(),
-      normalizedOptions,
-      context,
-      operation
-    );
+  let loader = selectLoaderInternal(data, candidates, options, context, operation);
+  if (!loader && !options?.core?.ignoreRegisteredLoaders) {
+    loader = selectLoaderInternal(data, getRegisteredLoaders(), options, context, operation);
   }
 
   // no loader available
-  if (!loader && !normalizedOptions.core.nothrow) {
+  if (!loader && !options?.core?.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
 
@@ -162,7 +148,6 @@ function selectLoaderInternal(
   let loader: Loader | null = null;
   let reason: string = '';
 
-  // if options.mimeType is supplied, it takes precedence
   const sourceType =
     options?.core && 'type' in options.core ? (options.core.type as string | undefined) : undefined;
   if (sourceType && sourceType !== 'auto') {
@@ -170,7 +155,7 @@ function selectLoaderInternal(
     reason = loader ? `match forced by supplied source type ${sourceType}` : '';
   }
 
-  // if options.mimeType is supplied, it takes precedence
+  // if options.core.mimeType is supplied, it takes precedence
   if (options?.core?.mimeType) {
     loader = findLoaderByMIMEType(loaders, options?.core?.mimeType);
     reason = `match forced by supplied MIME type ${options?.core?.mimeType}`;

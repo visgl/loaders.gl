@@ -45,8 +45,7 @@ test('parsePCD#colorFormat float32 returns normalized colors', () => {
 test('PCDLoader#colorFormat float16 works for Arrow batches', async () => {
   const data = new TextEncoder().encode(PCD_WITH_COLORS).buffer;
   const batches = await parseInBatches([data], PCDLoader, {
-    batchSize: 1,
-    core: {worker: false},
+    core: {worker: false, batchSize: 1},
     pcd: {shape: 'arrow-table', colorFormat: 'float16'}
   });
   const batchValues: number[] = [];

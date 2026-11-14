@@ -337,7 +337,7 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
 
   /** Returns true when source options supplied an explicit fetch override. */
   private _hasCustomFetch(): boolean {
-    return Boolean(this.loadOptions?.core?.fetch || this.loadOptions?.fetch);
+    return Boolean(this.loadOptions?.core?.fetch);
   }
 
   /** Builds request options for RAD fetches. */

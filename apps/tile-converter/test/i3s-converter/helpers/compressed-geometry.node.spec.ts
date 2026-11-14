@@ -48,8 +48,7 @@ test.each([
   expect(new TextDecoder().decode(compressed.slice(0, 5))).toBe('DRACO');
   expect(new Uint8Array(compressed).slice(7, 9)).toEqual(new Uint8Array([1, 1]));
   const decoded = (await parse(compressed, DracoLoader, {
-    core: {worker: false},
-    useLocalLibraries: true,
+    core: {worker: false, useLocalLibraries: true},
     draco: {shape: 'mesh', attributeNameEntry: 'i3s-attribute-type'}
   })) as DracoMesh;
   expect(decoded.loaderData.num_faces).toBe(2);

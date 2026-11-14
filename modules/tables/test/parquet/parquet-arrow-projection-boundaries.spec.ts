@@ -49,9 +49,7 @@ beforeAll(async () => {
 });
 
 test.each([1, 2, 3])('Parquet Arrow preserves nulls and narrow types with offset %i', async offset => {
-  const table = await parse(fixture, ParquetJSLoader, {
-    worker: false, parquet: {shape: 'arrow', offset, batchSize: 1}
-  });
+  const table = await parse(fixture, ParquetJSLoader, {core: {worker: false}, parquet: {shape: 'arrow', offset, batchSize: 1}});
   expect(table).toHaveProperty('numRows');
   if (!('numRows' in table)) throw new Error('Expected Arrow table');
   expect(table.numRows).toBe(4 - offset);
@@ -64,10 +62,7 @@ test.each([1, 2, 3])('Parquet Arrow preserves nulls and narrow types with offset
 });
 
 test('Parquet Arrow preserves empty projected schema in source order beyond the final row', async () => {
-  const result = await parse(fixture, ParquetJSLoader, {
-    worker: false,
-    parquet: {shape: 'arrow', offset: 100, columns: ['text', 'unsigned16']}
-  });
+  const result = await parse(fixture, ParquetJSLoader, {core: {worker: false}, parquet: {shape: 'arrow', offset: 100, columns: ['text', 'unsigned16']}});
   if (!('numRows' in result)) throw new Error('Expected Arrow table');
   expect(result.numRows).toBe(0);
   expect(result.schema.fields.map(field => field.name)).toEqual(['unsigned16', 'text']);

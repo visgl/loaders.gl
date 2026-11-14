@@ -278,8 +278,8 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async () => {
 });
 test('CSVLoader#loadInBatches(geospatial-points-wkt.csv, detectGeometryColumns)', async () => {
   const iterator = await loadInBatches(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
-    csv: {shape: 'columnar-table', detectGeometryColumns: true},
-    batchSize: 2
+    core: {batchSize: 2},
+    csv: {shape: 'columnar-table', detectGeometryColumns: true}
   });
   let firstBatch: any = null;
   for await (const batch of iterator) {
@@ -342,10 +342,10 @@ test('CSVLoader#loadInBatches(numbers-100.csv, shape: arrow)', async () => {
 test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async () => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
+    core: {batchSize},
     csv: {
       shape: 'columnar-table'
-    },
-    batchSize
+    }
   });
   let batchCount = 0;
   for await (const batch of iterator) {
@@ -374,7 +374,9 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async () => {
   expect(batchCount, 'Correct number of batches received').toBe(5);
 });
 test('CSVLoader#loadInBatches(sample.csv, array-rows)', async () => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {shape: 'array-row-table'});
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
+    core: {shape: 'array-row-table'}
+  });
   let batchCount = 0;
   for await (const batch of iterator) {
     // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
@@ -449,11 +451,11 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async () => {
 test('CSVLoader#loadInBatches(no header, row format, prefix)', async () => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_NO_HEADER_URL, CSVLoader, {
+    core: {batchSize},
     csv: {
       shape: 'object-row-table',
       columnPrefix: 'column_'
-    },
-    batchSize
+    }
   });
   for await (const batch of iterator) {
     expect(batch.shape, 'Got correct batch shape').toBe('object-row-table');

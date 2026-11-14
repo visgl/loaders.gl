@@ -110,7 +110,7 @@ test('format parquet metadata shares its grouped owner', () => {
 
 test('grouped JSON metadata supports synchronous and asynchronous entrypoints', async () => {
   const input = new TextEncoder().encode('{"value":7}').buffer;
-  expect(await parse(input, JSONLoader, {worker: false})).toEqual({value: 7});
+  expect(await parse(input, JSONLoader, {core: {worker: false}})).toEqual({value: 7});
   expect(parseSync(input, JSONLoaderWithParser)).toEqual({value: 7});
 });
 

@@ -54,7 +54,7 @@ export const OBJLoaderWithParser = {
 
 /** Returns a numeric batch size when batching has an explicit row count. */
 function getNumericBatchSize(options?: OBJLoaderOptions): number | undefined {
-  const batchSize = options?.core?.batchSize ?? options?.batchSize;
+  const batchSize = options?.core?.batchSize;
   return typeof batchSize === 'number' ? batchSize : undefined;
 }
 

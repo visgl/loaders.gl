@@ -13,9 +13,7 @@ const SHAPEFILE_JS_POINT_TEST_FILES = ['points', 'multipoints'];
 const SHAPEFILE_JS_POLYLINE_TEST_FILES = ['polylines'];
 const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons', 'multipolygon_with_holes'];
 const POINT_Z_TEST_FILE = 'point-z';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 const WKB_OPTIONS = {shp: {shape: 'wkb' as const}};
 test('SHPLoader#load polygons', async () => {
   const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader, WKB_OPTIONS);

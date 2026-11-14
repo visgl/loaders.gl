@@ -46,11 +46,7 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
   )
     return false;
   // Multifile workers cannot transfer an application's custom fetch callback.
-  if (
-    loader.id === 'shapefile' &&
-    (typeof options?.fetch === 'function' || typeof options?.core?.fetch === 'function')
-  )
-    return false;
+  if (loader.id === 'shapefile' && typeof options?.core?.fetch === 'function') return false;
   const workerOptions = getWorkerOptions(options);
   const nodeWorkers = workerOptions._nodeWorkers;
   if (!isBrowser && !nodeWorkers) {
@@ -308,7 +304,7 @@ function resolveWorkerLoaders(
 }
 
 /**
- * Create worker options with deprecated top-level worker fields available to worker-utils.
+ * Prepares worker routing controls and serializable parser options.
  * @param options
  * @param loader Loader whose parser will handle the worker request.
  */
@@ -318,7 +314,6 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
     ...portableOptions,
     signal: undefined,
     onProgress: undefined,
-    log: isDisabledLog(portableOptions.log) ? null : undefined,
     ...(portableOptions.core
       ? {
           core: {
@@ -338,19 +333,18 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
     })
   );
   restoreBigIntOptions(optionsToSerialize, serializedOptions);
-  const workerOptions: Record<string, any> = {
-    ...serializedOptions.core,
-    ...serializedOptions
-  };
-  // The decision has already been made before dispatch, so worker runtimes should
-  // receive the established boolean form even when the caller selected `auto`.
-  if (workerOptions.worker === 'auto') {
-    workerOptions.worker = true;
+  // The decision has already been made before dispatch.
+  if (serializedOptions.core?.worker === 'auto') {
+    serializedOptions.core.worker = true;
   }
   if (loader) {
-    workerOptions._workerLoaderId = loader.id;
+    serializedOptions._workerLoaderId = loader.id;
   }
-  return workerOptions;
+  return {
+    ...serializedOptions,
+    ...serializedOptions.core,
+    parserOptions: serializedOptions
+  };
 }
 
 /** Restores exact bigint leaves after JSON removes callbacks; ordinary JSON values keep their shape. */

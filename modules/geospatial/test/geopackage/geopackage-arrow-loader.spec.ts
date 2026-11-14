@@ -11,10 +11,7 @@ import * as unbundledGeopackage from '@loaders.gl/geospatial/geopackage/unbundle
 const GPKG_RIVERS = '@loaders.gl/geospatial/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_MULTI = '@loaders.gl/geospatial/geopackage/test/data/rivers_multi.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geospatial/geopackage/test/data/rivers_small.geojson';
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
-});
+setLoaderOptions({core: {_workerType: 'test', worker: false}});
 test('GeoPackageLoader#loader conformance', () => {
   validateLoader(GeoPackageLoader, 'GeoPackageLoader');
 });

@@ -16,10 +16,7 @@ import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
 import {DBFLoaderWithParser as DBFLoader} from '../../src/shapefile/dbf-loader';
 import {projectionEngine} from '@math.gl/geospatial/projection';
 import {equals, withEpsilon} from '@math.gl/core';
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
-});
+setLoaderOptions({core: {_workerType: 'test', worker: false}});
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = {
   'boolean-property': null,
@@ -59,7 +56,7 @@ test('ShapefileLoader#load (from browser File objects)', async () => {
       const fetch = fileSystem.fetch.bind(fileSystem.fetch);
       const filename = `${testFileName}.shp`;
       // @ts-ignore
-      const data = await load(filename, ShapefileLoader, {fetch, shapefile: {shape: 'v3'}});
+      const data = await load(filename, ShapefileLoader, {core: {fetch}, shapefile: {shape: 'v3'}});
       testShapefileData(testFileName, data);
     }
   }
@@ -165,7 +162,7 @@ test('ShapefileLoader#loadInBatches(File)', async () => {
     const file = new File([await response.blob()], filename);
     // @ts-ignore
     const batches = await loadInBatches(file, ShapefileLoader, {
-      fetch: fileSystem.fetch,
+      core: {fetch: fileSystem.fetch},
       shapefile: {shape: 'v3'}
     });
     let data;
@@ -207,8 +204,8 @@ test('ShapefileLoader#loadInBatches when options.metadata: true', async () => {
   const testFileName = Object.keys(SHAPEFILE_JS_TEST_FILES)[0];
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
   const batches = await loadInBatches(filename, ShapefileLoader, {
-    shapefile: {shape: 'v3'},
-    metadata: true
+    core: {metadata: true},
+    shapefile: {shape: 'v3'}
   });
   let data;
   for await (const batch of batches) {

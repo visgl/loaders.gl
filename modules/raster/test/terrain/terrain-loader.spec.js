@@ -7,9 +7,7 @@ import {ImageLoader} from '@loaders.gl/images';
 registerLoaders([ImageLoader]);
 const MAPBOX_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/mapbox.png';
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/terrarium.png';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('TerrainLoader#loader objects', async () => {
   validateLoader(TerrainLoader, 'TerrainLoader');
 });

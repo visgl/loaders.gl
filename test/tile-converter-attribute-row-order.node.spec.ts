@@ -35,7 +35,7 @@ beforeAll(async () => {
   for (const item of cases) {
     const table = {name: [0, 1, 2, 3].map(index => item.prefix + index), triangles: [1, 2, 3, 4]};
     const bytes = createRowOrderTile(table, item.primitives);
-    parsedTiles.set(item.label, await parse(bytes, Tiles3DLoader, {worker: false}));
+    parsedTiles.set(item.label, await parse(bytes, Tiles3DLoader, {core: {worker: false}}));
   }
 });
 

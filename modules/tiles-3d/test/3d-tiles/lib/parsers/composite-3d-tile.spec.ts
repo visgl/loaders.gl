@@ -75,9 +75,9 @@ test('composite tile#loads composite of composite', async () => {
   expect(tile, 'loaded').toBeTruthy();
 });
 test('loads multiple instanced tiles from composite content', async () => {
-  const tileset = await load(COMPOSITE_OF_INSTANCED_URL, Tiles3DLoader, {worker: false});
+  const tileset = await load(COMPOSITE_OF_INSTANCED_URL, Tiles3DLoader, {core: {worker: false}});
   const tile = await load(tileset.root.contentUrl, Tiles3DLoader, {
-    worker: false,
+    core: {worker: false},
     '3d-tiles': {loadGLTF: false}
   });
   expect(tile.tilesLength).toBe(2);

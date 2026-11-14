@@ -333,7 +333,7 @@ export function createAuthenticatedFetch(options: AuthenticatedFetchOptions): Fe
  * @returns A fetch function that preserves request defaults and applies matching credentials.
  */
 export function getAuthenticatedFetch(options: LoaderOptions = {}): FetchLike {
-  const fetchOption = options.fetch ?? options.core?.fetch;
+  const fetchOption = options.core?.fetch;
   let fetchFunction: FetchLike;
 
   if (typeof fetchOption === 'function') {

@@ -40,7 +40,7 @@ export default async function dracoBench(bench) {
   const arrayBuffer = await encode(mesh, DracoWriter, {draco: {pointcloud: true}});
 
   // Warm up worker (keep worker loading out of throughput measurement)
-  await parse(arrayBuffer.slice(0), DracoLoader, {draco: {pointcloud: true}, worker: true});
+  await parse(arrayBuffer.slice(0), DracoLoader, {core: {worker: true}, draco: {pointcloud: true}});
 
   const pointCount = POSITIONS.byteLength / 12;
 
@@ -52,14 +52,20 @@ export default async function dracoBench(bench) {
       `DracoLoader#pointcloud#${options.name} - sequential`,
       benchOptions,
       async () =>
-        await parse(arrayBuffer.slice(0), DracoLoader, {draco: {pointcloud: true}, worker: true})
+        await parse(arrayBuffer.slice(0), DracoLoader, {
+          core: {worker: true},
+          draco: {pointcloud: true}
+        })
     );
 
     bench.addAsync(
       `DracoLoader#pointcloud#${options.name} - parallel`,
       {...benchOptions, _throughput: 5},
       async () =>
-        await parse(arrayBuffer.slice(0), DracoLoader, {draco: {pointcloud: true}, worker: true})
+        await parse(arrayBuffer.slice(0), DracoLoader, {
+          core: {worker: true},
+          draco: {pointcloud: true}
+        })
     );
   }
 

@@ -73,7 +73,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = auto)', async 
 });
 test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async () => {
   const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
-    batchSize: 5,
+    core: {batchSize: 5},
     ndjson: {shape: 'object-row-table'}
   });
   expect(
@@ -103,7 +103,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async () 
 });
 test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow, batchSize = 5)', async () => {
   const classicIterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
-    batchSize: 5,
+    core: {batchSize: 5},
     ndjson: {shape: 'object-row-table'}
   });
   const classicBatches: any[] = [];
@@ -111,7 +111,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow, batchSize = 5)', a
     classicBatches.push(batch);
   }
   const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
-    batchSize: 5,
+    core: {batchSize: 5},
     ndjson: {shape: 'arrow'}
   });
   let batchCount = 0;
@@ -137,9 +137,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow, batchSize = 5)', a
   expect(rowCount, 'Correct number of Arrow rows received').toBe(11);
 });
 test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async () => {
-  const iterator = await loadInBatches(NDJSON_INVALID_PATH, NDJSONLoader, {
-    batchSize: 5
-  });
+  const iterator = await loadInBatches(NDJSON_INVALID_PATH, NDJSONLoader, {core: {batchSize: 5}});
   expect(
     isIterator(iterator) || isAsyncIterable(iterator),
     'loadInBatches returned iterator'
@@ -185,7 +183,7 @@ test('NDJSONLoader#load(ndjson-invalid.ndjson, shape: arrow)', async () => {
 });
 test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow, batchSize = 5) matches rows', async () => {
   const classicIterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
-    batchSize: 5,
+    core: {batchSize: 5},
     ndjson: {shape: 'object-row-table'}
   });
   const classicBatches: any[] = [];
@@ -193,7 +191,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow, batchSize = 5) mat
     classicBatches.push(batch);
   }
   const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
-    batchSize: 5,
+    core: {batchSize: 5},
     ndjson: {shape: 'arrow'}
   });
   expect(
@@ -235,7 +233,7 @@ test('NDJSONLoader#load(ndjson-empty-objects.ndjson, shape: arrow) matches rows'
 });
 test('NDJSONLoader#loadInBatches(ndjson-empty-objects.ndjson, shape: arrow, batchSize = 2)', async () => {
   const iterator = await loadInBatches(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader, {
-    batchSize: 2,
+    core: {batchSize: 2},
     ndjson: {shape: 'arrow'}
   });
   let batchCount = 0;

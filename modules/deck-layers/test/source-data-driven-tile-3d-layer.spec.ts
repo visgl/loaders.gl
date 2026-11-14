@@ -100,6 +100,8 @@ test('SourceDataDrivenTile3DLayer forwards preload headers for legacy loaders', 
   expect(sourceLayerMocks.createSource).toHaveBeenCalledWith(
     'tileset.json',
     loader,
-    expect.objectContaining({fetch: {headers: {'x-token': 'secret'}}})
+    expect.objectContaining({
+      core: expect.objectContaining({fetch: {headers: {'x-token': 'secret'}}})
+    })
   );
 });

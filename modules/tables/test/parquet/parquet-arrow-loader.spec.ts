@@ -15,9 +15,7 @@ import { ParquetLoader as BundledParquetLoader } from '@loaders.gl/tables/parque
 import * as arrow from 'apache-arrow';
 import { WASM_SUPPORTED_FILES } from './data/files';
 const PARQUET_DIR = '@loaders.gl/tables/parquet/test/data';
-setLoaderOptions({
-    _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('ParquetLoader#loader objects', () => {
 });
 test('ParquetLoader#publishes a module-local worker asset', () => {

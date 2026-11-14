@@ -56,7 +56,7 @@ test('core parses KML using group metadata', async () => {
   const text =
     '<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><name>A</name><Point><coordinates>1,2</coordinates></Point></Placemark></kml>';
   const result = await parse(new TextEncoder().encode(text).buffer, KMLLoader, {
-    worker: false,
+    core: {worker: false},
     kml: {shape: 'geojson-table'}
   });
   expect(result).toMatchObject({

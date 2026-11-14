@@ -11,7 +11,7 @@ const PARQUET_DIR = '@loaders.gl/tables/parquet/test/data/geoparquet';
 const GEOPARQUET_EXAMPLE = `${PARQUET_DIR}/example.parquet`;
 const GEOPARQUET_FILES = ['example.parquet', 'airports.parquet', 'geojson-big.parquet'];
 // Use local workers
-setLoaderOptions({ _workerType: 'test' });
+setLoaderOptions({core: {_workerType: 'test'}});
 test('Load GeoParquet#airports.parquet', async () => {
     const table = await load(`${PARQUET_DIR}/airports.parquet`, GeoParquetLoader, {
         core: { worker: false },

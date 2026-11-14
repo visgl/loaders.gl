@@ -23,7 +23,7 @@ beforeAll(async () => {
     ).arrayBuffer()
   );
   const gltf = await parse(createTexturedTriangle(imageBytes, 'image/png'), GLTFLoader, {
-    worker: false,
+    core: {worker: false},
     gltf: {loadImages: false}
   });
   const material = gltf.json.materials![gltf.json.meshes![0].primitives[0].material!];

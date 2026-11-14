@@ -17,7 +17,7 @@ import {
 import type {ChromeTraceEventArrowTable, PerfettoTrace, PerfettoTraceBatch} from '../src';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 let officialTraceBytes: Uint8Array;
 let officialTrace: PerfettoTrace;

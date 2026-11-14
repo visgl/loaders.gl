@@ -11,25 +11,11 @@ import {
 } from '../../../../src/loader-utils';
 /** Minimal source used to exercise shared options without loading resources. */
 class TestDataSource extends DataSource<string, DataSourceOptions> {}
-test('DataSource normalizes legacy base URL aliases for direct parser calls', () => {
+test('DataSource forwards core.baseUrl to direct parser calls', () => {
   const source = new TestDataSource('https://example.com/data', {
-    baseUri: 'https://example.com/model.gltf'
-  } as unknown as DataSourceOptions);
-  expect(
-    source.loadOptions.core?.baseUrl,
-    'top-level baseUri is normalized to core.baseUrl for direct parser calls'
-  ).toBe('https://example.com/model.gltf');
-  expect(source.loadOptions.baseUri, 'deprecated baseUri alias is removed').toBe(undefined);
-  const sourceWithBaseUrl = new TestDataSource('https://example.com/data', {
-    core: {baseUrl: 'https://example.com/textures'}
+    core: {baseUrl: 'https://example.com/model.gltf'}
   });
-  expect(
-    sourceWithBaseUrl.loadOptions.core?.baseUrl,
-    'top-level baseUrl is normalized to core.baseUrl for direct parser calls'
-  ).toBe('https://example.com/textures');
-  expect(sourceWithBaseUrl.loadOptions.baseUrl, 'top-level baseUrl alias is removed').toBe(
-    undefined
-  );
+  expect(source.loadOptions.core?.baseUrl).toBe('https://example.com/model.gltf');
 });
 
 test('DataSource shares flat parser and fetch options without forwarding source controls', async () => {

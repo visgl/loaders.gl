@@ -111,7 +111,7 @@ async function parseSpatialContent(
     {targetCrs: 'EPSG:3857'}
   );
   return await parse(createGltfContent(nodes, includeNormals, options), Tiles3DLoader, {
-    worker: false,
+    core: {worker: false},
     '3d-tiles': {loadGLTF: true, _tilesetOptions: {spatialReference, spatialTransform}}
   });
 }

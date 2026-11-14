@@ -26,7 +26,9 @@ test('load#load', async () => {
 
 test('load#with fetch options', async () => {
   expect(
-    await load(JSON_URL, JSONLoader, {fetch: {headers: {'Content-Type': 'application/json'}}}),
+    await load(JSON_URL, JSONLoader, {
+      core: {fetch: {headers: {'Content-Type': 'application/json'}}}
+    }),
     'load with fetch options work'
   ).toBeTruthy();
 
@@ -34,7 +36,7 @@ test('load#with fetch options', async () => {
 
   expect(
     // @ts-expect-error
-    await load(JSON_URL, JSONLoader, {fetch}),
+    await load(JSON_URL, JSONLoader, {core: {fetch}}),
     'load with fetch function works'
   ).toEqual({abc: 1});
 });

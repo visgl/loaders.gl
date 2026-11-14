@@ -130,7 +130,7 @@ export async function parseInBatches(
   // Chooses a loader and normalizes it
   // Note - only uses URL and contentType for streams and iterator inputs
   const loader = await selectLoader(data, loaders, options);
-  // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
+  // Note: if options.core.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return [];
   }
@@ -253,7 +253,7 @@ async function parseToOutputIterator(
   // Get an iterator from the input
   const inputIterator = await getAsyncIterableFromData(data, options);
 
-  // Apply any iterator transforms (options.transforms)
+  // Apply any iterator transforms (options.core.transforms)
   const transformedIterator = await applyInputTransforms(
     inputIterator,
     options?.core?.transforms || []

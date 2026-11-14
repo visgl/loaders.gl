@@ -10,7 +10,10 @@ import {getTransferList, getTransferListForWriter} from '../worker-utils/get-tra
 import {isBrowser, isMobile} from '../env-utils/globals';
 
 /** Loader processing options mapped onto public task controls. */
-export type ProcessOnWorkerOptions = WorkerOptions;
+export type ProcessOnWorkerOptions = WorkerOptions & {
+  /** Parser options to send independently of the worker routing controls. */
+  parserOptions?: Record<string, unknown>;
+};
 /** Code preload cancellation controls; preloading does not reserve workers. */
 export type PreloadWorkerOptions = Pick<TaskRunControls, 'signal'>;
 
@@ -153,9 +156,9 @@ function getControls(options: WorkerOptions): TaskRunControls {
 }
 
 /** Removes caller-only callbacks before options cross the task boundary. */
-function getParserOptions(options: WorkerOptions): Record<string, any> {
-  const {signal, onProgress, ...parserOptions} = options;
-  return getTransferListForWriter(parserOptions);
+function getParserOptions(options: ProcessOnWorkerOptions): Record<string, any> {
+  const {signal, onProgress, parserOptions, ...workerOptions} = options;
+  return getTransferListForWriter(parserOptions ?? workerOptions);
 }
 
 /** Opens one task-owned callback channel and guarantees cleanup if initialization fails. */

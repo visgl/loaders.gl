@@ -75,7 +75,7 @@ test.each([
   const streamedAttributes: Record<string, number[]> = {};
   for await (const batch of parseLASInBatches(splitInput(fixture.compressedFile), {
     ...options,
-    batchSize: 37
+    core: {batchSize: 37}
   })) {
     for (const [name, attribute] of Object.entries(convertTableToMesh(batch).attributes)) {
       streamedAttributes[name] ??= [];
@@ -107,7 +107,7 @@ test('pointwise raw streaming emits before EOF and preserves every reference byt
   const actual = new Uint8Array(fixture.rawPointData.byteLength);
   let byteOffset = 0;
   let emittedBeforeEnd = false;
-  for await (const batch of decodeLAZFileInBatches(readInput(), {batchSize: 37})) {
+  for await (const batch of decodeLAZFileInBatches(readInput(), {core: {batchSize: 37}})) {
     emittedBeforeEnd = emittedBeforeEnd || !inputComplete;
     const bytes = new Uint8Array(batch.arrayBuffer);
     actual.set(bytes, byteOffset);
@@ -123,7 +123,7 @@ test('pointwise streams reject truncation and invalid codec declarations', async
   const truncated = fixture.compressedFile.slice(0, -100);
   expect(() => parseLAS(truncated.buffer)).toThrow(/needs more compressed data/);
   await expect(async () => {
-    for await (const _batch of parseLASInBatches(splitInput(truncated), {batchSize: 37})) {
+    for await (const _batch of parseLASInBatches(splitInput(truncated), {core: {batchSize: 37}})) {
       /* Consume the iterator to verify final-input errors. */
     }
   }).rejects.toThrow(/needs more compressed data|truncated/);

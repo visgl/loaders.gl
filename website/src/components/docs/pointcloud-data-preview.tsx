@@ -361,7 +361,7 @@ async function loadPreviewPointCloud(
 
   if (urls.length === 1) {
     const pointCloud = await load(firstArrayBuffer, loader as any, {
-      worker: false,
+      core: {worker: false},
       las: {shape: 'arrow-table'},
       obj: {shape: 'arrow-table'},
       pcd: {shape: 'arrow-table'},
@@ -375,7 +375,7 @@ async function loadPreviewPointCloud(
       const arrayBuffer =
         index === 0 ? firstArrayBuffer : await (await fetch(url)).arrayBuffer();
       return load(arrayBuffer, loader as any, {
-        worker: false,
+        core: {worker: false},
         las: {shape: 'arrow-table'},
         obj: {shape: 'arrow-table'},
         pcd: {shape: 'arrow-table'},
