@@ -35,7 +35,13 @@ beforeAll(async () => {
 
 test('published root defers service implementations and their heavy dependencies', () => {
   expect(lazyRegistry.initialInputs.some(input => input.includes('arcgis/dist/'))).toBe(true);
-  expect(lazyRegistry.initialInputs.some(input => /source-loader\.js$/.test(input))).toBe(false);
+  expect(
+    lazyRegistry.initialInputs.some(input =>
+      /arcgis-(feature-server|scene-server|vector-tile-server|image-server|image-tile|map-tile)-loader\.js$/.test(
+        input
+      )
+    )
+  ).toBe(false);
   expect(
     lazyRegistry.initialInputs.some(input =>
       /modules\/(gis|i3s|mvt|lerc|loader-utils|worker-utils)\//.test(input)
@@ -51,7 +57,7 @@ test('named synchronous imports tree-shake unrelated ArcGIS clients', () => {
   ).toBe(true);
   expect(
     bundledFeature.initialInputs.some(input =>
-      /arcgis-(scene-server|vector-tile-server|image-server|image-tile|map-tile)-source-loader\.js$/.test(
+      /arcgis-(scene-server|vector-tile-server|image-server|image-tile|map-tile)-loader\.js$/.test(
         input
       )
     )
