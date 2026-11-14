@@ -311,7 +311,7 @@ export type {
   SourceArrayOptionsType,
   SourceArrayDataSourceType
 } from './source-types';
-export {isSourceLoader} from './source-types';
+export {isSourceLoader, supportsSourceCreation} from './source-types';
 
 export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {getSourceLoaderOptions} from './lib/sources/data-source';

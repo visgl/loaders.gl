@@ -26,5 +26,7 @@ export const PMTilesLoader = {
   options: {
     pmtiles: {}
   },
+  fromUrl: true,
+  fromBlob: true,
   preload
 } as const satisfies Loader<VectorSourceInfo | ImageSourceInfo, never, PMTilesLoaderOptions>;

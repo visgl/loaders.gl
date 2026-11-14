@@ -55,6 +55,11 @@ export function isSourceLoader(loader?: unknown): loader is SourceLoader {
   );
 }
 
+/** Returns whether a loader supports source creation directly or through preload. */
+export function supportsSourceCreation(loader: Loader): boolean {
+  return Boolean(loader.createDataSourceSync || (loader.preload && loader.fromUrl !== undefined));
+}
+
 /** Extracts the full public options contract, including fields absent from runtime defaults. */
 export type SourcePropsType<SourceT extends SourceLoader> = NonNullable<
   Parameters<SourceT['createDataSourceSync']>[1]
