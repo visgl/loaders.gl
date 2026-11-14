@@ -86,6 +86,14 @@ describe('FederatedTableScanSource', () => {
     expect(getFederatedTableBatchProvenance(batches[0]).sourceMetadata).toEqual({
       partition: 'native'
     });
+    const filtered = await collectBatches(
+      federated.read({predicate: {op: '>', args: [{property: 'id'}, 1]}})
+    );
+    expect(filtered[0].getChild('id')?.toArray()).toEqual(new Int32Array([2]));
+    expect(filtered[0].metadata.has('partition')).toBe(false);
+    expect(getFederatedTableBatchProvenance(filtered[0]).sourceMetadata).toEqual({
+      partition: 'native'
+    });
     expect(data.batches[0].metadata.size).toBe(1);
   });
 

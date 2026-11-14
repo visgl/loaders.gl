@@ -802,10 +802,12 @@ JSON batch paths are available through `batch.metadata.get('jsonpath')`.
 
 Federated scans yield Apache Arrow `RecordBatch` objects. Read source provenance
 with `getFederatedTableBatchProvenance(batch)` from `@loaders.gl/core/scan`.
+When federation removes rows, original physical metadata is available through
+`sourceMetadata` and describes the input batch.
 Parquet, dataset, and lakehouse readers store file and row provenance as JSON
 under `batch.metadata.get('loaders.gl.parquetProvenance')`.
 
-Arrow IPC, JSONTable, FlatGeobuf, Lance, COPC, and Potree physical readers also
+Arrow IPC, JSONTable, FlatGeobuf, Lance, DuckDB, COPC, and Potree physical readers also
 yield native batches. Use `batch.numRows` and access Arrow columns directly.
 
 #### Physical Arrow scans yield RecordBatches

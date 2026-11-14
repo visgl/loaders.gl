@@ -382,7 +382,9 @@ export class FederatedTableScanSource
             telemetry.rowsReturned += resultLength;
             sourceRowsReturned += resultLength;
             for (const recordBatch of result.data.batches) {
-              const metadata = new Map('shape' in input ? recordBatch.metadata : input.metadata);
+              const metadata = new Map(
+                resultLength === batch.length && !('shape' in input) ? input.metadata : undefined
+              );
               metadata.set('loaders.gl.federation', JSON.stringify(provenance));
               yield new arrow.RecordBatch(recordBatch.schema, recordBatch.data, metadata);
             }
@@ -453,7 +455,7 @@ export class FederatedTableScanSource
       }
       const metadata = await source.getQueryMetadata({signal});
       if (metadata.execution.status !== 'supported' || metadata.execution.method !== 'read') {
-        throw new Error(`Federated table source does not support read(): ${entry.dataSourceId}`);
+        throw new Error(`Source does not support read(): ${entry.dataSourceId}`);
       }
       if (metadata.queryType !== 'table') {
         throw new Error(`Federated source is not a table source: ${entry.dataSourceId}`);

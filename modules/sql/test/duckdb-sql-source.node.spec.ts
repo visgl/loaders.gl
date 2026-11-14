@@ -144,6 +144,24 @@ test('common queries page DuckDB tables, widen integers natively, and fall back 
   }
 });
 
+test('DuckDB physical and pushdown reads retain the schema of an empty result', async () => {
+  const source = new DuckDBSQLDataSource('duckdb:///:memory:', {});
+  try {
+    await source.queryRows('CREATE TABLE empty_table (id INTEGER, label VARCHAR)');
+    const table = await source.getTable('empty_table');
+    const plan = await table.planQueryPushdown?.({select: ['id']});
+    expect(plan).toBeTruthy();
+    for (const stream of [table.read({columns: ['id']}), plan!.read()]) {
+      const batches = [];
+      for await (const batch of stream) batches.push(batch);
+      expect(batches.map(batch => 'numRows' in batch && batch.numRows)).toEqual([0]);
+      expect(batches[0].schema?.fields.map(field => field.name)).toEqual(['id']);
+    }
+  } finally {
+    await source.close();
+  }
+});
+
 test('common queries combine native DuckDB casts and residual Arrow expressions', async () => {
   const source = new DuckDBSQLDataSource('duckdb:///:memory:', {});
   try {

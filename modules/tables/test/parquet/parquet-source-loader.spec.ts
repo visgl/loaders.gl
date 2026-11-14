@@ -289,7 +289,7 @@ test('ParquetSource#read selects row groups and columns with exact provenance', 
   expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowOffset)).toEqual([0, 1]);
   expect(batches.every(
       batch =>
-        batch.source === REMOTE_URL &&
+        JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).source === REMOTE_URL &&
         JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).sourceId === REMOTE_URL &&
         JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).sourceUrl === REMOTE_URL
     )).toBeTruthy();

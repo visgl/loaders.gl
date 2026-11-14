@@ -367,8 +367,8 @@ test('worker reads stop at a partial batch limit and retain absolute source row 
     );
     expect(batches).toHaveLength(1);
     expect(Array.from(batches[0].getChild('id')!)).toEqual([2]);
-    expect(batches[0]).toMatchObject({
-      length: 1,
+    expect(batches[0].numRows).toBe(1);
+    expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!)).toMatchObject({
       rowCount: 1,
       rowGroupIndex: 1,
       rowOffset: 2,
