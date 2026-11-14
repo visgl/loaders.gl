@@ -9,8 +9,8 @@ For a step-by-step introduction, see [Querying tables](/docs/developer-guide/que
 Both functions are available from `@loaders.gl/core/query`.
 
 ```ts
-query(query: Query | string, options: QueryOptions): Promise<ArrowTable>;
-queryInBatches(query: Query | string, options: QueryOptions): AsyncIterable<ArrowTableBatch>;
+query(query: Query | string, options: QueryOptions): Promise<Table>;
+queryInBatches(query: Query | string, options: QueryOptions): AsyncIterable<RecordBatch>;
 ```
 
 ## Logical query
@@ -41,7 +41,7 @@ non-table results fail; there is no fallback after an explicit FROM fails.
 
 | Option | Contract |
 | --- | --- |
-| `source` | A loaders.gl `ArrowTable`, existing `TableScanSource`, or URL string. Optional for metadata commands or when FROM selects a registered source. |
+| `source` | An Apache Arrow `Table`, a loaders.gl `ArrowTable` wrapper, an existing `TableScanSource`, or URL string. Optional for metadata commands or when FROM selects a registered source. |
 | `sources` | Readonly array of named `DataSource` objects. Names must be non-empty and unique. |
 | `loaders` | Required for URLs: one URL-capable `SourceLoader` or an array of explicit candidates. Omit for loaded inputs. |
 | `sqlParser` | Required for SQL strings: `SQLQueryParser` or `Promise<SQLQueryParser>`. Unused for logical input. |

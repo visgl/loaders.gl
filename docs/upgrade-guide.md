@@ -779,6 +779,12 @@ returned value and use `numRows` for batch row counts. Schema and field metadata
 Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
 JSON batch paths are available through `batch.metadata.get('jsonpath')`.
 
+#### Query APIs return native Arrow
+
+`query()` returns an Apache Arrow `Table`, `queryInBatches()` yields native
+`RecordBatch` objects, and `queryProgressive()` puts a native `Table` in each
+snapshot. Access Arrow data directly and use `numRows` for batch row counts.
+
 #### Vector sources return native Arrow tables
 
 `getFeatures({format: 'arrow'})` returns an Apache Arrow `Table` directly.

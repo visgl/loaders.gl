@@ -28,10 +28,9 @@ test('JSON table source queries inferred array columns from a URL', async () => 
   );
 
   expect(fetch).toHaveBeenCalledTimes(1);
-  expect(result.shape).toBe('arrow-table');
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['longitude', 'latitude']);
-  expect(result.data.get(0)?.toJSON()).toEqual({longitude: -74, latitude: 40.7});
-  expect(result.data.numRows).toBe(1);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['longitude', 'latitude']);
+  expect(result.get(0)?.toJSON()).toEqual({longitude: -74, latitude: 40.7});
+  expect(result.numRows).toBe(1);
 });
 
 test('JSONTableLoader parses data and creates a source after preload', async () => {

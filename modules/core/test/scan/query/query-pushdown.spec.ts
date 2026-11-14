@@ -67,7 +67,7 @@ test.each([
 ] as const)('offset %s is applied exactly once', async offset => {
   const {source, read} = makeSource({offset});
   const result = await query({offset: 2, limit: 1}, {source});
-  expect(result.data.getChild('value')!.toArray()).toEqual(new Int32Array([3]));
+  expect(result.getChild('value')!.toArray()).toEqual(new Int32Array([3]));
   expect(read.mock.calls[0][0]).toMatchObject(
     offset === 'pushdown' ? {offset: 2, limit: 1} : {limit: 3}
   );
@@ -80,7 +80,7 @@ test('residual filtering prevents premature offset and limit pushdown', async ()
     {where: {op: '>', args: [{property: 'value'}, 1]}, offset: 1, limit: 1},
     {source}
   );
-  expect(result.data.getChild('value')!.get(0)).toBe(4);
+  expect(result.getChild('value')!.get(0)).toBe(4);
   expect(read.mock.calls[0][0]?.offset).toBeUndefined();
   expect(read.mock.calls[0][0]?.limit).toBeUndefined();
 });
@@ -92,11 +92,14 @@ test('CAST projection and filtering use an accepted exact source plan without a 
   );
   const expected = await query(logical, {source: table});
   const execute = vi.fn(async function* () {
-    yield makeTableScanBatch(expected);
+    yield makeTableScanBatch({shape: 'arrow-table', data: expected});
   });
-  source.planQueryPushdown = vi.fn(async () => ({schema: expected.schema!, read: execute}));
+  source.planQueryPushdown = vi.fn(async () => ({
+    schema: convertArrowToSchema(expected.schema),
+    read: execute
+  }));
   const result = await query(logical, {source});
-  expect(result.data.getChild('result')!.get(0)).toBe(4n);
+  expect(result.getChild('result')!.get(0)).toBe(4n);
   expect(source.planQueryPushdown).toHaveBeenCalledTimes(1);
   expect(execute).toHaveBeenCalledTimes(1);
   expect(read).not.toHaveBeenCalled();
@@ -112,7 +115,7 @@ test.each([
     'SELECT CAST(value AS BIGINT) AS result WHERE CAST(value AS BIGINT) >= 3 OFFSET 1 LIMIT 1',
     {source, sqlParser: parseSQLQuery}
   );
-  expect(result.data.getChild('result')!.get(0)).toBe(4n);
+  expect(result.getChild('result')!.get(0)).toBe(4n);
   expect(source.planQueryPushdown).toHaveBeenCalledTimes(supportsCast ? 1 : 0);
   expect(read.mock.calls[0][0]?.limit).toBeUndefined();
   expect(read.mock.calls[0][0]?.offset).toBeUndefined();
@@ -124,10 +127,13 @@ test('accepted plans preserve zero-limit schemas without executing the source', 
   const execute = vi.fn(async function* () {
     throw new Error('must not execute');
   });
-  source.planQueryPushdown = async () => ({schema: expected.schema!, read: execute});
+  source.planQueryPushdown = async () => ({
+    schema: convertArrowToSchema(expected.schema),
+    read: execute
+  });
   const result = await query({limit: 0}, {source});
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.names).toEqual(['value']);
+  expect(result.numRows).toBe(0);
+  expect(result.schema.names).toEqual(['value']);
   expect(execute).not.toHaveBeenCalled();
 });
 
@@ -163,7 +169,7 @@ test('consumer return closes accepted plan iterators and reports completion once
     }
   });
   for await (const batch of queryInBatches({}, {source, onQueryComplete})) {
-    expect(batch.length).toBe(4);
+    expect(batch.numRows).toBe(4);
     break;
   }
   expect(closed).toHaveBeenCalledOnce();
@@ -173,14 +179,11 @@ test('consumer return closes accepted plan iterators and reports completion once
 
 test('offset without limit and unsafe combined windows preserve semantics', async () => {
   const native = makeSource();
-  expect((await query({offset: 3}, {source: native.source})).data.getChild('value')!.get(0)).toBe(
-    4
-  );
+  expect((await query({offset: 3}, {source: native.source})).getChild('value')!.get(0)).toBe(4);
   expect(native.read.mock.calls[0][0]?.offset).toBe(3);
   const residual = makeSource({offset: undefined});
   expect(
-    (await query({offset: Number.MAX_SAFE_INTEGER, limit: 1}, {source: residual.source})).data
-      .numRows
+    (await query({offset: Number.MAX_SAFE_INTEGER, limit: 1}, {source: residual.source})).numRows
   ).toBe(0);
   expect(residual.read.mock.calls[0][0]?.limit).toBeUndefined();
 });
@@ -190,13 +193,13 @@ test('CAST-only projection does not require general expression pushdown', async 
   const logical = parseSQLQuery('SELECT CAST(value AS BIGINT) AS result');
   const expected = await query(logical, {source: table});
   source.planQueryPushdown = vi.fn(async () => ({
-    schema: expected.schema!,
+    schema: convertArrowToSchema(expected.schema),
     read: async function* () {
-      yield makeTableScanBatch(expected);
+      yield makeTableScanBatch({shape: 'arrow-table', data: expected});
     }
   }));
   const result = await query(logical, {source});
-  expect(result.data.getChild('result')!.get(1)).toBeNull();
+  expect(result.getChild('result')!.get(1)).toBeNull();
   expect(source.planQueryPushdown).toHaveBeenCalledOnce();
   expect(read).not.toHaveBeenCalled();
 });
@@ -205,7 +208,7 @@ test('unhandled arithmetic never reaches the full-query planning hook', async ()
   const {source} = makeSource({expressions: 'unsupported'});
   source.planQueryPushdown = vi.fn(async () => null);
   expect(
-    (await query('SELECT value + 1 AS result', {source, sqlParser: parseSQLQuery})).data
+    (await query('SELECT value + 1 AS result', {source, sqlParser: parseSQLQuery}))
       .getChild('result')!
       .get(0)
   ).toBe(2);
@@ -259,7 +262,7 @@ test('cancellation closes a running physical plan', async () => {
 test('accepted empty plans preserve schema and reject batch schema drift', async () => {
   const {source, table} = makeSource();
   source.planQueryPushdown = async () => ({schema: table.schema!, read: async function* () {}});
-  expect((await query({}, {source})).data.schema.names).toEqual(['value']);
+  expect((await query({}, {source})).schema.names).toEqual(['value']);
   const otherData = new arrow.Table({value: arrow.vectorFromArray(['a'], new arrow.Utf8())});
   source.planQueryPushdown = async () => ({
     schema: table.schema!,
@@ -288,9 +291,10 @@ test.each([
       if (!accept) return null;
       const empty = await query({...request, limit: 0}, {source: table, signal: options?.signal});
       return {
-        schema: empty.schema!,
+        schema: convertArrowToSchema(empty.schema),
         async *read(options) {
-          yield makeTableScanBatch(await query(request, {source: table, signal: options?.signal}));
+          const data = await query(request, {source: table, signal: options?.signal});
+          yield makeTableScanBatch({shape: 'arrow-table', data});
         }
       };
     }
@@ -301,8 +305,8 @@ test.each([
   );
   const result = await query(request, {source});
   const expected = await query(request, {source: table});
-  expect(result.data.toArray().map(row => row.toJSON())).toEqual(
-    expected.data.toArray().map(row => row.toJSON())
+  expect(result.toArray().map(row => row.toJSON())).toEqual(
+    expected.toArray().map(row => row.toJSON())
   );
   expect(plan).toHaveBeenCalledOnce();
   expect(plan.mock.calls[0][0]).toMatchObject({

@@ -304,11 +304,11 @@ test('SQL source metadata discovery is lazy and resolves native namespaces unamb
   expect((await source.getTableMetadata(listed[0].name)).schema).toBe(schema);
   expect(schemasRead).toBe(1);
   const listing = await queryTables({command: 'showTables'}, {sources: [source]});
-  expect(listing.data.getChild('table_name')?.toArray()).toEqual(listed.map(table => table.name));
+  expect(listing.getChild('table_name')?.toArray()).toEqual(listed.map(table => table.name));
   const description = await queryTables(
     {command: 'describe', from: {source: 'warehouse', table: listed[0].name}},
     {sources: [source]}
   );
-  expect(description.data.getChild('column_name')?.toArray()).toEqual(['id']);
+  expect(description.getChild('column_name')?.toArray()).toEqual(['id']);
   expect(rowsRead).toBe(0);
 });

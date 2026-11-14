@@ -3,8 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable} from '@loaders.gl/core/schema';
-import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 import type {TableQuery} from '@loaders.gl/core/loader-utils';
 import {queryInBatches, type QueryOptions} from './query';
 
@@ -37,7 +35,7 @@ export type ProgressiveQueryOptions = QueryOptions &
 
 /** Each table is independent of later updates and replaces all previous snapshots. */
 export type ProgressiveQuerySnapshot = Readonly<{
-  table: ArrowTable;
+  table: arrow.Table;
   rowsProcessed: number;
   final: boolean;
 }>;
@@ -84,13 +82,13 @@ export async function* executeProgressiveQuery(
 
   for await (const batch of queryInBatches(tableQuery, {...queryOptions, queryOutput: undefined})) {
     options.signal?.throwIfAborted();
-    sourceSchema ??= batch.data.schema;
-    if (batch.length === 0) continue;
-    const keyVector = query.groupBy ? batch.data.getChild(query.groupBy) : undefined;
+    sourceSchema ??= batch.schema;
+    if (batch.numRows === 0) continue;
+    const keyVector = query.groupBy ? batch.getChild(query.groupBy) : undefined;
     const aggregateVectors = query.aggregates.map(aggregate =>
-      aggregate.column ? batch.data.getChild(aggregate.column) : undefined
+      aggregate.column ? batch.getChild(aggregate.column) : undefined
     );
-    for (let row = 0; row < batch.length; row++) {
+    for (let row = 0; row < batch.numRows; row++) {
       if ((row & 1023) === 0) options.signal?.throwIfAborted();
       const key = keyVector ? normalizeKey(keyVector.get(row)) : null;
       let group = groups.get(key);
@@ -115,7 +113,7 @@ export async function* executeProgressiveQuery(
         }
       }
     }
-    rowsProcessed += batch.length;
+    rowsProcessed += batch.numRows;
     if (++batchesSinceEmission >= emitEveryBatches) {
       yield {table: createSnapshot(groups, query, sourceSchema), rowsProcessed, final: false};
       batchesSinceEmission = 0;
@@ -201,7 +199,7 @@ function createSnapshot(
   groups: Map<GroupKey, AggregateState[]>,
   query: ProgressiveAggregateQuery,
   sourceSchema: arrow.Schema | undefined
-): ArrowTable {
+): arrow.Table {
   const resultColumns: Record<string, arrow.Vector> = {};
   if (query.groupBy) {
     const field = sourceSchema?.fields.find(candidate => candidate.name === query.groupBy);
@@ -227,5 +225,5 @@ function createSnapshot(
     });
     resultColumns[aggregate.as] = arrow.vectorFromArray(values, new arrow.Float64());
   }
-  return convertArrowToTable(new arrow.Table(resultColumns), 'arrow-table');
+  return new arrow.Table(resultColumns);
 }

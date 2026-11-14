@@ -28,6 +28,8 @@ import {
 import {
   convertArrowToSchema,
   convertSchemaToArrow,
+  makeArrowMetadataBatch,
+  makeArrowTableFromBatches,
   convertTableToArrow
 } from '@loaders.gl/core/schema-utils';
 import {projectArrowTable, filterArrowTable} from './arrow-execution';
@@ -59,7 +61,7 @@ export type QueryOptions = TableQueryExecutionOptions &
   Readonly<
     | {
         /** Already loaded Arrow table or caller-owned table scan source. */
-        source: ArrowTable | TableScanSource;
+        source: arrow.Table | ArrowTable | TableScanSource;
         /** URL loader selection is only used with URL sources. */
         loaders?: never;
       }
@@ -83,42 +85,17 @@ export type QueryOptions = TableQueryExecutionOptions &
 export async function query(
   tableQuery: Query | string,
   options: QueryOptions
-): Promise<ArrowTable> {
-  let schema: arrow.Schema | undefined;
-  const batches: arrow.RecordBatch[] = [];
-  for await (const batch of queryInBatches(tableQuery, {...options, queryOutput: undefined})) {
-    schema = batch.data.schema;
-    batches.push(...batch.data.batches);
-  }
-  const data = new arrow.Table(schema!, batches);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+): Promise<arrow.Table> {
+  return (await makeArrowTableFromBatches(
+    queryInBatches(tableQuery, {...options, queryOutput: 'batches'})
+  ))!;
 }
 
-/**
- * Without queryOutput, preserves the legacy loaders.gl ArrowTableBatch envelope.
- * With queryOutput, yields pure Arrow RecordBatch objects. Each snapshot replaces
- * all earlier snapshots; batches are append-only.
- */
-export function queryInBatches(
-  tableQuery: ProgressiveAggregateQuery,
-  options: QueryOptions & {queryOutput: 'snapshots'; emitEveryBatches?: number}
-): AsyncIterable<arrow.RecordBatch>;
-export function queryInBatches(
-  tableQuery: Query | string,
-  options: QueryOptions & {queryOutput: 'batches'}
-): AsyncIterable<arrow.RecordBatch>;
-export function queryInBatches(
-  tableQuery: Query | string,
-  options: QueryOptions & {queryOutput?: undefined}
-): AsyncIterable<ArrowTableBatch>;
-export function queryInBatches(
-  tableQuery: Query | string | ProgressiveAggregateQuery,
-  options: QueryOptions
-): AsyncIterable<ArrowTableBatch | arrow.RecordBatch>;
+/** Streams native Arrow batches or complete replacement snapshots. */
 export async function* queryInBatches(
   tableQuery: Query | string | ProgressiveAggregateQuery,
   options: QueryOptions
-): AsyncIterable<ArrowTableBatch | arrow.RecordBatch> {
+): AsyncIterable<arrow.RecordBatch> {
   if (options.queryOutput === 'snapshots') {
     if (
       !tableQuery ||
@@ -129,7 +106,7 @@ export async function* queryInBatches(
       throw new Error('Snapshot query output currently requires a structured aggregate query.');
     }
     for await (const snapshot of queryProgressive(tableQuery, options)) {
-      yield* snapshot.table.data.batches;
+      yield* snapshot.table.batches;
     }
     return;
   }
@@ -140,11 +117,8 @@ export async function* queryInBatches(
     throw new Error('Aggregate queries require queryOutput: snapshots.');
   }
   for await (const batch of queryAppendBatches(tableQuery as Query | string, options)) {
-    if (options.queryOutput === 'batches') {
-      yield* batch.data.batches;
-    } else {
-      yield batch;
-    }
+    if (batch.data.batches.length) yield* batch.data.batches;
+    else yield makeArrowMetadataBatch(batch.data.schema);
   }
 }
 
@@ -212,7 +186,12 @@ async function* queryAppendBatches(
     options.signal?.throwIfAborted();
     if (!source || typeof source !== 'object')
       throw new Error('Query source must be an Arrow table or table scan source.');
-    const inMemory = 'shape' in source && source.shape === 'arrow-table';
+    const inMemory =
+      'batches' in source
+        ? (source as arrow.Table)
+        : 'shape' in source && source.shape === 'arrow-table'
+          ? (source as ArrowTable).data
+          : null;
     if (
       !inMemory &&
       (!('read' in source) ||
@@ -234,9 +213,7 @@ async function* queryAppendBatches(
     ) {
       throw new Error('Query source must support table reads.');
     }
-    const sourceSchema = inMemory
-      ? (source as ArrowTable).data.schema
-      : convertSchemaToArrow(metadata!.schema);
+    const sourceSchema = inMemory ? inMemory.schema : convertSchemaToArrow(metadata!.schema);
     const names = sourceSchema.fields.map(field => field.name);
     const {select, where, ...controls} = logicalQuery;
     const computedProjection =
@@ -345,7 +322,7 @@ async function* queryAppendBatches(
       const batches: AsyncIterable<unknown> = pushedPlan
         ? pushedPlan.read({signal: options.signal})
         : inMemory
-          ? memoryBatches((source as ArrowTable).data)
+          ? memoryBatches(inMemory)
           : (source as TableScanSource).read(readOptions);
       for await (const value of batches) {
         options.signal?.throwIfAborted();

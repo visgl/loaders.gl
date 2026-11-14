@@ -125,20 +125,20 @@ test('common queries page DuckDB tables, widen integers natively, and fall back 
         `SELECT CAST(id AS BIGINT) AS result WHERE CAST(id AS BIGINT) >= 2 LIMIT 1 OFFSET ${offset}`,
         {source: table, sqlParser: parseSQLQuery}
       );
-      expect(result.data.getChild('result')?.get(0)).toBe(BigInt(offset + 2));
+      expect(result.getChild('result')?.get(0)).toBe(BigInt(offset + 2));
       expect(statements.at(-1)).toMatch(new RegExp(`CAST.*WHERE CAST.*LIMIT 1 OFFSET ${offset}$`));
     }
     const fallback = await query('SELECT CAST(value AS INTEGER) AS result LIMIT 1 OFFSET 1', {
       source: table,
       sqlParser: parseSQLQuery
     });
-    expect(fallback.data.getChild('result')?.get(0)).toBe(2);
+    expect(fallback.getChild('result')?.get(0)).toBe(2);
     expect(statements.at(-1)).toMatch(/SELECT "value".*LIMIT 1 OFFSET 1$/);
     const named = await query(
       {from: {source: 'database', table: 'values_table'}, limit: 1},
       {sources: [source]}
     );
-    expect(named.data.getChild('id')?.get(0)).toBe(1);
+    expect(named.getChild('id')?.get(0)).toBe(1);
   } finally {
     await source.close();
   }
@@ -164,7 +164,7 @@ test('common queries combine native DuckDB casts and residual Arrow expressions'
       source: table,
       sqlParser: parseSQLQuery
     });
-    expect(result.data.toArray().map(row => row.toJSON())).toEqual([
+    expect(result.toArray().map(row => row.toJSON())).toEqual([
       {wide: 2, truncated: 2},
       {wide: null, truncated: 3}
     ]);
@@ -175,8 +175,8 @@ test('common queries combine native DuckDB casts and residual Arrow expressions'
     );
     const reads = statements.length;
     const empty = await query(projection + ' LIMIT 0', {source: table, sqlParser: parseSQLQuery});
-    expect(empty.data.schema.names).toEqual(['wide', 'truncated']);
-    expect(empty.data.numRows).toBe(0);
+    expect(empty.schema.names).toEqual(['wide', 'truncated']);
+    expect(empty.numRows).toBe(0);
     expect(statements).toHaveLength(reads);
   } finally {
     await source.close();

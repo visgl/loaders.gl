@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {RecordBatch} from 'apache-arrow';
 import {expect, expectTypeOf, test, vi} from 'vitest';
 import {query, queryInBatches} from '@loaders.gl/core/scan';
-import type {ArrowTableBatch} from '@loaders.gl/core/schema';
 import type {TableQueryExecutionSummary} from '@loaders.gl/core/loader-utils';
 import type {QueryOptions} from '@loaders.gl/core/scan';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
@@ -74,9 +74,9 @@ test('URL sources open lazily with explicit loaders and close after one public c
     }
   );
   expect(fixture.createDataSourceSync).not.toHaveBeenCalled();
-  const batches: ArrowTableBatch[] = [];
+  const batches: RecordBatch[] = [];
   for await (const batch of iterator) batches.push(batch);
-  expect(batches.flatMap(batch => batch.data.toArray().map(row => row.number))).toEqual([1, 2]);
+  expect(batches.flatMap(batch => [...batch].map(row => row.number))).toEqual([1, 2]);
   expect(fixture.createDataSourceSync).toHaveBeenCalledTimes(1);
   expect(fixture.createDataSourceSync.mock.calls[0].slice(0, 2)).toMatchObject([
     'data.query-test',
@@ -103,7 +103,7 @@ test('URL loader arrays select only explicit candidates', async () => {
     {},
     {source: 'data.query-test', loaders: [otherLoader, fixture.loader]}
   );
-  expect(result.data.numRows).toBe(3);
+  expect(result.numRows).toBe(3);
   expect(other.createDataSourceSync).not.toHaveBeenCalled();
   expect(fixture.close).toHaveBeenCalledTimes(1);
 });
@@ -223,8 +223,8 @@ test('URL limit zero discovers metadata without reading and closes its source', 
     {select: [{column: 'value', as: 'number'}], limit: 0},
     {source: 'data.query-test', loaders: fixture.loader}
   );
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['number']);
+  expect(result.numRows).toBe(0);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['number']);
   expect(fixture.read).not.toHaveBeenCalled();
   expect(fixture.close).toHaveBeenCalledTimes(1);
 });

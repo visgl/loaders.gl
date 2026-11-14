@@ -25,13 +25,13 @@ test('injected parser objects and promises execute baseline portable query shape
   for (const parser of [() => baseline, Promise.resolve(() => baseline)]) {
     const options = {source: source(), sqlParser: parser} as QueryOptions;
     expect(
-      (await query('SELECT name AS label WHERE value >= 3 LIMIT 1', options)).data
+      (await query('SELECT name AS label WHERE value >= 3 LIMIT 1', options))
         .toArray()
         .map(row => row.label)
     ).toEqual(['c']);
     const labels: string[] = [];
     for await (const batch of queryInBatches('baseline', options))
-      labels.push(...batch.data.toArray().map(row => row.label));
+      labels.push(...[...batch].map(row => row.label));
     expect(labels).toEqual(['c']);
   }
 });
@@ -40,9 +40,9 @@ test('injected baseline limits retain schema for empty results', async () => {
     source: source(),
     sqlParser: () => ({select: [{column: 'value', as: 'result'}], limit: 0})
   });
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.names).toEqual(['result']);
-  expect(result.data.schema.fields[0]!.type).toEqual(new arrow.Int32());
+  expect(result.numRows).toBe(0);
+  expect(result.schema.names).toEqual(['result']);
+  expect(result.schema.fields[0]!.type).toEqual(new arrow.Int32());
 });
 test('streaming SQL computes projections, arrays and WHERE expressions from source columns', async () => {
   const results = [];
@@ -50,7 +50,7 @@ test('streaming SQL computes projections, arrays and WHERE expressions from sour
     'SELECT name, value + 1 AS next, ARRAY[value, value] AS pair WHERE value + 1 >= 4 LIMIT 1',
     {source: source(), sqlParser: parseSQLQuery}
   ))
-    results.push(batch.data);
+    results.push(batch);
   expect(results).toHaveLength(1);
   expect(results[0]!.schema.names).toEqual(['name', 'next', 'pair']);
   expect(results[0]!.getChild('name')!.get(0)).toBe('c');
@@ -63,7 +63,7 @@ test('explicit REAL arrays preserve null tuple validity and zero padding', async
     source: source(),
     sqlParser: parseSQLQuery
   });
-  const positions = result.data.getChild('position') as arrow.Vector<arrow.FixedSizeList>;
+  const positions = result.getChild('position') as arrow.Vector<arrow.FixedSizeList>;
   expect(positions.type.listSize).toBe(3);
   expect(positions.type.valueType).toEqual(new arrow.Float32());
   expect(positions.get(1)).toBeNull();
@@ -74,10 +74,10 @@ test('explicit REAL arrays preserve null tuple validity and zero padding', async
 test('SQL casts filter nulls and computed empty results retain the output schema', async () => {
   const options = {source: source(), sqlParser: parseSQLQuery};
   const result = await query('SELECT name WHERE CAST(value AS BIGINT) >= 3', options);
-  expect(result.data.getChild('name')!.toArray()).toEqual(['c', 'd']);
+  expect(result.getChild('name')!.toArray()).toEqual(['c', 'd']);
   const empty = await query('SELECT value + 1 AS next LIMIT 0', options);
-  expect(empty.data.numRows).toBe(0);
-  expect(empty.data.schema.names).toEqual(['next']);
+  expect(empty.numRows).toBe(0);
+  expect(empty.schema.names).toEqual(['next']);
 });
 
 test.each([
@@ -139,13 +139,13 @@ test('catalog parser commands preserve their result schema', async () => {
     sources: [],
     sqlParser: () => ({command: 'showSources'})
   });
-  expect(result.data.numRows).toBe(0);
-  expect(result.data.schema.names).toEqual(['source_name']);
+  expect(result.numRows).toBe(0);
+  expect(result.schema.names).toEqual(['source_name']);
 });
 test('shared predicate leaves remain valid while cycles fail without reading a source', async () => {
   const leaf = {op: '=', args: [{property: 'value'}, 3]} as const;
   const result = await query({where: {op: 'and', args: [leaf, leaf]}}, {source: source()});
-  expect(result.data.numRows).toBe(1);
+  expect(result.numRows).toBe(1);
   const cycle: {op: 'not'; args: unknown[]} = {op: 'not', args: []};
   cycle.args.push(cycle);
   await expect(query({where: cycle} as never, {source: source()})).rejects.toThrow('acyclic');

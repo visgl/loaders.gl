@@ -115,21 +115,21 @@ for (const format of formats) {
         limit: 3
       } as const;
       const result = await query(request, {source});
-      expect(result.data.toArray().map(row => row.toJSON())).toEqual([
+      expect(result.toArray().map(row => row.toJSON())).toEqual([
         {label: 'a', rowId: 1},
         {label: 'b', rowId: 2},
         {label: 'c', rowId: 3}
       ]);
       const streamed: unknown[] = [];
       for await (const batch of queryInBatches(request, {source}))
-        streamed.push(...batch.data.toArray().map(row => row.toJSON()));
-      expect(streamed).toEqual(result.data.toArray().map(row => row.toJSON()));
+        streamed.push(...[...batch].map(row => row.toJSON()));
+      expect(streamed).toEqual(result.toArray().map(row => row.toJSON()));
       const inputSchema = convertSchemaToArrow(metadata.schema);
-      expect(result.data.schema.metadata).toEqual(inputSchema.metadata);
-      expect(result.data.schema.fields[0].metadata).toEqual(
+      expect(result.schema.metadata).toEqual(inputSchema.metadata);
+      expect(result.schema.fields[0].metadata).toEqual(
         inputSchema.fields.find(field => field.name === 'label')!.metadata
       );
-      expect(result.data.schema.fields.map(field => field.name)).toEqual(['label', 'rowId']);
+      expect(result.schema.fields.map(field => field.name)).toEqual(['label', 'rowId']);
     } finally {
       await closeSource(source);
     }
@@ -142,15 +142,15 @@ for (const format of formats) {
         {select: ['label'], where: {op: 'not', args: [{op: '>', args: [{property: 'value'}, 3]}]}},
         {source}
       );
-      expect(result.data.toArray().map(row => row.label)).toEqual(
+      expect(result.toArray().map(row => row.label)).toEqual(
         format === 'csv' ? ['a', 'b', 'c'] : ['b', 'c']
       );
       const empty = await query(
         {select: [{column: 'label', as: 'name'}], where: {op: '>', args: [{property: 'id'}, 100]}},
         {source}
       );
-      expect(empty.data.numRows).toBe(0);
-      expect(empty.data.schema.fields.map(field => field.name)).toEqual(['name']);
+      expect(empty.numRows).toBe(0);
+      expect(empty.schema.fields.map(field => field.name)).toEqual(['name']);
     } finally {
       await closeSource(source);
     }
@@ -169,7 +169,7 @@ for (const format of formats) {
         {select: [{column: 'id', as: 'rowId'}], limit: 0},
         {source: observed, onQueryComplete}
       );
-      expect(result.data.numRows).toBe(0);
+      expect(result.numRows).toBe(0);
       expect(read).not.toHaveBeenCalled();
       expect(onQueryComplete).toHaveBeenCalledTimes(1);
       expect(onQueryComplete.mock.calls[0][0]).toMatchObject({
@@ -262,7 +262,7 @@ test.each(
         core: {fetch, worker: false, batchSize: 2}
       }
     );
-    expect(result.data.toArray().map(row => row.name)).toEqual(['c', 'd']);
+    expect(result.toArray().map(row => row.name)).toEqual(['c', 'd']);
     expect(requests.length).toBeGreaterThan(0);
     expect(requests.every(url => url === `https://query.invalid/data.${format}`)).toBe(true);
   } finally {
@@ -273,7 +273,7 @@ test.each(
 test('CSV blank fields remain empty strings rather than SQL null', async () => {
   const source = new CSVTableSource(new Blob(['label\na\n""\n']), {core: {batchSize: 2}});
   const result = await query({where: {op: 'isNull', args: [{property: 'label'}]}}, {source});
-  expect(result.data.numRows).toBe(0);
+  expect(result.numRows).toBe(0);
 });
 
 test('NDJSON infers nullable primitives across a batch and retains types in later null batches', async () => {
@@ -284,7 +284,7 @@ test('NDJSON infers nullable primitives across a batch and retains types in late
   const metadata = await source.getQueryMetadata();
   expect(metadata.schema.fields[0].type).toBe('float32');
   const result = await query({}, {source});
-  expect(result.data.toArray().map(row => row.value)).toEqual([null, 2, null, null]);
+  expect(result.toArray().map(row => row.value)).toEqual([null, 2, null, null]);
 });
 
 test('NDJSON declared schema supports discovery when the first batch is entirely null', async () => {
@@ -301,7 +301,7 @@ test('NDJSON declared schema supports discovery when the first batch is entirely
     }
   );
   const result = await query({}, {source});
-  expect(result.data.toArray().map(row => row.value)).toEqual([null, null, 3]);
+  expect(result.toArray().map(row => row.value)).toEqual([null, null, 3]);
 });
 
 test('Parquet prunes row groups but still applies the exact predicate before the limit', async () => {
@@ -311,7 +311,7 @@ test('Parquet prunes row groups but still applies the exact predicate before the
       {select: ['label'], where: {op: '>', args: [{property: 'id'}, 3]}, limit: 1},
       {source}
     );
-    expect(result.data.toArray().map(row => row.label)).toEqual(['d']);
+    expect(result.toArray().map(row => row.label)).toEqual(['d']);
     expect(source.getTelemetry().rowGroupsPrunedByStatistics).toBeGreaterThan(0);
     expect(source.getTelemetry().rowGroupsDecoded).toBeLessThan(3);
   } finally {
@@ -341,9 +341,9 @@ test('NDJSON accepts native Arrow schemas without mutating their metadata', asyn
     ndjson: {schema: declaredSchema}
   });
   const result = await query({}, {source});
-  expect(result.data.toArray().map(row => row.value)).toEqual([null, 3]);
-  expect(result.data.schema.metadata.get('origin')).toBe('declared');
-  expect(result.data.schema.fields[0].metadata.get('unit')).toBe('meters');
+  expect(result.toArray().map(row => row.value)).toEqual([null, 3]);
+  expect(result.schema.metadata.get('origin')).toBe('declared');
+  expect(result.schema.fields[0].metadata.get('unit')).toBe('meters');
   expect(declaredSchema.fields[0].type).toBeInstanceOf(arrow.Float64);
 });
 
@@ -362,7 +362,7 @@ test('NDJSON array rows preserve positional columns and nullable inference', asy
     },
     {source}
   );
-  expect(result.data.toArray().map(row => row.toJSON())).toEqual([
+  expect(result.toArray().map(row => row.toJSON())).toEqual([
     {value: null, label: 'a'},
     {value: 2, label: 'b'},
     {value: null, label: 'c'}
@@ -376,5 +376,5 @@ test('NDJSON source accepts declared schema alongside Arrow-only parser controls
       arrowConversion: {}
     }
   });
-  expect((await query({}, {source})).data.toArray().map(row => row.value)).toEqual([null, 3]);
+  expect((await query({}, {source})).toArray().map(row => row.value)).toEqual([null, 3]);
 });

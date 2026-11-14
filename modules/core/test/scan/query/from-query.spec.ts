@@ -75,7 +75,7 @@ test('FROM picks one named table source and leaves unused/default sources untouc
     },
     {source: unused, sources: [cities, unused], onQueryComplete: complete}
   );
-  expect(result.data.toArray().map(row => row.number)).toEqual([2]);
+  expect(result.toArray().map(row => row.number)).toEqual([2]);
   expect(unused.metadataReads).not.toHaveBeenCalled();
   expect(cities.close).not.toHaveBeenCalled();
   expect(complete).toHaveBeenCalledTimes(1);
@@ -88,7 +88,7 @@ test('qualified FROM resolves only one loaded table with literal identifier comp
     {from: {source: 'warehouse.v2', table: 'cities.v3'}},
     {sources: [source], signal: controller.signal}
   );
-  expect(result.data.numRows).toBe(3);
+  expect(result.numRows).toBe(3);
   expect(source.getTable).toHaveBeenCalledWith('cities.v3', {signal: controller.signal});
   expect(source.selected.close).not.toHaveBeenCalled();
 });
@@ -101,7 +101,7 @@ test('collections may return an already loaded Arrow table', async () => {
     schema: convertArrowToSchema(source.selected.table.schema)
   });
   expect(
-    (await query({from: {source: 'warehouse', table: 'cities'}}, {sources: [source]})).data.numRows
+    (await query({from: {source: 'warehouse', table: 'cities'}}, {sources: [source]})).numRows
   ).toBe(3);
 });
 
@@ -112,7 +112,7 @@ test('SQL parser promises are lazy and omission of FROM uses the normal source',
   await query({}, {source, sqlParser});
   expect(parser).not.toHaveBeenCalled();
   const result = await query('SELECT value LIMIT 1', {source, sqlParser});
-  expect(result.data.numRows).toBe(1);
+  expect(result.numRows).toBe(1);
   expect(parser).toHaveBeenCalledWith('SELECT value LIMIT 1');
   expect(source.close).not.toHaveBeenCalled();
 });
@@ -129,7 +129,7 @@ test('async SQL parsing can select a qualified source and stream through the sam
     sources: [source],
     sqlParser
   }))
-    rows.push(...batch.data.toArray().map(row => row.value));
+    rows.push(...[...batch].map(row => row.value));
   expect(rows).toEqual([1, 2]);
 });
 
@@ -204,7 +204,7 @@ test('public parser type accepts asynchronous logical queries', () => {
 
 test('literal dotted source names are not split and FROM requires an explicit registry', async () => {
   const source = new NamedTableSource('cities.v2');
-  expect((await query({from: 'cities.v2', limit: 1}, {sources: [source]})).data.numRows).toBe(1);
+  expect((await query({from: 'cities.v2', limit: 1}, {sources: [source]})).numRows).toBe(1);
   await expect(query({from: 'cities.v2'}, {source})).rejects.toThrow('sources array');
 });
 
