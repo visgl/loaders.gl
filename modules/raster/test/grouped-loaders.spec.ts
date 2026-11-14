@@ -42,3 +42,9 @@ test('raster source metadata defers constructors and keeps TIFF selection distin
     expect((await createDataSource(new Blob([]), metadata)).constructor).toBe(source.constructor);
   }
 });
+
+test('synchronous OME-TIFF construction requires the implementation subpath', () => {
+  expect(() => OMETiffLoader.createDataSourceSync(new Blob([]), {})).toThrow(
+    'OMETiffLoader requires async createDataSource() or its source implementation subpath'
+  );
+});
