@@ -437,23 +437,43 @@ async function getNextArrowBatch(iterator: AsyncIterator<any>): Promise<ArrowTab
       return null;
     }
     if (isNativeArrowRecordBatch(result.value)) {
-      const {schema, data: columns} = result.value;
+      const recordBatch = result.value;
+      const schema = convertArrowToSchema(recordBatch.schema);
       const batch =
-        result.value instanceof arrow.RecordBatch
-          ? result.value
-          : new arrow.RecordBatch(schema, columns);
-      if (batch !== result.value) {
-        for (const [key, value] of result.value.metadata) batch.metadata.set(key, value);
-      }
-      const data = new arrow.Table(schema, [batch]);
+        recordBatch instanceof arrow.RecordBatch ? recordBatch : importDBFRecordBatch(recordBatch);
+      const data = new arrow.Table(batch.schema, [batch]);
       return makeTableScanBatch({
         shape: 'arrow-table',
-        schema: convertArrowToSchema(data.schema),
+        schema,
         data
       });
     }
     if (result.value?.shape === 'arrow-table') return result.value;
   }
+}
+
+/** Rebuilds primitive DBF columns with local Arrow classes while reusing their buffers. */
+function importDBFRecordBatch(batch: arrow.RecordBatch): arrow.RecordBatch {
+  const schema = convertSchemaToArrow(convertArrowToSchema(batch.schema));
+  const children = batch.data.children.map(
+    (column, index) =>
+      new arrow.Data(
+        schema.fields[index].type,
+        column.offset,
+        column.length,
+        column.nullCount,
+        column.buffers,
+        undefined,
+        undefined,
+        column.variadicBuffers
+      )
+  );
+  const data = arrow.makeData({
+    type: new arrow.Struct(schema.fields),
+    length: batch.numRows,
+    children
+  });
+  return new arrow.RecordBatch(schema, data, new Map(batch.metadata));
 }
 
 function getQueuedRowCount(queue: arrow.Table[]): number {
