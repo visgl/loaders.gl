@@ -148,7 +148,7 @@ export class ArrowTableVectorTileSource
           tile,
           this.tiler.tableOptions.extent,
           this.localCoordinates
-        ).data
+        )
       : null;
   }
 

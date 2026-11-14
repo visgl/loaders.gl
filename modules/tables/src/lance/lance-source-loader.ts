@@ -100,8 +100,8 @@ export class LanceSource extends BaseDataSource<string | Blob, LanceSourceLoader
             columnNames: lanceOptions.columnNames,
             limit: lanceOptions.limit
           });
-    if (table.data.batches.length) yield* table.data.batches;
-    else yield makeArrowMetadataBatch(table.data.schema);
+    if (table.batches.length) yield* table.batches;
+    else yield makeArrowMetadataBatch(table.schema);
   }
 
   /** Reads the first remote data file through HTTP range requests. */

@@ -58,7 +58,7 @@ const categoryTabs = [
     representations: {
       arrow: {
         data: 'Arrow table data',
-        detail: "shape: 'arrow-table'",
+        detail: "shape: 'arrow'",
         loaders: ['ArrowLoader', 'CSVLoader', 'JSONLoader', 'NDJSONLoader', 'ParquetLoader'],
         writers: ['ArrowWriter', 'ParquetWriter']
       },
@@ -76,7 +76,7 @@ const categoryTabs = [
     representations: {
       arrow: {
         data: 'GeoArrow table data',
-        detail: "shape: 'arrow-table'",
+        detail: "shape: 'arrow'",
         loaders: [
           'GeoArrowLoader',
           'GeoJSONLoader',
@@ -143,7 +143,7 @@ const categoryTabs = [
     representations: {
       arrow: {
         data: 'Arrow table data',
-        detail: "shape: 'arrow-table'",
+        detail: "shape: 'arrow'",
         loaders: ['JSONLoader'],
         writers: []
       },

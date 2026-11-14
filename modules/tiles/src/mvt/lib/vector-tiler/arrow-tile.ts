@@ -3,10 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import {makeWKBGeometryDataFromWriters} from '@loaders.gl/core/arrow-geometry/wkb-arrow-utils';
 import {type WKBBuilder} from '@loaders.gl/core/arrow-geometry';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {ProtoTile} from './proto-tile';
 import type {ProtoFeature} from './features/proto-feature';
 import {classifyRings} from '../utils/geometry-utils';
@@ -19,7 +17,7 @@ export function createArrowTile(
   tile: ProtoTile,
   extent: number,
   localCoordinates: boolean
-): ArrowTable {
+): arrow.Table {
   const rowIndices = tile.protoFeatures.map(feature => Number(feature.tags!.sourceRowIndex));
   const geometryData = makeWKBGeometryDataFromWriters(
     tile.protoFeatures.map(feature => builder => writeTileGeometry(builder, feature)),
@@ -43,8 +41,7 @@ export function createArrowTile(
         ? arrow.makeVector(geometryData)
         : gatherColumnRows(column, rowIndices);
   }
-  const data = new arrow.Table(schema, columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+  return new arrow.Table(schema, columns);
 }
 
 /** Gathers contiguous row runs as Arrow views, preserving nested values and dictionary buffers. */

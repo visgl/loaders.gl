@@ -390,7 +390,7 @@ export class IcebergTableSource
       if (!response.ok)
         throw new Error(`Iceberg manifest request failed with HTTP ${response.status}`);
       const table = await parseAvro(await response.arrayBuffer(), {longType: 'number'});
-      return table.data.toArray() as RecordT[];
+      return table.toArray() as RecordT[];
     } finally {
       abortSignal.dispose();
     }

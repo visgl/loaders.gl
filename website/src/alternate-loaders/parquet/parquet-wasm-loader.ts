@@ -6,14 +6,15 @@ import type {Table, RecordBatch} from 'apache-arrow';
 import {unwrapParquetBatches} from '../../../../modules/tables/src/parquet/lib/native-parquet-batches';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {BlobFile, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
+import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 
-import {convertArrowTable, convertArrowTableBatch} from '@loaders.gl/core/schema-utils';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 import {
   parseParquetFileToArrow,
   parseParquetFileToArrowInBatches
 } from './parse-parquet-to-arrow';
+import {convertParquetTableToRows} from '../../../../modules/tables/src/parquet/lib/parsers/parse-parquet-tables';
 import {loadWasm} from '../../../../modules/tables/src/parquet/lib/utils/load-wasm';
 import {tableFromIPC} from 'apache-arrow';
 import {normalizeParquetOptions} from '../../../../modules/tables/src/parquet/lib/utils/normalize-parquet-options';
@@ -33,10 +34,10 @@ const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
 export async function decodeParquetWasmFixture(
   arrayBuffer: ArrayBuffer,
   columns?: string[]
-): Promise<ArrowTable> {
+): Promise<Table> {
   const wasm = await loadWasm();
   const table = wasm.readParquet(new Uint8Array(arrayBuffer), {columns});
-  return {shape: 'arrow-table', data: tableFromIPC(table.intoIPCStream())};
+  return tableFromIPC(table.intoIPCStream());
 }
 
 /** WASM-backed Parquet table loader supporting object-row and Arrow table output. */
@@ -88,11 +89,11 @@ async function parseParquetTable(
   const parquetOptions = getParquetOptions(options);
 
   if (parquetOptions.parquet?.shape === 'arrow') {
-    return (await parseParquetFileToArrow(file, parquetOptions.parquet)).data;
+    return parseParquetFileToArrow(file, parquetOptions.parquet);
   }
 
   const arrowTable = await parseParquetFileToArrow(file, parquetOptions.parquet);
-  return convertArrowTable(arrowTable, 'object-row-table');
+  return convertArrowToTable(arrowTable, 'object-row-table');
 }
 
 /**
@@ -113,7 +114,7 @@ async function* parseParquetTableInBatches(
   }
 
   for await (const batch of parseParquetFileToArrowInBatches(file, parquetOptions.parquet)) {
-    yield convertArrowTableBatch(batch, 'object-row-table');
+    yield convertParquetTableToRows(batch);
   }
 }
 

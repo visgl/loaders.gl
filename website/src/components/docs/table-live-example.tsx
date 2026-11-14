@@ -4,7 +4,7 @@ import {load, type LoaderOptions} from '@loaders.gl/core'
 import {ArrowLoader} from '@loaders.gl/tables/arrow'
 import {CSVLoader} from '@loaders.gl/tables/csv'
 import {JSONLoader, NDJSONLoader} from '@loaders.gl/tables/json'
-import type {Field, Table} from '@loaders.gl/core/schema'
+import type {ArrowTable, Field, Table} from '@loaders.gl/core/schema'
 import {ChromeTraceLoader} from '@loaders.gl/traces'
 
 import styles from './table-live-example.module.css'
@@ -53,7 +53,7 @@ type TableLiveExampleState =
       /** Current preview state. */
       status: 'loaded'
       /** Loaded loaders.gl table. */
-      table: Table
+      table: PreviewTable
       /** Source preview content for the loaded file. */
       sourcePreview: SourcePreview
     }
@@ -101,6 +101,9 @@ type ArrowTableLike = {
   getChildAt(columnIndex: number): {get(rowIndex: number): unknown} | null
 }
 
+/** Layouts supported by the preview. */
+type PreviewTable = Exclude<Table, ArrowTable> | ArrowTableLike
+
 /**
  * Loads a configured tabular file and renders a compact read-only table preview.
  */
@@ -131,7 +134,7 @@ export default function TableLiveExample({config}: {config: TableLiveExampleConf
         const arrayBuffer = await loadSourceArrayBuffer(source)
         sourcePreview = createSourcePreview(config.loaderName, arrayBuffer)
         const loader = getTableLoader(config.loaderName)
-        const table = normalizeLoadedTable(await load(arrayBuffer, loader, config.options))
+        const table = (await load(arrayBuffer, loader, config.options)) as PreviewTable
 
         if (!isCancelled) {
           setState({status: 'loaded', table, sourcePreview})
@@ -347,7 +350,7 @@ function TablePreview({
   columnLimit
 }: {
   /** Table to render. */
-  table: Table
+  table: PreviewTable
   /** Maximum number of rows to render. */
   rowLimit: number
   /** Maximum number of columns to render. */
@@ -466,20 +469,6 @@ function getTableLoader(loaderName: TableLiveExampleLoaderName) {
 }
 
 /**
- * Normalizes direct Apache Arrow loader output into the loaders.gl ArrowTable wrapper shape.
- */
-function normalizeLoadedTable(data: unknown): Table {
-  if (isArrowTableLike(data)) {
-    return {
-      shape: 'arrow-table',
-      data
-    } as Table
-  }
-
-  return data as Table
-}
-
-/**
  * Returns true when a value has the Apache Arrow table methods needed by the preview.
  */
 function isArrowTableLike(data: unknown): data is ArrowTableLike {
@@ -591,7 +580,8 @@ function formatByteCount(byteLength: number): string {
 /**
  * Returns column names for every table shape supported by loaders.gl table loaders.
  */
-function getPreviewColumnNames(table: Table): string[] {
+function getPreviewColumnNames(table: PreviewTable): string[] {
+  if (isArrowTableLike(table)) return table.schema.fields.map(field => field.name)
   const schemaFieldNames = getSchemaFieldNames(table.schema?.fields)
   if (schemaFieldNames.length > 0) {
     return schemaFieldNames
@@ -606,8 +596,6 @@ function getPreviewColumnNames(table: Table): string[] {
       return Object.keys(table.features[0] || {})
     case 'columnar-table':
       return Object.keys(table.data)
-    case 'arrow-table':
-      return table.data.schema.fields.map(field => field.name)
     default:
       return []
   }
@@ -623,7 +611,8 @@ function getSchemaFieldNames(fields?: Field[]): string[] {
 /**
  * Returns the row count for a table preview.
  */
-function getPreviewRowCount(table: Table): number {
+function getPreviewRowCount(table: PreviewTable): number {
+  if (isArrowTableLike(table)) return table.numRows
   switch (table.shape) {
     case 'array-row-table':
     case 'object-row-table':
@@ -632,8 +621,6 @@ function getPreviewRowCount(table: Table): number {
       return table.features.length
     case 'columnar-table':
       return Object.values(table.data)[0]?.length || 0
-    case 'arrow-table':
-      return table.data.numRows
     default:
       return 0
   }
@@ -643,11 +630,12 @@ function getPreviewRowCount(table: Table): number {
  * Returns one table cell from any table shape.
  */
 function getPreviewCell(
-  table: Table,
+  table: PreviewTable,
   rowIndex: number,
   columnName: string,
   columnIndex: number
 ): unknown {
+  if (isArrowTableLike(table)) return table.getChildAt(columnIndex)?.get(rowIndex)
   switch (table.shape) {
     case 'array-row-table':
       return table.data[rowIndex]?.[columnIndex]
@@ -657,8 +645,6 @@ function getPreviewCell(
       return table.features[rowIndex]?.[columnName]
     case 'columnar-table':
       return table.data[columnName]?.[rowIndex]
-    case 'arrow-table':
-      return table.data.getChildAt(columnIndex)?.get(rowIndex)
     default:
       return undefined
   }

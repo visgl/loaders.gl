@@ -67,7 +67,7 @@ class MemoryAvroFile implements ReadableFile {
 
 /** Returns ordinary rows from the Arrow table carried by an Avro batch. */
 function getBatchRows(batch: any): Record<string, unknown>[] {
-  return batch.data.toArray().map((row: Record<string, unknown>) => ({...row}));
+  return batch.toArray().map((row: Record<string, unknown>) => ({...row}));
 }
 
 /** Creates a multi-row OCF so streaming tests exercise both full and partial batches. */
@@ -158,7 +158,7 @@ test('Avro raw and single-object batch parsing preserve records and bigint promo
       })
     );
     expect(batches).toHaveLength(1);
-    expect(batches[0].data.getChild('value').get(0)).toBe(123);
+    expect(batches[0].getChild('value').get(0)).toBe(123);
   }
 });
 
@@ -194,7 +194,7 @@ describe('Avro boundary coverage', () => {
     );
     const file = new MemoryAvroFile(encoded);
     const table = await parseAvroFromFile(file, {batchSize: 2, rangeChunkSize: 1024});
-    expect(table.data.toArray().map((row: any) => row.id)).toEqual(rows.map(row => row.id));
+    expect(table.toArray().map((row: any) => row.id)).toEqual(rows.map(row => row.id));
     expect(file.reads[0]).toEqual({start: 0, length: 1024});
     expect(file.reads.some(read => read.start > 0 && read.length <= 1024)).toBe(true);
 
@@ -335,7 +335,7 @@ describe('Avro boundary coverage', () => {
     };
     const encoded = await encodeRaw(schema, row);
     const result = await parseAvro(encoded, {encoding: 'raw', schema, longType: 'bigint'});
-    const decoded = result.data.toArray()[0] as any;
+    const decoded = result.toArray()[0] as any;
 
     expect(decoded).toMatchObject({enabled: true, small: -5, choice: 'B', label: 'hello'});
     expect(decoded.large).toBe(9007199254740993n);
@@ -352,7 +352,7 @@ describe('Avro boundary coverage', () => {
       score: new Float64Array([2.5])
     });
     const result = await parseAvro(await encodeAvro(table));
-    expect(result.data.numRows).toBe(1);
+    expect(result.numRows).toBe(1);
   });
 
   test('projects reader aliases, defaults, unions, and numeric promotions', async () => {
@@ -389,7 +389,7 @@ describe('Avro boundary coverage', () => {
       schema: writerSchema,
       readerSchema
     });
-    expect(result.data.toArray()[0]).toMatchObject({name: 'renamed', count: 4, added: true});
+    expect(result.toArray()[0]).toMatchObject({name: 'renamed', count: 4, added: true});
   });
 
   test('round-trips every supported logical type and signed decimal shape', async () => {
@@ -448,7 +448,7 @@ describe('Avro boundary coverage', () => {
     });
     const decoded = (
       await parseAvro(encoded, {encoding: 'raw', schema, longType: 'bigint'})
-    ).data.toArray()[0] as any;
+    ).toArray()[0] as any;
 
     expect(decoded.negativeDecimal).toBeCloseTo(-123.45);
     expect(decoded.fixedDecimal).toBeCloseTo(12.345);
@@ -517,7 +517,7 @@ describe('Avro boundary coverage', () => {
       schema: writerSchema,
       readerSchema
     });
-    expect(decoded.data.numRows).toBe(1);
+    expect(decoded.numRows).toBe(1);
 
     await expect(
       parseAvro(encoded, {
@@ -668,7 +668,7 @@ describe('Avro boundary coverage', () => {
     });
     const bytes = new Uint8Array(encoded);
     const detected = await parseAvro(encoded, {schema, encoding: 'auto'});
-    expect(detected.data.getChild('id')?.get(0)).toBe(9);
+    expect(detected.getChild('id')?.get(0)).toBe(9);
 
     bytes[2] ^= 0xff;
     await expect(parseAvro(bytes.buffer, {schema, encoding: 'single-object'})).rejects.toThrow(
@@ -794,10 +794,8 @@ describe('Avro boundary coverage', () => {
     const table = createStructuralTable([{id: 3}]);
     const raw = await encodeAvro(table, {avro: {schema, encoding: 'raw'}});
     const singleObject = await encodeAvro(table, {avro: {schema, encoding: 'single-object'}});
-    expect((await parseAvro(raw, {schema, encoding: 'raw'})).data.numRows).toBe(1);
-    expect((await parseAvro(singleObject, {schema, encoding: 'single-object'})).data.numRows).toBe(
-      1
-    );
+    expect((await parseAvro(raw, {schema, encoding: 'raw'})).numRows).toBe(1);
+    expect((await parseAvro(singleObject, {schema, encoding: 'single-object'})).numRows).toBe(1);
 
     await expect(
       encodeAvro(createStructuralTable([]), {avro: {schema, encoding: 'raw'}})
@@ -839,7 +837,7 @@ describe('Avro boundary coverage', () => {
       byteArray: Uint8Array.from([1]),
       byteBuffer: Uint8Array.from([2]).buffer
     });
-    expect((await parseAvro(encoded, {schema, encoding: 'raw'})).data.numRows).toBe(1);
+    expect((await parseAvro(encoded, {schema, encoding: 'raw'})).numRows).toBe(1);
   });
 
   test.each([
@@ -936,8 +934,8 @@ describe('Avro boundary coverage', () => {
       blockIndices: [0, 2],
       headers: {'X-Test': 'yes'}
     });
-    expect(result.data.numRows).toBeGreaterThan(0);
-    expect(result.data.numRows).toBeLessThan(rows.length);
+    expect(result.numRows).toBeGreaterThan(0);
+    expect(result.numRows).toBeLessThan(rows.length);
     expect(requests[0]).toBe('bytes=0-1023');
     expect(requests.some(range => !range.startsWith('bytes=0-'))).toBe(true);
   });
@@ -953,7 +951,7 @@ describe('Avro boundary coverage', () => {
     const batches = await collectBatches(
       parseAvroInBatchesFromUrl('https://example.test/data.avro', {batchSize: 1})
     );
-    expect(batches.map(batch => batch.length)).toEqual([1, 1]);
+    expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
   });
 
   test('validates URL options and range responses', async () => {

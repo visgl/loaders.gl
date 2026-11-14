@@ -25,13 +25,12 @@ export const LanceLoaderWithParser = {
       return Promise.reject(new LanceDecoderUnavailableError());
     }
     const columnTypes = lanceOptions.columnTypes;
-    return import('@loaders.gl/tables/lance/lance-arrow').then(
-      ({parseLanceFileToArrow}) =>
-        parseLanceFileToArrow(_arrayBuffer, {
-          columnTypes,
-          columnNames: lanceOptions.columnNames,
-          limit: scanOptions?.limit ?? lanceOptions.limit
-        }).data
+    return import('@loaders.gl/tables/lance/lance-arrow').then(({parseLanceFileToArrow}) =>
+      parseLanceFileToArrow(_arrayBuffer, {
+        columnTypes,
+        columnNames: lanceOptions.columnNames,
+        limit: scanOptions?.limit ?? lanceOptions.limit
+      })
     );
   },
   async *parseInBatches(
