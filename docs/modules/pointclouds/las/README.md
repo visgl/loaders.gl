@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Geometry', value: 'Scaled positions with source offsets and bounds'},
     {label: 'Attributes', value: 'Classification, returns, color, time, NIR, and waveform data'},
-    {label: 'Columnar path', value: "Use shape: 'arrow-table' and select columns"},
+    {label: 'Columnar path', value: "Use shape: 'arrow' and select columns"},
     {label: 'Write back', value: 'Encode Mesh or Mesh Arrow tables as LAS or LAZ'}
   ]}
 />

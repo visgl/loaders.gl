@@ -230,7 +230,7 @@ import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
 const source = await createDataSource(url, [PMTilesLoader, MVTLoader], {
   core: {worker: false, fetch: {headers: {Authorization: 'Bearer …'}}},
-  pmtiles: {shape: 'arrow-table'},
+  pmtiles: {shape: 'arrow'},
   mvt: {layerProperty: 'sourceLayer', layers: ['roads']},
   mlt: {layers: ['roads']}
 });

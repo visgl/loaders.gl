@@ -27,7 +27,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
   items={[
     {label: 'Raw Arrow', value: "shape: 'arrow' for Apache Arrow JS tables"},
-    {label: 'Arrow wrapper', value: "shape: 'arrow-table' for loaders.gl APIs"},
+    {label: 'Arrow output', value: "shape: 'arrow' returns a native table"},
     {label: 'Other shapes', value: 'Rows, columnar tables, and GeoJSON-like tables'},
     {label: 'Use it for', value: 'Normalization before rendering, scanning, or writing'}
   ]}
@@ -47,7 +47,7 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 | --- | --- |
 | Package | `@loaders.gl/core/schema-utils` |
 | `id` | `'table'` |
-| `from` | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow'`, legacy `'arrow-table'` |
+| `from` | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow'` |
 | `to` | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow'` |
 | Detection | Recognizes native tables and reads `input.shape` on loaders.gl table wrappers |
 | Typical use | Convert between native Arrow and loaders.gl row or column tables |
@@ -60,7 +60,7 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 | --- | --- |
 | Package | `@loaders.gl/tables/arrow` |
 | `id` | `'arrow'` |
-| `from` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
+| `from` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
 | `to` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
 | Detection | Treats raw Apache Arrow `Table` instances as `'arrow'` |
 | Typical use | Bridge raw Arrow tables into loaders.gl wrappers, or write wrappers back to Arrow |
@@ -70,7 +70,6 @@ These converters move between loaders.gl table wrappers and Apache Arrow tables.
 | Shape | Meaning |
 | --- | --- |
 | `'arrow'` | Raw Apache Arrow `Table` |
-| `'arrow-table'` | loaders.gl wrapper around Arrow table data |
 | `'object-row-table'` | Array of row objects |
 | `'array-row-table'` | Array of row arrays |
 | `'columnar-table'` | Column-oriented loaders.gl wrapper |

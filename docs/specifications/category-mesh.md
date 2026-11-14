@@ -30,7 +30,7 @@ import {CategoryDataConcept} from '@site/src/components/home/concepts';
   items={[
     {label: 'Geometry', value: 'Positions, indices, normals, colors, and draw mode'},
     {label: 'Point clouds', value: 'Coordinates plus intensity, classification, time, and color'},
-    {label: 'Columnar path', value: "Use shape: 'arrow-table' for typed columns"},
+    {label: 'Columnar path', value: "Use shape: 'arrow' for typed columns"},
     {label: 'Writers', value: 'Encode compatible mesh and point-cloud data again'}
   ]}
 />
@@ -47,8 +47,8 @@ The _mesh and pointcloud_ loader category is intended for simpler mesh and point
 
 | Loader                                                                                          | Notes                     |
 | ----------------------------------------------------------------------------------------------- | ------------------------- |
-| [`DracoLoader`](/docs/modules/scene/draco/api-reference/draco-loader) with `draco.shape: 'arrow-table'` | Mesh Arrow table          |
-| [`LASLoader`](/docs/modules/pointclouds/las/api-reference/las-loader) with `las.shape: 'arrow-table'`         | Mesh Arrow table          |
+| [`DracoLoader`](/docs/modules/scene/draco/api-reference/draco-loader) with `draco.shape: 'arrow'` | Mesh Arrow table          |
+| [`LASLoader`](/docs/modules/pointclouds/las/api-reference/las-loader) with `las.shape: 'arrow'`         | Mesh Arrow table          |
 | [`OBJLoader`](/docs/modules/scene/obj/api-reference/obj-loader)                                        | Mesh Arrow table          |
 | [`PCDLoader`](/docs/modules/pointclouds/pcd/api-reference/pcd-loader)                                        | Mesh Arrow table          |
 | [`PLYLoader`](/docs/modules/pointclouds/ply/api-reference/ply-loader)         | Mesh Arrow table          |
@@ -79,7 +79,7 @@ Mesh category writers accept Mesh Arrow tables and legacy Mesh objects. Legacy M
 
 A single mesh is typically defined by a set of attributes, such as `positions`, `colors`, `normals` etc, as well as a draw mode.
 
-The Mesh/PointCloud category uses Arrow as the primary tabular mesh representation. Arrow loader variants return a loaders.gl Arrow table wrapper (`shape: 'arrow-table'`) whose raw Arrow `data` value has shape `'arrow'` and can be typed with `MeshArrowTableData` or `IndexedMeshArrowTableData` from `@loaders.gl/core/schema`.
+The Mesh/PointCloud category uses Arrow as the primary tabular mesh representation. Arrow loader variants return native Apache Arrow tables. Their columns can be typed with `MeshArrowTableData` or `IndexedMeshArrowTableData` from `@loaders.gl/core/schema`.
 
 Legacy Mesh loader variants return a JavaScript object shape that is optimized for direct use in WebGL frameworks:
 

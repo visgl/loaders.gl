@@ -121,7 +121,7 @@ pass before changing loader contracts.
 
 ### Tranche 4: Deliberate loader adoption and stabilization
 
-Adopt GeoArrow-compliant `arrow-table` output one loader at a time without changing established
+Adopt GeoArrow-compliant native Arrow output one loader at a time without changing established
 default return values. Each adoption needs a compatibility review, focused integration tests, and a
 bundle-cost check. Finish with documentation, performance baselines, migration guidance where
 needed, and the Gate D release decision.

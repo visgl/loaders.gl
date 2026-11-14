@@ -163,7 +163,7 @@ contain a logical type that the current JavaScript decoder or Arrow adapter cann
 
 ## Arrow output choices
 
-Arrow output uses `mlt.shape: 'arrow-table'`, which is the default. The default geometry column is
+Arrow output uses `mlt.shape: 'arrow'`, which is the default. The default geometry column is
 WKB-compatible GeoArrow.
 Applications can request native GeoArrow with `geoarrow.encodingPreference`:
 

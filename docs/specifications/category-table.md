@@ -64,12 +64,12 @@ worker, scan, renderer, or writer boundary.
 
 | Shape | Loaders | Notes |
 | --- | --- | --- |
-| `arrow-table` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader) | Default for Arrow IPC parsing can still be overridden with `options.arrow.shape`. |
+| `arrow` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader) | Returns a native Arrow table. |
 | `columnar-table` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader) | Column-major output for Arrow data. |
 | `array-row-table` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/tables/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader) | Row arrays. Scoped overrides: `options.arrow.shape`, `options.csv.shape`, `options.json.shape`. |
 | `object-row-table` | [`ArrowLoader`](/docs/modules/tables/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/tables/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/tables/json/api-reference/json-loader) | Row objects. Default for CSV. |
 
-`GeoJSONLoader` uses `options.geojson.shape` for GIS-specific output shapes such as `geojson-table`, `binary-feature-collection`, and `arrow-table`.
+`GeoJSONLoader` uses `options.geojson.shape` for GIS-specific output shapes such as `geojson-table`, `binary-feature-collection`, and `arrow`.
 
 ## Data Structure
 
@@ -86,7 +86,6 @@ worker, scan, renderer, or writer boundary.
 | `'object-row-table'` | loaders.gl table wrapper storing rows as JavaScript objects |
 | `'array-row-table'` | loaders.gl table wrapper storing rows as JavaScript arrays |
 | `'columnar-table'` | loaders.gl table wrapper storing one column array per field |
-| `'arrow-table'` | loaders.gl table wrapper whose `data` field is an Arrow table |
 | `'geojson-table'` | loaders.gl GIS-oriented table wrapper storing features plus schema |
 | `'arrow'` | raw Apache Arrow table value |
 | `'geoarrow'` | raw Arrow table value with GeoArrow geometry metadata |
