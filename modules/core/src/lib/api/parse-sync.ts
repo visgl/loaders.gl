@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getNativeArrowOptions, normalizeNativeArrowResult} from '../loader-utils/native-arrow';
+import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
 
 import type {
   LoaderArrayOptionsType,
@@ -130,7 +130,7 @@ export function parseSync(
     nativeArrowOptions || strictOptions,
     context
   );
-  return nativeArrowOptions ? normalizeNativeArrowResult(result, loader) : result;
+  return nativeArrowOptions ? unwrapArrowTable(result, loader.supportsNativeArrow) : result;
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
