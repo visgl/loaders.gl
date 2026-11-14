@@ -4,7 +4,7 @@
 
 export {ORCFormat} from './orc-format';
 
-export type {ORCSourceLoaderOptions} from './orc-source-loader';
+export type {ORCSourceOptions as ORCSourceLoaderOptions} from './orc-source-loader';
 export type {ORCLoaderOptions} from './orc-loader-types';
 export {ORCLoader} from './orc-loader-types';
 export {ORCWriter} from './orc-writer';
