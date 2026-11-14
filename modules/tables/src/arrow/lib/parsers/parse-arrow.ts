@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
-import {ArrowLoaderOptions} from '../../exports/arrow-loader';
+import {ArrowLoaderOptions} from '../../arrow-loader-types';
 import {
   convertArrowTable,
   convertArrowToTable,

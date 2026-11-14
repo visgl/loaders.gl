@@ -34,8 +34,6 @@ export type PointCloudSourceLayerProps = Omit<Tile3DLayerProps, 'data' | 'loader
   data: PointCloudTilesetSource | string | Blob;
   /** Parser loaders and SourceLoaders used to resolve URL/Blob inputs. */
   loaders?: ReadonlyArray<Loader>;
-  /** @deprecated Put SourceLoaders in `loaders`. */
-  sources?: Readonly<Loader[]>;
   /** Options forwarded to source construction. */
   sourceOptions?: DataSourceOptions;
   /** Optional metadata already loaded by a parent SourceLayer. */
@@ -71,7 +69,6 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
     ...Tile3DLayer.defaultProps,
     data: null,
     loaders: {type: 'array', compare: false, value: []},
-    sources: {type: 'array', compare: false, value: []},
     sourceOptions: {type: 'object', compare: false, value: {}},
     pointCloudTilesetOptions: {type: 'object', compare: false, value: {}},
     showTileBoundingBoxes: false,
@@ -127,7 +124,6 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
     if (
       changeFlags.dataChanged ||
       props.loaders !== oldProps.loaders ||
-      props.sources !== oldProps.sources ||
       props.sourceOptions !== oldProps.sourceOptions
     ) {
       void this.resolveSource(props);

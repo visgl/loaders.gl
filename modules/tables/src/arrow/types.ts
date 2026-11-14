@@ -29,9 +29,7 @@ export type {
   triangulateWKBColumnOnWorker,
   parseGeoArrowOnWorker,
   triangulateWKBGeometryColumn,
-  TriangulatedWKBGeometryColumns,
-  ArrowWorkerLoader,
-  GeoArrowWorkerLoader
+  TriangulatedWKBGeometryColumns
 } from './index';
 // Keep the upstream surface compatible with the minimum supported Apache Arrow release.
 export type {

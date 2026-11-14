@@ -9,7 +9,7 @@ export {VECTOR_TYPES} from './lib/types';
 
 export {ArrowFormat} from './exports/arrow-format';
 
-export type {ArrowLoaderOptions} from './exports/arrow-loader';
+export type {ArrowLoaderOptions} from './arrow-loader-types';
 
 export {ArrowLoader} from './arrow-loader-types';
 export {ArrowTableSource} from './arrow-source';
@@ -53,9 +53,3 @@ export {
   triangulateWKBGeometryColumn,
   type TriangulatedWKBGeometryColumns
 } from './triangulate-wkb-geometry-column';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use ArrowLoader. */
-export {ArrowWorkerLoader} from './exports/arrow-loader';
-/** @deprecated Use GeoArrowLoader. */
-export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';

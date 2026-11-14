@@ -40,18 +40,18 @@ test('ImageSourceLayer#accepts direct ImageSource inputs', () => {
   const resolvedData = layer._resolveData(layer.props);
   expect(resolvedData).toBe(TEST_IMAGE_SOURCE);
 });
-test('ImageSourceLayer#resolves URL inputs with sources', () => {
+test('ImageSourceLayer#resolves URL inputs with source loaders', () => {
   const layer = createLayer({
     id: 'test',
     data: 'https://example.com/wms',
-    sources: [TEST_SOURCE_FACTORY as any]
+    loaders: [TEST_SOURCE_FACTORY as any]
   });
   const resolvedData = layer._resolveData(layer.props);
   expect(resolvedData).toBe(TEST_IMAGE_SOURCE);
 });
-test('ImageSourceLayer#rejects Blob inputs without sources', () => {
+test('ImageSourceLayer#rejects Blob inputs without source loaders', () => {
   const layer = createLayer({id: 'test', data: new Blob(['test'])});
-  expect(() => layer._resolveData(layer.props)).toThrow(/requires `sources`/);
+  expect(() => layer._resolveData(layer.props)).toThrow(/requires a SourceLoader in `loaders`/);
 });
 test('ImageSourceLayer#resolves mixed loader lists and rejects unresolved strings', () => {
   const parserLoader = {
@@ -78,7 +78,7 @@ test('ImageSourceLayer#resolves mixed loader lists and rejects unresolved string
       id: 'missing',
       data: 'https://example.com/wms'
     })
-  ).toThrow(/requires `sources`/);
+  ).toThrow(/requires a SourceLoader in `loaders`/);
   expect(createLayer()._resolveData({id: 'null', data: null} as any)).toBeNull();
   expect(
     createLayer()._resolveData({

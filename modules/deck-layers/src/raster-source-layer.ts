@@ -69,8 +69,6 @@ export type RasterSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders
   data: RasterSource | string | Blob;
   /** Parser loaders and SourceLoaders used to resolve URL/Blob inputs. */
   loaders?: ReadonlyArray<Loader>;
-  /** @deprecated Put SourceLoaders in `loaders`. */
-  sources?: Readonly<Loader[]>;
   /** Options forwarded to source construction. */
   sourceOptions?: DataSourceOptions;
   /** Optional metadata already loaded by a parent SourceLayer. */
@@ -118,7 +116,6 @@ const defaultProps: DefaultProps<RasterSourceLayerProps> = {
   id: 'raster-source-layer',
   data: null as never,
   loaders: {type: 'array', compare: false, value: []},
-  sources: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   rasterParameters: {type: 'object', compare: false, value: {}},
   bitmapLayerProps: {type: 'object', compare: false, value: {}},
@@ -192,7 +189,6 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
     const sourceChanged =
       changeFlags.dataChanged ||
       props.loaders !== oldProps.loaders ||
-      props.sources !== oldProps.sources ||
       props.sourceOptions !== oldProps.sourceOptions;
 
     if (sourceChanged) {
