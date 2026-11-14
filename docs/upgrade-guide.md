@@ -995,7 +995,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 | Deprecated helper         | Replacement                     |
 | ------------------------- | ------------------------------- |
-| `loadImageTexture()`      | `load(url, TextureLoader)`      |
+| `loadImageTexture()`      | `load(url, ImageLoader)`        |
 | `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
 | `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
 

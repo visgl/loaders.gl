@@ -55,7 +55,6 @@ test('shared compressor and decompressor support async and batch APIs', async ()
   expect(new Uint8Array(decompressedBatches[0])).toEqual(new Uint8Array([1, 2, 3]));
 });
 
-
 test('base classes reject unsupported synchronous operations', () => {
   const compressor = new TestCompressor();
   const decompressor = new TestDecompressor();

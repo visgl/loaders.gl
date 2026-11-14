@@ -50,7 +50,6 @@ test('compress-utils direction-specific bindings copy atomic and streaming outpu
   expect(destroyedStreams).toBe(2);
 });
 
-
 test('compress-utils streaming transform destroys streams after failures', async () => {
   let destroyed = false;
   const module = {
@@ -113,9 +112,12 @@ test('compress-utils preload shares initialization, retries failures, and forwar
   expect(forwardedOptions).toEqual({expectedSize: 3});
 });
 
-test.each(
-  ['cancel', 'overflow', 'finish-overflow', 'input-error'] as const
-)('Incremental decompression releases resources on %s', async mode => {
+test.each([
+  'cancel',
+  'overflow',
+  'finish-overflow',
+  'input-error'
+] as const)('Incremental decompression releases resources on %s', async mode => {
   let destroyed = 0;
   let inputClosed = false;
   const loadModule = async () => ({

@@ -95,4 +95,33 @@ describe('Cesium ion authentication', () => {
       'https://assets.cesium.com/123/tileset.json'
     ]);
   });
+
+  test('refreshes the endpoint credential for child requests without exposing it to other origins', async () => {
+    let endpointRequests = 0;
+    const authorizations: Array<string | null> = [];
+    const fetchFunction: FetchLike = async (url, options) => {
+      if (url.startsWith('https://api.cesium.com/')) {
+        if (!url.endsWith('/endpoint')) return Response.json({type: '3DTILES'});
+        endpointRequests++;
+        return Response.json({
+          url: 'https://example.com/custom/root.json?version=1',
+          accessToken: `token-${endpointRequests}`
+        });
+      }
+      const authorization = new Headers(options?.headers).get('authorization');
+      authorizations.push(authorization);
+      return new Response(null, {status: authorization === 'Bearer token-1' ? 401 : 200});
+    };
+    const endpoint = await resolveCesiumIonTileset('account-token', 123, {fetch: fetchFunction});
+    const fetchAsset = createAuthenticatedFetch({
+      fetch: fetchFunction,
+      credentials: endpoint.credentials
+    });
+    expect(endpoint.url).toBe('https://example.com/custom/root.json?version=1');
+    expect((await fetchAsset(new URL('child.json', endpoint.url).href)).ok).toBe(true);
+    expect((await fetchAsset(new URL('tile.b3dm', endpoint.url).href)).ok).toBe(true);
+    await fetchAsset('https://other.example.com/tile.b3dm');
+    expect(authorizations).toEqual(['Bearer token-1', 'Bearer token-2', 'Bearer token-2', null]);
+    expect(endpointRequests).toBe(2);
+  });
 });

@@ -22,7 +22,8 @@ import type {
   Node3DIndexDocument
 } from '@loaders.gl/tiles-3d/i3s';
 import {load, encode, isBrowser} from '@loaders.gl/core';
-import {resolveCesiumIonTileset, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Geoid} from '@math.gl/earth';
 import {join} from 'path';
 import {randomUUID} from 'node:crypto';
@@ -258,12 +259,18 @@ export default class I3SConverter {
     this.nodePages.useWriteFunction(writeFileForSlpk);
 
     try {
-      const ionAsset = /^https:\/\/assets\.cesium\.com\/(\d+)\/tileset\.json(?:[?#]|$)/.exec(inputUrl);
+      const ionAsset = /^https:\/\/assets\.cesium\.com\/(\d+)\/tileset\.json(?:[?#]|$)/.exec(
+        inputUrl
+      );
       let tilesetUrl = inputUrl;
       if (ionAsset) {
-        const endpoint = await resolveCesiumIonTileset(this.options.token || ION_DEFAULT_TOKEN, ionAsset[1], {
-          fetch: getAuthenticatedFetch(this.loadOptions)
-        });
+        const endpoint = await resolveCesiumIonTileset(
+          this.options.token || ION_DEFAULT_TOKEN,
+          ionAsset[1],
+          {
+            fetch: getAuthenticatedFetch(this.loadOptions)
+          }
+        );
         tilesetUrl = endpoint.url;
         this.loadOptions.core = {
           ...this.loadOptions.core,
@@ -831,7 +838,6 @@ export default class I3SConverter {
     transformationMatrix: Matrix4
   ): Promise<NodeIndexDocument[]> {
     this._checkAddRefinementTypeForTile(sourceTile);
-
 
     let tileContent: Tiles3DTileContent | null = null;
     try {

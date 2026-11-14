@@ -167,10 +167,10 @@ describe('compression library bindings', () => {
     }
   });
 
-
-
   test('zstd-decompressor-fzstd decodes compress-utils Zstd output', async () => {
-    const compressed = await new ZstdCompressUtilsCompressor().compress(copyArrayBuffer(TEST_BYTES));
+    const compressed = await new ZstdCompressUtilsCompressor().compress(
+      copyArrayBuffer(TEST_BYTES)
+    );
     const output = await new ZstdFzstdDecompressor().decompress(compressed);
     expect(new Uint8Array(output)).toEqual(TEST_BYTES);
   });
@@ -182,8 +182,6 @@ describe('compression library bindings', () => {
     const output = await new BrotliShimDecompressor().decompress(compressed);
     expect(new Uint8Array(output)).toEqual(TEST_BYTES);
   });
-
-
 
   test('compress-utils binding streams incrementally', async () => {
     const compressor = new GZipCompressUtilsCompressor();
@@ -213,7 +211,6 @@ describe('compression library bindings', () => {
   ])('%s direction-specific bindings interoperate', async (_name, compressor, decompressor) => {
     await expectDirectionalRoundTrip(compressor, decompressor);
   });
-
 });
 
 /** Verifies interoperability between direction-specific implementations. */

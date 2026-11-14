@@ -1,5 +1,19 @@
 import {expect, test} from 'vitest';
-import {CompressionWorker, NoCompressor, NoDecompressor, DeflateCompressor, DeflateDecompressor, GZipCompressor, GZipDecompressor, LZ4Compressor, LZ4Decompressor, SnappyCompressor, SnappyDecompressor, ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression';
+import {
+  CompressionWorker,
+  NoCompressor,
+  NoDecompressor,
+  DeflateCompressor,
+  DeflateDecompressor,
+  GZipCompressor,
+  GZipDecompressor,
+  LZ4Compressor,
+  LZ4Decompressor,
+  SnappyCompressor,
+  SnappyDecompressor,
+  ZstdCompressor,
+  ZstdDecompressor
+} from '@loaders.gl/compression';
 import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream
@@ -20,7 +34,7 @@ test.each([
   [new GZipCompressor(), new GZipDecompressor()],
   [new LZ4Compressor(), new LZ4Decompressor()],
   [new SnappyCompressor(), new SnappyDecompressor()],
-  [new ZstdCompressor(), new ZstdDecompressor()],
+  [new ZstdCompressor(), new ZstdDecompressor()]
 ])('default codec round trip', async (compressor, decompressor) => {
   const input = getData().binaryData;
   const compressed = await compressor.compress(input);
@@ -31,7 +45,9 @@ test('gzip round trips split batches', async () => {
   const compressor = new GZipCompressor();
   const decompressor = new GZipDecompressor();
   const compressed = compressor.compressBatches([input.slice(0, 2), input.slice(2)]);
-  expect(await concatenateArrayBuffersAsync(decompressor.decompressBatches(compressed))).toEqual(input);
+  expect(await concatenateArrayBuffersAsync(decompressor.decompressBatches(compressed))).toEqual(
+    input
+  );
 });
 test('native decompression#real DecompressionStream formats', async () => {
   for (const format of Object.keys(

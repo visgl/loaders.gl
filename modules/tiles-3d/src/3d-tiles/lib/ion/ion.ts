@@ -57,10 +57,11 @@ export async function resolveCesiumIonTileset(
     resolvedAssetId = assets.items.find(item => item.type === '3DTILES')?.id;
   }
 
-  if (resolvedAssetId === undefined || resolvedAssetId === null) {
+  const selectedAssetId = resolvedAssetId;
+  if (selectedAssetId === undefined || selectedAssetId === null) {
     throw new Error('Cesium ion did not return a 3D Tiles asset.');
   }
-  const ionAssetMetadata = await getIonAssetMetadata(accessToken, resolvedAssetId, ionFetch);
+  const ionAssetMetadata = await getIonAssetMetadata(accessToken, selectedAssetId, ionFetch);
   const type = String(ionAssetMetadata.type || '');
   const endpointOptions = ionAssetMetadata.options as {url?: string} | undefined;
   const url = endpointOptions?.url || String(ionAssetMetadata.url || '');
@@ -73,7 +74,7 @@ export async function resolveCesiumIonTileset(
     origins: [new URL(url).origin],
     token: async ({reason}) => {
       if (reason !== 'refresh') return endpointToken;
-      const refreshed = await getIonAssetMetadata(accessToken, resolvedAssetId, ionFetch);
+      const refreshed = await getIonAssetMetadata(accessToken, selectedAssetId, ionFetch);
       const refreshedURL = (refreshed.options as {url?: string} | undefined)?.url || refreshed.url;
       if (typeof refreshedURL !== 'string' || new URL(refreshedURL).origin !== new URL(url).origin)
         throw new Error('Cesium ion changed the tileset endpoint origin');

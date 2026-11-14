@@ -268,11 +268,9 @@ const tileset = await load(endpoint.url, Tiles3DLoader, {
 });
 ```
 
-The Cesium ion loader uses the account token only with `api.cesium.com`, resolves the asset
-endpoint, and installs the returned endpoint token only for that endpoint's exact origin. The
-legacy `cesium-ion.accessToken` option remains the shortest Cesium-specific entry point;
-`createCesiumIonCredential` is useful when the ion REST request shares a larger application
-credential registry.
+The resolver sends the account token only to `api.cesium.com`. The returned credentials
+scope the endpoint token to the resolved origin and refresh it when the server rejects it.
+Pass the credentials to the tileset consumer so child requests can authenticate.
 
 ## I3S and deck.gl layers
 
