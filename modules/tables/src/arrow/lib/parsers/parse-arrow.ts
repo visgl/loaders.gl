@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {Table} from '@loaders.gl/core/schema';
 import {ArrowLoaderOptions} from '../../arrow-loader-types';
 import {convertArrowToTable, updateArrowTableSchema} from '@loaders.gl/core/schema-utils';
 import {paceBatchIterator, toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
@@ -16,12 +15,12 @@ const UNSUPPORTED_COMPRESSION_ERROR_REGEXP = /Record batch compression not imple
 export function parseArrowSync(arrayBuffer: ArrayBuffer, options?: {shape?: 'arrow'}): arrow.Table;
 export function parseArrowSync(
   arrayBuffer: ArrayBuffer,
-  options?: {shape?: 'arrow' | Exclude<Table['shape'], 'arrow-table'>}
-): arrow.Table | Exclude<Table, {shape: 'arrow-table'}>;
+  options?: {shape?: 'arrow' | Parameters<typeof convertArrowToTable>[1]}
+): arrow.Table | ReturnType<typeof convertArrowToTable>;
 export function parseArrowSync(
   arrayBuffer: ArrayBuffer,
-  options?: {shape?: 'arrow' | Exclude<Table['shape'], 'arrow-table'>}
-): arrow.Table | Exclude<Table, {shape: 'arrow-table'}> {
+  options?: {shape?: 'arrow' | Parameters<typeof convertArrowToTable>[1]}
+): arrow.Table | ReturnType<typeof convertArrowToTable> {
   const table = parseArrowTable(arrayBuffer);
   const shape = options?.shape;
   return !shape || shape === 'arrow' ? table : convertArrowToTable(table, shape);
