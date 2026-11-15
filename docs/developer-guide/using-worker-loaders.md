@@ -362,7 +362,7 @@ input buffers remain detached after cancellation; retain a copy if the applicati
 checks permit it. The worker stays leased for the iterator lifetime. Input is requested on demand;
 output batches are acknowledged before more output is produced.
 
-Built-in support includes CSV Arrow-table output, canonical Parquet Arrow/object-row batches,
+Built-in support includes native Arrow output for CSV, canonical Parquet Arrow/object-row batches,
 incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches, and OBJ, PLY, and PCD
 mesh batches. OBJ point-cloud and PLY vertex paths support incremental input; PCD currently
 collects the complete input before returning output batches.

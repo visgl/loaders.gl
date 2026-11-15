@@ -5,7 +5,7 @@
 /** Default output shape for CSV row-table parsing. */
 export const DEFAULT_CSV_SHAPE = 'object-row-table' as const;
 
-/** Default CSV parser options shared by row-table and Arrow-table code paths. */
+/** Default CSV parser options shared by row-table and native Arrow code paths. */
 export const DEFAULT_CSV_OPTIONS = {
   shape: DEFAULT_CSV_SHAPE,
   optimizeMemoryUsage: false,

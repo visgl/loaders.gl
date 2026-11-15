@@ -20,7 +20,7 @@ test('DracoLoader#removed Arrow loader exports', () => {
     'parser entry point does not export DracoArrowLoader'
   ).toBeFalsy();
 });
-test('DracoLoader#parse(mainthread, shape: arrow-table)', async () => {
+test('DracoLoader#parse(mainthread, shape: arrow)', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;
   }
@@ -44,7 +44,7 @@ test('DracoLoader#parse(mainthread) defaults to Arrow table', async () => {
   validateDracoMeshArrowTable(table);
   expect(table.getChild('POSITION'), 'POSITION attribute was found').toBeTruthy();
 });
-test('DracoLoader#draco3d npm package with shape: arrow-table', async () => {
+test('DracoLoader#draco3d npm package with shape: arrow', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;
   }
@@ -60,7 +60,7 @@ test('DracoLoader#draco3d npm package with shape: arrow-table', async () => {
   validateDracoMeshArrowTable(table);
   expect(data.getChild('POSITION'), 'POSITION attribute was found').toBeTruthy();
 });
-test('DracoLoader#parse custom attributes(mainthread, shape: arrow-table)', async () => {
+test('DracoLoader#parse custom attributes(mainthread, shape: arrow)', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;
   }

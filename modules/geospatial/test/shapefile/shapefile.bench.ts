@@ -20,12 +20,16 @@ export default async function shapefileLoaderBench(suite) {
   // Add the tests
   suite.group('ShapefileLoader');
 
-  suite.addAsync('ShapefileLoader load arrow-table geoarrow.wkb', rowBenchmarkOptions, async () => {
-    await load(arrayBuffer.slice(0), ShapefileLoader, {
-      core: {worker: false},
-      shapefile: {shape: 'arrow', geoarrowEncoding: 'geoarrow.wkb'}
-    });
-  });
+  suite.addAsync(
+    'ShapefileLoader load native Arrow geoarrow.wkb',
+    rowBenchmarkOptions,
+    async () => {
+      await load(arrayBuffer.slice(0), ShapefileLoader, {
+        core: {worker: false},
+        shapefile: {shape: 'arrow', geoarrowEncoding: 'geoarrow.wkb'}
+      });
+    }
+  );
 
   suite.addAsync('ShapefileLoader load geojson-table', rowBenchmarkOptions, async () => {
     await load(arrayBuffer.slice(0), ShapefileLoader, {

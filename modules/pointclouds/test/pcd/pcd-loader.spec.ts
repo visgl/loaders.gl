@@ -91,7 +91,7 @@ test('PCDLoader#parse defaults to Arrow table', async () => {
 test('PCDLoader#Arrow output supports workers', () => {
   expect(canParseWithWorker(PCDLoader, {core: {worker: true}, pcd: {shape: 'arrow'}})).toBe(true);
 });
-test('PCDLoader#parse(shape: arrow-table)', async () => {
+test('PCDLoader#parse(shape: arrow)', async () => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
     core: {worker: false},
     pcd: {shape: 'arrow'}
@@ -120,7 +120,7 @@ test('PCDLoader#parse(shape: arrow-table)', async () => {
     isSigned: false
   });
 });
-test('PCDLoader#parseInBatches(ascii, arrow-table)', async () => {
+test('PCDLoader#parseInBatches(ascii, arrow)', async () => {
   const response = await fetchFile(PCD_ASCII_URL);
   const batches = await parseInBatches(response, PCDLoader, {
     core: {worker: false, batchSize: 100},
@@ -161,7 +161,7 @@ test('PCDLoader#parse(binary with counted fields)', async () => {
     1, 2, 3, 4, 5, 6
   ]);
 });
-test('PCDLoader#parseInBatches(binary with counted fields, arrow-table)', async () => {
+test('PCDLoader#parseInBatches(binary with counted fields, arrow)', async () => {
   const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
   const batches = await parseInBatches([binaryArrayBuffer], PCDLoader, {
     core: {worker: false, batchSize: 1},

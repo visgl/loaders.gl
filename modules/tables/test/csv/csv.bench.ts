@@ -187,7 +187,7 @@ async function addCSVArrowTableWorkerBenchmarks(
 
     let workerBench = bench.group(`CSV Worker Decode - Arrow - ${scenario.name}`);
     workerBench = workerBench.addAsync(
-      'CSVLoader main-thread arrow-table#parse',
+      'CSVLoader main-thread native Arrow#parse',
       {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
       async () =>
         await parse(scenario.arrayBuffer.slice(0), CSVLoader, {
@@ -197,7 +197,7 @@ async function addCSVArrowTableWorkerBenchmarks(
 
     for (const {loader, workerCount} of workerLoaders) {
       workerBench = workerBench.addAsync(
-        `CSVLoader worker arrow-table workers=${workerCount}#parse`,
+        `CSVLoader worker native Arrow workers=${workerCount}#parse`,
         {
           ...BENCHMARK_OPTIONS,
           multiplier: scenario.rowCount * workerCount,

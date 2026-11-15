@@ -794,8 +794,7 @@ named `nodes` and `edges` Arrow tables. Applications that consume `graph.nodes` 
 `graph.edges`, including plain graph-layer integrations, must explicitly select
 `{graphml: {shape: 'plain-graph-data'}}` or `{dot: {shape: 'plain-graph-data'}}`.
 
-For Arrow output, read `graph.tables[0].table.data` and `graph.tables[1].table.data`
-after checking the collection and table discriminators. Structural identifiers are
+For Arrow output, read the native tables from `graph.tables[index].table`. Structural identifiers are
 strings; GraphML `long` attributes become exact `bigint` values. See the
 [graphs module](./modules/graphs/README.md) for schemas and object-row output.
 
@@ -817,7 +816,8 @@ See [native Apache Arrow output](./modules/core/schema/table-guide.md#native-apa
 for batch metadata and examples. Pass the native Arrow table to writers. Access columns directly
 on the returned value and use `numRows` for batch row counts. Schema and field metadata use
 Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
-JSON batch paths are available through `batch.metadata.get('jsonpath')`.
+JSON batch paths are available through `batch.metadata.get('jsonpath')`. Use the returned
+`RecordBatch` directly in place of the removed `Batch.recordBatch` field.
 
 GeoPackage, FlatGeobuf, GML, Parquet, GeoParquet, and the SPLAT, KSPLAT, and SPZ loaders now
 use `shape: 'arrow'` for native Arrow output. Use `table.numRows` and `table.getChild(name)`
@@ -905,14 +905,14 @@ native Arrow Table at `graph.tables[index].table`. Existing code that reads
 
 #### MLT output defaults
 
-- `MLTLoader` and `MLTLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
+- `MLTLoader` now returns a native Arrow table with WKB-compatible GeoArrow geometry by
    default. Applications that expect the previous GeoJSON table default must set
    `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
 
 #### MVT source output defaults
 
-- `MVTLoader` now returns tiles in the Arrow-table shape by default, matching the source's
-   columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
+- `MVTLoader` returns tiles as native Apache Arrow tables by default. Set
+   `mvt.shape: 'geojson-table'` for object-row GeoJSON tiles.
 - The top-level `gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
 
 #### PMTiles output shapes

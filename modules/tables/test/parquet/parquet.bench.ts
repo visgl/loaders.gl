@@ -446,7 +446,7 @@ function makeObjectRowTable(
   };
 }
 
-/** Creates equivalent Arrow-table decode cases for the maintained Parquet implementations. */
+/** Creates equivalent native Arrow decode cases for the maintained Parquet implementations. */
 function createParquetBenchmarkImplementations(
   typescriptLoader: LoaderWithParser,
   wasmLoader: LoaderWithParser

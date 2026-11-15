@@ -20,7 +20,7 @@ test('SHPLoader#load polygons', async () => {
   expect(result.header, 'A header received').toBeTruthy();
   expect(result.geometries.length, 'Correct number of rows received').toBe(3);
 });
-test('SHPLoader#defaults to arrow-table output', async () => {
+test('SHPLoader#defaults to native Arrow output', async () => {
   const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader, {core: {worker: false}});
   expect(result).toHaveProperty('numRows');
   expect(result.numRows).toBe(3);

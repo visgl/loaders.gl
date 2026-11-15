@@ -3,9 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {Schema} from './schema';
-// import type {RecordBatch} from 'apache-arrow';
-
-type ApacheRecordBatch = unknown;
 
 /**
  * A batch of data (or metadata/schema), from a streaming loader
@@ -23,8 +20,6 @@ export type Batch<MetadataT = unknown> = {
   schema?: Schema;
   /** Data in this batch */
   data?: unknown;
-  /**  If this is an arrow table. @deprecated Use `data` */
-  recordBatch?: ApacheRecordBatch;
   /** Length of data in this batch */
   length: number;
 
