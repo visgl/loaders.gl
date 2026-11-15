@@ -45,7 +45,7 @@ export type GeoArrowConvertFromOptions = {
  * generic Arrow conversion, preserving any existing schema metadata on the source table.
  */
 export function convertTableToGeoArrow(
-  table: Table | arrow.Table,
+  table: Exclude<Table, ArrowTable> | arrow.Table,
   options?: GeoArrowConvertFromOptions
 ): arrow.Table {
   const encoding = resolveGeoArrowEncoding(options);
@@ -53,17 +53,14 @@ export function convertTableToGeoArrow(
   if (!('shape' in table)) return convertArrowTableToGeoArrow(table, encoding, options);
 
   switch (table.shape) {
-    case 'arrow-table':
-      return convertArrowTableToGeoArrow(table.data, encoding, options);
-
     case 'geojson-table':
-      return convertFeatureCollectionToGeoArrowTable(table, options).data;
+      return convertFeatureCollectionToGeoArrowTable(table, options);
 
     default:
       if (encoding) {
         const featureTable = convertGenericGeometryTable(table, options);
         if (featureTable) {
-          return featureTable.data;
+          return featureTable;
         }
       }
       return convertArrowTableToGeoArrow(convertTableToArrow(table, options), encoding, options);
@@ -71,46 +68,40 @@ export function convertTableToGeoArrow(
 }
 
 /**
- * Converts a GeoJSON feature collection table to a loaders.gl Arrow table with WKB geometry metadata.
+ * Converts a GeoJSON feature collection table to an Apache Arrow table with GeoArrow geometry metadata.
  */
 export function convertFeatureCollectionToGeoArrowTable(
   table: GeoJSONTable,
   options?: GeoArrowConvertFromOptions
-): ArrowTable {
+): arrow.Table {
   const encoding = resolveGeoArrowEncoding(options);
   const arrowTable = convertGISFeatureCollectionToGeoArrowTable(table, {
     encoding: getGeoJSONStagingEncoding(encoding),
     geometryColumnName: options?.geoarrow?.geometryColumnName
   });
-  return {
-    shape: 'arrow-table',
-    data: convertGeoJSONArrowTableToTarget(arrowTable.data, encoding, options)
-  };
+  return convertGeoJSONArrowTableToTarget(arrowTable.data, encoding, options);
 }
 
 /**
- * Converts GeoJSON features into a loaders.gl Arrow table with WKB geometry metadata.
+ * Converts GeoJSON features into an Apache Arrow table with GeoArrow geometry metadata.
  */
 export function convertFeaturesToGeoArrowTable(
   features: Feature[],
   options?: GeoArrowConvertFromOptions
-): ArrowTable {
+): arrow.Table {
   const encoding = resolveGeoArrowEncoding(options);
   const arrowTable = convertGISFeaturesToGeoArrowTable(features, {
     encoding: getGeoJSONStagingEncoding(encoding),
     geometryColumnName: options?.geoarrow?.geometryColumnName
   });
-  return {
-    shape: 'arrow-table',
-    data: convertGeoJSONArrowTableToTarget(arrowTable.data, encoding, options)
-  };
+  return convertGeoJSONArrowTableToTarget(arrowTable.data, encoding, options);
 }
 
 /** Converts generic row and column tables when they contain GeoJSON geometry values. */
 function convertGenericGeometryTable(
   table: Exclude<Table, ArrowTable | GeoJSONTable>,
   options?: GeoArrowConvertFromOptions
-): ArrowTable | null {
+): arrow.Table | null {
   const geometryColumn = options?.geoarrow?.geometryColumn || 'geometry';
   const rows = getGenericTableRows(table);
   if (!rows.some(row => isGeoJSONGeometry(row[geometryColumn]))) {

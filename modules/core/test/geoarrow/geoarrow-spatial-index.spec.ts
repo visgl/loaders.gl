@@ -57,7 +57,7 @@ beforeAll(() => {
   const table = convertFeaturesToGeoArrowTable(
     geometries.map(geometry => ({type: 'Feature', properties: {}, geometry}))
   );
-  index = new GeoArrowSpatialIndex(table.data.getChild('geometry')!, 'geoarrow.wkb', [
+  index = new GeoArrowSpatialIndex(table.getChild('geometry')!, 'geoarrow.wkb', [
     1,
     '1',
     2,
@@ -96,7 +96,7 @@ test('native sliced vectors use local row indices and deterministic nearest ties
       geometry: {type: 'Point', coordinates: [value, 0]}
     }))
   );
-  const native = convertGeoArrowGeometry(table.data, 'geoarrow.point', {coordinates: 'separated'});
+  const native = convertGeoArrowGeometry(table, 'geoarrow.point', {coordinates: 'separated'});
   const column = native.getChild('geometry')!.slice(1);
   const slicedIndex = new GeoArrowSpatialIndex(column, 'geoarrow.point');
   expect(slicedIndex.getClosestFeature([3, 0])?.rowIndex).toBe(0);
@@ -143,7 +143,7 @@ test.each([
   }
 ] as Geometry[])('nearest $type handles multipart and degenerate segments', geometry => {
   const table = convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}]);
-  const query = new GeoArrowSpatialIndex(table.data.getChild('geometry')!, 'geoarrow.wkb');
+  const query = new GeoArrowSpatialIndex(table.getChild('geometry')!, 'geoarrow.wkb');
   expect(query.getClosestFeature([0, 0])).toEqual({rowIndex: 0, coordinate: [2, 0], distance: 2});
 });
 
@@ -152,7 +152,7 @@ test('null geometries and empty collections have no nearest match', () => {
     {type: 'Feature', properties: {}, geometry: null},
     {type: 'Feature', properties: {}, geometry: {type: 'GeometryCollection', geometries: []}}
   ]);
-  const query = new GeoArrowSpatialIndex(table.data.getChild('geometry')!, 'geoarrow.wkb');
+  const query = new GeoArrowSpatialIndex(table.getChild('geometry')!, 'geoarrow.wkb');
   expect(query.getClosestFeature([0, 0])).toBeNull();
   expect(query.getFeatureRowsInExtent([-1, -1, 1, 1])).toEqual([]);
 });
@@ -162,7 +162,7 @@ test('WKT queries normalize serialized geometry without losing row alignment', (
     {type: 'Feature', properties: {}, geometry: null},
     {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [5, 6]}}
   ]);
-  const table = convertGeoArrowGeometry(source.data, 'geoarrow.wkt');
+  const table = convertGeoArrowGeometry(source, 'geoarrow.wkt');
   const query = new GeoArrowSpatialIndex(table.getChild('geometry')!, 'geoarrow.wkt', [
     'empty',
     'point'
@@ -193,7 +193,7 @@ test('exact queries work on native sliced vectors and normalized WKT', () => {
     }))
   );
   for (const encoding of ['geoarrow.point', 'geoarrow.wkt'] as const) {
-    const converted = convertGeoArrowGeometry(table.data, encoding);
+    const converted = convertGeoArrowGeometry(table, encoding);
     const sliced = new GeoArrowSpatialIndex(converted.getChild('geometry')!.slice(1), encoding);
     expect(sliced.getFeatureRowsAtCoordinate([2, 0])).toEqual([0]);
     expect(sliced.getFeatureRowsIntersectingExtent([3, -1, 5, 1])).toEqual([1]);

@@ -255,7 +255,7 @@ test('dense-union validation covers absent buffers, unknown IDs, invalid offsets
 test('field capabilities and negotiation cover metadata, native selection, conversion, and mismatches', () => {
   const source = convertFeaturesToGeoArrowTable([
     {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2, 3]}}
-  ]).data;
+  ]);
   const native = convertGeoArrowGeometry(source, 'geoarrow.point', {
     coordinates: 'separated',
     dimension: 'xyz'
@@ -295,7 +295,7 @@ test('field capabilities and negotiation cover metadata, native selection, conve
           ]
         }
       }
-    ]).data,
+    ]),
     'geoarrow.linestring',
     {offsetType: 'int64'}
   );
