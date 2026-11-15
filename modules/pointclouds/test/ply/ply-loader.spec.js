@@ -84,7 +84,7 @@ test('PLYLoader#parse(textFile) defaults to Arrow table', async () => {
     schemaName: 'PLYLoader IndexedMesh table'
   });
 });
-test('PLYLoader#parse(shape: arrow-table)', async () => {
+test('PLYLoader#parse(shape: arrow)', async () => {
   const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {
     ply: {shape: 'arrow'}
   });
@@ -127,7 +127,7 @@ test('PLYLoader#parse(colorFormat) returns normalized colors', () => {
   expect(Array.from(tableColor)[1]).toBeCloseTo(128 / 255, 6);
   expect(Array.from(tableColor)[2]).toBe(0);
 });
-test('PLYLoader#parse(shape: arrow-table, pointCloud)', async () => {
+test('PLYLoader#parse(shape: arrow, pointCloud)', async () => {
   const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {
     ply: {shape: 'arrow', pointCloud: true}
   });
@@ -254,7 +254,7 @@ test('PLYLoader#parse(gaussian splat binary fixture)', async () => {
   expect(table.getChild('scale_0'), 'scale_0 column was preserved').toBeTruthy();
   expect(table.getChild('rot_3'), 'rot_3 column was preserved').toBeTruthy();
 });
-test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', async () => {
+test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow)', async () => {
   const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), PLYLoader, {
     core: {batchSize: 400},
@@ -274,7 +274,7 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', asy
   }
   expect(batchRowCounts, 'binary PLY emits requested Arrow batches').toEqual([400, 400, 200]);
 });
-test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk boundaries)', async () => {
+test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow, chunk boundaries)', async () => {
   const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const batches = await parseInBatches(makeChunkIterator(arrayBuffer, 777), PLYLoader, {
@@ -288,7 +288,7 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk
   }
   expect(batchRowCounts, 'batches span input chunk boundaries').toEqual([333, 333, 333, 1]);
 });
-test('PLYLoader#parseInBatches(ascii point cloud, arrow-table)', async () => {
+test('PLYLoader#parseInBatches(ascii point cloud, arrow)', async () => {
   const batches = await parseInBatches(makeTextIterator(ASCII_POINT_CLOUD_PLY), PLYLoader, {
     core: {batchSize: 2},
     ply: {shape: 'arrow'}
@@ -303,7 +303,7 @@ test('PLYLoader#parseInBatches(ascii point cloud, arrow-table)', async () => {
   }
   expect(batchRowCounts, 'ASCII point cloud emits requested Arrow batches').toEqual([2, 1]);
 });
-test('PLYLoader#parseInBatches(mesh PLY, arrow-table, pointCloud)', async () => {
+test('PLYLoader#parseInBatches(mesh PLY, arrow, pointCloud)', async () => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const sourceText = await response.text();
   const batches = await parseInBatches(makeTextIterator(sourceText), PLYLoader, {
@@ -320,7 +320,7 @@ test('PLYLoader#parseInBatches(mesh PLY, arrow-table, pointCloud)', async () => 
   }
   expect(batchRowCounts, 'pointCloud mode streams only vertex rows').toEqual([10, 10, 4]);
 });
-test('PLYLoader#parseInBatches(mesh PLY, arrow-table)', async () => {
+test('PLYLoader#parseInBatches(mesh PLY, arrow)', async () => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const sourceText = await response.text();
   const batches = await parseInBatches(makeTextIterator(sourceText), PLYLoader, {
@@ -338,11 +338,11 @@ test('PLYLoader#parseInBatches(mesh PLY, arrow-table)', async () => {
     })();
   } catch (error) {
     expect(String(error), 'mesh PLY requires pointCloud mode for Arrow table streaming').toMatch(
-      /PLY arrow-table batch parsing requires one vertex element/
+      /PLY Arrow batch parsing requires one vertex element/
     );
   }
 });
-test('PLYLoader#parseInBatches(binary vertex list properties, arrow-table)', async () => {
+test('PLYLoader#parseInBatches(binary vertex list properties, arrow)', async () => {
   const arrayBuffer = makeBinaryVertexListPLY();
   const elementTables = parsePLYToElementTables(arrayBuffer);
   const vertexTable = elementTables.elements[0].table;

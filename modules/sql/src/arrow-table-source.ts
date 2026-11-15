@@ -44,7 +44,7 @@ export class ArrowTableSource extends DataSource<Table, ArrowTableSourceOptions>
     throwIfAborted(options.signal);
     const schema = convertArrowToSchema(this.data.schema);
     return createScanQueryMetadata({
-      sourceType: 'arrow-table',
+      sourceType: 'arrow',
       queryType: 'table',
       execution: {status: 'supported', method: 'read'},
       schema,

@@ -252,7 +252,7 @@ describe('PLY element-table parser coverage', () => {
         {pointCloud: true, batchSize: 1}
       );
       expect(batches).toHaveLength(1);
-      expect(batches[0].topology).toBe('point-list');
+      expect(batches[0].schema.metadata.get('topology')).toBe('point-list');
     }
   });
 

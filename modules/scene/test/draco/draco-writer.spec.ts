@@ -3,7 +3,7 @@ import {validateWriter, validateMeshCategoryData} from 'test/common/conformance'
 import {DracoLoader, DracoWriterOptions} from '@loaders.gl/scene';
 import {DracoWriter, DracoWriterWorker, encodeDracoBatch} from '@loaders.gl/scene/draco-writer';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
-// import {getMeshSize} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import draco3d from 'draco3d';
 import {isBrowser, processOnWorker, destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {cloneTypeArray} from './test-utils/copyTypedArray';
@@ -53,25 +53,27 @@ async function parseMesh(data: any, options: any = {}) {
 test('DracoWriter#loader conformance', () => {
   validateWriter(DracoWriter, 'DracoWriter');
 });
-test('DracoWriter#preserves normalized MeshAttribute descriptors', async () => {
-  const compressedMesh = await encode(
-    {
-      attributes: {
-        POSITION: {
-          value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
-          size: 3
-        },
-        COLOR_0: {
-          value: new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255]),
-          size: 4,
-          normalized: true
-        }
-      },
-      indices: {value: new Uint16Array([0, 1, 2]), size: 1}
-    },
-    DracoWriter,
-    {useLocalLibraries: true}
-  );
+test.each([
+  'mesh',
+  'arrow'
+] as const)('DracoWriter preserves normalized attributes from %s', async shape => {
+  const attributes = {
+    POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3},
+    COLOR_0: {
+      value: new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255]),
+      size: 4,
+      normalized: true
+    }
+  };
+  const mesh = {
+    attributes,
+    indices: {value: new Uint16Array([0, 1, 2]), size: 1},
+    schema: deduceMeshSchema(attributes),
+    topology: 'triangle-list' as const,
+    mode: 4
+  };
+  const input = shape === 'arrow' ? convertMeshToArrowTable(mesh) : mesh;
+  const compressedMesh = await encode(input, DracoWriter, {useLocalLibraries: true});
   const decodedMesh = await parseMesh(compressedMesh, {
     core: {worker: false},
     useLocalLibraries: true
