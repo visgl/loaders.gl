@@ -12,3 +12,18 @@ test.each(['dist.min.js', 'dist.dev.js'])('core bundle %s exports compareLoaderO
   runInNewContext(source, scope);
   expect(scope.loaders).toHaveProperty('compareLoaderOptions', expect.any(Function));
 });
+
+test.each([
+  'crypto/dist/dist.min.js',
+  'tiles/dist/mvt/dist.min.js'
+])('%s preserves compareLoaderOptions when loaded after core', bundle => {
+  const scope = {console, TextEncoder, TextDecoder, URL, setTimeout, clearTimeout, loaders: {}};
+  const coreSource = readFileSync(new URL('../dist/dist.min.js', import.meta.url), 'utf8');
+  const addonSource = readFileSync(new URL(`../../${bundle}`, import.meta.url), 'utf8');
+  runInNewContext(coreSource, scope);
+  const {compareLoaderOptions} = scope.loaders as {compareLoaderOptions: unknown};
+
+  runInNewContext(addonSource, scope);
+  expect(compareLoaderOptions).toBeTypeOf('function');
+  expect(scope.loaders).toHaveProperty('compareLoaderOptions', compareLoaderOptions);
+});
