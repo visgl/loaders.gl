@@ -59,7 +59,7 @@
 
 ## Ready for merge
 
-- Add or update TSDoc for every new class, function, method, and field.
+- Ensure new or modified source code follows the TSDoc guidance below.
 - Update docs when behavior, public API, examples, or migration guidance changed.
 - Make sure `yarn.lock` is up to date by running `yarn` in the repo root.
 - Run build: `yarn build`
@@ -73,10 +73,17 @@
 - TypeScript strict mode
 - Single quotes, no semicolons
 - Never abbreviate variables, always type out the full name in camelCase (variables, functions, fields), PascalCase (types), CAPITAL_CASE (constant)
-- Add TSDoc to all new classes, functions, methods, fields.
 - Prefer verbNoun structure for function and method names.
 - Prefer `readonly` fields over getters for fixed or constructor-derived values.
 - We end JavaScript statements with semicolons. Do not remove semicolons.
+
+## Documentation
+
+- Describe the current API, including its features, behavior, and usage. Record what changed in release notes and put migration instructions in the upgrade guide.
+
+## Source code
+
+- Add TSDoc comments to every declaration and member, including internal classes, interfaces, types, functions, methods, fields, and constants.
 
 ## Notes
 
