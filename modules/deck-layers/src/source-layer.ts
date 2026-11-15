@@ -10,6 +10,7 @@ import {
   type LayersList
 } from '@deck.gl/core';
 import type {Tile3DLayerProps} from '@deck.gl/geo-layers';
+import {compareLoaderOptions} from '@loaders.gl/core';
 import type {
   DataSourceOptions,
   ImageSource,
@@ -176,7 +177,7 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
       changeFlags.dataChanged ||
       props.loader !== oldProps.loader ||
       props.loaders !== oldProps.loaders ||
-      props.sourceOptions !== oldProps.sourceOptions ||
+      !compareLoaderOptions(props.sourceOptions, oldProps.sourceOptions) ||
       props.layers !== oldProps.layers
     ) {
       void this.resolveSource(props);

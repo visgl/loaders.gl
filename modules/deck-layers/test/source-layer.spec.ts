@@ -351,6 +351,21 @@ describe('source classification and metadata defaults', () => {
 });
 
 describe('SourceLayer lifecycle and dispatch', () => {
+  test('resolves again only when the source options change', () => {
+    const onProgress = () => {};
+    const oldProps = {sourceOptions: {core: {worker: false}, onProgress}};
+    const layer = createTestLayer({data: new Blob()});
+    const resolveSource = vi.spyOn(layer, 'resolveSource').mockResolvedValue(undefined);
+    const props = {sourceOptions: {core: {worker: false}, onProgress}};
+
+    layer.updateState({props, oldProps, changeFlags: {propsChanged: true}});
+    expect(resolveSource).not.toHaveBeenCalled();
+
+    const changedProps = {sourceOptions: {...props.sourceOptions, onProgress: () => {}}};
+    layer.updateState({props: changedProps, oldProps, changeFlags: {propsChanged: true}});
+    expect(resolveSource).toHaveBeenCalledExactlyOnceWith(changedProps);
+  });
+
   test('dispatches all normalized runtime families', () => {
     const runtimeCases = [
       [{getMetadata() {}, getImage() {}}, 'image', 'ImageSourceLayer'],
