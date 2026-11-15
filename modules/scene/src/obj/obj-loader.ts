@@ -98,11 +98,7 @@ async function* parseOBJPointCloudLinesInBatches(
   }
 }
 
-function* makeOBJPointCloudBatches(
-  vertexLines: string[],
-  options?: OBJLoaderOptions,
-  batchSize?: number
-): Iterable<Table> {
+function* makeOBJPointCloudBatches(vertexLines: string[], batchSize?: number): Iterable<Table> {
   const normalizedBatchSize = batchSize || vertexLines.length || 1;
 
   for (let rowIndex = 0; rowIndex < vertexLines.length; rowIndex += normalizedBatchSize) {
