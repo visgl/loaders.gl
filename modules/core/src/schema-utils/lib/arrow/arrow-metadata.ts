@@ -55,13 +55,24 @@ function mergeTypeMetadata(previous: DataType, next: DataType): DataType {
   return next;
 }
 
+/** Snapshots a batch's schema and metadata while retaining its data buffers and row count. */
+function snapshotArrowBatch(batch: arrow.RecordBatch, schema: arrow.Schema): arrow.RecordBatch {
+  const snapshot = new arrow.RecordBatch(
+    snapshotArrowSchema(schema),
+    batch.data,
+    new Map(batch.metadata)
+  );
+  // Arrow reconstructs the Struct length from its columns, which are absent in zero-column batches.
+  if (snapshot.numRows !== batch.numRows) {
+    Object.defineProperty(snapshot, 'data', {value: batch.data});
+  }
+  return snapshot;
+}
+
 /** Applies a table schema snapshot to its batches while retaining batch-local custom metadata. */
 export function updateArrowTableSchema(table: arrow.Table, schema: arrow.Schema): arrow.Table {
   const snapshot = snapshotArrowSchema(schema);
-  const batches = table.batches.map(
-    batch =>
-      new arrow.RecordBatch(snapshotArrowSchema(snapshot), batch.data, new Map(batch.metadata))
-  );
+  const batches = table.batches.map(batch => snapshotArrowBatch(batch, snapshot));
   // Preserve declared schemas even for schema-only empty tables.
   return new arrow.Table(
     snapshot,
@@ -69,16 +80,24 @@ export function updateArrowTableSchema(table: arrow.Table, schema: arrow.Schema)
   );
 }
 
+/** Updates native Arrow metadata while preserving independent batch snapshots. */
+export function updateNativeArrowTableMetadata(
+  table: arrow.Table,
+  metadata: Record<string, string>
+): arrow.Table {
+  const schema = new arrow.Schema(
+    table.schema.fields,
+    new Map([...table.schema.metadata, ...Object.entries(metadata)])
+  );
+  return updateArrowTableSchema(table, schema);
+}
+
 /** Updates an Arrow wrapper and its underlying table together without mutating either input. */
 export function updateArrowTableMetadata<T extends ArrowTable>(
   table: T,
   metadata: Record<string, string>
 ): T {
-  const schema = new arrow.Schema(
-    table.data.schema.fields,
-    new Map([...table.data.schema.metadata, ...Object.entries(metadata)])
-  );
-  const data = updateArrowTableSchema(table.data, schema);
+  const data = updateNativeArrowTableMetadata(table.data, metadata);
   return {...table, data, schema: serializeArrowSchema(data.schema)};
 }
 
@@ -95,9 +114,7 @@ export async function makeArrowTableFromBatches(
   const collected: arrow.RecordBatch[] = [];
   for await (const batch of batches) {
     schema = mergeArrowSchemas(schema, batch.schema);
-    collected.push(
-      new arrow.RecordBatch(snapshotArrowSchema(batch.schema), batch.data, new Map(batch.metadata))
-    );
+    collected.push(snapshotArrowBatch(batch, batch.schema));
   }
   return schema ? new arrow.Table(schema, collected) : null;
 }

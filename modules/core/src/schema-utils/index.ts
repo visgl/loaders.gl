@@ -173,6 +173,7 @@ export {
   mergeArrowSchemas,
   updateArrowTableSchema,
   updateArrowTableMetadata,
+  updateNativeArrowTableMetadata,
   makeArrowMetadataBatch,
   makeArrowTableFromBatches
 } from './lib/arrow/arrow-metadata';

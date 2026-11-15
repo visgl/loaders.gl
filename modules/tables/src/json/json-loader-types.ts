@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
 import type {Batch, TableBatch} from '@loaders.gl/core/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {JSON_WORKER_URL} from './json-worker-url';
@@ -47,7 +48,7 @@ async function preload() {
 /** Metadata-only loader for JSON documents, including tabular JSON and streaming table extraction. */
 export const JSONLoader = {
   dataType: null as unknown,
-  batchType: null as unknown as TableBatch | MetadataBatch | JSONBatch,
+  batchType: null as unknown as TableBatch | RecordBatch | MetadataBatch | JSONBatch,
 
   ...JSONFormat,
   version: VERSION,
@@ -66,4 +67,8 @@ export const JSONLoader = {
     }
   },
   preload
-} as const satisfies Loader<unknown, TableBatch | MetadataBatch | JSONBatch, JSONLoaderOptions>;
+} as const satisfies Loader<
+  unknown,
+  TableBatch | RecordBatch | MetadataBatch | JSONBatch,
+  JSONLoaderOptions
+>;

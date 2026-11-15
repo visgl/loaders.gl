@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table as ArrowTable} from 'apache-arrow';
+import {isNativeArrowTable} from '@loaders.gl/core/schema-utils';
 import type {
   ArrowTable as WrappedArrowTable,
   ArrowTableBatch,
@@ -18,14 +19,9 @@ export type TableWriterBatch = Exclude<TableBatch, ArrowTableBatch>;
 
 /** Distinguishes native Arrow from the row and column layouts accepted by writers. */
 export function isNativeWriterTable(table: TableWriterInput): table is ArrowTable {
-  if (!('shape' in table)) return true;
-  switch (table.shape) {
-    case 'object-row-table':
-    case 'array-row-table':
-    case 'columnar-table':
-    case 'geojson-table':
-      return false;
-    default:
-      throw new Error('Pass the Apache Arrow table directly to the writer');
+  if (isNativeArrowTable(table)) return true;
+  if ('data' in table && isNativeArrowTable(table.data)) {
+    throw new Error('Pass the Apache Arrow table directly to the writer');
   }
+  return false;
 }

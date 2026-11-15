@@ -70,7 +70,7 @@ function parseNDJSONText(
         schema: options?.ndjson?.schema,
         arrowConversion: options?.ndjson?.arrowConversion,
         log: getLoaderLog(options)
-      }).data
+      })
     : table;
 }
 
@@ -110,7 +110,7 @@ function getNDJSONShape(options?: NDJSONLoaderOptions): NDJSONShape {
 /** Validates shape selection and options that require Arrow output. */
 function validateNDJSONArrowOptions(options?: NDJSONLoaderOptions): void {
   const shape = getNDJSONShape(options);
-  if ((shape as string) === 'arrow-table') {
+  if (!['arrow', 'object-row-table', 'array-row-table'].includes(shape)) {
     throw new Error('NDJSONLoader: use ndjson.shape "arrow" for native Arrow output');
   }
   const hasArrowOnlyOptions = Boolean(options?.ndjson?.schema || options?.ndjson?.arrowConversion);

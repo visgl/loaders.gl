@@ -64,9 +64,7 @@ test.each([
   );
   expect(mainBatches).not.toHaveBeenCalled();
   for (const [payload] of deserialize.mock.calls)
-    expect((payload as any).data?.transport || (payload as any).transport).toMatch(
-      /arrow-js|shp-wkb|shapefile-header/
-    );
+    expect((payload as any).transport).toMatch(/^(arrow-record-batch|shp-wkb|shapefile-header)$/);
   const atomic: any = await parse(buffer.slice(0), SHPLoader, {...workerOptions, shp: {shape}});
   if (shape === 'wkb') expect(atomic).toEqual(expected);
   else expect(atomic.numRows).toBe(expected.numRows);

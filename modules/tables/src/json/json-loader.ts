@@ -4,6 +4,7 @@
 
 import {serializeBinaryJSON, deserializeBinaryJSON} from './lib/json-binary-transport';
 import {serializeJSONWorkerBatch, deserializeJSONWorkerResult} from './lib/json-worker-transport';
+import type {RecordBatch} from 'apache-arrow';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
@@ -32,7 +33,7 @@ export const JSONLoaderWithParser = {
   parseInBatches
 } as const satisfies LoaderWithParser<
   unknown,
-  TableBatch | MetadataBatch | JSONBatch,
+  TableBatch | RecordBatch | MetadataBatch | JSONBatch,
   JSONLoaderOptions
 >;
 
@@ -50,7 +51,7 @@ function parseInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: JSONLoaderOptions
-): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
+): AsyncIterable<TableBatch | RecordBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = {...options, json: {...JSONLoaderWithParser.options.json, ...options?.json}};
   const parseOptions =
     jsonOptions.json?.backend === 'fast'

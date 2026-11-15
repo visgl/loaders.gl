@@ -24,7 +24,7 @@ export type ConvertJSONToArrowOptions = Pick<
  *
  * Accepts object-row arrays, array-row arrays, loaders.gl row tables, or a JSON object
  * containing a row array. Nested objects use the first array found in property order.
- * Native Arrow tables and Arrow/columnar wrappers are not accepted as row input.
+ * Native Arrow tables and columnar tables are not accepted as row input.
  * Does not parse text, fetch data, mutate input rows, or accumulate streaming chunks.
  *
  * @param data - Parsed JSON containing rows, or a loaders.gl row-table wrapper.
@@ -43,14 +43,15 @@ export function convertJSONToArrow(
     (data &&
       typeof data === 'object' &&
       'shape' in data &&
-      (data.shape === 'arrow-table' || data.shape === 'columnar-table'));
+      (data.shape === 'columnar-table' ||
+        ('data' in data && data.data instanceof ApacheArrowTable)));
   const table = isUnsupportedTable ? null : getJSONRowTable(data);
   if (!table) {
     throw new Error(
       'convertJSONToArrow: expected a JSON row array or an object containing a JSON row array'
     );
   }
-  return convertRowTableToArrowTable(table, options).data;
+  return convertRowTableToArrowTable(table, options);
 }
 
 /**

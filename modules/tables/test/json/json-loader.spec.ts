@@ -6,7 +6,6 @@ import {expect, test} from 'vitest';
 import {MemoryLog} from 'probe.gl/log';
 import {parse, load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import type {Schema} from '@loaders.gl/core/schema';
-import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/core/schema-utils';
 import {JSONLoader, JSONTableLoader, GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import type {JSONLoaderOptions, JSONTableLoaderOptions} from '@loaders.gl/tables/json/index';
 import {
@@ -1238,21 +1237,9 @@ for (const config of STREAMING_LOADER_CONFIGS) {
     );
     let rowCount = 0;
     for await (const batch of iterator) {
-      switch (batch.batchType) {
-        case 'metadata':
-        case 'partial-result':
-          break;
-        case 'data':
-          const rowBatch = batch as ObjectRowTableBatch;
-          rowCount += getTableLength(rowBatch);
-          // t.equal(rowBatch?.data?.[0].length, 10);
-          break;
-        case 'final-result':
-          if (batch.shape === 'json') {
-            expect(batch.container, 'final batch contains json').toBeTruthy();
-          }
-          break;
-        default:
+      if (batch instanceof arrow.RecordBatch) rowCount += batch.numRows;
+      else if (batch.batchType === 'final-result' && batch.shape === 'json') {
+        expect(batch.container, 'final batch contains json').toBeTruthy();
       }
     }
     expect(rowCount, '247 rows found').toBe(247);

@@ -12,7 +12,8 @@ import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {
   convertSchemaToArrow,
   makeArrowMetadataBatch,
-  updateArrowTableMetadata
+  convertArrowToSchema,
+  updateNativeArrowTableMetadata
 } from '@loaders.gl/core/schema-utils';
 import {getGeoMetadata, setGeoMetadata, type Schema} from '@loaders.gl/core/schema';
 import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
@@ -108,7 +109,7 @@ function parseTextSync(
     case 'binary-feature-collection':
       return geojsonToBinary(table.features);
     case 'arrow':
-      return updateArrowTableMetadata(
+      return updateNativeArrowTableMetadata(
         convertGeoJSONFeaturesToArrowTable(table.features, {
           schema: options.json?.schema,
           arrowConversion: options.json?.arrowConversion,
@@ -118,7 +119,7 @@ function parseTextSync(
           log: getLoaderLog(options)
         }),
         getJSONContainerMetadata(geojson, '$.features')
-      ).data;
+      );
     default:
       return table;
   }
@@ -205,16 +206,18 @@ async function* makeGeoJSONArrowBatchIterator(
       if (batch.batchType === 'final-result') {
         const schema = emittedSchema
           ? structuredClone(emittedSchema)
-          : convertGeoJSONFeaturesToArrowTable([], {
-              schema: frozenSchema || undefined,
-              arrowConversion: options.json?.arrowConversion,
-              geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
-              geoarrow: streamingPreference
-                ? {encodingPreference: streamingPreference}
-                : configuredGeoArrowOptions,
-              crs,
-              log: getLoaderLog(options)
-            }).schema!;
+          : convertArrowToSchema(
+              convertGeoJSONFeaturesToArrowTable([], {
+                schema: frozenSchema || undefined,
+                arrowConversion: options.json?.arrowConversion,
+                geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+                geoarrow: streamingPreference
+                  ? {encodingPreference: streamingPreference}
+                  : configuredGeoArrowOptions,
+                crs,
+                log: getLoaderLog(options)
+              }).schema
+            );
         applyLegacyGeoJSONCRSToSchema(
           schema,
           options.json?.geoarrowGeometryColumn || 'geometry',
@@ -249,11 +252,12 @@ async function* makeGeoJSONArrowBatchIterator(
       log: getLoaderLog(options)
     });
 
-    if (!frozenSchema && arrowTable.data.numRows > 0) {
-      frozenSchema = arrowTable.schema || null;
+    if (!frozenSchema && arrowTable.numRows > 0) {
+      frozenSchema = convertArrowToSchema(arrowTable.schema);
     }
 
-    const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata);
+    const tableSchema = convertArrowToSchema(arrowTable.schema);
+    const geoMetadata = getGeoMetadata(tableSchema.metadata);
     const previousGeoMetadata = getGeoMetadata(emittedSchema?.metadata);
     if (geoMetadata && previousGeoMetadata) {
       for (const [name, column] of Object.entries(geoMetadata.columns)) {
@@ -264,14 +268,14 @@ async function* makeGeoJSONArrowBatchIterator(
           ])
         ];
       }
-      setGeoMetadata(arrowTable.schema!.metadata!, geoMetadata);
+      setGeoMetadata(tableSchema.metadata, geoMetadata);
     }
-    const refinedTable = updateArrowTableMetadata(arrowTable, {
-      ...arrowTable.schema?.metadata,
+    const refinedTable = updateNativeArrowTableMetadata(arrowTable, {
+      ...tableSchema.metadata,
       ...containerMetadata
     });
-    emittedSchema = structuredClone(refinedTable.schema);
-    for (const recordBatch of refinedTable.data.batches) {
+    emittedSchema = convertArrowToSchema(refinedTable.schema);
+    for (const recordBatch of refinedTable.batches) {
       const metadata = new Map(recordBatch.metadata);
       if (batch.jsonpath) metadata.set('jsonpath', String(batch.jsonpath));
       yield new RecordBatch(recordBatch.schema, recordBatch.data, metadata);
@@ -308,7 +312,10 @@ function getGeoJSONCRS(geojson: unknown): LegacyGeoJSONCRS | null {
 
 /** Throws when GeoJSON Arrow-only options are used without Arrow output. */
 function validateGeoJSONArrowOptions(options: GeoJSONLoaderOptions): void {
-  if ((options.geojson?.shape as string) === 'arrow-table') {
+  if (
+    options.geojson?.shape &&
+    !['arrow', 'geojson-table', 'binary-feature-collection'].includes(options.geojson.shape)
+  ) {
     throw new Error('This loader uses shape: "arrow" for native Arrow output');
   }
   const hasArrowOnlyOptions = Boolean(

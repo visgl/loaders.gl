@@ -41,7 +41,7 @@ test('JSON Arrow conversion infers nested, nullable, list, and temporal fields',
     ]
   } as any);
 
-  expect(table.data.numRows).toBe(2);
+  expect(table.numRows).toBe(2);
   expect(table.schema?.fields.map(field => field.name)).toEqual([
     'id',
     'active',
@@ -51,8 +51,8 @@ test('JSON Arrow conversion infers nested, nullable, list, and temporal fields',
     'optional',
     'extra'
   ]);
-  expect(table.data.getChild('tags')?.get(0)?.toArray()).toEqual(['a', null]);
-  expect(table.data.getChild('profile')?.get(1)).toMatchObject({name: 'Grace', score: 10});
+  expect(table.getChild('tags')?.get(0)?.toArray()).toEqual(['a', null]);
+  expect(table.getChild('profile')?.get(1)).toMatchObject({name: 'Grace', score: 10});
 });
 
 test('JSON Arrow conversion infers array rows and rejects incompatible inferred shapes', () => {
@@ -65,7 +65,7 @@ test('JSON Arrow conversion infers array rows and rejects incompatible inferred 
     ['column2', true],
     ['column3', true]
   ]);
-  expect(table.data.numRows).toBe(3);
+  expect(table.numRows).toBe(3);
 
   expect(() =>
     convertRowTableToArrowTable({
@@ -89,8 +89,8 @@ test('JSON Arrow conversion handles empty schemas and extra-field policies', () 
   const empty = convertRowTableToArrowTable({shape: 'object-row-table', data: [{}, {}]} as any, {
     schema: emptySchema
   });
-  expect(empty.data.numRows).toBe(2);
-  expect(empty.schema?.metadata).toEqual({source: 'empty'});
+  expect(empty.numRows).toBe(2);
+  expect(empty.schema.metadata.get('source')).toBe('empty');
 
   expect(() =>
     convertRowTableToArrowTable({shape: 'array-row-table', data: [[1]]} as any, {
@@ -106,7 +106,7 @@ test('JSON Arrow conversion handles empty schemas and extra-field policies', () 
     schema: emptySchema,
     arrowConversion: {onExtraField: 'drop', logRecoveries: false}
   });
-  expect(dropped.data.numRows).toBe(1);
+  expect(dropped.numRows).toBe(1);
 });
 
 test('JSON Arrow recovery reports the one-based name of an extra positional column', () => {
@@ -119,7 +119,7 @@ test('JSON Arrow recovery reports the one-based name of an extra positional colu
       log: {warn: (message: string) => () => warnings.push(message)}
     }
   );
-  expect(table.data.get(0)?.toJSON()).toEqual({id: 1});
+  expect(table.get(0)?.toJSON()).toEqual({id: 1});
   expect(warnings).toEqual(['JSONLoader: extra Arrow field column2; dropping value']);
 });
 
@@ -164,9 +164,9 @@ test('JSON Arrow conversion normalizes nested schema recovery policies', () => {
       log: {warn: (message: string) => () => messages.push(message)}
     }
   );
-  expect(table.data.numRows).toBe(2);
-  expect(table.data.getChild('items')?.get(1)).toBe(null);
-  expect(table.data.getChild('profile')?.get(0)?.score).toBe(127);
+  expect(table.numRows).toBe(2);
+  expect(table.getChild('items')?.get(1)).toBe(null);
+  expect(table.getChild('profile')?.get(0)?.score).toBe(127);
   expect(messages.length).toBe(4);
 
   expect(() =>
@@ -197,9 +197,9 @@ test('JSON Arrow conversion applies primitive conversion boundaries', () => {
       arrowConversion: {utf8Conversion: 'number-to-string', integerConversion: 'clamp-and-round'}
     }
   );
-  expect(table.data.getChild('text')?.get(0)).toBe('42');
-  expect(table.data.getChild('integer')?.get(0)).toBe(0);
-  expect(Array.from(table.data.getChild('binary')?.get(0) || [])).toEqual([1, 2]);
+  expect(table.getChild('text')?.get(0)).toBe('42');
+  expect(table.getChild('integer')?.get(0)).toBe(0);
+  expect(Array.from(table.getChild('binary')?.get(0) || [])).toEqual([1, 2]);
   expect(() =>
     convertRowTableToArrowTable(
       {shape: 'object-row-table', data: [{text: true, integer: 1, binary: 'x', when: 1}]} as any,
@@ -238,7 +238,7 @@ test('JSON Arrow batch adapters freeze schemas and preserve metadata batches', a
     converted.push(batch);
   }
   expect(converted[0]).toBe(metadata);
-  expect(converted[1].shape).toBe('arrow-table');
+  expect(converted[1]).toBeInstanceOf(arrow.RecordBatch);
 
   const invalidIterator = convertTableBatchesToArrow(
     yieldBatches([{batchType: 'data', shape: 'invalid', data: []}])
@@ -257,12 +257,12 @@ test('JSON Arrow conversion covers primitive and integer policy matrices', () =>
       {shape: 'object-row-table', data: [{value: Number.POSITIVE_INFINITY}]} as any,
       {schema, arrowConversion: {integerConversion: 'clamp-and-round'}}
     );
-    expect(table.data.numRows).toBe(1);
+    expect(table.numRows).toBe(1);
     const nullable = convertRowTableToArrowTable(
       {shape: 'object-row-table', data: [{value: 1.5}]} as any,
       {schema, arrowConversion: {integerConversion: 'null'}}
     );
-    expect(nullable.data.getChild('value')?.get(0)).toBeNull();
+    expect(nullable.getChild('value')?.get(0)).toBeNull();
   }
 
   const primitiveFields: Schema['fields'] = [
@@ -291,7 +291,7 @@ test('JSON Arrow conversion covers primitive and integer policy matrices', () =>
     } as any,
     {schema: {fields: primitiveFields, metadata: {}}}
   );
-  expect(primitiveTable.data.numRows).toBe(1);
+  expect(primitiveTable.numRows).toBe(1);
 });
 
 test('JSON Arrow conversion validates GeoArrow schemas and deduplicates recovery logs', () => {
@@ -322,7 +322,7 @@ test('JSON Arrow conversion validates GeoArrow schemas and deduplicates recovery
       metadata: {custom: 'root'}
     }
   });
-  expect(geoarrow.schema?.fields[0].metadata).toMatchObject({custom: 'preserved'});
+  expect(geoarrow.schema.fields[0].metadata.get('custom')).toBe('preserved');
 
   const messages: string[] = [];
   const recovered = convertRowTableToArrowTable(
@@ -333,7 +333,7 @@ test('JSON Arrow conversion validates GeoArrow schemas and deduplicates recovery
       log: {once: (message: string) => () => messages.push(message)}
     }
   );
-  expect(recovered.data.numRows).toBe(2);
+  expect(recovered.numRows).toBe(2);
   expect(messages).toHaveLength(1);
 
   const arrowSchema = new arrow.Schema([new arrow.Field('value', new arrow.Utf8(), true)]);

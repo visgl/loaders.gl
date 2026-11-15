@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {Field, Schema} from '@loaders.gl/core/schema';
 import {
   convertRowTableToArrowTable,
@@ -45,7 +46,7 @@ test.each([
     },
     {schema: createSchema(type), arrowConversion: {integerConversion: 'clamp-and-round'}}
   );
-  expect(Array.from(table.data.getChild('value')!.toArray(), value => Number(value))).toEqual([
+  expect(Array.from(table.getChild('value')!.toArray(), value => Number(value))).toEqual([
     minimum,
     maximum,
     minimum,
@@ -120,9 +121,9 @@ test('JSON Arrow validates nested struct values and reports child paths', () => 
       }
     }
   );
-  expect(table.data.getChild('value')!.get(0)).toBeNull();
-  expect({...table.data.getChild('value')!.get(1)}).toEqual({child: null});
-  expect({...table.data.getChild('value')!.get(2)}).toEqual({child: false});
+  expect(table.getChild('value')!.get(0)).toBeNull();
+  expect({...table.getChild('value')!.get(1)}).toEqual({child: null});
+  expect({...table.getChild('value')!.get(2)}).toEqual({child: false});
 });
 
 test('JSON Arrow recovery refuses nulls for required integers and missing columns', () => {
@@ -151,14 +152,14 @@ test('JSON Arrow recovery refuses nulls for required integers and missing column
       arrowConversion: {onMissingField: 'null', onExtraField: 'drop', logRecoveries: false}
     }
   );
-  expect(table.data.getChild('value')!.get(0)).toBeNull();
-  expect(table.data.getChild('value')!.get(1)).toBe(true);
+  expect(table.getChild('value')!.get(0)).toBeNull();
+  expect(table.getChild('value')!.get(1)).toBe(true);
 });
 
 test('JSON Arrow inference merges nested lists without mutating input rows', () => {
   const rows = [{value: [[null, 1], [2]]}, {value: [[3], [null]]}];
   const table = convertRowTableToArrowTable({shape: 'object-row-table', data: rows});
-  expect(table.schema?.fields).toEqual([
+  expect(convertArrowToSchema(table.schema).fields).toMatchObject([
     {
       name: 'value',
       nullable: true,
@@ -177,7 +178,7 @@ test('JSON Arrow inference merges nested lists without mutating input rows', () 
       }
     }
   ]);
-  expect(Array.from(table.data.getChild('value')!.get(0).get(0))).toEqual([null, 1]);
+  expect(Array.from(table.getChild('value')!.get(0).get(0))).toEqual([null, 1]);
   expect(rows).toEqual([{value: [[null, 1], [2]]}, {value: [[3], [null]]}]);
 });
 
@@ -194,7 +195,7 @@ test('JSON Arrow binary conversion respects ArrayBuffer and typed view byte rang
     },
     {schema: createSchema('binary')}
   );
-  expect(Array.from(table.data.getChild('value')!, value => Array.from(value))).toEqual([
+  expect(Array.from(table.getChild('value')!, value => Array.from(value))).toEqual([
     [4, 5],
     [1, 2, 3],
     [2, 3]
@@ -211,7 +212,7 @@ test('JSON Arrow batch adapters enforce supplied schemas from the first empty ba
     const empty = (await iterator.next()).value;
     const first = (await iterator.next()).value;
     const second = (await iterator.next()).value;
-    const tables = [empty, first, second].map(batch => ('shape' in batch ? batch.data : batch));
+    const tables = [empty, first, second];
     expect(tables[0].numRows).toBe(0);
     expect(tables[1].schema.metadata.get('source')).toBe('fixture');
     expect(tables[1].getChild('value')!.get(0)).toBe(true);
