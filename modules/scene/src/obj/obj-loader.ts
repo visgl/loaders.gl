@@ -70,23 +70,17 @@ function hasOBJGeometryRecords(text: string): boolean {
   });
 }
 
-function* parseOBJPointCloudInBatches(
-  text: string,
-  options?: OBJLoaderOptions,
-  batchSize?: number
-): Iterable<Table> {
+function* parseOBJPointCloudInBatches(text: string, batchSize?: number): Iterable<Table> {
   const vertexLines = text.split(/\r?\n/).filter(line => line.trimStart().startsWith('v '));
-  yield* makeOBJPointCloudBatches(vertexLines, options, batchSize);
+  yield* makeOBJPointCloudBatches(vertexLines, batchSize);
 }
 
 async function* parseOBJPointCloudLinesInBatches(
   lines: AsyncIterable<string>,
-  options?: OBJLoaderOptions,
   batchSize?: number
 ): AsyncIterable<Table> {
   const normalizedBatchSize = batchSize || 1000;
   let vertexLines: string[] = [];
-  let yielded = false;
 
   for await (const line of lines) {
     if (!line.trimStart().startsWith('v ')) {
@@ -96,11 +90,10 @@ async function* parseOBJPointCloudLinesInBatches(
     if (vertexLines.length >= normalizedBatchSize) {
       yield convertMeshToArrowTable(parseOBJPointCloudMesh(vertexLines));
       vertexLines = [];
-      yielded = true;
     }
   }
 
-  if (vertexLines.length || (!yielded && options?.obj?.shape !== 'mesh')) {
+  if (vertexLines.length > 0) {
     yield convertMeshToArrowTable(parseOBJPointCloudMesh(vertexLines));
   }
 }
@@ -110,9 +103,6 @@ function* makeOBJPointCloudBatches(
   options?: OBJLoaderOptions,
   batchSize?: number
 ): Iterable<Table> {
-  if (!vertexLines.length && options?.obj?.shape !== 'mesh') {
-    yield convertMeshToArrowTable(parseOBJPointCloudMesh([]));
-  }
   const normalizedBatchSize = batchSize || vertexLines.length || 1;
 
   for (let rowIndex = 0; rowIndex < vertexLines.length; rowIndex += normalizedBatchSize) {
@@ -194,7 +184,7 @@ async function* parseOBJWithMetadataInBatches(
   if (options?.obj?.pointCloud) {
     const textIterator = makeTextDecoderIterator(arrayBuffer as AsyncIterable<ArrayBuffer>);
     const lineIterator = makeLineIterator(textIterator);
-    yield* parseOBJPointCloudLinesInBatches(lineIterator, options, batchSize);
+    yield* parseOBJPointCloudLinesInBatches(lineIterator, batchSize);
     return;
   }
 
@@ -205,5 +195,5 @@ async function* parseOBJWithMetadataInBatches(
     return;
   }
 
-  yield* parseOBJPointCloudInBatches(text, options, batchSize);
+  yield* parseOBJPointCloudInBatches(text, batchSize);
 }
