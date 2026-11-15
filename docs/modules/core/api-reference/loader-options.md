@@ -46,6 +46,16 @@ controls and parser namespaces; see [Source options](/docs/developer-guide/using
 for source-specific settings, precedence, and type inference. Sources do not accept `core.loadOptions`
 or a top-level `loadOptions` wrapper.
 
+## compareLoaderOptions
+
+`compareLoaderOptions(left: LoaderOptions | undefined, right: LoaderOptions | undefined): boolean`
+
+Import this helper from `@loaders.gl/core` to compare two options inputs. It compares the own
+enumerable properties of plain objects and arrays recursively, including nested loader namespaces.
+Object key order is ignored and array order matters. Callbacks, signals, and other objects such
+as `Headers` compare by reference. The comparison uses the supplied values directly, before
+loader defaults and global options are applied.
+
 ## Core options
 
 Options interpreted by the core API and shared across loaders live under `options.core`.

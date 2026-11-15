@@ -31,7 +31,7 @@ export {readArrayBuffer} from './lib/fetch/read-array-buffer';
 // export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // CONFIGURATION
-export {setLoaderOptions, getLoaderOptions} from './lib/api/loader-options';
+export {setLoaderOptions, getLoaderOptions, compareLoaderOptions} from './lib/api/loader-options';
 export {registerLoaders} from './lib/api/register-loaders';
 export {selectLoader, selectLoaderSync} from './lib/api/select-loader';
 

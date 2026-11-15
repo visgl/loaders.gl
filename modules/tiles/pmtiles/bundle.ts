@@ -9,6 +9,7 @@ export {
   readArrayBuffer,
   setLoaderOptions,
   getLoaderOptions,
+  compareLoaderOptions,
   registerLoaders,
   selectLoader,
   selectLoaderSync,
