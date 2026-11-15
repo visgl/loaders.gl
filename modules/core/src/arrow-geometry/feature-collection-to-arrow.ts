@@ -34,7 +34,7 @@ export function convertFeaturesToWKBArrowTable(
 ): Table {
   const encodingPreference = resolveGeoArrowEncodingPreference(options);
   if (encodingPreference && encodingPreference !== 'geoarrow.wkb') {
-    return convertFeaturesToGeoArrowTable(features, options).data;
+    return convertFeaturesToGeoArrowTable(features, options);
   }
   const hasFeatureIds = features.some(feature => feature.id !== undefined);
   const propertyRows = features.map(feature => {

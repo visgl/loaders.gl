@@ -97,7 +97,7 @@ test.each([
     expect(decoded.features[0].geometry.coordinates[0]).toBeCloseTo(id === 1 ? -90 : 90, 2);
     expect(decoded.features[0].geometry.coordinates[1]).toBeCloseTo(id === 1 ? 40 : -40, 1);
   }
-  expect(input.data.numRows).toBe(2);
+  expect(input.numRows).toBe(2);
 });
 
 test('GeoArrow partial export bounds the selection, includes only chosen properties and is deterministic', async () => {
@@ -108,7 +108,7 @@ test('GeoArrow partial export bounds the selection, includes only chosen propert
     mvt: {propertyColumns: ['name']},
     pmtiles: {bounds: [-100, 30, -80, 50] as const}
   };
-  const bytes = await encodeGeoArrowPMTiles(input.data, options);
+  const bytes = await encodeGeoArrowPMTiles(input, options);
   expect(await encodeGeoArrowPMTiles(input, options)).toEqual(bytes);
   const archive = openArchive(bytes);
   expect(await archive.getHeader()).toMatchObject({
@@ -178,7 +178,7 @@ test('GeoArrow MVT export preserves clipped polygon holes and line attributes', 
 });
 
 test('GeoArrow export rejects rich attributes unless explicitly projected and rejects unsafe integers', async () => {
-  const base = createTable().data;
+  const base = createTable();
   const nested = base.assign(
     new arrow.Table({
       nested: arrow.vectorFromArray(

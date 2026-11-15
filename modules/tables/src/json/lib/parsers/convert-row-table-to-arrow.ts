@@ -225,7 +225,7 @@ export function convertGeoJSONFeaturesToArrowTable(
       propertySchema,
       crs: options.crs,
       geoarrow: {encodingPreference: options.geoarrow.encodingPreference}
-    }).data;
+    });
   }
   const geometryColumnName = options?.geoarrowGeometryColumn || 'geometry';
   const inferredSchema = makeGeoArrowFeatureSchema(features, {

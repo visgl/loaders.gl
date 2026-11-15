@@ -80,7 +80,7 @@ export async function parseShapefileToArrow(
           properties: {}
         })),
         {encodingPreference: 'geoarrow.geometry'}
-      ).data;
+      );
     }
   }
 

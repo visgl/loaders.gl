@@ -38,7 +38,7 @@ export function parseSHPToArrow(arrayBuffer: ArrayBuffer, options?: SHPLoaderOpt
         properties: {}
       })) as any,
       {encodingPreference: 'geoarrow.geometry'}
-    ).data;
+    );
   }
   if (
     shouldUseTypedGeoArrow(
@@ -76,7 +76,7 @@ export async function* parseSHPToArrowInBatches(
     }));
     const table = convertFeaturesToGeoArrowTable(geometryFeatures as any, {
       encodingPreference: preference
-    }).data;
+    });
     if (table.batches.length) yield* table.batches;
     else yield makeArrowMetadataBatch(table.schema);
     return;

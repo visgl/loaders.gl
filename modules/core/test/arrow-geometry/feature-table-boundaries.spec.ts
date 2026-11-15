@@ -177,7 +177,7 @@ test.each([
   const multi = {type: multiKind, coordinates: multiCoordinates} as unknown as Geometry;
   const table = convertFeaturesToGeoArrowTable(makeFeatures([single, null, multi]), {
     encodingPreference: 'optimized'
-  }).data;
+  });
   expect(table.schema.fields.at(-1)?.metadata.get('ARROW:extension:name')).toBe(encoding);
   const vector = table.getChild('geometry')!;
   expect(
@@ -205,7 +205,7 @@ test('native GeoJSON output preserves nullable properties, 4D tuples, and explic
     geometryColumnName: 'location',
     encodingPreference: 'optimized',
     crs: {name: 'CRS84'}
-  }).data;
+  });
   expect(table.getChild('name')?.get(0)).toBe('first');
   expect(table.getChild('name')?.get(1)).toBeNull();
   expect(readArrowValue(table.getChild('location')?.get(0))).toEqual([1, 2, 3, 4]);
@@ -228,7 +228,7 @@ test.each([
 ])('empty and null-only optimized GeoJSON tables retain a stable union schema', ({geometries}) => {
   const table = convertFeaturesToGeoArrowTable(makeFeatures(geometries), {
     encodingPreference: 'optimized'
-  }).data;
+  });
   const vector = table.getChild('geometry')!;
   expect(vector.type).toBeInstanceOf(arrow.DenseUnion);
   expect(Array.from((vector.type as arrow.DenseUnion).typeIds)).toEqual([1, 2, 3, 4, 5, 6, 7]);

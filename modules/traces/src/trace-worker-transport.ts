@@ -5,8 +5,7 @@
 import {Table, RecordBatch} from 'apache-arrow';
 import {
   serializeNativeArrowWorkerResult,
-  deserializeNativeArrowWorkerResult,
-  deserializeArrowWorkerTable
+  deserializeNativeArrowWorkerResult
 } from '@loaders.gl/core/arrow-worker-transport';
 
 /** Transfers each logical trace table through the shared owned Arrow column transport. */
@@ -27,7 +26,6 @@ export function serializeTraceWorkerResult(result: any): unknown {
 export function deserializeTraceWorkerResult(result: any): any {
   if (result?.transport === 'arrow-table-columns')
     return deserializeNativeArrowWorkerResult(result);
-  if (result?.shape === 'arrow-table') return deserializeArrowWorkerTable(result).data;
   if (result?.transport !== 'trace-tables')
     throw new Error('Trace workers require Arrow column transport');
   return Object.fromEntries(
@@ -51,11 +49,7 @@ export function serializeTraceWorkerBatch(result: any): unknown {
 
 /** Restores a real Arrow record batch and its optional logical-table tag on the caller. */
 export function deserializeTraceWorkerBatch(result: any): any {
-  const columns = result?.columns;
-  const batch =
-    columns?.transport === 'arrow-record-batch'
-      ? deserializeNativeArrowWorkerResult(columns)
-      : (deserializeArrowWorkerTable(columns).data as Table).batches[0];
+  const batch = deserializeNativeArrowWorkerResult(result?.columns);
   if (!(batch instanceof RecordBatch))
     throw new Error('Trace worker batches require one Arrow record batch');
   return result.table === undefined ? batch : {table: result.table, data: batch};

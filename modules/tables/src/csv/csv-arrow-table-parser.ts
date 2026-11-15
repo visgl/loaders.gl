@@ -248,7 +248,7 @@ export function convertCSVRowTableToArrowTable(
       return convertFeaturesToGeoArrowTable(features as any, {
         geometryColumnName,
         encodingPreference
-      }).data;
+      });
     }
   }
   const arrowTableBuilder = new ArrowTableBuilder(table.schema!, {viewTypes});

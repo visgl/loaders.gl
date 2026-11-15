@@ -143,7 +143,7 @@ export async function parseGeoPackageToArrow(
     });
     return convertFeaturesToGeoArrowTable(geoJSONTable.features, {
       encodingPreference: preference
-    }).data;
+    });
   }
 
   return getGeoPackageArrowTable(database, selectedTable, projections, {

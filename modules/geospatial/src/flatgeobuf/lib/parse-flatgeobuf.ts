@@ -93,7 +93,7 @@ export function parseFlatGeobufToArrowTable(
   if (preference && preference !== 'geoarrow.wkb') {
     return convertFeaturesToGeoArrowTable(makeGeoJsonTable(arrayBuffer, options).features, {
       encodingPreference: preference
-    }).data;
+    });
   }
   const header = readFlatGeobufHeader(arrayBuffer);
   const projection = getProjection(header, options.reproject, options.targetCrs || 'WGS84');

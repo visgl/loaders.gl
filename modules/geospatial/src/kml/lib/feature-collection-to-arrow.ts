@@ -30,7 +30,7 @@ export function convertFeatureCollectionToArrowTable(
   options: {encodingPreference?: GeoArrowEncodingPreference} = {}
 ): Table {
   if (options.encodingPreference && options.encodingPreference !== 'geoarrow.wkb') {
-    return convertFeaturesToGeoArrowTable(features, options).data;
+    return convertFeaturesToGeoArrowTable(features, options);
   }
   const propertyRows = features.map(feature => normalizeProperties(feature.properties));
   const propertySchema = getPropertySchema(propertyRows);

@@ -79,7 +79,7 @@ export function convertFeatureCollectionToGeoArrowTable(
     encoding: getGeoJSONStagingEncoding(encoding),
     geometryColumnName: options?.geoarrow?.geometryColumnName
   });
-  return convertGeoJSONArrowTableToTarget(arrowTable.data, encoding, options);
+  return convertGeoJSONArrowTableToTarget(arrowTable, encoding, options);
 }
 
 /**
@@ -94,7 +94,7 @@ export function convertFeaturesToGeoArrowTable(
     encoding: getGeoJSONStagingEncoding(encoding),
     geometryColumnName: options?.geoarrow?.geometryColumnName
   });
-  return convertGeoJSONArrowTableToTarget(arrowTable.data, encoding, options);
+  return convertGeoJSONArrowTableToTarget(arrowTable, encoding, options);
 }
 
 /** Converts generic row and column tables when they contain GeoJSON geometry values. */
