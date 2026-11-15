@@ -159,7 +159,7 @@ test('LASLoader#parseInBatches(mesh)', async () => {
   ]);
   expect(totalVertexCount, 'batched vertex count matches full parse').toBe(LAS_POINT_COUNT);
 });
-test('LASLoader#parseInBatches(arrow-table)', async () => {
+test('LASLoader#parseInBatches(arrow)', async () => {
   const response = await fetchFile(LAS_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), LASLoader, {
     las: {shape: 'arrow'},
@@ -167,7 +167,7 @@ test('LASLoader#parseInBatches(arrow-table)', async () => {
   });
   const batchRowCounts: number[] = [];
   for await (const table of batches as AsyncIterable<any>) {
-    expect(table, 'batch has arrow-table shape').toHaveProperty('numRows');
+    expect(table, 'batch has an Arrow row count').toHaveProperty('numRows');
     expect(table.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
     expect(table.getChild('intensity'), 'batch includes intensity column').toBeTruthy();
     expect(table.getChild('classification'), 'batch includes classification column').toBeTruthy();
@@ -1749,7 +1749,7 @@ function createPointFormat0Record(): Uint8Array {
   dataView.setUint16(18, 99, true);
   return record;
 }
-test('LASLoader#shape="arrow-table"', async () => {
+test('LASLoader#shape="arrow"', async () => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'arrow'},
     core: {worker: false}

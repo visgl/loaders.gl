@@ -21,7 +21,7 @@ import {
 
 afterEach(() => vi.unstubAllGlobals());
 
-/** Creates the minimal Arrow-table contract needed by the Avro encoder. */
+/** Creates the minimal native Arrow table contract needed by the Avro encoder. */
 function createStructuralTable(rows: Record<string, unknown>[]) {
   const fields = Object.keys(rows[0] || {}).map(name => ({name, type: {toString: () => 'Utf8'}}));
   return {

@@ -61,9 +61,9 @@ decision checklist, not a claim that the proposed changes have already been impl
 
 | Area | Remaining pre-v5 decision |
 | --- | --- |
-| Table and batch outputs | Freeze native Arrow versus loaders.gl envelopes, schema/metadata placement, `Batch.recordBatch` disposition, and explicit exceptions for atomic geometries. |
-| Mesh Arrow | Ratify or replace the current row-zero `List<Uint32>` index representation and optional top-level accessor. Unsigned storage is implemented; a future representation change would still be breaking. |
-| Shapes and options | Freeze Arrow-primary defaults and geometry interchange; decide remaining deprecated top-level parser aliases. Alternate shapes are currently supported, not globally deprecated. |
+| Table and batch outputs | Document which atomic geometry loaders return format-specific results. Native Arrow tables and record batches carry schema and metadata directly. |
+| Mesh Arrow | Ratify or replace the current row-zero `List<Uint32>` index representation. Unsigned storage is implemented; a future representation change would still be breaking. |
+| Shapes and options | Freeze Arrow-primary defaults, explicit alternate shapes, and geometry interchange. |
 | Scan/query | Decide the stability of `_scan` and `QueryOptions` and their relationship to source `scan()`/`query()`, cancellation, partial results, and unsupported requests. |
 | Source lifecycle and imports | Review readiness, ownership, cleanup, lazy/runtime entry points, and service/authentication contracts without requiring a broad framework rewrite. |
 | Deprecations | Record a remove-now or retain-through-5.x decision for each remaining group, including consumer dependencies and usable replacement APIs. |

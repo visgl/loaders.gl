@@ -40,7 +40,7 @@ test('TerrainLoader#removed Arrow loader exports', () => {
     'unbundled does not export QuantizedMeshArrowLoader'
   ).toBeFalsy();
 });
-test('TerrainLoader#parse terrarium martini with shape: arrow-table', async () => {
+test('TerrainLoader#parse terrarium martini with shape: arrow', async () => {
   const table = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
     core: {worker: false},
     terrain: {
@@ -86,7 +86,7 @@ test('TerrainLoader#parse defaults to Arrow table', async () => {
     schemaName: 'TerrainLoader IndexedMesh table'
   });
 });
-test('QuantizedMeshLoader#parse tile-with-extensions with shape: arrow-table', async () => {
+test('QuantizedMeshLoader#parse tile-with-extensions with shape: arrow', async () => {
   const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
     core: {worker: false},
     'quantized-mesh': {shape: 'arrow'}

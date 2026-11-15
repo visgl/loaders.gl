@@ -39,7 +39,7 @@ test.each([
   const index = {x: 0, y: 0, z: 0};
   const tile = await source.getTileData({index});
   expect(tile?.numRows).toBe(1);
-  const layer = createLayer({id: 'arrow-table-example', data: source, showTileBorders: false});
+  const layer = createLayer({id: 'native-arrow-example', data: source, showTileBorders: false});
   expect(layer._resolveData(layer.props)).toBe(source);
   expect(layer.sourceSupportsMVTLayer(source)).toBe(coordinates === 'local');
   if (coordinates === 'local') {

@@ -24,9 +24,8 @@ const WIDE_COLUMN_COUNT = 40;
 // These settings apply equally to every implementation; they are not a warmup or result filter.
 const BENCHMARK_OPTIONS = {minIterations: 5, time: 100, unit: 'rows'};
 
-// Keep these labels synchronized with the exact versions resolved in yarn.lock. The workspace
-// package can report "latest" during local development, which is not useful benchmark metadata.
-const CSV_LOADER_DISPLAY_NAME = 'CSVLoader v5.0.0-alpha.2 (arrow-table)';
+// Keep external parser labels synchronized with the exact versions resolved in yarn.lock.
+const CSV_LOADER_DISPLAY_NAME = 'CSVLoader (native Arrow)';
 const D3_DSV_DISPLAY_NAME = 'd3-dsv v1.2.0';
 const UDSV_DISPLAY_NAME = 'uDSV v0.7.3';
 const PAPAPARSE_DISPLAY_NAME = 'PapaParse v5.5.3';
@@ -507,7 +506,7 @@ function addLoaderParseBenchmark(
       scenario: scenario.name
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
-    // Arrow's public parseText API is asynchronous; time its complete Arrow-table result without
+    // Arrow's public parseText API is asynchronous; time its complete native Arrow table without
     // adding a conversion step to the synchronous competitors' benchmark bodies.
     async () => await parseText(scenario.text, loaderBenchmark.options)
   );

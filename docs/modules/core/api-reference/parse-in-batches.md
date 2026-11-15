@@ -60,7 +60,7 @@ if the application must retain its bytes. Loader-specific serializers can hydrat
 Arrow tables after they cross the worker boundary.
 
 `core.worker: 'auto'` is currently an atomic `parse()` policy. Batched parsing keeps the loader's
-existing worker or main-thread behavior, including the CSV Arrow-table pilot. See the [worker
+existing worker or main-thread behavior, including native Arrow batches from CSV. See the [worker
 loaders guide](/docs/developer-guide/using-worker-loaders) for lifecycle, fallback, and transport
 details.
 

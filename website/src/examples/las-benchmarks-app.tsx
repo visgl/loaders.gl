@@ -218,7 +218,7 @@ export default function LASBenchmarksApp(): JSX.Element {
   return (
     <div className="benchmark-page">
       <p>
-        Live compressed LAZ Arrow-table throughput in this browser. Each section names one feature
+        Live compressed LAZ native Arrow throughput in this browser. Each section names one feature
         workload, and each result row identifies the implementation that ran it. Competitive
         sections use the same input and four-column output. Complete-versus-streaming sections use
         loaders.gl (TypeScript) for both paths. Keep this tab focused while the run completes.

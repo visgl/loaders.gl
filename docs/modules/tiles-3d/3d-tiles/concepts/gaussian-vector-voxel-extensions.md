@@ -17,7 +17,7 @@ voxel ray marching, or native IFC/STEP/DWG parsing.
 ## Standalone SPZ
 
 [`@loaders.gl/splats`](/docs/modules/splats) accepts standalone SPZ v2, v3, and v4 files and keeps
-the existing Arrow-table output. v2 and v3 are legacy gzip streams; v4 is the current TLV/zstd
+the native Arrow output. v2 and v3 are legacy gzip streams; v4 is the current TLV/zstd
 container. Coordinate conversion is explicit through `sourceCoordinateSystem` and
 `targetCoordinateSystem`; no silent conversion is applied.
 

@@ -82,8 +82,8 @@ const binary = convert(features, 'binary-feature-collection', [FeatureCollection
 | Converter | Package | Direct responsibility |
 | --- | --- | --- |
 | `TableConverter` | `@loaders.gl/core/schema-utils` | loaders.gl table wrappers |
-| `ArrowConverter` | `@loaders.gl/tables/arrow` | Apache Arrow tables and table wrappers |
-| `GeoArrowTableConverter` | `@loaders.gl/core/geoarrow` | GeoArrow tables and wrapper/table shapes |
+| `ArrowConverter` | `@loaders.gl/tables/arrow` | Native Arrow and row, columnar, or GeoJSON tables |
+| `GeoArrowTableConverter` | `@loaders.gl/core/geoarrow` | Native GeoArrow and row, columnar, or GeoJSON tables |
 | `GeoArrowGeometryConverter` | `@loaders.gl/core/geoarrow` | GeoArrow geometry encoding rewrites |
 | `FeatureCollectionConverter` | `@loaders.gl/core/geoarrow` | GeoJSON, Flat GeoJSON, binary feature collections |
 | `GeometryConverter` | `@loaders.gl/core/geoarrow` | single geometry values like WKB, WKT, TWKB, GeoJSON geometry |

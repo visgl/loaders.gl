@@ -306,7 +306,7 @@ describe('chrome-trace-stream', () => {
 
     const chunks: TraceStreamChunk[] = [];
     for await (const chunk of streamChromeTraceArrowChunks(tableSource(), {
-      name: 'public-arrow-table',
+      name: 'public-native-arrow',
       publishEveryEvents: 1
     })) {
       chunks.push(chunk);

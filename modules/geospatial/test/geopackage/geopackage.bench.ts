@@ -15,7 +15,7 @@ export default async function geopackageLoaderBench(suite) {
   suite = suite.group('GeoPackageLoader');
 
   suite.addAsync(
-    'GeoPackageLoader load arrow-table geoarrow.wkb',
+    'GeoPackageLoader load native Arrow geoarrow.wkb',
     ROW_BENCHMARK_OPTIONS,
     async () => {
       await load(arrayBuffer.slice(0), GeoPackageLoader, {

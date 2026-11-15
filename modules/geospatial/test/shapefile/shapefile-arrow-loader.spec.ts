@@ -23,21 +23,21 @@ const TEST_FILES = [
 test('ShapefileLoader#loader conformance', () => {
   validateLoader(ShapefileLoader, 'ShapefileLoader');
 });
-test('ShapefileLoader#defaults to arrow-table output', async () => {
+test('ShapefileLoader#defaults to native Arrow output', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {core: {worker: false}});
   expect(table).toBeInstanceOf(arrow.Table);
   expect(table.numRows).toBeGreaterThan(0);
   expect(table.schema.fields.some(field => field.name === 'geometry')).toBe(true);
 });
-test('ShapefileLoader#worker hydrates arrow-table output', async () => {
+test('ShapefileLoader#worker hydrates native Arrow output', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {core: {worker: true}});
   expect(table).toBeInstanceOf(arrow.Table);
 
   expect(table.getChild('geometry')?.length).toBe(table.numRows);
 });
-test('ShapefileLoader#load arrow-table fixtures round-trip to GeoJSON', async () => {
+test('ShapefileLoader#load native Arrow fixtures round-trip to GeoJSON', async () => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const table = await load(filename, ShapefileLoader, {shapefile: {shape: 'arrow'}});
@@ -55,7 +55,7 @@ test('ShapefileLoader#load arrow-table fixtures round-trip to GeoJSON', async ()
     );
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const expected = await response.json();
-    expect(getRowsFromArrowTable(table), `${testFileName}: arrow-table output is stable`).toEqual(
+    expect(getRowsFromArrowTable(table), `${testFileName}: native Arrow output is stable`).toEqual(
       getRowsFromArrowTable(explicitArrowTable)
     );
     expect(roundTripped.features, `${testFileName}: features round-trip`).toEqual(
@@ -63,7 +63,7 @@ test('ShapefileLoader#load arrow-table fixtures round-trip to GeoJSON', async ()
     );
   }
 });
-test('ShapefileLoader#load arrow-table reprojects like v3 output', async () => {
+test('ShapefileLoader#load native Arrow reprojects like v3 output', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const arrowTable = await load(filename, ShapefileLoader, {
     shapefile: {shape: 'arrow'},
@@ -82,7 +82,7 @@ test('ShapefileLoader#load arrow-table reprojects like v3 output', async () => {
     shapeTable.data
   );
 });
-test('ShapefileLoader#load arrow-table stores WKB in one contiguous Arrow values buffer', async () => {
+test('ShapefileLoader#load native Arrow stores WKB in one contiguous Arrow values buffer', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {shapefile: {shape: 'arrow'}});
   const rows = getRowsFromArrowTable(table);
@@ -101,7 +101,7 @@ test('ShapefileLoader#load arrow-table stores WKB in one contiguous Arrow values
     'geometry values are stored as a byte buffer'
   ).toBeTruthy();
 });
-test('ShapefileLoader#load arrow-table can emit typed GeoArrow point geometry', async () => {
+test('ShapefileLoader#load native Arrow can emit typed GeoArrow point geometry', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {
     shapefile: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
@@ -121,7 +121,7 @@ test('ShapefileLoader#load arrow-table can emit typed GeoArrow point geometry', 
   expect(geometryData.length, 'geometry data has one row per feature').toBe(table.numRows);
   expect(geometryData.children[0].values.length, 'coordinates are dense').toBe(table.numRows * 2);
 });
-test('ShapefileLoader#load arrow-table decodes dense union geometry slices', async () => {
+test('ShapefileLoader#load native Arrow decodes dense union geometry slices', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {
     shapefile: {shape: 'arrow'},
@@ -137,7 +137,7 @@ test('ShapefileLoader#load arrow-table decodes dense union geometry slices', asy
     convertGeoArrowVectorCellToGeoJSON(geometry!, 0, 'geoarrow.geometry')
   );
 });
-test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', async () => {
+test('ShapefileLoader#loadInBatches native Arrow yields stable Arrow schema', async () => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const batches = await loadInBatches(filename, ShapefileLoader, {
@@ -166,7 +166,7 @@ test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', asy
     );
   }
 });
-test('ShapefileLoader#loadInBatches arrow-table yields Arrow batches', async () => {
+test('ShapefileLoader#loadInBatches native Arrow yields Arrow batches', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const batches = await loadInBatches(filename, ShapefileLoader, {
     shapefile: {shape: 'arrow'}
@@ -182,7 +182,7 @@ test('ShapefileLoader#loadInBatches arrow-table yields Arrow batches', async () 
   }
   expect(sawDataBatch, 'main loader produced at least one Arrow batch').toBeTruthy();
 });
-test('ShapefileLoader#loadInBatches arrow-table respects batchSize', async () => {
+test('ShapefileLoader#loadInBatches native Arrow respects batchSize', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const batches = await loadInBatches(filename, ShapefileLoader, {
     shapefile: {shape: 'arrow', batchSize: 1}

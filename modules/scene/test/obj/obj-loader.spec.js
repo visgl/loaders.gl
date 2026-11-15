@@ -31,7 +31,7 @@ test('OBJLoader#parseText defaults to Arrow table', async () => {
 test('OBJLoader#Arrow output supports workers', () => {
   expect(canParseWithWorker(OBJLoader, {core: {worker: true}, obj: {shape: 'arrow'}})).toBe(true);
 });
-test('OBJLoader#parseText(shape: arrow-table)', async () => {
+test('OBJLoader#parseText(shape: arrow)', async () => {
   const table = await load(OBJ_ASCII_URL, OBJLoader, {
     obj: {shape: 'arrow'}
   });
@@ -42,7 +42,7 @@ test('OBJLoader#parseText(shape: arrow-table)', async () => {
   const rowCount = table.numRows ?? table.batches?.[0]?.numRows ?? table.batches?.[0]?.numRows;
   expect(rowCount, 'table has expected vertex count').toBe(14904);
 });
-test('OBJLoader#parseInBatches(vertex-only point cloud, arrow-table)', async () => {
+test('OBJLoader#parseInBatches(vertex-only point cloud, arrow)', async () => {
   const batches = await parseInBatches(
     [new TextEncoder().encode(['v 0 0 0', 'v 1 1 1', 'v 2 2 2', 'v 3 3 3', ''].join('\n')).buffer],
     OBJLoader,
@@ -79,7 +79,7 @@ test('OBJLoader#parseInBatches(pointCloud flag streams vertices without geometry
   }
   expect(batchRowCounts, 'pointCloud mode streams vertex rows and ignores faces').toEqual([2, 2]);
 });
-test('OBJLoader#parseInBatches(faces, arrow-table) falls back to atomic parse', async () => {
+test('OBJLoader#parseInBatches(faces, arrow) falls back to atomic parse', async () => {
   const batches = await parseInBatches(
     [new TextEncoder().encode(['v 0 0 0', 'v 1 0 0', 'v 0 1 0', 'f 1 2 3', ''].join('\n')).buffer],
     OBJLoader,

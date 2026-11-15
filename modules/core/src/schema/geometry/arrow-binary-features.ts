@@ -10,7 +10,7 @@ import type {BinaryGeometryType} from './binary-geometries';
 export type ArrowBinaryFeatureTable = {
   /** Geometry family stored in this table. */
   type: BinaryGeometryType;
-  /** Arrow table wrapper for the family. */
+  /** Native Arrow table for the family. */
   table: arrow.Table;
   /** Original feature-level properties sidecar from the binary feature collection. */
   properties: BinaryProperties['properties'];

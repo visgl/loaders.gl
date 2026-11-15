@@ -558,7 +558,7 @@ async function fetchParquetFixture(url: string): Promise<ArrayBuffer> {
   return await response.arrayBuffer();
 }
 
-/** Loads browser implementations and creates equivalent Arrow-table decode cases. */
+/** Loads browser implementations and creates equivalent native Arrow decode cases. */
 async function createParquetBenchmarkImplementations(): Promise<
   ParquetBenchmarkImplementation[]
 > {

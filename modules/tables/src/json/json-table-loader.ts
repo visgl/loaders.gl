@@ -61,7 +61,7 @@ export const JSONTableLoaderWithParser = {
 >;
 
 /**
- * Parses UTF-8 JSON bytes into row-table or Arrow-table output.
+ * Parses UTF-8 JSON bytes into row tables or native Arrow tables.
  *
  * @param arrayBuffer - UTF-8 encoded JSON payload.
  * @param options - JSON table loader options.
@@ -72,7 +72,7 @@ async function parse(arrayBuffer: ArrayBuffer, options?: JSONTableLoaderOptions)
 }
 
 /**
- * Parses JSON text into row-table or Arrow-table output.
+ * Parses JSON text into row tables or native Arrow tables.
  *
  * @param text - JSON text to parse.
  * @param options - JSON table loader options.
@@ -108,11 +108,11 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
 }
 
 /**
- * Parses streamed JSON row arrays into table or Arrow-table batches.
+ * Parses streamed JSON row arrays into row-table batches or native Arrow record batches.
  *
  * @param asyncIterator - UTF-8 JSON byte chunks.
  * @param options - JSON table loader options.
- * @returns Table, Arrow-table, metadata, and JSON parser batches.
+ * @returns Table batches, native Arrow record batches, or JSON parser envelopes, depending on the output shape.
  */
 function parseInBatches(
   asyncIterator:
@@ -238,7 +238,7 @@ function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
 }
 
 /**
- * Ensures Arrow-only options are used only when Arrow-table output is requested.
+ * Ensures Arrow-only options are used only with `shape: 'arrow'`.
  *
  * @param options - Normalized JSON table loader options.
  * @throws If Arrow conversion options are supplied without `json.shape: 'arrow'`.

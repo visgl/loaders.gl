@@ -22,7 +22,7 @@ const SHAPEFILE_JS_TEST_FILES = [
   'string-property',
   'utf8-property'
 ];
-test('DBFLoader#parse arrow-table', async () => {
+test('DBFLoader#parse native Arrow', async () => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     const encoding = testFileName === 'latin1-property' ? 'latin1' : 'utf8';
     const options = {core: {worker: false}, dbf: {encoding, shape: 'arrow' as const}};
@@ -38,7 +38,7 @@ test('DBFLoader#parse arrow-table', async () => {
   }
 });
 
-test('DBFLoader#defaults to arrow-table output', async () => {
+test('DBFLoader#defaults to native Arrow output', async () => {
   const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/points.dbf`);
   const table = await parse(await response.arrayBuffer(), DBFLoader, {
     core: {worker: false},
