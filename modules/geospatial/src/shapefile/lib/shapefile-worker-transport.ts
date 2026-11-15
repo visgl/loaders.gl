@@ -4,17 +4,14 @@
 
 import {Table, RecordBatch} from 'apache-arrow';
 import {
-  serializeArrowWorkerTable,
   serializeNativeArrowWorkerResult,
-  deserializeNativeArrowWorkerResult,
-  deserializeArrowWorkerTable
+  deserializeNativeArrowWorkerResult
 } from '@loaders.gl/core/arrow-worker-transport';
 
 /** Transfers owned Arrow columns or WKB buffers, with small SHP/DBF header envelopes. */
 export function serializeShapefileWorkerResult(result: any): unknown {
   if (result instanceof Table || result instanceof RecordBatch)
     return serializeNativeArrowWorkerResult(result);
-  if (result?.shape === 'arrow-table') return serializeArrowWorkerTable(result);
   if (
     Array.isArray(result) &&
     result.every(value => value === null || value instanceof Uint8Array)
@@ -39,8 +36,6 @@ export function serializeShapefileWorkerResult(result: any): unknown {
 export function deserializeShapefileWorkerResult<T>(result: any): T {
   if (result?.transport === 'arrow-table-columns' || result?.transport === 'arrow-record-batch')
     return deserializeNativeArrowWorkerResult(result) as T;
-  if (result?.transport === 'arrow-column-envelope' || result?.shape === 'arrow-table')
-    return deserializeArrowWorkerTable(result);
   if (result?.transport === 'shapefile-header') return result.header as T;
   if (result?.transport === 'shp-wkb') {
     return (

@@ -19,12 +19,10 @@ describe('parseSHPToArrow', () => {
       shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
     });
 
-    expect(wkbTable.data.numRows).toBeGreaterThan(0);
+    expect(wkbTable.numRows).toBeGreaterThan(0);
     expect(wkbTable.schema.fields[0].name).toBe('geometry');
-    expect(typedTable.data.numRows).toBe(wkbTable.data.numRows);
-    expect(typedTable.data.schema.fields[0].metadata.get('ARROW:extension:name')).toBe(
-      'geoarrow.point'
-    );
+    expect(typedTable.numRows).toBe(wkbTable.numRows);
+    expect(typedTable.schema.fields[0].metadata.get('ARROW:extension:name')).toBe('geoarrow.point');
   });
 
   test('streams WKB Arrow batches and emits an empty terminal schema', async () => {
@@ -35,14 +33,14 @@ describe('parseSHPToArrow', () => {
       batches.push(batch);
     }
     expect(batches.length).toBeGreaterThan(0);
-    expect(batches.reduce((count, batch) => count + batch.length, 0)).toBeGreaterThan(0);
+    expect(batches.reduce((count, batch) => count + batch.numRows, 0)).toBeGreaterThan(0);
 
     const emptyBatches = [];
     for await (const batch of parseSHPToArrowInBatches([], {shp: {shape: 'arrow'}})) {
       emptyBatches.push(batch);
     }
     expect(emptyBatches).toHaveLength(1);
-    expect(emptyBatches[0].length).toBe(0);
+    expect(emptyBatches[0].numRows).toBe(0);
   });
 
   test('rejects typed GeoArrow streaming output', async () => {

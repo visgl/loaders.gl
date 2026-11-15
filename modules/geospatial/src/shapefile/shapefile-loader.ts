@@ -4,15 +4,9 @@ import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-cod
 // Copyright (c) vis.gl contributors
 
 import type {Table, RecordBatch} from 'apache-arrow';
-import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {StrictLoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {
-  Batch,
-  GeoArrowEncodingPreference,
-  GeoJSONTable,
-  ArrowTable,
-  ArrowTableBatch
-} from '@loaders.gl/core/schema';
+import type {Batch, GeoArrowEncodingPreference, GeoJSONTable} from '@loaders.gl/core/schema';
 import {SHPLoaderOptions} from './shp-loader-types';
 import {
   parseShapefile,
@@ -21,7 +15,11 @@ import {
 } from './lib/parsers/parse-shapefile';
 import {DBFLoaderOptions} from './dbf-loader-types';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
-import {parseShapefileToArrow, parseShapefileToArrowInBatches} from './shapefile-arrow-loader';
+import {
+  parseShapefileToArrow,
+  parseShapefileToArrowInBatches,
+  SHAPEFILE_HEADER_KEY
+} from './shapefile-arrow-loader';
 import {ShapefileLoader as ShapefileLoaderMetadata} from './shapefile-loader-types';
 import {
   deserializeShapefileWorkerResult,
@@ -53,10 +51,10 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
  * Shapefile loader
  * @note Shapefile is multifile format and requires providing additional files
  */
-export const ShapefileColumnLoader = {
+export const ShapefileLoaderWithParser = {
   ...ShapefileLoaderMetadataWithoutPreload,
-  dataType: null as unknown as ShapefileOutput | GeoJSONTable | ArrowTable,
-  batchType: null as unknown as ShapefileOutput | Batch | ArrowTableBatch,
+  dataType: null as unknown as ShapefileOutput | GeoJSONTable | Table,
+  batchType: null as unknown as ShapefileOutput | Batch | RecordBatch,
   parse: (arrayBuffer, options, context) =>
     getShapefileShape(options) === 'arrow'
       ? parseShapefileToArrow(arrayBuffer, options, context)
@@ -66,12 +64,12 @@ export const ShapefileColumnLoader = {
       ? parseShapefileToArrowInBatches(asyncIterator, options, context)
       : parseShapefileInBatches(asyncIterator, options, context),
   serializeWorkerResult: serializeShapefileWorkerResult,
-  deserializeWorkerResult: deserializeShapefileOutput,
+  deserializeWorkerResult: (result, options) => deserializeShapefileOutput(result, options, false),
   serializeWorkerBatch: serializeShapefileWorkerBatch,
-  deserializeWorkerBatch: deserializeShapefileOutput
+  deserializeWorkerBatch: (result, options) => deserializeShapefileOutput(result, options, true)
 } as const satisfies LoaderWithParser<
-  ShapefileOutput | GeoJSONTable | ArrowTable,
-  ShapefileOutput | Batch | ArrowTableBatch,
+  ShapefileOutput | GeoJSONTable | Table,
+  ShapefileOutput | Batch | RecordBatch,
   ShapefileLoaderOptions
 >;
 
@@ -81,94 +79,46 @@ function getShapefileShape(
   return options?.shapefile?.shape || 'arrow';
 }
 
-/** Materializes requested GeoJSON features from hydrated WKB and property columns on the caller. */
-function deserializeShapefileOutput(result: unknown, options?: ShapefileLoaderOptions): any {
-  const table = deserializeShapefileWorkerResult<ArrowTable & {loaderData?: object}>(result);
+/** Materializes requested GeoJSON features from native worker columns on the caller. */
+function deserializeShapefileOutput(
+  result: unknown,
+  options: ShapefileLoaderOptions | undefined,
+  isBatch: boolean
+): any {
+  const table = deserializeShapefileWorkerResult<Table | RecordBatch>(result);
   if (getShapefileShape(options) === 'arrow') return table;
-  const features = table.data.toArray().map(row => {
-    const {geometry, ...properties} = row.toJSON();
+
+  const header = JSON.parse(table.schema.metadata.get(SHAPEFILE_HEADER_KEY) || '{}');
+  const loaderData = header.shx
+    ? {
+        ...header,
+        shx: {
+          offsets: Int32Array.from(header.shx.offsets),
+          lengths: Int32Array.from(header.shx.lengths)
+        }
+      }
+    : header;
+  const features = table.toArray().map(row => {
+    const {geometry, ...properties} = row!.toJSON();
     return {
       type: 'Feature',
       geometry: geometry ? convertWKBToGeometry(geometry.slice().buffer) : null,
       properties
     };
   });
-  if (getShapefileShape(options) === 'geojson-table' && !('batchType' in table)) {
+  if (getShapefileShape(options) === 'geojson-table' && !isBatch) {
     return {
-      ...table.loaderData,
+      ...loaderData,
       shape: 'geojson-table',
       type: 'FeatureCollection',
       schema: {
-        fields: table.schema?.fields.filter(field => field.name !== 'geometry') || [],
+        fields: convertArrowToSchema(table.schema).fields.filter(
+          field => field.name !== 'geometry'
+        ),
         metadata: {}
       },
       features
     };
   }
-  return {...table.loaderData, data: features};
-}
-
-/** Exposes native Arrow output after parsing or worker hydration. */
-export const ShapefileLoaderWithParser = {
-  ...ShapefileColumnLoader,
-  dataType: null as unknown as ShapefileOutput | GeoJSONTable | Table,
-  batchType: null as unknown as ShapefileOutput | Batch | RecordBatch,
-  async parse(input, options, context) {
-    return unwrapShapefileTable(await ShapefileColumnLoader.parse!(input, options, context));
-  },
-  async *parseInBatches(input, options, context) {
-    for await (const batch of ShapefileColumnLoader.parseInBatches!(input, options, context)) {
-      if (isShapefileArrowTable(batch)) {
-        const table = unwrapShapefileTable(batch);
-        if (table.batches.length) yield* table.batches;
-        else yield makeArrowMetadataBatch(table.schema);
-      } else yield batch;
-    }
-  },
-  deserializeWorkerResult(result, options) {
-    return unwrapShapefileTable(deserializeShapefileOutput(result, options));
-  },
-  deserializeWorkerBatch(result, options) {
-    const batch = deserializeShapefileOutput(result, options);
-    if (!isShapefileArrowTable(batch)) return batch;
-    const table = unwrapShapefileTable(batch);
-    return table.batches[0] ?? makeArrowMetadataBatch(table.schema);
-  }
-} as const satisfies LoaderWithParser<
-  ShapefileOutput | GeoJSONTable | Table,
-  ShapefileOutput | Batch | RecordBatch,
-  ShapefileLoaderOptions
->;
-
-/** Identifies Arrow output from the private column parser. */
-function isShapefileArrowTable(result: unknown): result is ArrowTable {
-  return (result as {shape?: string} | null)?.shape === 'arrow-table';
-}
-
-/** Unwraps Arrow columns and passes through legacy results. */
-function unwrapShapefileTable(result: ArrowTable): Table;
-function unwrapShapefileTable<T>(result: T): Exclude<T, ArrowTable> | Table;
-function unwrapShapefileTable(result: unknown): unknown {
-  if (!isShapefileArrowTable(result)) return result;
-  const loaderData = (
-    result as ArrowTable & {
-      loaderData?: {
-        header?: unknown;
-        encoding?: string;
-        prj?: string;
-        shx?: {offsets: Int32Array; lengths: Int32Array};
-      };
-    }
-  ).loaderData;
-  if (loaderData) {
-    const {shx, ...header} = loaderData;
-    const metadata = JSON.stringify({
-      ...header,
-      ...(shx ? {shx: {offsets: Array.from(shx.offsets), lengths: Array.from(shx.lengths)}} : {})
-    });
-    result.data.schema.metadata.set('loaders.gl.shapefile.header', metadata);
-    for (const batch of result.data.batches)
-      batch.schema.metadata.set('loaders.gl.shapefile.header', metadata);
-  }
-  return result.data;
+  return {...loaderData, data: features};
 }

@@ -8,7 +8,7 @@ import {
   type LoaderContext,
   type LoaderWithParser
 } from '@loaders.gl/core/loader-utils';
-import {ShapefileColumnLoader} from '../shapefile/shapefile-loader';
+import {ShapefileLoaderWithParser} from '../shapefile/shapefile-loader';
 
 /** Installs local subloader parsing so streamed sidecars and geometry stay in this worker. */
 function createShapefileContext(context?: LoaderContext, options?: any): LoaderContext {
@@ -65,10 +65,10 @@ function getArrowOptions(options: any): any {
 }
 
 createLoaderWorker({
-  ...ShapefileColumnLoader,
+  ...ShapefileLoaderWithParser,
   /** Parses geometries and sidecar attributes into owned transferable columns. */
   parse(input, options, context) {
-    return ShapefileColumnLoader.parse(
+    return ShapefileLoaderWithParser.parse(
       input,
       getArrowOptions(options),
       createShapefileContext(context, options)
@@ -76,7 +76,7 @@ createLoaderWorker({
   },
   /** Joins streamed geometry and attribute batches without delegating their rows to the caller. */
   parseInBatches(input, options, context) {
-    return ShapefileColumnLoader.parseInBatches(
+    return ShapefileLoaderWithParser.parseInBatches(
       input,
       getArrowOptions(options),
       createShapefileContext(context, options)

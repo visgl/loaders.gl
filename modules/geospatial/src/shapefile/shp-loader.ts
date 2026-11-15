@@ -3,9 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table, RecordBatch} from 'apache-arrow';
-import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 import type {SHPResult} from './lib/parsers/parse-shp';
 import {parseSHPToArrow, parseSHPToArrowInBatches} from './lib/parsers/parse-shp-to-arrow';
@@ -46,14 +44,14 @@ export const SHPWorkerLoaderWithParser = {
 } as const satisfies Loader<any, any, SHPLoaderOptions>;
 
 /** SHP file loader */
-export const SHPColumnLoader: LoaderWithParser<
-  SHPResult | ArrowTable,
-  SHPHeader | (Uint8Array | null)[] | ArrowTableBatch,
+export const SHPLoaderWithParser: LoaderWithParser<
+  SHPResult | Table,
+  SHPHeader | (Uint8Array | null)[] | RecordBatch,
   SHPLoaderOptions
 > = {
   ...SHPLoaderMetadataWithoutPreload,
-  dataType: null as unknown as SHPResult | ArrowTable,
-  batchType: null as unknown as SHPHeader | (Uint8Array | null)[] | ArrowTableBatch,
+  dataType: null as unknown as SHPResult | Table,
+  batchType: null as unknown as SHPHeader | (Uint8Array | null)[] | RecordBatch,
   parse: async (arrayBuffer, options?) =>
     getSHPShape(options) === 'arrow'
       ? parseSHPToArrow(arrayBuffer, options)
@@ -67,7 +65,7 @@ export const SHPColumnLoader: LoaderWithParser<
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options
-  ): AsyncIterable<SHPHeader | (Uint8Array | null)[] | ArrowTableBatch> => {
+  ): AsyncIterable<SHPHeader | (Uint8Array | null)[] | RecordBatch> => {
     const batchOptions =
       typeof options?.core?.batchSize === 'number'
         ? {...options, shp: {...options.shp, batchSize: options.core.batchSize}}
@@ -76,7 +74,7 @@ export const SHPColumnLoader: LoaderWithParser<
       getSHPShape(batchOptions) === 'arrow'
         ? parseSHPToArrowInBatches(arrayBufferIterator, batchOptions)
         : parseSHPInBatches(arrayBufferIterator, batchOptions)
-    ) as AsyncIterable<SHPHeader | (Uint8Array | null)[] | ArrowTableBatch>;
+    ) as AsyncIterable<SHPHeader | (Uint8Array | null)[] | RecordBatch>;
   },
   serializeWorkerResult: serializeShapefileWorkerResult,
   deserializeWorkerResult: deserializeShapefileWorkerResult,
@@ -86,56 +84,4 @@ export const SHPColumnLoader: LoaderWithParser<
 
 function getSHPShape(options?: SHPLoaderOptions): NonNullable<SHPLoaderOptions['shp']>['shape'] {
   return options?.shp?.shape || 'arrow';
-}
-
-/** Exposes native Arrow output after parsing or worker hydration. */
-export const SHPLoaderWithParser = {
-  ...SHPLoaderMetadataWithoutPreload,
-  serializeWorkerResult: serializeShapefileWorkerResult,
-  serializeWorkerBatch: serializeShapefileWorkerBatch,
-  dataType: null as unknown as SHPResult | Table,
-  batchType: null as unknown as SHPHeader | (Uint8Array | null)[] | RecordBatch,
-  async parse(input, options, context) {
-    return unwrapSHPTable(await SHPColumnLoader.parse!(input, options, context));
-  },
-  parseSync(input, options, context) {
-    return unwrapSHPTable(SHPColumnLoader.parseSync!(input, options, context));
-  },
-  async *parseInBatches(input, options, context) {
-    for await (const batch of SHPColumnLoader.parseInBatches!(input, options, context)) {
-      if (isSHPArrowTable(batch)) {
-        const table = unwrapSHPTable(batch);
-        if (table.batches.length) yield* table.batches;
-        else yield makeArrowMetadataBatch(table.schema);
-      } else yield batch;
-    }
-  },
-  deserializeWorkerResult(result) {
-    return unwrapSHPTable(deserializeShapefileWorkerResult(result));
-  },
-  deserializeWorkerBatch(result) {
-    const batch = deserializeShapefileWorkerBatch<SHPHeader | (Uint8Array | null)[] | ArrowTable>(
-      result
-    );
-    if (!isSHPArrowTable(batch)) return batch;
-    const table = unwrapSHPTable(batch);
-    return table.batches[0] ?? makeArrowMetadataBatch(table.schema);
-  }
-} as const satisfies LoaderWithParser<
-  SHPResult | Table,
-  SHPHeader | (Uint8Array | null)[] | RecordBatch,
-  SHPLoaderOptions
->;
-
-/** Identifies Arrow output from the private column parser. */
-function isSHPArrowTable(result: unknown): result is ArrowTable {
-  return (result as {shape?: string} | null)?.shape === 'arrow-table';
-}
-
-/** Unwraps Arrow columns and passes through legacy results. */
-function unwrapSHPTable(result: ArrowTable): Table;
-function unwrapSHPTable<T>(result: T): Exclude<T, ArrowTable> | Table;
-function unwrapSHPTable(result: unknown): unknown {
-  if (!isSHPArrowTable(result)) return result;
-  return result.data;
 }
