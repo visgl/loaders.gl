@@ -3,15 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type * as arrow from 'apache-arrow';
-import {isArrowTable} from '@math.gl/arrow';
-import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
-
 /** Data accepted by MeshArrowPointCloudLayer. */
-export type MeshArrowPointCloudData =
-  | MeshArrowTable
-  | arrow.Table
-  | AsyncIterable<ArrowTableBatch>
-  | null;
+export type MeshArrowPointCloudData = arrow.Table | AsyncIterable<arrow.RecordBatch> | null;
 
 /**
  * Returns the async batch index encoded in a rendered sublayer id.
@@ -64,46 +57,12 @@ export function getSerializableArrowValue(value: unknown): unknown {
 }
 
 /**
- * Returns an Apache Arrow table from supported non-streaming layer data.
- * @param data Mesh Arrow table wrapper or raw Apache Arrow table.
- * @returns Apache Arrow table.
- */
-export function getArrowTable(
-  data: MeshArrowTable | arrow.Table | AsyncIterable<ArrowTableBatch>
-): arrow.Table {
-  return isMeshArrowTable(data) ? data.data : (data as arrow.Table);
-}
-
-/**
- * Checks whether layer data is a loaders.gl Arrow table wrapper.
- * @param data Value to test.
- * @returns `true` when the value is a Mesh Arrow table wrapper.
- */
-export function isMeshArrowTable(data: unknown): data is MeshArrowTable {
-  return (data as MeshArrowTable).shape === 'arrow-table';
-}
-
-/**
  * Returns true when data can be consumed as async Arrow table batches.
  * @param data Value to test.
  * @returns `true` when the value is async iterable.
  */
-export function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> {
+export function isAsyncIterable(data: unknown): data is AsyncIterable<arrow.RecordBatch> {
   return Boolean(
-    data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
-  );
-}
-
-/**
- * Returns true when a value is a loaders.gl Arrow table data batch.
- * @param data Value to test.
- * @returns `true` when the value is an Arrow table batch.
- */
-export function isArrowTableBatch(data: unknown): data is ArrowTableBatch {
-  const arrowTableBatch = data as ArrowTableBatch;
-  return (
-    arrowTableBatch?.shape === 'arrow-table' &&
-    arrowTableBatch.batchType === 'data' &&
-    isArrowTable(arrowTableBatch.data)
+    data && typeof (data as AsyncIterable<arrow.RecordBatch>)[Symbol.asyncIterator] === 'function'
   );
 }

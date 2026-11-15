@@ -15,12 +15,7 @@ import {
   GEOARROW_POINT_WKB_FILE,
   GEOARROW_POLYGON_FILE
 } from '@loaders.gl/tables/arrow/test/data/geoarrow/test-cases';
-import {
-  convertGeoArrowTableToBinaryFeatureCollection,
-  GeoArrowLayer,
-  type GeoArrowLayerProps
-} from '@loaders.gl/deck-layers';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import {GeoArrowLayer, type GeoArrowLayerProps} from '@loaders.gl/deck-layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
 /**
  * Loads an Apache Arrow table from a GeoArrow test fixture.
@@ -205,18 +200,6 @@ test('GeoArrowLayer renders geometry collections as multiple primitive sublayers
     'renders points from the geometry collection'
   ).toBeTruthy();
   expect(sublayers[0].props.data.lines, 'renders lines from the geometry collection').toBeTruthy();
-});
-test('GeoArrow adapter accepts loaders.gl ArrowTable wrappers', async () => {
-  const table = await loadArrowTable(GEOARROW_POINT_WKB_FILE);
-  const binaryFeatureCollection = convertGeoArrowTableToBinaryFeatureCollection({
-    shape: 'arrow-table',
-    data: table
-  } as ArrowTable);
-  expect(binaryFeatureCollection.shape).toBe('binary-feature-collection');
-  expect(
-    binaryFeatureCollection.points,
-    'converts wrapper input to binary point data'
-  ).toBeTruthy();
 });
 test('GeoArrowLayer throws when multiple geometry columns are present without geometryColumn', async () => {
   const pointTable = await loadArrowTable(GEOARROW_POINT_FILE);

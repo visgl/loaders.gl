@@ -1,8 +1,8 @@
-import {Table, type RecordBatch} from 'apache-arrow';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table, type RecordBatch} from 'apache-arrow';
 import {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
@@ -20,8 +20,8 @@ import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 
 import {load, loadInBatches} from '@loaders.gl/core';
 import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
-import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
-import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import type {Mesh} from '@loaders.gl/core/schema';
+import {convertTableToMesh, isNativeArrowTable} from '@loaders.gl/core/schema-utils';
 import {DracoLoader} from '@loaders.gl/scene';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {OBJLoader} from '@loaders.gl/scene/obj';
@@ -85,7 +85,7 @@ type AppState = {
   error?: string | null;
 };
 
-type PointCloudData = DeckPoint[] | MeshArrowTable | AsyncIterable<ArrowTableBatch> | null;
+type PointCloudData = DeckPoint[] | Table | AsyncIterable<RecordBatch> | null;
 
 type DeckPoint = {
   position: [number, number, number];
@@ -150,7 +150,7 @@ export default function App(props: AppProps = {}) {
 
   const layers = state.pointData
     ? [
-        isMeshArrowTable(state.pointData) || isArrowTableBatchIterator(state.pointData)
+        isNativeArrowTable(state.pointData) || isArrowTableBatchIterator(state.pointData)
           ? createArrowPointCloudLayer(state.pointData, state.selectedExampleName)
           : createPointCloudLayer(state.pointData, state.selectedExampleName)
       ]
@@ -393,14 +393,14 @@ export default function App(props: AppProps = {}) {
       if (loadRequestId.current !== requestId) {
         return;
       }
-      const mesh = isMeshArrowTable(pointCloud)
+      const mesh = isNativeArrowTable(pointCloud)
         ? ((convertTableToMesh(pointCloud) as unknown) as Mesh)
         : (pointCloud as Mesh);
       const {schema, header, loaderData, attributes} = mesh as any;
 
       const viewState = getViewState(state.viewState, state.controllerMode, loaderData, attributes);
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
-      const pointData = isMeshArrowTable(pointCloud)
+      const pointData = isNativeArrowTable(pointCloud)
         ? pointCloud
         : convertLoadersMeshToDeckPointCloudData(attributes);
 
@@ -430,7 +430,7 @@ export default function App(props: AppProps = {}) {
   }
 }
 
-async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrowTable> {
+async function loadPointCloudExample(example: Example): Promise<Mesh | Table> {
   const urls = getExampleUrls(example);
   const loader = getPointCloudLoader(example);
   const pointClouds = await Promise.all(
@@ -445,21 +445,21 @@ async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrow
     )
   );
 
-  return combineMeshArrowTables(pointClouds.map(data => ({shape: 'arrow-table', data}) as MeshArrowTable));
+  return combineMeshArrowTables(pointClouds);
 }
 
 /**
- * Loads a streamable point cloud example as loaders.gl Arrow table batches.
+ * Loads a streamable point cloud example as native Arrow record batches.
  */
 async function loadPointCloudExampleInBatches(
   example: Example,
   callbacks: {
-    onBatch: (arrowTableBatch: ArrowTableBatch, pointCount: number) => void;
+    onBatch: (arrowTableBatch: RecordBatch, pointCount: number) => void;
     onComplete: () => void;
     onError: (error: unknown) => void;
     onFirstBatch: () => void;
   }
-): Promise<AsyncIterable<ArrowTableBatch>> {
+): Promise<AsyncIterable<RecordBatch>> {
   const urls = getExampleUrls(example);
   if (urls.length !== 1) {
     throw new Error('Streaming point cloud examples require a single URL.');
@@ -479,19 +479,19 @@ async function loadPointCloudExampleInBatches(
 async function* trackPointCloudBatches(
   pointCloudBatches: AsyncIterable<RecordBatch>,
   callbacks: {
-    onBatch: (arrowTableBatch: ArrowTableBatch, pointCount: number) => void;
+    onBatch: (arrowTableBatch: RecordBatch, pointCount: number) => void;
     onComplete: () => void;
     onError: (error: unknown) => void;
     onFirstBatch: () => void;
   }
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<RecordBatch> {
   let pointCount = 0;
   let batchIndex = 0;
 
   try {
     for await (const pointCloudBatch of pointCloudBatches) {
-      const arrowTableBatch = normalizeArrowTableBatch(pointCloudBatch);
-      pointCount += arrowTableBatch.length;
+      const arrowTableBatch = pointCloudBatch;
+      pointCount += arrowTableBatch.numRows;
       callbacks.onBatch(arrowTableBatch, pointCount);
       if (batchIndex === 0) {
         callbacks.onFirstBatch();
@@ -506,40 +506,18 @@ async function* trackPointCloudBatches(
   }
 }
 
-/**
- * Converts current PLY streaming output to the loaders.gl Arrow table batch wrapper.
- */
-function normalizeArrowTableBatch(batch: RecordBatch): ArrowTableBatch {
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    data: new Table(batch.schema, [batch]),
-    length: batch.numRows
-  };
+/** Converts one native batch to Mesh category data for bounds and display. */
+function convertArrowTableBatchToMesh(batch: RecordBatch): Mesh {
+  return convertTableToMesh(new Table(batch.schema, [batch]));
 }
 
-/**
- * Converts an Arrow table batch to Mesh category data for metadata, bounds, and view-state helpers.
- */
-function convertArrowTableBatchToMesh(arrowTableBatch: ArrowTableBatch): Mesh {
-  return convertTableToMesh({
-    shape: 'arrow-table',
-    topology: 'point-list',
-    schema: arrowTableBatch.schema,
-    data: arrowTableBatch.data
-  } as MeshArrowTable) as unknown as Mesh;
-}
-
-function combineMeshArrowTables(pointClouds: MeshArrowTable[]): MeshArrowTable {
-  const firstPointCloud = pointClouds[0];
-  if (!firstPointCloud || pointClouds.some((pointCloud) => !isMeshArrowTable(pointCloud))) {
+function combineMeshArrowTables(pointClouds: unknown[]): Table {
+  const tables = pointClouds.filter(isNativeArrowTable);
+  if (!tables.length || tables.length !== pointClouds.length) {
     throw new Error('Multi-file point cloud examples require Arrow table loader output.');
   }
-
-  return {
-    ...firstPointCloud,
-    data: firstPointCloud.data.concat(...pointClouds.slice(1).map((pointCloud) => pointCloud.data))
-  };
+  const [firstTable, ...remainingTables] = tables;
+  return firstTable.concat(...remainingTables);
 }
 
 function getExampleUrls(example: Example): string[] {
@@ -580,33 +558,29 @@ function isGaussianSplatExample(example: Example): boolean {
   );
 }
 
-function isMeshArrowTable(data: unknown): data is MeshArrowTable {
-  return Boolean(data && typeof data === 'object' && 'shape' in data && data.shape === 'arrow-table');
-}
-
 /**
- * Returns true when point data is an async iterator of loaders.gl Arrow table batches.
+ * Returns true when point data is an async iterator of native Arrow record batches.
  */
-function isArrowTableBatchIterator(data: unknown): data is AsyncIterable<ArrowTableBatch> {
+function isArrowTableBatchIterator(data: unknown): data is AsyncIterable<RecordBatch> {
   return Boolean(
     data &&
       typeof data === 'object' &&
-      typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
+      typeof (data as AsyncIterable<RecordBatch>)[Symbol.asyncIterator] === 'function'
   );
 }
 
 function getPointDataLength(pointData: any): number {
-  if (isMeshArrowTable(pointData)) {
-    return pointData.data.numRows;
+  if (isNativeArrowTable(pointData)) {
+    return pointData.numRows;
   }
   return pointData?.length || 0;
 }
 
 function createArrowPointCloudLayer(
-  pointData: MeshArrowTable | AsyncIterable<ArrowTableBatch>,
+  pointData: Table | AsyncIterable<RecordBatch>,
   selectedExampleName?: string | null
 ): MeshArrowPointCloudLayer | SplatLayer {
-  if (isMeshArrowTable(pointData) && isGaussianSplatArrowTable(pointData)) {
+  if (isNativeArrowTable(pointData) && isGaussianSplatArrowTable(pointData)) {
     return createSplatLayer(pointData, selectedExampleName);
   }
 
@@ -626,7 +600,7 @@ function createArrowPointCloudLayer(
 }
 
 function createSplatLayer(
-  pointData: MeshArrowTable,
+  pointData: Table,
   selectedExampleName?: string | null
 ): SplatLayer {
   return new SplatLayer({
@@ -641,8 +615,8 @@ function createSplatLayer(
   });
 }
 
-function isGaussianSplatArrowTable(pointData: MeshArrowTable): boolean {
-  return pointData.data.schema.metadata.get('loaders_gl.semantic_type') === 'gaussian-splats';
+function isGaussianSplatArrowTable(pointData: Table): boolean {
+  return pointData.schema.metadata.get('loaders_gl.semantic_type') === 'gaussian-splats';
 }
 
 function createPointCloudLayer(
@@ -1063,17 +1037,17 @@ function getPointRow(pointData: any, pointIndex: number): DeckPoint | null {
     return null;
   }
 
-  if (isMeshArrowTable(pointData)) {
-    const position = pointData.data.getChild('POSITION')?.get(pointIndex);
+  if (isNativeArrowTable(pointData)) {
+    const position = pointData.getChild('POSITION')?.get(pointIndex);
     if (!position) {
       return null;
     }
-    const color = pointData.data.getChild('COLOR_0')?.get(pointIndex);
+    const color = pointData.getChild('COLOR_0')?.get(pointIndex);
     return {
       position: Array.from(position) as [number, number, number],
       rowIndex: pointIndex,
-      intensity: pointData.data.getChild('intensity')?.get(pointIndex),
-      classification: pointData.data.getChild('classification')?.get(pointIndex),
+      intensity: pointData.getChild('intensity')?.get(pointIndex),
+      classification: pointData.getChild('classification')?.get(pointIndex),
       color: color ? (Array.from(color) as [number, number, number, number]) : undefined
     };
   }
