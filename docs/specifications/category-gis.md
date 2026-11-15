@@ -54,13 +54,13 @@ Each loader reference documents its alternate shapes and format-specific fields.
 
 | Loader | Default result | Scope |
 | --- | --- | --- |
-| [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | `ArrowTable` | Features from XML documents. |
-| [`GeoJSONLoader`](/docs/modules/tables/json/api-reference/geojson-loader) | `ArrowTable` | GeoJSON features. |
-| [`ShapefileLoader`](/docs/modules/geospatial/shapefile/api-reference/shapefile-loader) | `ArrowTable` | Features joined from geometry and property files. |
-| `SHPLoader` | `ArrowTable` | Geometry-only shapefile records. |
-| [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader) | `ArrowTable` | Features from a FlatGeobuf file. |
-| [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader) | `ArrowTable` | Features from selected vector-tile layers. |
-| [`GeoPackageLoader`](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader) | `ArrowTable` | Features from a selected table. |
+| [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | Apache Arrow `Table` | Features from XML documents. |
+| [`GeoJSONLoader`](/docs/modules/tables/json/api-reference/geojson-loader) | Apache Arrow `Table` | GeoJSON features. |
+| [`ShapefileLoader`](/docs/modules/geospatial/shapefile/api-reference/shapefile-loader) | Apache Arrow `Table` | Features joined from geometry and property files. |
+| `SHPLoader` | Apache Arrow `Table` | Geometry-only shapefile records. |
+| [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader) | Apache Arrow `Table` | Features from a FlatGeobuf file. |
+| [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader) | Apache Arrow `Table` | Features from selected vector-tile layers. |
+| [`GeoPackageLoader`](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader) | Apache Arrow `Table` | Features from a selected table. |
 | [`WKBLoader`](/docs/modules/geospatial/wkt/api-reference/wkb-loader), [`WKTLoader`](/docs/modules/geospatial/wkt/api-reference/wkt-loader) | GeoJSON geometry | One geometry, without a feature/property wrapper. |
 
 ## Supported shapes

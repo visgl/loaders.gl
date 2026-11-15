@@ -15,7 +15,7 @@ import {
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {GeometryConverter} from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import type {ArrowTable, Geometry, GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
+import type {Geometry, GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 
 const ROOT_TILE = {x: 0, y: 0, z: 0};
 const POINT: Geometry = {type: 'Point', coordinates: [-90, 40]};
@@ -64,7 +64,7 @@ test.each([0, 1])('Arrow tile source enforces maxZoom with indexMaxZoom=%s', asy
 function makeTable(
   geometries: (Geometry | null)[],
   encodingPreference: GeoArrowEncodingPreference = 'geoarrow.wkb'
-): ArrowTable {
+): arrow.Table {
   return convertFeaturesToGeoArrowTable(
     geometries.map((geometry, rowIndex) => ({
       type: 'Feature',
@@ -413,7 +413,7 @@ test('Arrow tile source rejects invalid inputs and geometry declarations', async
   await expect(new ArrowTableVectorTileSource('missing.arrow').ready).rejects.toThrow(
     'core.loaders'
   );
-  await expect(new ArrowTableVectorTileSource({} as ArrowTable).ready).rejects.toThrow(
+  await expect(new ArrowTableVectorTileSource({} as arrow.Table).ready).rejects.toThrow(
     'requires an Arrow table'
   );
   await expect(

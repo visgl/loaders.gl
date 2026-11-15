@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table as ArrowTable} from 'apache-arrow';
-import {isNativeArrowTable} from '@loaders.gl/core/schema-utils';
+import {isArrowTable} from '@loaders.gl/core/schema-utils';
 import type {Table, TableBatch} from '@loaders.gl/core/schema';
 
 /** Input shared by table writers that also accept loaders.gl row or columnar tables. */
@@ -14,8 +14,8 @@ export type TableWriterBatch = TableBatch;
 
 /** Distinguishes native Arrow from the row and column layouts accepted by writers. */
 export function isNativeWriterTable(table: TableWriterInput): table is ArrowTable {
-  if (isNativeArrowTable(table)) return true;
-  if ('data' in table && isNativeArrowTable(table.data)) {
+  if (isArrowTable(table)) return true;
+  if ('data' in table && isArrowTable(table.data)) {
     throw new Error('Pass the Apache Arrow table directly to the writer');
   }
   return false;

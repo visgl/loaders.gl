@@ -46,7 +46,7 @@ import {CSVLoader} from '@loaders.gl/tables/csv/index';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import {convertArrowToSchema, convertTable, getTableLength, isNativeArrowTable} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, convertTable, getTableLength, isArrowTable} from '@loaders.gl/core/schema-utils';
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
@@ -528,7 +528,7 @@ function getLoaderOptions(
 }
 
 function normalizeLoadedTable(table: LoadedTable, example?: Example | null): LoadedTable {
-  if (isNativeArrowTable(table)) {
+  if (isArrowTable(table)) {
     if (getGeoArrowLayerGeometryColumn(table)) {
       return table;
     }
@@ -602,7 +602,7 @@ function getLoadedTableInfo(table: LoadedTable): {
   loadedDataName: LoadedDataName;
   loadedGeometryType: LoadedGeometryType;
 } {
-  if (!isNativeArrowTable(table)) {
+  if (!isArrowTable(table)) {
     return {
       loadedDataName: 'geojson',
       loadedGeometryType: null
@@ -684,7 +684,7 @@ function renderLayer({table, selectedExample}: {table: LoadedTable | null; selec
 }
 
 function getGeoArrowLayerGeometryColumn(table: LoadedTable | null): string | null {
-  if (!isNativeArrowTable(table)) {
+  if (!isArrowTable(table)) {
     return null;
   }
 

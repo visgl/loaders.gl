@@ -4,7 +4,7 @@
 
 import {
   usesNativeArrowBatches,
-  isNativeArrowTable,
+  isArrowTable,
   normalizeNativeArrowBatches
 } from '../loader-utils/native-arrow';
 
@@ -289,7 +289,7 @@ async function* parseChunkInBatches(
     context
   );
 
-  if (isNativeArrowTable(parsedData)) {
+  if (isArrowTable(parsedData)) {
     yield* parsedData.batches;
     return;
   }

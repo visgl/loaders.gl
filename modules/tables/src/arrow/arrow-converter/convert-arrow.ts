@@ -13,7 +13,7 @@ import type {
 import {
   convertArrowToTable,
   convertTableToArrow,
-  isNativeArrowTable
+  isArrowTable
 } from '@loaders.gl/core/schema-utils';
 import type {ArrowConvertFromOptions, ArrowConvertToOptions} from './arrow-converter';
 
@@ -51,5 +51,5 @@ export function convertArrow(
  * Checks whether a value is an Apache Arrow table instance rather than a loaders.gl table wrapper.
  */
 export function isApacheArrowTable(input: arrow.Table | Table): input is arrow.Table {
-  return isNativeArrowTable(input);
+  return isArrowTable(input);
 }

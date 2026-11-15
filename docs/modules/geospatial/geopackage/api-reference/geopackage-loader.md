@@ -81,9 +81,10 @@ single table, the metadata-marked default, or the first vector table as a fallba
 ```typescript
 import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 import {load} from '@loaders.gl/core';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import {isArrowTable} from '@loaders.gl/core/schema-utils';
 
-const table: ArrowTable = await load(url, GeoPackageLoader);
+const table = await load(url, GeoPackageLoader);
+if (!isArrowTable(table)) throw new Error('Expected an Arrow table');
 ```
 
 To load a specific table named `feature_table` in a GeoPackage file as GeoJSON:
@@ -140,7 +141,7 @@ The `GeoPackageLoader` loads one GeoPackage vector table.
 
 - If `geopackage.shape` is `'arrow'`:
 
-  Returns an `ArrowTable` for the selected table with a WKB `geometry` column.
+  Returns an Apache Arrow `Table` for the selected table with a WKB `geometry` column.
 
 Use [`GeoPackageSource`](/docs/modules/geospatial/geopackage/api-reference/geopackage-source) when the
 application needs table discovery, metadata for multiple layers, or repeated table queries.

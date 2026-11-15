@@ -7,10 +7,7 @@ import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source'
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
-import {
-  updateNativeArrowTableMetadata,
-  isNativeArrowRecordBatch
-} from '@loaders.gl/core/schema-utils';
+import {updateNativeArrowTableMetadata, isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
 
 import {
@@ -151,7 +148,7 @@ async function* makeNativeJSONBatches(
   batches: AsyncIterable<ArrowTableBatch | MetadataBatch | JSONBatch>
 ): AsyncIterable<ArrowTableBatch> {
   for await (const batch of batches) {
-    if (isNativeArrowRecordBatch(batch)) yield batch;
+    if (isArrowRecordBatch(batch)) yield batch;
   }
 }
 

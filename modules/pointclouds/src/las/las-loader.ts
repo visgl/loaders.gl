@@ -7,7 +7,7 @@ import type {Table, RecordBatch} from 'apache-arrow';
 import {
   convertMeshToArrowTable,
   convertTableToMesh,
-  isNativeArrowTable,
+  isArrowTable,
   makeArrowMetadataBatch
 } from '@loaders.gl/core/schema-utils';
 import {
@@ -128,7 +128,7 @@ function deserializeLASWorkerTable(
     progress?: number;
   };
   const table = deserializeNativeArrowWorkerResult(payload.columns);
-  if (!isNativeArrowTable(table)) throw new Error('LAS workers require an Arrow table');
+  if (!isArrowTable(table)) throw new Error('LAS workers require an Arrow table');
   return convertLASMesh(
     {data: table, loader: 'las', loaderData: payload.loaderData, progress: payload.progress},
     options

@@ -9,7 +9,7 @@ import {
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
-import {convertArrowToSchema, isNativeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import type {Field, Schema as TableSchema} from '@loaders.gl/core/schema';
 import {makeArrowMetadataBatch, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
@@ -431,7 +431,7 @@ async function getNextArrowBatch(
   while (true) {
     const result = await iterator.next();
     if (result.done) return null;
-    if (isNativeArrowRecordBatch(result.value)) {
+    if (isArrowRecordBatch(result.value)) {
       const batch = result.value;
       return Object.getPrototypeOf(batch) === arrow.RecordBatch.prototype
         ? batch

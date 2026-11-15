@@ -4,7 +4,7 @@
 
 import {Table, type RecordBatch} from 'apache-arrow';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {isNativeArrowTable, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {isArrowTable, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   deserializeNativeArrowWorkerResult,
   serializeNativeArrowWorkerResult
@@ -32,12 +32,12 @@ export const PLYLoaderWithParser = {
   serializeWorkerBatch: result => serializeNativeArrowWorkerResult(result as RecordBatch),
   deserializeWorkerResult(result: unknown, options?: PLYLoaderOptions) {
     const table = deserializeNativeArrowWorkerResult(result);
-    if (!isNativeArrowTable(table)) throw new Error('PLY worker requires an Arrow table');
+    if (!isArrowTable(table)) throw new Error('PLY worker requires an Arrow table');
     return options?.ply?.shape === 'mesh' ? convertPLYTableToMesh(table) : table;
   },
   deserializeWorkerBatch(result: unknown, options?: PLYLoaderOptions) {
     const value = deserializeNativeArrowWorkerResult(result);
-    const batch = isNativeArrowTable(value)
+    const batch = isArrowTable(value)
       ? (value.batches[0] ?? makeArrowMetadataBatch(value.schema))
       : value;
     return options?.ply?.shape === 'mesh'

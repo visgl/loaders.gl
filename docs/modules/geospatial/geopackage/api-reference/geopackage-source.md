@@ -32,7 +32,7 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
     {label: 'Open', value: 'GeoPackage URL or supported loaded data'},
     {label: 'Discover', value: 'Tables, geometry columns, and default selection'},
     {label: 'Read', value: 'One selected table with loader options'},
-    {label: 'Output', value: 'ArrowTable with GeoPackage metadata'}
+    {label: 'Output', value: 'Apache Arrow table with GeoPackage metadata'}
   ]}
 />
 

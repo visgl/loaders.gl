@@ -5,13 +5,13 @@
 /* eslint-disable no-else-return */
 
 import type {Table as NativeArrowTable} from 'apache-arrow';
-import {isNativeArrowTable} from '../../../../lib/loader-utils/native-arrow';
+import {isArrowTable} from '../../../../lib/loader-utils/native-arrow';
 import {convertArrowToSchema} from '../../schema/convert-arrow-schema';
 import type {Table, ArrayRowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 
 /** Checks whether a value is a native Arrow table or a loaders.gl table. */
 export function isTable(table: any): table is Table | NativeArrowTable {
-  if (isNativeArrowTable(table)) return true;
+  if (isArrowTable(table)) return true;
   const shape = typeof table === 'object' && table?.shape;
   switch (shape) {
     case 'array-row-table':

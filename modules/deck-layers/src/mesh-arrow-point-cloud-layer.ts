@@ -15,7 +15,7 @@ import {
 } from '@deck.gl/core';
 import {PointCloudLayer, type PointCloudLayerProps} from '@deck.gl/layers';
 import {getDeckBinaryDataFromArrowMesh} from '@loaders.gl/core/geoarrow';
-import {isNativeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
+import {isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {
   getArrowTableRowProperties,
   getBatchIndexFromLayerId,
@@ -189,7 +189,7 @@ export class MeshArrowPointCloudLayer extends CompositeLayer<MeshArrowPointCloud
           return;
         }
 
-        if (!isNativeArrowRecordBatch(arrowTableBatch)) {
+        if (!isArrowRecordBatch(arrowTableBatch)) {
           throw new Error('MeshArrowPointCloudLayer async data requires Arrow RecordBatch values.');
         }
 

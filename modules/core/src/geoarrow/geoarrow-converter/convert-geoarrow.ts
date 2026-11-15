@@ -13,7 +13,7 @@ import type {
 import {
   convertArrowToSchema,
   convertArrowToTable,
-  isNativeArrowTable
+  isArrowTable
 } from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowToTable} from '../lib/table-converters/convert-geoarrow-table';
 import {convertTableToGeoArrow} from '../convert-table-to-geoarrow';
@@ -44,7 +44,7 @@ export function convertGeoArrow(
     | 'arrow',
   options?: GeoArrowConvertFromOptions | GeoArrowConvertToOptions
 ): Table | arrow.Table {
-  if (isNativeArrowTable(input)) {
+  if (isArrowTable(input)) {
     if (shape === 'arrow') return input;
     if (shape === 'geojson-table' && !isGeoArrowApacheTable(input)) {
       return convertArrowToTable(input, 'geojson-table');
