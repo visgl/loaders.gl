@@ -100,7 +100,7 @@ export async function convertPointCloudToTileset(
       signal: options.signal,
       onProgress: options.onProgress,
       measureInputBytes: tile => {
-        const table = tile.content?.data.data;
+        const table = tile.content?.data;
         return table
           ? table.schema.fields.reduce(
               (bytes, _field, index) => bytes + (table.getChildAt(index)?.byteLength ?? 0),

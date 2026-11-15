@@ -98,7 +98,7 @@ test('Potree source normalizes tile content and rejects incomplete meshes', asyn
   });
   const content = await source.loadTileContent({id: 'r'});
   expect(content).toMatchObject({pointCount: 1, coordinateSystem: 'cartesian'});
-  expect(content?.data.shape).toBe('arrow-table');
+  expect(content!.data.numRows).toBe(content!.pointCount);
 });
 
 test('Potree source covers loader fallbacks, failures, and color usability', async () => {
@@ -316,9 +316,9 @@ test('Potree bounds, URL layouts, loader options, and mesh normalization cover a
   expect(mesh.attributes.colors).toBe(mesh.attributes.COLOR_0);
 
   const table = source.getPointCloudTileTable(mesh);
-  expect(table.data.numRows).toBe(1);
-  expect(table.data.getChild('COLOR_0')).toBeTruthy();
-  expect(table.data.getChild('NORMAL')).toBeTruthy();
+  expect(table.numRows).toBe(1);
+  expect(table.getChild('COLOR_0')).toBeTruthy();
+  expect(table.getChild('NORMAL')).toBeTruthy();
 });
 
 test('Potree projects hierarchy bounds and normalizes native mesh offsets', async () => {
@@ -399,7 +399,7 @@ test('Potree initializes a tiny inline hierarchy and loads normalized node conte
   expect((await source.getChildren(root)).map(tile => tile.id)).toEqual(['r0']);
   const content = await source.loadTileContent({id: 'r0'});
   expect(content).toMatchObject({pointCount: 1, coordinateSystem: 'meter-offsets'});
-  expect(Array.from(content!.data.data.getChild('POSITION')!.get(0).toArray())).toEqual([-1, 0, 1]);
+  expect(Array.from(content!.data.getChild('POSITION')!.get(0).toArray())).toEqual([-1, 0, 1]);
   expect(load.mock.calls.map(([url]) => url)).toEqual([
     'https://example.test/cloud/cloud.js',
     'https://example.test/cloud/data/r0.bin'

@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {Matrix4} from '@math.gl/core';
-import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {
+  MeshAttribute,
+  MeshAttributes,
+  MeshArrowTable,
+  MeshTopology
+} from '@loaders.gl/core/schema';
 import {deduceMeshSchema, makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import type {GLTFAccessor, GLTFMeshPrimitive, GLTFNode} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
@@ -388,7 +393,7 @@ function getMeshTypedArrayConstructor(componentType: number): MeshTypedArrayCons
 }
 
 /** Map the supported glTF primitive modes to Mesh Arrow topology names. */
-function getMeshTopology(mode: number): MeshArrowTable['topology'] {
+function getMeshTopology(mode: number): MeshTopology {
   switch (mode) {
     case 0:
       return 'point-list';

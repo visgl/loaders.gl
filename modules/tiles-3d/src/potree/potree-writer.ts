@@ -2,12 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  Mesh,
-  MeshArrowTable,
-  MeshArrowTableData,
-  MeshAttribute
-} from '@loaders.gl/core/schema';
+import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {PotreeAttribute, PotreeMetadata} from './types/potree-metadata';
@@ -18,7 +13,7 @@ export type PotreeWriterNode = {
   /** Root r followed by XYZ octant digits 4/2/1. */
   readonly id: string;
   /** Decoded rows belonging exclusively to this node. */
-  readonly mesh: Mesh | MeshArrowTable | MeshArrowTableData;
+  readonly mesh: Mesh | MeshArrowTable;
 };
 
 /** Complete typed file collection; applications own storage or archive packaging. */
@@ -108,9 +103,9 @@ const WIRE_TYPES: [Potree2AttributeType, new (length: number) => WireArray, numb
 ];
 
 /** Validates decoded rows and layouts before writing any point bytes. */
-function getMesh(input: Mesh | MeshArrowTable | MeshArrowTableData): Mesh {
+function getMesh(input: Mesh | MeshArrowTable): Mesh {
   if (!('attributes' in input)) {
-    const table = 'shape' in input ? input.data : input;
+    const table = input;
     /** Rejects null rows and components before Arrow conversion can replace them. */
     type NullableColumn = {nullCount: number; children: readonly NullableColumn[]};
     const checkNulls = (data: NullableColumn): void => {
@@ -446,7 +441,7 @@ function getDirectory(id: string, step: number): string {
  * Version 2.0 output uses DEFAULT encoding; readers also accept upstream BROTLI data.
  */
 export async function encodePotreeDataset(
-  input: Mesh | MeshArrowTable | MeshArrowTableData | readonly PotreeWriterNode[],
+  input: Mesh | MeshArrowTable | readonly PotreeWriterNode[],
   options: PotreeWriterOptions = {}
 ): Promise<PotreeDataset> {
   const settings = options.potree || {};
@@ -477,7 +472,7 @@ export async function encodePotreeDataset(
   settings.signal?.throwIfAborted();
   const supplied = Array.isArray(input)
     ? (input as readonly PotreeWriterNode[])
-    : [{id: 'r', mesh: input as Mesh | MeshArrowTable | MeshArrowTableData}];
+    : [{id: 'r', mesh: input as Mesh | MeshArrowTable}];
   if (!supplied.length || supplied.length > maxNodes)
     throw new Error('Potree writer node budget exceeded');
   const nodes = supplied

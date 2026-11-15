@@ -3,22 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {getFloat16Storage, isNativeFloat16Array} from '@loaders.gl/core/schema';
-import type {
-  BigTypedArray,
-  Mesh,
-  MeshAttribute,
-  MeshArrowTable,
-  MeshTable,
-  Schema
-} from '@loaders.gl/core/schema';
+import type {BigTypedArray, Mesh, MeshAttribute, MeshTable, Schema} from '@loaders.gl/core/schema';
 import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListVector} from '../arrow-utils/arrow-fixed-size-list-utils';
-import {
-  deserializeArrowField,
-  deserializeArrowMetadata,
-  serializeArrowSchema
-} from '../schema/convert-arrow-schema';
+import {deserializeArrowField, deserializeArrowMetadata} from '../schema/convert-arrow-schema';
 
 /** Arrow column inputs, including exact 64-bit integers that are not GPU attributes. */
 export type MeshArrowAttributes = Record<
@@ -99,13 +88,8 @@ export function convertMeshToColumnarTable(mesh: Mesh): MeshTable {
   };
 }
 
-/**
- * Convert a loaders.gl Mesh to a legacy Arrow mesh wrapper for existing mesh consumers.
- * @param mesh Mesh to convert.
- * @param batchSize Reserved for future chunked Arrow conversion.
- * @returns Mesh data as an Apache Arrow table wrapper.
- */
-export function convertMeshToArrowTableWrapper(mesh: Mesh, batchSize?: number): MeshArrowTable {
+/** Builds a native Apache Arrow mesh table, including topology, indices, and bounds. */
+export function convertMeshToArrowTable(mesh: Mesh): arrow.Table {
   return makeMeshArrowTable(mesh.attributes, {
     schema: mesh.schema,
     topology: mesh.topology,
@@ -115,41 +99,15 @@ export function convertMeshToArrowTableWrapper(mesh: Mesh, batchSize?: number): 
   });
 }
 
-/** Builds a native Apache Arrow mesh table, including topology, indices, and bounds. */
-export function convertMeshToArrowTable(mesh: Mesh): arrow.Table {
-  return makeMeshArrowData(mesh.attributes, {
-    schema: mesh.schema,
-    topology: mesh.topology,
-    mode: mesh.mode,
-    boundingBox: mesh.header?.boundingBox,
-    indices: hasMeshIndices(mesh) ? mesh.indices : undefined
-  });
-}
-
 /**
- * Create a MeshArrowTable directly from mesh attribute typed arrays.
+ * Creates a native Apache Arrow mesh table from typed attributes.
  * @param attributes Mesh attributes to expose as Arrow columns.
  * @param options Mesh table metadata and optional schema.
- * @returns Mesh data as an Apache Arrow table wrapper.
+ * @returns The Arrow table with mesh topology, bounds, and optional indices.
  */
 export function makeMeshArrowTable(
   attributes: MeshArrowAttributes,
   options: MeshArrowTableOptions = {}
-): MeshArrowTable {
-  const data = makeMeshArrowData(attributes, options);
-  return {
-    shape: 'arrow-table',
-    schema: serializeArrowSchema(data.schema),
-    data,
-    topology: options.topology || 'point-list',
-    indices: options.indices
-  };
-}
-
-/** Builds the native Arrow columns and metadata shared by mesh conversion entry points. */
-function makeMeshArrowData(
-  attributes: MeshArrowAttributes,
-  options: MeshArrowTableOptions
 ): arrow.Table {
   const fields: arrow.Field[] = [];
   const columns: {[columnName: string]: arrow.Vector} = {};
@@ -165,7 +123,7 @@ function makeMeshArrowData(
       getAttributeArrowField(options.schema, attributeName, column, attribute.componentType)
     );
 
-    if (attributeName === 'POSITION' && options.indices?.value?.length) {
+    if (attributeName === attributeNames[0] && options.indices?.value?.length) {
       const indicesField = indexedMeshArrowSchema.fields.find(field => field.name === 'indices')!;
       columns.indices = getIndicesVector(options.indices.value, column.length, indicesField.type);
       fields.push(indicesField);

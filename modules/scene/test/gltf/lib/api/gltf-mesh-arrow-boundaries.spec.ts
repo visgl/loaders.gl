@@ -63,7 +63,7 @@ test.each([
   const geometry = convertGLTFToMeshArrow(source).geometries[0];
   expect(geometry.materialized).toBe(true);
   expect(geometry.attributes._VALUE.value).toEqual(new ArrayType([0]));
-  expect(geometry.table.data.numRows).toBe(1);
+  expect(geometry.table.numRows).toBe(1);
 });
 
 test.each([
@@ -76,8 +76,8 @@ test.each([
   const source = createMesh();
   source.json.meshes![0].primitives[0].mode = mode;
   const table = convertGLTFToMeshArrow(source).geometries[0].table;
-  expect(table.schema.metadata).toMatchObject({mode: String(mode)});
-  expect(table.topology).toBe(topology);
+  expect(Object.fromEntries(table.schema.metadata)).toMatchObject({mode: String(mode)});
+  expect(table.schema.metadata.get('topology')).toBe(topology);
 });
 
 test('an explicit empty scene stays empty while scene-less hierarchies infer roots', () => {
@@ -168,5 +168,5 @@ test('sparse indices materialize independently from packed vertex attributes', (
   new Uint32Array(source.buffers[0].arrayBuffer, 4, 1)[0] = 0;
   const geometry = convertGLTFToMeshArrow(source).geometries[0];
   expect(geometry.materialized).toBe(true);
-  expect(geometry.table.indices!.value).toEqual(new Uint32Array([0]));
+  expect(geometry.table.getChild('indices')?.get(0)?.toArray()).toEqual(new Uint32Array([0]));
 });

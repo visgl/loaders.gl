@@ -92,8 +92,8 @@ test('COPC atomic decoding preserves every selected attribute from progressive d
           readCOPCContentColumn(first.value, column)
         );
       } else {
-        expect(Array.from(atomic!.data.data.getChild(column)!)).toEqual(
-          Array.from(first.value.data.data.getChild(column)!)
+        expect(Array.from(atomic!.data.getChild(column)!)).toEqual(
+          Array.from(first.value.data.getChild(column)!)
         );
       }
     }
@@ -125,7 +125,7 @@ test('COPC missing nodes return null and failures release the atomic decode slot
     );
     const content = await source.loadTileContent(tile, {columns: ['POSITION']});
     expect(content!.pointCount).toBe(40);
-    expect(content!.data.data.numCols).toBe(1);
+    expect(content!.data.numCols).toBe(1);
   } finally {
     await source.close();
   }
@@ -293,13 +293,11 @@ test('COPC scans every PDRF 8 field and preserves projected tile origins', async
     const content = await source.loadTileContent(tile);
     expect(content!.coordinateSystem).toBe('lnglat-offsets');
     expect(content!.cartographicOrigin).toEqual([0, 0, 0]);
-    const position = content!.data.data.getChild('POSITION')!.get(0)!.toArray();
+    const position = content!.data.getChild('POSITION')!.get(0)!.toArray();
     expect(position[0]).toBeCloseTo(-0.000179663, 8);
     expect(position[1]).toBeCloseTo(-0.000107798, 8);
     expect(position[2]).toBe(-15);
-    expect(content!.data.data.getChild('POSITION')!.get(0)!.toArray().every(Number.isFinite)).toBe(
-      true
-    );
+    expect(content!.data.getChild('POSITION')!.get(0)!.toArray().every(Number.isFinite)).toBe(true);
     expect(await source.scan({limit: 0}).next()).toMatchObject({done: true});
   } finally {
     await source.close();
@@ -497,8 +495,8 @@ test('COPCLoader#loads full point content for a tile', async () => {
   const content = await source.loadTileContent(tile);
 
   expect(content).toBeTruthy();
-  expect(content?.data.data.getChild('POSITION')?.length).toBe(content?.pointCount);
-  expect(content?.data.shape).toBe('arrow-table');
+  expect(content?.data.getChild('POSITION')?.length).toBe(content?.pointCount);
+  expect(content!.data.numRows).toBe(content!.pointCount);
   expect(content?.cartographicOrigin.length).toBe(3);
 });
 
@@ -510,7 +508,7 @@ test('COPCLoader#loads tile content with TypeScript LAZ decoder', async () => {
   const content = await source.loadTileContent(rootTile);
 
   expect(content).toBeTruthy();
-  expect(content?.data.data.getChild('POSITION')?.length).toBe(content?.pointCount);
+  expect(content?.data.getChild('POSITION')?.length).toBe(content?.pointCount);
 });
 
 test('COPCLoader#implements the TileSource getTileData contract', async () => {
@@ -525,7 +523,7 @@ test('COPCLoader#implements the TileSource getTileData contract', async () => {
   });
 
   expect(content).toBeTruthy();
-  expect((content as any)?.data.shape).toBe('arrow-table');
+  expect(content!.data.getChild('POSITION')).toBeTruthy();
   expect((content as any)?.pointCount).toBe(rootTile.pointCount);
 });
 
@@ -540,12 +538,12 @@ test('COPCLoader#applies selected columns to atomic TypeScript decoding', async 
     columns: ['POSITION', 'COLOR_0', 'intensity', 'classification']
   });
 
-  expect(content?.data.data.getChild('POSITION')).toBeTruthy();
-  expect(content?.data.data.getChild('COLOR_0')).toBeTruthy();
-  expect(content?.data.data.getChild('intensity')).toBeTruthy();
-  expect(content?.data.data.getChild('classification')).toBeTruthy();
-  expect(content?.data.data.getChild('GPS_TIME')).toBeFalsy();
-  expect(content?.data.data.getChild('scanAngle')).toBeFalsy();
+  expect(content?.data.getChild('POSITION')).toBeTruthy();
+  expect(content?.data.getChild('COLOR_0')).toBeTruthy();
+  expect(content?.data.getChild('intensity')).toBeTruthy();
+  expect(content?.data.getChild('classification')).toBeTruthy();
+  expect(content?.data.getChild('GPS_TIME')).toBeFalsy();
+  expect(content?.data.getChild('scanAngle')).toBeFalsy();
 });
 
 test('COPCLoader#float16 converts 16-bit colors for Arrow output', async () => {
@@ -557,11 +555,13 @@ test('COPCLoader#float16 converts 16-bit colors for Arrow output', async () => {
 
   const rootTile = await source.getRootTile();
   const content = await source.loadTileContent(rootTile, {columns: ['POSITION', 'COLOR_0']});
-  const colors = content!.data.data.getChild('COLOR_0')!;
+  const colors = content!.data.getChild('COLOR_0')!;
   expect(colors.type).toBeInstanceOf(arrow.FixedSizeList);
   expect((colors.type as arrow.FixedSizeList).children[0].type).toBeInstanceOf(arrow.Float16);
   expect(
-    content!.data.schema.fields.find(field => field.name === 'COLOR_0')!.metadata?.componentType
+    content!.data.schema.fields
+      .find(field => field.name === 'COLOR_0')!
+      .metadata.get('componentType')
   ).toBe('float16');
   const values = colors.data[0].children[0].values;
   expect(getFloat16Value(values, 0)).toBeGreaterThanOrEqual(0);
@@ -727,8 +727,8 @@ test('COPCLoader#streams TypeScript tile content as Arrow batches', async () => 
     rangeChunkSize: 257,
     rangeConcurrency: 3
   })) {
-    const positions = batch.data.data.getChild('POSITION');
-    const colors = batch.data.data.getChild('COLOR_0');
+    const positions = batch.data.getChild('POSITION');
+    const colors = batch.data.getChild('COLOR_0');
     streamedPointCount += batch.pointCount;
     for (let index = 0; index < batch.pointCount; index++) {
       streamedPositions.push(...(positions?.get(index)?.toArray() || []));
@@ -736,8 +736,8 @@ test('COPCLoader#streams TypeScript tile content as Arrow batches', async () => 
     }
   }
 
-  const atomicPositions = atomicContent?.data.data.getChild('POSITION');
-  const atomicColors = atomicContent?.data.data.getChild('COLOR_0');
+  const atomicPositions = atomicContent?.data.getChild('POSITION');
+  const atomicColors = atomicContent?.data.getChild('COLOR_0');
   const expectedPositions: number[] = [];
   const expectedColors: number[] = [];
   for (let index = 0; index < rootTile.pointCount; index++) {
@@ -787,23 +787,23 @@ test('COPCLoader#selects progressive point-data columns', async () => {
   }
 
   expect(firstBatch).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('POSITION')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('COLOR_0')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('intensity')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('classification')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('synthetic')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('keyPoint')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('withheld')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('overlap')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('GPS_TIME')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('scanAngle')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('userData')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('pointSourceId')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('returnNumber')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('numberOfReturns')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('scannerChannel')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('scanDirectionFlag')).toBeTruthy();
-  expect(firstBatch?.data.data.getChild('edgeOfFlightLine')).toBeTruthy();
+  expect(firstBatch?.data.getChild('POSITION')).toBeTruthy();
+  expect(firstBatch?.data.getChild('COLOR_0')).toBeTruthy();
+  expect(firstBatch?.data.getChild('intensity')).toBeTruthy();
+  expect(firstBatch?.data.getChild('classification')).toBeTruthy();
+  expect(firstBatch?.data.getChild('synthetic')).toBeTruthy();
+  expect(firstBatch?.data.getChild('keyPoint')).toBeTruthy();
+  expect(firstBatch?.data.getChild('withheld')).toBeTruthy();
+  expect(firstBatch?.data.getChild('overlap')).toBeTruthy();
+  expect(firstBatch?.data.getChild('GPS_TIME')).toBeTruthy();
+  expect(firstBatch?.data.getChild('scanAngle')).toBeTruthy();
+  expect(firstBatch?.data.getChild('userData')).toBeTruthy();
+  expect(firstBatch?.data.getChild('pointSourceId')).toBeTruthy();
+  expect(firstBatch?.data.getChild('returnNumber')).toBeTruthy();
+  expect(firstBatch?.data.getChild('numberOfReturns')).toBeTruthy();
+  expect(firstBatch?.data.getChild('scannerChannel')).toBeTruthy();
+  expect(firstBatch?.data.getChild('scanDirectionFlag')).toBeTruthy();
+  expect(firstBatch?.data.getChild('edgeOfFlightLine')).toBeTruthy();
 });
 
 test('COPCLoader#streams position-only TypeScript tile batches', async () => {
@@ -812,15 +812,15 @@ test('COPCLoader#streams position-only TypeScript tile batches', async () => {
 
   const rootTile = await source.getRootTile();
   const atomicContent = await source.loadTileContent(rootTile);
-  const atomicPositions = atomicContent?.data.data.getChild('POSITION');
+  const atomicPositions = atomicContent?.data.getChild('POSITION');
   const streamedPositions: number[] = [];
   for await (const batch of source.loadTileContentInBatches(rootTile, {
     batchSize: 127,
     columns: ['POSITION'],
     rangeChunkSize: 257
   })) {
-    expect(batch.data.data.getChild('COLOR_0')).toBeFalsy();
-    const positions = batch.data.data.getChild('POSITION');
+    expect(batch.data.getChild('COLOR_0')).toBeFalsy();
+    const positions = batch.data.getChild('POSITION');
     for (let index = 0; index < batch.pointCount; index++) {
       streamedPositions.push(...(positions?.get(index)?.toArray() || []));
     }
@@ -986,7 +986,7 @@ test('COPCLoader#loads tile content from a Blob', async () => {
   const content = await source.loadTileContent(rootTile);
 
   expect(content).toBeTruthy();
-  expect(content?.data.data.getChild('POSITION')?.length).toBe(content?.pointCount);
+  expect(content?.data.getChild('POSITION')?.length).toBe(content?.pointCount);
 });
 
 test('COPCLoader#derives cartographic view metadata from the dataset', async () => {
@@ -1364,7 +1364,7 @@ function readCOPCContentColumn(
   content: Awaited<ReturnType<COPCTileSource['loadTileContent']>>,
   columnName: 'POSITION' | 'COLOR_0'
 ): number[] {
-  const column = content?.data.data.getChild(columnName);
+  const column = content?.data.getChild(columnName);
   const values: number[] = [];
   for (let index = 0; index < (column?.length || 0); index++) {
     values.push(...(column?.get(index)?.toArray() || []));

@@ -270,13 +270,10 @@ test('Arrow buffers and null attributes are checked before conversion', async ()
   await expect(new PointCloudTiler(input, {maxInputBytes: 1}).ready).rejects.toThrow(
     'input byte budget'
   );
-  const nullable = {
-    ...input,
-    data: new arrow.Table({
-      POSITION: input.data.getChild('POSITION')!,
-      identifier: arrow.vectorFromArray([null], new arrow.Int32())
-    })
-  };
+  const nullable = new arrow.Table({
+    POSITION: input.getChild('POSITION')!,
+    identifier: arrow.vectorFromArray([null], new arrow.Int32())
+  });
   await expect(new PointCloudTiler(nullable).ready).rejects.toThrow('null point attributes');
 });
 

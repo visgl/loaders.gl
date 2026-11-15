@@ -86,9 +86,9 @@ export function getPointCloudMesh(input: Mesh | MeshArrowTable, maxInputBytes = 
     if (bytes > maxInputBytes)
       throw new TileConversionError('POINT_CLOUD_INPUT_BUDGET', 'Point input byte budget exceeded');
   };
-  if ('shape' in input) {
+  if (!('attributes' in input)) {
     /** Validates nullable nested Arrow columns before conversion. */
-    type ArrowColumn = MeshArrowTable['data']['batches'][number]['data']['children'][number];
+    type ArrowColumn = MeshArrowTable['batches'][number]['data']['children'][number];
     const checkColumn = (column: ArrowColumn): void => {
       if (column.nullCount)
         throw new TileConversionError(
@@ -100,10 +100,10 @@ export function getPointCloudMesh(input: Mesh | MeshArrowTable, maxInputBytes = 
       for (const child of column.children) checkColumn(child);
       for (const dictionary of column.dictionary?.data || []) checkColumn(dictionary);
     };
-    for (const batch of input.data.batches) checkColumn(batch.data);
+    for (const batch of input.batches) checkColumn(batch.data);
   } else
     for (const attribute of Object.values(input.attributes)) countBuffer(attribute.value.buffer);
-  const mesh = 'shape' in input ? convertTableToMesh(input) : input;
+  const mesh = 'attributes' in input ? input : convertTableToMesh(input);
   if (mesh.topology !== 'point-list' || mesh.indices)
     throw new TileConversionError(
       'POINT_CLOUD_INPUT_INVALID',

@@ -68,16 +68,18 @@ test.each([
 ] as const)('LASLoader parses %s into the same columns as uncompressed LAS', async (_label, fixtureIndex) => {
   const fixture = fixtures[fixtureIndex];
   const expected = convertTableToMesh(
-    parseLAS(createUncompressedFile(fixture), options)
+    parseLAS(createUncompressedFile(fixture), options).data
   ).attributes;
-  const actual = convertTableToMesh(parseLAS(fixture.compressedFile.buffer, options)).attributes;
+  const actual = convertTableToMesh(
+    parseLAS(fixture.compressedFile.buffer, options).data
+  ).attributes;
   expect(actual).toEqual(expected);
   const streamedAttributes: Record<string, number[]> = {};
   for await (const batch of parseLASInBatches(splitInput(fixture.compressedFile), {
     ...options,
     core: {batchSize: 37}
   })) {
-    for (const [name, attribute] of Object.entries(convertTableToMesh(batch).attributes)) {
+    for (const [name, attribute] of Object.entries(convertTableToMesh(batch.data).attributes)) {
       streamedAttributes[name] ??= [];
       streamedAttributes[name].push(...attribute.value);
     }
@@ -92,7 +94,7 @@ test('LASLoader public entrypoint supports legacy pointwise mesh output', async 
     las: {shape: 'mesh'},
     core: {worker: false}
   })) as LASMesh;
-  const expected = convertTableToMesh(parseLAS(createUncompressedFile(fixture)));
+  const expected = convertTableToMesh(parseLAS(createUncompressedFile(fixture)).data);
   expect(actual.attributes).toEqual(expected.attributes);
 });
 

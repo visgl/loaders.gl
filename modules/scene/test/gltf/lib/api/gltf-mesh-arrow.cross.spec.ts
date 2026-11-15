@@ -13,15 +13,15 @@ describe('convertGLTFToMeshArrow', () => {
     const result = convertGLTFToMeshArrow(gltf);
     const [geometry] = result.geometries;
     const [placement] = result.placements;
-    const positionVector = geometry.table.data.getChild('POSITION')!;
+    const positionVector = geometry.table.getChild('POSITION')!;
     const positionValues = positionVector.data[0].children[0].values;
 
     expect(positionValues.buffer).toBe(positions.buffer);
-    expect(geometry.table.indices?.value).toEqual(new Uint16Array([0, 1]));
-    expect(geometry.table.data.getChild('indices')?.get(0)?.toArray()).toEqual(
-      new Uint32Array([0, 1])
-    );
-    expect(geometry.table.schema.metadata).toMatchObject({topology: 'triangle-list', mode: '4'});
+    expect(geometry.table.getChild('indices')?.get(0)?.toArray()).toEqual(new Uint32Array([0, 1]));
+    expect(Object.fromEntries(geometry.table.schema.metadata)).toMatchObject({
+      topology: 'triangle-list',
+      mode: '4'
+    });
     expect(geometry.attributes.POSITION.normalized).toBeUndefined();
     expect(geometry).toMatchObject({meshIndex: 0, primitiveIndex: 0, materialIndex: 2});
     expect(geometry.materialized).toBe(false);
@@ -65,14 +65,15 @@ describe('convertGLTFToMeshArrow', () => {
     });
 
     const {geometries} = convertGLTFToMeshArrow(gltf);
-    const positionValues =
-      geometries[0].table.data.getChild('POSITION')!.data[0].children[0].values;
+    const positionValues = geometries[0].table.getChild('POSITION')!.data[0].children[0].values;
 
     expect(positionValues).toBeInstanceOf(Uint16Array);
     expect(positionValues.buffer).toBe(source.buffer);
     expect(geometries[0].attributes.POSITION.normalized).toBe(true);
     expect(
-      geometries[0].table.schema.fields.find(field => field.name === 'POSITION')?.metadata
+      Object.fromEntries(
+        geometries[0].table.schema.fields.find(field => field.name === 'POSITION')!.metadata
+      )
     ).toEqual({normalized: 'true'});
     expect(geometries[0].materialized).toBe(false);
   });
@@ -85,7 +86,9 @@ describe('convertGLTFToMeshArrow', () => {
     const {geometries} = convertGLTFToMeshArrow(gltf);
 
     expect(
-      geometries[0].table.schema.fields.find(field => field.name === 'POSITION')?.metadata
+      Object.fromEntries(
+        geometries[0].table.schema.fields.find(field => field.name === 'POSITION')!.metadata
+      )
     ).toEqual({byteOffset: '0', byteStride: '12'});
   });
 
@@ -130,8 +133,8 @@ describe('convertGLTFToMeshArrow', () => {
 
     const {geometries} = convertGLTFToMeshArrow(gltf);
 
-    expect(geometries[0].table.topology).toBe('point-list');
-    expect(geometries[0].table.schema.metadata.mode).toBe('0');
+    expect(geometries[0].table.schema.metadata.get('topology')).toBe('point-list');
+    expect(geometries[0].table.schema.metadata.get('mode')).toBe('0');
   });
 
   test.each([
@@ -147,7 +150,7 @@ describe('convertGLTFToMeshArrow', () => {
 
     const {geometries} = convertGLTFToMeshArrow(gltf);
 
-    expect(geometries[0].table.topology).toBe(topology);
+    expect(geometries[0].table.schema.metadata.get('topology')).toBe(topology);
   });
 
   test('projects non-position vertex attributes into Arrow columns', () => {
@@ -158,7 +161,7 @@ describe('convertGLTFToMeshArrow', () => {
     const {geometries} = convertGLTFToMeshArrow(gltf);
 
     expect(geometries[0].attributes.NORMAL.size).toBe(3);
-    expect(geometries[0].table.data.getChild('NORMAL')).toBeDefined();
+    expect(geometries[0].table.getChild('NORMAL')).toBeDefined();
   });
 });
 

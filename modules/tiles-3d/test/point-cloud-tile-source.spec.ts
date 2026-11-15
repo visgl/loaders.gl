@@ -47,8 +47,8 @@ test('dynamic point source satisfies the native PointCloudTileset source contrac
       expect(content!.coordinateSystem).toBe('cartesian');
       expect(content!.cartographicOrigin).toEqual([0, 0, 0]);
       expect(content!.spatialReference).toEqual(spatialReference);
-      expect(content!.data.data.getChild('POSITION')!.type.toString()).toContain('Float64');
-      classifications.push(...Array.from(content!.data.data.getChild('classification')!.toArray()));
+      expect(content!.data.getChild('POSITION')!.type.toString()).toContain('Float64');
+      classifications.push(...Array.from(content!.data.getChild('classification')!.toArray()));
       const forged = {
         ...nodes[index],
         boundingVolume: {...nodes[index].boundingVolume, radius: -1}

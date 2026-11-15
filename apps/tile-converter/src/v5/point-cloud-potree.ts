@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh, MeshArrowTable, MeshArrowTableData} from '@loaders.gl/core/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {PointCloudTiler, type PointCloudTilerOptions} from '@loaders.gl/core/schema-utils';
 import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import type {
@@ -59,7 +59,7 @@ export interface ConvertedPointCloudPotree {
  * @returns A complete dataset and optional bundle after releasing the owned tiler.
  */
 export async function convertPointCloudToPotree(
-  input: Mesh | MeshArrowTable | MeshArrowTableData,
+  input: Mesh | MeshArrowTable,
   options: ConvertPointCloudToPotreeOptions
 ): Promise<ConvertedPointCloudPotree> {
   if (typeof options.projection !== 'string' || !options.projection.trim()) {

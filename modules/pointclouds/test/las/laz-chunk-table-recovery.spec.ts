@@ -48,14 +48,14 @@ test.each([
   const incomplete = removeChunkTable(file);
   expect(() => parseLAS(incomplete)).toThrow();
   const options = {las: {recoverMissingChunkTable: true}};
-  const expected = convertTableToMesh(parseLAS(file)).attributes;
-  expect(convertTableToMesh(parseLAS(incomplete, options)).attributes).toEqual(expected);
+  const expected = convertTableToMesh(parseLAS(file).data).attributes;
+  expect(convertTableToMesh(parseLAS(incomplete, options).data).attributes).toEqual(expected);
   const streamedPositions: number[] = [];
   for await (const batch of parseLASInBatches(splitInput(incomplete), {
     ...options,
     core: {batchSize: 3}
   })) {
-    streamedPositions.push(...convertTableToMesh(batch).attributes.POSITION.value);
+    streamedPositions.push(...convertTableToMesh(batch.data).attributes.POSITION.value);
   }
   expect(streamedPositions).toEqual([...expected.POSITION.value]);
   const expectedRaw: number[] = [];

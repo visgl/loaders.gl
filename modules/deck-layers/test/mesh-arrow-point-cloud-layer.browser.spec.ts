@@ -9,7 +9,7 @@ import {
   type MeshArrowPointCloudLayerProps
 } from '../src/mesh-arrow-point-cloud-layer';
 import type {Mesh} from '@loaders.gl/core/schema';
-import {convertMeshToArrowTableWrapper} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTable} from '@loaders.gl/core/schema-utils';
 type ControlledAsyncIterable<T> = AsyncIterable<T> & {
   push: (value: T) => void;
   close: () => void;
@@ -40,7 +40,7 @@ function createPointCloudMesh(positions: number[]): Mesh {
 }
 /** Creates one native record batch from point positions. */
 function createArrowTableBatch(positions: number[]): arrow.RecordBatch {
-  return convertMeshToArrowTableWrapper(createPointCloudMesh(positions)).data.batches[0];
+  return convertMeshToArrowTable(createPointCloudMesh(positions)).batches[0];
 }
 /** Normalizes a layer render result to an array. */
 function asLayerArray(layerResult: ReturnType<MeshArrowPointCloudLayer['renderLayers']>) {
@@ -91,16 +91,16 @@ async function waitForAsyncIterator(): Promise<void> {
   await Promise.resolve();
 }
 test('MeshArrowPointCloudLayer renders a static Mesh Arrow table', () => {
-  const meshArrowTable = convertMeshToArrowTableWrapper(createPointCloudMesh([0, 0, 0, 1, 2, 3]));
-  const layer = createLayer({data: meshArrowTable.data});
+  const meshArrowTable = convertMeshToArrowTable(createPointCloudMesh([0, 0, 0, 1, 2, 3]));
+  const layer = createLayer({data: meshArrowTable});
   const [sublayer] = asLayerArray(layer.renderLayers());
   expect(sublayer.constructor.layerName, 'creates a PointCloudLayer').toBe('PointCloudLayer');
   expect((sublayer.props.data as any).length, 'passes one rendered object per point').toBe(2);
 });
 test('MeshArrowPointCloudLayer applies defaultPointColor without table colors', () => {
-  const meshArrowTable = convertMeshToArrowTableWrapper(createPointCloudMesh([0, 0, 0]));
+  const meshArrowTable = convertMeshToArrowTable(createPointCloudMesh([0, 0, 0]));
   const layer = createLayer({
-    data: meshArrowTable.data,
+    data: meshArrowTable,
     defaultPointColor: [1, 2, 3]
   });
   const [sublayer] = asLayerArray(layer.renderLayers());

@@ -2,13 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  Mesh,
-  MeshArrowTable,
-  MeshArrowTableData,
-  MeshAttribute,
-  TypedArray
-} from '@loaders.gl/core/schema';
+import type {Mesh, MeshArrowTable, MeshAttribute, TypedArray} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from './convert-table-to-mesh';
 
 /** A native-coordinate cube, with minimum and maximum XYZ corners. */
@@ -95,10 +89,7 @@ export class PointCloudTiler {
   private pointByteLength = 0;
 
   /** Starts indexing one decoded point dataset with explicit allocation limits. */
-  constructor(
-    input: Mesh | MeshArrowTable | MeshArrowTableData,
-    options: PointCloudTilerOptions = {}
-  ) {
+  constructor(input: Mesh | MeshArrowTable, options: PointCloudTilerOptions = {}) {
     this.options = {
       nodePointLimit: options.nodePointLimit ?? 50_000,
       maximumDepth: options.maximumDepth ?? 16,
@@ -250,10 +241,10 @@ export class PointCloudTiler {
   }
 
   /** Validates the decoded profile and creates a root cube from finite native coordinates. */
-  private async initialize(input: Mesh | MeshArrowTable | MeshArrowTableData): Promise<void> {
+  private async initialize(input: Mesh | MeshArrowTable): Promise<void> {
     this.signal.throwIfAborted();
     if (!('attributes' in input)) {
-      const table = 'shape' in input ? input.data : input;
+      const table = input;
       const buffers = new Set<ArrayBufferLike>();
       let arrowBytes = 0;
       /** Counts retained Arrow buffers and rejects null child values before conversion. */
