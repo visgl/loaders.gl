@@ -113,16 +113,7 @@ test('batch conversion preserves metadata across all target shapes', async () =>
   const native = convertBatch(batch, 'arrow');
   expect(native).toBeInstanceOf(arrow.RecordBatch);
   expect(convertBatch(native, 'arrow')).toBe(native);
-  const table = new arrow.Table(native.schema, [native, native]);
-  const wrapper = {
-    shape: 'arrow-table' as const,
-    batchType: 'data' as const,
-    data: table,
-    length: 4
-  };
-  expect(() => convertBatch(wrapper, 'arrow')).toThrow('convertBatches');
-  expect(await Array.fromAsync(convertBatches([native, wrapper], 'arrow'))).toEqual([
-    native,
+  expect(await Array.fromAsync(convertBatches([native, native], 'arrow'))).toEqual([
     native,
     native
   ]);

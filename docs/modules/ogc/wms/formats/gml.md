@@ -83,7 +83,7 @@ import {load} from '@loaders.gl/core';
 import {GMLLoader} from '@loaders.gl/ogc/wms';
 
 const table = await load('features.gml', GMLLoader);
-console.log(table.data.numRows);
+console.log(table.numRows);
 ```
 
 ## Stream a large response

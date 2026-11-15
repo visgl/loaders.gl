@@ -167,8 +167,6 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
     async *readWithProvenance(options: any) {
       options.onQueryComplete({status: 'completed', rowsReturned: 4, sourceType: 'parquet'});
       yield {
-        shape: 'arrow-table',
-        schema: {fields: []},
         data: arrow.tableFromArrays({
           id: [1, 2, 3, 4],
           payload: arrow.vectorFromArray(
@@ -187,7 +185,6 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
             new Date('2020-01-04')
           ]
         }),
-        length: 4,
         rowCount: 4,
         rowOffset: 0,
         rowGroupRowOffset: 10,

@@ -21,7 +21,7 @@ export function convertBatch(
   shape: 'arrow'
 ): arrow.RecordBatch;
 
-/** Converts one batch. Use convertBatches to expand an Arrow wrapper containing multiple batches. */
+/** Converts one portable batch or returns the supplied native record batch. */
 export function convertBatch(
   batch: TableBatch | arrow.RecordBatch,
   shape: 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow'
@@ -39,9 +39,6 @@ export function convertBatch(
       return {...batch, ...convertTable(batch, 'columnar-table')};
     case 'arrow': {
       const table = convertTable(batch, 'arrow');
-      if (table.batches.length > 1) {
-        throw new Error('Use convertBatches to expand multiple Arrow record batches');
-      }
       return table.batches[0] ?? makeArrowMetadataBatch(table.schema);
     }
     default:
@@ -68,7 +65,7 @@ export function convertBatches(
 
 /**
  * Converts batches in emission order. For Arrow output, yields native record batches,
- * expanding wrapped tables and preserving the declared schema of empty inputs.
+ * preserving the declared schema of empty inputs.
  */
 export async function* convertBatches(
   batches: Iterable<TableBatch | arrow.RecordBatch> | AsyncIterable<TableBatch | arrow.RecordBatch>,

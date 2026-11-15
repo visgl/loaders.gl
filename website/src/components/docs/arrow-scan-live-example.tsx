@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {RecordBatch} from 'apache-arrow';
 import type {ScanQueryMetadata} from '@loaders.gl/core/query';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
 type ArrowScanDemoState = Readonly<{
   metadata?: ScanQueryMetadata;
-  table?: ArrowTable;
+  batch?: RecordBatch;
   error?: string;
   loading: boolean;
 }>;
@@ -28,15 +28,15 @@ export function ArrowScanLiveExample(): JSX.Element {
     void (async () => {
       try {
         const metadata = await source.getQueryMetadata();
-        let table: ArrowTable | undefined;
+        let previewBatch: RecordBatch | undefined;
         for await (const batch of source.read({
           columns: submittedQuery.columns,
           limit: submittedQuery.limit
         })) {
-          table = batch.data;
+          previewBatch = batch;
           break;
         }
-        if (mounted) setState({metadata, table, loading: false});
+        if (mounted) setState({metadata, batch: previewBatch, loading: false});
       } catch (error) {
         if (mounted) setState({loading: false, error: error instanceof Error ? error.message : String(error)});
       }
@@ -66,24 +66,24 @@ export function ArrowScanLiveExample(): JSX.Element {
         title="Arrow scan parameters"
       />
       {state.error ? <p role="alert">{state.error}</p> : null}
-      {state.table ? <ArrowPreview table={state.table} /> : null}
+      {state.batch ? <ArrowPreview batch={state.batch} /> : null}
     </div>
   );
 }
 
 /** Renders a compact preview of the first rows returned by an Arrow scan. */
-function ArrowPreview({table}: {table: ArrowTable}): JSX.Element {
-  const columns = table.schema.fields.map(field => field.name);
-  const rowCount = Math.min(table.data.numRows, 5);
+function ArrowPreview({batch}: {batch: RecordBatch}): JSX.Element {
+  const columns = batch.schema.fields.map(field => field.name);
+  const rowCount = Math.min(batch.numRows, 5);
   return (
     <div style={{overflowX: 'auto'}}>
-      <p><strong>Arrow result:</strong> {table.data.numRows} rows · {columns.length} columns</p>
+      <p><strong>Arrow result:</strong> {batch.numRows} rows · {columns.length} columns</p>
       <table>
         <thead><tr>{columns.map(column => <th key={column}>{column}</th>)}</tr></thead>
         <tbody>
           {Array.from({length: rowCount}, (_, rowIndex) => (
             <tr key={rowIndex}>
-              {columns.map(column => <td key={column}>{formatCell(table.data.getChild(column)?.get(rowIndex))}</td>)}
+              {columns.map(column => <td key={column}>{formatCell(batch.getChild(column)?.get(rowIndex))}</td>)}
             </tr>
           ))}
         </tbody>

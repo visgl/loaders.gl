@@ -4,9 +4,8 @@
 
 import {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Table} from '@loaders.gl/core/schema';
-import {convertArrowToTable, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 import {
-  deserializeArrowWorkerTable,
   serializeNativeArrowWorkerResult,
   deserializeNativeArrowWorkerResult
 } from '@loaders.gl/core/arrow-worker-transport';
@@ -31,19 +30,16 @@ export function deserializeArrowTableResult(
   return convertArrowToTable(table, shape);
 }
 
-/** Hydrates native IPC tables and accepts the older column wrapper. */
+/** Hydrates an Arrow table transferred by the IPC worker. */
 export function deserializeIPCWorkerTable(result: unknown): NativeArrowTable {
-  if ((result as {transport?: string})?.transport === 'arrow-table-columns') {
-    return deserializeNativeArrowWorkerResult(result) as NativeArrowTable;
-  }
-  return deserializeArrowWorkerTable(result).data;
+  const table = deserializeNativeArrowWorkerResult(result);
+  if (!(table instanceof NativeArrowTable)) throw new Error('IPC workers require an Arrow table');
+  return table;
 }
 
-/** Hydrates native IPC batches and accepts the older column wrapper. */
+/** Hydrates an Arrow record batch transferred by the IPC worker. */
 export function deserializeIPCWorkerBatch(result: unknown): RecordBatch {
-  if ((result as {transport?: string})?.transport === 'arrow-record-batch') {
-    return deserializeNativeArrowWorkerResult(result) as RecordBatch;
-  }
-  const table = deserializeArrowWorkerTable(result).data as NativeArrowTable;
-  return table.batches[0] ?? makeArrowMetadataBatch(table.schema);
+  const batch = deserializeNativeArrowWorkerResult(result);
+  if (!(batch instanceof RecordBatch)) throw new Error('IPC workers require an Arrow record batch');
+  return batch;
 }

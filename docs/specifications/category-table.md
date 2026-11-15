@@ -154,7 +154,9 @@ It is of course possible to work with the underlying IPC data structure.
 A JavaScript table has the freedom that a column can contain any type.
 
 ```typescript
-const arrowTable = makeArrowTable(table).data;
+import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
+
+const arrowTable = convertTableToArrow(table);
 ```
 
 ## Serialized table representation

@@ -4,7 +4,7 @@ import {load, type LoaderOptions} from '@loaders.gl/core'
 import {ArrowLoader} from '@loaders.gl/tables/arrow'
 import {CSVLoader} from '@loaders.gl/tables/csv'
 import {JSONLoader, NDJSONLoader} from '@loaders.gl/tables/json'
-import type {ArrowTable, Field, Table} from '@loaders.gl/core/schema'
+import type {Field, Table} from '@loaders.gl/core/schema'
 import {ChromeTraceLoader} from '@loaders.gl/traces'
 
 import styles from './table-live-example.module.css'
@@ -102,7 +102,7 @@ type ArrowTableLike = {
 }
 
 /** Layouts supported by the preview. */
-type PreviewTable = Exclude<Table, ArrowTable> | ArrowTableLike
+type PreviewTable = Table | ArrowTableLike
 
 /**
  * Loads a configured tabular file and renders a compact read-only table preview.

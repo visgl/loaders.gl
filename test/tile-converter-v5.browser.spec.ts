@@ -789,17 +789,15 @@ test('tile-converter(v5)#feature attributes preserve exact IDs, nulls, lists, an
     {schema, rawMetadataField: 'raw_metadata', batchSize: 2}
   );
 
-  expect(batches.map(batch => batch.length)).toEqual([2, 1]);
-  expect(batches[0].schema.metadata?.['loaders.gl:feature-class']).toBe('Buildings');
-  expect(batches[0].data.getChild('feature_id')?.get(0)).toBe(9007199254740993n);
-  expect(batches[0].data.getChild('name')?.get(0)).toBe('Café');
-  expect(batches[0].data.getChild('name')?.get(1)).toBeNull();
-  expect(batches[0].data.getChild('class_codes')?.get(0)?.toArray()).toEqual(
-    new Uint16Array([2, 7])
-  );
-  expect(batches[0].data.getChild('raw_metadata')?.get(0)).toEqual(new Uint8Array([10, 11]));
-  expect(batches[1].data.getChild('feature_id')?.get(0)).toBe(9007199254740995n);
-  expect(batches[1].data.getChild('name')?.get(0)).toBe('雪');
+  expect(batches.map(batch => batch.numRows)).toEqual([2, 1]);
+  expect(batches[0].schema.metadata.get('loaders.gl:feature-class')).toBe('Buildings');
+  expect(batches[0].getChild('feature_id')?.get(0)).toBe(9007199254740993n);
+  expect(batches[0].getChild('name')?.get(0)).toBe('Café');
+  expect(batches[0].getChild('name')?.get(1)).toBeNull();
+  expect(batches[0].getChild('class_codes')?.get(0)?.toArray()).toEqual(new Uint16Array([2, 7]));
+  expect(batches[0].getChild('raw_metadata')?.get(0)).toEqual(new Uint8Array([10, 11]));
+  expect(batches[1].getChild('feature_id')?.get(0)).toBe(9007199254740995n);
+  expect(batches[1].getChild('name')?.get(0)).toBe('雪');
 });
 
 test('tile-converter(v5)#feature attributes reject unmapped values and unsafe numeric IDs', () => {

@@ -495,9 +495,7 @@ function normalizeBatch(value: unknown, fallbackSchema: Schema): arrow.Table {
   if (!('shape' in value)) throw new Error('Unsupported query batch.');
   const input = value as TableBatch;
   const batch = {...input, schema: input.schema ?? fallbackSchema} as TableBatch;
-  if (
-    !['arrow-table', 'object-row-table', 'array-row-table', 'columnar-table'].includes(batch.shape)
-  )
+  if (!['object-row-table', 'array-row-table', 'columnar-table'].includes(batch.shape))
     throw new Error(`Unsupported query batch shape: ${batch.shape}`);
   return batch.length === 0 && batch.schema
     ? new arrow.Table(convertSchemaToArrow(batch.schema))

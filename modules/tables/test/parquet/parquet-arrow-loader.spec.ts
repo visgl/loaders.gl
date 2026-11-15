@@ -183,14 +183,14 @@ test('ParquetJSLoader#empty projection batches preserve their row counts', async
 });
 test('ParquetWriter#Arrow table round trip', async () => {
     const table = createArrowTable();
-    const parquetBuffer = await encode(table.data, ParquetWriter, {
+    const parquetBuffer = await encode(table, ParquetWriter, {
         worker: false
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
         core: { worker: false },
         parquet: { shape: 'arrow' }
     })) as arrow.Table;
-    expect(table.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
+    expect(table.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
 });
 test('ParquetJSLoader#returns object rows through parquetjs adapter', async () => {
     const url = `${PARQUET_DIR}/apache/good/alltypes_plain.parquet`;
@@ -312,7 +312,7 @@ test('GeoParquetLoader#supports arrow shape', async () => {
 });
 test('ParquetWriter#synthesizes GeoParquet metadata from GeoArrow WKB fields', async () => {
     const table = createGeoArrowWKBTable();
-    const parquetBuffer = await encode(table.data, ParquetWriter, {
+    const parquetBuffer = await encode(table, ParquetWriter, {
         core: { worker: false }
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
@@ -339,7 +339,7 @@ test('ParquetWriter#preserves valid GeoParquet metadata from GeoArrow input', as
             }
         }
     });
-    const parquetBuffer = await encode(table.data, ParquetWriter, {
+    const parquetBuffer = await encode(table, ParquetWriter, {
         core: { worker: false }
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
@@ -357,7 +357,7 @@ test('ParquetWriter#replaces invalid GeoParquet metadata from GeoArrow input', a
             columns: {}
         }
     });
-    const parquetBuffer = await encode(table.data, ParquetWriter, {
+    const parquetBuffer = await encode(table, ParquetWriter, {
         core: { worker: false }
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
@@ -390,7 +390,7 @@ function createArrowTable(): ArrowTable {
     const uint8Vector = arrow.vectorFromArray([1, 2, 3, 4], new arrow.Uint8());
     const int32Vector = arrow.vectorFromArray([0, -2147483638, 2147483637, 1], new arrow.Uint32());
     const table = new arrow.Table({ utf8Vector, uint8Vector, int32Vector, boolVector });
-    return { shape: 'arrow-table', data: table };
+    return table;
 }
 function createGeoArrowWKBTable(metadataOverrides?: {
     geo?: Record<string, unknown>;
@@ -415,8 +415,5 @@ function createGeoArrowWKBTable(metadataOverrides?: {
     if (metadataOverrides?.geo) {
         schemaMetadata.set('geo', JSON.stringify(metadataOverrides.geo));
     }
-    return {
-        shape: 'arrow-table',
-        data: new arrow.Table(new arrow.Schema(fields, schemaMetadata, baseTable.schema.dictionaries, baseTable.schema.metadataVersion), baseTable.batches)
-    };
+    return new arrow.Table(new arrow.Schema(fields, schemaMetadata, baseTable.schema.dictionaries, baseTable.schema.metadataVersion), baseTable.batches);
 }

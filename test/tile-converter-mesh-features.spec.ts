@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import {validateBytes} from 'gltf-validator';
 import {extractMeshFeatures} from '../apps/tile-converter/src/v5/mesh-source-features';
@@ -165,13 +166,13 @@ test.each([
     {
       metadataClass: 'building',
       sourceFeatureIdProperty: 'feature_id',
-      schema: features.batches[0].schema,
+      schema: convertArrowToSchema(features.batches[0].schema),
       batchSize: 2
     }
   );
-  expect(extracted!.batches[0].data.getChild('label')!.get(0)).toBeNull();
-  expect(extracted!.batches[0].data.getChild('label')!.get(1)).toBe('München 🏠');
-  expect(extracted!.batches[0].data.getChild('feature_id')!.get(0)).toBe(9007199254740993n);
+  expect(extracted!.batches[0].getChild('label')!.get(0)).toBeNull();
+  expect(extracted!.batches[0].getChild('label')!.get(1)).toBe('München 🏠');
+  expect(extracted!.batches[0].getChild('feature_id')!.get(0)).toBe(9007199254740993n);
   expect(primitive.attributes._FEATURE_ID_0).toBeDefined();
   expect(data.json.extensionsRequired ?? []).not.toContain('EXT_mesh_features');
   expect(data.json.extensionsRequired ?? []).not.toContain('EXT_structural_metadata');
@@ -228,12 +229,12 @@ test.each([
     {
       metadataClass: 'building',
       sourceFeatureIdProperty: 'feature_id',
-      schema: features.batches[0].schema,
+      schema: convertArrowToSchema(features.batches[0].schema),
       batchSize: 2
     }
   );
-  expect(extracted!.batches[0].data.getChild('value')!.get(0)).toBeNull();
-  expect(extracted!.batches[0].data.getChild('value')!.get(1)).toBe(values[1]);
+  expect(extracted!.batches[0].getChild('value')!.get(0)).toBeNull();
+  expect(extracted!.batches[0].getChild('value')!.get(1)).toBe(values[1]);
 });
 
 test('feature writer rejects unmapped schemas and invalid associations before emitting a GLB', () => {
@@ -292,13 +293,14 @@ test('declared feature schema builds an exact Arrow mapping and round trips null
     {name: 'label', type: 'utf8', nullable: true}
   ]);
   const extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
-  expect(Array.from(extracted.batches[0].data.getChild('feature_id')!)).toEqual([
+  expect(Array.from(extracted.batches[0].getChild('feature_id')!)).toEqual([
     9007199254740993n,
     18446744073709551615n
   ]);
-  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual([null, 'München 🏠']);
+  expect(Array.from(extracted.batches[0].getChild('label')!)).toEqual([null, 'München 🏠']);
   expect(
-    JSON.parse(extracted.batches[0].schema.metadata!['loaders.gl:source-schema']).classes.building
+    JSON.parse(extracted.batches[0].schema.metadata.get('loaders.gl:source-schema')!).classes
+      .building
   ).toBeDefined();
   const second = await readMesh(encodeMeshTile(mesh, {features: extracted}));
   expect(
@@ -319,11 +321,11 @@ test('declared optional columns use defaults or nulls and default identifiers re
     featureIdField: 'row_id'
   });
   let extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
-  expect(Array.from(extracted.batches[0].data.getChild('row_id')!)).toEqual([0, 1]);
-  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['默认', '默认']);
+  expect(Array.from(extracted.batches[0].getChild('row_id')!)).toEqual([0, 1]);
+  expect(Array.from(extracted.batches[0].getChild('label')!)).toEqual(['默认', '默认']);
   delete metadata.schema.classes.building.properties.label.default;
   extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
-  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual([null, null]);
+  expect(Array.from(extracted.batches[0].getChild('label')!)).toEqual([null, null]);
   metadata.schema.classes.building.properties.label.required = true;
   expect(() => extractMeshFeatures(gltf, primitive, {}, mesh, options)).toThrow(/not been decoded/);
 });
@@ -406,7 +408,7 @@ test('declared int64 defaults retain bigint values and reject unsafe JSON defaul
     sourceFeatureIdProperty: 'feature_id'
   });
   const extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
-  expect(Array.from(extracted.batches[0].data.getChild('code')!)).toEqual([-7n, -7n]);
+  expect(Array.from(extracted.batches[0].getChild('code')!)).toEqual([-7n, -7n]);
   metadata.schema.classes.building.properties.code.default = Number.MAX_SAFE_INTEGER + 1;
   expect(() => extractMeshFeatures(gltf, primitive, {}, mesh, options)).toThrow(
     /exact 64-bit default/
@@ -470,12 +472,12 @@ test.each([
   });
   const extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
   expect(extracted.triangleFeatureIndices).toEqual(new Uint32Array([0]));
-  expect(extracted.batches.reduce((total, batch) => total + batch.data.numRows, 0)).toBe(1);
-  expect(
-    Array.from(extracted.batches[0].data.getChild(explicit ? 'feature_id' : 'row_id')!)
-  ).toEqual([explicit ? 18446744073709551615n : 3]);
-  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['München 🏠']);
-  expect(Array.from(extracted.batches[0].data.getChild('optional')!)).toEqual(['默认']);
+  expect(extracted.batches.reduce((total, batch) => total + batch.numRows, 0)).toBe(1);
+  expect(Array.from(extracted.batches[0].getChild(explicit ? 'feature_id' : 'row_id')!)).toEqual([
+    explicit ? 18446744073709551615n : 3
+  ]);
+  expect(Array.from(extracted.batches[0].getChild('label')!)).toEqual(['München 🏠']);
+  expect(Array.from(extracted.batches[0].getChild('optional')!)).toEqual(['默认']);
   const output = await readMesh(encodeMeshTile(mesh, {features: extracted}));
   expect(output.data.json.extensions!.EXT_structural_metadata.propertyTables[0].count).toBe(1);
 });
@@ -489,8 +491,8 @@ test('default-only shared metadata materializes referenced rows without allocati
   metadata.schema.classes.building.properties = {label: {type: 'STRING', default: 'shared'}};
   const options = createMeshSourceFeatureOptions(gltf.json, {metadataClass: 'building'});
   const extracted = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
-  expect(extracted.batches[0].data.numRows).toBe(2);
-  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['shared', 'shared']);
+  expect(extracted.batches[0].numRows).toBe(2);
+  expect(Array.from(extracted.batches[0].getChild('label')!)).toEqual(['shared', 'shared']);
 });
 
 test.each([
@@ -531,7 +533,7 @@ test.each([
   if (degenerate) {
     const result = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
     expect(result.triangleFeatureIndices).toEqual(new Uint32Array([0]));
-    expect(result.batches[0].data.getChild('row_id')!.get(0)).toBe(1);
+    expect(result.batches[0].getChild('row_id')!.get(0)).toBe(1);
   } else
     expect(() => extractMeshFeatures(gltf, primitive, {}, mesh, options)).toThrow(
       /same feature row/
@@ -561,8 +563,8 @@ test('legacy batch tables compact unused rows while preserving original batch id
     options
   )!;
   expect(extracted.triangleFeatureIndices).toEqual(new Uint32Array([0]));
-  expect(Array.from(extracted.batches[0].data.getChild('row_id')!)).toEqual([3]);
-  expect(Array.from(extracted.batches[0].data.getChild('label')!)).toEqual(['d']);
+  expect(Array.from(extracted.batches[0].getChild('row_id')!)).toEqual([3]);
+  expect(Array.from(extracted.batches[0].getChild('label')!)).toEqual(['d']);
 });
 
 test('shared property readers treat prototype-like column names as data', async () => {
@@ -579,8 +581,5 @@ test('shared property readers treat prototype-like column names as data', async 
     featureIdField: 'row_id'
   });
   const result = extractMeshFeatures(gltf, primitive, {}, mesh, options)!;
-  expect(Array.from(result.batches[0].data.getChild('constructor')!)).toEqual([
-    'fallback',
-    'value'
-  ]);
+  expect(Array.from(result.batches[0].getChild('constructor')!)).toEqual(['fallback', 'value']);
 });

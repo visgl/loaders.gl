@@ -15,7 +15,13 @@ import {
   type TableScanReadOptions,
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, DataType, Schema} from '@loaders.gl/core/schema';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  TableBatch,
+  DataType,
+  Schema
+} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {queryArrowTable, type SQLPredicate} from '@loaders.gl/core/scan';
 import {
@@ -66,9 +72,7 @@ describe('FederatedTableScanSource', () => {
   test('reads native Arrow batches through federation and public queries', async () => {
     const data = arrow.tableFromArrays({id: new Int32Array([1, 2])});
     data.batches[0].metadata.set('partition', 'native');
-    const physical = new TestTableScanSource('native', [
-      {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data}
-    ]);
+    const physical = new TestTableScanSource('native', [data]);
     const source = Object.assign(physical, {
       async *read() {
         yield* data.batches;
@@ -128,8 +132,8 @@ describe('FederatedTableScanSource', () => {
       [{id: 3, score: 30}]
     ]);
     expect(batches.map(getFederatedTableBatchProvenance)).toEqual([
-      {sourceId: 'first', sourceIndex: 0, sourceBatchIndex: 0, sourceMetadata: {partition: 0}},
-      {sourceId: 'second', sourceIndex: 1, sourceBatchIndex: 0, sourceMetadata: {partition: 0}}
+      {sourceId: 'first', sourceIndex: 0, sourceBatchIndex: 0, sourceMetadata: {partition: '0'}},
+      {sourceId: 'second', sourceIndex: 1, sourceBatchIndex: 0, sourceMetadata: {partition: '0'}}
     ]);
     expect(secondSource.readOptions[0]?.limit).toBe(1);
     expect(secondSource.readOptions[0]?.columns).toEqual(['id', 'score']);
@@ -140,7 +144,12 @@ describe('FederatedTableScanSource', () => {
     const filteredTable = makeArrowTable({id: [1], score: [10]});
     const selectedTable = makeArrowTable({id: [2], score: [20]});
     const finalTable = makeArrowTable({id: [3], score: [30]});
-    const metadata = createTestMetadata('arrow-ipc', filteredTable, filteredTable.schema!, 3);
+    const metadata = createTestMetadata(
+      'arrow-ipc',
+      filteredTable,
+      convertArrowToSchema(filteredTable.schema),
+      3
+    );
     const physicalSource = new TestTableScanSource(
       'arrow-ipc',
       [filteredTable, selectedTable, finalTable],
@@ -850,13 +859,13 @@ describe('FederatedTableScanSource', () => {
     dataSourceManager.add({
       dataSourceId: 'big',
       dataSource: new TestTableScanSource('big', [table], {
-        metadata: createTestMetadata('big', table, table.schema!, 2n)
+        metadata: createTestMetadata('big', table, convertArrowToSchema(table.schema), 2n)
       })
     });
     dataSourceManager.add({
       dataSourceId: 'small',
       dataSource: new TestTableScanSource('small', [table], {
-        metadata: createTestMetadata('small', table, table.schema!, 1)
+        metadata: createTestMetadata('small', table, convertArrowToSchema(table.schema), 1)
       })
     });
     const exactSource = new FederatedTableScanSource(dataSourceManager, {
@@ -1031,7 +1040,7 @@ describe('FederatedTableScanSource', () => {
 /** Deterministic in-memory table source used by federation conformance tests. */
 class TestTableScanSource
   extends DataSource<string, DataSourceOptions>
-  implements TableScanSource<ArrowTableBatch, SQLPredicate>
+  implements TableScanSource<ArrowTableBatch | TableBatch, SQLPredicate>
 {
   /** Source-local read options received by each operation. */
   readonly readOptions: TableScanReadOptions<SQLPredicate>[] = [];
@@ -1061,8 +1070,8 @@ class TestTableScanSource
       createTestMetadata(
         this.data,
         this.tables[0],
-        this.tables[0].schema!,
-        this.tables.reduce((sum, table) => sum + table.data.numRows, 0)
+        convertArrowToSchema(this.tables[0].schema),
+        this.tables.reduce((sum, table) => sum + table.numRows, 0)
       )
     );
   }
@@ -1070,7 +1079,7 @@ class TestTableScanSource
   /** Applies the source-local query independently from the federated global query. */
   async *read(
     options: TableScanReadOptions<SQLPredicate> = {}
-  ): AsyncIterableIterator<ArrowTableBatch> {
+  ): AsyncIterableIterator<ArrowTableBatch | TableBatch> {
     this.readCount++;
     this.readOptions.push(options);
     let remaining = this.testOptions.ignoreLimit
@@ -1079,27 +1088,14 @@ class TestTableScanSource
     try {
       if (this.testOptions.throwError) throw this.testOptions.throwError;
       if (this.testOptions.prependNonDataBatch) {
-        yield {
-          batchType: 'metadata',
-          shape: 'arrow-table',
-          length: 0,
-          metadata: {partition: -2}
-        } as unknown as ArrowTableBatch;
+        yield {batchType: 'metadata', shape: 'object-row-table', data: [], length: 0};
       }
       if (this.testOptions.prependEmptyBatch) {
-        const data = arrow.tableFromArrays({id: []});
-        yield {
-          batchType: 'data',
-          shape: 'arrow-table',
-          schema: convertArrowToSchema(data.schema),
-          data,
-          length: 0,
-          metadata: {partition: -1}
-        };
+        yield new arrow.RecordBatch(this.tables[0].schema, undefined);
       }
       for (let batchIndex = 0; batchIndex < this.tables.length && remaining > 0; batchIndex++) {
         if (options.signal?.aborted) throw options.signal.reason;
-        const result = queryArrowTable(this.tables[batchIndex].data, {
+        const result = queryArrowTable(this.tables[batchIndex], {
           ...options,
           limit: this.testOptions.ignoreLimit
             ? undefined
@@ -1109,16 +1105,19 @@ class TestTableScanSource
         });
         if (!result.numRows) continue;
         remaining -= result.numRows;
-        yield {
-          batchType: 'data',
-          shape: 'arrow-table',
-          ...(this.testOptions.omitBatchSchema
-            ? {}
-            : {schema: convertArrowToSchema(result.schema)}),
-          data: result,
-          length: result.numRows,
-          metadata: {partition: batchIndex}
-        };
+        if (this.testOptions.omitBatchSchema) {
+          yield {
+            batchType: 'data',
+            shape: 'object-row-table',
+            data: result.toArray().map(row => row.toJSON()),
+            length: result.numRows
+          };
+        } else {
+          for (const batch of result.batches) {
+            batch.metadata.set('partition', String(batchIndex));
+            yield batch;
+          }
+        }
       }
     } finally {
       this.iteratorCloseCount++;
@@ -1142,24 +1141,24 @@ type TestTableScanSourceOptions = Readonly<{
   throwError?: Error;
 }>;
 
-/** Wraps simple columns in the loaders.gl Arrow table shape. */
+/** Builds a native Arrow table from simple columns. */
 function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
   const data = arrow.tableFromArrays(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+  return data;
 }
 
 /** Wraps pre-typed Arrow vectors without allowing Arrow to infer wider scalar types. */
 function makeTypedArrowTable(columns: Record<string, arrow.Vector>): ArrowTable {
   const data = new arrow.Table(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+  return data;
 }
 
 /** Creates supported table metadata with an optional schema and exact row count. */
 function createTestMetadata(
   sourceType: string,
   table: ArrowTable,
-  schema: Schema = table.schema!,
-  rowCount: number | bigint = table.data.numRows
+  schema: Schema = convertArrowToSchema(table.schema),
+  rowCount: number | bigint = table.numRows
 ): ScanQueryMetadata {
   return createScanQueryMetadata({
     sourceType,

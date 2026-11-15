@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
-import type {Table, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {Table} from '@loaders.gl/core/schema';
 import {ARROW_WORKER_URL} from './arrow-worker-url';
 import {ArrowFormat} from './exports/arrow-format';
 
@@ -41,7 +41,7 @@ export const ArrowLoader = {
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   dataType: null as unknown as Table | NativeArrowTable,
-  batchType: null as unknown as ArrowTableBatch | RecordBatch,
+  batchType: null as unknown as RecordBatch,
 
   ...ArrowFormat,
   version: VERSION,
@@ -56,8 +56,4 @@ export const ArrowLoader = {
     }
   },
   preload
-} as const satisfies Loader<
-  Table | NativeArrowTable,
-  ArrowTableBatch | RecordBatch,
-  ArrowLoaderOptions
->;
+} as const satisfies Loader<Table | NativeArrowTable, RecordBatch, ArrowLoaderOptions>;

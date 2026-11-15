@@ -107,7 +107,7 @@ test('early return closes source iterator without reading remaining batches', as
       try {
         for (let i = 0; i < 5; i++) {
           pulls++;
-          yield {shape: 'arrow-table', data: first, schema, length: 1, batchType: 'data'};
+          yield* first.batches;
         }
       } finally {
         closed = true;

@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {
-  getNativeArrowOptions,
+  usesNativeArrowBatches,
   isNativeArrowTable,
-  unwrapArrowBatches
+  normalizeNativeArrowBatches
 } from '../loader-utils/native-arrow';
 
 import type {Batch, Table} from '@loaders.gl/core/schema';
@@ -146,10 +146,10 @@ export async function parseInBatches(
     url || '',
     normalizedOptions
   );
-  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, true);
+  const nativeArrow = usesNativeArrowBatches(loader, strictOptions);
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
-    nativeArrowOptions || strictOptions,
+    strictOptions,
     context || null
   );
 
@@ -158,10 +158,10 @@ export async function parseInBatches(
     loader,
     loaderWithParser,
     data,
-    nativeArrowOptions || strictOptions,
+    strictOptions,
     context
   );
-  return nativeArrowOptions ? unwrapArrowBatches(batches) : batches;
+  return nativeArrow ? normalizeNativeArrowBatches(batches) : batches;
 }
 
 /**
@@ -334,8 +334,6 @@ function isTable(value: unknown): value is Table {
       return Array.isArray(table.features);
     case 'columnar-table':
       return Boolean(table.data && typeof table.data === 'object');
-    case 'arrow-table':
-      return Boolean(table.data && typeof table.data === 'object' && 'numRows' in table.data);
     default:
       return false;
   }
@@ -349,8 +347,6 @@ function getTableLength(table: Table): number {
       return table.data.length;
     case 'geojson-table':
       return table.features.length;
-    case 'arrow-table':
-      return table.data.numRows;
     case 'columnar-table':
       for (const column of Object.values(table.data)) {
         return column.length || 0;

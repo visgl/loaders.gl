@@ -103,9 +103,9 @@ test.each(cases)('$name returns native Tables and all RecordBatches', async ({lo
   }
   expect(values).toEqual(['first', 'second']);
 
-  await expect(parse(input(), loader, {core: {shape: 'arrow-table'} as any})).rejects.toThrow(
-    'uses shape: "arrow"'
-  );
+  await expect(
+    parse(input(), loader, {core: {worker: false, shape: 'arrow'}})
+  ).resolves.toBeInstanceOf(Table);
 });
 
 test.each(

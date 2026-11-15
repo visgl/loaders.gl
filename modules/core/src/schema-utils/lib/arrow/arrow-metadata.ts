@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {Field, DataType, ArrowTable} from '@loaders.gl/core/schema';
+import type {Field, DataType} from '@loaders.gl/core/schema';
 import {serializeArrowSchema, deserializeArrowSchema} from '../schema/convert-arrow-schema';
 
 /** Copies a schema, including nested field metadata, without retaining mutable metadata maps. */
@@ -90,15 +90,6 @@ export function updateNativeArrowTableMetadata(
     new Map([...table.schema.metadata, ...Object.entries(metadata)])
   );
   return updateArrowTableSchema(table, schema);
-}
-
-/** Updates an Arrow wrapper and its underlying table together without mutating either input. */
-export function updateArrowTableMetadata<T extends ArrowTable>(
-  table: T,
-  metadata: Record<string, string>
-): T {
-  const data = updateNativeArrowTableMetadata(table.data, metadata);
-  return {...table, data, schema: serializeArrowSchema(data.schema)};
 }
 
 /** Creates a zero-row metadata update retaining the complete declared schema. */

@@ -81,18 +81,15 @@ test.each([
   const schema = new arrow.Schema(batch.schema.fields, new Map([['stage', 'table']]));
   const table = new arrow.Table(schema, [batch]);
   const payload = structuredClone(
-    serializeArrowWorkerResult(
-      {shape: 'arrow-table', data: table},
-      {core: {workerTransferBufferCopy: copy}}
-    )
-  ) as {arrowBatchMetadata?: unknown};
-  const restored = deserializeArrowWorkerResult(payload).data;
+    serializeArrowWorkerResult(table, {core: {workerTransferBufferCopy: copy}})
+  ) as {columns: {arrowBatchMetadata?: unknown}};
+  const restored = deserializeArrowWorkerResult(payload) as arrow.Table;
   expect(restored.schema.metadata.get('stage')).toBe('table');
   expect(restored.batches[0].schema.metadata.get('stage')).toBe('batch');
   expect(restored.batches[0].schema.fields[0].metadata.get('stage')).toBe('batch');
   expect(restored.batches[0].metadata.get('local')).toBe('1');
-  delete payload.arrowBatchMetadata;
-  const withoutSchemaSnapshot = deserializeArrowWorkerResult(payload).data;
+  delete payload.columns.arrowBatchMetadata;
+  const withoutSchemaSnapshot = deserializeArrowWorkerResult(payload) as arrow.Table;
   expect(withoutSchemaSnapshot.batches[0].schema.metadata.get('stage')).toBe('table');
   expect(withoutSchemaSnapshot.batches[0].metadata.get('local')).toBe('1');
 });
@@ -167,7 +164,6 @@ test('native table conversion works without Arrow static type guards', () => {
   Object.defineProperty(arrow.Table, 'isTable', {value: undefined, configurable: true});
   try {
     expect(convertTableToArrow(table)).toBe(table);
-    expect(convertTableToArrow({shape: 'arrow-table', data: table})).toBe(table);
   } finally {
     if (original) Object.defineProperty(arrow.Table, 'isTable', original);
     else Reflect.deleteProperty(arrow.Table, 'isTable');

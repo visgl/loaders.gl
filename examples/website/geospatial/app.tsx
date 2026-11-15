@@ -27,7 +27,8 @@ import {getExampleDevicePixelRatio, getExampleRowLimit} from '../shared/example-
 import type {Example} from './examples';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 
-import {Table, GeoJSON, type ArrowTable, type Schema} from '@loaders.gl/core/schema';
+import type {Table, GeoJSON, Schema} from '@loaders.gl/core/schema';
+import type {Table as ArrowTable} from 'apache-arrow';
 import {load, LoaderOptions} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/tables/arrow/index';
 import {
@@ -45,7 +46,7 @@ import {CSVLoader} from '@loaders.gl/tables/csv/index';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, convertTable, getTableLength, isNativeArrowTable} from '@loaders.gl/core/schema-utils';
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
@@ -134,9 +135,12 @@ type AppProps = {
   children?: ReactNode;
 };
 
+/** A native Arrow table or portable loader output displayed by this example. */
+type LoadedTable = ArrowTable | Table;
+
 type AppState = {
   // EXAMPLE STATE
-  table: Table | null;
+  table: LoadedTable | null;
   layerProps?: Record<string, unknown>;
   getTooltipData?: Function; // (object: Properties) => {title: string; properties: Record<string, unknown>};
   selectedCategoryName?: string | null;
@@ -354,10 +358,7 @@ export default function App(props: AppProps = {}) {
     }));
 
     try {
-      const loaded = (await load(url, loaders as any, loaderOptions)) as Table | import('apache-arrow').Table;
-      const rawTable: Table = 'numRows' in loaded
-        ? {shape: 'arrow-table', data: loaded, schema: convertArrowToSchema(loaded.schema)}
-        : loaded;
+      const rawTable = (await load(url, loaders as any, loaderOptions)) as LoadedTable;
       if (requestId !== loadRequestIdRef.current) {
         return;
       }
@@ -484,7 +485,6 @@ function getLoaderOptions(
   parquetLoaderName: ParquetLoaderName
 ): LoaderOptions {
   const nativeTableShape = tableFormat === 'geoarrow' ? 'arrow' : 'geojson-table';
-  const geoArrowTableShape = 'arrow-table';
 
   return {
     ...LOADER_OPTIONS,
@@ -494,7 +494,7 @@ function getLoaderOptions(
     },
     arrow: {
       ...LOADER_OPTIONS.arrow,
-      shape: example.format === 'geoarrow' ? geoArrowTableShape : LOADER_OPTIONS.arrow.shape
+      shape: example.format === 'geoarrow' ? 'arrow' : LOADER_OPTIONS.arrow.shape
     },
     geopackage: {
       ...LOADER_OPTIONS.geopackage,
@@ -527,18 +527,14 @@ function getLoaderOptions(
   } as unknown as LoaderOptions;
 }
 
-function normalizeLoadedTable(table: Table, example?: Example | null): Table {
-  if (example?.format === 'geoarrow' && table.shape === 'arrow-table' && getGeoArrowLayerGeometryColumn(table)) {
-    return table;
-  }
-
-  if (table.shape === 'arrow-table') {
+function normalizeLoadedTable(table: LoadedTable, example?: Example | null): LoadedTable {
+  if (isNativeArrowTable(table)) {
     if (getGeoArrowLayerGeometryColumn(table)) {
       return table;
     }
 
     try {
-      return convertGeoArrowToTable(table.data, 'geojson-table');
+      return convertGeoArrowToTable(table, 'geojson-table');
     } catch (error) {
       if (!(error instanceof Error) || !error.message.includes('No GeoArrow geometry column found')) {
         throw error;
@@ -554,9 +550,9 @@ function normalizeLoadedTable(table: Table, example?: Example | null): Table {
   return table;
 }
 
-function convertWKBArrowTableToGeoJSON(table: Table): Table {
+function convertWKBArrowTableToGeoJSON(table: ArrowTable): Table {
   const objectRowTable = convertTable(table, 'object-row-table');
-  return convertWKBTableToGeoJSON(objectRowTable, table.schema as Schema);
+  return convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema as Schema);
 }
 
 function getLoaderDisplayName(
@@ -594,7 +590,7 @@ function getLoaderDisplayName(
   }
 }
 
-function getActiveLayerName(table: Table | null): string {
+function getActiveLayerName(table: LoadedTable | null): string {
   if (getGeoArrowLayerGeometryColumn(table)) {
     return 'GeoArrowLayer';
   }
@@ -602,11 +598,11 @@ function getActiveLayerName(table: Table | null): string {
   return 'GeoJsonLayer';
 }
 
-function getLoadedTableInfo(table: Table): {
+function getLoadedTableInfo(table: LoadedTable): {
   loadedDataName: LoadedDataName;
   loadedGeometryType: LoadedGeometryType;
 } {
-  if (table.shape !== 'arrow-table') {
+  if (!isNativeArrowTable(table)) {
     return {
       loadedDataName: 'geojson',
       loadedGeometryType: null
@@ -634,7 +630,7 @@ function getLoadedTableInfo(table: Table): {
   };
 }
 
-function renderLayer({table, selectedExample}: {table: Table | null; selectedExample?: Example | null}) {
+function renderLayer({table, selectedExample}: {table: LoadedTable | null; selectedExample?: Example | null}) {
   if (!table) {
     return [];
   }
@@ -645,7 +641,7 @@ function renderLayer({table, selectedExample}: {table: Table | null; selectedExa
     return [
       new GeoArrowLayer({
         id: 'geoarrow-layer',
-        data: arrowTable.data,
+        data: arrowTable,
         geometryColumn,
         pickable: true,
         autoHighlight: true,
@@ -687,8 +683,8 @@ function renderLayer({table, selectedExample}: {table: Table | null; selectedExa
   ];
 }
 
-function getGeoArrowLayerGeometryColumn(table: Table | null): string | null {
-  if (!table || table.shape !== 'arrow-table') {
+function getGeoArrowLayerGeometryColumn(table: LoadedTable | null): string | null {
+  if (!isNativeArrowTable(table)) {
     return null;
   }
 
@@ -703,8 +699,8 @@ function getGeoArrowLayerGeometryColumn(table: Table | null): string | null {
   return isGeoArrowLayerEncodingSupported(geometryMetadata.encoding) ? geometryColumnName : null;
 }
 
-function getGeoArrowColumns(table: Table): Record<string, GeoArrowMetadata> {
-  const schema = convertArrowToSchema((table as ArrowTable).data.schema);
+function getGeoArrowColumns(table: ArrowTable): Record<string, GeoArrowMetadata> {
+  const schema = convertArrowToSchema(table.schema);
   return getGeometryColumnsFromSchema(schema);
 }
 
@@ -870,7 +866,7 @@ function getExamplesForFormat(
   return {...examples};
 }
 
-function getTableRowCount(table: Table | null): number | null {
+function getTableRowCount(table: LoadedTable | null): number | null {
   if (!table) {
     return null;
   }

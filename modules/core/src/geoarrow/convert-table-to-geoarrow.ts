@@ -7,7 +7,6 @@ import {
   convertFeaturesToGeoArrowTable as convertGISFeaturesToGeoArrowTable
 } from '@loaders.gl/core/arrow-geometry/feature-table';
 import type {
-  ArrowTable,
   Feature,
   Geometry,
   GeoArrowEncodingPreference,
@@ -45,7 +44,7 @@ export type GeoArrowConvertFromOptions = {
  * generic Arrow conversion, preserving any existing schema metadata on the source table.
  */
 export function convertTableToGeoArrow(
-  table: Exclude<Table, ArrowTable> | arrow.Table,
+  table: Table | arrow.Table,
   options?: GeoArrowConvertFromOptions
 ): arrow.Table {
   const encoding = resolveGeoArrowEncoding(options);
@@ -99,7 +98,7 @@ export function convertFeaturesToGeoArrowTable(
 
 /** Converts generic row and column tables when they contain GeoJSON geometry values. */
 function convertGenericGeometryTable(
-  table: Exclude<Table, ArrowTable | GeoJSONTable>,
+  table: Exclude<Table, GeoJSONTable>,
   options?: GeoArrowConvertFromOptions
 ): arrow.Table | null {
   const geometryColumn = options?.geoarrow?.geometryColumn || 'geometry';
@@ -129,9 +128,7 @@ function convertGenericGeometryTable(
 }
 
 /** Materializes generic table rows for the opt-in geometry adaptation path. */
-function getGenericTableRows(
-  table: Exclude<Table, ArrowTable | GeoJSONTable>
-): Record<string, unknown>[] {
+function getGenericTableRows(table: Exclude<Table, GeoJSONTable>): Record<string, unknown>[] {
   switch (table.shape) {
     case 'object-row-table':
       return table.data as Record<string, unknown>[];

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, Geometry} from '@loaders.gl/core/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import type {MLTWriterOptions} from '../mlt-writer';
@@ -18,11 +18,7 @@ import {
 import {encodeGeometryColumn, quantizeGeometry} from './encode-mlt-geometry';
 
 /** Encodes one MLT v1 layer directly from Arrow columns, without a GeoJSON feature intermediate. */
-export function encodeMLT(
-  input: ArrowTable | arrow.Table,
-  options: MLTWriterOptions = {}
-): ArrayBuffer {
-  const table = input instanceof arrow.Table ? input : input.data;
+export function encodeMLT(table: arrow.Table, options: MLTWriterOptions = {}): ArrayBuffer {
   const configuration = options.mlt ?? {};
   const extent = configuration.extent ?? 4096;
   const coordinates = configuration.coordinates ?? 'local';

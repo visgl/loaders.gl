@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
-
 import type {
   LoaderArrayOptionsType,
   LoaderShapeType,
@@ -118,21 +116,14 @@ export async function parseFile(
     url,
     normalizedOptions
   );
-  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, false);
   context = getLoaderContext(
     // @ts-expect-error candidateLoaders may be a single forced loader
     {url, _parse: parse, loaders: candidateLoaders},
-    nativeArrowOptions || strictOptions,
+    strictOptions,
     context || null
   );
 
-  const result = await parseFileWithLoader(
-    loader,
-    file,
-    nativeArrowOptions || strictOptions,
-    context
-  );
-  return nativeArrowOptions ? unwrapArrowTable(result) : result;
+  return parseFileWithLoader(loader, file, strictOptions, context);
 }
 
 /**

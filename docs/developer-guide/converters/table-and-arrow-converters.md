@@ -23,7 +23,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocOrientation
   eyebrow="Shape is part of the contract"
   title="Convert at the boundary, not by accident."
-  description="A raw Arrow table, a loaders.gl Arrow wrapper, a columnar table, and an array of row objects can all describe the same records. The converters make the transition deliberate."
+  description="A native Arrow table, a columnar table, and an array of row objects can all describe the same records. The converters make the transition deliberate."
   tone="cyan"
   items={[
     {label: 'Raw Arrow', value: "shape: 'arrow' for Apache Arrow JS tables"},

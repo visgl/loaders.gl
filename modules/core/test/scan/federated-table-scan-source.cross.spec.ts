@@ -59,7 +59,7 @@ class CrossRuntimeTableSource
   constructor() {
     super('memory', {});
     const data = arrow.tableFromArrays({id: [1, 2], score: [10, 20]});
-    this.table = {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+    this.table = data;
   }
 
   /** Reports the fixture schema without consuming rows. */
@@ -68,7 +68,7 @@ class CrossRuntimeTableSource
       sourceType: 'memory',
       queryType: 'table',
       execution: {status: 'supported', method: 'read'},
-      schema: this.table.schema!,
+      schema: convertArrowToSchema(this.table.schema),
       capabilities: {
         table: {
           predicate: 'unsupported',
@@ -78,18 +78,12 @@ class CrossRuntimeTableSource
           cancellation: true
         }
       },
-      statistics: {rowCount: this.table.data.numRows}
+      statistics: {rowCount: this.table.numRows}
     });
   }
 
   /** Emits the fixture as one physical batch for residual federation execution. */
   async *read(_options: TableScanReadOptions<SQLPredicate> = {}): AsyncIterable<ArrowTableBatch> {
-    yield {
-      batchType: 'data',
-      shape: 'arrow-table',
-      schema: this.table.schema,
-      data: this.table.data,
-      length: this.table.data.numRows
-    };
+    yield* this.table.batches;
   }
 }

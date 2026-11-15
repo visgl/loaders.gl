@@ -27,45 +27,6 @@ type ArrowWorkerColumns = {
   arrowBatchMetadata?: BatchMetadata[];
 };
 
-/** Wire payload for callers that still carry format-specific side metadata. */
-type ArrowWorkerEnvelope = ArrowWorkerColumns & {
-  transport: 'arrow-column-envelope';
-  metadata: Record<string, unknown>;
-};
-
-/** Previous envelope accepted during hydration for workers built against older releases. */
-type LegacyArrowWorkerEnvelope = ArrowWorkerColumns & {
-  shape: 'arrow-table';
-  [key: string]: unknown;
-};
-
-/** Serializes Arrow columns with owned buffers so transfers cannot detach retained parser state. */
-export function serializeArrowWorkerTable(result: unknown): unknown {
-  if (!isArrowTableWrapper(result)) {
-    throw new Error('Workers require Arrow table output');
-  }
-  const {data, shape: _shape, ...metadata} = result;
-  // Headers, sidecar indexes, and mesh indices can also retain parser-owned binary buffers.
-  // Clone only this small envelope; the Arrow table always uses column-buffer transfer.
-  return {
-    transport: 'arrow-column-envelope',
-    metadata: structuredClone(metadata),
-    ...serializeWorkerColumns(data, {copy: 'all'})
-  } satisfies ArrowWorkerEnvelope;
-}
-
-/** Hydrates the column-buffer worker protocol; other wire formats are rejected. */
-export function deserializeArrowWorkerTable(result: unknown): any {
-  if (isArrowWorkerEnvelope(result)) {
-    return {...result.metadata, shape: 'arrow-table', data: hydrateWorkerTable(result)};
-  }
-  if (isLegacyArrowWorkerEnvelope(result)) {
-    const {arrowBatchMetadata: _snapshots, data: _columns, ...metadata} = result;
-    return {...metadata, data: hydrateWorkerTable(result)};
-  }
-  throw new Error('Workers require Arrow column transport');
-}
-
 /** Serializes a native Arrow table or batch with owned column buffers for worker transport. */
 export function serializeNativeArrowWorkerResult(
   result: arrow.Table | arrow.RecordBatch,
@@ -101,69 +62,30 @@ export function deserializeNativeArrowWorkerResult(
   return payload.transport === 'arrow-record-batch' ? data.batches[0] : data;
 }
 
-/** Serializes any loaders.gl Arrow table wrapper for worker postMessage transport. */
+/** Transfers native Arrow columns and passes other loader results through. */
 export function serializeArrowWorkerResult(result: unknown, options?: unknown): unknown {
   const workerOptions = options as ArrowWorkerOptions | undefined;
-  const bufferCopyMode =
+  const copy =
     workerOptions?.core?.workerTransferBufferCopy ?? workerOptions?.workerTransferBufferCopy;
-  if (result instanceof arrow.Table || result instanceof arrow.RecordBatch) {
-    return serializeNativeArrowWorkerResult(result, {copy: bufferCopyMode ?? 'all'});
-  }
-  if (!isArrowTableWrapper(result)) {
-    return result;
-  }
-  const {data, shape: _shape, ...metadata} = result;
-  return {
-    transport: 'arrow-column-envelope',
-    metadata: structuredClone(metadata),
-    ...serializeWorkerColumns(data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
-  } satisfies ArrowWorkerEnvelope;
-}
-
-/** Rehydrates any loaders.gl Arrow table wrapper returned from worker postMessage transport. */
-export function deserializeArrowWorkerResult(result: unknown): any {
-  const transport = (result as {transport?: string} | null)?.transport;
-  if (transport === 'arrow-table-columns' || transport === 'arrow-record-batch') {
-    return deserializeNativeArrowWorkerResult(result);
-  }
-  return isArrowWorkerEnvelope(result) || isLegacyArrowWorkerEnvelope(result)
-    ? deserializeArrowWorkerTable(result)
+  return result instanceof arrow.Table || result instanceof arrow.RecordBatch
+    ? serializeNativeArrowWorkerResult(result, {copy: copy ?? 'all'})
     : result;
 }
 
-function isArrowTableWrapper(
-  value: unknown
-): value is {shape: 'arrow-table'; data: arrow.Table; [key: string]: unknown} {
-  const table = value as {shape?: unknown; data?: unknown} | null;
-  return Boolean(
-    table &&
-      table.shape === 'arrow-table' &&
-      table.data &&
-      typeof table.data === 'object' &&
-      'batches' in table.data
-  );
+/** Restores native Arrow worker results and passes other loader results through. */
+export function deserializeArrowWorkerResult<ResultType = unknown>(result: unknown): ResultType {
+  const transport = (result as {transport?: string} | null)?.transport;
+  return (
+    transport === 'arrow-table-columns' || transport === 'arrow-record-batch'
+      ? deserializeNativeArrowWorkerResult(result)
+      : result
+  ) as ResultType;
 }
 
 /** Recognizes a transferable Arrow columns descriptor. */
 function hasArrowWorkerColumns(value: unknown): value is ArrowWorkerColumns {
   const columns = value as ArrowWorkerColumns | null;
   return columns?.data?.transport === 'arrow-js' && Array.isArray(columns.data.batches);
-}
-
-/** Recognizes payloads carrying format-specific metadata. */
-function isArrowWorkerEnvelope(value: unknown): value is ArrowWorkerEnvelope {
-  return (
-    (value as ArrowWorkerEnvelope | null)?.transport === 'arrow-column-envelope' &&
-    hasArrowWorkerColumns(value)
-  );
-}
-
-/** Recognizes wrapped column payloads from older workers. */
-function isLegacyArrowWorkerEnvelope(value: unknown): value is LegacyArrowWorkerEnvelope {
-  return (
-    (value as LegacyArrowWorkerEnvelope | null)?.shape === 'arrow-table' &&
-    hasArrowWorkerColumns(value)
-  );
 }
 
 /** Serializes columns and independent batch metadata. */

@@ -4,6 +4,7 @@
 
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   GLTFScenegraph,
@@ -299,8 +300,8 @@ test('legacy B3DM batch metadata follows the same explicit Arrow mapping with nu
   });
   const resources = [];
   for await (const resource of source.read(await source.inspect())) resources.push(resource);
-  expect(resources[0].features!.batches[0].data.getChild('label')!.get(0)).toBe(null);
-  expect(resources[0].features!.batches[0].data.getChild('label')!.get(1)).toBe('');
+  expect(resources[0].features!.batches[0].getChild('label')!.get(0)).toBe(null);
+  expect(resources[0].features!.batches[0].getChild('label')!.get(1)).toBe('');
   expect(resources[0].features!.triangleFeatureIndices).toEqual(new Uint32Array([1, 0]));
 });
 
@@ -560,7 +561,7 @@ test('feature extraction expands declared defaults and rejects undeclared or mal
   });
   const adapter = createMeshTilesetConversionSource(runtime, {features: FEATURES});
   for await (const resource of adapter.read(await adapter.inspect())) {
-    expect(Array.from(resource.features!.batches[0].data.getChild('label')!)).toEqual([
+    expect(Array.from(resource.features!.batches[0].getChild('label')!)).toEqual([
       'default',
       'default'
     ]);
@@ -660,9 +661,11 @@ test('mesh source derives each inline class mapping from declarations when schem
   const iterator = source.read(await source.inspect())[Symbol.asyncIterator]();
   const resource = (await iterator.next()).value!;
   expect(
-    resource.features!.batches[0].schema.fields.find(field => field.name === 'feature_id')
+    convertArrowToSchema(resource.features!.batches[0].schema).fields.find(
+      field => field.name === 'feature_id'
+    )
   ).toMatchObject({type: 'uint64', nullable: false});
-  expect(Array.from(resource.features!.batches[0].data.getChild('feature_id')!)).toEqual([
+  expect(Array.from(resource.features!.batches[0].getChild('feature_id')!)).toEqual([
     9007199254740993n,
     18446744073709551615n
   ]);

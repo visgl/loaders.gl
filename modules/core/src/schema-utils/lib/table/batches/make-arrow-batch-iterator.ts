@@ -39,18 +39,14 @@ export function* makeArrowRecordBatchIterator(
     yield* sliceNativeArrowBatches(table, options?.batchSize);
     return;
   }
-  yield* makeWrappedTableRecordBatchIterator(table, options);
+  yield* makePortableTableRecordBatchIterator(table, options);
 }
 
 /** Converts loaders.gl table representations to record batches. */
-export function* makeWrappedTableRecordBatchIterator(
+export function* makePortableTableRecordBatchIterator(
   table: Table,
   options?: {batchSize?: number}
 ): IterableIterator<arrow.RecordBatch> {
-  if (table.shape === 'arrow-table') {
-    yield* sliceNativeArrowBatches(table.data, options?.batchSize);
-    return;
-  }
   const arrowSchema = convertSchemaToArrow(table.schema!);
 
   const length = getTableLength(table);

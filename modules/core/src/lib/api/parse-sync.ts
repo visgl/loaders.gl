@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
-
 import type {
   LoaderArrayOptionsType,
   LoaderShapeType,
@@ -116,21 +114,19 @@ export function parseSync(
   const parse = () => {
     throw new Error('parseSync called parse (which is async');
   };
-  const nativeArrowOptions = getNativeArrowOptions(loader, strictOptions, false);
   context = getLoaderContext(
     {url, _parseSync: parse, _parse: parse, loaders: loaders as Loader[]},
-    nativeArrowOptions || strictOptions,
+    strictOptions,
     context || null
   );
 
   const loaderWithParser = getLoaderImplementationSync(loader);
-  const result = parseWithLoaderSync(
+  return parseWithLoaderSync(
     loaderWithParser || (loader as LoaderWithParser),
     data,
-    nativeArrowOptions || strictOptions,
+    strictOptions,
     context
   );
-  return nativeArrowOptions ? unwrapArrowTable(result, loader.supportsNativeArrow) : result;
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator

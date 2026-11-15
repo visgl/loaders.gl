@@ -258,7 +258,7 @@ export async function extractI3SMeshFeatures(
   );
   const stableIds = new Set<string | number | bigint>();
   for (const batch of batches) {
-    const column = batch.data.getChild(options.featureIdField || 'feature_id')!;
+    const column = batch.getChild(options.featureIdField || 'feature_id')!;
     for (let index = 0; index < column.length; index++) {
       const identifier = column.get(index);
       if (stableIds.has(identifier)) {

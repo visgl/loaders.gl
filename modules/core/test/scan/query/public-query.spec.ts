@@ -17,7 +17,7 @@ function makeTable(): ArrowTable {
     name: arrow.vectorFromArray(['a', 'b', 'c'], new arrow.Utf8()),
     value: arrow.vectorFromArray([1, 2, 3], new arrow.Int32())
   });
-  return {shape: 'arrow-table', data, schema: convertArrowToSchema(data.schema)};
+  return data;
 }
 
 const logical = {
@@ -27,7 +27,7 @@ const logical = {
 } as const;
 
 test('collected and streamed queries agree and report one completion', async () => {
-  const source = makeTable().data;
+  const source = makeTable();
   const onQueryComplete = vi.fn();
   const result = await query(logical, {source, onQueryComplete});
   expect(result.toArray().map(row => row.toJSON())).toEqual([{label: 'b'}]);
@@ -56,7 +56,7 @@ test('empty and zero-limit results preserve aliased schemas without reading sour
       createScanQueryMetadata({
         sourceType: 'test',
         queryType: 'table',
-        schema: table.schema!,
+        schema: convertArrowToSchema(table.schema),
         execution: {status: 'supported', method: 'read'},
         capabilities: {}
       }),
@@ -68,7 +68,7 @@ test('empty and zero-limit results preserve aliased schemas without reading sour
   expect(read).not.toHaveBeenCalled();
   const rejected = await query(
     {select: ['name'], where: {op: '>', args: [{property: 'value'}, 100]}},
-    {source: table.data}
+    {source: table}
   );
   expect(rejected.numRows).toBe(0);
   expect(rejected.schema.fields[0].name).toBe('name');
@@ -85,7 +85,7 @@ test.each([
       createScanQueryMetadata({
         sourceType: 'test',
         queryType: 'table',
-        schema: table.schema!,
+        schema: convertArrowToSchema(table.schema),
         execution: {status: 'supported', method: 'read'},
         capabilities: {
           table: {
@@ -99,15 +99,8 @@ test.each([
       }),
     read: async function* (options) {
       received = options;
-      const data =
-        support === 'residual' ? table.data : table.data.slice(1, 1 + (options?.limit ?? 2));
-      yield {
-        shape: 'arrow-table',
-        data,
-        length: data.numRows,
-        schema: table.schema,
-        batchType: 'data'
-      };
+      const data = support === 'residual' ? table : table.slice(1, 1 + (options?.limit ?? 2));
+      yield* data.batches;
     }
   };
   const result = await query(logical, {source});
@@ -126,24 +119,18 @@ test('computed SQL aligns projected source fields and keeps the limit above loca
   const table = makeTable();
   const read = vi.fn(async function* (_options: TableScanReadOptions = {}) {
     const data = new arrow.Table({
-      value: table.data.getChild('value')!,
+      value: table.getChild('value')!,
       extra: arrow.vectorFromArray([8, 9, 10], new arrow.Int32()),
-      name: table.data.getChild('name')!
+      name: table.getChild('name')!
     });
-    yield {
-      shape: 'arrow-table' as const,
-      data,
-      length: data.numRows,
-      schema: convertArrowToSchema(data.schema),
-      batchType: 'data' as const
-    };
+    yield* data.batches;
   });
   const source: TableScanSource = {
     getQueryMetadata: async () =>
       createScanQueryMetadata({
         sourceType: 'test',
         queryType: 'table',
-        schema: table.schema!,
+        schema: convertArrowToSchema(table.schema),
         execution: {status: 'supported', method: 'read'},
         capabilities: {
           table: {
@@ -178,7 +165,7 @@ test('row batches normalize to Arrow and failures/cancellation complete once', a
       createScanQueryMetadata({
         sourceType: 'test',
         queryType: 'table',
-        schema: table.schema!,
+        schema: convertArrowToSchema(table.schema),
         execution: {status: 'supported', method: 'read'},
         capabilities: {}
       }),
@@ -186,7 +173,7 @@ test('row batches normalize to Arrow and failures/cancellation complete once', a
       try {
         yield {
           shape: 'object-row-table',
-          schema: table.schema,
+          schema: convertArrowToSchema(table.schema),
           data: [{name: 'b', value: 2}],
           length: 1
         } as TableBatch;
@@ -202,14 +189,14 @@ test('row batches normalize to Arrow and failures/cancellation complete once', a
   expect(complete.mock.calls[0][0].status).toBe('failed');
   const aborted = vi.fn();
   await expect(
-    query({}, {source: table.data, signal: AbortSignal.abort(), onQueryComplete: aborted})
+    query({}, {source: table, signal: AbortSignal.abort(), onQueryComplete: aborted})
   ).rejects.toThrow();
   expect(aborted).toHaveBeenCalledTimes(1);
   expect(aborted.mock.calls[0][0].status).toBe('cancelled');
   const throwing = vi.fn(() => {
     throw new Error('observer');
   });
-  expect((await query({}, {source: table.data, onQueryComplete: throwing})).numRows).toBe(3);
+  expect((await query({}, {source: table, onQueryComplete: throwing})).numRows).toBe(3);
 });
 
 test('consumer return closes the source and emits one terminal summary', async () => {
@@ -222,16 +209,16 @@ test('consumer return closes the source and emits one terminal summary', async (
       createScanQueryMetadata({
         sourceType: 'test',
         queryType: 'table',
-        schema: table.schema!,
+        schema: convertArrowToSchema(table.schema),
         execution: {status: 'supported', method: 'read'},
         capabilities: {}
       }),
     read: async function* () {
       try {
         pulls++;
-        yield {...table, batchType: 'data', length: 3};
+        yield* table.batches;
         pulls++;
-        yield {...table, batchType: 'data', length: 3};
+        yield* table.batches;
       } finally {
         closed = true;
       }
@@ -262,7 +249,7 @@ test('unsupported inputs and changed output types fail with one completion summa
       createScanQueryMetadata({
         sourceType: 'test',
         queryType: 'table',
-        schema: table.schema!,
+        schema: convertArrowToSchema(table.schema),
         execution: {status: 'supported', method: 'read'},
         capabilities: {}
       }),
@@ -271,13 +258,7 @@ test('unsupported inputs and changed output types fail with one completion summa
         name: arrow.vectorFromArray([1], new arrow.Int32()),
         value: arrow.vectorFromArray([1], new arrow.Int32())
       });
-      yield {
-        shape: 'arrow-table',
-        data,
-        schema: convertArrowToSchema(data.schema),
-        batchType: 'data',
-        length: 1
-      };
+      yield* data.batches;
     }
   };
   await expect(query({}, {source: drift})).rejects.toThrow('schema does not match');
@@ -300,7 +281,7 @@ test.each([
       createScanQueryMetadata({
         sourceType: 'test',
         queryType: 'table',
-        schema: table.schema!,
+        schema: convertArrowToSchema(table.schema),
         execution: {status: 'supported', method: 'read'},
         capabilities: {}
       }),
@@ -334,7 +315,7 @@ test('equivalent Arrow float constructors compare as the same logical output typ
         capabilities: {}
       }),
     read: async function* () {
-      yield {shape: 'arrow-table', data, schema, batchType: 'data', length: 2};
+      yield* data.batches;
     }
   };
   const result = await query({select: [{column: 'value', as: 'number'}]}, {source});
@@ -347,8 +328,11 @@ test('equivalent Arrow float constructors compare as the same logical output typ
 test('source nullability drift is rejected so empty and populated schemas stay consistent', async () => {
   const table = makeTable();
   const schema = {
-    ...table.schema!,
-    fields: table.schema!.fields.map(field => ({...field, nullable: !field.nullable}))
+    ...convertArrowToSchema(table.schema),
+    fields: convertArrowToSchema(table.schema).fields.map(field => ({
+      ...field,
+      nullable: !field.nullable
+    }))
   };
   const source: TableScanSource = {
     getQueryMetadata: async () =>
@@ -360,7 +344,7 @@ test('source nullability drift is rejected so empty and populated schemas stay c
         capabilities: {}
       }),
     read: async function* () {
-      yield {...table, batchType: 'data', length: table.data.numRows};
+      yield* table.batches;
     }
   };
   const empty = await query({limit: 0}, {source});
@@ -371,7 +355,7 @@ test('source nullability drift is rejected so empty and populated schemas stay c
 });
 
 test('stream pagination skips filtered batches and slices only the boundary batches', async () => {
-  const table = makeTable().data;
+  const table = makeTable();
   const data = new arrow.Table(table.schema, [
     ...table.slice(0, 1).batches,
     ...table.slice(1, 3).batches,

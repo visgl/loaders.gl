@@ -35,13 +35,7 @@ class NamedTableSource extends DataSource<string, DataSourceOptions> {
   }
   /** Streams one fixture batch. */
   async *read() {
-    yield {
-      shape: 'arrow-table' as const,
-      data: this.table,
-      schema: convertArrowToSchema(this.table.schema),
-      length: 3,
-      batchType: 'data' as const
-    };
+    yield* this.table.batches;
   }
 }
 

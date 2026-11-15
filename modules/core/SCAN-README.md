@@ -207,11 +207,11 @@ for await (const batch of tileTable.read({
   columns: ['name', 'population'],
   limit: 25
 })) {
-  // Arrow feature table batch
+  // Native Arrow RecordBatch
 }
 ```
 
-Configure MVT and vector PMTiles sources with `shape: 'arrow-table'`. The corresponding
+Configure MVT and vector PMTiles sources with `shape: 'arrow'`. The corresponding
 `VectorFeatureTableScanSource` requests Arrow output from bounded vector sources such as WFS and
 ArcGIS FeatureServer. Tile coordinates, selected layers, service bounds, and CRS remain immutable
 source parameters; predicates, projection, ordering, aggregates, and limits remain portable query

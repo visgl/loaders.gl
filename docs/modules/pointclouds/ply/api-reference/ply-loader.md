@@ -69,7 +69,7 @@ const table = await load(url, PLYLoader, {ply: {shape: 'arrow'}});
 
 ## Batched Parsing
 
-`PLYLoader` supports `loadInBatches` and `parseInBatches`. When `ply.shape: 'arrow'` is set, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
+`PLYLoader` supports `loadInBatches` and `parseInBatches`. When `ply.shape: 'arrow'` is set, the loader yields native Apache Arrow `RecordBatch` objects. Their schema metadata carries cumulative bounds. Read the bounds for an individual batch from `batch.metadata.get('boundingBox')`.
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';

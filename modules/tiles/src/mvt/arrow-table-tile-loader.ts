@@ -14,7 +14,7 @@ import {
   type GetTileDataParameters,
   type TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, Schema, GeoArrowEncoding} from '@loaders.gl/core/schema';
+import type {Schema, GeoArrowEncoding} from '@loaders.gl/core/schema';
 import {
   convertWKBToGeometry,
   convertWKTToGeometry
@@ -171,7 +171,7 @@ export class ArrowTableVectorTileSource
         this.loadOptions
       );
     }
-    const table = loaded instanceof arrow.Table ? loaded : (loaded as ArrowTable | null)?.data;
+    const table = loaded;
     if (!(table instanceof arrow.Table))
       throw new Error('ArrowTableTileLoader requires an Arrow table');
     const field = getGeometryField(table, this.options.table.geometryColumn);

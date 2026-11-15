@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {Table, RecordBatch} from 'apache-arrow';
-import {convertArrowToSchema, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   parseDBF as parseDBFToObjectRows,
   parseDBFInBatches as parseDBFToObjectRowsInBatches
@@ -87,8 +87,7 @@ function getDBFShape(options?: DBFLoaderOptions): NonNullable<DBFLoaderOptions['
 
 /** Converts hydrated Arrow scalars to the requested legacy row output on the caller. */
 function deserializeDBFWorkerResult(result: unknown, options?: DBFLoaderOptions) {
-  const value = deserializeShapefileWorkerResult<Table | ArrowTable>(result);
-  const table = 'shape' in value ? value.data : value;
+  const table = deserializeShapefileWorkerResult<Table>(result);
   const shape = getDBFShape(options);
   if (shape === 'arrow') return table;
   const rows = table.toArray().map(row => row.toJSON());
@@ -100,9 +99,7 @@ function deserializeDBFWorkerResult(result: unknown, options?: DBFLoaderOptions)
 
 /** Keeps legacy header events and materializes row arrays only on the caller. */
 function deserializeDBFWorkerBatch(result: unknown, options?: DBFLoaderOptions) {
-  const value = deserializeShapefileWorkerResult<DBFHeader | RecordBatch | ArrowTable>(result);
-  const batch =
-    'shape' in value ? (value.data.batches[0] ?? makeArrowMetadataBatch(value.data.schema)) : value;
+  const batch = deserializeShapefileWorkerResult<DBFHeader | RecordBatch>(result);
   return batch instanceof RecordBatch && getDBFShape(options) !== 'arrow'
     ? batch.toArray().map(row => row.toJSON())
     : batch;

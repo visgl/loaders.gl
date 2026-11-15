@@ -75,18 +75,6 @@ test('shared batch helpers preserve columnar, array-row, and GeoJSON shapes', ()
       data: []
     }
   );
-
-  const arrowData = {
-    slice: (_start: number, length: number) => ({length}),
-    select: (columns: string[]) => ({columns})
-  };
-  const arrow = {
-    shape: 'arrow-table',
-    data: arrowData,
-    length: 2
-  } as unknown as TableBatch;
-  expect(truncateTableBatch(arrow, 1)).toMatchObject({length: 1, data: {length: 1}});
-  expect(projectTableBatch(arrow, ['id'])).toMatchObject({data: {columns: ['id']}});
 });
 
 test('shared table executor reports cancellation and consumer return', async () => {
@@ -274,16 +262,23 @@ test.each([
   ]);
 });
 
-test('shared scan executor windows and projects a native Arrow chunk', async () => {
+test.each([
+  'table',
+  'record batch'
+] as const)('shared scan executor windows and projects a native Arrow %s', async layout => {
+  const table = tableFromArrays({id: new Int32Array([1, 2, 3]), value: ['a', 'b', 'c']});
+  const batch = layout === 'table' ? table : table.batches[0];
   async function* readBatches() {
-    yield tableFromArrays({id: new Int32Array([1, 2, 3]), value: ['a', 'b', 'c']});
+    yield batch;
   }
 
   const result = await Array.fromAsync(
-    executeTableScanBatches(readBatches, {offset: 1, limit: 1, columns: ['id']})
+    executeTableScanBatches(readBatches, {offset: 1, limit: 1, columns: ['value', 'id']})
   );
   expect(result).toHaveLength(1);
-  expect(result[0].schema.names).toEqual(['id']);
+  expect(result[0].schema.names).toEqual(['value', 'id']);
+  expect(truncateTableBatch(batch, 1).numRows).toBe(1);
+  expect(projectTableBatch(batch, ['value']).schema.names).toEqual(['value']);
   expect(result[0].getChild('id')?.toArray()).toEqual(new Int32Array([2]));
   await expect(
     Array.fromAsync(

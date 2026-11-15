@@ -23,7 +23,7 @@ function makeURLSource() {
   const schema = convertArrowToSchema(data.schema);
   const close = vi.fn(async () => {});
   const read = vi.fn(async function* () {
-    yield {shape: 'arrow-table' as const, data, schema, length: 3, batchType: 'data' as const};
+    yield* data.batches;
   });
   const source: TableScanSource & {close: typeof close} = {
     getQueryMetadata: vi.fn(async () =>

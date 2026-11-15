@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table as ApacheArrowTable} from 'apache-arrow';
+import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import type {TableScanReadOptions, TableQueryExecutionSummary} from './scan-query-metadata';
 import {emitQueryComplete} from './scan-query-metadata';
 import {filterColumnarRowIndices, validateColumnarPredicate} from './columnar-predicate';
 import {validateTableQueryLimit, validateTableQueryOffset} from './table-query';
+
+/** Physical batches handled by the shared scan executor. */
+type ScanBatch = TableBatch | ApacheArrowTable | RecordBatch;
 
 /** Reads source batches while allowing the shared executor to observe fetched bytes. */
 export type TableScanBatchReader<BatchT = TableBatch> = (
@@ -35,7 +38,7 @@ export type TableScanBatchOperators<BatchT = TableBatch> = Readonly<{
  * limits, cancellation, and telemetry here avoids copying the same executor into every format
  * package while preserving each format's native batch shape.
  */
-export async function* executeTableScanBatches<BatchT extends TableBatch | ApacheArrowTable>(
+export async function* executeTableScanBatches<BatchT extends ScanBatch>(
   readBatches: TableScanBatchReader<BatchT>,
   options: TableScanReadOptions &
     Readonly<{
@@ -105,11 +108,7 @@ export async function* executeTableScanBatches<BatchT extends TableBatch | Apach
       skip = 0;
       const output = operators.project
         ? operators.project(window, options.columns)
-        : (('shape' in window
-            ? projectTableBatch(window, options.columns)
-            : options.columns === undefined
-              ? window
-              : window.select([...options.columns])) as BatchT);
+        : projectTableBatch(window, options.columns);
       remaining -= getScanBatchRowCount(window);
       rowsReturned += getScanBatchRowCount(output);
       if (remaining === 0) earlyTerminationReason = 'limit';
@@ -151,13 +150,18 @@ export async function* executeTableScanBatches<BatchT extends TableBatch | Apach
 }
 
 /** Reads the row count from native Arrow chunks and portable batch envelopes. */
-function getScanBatchRowCount(batch: TableBatch | ApacheArrowTable): number {
+function getScanBatchRowCount(batch: ScanBatch): number {
   return 'shape' in batch ? batch.length : batch.numRows;
 }
 
 /** Truncates a batch without changing its native representation. */
-export function truncateTableBatch(batch: TableBatch, length: number): TableBatch {
-  return sliceTableBatch(batch, 0, length);
+export function truncateTableBatch<BatchType extends ScanBatch>(
+  batch: BatchType,
+  length: number
+): BatchType {
+  return (
+    'shape' in batch ? sliceTableBatch(batch, 0, length) : batch.slice(0, length)
+  ) as BatchType;
 }
 
 /** Slices rows in a batch, preserving Arrow buffers and the batch shape. */
@@ -178,30 +182,36 @@ function sliceTableBatch(batch: TableBatch, start: number, end: number): TableBa
       length
     };
   }
-  if (batch.shape === 'arrow-table') return {...batch, data: batch.data.slice(start, end), length};
   return {...batch, features: batch.features.slice(start, end), length};
 }
 
 /** Projects a batch in the caller-requested order while preserving its shape. */
-export function projectTableBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
+export function projectTableBatch<BatchType extends ScanBatch>(
+  batch: BatchType,
+  columns?: readonly string[]
+): BatchType {
   if (columns === undefined) return batch;
+  if (!('shape' in batch)) {
+    const indices = columns
+      .map(column => batch.schema.fields.findIndex(field => field.name === column))
+      .filter(index => index >= 0);
+    return batch.selectAt(indices) as BatchType;
+  }
   const schema = projectTableSchema(batch, columns);
   if (batch.shape === 'object-row-table') {
     return {
       ...batch,
       schema,
       data: batch.data.map(row => Object.fromEntries(columns.map(column => [column, row[column]])))
-    } as TableBatch;
+    } as BatchType;
   }
   if (batch.shape === 'columnar-table') {
     return {
       ...batch,
       schema,
       data: Object.fromEntries(columns.map(column => [column, batch.data[column]]))
-    };
+    } as BatchType;
   }
-  if (batch.shape === 'arrow-table')
-    return {...batch, schema, data: batch.data.select([...columns])};
   return batch;
 }
 

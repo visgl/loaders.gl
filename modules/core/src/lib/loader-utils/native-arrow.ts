@@ -14,56 +14,28 @@ export function getShapeOptionKey(loader: Loader): string | undefined {
   return keys.includes(loader.id) ? loader.id : keys.length === 1 ? keys[0] : undefined;
 }
 
-/** Resolves native Arrow selection for native parsers and wrapper-based parsers. */
-export function getNativeArrowOptions(
-  loader: Loader,
-  options: StrictLoaderOptions,
-  inBatches = false
-): StrictLoaderOptions | null {
+/** Checks for an Arrow stream and validates its metadata options. */
+export function usesNativeArrowBatches(loader: Loader, options: StrictLoaderOptions): boolean {
   const key = getShapeOptionKey(loader);
   const scopedOptions = key && options[key];
-  if (
-    loader.supportsNativeArrow &&
-    scopedOptions &&
-    typeof scopedOptions === 'object' &&
-    'shape' in scopedOptions &&
-    scopedOptions.shape === 'arrow-table'
-  ) {
-    throw new Error('This loader uses shape: "arrow" for native Arrow output');
-  }
   if (
     !scopedOptions ||
     typeof scopedOptions !== 'object' ||
     !('shape' in scopedOptions) ||
     scopedOptions.shape !== 'arrow'
   ) {
-    return null;
+    return false;
   }
-  if (inBatches && options.core?.metadata) {
+  if (options.core?.metadata) {
     throw new Error(
       'shape: "arrow" carries metadata in the Arrow schema and does not support core.metadata envelopes'
     );
   }
-  if (loader.supportsNativeArrow) return options;
-  return {
-    ...options,
-    core: {...options.core, ...(options.core?.shape === 'arrow' ? {shape: 'arrow-table'} : {})},
-    [key!]: {...scopedOptions, shape: 'arrow-table'}
-  };
-}
-
-/** Unwraps legacy tables and passes through results from native parsers. */
-export function unwrapArrowTable(result: unknown): arrow.Table;
-export function unwrapArrowTable(result: unknown, nativeParser: boolean | undefined): unknown;
-export function unwrapArrowTable(result: unknown, nativeParser?: boolean): unknown {
-  const table = result as {shape?: string; data?: arrow.Table} | null;
-  if (table?.shape === 'arrow-table' && Array.isArray(table.data?.batches)) return table.data;
-  if (nativeParser || isNativeArrowTable(result)) return result;
-  throw new Error('shape: "arrow" requires a loader that supports "arrow-table" output');
+  return true;
 }
 
 /** Yields every record batch, preserving order and iterator cancellation. */
-export async function* unwrapArrowBatches(
+export async function* normalizeNativeArrowBatches(
   batches: AsyncIterable<unknown> | Iterable<unknown>
 ): AsyncIterable<arrow.RecordBatch> {
   for await (const batch of batches) {
@@ -78,8 +50,10 @@ export async function* unwrapArrowBatches(
     }
     if (isNativeArrowRecordBatch(batch)) {
       yield batch;
+    } else if (isNativeArrowTable(batch)) {
+      yield* batch.batches;
     } else {
-      yield* unwrapArrowTable(batch).batches;
+      throw new Error('shape: "arrow" requires a native Arrow table or record batch');
     }
   }
 }

@@ -4,7 +4,6 @@
 
 import type * as arrow from 'apache-arrow';
 import type {
-  ArrowTable,
   Table,
   ArrayRowTable,
   ObjectRowTable,
@@ -30,12 +29,12 @@ export function convertGeoArrow(input: arrow.Table, shape: 'object-row-table'): 
 export function convertGeoArrow(input: arrow.Table, shape: 'columnar-table'): ColumnarTable;
 export function convertGeoArrow(input: arrow.Table, shape: 'geojson-table'): GeoJSONTable;
 export function convertGeoArrow(
-  input: Exclude<Table, ArrowTable> | arrow.Table,
+  input: Table | arrow.Table,
   shape: 'geoarrow',
   options?: GeoArrowConvertFromOptions
 ): arrow.Table;
 export function convertGeoArrow(
-  input: arrow.Table | Exclude<Table, ArrowTable>,
+  input: arrow.Table | Table,
   shape:
     | 'geoarrow'
     | 'object-row-table'

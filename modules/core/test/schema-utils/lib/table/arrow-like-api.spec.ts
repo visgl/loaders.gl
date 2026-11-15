@@ -200,11 +200,7 @@ test('ArrowLikeTable accesses columnar, Arrow, row, and GeoJSON tables', () => {
   expect(columnarTable.getChild('id').toArray()).toEqual(new Uint8Array([1, 2]));
 
   const arrowData = arrow.tableFromArrays({id: [3, 4]});
-  const arrowTable = new ArrowLikeTable({
-    shape: 'arrow-table',
-    schema: {fields: [{name: 'id', type: 'int32', nullable: false}], metadata: {}},
-    data: arrowData
-  } as Table);
+  const arrowTable = new ArrowLikeTable(arrowData);
   expect(Array.from(arrowTable.getChild('id').toArray())).toEqual([3, 4]);
 
   const rowTable = new ArrowLikeTable({

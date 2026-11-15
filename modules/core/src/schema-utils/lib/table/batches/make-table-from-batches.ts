@@ -10,13 +10,8 @@ import type {
   ArrayRowTable,
   Feature
 } from '@loaders.gl/core/schema';
-import * as arrow from 'apache-arrow';
-import {
-  makeArrowTableFromBatches,
-  mergeArrowSchemas,
-  makeArrowMetadataBatch
-} from '../../arrow/arrow-metadata';
-import {convertSchemaToArrow, serializeArrowSchema} from '../../schema/convert-arrow-schema';
+import type * as arrow from 'apache-arrow';
+import {makeArrowTableFromBatches} from '../../arrow/arrow-metadata';
 import {isNativeArrowRecordBatch} from '../../../../lib/loader-utils/native-arrow';
 import {getTableLength} from '../tables/table-accessors';
 
@@ -44,7 +39,6 @@ export async function makeTableFromBatches(
   let shape: Table['shape'] | 'arrow' | null = null;
   let schema: Schema | undefined;
   const arrowBatches: arrow.RecordBatch[] = [];
-  let arrowSchema: arrow.Schema | undefined;
 
   for await (const batch of batchIterator) {
     const batchShape = isNativeArrowRecordBatch(batch) ? 'arrow' : batch.shape;
@@ -81,17 +75,6 @@ export async function makeTableFromBatches(
         }
         break;
 
-      case 'arrow-table': {
-        for (const recordBatch of batch.data.batches) {
-          arrowSchema = mergeArrowSchemas(arrowSchema, recordBatch.schema);
-          arrowBatches.push(recordBatch);
-        }
-        arrowSchema = mergeArrowSchemas(arrowSchema, batch.data.schema);
-        if (batch.schema)
-          arrowSchema = mergeArrowSchemas(arrowSchema, convertSchemaToArrow(batch.schema));
-        if (batch.data.batches.length === 0) arrowBatches.push(makeArrowMetadataBatch(arrowSchema));
-        break;
-      }
       case 'columnar-table':
       default:
         throw new Error('shape');
@@ -105,11 +88,6 @@ export async function makeTableFromBatches(
   switch (shape) {
     case 'arrow':
       return makeArrowTableFromBatches(arrowBatches);
-    case 'arrow-table': {
-      const collected = await makeArrowTableFromBatches(arrowBatches);
-      const data = collected && new arrow.Table(arrowSchema || collected.schema, collected.batches);
-      return data ? {shape: 'arrow-table', data, schema: serializeArrowSchema(data.schema)} : null;
-    }
     case 'array-row-table':
       return {shape: 'array-row-table', data: arrayRows!, schema};
 

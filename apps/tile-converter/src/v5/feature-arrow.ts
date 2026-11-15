@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
-import {Table} from 'apache-arrow';
-import type {ArrowTableBatch, DataType, Field, Schema} from '@loaders.gl/core/schema';
+import type {RecordBatch} from 'apache-arrow';
+import type {DataType, Field, Schema} from '@loaders.gl/core/schema';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 
 const DEFAULT_FEATURE_ID_FIELD = 'feature_id';
@@ -44,12 +44,12 @@ export interface FeatureArrowBatchOptions {
  *
  * @param features - Features decoded from one source metadata class.
  * @param options - Explicit Arrow schema and batch configuration.
- * @returns Arrow table batches whose schema metadata records the source metadata class.
+ * @returns Native Arrow record batches whose schema metadata records the source metadata class.
  */
 export function convertFeatureAttributesToArrowBatches(
   features: readonly TileFeatureAttributes[],
   options: FeatureArrowBatchOptions
-): ArrowTableBatch[] {
+): RecordBatch[] {
   const featureIdField = options.featureIdField || DEFAULT_FEATURE_ID_FIELD;
   const batchSize = options.batchSize ?? 65_536;
   if (!Number.isInteger(batchSize) || batchSize <= 0) {
@@ -98,7 +98,7 @@ export function convertFeatureAttributesToArrowBatches(
     }
   }
 
-  const batches: ArrowTableBatch[] = [];
+  const batches: RecordBatch[] = [];
   for (let batchStart = 0; batchStart < features.length; batchStart += batchSize) {
     const tableBuilder = new ArrowTableBuilder(schema);
     const batchFeatures = features.slice(batchStart, batchStart + batchSize);
@@ -120,13 +120,7 @@ export function convertFeatureAttributesToArrowBatches(
     }
     const batch = tableBuilder.finishBatch();
     if (batch) {
-      batches.push({
-        shape: 'arrow-table',
-        batchType: 'data',
-        length: batch.numRows,
-        schema,
-        data: new Table(batch)
-      });
+      batches.push(batch);
     }
   }
   return batches;

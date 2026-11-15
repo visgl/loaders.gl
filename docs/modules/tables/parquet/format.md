@@ -78,7 +78,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Source</span>
     <strong>ParquetLoader</strong>
     <span>Reuses cached schema and footer metadata for selective Arrow reads.</span>
-    <span className="docs-api-card__meta">Output: ArrowTableBatch</span>
+    <span className="docs-api-card__meta">Output: Arrow RecordBatch</span>
     <span className="docs-api-card__meta">APIs: createDataSource, getMetadata, getSchema, read</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/parquet-writer">

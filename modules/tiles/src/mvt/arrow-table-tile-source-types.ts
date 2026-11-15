@@ -4,11 +4,10 @@
 
 import type {Table} from 'apache-arrow';
 import type {DataSourceOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import type {TableTileLoaderOptions} from './table-tile-loader';
 
 /** In-memory Arrow tables accepted by the Arrow tile source. */
-export type ArrowTableTileSourceInput = ArrowTable | Table;
+export type ArrowTableTileSourceInput = Table;
 
 /** Options for Arrow-native, two-dimensional client-side vector tiling. */
 export type ArrowTableTileLoaderOptions = DataSourceOptions & {

@@ -29,11 +29,6 @@ export type {
 export {getArrowViewTypeSupport} from './lib/schema/convert-arrow-schema';
 export {getDataTypeFromArray} from './lib/schema/data-type';
 
-export {
-  convertArrowTable,
-  convertArrowTableBatch
-} from './lib/table/tables/convert-arrow-table-wrapper';
-
 // TABLE CATEGORY UTILS
 
 export {deduceTableSchema} from './lib/schema/deduce-table-schema';
@@ -171,7 +166,6 @@ export {
   snapshotArrowSchema,
   mergeArrowSchemas,
   updateArrowTableSchema,
-  updateArrowTableMetadata,
   updateNativeArrowTableMetadata,
   makeArrowMetadataBatch,
   makeArrowTableFromBatches

@@ -492,9 +492,9 @@ type NativeArrowOutput<T, Options, Wrapped, Native> = [Options] extends [never]
     : never;
 
 /** Selects native output when certain and a union when shape selection is dynamic. */
-type NativeArrowOutputForOption<T, Options, Wrapped, Native> = [
-  Extract<Wrapped, {shape: 'arrow-table'} | Native>
-] extends [never]
+type NativeArrowOutputForOption<T, Options, Wrapped, Native> = [Extract<Wrapped, Native>] extends [
+  never
+]
   ? Wrapped
   : [RequiredOutputShape<T, Options>] extends [never]
     ? [

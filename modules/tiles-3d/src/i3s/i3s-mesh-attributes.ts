@@ -3,12 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import type {ArrowTableBatch, Field} from '@loaders.gl/core/schema';
+import type {Field} from '@loaders.gl/core/schema';
+import type {RecordBatch} from 'apache-arrow';
 
 /** One feature table with an explicit triangle-to-row association. */
 export interface I3SMeshFeatures {
   /** Explicit-schema Arrow batches for a single metadata class, in row order. */
-  readonly batches: readonly ArrowTableBatch[];
+  readonly batches: readonly RecordBatch[];
   /** One zero-based table row per triangle, in the original index/vertex order. */
   readonly triangleFeatureIndices: Uint32Array;
   /** Non-null stable identifier column; geometry uses separate local OIDs. */
@@ -37,8 +38,8 @@ export function encodeI3SMeshAttributes(
   maxResourceBytes: number
 ): EncodedI3SMeshAttributes {
   const batches = features?.batches || [];
-  const schema = batches[0]?.schema;
-  const count = batches.reduce((total, batch) => total + batch.data.numRows, 0);
+  const schema = batches[0]?.schema && convertArrowToSchema(batches[0].schema);
+  const count = batches.reduce((total, batch) => total + batch.numRows, 0);
   if (features && (!schema || count === 0 || !schema.fields.length)) {
     throw new Error('I3S features require nonempty explicit-schema Arrow batches');
   }
@@ -67,19 +68,10 @@ export function encodeI3SMeshAttributes(
   }
   const identifiers = new Set<string | number | bigint>();
   for (const batch of batches) {
-    if (
-      JSON.stringify(batch.schema) !== JSON.stringify(schema) ||
-      batch.length !== batch.data.numRows
-    ) {
-      throw new Error('I3S feature batches must share an explicit schema and correct row counts');
+    if (JSON.stringify(convertArrowToSchema(batch.schema)) !== JSON.stringify(schema)) {
+      throw new Error('I3S feature batches must share an explicit schema');
     }
-    const actualFields = convertArrowToSchema(batch.data.schema).fields;
-    if (
-      JSON.stringify(actualFields.map(field => [field.name, field.type])) !==
-      JSON.stringify(schema.fields.map(field => [field.name, field.type]))
-    )
-      throw new Error('I3S declared feature schema must match the Arrow column types');
-    const column = batch.data.getChild(features.featureIdField);
+    const column = batch.getChild(features.featureIdField);
     if (!column) throw new Error('Missing Arrow feature identifier column');
     for (let index = 0; index < column.length; index++) {
       const identifier = column.get(index);
@@ -101,7 +93,7 @@ export function encodeI3SMeshAttributes(
       throw new Error('I3S fields require unique identifiers other than reserved OBJECTID');
     }
     const values = batches.flatMap(batch => {
-      const column = batch.data.getChild(field.name);
+      const column = batch.getChild(field.name);
       if (!column) throw new Error(`Missing Arrow column ${field.name}`);
       return Array.from({length: column.length}, (_, index) => column.get(index));
     });

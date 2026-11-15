@@ -2,30 +2,24 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Field, Schema} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 /** Updates nullable Arrow table fields to non-nullable when their columns contain no null values. */
-export function tightenArrowTableSchemaNullability(table: ArrowTable): ArrowTable {
-  const arrowTable = table.data;
-  const fieldNullability = getTightenedArrowFieldNullability(arrowTable);
-
-  if (!doesSchemaHaveTightenedFieldNullability(arrowTable.schema, fieldNullability)) {
+export function tightenArrowTableSchemaNullability(table: arrow.Table): arrow.Table {
+  const fieldNullability = getTightenedArrowFieldNullability(table);
+  if (!doesSchemaHaveTightenedFieldNullability(table.schema, fieldNullability)) {
     return table;
   }
-
-  const arrowSchema = tightenApacheArrowSchemaNullability(arrowTable.schema, fieldNullability);
-  const schema = tightenLoadersSchemaNullability(
-    table.schema || convertArrowToSchema(arrowTable.schema),
-    fieldNullability
+  const schema = tightenApacheArrowSchemaNullability(table.schema, fieldNullability);
+  const batches = table.batches.map(
+    batch =>
+      new arrow.RecordBatch(
+        tightenApacheArrowSchemaNullability(batch.schema, fieldNullability),
+        batch.data,
+        new Map(batch.metadata)
+      )
   );
-
-  return {
-    ...table,
-    schema,
-    data: makeArrowTableWithSchema(arrowTable, arrowSchema)
-  };
+  return new arrow.Table(schema, batches);
 }
 
 /** Returns true when a nullable field can be marked as non-nullable. */
@@ -86,32 +80,4 @@ function tightenApacheArrowSchemaNullability(
     new Map(arrowSchema.dictionaries),
     arrowSchema.metadataVersion
   );
-}
-
-/** Returns a loaders.gl schema with matching fields marked non-nullable. */
-function tightenLoadersSchemaNullability(schema: Schema, fieldNullability: boolean[]): Schema {
-  return {
-    ...schema,
-    fields: schema.fields.map((field, fieldIndex) =>
-      field.nullable && !fieldNullability[fieldIndex]
-        ? tightenLoadersSchemaFieldNullability(field, false)
-        : field
-    )
-  };
-}
-
-/** Returns a loaders.gl schema field with updated nullability. */
-function tightenLoadersSchemaFieldNullability(field: Field, nullable: boolean): Field {
-  return {
-    ...field,
-    nullable
-  };
-}
-
-/** Returns a new Arrow table with the supplied schema while reusing existing column buffers. */
-function makeArrowTableWithSchema(arrowTable: arrow.Table, arrowSchema: arrow.Schema): arrow.Table {
-  const recordBatches = arrowTable.batches.map(
-    recordBatch => new arrow.RecordBatch(arrowSchema, recordBatch.data)
-  );
-  return new arrow.Table(arrowSchema, recordBatches);
 }

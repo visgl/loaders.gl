@@ -74,7 +74,7 @@ const table = await load(url, OBJLoader, {obj: {shape: 'arrow'}});
 
 `OBJLoader` supports `loadInBatches` and `parseInBatches` for vertex-only OBJ point clouds. By default, the loader scans the OBJ text before batching; if `f` face records or `l` line records are present, it falls back to atomic parsing and yields one batch.
 
-Set `obj.pointCloud: true` when the input is known to be a point cloud and should stream `v` vertex records without waiting for a whole-file geometry scan. With `obj.shape: 'arrow'`, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
+Set `obj.pointCloud: true` when the input is known to be a point cloud and should stream `v` vertex records without waiting for a whole-file geometry scan. With `obj.shape: 'arrow'`, the loader yields native Apache Arrow `RecordBatch` objects. Their schema metadata carries cumulative bounds. Read the bounds for an individual batch from `batch.metadata.get('boundingBox')`.
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';

@@ -367,9 +367,8 @@ export function measureMeshBytes(resource: MeshSourceResource): number {
       resource.features.batches.reduce(
         (bytes, batch) =>
           bytes +
-          batch.data.schema.fields.reduce(
-            (columnBytes, field) =>
-              columnBytes + (batch.data.getChild(field.name)?.byteLength ?? 0),
+          batch.schema.fields.reduce(
+            (columnBytes, field) => columnBytes + (batch.getChild(field.name)?.byteLength ?? 0),
             0
           ),
         0

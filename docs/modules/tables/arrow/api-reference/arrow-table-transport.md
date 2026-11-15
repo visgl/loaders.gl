@@ -167,22 +167,14 @@ load different Apache Arrow JS versions.
 
 ## Owned worker column buffers
 
-`serializeArrowWorkerTable(result)` and `deserializeArrowWorkerTable(result)` from
-`@loaders.gl/core/arrow-worker-transport` transfer Arrow table and batch columns directly.
-The serializer uses `dehydrateArrowTable(table, {copy: 'all'})`; the receiver uses
-`hydrateArrowTable`. The worker protocol does not encode or decode Arrow IPC.
+`serializeNativeArrowWorkerResult(value)` and `deserializeNativeArrowWorkerResult(payload)`
+from `@loaders.gl/core/arrow-worker-transport` transfer native Apache Arrow `Table` and
+`RecordBatch` values. Column buffers are transferred directly. The payload includes the table
+schema, each batch's own schema, and batch-local metadata.
 
-Every outgoing buffer is owned by the message, including dictionaries retained by a parser and
-separate mesh indices. Identical typed-array views referenced within one Arrow object reuse a
-single copy. This is a safe-copy transport, not a promise of zero-copy handoff from the parser.
-Small schema and batch descriptors accompany the transferable buffers.
+The native serializer copies all outgoing buffers by default, including dictionaries retained by
+a parser. Identical typed-array views within one message reuse a single copy. Applications
+that own the backing buffers can choose an explicit copy mode.
 
-Built-in CSV, Parquet, Arrow, GeoArrow, JSONTable/NDJSON Arrow output, OBJ, PLY, and PCD workers
-use this shared path for atomic results and batches. Requested rows, GeoJSON features, and legacy
-meshes are materialized on the caller. Non-Arrow JSON uses binary JSON transport and caller-side
-decoding. Worker deserializers reject IPC and raw decoded-object payloads; custom workers must
-use the current wire format.
-
-These owned worker serializers always copy retained storage, regardless of
-`core.workerTransferBufferCopy`. The lower-level splitter and generic transport helpers retain
-explicit copy modes for applications that can establish exclusive buffer ownership.
+Built-in workers use this column transport for Arrow results. Where a loader also supports row,
+GeoJSON, or mesh output, it can reconstruct those values after hydration.

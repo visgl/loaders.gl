@@ -4,18 +4,13 @@
 
 import type {Table as ArrowTable} from 'apache-arrow';
 import {isNativeArrowTable} from '@loaders.gl/core/schema-utils';
-import type {
-  ArrowTable as WrappedArrowTable,
-  ArrowTableBatch,
-  Table,
-  TableBatch
-} from '@loaders.gl/core/schema';
+import type {Table, TableBatch} from '@loaders.gl/core/schema';
 
 /** Input shared by table writers that also accept loaders.gl row or columnar tables. */
-export type TableWriterInput = ArrowTable | Exclude<Table, WrappedArrowTable>;
+export type TableWriterInput = ArrowTable | Table;
 
 /** Batch envelopes supported by table writers alongside native Arrow batches. */
-export type TableWriterBatch = Exclude<TableBatch, ArrowTableBatch>;
+export type TableWriterBatch = TableBatch;
 
 /** Distinguishes native Arrow from the row and column layouts accepted by writers. */
 export function isNativeWriterTable(table: TableWriterInput): table is ArrowTable {
