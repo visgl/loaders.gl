@@ -115,6 +115,17 @@ export function convertMeshToArrowTableWrapper(mesh: Mesh, batchSize?: number): 
   });
 }
 
+/** Builds a native Apache Arrow mesh table, including topology, indices, and bounds. */
+export function convertMeshToArrowTable(mesh: Mesh): arrow.Table {
+  return makeMeshArrowData(mesh.attributes, {
+    schema: mesh.schema,
+    topology: mesh.topology,
+    mode: mesh.mode,
+    boundingBox: mesh.header?.boundingBox,
+    indices: hasMeshIndices(mesh) ? mesh.indices : undefined
+  });
+}
+
 /**
  * Create a MeshArrowTable directly from mesh attribute typed arrays.
  * @param attributes Mesh attributes to expose as Arrow columns.
@@ -125,6 +136,21 @@ export function makeMeshArrowTable(
   attributes: MeshArrowAttributes,
   options: MeshArrowTableOptions = {}
 ): MeshArrowTable {
+  const data = makeMeshArrowData(attributes, options);
+  return {
+    shape: 'arrow-table',
+    schema: serializeArrowSchema(data.schema),
+    data,
+    topology: options.topology || 'point-list',
+    indices: options.indices
+  };
+}
+
+/** Builds the native Arrow columns and metadata shared by mesh conversion entry points. */
+function makeMeshArrowData(
+  attributes: MeshArrowAttributes,
+  options: MeshArrowTableOptions
+): arrow.Table {
   const fields: arrow.Field[] = [];
   const columns: {[columnName: string]: arrow.Vector} = {};
   const attributeNames = getOrderedAttributeNames(attributes);
@@ -149,19 +175,9 @@ export function makeMeshArrowTable(
   const arrowSchema = new arrow.Schema(fields, getMeshArrowMetadata(options));
   // Arrow's column-object constructor synthesizes an incompatible batch schema for empty
   // fixed-size-list vectors. A schema-only table preserves the declared mesh fields instead.
-  const table =
-    columns[attributeNames[0]]?.length === 0
-      ? new arrow.Table(arrowSchema)
-      : new arrow.Table(arrowSchema, columns);
-  const schema = serializeArrowSchema(table.schema);
-
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: table,
-    topology: options.topology || 'point-list',
-    indices: options.indices
-  };
+  return columns[attributeNames[0]]?.length === 0
+    ? new arrow.Table(arrowSchema)
+    : new arrow.Table(arrowSchema, columns);
 }
 
 /** Return an Arrow vector for a mesh attribute. */

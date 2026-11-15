@@ -4,6 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {Field, DataType, ArrowTable} from '@loaders.gl/core/schema';
+import {isNativeArrowTable} from '../../../lib/loader-utils/native-arrow';
 import {serializeArrowSchema, deserializeArrowSchema} from '../schema/convert-arrow-schema';
 
 /** Copies a schema, including nested field metadata, without retaining mutable metadata maps. */
@@ -102,20 +103,22 @@ export async function makeArrowTableFromBatches(
   return schema ? new arrow.Table(schema, collected) : null;
 }
 
-/** Refines Arrow wrapper schemas and cumulative bounds while passing non-Arrow outputs through. */
+/** Refines Arrow table schemas and cumulative bounds while passing non-Arrow outputs through. */
 export async function* refineArrowTableBatches<T>(
   batches: AsyncIterable<T> | Iterable<T>
 ): AsyncIterable<T> {
   let schema: arrow.Schema | undefined;
   let bounds: number[][] | undefined;
   for await (const batch of batches) {
-    const table = batch as T & ArrowTable;
-    if (table?.shape !== 'arrow-table') {
+    const wrapped = batch as T & ArrowTable;
+    const native = isNativeArrowTable(batch);
+    const table = native ? batch : wrapped?.shape === 'arrow-table' ? wrapped.data : null;
+    if (!table) {
       yield batch;
       continue;
     }
-    const localBounds = table.data.schema.metadata.get('boundingBox');
-    const nextSchema = snapshotArrowSchema(table.data.schema);
+    const localBounds = table.schema.metadata.get('boundingBox');
+    const nextSchema = snapshotArrowSchema(table.schema);
     if (localBounds) {
       const nextBounds = JSON.parse(localBounds) as number[][];
       bounds = bounds
@@ -127,10 +130,12 @@ export async function* refineArrowTableBatches<T>(
       nextSchema.metadata.set('boundingBox', JSON.stringify(bounds));
     }
     schema = mergeArrowSchemas(schema, nextSchema);
-    const data = updateArrowTableSchema(table.data, schema);
+    const data = updateArrowTableSchema(table, schema);
     if (localBounds) {
       for (const recordBatch of data.batches) recordBatch.metadata.set('boundingBox', localBounds);
     }
-    yield {...table, data, schema: serializeArrowSchema(data.schema)} as Awaited<T>;
+    yield (
+      native ? data : {...wrapped, data, schema: serializeArrowSchema(data.schema)}
+    ) as Awaited<T>;
   }
 }

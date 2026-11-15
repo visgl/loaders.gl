@@ -98,6 +98,7 @@ export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 export {getMeshSize, getMeshBoundingBox} from './lib/mesh/mesh-utils';
 export {
   convertMeshToTable,
+  convertMeshToArrowTable,
   convertMeshToArrowTableWrapper,
   makeMeshArrowTable
 } from './lib/mesh/convert-mesh-to-table';

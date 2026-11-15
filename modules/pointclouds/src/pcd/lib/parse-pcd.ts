@@ -81,7 +81,7 @@ export function parsePCD(data: ArrayBufferLike, options?: ParsePCDOptions): PCDM
   const schemaMetadata = Object.fromEntries([
     ['topology', 'point-list'],
     ['mode', '0'],
-    ['boundingBox', JSON.stringify(header.boundingBox)]
+    ...(header.boundingBox ? [['boundingBox', JSON.stringify(header.boundingBox)]] : [])
   ]);
 
   const schema = getPCDSchema(pcdHeader, schemaMetadata, options?.pcd?.colorFormat);
@@ -102,10 +102,10 @@ function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): 
   if (typeof pcdHeader.width === 'number' && typeof pcdHeader.height === 'number') {
     const pointCount = pcdHeader.width * pcdHeader.height; // Supports "organized" point sets
     const boundingBox = getMeshBoundingBox(attributes);
-    if (!boundingBox) throw new Error('PCD point cloud is missing positions');
+    if (pointCount && !boundingBox) throw new Error('PCD point cloud is missing positions');
     return {
       vertexCount: pointCount,
-      boundingBox
+      boundingBox: boundingBox ?? undefined
     };
   }
   return {
