@@ -243,9 +243,13 @@ function makePLYElementTable(collector: ElementCollector): PLYElementTable {
     fields.push(new arrow.Field(propertyCollector.property.name, column.type, false));
   }
 
+  const schema = new arrow.Schema(fields);
   return {
     element: collector.element,
-    table: new arrow.Table(new arrow.Schema(fields), columns)
+    table:
+      fields.length && columns[fields[0].name].length
+        ? new arrow.Table(schema, columns)
+        : new arrow.Table(schema)
   };
 }
 
@@ -496,8 +500,8 @@ function getOrderedAttributeNames(attributes: MeshAttributes): string[] {
 
 /** Return a vector's backing values. */
 function getVectorValues(vector: arrow.Vector): TypedArray {
-  const data = vector.data[0];
-  return data.values as TypedArray;
+  if (vector.length === 0) return new vector.type.ArrayType(0);
+  return vector.data[0].values as TypedArray;
 }
 
 /** Return a PLY text body after the header terminator. */

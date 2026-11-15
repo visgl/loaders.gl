@@ -667,22 +667,22 @@ function getPLYMeshAttributes(attributes: PLYAttributes): MeshAttributes {
   for (const attributeName of Object.keys(attributes)) {
     switch (attributeName) {
       case 'vertices':
-        if (attributes.vertices.length > 0) {
+        if (ArrayBuffer.isView(attributes.vertices)) {
           meshAttributes.POSITION = {value: getFloat32Array(attributes.vertices), size: 3};
         }
         break;
       case 'normals':
-        if (attributes.normals.length > 0) {
+        if (ArrayBuffer.isView(attributes.normals)) {
           meshAttributes.NORMAL = {value: getFloat32Array(attributes.normals), size: 3};
         }
         break;
       case 'uvs':
-        if (attributes.uvs.length > 0) {
+        if (ArrayBuffer.isView(attributes.uvs)) {
           meshAttributes.TEXCOORD_0 = {value: getFloat32Array(attributes.uvs), size: 2};
         }
         break;
       case 'colors':
-        if (attributes.colors.length > 0) {
+        if (ArrayBuffer.isView(attributes.colors)) {
           meshAttributes.COLOR_0 = {
             value: getUint8Array(attributes.colors),
             size: 3,
@@ -693,7 +693,7 @@ function getPLYMeshAttributes(attributes: PLYAttributes): MeshAttributes {
       case 'indices':
         break;
       default:
-        if (attributes[attributeName].length > 0) {
+        if (ArrayBuffer.isView(attributes[attributeName])) {
           meshAttributes[attributeName] = {
             value: getFloat32Array(attributes[attributeName]),
             size: 1

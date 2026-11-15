@@ -185,14 +185,20 @@ function getAttributeTypedArray(attributeData: arrow.Vector, size: number): any 
     return attributeData.toArray();
   }
 
-  const values = attributeData.data[0].children[0].values;
+  if (attributeData.length === 0) {
+    const EmptyStorage = attributeData.type.valueType.ArrayType;
+    return new EmptyStorage(0);
+  }
+
+  const values = attributeData.data.find(chunk => chunk.length > 0)!.children[0].values;
   const TypedArrayConstructor = values.constructor as any;
   const typedArray = new TypedArrayConstructor(attributeData.length * size);
   let targetOffset = 0;
 
   for (const data of attributeData.data) {
-    const child = data.children[0];
     const sourceLength = data.length * size;
+    if (sourceLength === 0) continue;
+    const child = data.children[0];
     const sourceOffset = child.offset || data.offset * size;
     // Arrow chunks can either slice child values eagerly or retain offsets into the source buffer.
     const sourceStart = sourceOffset + sourceLength <= child.values.length ? sourceOffset : 0;

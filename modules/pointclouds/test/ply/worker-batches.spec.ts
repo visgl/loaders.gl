@@ -189,3 +189,47 @@ test.each([
   }
   expect(count).toBe(2);
 });
+
+test.each([
+  ['ascii', false],
+  ['ascii', true],
+  ['binary_little_endian', false],
+  ['binary_little_endian', true]
+] as const)('empty %s PLY retains typed attributes with worker=%s', async (format, worker) => {
+  const text = [
+    'ply',
+    `format ${format} 1.0`,
+    'element vertex 0',
+    'property float x',
+    'property float y',
+    'property float z',
+    'property uchar red',
+    'property uchar green',
+    'property uchar blue',
+    'end_header',
+    ''
+  ].join('\n');
+  const input = new TextEncoder().encode(text);
+  const core = {worker, _workerType: 'test'} as const;
+  const mesh = await parse(input.slice(), PLYLoader, {core, ply: {shape: 'mesh'}});
+  expect(mesh.header.vertexCount).toBe(0);
+  expect(mesh.attributes.POSITION).toMatchObject({size: 3, value: new Float32Array()});
+  expect(mesh.attributes.COLOR_0).toMatchObject({size: 3, value: new Uint8Array()});
+
+  const table = await parse(input.slice(), PLYLoader, {
+    core,
+    ply: {shape: 'arrow', colorFormat: 'float32'}
+  });
+  expect(table.numRows).toBe(0);
+  expect(table.getChild('COLOR_0')?.type.toString()).toContain('Float32');
+
+  const batches = await parseInBatches([input], PLYLoader, {
+    core,
+    ply: {shape: 'arrow', pointCloud: true, colorFormat: 'float32'}
+  });
+  const result = [];
+  for await (const batch of batches) result.push(batch);
+  expect(result).toHaveLength(1);
+  expect(result[0].numRows).toBe(0);
+  expect(result[0].schema.fields.map(field => field.name)).toEqual(['POSITION', 'COLOR_0']);
+});

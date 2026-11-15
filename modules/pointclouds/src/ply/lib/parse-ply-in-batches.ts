@@ -91,11 +91,17 @@ async function* parseBinaryPLYToArrowInBatches(
 ): AsyncIterable<Table> {
   const byteIterator = toArrayBufferIterator(iterator)[Symbol.asyncIterator]();
   const {header, initialBodyBytes} = await readPLYHeader(byteIterator, options);
-  let tables: AsyncIterable<Table>;
-  if (header.format === 'ascii') {
+  const vertexElement = getVertexElement(header, options);
+  let tables: AsyncIterable<Table> | Iterable<Table>;
+  if (vertexElement.count === 0) {
+    tables = [
+      header.format === 'ascii'
+        ? makeASCIIPLYArrowBatch(header, [], options)
+        : makeBinaryPLYArrowBatchFromRows(header, [], 0, 0, options)
+    ];
+  } else if (header.format === 'ascii') {
     tables = parseASCIIPLYToArrowInBatches(byteIterator, header, initialBodyBytes, options);
   } else {
-    const vertexElement = getVertexElement(header, options);
     tables = vertexElement.properties.some(property => property.type === 'list')
       ? parseBinaryVariableWidthVertexPLYToArrowInBatches(
           byteIterator,
