@@ -13,6 +13,6 @@ const {preload: _KSPLATLoaderPreload, ...KSPLATLoaderMetadataWithoutPreload} = K
 /** Parser-bearing loader for `.ksplat` Gaussian splat files. */
 export const KSPLATLoaderWithParser = {
   ...KSPLATLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer) => parseKSPLAT(arrayBuffer).data,
-  parseSync: (arrayBuffer: ArrayBuffer) => parseKSPLAT(arrayBuffer).data
+  parse: async (arrayBuffer: ArrayBuffer) => parseKSPLAT(arrayBuffer),
+  parseSync: (arrayBuffer: ArrayBuffer) => parseKSPLAT(arrayBuffer)
 } as const satisfies LoaderWithParser<Table, never, SplatsLoaderOptions>;

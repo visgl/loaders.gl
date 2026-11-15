@@ -14,5 +14,5 @@ const {preload: _SPZLoaderPreload, ...SPZLoaderMetadataWithoutPreload} = SPZLoad
 export const SPZLoaderWithParser = {
   ...SPZLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: SplatsLoaderOptions) =>
-    (await parseSPZ(arrayBuffer, options)).data
+    parseSPZ(arrayBuffer, options)
 } as const satisfies LoaderWithParser<Table, never, SplatsLoaderOptions>;

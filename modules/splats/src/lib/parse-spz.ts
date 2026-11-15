@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {GZipDecompressor, ZstdDecompressor} from '@loaders.gl/compression';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {GaussianSplats, SPZCoordinateSystem, SplatsLoaderOptions} from '../types';
 import {makeGaussianSplatsArrowTable} from './splats-arrow-table';
 import {normalizeQuaternion} from './splat-utils';
@@ -34,10 +34,7 @@ type SPZStreamInfo = {
 };
 
 /** Parses a Niantic Spatial `.spz` ArrayBuffer into a Mesh Arrow table. */
-export async function parseSPZ(
-  data: ArrayBuffer,
-  options?: SplatsLoaderOptions
-): Promise<MeshArrowTable> {
+export async function parseSPZ(data: ArrayBuffer, options?: SplatsLoaderOptions): Promise<Table> {
   return makeGaussianSplatsArrowTable(await parseSPZToGaussianSplats(data, options));
 }
 

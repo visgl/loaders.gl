@@ -82,6 +82,10 @@ for await (const chunkTable of source.getChunkTables({
 }
 ```
 
+Chunk table methods return Apache Arrow tables. The schema entry
+`loaders_gl.gaussian_splats.loader_data` holds the chunk header and, when decoded,
+the LoD child counts and offsets as JSON arrays.
+
 For full buffers, `RADLoader` returns just the top-level metadata:
 
 ```typescript

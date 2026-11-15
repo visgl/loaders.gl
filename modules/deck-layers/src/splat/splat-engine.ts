@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type * as arrow from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 import {
   Buffer,
   type Binding,
@@ -12,8 +12,7 @@ import {
   type Shader
 } from '@luma.gl/core';
 import type {Color} from '@deck.gl/core';
-import type {ArrowTableBatch} from '@loaders.gl/core/schema';
-import {isArrowTableBatch} from '../mesh-arrow-point-cloud-layer-utils';
+import {isNativeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {BoundingSphere, CullingVolume} from '@math.gl/geometry/culling';
 import {
   projectSplatCovarianceToScreen,
@@ -284,7 +283,7 @@ export class SplatEngine {
   }
 
   /** Decode Arrow data and upload persistent/transient GPU buffers. */
-  setData(table: arrow.Table | AsyncIterable<ArrowTableBatch>, fallbackColor: Color): void {
+  setData(table: arrow.Table | AsyncIterable<arrow.RecordBatch>, fallbackColor: Color): void {
     this.dataStreamVersion++;
     if (isAsyncIterable(table)) {
       const streamVersion = this.dataStreamVersion;
@@ -300,7 +299,7 @@ export class SplatEngine {
   }
 
   private async setDataFromBatches(
-    tableBatches: AsyncIterable<ArrowTableBatch>,
+    tableBatches: AsyncIterable<arrow.RecordBatch>,
     fallbackColor: Color,
     streamVersion: number
   ): Promise<void> {
@@ -311,13 +310,12 @@ export class SplatEngine {
         return;
       }
 
-      if (!isArrowTableBatch(tableBatch)) {
-        throw new Error('SplatEngine async data requires ArrowTableBatch values.');
+      if (!isNativeArrowRecordBatch(tableBatch)) {
+        throw new Error('SplatEngine async data requires Arrow RecordBatch values.');
       }
 
-      accumulatedTable = accumulatedTable
-        ? accumulatedTable.concat(tableBatch.data)
-        : tableBatch.data;
+      const table = new arrow.Table(tableBatch.schema, [tableBatch]);
+      accumulatedTable = accumulatedTable ? accumulatedTable.concat(table) : table;
       this.setArrowTableData(accumulatedTable, fallbackColor);
       this.props.onDataUpdate?.();
     }
@@ -1001,9 +999,9 @@ function writeCullingPlanes(
 }
 
 /** Returns true when data can be consumed as async Arrow table batches. */
-function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> {
+function isAsyncIterable(data: unknown): data is AsyncIterable<arrow.RecordBatch> {
   return Boolean(
-    data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
+    data && typeof (data as AsyncIterable<arrow.RecordBatch>)[Symbol.asyncIterator] === 'function'
   );
 }
 

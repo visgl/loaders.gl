@@ -13,6 +13,6 @@ const {preload: _SPLATLoaderPreload, ...SPLATLoaderMetadataWithoutPreload} = SPL
 /** Parser-bearing loader for raw `.splat` Gaussian splat files. */
 export const SPLATLoaderWithParser = {
   ...SPLATLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer) => parseSPLAT(arrayBuffer).data,
-  parseSync: (arrayBuffer: ArrayBuffer) => parseSPLAT(arrayBuffer).data
+  parse: async (arrayBuffer: ArrayBuffer) => parseSPLAT(arrayBuffer),
+  parseSync: (arrayBuffer: ArrayBuffer) => parseSPLAT(arrayBuffer)
 } as const satisfies LoaderWithParser<Table, never, SplatsLoaderOptions>;
