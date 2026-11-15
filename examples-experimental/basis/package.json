@@ -11,8 +11,8 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/core": "5.0.0-beta.8",
-    "@loaders.gl/images": "5.0.0-beta.8"
+    "@loaders.gl/core": "5.0.0-beta.10",
+    "@loaders.gl/images": "5.0.0-beta.10"
   },
   "devDependencies": {
     "vite": "^8.3.5"
