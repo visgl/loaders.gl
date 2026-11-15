@@ -1,3 +1,4 @@
+import {tableFromArrays} from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
 import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
 import {
@@ -283,4 +284,24 @@ test.each([
   expect(summaries).toEqual([
     expect.objectContaining({status: 'early-terminated', earlyTerminationReason: 'limit'})
   ]);
+});
+
+test('shared scan executor windows and projects a native Arrow chunk', async () => {
+  async function* readBatches() {
+    yield tableFromArrays({id: new Int32Array([1, 2, 3]), value: ['a', 'b', 'c']});
+  }
+
+  const result = await Array.fromAsync(
+    executeTableScanBatches(readBatches, {offset: 1, limit: 1, columns: ['id']})
+  );
+  expect(result).toHaveLength(1);
+  expect(result[0].schema.names).toEqual(['id']);
+  expect(result[0].getChild('id')?.toArray()).toEqual(new Int32Array([2]));
+  await expect(
+    Array.fromAsync(
+      executeTableScanBatches(readBatches, {
+        predicate: {op: '=', args: [{property: 'id'}, 2]}
+      })
+    )
+  ).rejects.toThrow('require a filter kernel');
 });

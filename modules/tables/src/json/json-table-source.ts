@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {RecordBatch} from 'apache-arrow';
+import type {RecordBatch, Table} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   createScanQueryMetadata,
   DataSource,
-  executeTableScanBatches,
-  makeTableScanBatch
+  executeTableScanBatches
 } from '@loaders.gl/core/loader-utils';
 import type {
   CoreAPI,
@@ -18,7 +17,6 @@ import type {
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {JSONTableLoaderOptions} from './json-table-loader-types';
 
@@ -32,7 +30,7 @@ export class JSONTableSource
   extends DataSource<string | Blob, JSONTableSourceOptions>
   implements TableScanSource<RecordBatch>
 {
-  private table: ArrowTable | undefined;
+  private table: Table | undefined;
   private revision = 0;
 
   /** Creates a source without loading or parsing the JSON. */
@@ -55,7 +53,7 @@ export class JSONTableSource
       name: this.name,
       queryType: 'table',
       execution: {status: 'supported', method: 'read'},
-      schema: table.schema ?? convertArrowToSchema(table.data.schema),
+      schema: convertArrowToSchema(table.schema),
       capabilities: {
         table: {
           predicate: 'residual',
@@ -71,9 +69,9 @@ export class JSONTableSource
   /** Applies scan options to the decoded table and yields the result batch. */
   async *read(options: TableScanReadOptions = {}): AsyncIterable<RecordBatch> {
     const source = this;
-    for await (const batch of executeTableScanBatches(
+    for await (const batch of executeTableScanBatches<Table>(
       async function* (signal, onByteLength) {
-        yield makeTableScanBatch(await source.loadTable(signal, onByteLength));
+        yield await source.loadTable(signal, onByteLength);
       },
       options,
       {
@@ -82,15 +80,12 @@ export class JSONTableSource
             return batch;
           }
           const {filterArrowTable} = await import('@loaders.gl/core/scan/arrow-execution');
-          const arrowBatch = batch as ArrowTableBatch;
-          const data = filterArrowTable(arrowBatch.data, predicate, {signal});
-          return {...arrowBatch, data, length: data.numRows};
+          return filterArrowTable(batch, predicate, {signal});
         }
       }
     )) {
-      const {data} = batch as ArrowTableBatch;
-      if (data.batches.length) yield* data.batches;
-      else yield makeArrowMetadataBatch(data.schema);
+      if (batch.batches.length) yield* batch.batches;
+      else yield makeArrowMetadataBatch(batch.schema);
     }
   }
 
@@ -98,7 +93,7 @@ export class JSONTableSource
   private async loadTable(
     signal?: AbortSignal,
     onByteLength?: (byteLength: number) => void
-  ): Promise<ArrowTable> {
+  ): Promise<Table> {
     signal?.throwIfAborted();
     if (this.table) {
       return this.table;
@@ -125,8 +120,8 @@ export class JSONTableSource
       throw new Error('JSON table source expected an Arrow table');
     }
     if (this.revision === revision) {
-      this.table = {shape: 'arrow-table', data: table, schema: convertArrowToSchema(table.schema)};
+      this.table = table;
     }
-    return {shape: 'arrow-table', data: table, schema: convertArrowToSchema(table.schema)};
+    return table;
   }
 }

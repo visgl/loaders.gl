@@ -3,7 +3,6 @@ import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   createScanQueryMetadata,
   executeTableScanBatches,
-  makeTableScanBatch,
   explainTableQuery
 } from '@loaders.gl/core/loader-utils';
 import type {
@@ -13,7 +12,6 @@ import type {
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {projectArrowTable, filterArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {DataSource} from '@loaders.gl/core/loader-utils';
@@ -58,20 +56,19 @@ export class ArrowTableSource
 
   /** Streams Arrow record batches in source order with an optional global limit. */
   async *read(options: TableScanReadOptions = {}): AsyncIterable<RecordBatch> {
-    for await (const batch of executeTableScanBatches(
+    for await (const batch of executeTableScanBatches<Table>(
       (signal, onByteLength) => this.parseBatches(signal, onByteLength),
       options,
       {filter: filterArrowBatch, project: projectArrowBatch}
     )) {
-      const {data} = batch as ArrowTableBatch;
-      if (data.batches.length) yield* data.batches;
-      else yield makeArrowMetadataBatch(data.schema);
+      if (batch.batches.length) yield* batch.batches;
+      else yield makeArrowMetadataBatch(batch.schema);
     }
   }
 
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
     for await (const batch of this.parseBatches(signal)) {
-      const arrowSchema = (batch as ArrowTableBatch).data.schema;
+      const arrowSchema = batch.schema;
       return createScanQueryMetadata({
         sourceType: 'arrow',
         queryType: 'table',
@@ -88,7 +85,7 @@ export class ArrowTableSource
   private async *parseBatches(
     signal?: AbortSignal,
     onByteLength?: (byteLength: number) => void
-  ): AsyncIterable<TableBatch> {
+  ): AsyncIterable<Table> {
     if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
     const chunks =
       this.data instanceof Blob
@@ -96,38 +93,23 @@ export class ArrowTableSource
         : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
     const {parseArrowInBatches} = await import('./lib/parsers/parse-arrow');
     for await (const batch of parseArrowInBatches(chunks)) {
-      yield makeTableScanBatch({shape: 'arrow-table', data: new Table(batch)});
+      yield new Table(batch.schema, [batch]);
     }
   }
 }
 
-/** Applies the Arrow-native residual predicate while retaining the table-batch envelope. */
+/** Applies an Arrow-native residual predicate to a decoded IPC chunk. */
 function filterArrowBatch(
-  batch: TableBatch,
+  batch: Table,
   predicate: TableScanReadOptions['predicate'],
   signal?: AbortSignal
-): TableBatch {
-  const arrowBatch = batch as ArrowTableBatch;
-  const data = predicate ? filterArrowTable(arrowBatch.data, predicate, {signal}) : arrowBatch.data;
-  return {
-    ...batch,
-    data,
-    length: data.numRows,
-    schema: convertArrowToSchema(data.schema)
-  } as TableBatch;
+): Table {
+  return predicate ? filterArrowTable(batch, predicate, {signal}) : batch;
 }
 
-/** Projects Arrow columns and updates the portable schema in one format-specific kernel. */
-function projectArrowBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
-  const arrowBatch = batch as ArrowTableBatch;
-  const data =
-    columns === undefined ? arrowBatch.data : projectArrowTable(arrowBatch.data, columns);
-  return {
-    ...batch,
-    data,
-    length: data.numRows,
-    schema: convertArrowToSchema(data.schema)
-  } as TableBatch;
+/** Projects columns in a decoded IPC chunk. */
+function projectArrowBatch(batch: Table, columns?: readonly string[]): Table {
+  return columns === undefined ? batch : projectArrowTable(batch, columns);
 }
 
 async function* readResponseChunks(
