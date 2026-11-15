@@ -17,7 +17,7 @@ function encode(text: string): ArrayBuffer {
 
 /** Returns plain rows from a loaders.gl Arrow table. */
 function getRows(table: any): Record<string, unknown>[] {
-  return table.data.toArray().map((row: any) => row.toJSON());
+  return table.toArray().map((row: any) => row.toJSON());
 }
 
 test.each([
@@ -138,7 +138,7 @@ test.each([
 
 test('ASCII scanner covers empty input, terminal delimiters, CR variants, and late validation', () => {
   const options = {delimiter: ',', header: false, columnPrefix: 'column'} as const;
-  expect(parseRawArrowCSVASCIIText('', options)?.data.numRows).toBe(0);
+  expect(parseRawArrowCSVASCIIText('', options)?.numRows).toBe(0);
   expect(getRows(parseRawArrowCSVASCIIText('a,', options)!)).toEqual([{column1: 'a', column2: ''}]);
   expect(getRows(parseRawArrowCSVASCIIText('a,b\r\nc,d\re,f\n', options)!)).toEqual([
     {column1: 'a', column2: 'b'},
@@ -175,7 +175,7 @@ test('raw builders grow value, offset, escaped, and null buffers together', () =
     header: true,
     skipEmptyLines: true
   });
-  expect(table?.data.numRows).toBe(1100);
+  expect(table?.numRows).toBe(1100);
   expect(table?.schema.fields.map(field => field.name)).toEqual(['name', 'name.1', 'value']);
-  expect(table?.data.getChild('value')?.nullCount).toBeGreaterThan(0);
+  expect(table?.getChild('value')?.nullCount).toBeGreaterThan(0);
 });

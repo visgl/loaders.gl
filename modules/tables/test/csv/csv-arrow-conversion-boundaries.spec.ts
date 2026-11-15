@@ -3,12 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  ArrayRowTable,
-  ObjectRowTable
-} from '@loaders.gl/core/schema';
+import {RecordBatch, type Table} from 'apache-arrow';
+import type {ArrayRowTable, ObjectRowTable} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {
   convertCSVRowTableToArrowTable,
@@ -18,10 +14,10 @@ import {
 } from '../../src/csv/csv-arrow-table-parser';
 
 /** Reads a column without conflating missing columns and null cells. */
-function getColumnValues(table: ArrowTable, columnName: string): unknown[] {
-  const column = table.data.getChild(columnName);
+function getColumnValues(table: Table | RecordBatch, columnName: string): unknown[] {
+  const column = table.getChild(columnName);
   expect(column).not.toBeNull();
-  return Array.from({length: table.data.numRows}, (_, rowIndex) => column!.get(rowIndex));
+  return Array.from({length: table.numRows}, (_, rowIndex) => column!.get(rowIndex));
 }
 
 test('CSV Arrow conversion preserves array row order and nullable values', () => {
@@ -73,12 +69,12 @@ test.each([
   };
   const converted = convertCSVRowTableToArrowTable(table, 'never', 'optimized');
   expect(
-    converted.schema.fields.find(field => field.name === 'geometry')?.metadata?.[
-      'ARROW:extension:name'
-    ]
+    converted.schema.fields
+      .find(field => field.name === 'geometry')
+      ?.metadata.get('ARROW:extension:name')
   ).toBe('geoarrow.point');
   expect(getColumnValues(converted, 'name')).toEqual(['point', 'missing']);
-  const geometryColumn = converted.data.getChild('geometry')!;
+  const geometryColumn = converted.getChild('geometry')!;
   expect(Array.from(geometryColumn.get(0))).toEqual([1, 2]);
   expect(geometryColumn.get(1)).toBeNull();
   expect(table.data[0].geometry).toBe(geometry);
@@ -143,7 +139,7 @@ test('CSV quoted dynamic strings retain short non-ASCII and non-whitespace prefi
 
 test('CSV geometry streaming skips metadata batches and retains missing geometries', async () => {
   const bytes = new TextEncoder().encode('geometry,name\nPOINT (1 2),point\n,missing');
-  const batches: ArrowTableBatch[] = [];
+  const batches: RecordBatch[] = [];
   for await (const batch of parseCSVInArrowBatches([bytes.subarray(0, 26), bytes.subarray(26)], {
     core: {worker: false, metadata: true, batchSize: 1},
     csv: {header: true, detectGeometryColumns: true, geometryEncoding: 'source'},
@@ -152,7 +148,7 @@ test('CSV geometry streaming skips metadata batches and retains missing geometri
     batches.push(batch);
   }
   expect(batches.length).toBeGreaterThan(0);
-  expect(batches.every(batch => batch.batchType === 'data')).toBe(true);
+  expect(batches.every(batch => batch instanceof RecordBatch)).toBe(true);
   expect(batches.flatMap(batch => getColumnValues(batch, 'name'))).toEqual(['point', 'missing']);
   expect(batches.flatMap(batch => getColumnValues(batch, 'geometry'))[1]).toBeNull();
 });

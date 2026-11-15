@@ -4,6 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {csvParse} from 'd3-dsv';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 
 import {
   parseCSVArrayBufferAsArrow,
@@ -145,8 +146,8 @@ describe('raw Arrow CSV parser', () => {
       header: true,
       delimiter: ','
     });
-    expect(table?.data.numRows).toBe(1030);
-    expect(table?.data.getChild('b')?.get(1029)).toBe('vvvvvvvv');
+    expect(table?.numRows).toBe(1030);
+    expect(table?.getChild('b')?.get(1029)).toBe('vvvvvvvv');
   });
 
   test('matches d3-dsv string contents on the unquoted ASCII text fast path', async () => {
@@ -249,13 +250,13 @@ describe('raw Arrow CSV parser', () => {
   test('handles empty and header-only byte inputs without fabricating rows', async () => {
     const emptyTable = parseRawArrowCSVBytes(encode(''), {header: true});
     expect(emptyTable?.schema.fields).toEqual([]);
-    expect(emptyTable?.data.numRows).toBe(0);
+    expect(emptyTable?.numRows).toBe(0);
 
     const headerOnlyTable = await parseRawArrowCSVText('first,second', {
       csv: {header: true}
     });
     expect(headerOnlyTable.schema.fields.map(field => field.name)).toEqual(['first', 'second']);
-    expect(headerOnlyTable.data.numRows).toBe(0);
+    expect(headerOnlyTable.numRows).toBe(0);
 
     const carriageReturnTable = await parseRawArrowCSVTable(encode('first,second\r1,2\r'), {
       csv: {header: true}
@@ -276,7 +277,10 @@ describe('raw Arrow CSV parser', () => {
     const table = await parseCSVTextAsArrow('label,count\nalpha,1\n,2\nbeta,3', {
       csv: {header: true, dynamicTyping: true}
     });
-    expect(table.schema.fields.map(field => field.type)).toEqual(['utf8', 'float64']);
+    expect(convertArrowToSchema(table.schema).fields.map(field => field.type)).toEqual([
+      'utf8',
+      'float64'
+    ]);
     expect(getArrowColumnValues(table, 'label')).toEqual(['alpha', null, 'beta']);
     expect(getArrowColumnValues(table, 'count')).toEqual([1, 2, 3]);
 
@@ -299,7 +303,9 @@ describe('raw Arrow CSV parser', () => {
     const table = await parseCSVTextAsArrow(csvText, {
       csv: {header: true, dynamicTyping: true}
     });
-    expect(table.schema.fields.map(field => field.type)).toEqual(expectedTypes);
+    expect(convertArrowToSchema(table.schema).fields.map(field => field.type)).toEqual(
+      expectedTypes
+    );
     expect(toRows(table)).toEqual(expectedRows);
   });
 
@@ -307,7 +313,7 @@ describe('raw Arrow CSV parser', () => {
     const table = await parseCSVTextAsArrow('value\n1\ntrue\ntext\n', {
       csv: {header: true, dynamicTyping: true}
     });
-    expect(table.schema.fields[0].type).toBe('utf8');
+    expect(convertArrowToSchema(table.schema).fields[0].type).toBe('utf8');
     expect(toRows(table)).toEqual([{value: '1'}, {value: 'true'}, {value: 'text'}]);
   });
 
@@ -322,8 +328,11 @@ describe('raw Arrow CSV parser', () => {
       csv: {header: true, dynamicTyping: true}
     });
 
-    expect(table.data.numRows).toBe(1102);
-    expect(table.schema.fields.map(field => field.type)).toEqual(['utf8', 'utf8']);
+    expect(table.numRows).toBe(1102);
+    expect(convertArrowToSchema(table.schema).fields.map(field => field.type)).toEqual([
+      'utf8',
+      'utf8'
+    ]);
     expect(getArrowColumnValues(table, 'number').slice(0, 3)).toEqual([null, '0', '1']);
     expect(getArrowColumnValues(table, 'number').at(-1)).toBe('mixed');
     expect(getArrowColumnValues(table, 'label').at(-1)).toBe('true');
@@ -358,26 +367,38 @@ describe('raw Arrow CSV parser', () => {
     const types: string[] = [];
     for await (const batch of batches) {
       values.push(...getArrowColumnValues(batch, 'value'));
-      types.push(batch.schema.fields[0].type);
+      types.push(convertArrowToSchema(batch.schema).fields[0].type as string);
     }
     expect(values).toEqual([1, null, 3]);
     expect(types).toEqual(['float64', 'float64', 'float64']);
+  });
+
+  test('streams the declared schema for a header-only file', async () => {
+    const batches = parseCSVInArrowBatches([encode('value,name')], {
+      csv: {header: true, dynamicTyping: true},
+      core: {batchSize: 1}
+    });
+    const result = [];
+    for await (const batch of batches) result.push(batch);
+    expect(result).toHaveLength(1);
+    expect(result[0].numRows).toBe(0);
+    expect(result[0].schema.fields.map(field => field.name)).toEqual(['value', 'name']);
   });
 
   test('converts detected WKT geometry through the Arrow public parser', async () => {
     const table = await parseCSVTextAsArrow('name,geometry\npoint,POINT (1 2)', {
       csv: {header: true, detectGeometryColumns: true}
     });
-    expect(table.data.numRows).toBe(1);
+    expect(table.numRows).toBe(1);
     expect(table.schema.fields.map(field => field.name)).toEqual(['name', 'geometry']);
-    expect(table.data.getChild('geometry')?.get(0)).toBeInstanceOf(Uint8Array);
+    expect(table.getChild('geometry')?.get(0)).toBeInstanceOf(Uint8Array);
   });
 
   test('uses the Papa fallback for memory-optimized and skipped-line input', async () => {
     const table = await parseCSVTextAsArrow('name,value\nalpha,1,extra\n\n', {
       csv: {header: true, optimizeMemoryUsage: true, skipEmptyLines: true}
     });
-    expect(table.data.numRows).toBe(1);
+    expect(table.numRows).toBe(1);
     expect(table.schema.fields.map(field => field.name)).toEqual([
       'name',
       'value',
@@ -385,7 +406,7 @@ describe('raw Arrow CSV parser', () => {
     ]);
     expect(getArrowColumnValues(table, 'name')).toEqual(['alpha']);
     expect(getArrowColumnValues(table, 'value')).toEqual(['1']);
-    expect(table.data.getChild('__parsed_extra')?.get(0)?.toArray()).toEqual(['extra']);
+    expect(table.getChild('__parsed_extra')?.get(0)?.toArray()).toEqual(['extra']);
   });
 
   test('falls back when options are outside the raw byte parser contract', async () => {
@@ -404,13 +425,11 @@ describe('raw Arrow CSV parser', () => {
 
 /** Reads one Arrow column into ordinary JavaScript values for stable assertions. */
 function getArrowColumnValues(table: any, columnName: string): unknown[] {
-  const column = table.data.getChild(columnName);
-  return column
-    ? Array.from({length: table.data.numRows}, (_, rowIndex) => column.get(rowIndex))
-    : [];
+  const column = table.getChild(columnName);
+  return column ? Array.from({length: table.numRows}, (_, rowIndex) => column.get(rowIndex)) : [];
 }
 
 /** Converts Arrow struct rows to plain objects for stable assertions. */
 function toRows(table: any): Record<string, unknown>[] {
-  return table.data.toArray().map((row: any) => row.toJSON());
+  return table.toArray().map((row: any) => row.toJSON());
 }
