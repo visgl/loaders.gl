@@ -21,7 +21,7 @@ import {ParquetSource} from './parquet-source-loader';
 import {sliceParquetBatch} from './lib/slice-parquet-batch';
 import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
-  ParquetDatasetBatch,
+  ParquetDecodedBatch,
   ParquetDatasetBatchProvenance,
   ParquetDatasetBoundingBox,
   ParquetDatasetFile,
@@ -34,7 +34,6 @@ import type {
   ParquetDatasetExplain,
   ParquetDatasetSourceOptions,
   ParquetDatasetTelemetry,
-  ParquetSourceBatch,
   ParquetPredicate,
   ParquetSourceExplain,
   ParquetTelemetry
@@ -258,11 +257,11 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
         concurrency: fileConcurrency,
         signal: readContext.abortController.signal
       })) {
-        const outputBatch = sliceParquetBatch(batch, Math.min(batch.length, remainingRows));
+        const outputBatch = sliceParquetBatch(batch, Math.min(batch.rowCount, remainingRows));
         this.telemetry.batchesEmitted++;
-        this.telemetry.rowsEmitted += outputBatch.length;
+        this.telemetry.rowsEmitted += outputBatch.rowCount;
         yield* streamNativeParquetBatches([outputBatch]);
-        remainingRows -= outputBatch.length;
+        remainingRows -= outputBatch.rowCount;
         if (remainingRows === 0) return;
       }
     } finally {
@@ -290,7 +289,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
   /** Reads decoded batches for dataset composition and row provenance processing. @internal */
   async *readWithProvenance(
     options: ParquetDatasetReadOptions = {}
-  ): AsyncIterable<ParquetDatasetBatch> {
+  ): AsyncIterable<ParquetDecodedBatch<ParquetDatasetBatchProvenance>> {
     this.assertOpen();
     validateTableQueryLimit(options.limit);
     const startedAt = Date.now();
@@ -324,11 +323,11 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
         concurrency: fileConcurrency,
         signal: readContext.abortController.signal
       })) {
-        const outputBatch = sliceParquetBatch(batch, Math.min(batch.length, remainingRows));
+        const outputBatch = sliceParquetBatch(batch, Math.min(batch.rowCount, remainingRows));
         this.telemetry.batchesEmitted++;
-        this.telemetry.rowsEmitted += outputBatch.length;
+        this.telemetry.rowsEmitted += outputBatch.rowCount;
         yield outputBatch;
-        remainingRows -= outputBatch.length;
+        remainingRows -= outputBatch.rowCount;
         if (remainingRows === 0) {
           limitReached = true;
           return;
@@ -384,7 +383,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
     options: ParquetDatasetReadOptions,
     signal: AbortSignal,
     filePlans?: ReadonlyMap<number, ParquetSourceExplain>
-  ): AsyncIterable<ScanTask<ParquetDatasetBatch>> {
+  ): AsyncIterable<ScanTask<ParquetDecodedBatch<ParquetDatasetBatchProvenance>>> {
     const selectedFiles = this.getSelectedFiles({...options, signal});
     for await (const indexedFile of selectedFiles) {
       if (filePlans && !filePlans.has(indexedFile.index)) {
@@ -448,7 +447,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
     options: ParquetDatasetReadOptions,
     signal: AbortSignal,
     scanPlan?: ParquetSourceExplain
-  ): AsyncIterable<ParquetDatasetBatch> {
+  ): AsyncIterable<ParquetDecodedBatch<ParquetDatasetBatchProvenance>> {
     const source = this.createSource(indexedFile.file);
     this.telemetry.filesOpened++;
     try {
@@ -569,9 +568,9 @@ async function getFileCollection(
 
 /** Attaches dataset-level descriptor provenance without copying Arrow buffers. */
 function createDatasetBatch(
-  batch: ParquetSourceBatch,
+  batch: ParquetDecodedBatch,
   indexedFile: IndexedParquetDatasetFile
-): ParquetDatasetBatch {
+): ParquetDecodedBatch<ParquetDatasetBatchProvenance> {
   const datasetProvenance = {
     datasetFileIndex: indexedFile.index,
     datasetFileId: getDatasetFileId(indexedFile.file, indexedFile.index),

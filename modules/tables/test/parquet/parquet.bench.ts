@@ -7,8 +7,7 @@ import {
   GeoParquetLoader,
   ParquetJSWriter,
   ParquetLoader,
-  type ParquetJSWriterOptions,
-  type ParquetSourceBatch
+  type ParquetJSWriterOptions
 } from '@loaders.gl/tables/parquet/index';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
@@ -339,8 +338,8 @@ async function addParquetSourceBenchmarks(suite) {
           columns: ['payload'],
           predicate: {op: '=', args: [{property: 'category'}, 'category-3']}
         });
-        for await (const batch of batches as AsyncIterable<ParquetSourceBatch>) {
-          matchedRowCount += batch.length;
+        for await (const batch of batches ) {
+          matchedRowCount += batch.numRows;
         }
       } finally {
         await source.close();

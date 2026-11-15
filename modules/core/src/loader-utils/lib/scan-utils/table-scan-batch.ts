@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table as ApacheArrowTable} from 'apache-arrow';
-import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
+import type {TableBatch} from '@loaders.gl/core/schema';
 import type {TableScanReadOptions, TableQueryExecutionSummary} from './scan-query-metadata';
 import {emitQueryComplete} from './scan-query-metadata';
 import {filterColumnarRowIndices, validateColumnarPredicate} from './columnar-predicate';
@@ -26,11 +26,6 @@ export type TableScanBatchOperators<BatchT = TableBatch> = Readonly<{
   /** Applies a projection while preserving the source batch shape. */
   project?: (batch: BatchT, columns?: readonly string[]) => BatchT;
 }>;
-
-/** Wraps an Arrow table in the standard single-result scan batch envelope. */
-export function makeTableScanBatch(table: ArrowTable): ArrowTableBatch {
-  return {...table, batchType: 'data', length: table.data.numRows} as ArrowTableBatch;
-}
 
 /**
  * Executes the common residual table-scan stages for row, columnar, and native Arrow chunks.

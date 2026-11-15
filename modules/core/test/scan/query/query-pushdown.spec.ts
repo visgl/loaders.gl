@@ -8,18 +8,16 @@ import {parseSQLQuery} from '@math.gl/expressions/sql';
 import {query, queryInBatches, createQueryMetadata} from '@loaders.gl/core/query';
 import {query as legacyQuery} from '@loaders.gl/core/scan';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {executeTableScanBatches, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
+import {executeTableScanBatches} from '@loaders.gl/core/loader-utils';
 import type {
   TableQueryCapabilities,
   TableQuerySource,
   TableQueryReadOptions
 } from '@loaders.gl/core/query';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 
 /** Small nullable table used for exact pushdown and fallback comparisons. */
-function makeTable(): ArrowTable {
-  const data = new arrow.Table({value: arrow.vectorFromArray([1, null, 3, 4], new arrow.Int32())});
-  return {shape: 'arrow-table', data, schema: convertArrowToSchema(data.schema)};
+function makeTable(): arrow.Table {
+  return new arrow.Table({value: arrow.vectorFromArray([1, null, 3, 4], new arrow.Int32())});
 }
 
 /** Source fixture that executes simple physical operations with the shared executor. */
@@ -28,7 +26,7 @@ function makeSource(capabilities: Partial<TableQueryCapabilities> = {}) {
   const metadata = createQueryMetadata({
     sourceType: 'test',
     queryType: 'table',
-    schema: table.schema!,
+    schema: convertArrowToSchema(table.schema),
     execution: {status: 'supported', method: 'read'},
     queryCapabilities: {
       table: {
@@ -46,7 +44,7 @@ function makeSource(capabilities: Partial<TableQueryCapabilities> = {}) {
   });
   const read = vi.fn((options?: TableQueryReadOptions) =>
     executeTableScanBatches(async function* () {
-      yield makeTableScanBatch(table);
+      yield table;
     }, options)
   );
   const source: TableQuerySource = {getQueryMetadata: async () => metadata, read};
@@ -90,7 +88,7 @@ test('CAST projection and filtering use an accepted exact source plan without a 
   const logical = parseSQLQuery(
     'SELECT CAST(value AS BIGINT) AS result WHERE CAST(value AS BIGINT) >= 3 OFFSET 1 LIMIT 1'
   );
-  const expected = await query(logical, {source: table.data});
+  const expected = await query(logical, {source: table});
   const execute = vi.fn(async function* () {
     yield* expected.batches;
   });
@@ -123,7 +121,7 @@ test.each([
 
 test('accepted plans preserve zero-limit schemas without executing the source', async () => {
   const {source, table} = makeSource();
-  const expected = await query({limit: 0}, {source: table.data});
+  const expected = await query({limit: 0}, {source: table});
   const execute = vi.fn(async function* () {
     throw new Error('must not execute');
   });
@@ -145,9 +143,9 @@ test('accepted plans reject schema drift and excess rows', async () => {
   });
   await expect(query({}, {source})).rejects.toThrow('pushdown schema');
   source.planQueryPushdown = async () => ({
-    schema: table.schema!,
+    schema: convertArrowToSchema(table.schema),
     read: async function* () {
-      yield* table.data.batches;
+      yield* table.batches;
     }
   });
   await expect(query({limit: 1}, {source})).rejects.toThrow('more rows');
@@ -158,11 +156,11 @@ test('consumer return closes accepted plan iterators and reports completion once
   const closed = vi.fn();
   const onQueryComplete = vi.fn();
   source.planQueryPushdown = async () => ({
-    schema: table.schema!,
+    schema: convertArrowToSchema(table.schema),
     read: async function* () {
       try {
-        yield* table.data.batches;
-        yield* table.data.batches;
+        yield* table.batches;
+        yield* table.batches;
       } finally {
         closed();
       }
@@ -191,7 +189,7 @@ test('offset without limit and unsafe combined windows preserve semantics', asyn
 test('CAST-only projection does not require general expression pushdown', async () => {
   const {source, table, read} = makeSource({expressions: 'unsupported'});
   const logical = parseSQLQuery('SELECT CAST(value AS BIGINT) AS result');
-  const expected = await query(logical, {source: table.data});
+  const expected = await query(logical, {source: table});
   source.planQueryPushdown = vi.fn(async () => ({
     schema: convertArrowToSchema(expected.schema),
     read: async function* () {
@@ -219,11 +217,11 @@ test('cancellation during planning prevents physical execution', async () => {
   const {source, table, read} = makeSource();
   const controller = new AbortController();
   const execute = vi.fn(async function* () {
-    yield* table.data.batches;
+    yield* table.batches;
   });
   source.planQueryPushdown = async () => {
     controller.abort(new Error('cancel plan'));
-    return {schema: table.schema!, read: execute};
+    return {schema: convertArrowToSchema(table.schema), read: execute};
   };
   const onQueryComplete = vi.fn();
   await expect(query({}, {source, signal: controller.signal, onQueryComplete})).rejects.toThrow(
@@ -240,12 +238,12 @@ test('cancellation closes a running physical plan', async () => {
   const closed = vi.fn();
   const onQueryComplete = vi.fn();
   source.planQueryPushdown = async () => ({
-    schema: table.schema!,
+    schema: convertArrowToSchema(table.schema),
     read: async function* () {
       try {
-        yield* table.data.batches;
+        yield* table.batches;
         controller.abort(new Error('cancel read'));
-        yield* table.data.batches;
+        yield* table.batches;
       } finally {
         closed();
       }
@@ -261,11 +259,14 @@ test('cancellation closes a running physical plan', async () => {
 
 test('accepted empty plans preserve schema and reject batch schema drift', async () => {
   const {source, table} = makeSource();
-  source.planQueryPushdown = async () => ({schema: table.schema!, read: async function* () {}});
+  source.planQueryPushdown = async () => ({
+    schema: convertArrowToSchema(table.schema),
+    read: async function* () {}
+  });
   expect((await query({}, {source})).schema.names).toEqual(['value']);
   const otherData = new arrow.Table({value: arrow.vectorFromArray(['a'], new arrow.Utf8())});
   source.planQueryPushdown = async () => ({
-    schema: table.schema!,
+    schema: convertArrowToSchema(table.schema),
     read: async function* () {
       yield* otherData.batches;
     }
@@ -285,14 +286,11 @@ test.each([
   const plan = vi.fn<NonNullable<TableQuerySource['planQueryPushdown']>>(
     async (request, options) => {
       if (!accept) return null;
-      const empty = await query(
-        {...request, limit: 0},
-        {source: table.data, signal: options?.signal}
-      );
+      const empty = await query({...request, limit: 0}, {source: table, signal: options?.signal});
       return {
         schema: convertArrowToSchema(empty.schema),
         async *read(options) {
-          const data = await query(request, {source: table.data, signal: options?.signal});
+          const data = await query(request, {source: table, signal: options?.signal});
           yield* data.batches;
         }
       };
@@ -303,7 +301,7 @@ test.each([
     'SELECT CAST(value AS BIGINT) AS wide, value + 1 AS next LIMIT 1 OFFSET 2'
   );
   const result = await query(request, {source});
-  const expected = await query(request, {source: table.data});
+  const expected = await query(request, {source: table});
   expect(result.toArray().map(row => row.toJSON())).toEqual(
     expected.toArray().map(row => row.toJSON())
   );

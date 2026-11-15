@@ -345,7 +345,6 @@ export {executeScanTasks} from './lib/scan-utils/scan-executor';
 export {
   executeTableScanBatches,
   filterTableBatch,
-  makeTableScanBatch,
   projectTableBatch,
   projectTableSchema,
   truncateTableBatch

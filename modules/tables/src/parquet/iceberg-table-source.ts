@@ -33,7 +33,8 @@ import {parseAvro} from '@loaders.gl/tables/avro/avro-parser';
 import {ParquetDatasetSource} from './parquet-dataset-source';
 import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
-  ParquetDatasetBatch,
+  ParquetDecodedBatch,
+  ParquetDatasetBatchProvenance,
   ParquetComparisonPredicate,
   ParquetDatasetPartitionValue,
   ParquetPredicate,
@@ -257,7 +258,7 @@ export class IcebergTableSource
   /** Applies snapshot deletes before exposing Arrow batches. */
   private async *readWithProvenance(
     options: IcebergScanOptions
-  ): AsyncIterable<ParquetDatasetBatch> {
+  ): AsyncIterable<ParquetDecodedBatch<ParquetDatasetBatchProvenance>> {
     this.assertOpen();
     const metadata = await this.getMetadata(options.signal);
     const plan = await this.getScanPlan(options.signal, options.snapshotId, options.snapshotRef);
@@ -284,8 +285,8 @@ export class IcebergTableSource
         const filteredBatch = options.applyDeletes
           ? applyIcebergDeletes(batch, positionDeletes, equalityDeletes, options.columns)
           : batch;
-        if (filteredBatch.length > 0) {
-          rowsReturned += filteredBatch.length;
+        if (filteredBatch.rowCount > 0) {
+          rowsReturned += filteredBatch.rowCount;
           yield filteredBatch;
         }
       }
@@ -481,14 +482,14 @@ function addEqualityColumns(
 
 /** Removes position and equality-deleted rows while retaining Arrow output and provenance. */
 function applyIcebergDeletes(
-  batch: ParquetDatasetBatch,
+  batch: ParquetDecodedBatch<ParquetDatasetBatchProvenance>,
   positionsByFile: ReadonlyMap<string, readonly IcebergPositionDelete[]> | undefined,
   equalityDeletes: readonly IcebergEqualityDelete[],
   outputColumns: readonly string[] | undefined
-): ParquetDatasetBatch {
+): ParquetDecodedBatch<ParquetDatasetBatchProvenance> {
   const sourcePositions = positionsByFile?.get(batch.sourceUrl || batch.source);
   const keptIndexes: number[] = [];
-  for (let index = 0; index < batch.length; index++) {
+  for (let index = 0; index < batch.rowCount; index++) {
     const sourcePosition = batch.rowIndices?.[index] ?? batch.rowOffset + index;
     if (
       sourcePositions?.some(
@@ -508,7 +509,7 @@ function applyIcebergDeletes(
   const needsColumnProjection =
     selectedColumns.length !== allColumns.length ||
     selectedColumns.some((column, index) => column !== allColumns[index]);
-  if (keptIndexes.length === batch.length && !needsColumnProjection) return batch;
+  if (keptIndexes.length === batch.rowCount && !needsColumnProjection) return batch;
   const columns: Record<string, unknown[]> = {};
   for (const columnName of selectedColumns) {
     const column = batch.data.getChild(columnName);
@@ -524,17 +525,16 @@ function applyIcebergDeletes(
   return {
     ...batch,
     data,
-    length: keptIndexes.length,
     rowCount: keptIndexes.length,
     rowGroupRowIndices,
     rowIndices,
-    metadata: batch.metadata ? {...batch.metadata, rowCount: keptIndexes.length} : batch.metadata
+    metadata: {...batch.metadata, rowCount: keptIndexes.length}
   };
 }
 
 /** Tests one decoded row against one equality-delete key. */
 function matchesEqualityDelete(
-  batch: ParquetDatasetBatch,
+  batch: ParquetDecodedBatch<ParquetDatasetBatchProvenance>,
   rowIndex: number,
   deleteFile: IcebergEqualityDelete
 ): boolean {
@@ -551,7 +551,7 @@ function matchesEqualityDelete(
 
 /** Conservatively limits equality deletes to the data-file partition they describe. */
 function matchesDeletePartition(
-  batch: ParquetDatasetBatch,
+  batch: ParquetDecodedBatch<ParquetDatasetBatchProvenance>,
   deleteFile: IcebergEqualityDelete
 ): boolean {
   if (!deleteFile.partition || !batch.datasetPartitions) return true;
@@ -563,14 +563,17 @@ function matchesDeletePartition(
 
 /** Avoids applying a delete whose sequence is not newer than the data file. */
 function matchesDeleteSequence(
-  batch: ParquetDatasetBatch,
+  batch: ParquetDecodedBatch<ParquetDatasetBatchProvenance>,
   deleteFile: IcebergEqualityDelete
 ): boolean {
   return isDeleteSequenceApplicable(batch, deleteFile.dataSequenceNumber);
 }
 
 /** Returns whether a delete sequence is newer than the current data-file sequence. */
-function isDeleteSequenceApplicable(batch: ParquetDatasetBatch, deleteSequence?: number): boolean {
+function isDeleteSequenceApplicable(
+  batch: ParquetDecodedBatch<ParquetDatasetBatchProvenance>,
+  deleteSequence?: number
+): boolean {
   if (deleteSequence === undefined) return true;
   const metadata = batch.datasetFileMetadata?.iceberg;
   if (!metadata || typeof metadata !== 'object') return true;

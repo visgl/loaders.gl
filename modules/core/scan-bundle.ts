@@ -7,7 +7,6 @@ export {
   registerScanBackend,
   executeTableScanBatches,
   filterTableBatch,
-  makeTableScanBatch,
   projectTableBatch,
   projectTableSchema,
   truncateTableBatch,

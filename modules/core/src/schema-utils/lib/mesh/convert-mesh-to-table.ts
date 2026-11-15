@@ -71,7 +71,7 @@ export function convertMeshToTable(
     case 'columnar-table':
       return convertMeshToColumnarTable(mesh);
     case 'arrow':
-      return convertMeshToArrowTableWrapper(mesh).data;
+      return convertMeshToArrowTable(mesh);
     default:
       throw new Error(shape);
   }

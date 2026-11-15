@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch, Table} from 'apache-arrow';
 import type * as parquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
 
 import type {
@@ -11,7 +12,7 @@ import type {
   TableQueryExecutionOptions,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {
   ColumnarComparisonPredicate,
   ColumnarInPredicate,
@@ -451,8 +452,21 @@ export type ParquetBatchProvenance = {
 /** Compatibility alias for Parquet batch provenance. */
 export type ParquetBatchMetadata = ParquetBatchProvenance;
 
-/** Arrow batch returned by `ParquetSource.read()` with source provenance. */
-export type ParquetBatch = ArrowTableBatch<ParquetBatchProvenance> & ParquetBatchProvenance;
+/**
+ * Native Arrow batch returned by `ParquetSource.read()`.
+ * Read its source and row positions with `getParquetBatchProvenance`.
+ */
+export type ParquetBatch = RecordBatch;
+
+/** A decoded Arrow table paired with physical source positions for dataset composition. @internal */
+export type ParquetDecodedBatch<
+  ProvenanceT extends ParquetBatchProvenance = ParquetBatchProvenance
+> = {
+  /** Decoded columns, retaining their native schema and metadata. */
+  data: Table;
+  /** Source and row positions to attach when emitting record batches. */
+  metadata: ProvenanceT;
+} & ProvenanceT;
 
 /** Compatibility alias for Arrow batches returned by `ParquetSource.read()`. */
 export type ParquetSourceBatch = ParquetBatch;
@@ -606,8 +620,7 @@ export type ParquetDatasetBatchProvenance = ParquetBatchProvenance & {
 };
 
 /** Arrow batch emitted by `ParquetDatasetSource.read()`. */
-export type ParquetDatasetBatch = ArrowTableBatch<ParquetDatasetBatchProvenance> &
-  ParquetDatasetBatchProvenance;
+export type ParquetDatasetBatch = RecordBatch;
 
 /** Cumulative discovery, pruning, output, and child-source counters for one dataset source. */
 export type ParquetDatasetTelemetry = {

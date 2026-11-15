@@ -5,7 +5,7 @@
 import {RecordBatch, type Table} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {
-  ParquetBatch,
+  ParquetDecodedBatch,
   ParquetBatchProvenance,
   ParquetDatasetBatchProvenance
 } from '../parquet-source-types';
@@ -29,7 +29,7 @@ export function getParquetBatchProvenance(
 
 /** Exposes decoded batches with file and row provenance in Arrow metadata. */
 export async function* streamNativeParquetBatches(
-  batches: AsyncIterable<ParquetBatch> | Iterable<ParquetBatch>
+  batches: AsyncIterable<ParquetDecodedBatch> | Iterable<ParquetDecodedBatch>
 ): AsyncIterable<RecordBatch> {
   for await (const batch of batches) {
     let start = 0;

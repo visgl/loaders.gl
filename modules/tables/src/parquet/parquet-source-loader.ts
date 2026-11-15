@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {RecordBatch} from 'apache-arrow';
+import type {RecordBatch, Table} from 'apache-arrow';
 import {streamNativeParquetBatches} from './lib/native-parquet-batches';
 export {getParquetBatchProvenance} from './lib/native-parquet-batches';
 import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/arrow';
@@ -15,7 +15,6 @@ import {
   emitQueryComplete,
   explainTableQuery,
   isBrowser,
-  makeTableScanBatch,
   validateTableQueryLimit
 } from '@loaders.gl/core/loader-utils';
 import type {
@@ -25,7 +24,7 @@ import type {
   ScanQueryMetadataOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrayType, ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {ArrayType, Schema} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 
@@ -79,7 +78,7 @@ import type {
   ParquetDeferredPageFilter
 } from './parquet-encoded-page-types';
 import type {
-  ParquetBatch,
+  ParquetDecodedBatch,
   ParquetColumnChunkMetadata,
   ParquetColumnChunkStatistics,
   ParquetColumnChunkSizeStatistics,
@@ -90,7 +89,6 @@ import type {
   ParquetPredicate,
   ParquetRowGroupMetadata,
   ParquetSortingColumn,
-  ParquetSourceBatch,
   ParquetSourceLoaderOptions,
   ParquetSourceMetadata,
   ParquetSourceReadOptions,
@@ -510,7 +508,7 @@ export class ParquetSource
   /** Reads decoded batches for dataset composition and row provenance processing. @internal */
   async *readWithProvenance(
     options: ParquetSourceReadOptions = {}
-  ): AsyncIterable<ParquetSourceBatch> {
+  ): AsyncIterable<ParquetDecodedBatch> {
     const startedAt = Date.now();
     const telemetryBefore = this.getTelemetry();
     const readOptions = this.getReadOptions(options);
@@ -654,7 +652,6 @@ export class ParquetSource
             const batch = sliceParquetBatch(
               createParquetBatchFromArrow(
                 initialization.metadata,
-                projectedSchema,
                 rowGroupIndex,
                 workerBatch.rowGroupRowOffset,
                 arrowTable,
@@ -666,11 +663,11 @@ export class ParquetSource
             );
             this.recordTelemetry(
               'batch',
-              {batchesEmitted: 1, rowsEmitted: batch.length},
-              {rowGroupIndex, rowCount: batch.length}
+              {batchesEmitted: 1, rowsEmitted: batch.rowCount},
+              {rowGroupIndex, rowCount: batch.rowCount}
             );
             yield batch;
-            remainingRows -= batch.length;
+            remainingRows -= batch.rowCount;
             if (remainingRows === 0) {
               limitReached = true;
               completed = true;
@@ -726,7 +723,7 @@ export class ParquetSource
             {rowGroupIndex, rowCount: batchRowCount}
           );
           yield batch;
-          remainingRows -= batch.length;
+          remainingRows -= batch.rowCount;
           if (remainingRows === 0) {
             limitReached = true;
             completed = true;
@@ -1843,11 +1840,10 @@ function createParquetBatch(
   columns: Record<string, ArrayType>,
   rowCount: number,
   rowGroupRowIndices?: readonly number[]
-): ParquetBatch {
+): ParquetDecodedBatch {
   const arrowTable = convertTable({shape: 'columnar-table', schema, data: columns}, 'arrow');
   return createParquetBatchFromArrow(
     metadata,
-    schema,
     rowGroupIndex,
     rowGroupRowOffset,
     arrowTable,
@@ -1859,13 +1855,12 @@ function createParquetBatch(
 /** Wraps a worker-transferred or locally converted Arrow table with source provenance. */
 function createParquetBatchFromArrow(
   metadata: ParquetSourceMetadata,
-  schema: Schema,
   rowGroupIndex: number,
   rowGroupRowOffset: number,
-  data: ArrowTable['data'],
+  data: Table,
   rowCount: number,
   rowGroupRowIndices?: readonly number[]
-): ParquetBatch {
+): ParquetDecodedBatch {
   const rowGroup = metadata.rowGroups[rowGroupIndex];
   const sourceId = metadata.url || metadata.name;
   const provenance = Object.freeze({
@@ -1882,9 +1877,7 @@ function createParquetBatchFromArrow(
       : undefined
   });
   return {
-    ...makeTableScanBatch({shape: 'arrow-table', schema, data}),
-    schemaType: 'explicit',
-    length: rowCount,
+    data,
     metadata: provenance,
     ...provenance
   };

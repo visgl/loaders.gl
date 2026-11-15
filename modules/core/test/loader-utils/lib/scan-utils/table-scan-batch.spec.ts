@@ -1,10 +1,9 @@
 import {tableFromArrays} from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
-import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
+import type {TableBatch} from '@loaders.gl/core/schema';
 import {
   executeTableScanBatches,
   filterTableBatch,
-  makeTableScanBatch,
   projectTableBatch,
   truncateTableBatch
 } from '../../../../src/loader-utils/lib/scan-utils/table-scan-batch';
@@ -49,18 +48,7 @@ test('shared table executor filters, projects, limits, and reports bytes', async
   expect(telemetry[0]).toMatchObject({status: 'early-terminated', rowsRead: 3, rowsReturned: 1});
 });
 
-test('shared batch helpers preserve columnar, array, geojson, and arrow shapes', () => {
-  const arrowTable = {
-    shape: 'arrow-table',
-    schema,
-    data: {numRows: 2}
-  } as unknown as ArrowTable;
-  expect(makeTableScanBatch(arrowTable)).toMatchObject({
-    shape: 'arrow-table',
-    batchType: 'data',
-    length: 2
-  });
-
+test('shared batch helpers preserve columnar, array-row, and GeoJSON shapes', () => {
   const columnar: TableBatch = {
     shape: 'columnar-table',
     schema,
