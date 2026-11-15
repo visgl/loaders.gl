@@ -64,7 +64,7 @@ function makeGMLArrowTable(features: GMLFeatureCollection['features']): Table {
     }
   }
   // The shared encoder supports null geometry although the GeoJSON Feature type excludes it.
-  const table = convertFeaturesToWKBArrowTable(features as Feature[]).data;
+  const table = convertFeaturesToWKBArrowTable(features as Feature[]);
   const geoMetadata = getGeoMetadata(table.schema.metadata)!;
   geoMetadata.columns.geometry.crs = null;
   setGeoMetadata(table.schema.metadata, geoMetadata);

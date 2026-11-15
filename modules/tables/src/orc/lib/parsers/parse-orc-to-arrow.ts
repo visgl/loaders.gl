@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import {decompressORCStream} from './orc-compression';
 import {
   ORCStreamKind,
@@ -16,23 +15,20 @@ import {
 } from './parse-orc';
 
 /** Parses supported ORC primitive streams into an Arrow table. */
-export function parseORCToArrow(arrayBuffer: ArrayBuffer): ArrowTable {
+export function parseORCToArrow(arrayBuffer: ArrayBuffer): arrow.Table {
   const bytes = new Uint8Array(arrayBuffer);
   const orcFile = parseORC(arrayBuffer);
   const rowCount = orcFile.footer.numberOfRows || 0;
   const rootType = orcFile.footer.types[0];
   if (!rootType || rootType.kind !== ORCTypeKind.STRUCT) {
     if (rowCount) throw new Error('ORC root type is not a struct');
-    return {shape: 'arrow-table', data: new arrow.Table(new arrow.Schema([]))};
+    return new arrow.Table(new arrow.Schema([]));
   }
   if (!rowCount) {
     const columns = Object.fromEntries(rootType.fieldNames.map(fieldName => [fieldName, []]));
-    return {
-      shape: 'arrow-table',
-      data: rootType.fieldNames.length
-        ? arrow.tableFromArrays(columns)
-        : new arrow.Table(new arrow.Schema([]))
-    };
+    return rootType.fieldNames.length
+      ? arrow.tableFromArrays(columns)
+      : new arrow.Table(new arrow.Schema([]));
   }
   const columns: Record<string, unknown[] | arrow.Vector> = {};
   for (let index = 0; index < rootType.subtypes.length; index++) {
@@ -58,10 +54,7 @@ export function parseORCToArrow(arrayBuffer: ArrayBuffer): ArrowTable {
           ? arrow.vectorFromArray(values, new arrow.Binary())
           : values;
   }
-  return {
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays(columns as unknown as Record<string, readonly unknown[]>)
-  };
+  return arrow.tableFromArrays(columns as unknown as Record<string, readonly unknown[]>);
 }
 
 /** Creates an Arrow list vector from reconstructed JavaScript list values. */

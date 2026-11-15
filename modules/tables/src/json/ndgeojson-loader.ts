@@ -78,7 +78,7 @@ function convertFeatures(
     geoarrowGeometryColumn: options?.json?.geoarrowGeometryColumn,
     geoarrow: options?.geoarrow || options?.json?.geoarrow,
     log: getLoaderLog(options)
-  }).data;
+  });
 }
 
 /** Streams bounded batches with a schema frozen by the first nonempty Arrow batch. */

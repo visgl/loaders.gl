@@ -8,7 +8,6 @@ export {createScanEngine, registerScanBackend} from './scan-engine';
 export {
   executeTableScanBatches,
   filterTableBatch,
-  makeTableScanBatch,
   projectTableBatch,
   projectTableSchema,
   truncateTableBatch

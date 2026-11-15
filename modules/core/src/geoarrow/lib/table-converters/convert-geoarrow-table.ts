@@ -4,7 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 import type {
-  Table,
   ArrayRowTable,
   ColumnarTable,
   ObjectRowTable,
@@ -15,6 +14,9 @@ import {convertTable, convertArrowToSchema} from '@loaders.gl/core/schema-utils'
 import {getGeometryColumnsFromSchema} from '../../metadata/geoarrow-metadata';
 import {getGeoMetadata} from '../../metadata/geoparquet-metadata';
 import {convertGeoArrowVectorCellToGeoJSON} from '../../geoarrow-converter/convert-geoarrow-geometry';
+
+/** Portable row and column layouts produced from a GeoArrow table. */
+type GeoArrowOutputTable = ArrayRowTable | ColumnarTable | ObjectRowTable | GeoJSONTable;
 
 export function convertGeoArrowToTable(
   arrowTable: arrow.Table,
@@ -34,16 +36,16 @@ export function convertGeoArrowToTable(
 ): GeoJSONTable;
 export function convertGeoArrowToTable(
   arrowTable: arrow.Table,
-  shape: Exclude<Table['shape'], 'arrow-table'>
-): Table;
+  shape: GeoArrowOutputTable['shape']
+): GeoArrowOutputTable;
 
 /**
  * Converts an Apache Arrow table with GeoArrow metadata to a loaders.gl table shape.
  */
 export function convertGeoArrowToTable(
   arrowTable: arrow.Table,
-  shape: Exclude<Table['shape'], 'arrow-table'>
-): Table {
+  shape: GeoArrowOutputTable['shape']
+): GeoArrowOutputTable {
   switch (shape) {
     case 'array-row-table':
       return convertTable(convertArrowToColumnarTable(arrowTable), 'array-row-table');

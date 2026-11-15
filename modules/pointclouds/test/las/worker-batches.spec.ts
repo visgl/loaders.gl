@@ -59,8 +59,7 @@ test.each([
   expect(deserialize.mock.calls.length).toBeGreaterThan(2);
   for (const [payload] of deserialize.mock.calls)
     expect(payload).toMatchObject({
-      transport: 'arrow-column-envelope',
-      data: {transport: 'arrow-js'}
+      columns: {transport: 'arrow-table-columns', columns: {data: {transport: 'arrow-js'}}}
     });
   const atomic: any = await parse(source.slice(0), LASLoader, {
     core: {worker: true, _workerType: 'test'}

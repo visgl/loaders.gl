@@ -5,7 +5,7 @@
 import {DataSource, type CoreAPI} from '@loaders.gl/core/loader-utils';
 import {
   PointCloudTiler,
-  convertMeshToArrowTableWrapper,
+  convertMeshToArrowTable,
   type PointCloudTilerNode
 } from '@loaders.gl/core/schema-utils';
 import type {
@@ -75,7 +75,7 @@ export class PointCloudTileSource
     const mesh = await this.tiler.getTileMesh(tile.id);
     if (!mesh.header!.vertexCount) return null;
     return {
-      data: convertMeshToArrowTableWrapper(mesh),
+      data: convertMeshToArrowTable(mesh),
       pointCount: mesh.header!.vertexCount,
       cartographicOrigin: [0, 0, 0],
       coordinateSystem: 'cartesian',

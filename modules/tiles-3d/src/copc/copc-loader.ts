@@ -10,7 +10,7 @@ import {
   makeMeshArrowTable,
   type MeshArrowAttributes
 } from '@loaders.gl/core/schema-utils';
-import {deserializeArrowWorkerTable} from '@loaders.gl/core/arrow-worker-transport';
+import {deserializeNativeArrowWorkerResult} from '@loaders.gl/core/arrow-worker-transport';
 import type {
   CoreAPI,
   SourceLoader,
@@ -499,7 +499,7 @@ export class COPCTileSource
     const columns = Object.fromEntries(
       columnNames.map(columnName => [columnName, [] as unknown[]])
     );
-    const positionVector = content.data.data.getChild('POSITION');
+    const positionVector = content.data.getChild('POSITION');
     for (let pointIndex = 0; pointIndex < content.pointCount; pointIndex++) {
       const offsetPosition = readArrowListValue(positionVector?.get(pointIndex));
       const projectedPosition = [
@@ -1123,7 +1123,9 @@ export class COPCTileSource
       undefined,
       signal
     );
-    const mesh = convertTableToMesh(deserializeArrowWorkerTable(result));
+    const nativeTable = deserializeNativeArrowWorkerResult((result as {columns: unknown}).columns);
+    if (!('batches' in nativeTable)) throw new Error('COPC LAS worker must return an Arrow table');
+    const mesh = convertTableToMesh(nativeTable);
     const nativePositions = mesh.attributes.POSITION?.value;
     const colors = mesh.attributes.COLOR_0?.value || null;
     if (
@@ -1712,13 +1714,11 @@ function getCOPCScanValue(
   if (columnName === 'Z') return sourcePosition[2];
 
   if (columnName === 'Red' || columnName === 'Green' || columnName === 'Blue') {
-    const color = readArrowListValue(data.data.getChild('COLOR_0')?.get(pointIndex));
+    const color = readArrowListValue(data.getChild('COLOR_0')?.get(pointIndex));
     return color[columnName === 'Red' ? 0 : columnName === 'Green' ? 1 : 2];
   }
   const decoderColumn = COPC_SCAN_COLUMN_MAP[columnName];
-  const value = normalizeArrowValue(
-    data.data.getChild(decoderColumn || columnName)?.get(pointIndex)
-  );
+  const value = normalizeArrowValue(data.getChild(decoderColumn || columnName)?.get(pointIndex));
   if (COPC_BOOLEAN_COLUMN_NAMES.has(columnName) && typeof value === 'number') {
     return value !== 0;
   }

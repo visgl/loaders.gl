@@ -201,7 +201,7 @@ describe('GeoArrow nested geometry recognition', () => {
           ]
         }
       }
-    ]).data;
+    ]);
     const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
     const collection = convertGeoArrowGeometry(
       convertFeaturesToGeoArrowTable([
@@ -213,7 +213,7 @@ describe('GeoArrow nested geometry recognition', () => {
             geometries: [{type: 'Point', coordinates: [1, 2]}]
           }
         }
-      ]).data,
+      ]),
       'geoarrow.geometrycollection'
     );
 
@@ -249,7 +249,7 @@ describe('GeoArrow nested geometry recognition', () => {
           ]
         }
       }
-    ]).data;
+    ]);
     const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
     const vector = union.getChild('geometry')!;
     const data = vector.data[0];
@@ -307,7 +307,7 @@ describe('GeoArrow nested geometry recognition', () => {
         properties: {},
         geometry: {type: 'Point', coordinates: [3, 4, 5]}
       }
-    ]).data;
+    ]);
     const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
     const info = getGeoArrowGeometryInfo(union.schema.fields[0]);
 

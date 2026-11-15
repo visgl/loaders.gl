@@ -831,9 +831,13 @@ Streaming Arrow parsers emit `RecordBatch` values. LAS, PLY, PCD, and Shapefile
 store file information as JSON in the Arrow schema under `loaders.gl.<format>.header`.
 Mesh topology, bounds, and attribute metadata remain available through the Arrow schema.
 
+Pass native Apache Arrow tables directly to `GeoArrowLayer`, `MeshArrowPointCloudLayer`,
+and `SplatLayer`. For streaming point clouds and splats, pass an async iterable of Arrow
+`RecordBatch` values.
+
 #### Table and batch conversions use native Arrow
 
-Use `'arrow'` as the target for table converters, mesh conversion, and batch conversion. Table conversion returns an Apache Arrow `Table`. Batch conversion produces `RecordBatch` values, with schema metadata available on each batch. Use `convertBatches(batches, 'arrow')` to expand an iterable containing multiple record batches per input table. Use `makeArrowRecordBatchIterator` in place of `makeArrowTableBatchIterator`.
+Use `'arrow'` as the target for table converters, mesh conversion, and batch conversion. Table conversion returns an Apache Arrow `Table`. Batch conversion produces `RecordBatch` values, with schema metadata available on each batch. Use `convertBatches(batches, 'arrow')` for portable row and column batches, and `makeArrowTableFromBatches` to collect a native stream. Use `makeArrowRecordBatchIterator` in place of `makeArrowTableBatchIterator`.
 
 #### Federated and format-specific scans yield native Arrow batches
 

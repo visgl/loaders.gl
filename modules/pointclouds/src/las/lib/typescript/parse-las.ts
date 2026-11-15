@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {makeArrowMetadataBatch, updateArrowTableMetadata} from '@loaders.gl/core/schema-utils';
+import {
+  makeArrowMetadataBatch,
+  updateNativeArrowTableMetadata
+} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 import {makeMetadataFromLasHeader} from '../get-las-schema';
-import type {MeshArrowTable, MeshAttributes} from '@loaders.gl/core/schema';
+import type {MeshAttributes} from '@loaders.gl/core/schema';
 import {makeMeshArrowTable, type MeshArrowAttributes} from '@loaders.gl/core/schema-utils';
 import {
   BinaryChunkReader,
@@ -46,7 +49,9 @@ import type {
 } from '../las-types';
 
 /** Arrow table returned by the TypeScript LAS parser with LAS loader metadata attached. */
-export type LASArrowTable = MeshArrowTable & {
+export type LASArrowTable = {
+  /** Native point columns paired with the typed source header for mesh output. */
+  data: arrow.Table;
   /** Loader identifier preserved for mesh compatibility conversion. */
   loader: 'las';
   /** Parsed LAS header and metadata for the batch. */
@@ -422,7 +427,7 @@ export async function* parseLASInBatches(
         lastTable = makeEmptyLASBatch(header, options);
       } else {
         for await (const table of parseLAZInBatches(pending, trackedIterator, header, options)) {
-          lastTable = updateArrowTableMetadata(
+          lastTable = updateLASArrowMetadata(
             table,
             makeMetadataFromLasHeader({
               ...header,
@@ -475,7 +480,7 @@ export async function* parseLASInBatches(
       totalRead = batch.totalRead;
       pending = batch.pending;
       absoluteOffset = batch.absoluteOffset;
-      lastTable = updateArrowTableMetadata(
+      lastTable = updateLASArrowMetadata(
         parseLASArrowTableBatch(batch.arrayBuffer, batch.header, options),
         makeMetadataFromLasHeader({...header, totalRead})
       );
@@ -500,10 +505,7 @@ export async function* parseLASInBatches(
 /** Creates the declared point schema and original header metadata for a zero-point stream. */
 function makeEmptyLASBatch(header: LASHeader, options: LASLoaderOptions): LASArrowTable {
   const table = parseLASArrowTableBatch(new ArrayBuffer(0), {...header, pointsOffset: 0}, options);
-  return updateArrowTableMetadata(
-    {...table, loaderData: header},
-    makeMetadataFromLasHeader(header)
-  );
+  return updateLASArrowMetadata({...table, loaderData: header}, makeMetadataFromLasHeader(header));
 }
 
 /** Builds a schema-only batch carrying late extended records and their absolute offsets. */
@@ -537,12 +539,20 @@ function makeLASMetadataUpdate(
     const finalHeader = {...header, totalRead, metadata: finalMetadata};
     if (records.length > 0) {
       const data = new arrow.Table([makeArrowMetadataBatch(lastTable.data.schema)]);
-      return updateArrowTableMetadata(
+      return updateLASArrowMetadata(
         {...lastTable, data, loaderData: finalHeader},
         makeMetadataFromLasHeader(finalHeader)
       );
     }
   }
+}
+
+/** Applies a schema metadata snapshot to decoded LAS point columns. */
+function updateLASArrowMetadata(
+  table: LASArrowTable,
+  metadata: Record<string, string>
+): LASArrowTable {
+  return {...table, data: updateNativeArrowTableMetadata(table.data, metadata)};
 }
 
 /** Decode LAS data into raw point chunks. */
@@ -1613,7 +1623,7 @@ function readFloat64Array(bytes: Uint8Array): Float64Array {
 }
 
 /**
- * Parse raw LAS point records into a MeshArrowTable batch.
+ * Parse raw LAS point records into native Arrow columns.
  * @param arrayBuffer Raw point record data or a complete LAS file buffer.
  * @param lasHeader LAS header describing the point record layout.
  * @param options LAS loader options.
@@ -1828,7 +1838,7 @@ function makeLASArrowTableFromAttributes(
   }
   const schema = getLASSchema(lasHeader, numericAttributes);
   return {
-    ...makeMeshArrowTable(attributes, {
+    data: makeMeshArrowTable(attributes, {
       schema,
       topology: 'point-list',
       mode: 0,

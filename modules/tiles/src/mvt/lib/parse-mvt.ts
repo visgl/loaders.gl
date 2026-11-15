@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/core/schema';
+import type {FlatFeature, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
 import {
   convertFlatGeojsonToBinaryFeatureCollection as flatGeojsonToBinary,
@@ -36,14 +36,10 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
     case 'geojson-table':
       return parseMVTGeoJSON(arrayBuffer, {mvt: mvtOptions});
     case 'arrow': {
-      const table: ArrowTable = convertFeaturesToWKBArrowTable(
-        parseToGeoJSONFeatures(arrayBuffer, mvtOptions),
-        {
-          encodingPreference:
-            options?.geoarrow?.encodingPreference || mvtOptions.geoarrow?.encodingPreference
-        }
-      );
-      return table.data;
+      return convertFeaturesToWKBArrowTable(parseToGeoJSONFeatures(arrayBuffer, mvtOptions), {
+        encodingPreference:
+          options?.geoarrow?.encodingPreference || mvtOptions.geoarrow?.encodingPreference
+      });
     }
     case 'binary-geometry':
       return parseToBinary(arrayBuffer, mvtOptions);

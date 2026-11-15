@@ -9,7 +9,6 @@ import {
   makeArrowTableFromBatches,
   convertTableToArrow,
   makeArrowRecordBatchIterator,
-  makeTableFromBatches,
   mergeArrowSchemas,
   updateArrowTableSchema,
   refineArrowTableBatches,
@@ -82,40 +81,30 @@ test.each([
   const schema = new arrow.Schema(batch.schema.fields, new Map([['stage', 'table']]));
   const table = new arrow.Table(schema, [batch]);
   const payload = structuredClone(
-    serializeArrowWorkerResult(
-      {shape: 'arrow-table', data: table},
-      {core: {workerTransferBufferCopy: copy}}
-    )
-  ) as {arrowBatchMetadata?: unknown};
-  const restored = deserializeArrowWorkerResult(payload).data;
+    serializeArrowWorkerResult(table, {core: {workerTransferBufferCopy: copy}})
+  ) as {columns: {arrowBatchMetadata?: unknown}};
+  const restored = deserializeArrowWorkerResult(payload) as arrow.Table;
   expect(restored.schema.metadata.get('stage')).toBe('table');
   expect(restored.batches[0].schema.metadata.get('stage')).toBe('batch');
   expect(restored.batches[0].schema.fields[0].metadata.get('stage')).toBe('batch');
   expect(restored.batches[0].metadata.get('local')).toBe('1');
-  delete payload.arrowBatchMetadata;
-  const withoutSchemaSnapshot = deserializeArrowWorkerResult(payload).data;
+  delete payload.columns.arrowBatchMetadata;
+  const withoutSchemaSnapshot = deserializeArrowWorkerResult(payload) as arrow.Table;
   expect(withoutSchemaSnapshot.batches[0].schema.metadata.get('stage')).toBe('table');
   expect(withoutSchemaSnapshot.batches[0].metadata.get('local')).toBe('1');
 });
 
-test('Arrow wrappers collect cumulative bounds and retain local bounds', async () => {
+test('Native Arrow chunks collect cumulative and batch-local bounds', async () => {
   const first = makeBatch(1, {boundingBox: '[[1,2,3],[1,2,3]]'});
   const second = makeBatch(2, {boundingBox: '[[-1,4,0],[-1,4,0]]'});
-  const batches = [];
-  for await (const batch of refineArrowTableBatches(
-    [first, second].map(recordBatch => ({
-      shape: 'arrow-table' as const,
-      batchType: 'data' as const,
-      length: 1,
-      data: new arrow.Table([recordBatch])
-    }))
-  ))
-    batches.push(batch);
-  expect(batches[0].data.schema.metadata.get('boundingBox')).toBe('[[1,2,3],[1,2,3]]');
-  expect(batches[1].data.schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
-  expect(batches[1].data.batches[0].metadata.get('boundingBox')).toBe('[[-1,4,0],[-1,4,0]]');
-  const table = await makeTableFromBatches(batches);
-  expect(table?.schema?.metadata?.boundingBox).toBe('[[-1,2,0],[1,4,3]]');
+  const chunks = await Array.fromAsync(
+    refineArrowTableBatches([first, second].map(batch => new arrow.Table(batch.schema, [batch])))
+  );
+  expect(chunks[0].schema.metadata.get('boundingBox')).toBe('[[1,2,3],[1,2,3]]');
+  expect(chunks[1].schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
+  expect(chunks[1].batches[0].metadata.get('boundingBox')).toBe('[[-1,4,0],[-1,4,0]]');
+  const table = await makeArrowTableFromBatches(chunks.flatMap(chunk => chunk.batches));
+  expect(table?.schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
 });
 
 test.each([
@@ -175,7 +164,6 @@ test('native table conversion works without Arrow static type guards', () => {
   Object.defineProperty(arrow.Table, 'isTable', {value: undefined, configurable: true});
   try {
     expect(convertTableToArrow(table)).toBe(table);
-    expect(convertTableToArrow({shape: 'arrow-table', data: table})).toBe(table);
   } finally {
     if (original) Object.defineProperty(arrow.Table, 'isTable', original);
     else Reflect.deleteProperty(arrow.Table, 'isTable');

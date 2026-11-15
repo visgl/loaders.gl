@@ -42,7 +42,6 @@ export const GeoArrowTableConverter: Converter<
   | 'array-row-table'
   | 'columnar-table'
   | 'geojson-table'
-  | 'arrow-table'
   | 'arrow',
   GeoArrowConvertFromOptions | GeoArrowConvertToOptions
 > = {
@@ -54,8 +53,7 @@ export const GeoArrowTableConverter: Converter<
     'array-row-table',
     'columnar-table',
     'geojson-table',
-    'arrow',
-    'arrow-table'
+    'arrow'
   ],
   to: [
     'geoarrow',
@@ -68,7 +66,7 @@ export const GeoArrowTableConverter: Converter<
   canConvert(sourceShape, targetShape) {
     const sourceIsGeoArrow = sourceShape === 'geoarrow';
     const targetIsGeoArrow = targetShape === 'geoarrow';
-    return targetShape !== 'arrow-table' && sourceIsGeoArrow !== targetIsGeoArrow;
+    return sourceIsGeoArrow !== targetIsGeoArrow;
   },
   detectInputShape(input) {
     return isGeoArrowApacheTable(input as any) ? 'geoarrow' : null;

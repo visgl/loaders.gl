@@ -41,17 +41,16 @@ See [converter usage](/docs/developer-guide/converters/dispatcher) and
 See the [dynamic point source reference](/docs/modules/tiles-3d/api-reference/point-cloud-tile-source)
 for `PointCloudTiler` ownership, coordinate and memory-limit contracts.
 
-## Arrow wrapper conversion
+## Native Arrow conversion
 
-`convertArrowTable(table, shape)` and `convertArrowTableBatch(batch, shape)` convert
-Arrow-backed wrappers to `columnar-table`, `object-row-table`, or
-`array-row-table`. Import them from `@loaders.gl/core/schema-utils`.
+Use `convertArrowToTable(table, shape)` to convert an Apache Arrow `Table` to a
+row or column layout. It translates the Arrow schema into the portable schema
+used by those layouts. Use `convertTableToArrow(table)` for the reverse conversion.
 
-These helpers retain the wrapper's schema and additional metadata. If no schema
-is supplied, conversions to other layouts infer it from Arrow. Batch conversion
-also retains length, batch type, and progress fields without buffering batches.
-Read native Arrow output from the input wrapper’s `data` property. Value conversion
-uses the existing Arrow conversion semantics; geometry reconstruction is separate.
+Streaming Arrow loaders yield native `RecordBatch` objects. Use
+`makeArrowTableFromBatches(batches)` to collect them. It merges schema and field
+metadata in emission order and keeps each batch's own metadata. A final zero-row
+batch can carry a schema or metadata update.
 
 ## Arrow worker transport
 
@@ -114,7 +113,7 @@ const table = await makeArrowTableFromBatches(recordBatches);
 The collector merges schema and nested field metadata in emission order, keeps
 batch metadata separate, and returns a Table with the completed schema. It rejects
 incompatible column structures and returns `null` when the iterator yields no
-batches. `makeTableFromBatches` also accepts existing loaders.gl Arrow wrappers.
+batches. `makeTableFromBatches` accepts native Arrow batches and portable row batches.
 Loader shape options and wrapper return types are unchanged.
 
 The shared Arrow JS worker transport preserves the Table schema, each batch's

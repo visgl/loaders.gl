@@ -148,7 +148,7 @@ worker batch support. COPC range/chunk APIs are separate from this full-file str
 
 `LASLoader.parseInBatches` consumes compressed LAZ input incrementally. Legacy interleaved PDRF 0-5 chunks can emit complete Arrow batches before the current compressed chunk or file has finished arriving. Layered PDRF 6-10 table parsing emits after the compressed field ranges required by `las.columns` arrive. PDRF 9/10 waveform-reference rows can precede trailing Extra Bytes; raw or typed Extra Bytes are projected directly once their Byte14 layers arrive. Complete-buffer `parse` uses the same direct-column path instead of allocating and reparsing complete raw records. Legacy Point10/GPS/RGB/Byte item versions 1 and 2, WavePacket13 item version 1, and modern item versions 2-4 are supported. Legacy files may use either pointwise compressor 1 (one continuous stream without a chunk table) or chunked compressor 2. Pointwise parsing preserves predictors across batches and releases consumed compressed bytes. `GPS_TIME`, `NIR`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, and `edgeOfFlightLine` are available as typed Arrow columns for records that contain them. Legacy PDRF 0-5 records report `overlap` as zero because that flag was introduced with PDRF 6. `WAVEFORM` exposes PDRF 4/5/9/10 packet references as fixed-width 29-byte rows. `EXTRA_BYTES` exposes raw bytes by default, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Waveform sample payloads are loaded separately through the range APIs below. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
 
-Atomic TypeScript parses attach typed file metadata to `loaderData.metadata`. This includes the public header identity and creation fields, raw VLR and EVLR records, Extra Bytes descriptors, waveform packet descriptors, WKT projection records, and GeoTIFF payloads. EVLR payloads are retained when they are present in the supplied complete buffer; streaming batches expose the header before later EVLR data is available.
+Atomic Arrow parses attach the file header as JSON in `table.schema.metadata.get('loaders.gl.las.header')`. Mesh output exposes the typed metadata at `mesh.loaderData.metadata`. This includes the public header identity and creation fields, raw VLR and EVLR records, Extra Bytes descriptors, waveform packet descriptors, WKT projection records, and GeoTIFF payloads. EVLR payloads are retained when they are present in the supplied complete buffer; streaming batches expose the header before later EVLR data is available.
 
 ## Waveform Sample Access
 
@@ -161,8 +161,11 @@ import {
 } from '@loaders.gl/pointclouds/las';
 import {HttpFile} from '@loaders.gl/core/loader-utils';
 
-const metadata = table.loaderData.metadata;
-const waveformRow = table.data.getChild('WAVEFORM').get(pointIndex);
+const header = JSON.parse(table.schema.metadata.get('loaders.gl.las.header')!, (key, value) =>
+  key === 'waveformDataOffset' ? BigInt(value) : value
+);
+const metadata = header.metadata;
+const waveformRow = table.getChild('WAVEFORM')!.get(pointIndex);
 const reference = parseLASWaveformPacketReference(Uint8Array.from(waveformRow));
 
 // Use the LAS URL for internal data or the companion WDP URL for external data.

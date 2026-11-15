@@ -188,25 +188,21 @@ export function applyLoadersSchemaToArrowTable(table: arrow.Table, schema: Schem
 }
 
 /**
- * Normalizes an Arrow wrapper so GeoParquet metadata is preserved and GeoArrow field metadata is attached.
+ * Normalizes an Apache Arrow table so GeoParquet metadata is preserved and GeoArrow field metadata is attached.
  *
- * @param arrowTable - loaders.gl Arrow table wrapper.
+ * @param arrowTable - Apache Arrow table.
  * @param schemaMetadata - Optional schema metadata override from the Parquet footer.
- * @returns Arrow table wrapper with synchronized schema metadata.
+ * @returns Arrow table with synchronized schema metadata.
  */
 export function normalizeArrowTableGeoMetadata(
-  arrowTable: {shape: 'arrow-table'; data: arrow.Table; schema?: Schema},
+  arrowTable: arrow.Table,
   schemaMetadata?: Map<string, string> | Record<string, string>
-): {shape: 'arrow-table'; data: arrow.Table; schema: Schema} {
-  const schema = convertArrowToSchema(arrowTable.data.schema);
+): arrow.Table {
+  const schema = convertArrowToSchema(arrowTable.schema);
   mergeSchemaMetadata(schema, schemaMetadata);
   applyGeoParquetToFieldMetadata(schema);
 
-  return {
-    shape: 'arrow-table',
-    data: applyLoadersSchemaToArrowTable(arrowTable.data, schema),
-    schema
-  };
+  return applyLoadersSchemaToArrowTable(arrowTable, schema);
 }
 
 /**

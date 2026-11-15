@@ -6,12 +6,11 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {queryProgressive, queryInBatches} from '@loaders.gl/core/scan';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {TableScanSource} from '@loaders.gl/core/loader-utils';
 
 /** Keeps the source split into two genuinely independent Arrow batches. */
-function makeSource(): ArrowTable {
+function makeSource(): arrow.Table {
   const first = new arrow.Table({
     country: arrow.vectorFromArray(['SE', 'US', 'SE'], new arrow.Utf8()),
     temperature: arrow.vectorFromArray([10, 20, null], new arrow.Float64())
@@ -21,7 +20,7 @@ function makeSource(): ArrowTable {
     temperature: arrow.vectorFromArray([30, 50], new arrow.Float64())
   });
   const data = first.concat(second);
-  return {shape: 'arrow-table', data, schema: convertArrowToSchema(data.schema)};
+  return data;
 }
 
 test('progressive GROUP BY yields complete replacement tables and a final snapshot', async () => {
@@ -108,7 +107,7 @@ test('early return closes source iterator without reading remaining batches', as
       try {
         for (let i = 0; i < 5; i++) {
           pulls++;
-          yield {shape: 'arrow-table', data: first, schema, length: 1, batchType: 'data'};
+          yield* first.batches;
         }
       } finally {
         closed = true;
@@ -130,7 +129,7 @@ test('empty global input emits a final zero count, not a provisional result', as
   const data = new arrow.Table({
     n: arrow.vectorFromArray([], new arrow.Int32())
   });
-  const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
+  const source = data;
   const snapshots = [];
   for await (const snapshot of queryProgressive(
     {

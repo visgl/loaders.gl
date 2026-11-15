@@ -20,50 +20,44 @@ const {preload: _AvroLoaderPreload, ...AvroLoaderMetadataWithoutPreload} = AvroL
 export const AvroLoaderWithParser = {
   ...AvroLoaderMetadataWithoutPreload,
   async parse(arrayBuffer: ArrayBuffer, options?: AvroLoaderOptions): Promise<Table> {
-    return (
-      await parseAvro(arrayBuffer, {
-        readerSchema: options?.avro?.readerSchema,
-        longType: options?.avro?.longType,
-        schema: options?.avro?.schema,
-        encoding: options?.avro?.encoding,
-        validateFingerprint: options?.avro?.validateFingerprint,
-        blockIndices: options?.avro?.blockIndices,
-        headers: options?.avro?.headers,
-        signal: options?.avro?.signal,
-        rangeChunkSize: options?.avro?.rangeChunkSize
-      })
-    ).data;
+    return parseAvro(arrayBuffer, {
+      readerSchema: options?.avro?.readerSchema,
+      longType: options?.avro?.longType,
+      schema: options?.avro?.schema,
+      encoding: options?.avro?.encoding,
+      validateFingerprint: options?.avro?.validateFingerprint,
+      blockIndices: options?.avro?.blockIndices,
+      headers: options?.avro?.headers,
+      signal: options?.avro?.signal,
+      rangeChunkSize: options?.avro?.rangeChunkSize
+    });
   },
   async parseUrl(url: string, options?: AvroLoaderOptions): Promise<Table> {
-    return (
-      await parseAvroFromUrl(url, {
-        readerSchema: options?.avro?.readerSchema,
-        longType: options?.avro?.longType,
-        schema: options?.avro?.schema,
-        encoding: options?.avro?.encoding,
-        validateFingerprint: options?.avro?.validateFingerprint,
-        blockIndices: options?.avro?.blockIndices,
-        batchSize: options?.avro?.batchSize,
-        headers: options?.avro?.headers,
-        signal: options?.avro?.signal,
-        rangeChunkSize: options?.avro?.rangeChunkSize
-      })
-    ).data;
+    return parseAvroFromUrl(url, {
+      readerSchema: options?.avro?.readerSchema,
+      longType: options?.avro?.longType,
+      schema: options?.avro?.schema,
+      encoding: options?.avro?.encoding,
+      validateFingerprint: options?.avro?.validateFingerprint,
+      blockIndices: options?.avro?.blockIndices,
+      batchSize: options?.avro?.batchSize,
+      headers: options?.avro?.headers,
+      signal: options?.avro?.signal,
+      rangeChunkSize: options?.avro?.rangeChunkSize
+    });
   },
   async parseFile(file, options?: AvroLoaderOptions): Promise<Table> {
-    return (
-      await parseAvroFromFile(file, {
-        readerSchema: options?.avro?.readerSchema,
-        longType: options?.avro?.longType,
-        schema: options?.avro?.schema,
-        encoding: options?.avro?.encoding,
-        validateFingerprint: options?.avro?.validateFingerprint,
-        blockIndices: options?.avro?.blockIndices,
-        batchSize: options?.avro?.batchSize,
-        signal: options?.avro?.signal,
-        rangeChunkSize: options?.avro?.rangeChunkSize
-      })
-    ).data;
+    return parseAvroFromFile(file, {
+      readerSchema: options?.avro?.readerSchema,
+      longType: options?.avro?.longType,
+      schema: options?.avro?.schema,
+      encoding: options?.avro?.encoding,
+      validateFingerprint: options?.avro?.validateFingerprint,
+      blockIndices: options?.avro?.blockIndices,
+      batchSize: options?.avro?.batchSize,
+      signal: options?.avro?.signal,
+      rangeChunkSize: options?.avro?.rangeChunkSize
+    });
   },
   async *parseInBatches(asyncIterator, options?: AvroLoaderOptions) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
@@ -81,7 +75,7 @@ export const AvroLoaderWithParser = {
         blockIndices: options?.avro?.blockIndices
       }
     )) {
-      yield* batch.data.batches;
+      yield* batch.batches;
     }
   },
   async *parseInBatchesFromUrl(url: string, options?: AvroLoaderOptions) {
@@ -100,7 +94,7 @@ export const AvroLoaderWithParser = {
       signal: options?.avro?.signal,
       rangeChunkSize: options?.avro?.rangeChunkSize
     })) {
-      yield* batch.data.batches;
+      yield* batch.batches;
     }
   }
 } as const satisfies LoaderWithParser<Table, RecordBatch, AvroLoaderOptions> & {

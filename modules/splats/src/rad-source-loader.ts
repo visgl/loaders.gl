@@ -4,7 +4,7 @@
 
 import type {CoreAPI, DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {
   parseRADChunkHeader,
   tryParseRADHeader,
@@ -173,10 +173,7 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
   }
 
   /** Fetches and decodes one RADC chunk into a Mesh Arrow table. */
-  async getChunkTable(
-    chunkIndex: number,
-    options: RADChunkRequestOptions = {}
-  ): Promise<MeshArrowTable> {
+  async getChunkTable(chunkIndex: number, options: RADChunkRequestOptions = {}): Promise<Table> {
     const metadata = await this.getMetadata();
     await preloadRADCompression();
     return parseRADChunk(
@@ -186,7 +183,7 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
   }
 
   /** Iterates decoded RADC chunks as Mesh Arrow tables. */
-  async *getChunkTables(options: RADChunkTableIteratorOptions = {}): AsyncIterable<MeshArrowTable> {
+  async *getChunkTables(options: RADChunkTableIteratorOptions = {}): AsyncIterable<Table> {
     const metadata = await this.getMetadata();
     const startChunkIndex = options.startChunkIndex ?? 0;
     const maxChunks = options.maxChunks ?? Number.POSITIVE_INFINITY;
@@ -222,7 +219,7 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
     ) {
       const table = await this.getChunkTable(chunkIndex, options);
       chunkCount++;
-      splatCount += table.data.numRows;
+      splatCount += table.numRows;
       yield table;
     }
   }

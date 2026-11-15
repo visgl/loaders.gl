@@ -19,7 +19,7 @@ function makeTable(
   const table = convertFeaturesToGeoArrowTable(
     geometries.map(geometry => ({type: 'Feature', geometry, properties: {}})),
     {encodingPreference: 'geoarrow.wkb'}
-  ).data;
+  );
   return new arrow.Table(
     new arrow.Schema(
       table.schema.fields.concat(

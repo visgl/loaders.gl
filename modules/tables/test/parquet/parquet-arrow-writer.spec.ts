@@ -47,14 +47,14 @@ test('ParquetWriter#removed JSON aliases are absent', () => {
 });
 test('ParquetWriter#encodes Arrow tables through primary writer', async () => {
     const table = createArrowTable();
-    const parquetBuffer = await encode(table.data, ParquetWriter, {
+    const parquetBuffer = await encode(table, ParquetWriter, {
         worker: false
     });
     const newTable = (await load(parquetBuffer, ParquetLoader, {
         core: { worker: false },
         parquet: { shape: 'arrow' }
     })) as arrow.Table;
-    expect(table.data.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
+    expect(table.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]), 'preserves Arrow field names and physical types').toEqual(newTable.schema.fields.map(field => [field.name, field.type.typeId, field.type.bitWidth, field.type.isSigned]));
 });
 test('ParquetWriter#encodes plain JS tables through Arrow adapter', async () => {
     const table: ObjectRowTable = {
@@ -82,5 +82,5 @@ function createArrowTable(): ArrowTable {
     const uint8Vector = arrow.vectorFromArray([1, 2, 3, 4], new arrow.Uint8());
     const int32Vector = arrow.vectorFromArray([0, -2147483638, 2147483637, 1], new arrow.Uint32());
     const table = new arrow.Table({ utf8Vector, uint8Vector, int32Vector, boolVector });
-    return { shape: 'arrow-table', data: table };
+    return table;
 }

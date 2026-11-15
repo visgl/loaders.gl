@@ -327,7 +327,7 @@ export class WFSVectorSource extends DataSource<string, WFSLoaderOptions> implem
       default:
         return convertFeaturesToWKBArrowTable(geoJsonTable.features, {
           encodingPreference: parameters.geoarrow?.encodingPreference
-        }).data;
+        });
     }
   }
 
@@ -934,7 +934,7 @@ function convertWFSFeatures(
   }
   return convertFeaturesToWKBArrowTable(parsed.features as any, {
     encodingPreference
-  }).data;
+  });
 }
 
 /** Adapts a browser response stream to the chunk iterator expected by GML. */

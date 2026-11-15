@@ -9,7 +9,7 @@ import type {
   ProgressiveQuerySnapshot
 } from './query-progressive';
 import type {SQLQuery} from '@math.gl/expressions/sql';
-import type {ArrowTable, ArrowTableBatch, TableBatch, Schema} from '@loaders.gl/core/schema';
+import type {TableBatch, Schema} from '@loaders.gl/core/schema';
 import {
   normalizeTableQuery,
   getColumnarPredicateColumns,
@@ -93,7 +93,7 @@ export type QueryOptions = TableQueryExecutionOptions &
   Readonly<
     | {
         /** Already loaded Arrow table or caller-owned table scan source. */
-        source: arrow.Table | ArrowTable | TableScanSource;
+        source: arrow.Table | TableScanSource;
         /** URL loader selection is only used with URL sources. */
         loaders?: never;
       }
@@ -148,9 +148,9 @@ export async function* queryInBatches(
   if (typeof tableQuery === 'object' && tableQuery && 'aggregates' in tableQuery) {
     throw new Error('Aggregates require snapshots.');
   }
-  for await (const batch of queryAppendBatches(tableQuery as Query | string, options)) {
-    if (batch.data.batches.length) yield* batch.data.batches;
-    else yield makeArrowMetadataBatch(batch.data.schema);
+  for await (const table of queryAppendBatches(tableQuery as Query | string, options)) {
+    if (table.batches.length) yield* table.batches;
+    else yield makeArrowMetadataBatch(table.schema);
   }
 }
 
@@ -167,7 +167,7 @@ export async function* queryProgressive(
 async function* queryAppendBatches(
   tableQuery: Query | string,
   options: QueryOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.Table> {
   const startedAt = Date.now();
   let status: TableQueryExecutionSummary['status'] = 'early-terminated';
   let rowsRead = 0;
@@ -225,12 +225,7 @@ async function* queryAppendBatches(
     options.signal?.throwIfAborted();
     if (!source || typeof source !== 'object')
       throw new Error('Expected an Arrow table or table scan source.');
-    const inMemory =
-      'batches' in source
-        ? (source as arrow.Table)
-        : 'shape' in source && source.shape === 'arrow-table'
-          ? (source as ArrowTable).data
-          : null;
+    const inMemory = 'batches' in source ? (source as arrow.Table) : null;
     if (
       !inMemory &&
       (!('read' in source) ||
@@ -356,7 +351,7 @@ async function* queryAppendBatches(
     options.signal?.throwIfAborted();
     let emitted = false;
     /** Adapts physical batches without pulling ahead of the query consumer. */
-    async function* inputs(): AsyncIterable<ArrowTableBatch> {
+    async function* inputs(): AsyncIterable<arrow.Table> {
       sourcesRead = 1;
       const batches: AsyncIterable<unknown> = pushedPlan
         ? pushedPlan.read({signal: options.signal})
@@ -369,22 +364,27 @@ async function* queryAppendBatches(
         if (
           !pushedPlan &&
           comparisonInputSchema &&
-          !arrow.util.compareSchemas(comparisonInputSchema, convertSchemaToArrow(batch.schema!))
+          !arrow.util.compareSchemas(
+            comparisonInputSchema,
+            convertSchemaToArrow(convertArrowToSchema(batch.schema))
+          )
         ) {
           // A source may return a wider or differently ordered projection than requested.
-          const data = batch.data.select(inputSchema.names);
-          batch = {...batch, ...wrapBatch(data)};
+          batch = batch.select(inputSchema.names);
           if (
-            !arrow.util.compareSchemas(comparisonInputSchema, convertSchemaToArrow(batch.schema!))
+            !arrow.util.compareSchemas(
+              comparisonInputSchema,
+              convertSchemaToArrow(convertArrowToSchema(batch.schema))
+            )
           )
             throw new Error('Query input schema does not match source metadata.');
         }
         batchesRead++;
-        rowsRead += batch.length;
+        rowsRead += batch.numRows;
         yield batch;
       }
     }
-    for await (const value of executeTableScanBatches(
+    for await (const value of executeTableScanBatches<arrow.Table>(
       () => inputs(),
       {
         predicate: pushedPlan ? undefined : residual,
@@ -396,46 +396,40 @@ async function* queryAppendBatches(
       {
         filter: (batch, predicate, signal) => {
           if (pushedPlan) return batch;
-          const input = batch as ArrowTableBatch;
-          const data = compiledFilter
-            ? filterArrowRows(
-                input.data,
-                batch => {
-                  const matches = compiledFilter.evaluate(batch, {signal});
-                  return index => matches.get(index) === true;
-                },
-                {signal}
-              )
-            : predicate
-              ? filterArrowTable(input.data, predicate, {signal})
-              : input.data;
-          return {...input, ...wrapBatch(data)};
+          if (compiledFilter) {
+            return filterArrowRows(
+              batch,
+              recordBatch => {
+                const matches = compiledFilter.evaluate(recordBatch, {signal});
+                return index => matches.get(index) === true;
+              },
+              {signal}
+            );
+          }
+          return predicate ? filterArrowTable(batch, predicate, {signal}) : batch;
         },
-        project: batch => {
-          const input = batch as ArrowTableBatch;
-          return pushedPlan || computedProjection
-            ? input
-            : {...input, ...wrapBatch(project(input.data))};
-        }
+        project: batch => (pushedPlan || computedProjection ? batch : project(batch))
       }
     )) {
-      const input = value as ArrowTableBatch;
       const finishProjection = pushedPlan
         ? pushedPlan.project
         : computedProjection
           ? project
           : undefined;
-      const batch = finishProjection
-        ? {...input, ...wrapBatch(finishProjection(input.data))}
-        : input;
-      if (!arrow.util.compareSchemas(comparisonSchema, convertSchemaToArrow(batch.schema!)))
+      const batch = finishProjection ? finishProjection(value) : value;
+      if (
+        !arrow.util.compareSchemas(
+          comparisonSchema,
+          convertSchemaToArrow(convertArrowToSchema(batch.schema))
+        )
+      )
         throw new Error('Query output schema does not match source metadata.');
       emitted = true;
-      rowsReturned += batch.length;
+      rowsReturned += batch.numRows;
       yield batch;
     }
     // An empty schema-bearing batch makes collected and streaming empty results identical.
-    if (!emitted) yield wrapBatch(empty);
+    if (!emitted) yield empty;
     if (normalized.limit !== undefined && rowsReturned >= normalized.limit)
       earlyTerminationReason = 'limit';
     status = earlyTerminationReason ? 'early-terminated' : 'completed';
@@ -487,40 +481,25 @@ async function normalizeTypedQuery(query: Query): Promise<SQLQuery | TableQuery>
 }
 
 /** Emits original Arrow RecordBatches without copying their buffers. */
-async function* memoryBatches(data: arrow.Table): AsyncIterable<ArrowTableBatch> {
-  for (const batch of data.batches) yield wrapBatch(new arrow.Table(data.schema, [batch]));
+async function* memoryBatches(data: arrow.Table): AsyncIterable<arrow.Table> {
+  for (const batch of data.batches) yield new arrow.Table(data.schema, [batch]);
 }
 
 /** Converts supported native table batches to Arrow while preserving their declared schema. */
-function normalizeBatch(value: unknown, fallbackSchema: Schema): ArrowTableBatch {
+function normalizeBatch(value: unknown, fallbackSchema: Schema): arrow.Table {
   if (!value || typeof value !== 'object') throw new Error('Unsupported query batch.');
   if ('numRows' in value) {
     const batch = value as arrow.RecordBatch;
-    return wrapBatch(new arrow.Table(batch.schema, [batch]));
+    return new arrow.Table(batch.schema, [batch]);
   }
   if (!('shape' in value)) throw new Error('Unsupported query batch.');
   const input = value as TableBatch;
   const batch = {...input, schema: input.schema ?? fallbackSchema} as TableBatch;
-  if (
-    !['arrow-table', 'object-row-table', 'array-row-table', 'columnar-table'].includes(batch.shape)
-  )
+  if (!['object-row-table', 'array-row-table', 'columnar-table'].includes(batch.shape))
     throw new Error(`Unsupported query batch shape: ${batch.shape}`);
-  const data =
-    batch.length === 0 && batch.schema
-      ? new arrow.Table(convertSchemaToArrow(batch.schema))
-      : convertTableToArrow(batch);
-  return {...batch, ...wrapBatch(data)} as ArrowTableBatch;
-}
-
-/** Wraps Arrow data in the standard batch envelope. */
-function wrapBatch(data: arrow.Table): ArrowTableBatch {
-  return {
-    shape: 'arrow-table',
-    data,
-    schema: convertArrowToSchema(data.schema),
-    batchType: 'data',
-    length: data.numRows
-  } as ArrowTableBatch;
+  return batch.length === 0 && batch.schema
+    ? new arrow.Table(convertSchemaToArrow(batch.schema))
+    : convertTableToArrow(batch);
 }
 
 /** Checks predicate tree bounds and detects casts that require Arrow execution. */

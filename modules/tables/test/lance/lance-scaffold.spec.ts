@@ -317,7 +317,7 @@ test('Lance remote reader projects and slices flat primitive columns', async () 
     fetchFunction
   );
 
-  expect(Array.from(table.data.getChild('id').toArray())).toEqual([20]);
+  expect(Array.from(table.getChild('id').toArray())).toEqual([20]);
 
   const emptyTable = await readLanceRemoteFileToArrow(
     'https://example.com/part.lance',
@@ -327,7 +327,7 @@ test('Lance remote reader projects and slices flat primitive columns', async () 
     0,
     fetchFunction
   );
-  expect(emptyTable.data.numRows).toBe(0);
+  expect(emptyTable.numRows).toBe(0);
 });
 
 test('Lance remote coordinate reader extracts interleaved float pairs', async () => {
@@ -340,8 +340,8 @@ test('Lance remote coordinate reader extracts interleaved float pairs', async ()
     createRangeFetch(COORDINATE_FILE_FIXTURE)
   );
 
-  expect(Array.from(table.data.getChild('x').toArray())).toEqual([2, 3]);
-  expect(Array.from(table.data.getChild('y').toArray())).toEqual([20, 30]);
+  expect(Array.from(table.getChild('x').toArray())).toEqual([2, 3]);
+  expect(Array.from(table.getChild('y').toArray())).toEqual([20, 30]);
 });
 
 test('Lance remote readers reject invalid requests and responses', async () => {

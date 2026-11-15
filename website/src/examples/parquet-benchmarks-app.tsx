@@ -5,7 +5,7 @@
 import React, {useEffect, useState} from 'react';
 
 import {Bench, type LogEntry} from 'probe.gl/bench';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 type BenchmarkResultRow = {
   /** Human-readable fixture and feature label. */
@@ -22,7 +22,7 @@ type BenchmarkStatus = 'loading' | 'running' | 'complete' | 'failed';
 type BenchmarkCellOutcome = 'failed' | 'incorrect';
 
 type ParquetBenchmarkImplementationId = 'typescript' | 'parquetjs' | 'wasm' | 'hyparquet';
-type ParquetBenchmarkShape = 'arrow-table' | 'object-row-table';
+type ParquetBenchmarkShape = 'arrow' | 'object-row-table';
 
 type ParquetBenchmarkScenario = {
   /** Human-readable fixture and feature label. */
@@ -421,59 +421,59 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
       name: 'PLAIN nullable primitives · 40K rows × 6 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['name', 'quantity', 'price', 'date', 'day', 'finger'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'PLAIN single-column projection · 40K rows × 1 col → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['quantity'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'PLAIN mixed projection · 40K rows × 8 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['name', 'quantity', 'price', 'date', 'day', 'finger', 'stock', 'colour'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'PLAIN full table · 40K rows × 10 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'RLE_DICTIONARY mixed table · 20K rows × 5 cols → Arrow Utf8',
       arrayBuffer: dictionaryArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'PLAIN nested/repeated · 40K rows × 2 cols → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['stock', 'colour'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'DELTA_BINARY_PACKED wide integers · 200 rows × 66 cols → Arrow',
       arrayBuffer: deltaBinaryPackedArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'DELTA_BYTE_ARRAY strings · 1K rows × 9 cols → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'DELTA_BYTE_ARRAY projection · 1K rows × 2 cols → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
       columns: ['c_customer_id', 'c_email_address'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
@@ -485,31 +485,31 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
     {
       name: 'RLE_DICTIONARY + GZIP · 20K rows × 5 cols → Arrow',
       arrayBuffer: compressedDictionaryFixtures.gzip,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'RLE_DICTIONARY + ZSTD · 20K rows × 5 cols → Arrow',
       arrayBuffer: compressedDictionaryFixtures.zstd,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'LZ4_RAW · 10K rows × 1 col → Arrow',
       arrayBuffer: lz4ArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'LZ4 legacy framing · 10K rows × 1 col → Arrow',
       arrayBuffer: legacyLz4ArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     },
     {
       name: 'GeoParquet SNAPPY · 1K rows × 4 cols → Arrow',
       arrayBuffer: geoParquetArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: [...PARQUET_BENCHMARK_IMPLEMENTATION_IDS]
     }
   ];
@@ -591,7 +591,7 @@ async function createParquetBenchmarkImplementations(): Promise<
           scenario.arrayBuffer,
           {
             core: {worker: false},
-            parquet: {columns: scenario.columns, shape: scenario.shape === 'arrow-table' ? 'arrow' : scenario.shape}
+            parquet: {columns: scenario.columns, shape: scenario.shape}
           }
         )) as import('apache-arrow').Table | ObjectRowTable;
         return 'numRows' in table ? table.numRows : table.data.length;
@@ -602,7 +602,7 @@ async function createParquetBenchmarkImplementations(): Promise<
       name: PARQUET_BENCHMARK_IMPLEMENTATION_LABELS.parquetjs,
       decode: async scenario => {
         const table = await parquetjs.ParquetJSLoaderWithParser.parse(scenario.arrayBuffer, {
-          parquet: {columns: scenario.columns, shape: scenario.shape === 'arrow-table' ? 'arrow' : scenario.shape}
+          parquet: {columns: scenario.columns, shape: scenario.shape}
         });
         return 'numRows' in table ? table.numRows : table.data.length;
       }
@@ -615,14 +615,11 @@ async function createParquetBenchmarkImplementations(): Promise<
           scenario.arrayBuffer,
           scenario.columns
         );
-        const arrowTable: ArrowTable = {
-          ...table,
-          data: expandArrowDictionaryColumns(table.data, arrowJs)
-        };
-        if (scenario.shape === 'arrow-table') {
-          return arrowTable.data.numRows;
+        const arrowTable = expandArrowDictionaryColumns(table, arrowJs);
+        if (scenario.shape === 'arrow') {
+          return arrowTable.numRows;
         }
-        const objectRowTable = loadersGlSchemaUtils.convertArrowTable(arrowTable, 'object-row-table');
+        const objectRowTable = loadersGlSchemaUtils.convertArrowToTable(arrowTable, 'object-row-table');
         return objectRowTable.data.length;
       }
     },

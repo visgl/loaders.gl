@@ -246,7 +246,7 @@ export class GeoPackageDataSource
   /** Loads one GeoPackage vector table as an Arrow table. */
   async getTable(tableName?: string): Promise<Table> {
     const arrayBuffer = await this.getArrayBuffer();
-    return (await parseGeoPackageToArrow(arrayBuffer, this.getLoaderOptions(tableName))).data;
+    return parseGeoPackageToArrow(arrayBuffer, this.getLoaderOptions(tableName));
   }
 
   /** Executes projection, residual predicates, and a global limit on the selected feature table. */

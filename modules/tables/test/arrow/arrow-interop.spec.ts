@@ -41,8 +41,7 @@ test('Arrow converter detects wrappers and rejects unsupported conversion routes
   expect(ArrowConverter.detectInputShape(table)).toBe('arrow');
   expect(ArrowConverter.detectInputShape(null)).toBe(null);
   expect(ArrowConverter.detectInputShape({shape: 'arrow-table', data: table})).toBe(null);
-  expect(ArrowConverter.canConvert('arrow', 'arrow-table')).toBe(false);
-  expect(ArrowConverter.canConvert('arrow-table', 'arrow')).toBe(true);
+  expect(ArrowConverter.canConvert('columnar-table', 'arrow')).toBe(true);
   expect(ArrowConverter.canConvert('arrow', 'arrow')).toBe(false);
   expect(ArrowConverter.canConvert('array-row-table', 'object-row-table')).toBe(false);
   expect(() => ArrowConverter.convert(table, 'invalid' as never)).toThrow(
@@ -59,15 +58,14 @@ test.each([
   'all'
 ] as const)('loader result hooks honor %s buffer ownership', copy => {
   const source = arrow.tableFromArrays({value: new Int32Array([7, 9, 11])}).slice(1, 2);
-  const input = {shape: 'arrow-table', data: source, category: 'test'};
-  const payload = serializeArrowWorkerResult(input, {
+  source.schema.metadata.set('category', 'test');
+  const payload = serializeArrowWorkerResult(source, {
     core: {workerTransferBufferCopy: copy}
   }) as any;
-  expect(payload.metadata.category).toBe('test');
-  expect(Array.from(hydrateArrowTable(payload.data).getChild('value')!)).toEqual([9]);
-  const restored = deserializeArrowWorkerResult(structuredClone(payload));
-  expect(restored.shape).toBe('arrow-table');
-  expect(Array.from(restored.data.getChild('value'))).toEqual([9]);
+  expect(Array.from(hydrateArrowTable(payload.columns.data).getChild('value')!)).toEqual([9]);
+  const restored = deserializeArrowWorkerResult(structuredClone(payload)) as arrow.Table;
+  expect(restored.schema.metadata.get('category')).toBe('test');
+  expect(Array.from(restored.getChild('value')!)).toEqual([9]);
   expect(Array.from(source.getChild('value')!)).toEqual([9]);
 });
 
@@ -77,14 +75,10 @@ test('loader result hooks preserve non-Arrow values and accept legacy copy optio
     expect(deserializeArrowWorkerResult(value)).toBe(value);
   }
   const table = arrow.tableFromArrays({value: [7]});
-  const payload = serializeArrowWorkerResult(
-    {shape: 'arrow-table', data: table},
-    {workerTransferBufferCopy: 'all'}
-  );
-  expect(deserializeArrowWorkerResult(payload).data.numRows).toBe(1);
+  const payload = serializeArrowWorkerResult(table, {workerTransferBufferCopy: 'all'});
+  expect((deserializeArrowWorkerResult(payload) as arrow.Table).numRows).toBe(1);
   expect(
-    deserializeArrowWorkerResult(serializeArrowWorkerResult({shape: 'arrow-table', data: table}))
-      .data.numRows
+    (deserializeArrowWorkerResult(serializeArrowWorkerResult(table)) as arrow.Table).numRows
   ).toBe(1);
 });
 

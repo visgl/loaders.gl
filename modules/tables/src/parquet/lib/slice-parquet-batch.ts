@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ParquetBatch} from '../parquet-source-types';
+import type {ParquetDecodedBatch} from '../parquet-source-types';
 
 /**
  * Retains a window of rows of a Parquet batch while keeping source-position provenance aligned.
@@ -10,7 +10,7 @@ import type {ParquetBatch} from '../parquet-source-types';
  * This is used by physical readers, dataset orchestration, and table-format delete handling to
  * implement one global post-filter limit without materializing row objects.
  */
-export function sliceParquetBatch<BatchT extends ParquetBatch>(
+export function sliceParquetBatch<BatchT extends ParquetDecodedBatch>(
   batch: BatchT,
   rowCount: number,
   start = 0
@@ -20,11 +20,11 @@ export function sliceParquetBatch<BatchT extends ParquetBatch>(
     rowCount < 0 ||
     !Number.isSafeInteger(start) ||
     start < 0 ||
-    rowCount + start > batch.length
+    rowCount + start > batch.rowCount
   ) {
-    throw new Error(`Parquet batch row count must be between zero and ${batch.length}`);
+    throw new Error(`Parquet batch row count must be between zero and ${batch.rowCount}`);
   }
-  if (rowCount === batch.length) return batch;
+  if (rowCount === batch.rowCount) return batch;
   const rowGroupRowIndices = batch.rowGroupRowIndices?.slice(start, start + rowCount);
   const rowIndices = batch.rowIndices?.slice(start, start + rowCount);
   const rowGroupRowOffset = rowGroupRowIndices?.[0] ?? batch.rowGroupRowOffset + start;
@@ -34,12 +34,16 @@ export function sliceParquetBatch<BatchT extends ParquetBatch>(
     data: batch.data.slice(start, start + rowCount),
     rowGroupRowOffset,
     rowOffset,
-    length: rowCount,
     rowCount,
     rowGroupRowIndices,
     rowIndices,
-    metadata: batch.metadata
-      ? {...batch.metadata, rowCount, rowGroupRowOffset, rowOffset, rowGroupRowIndices, rowIndices}
-      : batch.metadata
+    metadata: {
+      ...batch.metadata,
+      rowCount,
+      rowGroupRowOffset,
+      rowOffset,
+      rowGroupRowIndices,
+      rowIndices
+    }
   } as BatchT;
 }

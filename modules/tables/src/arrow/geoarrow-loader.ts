@@ -12,12 +12,7 @@ import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoJSONTable,
-  GeoJSONTableBatch
-} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/core/schema';
 import {parseGeoArrowSync, parseGeoArrowInBatches} from './lib/parsers/parse-geoarrow';
 import type {GeoArrowLoaderOptions} from './geoarrow-loader-types';
 import {GeoArrowLoader as GeoArrowLoaderMetadata} from './geoarrow-loader-types';
@@ -49,7 +44,7 @@ export const GeoArrowLoaderWithParser = {
     parseGeoArrowSync(arraybuffer, options?.arrow),
   parseInBatches: parseGeoArrowInBatches
 } as const satisfies LoaderWithParser<
-  ArrowTable | GeoJSONTable | NativeArrowTable, // | BinaryGeometry,
-  ArrowTableBatch | GeoJSONTableBatch | RecordBatch, // | BinaryGeometry,
+  GeoJSONTable | NativeArrowTable, // | BinaryGeometry,
+  GeoJSONTableBatch | RecordBatch, // | BinaryGeometry,
   GeoArrowLoaderOptions
 >;

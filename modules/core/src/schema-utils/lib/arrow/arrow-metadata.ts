@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {Field, DataType, ArrowTable} from '@loaders.gl/core/schema';
+import type {Field, DataType} from '@loaders.gl/core/schema';
 import {serializeArrowSchema, deserializeArrowSchema} from '../schema/convert-arrow-schema';
 
 /** Copies a schema, including nested field metadata, without retaining mutable metadata maps. */
@@ -55,13 +55,24 @@ function mergeTypeMetadata(previous: DataType, next: DataType): DataType {
   return next;
 }
 
+/** Snapshots a batch's schema and metadata while retaining its data buffers and row count. */
+function snapshotArrowBatch(batch: arrow.RecordBatch, schema: arrow.Schema): arrow.RecordBatch {
+  const snapshot = new arrow.RecordBatch(
+    snapshotArrowSchema(schema),
+    batch.data,
+    new Map(batch.metadata)
+  );
+  // Arrow reconstructs the Struct length from its columns, which are absent in zero-column batches.
+  if (snapshot.numRows !== batch.numRows) {
+    Object.defineProperty(snapshot, 'data', {value: batch.data});
+  }
+  return snapshot;
+}
+
 /** Applies a table schema snapshot to its batches while retaining batch-local custom metadata. */
 export function updateArrowTableSchema(table: arrow.Table, schema: arrow.Schema): arrow.Table {
   const snapshot = snapshotArrowSchema(schema);
-  const batches = table.batches.map(
-    batch =>
-      new arrow.RecordBatch(snapshotArrowSchema(snapshot), batch.data, new Map(batch.metadata))
-  );
+  const batches = table.batches.map(batch => snapshotArrowBatch(batch, snapshot));
   // Preserve declared schemas even for schema-only empty tables.
   return new arrow.Table(
     snapshot,
@@ -69,17 +80,16 @@ export function updateArrowTableSchema(table: arrow.Table, schema: arrow.Schema)
   );
 }
 
-/** Updates an Arrow wrapper and its underlying table together without mutating either input. */
-export function updateArrowTableMetadata<T extends ArrowTable>(
-  table: T,
+/** Updates native Arrow metadata while preserving independent batch snapshots. */
+export function updateNativeArrowTableMetadata(
+  table: arrow.Table,
   metadata: Record<string, string>
-): T {
+): arrow.Table {
   const schema = new arrow.Schema(
-    table.data.schema.fields,
-    new Map([...table.data.schema.metadata, ...Object.entries(metadata)])
+    table.schema.fields,
+    new Map([...table.schema.metadata, ...Object.entries(metadata)])
   );
-  const data = updateArrowTableSchema(table.data, schema);
-  return {...table, data, schema: serializeArrowSchema(data.schema)};
+  return updateArrowTableSchema(table, schema);
 }
 
 /** Creates a zero-row metadata update retaining the complete declared schema. */
@@ -95,27 +105,20 @@ export async function makeArrowTableFromBatches(
   const collected: arrow.RecordBatch[] = [];
   for await (const batch of batches) {
     schema = mergeArrowSchemas(schema, batch.schema);
-    collected.push(
-      new arrow.RecordBatch(snapshotArrowSchema(batch.schema), batch.data, new Map(batch.metadata))
-    );
+    collected.push(snapshotArrowBatch(batch, batch.schema));
   }
   return schema ? new arrow.Table(schema, collected) : null;
 }
 
-/** Refines Arrow wrapper schemas and cumulative bounds while passing non-Arrow outputs through. */
-export async function* refineArrowTableBatches<T>(
-  batches: AsyncIterable<T> | Iterable<T>
-): AsyncIterable<T> {
+/** Snapshots native Arrow schemas, accumulating bounds and retaining local batch bounds. */
+export async function* refineArrowTableBatches(
+  batches: AsyncIterable<arrow.Table> | Iterable<arrow.Table>
+): AsyncIterable<arrow.Table> {
   let schema: arrow.Schema | undefined;
   let bounds: number[][] | undefined;
-  for await (const batch of batches) {
-    const table = batch as T & ArrowTable;
-    if (table?.shape !== 'arrow-table') {
-      yield batch;
-      continue;
-    }
-    const localBounds = table.data.schema.metadata.get('boundingBox');
-    const nextSchema = snapshotArrowSchema(table.data.schema);
+  for await (const table of batches) {
+    const localBounds = table.schema.metadata.get('boundingBox');
+    const nextSchema = snapshotArrowSchema(table.schema);
     if (localBounds) {
       const nextBounds = JSON.parse(localBounds) as number[][];
       bounds = bounds
@@ -127,10 +130,10 @@ export async function* refineArrowTableBatches<T>(
       nextSchema.metadata.set('boundingBox', JSON.stringify(bounds));
     }
     schema = mergeArrowSchemas(schema, nextSchema);
-    const data = updateArrowTableSchema(table.data, schema);
+    const data = updateArrowTableSchema(table, schema);
     if (localBounds) {
       for (const recordBatch of data.batches) recordBatch.metadata.set('boundingBox', localBounds);
     }
-    yield {...table, data, schema: serializeArrowSchema(data.schema)} as Awaited<T>;
+    yield data;
   }
 }

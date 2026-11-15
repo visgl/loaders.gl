@@ -6,7 +6,6 @@ import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
   emitQueryComplete,
-  makeTableScanBatch,
   explainTableQuery,
   getColumnarPredicateColumns,
   planTableQuery,
@@ -321,28 +320,25 @@ export class FederatedTableScanSource
         let sourceBatchIndex = 0;
         try {
           for await (const input of resolvedSource.source.read(sourceReadOptions)) {
-            const batch =
-              'shape' in input
-                ? input
-                : makeTableScanBatch({
-                    shape: 'arrow-table',
-                    data: new arrow.Table(input.schema, [input])
-                  });
+            const native = !('shape' in input);
+            const batchLength = native ? input.numRows : input.length;
             throwIfAborted(options.signal);
             if (remaining <= 0) {
               telemetry.earlyTerminationReason = 'limit';
               return;
             }
             if (sourceRemaining <= 0) break;
-            if (batch.batchType !== 'data') continue;
+            if (!native && input.batchType !== 'data') continue;
             telemetry.batchesRead++;
-            telemetry.rowsRead += batch.length;
+            telemetry.rowsRead += batchLength;
             sourceBatchesDecoded++;
-            sourceRowsRead += batch.length;
-            if (batch.length <= 0) continue;
-            const physicalTable = convertTableToArrow(
-              batch.schema ? batch : {...batch, schema: resolvedSource.metadata.schema}
-            );
+            sourceRowsRead += batchLength;
+            if (batchLength <= 0) continue;
+            const physicalTable = native
+              ? new arrow.Table(input.schema, [input])
+              : convertTableToArrow(
+                  input.schema ? input : {...input, schema: resolvedSource.metadata.schema}
+                );
             const sourceResult = queryArrowTable(physicalTable, {
               predicate: sourceResidualPredicate,
               limit: Number.isFinite(sourceRemaining) ? sourceRemaining : undefined,
@@ -376,13 +372,13 @@ export class FederatedTableScanSource
               sourceId: resolvedSource.entry.dataSourceId,
               sourceIndex: resolvedSource.sourceIndex,
               sourceBatchIndex: currentSourceBatchIndex,
-              sourceMetadata: 'shape' in input ? batch.metadata : Object.fromEntries(input.metadata)
+              sourceMetadata: native ? Object.fromEntries(input.metadata) : input.metadata
             });
             telemetry.rowsReturned += resultLength;
             sourceRowsReturned += resultLength;
             for (const recordBatch of result.batches) {
               const metadata = new Map(
-                resultLength === batch.length && !('shape' in input) ? input.metadata : undefined
+                native && resultLength === batchLength ? input.metadata : undefined
               );
               metadata.set('loaders.gl.federation', JSON.stringify(provenance));
               yield new arrow.RecordBatch(recordBatch.schema, recordBatch.data, metadata);

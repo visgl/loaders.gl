@@ -131,3 +131,6 @@ function getNumberedPropertyComponent(name: string, prefix: string): string | un
   const match = name.match(new RegExp(`^${prefix}_(\\d+)$`));
   return match?.[1];
 }
+
+/** Schema metadata key carrying the original PLY header. */
+export const PLY_HEADER_KEY = 'loaders.gl.ply.header';

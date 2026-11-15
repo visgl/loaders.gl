@@ -67,7 +67,7 @@ const table = await load(url, PCDLoader, {pcd: {shape: 'arrow'}});
 
 ## Batched Parsing
 
-`PCDLoader` supports `loadInBatches` and `parseInBatches` for ASCII and uncompressed binary PCD data. When `pcd.shape: 'arrow'` is set, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow'`, `batchType: 'data'`, and `data` containing an Apache Arrow table. Compressed binary PCD files fall back to a single parsed batch.
+`PCDLoader` supports `loadInBatches` and `parseInBatches` for ASCII and uncompressed binary PCD data. When `pcd.shape: 'arrow'` is set, the loader yields native Apache Arrow `RecordBatch` objects. Compressed binary PCD files fall back to a single parsed batch.
 
 ```typescript
 import {loadInBatches} from '@loaders.gl/core';

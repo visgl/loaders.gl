@@ -304,7 +304,7 @@ test('union and collection readers inspect, bound, and decode all native geometr
     },
     {type: 'Feature', properties: {}, geometry: null}
   ];
-  const source = convertFeaturesToGeoArrowTable(features).data;
+  const source = convertFeaturesToGeoArrowTable(features);
   const union = convertGeoArrowGeometry(source, 'geoarrow.geometry').getChild('geometry')!;
   const inspection = inspectGeoArrowVector(union, 'geoarrow.geometry');
   expect(inspection.geometryTypes).toEqual([
@@ -328,7 +328,7 @@ test('union and collection readers inspect, bound, and decode all native geometr
       }
     },
     {type: 'Feature', properties: {}, geometry: null}
-  ] as any).data;
+  ] as any);
   const collection = convertGeoArrowGeometry(
     collectionSource,
     'geoarrow.geometrycollection'

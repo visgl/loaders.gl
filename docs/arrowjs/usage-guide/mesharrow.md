@@ -135,7 +135,7 @@ Dense, packed accessors retain views of their source buffers. Interleaved, spars
 
 ## Rendering with luma.gl
 
-`@luma.gl/arrow` accepts the loaders.gl wrapper structurally, without introducing a loaders.gl dependency. `makeGPUGeometryFromArrow()` can create static GPU geometry from a Mesh Arrow table:
+`@luma.gl/arrow` accepts the native Apache Arrow table. `makeGPUGeometryFromArrow()` can create static GPU geometry from a Mesh Arrow table:
 
 ```ts
 import {makeGPUGeometryFromArrow} from '@luma.gl/arrow';

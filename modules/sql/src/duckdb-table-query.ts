@@ -6,14 +6,13 @@ import {RecordBatch, Struct, Table, makeData, vectorFromArray} from 'apache-arro
 import {
   createQueryMetadata,
   executeTableScanBatches,
-  makeTableScanBatch,
   validateTableQueryLimit,
   type TableQuerySource,
   type TableQueryPushdownRequest,
   type TableQueryReadOptions
 } from '@loaders.gl/core/loader-utils';
 import {filterArrowTable} from '@loaders.gl/core/query/arrow-execution';
-import type {ArrowTableBatch, Field, Schema} from '@loaders.gl/core/schema';
+import type {Field, Schema} from '@loaders.gl/core/schema';
 import {convertSchemaToArrow, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import type {DuckDBSQLDataSource} from './duckdb-sql-source';
 import type {SQLTableInfo} from './sql-types';
@@ -108,20 +107,14 @@ export function makeDuckDBTableQuerySource(
         field.type
       )
     );
-    yield makeTableScanBatch({
-      shape: 'arrow-table',
-      schema: outputSchema,
-      data: new Table(arrowSchema, [
-        new RecordBatch(
-          arrowSchema,
-          makeData({
-            type: new Struct(arrowSchema.fields),
-            length: rows.length,
-            children: vectors.map(vector => vector.data[0])
-          })
-        )
-      ])
-    });
+    yield new RecordBatch(
+      arrowSchema,
+      makeData({
+        type: new Struct(arrowSchema.fields),
+        length: rows.length,
+        children: vectors.map(vector => vector.data[0])
+      })
+    );
   }
 
   /** Compiles the exact subset without evaluating data or changing the connection. */
@@ -191,9 +184,7 @@ export function makeDuckDBTableQuerySource(
       schema: outputSchema,
       /** Executes the planned SQL when the consumer starts reading. */
       async *read(options?: {signal?: AbortSignal}) {
-        for await (const {data} of readStatement(sql, outputSchema, options?.signal)) {
-          yield* data.batches.length ? data.batches : [makeArrowMetadataBatch(data.schema)];
-        }
+        yield* readStatement(sql, outputSchema, options?.signal);
       }
     };
   }
@@ -220,22 +211,25 @@ export function makeDuckDBTableQuerySource(
         yield* accepted.read({signal});
         return;
       }
-      for await (const batch of executeTableScanBatches(
-        readSignal => readStatement(`SELECT * FROM ${tableName}${order}`, schema, readSignal),
+      for await (const batch of executeTableScanBatches<Table>(
+        async function* (readSignal) {
+          for await (const batch of readStatement(
+            `SELECT * FROM ${tableName}${order}`,
+            schema,
+            readSignal
+          )) {
+            yield new Table(batch.schema, [batch]);
+          }
+        },
         options,
         {
           filter: (batch, predicate, filterSignal) => {
             if (!predicate) return batch;
-            const arrowBatch = batch as ArrowTableBatch;
-            return makeTableScanBatch({
-              ...arrowBatch,
-              data: filterArrowTable(arrowBatch.data, predicate, {signal: filterSignal})
-            });
+            return filterArrowTable(batch, predicate, {signal: filterSignal});
           }
         }
       )) {
-        const {data} = batch as ArrowTableBatch;
-        yield* data.batches.length ? data.batches : [makeArrowMetadataBatch(data.schema)];
+        yield* batch.batches.length ? batch.batches : [makeArrowMetadataBatch(batch.schema)];
       }
     }
   };

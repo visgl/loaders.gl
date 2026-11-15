@@ -226,8 +226,8 @@ beforeAll(async () => {
 
 test('inferred nullable primitives roundtrip through direct Arrow buffers after an initial null', async () => {
   const table = await parseParquetFileToArrowWithJs(new BlobFile(inferredFixture));
-  expect(table.data.numRows).toBe(3);
-  expect(table.data.schema.fields.map((field) => field.type.constructor)).toEqual([
+  expect(table.numRows).toBe(3);
+  expect(table.schema.fields.map((field) => field.type.constructor)).toEqual([
     arrow.Bool,
     arrow.Int32,
     arrow.Float64,
@@ -235,12 +235,12 @@ test('inferred nullable primitives roundtrip through direct Arrow buffers after 
     arrow.TimestampMillisecond,
     arrow.Binary
   ]);
-  expect(Array.from(table.data.getChild('active')!)).toEqual([null, true, true]);
-  expect(Array.from(table.data.getChild('count')!)).toEqual([null, 17, 17]);
-  expect(Array.from(table.data.getChild('measurement')!)).toEqual([null, 1.25, 1.25]);
-  expect(Array.from(table.data.getChild('label')!)).toEqual([null, 'four', 'four']);
-  expect(Array.from(table.data.getChild('timestamp')!)).toEqual([null, 123456, 123456]);
-  expect(Array.from(table.data.getChild('payload')!)).toEqual([
+  expect(Array.from(table.getChild('active')!)).toEqual([null, true, true]);
+  expect(Array.from(table.getChild('count')!)).toEqual([null, 17, 17]);
+  expect(Array.from(table.getChild('measurement')!)).toEqual([null, 1.25, 1.25]);
+  expect(Array.from(table.getChild('label')!)).toEqual([null, 'four', 'four']);
+  expect(Array.from(table.getChild('timestamp')!)).toEqual([null, 123456, 123456]);
+  expect(Array.from(table.getChild('payload')!)).toEqual([
     null,
     inferredValues.payload,
     inferredValues.payload
@@ -248,8 +248,8 @@ test('inferred nullable primitives roundtrip through direct Arrow buffers after 
   const slice = await parseParquetFileToArrowWithJs(new BlobFile(inferredFixture), {
     parquet: {offset: 1, limit: 1}
   });
-  expect(Array.from(slice.data.getChild('label')!)).toEqual(['four']);
-  expect(slice.data.getChild('payload')!.get(0)).toEqual(inferredValues.payload);
+  expect(Array.from(slice.getChild('label')!)).toEqual(['four']);
+  expect(slice.getChild('payload')!.get(0)).toEqual(inferredValues.payload);
 });
 
 test.each([
@@ -267,22 +267,22 @@ test.each([
     'timestampNanos',
     'unsigned64'
   ]) {
-    const vector = table.data.getChild(name)!;
+    const vector = table.getChild(name)!;
     const physicalValues = vector.data[0].values;
     for (let index = 0; index < expectedRows.length; index++) {
       if (expectedRows[index][name] === null) expect(vector.isValid(index)).toBe(false);
       else expect(physicalValues[index]).toBe(expectedRows[index][name]);
     }
   }
-  expect(Array.from(table.data.getChild('date')!)).toEqual(
+  expect(Array.from(table.getChild('date')!)).toEqual(
     expectedRows.map((row) => (row.date === null ? null : Number(row.date) * 86400000))
   );
-  expect(Array.from(table.data.getChild('half')!)).toEqual(expectedRows.map((row) => row.half));
+  expect(Array.from(table.getChild('half')!)).toEqual(expectedRows.map((row) => row.half));
   for (const [name, bitWidth, expectedValues] of [
     ['decimal32', 128, [-1234n, null, 5678n]],
     ['decimal256', 256, [-(10n ** 35n), null, 10n ** 35n]]
   ] as const) {
-    const vector = table.data.getChild(name)!;
+    const vector = table.getChild(name)!;
     expect(vector.type).toMatchObject({bitWidth});
     for (const [index, expectedValue] of expectedValues.slice(offset).entries()) {
       if (expectedValue === null) expect(vector.isValid(index)).toBe(false);
@@ -293,7 +293,7 @@ test.each([
 
 test('nested collection normalization retains struct nulls, nullable list elements and both map input forms', async () => {
   const table = await parseParquetFileToArrowWithJs(new BlobFile(nestedFixture));
-  const vector = table.data.getChild('properties')!;
+  const vector = table.getChild('properties')!;
   const first = vector.get(0);
   const second = vector.get(1);
   expect(first.label).toBe('first');
@@ -307,7 +307,7 @@ test('nested collection normalization retains struct nulls, nullable list elemen
 
 test('Arrow schemas retain normal public assignment semantics after record batch construction', async () => {
   const table = await parseParquetFileToArrowWithJs(new BlobFile(inferredFixture));
-  const schema = table.data.schema;
+  const schema = table.schema;
   const unchanged = schema.assign(schema);
   expect(unchanged).not.toBe(schema);
   expect(unchanged.fields.map((field) => field.name)).toEqual(
@@ -335,7 +335,7 @@ test('native geometry merges XYZM extrema and roundtrips the original WKB bytes'
     const query = await source.getQueryMetadata();
     expect(query.columns[0]).toMatchObject({name: 'geometry', role: 'geometry'});
     const output = await parseParquetFileToArrowWithJs(new BlobFile(spatialFixture));
-    expect(Array.from(output.data.getChild('geometry')!)).toEqual([
+    expect(Array.from(output.getChild('geometry')!)).toEqual([
       createPointZM(1, 2, 3, 4),
       createPointZM(-1, -2, -3, -4)
     ]);
@@ -379,12 +379,12 @@ test.each([
   0, 1
 ])('fixed-width Binary preserves bytes and null alignment with dictionary fixture %i', async (fixtureIndex) => {
   const table = await parseParquetFileToArrowWithJs(new BlobFile(fixedFixtures[fixtureIndex]));
-  expect(Array.from(table.data.getChild('required')!)).toEqual([
+  expect(Array.from(table.getChild('required')!)).toEqual([
     fixedValues[0],
     fixedValues[1],
     fixedValues[0]
   ]);
-  expect(Array.from(table.data.getChild('optional')!)).toEqual([
+  expect(Array.from(table.getChild('optional')!)).toEqual([
     fixedValues[0],
     null,
     fixedValues[1]
@@ -392,7 +392,7 @@ test.each([
   const slice = await parseParquetFileToArrowWithJs(new BlobFile(fixedFixtures[fixtureIndex]), {
     parquet: {offset: 1, limit: 2}
   });
-  expect(Array.from(slice.data.getChild('optional')!)).toEqual([null, fixedValues[1]]);
+  expect(Array.from(slice.getChild('optional')!)).toEqual([null, fixedValues[1]]);
 });
 
 test.each([

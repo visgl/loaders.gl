@@ -29,11 +29,6 @@ export type {
 export {getArrowViewTypeSupport} from './lib/schema/convert-arrow-schema';
 export {getDataTypeFromArray} from './lib/schema/data-type';
 
-export {
-  convertArrowTable,
-  convertArrowTableBatch
-} from './lib/table/tables/convert-arrow-table-wrapper';
-
 // TABLE CATEGORY UTILS
 
 export {deduceTableSchema} from './lib/schema/deduce-table-schema';
@@ -98,7 +93,7 @@ export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 export {getMeshSize, getMeshBoundingBox} from './lib/mesh/mesh-utils';
 export {
   convertMeshToTable,
-  convertMeshToArrowTableWrapper,
+  convertMeshToArrowTable,
   makeMeshArrowTable
 } from './lib/mesh/convert-mesh-to-table';
 export type {MeshArrowTableOptions} from './lib/mesh/convert-mesh-to-table';
@@ -171,7 +166,7 @@ export {
   snapshotArrowSchema,
   mergeArrowSchemas,
   updateArrowTableSchema,
-  updateArrowTableMetadata,
+  updateNativeArrowTableMetadata,
   makeArrowMetadataBatch,
   makeArrowTableFromBatches
 } from './lib/arrow/arrow-metadata';

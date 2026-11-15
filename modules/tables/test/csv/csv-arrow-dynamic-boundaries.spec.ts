@@ -12,8 +12,8 @@ const encoder = new TextEncoder();
 
 /** Returns one Arrow column as ordinary values. */
 function values(table: any, name: string): unknown[] {
-  const column = table.data.getChild(name);
-  return Array.from({length: table.data.numRows}, (_, index) => column.get(index));
+  const column = table.getChild(name);
+  return Array.from({length: table.numRows}, (_, index) => column.get(index));
 }
 
 test('ArrayBuffer Arrow parsing covers geometry and untyped fallback paths', async () => {
@@ -21,7 +21,7 @@ test('ArrayBuffer Arrow parsing covers geometry and untyped fallback paths', asy
     encoder.encode('name,geometry\npoint,POINT (1 2)').buffer,
     {csv: {header: true, detectGeometryColumns: true}}
   );
-  expect(geometry.data.getChild('geometry')!.get(0)).toBeInstanceOf(Uint8Array);
+  expect(geometry.getChild('geometry')!.get(0)).toBeInstanceOf(Uint8Array);
 
   const untyped = await parseCSVArrayBufferAsArrow(encoder.encode('a,b\n1,2').buffer, {
     csv: {header: true, dynamicTyping: false}
@@ -79,12 +79,12 @@ test('direct numeric parser covers duplicate headers and malformed speculative r
   const malformedWidth = await parseCSVTextAsArrow('a,b\n1\n2,3', {
     csv: {header: true, dynamicTyping: true}
   });
-  expect(malformedWidth.data.numRows).toBe(2);
+  expect(malformedWidth.numRows).toBe(2);
 
   const headerOnly = await parseCSVTextAsArrow('a,b', {
     csv: {header: true, dynamicTyping: true}
   });
-  expect(headerOnly.data.numRows).toBe(0);
+  expect(headerOnly.numRows).toBe(0);
 });
 
 test('direct parser rejects incompatible delimiter candidates before safe fallback', async () => {

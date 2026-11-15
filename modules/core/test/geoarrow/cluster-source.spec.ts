@@ -9,7 +9,7 @@ import {
   convertFeaturesToGeoArrowTable,
   convertGeoArrowGeometry
 } from '@loaders.gl/core/geoarrow';
-import type {ArrowTable, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 const TABLE: GeoJSONTable = {
@@ -52,7 +52,7 @@ const REQUEST: GetFeaturesParameters = {
   ],
   zoom: 0
 };
-let arrowTable: ArrowTable;
+let arrowTable: NativeArrowTable;
 let source: ClusterSource;
 beforeAll(() => {
   arrowTable = convertFeaturesToGeoArrowTable(TABLE.features);
@@ -141,9 +141,9 @@ test('Arrow geometry extraction handles mixed geometries, custom positions and a
 
 test('native point input preserves null rows, chunk and slice offsets without feature objects', () => {
   const pointTable = convertFeaturesToGeoArrowTable(TABLE.features.slice(0, 3));
-  const native = convertGeoArrowGeometry(pointTable.data, 'geoarrow.point');
+  const native = convertGeoArrowGeometry(pointTable, 'geoarrow.point');
   const chunked = native.concat(native).slice(1, 5);
-  const points = new ClusterSource({shape: 'arrow-table', data: chunked});
+  const points = new ClusterSource(chunked);
   expect(points.indexedRowCount).toBe(2);
   expect(points.index.getNode(0).rowIndex).toBe(1);
   expect(points.index.getNode(1).rowIndex).toBe(2);

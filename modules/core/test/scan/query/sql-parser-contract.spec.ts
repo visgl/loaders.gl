@@ -4,7 +4,6 @@
 import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
 import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/scan';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {SQLQueryParser} from '@loaders.gl/core/scan';
 import {parseSQLQuery} from '@loaders.gl/core/scan/query';
 
@@ -13,7 +12,7 @@ function source() {
     value: arrow.vectorFromArray([1, null, 3, 4], new arrow.Int32()),
     name: arrow.vectorFromArray(['a', 'b', 'c', 'd'], new arrow.Utf8())
   });
-  return {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
+  return data;
 }
 
 const baseline = {

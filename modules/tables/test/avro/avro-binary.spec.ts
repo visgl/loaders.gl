@@ -46,19 +46,18 @@ function expectPayloads(table: arrow.Table, values = PAYLOADS): void {
 }
 
 test('Avro preserves variable-length bytes, including first-row null and empty bytes', async () => {
-  expectPayloads((await parseAvro(await encodeFixture())).data);
+  expectPayloads(await parseAvro(await encodeFixture()));
 });
 
 test.each(['raw', 'single-object'] as const)('Avro preserves bytes in %s input', async encoding => {
-  expectPayloads(
-    (await parseAvro(await encodeFixture(encoding), {encoding, schema: SCHEMA})).data,
-    [PAYLOADS[2]]
-  );
+  expectPayloads(await parseAvro(await encodeFixture(encoding), {encoding, schema: SCHEMA}), [
+    PAYLOADS[2]
+  ]);
 });
 
 test('Avro keeps binary types across batch boundaries', async () => {
   const batches = [];
-  for await (const batch of parseAvroInBatches(await encodeFixture(), 1)) batches.push(batch.data);
+  for await (const batch of parseAvroInBatches(await encodeFixture(), 1)) batches.push(batch);
   expectPayloads(batches[0].concat(...batches.slice(1)));
 });
 
@@ -76,10 +75,9 @@ test.each([
     }
   };
   const options = {batchSize: 1, rangeChunkSize: 1024};
-  expectPayloads((await parseAvroFromFile(file as any, options)).data);
+  expectPayloads(await parseAvroFromFile(file as any, options));
   const batches = [];
-  for await (const batch of parseAvroInBatchesFromFile(file as any, options))
-    batches.push(batch.data);
+  for await (const batch of parseAvroInBatchesFromFile(file as any, options)) batches.push(batch);
   expectPayloads(batches[0].concat(...batches.slice(1)));
 });
 
@@ -97,10 +95,10 @@ test.each([
   });
   try {
     const options = {batchSize: 1, rangeChunkSize: 1024};
-    expectPayloads((await parseAvroFromUrl('https://avro.invalid/fixture', options)).data);
+    expectPayloads(await parseAvroFromUrl('https://avro.invalid/fixture', options));
     const batches = [];
     for await (const batch of parseAvroInBatchesFromUrl('https://avro.invalid/fixture', options))
-      batches.push(batch.data);
+      batches.push(batch);
     expectPayloads(batches[0].concat(...batches.slice(1)));
   } finally {
     vi.unstubAllGlobals();
@@ -159,7 +157,7 @@ test('Avro uses reader field names and preserves binary types in empty tables', 
     fields: [{name: 'renamed', aliases: ['payload'], type: ['null', 'bytes']}]
   };
   const result = await parseAvro(await encodeFixture(), {readerSchema});
-  const column = result.data.getChild('renamed')!;
+  const column = result.getChild('renamed')!;
   expect(column.type).toBeInstanceOf(arrow.Binary);
   expect(Array.from(column, value => (value === null ? null : Array.from(value)))).toEqual(
     PAYLOADS.map(value => (value === null ? null : Array.from(value)))
@@ -172,7 +170,7 @@ test('Avro preserves the reported three unequal byte lengths', async () => {
     new arrow.Table({payload: arrow.vectorFromArray(values, new arrow.Binary())}),
     {avro: {schema: SCHEMA}}
   );
-  expectPayloads((await parseAvro(encoded)).data, values);
+  expectPayloads(await parseAvro(encoded), values);
 });
 
 test('Avro converts reader binary defaults by code point instead of UTF-8', async () => {
@@ -185,7 +183,7 @@ test('Avro converts reader binary defaults by code point instead of UTF-8', asyn
       {name: 'fixedDefault', type: {type: 'fixed', name: 'Pair', size: 2}, default: '\u00ff\u0000'}
     ]
   };
-  const table = (await parseAvro(await encodeFixture(), {readerSchema})).data;
+  const table = await parseAvro(await encodeFixture(), {readerSchema});
   for (const name of ['bytesDefault', 'fixedDefault']) {
     expect(Array.from(table.getChild(name)!.get(0))).toEqual([255, 0]);
   }
@@ -201,7 +199,7 @@ test('Avro preserves nullable bigint column types across batches', async () => {
   );
   const batches = [];
   for await (const batch of parseAvroInBatches(encoded, 1, {longType: 'bigint'}))
-    batches.push(batch.data);
+    batches.push(batch);
   expect(Array.from(batches[0].concat(batches[1]).getChild('value')!)).toEqual([
     null,
     9007199254740993n
@@ -219,7 +217,7 @@ test('Avro normalizes promoted longs and reader defaults for bigint columns', as
     ]
   };
   const encoded = await AvroWriter.encode(arrow.tableFromArrays({value: [42]}), {avro: {schema}});
-  const table = (await parseAvro(encoded, {readerSchema, longType: 'bigint'})).data;
+  const table = await parseAvro(encoded, {readerSchema, longType: 'bigint'});
   expect(table.getChild('value')!.get(0)).toBe(42n);
   expect(table.getChild('added')!.get(0)).toBe(7n);
 });

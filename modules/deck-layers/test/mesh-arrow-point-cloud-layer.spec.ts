@@ -4,10 +4,10 @@
 
 import {expect, test} from 'vitest';
 import {tableFromArrays} from 'apache-arrow';
+import {isNativeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {
   getBatchIndexFromLayerId,
   getSerializableArrowValue,
-  isArrowTableBatch,
   isAsyncIterable
 } from '../src/mesh-arrow-point-cloud-layer-utils';
 test('mesh-arrow-point-cloud-layer-utils decodes async batch layer ids', () => {
@@ -37,11 +37,8 @@ test('mesh-arrow-point-cloud-layer-utils identifies supported data shapes', () =
   const arrowTable = tableFromArrays({value: [1]});
   expect(isAsyncIterable(asyncIterable), 'identifies async iterable data').toBeTruthy();
   expect(
-    isArrowTableBatch({shape: 'arrow-table', batchType: 'data', data: arrowTable}),
+    isNativeArrowRecordBatch(arrowTable.batches[0]),
     'identifies Arrow table batches'
   ).toBeTruthy();
-  expect(
-    isArrowTableBatch({shape: 'object-row-table', batchType: 'data', data: arrowTable}),
-    'rejects non-Arrow batches'
-  ).toBeFalsy();
+  expect(isNativeArrowRecordBatch(arrowTable), 'rejects non-Arrow batches').toBeFalsy();
 });

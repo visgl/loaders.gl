@@ -3,20 +3,20 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {PCDColumnLoader} from '../pcd-loader';
+import {PCDLoaderWithParser} from '../pcd-loader';
 
 createLoaderWorker({
-  ...PCDColumnLoader,
+  ...PCDLoaderWithParser,
   /** Always returns columnar data; legacy mesh conversion runs on the caller. */
   parse(input, options) {
-    return PCDColumnLoader.parse(input, {
+    return PCDLoaderWithParser.parse(input, {
       ...options,
       pcd: {...options?.pcd, shape: 'arrow'}
     });
   },
   /** Keeps one columnar parser alive for the entire worker input stream. */
   parseInBatches(input, options) {
-    return PCDColumnLoader.parseInBatches(input, {
+    return PCDLoaderWithParser.parseInBatches(input, {
       ...options,
       pcd: {...options?.pcd, shape: 'arrow'}
     });

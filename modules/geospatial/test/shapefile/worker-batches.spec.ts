@@ -64,9 +64,7 @@ test.each([
   );
   expect(mainBatches).not.toHaveBeenCalled();
   for (const [payload] of deserialize.mock.calls)
-    expect((payload as any).data?.transport || (payload as any).transport).toMatch(
-      /arrow-js|shp-wkb|shapefile-header/
-    );
+    expect((payload as any).transport).toMatch(/^(arrow-record-batch|shp-wkb|shapefile-header)$/);
   const atomic: any = await parse(buffer.slice(0), SHPLoader, {...workerOptions, shp: {shape}});
   if (shape === 'wkb') expect(atomic).toEqual(expected);
   else expect(atomic.numRows).toBe(expected.numRows);
@@ -176,8 +174,8 @@ test.each([
   expect(mainBatches).not.toHaveBeenCalled();
   for (const [payload] of deserialize.mock.calls)
     expect(payload).toMatchObject({
-      transport: 'arrow-column-envelope',
-      data: {transport: 'arrow-js'}
+      transport: 'arrow-record-batch',
+      columns: {data: {transport: 'arrow-js'}}
     });
 });
 
@@ -199,11 +197,9 @@ test('Shapefile transport rejects raw rows and owns binary geometry buffers', ()
 
 test('Shapefile transport preserves Arrow schema, empty geometries, and header events', () => {
   const data = tableFromArrays({value: [1, 2]});
-  const table: any = deserializeShapefileWorkerResult(
-    serializeShapefileWorkerResult({shape: 'arrow-table', data})
-  );
-  expect(table.data).toBeInstanceOf(Table);
-  expect(table.data.getChild('value').toArray()).toEqual(data.getChild('value')!.toArray());
+  const table: any = deserializeShapefileWorkerResult(serializeShapefileWorkerResult(data));
+  expect(table).toBeInstanceOf(Table);
+  expect(table.getChild('value').toArray()).toEqual(data.getChild('value')!.toArray());
   expect(deserializeShapefileWorkerResult(serializeShapefileWorkerResult([]))).toEqual([]);
   for (const header of [{magic: 9994}, {nRecords: 0}])
     expect(deserializeShapefileWorkerResult(serializeShapefileWorkerResult(header))).toEqual(
@@ -265,12 +261,14 @@ test('streamed Shapefile joins DBF record batches from another Arrow instance', 
     url: 'points.shp',
     fetch: async (url: string) => new Response(null, {status: url.endsWith('.dbf') ? 200 : 404}),
     async _parseInBatches(_input, loader) {
-      return loader.id === 'dbf' ? [foreignDBFBatch] : [geometry.header, geometry.geometries];
+      return loader.id === 'dbf'
+        ? [foreignDBFBatch]
+        : [geometry.header, geometry.geometries.slice(0, 1), geometry.geometries.slice(1)];
     }
   } as LoaderContext;
   const output = [];
   for await (const result of parseShapefileToArrowInBatches([], {}, context)) {
-    output.push(...result.data.toArray().map(row => row.toJSON()));
+    output.push(...result.toArray().map(row => row.toJSON()));
   }
   const property = recordBatch.schema.fields[0].name;
   expect(output.map(row => row[property])).toEqual(Array.from(recordBatch.getChild(property)!));

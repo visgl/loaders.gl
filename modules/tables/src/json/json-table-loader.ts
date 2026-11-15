@@ -2,16 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  RecordBatch,
-  type Table as ArrowTable,
-  type RecordBatch as ArrowTableBatch
-} from 'apache-arrow';
+import {type Table as ArrowTable, type RecordBatch as ArrowTableBatch} from 'apache-arrow';
 import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source';
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
-import {updateArrowTableMetadata} from '@loaders.gl/core/schema-utils';
+import {
+  updateNativeArrowTableMetadata,
+  isNativeArrowRecordBatch
+} from '@loaders.gl/core/schema-utils';
 import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
 
 import {
@@ -98,14 +97,14 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
       : convertTable(table, 'object-row-table');
   }
 
-  return updateArrowTableMetadata(
+  return updateNativeArrowTableMetadata(
     convertRowTableToArrowTable(table, {
       schema: jsonOptions.json.schema,
       arrowConversion: jsonOptions.json.arrowConversion,
       log: getLoaderLog(jsonOptions)
     }),
     getJSONContainerMetadata(json)
-  ).data;
+  );
 }
 
 /**
@@ -147,16 +146,12 @@ function parseInBatches(
   return makeNativeJSONBatches(arrowBatches);
 }
 
-/** Yields Arrow batches including final schema and container metadata refinements. */
-async function* makeNativeJSONBatches(batches: AsyncIterable<any>): AsyncIterable<ArrowTableBatch> {
+/** Yields native data batches and schema refinements from the JSON stream. */
+async function* makeNativeJSONBatches(
+  batches: AsyncIterable<ArrowTableBatch | MetadataBatch | JSONBatch>
+): AsyncIterable<ArrowTableBatch> {
   for await (const batch of batches) {
-    if (batch.shape === 'arrow-table') {
-      for (const recordBatch of batch.data.batches) {
-        const metadata = new Map<string, string>(recordBatch.metadata);
-        if (batch.jsonpath) metadata.set('jsonpath', String(batch.jsonpath));
-        yield new RecordBatch(recordBatch.schema, recordBatch.data, metadata);
-      }
-    }
+    if (isNativeArrowRecordBatch(batch)) yield batch;
   }
 }
 
@@ -249,7 +244,10 @@ function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
  * @throws If Arrow conversion options are supplied without `json.shape: 'arrow'`.
  */
 function validateJSONTableArrowOptions(options: JSONTableLoaderOptions): void {
-  if ((options.json?.shape as string) === 'arrow-table') {
+  if (
+    options.json?.shape &&
+    !['arrow', 'object-row-table', 'array-row-table'].includes(options.json.shape)
+  ) {
     throw new Error('This loader uses shape: "arrow" for native Arrow output');
   }
   const hasArrowOnlyOptions = Boolean(options.json?.schema || options.json?.arrowConversion);

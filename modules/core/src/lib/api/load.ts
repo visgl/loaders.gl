@@ -11,7 +11,6 @@ import type {
   Loader,
   LoaderContext,
   LoaderOptions,
-  StrictLoaderOptions,
   LoaderOptionsType,
   LoaderReturnType,
   SourceLoader
@@ -22,7 +21,6 @@ import {
   resolveLoaderAuthenticationOptions
 } from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {getNativeArrowOptions, unwrapArrowTable} from '../loader-utils/native-arrow';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 import {
   applySearchParamsToUrl,
@@ -152,16 +150,8 @@ export async function load(
       const {parseUrl} = loaderImplementation;
       if (parseUrl) {
         const requestUrl = applySearchParamsToUrl(url, resolvedOptions);
-        const nativeOptions = getNativeArrowOptions(
-          selectedLoader,
-          normalizeOptions(resolvedOptions, selectedLoader, [selectedLoader], url)
-        );
-        const result = await parseUrl(
-          requestUrl,
-          (nativeOptions || resolvedOptions) as StrictLoaderOptions,
-          context
-        );
-        return nativeOptions ? unwrapArrowTable(result) : result;
+        const options = normalizeOptions(resolvedOptions, selectedLoader, [selectedLoader], url);
+        return parseUrl(requestUrl, options, context);
       }
     }
   }

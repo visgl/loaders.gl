@@ -3,16 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import {
-  concatenateArrayBuffersAsync,
-  makeTableScanBatch,
-  toArrayBufferIterator
-} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
+import {concatenateArrayBuffersAsync, toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
+import type {Schema} from '@loaders.gl/core/schema';
 import {
   AsyncQueue,
   ArrowTableBuilder,
-  convertArrowToSchema,
+  makeArrowMetadataBatch,
+  convertSchemaToArrow,
   convertToObjectRow,
   deserializeArrowType
 } from '@loaders.gl/core/schema-utils';
@@ -60,10 +57,10 @@ const textEncoder = new TextEncoder();
 export function parseRawArrowCSVTable(
   arrayBuffer: ArrayBuffer,
   options?: CSVRawArrowParseOptions
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   const csvOptions = createRawArrowCSVOptions(options);
   if (shouldUsePapaCompatibleSkipEmptyLines(csvOptions)) {
-    return parseRawArrowCSVTextWithPapa(new TextDecoder().decode(arrayBuffer), options, csvOptions);
+    return parseRawArrowCSVTextWithPapa(new TextDecoder().decode(arrayBuffer), csvOptions);
   }
 
   const arrowTable = parseRawArrowCSVBytes(arrayBuffer, csvOptions);
@@ -78,10 +75,10 @@ export function parseRawArrowCSVTable(
 export async function parseRawArrowCSVText(
   csvText: string,
   options?: CSVRawArrowParseOptions
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   const csvOptions = createRawArrowCSVOptions(options);
   if (shouldUsePapaCompatibleSkipEmptyLines(csvOptions)) {
-    return parseRawArrowCSVTextWithPapa(csvText, options, csvOptions);
+    return parseRawArrowCSVTextWithPapa(csvText, csvOptions);
   }
 
   // Keep the common text case in the string domain: encoding the entire input before parsing
@@ -102,7 +99,6 @@ export async function parseRawArrowCSVText(
   let arrowTableBuilder: ArrowTableBuilder | null = null;
   let headerRow: string[] | null = null;
   let isFirstRow: boolean = true;
-  let schema: Schema | null = null;
 
   const config = {
     ...csvOptions,
@@ -144,7 +140,7 @@ export async function parseRawArrowCSVText(
         if (!headerRow) {
           headerRow = generateHeader(csvOptions.columnPrefix || 'column', row.length);
         }
-        schema = createUtf8Schema(headerRow);
+        const schema = createUtf8Schema(headerRow);
         arrowTableBuilder = new ArrowTableBuilder(schema, {viewTypes: csvOptions.viewTypes});
       }
 
@@ -163,37 +159,23 @@ export async function parseRawArrowCSVText(
   Papa.parse(csvText, config);
 
   if (arrowTableBuilder) {
-    const builder = arrowTableBuilder as ArrowTableBuilder;
-    return {
-      shape: 'arrow-table',
-      schema: structuredClone(builder.schema),
-      data: builder.finishTable()
-    };
+    return (arrowTableBuilder as ArrowTableBuilder).finishTable();
   }
 
   if (headerRow) {
     const headerSchema = createUtf8Schema(headerRow);
     const builder = new ArrowTableBuilder(headerSchema, {viewTypes: csvOptions.viewTypes});
-    return {
-      shape: 'arrow-table',
-      schema: structuredClone(builder.schema),
-      data: builder.finishTable()
-    };
+    return builder.finishTable();
   }
 
-  return {
-    shape: 'arrow-table',
-    schema: schema || createUtf8Schema([]),
-    data: new arrow.Table({})
-  };
+  return new arrow.Table(convertSchemaToArrow(createUtf8Schema([])), []);
 }
 
 /** Parses through CSVLoader when Papa-compatible edge semantics require row objects. */
 async function parseRawArrowCSVTextWithPapa(
   csvText: string,
-  options: CSVRawArrowParseOptions | undefined,
   csvOptions: CSVRawArrowOptions
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   const headerPreview = readFirstRow(csvText, Boolean(csvOptions.dynamicTyping));
   const header =
     csvOptions.header === 'auto'
@@ -235,12 +217,7 @@ async function parseRawArrowCSVTextWithPapa(
       : arrow.vectorFromArray(columnValues.map(getRawArrowStringValue), utf8Type);
   }
 
-  const data = new arrow.Table(columns);
-  return {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(data.schema),
-    data
-  };
+  return new arrow.Table(columns);
 }
 
 /** Reads and parses the first CSV row for header detection. */
@@ -294,7 +271,7 @@ export function parseRawArrowCSVInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: CSVRawArrowParseOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.RecordBatch> {
   options = {...options};
   const batchSize = getBatchSize(options);
 
@@ -308,7 +285,7 @@ export function parseRawArrowCSVInBatches(
     return parseRawArrowCSVInSingleBatch(asyncIterator, options, csvOptions);
   }
 
-  const asyncQueue = new AsyncQueue<ArrowTableBatch>();
+  const asyncQueue = new AsyncQueue<arrow.RecordBatch>();
 
   let arrowTableBuilder: ArrowTableBuilder | null = null;
   let headerRow: string[] | null = null;
@@ -371,15 +348,9 @@ export function parseRawArrowCSVInBatches(
       if (rowCountInCurrentBatch >= batchSize) {
         const batch = arrowTableBuilder?.flushBatch();
         if (batch) {
-          asyncQueue.enqueue({
-            shape: 'arrow-table',
-            batchType: 'data',
-            schema: structuredClone(arrowTableBuilder!.schema),
-            length: batch.numRows,
-            data: new arrow.Table(batch),
-            count: emittedBatchCount,
-            bytesUsed: results.meta.cursor
-          });
+          batch.metadata.set('count', String(emittedBatchCount));
+          batch.metadata.set('bytesUsed', String(results.meta.cursor));
+          asyncQueue.enqueue(batch);
           emittedBatchCount++;
           rowCountInCurrentBatch = 0;
         }
@@ -390,15 +361,14 @@ export function parseRawArrowCSVInBatches(
       try {
         const batch = rowCountInCurrentBatch > 0 ? arrowTableBuilder?.finishBatch() : null;
         if (batch) {
-          asyncQueue.enqueue({
-            shape: 'arrow-table',
-            batchType: 'data',
-            schema: structuredClone(arrowTableBuilder!.schema),
-            length: batch.numRows,
-            data: new arrow.Table(batch),
-            count: emittedBatchCount,
-            bytesUsed: results.meta.cursor
+          batch.metadata.set('count', String(emittedBatchCount));
+          batch.metadata.set('bytesUsed', String(results.meta.cursor));
+          asyncQueue.enqueue(batch);
+        } else if (emittedBatchCount === 0) {
+          const schema = convertSchemaToArrow(createUtf8Schema(headerRow || []), {
+            viewTypes: csvOptions.viewTypes
           });
+          asyncQueue.enqueue(makeArrowMetadataBatch(schema));
         }
       } catch (error) {
         asyncQueue.enqueue(error as Error);
@@ -420,7 +390,7 @@ async function* parseRawArrowCSVInSingleBatch(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: CSVRawArrowParseOptions,
   csvOptions: CSVRawArrowOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.RecordBatch> {
   const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
   const csvText = shouldUsePapaCompatibleSkipEmptyLines(csvOptions)
     ? new TextDecoder().decode(arrayBuffer)
@@ -429,11 +399,14 @@ async function* parseRawArrowCSVInSingleBatch(
     (csvText ? null : parseRawArrowCSVBytes(arrayBuffer, csvOptions)) ||
     (await parseRawArrowCSVText(csvText || new TextDecoder().decode(arrayBuffer), options));
 
-  yield {
-    ...makeTableScanBatch(arrowTable),
-    count: 0,
-    bytesUsed: arrayBuffer.byteLength
-  };
+  const batches = arrowTable.batches.length
+    ? arrowTable.batches
+    : [makeArrowMetadataBatch(arrowTable.schema)];
+  for (const [index, batch] of batches.entries()) {
+    batch.metadata.set('count', String(index));
+    batch.metadata.set('bytesUsed', String(arrayBuffer.byteLength));
+    yield batch;
+  }
 }
 
 /** Returns the normalized batch size from core options or legacy top-level options. */

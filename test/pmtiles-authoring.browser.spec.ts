@@ -136,7 +136,7 @@ test.each([
       properties: {id: 7, name: 'sample', nested: {value: 1}}
     }
   ]);
-  const blob = new Blob([tableToIPC(table.data).slice().buffer]);
+  const blob = new Blob([tableToIPC(table).slice().buffer]);
   const archive = await openArchive(
     await createPMTilesExampleArchive(
       blob,
@@ -493,7 +493,7 @@ test('real worker converts GeoArrow IPC into MVT and serializes conversion failu
   ]);
   const archive = await openArchive(
     await createPMTilesArchiveInWorker(
-      new Blob([tableToIPC(table.data).slice().buffer]),
+      new Blob([tableToIPC(table).slice().buffer]),
       {...OPTIONS, format: 'arrow'},
       new AbortController().signal
     )

@@ -123,7 +123,7 @@ test.each([
 });
 
 test('Arrow tile source preserves typed, nullable attributes and metadata across batches and slices', async () => {
-  const geometry = makeTable([POINT, POINT, POINT]).data.getChild('geometry')!;
+  const geometry = makeTable([POINT, POINT, POINT]).getChild('geometry')!;
   const columns = {
     geometry,
     identifier: arrow.vectorFromArray(
@@ -193,7 +193,7 @@ test('Arrow tile source preserves polygon holes and separate polygons without mu
     [20, 10]
   ];
   const input = makeTable([{type: 'MultiPolygon', coordinates: [[ring, hole], [otherRing]]}]);
-  const before = input.data.getChild('geometry')!.get(0).slice();
+  const before = input.getChild('geometry')!.get(0).slice();
   const source = new ArrowTableVectorTileSource(input, {
     table: {coordinates: 'wgs84', tolerance: 0}
   });
@@ -205,7 +205,7 @@ test('Arrow tile source preserves polygon holes and separate polygons without mu
   await source.getTile({x: 0, y: 0, z: 1});
   expect(readGeometries(await source.getTile(ROOT_TILE))).toEqual(first);
   expect(readGeometries(await source.getTile({x: 1, y: 0, z: 0}))).toEqual(first);
-  expect(input.data.getChild('geometry')!.get(0)).toEqual(before);
+  expect(input.getChild('geometry')!.get(0)).toEqual(before);
   expect(
     getGeoMetadata((await source.getTile(ROOT_TILE))!.schema.metadata)?.columns.geometry.crs
   ).toBeUndefined();
@@ -347,7 +347,7 @@ test('Arrow tile source loads URLs and blobs through injected core and works thr
 });
 
 test('Arrow tile source selects a named geometry column and retains other geometries unchanged', async () => {
-  const geometry = makeTable([POINT]).data.getChild('geometry')!;
+  const geometry = makeTable([POINT]).getChild('geometry')!;
   const fields = ['original', 'selected'].map(
     name =>
       new arrow.Field(
@@ -378,7 +378,7 @@ test('Arrow tile source writes a geometry-only multipoint table', async () => {
         [90, 0]
       ]
     }
-  ]).data.select(['geometry']);
+  ]).select(['geometry']);
   const source = new ArrowTableVectorTileSource(table, {table: {coordinates: 'EPSG:4326'}});
   const tile = await source.getTile(ROOT_TILE);
   expect(readGeometries(tile)).toEqual([
@@ -419,7 +419,7 @@ test('Arrow tile source rejects invalid inputs and geometry declarations', async
   await expect(
     new ArrowTableVectorTileSource(new arrow.Table({value: arrow.vectorFromArray([1])})).ready
   ).rejects.toThrow('geometryColumn');
-  const table = makeTable([POINT]).data;
+  const table = makeTable([POINT]);
   for (const [extension, metadata, message] of [
     ['geoarrow.box', '{}', 'Unsupported geometry encoding'],
     ['geoarrow.wkb', '{"crs":"EPSG:3857"}', 'reproject before tiling']

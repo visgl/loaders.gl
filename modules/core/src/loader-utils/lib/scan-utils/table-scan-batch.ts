@@ -2,51 +2,51 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
+import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow';
+import type {TableBatch} from '@loaders.gl/core/schema';
 import type {TableScanReadOptions, TableQueryExecutionSummary} from './scan-query-metadata';
 import {emitQueryComplete} from './scan-query-metadata';
 import {filterColumnarRowIndices, validateColumnarPredicate} from './columnar-predicate';
 import {validateTableQueryLimit, validateTableQueryOffset} from './table-query';
 
+/** Physical batches handled by the shared scan executor. */
+type ScanBatch = TableBatch | ApacheArrowTable | RecordBatch;
+
 /** Reads source batches while allowing the shared executor to observe fetched bytes. */
-export type TableScanBatchReader = (
+export type TableScanBatchReader<BatchT = TableBatch> = (
   signal?: AbortSignal,
   onByteLength?: (byteLength: number) => void
-) => AsyncIterable<TableBatch>;
+) => AsyncIterable<BatchT>;
 
 /** Optional batch kernels for formats with a native vectorized predicate implementation. */
-export type TableScanBatchOperators = Readonly<{
+export type TableScanBatchOperators<BatchT = TableBatch> = Readonly<{
   /** Applies a residual predicate locally or on a worker; async kernels must observe the signal. */
   filter?: (
-    batch: TableBatch,
+    batch: BatchT,
     predicate: TableScanReadOptions['predicate'],
     signal?: AbortSignal
-  ) => TableBatch | Promise<TableBatch>;
+  ) => BatchT | Promise<BatchT>;
   /** Applies a projection while preserving the source batch shape. */
-  project?: (batch: TableBatch, columns?: readonly string[]) => TableBatch;
+  project?: (batch: BatchT, columns?: readonly string[]) => BatchT;
 }>;
 
-/** Wraps an Arrow table in the standard single-result scan batch envelope. */
-export function makeTableScanBatch(table: ArrowTable): ArrowTableBatch {
-  return {...table, batchType: 'data', length: table.data.numRows} as ArrowTableBatch;
-}
-
 /**
- * Executes the common residual table-scan stages for row and columnar batches.
+ * Executes the common residual table-scan stages for row, columnar, and native Arrow chunks.
+ * Native Arrow predicates require a format-supplied filter kernel.
  *
  * Format adapters provide only their parser-specific batch reader. Keeping filtering, projection,
  * limits, cancellation, and telemetry here avoids copying the same executor into every format
  * package while preserving each format's native batch shape.
  */
-export async function* executeTableScanBatches(
-  readBatches: TableScanBatchReader,
+export async function* executeTableScanBatches<BatchT extends ScanBatch>(
+  readBatches: TableScanBatchReader<BatchT>,
   options: TableScanReadOptions &
     Readonly<{
       /** Omits empty batches from the output stream. */
       skipEmptyBatches?: boolean;
     }> = {},
-  operators: TableScanBatchOperators = {}
-): AsyncIterable<TableBatch> {
+  operators: TableScanBatchOperators<NoInfer<BatchT>> = {}
+): AsyncIterable<BatchT> {
   validateTableQueryLimit(options.limit);
   validateTableQueryOffset(options.offset);
   let skip = options.offset ?? 0;
@@ -80,30 +80,37 @@ export async function* executeTableScanBatches(
       }
       options.signal?.throwIfAborted();
       batchesRead++;
-      rowsRead += batch.length;
-      const filteredBatch = await (operators.filter || filterTableBatch)(
-        batch,
-        options.predicate,
-        options.signal
-      );
-      options.signal?.throwIfAborted();
-      if (options.predicate) {
-        rowsTested += batch.length;
-        rowsRetained += filteredBatch.length;
+      const rowCount = getScanBatchRowCount(batch);
+      rowsRead += rowCount;
+      if (options.predicate && !operators.filter && !('shape' in batch)) {
+        throw new Error('Native Arrow scans require a filter kernel for residual predicates.');
       }
-      if (skip >= filteredBatch.length && (skip > 0 || options.skipEmptyBatches)) {
-        skip -= filteredBatch.length;
+      const filteredBatch = operators.filter
+        ? await operators.filter(batch, options.predicate, options.signal)
+        : (('shape' in batch ? filterTableBatch(batch, options.predicate) : batch) as BatchT);
+      options.signal?.throwIfAborted();
+      const filteredRowCount = getScanBatchRowCount(filteredBatch);
+      if (options.predicate) {
+        rowsTested += rowCount;
+        rowsRetained += filteredRowCount;
+      }
+      if (skip >= filteredRowCount && (skip > 0 || options.skipEmptyBatches)) {
+        skip -= filteredRowCount;
         continue;
       }
-      const end = Math.min(filteredBatch.length, skip + remaining);
+      const end = Math.min(filteredRowCount, skip + remaining);
       const window =
-        skip || end < filteredBatch.length
-          ? sliceTableBatch(filteredBatch, skip, end)
+        skip || end < filteredRowCount
+          ? (('shape' in filteredBatch
+              ? sliceTableBatch(filteredBatch, skip, end)
+              : filteredBatch.slice(skip, end)) as BatchT)
           : filteredBatch;
       skip = 0;
-      const output = (operators.project || projectTableBatch)(window, options.columns);
-      remaining -= window.length;
-      rowsReturned += output.length;
+      const output = operators.project
+        ? operators.project(window, options.columns)
+        : projectTableBatch(window, options.columns);
+      remaining -= getScanBatchRowCount(window);
+      rowsReturned += getScanBatchRowCount(output);
       if (remaining === 0) earlyTerminationReason = 'limit';
       yield output;
       if (remaining === 0) return;
@@ -142,9 +149,19 @@ export async function* executeTableScanBatches(
   }
 }
 
+/** Reads the row count from native Arrow chunks and portable batch envelopes. */
+function getScanBatchRowCount(batch: ScanBatch): number {
+  return 'shape' in batch ? batch.length : batch.numRows;
+}
+
 /** Truncates a batch without changing its native representation. */
-export function truncateTableBatch(batch: TableBatch, length: number): TableBatch {
-  return sliceTableBatch(batch, 0, length);
+export function truncateTableBatch<BatchType extends ScanBatch>(
+  batch: BatchType,
+  length: number
+): BatchType {
+  return (
+    'shape' in batch ? sliceTableBatch(batch, 0, length) : batch.slice(0, length)
+  ) as BatchType;
 }
 
 /** Slices rows in a batch, preserving Arrow buffers and the batch shape. */
@@ -165,30 +182,36 @@ function sliceTableBatch(batch: TableBatch, start: number, end: number): TableBa
       length
     };
   }
-  if (batch.shape === 'arrow-table') return {...batch, data: batch.data.slice(start, end), length};
   return {...batch, features: batch.features.slice(start, end), length};
 }
 
 /** Projects a batch in the caller-requested order while preserving its shape. */
-export function projectTableBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
+export function projectTableBatch<BatchType extends ScanBatch>(
+  batch: BatchType,
+  columns?: readonly string[]
+): BatchType {
   if (columns === undefined) return batch;
+  if (!('shape' in batch)) {
+    const indices = columns
+      .map(column => batch.schema.fields.findIndex(field => field.name === column))
+      .filter(index => index >= 0);
+    return batch.selectAt(indices) as BatchType;
+  }
   const schema = projectTableSchema(batch, columns);
   if (batch.shape === 'object-row-table') {
     return {
       ...batch,
       schema,
       data: batch.data.map(row => Object.fromEntries(columns.map(column => [column, row[column]])))
-    } as TableBatch;
+    } as BatchType;
   }
   if (batch.shape === 'columnar-table') {
     return {
       ...batch,
       schema,
       data: Object.fromEntries(columns.map(column => [column, batch.data[column]]))
-    };
+    } as BatchType;
   }
-  if (batch.shape === 'arrow-table')
-    return {...batch, schema, data: batch.data.select([...columns])};
   return batch;
 }
 

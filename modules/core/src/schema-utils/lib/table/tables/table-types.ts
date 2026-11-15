@@ -10,6 +10,7 @@ import type {
   GeoJSONTable,
   ArrowTable
 } from '@loaders.gl/core/schema';
+import {isNativeArrowTable} from '../../../../lib/loader-utils/native-arrow';
 
 /** Checks if a table is of array row layout */
 export function isArrayRowTable(table: Table): table is ArrayRowTable {
@@ -31,7 +32,7 @@ export function isGeoJSONTable(table: Table): table is GeoJSONTable {
   return table.shape === 'geojson-table';
 }
 
-/** Checks if table wraps an Apache Arrow table */
-export function isArrowTable(table: Table): table is ArrowTable {
-  return table.shape === 'arrow-table';
+/** Identifies a native Apache Arrow table. */
+export function isArrowTable(table: unknown): table is ArrowTable {
+  return isNativeArrowTable(table);
 }

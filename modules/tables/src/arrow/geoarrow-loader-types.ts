@@ -4,12 +4,7 @@
 
 import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoJSONTable,
-  GeoJSONTableBatch
-} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/core/schema';
 import {ARROW_WORKER_URL} from './arrow-worker-url';
 import {ArrowLoader} from './arrow-loader-types';
 
@@ -39,8 +34,8 @@ const {
 /** Metadata-only GeoArrow loader. */
 export const GeoArrowLoader = {
   ...arrowParserMetadata,
-  batchType: null as unknown as ArrowTableBatch | RecordBatch,
-  dataType: null as unknown as ArrowTable | GeoJSONTable | NativeArrowTable,
+  batchType: null as unknown as RecordBatch,
+  dataType: null as unknown as GeoJSONTable | NativeArrowTable,
   format: 'geoarrow',
   worker:
     typeof ARROW_WORKER_URL === 'string'
@@ -56,7 +51,7 @@ export const GeoArrowLoader = {
   },
   preload
 } as const satisfies Loader<
-  ArrowTable | GeoJSONTable | NativeArrowTable,
-  ArrowTableBatch | GeoJSONTableBatch | RecordBatch,
+  GeoJSONTable | NativeArrowTable,
+  GeoJSONTableBatch | RecordBatch,
   GeoArrowLoaderOptions
 >;

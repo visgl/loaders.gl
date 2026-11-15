@@ -17,7 +17,6 @@ import type {
 import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {
   AsyncQueue,
-  makeArrowMetadataBatch,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
@@ -56,18 +55,18 @@ export const CSVLoaderWithParser = {
   ...CSVLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     getCSVShape(options) === 'arrow'
-      ? parseCSVArrayBufferAsArrow(arrayBuffer, options).then(table => table.data)
+      ? parseCSVArrayBufferAsArrow(arrayBuffer, options)
       : parseCSVText(new TextDecoder().decode(arrayBuffer), options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     parseCSVTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseText: (text: string, options?: CSVLoaderOptions) =>
     getCSVShape(options) === 'arrow'
-      ? parseCSVTextAsArrow(text, options).then(table => table.data)
+      ? parseCSVTextAsArrow(text, options)
       : parseCSVText(text, options),
   parseTextSync: (text: string, options?: CSVLoaderOptions) => parseCSVTextSync(text, options),
   parseInBatches: (asyncIterator, options?: CSVLoaderOptions) =>
     getCSVShape(options) === 'arrow'
-      ? parseNativeCSVInBatches(asyncIterator, options)
+      ? parseCSVInArrowBatches(asyncIterator, options)
       : parseCSVInBatches(asyncIterator, options),
   serializeWorkerResult: serializeCSVWorkerResult,
   deserializeWorkerResult: deserializeCSVWorkerResult,
@@ -109,7 +108,7 @@ function parseCSVTextSync(
       rowTable as ObjectRowTable,
       csvOptions.viewTypes,
       options?.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
-    ).data;
+    );
   }
 
   const firstRowResult = readFirstRow(csvText, csvOptions.delimitersToGuess);
@@ -185,7 +184,7 @@ function getCSVShape(options?: CSVLoaderOptions): NonNullable<CSVLoaderOptions['
     options as {shape?: NonNullable<CSVLoaderOptions['csv']>['shape']} | undefined
   )?.shape;
   const shape = options?.csv?.shape || deprecatedShape || DEFAULT_CSV_SHAPE;
-  if ((shape as string) === 'arrow-table') {
+  if (!['arrow', 'object-row-table', 'array-row-table', 'columnar-table'].includes(shape)) {
     throw new Error('CSVLoader uses shape: "arrow" for native Arrow output');
   }
   return shape;
@@ -494,20 +493,4 @@ function convertToPapaObjectRow(
     objectRow.__parsed_extra = parsedExtra;
   }
   return objectRow;
-}
-
-/** Streams each native record batch produced by the CSV Arrow parser. */
-async function* parseNativeCSVInBatches(
-  input:
-    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-    | Iterable<ArrayBufferLike | ArrayBufferView>,
-  options?: CSVLoaderOptions
-): AsyncIterable<ArrowTableBatch> {
-  for await (const batch of parseCSVInArrowBatches(input, options)) {
-    if (batch.data.batches.length) {
-      yield* batch.data.batches;
-    } else {
-      yield makeArrowMetadataBatch(batch.data.schema);
-    }
-  }
 }

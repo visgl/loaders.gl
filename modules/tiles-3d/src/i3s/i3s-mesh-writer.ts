@@ -452,13 +452,14 @@ function prepareMeshLayer(
     }
   };
   const material = encodeMaterial(options.material);
+  const featureClass = options.features?.batches[0]?.schema.metadata.get(
+    'loaders.gl:feature-class'
+  );
   const layer = {
     id: 0,
     version: '1',
     name: options.name || 'Converted mesh',
-    description: options.features?.batches[0]?.schema?.metadata?.['loaders.gl:feature-class']
-      ? `Source feature metadata class: ${options.features.batches[0].schema!.metadata!['loaders.gl:feature-class']}`
-      : undefined,
+    description: featureClass ? `Source feature metadata class: ${featureClass}` : undefined,
     layerType: '3DObject',
     spatialReference: {wkid: 4326},
     heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},

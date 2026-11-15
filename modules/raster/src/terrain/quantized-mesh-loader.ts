@@ -9,7 +9,7 @@ import {
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
 import type {Mesh} from '@loaders.gl/core/schema';
-import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {parseQuantizedMesh} from './lib/parse-quantized-mesh';
 import {
   QuantizedMeshLoader as QuantizedMeshLoaderMetadata,
@@ -35,9 +35,9 @@ function parseQuantizedMeshInRequestedShape(
   options?: QuantizedMeshLoaderOptions
 ): Mesh | Table {
   const mesh = parseQuantizedMesh(arrayBuffer, options?.['quantized-mesh']);
-  const table = convertMeshToArrowTableWrapper(mesh);
+  const table = convertMeshToArrowTable(mesh);
   if (options?.['quantized-mesh']?.shape === 'arrow') {
-    return table.data;
+    return table;
   }
   return {
     ...convertTableToMesh(table),

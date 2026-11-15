@@ -4,55 +4,42 @@
 
 import * as arrow from 'apache-arrow';
 import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
-import type {Field, MeshArrowTable, Schema} from '@loaders.gl/core/schema';
 import type {GaussianSplats} from '../types';
 import {convertColorByteToSphericalHarmonicDc} from './splat-utils';
 
 /** Builds a Mesh Arrow table from decoded Gaussian splat values. */
-export function makeGaussianSplatsArrowTable(splats: GaussianSplats): MeshArrowTable {
+export function makeGaussianSplatsArrowTable(splats: GaussianSplats): arrow.Table {
   const columns: Record<string, arrow.Vector> = {};
   const fields: arrow.Field[] = [];
-  const schemaFields: Field[] = [];
 
-  addColumn(
-    columns,
-    fields,
-    schemaFields,
-    'POSITION',
-    makeFixedSizeListVector(splats.positions, 3),
-    {
-      type: 'fixed-size-list',
-      listSize: 3,
-      children: [{name: 'value', type: 'float32'}]
-    }
-  );
+  addColumn(columns, fields, 'POSITION', makeFixedSizeListVector(splats.positions, 3));
 
   const colorCoefficients = getColorCoefficients(splats);
-  addScalarColumn(columns, fields, schemaFields, 'f_dc_0', colorCoefficients[0], {
+  addScalarColumn(columns, fields, 'f_dc_0', colorCoefficients[0], {
     'loaders_gl.gaussian_splats.semantic': 'spherical_harmonic_dc',
     'loaders_gl.gaussian_splats.component': '0',
     'loaders_gl.gaussian_splats.encoding': 'coefficient'
   });
-  addScalarColumn(columns, fields, schemaFields, 'f_dc_1', colorCoefficients[1], {
+  addScalarColumn(columns, fields, 'f_dc_1', colorCoefficients[1], {
     'loaders_gl.gaussian_splats.semantic': 'spherical_harmonic_dc',
     'loaders_gl.gaussian_splats.component': '1',
     'loaders_gl.gaussian_splats.encoding': 'coefficient'
   });
-  addScalarColumn(columns, fields, schemaFields, 'f_dc_2', colorCoefficients[2], {
+  addScalarColumn(columns, fields, 'f_dc_2', colorCoefficients[2], {
     'loaders_gl.gaussian_splats.semantic': 'spherical_harmonic_dc',
     'loaders_gl.gaussian_splats.component': '2',
     'loaders_gl.gaussian_splats.encoding': 'coefficient'
   });
 
-  addScalarColumn(columns, fields, schemaFields, 'opacity', splats.opacities, {
+  addScalarColumn(columns, fields, 'opacity', splats.opacities, {
     'loaders_gl.gaussian_splats.semantic': 'opacity',
     'loaders_gl.gaussian_splats.encoding': 'linear'
   });
-  addVectorComponents(columns, fields, schemaFields, 'scale', splats.scales, 3, {
+  addVectorComponents(columns, fields, 'scale', splats.scales, 3, {
     'loaders_gl.gaussian_splats.semantic': 'scale',
     'loaders_gl.gaussian_splats.encoding': 'linear'
   });
-  addVectorComponents(columns, fields, schemaFields, 'rot', splats.rotations, 4, {
+  addVectorComponents(columns, fields, 'rot', splats.rotations, 4, {
     'loaders_gl.gaussian_splats.semantic': 'rotation',
     'loaders_gl.gaussian_splats.encoding': 'quaternion'
   });
@@ -61,7 +48,6 @@ export function makeGaussianSplatsArrowTable(splats: GaussianSplats): MeshArrowT
     addSphericalHarmonicRestColumns(
       columns,
       fields,
-      schemaFields,
       splats.sphericalHarmonics,
       splats.sphericalHarmonicsComponentCount
     );
@@ -74,9 +60,16 @@ export function makeGaussianSplatsArrowTable(splats: GaussianSplats): MeshArrowT
     ['topology', 'point-list'],
     ['mode', '0']
   ]);
-  if (splats.format !== 'rad' && splats.loaderData) {
-    const {extensionBytes, ...header} = splats.loaderData;
-    metadata.set('loaders_gl.gaussian_splats.loader_data', JSON.stringify(header));
+  if (splats.loaderData) {
+    const {extensionBytes, childCounts, childStarts, ...header} = splats.loaderData;
+    metadata.set(
+      'loaders_gl.gaussian_splats.loader_data',
+      JSON.stringify({
+        ...header,
+        childCounts: childCounts instanceof Uint16Array ? Array.from(childCounts) : childCounts,
+        childStarts: childStarts instanceof Uint32Array ? Array.from(childStarts) : childStarts
+      })
+    );
     if (extensionBytes instanceof Uint8Array) {
       metadata.set(
         'loaders_gl.gaussian_splats.extension_bytes',
@@ -84,26 +77,13 @@ export function makeGaussianSplatsArrowTable(splats: GaussianSplats): MeshArrowT
       );
     }
   }
-  const arrowSchema = new arrow.Schema(fields, metadata);
-  const schema: Schema = {
-    fields: schemaFields,
-    metadata: Object.fromEntries(metadata)
-  };
-
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, columns),
-    topology: 'point-list',
-    loaderData: splats.loaderData
-  } as MeshArrowTable;
+  return new arrow.Table(new arrow.Schema(fields, metadata), columns);
 }
 
 /** Adds one scalar Arrow column per component of an interleaved vector array. */
 function addVectorComponents(
   columns: Record<string, arrow.Vector>,
   fields: arrow.Field[],
-  schemaFields: Field[],
   prefix: string,
   values: Float32Array,
   size: number,
@@ -114,7 +94,7 @@ function addVectorComponents(
     for (let rowIndex = 0; rowIndex < componentValues.length; rowIndex++) {
       componentValues[rowIndex] = values[rowIndex * size + component];
     }
-    addScalarColumn(columns, fields, schemaFields, `${prefix}_${component}`, componentValues, {
+    addScalarColumn(columns, fields, `${prefix}_${component}`, componentValues, {
       ...metadata,
       'loaders_gl.gaussian_splats.component': String(component)
     });
@@ -125,7 +105,6 @@ function addVectorComponents(
 function addSphericalHarmonicRestColumns(
   columns: Record<string, arrow.Vector>,
   fields: arrow.Field[],
-  schemaFields: Field[],
   sphericalHarmonics: Float32Array,
   componentCount: number
 ): void {
@@ -134,7 +113,7 @@ function addSphericalHarmonicRestColumns(
     for (let rowIndex = 0; rowIndex < componentValues.length; rowIndex++) {
       componentValues[rowIndex] = sphericalHarmonics[rowIndex * componentCount + component];
     }
-    addScalarColumn(columns, fields, schemaFields, `f_rest_${component}`, componentValues, {
+    addScalarColumn(columns, fields, `f_rest_${component}`, componentValues, {
       'loaders_gl.gaussian_splats.semantic': 'spherical_harmonic_rest',
       'loaders_gl.gaussian_splats.component': String(component),
       'loaders_gl.gaussian_splats.encoding': 'coefficient'
@@ -142,31 +121,27 @@ function addSphericalHarmonicRestColumns(
   }
 }
 
-/** Adds a Float32 scalar Arrow column and matching loaders.gl schema field. */
+/** Adds a Float32 scalar Arrow column. */
 function addScalarColumn(
   columns: Record<string, arrow.Vector>,
   fields: arrow.Field[],
-  schemaFields: Field[],
   name: string,
   values: Float32Array,
   metadata: Record<string, string>
 ): void {
-  addColumn(columns, fields, schemaFields, name, arrow.makeVector(values), 'float32', metadata);
+  addColumn(columns, fields, name, arrow.makeVector(values), metadata);
 }
 
-/** Adds an Arrow column, Arrow field, and loaders.gl schema field. */
+/** Adds an Arrow column and its field metadata. */
 function addColumn(
   columns: Record<string, arrow.Vector>,
   fields: arrow.Field[],
-  schemaFields: Field[],
   name: string,
   column: arrow.Vector,
-  schemaType: Field['type'],
   metadata: Record<string, string> = {}
 ): void {
   columns[name] = column;
   fields.push(new arrow.Field(name, column.type, false, new Map(Object.entries(metadata))));
-  schemaFields.push({name, type: schemaType, nullable: false, metadata});
 }
 
 /** Builds a FixedSizeList Arrow vector from an interleaved Float32 array. */

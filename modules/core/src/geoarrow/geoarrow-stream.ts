@@ -4,13 +4,12 @@
 
 import * as arrow from 'apache-arrow';
 import type {
-  ArrowTableBatch,
   GeoArrowDimension,
   GeoArrowMetadata,
   GeoMetadata,
   GeoParquetGeometryType
 } from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   type GeoArrowGeometryConvertOptions,
   type GeoArrowGeometryTarget,
@@ -41,10 +40,10 @@ export type GeoArrowStreamConvertOptions = GeoArrowGeometryConvertOptions & {
  * @returns Async iterator of converted Arrow table batches.
  */
 export async function* convertGeoArrowBatches(
-  batches: Iterable<ArrowTableBatch> | AsyncIterable<ArrowTableBatch>,
+  batches: Iterable<arrow.RecordBatch> | AsyncIterable<arrow.RecordBatch>,
   targetEncoding: GeoArrowGeometryTarget,
   options: GeoArrowStreamConvertOptions = {}
-): AsyncIterableIterator<ArrowTableBatch> {
+): AsyncIterableIterator<arrow.RecordBatch> {
   let stableGeometryTypes: readonly GeoParquetGeometryType[] | undefined;
   let firstBatch = true;
 
@@ -52,28 +51,29 @@ export async function* convertGeoArrowBatches(
     if (options.signal?.aborted) {
       throw createAbortError();
     }
-    if (!batch || batch.shape !== 'arrow-table') {
-      throw new Error('convertGeoArrowBatches requires ArrowTableBatch inputs.');
-    }
+    const table = new arrow.Table(batch.schema, [batch]);
 
     if (firstBatch) {
-      stableGeometryTypes = getStableGeometryTypes(batch.data, targetEncoding, options);
+      stableGeometryTypes = getStableGeometryTypes(table, targetEncoding, options);
       firstBatch = false;
     }
 
     const conversionOptions = stableGeometryTypes
       ? {...options, geometryTypes: stableGeometryTypes}
       : options;
-    const convertedTable = convertGeoArrowGeometry(batch.data, targetEncoding, conversionOptions);
+    const convertedTable = convertGeoArrowGeometry(table, targetEncoding, conversionOptions);
     const stableTable = stableGeometryTypes
       ? stabilizeGeometryUnionTable(convertedTable, stableGeometryTypes)
       : convertedTable;
-    yield {
-      ...batch,
-      data: stableTable,
-      schema: convertArrowToSchema(stableTable.schema),
-      length: stableTable.numRows
-    };
+    for (const convertedBatch of stableTable.batches.length
+      ? stableTable.batches
+      : [makeArrowMetadataBatch(stableTable.schema)]) {
+      yield new arrow.RecordBatch(
+        convertedBatch.schema,
+        convertedBatch.data,
+        new Map(batch.metadata)
+      );
+    }
   }
 }
 

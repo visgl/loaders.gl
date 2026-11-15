@@ -57,8 +57,7 @@ test('geoarrow#getGeoarrowVertexCount counts WKB Data/Vector/Table vertices', ()
     fields: [makeWKBGeometryField('geometry')],
     metadata: {}
   };
-  const geometryTable = makeWKBGeometryArrowTable([polygonWKB, null, multiPolygonWKB], schema)
-    .data as arrow.Table;
+  const geometryTable = makeWKBGeometryArrowTable([polygonWKB, null, multiPolygonWKB], schema);
   expect(getGeoarrowVertexCount(geometryData), 'counts WKB Data vertices').toBe(20);
   expect(getGeoarrowVertexCount(geometryVector), 'counts WKB Vector vertices').toBe(20);
   expect(getGeoarrowVertexCount(geometryTable), 'counts WKB Table vertices').toBe(20);
@@ -240,7 +239,7 @@ test.each([
 ] as const)('geoarrow#getGeoarrowVertexCount counts native %s arrays', (encoding, geometry, expectedCount) => {
   const wkb = convertGeometryToWKB(geometry);
   const schema: Schema = {fields: [makeWKBGeometryField('geometry')], metadata: {}};
-  const table = makeWKBGeometryArrowTable([wkb, null], schema).data as arrow.Table;
+  const table = makeWKBGeometryArrowTable([wkb, null], schema);
   const nativeTable = convertGeoArrowGeometry(table, encoding);
 
   expect(getGeoarrowVertexCount(nativeTable)).toBe(expectedCount);

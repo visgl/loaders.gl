@@ -11,7 +11,7 @@ import {ArrowLoader} from '../../src/arrow/arrow-loader-types';
 import {GeoArrowLoader} from '../../src/arrow/geoarrow-loader-types';
 import {
   serializeArrowTableResult,
-  deserializeArrowTableBatch
+  deserializeIPCWorkerBatch
 } from '../../src/arrow/lib/arrow-worker-transport';
 
 afterEach(() => destroyWorkerTasks());
@@ -64,17 +64,12 @@ test('Arrow atomic worker returns columns before caller-side row conversion', as
 
 test('Arrow batch serialization transfers owned column buffers without detaching parser state', () => {
   const table = tableFromArrays({label: ['first', 'second']});
-  const serialized = serializeArrowTableResult({
-    shape: 'arrow-table',
-    batchType: 'data',
-    length: 1,
-    data: table.slice(0, 1)
-  });
+  const serialized = serializeArrowTableResult(table.batches[0].slice(0, 1));
   const transferred = structuredClone(serialized, {
     transfer: getTransferList(serialized)
   });
-  const received = deserializeArrowTableBatch(transferred);
-  expect(received.data.getChild('label')?.get(0)).toBe('first');
+  const received = deserializeIPCWorkerBatch(transferred);
+  expect(received.getChild('label')?.get(0)).toBe('first');
   expect(table.getChild('label')?.get(1)).toBe('second');
   expect(() => serializeArrowTableResult({shape: 'object-row-table', data: [{id: 1}]})).toThrow(
     'Arrow table output'

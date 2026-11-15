@@ -3,17 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table} from 'apache-arrow';
-import type {
-  Schema,
-  Feature,
-  GeoJSONTable,
-  BinaryFeatureCollection,
-  ArrowTable
-} from '@loaders.gl/core/schema';
+import type {Schema, Feature, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import {TileSource, TileSourceProps, GetTileParameters} from './tile-source';
 import type {GetTileDataParameters} from './tile-source';
 
-export type VectorTile = Feature[] | GeoJSONTable | BinaryFeatureCollection | ArrowTable | Table;
+export type VectorTile = Feature[] | GeoJSONTable | BinaryFeatureCollection | Table;
 
 export type VectorTileSourceProps = TileSourceProps;
 
@@ -26,5 +20,5 @@ export interface VectorTileSource extends TileSource {
   getVectorTile(parameters: GetTileParameters): Promise<VectorTile | null>;
   getTileData(
     parameters: GetTileDataParameters
-  ): Promise<Feature[] | GeoJSONTable | BinaryFeatureCollection | ArrowTable | Table | null>;
+  ): Promise<Feature[] | GeoJSONTable | BinaryFeatureCollection | Table | null>;
 }

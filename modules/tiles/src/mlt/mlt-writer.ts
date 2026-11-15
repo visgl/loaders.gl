@@ -4,7 +4,6 @@
 
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import {encodeMLT} from './lib/encode-mlt';
 import {MLTFormat} from './mlt-format';
 
@@ -41,7 +40,7 @@ export const MLTWriter = {
   binary: true,
   options: {mlt: {}},
   /** Encodes a materialized tile asynchronously for the core writer API. */
-  encode: async (data: ArrowTable | Table, options?: MLTWriterOptions) => encodeMLT(data, options),
+  encode: async (data: Table, options?: MLTWriterOptions) => encodeMLT(data, options),
   /** Encodes one tile synchronously. */
   encodeSync: encodeMLT
-} as const satisfies WriterWithEncoder<ArrowTable | Table, never, MLTWriterOptions>;
+} as const satisfies WriterWithEncoder<Table, never, MLTWriterOptions>;

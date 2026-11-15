@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-types';
@@ -19,7 +20,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  */
 export const FastJSONLoader = {
   dataType: null as unknown,
-  batchType: null as unknown as TableBatch | MetadataBatch | JSONBatch,
+  batchType: null as unknown as TableBatch | RecordBatch | MetadataBatch | JSONBatch,
 
   name: 'Fast JSON',
   id: 'fast-json',
@@ -42,7 +43,7 @@ export const FastJSONLoader = {
   parseInBatches
 } as const satisfies LoaderWithParser<
   unknown,
-  TableBatch | MetadataBatch | JSONBatch,
+  TableBatch | RecordBatch | MetadataBatch | JSONBatch,
   JSONLoaderOptions
 >;
 
@@ -81,7 +82,7 @@ function parseInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: JSONLoaderOptions
-): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
+): AsyncIterable<TableBatch | RecordBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = {...options, json: {...FastJSONLoader.options.json, ...options?.json}};
   const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, {
     parserFactory: parserOptions => new FastStreamingJSONParser(parserOptions)

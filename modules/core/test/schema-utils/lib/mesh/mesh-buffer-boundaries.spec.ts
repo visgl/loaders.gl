@@ -37,8 +37,7 @@ function createMeshTable(transform: unknown, boundingBox?: string) {
   const struct = new arrow.Data(new arrow.Struct([field]), 0, vector.length, 0, undefined, [
     vector.data[0]
   ]);
-  const data = new arrow.Table(new arrow.RecordBatch(schema, struct));
-  return {shape: 'arrow-table' as const, data};
+  return new arrow.Table(new arrow.RecordBatch(schema, struct));
 }
 
 test.each([
@@ -104,7 +103,7 @@ test('fixed-size list slices copy only selected values across chunk offsets', ()
   const slice = vector.slice(1, 3);
   const chunked = slice.slice(0, 1).concat(slice.slice(1, 2));
   const data = new arrow.Table({POSITION: chunked});
-  const mesh = convertArrowTableToMesh({shape: 'arrow-table', data});
+  const mesh = convertArrowTableToMesh(data);
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6]);
   expect(mesh.attributes.POSITION.value.buffer).not.toBe(values.buffer);
   expect(mesh.header?.vertexCount).toBe(2);

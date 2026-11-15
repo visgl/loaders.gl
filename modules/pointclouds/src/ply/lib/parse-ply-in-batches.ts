@@ -32,9 +32,9 @@ import {
   forEach,
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {updateArrowTableMetadata} from '@loaders.gl/core/schema-utils';
-import {makeMetadataFromPlyHeader} from './get-ply-schema';
+import {Schema, type Table} from 'apache-arrow';
+import {updateArrowTableSchema} from '@loaders.gl/core/schema-utils';
+import {makeMetadataFromPlyHeader, PLY_HEADER_KEY} from './get-ply-schema';
 import normalizePLY from './normalize-ply';
 import {PLYMesh, PLYHeader, PLYElement, PLYProperty, PLYAttributes} from './ply-types';
 import {
@@ -60,7 +60,7 @@ export async function* parsePLYInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: any
-): AsyncIterable<PLYMesh | MeshArrowTable> {
+): AsyncIterable<PLYMesh | Table> {
   if (options?.shape === 'arrow') {
     yield* parseBinaryPLYToArrowInBatches(iterator, options);
     return;
@@ -88,14 +88,20 @@ async function* parseBinaryPLYToArrowInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: any
-): AsyncIterable<MeshArrowTable> {
+): AsyncIterable<Table> {
   const byteIterator = toArrayBufferIterator(iterator)[Symbol.asyncIterator]();
   const {header, initialBodyBytes} = await readPLYHeader(byteIterator, options);
-  let tables: AsyncIterable<MeshArrowTable>;
-  if (header.format === 'ascii') {
+  const vertexElement = getVertexElement(header, options);
+  let tables: AsyncIterable<Table> | Iterable<Table>;
+  if (vertexElement.count === 0) {
+    tables = [
+      header.format === 'ascii'
+        ? makeASCIIPLYArrowBatch(header, [], options)
+        : makeBinaryPLYArrowBatchFromRows(header, [], 0, 0, options)
+    ];
+  } else if (header.format === 'ascii') {
     tables = parseASCIIPLYToArrowInBatches(byteIterator, header, initialBodyBytes, options);
   } else {
-    const vertexElement = getVertexElement(header, options);
     tables = vertexElement.properties.some(property => property.type === 'list')
       ? parseBinaryVariableWidthVertexPLYToArrowInBatches(
           byteIterator,
@@ -111,10 +117,12 @@ async function* parseBinaryPLYToArrowInBatches(
         );
   }
   for await (const table of tables) {
-    yield {
-      ...updateArrowTableMetadata(table, makeMetadataFromPlyHeader(header)),
-      loaderData: header
-    } as MeshArrowTable;
+    const metadata = new Map([
+      ...table.schema.metadata,
+      ...Object.entries(makeMetadataFromPlyHeader(header)),
+      [PLY_HEADER_KEY, JSON.stringify(header)]
+    ]);
+    yield updateArrowTableSchema(table, new Schema(table.schema.fields, metadata));
   }
 }
 
@@ -124,7 +132,7 @@ async function* parseBinaryFixedWidthVertexPLYToArrowInBatches(
   header: PLYHeader,
   initialBodyBytes: ByteArray,
   options: any
-): AsyncIterable<MeshArrowTable> {
+): AsyncIterable<Table> {
   const vertexElement = getFixedWidthVertexElement(header, options);
   const batchSize = getBatchSize(options);
   const vertexStride = getPLYElementSize(vertexElement);
@@ -183,7 +191,7 @@ async function* parseASCIIPLYToArrowInBatches(
   header: PLYHeader,
   initialBodyBytes: ByteArray,
   options: any
-): AsyncIterable<MeshArrowTable> {
+): AsyncIterable<Table> {
   const vertexElement = getVertexElement(header, options);
   const batchSize = getBatchSize(options);
   const lineIterator = makeLineIterator(
@@ -219,7 +227,7 @@ async function* parseBinaryVariableWidthVertexPLYToArrowInBatches(
   header: PLYHeader,
   initialBodyBytes: ByteArray,
   options: any
-): AsyncIterable<MeshArrowTable> {
+): AsyncIterable<Table> {
   const vertexElement = getVertexElement(header, options);
   const batchSize = getBatchSize(options);
   const littleEndian = header.format !== 'binary_big_endian';
@@ -300,7 +308,7 @@ async function readPLYHeader(
 function getVertexElement(header: PLYHeader, options: any): PLYElement {
   const vertexElement = header.elements[0];
   if ((!options?.pointCloud && header.elements.length !== 1) || vertexElement?.name !== 'vertex') {
-    throw new Error('PLY arrow-table batch parsing requires one vertex element');
+    throw new Error('PLY Arrow batch parsing requires one vertex element');
   }
   return vertexElement;
 }
@@ -313,7 +321,7 @@ function getFixedWidthVertexElement(header: PLYHeader, options: any): PLYElement
     vertexElement?.name !== 'vertex' ||
     vertexElement.properties.some(property => property.type === 'list')
   ) {
-    throw new Error('Binary PLY arrow-table batch parsing requires one scalar vertex element');
+    throw new Error('Binary PLY Arrow batch parsing requires one scalar vertex element');
   }
   return vertexElement;
 }
@@ -326,7 +334,7 @@ function makeBinaryPLYArrowBatch(
   vertexStride: number,
   options: any,
   parsePlan: PLYBinaryPointCloudParsePlan | null
-): MeshArrowTable {
+): Table {
   const vertexElement = header.elements[0];
   const batchHeader = {
     ...header,
@@ -347,7 +355,7 @@ function makeBinaryPLYArrowBatch(
 }
 
 /** Build one Arrow table batch from ASCII PLY vertex lines. */
-function makeASCIIPLYArrowBatch(header: PLYHeader, lines: string[], options: any): MeshArrowTable {
+function makeASCIIPLYArrowBatch(header: PLYHeader, lines: string[], options: any): Table {
   const batchHeaderText = makePLYHeaderText(header, lines.length, options);
   const elementTables = parsePLYToElementTables(`${batchHeaderText}${lines.join('\n')}\n`, options);
   return convertPLYElementTablesToMeshArrowTable(elementTables);
@@ -360,7 +368,7 @@ function makeBinaryPLYArrowBatchFromRows(
   byteLength: number,
   vertexCount: number,
   options: any
-): MeshArrowTable {
+): Table {
   const batchHeaderText = makePLYHeaderText(header, vertexCount, options);
   const headerBytes = new TextEncoder().encode(batchHeaderText);
   const batchBytes = new Uint8Array(headerBytes.length + byteLength);

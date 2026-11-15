@@ -44,9 +44,7 @@ test.each([
   });
   for (const table of [asciiTable, byteTable, fallbackTable]) {
     expect(table.schema.fields.map(field => field.name)).toEqual([header, 'label']);
-    expect(table.data.toArray().map(row => row.toJSON())).toEqual([
-      {[header]: 'value', label: 'item'}
-    ]);
+    expect(table.toArray().map(row => row.toJSON())).toEqual([{[header]: 'value', label: 'item'}]);
   }
   expect(Papa.parse(`"${header}"`, {dynamicTyping: true, delimiter: ','}).data).toEqual([[header]]);
 });

@@ -9,7 +9,7 @@ import {
   convertGeoArrowBatches,
   convertGeoArrowVectorCellToGeoJSON
 } from '@loaders.gl/core/geoarrow';
-import type {ArrowTableBatch, Geometry} from '@loaders.gl/core/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 
 test('convertGeoArrowBatches freezes an unknown WKB stream to one union schema', async () => {
   const batches = [
@@ -26,15 +26,17 @@ test('convertGeoArrowBatches freezes an unknown WKB stream to one union schema',
       ]
     })
   ];
-  const convertedBatches: ArrowTableBatch[] = [];
+  const convertedBatches: arrow.RecordBatch[] = [];
 
   for await (const batch of convertGeoArrowBatches(batches, 'native')) {
     convertedBatches.push(batch);
   }
 
   expect(convertedBatches).toHaveLength(2);
-  const firstVector = convertedBatches[0].data.getChild('geometry')!;
-  const secondVector = convertedBatches[1].data.getChild('geometry')!;
+  expect(convertedBatches[0].metadata.get('fixture')).toBe('local');
+  expect(convertedBatches[0].metadata).not.toBe(batches[0].metadata);
+  const firstVector = convertedBatches[0].getChild('geometry')!;
+  const secondVector = convertedBatches[1].getChild('geometry')!;
   expect(firstVector.type.toString()).toBe(secondVector.type.toString());
   expect((firstVector.type as arrow.DenseUnion).typeIds).toEqual(
     (secondVector.type as arrow.DenseUnion).typeIds
@@ -63,9 +65,9 @@ test('convertGeoArrowBatches freezes an unknown WKB stream to one union schema',
     ]
   });
   const geometryMetadata = JSON.parse(
-    convertedBatches[0].schema?.fields.find(field => field.name === 'geometry')?.metadata?.[
-      'ARROW:extension:metadata'
-    ] || '{}'
+    convertedBatches[0].schema?.fields
+      .find(field => field.name === 'geometry')
+      ?.metadata.get('ARROW:extension:metadata') || '{}'
   );
   expect(geometryMetadata.geometry_types).toHaveLength(28);
 });
@@ -79,7 +81,7 @@ test('convertGeoArrowBatches aborts before consuming the next batch', async () =
   await expect(iterator.next()).rejects.toMatchObject({name: 'AbortError'});
 });
 
-function createWKBBatch(geometry: Geometry): ArrowTableBatch {
+function createWKBBatch(geometry: Geometry): arrow.RecordBatch {
   const bytes = new Uint8Array(convertGeometryToWKB(geometry));
   const vector = arrow.vectorFromArray([bytes], new arrow.Binary());
   const geometryField = new arrow.Field(
@@ -92,12 +94,9 @@ function createWKBBatch(geometry: Geometry): ArrowTableBatch {
     ])
   );
   const schema = new arrow.Schema([geometryField]);
-  const data = new arrow.Table(
+  return new arrow.RecordBatch(
     schema,
-    new arrow.RecordBatch(
-      schema,
-      new arrow.Data(new arrow.Struct(schema.fields), 0, 1, 0, undefined, [vector.data[0]])
-    )
+    new arrow.Data(new arrow.Struct(schema.fields), 0, 1, 0, undefined, [vector.data[0]]),
+    new Map([['fixture', 'local']])
   );
-  return {shape: 'arrow-table', batchType: 'data', length: 1, data};
 }

@@ -133,7 +133,7 @@ async function renderPage(): Promise<void> {
       Math.max(PAGE_SIZE, 200),
       pageIndex * PAGE_SIZE
     );
-    const tableRows = coordinateTable.data.toArray().slice(0, PAGE_SIZE) as Array<Record<string, number>>;
+    const tableRows = coordinateTable.toArray().slice(0, PAGE_SIZE) as Array<Record<string, number>>;
     renderCoordinateTableHeader(coordinateColumn);
     getElement('#arrow-status').textContent = `Arrow table: ${pagedRows.toLocaleString()} coordinate rows from fragment 0`;
     const firstRow = pageIndex * PAGE_SIZE + 1;
@@ -144,7 +144,7 @@ async function renderPage(): Promise<void> {
     getElement('#arrow-rows').innerHTML = tableRows
       .map(row => `<tr><td>${row[coordinateColumn.xName]}</td><td>${row[coordinateColumn.yName]}</td></tr>`)
       .join('');
-    renderDeck((coordinateTable.data.toArray() as Array<Record<string, number>>).map(row => ({
+    renderDeck((coordinateTable.toArray() as Array<Record<string, number>>).map(row => ({
       position: [row[coordinateColumn.xName], row[coordinateColumn.yName]],
       color: [59, 130, 246]
     })));
@@ -160,12 +160,12 @@ async function renderPage(): Promise<void> {
   }
   const arrowTable = await readLanceRemoteFileToArrow(activeFileURL, activeFileSize, activeColumns, PAGE_SIZE, pageIndex * PAGE_SIZE);
   const firstRow = pageIndex * PAGE_SIZE + 1;
-  const lastRow = Math.min(firstRow + arrowTable.data.numRows - 1, pagedRows);
+  const lastRow = Math.min(firstRow + arrowTable.numRows - 1, pagedRows);
   getElement('#arrow-status').textContent = `Arrow table: ${pagedRows.toLocaleString()} rows from fragment 0`;
   pageStatus.textContent = `${firstRow.toLocaleString()}–${lastRow.toLocaleString()} of ${pagedRows.toLocaleString()}`;
   previousPageButton.disabled = pageIndex === 0;
   nextPageButton.disabled = lastRow >= pagedRows;
-  getElement('#arrow-rows').innerHTML = arrowTable.data.toArray()
+  getElement('#arrow-rows').innerHTML = arrowTable.toArray()
     .map(row => `<tr>${activeColumns.map(column => `<td>${escapeHTML((row as Record<string, unknown>)[column.name])}</td>`).join('')}</tr>`)
     .join('');
 }

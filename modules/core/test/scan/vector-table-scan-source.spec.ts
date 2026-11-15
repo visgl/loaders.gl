@@ -10,7 +10,6 @@ import type {
   VectorSource,
   VectorTileSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {OGCAPIFeaturesSource, WFSVectorSource} from '@loaders.gl/ogc/wms';
 import {
@@ -18,10 +17,7 @@ import {
   VectorTileTableScanSource
 } from '../../src/scan/vector-table-scan-source';
 
-test.each([
-  'native Arrow',
-  'wrapped Arrow'
-] as const)('VectorTileTableScanSource reads %s tiles and keeps addressing outside the query', async shape => {
+test('VectorTileTableScanSource reads native Arrow tiles and keeps addressing outside the query', async () => {
   const sourceTable = makeArrowTable({id: [1, 2, 3], value: [10, 20, 30]});
   const requestedTiles: GetTileParameters[] = [];
   const tileLayers = ['roads'];
@@ -36,11 +32,11 @@ test.each([
       return null;
     },
     async getSchema() {
-      return sourceTable.schema;
+      return convertArrowToSchema(sourceTable.schema);
     },
     async getVectorTile(parameters: GetTileParameters) {
       requestedTiles.push(parameters);
-      return shape === 'native Arrow' ? sourceTable.data : sourceTable;
+      return sourceTable;
     }
   } satisfies VectorTileSource;
   const scanSource = new VectorTileTableScanSource(source, {
@@ -89,14 +85,14 @@ test('VectorFeatureTableScanSource binds service controls and requests Arrow out
   const requests: GetFeaturesParameters[] = [];
   const source = {
     async getSchema() {
-      return sourceTable.schema;
+      return convertArrowToSchema(sourceTable.schema);
     },
     async getMetadata() {
       return {name: 'features', keywords: [], layers: []};
     },
     async getFeatures(parameters: GetFeaturesParameters) {
       requests.push(parameters);
-      return sourceTable.data;
+      return sourceTable;
     }
   } as VectorSource;
   const scanSource = new VectorFeatureTableScanSource(source, {
@@ -229,7 +225,7 @@ test('addressed vector scans infer missing schema and optional service metadata'
 
 test('addressed vector scans isolate shared loads from caller cancellation', async () => {
   const sourceTable = makeArrowTable({id: [1]});
-  let resolveLoad!: (table: ArrowTable) => void;
+  let resolveLoad!: (table: arrow.Table) => void;
   let loadCount = 0;
   let physicalSignal: AbortSignal | undefined;
   const source = {
@@ -243,12 +239,12 @@ test('addressed vector scans isolate shared loads from caller cancellation', asy
       return null;
     },
     async getSchema() {
-      return sourceTable.schema;
+      return convertArrowToSchema(sourceTable.schema);
     },
     getVectorTile(parameters: GetTileParameters) {
       loadCount++;
       physicalSignal = parameters.signal;
-      return new Promise<ArrowTable>(resolve => {
+      return new Promise<arrow.Table>(resolve => {
         resolveLoad = resolve;
       });
     }
@@ -268,12 +264,11 @@ test('addressed vector scans isolate shared loads from caller cancellation', asy
   expect(physicalSignal).toBeUndefined();
 });
 
-/** Creates a loaders.gl Arrow table from ordinary named arrays. */
+/** Creates an Apache Arrow table from ordinary named arrays. */
 function makeArrowTable(
   columns: Record<string, arrow.TypedArray | readonly unknown[]>
-): ArrowTable {
-  const data = arrow.tableFromArrays(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+): arrow.Table {
+  return arrow.tableFromArrays(columns);
 }
 
 test.each([

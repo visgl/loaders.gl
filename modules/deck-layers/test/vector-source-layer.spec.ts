@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {VectorSourceLayer, type VectorSourceLayerProps} from '@loaders.gl/deck-layers';
 import {VectorFeatureTableScanSource} from '@loaders.gl/core/scan';
-import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
+import {ArrowTableBuilder, convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {VectorSet} from '../src/vector-source-layer/vector-set';
 function createDeferredPromise<T>() {
   let resolvePromise!: (value: T) => void;
@@ -358,7 +358,7 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
         return {metadata: {}, fields: []};
       },
       async getFeatures() {
-        return ARROW_TABLE.data;
+        return ARROW_TABLE;
       }
     } as any,
     layers: ['roads'],
@@ -367,16 +367,16 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
     debounceTime: 0
   });
   await vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
-  expect(vectorSet.data, 'VectorSet keeps Arrow tables').toBe(ARROW_TABLE.data);
+  expect(vectorSet.data, 'VectorSet keeps Arrow tables').toBe(ARROW_TABLE);
   const source = {
     async getMetadata() {
       return {name: 'roads', keywords: [], layers: [{name: 'roads'}]};
     },
     async getSchema() {
-      return ARROW_TABLE.schema!;
+      return convertArrowToSchema(ARROW_TABLE.schema);
     },
     async getFeatures() {
-      return ARROW_TABLE.data;
+      return ARROW_TABLE;
     }
   };
   const scanSource = new VectorFeatureTableScanSource(source, {
@@ -389,9 +389,9 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
     }
   });
   const scanned = await scanSource.query();
-  expect(scanned.numRows).toBe(ARROW_TABLE.data.numRows);
+  expect(scanned.numRows).toBe(ARROW_TABLE.numRows);
   expect(scanned.schema.fields.find(field => field.name === 'geometry')?.metadata).toEqual(
-    ARROW_TABLE.data.schema.fields.find(field => field.name === 'geometry')?.metadata
+    ARROW_TABLE.schema.fields.find(field => field.name === 'geometry')?.metadata
   );
 
   const layer = createLayer({
@@ -708,7 +708,7 @@ function createArrowTable() {
     name: 'arrow',
     geometry: new Uint8Array(convertGeometryToWKB({type: 'Point', coordinates: [1, 2]}))
   });
-  return {shape: 'arrow-table', schema: builder.schema, data: builder.finishTable()};
+  return builder.finishTable();
 }
 
 test('VectorSet retries the same extent after failure and aborts requests when replacing its source', async () => {

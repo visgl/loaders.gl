@@ -32,7 +32,7 @@ console.log(result.getChild('people'));
 ```
 
 The result is an Apache Arrow `Table`.
-You can also pass an already loaded loaders.gl Arrow table or an existing table scan source as
+You can also pass an already loaded Apache Arrow table or an existing table scan source as
 `source`. Those inputs do not need `loaders`. Parser-only loaders such as `ParquetLoader` are not
 source loaders; use `ParquetLoader` for URL queries.
 
@@ -181,7 +181,7 @@ const result = await query(
 );
 ```
 
-Only the selected table is resolved. It must return a loaders.gl Arrow table or a source supporting
+Only the selected table is resolved. It must return an Apache Arrow table or a source supporting
 table metadata and reads. Raster, tile, or catalog sources are not automatically converted into
 tables. Names are matched exactly. A string such as `from: 'warehouse.cities'` is one literal source
 name; use the structured form for qualified lookup.

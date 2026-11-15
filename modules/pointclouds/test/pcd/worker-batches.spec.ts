@@ -60,10 +60,10 @@ test.each([
   expect(deserialize).toHaveBeenCalledTimes(2);
   for (const [payload] of deserialize.mock.calls) {
     expect(payload).toMatchObject({
-      transport: 'arrow-column-envelope',
-      data: {transport: 'arrow-js'}
+      transport: 'arrow-record-batch',
+      columns: {data: {transport: 'arrow-js'}}
     });
-    expect((payload as any).data.batches).toBeInstanceOf(Array);
+    expect((payload as any).columns.data.batches).toBeInstanceOf(Array);
   }
 });
 
@@ -77,8 +77,8 @@ test('PCD atomic worker uses column transport before caller-side mesh conversion
   );
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    transport: 'arrow-column-envelope',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
   expect(mesh.loader).toBe('pcd');
   expect(mesh.loaderData).toBeTruthy();
@@ -124,9 +124,27 @@ test('PCD column transport hydration defaults to Arrow when caller options are o
   const table = await parser.parse(new TextEncoder().encode(source).buffer, {
     pcd: {shape: 'arrow'}
   });
-  const payload = parser.serializeWorkerResult({shape: 'arrow-table', data: table});
+  const payload = parser.serializeWorkerResult(table);
   expect(parser.deserializeWorkerResult(payload)).toBeInstanceOf(Table);
   expect(parser.deserializeWorkerResult(payload, {})).toBeInstanceOf(Table);
   expect(parser.deserializeWorkerBatch(payload)).toBeInstanceOf(RecordBatch);
   expect(parser.deserializeWorkerBatch(payload, {})).toBeInstanceOf(RecordBatch);
+});
+
+test('PCD streaming retains the declared position schema for zero points', async () => {
+  const header = source
+    .slice(0, source.indexOf('1 2 3'))
+    .replace('WIDTH 3', 'WIDTH 0')
+    .replace('POINTS 3', 'POINTS 0');
+  const iterator = await parseInBatches([new TextEncoder().encode(header)], PCDLoader, {
+    core: {worker: false},
+    pcd: {shape: 'arrow'}
+  });
+  const batches = await Array.fromAsync(iterator);
+  expect(batches).toHaveLength(1);
+  expect(batches[0].numRows).toBe(0);
+  expect(batches[0].schema.names).toEqual(['POSITION']);
+  expect(JSON.parse(batches[0].schema.metadata.get('loaders.gl.pcd.header')!)).toMatchObject({
+    points: 0
+  });
 });

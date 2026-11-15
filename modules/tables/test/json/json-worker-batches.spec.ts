@@ -322,6 +322,6 @@ test.each([false, true])('JSON table batches default to Arrow with worker=%s', a
       json: {table: true}
     })
   );
-  expect(batches.map(batch => batch.shape)).toEqual(['arrow-table', 'arrow-table']);
-  expect(batches.map(batch => batch.data.getChild('id').get(0))).toEqual([1, 2]);
+  expect(batches).toEqual([expect.any(RecordBatch), expect.any(RecordBatch)]);
+  expect(batches.map(batch => batch.getChild('id').get(0))).toEqual([1, 2]);
 });

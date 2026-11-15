@@ -24,9 +24,6 @@ export function isTable(table: any): table is Table | NativeArrowTable {
     case 'columnar-table':
       return Boolean(table.data && typeof table.data === 'object');
 
-    case 'arrow-table':
-      return Boolean(table?.data?.numRows !== undefined);
-
     default:
       return false;
   }
@@ -44,9 +41,6 @@ export function getTableLength(table: Table | NativeArrowTable): number {
 
     case 'geojson-table':
       return table.features.length;
-
-    case 'arrow-table':
-      return getTableLength(table.data);
 
     case 'columnar-table':
       for (const column of Object.values(table.data)) {
@@ -79,8 +73,6 @@ export function getTableNumCols(table: Table | NativeArrowTable): number {
       return Object.keys(table.features[0]).length;
     case 'columnar-table':
       return Object.keys(table.data).length;
-    case 'arrow-table':
-      return getTableNumCols(table.data);
 
     default:
       throw new Error('table');
@@ -108,9 +100,6 @@ export function getTableCell(
     case 'columnar-table':
       const column = table.data[columnName];
       return column[rowIndex];
-
-    case 'arrow-table':
-      return getTableCell(table.data, rowIndex, columnName);
 
     default:
       throw new Error('todo');
@@ -140,9 +129,6 @@ export function getTableCellAt(
       const columnName3 = getTableColumnName(table, columnIndex);
       const column = table.data[columnName3];
       return column[rowIndex];
-
-    case 'arrow-table':
-      return getTableCellAt(table.data, rowIndex, columnIndex);
 
     default:
       throw new Error('todo');
@@ -248,9 +234,6 @@ export function getTableRowAsObject(
         return objectRow;
       }
 
-    case 'arrow-table':
-      return getTableRowAsObject(table.data, rowIndex, target, copy);
-
     default:
       throw new Error('shape');
   }
@@ -320,9 +303,6 @@ export function getTableRowAsArray(
         }
         return arrayRow;
       }
-
-    case 'arrow-table':
-      return getTableRowAsArray(table.data, rowIndex, target, copy);
 
     default:
       throw new Error('shape');

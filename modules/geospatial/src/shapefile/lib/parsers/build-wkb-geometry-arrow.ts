@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Schema as TableSchema} from '@loaders.gl/core/schema';
 import {WKBBuilder} from '@loaders.gl/core/arrow-geometry';
 import {type CoordinateTransform} from '@loaders.gl/core/arrow-geometry/binary-geometry-to-wkb';
 import {
@@ -32,7 +33,7 @@ export function makeWKBGeometryArrowTable(
   geometries: (SHPWKBGeometry | null | undefined)[],
   schema: TableSchema,
   transform?: CoordinateTransform
-): ArrowTable {
+): Table {
   return makeSharedWKBGeometryArrowTable(geometries, schema, {transform});
 }
 
@@ -42,7 +43,7 @@ export function makeSHPWKBGeometryArrowTable(
   schema: TableSchema,
   options?: SHPLoaderOptions,
   transform?: CoordinateTransform
-): ArrowTable {
+): Table {
   const geometryData = makeSHPWKBGeometryData(arrayBuffer, options, transform);
   return makeWKBGeometryArrowTableFromData(schema, geometryData);
 }

@@ -655,7 +655,7 @@ function getExpectedPointData(
 
 /** Collect represented attributes from one Arrow table. */
 function collectTableAttributes(table: LASArrowTable): CollectedAttributes {
-  const {attributes} = convertTableToMesh(table);
+  const {attributes} = convertTableToMesh(table.data);
   return {
     positions: Array.from(attributes.POSITION.value),
     intensities: Array.from(attributes.intensity.value),

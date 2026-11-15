@@ -3,21 +3,20 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table as ArrowTable} from 'apache-arrow';
-import type {ArrowTable as WrappedArrowTable, Table, TableBatch} from '@loaders.gl/core/schema';
+import {isNativeArrowTable} from '@loaders.gl/core/schema-utils';
+import type {Table, TableBatch} from '@loaders.gl/core/schema';
 
 /** Input shared by table writers that also accept loaders.gl row or columnar tables. */
-export type TableWriterInput = ArrowTable | Exclude<Table, WrappedArrowTable>;
+export type TableWriterInput = ArrowTable | Table;
 
 /** Batch envelopes supported by table writers alongside native Arrow batches. */
-export type TableWriterBatch = Exclude<TableBatch, {shape: 'arrow-table'}>;
+export type TableWriterBatch = TableBatch;
 
-/** Checks the native Arrow branch and reports obsolete wrapper input from JavaScript. */
+/** Distinguishes native Arrow from the row and column layouts accepted by writers. */
 export function isNativeWriterTable(table: TableWriterInput): table is ArrowTable {
-  if ('shape' in table) {
-    if ((table as Table).shape === 'arrow-table') {
-      throw new Error('Pass the Apache Arrow table in data directly to the writer');
-    }
-    return false;
+  if (isNativeArrowTable(table)) return true;
+  if ('data' in table && isNativeArrowTable(table.data)) {
+    throw new Error('Pass the Apache Arrow table directly to the writer');
   }
-  return true;
+  return false;
 }

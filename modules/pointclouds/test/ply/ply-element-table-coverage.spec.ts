@@ -123,8 +123,10 @@ describe('PLY element-table parser coverage', () => {
     expect(mesh.topology).toBe('triangle-list');
 
     const arrowTable = convertPLYElementTablesToMeshArrowTable(elementTables);
-    expect(arrowTable.data.schema.fields.map(field => field.name)).toContain('indices');
-    expect(arrowTable.indices?.value).toEqual(mesh.indices?.value);
+    expect(arrowTable.schema.fields.map(field => field.name)).toContain('indices');
+    expect(Array.from(arrowTable.getChild('indices')!.get(0))).toEqual(
+      Array.from(mesh.indices!.value)
+    );
 
     const pointCloud = parsePLYToElementTables(text, {pointCloud: true});
     expect(pointCloud.elements).toHaveLength(1);
@@ -250,7 +252,7 @@ describe('PLY element-table parser coverage', () => {
         {pointCloud: true, batchSize: 1}
       );
       expect(batches).toHaveLength(1);
-      expect(batches[0].topology).toBe('point-list');
+      expect(batches[0].schema.metadata.get('topology')).toBe('point-list');
     }
   });
 
@@ -273,7 +275,7 @@ describe('PLY element-table parser coverage', () => {
     const batches = await collectBatches([ascii.subarray(0, 17), ascii.subarray(17)], {
       batchSize: 2
     });
-    expect(batches.map(batch => batch.data.numRows)).toEqual([2, 1]);
+    expect(batches.map(batch => batch.numRows)).toEqual([2, 1]);
 
     await expect(
       collectBatches([new TextEncoder().encode('ply\nformat ascii 1.0')])

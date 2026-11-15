@@ -26,8 +26,8 @@ test('Avro file parsing reads small files through the whole-file path', async ()
     batches.push(batch);
   }
 
-  expect(batches.map(batch => batch.length)).toEqual([1, 1]);
-  expect(batches[1].data.getChild('label')?.get(0)).toBe('two');
+  expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
+  expect(batches[1].getChild('label')?.get(0)).toBe('two');
 });
 
 test('Avro file parsing reads multiple ranged blocks and applies block selection', async () => {
@@ -49,9 +49,7 @@ test('Avro file parsing reads multiple ranged blocks and applies block selection
     batches.push(batch);
   }
 
-  const selectedIds = batches.flatMap(batch =>
-    Array.from(batch.data.getChild('id')?.toArray() || [])
-  );
+  const selectedIds = batches.flatMap(batch => Array.from(batch.getChild('id')?.toArray() || []));
   expect(selectedIds.length).toBeGreaterThan(20);
   expect(selectedIds.every(id => Number(id) >= 0 && Number(id) < 160)).toBe(true);
   expect(selectedIds.includes(0)).toBe(false);
@@ -70,8 +68,7 @@ test('Avro file parsing resolves stat-only sizes and the table convenience API',
     read: async (offset: number, length: number) => bytes.slice(offset, offset + length).buffer
   };
   await expect(parseAvroFromFile(file as any, {batchSize: 1})).resolves.toMatchObject({
-    shape: 'arrow-table',
-    data: {numRows: 2}
+    numRows: 2
   });
 });
 

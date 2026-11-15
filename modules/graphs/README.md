@@ -6,21 +6,21 @@ Supported formats: DOT, GraphML, GEXF.
 
 ## Graph output shapes
 
-Graph loaders default to `graphml.shape: 'arrow-table'`, `dot.shape: 'arrow-table'`,
-or `gexf.shape: 'arrow-table'`.
+Graph loaders default to `graphml.shape: 'arrow'`, `dot.shape: 'arrow'`,
+or `gexf.shape: 'arrow'`.
 The result uses the standard table collection shape:
 
 ```typescript
 {
   shape: 'tables',
   tables: [
-    {name: 'nodes', table: {shape: 'arrow-table', schema, data: nodes}},
-    {name: 'edges', table: {shape: 'arrow-table', schema, data: edges}}
+    {name: 'nodes', table: nodes},
+    {name: 'edges', table: edges}
   ]
 }
 ```
 
-Each `data` is an Apache Arrow `Table`; each `schema` is a loaders.gl schema.
+Each named table is a native Apache Arrow `Table` with its own schema.
 The node table has `id`, nullable `label`, and nullable `attributes` columns.
 The edge table additionally has `sourceId`, `targetId`, and `directed`.
 Structural identifiers are strings, including numeric DOT edge IDs. Row order follows
@@ -39,9 +39,9 @@ Empty undeclared attributes have a Struct with no child fields.
 
 ```typescript
 const graph = await load('network.graphml', GraphMLLoader);
-if (graph.shape === 'tables' && graph.tables[0].table.shape === 'arrow-table') {
-  const nodes = graph.tables[0].table.data;
-  console.log(nodes.getChild('id')?.get(0));
+if (graph.shape === 'tables') {
+  const nodes = graph.tables.find(entry => entry.name === 'nodes')?.table;
+  if (nodes && 'getChild' in nodes) console.log(nodes.getChild('id')?.get(0));
 }
 ```
 

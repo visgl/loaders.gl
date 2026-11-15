@@ -17,7 +17,7 @@ test('getGeoArrowRowBounds reads sliced separated native points', () => {
     {type: 'Feature', properties: {id: 1}, geometry: {type: 'Point', coordinates: [1, 2]}},
     {type: 'Feature', properties: {id: 2}, geometry: {type: 'Point', coordinates: [3, 4]}}
   ]);
-  const native = convertGeoArrowGeometry(source.data, 'geoarrow.point', {
+  const native = convertGeoArrowGeometry(source, 'geoarrow.point', {
     coordinates: 'separated'
   });
   const geometry = native.getChild('geometry')?.slice(1, 2);
@@ -31,7 +31,7 @@ test('getGeoArrowRowBounds reads sliced interleaved native points', () => {
     {type: 'Feature', properties: {id: 1}, geometry: {type: 'Point', coordinates: [1, 2]}},
     {type: 'Feature', properties: {id: 2}, geometry: {type: 'Point', coordinates: [3, 4]}}
   ]);
-  const native = convertGeoArrowGeometry(source.data, 'geoarrow.point');
+  const native = convertGeoArrowGeometry(source, 'geoarrow.point');
   const geometry = native.getChild('geometry')?.slice(1, 2);
 
   expect(geometry).toBeTruthy();
@@ -52,7 +52,7 @@ test('getGeoArrowRowBounds reads nested native lines with large offsets', () => 
       }
     }
   ]);
-  const native = convertGeoArrowGeometry(source.data, 'geoarrow.linestring', {
+  const native = convertGeoArrowGeometry(source, 'geoarrow.linestring', {
     offsetType: 'int64'
   });
   const geometry = native.getChild('geometry');
@@ -86,7 +86,7 @@ test('getGeoArrowRowBounds reads a sliced nested native line', () => {
       }
     }
   ]);
-  const native = convertGeoArrowGeometry(source.data, 'geoarrow.linestring');
+  const native = convertGeoArrowGeometry(source, 'geoarrow.linestring');
   const geometry = native.getChild('geometry')?.slice(1, 2);
 
   expect(geometry).toBeTruthy();
@@ -116,7 +116,7 @@ test('getGeoArrowRowBounds walks mixed unions and collections in buffers', () =>
         ]
       }
     }
-  ]).data;
+  ]);
   const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
   const collectionSource = convertFeaturesToGeoArrowTable([
     {
@@ -140,7 +140,7 @@ test('getGeoArrowRowBounds walks mixed unions and collections in buffers', () =>
         ]
       }
     }
-  ]).data;
+  ]);
   const collection = convertGeoArrowGeometry(collectionSource, 'geoarrow.geometrycollection');
 
   expect(getGeoArrowRowBounds(union.getChild('geometry')!, 'geoarrow.geometry')).toEqual([
@@ -167,7 +167,7 @@ test('getGeoArrowRowBounds reads sliced nullable XYZM boxes directly', () => {
       properties: {},
       geometry: {type: 'Point', coordinates: [7, 8, 9, 10]}
     }
-  ]).data;
+  ]);
   const boxes = convertGeoArrowGeometry(source, 'geoarrow.box', {dimension: 'xyzm'});
   const geometry = boxes.getChild('geometry');
   const field = boxes.schema.fields.find(candidate => candidate.name === 'geometry');
@@ -191,7 +191,7 @@ test.each([
       geometry: {type: 'Point', coordinates: [value, value + 1]}
     }))
   );
-  const native = convertGeoArrowGeometry(source.data, 'geoarrow.point', {coordinates});
+  const native = convertGeoArrowGeometry(source, 'geoarrow.point', {coordinates});
   const geometry = native.getChild('geometry')!.slice(1, 3);
   expect(getGeoArrowRowBounds(geometry, 'geoarrow.point')).toEqual([
     [2, 3, 2, 3],

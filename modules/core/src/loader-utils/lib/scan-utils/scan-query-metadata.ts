@@ -454,11 +454,7 @@ export type TableQueryPushdownPlan = Readonly<{
   /** Exact output schema, including aliases, CAST types, and nullability. */
   schema: Schema;
   /** Executes on demand with equivalent order, error semantics, and cancellation. */
-  read: (
-    options?: ScanQueryMetadataOptions
-  ) => AsyncIterable<
-    import('apache-arrow').RecordBatch | import('@loaders.gl/core/schema').ArrowTableBatch
-  >;
+  read: (options?: ScanQueryMetadataOptions) => AsyncIterable<import('apache-arrow').RecordBatch>;
 }>;
 
 /** Preferred name for source discovery metadata. */

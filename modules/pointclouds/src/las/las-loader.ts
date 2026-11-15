@@ -4,9 +4,12 @@
 
 import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, RecordBatch} from 'apache-arrow';
-import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {
+  convertMeshToArrowTable,
+  convertTableToMesh,
+  isNativeArrowTable,
+  makeArrowMetadataBatch
+} from '@loaders.gl/core/schema-utils';
 import {
   formatLASMeshColors,
   getLASShape,
@@ -14,8 +17,8 @@ import {
   type LASLoaderOptions
 } from './las-loader-shared';
 import {
-  serializeArrowWorkerTable,
-  deserializeArrowWorkerTable
+  serializeNativeArrowWorkerResult,
+  deserializeNativeArrowWorkerResult
 } from '@loaders.gl/core/arrow-worker-transport';
 import type {LASMesh} from './lib/las-types';
 import {
@@ -39,12 +42,12 @@ type LASWorkerOptions = LASLoaderOptions & {
 /** Parser-bearing TypeScript-only LAS loader implementation. */
 export const LASColumnLoader = {
   ...LAS_LOADER_METADATA,
-  dataType: null as unknown as LASMesh | MeshArrowTable,
-  batchType: null as unknown as LASMesh | MeshArrowTable,
+  dataType: null as unknown as LASMesh | LASArrowTable,
+  batchType: null as unknown as LASMesh | LASArrowTable,
   worker: true,
   workerInBatches: true,
-  serializeWorkerResult: serializeArrowWorkerTable,
-  serializeWorkerBatch: serializeArrowWorkerTable,
+  serializeWorkerResult: serializeLASWorkerTable,
+  serializeWorkerBatch: serializeLASWorkerTable,
   deserializeWorkerResult: deserializeLASWorkerTable,
   deserializeWorkerBatch: deserializeLASWorkerTable,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
@@ -55,8 +58,8 @@ export const LASColumnLoader = {
     yield* convertLASMeshBatches(parseLASInBatches(arrayBufferIterator, options), options);
   }
 } as const satisfies LoaderWithParser<
-  LASMesh | MeshArrowTable,
-  LASMesh | MeshArrowTable,
+  LASMesh | LASArrowTable,
+  LASMesh | LASArrowTable,
   LASLoaderOptions
 >;
 
@@ -68,16 +71,13 @@ function parseLASTable(arrayBuffer: ArrayBuffer, options?: LASLoaderOptions): LA
     : parseLAS(arrayBuffer, options);
 }
 
-function convertLASMesh(
-  table: LASArrowTable,
-  options?: LASLoaderOptions
-): LASMesh | MeshArrowTable {
+function convertLASMesh(table: LASArrowTable, options?: LASLoaderOptions): LASMesh | LASArrowTable {
   const formattedTable =
     options?.las?.colorFormat === undefined || options.las.colorFormat === 'uint8norm'
       ? table
       : {
-          ...convertMeshToArrowTableWrapper(
-            formatLASMeshColors(convertTableToMesh(table) as LASMesh, options.las.colorFormat)
+          data: convertMeshToArrowTable(
+            formatLASMeshColors(convertTableToMesh(table.data) as LASMesh, options.las.colorFormat)
           ),
           loader: table.loader,
           loaderData: table.loaderData,
@@ -87,7 +87,7 @@ function convertLASMesh(
     return formattedTable;
   }
   return {
-    ...(convertTableToMesh(formattedTable) as LASMesh),
+    ...(convertTableToMesh(formattedTable.data) as LASMesh),
     loader: formattedTable.loader,
     loaderData: formattedTable.loaderData,
     progress: formattedTable.progress
@@ -97,7 +97,7 @@ function convertLASMesh(
 async function* convertLASMeshBatches(
   tableBatches: AsyncIterable<LASArrowTable>,
   options?: LASLoaderOptions
-): AsyncIterable<LASMesh | MeshArrowTable> {
+): AsyncIterable<LASMesh | LASArrowTable> {
   for await (const table of paceBatchIterator(tableBatches, {
     batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
     getRowCount: batch => batch.data.numRows,
@@ -107,17 +107,43 @@ async function* convertLASMeshBatches(
   }
 }
 
+/** Transfers native columns and clones the typed header needed for legacy mesh output. */
+function serializeLASWorkerTable(result: LASMesh | LASArrowTable): unknown {
+  if ('attributes' in result) throw new Error('LAS workers require Arrow columns');
+  return {
+    columns: serializeNativeArrowWorkerResult(result.data),
+    loaderData: structuredClone(result.loaderData),
+    progress: result.progress
+  };
+}
+
 /** Hydrates transferred columns and applies the requested mesh and color representation on the caller. */
 function deserializeLASWorkerTable(
   result: unknown,
   options?: LASLoaderOptions
-): LASMesh | MeshArrowTable {
-  return convertLASMesh(deserializeArrowWorkerTable(result), options);
+): LASMesh | LASArrowTable {
+  const payload = result as {
+    columns: unknown;
+    loaderData: LASArrowTable['loaderData'];
+    progress?: number;
+  };
+  const table = deserializeNativeArrowWorkerResult(payload.columns);
+  if (!isNativeArrowTable(table)) throw new Error('LAS workers require an Arrow table');
+  return convertLASMesh(
+    {data: table, loader: 'las', loaderData: payload.loaderData, progress: payload.progress},
+    options
+  );
 }
+
+const {
+  serializeWorkerResult: _serializeLASWorkerResult,
+  serializeWorkerBatch: _serializeLASWorkerBatch,
+  ...LASColumnLoaderForCaller
+} = LASColumnLoader;
 
 /** Exposes native Arrow while retaining the column worker and mesh compatibility paths. */
 export const LASLoaderWithParser = {
-  ...LASColumnLoader,
+  ...LASColumnLoaderForCaller,
   dataType: LAS_LOADER_METADATA.dataType,
   batchType: LAS_LOADER_METADATA.batchType,
   parse: async (input: ArrayBuffer, options?: LASLoaderOptions) =>
@@ -126,7 +152,7 @@ export const LASLoaderWithParser = {
     toPublicLASResult(LASColumnLoader.parseSync(input, options)),
   async *parseInBatches(input, options) {
     for await (const result of LASColumnLoader.parseInBatches(input, options)) {
-      if ('shape' in result) yield* getLASRecordBatches(result);
+      if (!('attributes' in result)) yield* getLASRecordBatches(toPublicLASResult(result));
       else yield result;
     }
   },
@@ -134,14 +160,16 @@ export const LASLoaderWithParser = {
     toPublicLASResult(deserializeLASWorkerTable(result, options)),
   deserializeWorkerBatch(result: unknown, options?: LASLoaderOptions) {
     const decoded = deserializeLASWorkerTable(result, options);
-    return 'shape' in decoded ? getLASRecordBatches(decoded)[0] : decoded;
+    return 'attributes' in decoded ? decoded : getLASRecordBatches(toPublicLASResult(decoded))[0];
   }
 } as const satisfies LoaderWithParser<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;
 
 /** Unwraps the Arrow table with its complete file header. */
-export function toPublicLASResult(result: LASMesh | MeshArrowTable): LASMesh | Table {
-  if (!('shape' in result)) return result;
-  const header = JSON.stringify((result as LASArrowTable).loaderData, (_key, value) =>
+export function toPublicLASResult(result: LASArrowTable): Table;
+export function toPublicLASResult(result: LASMesh | LASArrowTable): LASMesh | Table;
+export function toPublicLASResult(result: LASMesh | LASArrowTable): LASMesh | Table {
+  if ('attributes' in result) return result;
+  const header = JSON.stringify(result.loaderData, (_key, value) =>
     typeof value === 'bigint'
       ? value.toString()
       : ArrayBuffer.isView(value)
@@ -157,7 +185,6 @@ export function toPublicLASResult(result: LASMesh | MeshArrowTable): LASMesh | T
 }
 
 /** Unwraps the record batches, retaining schema on empty LAS results. */
-export function getLASRecordBatches(result: MeshArrowTable): RecordBatch[] {
-  const table = toPublicLASResult(result) as Table;
+export function getLASRecordBatches(table: Table): RecordBatch[] {
   return table.batches.length ? table.batches : [makeArrowMetadataBatch(table.schema)];
 }

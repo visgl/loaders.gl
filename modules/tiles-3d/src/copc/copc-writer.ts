@@ -11,7 +11,8 @@ import {
   type WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
 import {LASWriter, type LASExtraBytesWriter} from '@loaders.gl/pointclouds/las';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
 import {COPCFormat} from './copc-format';
 
@@ -57,7 +58,7 @@ export type COPCWriterOptions = WriterOptions & {
 /** Writer metadata for COPC point cloud output. */
 export const COPCWriter = {
   ...COPCFormat,
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  dataType: null as unknown as Mesh | Table,
   batchType: null as never,
   version: VERSION,
   extensions: ['copc.laz', 'laz'],
@@ -66,10 +67,10 @@ export const COPCWriter = {
   },
   encode: async (data, options) => encodeCOPCSync(data, options),
   encodeSync: encodeCOPCSync
-} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable, never, COPCWriterOptions>;
+} as const satisfies WriterWithEncoder<Mesh | Table, never, COPCWriterOptions>;
 
 /** Encode a mesh or Arrow table as COPC. */
-function encodeCOPCSync(data: Mesh | MeshArrowTable, options: COPCWriterOptions = {}): ArrayBuffer {
+function encodeCOPCSync(data: Mesh | Table, options: COPCWriterOptions = {}): ArrayBuffer {
   const nodePointLimit = options.copc?.nodePointLimit ?? DEFAULT_NODE_POINT_LIMIT;
   const maximumDepth = options.copc?.maximumDepth ?? DEFAULT_MAXIMUM_DEPTH;
   const hierarchyPageDepth = options.copc?.hierarchyPageDepth ?? DEFAULT_HIERARCHY_PAGE_DEPTH;
@@ -240,7 +241,7 @@ type OctreeContext = {
 };
 
 /** Encode input data once as uncompressed LAS 1.4 point records. */
-function encodeRawLAS(data: Mesh | MeshArrowTable, options: COPCWriterOptions): RawLASData {
+function encodeRawLAS(data: Mesh | Table, options: COPCWriterOptions): RawLASData {
   const arrayBuffer = LASWriter.encodeSync(data, {
     las: {
       version: '1.4',

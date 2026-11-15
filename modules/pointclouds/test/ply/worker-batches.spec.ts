@@ -58,10 +58,10 @@ test.each([
   expect(deserialize).toHaveBeenCalledTimes(2);
   for (const [payload] of deserialize.mock.calls) {
     expect(payload).toMatchObject({
-      transport: 'arrow-column-envelope',
-      data: {transport: 'arrow-js'}
+      transport: 'arrow-record-batch',
+      columns: {data: {transport: 'arrow-js'}}
     });
-    expect((payload as any).data.batches).toBeInstanceOf(Array);
+    expect((payload as any).columns.data.batches).toBeInstanceOf(Array);
   }
 });
 
@@ -75,8 +75,8 @@ test('PLY atomic worker uses column transport before caller-side mesh conversion
   );
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    transport: 'arrow-column-envelope',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
   expect(mesh.loader).toBe('ply');
   expect(mesh.loaderData).toBeTruthy();
@@ -154,7 +154,7 @@ test('PLY column transport hydration defaults to Arrow when caller options are o
   const table = await parser.parse(new TextEncoder().encode(source).buffer, {
     ply: {shape: 'arrow'}
   });
-  const payload = parser.serializeWorkerResult({shape: 'arrow-table', data: table});
+  const payload = parser.serializeWorkerResult(table);
   expect(parser.deserializeWorkerResult(payload)).toBeInstanceOf(Table);
   expect(parser.deserializeWorkerResult(payload, {})).toBeInstanceOf(Table);
   expect(parser.deserializeWorkerBatch(payload)).toBeInstanceOf(RecordBatch);
@@ -188,4 +188,48 @@ test.each([
     count++;
   }
   expect(count).toBe(2);
+});
+
+test.each([
+  ['ascii', false],
+  ['ascii', true],
+  ['binary_little_endian', false],
+  ['binary_little_endian', true]
+] as const)('empty %s PLY retains typed attributes with worker=%s', async (format, worker) => {
+  const text = [
+    'ply',
+    `format ${format} 1.0`,
+    'element vertex 0',
+    'property float x',
+    'property float y',
+    'property float z',
+    'property uchar red',
+    'property uchar green',
+    'property uchar blue',
+    'end_header',
+    ''
+  ].join('\n');
+  const input = new TextEncoder().encode(text);
+  const core = {worker, _workerType: 'test'} as const;
+  const mesh = await parse(input.slice(), PLYLoader, {core, ply: {shape: 'mesh'}});
+  expect(mesh.header.vertexCount).toBe(0);
+  expect(mesh.attributes.POSITION).toMatchObject({size: 3, value: new Float32Array()});
+  expect(mesh.attributes.COLOR_0).toMatchObject({size: 3, value: new Uint8Array()});
+
+  const table = await parse(input.slice(), PLYLoader, {
+    core,
+    ply: {shape: 'arrow', colorFormat: 'float32'}
+  });
+  expect(table.numRows).toBe(0);
+  expect(table.getChild('COLOR_0')?.type.toString()).toContain('Float32');
+
+  const batches = await parseInBatches([input], PLYLoader, {
+    core,
+    ply: {shape: 'arrow', pointCloud: true, colorFormat: 'float32'}
+  });
+  const result = [];
+  for await (const batch of batches) result.push(batch);
+  expect(result).toHaveLength(1);
+  expect(result[0].numRows).toBe(0);
+  expect(result[0].schema.fields.map(field => field.name)).toEqual(['POSITION', 'COLOR_0']);
 });

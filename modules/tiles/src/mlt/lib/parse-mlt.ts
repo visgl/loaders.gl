@@ -4,7 +4,6 @@
 
 import * as arrow from 'apache-arrow';
 import type {
-  ArrowTable,
   Feature,
   GeoJSONTable,
   BinaryFeatureCollection,
@@ -26,7 +25,6 @@ import {
 } from '@loaders.gl/core/arrow-geometry';
 import {
   ArrowTableBuilder,
-  convertArrowToSchema,
   convertSchemaToArrow,
   getDataTypeFromArray
 } from '@loaders.gl/core/schema-utils';
@@ -136,7 +134,7 @@ export function parseMLT(
       return binaryData;
     }
     case 'arrow':
-      return parseToArrowTable(arrayBuffer, mltOptions).data;
+      return parseToArrowTable(arrayBuffer, mltOptions);
     default:
       throw new Error(shape || 'undefined shape');
   }
@@ -148,7 +146,7 @@ export function parseMLT(
  * MLT's decoder already exposes column vectors and a geometry vector. Building Arrow from those
  * vectors avoids materializing GeoJSON features and then decoding the same geometry a second time.
  */
-function parseToArrowTable(arrayBuffer: ArrayBuffer, options: MLTOptions): ArrowTable {
+function parseToArrowTable(arrayBuffer: ArrayBuffer, options: MLTOptions): arrow.Table {
   if (arrayBuffer.byteLength <= 0) {
     return makeWKBArrowTable([], [], []);
   }
@@ -215,7 +213,7 @@ function makeWKBArrowTable(
   propertyRows: Record<string, unknown>[],
   geometryWriters: (WKBGeometryWriter | null)[],
   geometries: MLTGeometry[]
-): ArrowTable {
+): arrow.Table {
   const propertySchema = getPropertySchema(propertyRows);
   const schema: Schema = {
     fields: [...propertySchema.fields, makeWKBGeometryField('geometry')],
@@ -246,11 +244,7 @@ function makeWKBArrowTable(
     children
   } as any);
 
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(new arrow.RecordBatch(arrowSchema, structData as any))
-  };
+  return new arrow.Table(arrowSchema, [new arrow.RecordBatch(arrowSchema, structData as any)]);
 }
 
 /**
@@ -264,7 +258,7 @@ function makeNativeArrowTable(
     NonNullable<MLTOptions['geoarrow']>['encodingPreference'],
     'geoarrow.wkb'
   >
-): ArrowTable {
+): arrow.Table {
   const dimension: GeoArrowBuilderDimension = 'xy';
   const encoding = selectGeoArrowEncoding(geometries, encodingPreference);
   const geometryVector =
@@ -310,11 +304,7 @@ function makeNativeArrowTable(
     nullCount: 0,
     children
   } as any);
-  return {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(arrowSchema),
-    data: new arrow.Table(new arrow.RecordBatch(arrowSchema, structData as any))
-  };
+  return new arrow.Table(arrowSchema, [new arrow.RecordBatch(arrowSchema, structData as any)]);
 }
 
 /** Selects a concrete GeoArrow encoding or the mixed-geometry union encoding. */

@@ -6,8 +6,7 @@
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, RecordBatch} from 'apache-arrow';
 import {getLASRecordBatches, toPublicLASResult} from './las-loader';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
   formatLASMeshColors,
   getLASShape,
@@ -26,23 +25,23 @@ export const LAZRsLoaderWithParser = {
   name: 'LAS (laz-rs)',
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
     await initLazRsWasm();
-    return toPublicLASResult(convertLASMesh(parseLAS(arrayBuffer, {...options}), options));
+    return convertLASMesh(parseLAS(arrayBuffer, {...options}), options);
   },
   parseInBatches: async function* (arrayBufferIterator, options?: LASLoaderOptions) {
     await initLazRsWasm();
     for await (const mesh of parseLASInBatches(arrayBufferIterator, options)) {
       const result = convertLASMesh(mesh, options);
-      if ('shape' in result) yield* getLASRecordBatches(result);
+      if (!('attributes' in result)) yield* getLASRecordBatches(result);
       else yield result;
     }
   }
 } as const satisfies LoaderWithParser<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;
 
-function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
+function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | Table {
   const formattedMesh = formatLASMeshColors(mesh, options?.las?.colorFormat || 'uint8norm');
-  const table = convertMeshToArrowTableWrapper(formattedMesh) as MeshArrowTable;
+  const table = convertMeshToArrowTable(formattedMesh);
   if (getLASShape(options) === 'arrow') {
-    return {...table, loaderData: mesh.loaderData};
+    return toPublicLASResult({data: table, loader: 'las', loaderData: mesh.loaderData});
   }
   return {
     ...(convertTableToMesh(table) as LASMesh),

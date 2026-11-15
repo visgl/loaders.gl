@@ -66,7 +66,7 @@ test('DataSource merges namespace defaults and refreshes parser and fetch option
       core: {fetch: originalFetch, worker: false},
       mvt: {shape: 'binary-geometry'}
     },
-    {mvt: {shape: 'arrow-table', layers: ['roads']}}
+    {mvt: {shape: 'arrow', layers: ['roads']}}
   );
   expect(source.options.core.type).toBe('auto');
   expect(source.loadOptions.mvt).toEqual({shape: 'binary-geometry', layers: ['roads']});

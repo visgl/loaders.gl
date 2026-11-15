@@ -35,12 +35,8 @@ test('ArrowTableSource applies residual predicates and stops after a batch limit
 test('ArrowTableSource handles a limit reached between physical batches', async () => {
   const firstTable = arrow.tableFromArrays({id: [1]});
   const secondTable = arrow.tableFromArrays({id: [2]});
-  const source = new ArrowTableSource(new Blob());
-  (source as unknown as {parseBatches: () => AsyncIterable<unknown>}).parseBatches =
-    async function* () {
-      yield {batchType: 'data', shape: 'arrow-table', data: firstTable, length: 1};
-      yield {batchType: 'data', shape: 'arrow-table', data: secondTable, length: 1};
-    };
+  const bytes = arrow.tableToIPC(firstTable.concat(secondTable));
+  const source = new ArrowTableSource(new Blob([bytes]));
   const batches = [];
   for await (const batch of source.read({limit: 1})) batches.push(batch);
   expect(batches).toHaveLength(1);

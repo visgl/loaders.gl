@@ -67,7 +67,7 @@ async function parseGeoParquetTable(
   options: GeoParquetLoaderOptions
 ): Promise<GeoJSONTable | Table> {
   if (options.parquet?.shape === 'arrow') {
-    return (await parseParquetArrowTable(file, options)).data;
+    return parseParquetArrowTable(file, options);
   }
 
   return await parseGeoParquetFile(file, options);

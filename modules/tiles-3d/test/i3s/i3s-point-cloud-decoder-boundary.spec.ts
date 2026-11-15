@@ -107,17 +107,17 @@ describe('I3SPointCloudSource injected decoder boundaries', () => {
     expect(content?.pointCount).toBe(1);
     expect(content?.coordinateSystem).toBe('lnglat-offsets');
     expect(content?.cartographicOrigin).toEqual([10, 20, 30]);
-    expect(content?.data.data.getChild('intensity')?.get(0)).toBe(1200);
-    expect(content?.data.data.getChild('flags')?.get(0)).toBe(7);
-    expect(content?.data.data.getChild('optional')).toBeNull();
-    const colors = Array.from(content!.data.data.getChild('COLOR_0')!.get(0));
+    expect(content?.data.getChild('intensity')?.get(0)).toBe(1200);
+    expect(content?.data.getChild('flags')?.get(0)).toBe(7);
+    expect(content?.data.getChild('optional')).toBeNull();
+    const colors = Array.from(content!.data.getChild('COLOR_0')!.get(0));
     expect(colors[0]).toBe(colorFormat === 'uint8norm' ? 255 : 1);
     expect(colors[1]).toBe(0);
     expect(colors[2]).toBeCloseTo(
       colorFormat === 'uint8norm' ? 128 : 128 / 255,
       colorFormat === 'float16' ? 3 : 6
     );
-    const colorField = content!.data.data.schema.fields.find(field => field.name === 'COLOR_0')!;
+    const colorField = content!.data.schema.fields.find(field => field.name === 'COLOR_0')!;
     if (colorFormat === 'float16') expect(colorField.metadata.get('componentType')).toBe('float16');
     expect(parse).toHaveBeenCalledTimes(4);
     expect(requestedPaths).toContain('/point-layer/nodes/7/geometries/3');
@@ -145,9 +145,9 @@ describe('I3SPointCloudSource injected decoder boundaries', () => {
       }
     );
     const content = await source.loadTileContent(await source.getRootTile());
-    expect(Array.from(content!.data.data.getChild('COLOR_0')!.get(0))).toEqual([1, 2, 3]);
-    expect(content!.data.data.getChild('intensity')!.get(0)).toBe(42);
-    expect(content!.data.data.getChild('flags')!.get(0)).toBe(6);
+    expect(Array.from(content!.data.getChild('COLOR_0')!.get(0))).toEqual([1, 2, 3]);
+    expect(content!.data.getChild('intensity')!.get(0)).toBe(42);
+    expect(content!.data.getChild('flags')!.get(0)).toBe(6);
     expect(colorDecoder).toHaveBeenCalledOnce();
     expect(intensityDecoder).toHaveBeenCalledOnce();
     expect(flagDecoder).toHaveBeenCalledOnce();

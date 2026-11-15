@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {Table as ArrowTable} from 'apache-arrow';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {TableScanSource} from '../scan-utils/scan-query-metadata';
 
 /** Source exposing named tables. Returned handles remain owned by the source or caller. */

@@ -4,8 +4,8 @@
 
 import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
-import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
+import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {PLYFormat} from './ply-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -23,7 +23,7 @@ export type PLYWriterOptions = WriterOptions & {
  */
 export const PLYWriter = {
   ...PLYFormat,
-  dataType: null as unknown as Mesh | MeshArrowTable | Table,
+  dataType: null as unknown as Mesh | Table,
   batchType: null as never,
   version: VERSION,
   options: {
@@ -33,19 +33,16 @@ export const PLYWriter = {
   encode: async (data, options) => encodePLYSync(data, options),
   encodeSync: encodePLYSync,
   encodeTextSync: encodePLY
-} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable | Table, never, PLYWriterOptions>;
+} as const satisfies WriterWithEncoder<Mesh | Table, never, PLYWriterOptions>;
 
 /** Encode mesh category data as PLY bytes. */
-function encodePLYSync(
-  data: Mesh | MeshArrowTable | Table,
-  options?: PLYWriterOptions
-): ArrayBuffer {
+function encodePLYSync(data: Mesh | Table, options?: PLYWriterOptions): ArrayBuffer {
   const text = encodePLY(data, options);
   return new TextEncoder().encode(text).buffer;
 }
 
 /** Encode mesh category data as ASCII PLY text. */
-function encodePLY(data: Mesh | MeshArrowTable | Table, options?: PLYWriterOptions): string {
+function encodePLY(data: Mesh | Table, options?: PLYWriterOptions): string {
   const mesh = convertTableToMesh(normalizeMeshArrowTable(data));
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
   const normalAttribute = mesh.attributes.NORMAL;
@@ -112,12 +109,12 @@ function encodePLY(data: Mesh | MeshArrowTable | Table, options?: PLYWriterOptio
   return `${header.concat(rows).join('\n')}\n`;
 }
 
-/** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
-function normalizeMeshArrowTable(data: Mesh | MeshArrowTable | Table): MeshArrowTable | Table {
+/** Return mesh data as a native Arrow table, converting plain Mesh data first. */
+function normalizeMeshArrowTable(data: Mesh | Table): Table {
   if (!('attributes' in data)) {
     return data;
   }
-  return convertMeshToArrowTableWrapper(data as Mesh);
+  return convertMeshToArrowTable(data as Mesh);
 }
 
 /** Return a required mesh attribute or throw a format-specific error. */

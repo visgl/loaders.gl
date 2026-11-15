@@ -35,13 +35,13 @@ export const ParquetJSLoaderWithParser = {
     const parquetOptions = getParquetOptions(options);
     const file = new ArrayBufferFile(arrayBuffer);
     return parquetOptions.parquet?.shape === 'arrow'
-      ? parseParquetFileToArrowWithJs(file, parquetOptions).then(table => table.data)
+      ? parseParquetFileToArrowWithJs(file, parquetOptions)
       : parseParquetFile(file, parquetOptions);
   },
   parseFile(file: ReadableFile, options?: ParquetLoaderOptions) {
     const parquetOptions = getParquetOptions(options);
     return parquetOptions.parquet?.shape === 'arrow'
-      ? parseParquetFileToArrowWithJs(file, parquetOptions).then(table => table.data)
+      ? parseParquetFileToArrowWithJs(file, parquetOptions)
       : parseParquetFile(file, parquetOptions);
   },
   parseFileInBatches(file: ReadableFile, options?: ParquetLoaderOptions) {

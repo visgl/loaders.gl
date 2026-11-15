@@ -16,15 +16,12 @@ import {
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 
-import {
-  convertArrowTable,
-  convertArrowTableBatch,
-  makeArrowMetadataBatch
-} from '@loaders.gl/core/schema-utils';
+import {convertArrowToTable, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   parseParquetFileToArrowWithJs,
   parseParquetFileToArrowInBatchesWithJs
 } from './lib/parsers/parse-parquet-to-arrow-js';
+import {convertParquetTableToRows} from './lib/parsers/parse-parquet-tables';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {
   convertParquetBatchToRows,
@@ -63,7 +60,7 @@ export const ParquetLoaderWithParser = {
         if ('shape' in table) {
           throw new Error('Parquet object-row conversion requires Arrow table output');
         }
-        return convertArrowTable({shape: 'arrow-table', data: table}, 'object-row-table');
+        return convertArrowToTable(table, 'object-row-table');
       }
     };
   },
@@ -133,11 +130,11 @@ async function parseParquetTable(
   });
 
   if (parquetOptions.parquet?.shape === 'arrow') {
-    return (await parseParquetFileToArrowWithJs(file, parquetOptions)).data;
+    return parseParquetFileToArrowWithJs(file, parquetOptions);
   }
 
   const arrowTable = await parseParquetFileToArrowWithJs(file, parquetOptions);
-  return convertArrowTable(arrowTable, 'object-row-table');
+  return convertArrowToTable(arrowTable, 'object-row-table');
 }
 
 /**
@@ -162,13 +159,13 @@ async function* parseParquetTableInBatches(
   reportProgress?.({phase: 'decode', completed, unit: 'rows'});
   for await (const batch of parseParquetFileToArrowInBatchesWithJs(file, parquetOptions)) {
     (options?.signal || context?.signal || options?.parquet?.signal)?.throwIfAborted();
-    completed += batch.data.numRows;
+    completed += batch.numRows;
     reportProgress?.({phase: 'decode', completed, unit: 'rows'});
     if (parquetOptions.parquet?.shape === 'arrow') {
-      if (batch.data.batches.length) yield* batch.data.batches;
-      else yield makeArrowMetadataBatch(batch.data.schema);
+      if (batch.batches.length) yield* batch.batches;
+      else yield makeArrowMetadataBatch(batch.schema);
     } else {
-      yield convertArrowTableBatch(batch, 'object-row-table');
+      yield convertParquetTableToRows(batch);
     }
   }
 }

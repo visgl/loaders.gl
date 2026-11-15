@@ -1,9 +1,9 @@
+import {tableFromArrays} from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
-import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
+import type {TableBatch} from '@loaders.gl/core/schema';
 import {
   executeTableScanBatches,
   filterTableBatch,
-  makeTableScanBatch,
   projectTableBatch,
   truncateTableBatch
 } from '../../../../src/loader-utils/lib/scan-utils/table-scan-batch';
@@ -48,18 +48,7 @@ test('shared table executor filters, projects, limits, and reports bytes', async
   expect(telemetry[0]).toMatchObject({status: 'early-terminated', rowsRead: 3, rowsReturned: 1});
 });
 
-test('shared batch helpers preserve columnar, array, geojson, and arrow shapes', () => {
-  const arrowTable = {
-    shape: 'arrow-table',
-    schema,
-    data: {numRows: 2}
-  } as unknown as ArrowTable;
-  expect(makeTableScanBatch(arrowTable)).toMatchObject({
-    shape: 'arrow-table',
-    batchType: 'data',
-    length: 2
-  });
-
+test('shared batch helpers preserve columnar, array-row, and GeoJSON shapes', () => {
   const columnar: TableBatch = {
     shape: 'columnar-table',
     schema,
@@ -86,18 +75,6 @@ test('shared batch helpers preserve columnar, array, geojson, and arrow shapes',
       data: []
     }
   );
-
-  const arrowData = {
-    slice: (_start: number, length: number) => ({length}),
-    select: (columns: string[]) => ({columns})
-  };
-  const arrow = {
-    shape: 'arrow-table',
-    data: arrowData,
-    length: 2
-  } as unknown as TableBatch;
-  expect(truncateTableBatch(arrow, 1)).toMatchObject({length: 1, data: {length: 1}});
-  expect(projectTableBatch(arrow, ['id'])).toMatchObject({data: {columns: ['id']}});
 });
 
 test('shared table executor reports cancellation and consumer return', async () => {
@@ -283,4 +260,31 @@ test.each([
   expect(summaries).toEqual([
     expect.objectContaining({status: 'early-terminated', earlyTerminationReason: 'limit'})
   ]);
+});
+
+test.each([
+  'table',
+  'record batch'
+] as const)('shared scan executor windows and projects a native Arrow %s', async layout => {
+  const table = tableFromArrays({id: new Int32Array([1, 2, 3]), value: ['a', 'b', 'c']});
+  const batch = layout === 'table' ? table : table.batches[0];
+  async function* readBatches() {
+    yield batch;
+  }
+
+  const result = await Array.fromAsync(
+    executeTableScanBatches(readBatches, {offset: 1, limit: 1, columns: ['value', 'id']})
+  );
+  expect(result).toHaveLength(1);
+  expect(result[0].schema.names).toEqual(['value', 'id']);
+  expect(truncateTableBatch(batch, 1).numRows).toBe(1);
+  expect(projectTableBatch(batch, ['value']).schema.names).toEqual(['value']);
+  expect(result[0].getChild('id')?.toArray()).toEqual(new Int32Array([2]));
+  await expect(
+    Array.fromAsync(
+      executeTableScanBatches(readBatches, {
+        predicate: {op: '=', args: [{property: 'id'}, 2]}
+      })
+    )
+  ).rejects.toThrow('require a filter kernel');
 });

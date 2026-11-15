@@ -110,9 +110,7 @@ function createFeatures() {
   builder.addObjectRow({feature_id: 7n});
   const data = builder.finishTable();
   return {
-    batches: [
-      {shape: 'arrow-table' as const, batchType: 'data' as const, length: data.numRows, data}
-    ],
+    batches: data.batches,
     triangleFeatureIndices: new Uint32Array([0]),
     featureIdField: 'feature_id'
   };
@@ -175,7 +173,7 @@ test('feature data needs a complete explicit mapper and unsafe numeric identifie
   const iterator = source.read(await source.inspect())[Symbol.asyncIterator]();
   const resource = (await iterator.next()).value!;
   await iterator.return?.();
-  expect(resource.features!.batches[0].data.getChild('feature_id')!.get(0)).toBe(7n);
+  expect(resource.features!.batches[0].getChild('feature_id')!.get(0)).toBe(7n);
   expect(mapper).toHaveBeenCalledOnce();
   content.featureIds = [9007199254740992];
   await expect(
@@ -697,14 +695,15 @@ test('I3S attribute resources map exact bigint stable IDs, Unicode/nulls and reo
     })
   );
   expect(resource.features!.triangleFeatureIndices).toEqual(new Uint32Array([1, 0]));
-  expect(
-    resource.features!.batches.map(batch => batch.data.getChild('feature_id')!.get(0))
-  ).toEqual([9007199254740993n, 18446744073709551615n]);
-  expect(resource.features!.batches.map(batch => batch.data.getChild('label')!.get(0))).toEqual([
+  expect(resource.features!.batches.map(batch => batch.getChild('feature_id')!.get(0))).toEqual([
+    9007199254740993n,
+    18446744073709551615n
+  ]);
+  expect(resource.features!.batches.map(batch => batch.getChild('label')!.get(0))).toEqual([
     '東京',
     null
   ]);
-  expect(resource.features!.batches.map(batch => batch.data.getChild('value')!.get(0))).toEqual([
+  expect(resource.features!.batches.map(batch => batch.getChild('value')!.get(0))).toEqual([
     -1, 42
   ]);
   expect(reader).toHaveBeenCalledTimes(4);
@@ -873,8 +872,8 @@ test('I3S resource mapping defaults stable IDs to geometry OIDs without discardi
     })
   );
   const batch = resource.features!.batches[0];
-  expect(Array.from(batch.data.getChild('feature_id')!)).toEqual([7, 12]);
-  expect(Array.from(batch.data.getChild('stable_id')!)).toEqual([
+  expect(Array.from(batch.getChild('feature_id')!)).toEqual([7, 12]);
+  expect(Array.from(batch.getChild('stable_id')!)).toEqual([
     9007199254740993n,
     18446744073709551615n
   ]);
@@ -1095,7 +1094,7 @@ test('attribute resources isolate pooled views even when slice does not copy', a
     })
   );
   expect(resource.features!.triangleFeatureIndices).toEqual(new Uint32Array([1, 0]));
-  expect(resource.features!.batches[0].data.getChild('feature_id')!.get(0)).toBe(9007199254740993n);
+  expect(resource.features!.batches[0].getChild('feature_id')!.get(0)).toBe(9007199254740993n);
 });
 
 test('IntegratedMesh provenance requires an explicit I3S layer-type policy and reports the change', async () => {

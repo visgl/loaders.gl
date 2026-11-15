@@ -73,12 +73,12 @@ describe('PLY parser edge cases', () => {
       bytes.set(new Uint8Array(record), headerBytes.length);
       const table = parsePLYToArrowTable(bytes.buffer);
 
-      expect(table?.data.numRows).toBe(1);
-      expect(Array.from(table!.data.getChild('POSITION')!.get(0) as number[])).toEqual([
+      expect(table?.numRows).toBe(1);
+      expect(Array.from(table!.getChild('POSITION')!.get(0) as number[])).toEqual([
         1.25, -2.5, 3.75
       ]);
       for (const [, name, value] of properties.slice(0, 6)) {
-        expect(table!.data.getChild(name)!.get(0)).toBe(value);
+        expect(table!.getChild(name)!.get(0)).toBe(value);
       }
     }
   });
@@ -240,9 +240,9 @@ describe('PLY parser edge cases', () => {
       {},
       plan
     );
-    expect(table?.data.numRows).toBe(2);
-    expect(Array.from(table!.data.getChild('POSITION')!.toArray()[1] as any)).toEqual([4, 5, 6]);
-    expect(table!.data.getChild('intensity')!.get(0)).toBe(7);
+    expect(table?.numRows).toBe(2);
+    expect(Array.from(table!.getChild('POSITION')!.toArray()[1] as any)).toEqual([4, 5, 6]);
+    expect(table!.getChild('intensity')!.get(0)).toBe(7);
     expect(parsePLYToArrowTable(headerText)).toBeNull();
   });
 
@@ -288,13 +288,11 @@ describe('PLY parser edge cases', () => {
     }
 
     const table = parsePLYBinaryPointCloudRecordsToArrowTable(records, header, {}, plan)!;
-    expect(Array.from(table.data.getChild('POSITION')!.get(0) as number[])).toEqual([
-      0.5, 1.5, 2.5
-    ]);
-    expect(Array.from(table.data.getChild('NORMAL')!.get(0) as number[])).toEqual([3.5, 4.5, 5.5]);
-    expect(Array.from(table.data.getChild('TEXCOORD_0')!.get(0) as number[])).toEqual([6.5, 7.5]);
-    expect(Array.from(table.data.getChild('COLOR_0')!.get(0) as number[])).toEqual([108, 109, 110]);
-    expect(table.data.getChild('confidence')!.get(0)).toBe(11.5);
+    expect(Array.from(table.getChild('POSITION')!.get(0) as number[])).toEqual([0.5, 1.5, 2.5]);
+    expect(Array.from(table.getChild('NORMAL')!.get(0) as number[])).toEqual([3.5, 4.5, 5.5]);
+    expect(Array.from(table.getChild('TEXCOORD_0')!.get(0) as number[])).toEqual([6.5, 7.5]);
+    expect(Array.from(table.getChild('COLOR_0')!.get(0) as number[])).toEqual([108, 109, 110]);
+    expect(table.getChild('confidence')!.get(0)).toBe(11.5);
   });
 
   test('rejects unsupported point-cloud layouts and malformed headers', () => {
@@ -343,8 +341,8 @@ describe('PLY parser edge cases', () => {
       pointCloud: true,
       batchSize: 2
     });
-    expect(batches.map((batch: any) => batch.data.numRows)).toEqual([2, 1]);
-    expect((batches[1] as any).data.getChild('intensity').get(0)).toBe(102);
+    expect(batches.map((batch: any) => batch.numRows)).toEqual([2, 1]);
+    expect((batches[1] as any).getChild('intensity').get(0)).toBe(102);
   });
 
   test('streams ASCII Arrow batches and legacy meshes with empty lines', async () => {
@@ -369,7 +367,7 @@ describe('PLY parser edge cases', () => {
       shape: 'arrow',
       batchSize: 2
     });
-    expect(arrowBatches.map((batch: any) => batch.data.numRows)).toEqual([2, 1]);
+    expect(arrowBatches.map((batch: any) => batch.numRows)).toEqual([2, 1]);
 
     const meshBatches = await collectPLYBatches(bytes, options);
     expect(meshBatches).toHaveLength(1);
@@ -407,7 +405,7 @@ describe('PLY parser edge cases', () => {
     bytes.set(headerBytes);
     bytes.set(body, headerBytes.length);
     const batches = await collectPLYBatches(bytes, {shape: 'arrow', batchSize: 1});
-    expect(batches.map((batch: any) => batch.data.numRows)).toEqual([1, 1]);
+    expect(batches.map((batch: any) => batch.numRows)).toEqual([1, 1]);
 
     await expect(
       collectPLYBatches(new TextEncoder().encode('ply\nformat ascii 1.0\n'), {

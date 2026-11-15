@@ -138,7 +138,7 @@ export class ManagedVectorSource implements VectorSource {
       case 'arrow':
         return convertFeaturesToWKBArrowTable(features, {
           encodingPreference: parameters.geoarrow?.encodingPreference
-        }).data;
+        });
       case 'binary':
         return convertGeojsonToBinaryFeatureCollection(features);
       default:

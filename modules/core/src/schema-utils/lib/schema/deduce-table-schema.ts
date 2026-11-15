@@ -4,6 +4,8 @@
 
 // Type deduction
 import type {Schema, Field, ArrayType, Table} from '@loaders.gl/core/schema';
+import type {Table as ArrowTable} from 'apache-arrow';
+import {convertArrowToSchema} from './convert-arrow-schema';
 import {getDataTypeFromArray, getDataTypeFromValue} from './data-type';
 
 /**
@@ -12,7 +14,8 @@ import {getDataTypeFromArray, getDataTypeFromValue} from './data-type';
  * @param {*} schema
  * @returns
  */
-export function deduceTableSchema(table: Table): Schema {
+export function deduceTableSchema(table: Table | ArrowTable): Schema {
+  if (!('shape' in table)) return convertArrowToSchema(table.schema);
   switch (table.shape) {
     case 'array-row-table':
     case 'object-row-table':
@@ -24,7 +27,6 @@ export function deduceTableSchema(table: Table): Schema {
     case 'columnar-table':
       return deduceSchemaFromColumns(table.data);
 
-    case 'arrow-table':
     default:
       throw new Error('Deduce schema');
   }

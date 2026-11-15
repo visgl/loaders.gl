@@ -17,7 +17,7 @@ test('COPCLoader reads local files through the native range reader', async () =>
 
   expect(rootTile.pointCount).toBeGreaterThan(0);
   expect(content?.pointCount).toBe(rootTile.pointCount);
-  expect(content?.data.data.getChild('POSITION')?.length).toBe(rootTile.pointCount);
+  expect(content?.data.getChild('POSITION')?.length).toBe(rootTile.pointCount);
 });
 
 test('COPCLoader closes its local file handle exactly once', async () => {

@@ -215,7 +215,7 @@ export class TableVectorTileSource
           encodingPreference:
             (this.options as TableTileLoaderOptions).geoarrow?.encodingPreference ||
             this.tableOptions.geoarrow?.encodingPreference
-        }).data
+        })
       : table;
   }
 

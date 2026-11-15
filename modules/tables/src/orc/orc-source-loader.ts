@@ -87,7 +87,7 @@ export class ORCSource extends DataSource<string | Blob, ORCSourceOptions> {
         : file.footer.types[0]?.fieldNames || [],
       options
     );
-    const {data: table} = parseORCToArrow(arrayBuffer);
+    const table = parseORCToArrow(arrayBuffer);
     const availableColumns = table.schema.fields.map(field => field.name);
     validateTableQueryOptions(availableColumns, options);
     return queryArrowTable(table, options, (predicate, columns, rowCount) =>

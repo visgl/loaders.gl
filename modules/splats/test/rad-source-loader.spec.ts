@@ -9,7 +9,7 @@ import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compresso
 import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
 import {RADLoader, resolveRADChunkUrl} from '@loaders.gl/splats';
 import type {RADSource} from '@loaders.gl/splats';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {
   parseRADChunkHeader,
   parseRADChunkToGaussianSplats,
@@ -39,7 +39,7 @@ test('RADLoader reads inline RAD chunk metadata from a Blob', async () => {
   const metadata = await source.getMetadata();
   const chunk = await source.getChunk(0);
   const chunkMetadata = await source.getChunkMetadata(0);
-  const chunkTables: MeshArrowTable[] = [];
+  const chunkTables: Table[] = [];
   for await (const table of source.getChunkTables({maxChunks: 1})) {
     chunkTables.push(table);
   }
@@ -49,7 +49,10 @@ test('RADLoader reads inline RAD chunk metadata from a Blob', async () => {
   expect(chunkMetadata.base, 'parses chunk base').toBe(0);
   expect(chunkMetadata.count, 'parses chunk count').toBe(2);
   expect(chunkMetadata.payloadBytes > 0, 'parses chunk payload byte length').toBeTruthy();
-  expect(chunkTables[0].data.numRows, 'iterates decoded chunk tables').toBe(2);
+  expect(chunkTables[0].numRows, 'iterates decoded chunk tables').toBe(2);
+  expect(
+    JSON.parse(chunkTables[0].schema.metadata.get('loaders_gl.gaussian_splats.loader_data')!)
+  ).toMatchObject({format: 'rad', base: 0, count: 2, childCounts: [0, 2], childStarts: [0, 42]});
 });
 test('parseRADChunkToGaussianSplats decodes Spark RADC chunk payloads', () => {
   const splats = parseRADChunkToGaussianSplats(makeRADChunkFixture());
@@ -262,7 +265,7 @@ test('RADLoader bounds concurrent pruned chunk table reads', async () => {
       }
     }
   });
-  const chunkTables: MeshArrowTable[] = [];
+  const chunkTables: Table[] = [];
   for await (const table of source.getChunkTables({
     maxChunks: 4,
     maxConcurrentChunkRequests: 2,
@@ -371,7 +374,7 @@ test('RAD uses injected fetchFile when no source fetch override was supplied', a
     }
   } as any);
   await source.initialize();
-  expect((await source.getChunkTable(0)).data.numRows).toBe(2);
+  expect((await source.getChunkTable(0)).numRows).toBe(2);
   expect(requests).toHaveLength(2);
   expect(requests[0].credentials).toBe('same-origin');
 });
@@ -389,7 +392,7 @@ test.each([
     ]),
     {}
   );
-  const tables: MeshArrowTable[] = [];
+  const tables: Table[] = [];
   for await (const table of source.getChunkTables({
     pruneLoadedLoDParents: true,
     maxConcurrentChunkRequests,
@@ -397,10 +400,10 @@ test.each([
   }))
     tables.push(table);
   expect(tables).toHaveLength(1);
-  expect(tables[0].data.numRows).toBe(1);
-  expect(Array.from(tables[0].data.getChild('POSITION')!.get(0).toArray())).toEqual([1, 2, 3]);
-  expect(tables[0].data.getChild('opacity')!.get(0)).toBe(0.25);
-  expect(tables[0].data.getChild('f_rest_0')!.get(0)).toBeCloseTo(0.1);
+  expect(tables[0].numRows).toBe(1);
+  expect(Array.from(tables[0].getChild('POSITION')!.get(0).toArray())).toEqual([1, 2, 3]);
+  expect(tables[0].getChild('opacity')!.get(0)).toBe(0.25);
+  expect(tables[0].getChild('f_rest_0')!.get(0)).toBeCloseTo(0.1);
 });
 
 test('RAD iterator budgets omit reads and retain chunks without a LoD tree', async () => {
@@ -418,10 +421,10 @@ test('RAD iterator budgets omit reads and retain chunks without a LoD tree', asy
       done: true
     });
   }
-  const tables: MeshArrowTable[] = [];
+  const tables: Table[] = [];
   for await (const table of source.getChunkTables({pruneLoadedLoDParents: true, maxSplats: 1}))
     tables.push(table);
-  expect(tables.map(table => table.data.numRows)).toEqual([2]);
+  expect(tables.map(table => table.numRows)).toEqual([2]);
 });
 
 test('RAD sidecar resolution preserves absolute URLs and local path suffixes', () => {

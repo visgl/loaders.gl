@@ -95,14 +95,14 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
   expect((await source.getChildren(root)).map(tile => tile.id)).toEqual(['1']);
   const content = await source.loadTileContent(root);
   expect(content?.pointCount).toBe(106);
-  expect(content?.data.topology).toBe('point-list');
-  expect(content?.data.data.schema.fields.map(field => field.name)).toEqual([
+  expect(content?.data.schema.metadata.get('topology')).toBe('point-list');
+  expect(content?.data.schema.fields.map(field => field.name)).toEqual([
     'POSITION',
     'intensity',
     'classification'
   ]);
   expect(content?.coordinateSystem).toBe('lnglat-offsets');
-  expect(content?.data.data.getChild('classification')?.get(0)).toBe(7);
+  expect(content?.data.getChild('classification')?.get(0)).toBe(7);
 
   const cartesianSource = new I3SPointCloudSource('https://example.com/layer', {
     i3s: {coordinateSystem: 'cartesian'},
@@ -111,7 +111,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
   const cartesianRoot = await cartesianSource.getRootTile();
   (cartesianSource as any).decoder.decodeXyz = () => new Float64Array(106 * 3);
   const cartesianContent = await cartesianSource.loadTileContent(cartesianRoot);
-  const firstPosition = cartesianContent?.data.data.getChild('POSITION')?.get(0) as
+  const firstPosition = cartesianContent?.data.getChild('POSITION')?.get(0) as
     | Iterable<number>
     | undefined;
   expect(cartesianContent?.coordinateSystem).toBe('cartesian');
@@ -128,7 +128,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
   }
   (transformedSource as any).decoder.decodeXyz = () => transformedPositions;
   const transformedContent = await transformedSource.loadTileContent(transformedRoot);
-  const transformedFirstPosition = transformedContent?.data.data.getChild('POSITION')?.get(0) as
+  const transformedFirstPosition = transformedContent?.data.getChild('POSITION')?.get(0) as
     | Iterable<number>
     | undefined;
 
@@ -198,7 +198,7 @@ test('I3SPointCloudSource traverses node pages and decodes content', async () =>
   }
   (placedSource as any).decoder.decodeXyz = () => placedPositions;
   const placedContent = await placedSource.loadTileContent(placedRoot);
-  const placedFirstPosition = placedContent?.data.data.getChild('POSITION')?.get(0) as
+  const placedFirstPosition = placedContent?.data.getChild('POSITION')?.get(0) as
     | Iterable<number>
     | undefined;
 

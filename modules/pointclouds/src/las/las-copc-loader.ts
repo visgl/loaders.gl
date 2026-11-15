@@ -6,8 +6,7 @@
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, RecordBatch} from 'apache-arrow';
 import {getLASRecordBatches, toPublicLASResult} from './las-loader';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {convertMeshToArrowTableWrapper, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
   formatLASMeshColors,
   getLASShape,
@@ -24,16 +23,16 @@ export const LASCOPCLoaderWithParser = {
   ...LAS_LOADER_METADATA,
   name: 'LAS (COPC)',
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    toPublicLASResult(convertLASMesh(await parseCOPCLAS(arrayBuffer, options), options)),
+    convertLASMesh(await parseCOPCLAS(arrayBuffer, options), options),
   parseInBatches: (arrayBufferIterator, options?: LASLoaderOptions) =>
     convertLASMeshBatches(parseCOPCLASInBatches(arrayBufferIterator, options), options)
 } as const satisfies LoaderWithParser<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;
 
-function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
+function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | Table {
   const formattedMesh = formatLASMeshColors(mesh, options?.las?.colorFormat || 'uint8norm');
-  const table = convertMeshToArrowTableWrapper(formattedMesh) as MeshArrowTable;
+  const table = convertMeshToArrowTable(formattedMesh);
   if (getLASShape(options) === 'arrow') {
-    return {...table, loaderData: mesh.loaderData};
+    return toPublicLASResult({data: table, loader: 'las', loaderData: mesh.loaderData});
   }
   return {
     ...(convertTableToMesh(table) as LASMesh),
@@ -55,7 +54,7 @@ async function* convertLASMeshBatches(
 ): AsyncIterable<LASMesh | RecordBatch> {
   for await (const mesh of meshBatches) {
     const result = convertLASMesh(mesh, options);
-    if ('shape' in result) yield* getLASRecordBatches(result);
+    if (!('attributes' in result)) yield* getLASRecordBatches(result);
     else yield result;
   }
 }
