@@ -2,14 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  Mesh,
-  MeshAttribute,
-  MeshAttributes,
-  MeshArrowTable,
-  TypedArray
-} from '@loaders.gl/core/schema';
-import {getMeshBoundingBox, serializeArrowSchema} from '@loaders.gl/core/schema-utils';
+import type {Mesh, MeshAttribute, MeshAttributes, TypedArray} from '@loaders.gl/core/schema';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 import type {ParsePLYOptions} from './parse-ply';
 import {parsePLYHeader} from './parse-ply';
@@ -63,10 +57,10 @@ export function parsePLYToElementTables(
   return parseBinaryPLYToElementTables(data, parseHeader);
 }
 
-/** Convert raw PLY element tables into the public Mesh Arrow table shape. */
+/** Convert raw PLY element tables into a native Arrow mesh table. */
 export function convertPLYElementTablesToMeshArrowTable(
   elementTables: PLYElementTables
-): MeshArrowTable {
+): arrow.Table {
   const mesh = convertPLYElementTablesToMesh(elementTables);
   return convertPLYMeshToArrowTable(mesh);
 }
@@ -369,8 +363,8 @@ function getArrayLikeValue(values: ArrayLike<number>, index: number): number {
     : Number(values[index]);
 }
 
-/** Convert a Mesh into the public Mesh Arrow table shape. */
-function convertPLYMeshToArrowTable(mesh: Mesh): MeshArrowTable {
+/** Convert a Mesh into a native Arrow mesh table. */
+function convertPLYMeshToArrowTable(mesh: Mesh): arrow.Table {
   const fields: arrow.Field[] = [];
   const columns: Record<string, arrow.Vector> = {};
   const attributeNames = getOrderedAttributeNames(mesh.attributes);
@@ -396,13 +390,9 @@ function convertPLYMeshToArrowTable(mesh: Mesh): MeshArrowTable {
   });
   const arrowSchema = new arrow.Schema(fields, metadata);
 
-  return {
-    shape: 'arrow-table',
-    schema: serializeArrowSchema(arrowSchema),
-    data: new arrow.Table(arrowSchema, columns),
-    topology: mesh.topology,
-    indices: mesh.indices?.value.length ? mesh.indices : undefined
-  };
+  return fields.length && columns[fields[0].name].length
+    ? new arrow.Table(arrowSchema, columns)
+    : new arrow.Table(arrowSchema);
 }
 
 /** Return a mesh attribute vector. */

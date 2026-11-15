@@ -19,7 +19,7 @@ import type {PCDHeader, PCDMesh} from './pcd-types';
 
 type MeshHeader = {
   vertexCount: number;
-  boundingBox: [[number, number, number], [number, number, number]];
+  boundingBox?: [[number, number, number], [number, number, number]];
 };
 
 type NormalizedAttributes = {

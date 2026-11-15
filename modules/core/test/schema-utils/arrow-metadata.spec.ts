@@ -9,7 +9,6 @@ import {
   makeArrowTableFromBatches,
   convertTableToArrow,
   makeArrowRecordBatchIterator,
-  makeTableFromBatches,
   mergeArrowSchemas,
   updateArrowTableSchema,
   refineArrowTableBatches,
@@ -98,24 +97,17 @@ test.each([
   expect(withoutSchemaSnapshot.batches[0].metadata.get('local')).toBe('1');
 });
 
-test('Arrow wrappers collect cumulative bounds and retain local bounds', async () => {
+test('Native Arrow chunks collect cumulative and batch-local bounds', async () => {
   const first = makeBatch(1, {boundingBox: '[[1,2,3],[1,2,3]]'});
   const second = makeBatch(2, {boundingBox: '[[-1,4,0],[-1,4,0]]'});
-  const batches = [];
-  for await (const batch of refineArrowTableBatches(
-    [first, second].map(recordBatch => ({
-      shape: 'arrow-table' as const,
-      batchType: 'data' as const,
-      length: 1,
-      data: new arrow.Table([recordBatch])
-    }))
-  ))
-    batches.push(batch);
-  expect(batches[0].data.schema.metadata.get('boundingBox')).toBe('[[1,2,3],[1,2,3]]');
-  expect(batches[1].data.schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
-  expect(batches[1].data.batches[0].metadata.get('boundingBox')).toBe('[[-1,4,0],[-1,4,0]]');
-  const table = await makeTableFromBatches(batches);
-  expect(table?.schema?.metadata?.boundingBox).toBe('[[-1,2,0],[1,4,3]]');
+  const chunks = await Array.fromAsync(
+    refineArrowTableBatches([first, second].map(batch => new arrow.Table(batch.schema, [batch])))
+  );
+  expect(chunks[0].schema.metadata.get('boundingBox')).toBe('[[1,2,3],[1,2,3]]');
+  expect(chunks[1].schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
+  expect(chunks[1].batches[0].metadata.get('boundingBox')).toBe('[[-1,4,0],[-1,4,0]]');
+  const table = await makeArrowTableFromBatches(chunks.flatMap(chunk => chunk.batches));
+  expect(table?.schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
 });
 
 test.each([

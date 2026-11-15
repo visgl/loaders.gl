@@ -2,39 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createLoaderWorker, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {convertMeshToArrowTableWrapper} from '@loaders.gl/core/schema-utils';
-import type {PLYMesh} from '../lib/ply-types';
-import type {PLYLoaderOptions} from '../ply-loader-types';
-import {PLYColumnLoader} from '../ply-loader';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
+import {parsePLYNativeBatches, parsePLYTable} from '../lib/parse-ply-output';
+import {PLYLoaderWithParser} from '../ply-loader';
 
 createLoaderWorker({
-  ...PLYColumnLoader,
-  /** Always returns columnar data; legacy mesh conversion runs on the caller. */
-  parse(input, options) {
-    return PLYColumnLoader.parse(input, {
-      ...options,
-      ply: {...options?.ply, shape: 'arrow'}
-    });
-  },
-  /** Preserves full-mesh parsing while streaming point-cloud vertices as Arrow batches. */
-  async *parseInBatches(input, options?: PLYLoaderOptions) {
-    const parseMesh = options?.ply?.shape === 'mesh' && !options?.ply?.pointCloud;
-    const parserOptions = parseMesh
-      ? options
-      : {...options, ply: {...options?.ply, shape: 'arrow' as const}};
-    for await (const batch of PLYColumnLoader.parseInBatches(input, parserOptions)) {
-      if ('shape' in batch && batch.shape === 'arrow-table') {
-        yield batch;
-      } else {
-        const mesh = batch as PLYMesh;
-        yield makeTableScanBatch({
-          ...convertMeshToArrowTableWrapper(mesh),
-          loader: mesh.loader,
-          loaderData: mesh.loaderData
-        } as MeshArrowTable);
-      }
+  ...PLYLoaderWithParser,
+  /** Transfers native columns for both requested output shapes. */
+  parse: async (input, options) => parsePLYTable(input, options),
+  /** Streams native record batches before caller-side mesh conversion. */
+  parseInBatches(input, options) {
+    if (options?.ply?.shape === 'mesh' && !options.ply.pointCloud) {
+      return parsePLYNativeBatches(input, options);
     }
+    return parsePLYNativeBatches(input, {...options, ply: {...options?.ply, shape: 'arrow'}});
   }
 });

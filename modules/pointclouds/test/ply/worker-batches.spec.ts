@@ -58,10 +58,10 @@ test.each([
   expect(deserialize).toHaveBeenCalledTimes(2);
   for (const [payload] of deserialize.mock.calls) {
     expect(payload).toMatchObject({
-      transport: 'arrow-column-envelope',
-      data: {transport: 'arrow-js'}
+      transport: 'arrow-record-batch',
+      columns: {data: {transport: 'arrow-js'}}
     });
-    expect((payload as any).data.batches).toBeInstanceOf(Array);
+    expect((payload as any).columns.data.batches).toBeInstanceOf(Array);
   }
 });
 
@@ -75,8 +75,8 @@ test('PLY atomic worker uses column transport before caller-side mesh conversion
   );
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    transport: 'arrow-column-envelope',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
   expect(mesh.loader).toBe('ply');
   expect(mesh.loaderData).toBeTruthy();
@@ -154,7 +154,7 @@ test('PLY column transport hydration defaults to Arrow when caller options are o
   const table = await parser.parse(new TextEncoder().encode(source).buffer, {
     ply: {shape: 'arrow'}
   });
-  const payload = parser.serializeWorkerResult({shape: 'arrow-table', data: table});
+  const payload = parser.serializeWorkerResult(table);
   expect(parser.deserializeWorkerResult(payload)).toBeInstanceOf(Table);
   expect(parser.deserializeWorkerResult(payload, {})).toBeInstanceOf(Table);
   expect(parser.deserializeWorkerBatch(payload)).toBeInstanceOf(RecordBatch);

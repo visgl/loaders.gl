@@ -24,7 +24,7 @@
 //     diffuse_blue: 'blue'
 //   }
 // });
-import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {MeshAttribute, MeshAttributes} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import type {
@@ -87,7 +87,7 @@ export function parsePLY(data: ArrayBuffer | string, options: ParsePLYOptions = 
 export function parsePLYToArrowTable(
   data: ArrayBuffer | string,
   options: ParsePLYOptions = {}
-): MeshArrowTable | null {
+): arrow.Table | null {
   if (!(data instanceof ArrayBuffer)) {
     return null;
   }
@@ -116,7 +116,7 @@ export function parsePLYBinaryPointCloudToArrowTable(
   data: ArrayBuffer,
   header: PLYHeader,
   options: ParsePLYOptions = {}
-): MeshArrowTable | null {
+): arrow.Table | null {
   const attributes = parseBinaryPointCloud(data, header, options);
   return attributes ? makePLYArrowTable(header, attributes) : null;
 }
@@ -134,7 +134,7 @@ export function parsePLYBinaryPointCloudRecordsToArrowTable(
   header: PLYHeader,
   options: ParsePLYOptions = {},
   plan?: PLYBinaryPointCloudParsePlan
-): MeshArrowTable | null {
+): arrow.Table | null {
   const attributes = parseBinaryPointCloudRecords(records, header, options, plan);
   return attributes ? makePLYArrowTable(header, attributes) : null;
 }
@@ -633,7 +633,7 @@ export type PLYBinaryPointCloudParsePlan = {
 };
 
 /** Build an Arrow table from normalized PLY attribute arrays. */
-function makePLYArrowTable(header: PLYHeader, attributes: PLYAttributes): MeshArrowTable {
+function makePLYArrowTable(header: PLYHeader, attributes: PLYAttributes): arrow.Table {
   const meshAttributes = getPLYMeshAttributes(attributes);
   const schema = getPLYSchema(header, meshAttributes);
   schema.metadata.topology = 'point-list';
@@ -655,12 +655,9 @@ function makePLYArrowTable(header: PLYHeader, attributes: PLYAttributes): MeshAr
   }
 
   const arrowSchema = new arrow.Schema(fields, getArrowMetadata(schema.metadata));
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, columns),
-    topology: 'point-list'
-  };
+  return fields.length && columns[fields[0].name].length
+    ? new arrow.Table(arrowSchema, columns)
+    : new arrow.Table(arrowSchema);
 }
 
 /** Convert normalized PLY attributes into mesh-style attribute descriptors. */

@@ -112,12 +112,12 @@ test.each([
       shape: 'arrow',
       batchSize: 1
     })) as MeshArrowTable[];
-    expect(batches.map(batch => batch.data.numRows)).toEqual([1, 1]);
-    expect(batches.map(batch => Array.from(batch.data.getChild('POSITION')!.get(0)))).toEqual([
+    expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
+    expect(batches.map(batch => Array.from(batch.getChild('POSITION')!.get(0)))).toEqual([
       [1.25, -2.5, 3.75],
       [2.25, -3.5, 4.75]
     ]);
-    expect(batches.map(batch => batch.data.getChild('intensity')!.get(0))).toEqual([65000, 65001]);
+    expect(batches.map(batch => batch.getChild('intensity')!.get(0))).toEqual([65000, 65001]);
   }
 });
 
