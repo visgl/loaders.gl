@@ -220,7 +220,8 @@ export class FederatedTableScanSource
         description: this.description,
         schema: plan.schema,
         capabilities: {table: FEDERATED_TABLE_QUERY_CAPABILITIES},
-        statistics: getFederatedStatistics(plan.sources)
+        statistics: getFederatedStatistics(plan.sources),
+        hasDefaultRowWindow: plan.sources.some(({metadata}) => metadata.hasDefaultRowWindow)
       });
     } finally {
       this.dataSourceManager.unsubscribe({consumerId});

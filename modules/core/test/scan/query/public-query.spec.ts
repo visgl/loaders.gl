@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {query, queryInBatches} from '@loaders.gl/core/scan';
+import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/scan';
 import {parseSQLQuery} from '@math.gl/expressions/sql';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
@@ -43,6 +43,20 @@ test('collected and streamed queries agree and report one completion', async () 
   const projected = await query({select: [{column: 'name', as: 'label'}]}, {source});
   expect(projected.getChild('label')!.data[0].values.buffer).toBe(
     source.getChild('name')!.data[0].values.buffer
+  );
+});
+
+test.each([
+  {offset: 1},
+  {limit: 0},
+  {_scan: {offset: 1}},
+  {_scan: {limit: 0}}
+])('rejects row windows outside the logical query: %j', async window => {
+  const onQueryComplete = vi.fn();
+  const options = {source: makeTable(), onQueryComplete, ...window} as unknown as QueryOptions;
+  await expect(query({}, options)).rejects.toThrow('Put offset and limit in the logical query');
+  expect(onQueryComplete).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({status: 'failed', sourcesRead: 0})
   );
 });
 

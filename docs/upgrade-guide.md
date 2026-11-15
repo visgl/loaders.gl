@@ -859,6 +859,14 @@ objects. The in-memory Arrow, GeoPackage, ORC, and addressed vector sources also
 yield native batches from `read()` (and `scan()` on addressed vector sources).
 Use `batch.numRows` and read columns directly from the batch.
 
+#### Row windows belong to logical queries
+
+Move Parquet construction options `parquet.offset` and `parquet.limit` to the logical request
+passed to `query()` or `queryInBatches()`. For example, use
+`query({offset: 100, limit: 50}, {source})` with a source created without window defaults.
+For direct selective I/O, pass `{offset, limit}` to `ParquetSource.read()`.
+Direct parsing and direct source reads still accept the legacy settings during migration.
+
 #### Query APIs return native Arrow
 
 `query()` returns an Apache Arrow `Table`, `queryInBatches()` yields native

@@ -7,6 +7,7 @@ import {expect, test} from 'vitest';
 import {hydrateArrowTable} from '@math.gl/arrow';
 import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
+import {query, queryInBatches} from '@loaders.gl/core/query';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetJSWriter, ParquetLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet/index';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
@@ -170,6 +171,57 @@ test('ParquetSource#read applies snapshotted source defaults', async () => {
   expect(batches.every(batch => batch.schema?.fields[0]?.name === 'x')).toBeTruthy();
   await source.close();
   });
+
+test('logical Parquet queries reject construction windows while direct reads retain them', async () => {
+  const fixture = await createSelectiveFixture();
+  const source = new ParquetSource(new Blob([fixture]), {
+    core: {worker: false},
+    parquet: {offset: 1, limit: 2}
+  });
+
+  try {
+    await expect(query({select: ['x']}, {source})).rejects.toThrow('default offset or limit');
+    expect(source.getTelemetry().rowGroupsDecoded).toBe(0);
+    const batches = await collectParquetBatches(source.read({columns: ['x']}));
+    expect(batches.flatMap(batch => Array.from(batch.getChild('x')!.toArray()))).toEqual([1, 2]);
+  } finally {
+    await source.close();
+  }
+});
+
+test('logical Parquet pagination works on explicit URL and Blob sources', async () => {
+  const fixture = await createSelectiveFixture();
+  const source = new ParquetSource(new Blob([fixture]), {core: {worker: false}});
+  const request = {
+    select: ['source_id'],
+    where: {op: '>=', args: [{property: 'x'}, 1]},
+    offset: 1,
+    limit: 3
+  } as const;
+
+  try {
+    const result = await query(request, {source});
+    expect(result.getChild('source_id')?.toArray()).toEqual(['source-2', 'source-3', 'source-4']);
+
+    const options = {
+      source: REMOTE_URL,
+      loaders: ParquetLoader,
+      core: {fetch: createRangeFetch(fixture), worker: false}
+    };
+    const remote = await collectParquetBatches(queryInBatches(request, options));
+    expect(remote.flatMap(batch => Array.from(batch.getChild('source_id')!.toArray()))).toEqual([
+      'source-2',
+      'source-3',
+      'source-4'
+    ]);
+
+    await expect(query(request, {...options, parquet: {limit: 0}})).rejects.toThrow(
+      'default offset or limit'
+    );
+  } finally {
+    await source.close();
+  }
+});
 
 test('ParquetLoader#decodes optional column-chunk statistics', async () => {
   const fixture = await loadFixture(STATISTICS_FIXTURE_URL);
