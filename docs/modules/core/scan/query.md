@@ -41,7 +41,7 @@ non-table results fail; there is no fallback after an explicit FROM fails.
 
 | Option | Contract |
 | --- | --- |
-| `source` | An Apache Arrow `Table`, a loaders.gl `ArrowTable` wrapper, an existing `TableScanSource`, or URL string. Optional for metadata commands or when FROM selects a registered source. |
+| `source` | An Apache Arrow `Table`, an existing `TableScanSource`, or a URL string. Optional for metadata commands or when FROM selects a registered source. |
 | `sources` | Readonly array of named `DataSource` objects. Names must be non-empty and unique. |
 | `loaders` | Required for URLs: one URL-capable `SourceLoader` or an array of explicit candidates. Omit for loaded inputs. |
 | `sqlParser` | Required for SQL strings: `SQLQueryParser` or `Promise<SQLQueryParser>`. Unused for logical input. |
@@ -54,7 +54,7 @@ type SQLQueryParser = (sql: string) => Query | Promise<Query>;
 
 interface TableSourceCollection {
   getTable(name: string, options?: {signal?: AbortSignal}):
-    ArrowTable | TableScanSource | Promise<ArrowTable | TableScanSource>;
+    arrow.Table | TableScanSource | Promise<arrow.Table | TableScanSource>;
 }
 ```
 

@@ -57,19 +57,19 @@ function validatePushdownPlan(
       let rowsReturned = 0;
       for await (const batch of plan.read(options)) {
         options.signal?.throwIfAborted();
-        const native = !('shape' in batch);
-        const schema = native ? batch.schema : batch.data.schema;
-        const rowCount = native ? batch.numRows : batch.data.numRows;
         if (
-          !util.compareSchemas(outputSchema, convertSchemaToArrow(convertArrowToSchema(schema)))
+          !util.compareSchemas(
+            outputSchema,
+            convertSchemaToArrow(convertArrowToSchema(batch.schema))
+          )
         ) {
           throw new Error('Query pushdown batch schema does not match the logical output schema.');
         }
-        rowsReturned += rowCount;
+        rowsReturned += batch.numRows;
         if (limit !== undefined && rowsReturned > limit) {
           throw new Error('Query pushdown returned more rows than the requested limit.');
         }
-        yield native ? batch : {...batch, length: rowCount};
+        yield batch;
       }
     }
   };

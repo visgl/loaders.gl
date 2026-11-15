@@ -27,7 +27,7 @@ const logical = {
 } as const;
 
 test('collected and streamed queries agree and report one completion', async () => {
-  const source = makeTable();
+  const source = makeTable().data;
   const onQueryComplete = vi.fn();
   const result = await query(logical, {source, onQueryComplete});
   expect(result.toArray().map(row => row.toJSON())).toEqual([{label: 'b'}]);
@@ -42,7 +42,7 @@ test('collected and streamed queries agree and report one completion', async () 
   expect(rows).toEqual([{label: 'b'}]);
   const projected = await query({select: [{column: 'name', as: 'label'}]}, {source});
   expect(projected.getChild('label')!.data[0].values.buffer).toBe(
-    source.data.getChild('name')!.data[0].values.buffer
+    source.getChild('name')!.data[0].values.buffer
   );
 });
 
@@ -68,7 +68,7 @@ test('empty and zero-limit results preserve aliased schemas without reading sour
   expect(read).not.toHaveBeenCalled();
   const rejected = await query(
     {select: ['name'], where: {op: '>', args: [{property: 'value'}, 100]}},
-    {source: table}
+    {source: table.data}
   );
   expect(rejected.numRows).toBe(0);
   expect(rejected.schema.fields[0].name).toBe('name');
@@ -202,14 +202,14 @@ test('row batches normalize to Arrow and failures/cancellation complete once', a
   expect(complete.mock.calls[0][0].status).toBe('failed');
   const aborted = vi.fn();
   await expect(
-    query({}, {source: table, signal: AbortSignal.abort(), onQueryComplete: aborted})
+    query({}, {source: table.data, signal: AbortSignal.abort(), onQueryComplete: aborted})
   ).rejects.toThrow();
   expect(aborted).toHaveBeenCalledTimes(1);
   expect(aborted.mock.calls[0][0].status).toBe('cancelled');
   const throwing = vi.fn(() => {
     throw new Error('observer');
   });
-  expect((await query({}, {source: table, onQueryComplete: throwing})).numRows).toBe(3);
+  expect((await query({}, {source: table.data, onQueryComplete: throwing})).numRows).toBe(3);
 });
 
 test('consumer return closes the source and emits one terminal summary', async () => {
@@ -378,11 +378,7 @@ test('stream pagination skips filtered batches and slices only the boundary batc
     ...table.batches,
     ...table.batches
   ]);
-  const source: ArrowTable = {
-    shape: 'arrow-table',
-    data,
-    schema: convertArrowToSchema(data.schema)
-  };
+  const source = data;
   const complete = vi.fn();
   const batches = [];
   for await (const batch of queryInBatches(

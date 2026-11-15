@@ -8,7 +8,6 @@ import {parseSQLQuery, parseSQLSelect} from '@loaders.gl/core/scan/query';
 import type {TableQuery} from '@loaders.gl/core/scan';
 import {query, queryInBatches} from '@loaders.gl/core/scan';
 import {parseSQLPredicate} from '@loaders.gl/core/scan/parse-sql-predicate';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 
 test('SELECT parser handles ordered aliases, qualified FROM, exact names, wildcard and limits', () => {
   expect(
@@ -106,7 +105,7 @@ test('quoted WHERE identifiers execute through the injected parser and both resu
     not: arrow.vectorFromArray([0, 1], new arrow.Int32()),
     'field.name': arrow.vectorFromArray(['x', 'LIMIT 2'], new arrow.Utf8())
   });
-  const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
+  const source = data;
   const sql = `SELECT "field.name" AS label WHERE "not" > 0 AND "field.name" = 'LIMIT 2' LIMIT 1`;
   const result = await query(sql, {source, sqlParser: Promise.resolve(parseSQLQuery)});
   expect(result.toArray().map(row => row.label)).toEqual(['LIMIT 2']);
@@ -121,7 +120,7 @@ test('quoted WHERE identifiers execute through the injected parser and both resu
 
 test('SQL OFFSET skips filtered rows before LIMIT', async () => {
   const data = new arrow.Table({value: arrow.vectorFromArray([0, 1, 2, 3], new arrow.Int32())});
-  const source = {shape: 'arrow-table' as const, data, schema: convertArrowToSchema(data.schema)};
+  const source = data;
   const result = await query('SELECT value WHERE value > 0 LIMIT 1 OFFSET 1', {
     source,
     sqlParser: parseSQLQuery

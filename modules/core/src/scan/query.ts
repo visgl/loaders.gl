@@ -9,7 +9,7 @@ import type {
   ProgressiveQuerySnapshot
 } from './query-progressive';
 import type {SQLQuery} from '@math.gl/expressions/sql';
-import type {ArrowTable, TableBatch, Schema} from '@loaders.gl/core/schema';
+import type {TableBatch, Schema} from '@loaders.gl/core/schema';
 import {
   normalizeTableQuery,
   getColumnarPredicateColumns,
@@ -93,7 +93,7 @@ export type QueryOptions = TableQueryExecutionOptions &
   Readonly<
     | {
         /** Already loaded Arrow table or caller-owned table scan source. */
-        source: arrow.Table | ArrowTable | TableScanSource;
+        source: arrow.Table | TableScanSource;
         /** URL loader selection is only used with URL sources. */
         loaders?: never;
       }
@@ -225,12 +225,7 @@ async function* queryAppendBatches(
     options.signal?.throwIfAborted();
     if (!source || typeof source !== 'object')
       throw new Error('Expected an Arrow table or table scan source.');
-    const inMemory =
-      'batches' in source
-        ? (source as arrow.Table)
-        : 'shape' in source && source.shape === 'arrow-table'
-          ? (source as ArrowTable).data
-          : null;
+    const inMemory = 'batches' in source ? (source as arrow.Table) : null;
     if (
       !inMemory &&
       (!('read' in source) ||

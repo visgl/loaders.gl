@@ -95,11 +95,7 @@ test('qualified FROM resolves only one loaded table with literal identifier comp
 
 test('collections may return an already loaded Arrow table', async () => {
   const source = new CollectionSource();
-  source.getTable.mockResolvedValueOnce({
-    shape: 'arrow-table',
-    data: source.selected.table,
-    schema: convertArrowToSchema(source.selected.table.schema)
-  });
+  source.getTable.mockResolvedValueOnce(source.selected.table);
   expect(
     (await query({from: {source: 'warehouse', table: 'cities'}}, {sources: [source]})).numRows
   ).toBe(3);
