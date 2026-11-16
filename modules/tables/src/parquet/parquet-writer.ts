@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Table as ArrowTable, tableToIPC} from 'apache-arrow';
+import {Schema as ArrowSchema, Table as ArrowTable, tableToIPC} from 'apache-arrow';
 import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {isNativeWriterTable} from '../arrow/table-writer-input';
@@ -110,7 +110,16 @@ export const ParquetWriter = {
       schema: {...objectRowTable.schema!, metadata: {...objectRowTable.schema?.metadata}}
     };
     if (isNativeWriterTable(input)) {
-      const schemaBytes = tableToIPC(new ArrowTable(input.schema), 'stream');
+      // Avoid nesting an earlier Parquet footer schema during repeated read/write cycles.
+      const metadata = new Map(input.schema.metadata);
+      metadata.delete('ARROW:schema');
+      const schema = new ArrowSchema(
+        input.schema.fields,
+        metadata,
+        input.schema.dictionaries,
+        input.schema.metadataVersion
+      );
+      const schemaBytes = tableToIPC(new ArrowTable(schema), 'stream');
       table.schema.metadata['ARROW:schema'] = encodeArrayBufferToBase64(schemaBytes.slice().buffer);
     }
     return await encodeTableToParquetJs(

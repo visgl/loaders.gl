@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TableWriterInput, TableWriterBatch} from '../../../../modules/tables/src/arrow/table-writer-input';
+import type {
+  TableWriterInput,
+  TableWriterBatch
+} from '../../../../modules/tables/src/arrow/table-writer-input';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import {convertTableToArrow, deduceTableSchema} from '@loaders.gl/core/schema-utils';
 import {isNativeWriterTable} from '../../../../modules/tables/src/arrow/table-writer-input';
@@ -36,4 +39,8 @@ export const ParquetWasmWriter = {
     const parquetOptions = normalizeParquetOptions(options, ParquetWasmWriter.options.parquet);
     return encodeArrowToParquet(ensureGeoParquetMetadataOnArrowTable(arrowTable), parquetOptions);
   }
-} as const satisfies WriterWithEncoder<TableWriterInput, TableWriterBatch, ParquetWasmWriterOptions>;
+} as const satisfies WriterWithEncoder<
+  TableWriterInput,
+  TableWriterBatch,
+  ParquetWasmWriterOptions
+>;
