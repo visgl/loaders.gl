@@ -251,3 +251,8 @@ and retained rows. Percentile endpoints use the upstream bounded sketch.
 Use `queryScales()` for exact quantile classes while progressive
 quantile classification awaits the upstream binder. With math.gl beta.11,
 multi-class quantize snapshots wait for a nonconstant extent.
+
+Run `yarn bench scale-query` to compare fixed-domain streaming, exact
+percentile collection, and approximate percentile snapshots over equivalent
+Arrow IPC, Parquet, and CSV sources. The benchmark starts with warm source
+metadata and applies the same row predicate in each format.
