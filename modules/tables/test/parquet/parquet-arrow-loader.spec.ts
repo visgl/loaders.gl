@@ -6,7 +6,7 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/
 import { expect, test } from "vitest";
 // import {validateLoader} from 'test/common/conformance';
 import {load, loadInBatches, encode, fetchFile, setLoaderOptions, isBrowser} from '@loaders.gl/core';
-import type { ArrowTable, ObjectRowTable } from '@loaders.gl/core/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import { getGeometryColumnsFromSchema } from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
@@ -384,7 +384,7 @@ test('ParquetWriter#synthesizes native GeoParquet encoding from GeoArrow input',
     expect(geoMetadata?.columns.geometry.geometry_types, 'writer infers native geometry type').toEqual(['Point']);
     expect(getGeometryColumnsFromSchema(newTable.schema!).geometry?.encoding, 'read path preserves native GeoArrow field metadata').toBe('geoarrow.point');
 });
-function createArrowTable(): ArrowTable {
+function createArrowTable(): arrow.Table {
     const utf8Vector = arrow.vectorFromArray(['a', 'b', 'c', 'd'], new arrow.Utf8());
     const boolVector = arrow.vectorFromArray([true, true, false, false], new arrow.Bool());
     const uint8Vector = arrow.vectorFromArray([1, 2, 3, 4], new arrow.Uint8());
@@ -394,7 +394,7 @@ function createArrowTable(): ArrowTable {
 }
 function createGeoArrowWKBTable(metadataOverrides?: {
     geo?: Record<string, unknown>;
-}): ArrowTable {
+}): arrow.Table {
     const geometryBytes = new Uint8Array(convertGeometryToWKB({
         type: 'Point',
         coordinates: [1, 2]

@@ -7,7 +7,7 @@ import type {Mesh, MeshAttribute, ColumnarTable, Schema} from '@loaders.gl/core/
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListSize} from '../arrow-utils/arrow-fixed-size-list-utils';
 import {serializeArrowSchema} from '../schema/convert-arrow-schema';
-import {isNativeArrowTable} from '../../../lib/loader-utils/native-arrow';
+import {isArrowTable} from '../../../lib/loader-utils/native-arrow';
 import {getMeshBoundingBox} from './mesh-utils';
 
 /**
@@ -16,7 +16,7 @@ import {getMeshBoundingBox} from './mesh-utils';
  * @returns Mesh reconstructed from the table.
  */
 export function convertTableToMesh(table: ColumnarTable | arrow.Table): Mesh {
-  if (isNativeArrowTable(table)) return convertArrowTableToMesh(table);
+  if (isArrowTable(table)) return convertArrowTableToMesh(table);
   throw new Error(table.shape);
 }
 

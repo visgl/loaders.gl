@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {isNativeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
+import {isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import {
   getArrowTableRowProperties,
@@ -35,10 +35,10 @@ test('Arrow tooltips serialize bounded views and nested iterable values', () => 
 
 test('Arrow batch and iterator guards reject incomplete layer input', () => {
   const data = arrow.tableFromArrays({value: [1]});
-  expect(isNativeArrowRecordBatch(data.batches[0])).toBe(true);
-  expect(isNativeArrowRecordBatch({})).toBe(false);
-  expect(isNativeArrowRecordBatch(data)).toBe(false);
-  expect(isNativeArrowRecordBatch(null)).toBe(false);
+  expect(isArrowRecordBatch(data.batches[0])).toBe(true);
+  expect(isArrowRecordBatch({})).toBe(false);
+  expect(isArrowRecordBatch(data)).toBe(false);
+  expect(isArrowRecordBatch(null)).toBe(false);
   expect(isAsyncIterable(null)).toBe(false);
   expect(isAsyncIterable({[Symbol.asyncIterator]: 1})).toBe(false);
   expect(isAsyncIterable({[Symbol.asyncIterator]: () => ({})})).toBe(true);

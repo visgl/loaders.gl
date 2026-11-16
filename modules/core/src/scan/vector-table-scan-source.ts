@@ -4,7 +4,7 @@
 
 import type {RecordBatch, Table} from 'apache-arrow';
 import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
-import {isNativeArrowTable} from '../lib/loader-utils/native-arrow';
+import {isArrowTable} from '../lib/loader-utils/native-arrow';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {
   GetFeaturesParameters,
@@ -180,7 +180,7 @@ export class VectorTileTableScanSource extends AddressedVectorTableScanSource {
   /** Loads the bound vector tile using the source's requested Arrow output shape. */
   protected async loadTable(signal?: AbortSignal): Promise<Table | null> {
     const tile = await this.source.getVectorTile({...this.tile, signal});
-    if (tile === null || isNativeArrowTable(tile)) return tile;
+    if (tile === null || isArrowTable(tile)) return tile;
     throw new Error(
       'The addressed vector selection must return an Arrow table. Configure the source with shape "arrow".'
     );
@@ -229,7 +229,7 @@ export class VectorFeatureTableScanSource extends AddressedVectorTableScanSource
   /** Loads the bound service request through the source's Arrow feature output. */
   protected async loadTable(signal?: AbortSignal): Promise<Table | null> {
     const data = await this.source.getFeatures({...this.request, format: 'arrow', signal});
-    return isNativeArrowTable(data) ? data : null;
+    return isArrowTable(data) ? data : null;
   }
 }
 

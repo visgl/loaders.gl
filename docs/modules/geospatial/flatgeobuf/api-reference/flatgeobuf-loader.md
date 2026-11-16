@@ -38,7 +38,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="The default result is an Arrow table for typed columns and direct table interoperability. GeoJSON and binary shapes remain available when application code needs them."
   tone="cyan"
   items={[
-    {label: 'Default', value: 'ArrowTable with typed columns and WKB geometry'},
+    {label: 'Default', value: 'Apache Arrow table with typed columns and WKB geometry'},
     {label: 'GeoJSON', value: 'GeoJSONTable for application code'},
     {label: 'Index', value: 'Bounding-box filtering before decode'},
     {label: 'Streaming', value: 'Source APIs for incremental reads'}
@@ -73,7 +73,7 @@ const geojsonTable = await load(url, FlatGeobufLoader, {
 
 ### Shapes
 
-`FlatGeobufLoader` returns loaders.gl `ArrowTable` objects by default. Set `flatgeobuf.shape` to select another representation.
+`FlatGeobufLoader` returns native Apache Arrow `Table` objects by default. Set `flatgeobuf.shape` to select another representation.
 
 | Shape              | Output                                |
 | ------------------ | ------------------------------------- |

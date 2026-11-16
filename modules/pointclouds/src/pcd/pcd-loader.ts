@@ -14,7 +14,7 @@ import {
 import {
   convertMeshToArrowTable,
   convertTableToMesh,
-  isNativeArrowTable
+  isArrowTable
 } from '@loaders.gl/core/schema-utils';
 import type {PCDHeader, PCDMesh} from './lib/pcd-types';
 import {parsePCD, parsePCDHeader} from './lib/parse-pcd';
@@ -155,7 +155,7 @@ function makePCDHeaderText(pcdHeader: any, pointCount: number): string {
 /** Hydrates a native worker table before optional mesh reconstruction. */
 function deserializePCDWorkerResult(result: unknown, options?: PCDLoaderOptions): PCDMesh | Table {
   const table = deserializeNativeArrowWorkerResult(result);
-  if (!isNativeArrowTable(table)) throw new Error('PCD worker requires an Arrow table');
+  if (!isArrowTable(table)) throw new Error('PCD worker requires an Arrow table');
   return options?.pcd?.shape === 'mesh' ? convertPCDTableToMesh(table) : table;
 }
 
@@ -165,7 +165,7 @@ function deserializePCDWorkerBatch(
   options?: PCDLoaderOptions
 ): PCDMesh | RecordBatch {
   const chunk = deserializeNativeArrowWorkerResult(result);
-  const batch = isNativeArrowTable(chunk)
+  const batch = isArrowTable(chunk)
     ? (chunk.batches[0] ?? makeArrowMetadataBatch(chunk.schema))
     : chunk;
   return options?.pcd?.shape === 'mesh'

@@ -63,7 +63,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Loader</span>
     <strong>FlatGeobufLoader</strong>
     <span>Loads FlatGeobuf files as GeoJSON, Arrow, columnar, or binary geometry data.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ArrowTable, ColumnarTable, BinaryFeatureCollection</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, Apache Arrow table, ColumnarTable, BinaryFeatureCollection</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync, parseInBatches</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader">

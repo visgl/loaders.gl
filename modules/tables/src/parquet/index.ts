@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// import {ArrowTable, ArrowTableBatch} from '@loaders.gl/tables/arrow/index';
-
 export {ParquetFormat} from './parquet-format';
 
 export type {ParquetLoaderOptions} from './parquet-loader-options';

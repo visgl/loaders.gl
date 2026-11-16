@@ -62,7 +62,6 @@ export type {
   ObjectRowTable,
   GeoJSONTable,
   ColumnarTable,
-  ArrowTable,
   Tables
 } from './categories/category-table';
 export type {
@@ -70,8 +69,7 @@ export type {
   ArrayRowTableBatch,
   ObjectRowTableBatch,
   GeoJSONTableBatch,
-  ColumnarTableBatch,
-  ArrowTableBatch
+  ColumnarTableBatch
 } from './categories/category-table';
 
 // MESH CATEGORY

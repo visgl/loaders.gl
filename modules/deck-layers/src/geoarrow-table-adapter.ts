@@ -21,7 +21,7 @@ import type {
   BinaryPolygonFeature,
   TypedArray
 } from '@loaders.gl/core/schema';
-import {convertArrowToSchema, isNativeArrowTable} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, isArrowTable} from '@loaders.gl/core/schema-utils';
 import type {BinaryDataFromGeoArrow, GeoArrowEncoding} from '@loaders.gl/core/geoarrow';
 import {
   convertGeoArrowToBinaryFeatureCollection,
@@ -99,7 +99,7 @@ function completeBinaryFeatureCollection(
  * @returns Raw Apache Arrow table.
  */
 export function getApacheArrowTable(input: GeoArrowTableInput): arrow.Table {
-  if (isNativeArrowTable(input)) return input;
+  if (isArrowTable(input)) return input;
   if (isDehydratedArrowTable(input)) return hydrateArrowTable(input);
   if (isSerializedArrowTableIPC(input)) return deserializeArrowTableFromIPC(input);
   throw new Error('GeoArrow table adapter expected an Apache Arrow table.');

@@ -13,7 +13,6 @@ import {
   type TableScanReadOptions,
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {SQLPredicate} from '@loaders.gl/core/scan';
 import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/core/scan';
@@ -50,10 +49,10 @@ test('FederatedTableScanSource has matching Node and browser execution semantics
 /** Minimal Arrow source used to execute the public federation contract in both runtimes. */
 class CrossRuntimeTableSource
   extends DataSource<string, DataSourceOptions>
-  implements TableScanSource<ArrowTableBatch, SQLPredicate>
+  implements TableScanSource<arrow.RecordBatch, SQLPredicate>
 {
   /** Immutable in-memory Arrow table emitted by this source. */
-  private readonly table: ArrowTable;
+  private readonly table: arrow.Table;
 
   /** Creates the deterministic two-row fixture. */
   constructor() {
@@ -83,7 +82,7 @@ class CrossRuntimeTableSource
   }
 
   /** Emits the fixture as one physical batch for residual federation execution. */
-  async *read(_options: TableScanReadOptions<SQLPredicate> = {}): AsyncIterable<ArrowTableBatch> {
+  async *read(_options: TableScanReadOptions<SQLPredicate> = {}): AsyncIterable<arrow.RecordBatch> {
     yield* this.table.batches;
   }
 }

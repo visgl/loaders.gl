@@ -5,7 +5,6 @@
 import type {Schema} from '../types/schema';
 import type {Batch} from '../types/batch';
 import type {Feature} from './category-gis';
-import type * as arrow from 'apache-arrow';
 
 /** A general table */
 export type Table = RowTable | ArrayRowTable | ObjectRowTable | GeoJSONTable | ColumnarTable;
@@ -46,9 +45,6 @@ export type ColumnarTable = {
   schema?: Schema;
   data: {[columnName: string]: ArrayLike<unknown>};
 };
-
-/** A native Apache Arrow table. */
-export type ArrowTable = arrow.Table;
 
 /** A collection of tables */
 export type Tables<TableType = Table> = {
@@ -101,6 +97,3 @@ export type ColumnarTableBatch<MetadataT = unknown> = Batch<MetadataT> & {
   data: {[columnName: string]: ArrayLike<unknown>};
   length: number;
 };
-
-/** A native Apache Arrow record batch. */
-export type ArrowTableBatch = arrow.RecordBatch;

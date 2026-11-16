@@ -4,7 +4,7 @@
 
 import type * as arrow from 'apache-arrow';
 import type {Table, ArrayRowTable, ObjectRowTable, ColumnarTable} from '@loaders.gl/core/schema';
-import {isNativeArrowTable} from '../../../../lib/loader-utils/native-arrow';
+import {isArrowTable} from '../../../../lib/loader-utils/native-arrow';
 import {deduceTableSchema} from '../../schema/deduce-table-schema';
 
 /**
@@ -17,7 +17,7 @@ export function makeTableFromData(data: {[column: string]: ArrayLike<unknown>}):
 export function makeTableFromData(data: arrow.Table): arrow.Table;
 
 export function makeTableFromData(data: unknown): Table | arrow.Table {
-  if (isNativeArrowTable(data)) return data;
+  if (isArrowTable(data)) return data;
   let table: Table;
   switch (getTableShapeFromData(data)) {
     case 'array-row-table':
