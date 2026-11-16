@@ -6,6 +6,13 @@
 
 ## v5.0
 
+### v5.0.0-beta.11
+
+- Upgrade to math.gl 5.0.0-beta.11 and adopt its SQL entry points, nested Arrow struct access, and batch metadata transport.
+- Add scale-aware Arrow query projections, fixed-domain batch streaming, and progressive scale snapshots. Validate matching output across Arrow IPC, CSV, and Parquet.
+- Use WebGPU topology strings and typed arrays in decoded tile payloads. See the upgrade guide for attribute and feature table changes.
+- Add LAS query sources with projection pushdown, run Arrow table queries in workers, and consolidate row pagination in logical queries.
+
 ### v5.0.0-beta.10
 
 - Upgrade to math.gl 5.0.0-beta.10 and reuse its Arrow worker transport and sparse row selection helpers.
