@@ -191,3 +191,22 @@ test('LAS source metadata and queries retain position precision and header value
   const explanation = await source.explain({columns: ['POSITION'], limit: 1});
   expect(explanation).toBeDefined();
 });
+
+test('LAS source discovers raw Extra Bytes width and selects typed Extra Bytes fields', async () => {
+  const extraBytes = await (
+    await fetchFile('@loaders.gl/pointclouds/las/test/data/pdrf8-1.4.las')
+  ).arrayBuffer();
+  const raw = new LASSource(new Blob([extraBytes]), {las: {columns: ['EXTRA_BYTES']}});
+  const metadata = await raw.getQueryMetadata();
+  const result = await query({select: ['EXTRA_BYTES'], limit: 1}, {source: raw});
+  expect(result.numRows).toBe(1);
+  expect(metadata.columns.map(column => column.name)).toContain('EXTRA_BYTES');
+  expect(result.getChild('EXTRA_BYTES')!.get(0).length).toBeGreaterThan(0);
+  const typed = new LASSource(new Blob([extraBytes]), {las: {extraBytes: 'typed'}});
+  const typedMetadata = await typed.getQueryMetadata();
+  const field = typedMetadata.columns.find(column => column.name.startsWith('EXTRA_BYTES_'))!;
+  expect(field).toBeDefined();
+  const typedResult = await query({select: [field.name], limit: 1}, {source: typed});
+  expect(typedResult.numRows).toBe(1);
+  expect(typedResult.schema.fields.map(column => column.name)).toEqual([field.name]);
+});

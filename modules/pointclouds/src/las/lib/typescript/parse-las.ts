@@ -1822,7 +1822,7 @@ function makeLASArrowTableFromAttributes(
   if (extraBytes) {
     attributes.EXTRA_BYTES = {
       value: extraBytes,
-      size: extraBytes.length / Math.max(lasHeader.pointsCount, 1)
+      size: lasHeader.pointsStructSize - getLAZPointDataRecordBaseLength(lasHeader.pointsFormatId)
     };
   }
   if (typedExtraBytes) {

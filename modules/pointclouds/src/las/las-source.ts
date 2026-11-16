@@ -124,7 +124,17 @@ export class LASSource
       las: {
         ...this.options.las,
         shape: 'arrow',
-        ...(columns && {columns: columns as LASColumnName[]})
+        ...(columns && {
+          columns: [
+            ...new Set(
+              columns.map(column =>
+                this.options.las?.extraBytes === 'typed' && column.startsWith('EXTRA_BYTES_')
+                  ? 'EXTRA_BYTES'
+                  : column
+              )
+            )
+          ] as LASColumnName[]
+        })
       }
     };
     const chunks = this.readBytes(signal, onByteLength);
