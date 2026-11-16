@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {TaskRunner, type Task, type TaskWorker} from '@math.gl/tasks';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {
-  deserializeArrowWorkerTable,
-  serializeArrowWorkerResult,
-  serializeArrowWorkerTable
+  deserializeNativeArrowWorkerResult,
+  serializeNativeArrowWorkerResult
 } from '../arrow-worker-transport';
+import {isArrowTable} from '../lib/loader-utils/native-arrow';
 import {queryArrowTable, type ArrowQueryOptions} from './query-arrow-table';
 
 type QueryInput =
@@ -32,21 +32,21 @@ export type ArrowQueryWorkerOptions = {
 /** A worker that retains one source table across calls. */
 export type ArrowQueryWorkerSession = {
   /** Executes a query against the retained table. */
-  query(options?: ArrowQueryOptions): Promise<ArrowTable>;
+  query(options?: ArrowQueryOptions): Promise<Table>;
   /** Returns a copy of the retained table. The session remains open. */
-  getTable(): Promise<ArrowTable>;
+  getTable(): Promise<Table>;
   /** Transfers the retained table back and closes the session. */
-  takeTable(): Promise<ArrowTable>;
+  takeTable(): Promise<Table>;
   /** Drains pending operations and releases the worker. */
   close(): Promise<void>;
 };
 
 /** Runs one query in a worker and releases it when the query settles. */
 export async function queryArrowTableInWorker(
-  source: ArrowTable,
+  source: Table,
   options: ArrowQueryOptions,
   workerOptions: ArrowQueryWorkerOptions
-): Promise<ArrowTable> {
+): Promise<Table> {
   const session = await createArrowQueryWorker(source, {
     ...workerOptions,
     signal: options.signal ?? workerOptions.signal
@@ -60,7 +60,7 @@ export async function queryArrowTableInWorker(
 
 /** Opens a worker session and sends the source table once. */
 export async function createArrowQueryWorker(
-  source: ArrowTable,
+  source: Table,
   {worker, inputOwnership, signal}: ArrowQueryWorkerOptions
 ): Promise<ArrowQueryWorkerSession> {
   signal?.throwIfAborted();
@@ -68,7 +68,7 @@ export async function createArrowQueryWorker(
   try {
     const task = await runner.initializeTask(
       createArrowQueryTask({...worker, capabilities: {atomic: true, streaming: false}}),
-      {table: serializeArrowWorkerResult(source, {workerTransferBufferCopy: 'none'})},
+      {table: serializeNativeArrowWorkerResult(source, {copy: 'none'})},
       {execution: 'worker', inputOwnership, signal}
     );
     let closing = false;
@@ -84,7 +84,7 @@ export async function createArrowQueryWorker(
           tables &&
           Object.entries(tables).map(([name, table]): [string, unknown] => [
             name,
-            serializeArrowWorkerResult(table, {workerTransferBufferCopy: 'none'})
+            serializeNativeArrowWorkerResult(table, {copy: 'none'})
           ]);
         const result = await task.runTask(
           {operation: 'query', options, tables: childTables},
@@ -123,7 +123,7 @@ export function createArrowQueryTask(worker?: TaskWorker): Task<{
   initialization: {table: unknown};
   input: QueryInput;
   output: {table: unknown};
-  state: ArrowTable;
+  state: Table;
 }> {
   return {
     id: 'loaders.gl-arrow-query',
@@ -143,9 +143,16 @@ export function createArrowQueryTask(worker?: TaskWorker): Task<{
         // Query results can alias the retained source, including through slices and dictionaries.
         table:
           input.operation === 'take'
-            ? serializeArrowWorkerResult(result, {workerTransferBufferCopy: 'none'})
-            : serializeArrowWorkerTable(result)
+            ? serializeNativeArrowWorkerResult(result, {copy: 'none'})
+            : serializeNativeArrowWorkerResult(result)
       };
     }
   };
+}
+
+/** Hydrates a table from the query worker protocol. */
+function deserializeArrowWorkerTable(value: unknown): Table {
+  const result = deserializeNativeArrowWorkerResult(value);
+  if (!isArrowTable(result)) throw new Error('Arrow query workers require an Arrow table');
+  return result;
 }
