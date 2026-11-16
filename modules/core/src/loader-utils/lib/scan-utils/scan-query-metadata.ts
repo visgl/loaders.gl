@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {SQLQuery} from '@math.gl/expressions/sql';
+import type {SQLQuery} from '@math.gl/sql/parser';
 import type {DataType, FieldMetadata, Schema} from '@loaders.gl/core/schema';
 import type {ColumnarPredicate, ColumnarPredicateProperty} from './columnar-predicate';
 import type {

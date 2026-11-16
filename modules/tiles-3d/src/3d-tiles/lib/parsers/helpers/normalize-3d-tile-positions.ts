@@ -3,7 +3,6 @@
 // Copyright vis.gl contributors
 
 import {Vector3} from '@math.gl/core';
-import {GL} from '@math.gl/geometry';
 
 // Prepare attribute for positions
 export function normalize3DTilePositionAttribute(tile, positions, options) {
@@ -23,7 +22,6 @@ export function normalize3DTilePositionAttribute(tile, positions, options) {
   // Default: Use normalized shorts directly, no copying/processing.
   // NOTE: The "missing" offset/scaling operations are automatically added to modelMatrix if `tile.isQuantized === true`
   return {
-    type: GL.UNSIGNED_SHORT,
     value: positions,
     size: 3,
     normalized: true

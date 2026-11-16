@@ -1357,7 +1357,7 @@ export class COPCTileSource
       attributes[attribute.name] = {value: attribute.value, size: attribute.size};
     }
 
-    return makeMeshArrowTable(attributes, {topology: 'point-list', mode: 0});
+    return makeMeshArrowTable(attributes, {topology: 'point-list'});
   }
 
   protected async ensureHierarchyLoaded(tileId: string): Promise<void> {

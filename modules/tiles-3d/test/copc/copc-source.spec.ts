@@ -497,6 +497,8 @@ test('COPCLoader#loads full point content for a tile', async () => {
   expect(content).toBeTruthy();
   expect(content?.data.getChild('POSITION')?.length).toBe(content?.pointCount);
   expect(content!.data.numRows).toBe(content!.pointCount);
+  expect(content!.data.schema.metadata.get('topology')).toBe('point-list');
+  expect(content!.data.schema.metadata.has('mode')).toBe(false);
   expect(content?.cartographicOrigin.length).toBe(3);
 });
 

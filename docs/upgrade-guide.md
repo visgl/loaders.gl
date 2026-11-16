@@ -18,6 +18,25 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Decoded tile attributes
+
+Decoded 3D Tiles point clouds expose `topology: 'point-list'`. I3S tile
+content exposes `'point-list'` or `'triangle-list'` according to the layer.
+COPC and Potree Arrow tile schemas use `topology: point-list` in their
+metadata. Use these WebGPU topology strings when selecting a draw topology.
+
+Point cloud and I3S attribute descriptors no longer carry a numeric `type`.
+Read the scalar storage from the typed array in `value`, the tuple width
+from `size`, and integer normalization from `normalized`. Check
+`componentType: 'float16'` when half-float colors use a `Uint16Array` fallback.
+Decoded point cloud normals are XYZ triples, including normals decoded from
+octahedral pairs.
+
+If you read binary feature tables directly with `Tile3DFeatureTable`, pass
+typed array constructors such as `Float32Array` in place of numeric component
+constants. Embedded glTF and binary table descriptors use their file format
+identifiers.
+
 ### Source-only loader imports
 
 Use `-loader` subpaths for source-only loaders. For example,

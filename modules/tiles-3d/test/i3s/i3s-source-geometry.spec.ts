@@ -52,6 +52,8 @@ test.each([
       {...SCHEMA, spatialReference: reference} as any,
       {i3s: {geometryMode: 'source'}} as any
     );
+    expect(content.topology).toBe('triangle-list');
+    expect(content.attributes.positions).not.toHaveProperty('type');
     expect(content.attributes.positions.value).toBeInstanceOf(Float64Array);
     expect(Array.from(content.attributes.positions.value).slice(0, 3)).toEqual([
       sourceOrigin,

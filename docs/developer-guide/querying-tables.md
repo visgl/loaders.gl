@@ -308,7 +308,7 @@ signatures, errors, capability details, and benchmark commands, see the
 ### Injected SQL parser contract
 
 An injected `sqlParser` returns a portable logical query. Use `parseSQLQuery` from
-`@math.gl/expressions/sql` for SELECT expressions, ARRAY projections, casts, computed WHERE expressions,
+`@math.gl/sql/parser` for SELECT expressions, ARRAY projections, casts, computed WHERE expressions,
 and catalog commands. Math.gl compiles expressions against each source schema. Loaders.gl requests
 the referenced columns and evaluates computed filters before applying LIMIT. Sources can still
 push down portable column predicates. Unsupported expressions fail with a terminal query error.

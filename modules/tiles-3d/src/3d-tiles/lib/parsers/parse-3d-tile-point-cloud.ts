@@ -8,7 +8,6 @@
 import {DracoLoader} from '@loaders.gl/scene';
 import type {DracoMesh} from '@loaders.gl/scene';
 import {LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';
-import {GL} from '@math.gl/geometry';
 import {Vector3} from '@math.gl/core';
 
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
@@ -46,7 +45,7 @@ export async function parsePointCloud3DTile(
 }
 
 function initializeTile(tile: Tiles3DTileContent): void {
-  // Initialize point cloud tile defaults
+  tile.topology = 'point-list';
   tile.attributes = {
     positions: null,
     colors: null,
@@ -75,7 +74,7 @@ function parsePointCloudTables(tile: Tiles3DTileContent): {
   tile.pointsLength = pointsLength;
   tile.pointCount = pointsLength;
 
-  tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
+  tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', Float32Array, 3);
 
   const batchTable = parseBatchIds(tile, featureTable);
 
@@ -95,16 +94,16 @@ function parsePositions(
   };
   if (!tile.attributes.positions) {
     if (featureTable.hasProperty('POSITION')) {
-      tile.attributes.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+      tile.attributes.positions = featureTable.getPropertyArray('POSITION', Float32Array, 3);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-      const positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
+      const positions = featureTable.getPropertyArray('POSITION_QUANTIZED', Uint16Array, 3);
 
       tile.isQuantized = true;
       tile.quantizedRange = (1 << 16) - 1;
 
       tile.quantizedVolumeScale = featureTable.getGlobalProperty(
         'QUANTIZED_VOLUME_SCALE',
-        GL.FLOAT,
+        Float32Array,
         3
       );
       if (!tile.quantizedVolumeScale) {
@@ -113,7 +112,7 @@ function parsePositions(
 
       tile.quantizedVolumeOffset = featureTable.getGlobalProperty(
         'QUANTIZED_VOLUME_OFFSET',
-        GL.FLOAT,
+        Float32Array,
         3
       );
       if (!tile.quantizedVolumeOffset) {
@@ -144,12 +143,12 @@ function parseColors(
   if (!tile.attributes.colors) {
     let colors = null;
     if (featureTable.hasProperty('RGBA')) {
-      colors = featureTable.getPropertyArray('RGBA', GL.UNSIGNED_BYTE, 4);
+      colors = featureTable.getPropertyArray('RGBA', Uint8Array, 4);
       tile.isTranslucent = true;
     } else if (featureTable.hasProperty('RGB')) {
-      colors = featureTable.getPropertyArray('RGB', GL.UNSIGNED_BYTE, 3);
+      colors = featureTable.getPropertyArray('RGB', Uint8Array, 3);
     } else if (featureTable.hasProperty('RGB565')) {
-      colors = featureTable.getPropertyArray('RGB565', GL.UNSIGNED_SHORT, 1);
+      colors = featureTable.getPropertyArray('RGB565', Uint16Array, 1);
       tile.isRGB565 = true;
     }
 
@@ -157,7 +156,7 @@ function parseColors(
   }
 
   if (featureTable.hasProperty('CONSTANT_RGBA')) {
-    tile.constantRGBA = featureTable.getGlobalProperty('CONSTANT_RGBA', GL.UNSIGNED_BYTE, 4);
+    tile.constantRGBA = featureTable.getGlobalProperty('CONSTANT_RGBA', Uint8Array, 4);
   }
 }
 
@@ -171,9 +170,9 @@ function parseNormals(tile: Tiles3DTileContent, featureTable: Tile3DFeatureTable
   if (!tile.attributes.normals) {
     let normals = null;
     if (featureTable.hasProperty('NORMAL')) {
-      normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
+      normals = featureTable.getPropertyArray('NORMAL', Float32Array, 3);
     } else if (featureTable.hasProperty('NORMAL_OCT16P')) {
-      normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
+      normals = featureTable.getPropertyArray('NORMAL_OCT16P', Uint8Array, 2);
       tile.isOctEncoded16P = true;
     }
 
@@ -187,7 +186,7 @@ function parseBatchIds(
 ): Tile3DBatchTable | null {
   let batchTable: Tile3DBatchTable | null = null;
   if (!tile.batchIds && featureTable.hasProperty('BATCH_ID')) {
-    tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
+    tile.batchIds = featureTable.getPropertyArray('BATCH_ID', Uint16Array, 1);
 
     if (tile.batchIds) {
       const batchFeatureLength = featureTable.getGlobalProperty('BATCH_LENGTH');
@@ -351,35 +350,35 @@ export async function loadDraco(
 
   if (!tile.attributes.positions) {
     if (featureTable.hasProperty('POSITION')) {
-      tile.attributes.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
+      tile.attributes.positions = featureTable.getPropertyArray('POSITION', Float32Array, 3);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
-      tile.attributes.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', GL.UNSIGNED_SHORT, 3);
+      tile.attributes.positions = featureTable.getPropertyArray('POSITION_QUANTIZED', Uint16Array, 3);
 
 
   if (!tile.colors) {
     if (featureTable.hasProperty('RGBA')) {
-      tile.colors = featureTable.getPropertyArray('RGBA', GL.UNSIGNED_BYTE, 4);
+      tile.colors = featureTable.getPropertyArray('RGBA', Uint8Array, 4);
       tile.isTranslucent = true;
     } else if (featureTable.hasProperty('RGB')) {
-      tile.colors = featureTable.getPropertyArray('RGB', GL.UNSIGNED_BYTE, 3);
+      tile.colors = featureTable.getPropertyArray('RGB', Uint8Array, 3);
     } else if (featureTable.hasPropertry('RGB565')) {
-      tile.colors = featureTable.getPropertyArray('RGB565', GL.UNSIGNED_SHORT, 1);
+      tile.colors = featureTable.getPropertyArray('RGB565', Uint16Array, 1);
       tile.isRGB565 = true;
     }
   }
 
   if (!tile.attributes.normals) {
     if (featureTable.getPropertry('NORMAL')) {
-      tile.attributes.normals = featureTable.getPropertyArray('NORMAL', GL.FLOAT, 3);
+      tile.attributes.normals = featureTable.getPropertyArray('NORMAL', Float32Array, 3);
     } else if (featureTable.getProperty('NORMAL_OCT16P')) {
-      tile.attributes.normals = featureTable.getPropertyArray('NORMAL_OCT16P', GL.UNSIGNED_BYTE, 2);
+      tile.attributes.normals = featureTable.getPropertyArray('NORMAL_OCT16P', Uint8Array, 2);
       tile.isOctEncoded16P = true;
     }
   }
 
   if (!tile.batchIds) {
     if (featureTable.hasProperty('BATCH_ID')) {
-      tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
+      tile.batchIds = featureTable.getPropertyArray('BATCH_ID', Uint16Array, 1);
     }
   }
 
@@ -388,7 +387,7 @@ export async function loadDraco(
   }
 
   if (featureTable.getPropertry('CONSTANT_RGBA')) {
-    tile.constantRGBA = featureTable.getGlobalProperty('CONSTANT_RGBA', GL.UNSIGNED_BYTE, 4);
+    tile.constantRGBA = featureTable.getGlobalProperty('CONSTANT_RGBA', Uint8Array, 4);
   }
 
   if (tile.batchIds) {

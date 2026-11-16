@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {compileArrowArray, compileArrowExpression} from '@math.gl/expressions/arrow';
-import type {TableSelection} from '@math.gl/expressions/sql';
-import {getExpressionColumns} from '@math.gl/expressions';
+import {compileArrowArray, compileArrowExpression} from '@math.gl/sql/arrow';
+import type {TableSelection} from '@math.gl/sql/parser';
+import {getExpressionColumns} from '@math.gl/sql/expressions';
 
-export {compileArrowExpression, compileArrowPredicate} from '@math.gl/expressions/arrow';
-export {getExpressionColumns} from '@math.gl/expressions';
+export {compileArrowExpression, compileArrowPredicate} from '@math.gl/sql/arrow';
+export {getExpressionColumns} from '@math.gl/sql/expressions';
 
 /** Finds source columns and rejects ambiguous projection shapes before a scan. */
 export function getProjectionColumns(selections: readonly TableSelection[]): string[] {
@@ -87,8 +87,8 @@ export function compileArrowProjection(
 
 /** Converts typed SELECT items into ordinary SQL CAST expressions. */
 export function normalizeTypedProjection(
-  query: import('../query').TypedTableQuery | import('@math.gl/expressions/sql').TableQuery
-): import('@math.gl/expressions/sql').TableQuery {
+  query: import('../query').TypedTableQuery | import('@math.gl/sql/parser').TableQuery
+): import('@math.gl/sql/parser').TableQuery {
   return {
     ...query,
     select: query.select?.map(item => {

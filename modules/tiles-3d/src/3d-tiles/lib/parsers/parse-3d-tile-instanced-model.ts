@@ -8,7 +8,7 @@
 import {Vector3, Matrix3, Matrix4, Quaternion} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial';
-import {GL, octDecodeInRange} from '@math.gl/geometry';
+import {octDecodeInRange} from '@math.gl/geometry';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 
@@ -70,7 +70,7 @@ function parseInstancedModel(
   }
 
   tile.eastNorthUp = featureTable.getGlobalProperty('EAST_NORTH_UP');
-  tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', GL.FLOAT, 3);
+  tile.rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', Float32Array, 3);
 
   const batchTable = new Tile3DBatchTable(
     tile.batchTableJson,
@@ -111,11 +111,11 @@ function extractInstancedAttributes(
 
     // Get the instance position
     if (featureTable.hasProperty('POSITION')) {
-      position = featureTable.getProperty('POSITION', GL.FLOAT, 3, i, instancePosition);
+      position = featureTable.getProperty('POSITION', Float32Array, 3, i, instancePosition);
     } else if (featureTable.hasProperty('POSITION_QUANTIZED')) {
       position = featureTable.getProperty(
         'POSITION_QUANTIZED',
-        GL.UNSIGNED_SHORT,
+        Uint16Array,
         3,
         i,
         instancePosition
@@ -123,7 +123,7 @@ function extractInstancedAttributes(
 
       const quantizedVolumeOffset = featureTable.getGlobalProperty(
         'QUANTIZED_VOLUME_OFFSET',
-        GL.FLOAT,
+        Float32Array,
         3
       );
       if (!quantizedVolumeOffset) {
@@ -134,7 +134,7 @@ function extractInstancedAttributes(
 
       const quantizedVolumeScale = featureTable.getGlobalProperty(
         'QUANTIZED_VOLUME_SCALE',
-        GL.FLOAT,
+        Float32Array,
         3
       );
       if (!quantizedVolumeScale) {
@@ -159,8 +159,8 @@ function extractInstancedAttributes(
     instanceTranslationRotationScale.translation = instancePosition;
 
     // Get the instance rotation
-    const normalUp = featureTable.getProperty('NORMAL_UP', GL.FLOAT, 3, i, scratch1);
-    const normalRight = featureTable.getProperty('NORMAL_RIGHT', GL.FLOAT, 3, i, scratch2);
+    const normalUp = featureTable.getProperty('NORMAL_UP', Float32Array, 3, i, scratch1);
+    const normalRight = featureTable.getProperty('NORMAL_RIGHT', Float32Array, 3, i, scratch2);
     tile.normalUp = normalUp;
     tile.normalRight = normalRight;
 
@@ -174,16 +174,10 @@ function extractInstancedAttributes(
       tile.hasCustomOrientation = true;
       hasCustomOrientation = true;
     } else {
-      const octNormalUp = featureTable.getProperty(
-        'NORMAL_UP_OCT32P',
-        GL.UNSIGNED_SHORT,
-        2,
-        i,
-        scratch1
-      );
+      const octNormalUp = featureTable.getProperty('NORMAL_UP_OCT32P', Uint16Array, 2, i, scratch1);
       const octNormalRight = featureTable.getProperty(
         'NORMAL_RIGHT_OCT32P',
-        GL.UNSIGNED_SHORT,
+        Uint16Array,
         2,
         i,
         scratch2
@@ -224,11 +218,17 @@ function extractInstancedAttributes(
 
     // Get the instance scale
     instanceScale.set(1.0, 1.0, 1.0);
-    const scale = featureTable.getProperty('SCALE', GL.FLOAT, 1, i, scratch3);
+    const scale = featureTable.getProperty('SCALE', Float32Array, 1, i, scratch3);
     if (Number.isFinite(scale)) {
       instanceScale.multiplyByScalar(scale);
     }
-    const nonUniformScale = featureTable.getProperty('SCALE_NON_UNIFORM', GL.FLOAT, 3, i, scratch1);
+    const nonUniformScale = featureTable.getProperty(
+      'SCALE_NON_UNIFORM',
+      Float32Array,
+      3,
+      i,
+      scratch1
+    );
     if (nonUniformScale) {
       instanceScale.scale(nonUniformScale);
     }
@@ -237,7 +237,7 @@ function extractInstancedAttributes(
     instanceTranslationRotationScale.scale = instanceScale;
 
     // Get the batchId
-    let batchId = featureTable.getProperty('BATCH_ID', GL.UNSIGNED_SHORT, 1, i, scratch4);
+    let batchId = featureTable.getProperty('BATCH_ID', Uint16Array, 1, i, scratch4);
     if (batchId === undefined) {
       // If BATCH_ID semantic is undefined, batchId is just the instance number
       batchId = i;

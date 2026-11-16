@@ -9,7 +9,6 @@
 /* eslint-disable */
 // @ts-nocheck
 import {log as loaderLog} from '@loaders.gl/core/loader-utils';
-import {GL} from '@math.gl/geometry';
 import {createTypedArrayFromAccessor} from './helpers/tile-3d-accessor-utils';
 
 const defined = x => x !== undefined;
@@ -79,7 +78,7 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
   let parentIdsLength = instancesLength;
 
   if (defined(classIds.byteOffset)) {
-    classIds.componentType ??= GL.UNSIGNED_SHORT;
+    classIds.componentType ??= 'UNSIGNED_SHORT';
     classIds.type = 'SCALAR';
     classIds = createTypedArrayFromAccessor(
       classIds,
@@ -92,7 +91,7 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
   let parentIndexes;
   if (defined(parentCounts)) {
     if (defined(parentCounts.byteOffset)) {
-      parentCounts.componentType ??= GL.UNSIGNED_SHORT;
+      parentCounts.componentType ??= 'UNSIGNED_SHORT';
       parentCounts.type = 'SCALAR';
       parentCounts = createTypedArrayFromAccessor(
         parentCounts,
@@ -110,7 +109,7 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
   }
 
   if (defined(parentIds) && defined(parentIds.byteOffset)) {
-    parentIds.componentType ??= GL.UNSIGNED_SHORT;
+    parentIds.componentType ??= 'UNSIGNED_SHORT';
     parentIds.type = 'SCALAR';
     parentIds = createTypedArrayFromAccessor(
       parentIds,

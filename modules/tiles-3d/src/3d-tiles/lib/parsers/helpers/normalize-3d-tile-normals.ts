@@ -3,37 +3,36 @@
 // Copyright vis.gl contributors
 
 import {Vector3} from '@math.gl/core';
-import {GL, octDecode} from '@math.gl/geometry';
+import {octDecode} from '@math.gl/geometry';
 import {Tiles3DTileContent} from '../../../types';
 
 const scratchNormal = new Vector3();
 
 export function normalize3DTileNormalAttribute(
   tile: Tiles3DTileContent,
-  normals: Float32Array | null
-): {type: number; size: number; value: Float32Array} | null {
+  normals: Float32Array | Uint8Array | null
+): {size: number; value: Float32Array} | null {
   if (!normals) {
     return null;
   }
 
   if (tile.isOctEncoded16P) {
-    const decodedArray = new Float32Array((tile.pointsLength || 0) * 3);
-    for (let i = 0; i < (tile.pointsLength || 0); i++) {
+    const pointCount = normals.length / 2;
+    const decodedArray = new Float32Array(pointCount * 3);
+    for (let i = 0; i < pointCount; i++) {
       octDecode(normals[i * 2], normals[i * 2 + 1], scratchNormal);
       // @ts-ignore
       scratchNormal.toArray(decodedArray, i * 3);
     }
 
     return {
-      type: GL.FLOAT,
-      size: 2,
+      size: 3,
       value: decodedArray
     };
   }
 
   return {
-    type: GL.FLOAT,
-    size: 2,
-    value: normals
+    size: 3,
+    value: normals as Float32Array
   };
 }

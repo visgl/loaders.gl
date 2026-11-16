@@ -4,6 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {
+  createRecordBatchWithMetadata,
+  getRecordBatchMetadata,
   dehydrateArrowTable,
   dehydrateArrowRecordBatch,
   hydrateArrowTable,
@@ -14,7 +16,7 @@ import {
 /** Per-batch metadata transferred alongside math.gl's column payload. */
 type BatchMetadata = {
   schema: Uint8Array;
-  metadata: [string, string][];
+  metadata?: [string, string][];
 };
 
 type ArrowWorkerOptions = {
@@ -95,29 +97,14 @@ function serializeWorkerColumns(
 ): ArrowWorkerColumns {
   return {
     arrowBatchMetadata: snapshotBatchMetadata(table),
-    data: dehydrateWorkerTable(table, options)
+    data: dehydrateArrowTable(table, options)
   };
 }
 
-/** Preserves row counts for tables whose batches have no columns. */
-function dehydrateWorkerTable(
-  table: arrow.Table,
-  options?: SplitArrowBuffersOptions
-): DehydratedArrowTable {
-  const payload = dehydrateArrowTable(table, options);
-  if (table.numCols === 0) {
-    for (const [index, batch] of table.batches.entries()) {
-      payload.batches[index].length = batch.numRows;
-    }
-  }
-  return payload;
-}
-
-/** Captures batch schemas and custom metadata before transferring column buffers. */
+/** Captures batch schemas before transferring column buffers. */
 function snapshotBatchMetadata(table: arrow.Table): BatchMetadata[] {
   return table.batches.map(batch => ({
-    schema: arrow.tableToIPC(new arrow.Table(batch.schema, [])),
-    metadata: Array.from(batch.metadata)
+    schema: arrow.tableToIPC(new arrow.Table(batch.schema, []))
   }));
 }
 
@@ -127,21 +114,13 @@ function hydrateWorkerTable(result: ArrowWorkerColumns): arrow.Table {
   const table = hydrateArrowTable(data);
   const batches = table.batches.map((batch, index) => {
     const snapshot = arrowBatchMetadata?.[index];
-    const restored = snapshot
-      ? new arrow.RecordBatch(
+    return snapshot
+      ? createRecordBatchWithMetadata(
           arrow.tableFromIPC(snapshot.schema).schema,
           batch.data,
-          new Map(snapshot.metadata)
+          snapshot.metadata ? new Map(snapshot.metadata) : getRecordBatchMetadata(batch)
         )
       : batch;
-    // Arrow JS derives the length of a struct from its children, which can be empty.
-    const rowCount = data.batches[index].length;
-    if (restored.numCols === 0 && restored.numRows !== rowCount) {
-      Object.defineProperty(restored, 'data', {
-        value: new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, [])
-      });
-    }
-    return restored;
   });
   return new arrow.Table(table.schema, batches);
 }

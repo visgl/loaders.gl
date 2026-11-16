@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Table, util, type Schema} from 'apache-arrow';
-import type {SQLQuery} from '@math.gl/expressions/sql';
+import type {SQLQuery} from '@math.gl/sql/parser';
 import {convertArrowToSchema, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import type {
   TableQueryCapabilities,

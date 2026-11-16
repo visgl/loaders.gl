@@ -147,7 +147,7 @@ sources. Catalogs and commands never close caller-owned sources.
 
 ## Optional SQL parsers
 
-Import `parseSQLQuery` from `@math.gl/expressions/sql` or `@loaders.gl/core/query/query` and pass it as
+Import `parseSQLQuery` from `@math.gl/sql/parser` or `@loaders.gl/core/query/query` and pass it as
 `sqlParser`. It supports SELECT, WHERE, FROM, LIMIT, OFFSET, and catalog commands. Use `parseSQLSelect`
 for SELECT parsing with an optional caller-supplied WHERE parser. Both preserve case and double-quoted identifiers.
 

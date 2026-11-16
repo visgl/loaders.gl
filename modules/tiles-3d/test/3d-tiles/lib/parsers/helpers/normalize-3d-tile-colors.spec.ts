@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {GL} from '@math.gl/geometry';
 import {getFloat16Value} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 import {normalize3DTileColorAttribute} from '../../../../../src/3d-tiles/lib/parsers/helpers/normalize-3d-tile-colors';
@@ -26,7 +25,6 @@ const TEST_CASES: {
     colors: new Uint8ClampedArray([250, 150, 50]),
     batchTable: null,
     expected: {
-      type: GL.UNSIGNED_BYTE,
       size: 3,
       value: new Uint8ClampedArray([250, 150, 50]),
       normalized: true
@@ -38,7 +36,6 @@ const TEST_CASES: {
     colors: new Uint8ClampedArray([250, 150, 50, 255]),
     batchTable: null,
     expected: {
-      type: GL.UNSIGNED_BYTE,
       size: 4,
       value: new Uint8ClampedArray([250, 150, 50, 255]),
       normalized: true
@@ -66,7 +63,6 @@ test.each([
   {
     colors: new Uint8ClampedArray([250, 150, 50]),
     expected: {
-      type: GL.UNSIGNED_BYTE,
       size: 3,
       value: new Uint8ClampedArray([250, 150, 50]),
       normalized: true
@@ -94,7 +90,6 @@ test('normalize3DTileColorAttribute#float16', () => {
     'float16'
   );
   expect(attribute).toMatchObject({
-    type: 0x140b,
     size: 3,
     normalized: false,
     componentType: 'float16'
@@ -111,7 +106,6 @@ test('normalize3DTileColorAttribute#float32', () => {
     'float32'
   );
   expect(attribute).toMatchObject({
-    type: GL.FLOAT,
     size: 3,
     normalized: false
   });
