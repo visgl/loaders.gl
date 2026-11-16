@@ -2,11 +2,23 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {beforeAll, expect, test} from 'vitest';
 import {getFrameState, type Tile3D} from '@loaders.gl/tiles-3d';
 import {getProjectedRadius} from '../../../src/tileset-3d/helpers/i3s-lod';
-import {updateCameraMotionState} from '../../../src/tileset-3d/helpers/frame-state';
-import {WebMercatorViewport, FirstPersonView} from '@deck.gl/core';
+import {
+  limitSelectedTiles,
+  updateCameraMotionState,
+  type FrameState
+} from '../../../src/tileset-3d/helpers/frame-state';
+import type {GeospatialViewport} from '../../../src/types';
+import {
+  _CustomProjectionViewport as CustomProjectionViewport,
+  WebMercatorViewport,
+  FirstPersonView
+} from '@deck.gl/core';
+import type {CustomProjectionViewportOptions} from '@deck.gl/core';
+import {projectionEngine} from '@math.gl/geospatial/projection';
+import type {CRSDescriptor} from '@math.gl/geospatial/projection/core';
 import {equals, Matrix4, radians, Vector3} from '@math.gl/core';
 import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 const EPSILON = 1e-5;
@@ -267,4 +279,132 @@ test('getFrameState preserves target elevation for projected I3S radius', () => 
   expect(radii[0]).toBeGreaterThan(0);
   // Moving camera and sphere up together preserves apparent size, apart from ellipsoid curvature.
   expect(radii[1]).toBeCloseTo(radii[0], 1);
+});
+
+/** WGS84 camera center of the projected-CRS fixtures, inside UTM zone 18N. */
+const PROJECTED_VIEWPORT_CENTER: [number, number, number] = [-75.612, 40.042, 0];
+
+/** UTM zone 18N descriptor shared by the projected-CRS viewport tests. */
+let utmZone18North: CRSDescriptor;
+
+beforeAll(async () => {
+  utmZone18North = await projectionEngine.getCRS('EPSG:32618');
+});
+
+/**
+ * Projected-CRS viewport that supplies its own top-down viewport.
+ * deck.gl's `CustomProjectionViewport` requires a `crs` and has no `longitude` or `latitude`,
+ * so it cannot be rebuilt from Web Mercator view state.
+ */
+class TopDownCustomProjectionViewport extends CustomProjectionViewport {
+  /** Options used to construct this viewport. */
+  readonly options: CustomProjectionViewportOptions;
+
+  /** Retains the construction options so the top-down viewport keeps the projection. */
+  constructor(options: CustomProjectionViewportOptions) {
+    super(options);
+    this.options = options;
+  }
+
+  /** Returns the same camera with zero pitch in the same CRS. */
+  getTopDownViewport(): TopDownCustomProjectionViewport {
+    return new TopDownCustomProjectionViewport({...this.options, pitch: 0});
+  }
+}
+
+test('getFrameState uses the top-down viewport supplied by a projected-CRS viewport', () => {
+  const viewport = new TopDownCustomProjectionViewport({
+    crs: utmZone18North,
+    center: PROJECTED_VIEWPORT_CENTER,
+    width: 800,
+    height: 600,
+    zoom: 16,
+    pitch: 45,
+    bearing: 20
+  });
+  expect(
+    (viewport as unknown as {longitude?: number}).longitude,
+    'the viewport has no longitude field'
+  ).toBeUndefined();
+  const frameState = getFrameState(viewport as unknown as GeospatialViewport, 1);
+  const topDownViewport = frameState.topDownViewport as unknown as CustomProjectionViewport;
+  expect(topDownViewport).toBeInstanceOf(CustomProjectionViewport);
+  expect(topDownViewport.crs).toBe(utmZone18North);
+  expect(topDownViewport.pitch).toBe(0);
+  expect(topDownViewport.bearing).toBe(20);
+  expect(topDownViewport.zoom).toBe(16);
+  expect(Array.from(frameState.camera.position).every(Number.isFinite)).toBe(true);
+  const centerCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+    PROJECTED_VIEWPORT_CENTER,
+    new Vector3()
+  );
+  for (const plane of frameState.cullingVolume.planes) {
+    expect(plane.getPointDistance(centerCartesian)).toBeGreaterThanOrEqual(0);
+  }
+});
+
+test('getFrameState constructs the top-down viewport when the viewport has no hook', () => {
+  const viewport = new WebMercatorViewport({
+    width: 800,
+    height: 600,
+    longitude: 8.5391,
+    latitude: 47.3686,
+    zoom: 15,
+    pitch: 40,
+    bearing: 30,
+    position: [0, 0, 12]
+  });
+  const topDownViewport = getFrameState(viewport, 1)
+    .topDownViewport as unknown as WebMercatorViewport;
+  expect(topDownViewport).toBeInstanceOf(WebMercatorViewport);
+  expect(topDownViewport).not.toBe(viewport);
+  expect(topDownViewport.pitch).toBe(0);
+  expect(topDownViewport.bearing).toBe(viewport.bearing);
+  expect(topDownViewport.zoom).toBe(viewport.zoom);
+  expect(topDownViewport.longitude).toBeCloseTo(viewport.longitude);
+  expect(topDownViewport.latitude).toBeCloseTo(viewport.latitude);
+  expect(topDownViewport.position).toEqual(viewport.position);
+});
+
+/** Creates the minimal tile shape that `limitSelectedTiles` reads. */
+function makeTileAt(longitude: number, latitude: number): Tile3D {
+  return {header: {mbs: [longitude, latitude, 0, 10]}} as unknown as Tile3D;
+}
+
+test('limitSelectedTiles measures distance from the center of a projected-CRS viewport', () => {
+  const viewport = new CustomProjectionViewport({
+    crs: utmZone18North,
+    center: PROJECTED_VIEWPORT_CENTER,
+    width: 800,
+    height: 600,
+    zoom: 12
+  });
+  const farTile = makeTileAt(-75.0, 40.5);
+  const nearTile = makeTileAt(-75.61, 40.04);
+  const middleTile = makeTileAt(-75.5, 40.1);
+  const frameState = {viewport} as unknown as FrameState;
+  const [selectedTiles, unselectedTiles] = limitSelectedTiles(
+    [farTile, middleTile, nearTile],
+    frameState,
+    2
+  );
+  expect(selectedTiles).toEqual([nearTile, middleTile]);
+  expect(unselectedTiles).toEqual([farTile]);
+});
+
+test('limitSelectedTiles uses viewport longitude and latitude when they are present', () => {
+  const viewport = {
+    longitude: -70,
+    latitude: 40,
+    center: [0, 0, 0],
+    unprojectPosition: () => {
+      throw new Error('center must not be unprojected when longitude and latitude exist');
+    }
+  };
+  const nearTile = makeTileAt(-70.1, 40);
+  const farTile = makeTileAt(-75, 40);
+  const frameState = {viewport} as unknown as FrameState;
+  const [selectedTiles, unselectedTiles] = limitSelectedTiles([farTile, nearTile], frameState, 1);
+  expect(selectedTiles).toEqual([nearTile]);
+  expect(unselectedTiles).toEqual([farTile]);
 });
