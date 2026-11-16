@@ -95,6 +95,24 @@ describe('FederatedTableScanSource', () => {
     expect(data.batches[0].metadata.size).toBe(1);
   });
 
+  test('reports default row windows from child sources to logical queries', async () => {
+    const source = new TestTableScanSource('physical', [makeArrowTable({id: [1, 2]})]);
+    const getQueryMetadata = source.getQueryMetadata.bind(source);
+    source.getQueryMetadata = async () => ({
+      ...(await getQueryMetadata()),
+      hasDefaultRowWindow: true
+    });
+    const manager = new DataSourceManager();
+    manager.add({dataSourceId: 'physical', dataSource: source});
+    const federated = new FederatedTableScanSource(manager, {
+      sources: [{dataSourceId: 'physical'}]
+    });
+
+    await expect(query({limit: 1}, {source: federated})).rejects.toThrow('default offset or limit');
+    expect(source.readCount).toBe(0);
+    expect(await collectBatches(federated.read({limit: 1}))).toHaveLength(1);
+  });
+
   test('resolves manager sources and appends ordered batches with global provenance', async () => {
     const dataSourceManager = new DataSourceManager();
     const firstSource = new TestTableScanSource('first', [

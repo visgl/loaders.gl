@@ -32,6 +32,13 @@ limits; predicate-only columns are retained internally. Rows and selected column
 specified order. Both `offset` and `limit` must be non-negative safe integers. A supplied `select` must be
 non-empty and produce unique output names.
 
+Pass `offset` and `limit` in the logical request or write `OFFSET` and `LIMIT` in SQL.
+The execution options and their `_scan` namespace reject row-window fields. Sources configured
+with a default row window, such as Parquet sources created with `parquet.offset` or
+`parquet.limit`, must be reopened without those defaults. This keeps source-side reads
+from applying a window before the logical predicate or applying it twice. Direct
+`source.read({offset, limit})` calls still support per-read windows on sources that implement them.
+
 `from` resolves an exact source name in `options.sources`. Its structured form calls
 `source.getTable(table, {signal})`. Dots in identifier components are literal. Without `from`,
 execution uses `options.source`. Unknown/duplicate source names, unsupported table lookup, and

@@ -85,6 +85,10 @@ export type QueryOptions = TableQueryExecutionOptions &
     core?: DataSourceOptions['core'];
     /** Named caller-owned data sources used by FROM and metadata commands. */
     sources?: readonly DataSource<unknown, DataSourceOptions>[];
+    /** Row offset belongs on the logical query. */
+    offset?: never;
+    /** Row limit belongs on the logical query. */
+    limit?: never;
     /** Parser or lazy parser promise, required only for SQL string input. */
     sqlParser?: SQLQueryParser | Promise<SQLQueryParser>;
     /** Append-only batches (default), or complete progressive replacement snapshots. */
@@ -179,6 +183,15 @@ async function* queryAppendBatches(
   let earlyTerminationReason: TableQueryExecutionSummary['earlyTerminationReason'];
   try {
     options.signal?.throwIfAborted();
+    const scan = options._scan;
+    if (
+      options.offset !== undefined ||
+      options.limit !== undefined ||
+      scan?.limit !== undefined ||
+      (scan && 'offset' in scan && scan.offset !== undefined)
+    ) {
+      throw new Error('Put offset and limit in the logical query, not the execution options.');
+    }
     let parsedQuery: Query;
     if (typeof tableQuery === 'string') {
       const parser = await options.sqlParser;
@@ -246,6 +259,11 @@ async function* queryAppendBatches(
         metadata.execution.method !== 'read')
     ) {
       throw new Error('Query source must support table reads.');
+    }
+    if (metadata?.hasDefaultRowWindow) {
+      throw new Error(
+        'Query source has a default offset or limit. Remove the source defaults and put offset and limit in the logical query.'
+      );
     }
     const sourceSchema = inMemory ? inMemory.schema : convertSchemaToArrow(metadata!.schema);
     const names = sourceSchema.fields.map(field => field.name);

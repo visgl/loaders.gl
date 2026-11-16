@@ -15,7 +15,7 @@ export type LanceLoaderOptions = LoaderOptions & {
     shape?: 'arrow';
     /** Columns to project into the returned table. (Physical projection is not yet part of `_scan`.) */
     columns?: string[];
-    /** @deprecated Use `_scan.limit` instead. */
+    /** Maximum number of rows returned by the flat-file loader. */
     limit?: number;
     /** Primitive type for each physical column in the MVP reader. */
     columnTypes?: LanceFlatPrimitiveType[];
