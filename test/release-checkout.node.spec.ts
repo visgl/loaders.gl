@@ -79,3 +79,14 @@ test('release checkout refuses unrelated tracked source changes', () => {
     execFileSync('bash', ['-e', '-c', cleanupScript], {cwd: directory, stdio: 'pipe'})
   ).toThrow();
 });
+
+test('release runs both hermetic slow projects in separate processes before publishing', () => {
+  const commands = workflow.jobs.slow_tests.steps
+    .map(step => step.run)
+    .filter(command => command?.includes('--project slow-'));
+  expect(commands).toEqual([
+    'yarn exec vitest run --config vitest.config.ts --project slow-node --maxWorkers=1',
+    'yarn exec vitest run --config vitest.config.ts --project slow-headless --maxWorkers=1'
+  ]);
+  expect(workflow.jobs.release.needs).toContain('slow_tests');
+});
