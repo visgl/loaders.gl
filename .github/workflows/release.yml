@@ -294,10 +294,12 @@ jobs:
       - name: Restore release build
         run: tar -xf "$RUNNER_TEMP/release-build.tar"
 
-      - name: Run hermetic slow tests
-        env:
-          VITEST_MAX_WORKERS: 1
-        run: yarn test-slow
+      # CPU-throughput checks use process CPU time, so keep browser work outside the Node process.
+      - name: Run hermetic slow Node tests
+        run: yarn exec vitest run --config vitest.config.ts --project slow-node --maxWorkers=1
+
+      - name: Run hermetic slow browser tests
+        run: yarn exec vitest run --config vitest.config.ts --project slow-headless --maxWorkers=1
 
   release:
     name: Publish tagged packages to npm
