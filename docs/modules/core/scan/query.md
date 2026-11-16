@@ -212,3 +212,29 @@ compare equivalent runtimes and machines.
 
 Executor predicate-index memory is bounded by an input batch. Retained output and Arrow slices can
 keep additional buffers alive; collection retains the complete result.
+
+### Row-preserving scale projections
+
+Use `@loaders.gl/core/scan-scales` to compute scale-driven Arrow columns
+and the descriptors that explain their values. The input query controls the
+row set. Include the value and domain columns in its output. Scale expressions
+preserve the order and cardinality of those rows.
+
+```ts
+import {queryScales} from '@loaders.gl/core/scan-scales';
+import {parseSQLQuery} from '@math.gl/sql/parser';
+
+const {columns, scales} = await queryScales(
+  'SELECT temperature WHERE temperature IS NOT NULL',
+  {color: "SCALE_COLOR(temperature, DOMAIN(temperature), PALETTE('viridis'))"},
+  {source: arrowTable, sqlParser: parseSQLQuery}
+);
+
+const color = columns.color;
+const legend = scales.color.descriptor;
+```
+
+Domains resolve over the returned rows, including the effect of any row limit
+or offset. Each scale exposes its evaluator through `sample(value)` and its
+JSON-safe configuration through `descriptor`. This entry point materializes
+the query result before resolving its domains.
