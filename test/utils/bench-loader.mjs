@@ -13,11 +13,7 @@ export async function resolve(specifier, context, nextResolve) {
 
   const workspaceSourcePath = getWorkspaceSourcePath(specifier);
   if (workspaceSourcePath) {
-    const sourceFile = findCandidateFile(workspaceSourcePath, specifier);
-    if (sourceFile) {
-      return {shortCircuit: true, url: pathToFileURL(sourceFile).href};
-    }
-    // A public export can map to a differently named source file.
+    return resolveFileWithCandidates(workspaceSourcePath);
   }
 
   if (isFileLikeSpecifier(specifier)) {

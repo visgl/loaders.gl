@@ -7,7 +7,7 @@ import {
   queryScales,
   queryScalesInBatches,
   queryScalesProgressive
-} from '@loaders.gl/core/scan-scales';
+} from '../../core/src/scan/query-scales';
 import {createScaleQuerySources} from './scale-query-fixtures';
 
 /** Measures scale projection over ordered in-memory sources with warm metadata. */
