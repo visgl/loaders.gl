@@ -12,7 +12,7 @@ import {
   type Shader
 } from '@luma.gl/core';
 import type {Color} from '@deck.gl/core';
-import {isNativeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
+import {isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {BoundingSphere, CullingVolume} from '@math.gl/geometry/culling';
 import {
   projectSplatCovarianceToScreen,
@@ -310,7 +310,7 @@ export class SplatEngine {
         return;
       }
 
-      if (!isNativeArrowRecordBatch(tableBatch)) {
+      if (!isArrowRecordBatch(tableBatch)) {
         throw new Error('SplatEngine async data requires Arrow RecordBatch values.');
       }
 

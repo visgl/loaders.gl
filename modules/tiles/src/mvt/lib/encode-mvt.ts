@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterOptions} from '@loaders.gl/core/loader-utils';
-import {isNativeArrowTable} from '@loaders.gl/core/schema-utils';
+import {isArrowTable} from '@loaders.gl/core/schema-utils';
 import {encodeMVTArrow} from './encode-mvt-arrow';
 import {fromGeojson} from './mapbox-vt-pbf/to-vector-tile';
 
@@ -32,7 +32,7 @@ export type MVTWriterOptions = WriterOptions & {
 
 /** Encodes legacy GeoJSON or a GeoArrow WKB tile without materializing Arrow attributes as GeoJSON. */
 export function encodeMVT(data, options?: MVTWriterOptions): ArrayBuffer {
-  if (isNativeArrowTable(data)) return encodeMVTArrow(data, options ?? {});
+  if (isArrowTable(data)) return encodeMVTArrow(data, options ?? {});
   const {mvt} = options || {};
   const encodeOptions = {
     layerName: mvt?.layerName || 'geojsonLayer',

@@ -15,13 +15,7 @@ import {
   type TableScanReadOptions,
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  TableBatch,
-  DataType,
-  Schema
-} from '@loaders.gl/core/schema';
+import type {TableBatch, DataType, Schema} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {queryArrowTable, type SQLPredicate} from '@loaders.gl/core/scan';
 import {
@@ -1040,7 +1034,7 @@ describe('FederatedTableScanSource', () => {
 /** Deterministic in-memory table source used by federation conformance tests. */
 class TestTableScanSource
   extends DataSource<string, DataSourceOptions>
-  implements TableScanSource<ArrowTableBatch | TableBatch, SQLPredicate>
+  implements TableScanSource<arrow.RecordBatch | TableBatch, SQLPredicate>
 {
   /** Source-local read options received by each operation. */
   readonly readOptions: TableScanReadOptions<SQLPredicate>[] = [];
@@ -1049,13 +1043,13 @@ class TestTableScanSource
   /** Number of physical iterators closed through completion or early return. */
   iteratorCloseCount = 0;
 
-  private readonly tables: readonly ArrowTable[];
+  private readonly tables: readonly arrow.Table[];
   private readonly testOptions: TestTableScanSourceOptions;
 
   /** Creates a deterministic source with one or more physical batches. */
   constructor(
     sourceType: string,
-    tables: readonly ArrowTable[],
+    tables: readonly arrow.Table[],
     testOptions: TestTableScanSourceOptions = {}
   ) {
     super(sourceType, {});
@@ -1079,7 +1073,7 @@ class TestTableScanSource
   /** Applies the source-local query independently from the federated global query. */
   async *read(
     options: TableScanReadOptions<SQLPredicate> = {}
-  ): AsyncIterableIterator<ArrowTableBatch | TableBatch> {
+  ): AsyncIterableIterator<arrow.RecordBatch | TableBatch> {
     this.readCount++;
     this.readOptions.push(options);
     let remaining = this.testOptions.ignoreLimit
@@ -1142,13 +1136,13 @@ type TestTableScanSourceOptions = Readonly<{
 }>;
 
 /** Builds a native Arrow table from simple columns. */
-function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
+function makeArrowTable(columns: Record<string, readonly unknown[]>): arrow.Table {
   const data = arrow.tableFromArrays(columns);
   return data;
 }
 
 /** Wraps pre-typed Arrow vectors without allowing Arrow to infer wider scalar types. */
-function makeTypedArrowTable(columns: Record<string, arrow.Vector>): ArrowTable {
+function makeTypedArrowTable(columns: Record<string, arrow.Vector>): arrow.Table {
   const data = new arrow.Table(columns);
   return data;
 }
@@ -1156,7 +1150,7 @@ function makeTypedArrowTable(columns: Record<string, arrow.Vector>): ArrowTable 
 /** Creates supported table metadata with an optional schema and exact row count. */
 function createTestMetadata(
   sourceType: string,
-  table: ArrowTable,
+  table: arrow.Table,
   schema: Schema = convertArrowToSchema(table.schema),
   rowCount: number | bigint = table.numRows
 ): ScanQueryMetadata {

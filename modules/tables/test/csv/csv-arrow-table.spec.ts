@@ -18,7 +18,6 @@ import {CSVLoader as BundledCSVLoader} from '@loaders.gl/tables/csv/bundled';
 import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv/unbundled';
 import * as csv from '@loaders.gl/tables/csv/index';
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {
   deserializeCSVWorkerResult,
   serializeCSVWorkerResult
@@ -636,7 +635,7 @@ test('CSVLoader#parseInBatches freezes schema after first typed batch', async ()
     }
   });
 
-  const batches: ArrowTableBatch[] = [];
+  const batches: arrow.RecordBatch[] = [];
   for await (const batch of iterator) {
     batches.push(batch);
   }
@@ -755,7 +754,7 @@ test('CSVLoader#arrow geometry detection supports byte and streaming inputs', as
   });
   expect(table.numRows).toBe(2);
 
-  const batches: ArrowTableBatch[] = [];
+  const batches: arrow.RecordBatch[] = [];
   const iterator = await parseInBatches(
     [bytes.subarray(0, 30), bytes.subarray(30)],
     preloadedLoader,
@@ -790,7 +789,7 @@ test('CSVLoader#arrow applies GeoArrow encoding preference to detected WKT', asy
       geometryEncoding: 'source'
     }
   });
-  const batches: ArrowTableBatch[] = [];
+  const batches: arrow.RecordBatch[] = [];
   for await (const batch of iterator) {
     batches.push(batch);
   }
@@ -869,7 +868,7 @@ test('CSVLoader#worker transport serializes and hydrates Arrow table results', a
   expect(serialized.columns.data.transport).toBe('arrow-js');
   expect(serialized.getChild).toBeFalsy();
 
-  const hydrated = deserializeCSVWorkerResult(serialized) as ArrowTable;
+  const hydrated = deserializeCSVWorkerResult(serialized) as arrow.Table;
   expect(hydrated).toBeInstanceOf(arrow.Table);
   expect(hydrated.getChild('city')?.get(0)).toBe('Paris');
 

@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table, ArrowTable} from '@loaders.gl/core/schema';
+import type * as arrow from 'apache-arrow';
+import type {Table} from '@loaders.gl/core/schema';
 
 import {ArrowLikeSchema} from './arrow-like-schema';
 import {deduceTableSchema} from '../../schema/deduce-table-schema';
@@ -20,10 +21,10 @@ import {
 } from '../tables/table-accessors';
 
 class ArrowLikeVector {
-  table: Table | ArrowTable;
+  table: Table | arrow.Table;
   columnName: string;
 
-  constructor(table: Table | ArrowTable, columnName: string) {
+  constructor(table: Table | arrow.Table, columnName: string) {
     this.table = table;
     this.columnName = columnName;
   }
@@ -49,9 +50,9 @@ class ArrowLikeVector {
  */
 export class ArrowLikeTable {
   schema: ArrowLikeSchema;
-  table: Table | ArrowTable;
+  table: Table | arrow.Table;
 
-  constructor(table: Table | ArrowTable) {
+  constructor(table: Table | arrow.Table) {
     const schema =
       'shape' in table ? table.schema || deduceTableSchema(table) : deduceTableSchema(table);
     this.schema = new ArrowLikeSchema(schema.fields, schema.metadata);

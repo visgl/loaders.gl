@@ -64,14 +64,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Loader</span>
     <strong>ParquetLoader</strong>
     <span>Loads Parquet files as object-row tables or Arrow tables.</span>
-    <span className="docs-api-card__meta">Output: ObjectRowTable, ArrowTable</span>
+    <span className="docs-api-card__meta">Output: ObjectRowTable, Apache Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseInBatches</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/geoparquet-loader">
     <span className="docs-api-card__kind">Loader</span>
     <strong>GeoParquetLoader</strong>
     <span>Loads GeoParquet files as GeoJSON tables or Arrow tables with geospatial metadata.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ArrowTable</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, Apache Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseInBatches</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/parquet-source-loader">

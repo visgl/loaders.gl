@@ -21,7 +21,7 @@ import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 import {load, loadInBatches} from '@loaders.gl/core';
 import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
 import type {Mesh} from '@loaders.gl/core/schema';
-import {convertTableToMesh, isNativeArrowTable} from '@loaders.gl/core/schema-utils';
+import {convertTableToMesh, isArrowTable} from '@loaders.gl/core/schema-utils';
 import {DracoLoader} from '@loaders.gl/scene';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {OBJLoader} from '@loaders.gl/scene/obj';
@@ -150,7 +150,7 @@ export default function App(props: AppProps = {}) {
 
   const layers = state.pointData
     ? [
-        isNativeArrowTable(state.pointData) || isArrowTableBatchIterator(state.pointData)
+        isArrowTable(state.pointData) || isArrowTableBatchIterator(state.pointData)
           ? createArrowPointCloudLayer(state.pointData, state.selectedExampleName)
           : createPointCloudLayer(state.pointData, state.selectedExampleName)
       ]
@@ -393,14 +393,14 @@ export default function App(props: AppProps = {}) {
       if (loadRequestId.current !== requestId) {
         return;
       }
-      const mesh = isNativeArrowTable(pointCloud)
+      const mesh = isArrowTable(pointCloud)
         ? ((convertTableToMesh(pointCloud) as unknown) as Mesh)
         : (pointCloud as Mesh);
       const {schema, header, loaderData, attributes} = mesh as any;
 
       const viewState = getViewState(state.viewState, state.controllerMode, loaderData, attributes);
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
-      const pointData = isNativeArrowTable(pointCloud)
+      const pointData = isArrowTable(pointCloud)
         ? pointCloud
         : convertLoadersMeshToDeckPointCloudData(attributes);
 
@@ -512,7 +512,7 @@ function convertArrowTableBatchToMesh(batch: RecordBatch): Mesh {
 }
 
 function combineMeshArrowTables(pointClouds: unknown[]): Table {
-  const tables = pointClouds.filter(isNativeArrowTable);
+  const tables = pointClouds.filter(isArrowTable);
   if (!tables.length || tables.length !== pointClouds.length) {
     throw new Error('Multi-file point cloud examples require Arrow table loader output.');
   }
@@ -570,7 +570,7 @@ function isArrowTableBatchIterator(data: unknown): data is AsyncIterable<RecordB
 }
 
 function getPointDataLength(pointData: any): number {
-  if (isNativeArrowTable(pointData)) {
+  if (isArrowTable(pointData)) {
     return pointData.numRows;
   }
   return pointData?.length || 0;
@@ -580,7 +580,7 @@ function createArrowPointCloudLayer(
   pointData: Table | AsyncIterable<RecordBatch>,
   selectedExampleName?: string | null
 ): MeshArrowPointCloudLayer | SplatLayer {
-  if (isNativeArrowTable(pointData) && isGaussianSplatArrowTable(pointData)) {
+  if (isArrowTable(pointData) && isGaussianSplatArrowTable(pointData)) {
     return createSplatLayer(pointData, selectedExampleName);
   }
 
@@ -1037,7 +1037,7 @@ function getPointRow(pointData: any, pointIndex: number): DeckPoint | null {
     return null;
   }
 
-  if (isNativeArrowTable(pointData)) {
+  if (isArrowTable(pointData)) {
     const position = pointData.getChild('POSITION')?.get(pointIndex);
     if (!position) {
       return null;

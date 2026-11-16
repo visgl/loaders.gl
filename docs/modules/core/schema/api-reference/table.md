@@ -46,9 +46,8 @@ loaders.gl defines a number of table types.
 - `ArrayRowTable`
 - `GeoJSONTable`
 - `ColumnarTable`
-- `ArrowTable`
 
-These all have a `shape` field on the top level.
+These all have a `shape` field on the top level. Import native `Table` and `RecordBatch` types from `apache-arrow`. Use `isArrowTable` and `isArrowRecordBatch` from `@loaders.gl/core/schema-utils` to narrow native values.
 
 (If you are an advanced TypeScript programmer, you will appreciate that this lets typescript treat table types as a "discriminated union", meaning that once the type has been checked in an if or switch statement, the typing of the table is implied).
 

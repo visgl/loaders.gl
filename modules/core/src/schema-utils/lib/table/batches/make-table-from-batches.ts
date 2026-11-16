@@ -12,7 +12,7 @@ import type {
 } from '@loaders.gl/core/schema';
 import type * as arrow from 'apache-arrow';
 import {makeArrowTableFromBatches} from '../../arrow/arrow-metadata';
-import {isNativeArrowRecordBatch} from '../../../../lib/loader-utils/native-arrow';
+import {isArrowRecordBatch} from '../../../../lib/loader-utils/native-arrow';
 import {getTableLength} from '../tables/table-accessors';
 
 /**
@@ -41,10 +41,10 @@ export async function makeTableFromBatches(
   const arrowBatches: arrow.RecordBatch[] = [];
 
   for await (const batch of batchIterator) {
-    const batchShape = isNativeArrowRecordBatch(batch) ? 'arrow' : batch.shape;
+    const batchShape = isArrowRecordBatch(batch) ? 'arrow' : batch.shape;
     shape ??= batchShape;
     if (shape !== batchShape) throw new Error('Batches must have the same shape');
-    if (isNativeArrowRecordBatch(batch)) {
+    if (isArrowRecordBatch(batch)) {
       arrowBatches.push(batch);
       continue;
     }

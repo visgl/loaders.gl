@@ -8,11 +8,11 @@ import {query, queryInBatches} from '@loaders.gl/core/scan';
 import {parseSQLQuery} from '@math.gl/expressions/sql';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
+import type {TableBatch} from '@loaders.gl/core/schema';
 import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loader-utils';
 
 /** Creates a small source table with a predicate-only column. */
-function makeTable(): ArrowTable {
+function makeTable(): arrow.Table {
   const data = new arrow.Table({
     name: arrow.vectorFromArray(['a', 'b', 'c'], new arrow.Utf8()),
     value: arrow.vectorFromArray([1, 2, 3], new arrow.Int32())
@@ -239,7 +239,7 @@ test('unsupported inputs and changed output types fail with one completion summa
   await expect(
     query(
       {},
-      {source: 'https://example.invalid' as unknown as ArrowTable, onQueryComplete: complete}
+      {source: 'https://example.invalid' as unknown as arrow.Table, onQueryComplete: complete}
     )
   ).rejects.toThrow('explicit URL-capable source loaders');
   expect(complete).toHaveBeenCalledTimes(1);

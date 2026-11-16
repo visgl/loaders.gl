@@ -15,6 +15,8 @@ import {
   getTableRowAsArray,
   getTableRowAsObject,
   getTableRowShape,
+  isArrowRecordBatch,
+  isArrowTable,
   isTable,
   makeArrayRowIterator,
   makeObjectRowIterator,
@@ -123,6 +125,20 @@ test('reports invalid table shapes and missing columns', () => {
   expect(() => getTableRowShape({shape: 'columnar-table', data: {}} as Table)).toThrow(
     'Not a row table'
   );
+});
+
+test('distinguishes native Arrow tables and record batches through the public guards', () => {
+  const table: unknown = arrow.tableFromArrays({value: [1]});
+  if (!isArrowTable(table)) throw new Error('Expected an Arrow table');
+
+  const batch: unknown = table.batches[0];
+  if (!isArrowRecordBatch(batch)) throw new Error('Expected an Arrow record batch');
+
+  expect(batch.numRows).toBe(1);
+  expect(isArrowTable(batch)).toBe(false);
+  expect(isArrowRecordBatch(table)).toBe(false);
+  expect(isArrowTable({shape: 'arrow-table', data: table})).toBe(false);
+  expect(isArrowRecordBatch({shape: 'arrow-table', data: batch})).toBe(false);
 });
 
 test('recognizes and measures every supported table shape', () => {

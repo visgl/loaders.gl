@@ -9,7 +9,7 @@ import type {
   ColumnarTableBatch
 } from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
-import {isNativeArrowRecordBatch} from '../../../../lib/loader-utils/native-arrow';
+import {isArrowRecordBatch} from '../../../../lib/loader-utils/native-arrow';
 import {makeArrowMetadataBatch} from '../../arrow/arrow-metadata';
 import {convertTable} from '../tables/convert-table';
 
@@ -26,7 +26,7 @@ export function convertBatch(
   batch: TableBatch | arrow.RecordBatch,
   shape: 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow'
 ): TableBatch | arrow.RecordBatch {
-  if (isNativeArrowRecordBatch(batch)) {
+  if (isArrowRecordBatch(batch)) {
     if (shape === 'arrow') return batch;
     throw new Error('Convert a native RecordBatch as a table to select a row or column layout');
   }
@@ -72,7 +72,7 @@ export async function* convertBatches(
   shape: 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow'
 ): AsyncIterableIterator<TableBatch | arrow.RecordBatch> {
   for await (const batch of batches) {
-    if (isNativeArrowRecordBatch(batch)) {
+    if (isArrowRecordBatch(batch)) {
       if (shape !== 'arrow') throw new Error('Expected a loaders.gl table batch');
       yield batch;
       continue;

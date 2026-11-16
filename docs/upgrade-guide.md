@@ -835,6 +835,13 @@ Pass native Apache Arrow tables directly to `GeoArrowLayer`, `MeshArrowPointClou
 and `SplatLayer`. For streaming point clouds and splats, pass an async iterable of Arrow
 `RecordBatch` values.
 
+#### Native Arrow types and guards
+
+Import `Table` and `RecordBatch` from `apache-arrow` in place of the removed
+`ArrowTable` and `ArrowTableBatch` exports from `@loaders.gl/core/schema`.
+Use `isArrowTable` and `isArrowRecordBatch` from `@loaders.gl/core/schema-utils`
+in place of `isNativeArrowTable` and `isNativeArrowRecordBatch`.
+
 #### Table and batch conversions use native Arrow
 
 Use `'arrow'` as the target for table converters, mesh conversion, and batch conversion. Table conversion returns an Apache Arrow `Table`. Batch conversion produces `RecordBatch` values, with schema metadata available on each batch. Use `convertBatches(batches, 'arrow')` for portable row and column batches, and `makeArrowTableFromBatches` to collect a native stream. Use `makeArrowRecordBatchIterator` in place of `makeArrowTableBatchIterator`.

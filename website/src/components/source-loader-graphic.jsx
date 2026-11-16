@@ -17,7 +17,7 @@ const sourceTabs = [
     dataSource: 'VectorTileDataSource',
     methods: ['getMetadata()', 'getTile()'],
     outputCategory: 'VectorTileTables',
-    outputDetail: 'Tables<ArrowTable>',
+    outputDetail: 'Tables<arrow.Table>',
     loadingManager: 'Tileset2D',
     deckLayers: ['Tile2DSourceLayer', 'MVTLayer', 'GeoJsonLayer']
   },

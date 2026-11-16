@@ -62,8 +62,7 @@ export {
   isArrayRowTable,
   isObjectRowTable,
   isColumnarTable,
-  isGeoJSONTable,
-  isArrowTable
+  isGeoJSONTable
 } from './lib/table/tables/table-types';
 
 export {
@@ -172,4 +171,4 @@ export {
 } from './lib/arrow/arrow-metadata';
 export {refineArrowTableBatches} from './lib/arrow/arrow-metadata';
 
-export {isNativeArrowRecordBatch, isNativeArrowTable} from '../lib/loader-utils/native-arrow';
+export {isArrowRecordBatch, isArrowTable} from '../lib/loader-utils/native-arrow';

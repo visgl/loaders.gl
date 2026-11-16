@@ -9,7 +9,7 @@ import {
   type WriterOptions
 } from '@loaders.gl/core/loader-utils';
 import type {Mesh, TypedArray} from '@loaders.gl/core/schema';
-import {convertTableToMesh, isNativeArrowTable} from '@loaders.gl/core/schema-utils';
+import {convertTableToMesh, isArrowTable} from '@loaders.gl/core/schema-utils';
 import {extractLoadLibraryOptions, processOnWorkerInBatches} from '@loaders.gl/core/worker-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuilderMesh, DracoBuildOptions, DracoEncodingResult} from './lib/draco-builder';
@@ -216,7 +216,7 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
 
 /** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */
 function normalizeDracoMesh(data: DracoWriterInput): DracoBuilderMesh {
-  if (isNativeArrowTable(data)) {
+  if (isArrowTable(data)) {
     return convertTableToMesh(data);
   }
 
