@@ -249,4 +249,5 @@ its vectors. The final snapshot has `final: true`. Configure
 `emitEveryBatches` and `maxRetainedRows` to control recoloring frequency
 and retained rows. Percentile endpoints use the upstream bounded sketch.
 Use `queryScales()` for exact quantile classes while progressive
-quantile classification awaits the upstream binder.
+quantile classification awaits the upstream binder. With math.gl beta.11,
+multi-class quantize snapshots wait for a nonconstant extent.

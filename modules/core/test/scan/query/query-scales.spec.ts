@@ -126,6 +126,20 @@ test('progressive percentile endpoints are applied without rescanning the source
   expect(source.read).toHaveBeenCalledTimes(1);
 });
 
+test('progressive quantize waits for a distinct extent on beta.11', async () => {
+  const source = createScaleSource([5, 5], [15]);
+  const snapshots = await Array.fromAsync(
+    queryScalesProgressive(
+      {},
+      {color: "SCALE_QUANTIZE(value, 5, PALETTE('Blues'))"},
+      {source, emitEveryBatches: 1}
+    )
+  );
+  expect(snapshots.map(snapshot => snapshot.final)).toEqual([false, true]);
+  expect(snapshots[0].scales.color.descriptor.thresholds).toEqual([7, 9, 11, 13]);
+  expect(snapshots[1].columns.color.length).toBe(3);
+});
+
 test('streaming validates its mode and resource limits', async () => {
   const source = createScaleSource([0, 1], [2, 3]);
   await expect(

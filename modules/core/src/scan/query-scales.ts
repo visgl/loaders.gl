@@ -144,9 +144,23 @@ export async function* queryScalesProgressive<Name extends string>(
   let last: ScaleQueryResult<Name> | undefined;
 
   /** Binds the current statistics and evaluates the selected snapshot. */
-  async function snapshot(): Promise<ScaleQueryResult<Name> | undefined> {
+  async function snapshot(final = false): Promise<ScaleQueryResult<Name> | undefined> {
     const domains = accumulator.result();
     if (domains.some(domain => domain.length === 0)) return undefined;
+    // math.gl beta.11 cannot bind repeated quantize breaks. Defer publication
+    // until the extent grows, while still surfacing final domain errors.
+    if (
+      !final &&
+      entries.some(
+        ([, {scale}], index) =>
+          scale.type === 'quantize' &&
+          scale.range.type === 'palette' &&
+          (scale.range.count ?? 0) > 2 &&
+          domains[index][0] === domains[index][1]
+      )
+    )
+      return undefined;
+
     const table = await makeArrowTableFromBatches(batches);
     signal?.throwIfAborted();
     if (!table) return undefined;
@@ -179,7 +193,7 @@ export async function* queryScalesProgressive<Name extends string>(
     }
   }
   signal?.throwIfAborted();
-  const final = last && batchesSinceEmission === 0 ? last : await snapshot();
+  const final = last && batchesSinceEmission === 0 ? last : await snapshot(true);
   if (!final) throw new Error('Progressive scale query could not resolve its domain.');
   yield {...final, final: true};
 }
